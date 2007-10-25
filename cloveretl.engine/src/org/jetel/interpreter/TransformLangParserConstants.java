@@ -4,101 +4,101 @@ package org.jetel.interpreter;
 public interface TransformLangParserConstants {
 
   int EOF = 0;
-  int INTEGER_LITERAL = 15;
-  int DIGIT = 16;
-  int LETTER = 17;
-  int UNDERSCORE = 18;
-  int DECIMAL_LITERAL = 19;
-  int HEX_LITERAL = 20;
-  int OCTAL_LITERAL = 21;
-  int FLOATING_POINT_LITERAL = 22;
-  int EXPONENT = 23;
-  int STRING_LITERAL = 24;
-  int QUOTED_STRING = 25;
-  int DQUOTED_STRING = 26;
-  int UNTERMINATED_STRING_LITERAL = 27;
-  int UNTERMINATED_QUOTED_STRING = 28;
-  int UNTERMINATED_DQUOTED_STRING = 29;
-  int BOOLEAN_LITERAL = 30;
-  int TRUE = 31;
-  int FALSE = 32;
-  int DATE_LITERAL = 33;
-  int DATETIME_LITERAL = 34;
-  int SEMICOLON = 35;
-  int BLOCK_START = 36;
-  int BLOCK_END = 37;
-  int NULL_LITERAL = 38;
-  int MAPPING = 39;
-  int OR = 40;
-  int AND = 41;
-  int NOT = 42;
-  int EQUAL = 43;
-  int NON_EQUAL = 44;
-  int LESS_THAN = 45;
-  int LESS_THAN_EQUAL = 46;
-  int GREATER_THAN = 47;
-  int GREATER_THAN_EQUAL = 48;
-  int REGEX_EQUAL = 49;
-  int CMPOPERATOR = 50;
-  int MINUS = 51;
-  int PLUS = 52;
-  int MULTIPLY = 53;
-  int DIVIDE = 54;
-  int MODULO = 55;
-  int INCR = 56;
-  int DECR = 57;
-  int TILDA = 58;
-  int FIELD_ID = 59;
-  int REC_NAME_FIELD_ID = 60;
-  int REC_NUM_FIELD_ID = 61;
-  int OPEN_PAR = 62;
-  int CLOSE_PAR = 63;
-  int INT_VAR = 64;
-  int LONG_VAR = 65;
-  int DATE_VAR = 66;
-  int DOUBLE_VAR = 67;
-  int DECIMAL_VAR = 68;
-  int BOOLEAN_VAR = 69;
-  int STRING_VAR = 70;
-  int BYTE_VAR = 71;
-  int LIST_VAR = 72;
-  int MAP_VAR = 73;
-  int RECORD_VAR = 74;
-  int OBJECT_VAR = 75;
-  int BREAK = 76;
-  int CONTINUE = 77;
-  int ELSE = 78;
-  int FOR = 79;
-  int FOR_EACH = 80;
-  int FUNCTION = 81;
-  int IF = 82;
-  int RETURN = 83;
-  int WHILE = 84;
-  int CASE = 85;
-  int ENUM = 86;
-  int IMPORT = 87;
-  int SWITCH = 88;
-  int CASE_DEFAULT = 89;
-  int DO = 90;
-  int TRY = 91;
-  int CATCH = 92;
-  int YEAR = 93;
-  int MONTH = 94;
-  int WEEK = 95;
-  int DAY = 96;
-  int HOUR = 97;
-  int MINUTE = 98;
-  int SECOND = 99;
-  int MILLISEC = 100;
-  int DATE_FIELD_LITERAL = 133;
-  int IDENTIFIER = 134;
-  int ERROR = 135;
+  int SINGLE_LINE_COMMENT = 9;
+  int INTEGER_LITERAL = 13;
+  int DIGIT = 14;
+  int LETTER = 15;
+  int UNDERSCORE = 16;
+  int DECIMAL_LITERAL = 17;
+  int HEX_LITERAL = 18;
+  int OCTAL_LITERAL = 19;
+  int FLOATING_POINT_LITERAL = 20;
+  int EXPONENT = 21;
+  int STRING_LITERAL = 22;
+  int QUOTED_STRING = 23;
+  int DQUOTED_STRING = 24;
+  int UNTERMINATED_STRING_LITERAL = 25;
+  int UNTERMINATED_QUOTED_STRING = 26;
+  int UNTERMINATED_DQUOTED_STRING = 27;
+  int BOOLEAN_LITERAL = 28;
+  int TRUE = 29;
+  int FALSE = 30;
+  int DATE_LITERAL = 31;
+  int DATETIME_LITERAL = 32;
+  int SEMICOLON = 33;
+  int BLOCK_START = 34;
+  int BLOCK_END = 35;
+  int NULL_LITERAL = 36;
+  int MAPPING = 37;
+  int OR = 38;
+  int AND = 39;
+  int NOT = 40;
+  int EQUAL = 41;
+  int NON_EQUAL = 42;
+  int LESS_THAN = 43;
+  int LESS_THAN_EQUAL = 44;
+  int GREATER_THAN = 45;
+  int GREATER_THAN_EQUAL = 46;
+  int REGEX_EQUAL = 47;
+  int CMPOPERATOR = 48;
+  int MINUS = 49;
+  int PLUS = 50;
+  int MULTIPLY = 51;
+  int DIVIDE = 52;
+  int MODULO = 53;
+  int INCR = 54;
+  int DECR = 55;
+  int TILDA = 56;
+  int FIELD_ID = 57;
+  int REC_NAME_FIELD_ID = 58;
+  int REC_NUM_FIELD_ID = 59;
+  int OPEN_PAR = 60;
+  int CLOSE_PAR = 61;
+  int INT_VAR = 62;
+  int LONG_VAR = 63;
+  int DATE_VAR = 64;
+  int DOUBLE_VAR = 65;
+  int DECIMAL_VAR = 66;
+  int BOOLEAN_VAR = 67;
+  int STRING_VAR = 68;
+  int BYTE_VAR = 69;
+  int LIST_VAR = 70;
+  int MAP_VAR = 71;
+  int RECORD_VAR = 72;
+  int OBJECT_VAR = 73;
+  int BREAK = 74;
+  int CONTINUE = 75;
+  int ELSE = 76;
+  int FOR = 77;
+  int FOR_EACH = 78;
+  int FUNCTION = 79;
+  int IF = 80;
+  int RETURN = 81;
+  int WHILE = 82;
+  int CASE = 83;
+  int ENUM = 84;
+  int IMPORT = 85;
+  int SWITCH = 86;
+  int CASE_DEFAULT = 87;
+  int DO = 88;
+  int TRY = 89;
+  int CATCH = 90;
+  int YEAR = 91;
+  int MONTH = 92;
+  int WEEK = 93;
+  int DAY = 94;
+  int HOUR = 95;
+  int MINUTE = 96;
+  int SECOND = 97;
+  int MILLISEC = 98;
+  int DATE_FIELD_LITERAL = 131;
+  int IDENTIFIER = 132;
+  int ERROR = 133;
 
   int DEFAULT = 0;
   int WithinComment = 1;
-  int WithinLineComment = 2;
-  int WithinInclude = 3;
-  int WithingInclude = 4;
+  int WithinInclude = 2;
+  int WithingInclude = 3;
 
   String[] tokenImage = {
     "<EOF>",
@@ -110,12 +110,10 @@ public interface TransformLangParserConstants {
     "\"/*\"",
     "\"*/\"",
     "<token of kind 8>",
-    "\"//\"",
-    "\"\\n\"",
-    "<token of kind 11>",
+    "<SINGLE_LINE_COMMENT>",
     "\"#include\"",
     "\"\\n\"",
-    "<token of kind 14>",
+    "<token of kind 12>",
     "<INTEGER_LITERAL>",
     "<DIGIT>",
     "<LETTER>",
