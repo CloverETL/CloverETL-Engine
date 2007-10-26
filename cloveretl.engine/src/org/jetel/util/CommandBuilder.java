@@ -308,13 +308,34 @@ public class CommandBuilder {
 	}
 	
 	/**
+	 * if paramName is in properties adds to the end of command: 
+	 *  " <i><b>switchMark</b>switchString</i>paramValue"<br>
+	 *  for exmaple:  -PASSWORD password
+	 * 
+	 * @param paramName
+	 * @param switchString
+	 */
+	public boolean addParameterSwitch(String paramName, String switchString) {
+		if (params.containsKey(paramName)) {
+			command.append(parameterDelimiter);
+			command.append(switchMark);
+			command.append(switchString);
+			command.append(" ");
+			command.append(StringUtils.quote(params.getProperty(paramName)));
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * if value isn;t null adds to the end of command: 
 	 *  " <i><b>switchMark</b>switchChar</i>value"<br>
 	 *  for exmaple:  -P"password"
 	 *  
-	 *  
-	 * @param paramName
 	 * @param switchChar
+	 * @param value
 	 */
 	public void addSwitch(char switchChar, String value) {
 		if (value != null) {
@@ -333,8 +354,8 @@ public class CommandBuilder {
 	 * @param paramName
 	 * @param switchChar
 	 */
-	public void addParameterBooleanSwitch(String paramName, char switchChar) {
-		addParameterBooleanSwitch(paramName, String.valueOf(switchChar));
+	public boolean addParameterBooleanSwitch(String paramName, char switchChar) {
+		return addParameterBooleanSwitch(paramName, String.valueOf(switchChar));
 	}
 	
 	/**
@@ -344,6 +365,7 @@ public class CommandBuilder {
 	 * 
 	 * @param paramName
 	 * @param switchString
+	 * @param paramValue
 	 */
 	public void addParameterSwitchWithEqualChar(String paramName, String switchString, String paramValue) {
 		if (paramValue == null && (paramName == null || !params.containsKey(paramName))) {
@@ -369,12 +391,40 @@ public class CommandBuilder {
 	 * @param paramName
 	 * @param switchString
 	 */
-	public void addParameterBooleanSwitch(String paramName, String switchString) {
+	public boolean addParameterBooleanSwitch(String paramName, String switchString) {
 		if (params.containsKey(paramName) && !"false".equalsIgnoreCase(params.getProperty(paramName))) {
-			command.append(parameterDelimiter);
-			command.append(switchMark);
-			command.append(switchString);
+			addBooleanSwitch(switchString);
+			return true;
 		}
+		return false;
+	}
+	
+	/**
+	 * if paramName is in properties adds to the end of command: 
+	 *  " <i><b>switchMark</b>switchChar</i>"<br>
+	 *  for exmaple:  --compress
+	 * 
+	 * @param paramName
+	 * @param switchString
+	 * @param defaultValue
+	 */
+	public boolean addParameterBooleanSwitch(String paramName, String switchString, boolean defaultValue) {
+		if (params.containsKey(paramName)) {
+			addParameterBooleanSwitch(paramName, switchString);
+			return true;
+		}
+		
+		if (defaultValue) {
+			addBooleanSwitch(switchString);
+		}
+		
+		return defaultValue;
+	}
+	
+	private void addBooleanSwitch(String switchString) {
+		command.append(parameterDelimiter);
+		command.append(switchMark);
+		command.append(switchString);
 	}
 	
 	/**
