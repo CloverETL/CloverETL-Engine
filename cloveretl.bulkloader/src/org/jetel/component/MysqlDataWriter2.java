@@ -463,23 +463,23 @@ public class MysqlDataWriter2 extends Node {
 	private String user;
 	private String password;
 	private String columnDelimiter = DEFAULT_COLUMN_DELIMITER;
-	private String dataURL; // fileUrl from XML - data file that is used when no input port is connected
+	private String dataURL; // fileUrl from XML - data file that is used when no input port is connected or for log
 	private int ignoreRows = UNUSED_INT;
 	private String parameters;
 	private String commandURL;
 	private File commandFile;
 
 	private Properties properties;
-	private File dataFile; // file that is used for exchange data between clover and mysqlimport - file from dataURL
-	private String[] commandLine; // command line of mysqlimport
-	private DataRecordMetadata dbMetadata; // it correspond to mysqlImport input format
-	private DataFormatter formatter; // format data to mysqlimport format and write them to dataFileName
-	private DataConsumer consumer = null; // consume data from out stream of mysqlimport
-	private DataConsumer errConsumer; // consume data from err stream of mysqlimport - write them to by logger
+	private File dataFile; // file that is used for exchange data between clover and mysql - file from dataURL
+	private String[] commandLine; // command line of mysql
+	private DataRecordMetadata dbMetadata; // it correspond to mysql input format
+	private DataFormatter formatter; // format data to mysql format and write them to dataFileName
+	private DataConsumer consumer = null; // consume data from out stream of mysql
+	private DataConsumer errConsumer; // consume data from err stream of mysql - write them to by logger
 
 	/**
 	 * true - data is read from in port; 
-	 * false - data is read from file directly by mysqlimport utility
+	 * false - data is read from file directly by mysql utility
 	 */
 	private boolean isDataReadFromPort;
 
@@ -532,7 +532,7 @@ public class MysqlDataWriter2 extends Node {
 		}
 
 		if (processExitValue != 0) {
-			throw new JetelException("Mysqlimport utility has failed.");
+			throw new JetelException("Mysql utility has failed.");
 		}
 
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -586,11 +586,12 @@ public class MysqlDataWriter2 extends Node {
 	}
 
 	/**
-	 * Create command line for process, where mysqlimport utility is running. 
-	 * Example: mysqlimport --host=localhost --user=root --password --local testdb test.txt
+	 * Create command line for process, where mysql utility is running. 
+	 * Example: mysql --skip-auto-rehash --database=testdb 
+	 * 		--execute=source /tmp/mysql47459.ctl --local-infile --show-warnings
 	 * 
-	 * @return
-	 * @throws ComponentNotReadyException
+	 * @return array first field is name of mysql utility and the others fields are parameters
+	 * @throws ComponentNotReadyException when command file isn't created
 	 */
 	private String[] createCommandLineForDbLoader() throws ComponentNotReadyException {
 		MysqlCommandBuilder command = new MysqlCommandBuilder(mysqlPath, properties);
@@ -623,8 +624,10 @@ public class MysqlDataWriter2 extends Node {
 	}
 
 	/**
+	 * Create file that contains LOAD DATA INFILE command and return its name.
+	 * 
 	 * @return name of the command file
-	 * @throws ComponentNotReadyException
+	 * @throws ComponentNotReadyException when command file isn't created
 	 */
 	String createCommandFile() throws ComponentNotReadyException {
 		try {
@@ -641,7 +644,7 @@ public class MysqlDataWriter2 extends Node {
 			}
 
 			FileWriter commandWriter = new FileWriter(commandFile);
-			String command = getDefaultControlFileContent();
+			String command = getDefaultCommandFileContent();
 			logger.debug("Command file content: " + command);
 
 			commandWriter.write(command);
@@ -654,7 +657,13 @@ public class MysqlDataWriter2 extends Node {
 		}
 	}
 
-	private String getDefaultControlFileContent() throws IOException {
+	
+	/**
+	 * Create and return string that contains LOAD DATA INFILE command.
+	 * @return string that contains LOAD DATA INFILE command
+	 * @throws IOException
+	 */
+	private String getDefaultCommandFileContent() throws IOException {
 		// LOAD DATA [LOW_PRIORITY | CONCURRENT] [LOCAL] INFILE 'file_name'
 		CommandBuilder command = new CommandBuilder("LOAD DATA", "");
 		command.setParams(properties);
@@ -729,8 +738,7 @@ public class MysqlDataWriter2 extends Node {
 	/**
 	 * Description of the Method
 	 * 
-	 * @exception ComponentNotReadyException
-	 *                Description of the Exception
+	 * @exception ComponentNotReadyException Description of the Exception
 	 * @since April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
@@ -804,7 +812,7 @@ public class MysqlDataWriter2 extends Node {
 
 	/**
 	 * Create instance of Properties from String. 
-	 * Parse parameters from string "parameteres" and fill properties by them.
+	 * Parse parameters from string "parameters" and fill properties by them.
 	 * 
 	 * @param parameters string that contains parameters
 	 * @return instance of Properties created by parsing string
@@ -826,7 +834,8 @@ public class MysqlDataWriter2 extends Node {
 	 * Checks if mandatory parameters are defined.
 	 * And check combination of some parameters.
 	 * 
-	 * @throws ComponentNotReadyException if any of mandatory parameters is empty
+	 * 
+	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
 	 */
 	private void checkParams() throws ComponentNotReadyException {
 		if (StringUtils.isEmpty(mysqlPath)) {
@@ -898,7 +907,7 @@ public class MysqlDataWriter2 extends Node {
 	}
 
 	/**
-	 * Modify metadata so that they correspond to mysqlimport input format. 
+	 * Modify metadata so that they correspond to mysql input format. 
 	 * Each field is delimited and it has the same delimiter.
 	 * Only last field has different delimiter.
 	 * 
@@ -923,7 +932,7 @@ public class MysqlDataWriter2 extends Node {
 	}
 
 	/**
-	 * If field has format of date or time then default informix format is set.
+	 * If field has format of date or time then default mysql format is set.
 	 * 
 	 * @param field
 	 */
@@ -934,8 +943,7 @@ public class MysqlDataWriter2 extends Node {
 			boolean isTime = field.isTimeFormat();
 			boolean isOnlyYearFormat = isDate && field.getFormatStr().matches("(y|Y)*");
 
-			// if formatStr is undefined then DEFAULT_DATETIME_FORMAT is
-			// assigned
+			// if formatStr is undefined then DEFAULT_DATETIME_FORMAT is assigned
 			if (isOnlyYearFormat) {
 				field.setFormatStr(DEFAULT_YEAR_FORMAT);
 			} else if ((isDate && isTime) || (StringUtils.isEmpty(field.getFormatStr()))) {
@@ -956,7 +964,7 @@ public class MysqlDataWriter2 extends Node {
 	}
 
 	/**
-	 * Deletes (renames or nothing) data file which was used for exchange data.
+	 * Deletes data file which was used for exchange data.
 	 */
 	private void deleteDataFile() {
 		if (dataFile == null) {
@@ -1223,8 +1231,7 @@ public class MysqlDataWriter2 extends Node {
 		private Matcher badRowMatcher;
 
 		/**
-		 * @param port
-		 *            Output port receiving consumed data.
+		 * @param port Output port receiving consumed data.
 		 * @throws ComponentNotReadyException
 		 */
 		public MysqlPortDataConsumer(OutputPort errPort) throws ComponentNotReadyException {
@@ -1323,8 +1330,7 @@ public class MysqlDataWriter2 extends Node {
 		/**
 		 * check metadata at error port if metadata isn't correct then throws ComponentNotReadyException
 		 * 
-		 * @throws ComponentNotReadyException
-		 *             when metadata isn't correct
+		 * @throws ComponentNotReadyException when metadata isn't correct
 		 */
 		private void checkErrPortMetadata() throws ComponentNotReadyException {
 			// check number of fields
