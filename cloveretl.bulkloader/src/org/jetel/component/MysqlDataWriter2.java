@@ -643,13 +643,7 @@ public class MysqlDataWriter2 extends Node {
 						COMMAND_FILE_NAME_SUFFIX, TMP_DIR);
 			}
 
-			FileWriter commandWriter = new FileWriter(commandFile);
-			String command = getDefaultCommandFileContent();
-			logger.debug("Command file content: " + command);
-
-			commandWriter.write(command);
-			commandWriter.close();
-
+			saveCommandFile(commandFile);
 			return commandFile.getCanonicalPath();
 		} catch (IOException ioe) {
 			throw new ComponentNotReadyException(this, 
@@ -657,6 +651,19 @@ public class MysqlDataWriter2 extends Node {
 		}
 	}
 
+	/**
+	 * Save default LOAD DATA INFILE command to the file.
+	 * 
+	 * @throws IOException when error occured
+	 */
+	private void saveCommandFile(File commandFile) throws IOException {
+		FileWriter commandWriter = new FileWriter(commandFile);
+		String command = getDefaultCommandFileContent();
+		logger.debug("Command file content: " + command);
+
+		commandWriter.write(command);
+		commandWriter.close();
+	}
 	
 	/**
 	 * Create and return string that contains LOAD DATA INFILE command.
