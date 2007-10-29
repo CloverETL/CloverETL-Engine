@@ -247,7 +247,7 @@ public class InformixDataWriter extends Node {
         int processExitValue = 0;
 
         if (isDataReadFromPort) {
-	        if (ProcBox.isWindowsPlatform()) {
+	        if (ProcBox.isWindowsPlatform() || dataURL != null) {
 	        	// temp file is used for exchange data
 	        	formatter.setDataTarget(Channels.newChannel(new FileOutputStream(tmpDataFileName)));
 	        	readFromPortAndWriteByFormatter();
@@ -380,7 +380,7 @@ public class InformixDataWriter extends Node {
             }
             
             if (isDataReadFromPort) {
-	        	if (ProcBox.isWindowsPlatform()) {
+	        	if (ProcBox.isWindowsPlatform() || dataURL != null) {
 	        		if (dataURL != null) {
 	        			tmpDataFileName = new File(dataURL).getCanonicalPath();
 	        		} else {
