@@ -511,7 +511,7 @@ public class MysqlDataWriter2 extends Node {
 		int processExitValue = 0;
 
 		if (isDataReadFromPort) {
-			if (ProcBox.isWindowsPlatform()) {
+			if (ProcBox.isWindowsPlatform() || dataURL != null) {
 				// dataFile is used for exchange data
 				formatter.setDataTarget(Channels.newChannel(new FileOutputStream(dataFile)));
 				readFromPortAndWriteByFormatter();
@@ -760,7 +760,7 @@ public class MysqlDataWriter2 extends Node {
 		// prepare (temporary) data file
 		try {
 			if (isDataReadFromPort) {
-				if (ProcBox.isWindowsPlatform()) {
+				if (ProcBox.isWindowsPlatform() || dataURL != null) {
 					if (dataURL != null) {
 						dataFile = new File(dataURL);
 					} else {
