@@ -139,8 +139,9 @@ import org.w3c.dom.Element;
  * <td><b>fileURL</b><br>
  * <i>optional</i></td>
  * <td>Path to data file to be loaded.<br>
- * Normally this file is a temporary storage for data to be passed to mysql utility. If <i>fileURL</i> is not specified, the file
- * is created in Clover temporary directory and deleted after load finishes.<br>
+ * Normally this file is a temporary storage for data to be passed to mysql utility.
+ * If <i>fileURL</i> is not specified, at Windows platform the file is created in Clover or OS temporary directory and deleted after load finishes.
+ * At Linux/Unix system stdio is used instead of temporary file.
  * If <i>fileURL</i> is specified, temporary file is created within given path and name and not deleted after being loaded. Next graph
  * run overwrites it.<br>
  * There is one more meaning of this parameter. If input port is not specified, this file is used only for reading by mysql
