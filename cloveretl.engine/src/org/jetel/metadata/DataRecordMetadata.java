@@ -727,6 +727,22 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
         return fields.iterator();
     }
     
+    /**
+     * Returns field positions for all field names.
+     * 
+     * @param fieldNames - array of field names
+     * @return field positions
+     */
+    public int[] fieldsIndices(String... fieldNames) {
+    	int[] indices = new int[fieldNames.length];
+    	int i=0;
+    	for (String name: fieldNames) {
+    		if ((indices[i++] = getFieldPosition(name)) == -1) {
+    			throw new RuntimeException("No such field name found for: '" + name + "'");
+    		}
+    	}
+    	return indices;
+    }
 }
 /*
  *  end class DataRecordMetadata
