@@ -82,7 +82,7 @@ import org.w3c.dom.Element;
  * <td>This component loads data to Informix database using the dbload utility. 
  * There is created temporary file with dbload commands depending on input parameters. Data are read from given input file or from the input port and loaded to database. 
  * On Linux/Unix system data transfer can be processed by stdin.<br>
- * Any generated scripts/commands can be optionally logged to help diagnose problems.<br>
+ * Any generated commands/files can be optionally logged to help diagnose problems.<br>
  * CloverETL must run on the same machine as the Informix server with accesed database.
  * Dbload command line tool must be also available (standard part of Informix server).
  * </td></tr>
@@ -123,10 +123,10 @@ import org.w3c.dom.Element;
  *  <tr><td><b>columnDelimiter</b><br><i>optional</i></td><td>char delimiter used for each column in data (default = '|')</br>
  *  Delimiter has length one and value of the delimiter mustn't be contained in data.</td></tr>
  *  <tr><td><b>fileURL</b><br><i>optional</i></td><td>Path to data file to be loaded.<br>
- *  Normally this file is a temporary storage for data to be passed to dbload utility 
- *  (if stdio isn't used instead). If file URL is not specified, 
- *  the file is created in Clover or OS temporary directory and deleted after load finishes.<br>
- *  If file URL is specified, temporary file is created within given path and name and not 
+ *  Normally this file is a temporary storage for data to be passed to dbload utility. 
+ *  If <i>fileURL</i> is not specified, at Windows platform the file is created in Clover or OS temporary directory and deleted after load finishes.
+ *  At Linux/Unix system stdio is used instead of temporary file.<br>
+ *  If <i>fileURL</i> is specified, temporary file is created within given path and name and not 
  *  deleted after being loaded. Next graph run overwrites it. 
  *  <br>
  *  There is one more meaning of this parameter. If input port is not specified, this file 
