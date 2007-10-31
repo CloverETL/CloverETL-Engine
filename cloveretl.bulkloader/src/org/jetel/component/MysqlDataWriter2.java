@@ -388,19 +388,20 @@ public class MysqlDataWriter2 extends Node {
 	private static final String MYSQL_SSL_PARAM = "ssl";
 
 	// params for LOAD DATA INFILE statement
-	private static final String MYSQL_LOCAL_PARAM = "local";
-	private static final String MYSQL_LOW_PRIORITY_PARAM = "lowPriority";
-	private static final String MYSQL_CONCURRENT_PARAM = "concurrent";
-	private static final String MYSQL_REPLACE_PARAM = "replace";
-	private static final String MYSQL_IGNORE_PARAM = "ignore";
-	private static final String MYSQL_FIELDS_ENCLOSED_BY_PARAM = "fieldsEnclosedBy";
-	private static final String MYSQL_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM = "fieldsIsOptionallyEnclosed";
-	private static final String MYSQL_FIELDS_ESCAPED_BY_PARAM = "fieldsEscapedBy";
-	private static final String MYSQL_LINES_STARTING_BY_PARAM = "linesStartingBy";
-	private static final String MYSQL_RECORD_DELIMITER_PARAM = "recordDelimiter";
-	private static final String MYSQL_COLUMNS_PARAM = "columns";
+	private static final String LOAD_LOCAL_PARAM = "local";
+	private static final String LOAD_LOW_PRIORITY_PARAM = "lowPriority";
+	private static final String LOAD_CONCURRENT_PARAM = "concurrent";
+	private static final String LOAD_REPLACE_PARAM = "replace";
+	private static final String LOAD_IGNORE_PARAM = "ignore";
+	private static final String LOAD_FIELDS_ENCLOSED_BY_PARAM = "fieldsEnclosedBy";
+	private static final String LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM = "fieldsIsOptionallyEnclosed";
+	private static final String LOAD_FIELDS_ESCAPED_BY_PARAM = "fieldsEscapedBy";
+	private static final String LOAD_LINES_STARTING_BY_PARAM = "linesStartingBy";
+	private static final String LOAD_RECORD_DELIMITER_PARAM = "recordDelimiter";
+	private static final String LOAD_COLUMNS_PARAM = "columns";
 
 	// switches for mysql client,these switches have own xml attributes
+	private static final String MYSQL_DATABASE_SWITCH = "database";
 	private static final String MYSQL_HOST_SWITCH = "host";
 	private static final String MYSQL_USER_SWITCH = "user";
 	private static final String MYSQL_PASSWORD_SWITCH = "password";
@@ -409,7 +410,6 @@ public class MysqlDataWriter2 extends Node {
 	private static final String MYSQL_SKIP_AUTO_REHASH_SWITCH = "skip-auto-rehash";
 	private static final String MYSQL_CHARACTER_SETS_DIR_SWITCH = "character-sets-dir";
 	private static final String MYSQL_COMPRESS_SWITCH = "compress";
-	private static final String MYSQL_DATABASE_SWITCH = "database";
 	private static final String MYSQL_DEFAULT_CHARACTER_SET_SWITCH = "default-character-set";
 	private static final String MYSQL_EXECUTE_SWITCH = "execute";
 	private static final String MYSQL_FORCE_SWITCH = "force";
@@ -425,16 +425,16 @@ public class MysqlDataWriter2 extends Node {
 	private static final String MYSQL_SSL_SWITCH = "ssl*";
 
 	// keywords for LOAD DATA INFILE statement
-	private static final String MYSQL_LOCAL_KEYWORD = "LOCAL";
-	private static final String MYSQL_LOW_PRIORITY_KEYWORD = "LOW_PRIORITY";
-	private static final String MYSQL_CONCURRENT_KEYWORD = "CONCURRENT";
-	private static final String MYSQL_REPLACE_KEYWORD = "REPLACE";
-	private static final String MYSQL_IGNORE_KEYWORD = "IGNORE";
-	private static final String MYSQL_FIELDS_ENCLOSED_BY_KEYWORD = "ENCLOSED BY";
-	private static final String MYSQL_FIELDS_OPTIONALLY_ENCLOSED_KEYWORD = "OPTIONALLY";
-	private static final String MYSQL_FIELDS_ESCAPED_BY_KEYWORD = "ESCAPED BY";
-	private static final String MYSQL_LINES_STARTING_BY_KEYWORD = "STARTING BY";
-	private static final String MYSQL_RECORD_DELIMITER_KEYWORD = "TERMINATED BY";
+	private static final String LOAD_LOCAL_KEYWORD = "LOCAL";
+	private static final String LOAD_LOW_PRIORITY_KEYWORD = "LOW_PRIORITY";
+	private static final String LOAD_CONCURRENT_KEYWORD = "CONCURRENT";
+	private static final String LOAD_REPLACE_KEYWORD = "REPLACE";
+	private static final String LOAD_IGNORE_KEYWORD = "IGNORE";
+	private static final String LOAD_FIELDS_ENCLOSED_BY_KEYWORD = "ENCLOSED BY";
+	private static final String LOAD_FIELDS_OPTIONALLY_ENCLOSED_KEYWORD = "OPTIONALLY";
+	private static final String LOAD_FIELDS_ESCAPED_BY_KEYWORD = "ESCAPED BY";
+	private static final String LOAD_LINES_STARTING_BY_KEYWORD = "STARTING BY";
+	private static final String LOAD_RECORD_DELIMITER_KEYWORD = "TERMINATED BY";
 
 	public final static String COMPONENT_TYPE = "MYSQL_DATA_WRITER";
 	private final static int READ_FROM_PORT = 0;
@@ -675,16 +675,16 @@ public class MysqlDataWriter2 extends Node {
 		// LOAD DATA [LOW_PRIORITY | CONCURRENT] [LOCAL] INFILE 'file_name'
 		CommandBuilder command = new CommandBuilder("LOAD DATA", "");
 		command.setParams(properties);
-		command.addParameterBooleanSwitch(MYSQL_LOW_PRIORITY_PARAM, MYSQL_LOW_PRIORITY_KEYWORD);
-		command.addParameterBooleanSwitch(MYSQL_CONCURRENT_PARAM, MYSQL_CONCURRENT_KEYWORD);
-		command.addParameterBooleanSwitch(MYSQL_LOCAL_PARAM, MYSQL_LOCAL_KEYWORD, true);
+		command.addParameterBooleanSwitch(LOAD_LOW_PRIORITY_PARAM, LOAD_LOW_PRIORITY_KEYWORD);
+		command.addParameterBooleanSwitch(LOAD_CONCURRENT_PARAM, LOAD_CONCURRENT_KEYWORD);
+		command.addParameterBooleanSwitch(LOAD_LOCAL_PARAM, LOAD_LOCAL_KEYWORD, true);
 		command.append(" INFILE ");
 		command.append(StringUtils.quote(dataFile.getCanonicalPath()));
 		command.append(LINE_SEPARATOR);
 
 		// [REPLACE | IGNORE]
-		if (command.addParameterBooleanSwitch(MYSQL_REPLACE_PARAM, MYSQL_REPLACE_KEYWORD)
-				|| command.addParameterBooleanSwitch(MYSQL_IGNORE_PARAM, MYSQL_IGNORE_KEYWORD)) {
+		if (command.addParameterBooleanSwitch(LOAD_REPLACE_PARAM, LOAD_REPLACE_KEYWORD)
+				|| command.addParameterBooleanSwitch(LOAD_IGNORE_PARAM, LOAD_IGNORE_KEYWORD)) {
 			command.append(LINE_SEPARATOR);
 		}
 
@@ -699,17 +699,17 @@ public class MysqlDataWriter2 extends Node {
 		// [ESCAPED BY 'char']
 		// ]
 		if (!columnDelimiter.equals(DEFAULT_COLUMN_DELIMITER) || 
-				properties.containsKey(MYSQL_FIELDS_ENCLOSED_BY_PARAM) ||
-				properties.containsKey(MYSQL_FIELDS_ESCAPED_BY_PARAM)) {
+				properties.containsKey(LOAD_FIELDS_ENCLOSED_BY_PARAM) ||
+				properties.containsKey(LOAD_FIELDS_ESCAPED_BY_PARAM)) {
 			command.append("FIELDS" + LINE_SEPARATOR);
 			command.append("TERMINATED BY " + StringUtils.quote(columnDelimiter) + LINE_SEPARATOR);
 
-			command.addParameterBooleanSwitch(MYSQL_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM,
-							MYSQL_FIELDS_OPTIONALLY_ENCLOSED_KEYWORD);
-			if (command.addParameterSwitch(MYSQL_FIELDS_ENCLOSED_BY_PARAM, MYSQL_FIELDS_ENCLOSED_BY_KEYWORD)) {
+			command.addParameterBooleanSwitch(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM,
+							LOAD_FIELDS_OPTIONALLY_ENCLOSED_KEYWORD);
+			if (command.addParameterSwitch(LOAD_FIELDS_ENCLOSED_BY_PARAM, LOAD_FIELDS_ENCLOSED_BY_KEYWORD)) {
 				command.append(LINE_SEPARATOR);
 			}
-			if (command.addParameterSwitch(MYSQL_FIELDS_ESCAPED_BY_PARAM, MYSQL_FIELDS_ESCAPED_BY_KEYWORD)) {
+			if (command.addParameterSwitch(LOAD_FIELDS_ESCAPED_BY_PARAM, LOAD_FIELDS_ESCAPED_BY_KEYWORD)) {
 				command.append(LINE_SEPARATOR);
 			}
 		}
@@ -718,14 +718,14 @@ public class MysqlDataWriter2 extends Node {
 		// [STARTING BY 'string']
 		// [TERMINATED BY 'string']
 		// ]
-		if (properties.containsKey(MYSQL_LINES_STARTING_BY_PARAM) ||
-				properties.containsKey(MYSQL_RECORD_DELIMITER_PARAM)) {
+		if (properties.containsKey(LOAD_LINES_STARTING_BY_PARAM) ||
+				properties.containsKey(LOAD_RECORD_DELIMITER_PARAM)) {
 			command.append("LINES" + LINE_SEPARATOR);
 
-			if (command.addParameterSwitch(MYSQL_LINES_STARTING_BY_PARAM, MYSQL_LINES_STARTING_BY_KEYWORD)) {
+			if (command.addParameterSwitch(LOAD_LINES_STARTING_BY_PARAM, LOAD_LINES_STARTING_BY_KEYWORD)) {
 				command.append(LINE_SEPARATOR);
 			}
-			if (command.addParameterSwitch(MYSQL_RECORD_DELIMITER_PARAM, MYSQL_RECORD_DELIMITER_KEYWORD)) {
+			if (command.addParameterSwitch(LOAD_RECORD_DELIMITER_PARAM, LOAD_RECORD_DELIMITER_KEYWORD)) {
 				command.append(LINE_SEPARATOR);
 			}
 		}
@@ -736,8 +736,8 @@ public class MysqlDataWriter2 extends Node {
 		}
 
 		// [(col_name_or_user_var,...)]
-		if (properties.containsKey(MYSQL_COLUMNS_PARAM)) {
-			command.append(properties.getProperty(MYSQL_COLUMNS_PARAM));
+		if (properties.containsKey(LOAD_COLUMNS_PARAM)) {
+			command.append(properties.getProperty(LOAD_COLUMNS_PARAM));
 		}
 
 		return command.getCommand();
@@ -875,11 +875,11 @@ public class MysqlDataWriter2 extends Node {
 		}
 
 		// check combination
-		if (properties.containsKey(MYSQL_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)
-				&& !properties.containsKey(MYSQL_FIELDS_ENCLOSED_BY_PARAM)) {
-			logger.warn("Attribute" + StringUtils.quote(MYSQL_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)
+		if (properties.containsKey(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)
+				&& !properties.containsKey(LOAD_FIELDS_ENCLOSED_BY_PARAM)) {
+			logger.warn("Attribute" + StringUtils.quote(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)
 					+ " is ignored because it has to be used in combination with "
-					+ StringUtils.quote(MYSQL_FIELDS_ENCLOSED_BY_PARAM) + " attribute.");
+					+ StringUtils.quote(LOAD_FIELDS_ENCLOSED_BY_PARAM) + " attribute.");
 		}
 
 		// if any output port is connected, MYSQL_SHOW_WARNINGS_SWITCH parameter must be used
@@ -899,16 +899,16 @@ public class MysqlDataWriter2 extends Node {
 
 		// report on ignoring some attributes
 		if (isDataReadFromPort) {
-			if (properties.containsKey(MYSQL_FIELDS_ENCLOSED_BY_PARAM)) {
-				logger.warn("Attribute " + StringUtils.quote(MYSQL_FIELDS_ENCLOSED_BY_PARAM)
+			if (properties.containsKey(LOAD_FIELDS_ENCLOSED_BY_PARAM)) {
+				logger.warn("Attribute " + StringUtils.quote(LOAD_FIELDS_ENCLOSED_BY_PARAM)
 						+ " is ignored because it is used only when data is read directly from file.");
 			}
-			if (properties.containsKey(MYSQL_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)) {
-				logger.warn("Attribute " + StringUtils.quote(MYSQL_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)
+			if (properties.containsKey(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)) {
+				logger.warn("Attribute " + StringUtils.quote(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)
 						+ " is ignored because it is used only when data is read directly from file.");
 			}
-			if (properties.containsKey(MYSQL_FIELDS_ESCAPED_BY_PARAM)) {
-				logger.warn("Attribute " + StringUtils.quote(MYSQL_FIELDS_ESCAPED_BY_PARAM)
+			if (properties.containsKey(LOAD_FIELDS_ESCAPED_BY_PARAM)) {
+				logger.warn("Attribute " + StringUtils.quote(LOAD_FIELDS_ESCAPED_BY_PARAM)
 						+ " is ignored because it is used only when data is read directly from file.");
 			}
 		}
@@ -929,8 +929,8 @@ public class MysqlDataWriter2 extends Node {
 			metadata.getField(idx).setDelimiter(columnDelimiter);
 			setMysqlDateFormat(metadata.getField(idx));
 		}
-		if (properties.containsKey(MYSQL_RECORD_DELIMITER_PARAM)) {
-			metadata.getField(metadata.getNumFields() - 1).setDelimiter((String) properties.get(MYSQL_RECORD_DELIMITER_PARAM));
+		if (properties.containsKey(LOAD_RECORD_DELIMITER_PARAM)) {
+			metadata.getField(metadata.getNumFields() - 1).setDelimiter((String) properties.get(LOAD_RECORD_DELIMITER_PARAM));
 		} else {
 			metadata.getField(metadata.getNumFields() - 1).setDelimiter(DEFAULT_RECORD_DELIMITER);
 		}
