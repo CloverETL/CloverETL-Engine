@@ -31,7 +31,7 @@ import org.apache.commons.logging.Log;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.formatter.Formatter;
-import org.jetel.data.formatter.getter.FormatterGetter;
+import org.jetel.data.formatter.provider.FormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
@@ -60,7 +60,7 @@ public class MultiFileWriter {
 	private final static int tableInitialSize = 512;
 
     private Formatter currentFormatter;				// for former constructor
-    private FormatterGetter formatterGetter;		// creates new formatter
+    private FormatterProvider formatterGetter;		// creates new formatter
     private Map<Object, TargetFile> multiTarget;	// <key, TargetFile> for file partition
     private TargetFile currentTarget;				// actual output target
     private URL contextURL;
@@ -98,13 +98,13 @@ public class MultiFileWriter {
         this.channels = channels;
     }
 
-    public MultiFileWriter(FormatterGetter formatterGetter, URL contextURL, String fileURL) {
+    public MultiFileWriter(FormatterProvider formatterGetter, URL contextURL, String fileURL) {
         this.formatterGetter = formatterGetter;
         this.contextURL = contextURL;
         this.fileURL = fileURL;
     }
 
-    public MultiFileWriter(FormatterGetter formatterGetter, Iterator<WritableByteChannel> channels) {
+    public MultiFileWriter(FormatterProvider formatterGetter, Iterator<WritableByteChannel> channels) {
         this.formatterGetter = formatterGetter;
         this.channels = channels;
     }
@@ -435,7 +435,7 @@ public class MultiFileWriter {
 	 * @param partitionFileTagType - PartitionFileTagType
 	 */
 	public void setPartitionFileTag(PartitionFileTagType partitionFileTagType) {
-		this.useNumberFileTag = partitionFileTagType == PartitionFileTagType.NUMBERFILETAG;
+		this.useNumberFileTag = partitionFileTagType == PartitionFileTagType.NUMBER_FILE_TAG;
 	}
 
 }

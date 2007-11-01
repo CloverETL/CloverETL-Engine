@@ -26,7 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.getter.DelimitedDataFormatterGetter;
+import org.jetel.data.formatter.provider.DelimitedDataFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
@@ -108,7 +108,7 @@ public class DelimitedDataWriter extends Node {
 	
 	private String fileURL;
 	private boolean appendData;
-	private DelimitedDataFormatterGetter formatterGetter;
+	private DelimitedDataFormatterProvider formatterProvider;
     private MultiFileWriter writer;
 	private boolean outputFieldNames=false;
 	private int recordsPerFile;
@@ -121,7 +121,7 @@ public class DelimitedDataWriter extends Node {
 	private String attrPartitionKey;
 	private String[] partitionKey;
 	private LookupTable lookupTable;
-	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBERFILETAG;
+	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 	
 	static Log logger = LogFactory.getLog(DelimitedDataWriter.class);
 
@@ -140,26 +140,26 @@ public class DelimitedDataWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-		formatterGetter = new DelimitedDataFormatterGetter();
+		formatterProvider = new DelimitedDataFormatterProvider();
 	}
 
 	public DelimitedDataWriter(String id, WritableByteChannel writableByteChannel) {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
-		formatterGetter = new DelimitedDataFormatterGetter();
+		formatterProvider = new DelimitedDataFormatterProvider();
 	}
 
 	public DelimitedDataWriter(String id, String fileURL, String charset, boolean appendData) {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-		formatterGetter = new DelimitedDataFormatterGetter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		formatterProvider = new DelimitedDataFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
 	public DelimitedDataWriter(String id, WritableByteChannel writableByteChannel, String charset) {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
-		formatterGetter = new DelimitedDataFormatterGetter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		formatterProvider = new DelimitedDataFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
 	@Override
@@ -195,12 +195,12 @@ public class DelimitedDataWriter extends Node {
         
         // initialize multifile writer based on prepared formatter
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterGetter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = Channels.newChannel(System.out);
 			}
-	        writer = new MultiFileWriter(formatterGetter, new WritableByteChannelIterator(writableByteChannel));
+	        writer = new MultiFileWriter(formatterProvider, new WritableByteChannelIterator(writableByteChannel));
 		}
         writer.setLogger(logger);
         writer.setBytesPerFile(bytesPerFile);
@@ -213,7 +213,7 @@ public class DelimitedDataWriter extends Node {
         writer.setPartitionKeyNames(partitionKey);
         writer.setPartitionFileTag(partitionFileTagType);
         if(outputFieldNames) {
-        	formatterGetter.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+        	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
@@ -264,9 +264,9 @@ public class DelimitedDataWriter extends Node {
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
-		String charSet = formatterGetter.getCharsetName();
+		String charSet = formatterProvider.getCharsetName();
 		if (charSet != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, formatterGetter.getCharsetName());
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, formatterProvider.getCharsetName());
 		}
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
 		if (outputFieldNames){

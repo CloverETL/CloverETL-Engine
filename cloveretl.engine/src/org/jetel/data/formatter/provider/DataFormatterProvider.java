@@ -1,4 +1,4 @@
-package org.jetel.data.formatter.getter;
+package org.jetel.data.formatter.provider;
 
 import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.formatter.Formatter;
@@ -9,7 +9,7 @@ import org.jetel.data.formatter.Formatter;
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
-public class DataFormatterGetter implements FormatterGetter {
+public class DataFormatterProvider implements FormatterProvider {
 
 	private String charEncoder;
 	private String header;
@@ -18,9 +18,9 @@ public class DataFormatterGetter implements FormatterGetter {
 	/**
 	 * Contructors.
 	 */
-	public DataFormatterGetter() {
+	public DataFormatterProvider() {
 	}
-	public DataFormatterGetter(String charEncoder) {
+	public DataFormatterProvider(String charEncoder) {
 		this.charEncoder = charEncoder;
 	}
 

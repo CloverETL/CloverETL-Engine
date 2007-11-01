@@ -1,4 +1,4 @@
-package org.jetel.data.formatter.getter;
+package org.jetel.data.formatter.provider;
 
 import org.jetel.data.formatter.FixLenDataFormatter;
 import org.jetel.data.formatter.Formatter;
@@ -9,7 +9,7 @@ import org.jetel.data.formatter.Formatter;
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
-public class FixLenDataFormatterGetter implements FormatterGetter {
+public class FixLenDataFormatterProvider implements FormatterProvider {
 
 	private String charEncoder;
 	private String header;
@@ -22,9 +22,9 @@ public class FixLenDataFormatterGetter implements FormatterGetter {
 	/**
 	 * Contructors.
 	 */
-	public FixLenDataFormatterGetter() {
+	public FixLenDataFormatterProvider() {
 	}
-	public FixLenDataFormatterGetter(String charEncoder) {
+	public FixLenDataFormatterProvider(String charEncoder) {
 		this.charEncoder = charEncoder;
 	}
 

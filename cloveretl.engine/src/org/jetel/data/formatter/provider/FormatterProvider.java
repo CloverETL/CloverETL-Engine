@@ -1,4 +1,4 @@
-package org.jetel.data.formatter.getter;
+package org.jetel.data.formatter.provider;
 
 import org.jetel.data.formatter.Formatter;
 
@@ -8,7 +8,7 @@ import org.jetel.data.formatter.Formatter;
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
-public interface FormatterGetter {
+public interface FormatterProvider {
 
 	/**
 	 * Creates new data formatter.

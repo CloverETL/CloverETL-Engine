@@ -28,7 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.getter.XLSFormatterGetter;
+import org.jetel.data.formatter.provider.XLSFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
@@ -131,12 +131,12 @@ public class XLSWriter extends Node {
 	private String attrPartitionKey;
 	private String[] partitionKey;
 	private LookupTable lookupTable;
-	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBERFILETAG;
+	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 
 	private static Log logger = LogFactory.getLog(XLSWriter.class);
 	
 	private String fileURL;
-	private XLSFormatterGetter formatterGetter;
+	private XLSFormatterProvider formatterProvider;
 	private MultiFileWriter writer;
     private int skip;
 	private int numRecords;
@@ -154,7 +154,7 @@ public class XLSWriter extends Node {
 	public XLSWriter(String id,String fileURL, boolean append){
 		super(id);
 		this.fileURL = fileURL;
-		formatterGetter = new XLSFormatterGetter(append);
+		formatterProvider = new XLSFormatterProvider(append);
 	}
 	
 	/* (non-Javadoc)
@@ -219,12 +219,12 @@ public class XLSWriter extends Node {
 		initLookupTable();
 		
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterGetter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = Channels.newChannel(System.out);
 			}
-	        writer = new MultiFileWriter(formatterGetter, new WritableByteChannelIterator(writableByteChannel));
+	        writer = new MultiFileWriter(formatterProvider, new WritableByteChannelIterator(writableByteChannel));
 		}
         writer.setLogger(logger);
         writer.setRecordsPerFile(recordsPerFile);
@@ -306,12 +306,12 @@ public class XLSWriter extends Node {
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
-		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(formatterGetter.isAppend()));
-		xmlElement.setAttribute(XML_FIRSTCOLUMN_ATTRIBUTE,String.valueOf(formatterGetter.getFirstColumn()));
-		xmlElement.setAttribute(XML_FIRSTDATAROW_ATTRIBUTE, String.valueOf(formatterGetter.getFirstRow()+1));
-		xmlElement.setAttribute(XML_NAMESROW_ATTRIBUTE, String.valueOf(formatterGetter.getNamesRow()+1));
-		if (formatterGetter.getSheetName() != null) {
-			xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE,formatterGetter.getSheetName());
+		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(formatterProvider.isAppend()));
+		xmlElement.setAttribute(XML_FIRSTCOLUMN_ATTRIBUTE,String.valueOf(formatterProvider.getFirstColumn()));
+		xmlElement.setAttribute(XML_FIRSTDATAROW_ATTRIBUTE, String.valueOf(formatterProvider.getFirstRow()+1));
+		xmlElement.setAttribute(XML_NAMESROW_ATTRIBUTE, String.valueOf(formatterProvider.getNamesRow()+1));
+		if (formatterProvider.getSheetName() != null) {
+			xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE,formatterProvider.getSheetName());
 		}
 		if (skip != 0){
 			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
@@ -334,23 +334,23 @@ public class XLSWriter extends Node {
 	}
 
 	private void setSheetName(String sheetName) {
-		formatterGetter.setSheetName(sheetName);
+		formatterProvider.setSheetName(sheetName);
 	}
 
 	private void setSheetNumber(int sheetNumber) {
-		formatterGetter.setSheetNumber(sheetNumber);
+		formatterProvider.setSheetNumber(sheetNumber);
 	}
 	
 	private void setFirstColumn(String firstColumn){
-		formatterGetter.setFirstColumn(firstColumn);
+		formatterProvider.setFirstColumn(firstColumn);
 	}
 	
 	private void setFirstRow(int firstRow){
-		formatterGetter.setFirstRow(firstRow-1);
+		formatterProvider.setFirstRow(firstRow-1);
 	}
 	
 	private void setNamesRow(int namesRow){
-		formatterGetter.setNamesRow(namesRow-1);
+		formatterProvider.setNamesRow(namesRow-1);
 	}
 	
     /**
