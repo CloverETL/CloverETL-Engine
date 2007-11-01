@@ -1,4 +1,4 @@
-package org.jetel.data.formatter.getter;
+package org.jetel.data.formatter.provider;
 
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.JExcelXLSDataFormatter;
@@ -10,7 +10,7 @@ import org.jetel.data.formatter.XLSFormatter;
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
-public class XLSFormatterGetter implements FormatterGetter {
+public class XLSFormatterProvider implements FormatterProvider {
 
 	private boolean append;
 	private String sheetName;
@@ -22,7 +22,7 @@ public class XLSFormatterGetter implements FormatterGetter {
 	/**
 	 * Contructors.
 	 */
-	public XLSFormatterGetter(boolean append) {
+	public XLSFormatterProvider(boolean append) {
 		this.append = append;
 	}
 

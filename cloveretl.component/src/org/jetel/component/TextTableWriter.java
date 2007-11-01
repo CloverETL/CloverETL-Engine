@@ -28,7 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.getter.TextTableFormatterGetter;
+import org.jetel.data.formatter.provider.TextTableFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
@@ -111,7 +111,7 @@ public class TextTableWriter extends Node {
 
 	private String fileURL;
 	private boolean appendData;
-	private TextTableFormatterGetter formatterGetter;
+	private TextTableFormatterProvider formatterProvider;
 	private MultiFileWriter writer;
     private int skip;
 	private int numRecords;
@@ -124,7 +124,7 @@ public class TextTableWriter extends Node {
 	private String attrPartitionKey;
 	private String[] partitionKey;
 	private LookupTable lookupTable;
-	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBERFILETAG;
+	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 
 	public final static String COMPONENT_TYPE = "TEXT_TABLE_WRITER";
 	private final static int READ_FROM_PORT = 0;
@@ -145,8 +145,8 @@ public class TextTableWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-		formatterGetter = charset == null ? new TextTableFormatterGetter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER) : new TextTableFormatterGetter(charset);
-		formatterGetter.setMask(fields);
+		formatterProvider = charset == null ? new TextTableFormatterProvider(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER) : new TextTableFormatterProvider(charset);
+		formatterProvider.setMask(fields);
 	}
 	
 	/**
@@ -163,8 +163,8 @@ public class TextTableWriter extends Node {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
 		this.appendData = appendData;
-		formatterGetter = charset == null ? new TextTableFormatterGetter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER) : new TextTableFormatterGetter(charset);
-		formatterGetter.setMask(fields);
+		formatterProvider = charset == null ? new TextTableFormatterProvider(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER) : new TextTableFormatterProvider(charset);
+		formatterProvider.setMask(fields);
 	}
 
 	/* (non-Javadoc)
@@ -227,12 +227,12 @@ public class TextTableWriter extends Node {
 
 		// based on file mask, create/open output file
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterGetter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = Channels.newChannel(System.out);
 			}
-	        writer = new MultiFileWriter(formatterGetter, new WritableByteChannelIterator(writableByteChannel));
+	        writer = new MultiFileWriter(formatterProvider, new WritableByteChannelIterator(writableByteChannel));
 		}
         writer.setLogger(logger);
         writer.setBytesPerFile(bytesPerFile);
@@ -244,7 +244,7 @@ public class TextTableWriter extends Node {
         if (attrPartitionKey != null) partitionKey = attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
         writer.setPartitionKeyNames(partitionKey);
         writer.setPartitionFileTag(partitionFileTagType);
-       	formatterGetter.setOutputFieldNames(outputFieldNames);
+       	formatterProvider.setOutputFieldNames(outputFieldNames);
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 
@@ -319,9 +319,9 @@ public class TextTableWriter extends Node {
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
-		String charSet = this.formatterGetter.getCharsetName();
+		String charSet = this.formatterProvider.getCharsetName();
 		if (charSet != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatterGetter.getCharsetName());
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatterProvider.getCharsetName());
 		}
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
 		if (skip != 0){

@@ -1,4 +1,4 @@
-package org.jetel.data.formatter.getter;
+package org.jetel.data.formatter.provider;
 
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.TextTableFormatter;
@@ -9,7 +9,7 @@ import org.jetel.data.formatter.TextTableFormatter;
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
-public class TextTableFormatterGetter implements FormatterGetter {
+public class TextTableFormatterProvider implements FormatterProvider {
 
 	private String charEncoder;
 	private String charSet;
@@ -19,9 +19,9 @@ public class TextTableFormatterGetter implements FormatterGetter {
 	/**
 	 * Contructors.
 	 */
-	public TextTableFormatterGetter() {
+	public TextTableFormatterProvider() {
 	}
-	public TextTableFormatterGetter(String charEncoder) {
+	public TextTableFormatterProvider(String charEncoder) {
 		this.charEncoder = charEncoder;
 	}
 

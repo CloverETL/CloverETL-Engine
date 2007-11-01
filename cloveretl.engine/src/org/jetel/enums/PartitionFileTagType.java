@@ -28,19 +28,30 @@ package org.jetel.enums;
  */
 public enum PartitionFileTagType {
 
-	NUMBERFILETAG, KEYNAMEFILETAG;
-    
+	NUMBER_FILE_TAG("numberFileTag"), KEY_NAME_FILE_TAG("keyNameFileTag");
+
+	private String id;
+	
+	private PartitionFileTagType(String id) {
+		this.id = id;
+	}
+
+	@Override
+	public String toString() {
+		return id;
+	}
+	
     public static PartitionFileTagType valueOfIgnoreCase(String partitionFileTagType) {
         if(partitionFileTagType == null) {
-            return NUMBERFILETAG;
+            return NUMBER_FILE_TAG;
         }
         
         for(PartitionFileTagType pt : PartitionFileTagType.values()) {
-            if(partitionFileTagType.equalsIgnoreCase(pt.toString())) {
+            if(partitionFileTagType.equalsIgnoreCase(pt.id)) {
                 return pt;
             }
         }
         
-        return NUMBERFILETAG; //default value
+        return NUMBER_FILE_TAG; //default value
     }
 }

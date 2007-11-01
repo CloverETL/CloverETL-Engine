@@ -28,7 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.getter.StructureFormatterGetter;
+import org.jetel.data.formatter.provider.StructureFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
@@ -128,7 +128,7 @@ public class StructureWriter extends Node {
 
 	private String fileURL;
 	private boolean appendData;
-	private StructureFormatterGetter formatterGetter;
+	private StructureFormatterProvider formatterProvider;
 	private String header = null;
 	private String footer = null;
 	private MultiFileWriter writer;
@@ -142,7 +142,7 @@ public class StructureWriter extends Node {
 	private String attrPartitionKey;
 	private String[] partitionKey;
 	private LookupTable lookupTable;
-	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBERFILETAG;
+	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 
 	private static Log logger = LogFactory.getLog(StructureWriter.class);
 
@@ -163,8 +163,8 @@ public class StructureWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-		formatterGetter = new StructureFormatterGetter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
-		formatterGetter.setMask(mask);
+		formatterProvider = new StructureFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		formatterProvider.setMask(mask);
 	}
 
 	/* (non-Javadoc)
@@ -227,12 +227,12 @@ public class StructureWriter extends Node {
 
 		// based on file mask, create/open output file
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterGetter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = Channels.newChannel(System.out);
 			}
-	        writer = new MultiFileWriter(formatterGetter, new WritableByteChannelIterator(writableByteChannel));
+	        writer = new MultiFileWriter(formatterProvider, new WritableByteChannelIterator(writableByteChannel));
 		}
         writer.setLogger(logger);
         writer.setBytesPerFile(bytesPerFile);
@@ -244,8 +244,8 @@ public class StructureWriter extends Node {
         if (attrPartitionKey != null) partitionKey = attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
         writer.setPartitionKeyNames(partitionKey);
         writer.setPartitionFileTag(partitionFileTagType);
-        formatterGetter.setHeader(header);
-        formatterGetter.setFooter(footer);
+        formatterProvider.setHeader(header);
+        formatterProvider.setFooter(footer);
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 
@@ -321,9 +321,9 @@ public class StructureWriter extends Node {
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
-		String charSet = this.formatterGetter.getCharsetName();
+		String charSet = this.formatterProvider.getCharsetName();
 		if (charSet != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatterGetter.getCharsetName());
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatterProvider.getCharsetName());
 		}
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
 		if (header != null){

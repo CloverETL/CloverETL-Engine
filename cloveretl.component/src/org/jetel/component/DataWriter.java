@@ -26,7 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.getter.DataFormatterGetter;
+import org.jetel.data.formatter.provider.DataFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
@@ -102,7 +102,7 @@ public class DataWriter extends Node {
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private String fileURL;
 	private boolean appendData;
-	private DataFormatterGetter formatterGetter;
+	private DataFormatterProvider formatterProvider;
     private MultiFileWriter writer;
     private boolean outputFieldNames;
 	private int bytesPerFile;
@@ -115,7 +115,7 @@ public class DataWriter extends Node {
 	private String attrPartitionKey;
 	private String[] partitionKey;
 	private LookupTable lookupTable;
-	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBERFILETAG;
+	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 
 	static Log logger = LogFactory.getLog(DataWriter.class);
 
@@ -134,13 +134,13 @@ public class DataWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-		formatterGetter = new DataFormatterGetter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		formatterProvider = new DataFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 	
 	public DataWriter(String id, WritableByteChannel writableByteChannel, String charset) {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
-		formatterGetter = new DataFormatterGetter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		formatterProvider = new DataFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
 	@Override
@@ -177,12 +177,12 @@ public class DataWriter extends Node {
 
 		// initialize multifile writer based on prepared formatter
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterGetter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = Channels.newChannel(System.out);
 			}
-	        writer = new MultiFileWriter(formatterGetter, new WritableByteChannelIterator(writableByteChannel));
+	        writer = new MultiFileWriter(formatterProvider, new WritableByteChannelIterator(writableByteChannel));
 		}
         writer.setLogger(logger);
         writer.setBytesPerFile(bytesPerFile);
@@ -195,7 +195,7 @@ public class DataWriter extends Node {
         writer.setPartitionKeyNames(partitionKey);
         writer.setPartitionFileTag(partitionFileTagType);
         if(outputFieldNames) {
-			formatterGetter.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+        	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
@@ -227,9 +227,9 @@ public class DataWriter extends Node {
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
-		String charSet = this.formatterGetter.getCharsetName();
+		String charSet = this.formatterProvider.getCharsetName();
 		if (charSet != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatterGetter.getCharsetName());
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatterProvider.getCharsetName());
 		}
         if (outputFieldNames){
             xmlElement.setAttribute(XML_OUTPUT_FIELD_NAMES, Boolean.toString(outputFieldNames));

@@ -1,28 +1,26 @@
-package org.jetel.data.formatter.getter;
+package org.jetel.data.formatter.provider;
 
+import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.formatter.Formatter;
-import org.jetel.data.formatter.StructureFormatter;
 
 /**
- * Provides support for getting the structure data formatter.
+ * Provides support for getting the delimited data formatter.
  * 
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
-public class StructureFormatterGetter implements FormatterGetter {
+public class DelimitedDataFormatterProvider implements FormatterProvider {
 
 	private String charEncoder;
 	private String header;
-	private String footer;
 	private String charSet;
-	private String mask;
 	
 	/**
 	 * Contructors.
 	 */
-	public StructureFormatterGetter() {
+	public DelimitedDataFormatterProvider() {
 	}
-	public StructureFormatterGetter(String charEncoder) {
+	public DelimitedDataFormatterProvider(String charEncoder) {
 		this.charEncoder = charEncoder;
 	}
 
@@ -32,15 +30,13 @@ public class StructureFormatterGetter implements FormatterGetter {
 	 * @return data formatter
 	 */
 	public Formatter getNewFormatter() {
-		StructureFormatter formatter;
+		DelimitedDataFormatter formatter;
 		if (charEncoder == null) {
-			formatter =	new StructureFormatter();
+			formatter =	new DelimitedDataFormatter();
 		} else {
-			formatter =	new StructureFormatter(charEncoder);
+			formatter =	new DelimitedDataFormatter(charEncoder);
 		}
 		formatter.setHeader(header);
-		formatter.setFooter(footer);
-		formatter.setMask(mask);
 		charSet = formatter.getCharsetName();
 		return formatter;
 	}
@@ -57,13 +53,5 @@ public class StructureFormatterGetter implements FormatterGetter {
 	public String getCharsetName() {
 		return charSet ;
 	}
-
-	public void setMask(String mask) {
-		this.mask = mask;
-	}
-
-    public void setFooter(String footer) {
-    	this.footer = footer;
-    }
 
 }
