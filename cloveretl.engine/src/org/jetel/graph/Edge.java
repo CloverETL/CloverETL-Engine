@@ -64,16 +64,6 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
 	private EdgeBase edge;
 
-	/**  Proxy represents Direct Edge */
-	public final static int EDGE_TYPE_DIRECT = 0;
-	/**  Proxy represents Buffered Edge */
-	public final static int EDGE_TYPE_BUFFERED = 1;
-	/** Proxy represents Edge connecting two different phases */
-	public final static int EDGE_TYPE_PHASE_CONNECTION = 2;
-	/**  Proxy represents Direct Edge fast propagate */
-	public final static int EDGE_TYPE_DIRECT_FAST_PROPAGATE = 3;
-
-
 	/**
 	 *  Constructor for the EdgeStub object
 	 *
@@ -81,28 +71,26 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @param  metadata  Metadata describing data transported by this edge
 	 * @since            April 2, 2002
 	 */
-    @Deprecated
-	public Edge(String id, DataRecordMetadata metadata, boolean debugMode, boolean fastPropagate) {
+	public Edge(String id, DataRecordMetadata metadata, boolean debugMode) {
         super(id);
 		this.metadata = metadata;
         this.debugMode = debugMode;
 		reader = writer = null;
-    	edgeType = fastPropagate ? EdgeTypeEnum.DIRECT_FAST_PROPAGATE : EdgeTypeEnum.DIRECT;
+    	edgeType = EdgeTypeEnum.DIRECT;
 		edge = null;
 	}
 
     public Edge(String id, DataRecordMetadata metadata) {
-        this(id, metadata, false, false);
+        this(id, metadata, false);
     }
     
 	public Edge(String id, DataRecordMetadataStub metadataStub) {
-		this(id, null, false, false);
+		this(id, null, false);
 		this.metadataStub=metadataStub;
 	}
 
-    @Deprecated
-	public Edge(String id, DataRecordMetadataStub metadataStub,DataRecordMetadata metadata, boolean debugMode, boolean fastPropagate) {
-		this(id,metadata, debugMode, fastPropagate);
+	public Edge(String id, DataRecordMetadataStub metadataStub, DataRecordMetadata metadata, boolean debugMode) {
+		this(id,metadata, debugMode);
 		this.metadataStub=metadataStub;
 	}
 
@@ -110,51 +98,6 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     	this.debugMode = debugMode;
     }    
     
-	/**
-	 *  Sets the type attribute of the EdgeProxy object
-	 *
-	 * @param  edgeType  The new type value
-	 * 
-	 * @deprecated
-	 */
-    @Deprecated
-	public void setType(int edgeType) {
-    	switch(edgeType) {
-    	case EDGE_TYPE_DIRECT:
-    		this.edgeType = EdgeTypeEnum.DIRECT;
-    		break;
-    	case EDGE_TYPE_BUFFERED:
-    		this.edgeType = EdgeTypeEnum.BUFFERED;
-    		break;
-    	case EDGE_TYPE_PHASE_CONNECTION:
-    		this.edgeType = EdgeTypeEnum.PHASE_CONNECTION;
-    		break;
-    	case EDGE_TYPE_DIRECT_FAST_PROPAGATE:
-    		this.edgeType = EdgeTypeEnum.DIRECT_FAST_PROPAGATE;
-    		break;
-    	}
-	}
-    
-	/**
-	 *  Gets the type attribute of the Edge object
-	 *
-	 * @return    The type value
-	 * 
-	 * @deprecated
-	 */
-    @Deprecated
-	public int getType() {
-    	if (edgeType == EdgeTypeEnum.BUFFERED) {
-    		return EDGE_TYPE_BUFFERED;
-    	} else if (edgeType == EdgeTypeEnum.PHASE_CONNECTION) {
-    		return EDGE_TYPE_PHASE_CONNECTION;
-    	} else if (edgeType == EdgeTypeEnum.DIRECT_FAST_PROPAGATE) {
-    		return EDGE_TYPE_DIRECT_FAST_PROPAGATE;
-    	} else {
-    		return EDGE_TYPE_DIRECT;
-    	}
-	}
-
 	/**
 	 *  Sets the type attribute of the EdgeProxy object
 	 *
@@ -478,16 +421,6 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         edge.free();
     }
 
-    @Deprecated
-    public boolean isFastPropagate() {
-        return edgeType == EdgeTypeEnum.DIRECT_FAST_PROPAGATE;
-    }
-
-    @Deprecated
-    public void setFastPropagate(boolean fastPropagate) {
-    	edgeType = fastPropagate ? EdgeTypeEnum.DIRECT_FAST_PROPAGATE : EdgeTypeEnum.DIRECT;
-    }
-    
     @Override public int hashCode(){
         return getId().hashCode();
     }

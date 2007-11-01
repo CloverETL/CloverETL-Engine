@@ -11,7 +11,10 @@ public enum EdgeTypeEnum {
 	/** Proxy represents Edge connecting two different phases */
 	PHASE_CONNECTION("PHASECONNECTION");
 	
+	String name;
+	
 	EdgeTypeEnum(String name){
+		this.name = name;
 	}
 	
 	public static EdgeTypeEnum valueOfIgnoreCase(String edgeTypeName) {
@@ -19,7 +22,7 @@ public enum EdgeTypeEnum {
             return null;
         }
         for(EdgeTypeEnum et : EdgeTypeEnum.values()) {
-            if(edgeTypeName.equalsIgnoreCase(et.toString())) {
+            if(edgeTypeName.equalsIgnoreCase(et.name)) {
                 return et;
             }
         }
