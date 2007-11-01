@@ -19,8 +19,6 @@
 */
 package org.jetel.data;
 
-import org.jetel.metadata.DataRecordMetadata;
-
 /**
  *  Class associated with RecorKey and DataRecord
  *  Intended primarily to be used as a key for HashTable
@@ -142,17 +140,11 @@ public class HashKey {
 		this.recKey = key;
 	}
 	
-	/**
-	 */
-	public DataRecordMetadata getKeyRecordMetadata() {
-		return recKey.generateKeyRecordMetadata();
-	}
-
 	public String toString(){
 		StringBuffer strBuf=new StringBuffer();
 		int[] keyFields = recKey.getKeyFields();
 		for (int i = 0; i < keyFields.length; i++) {
-			strBuf.append("�").append(record.getField(keyFields[i]).getValue()).append("�");
+			strBuf.append("$").append(record.getField(keyFields[i]).getValue()).append("$");
 		}
 		return strBuf.toString();
 	}
