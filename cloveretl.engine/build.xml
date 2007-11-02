@@ -10,7 +10,7 @@
 	<!-- =========================== VERSIONs =========================== -->
 	<property name="major_version" value="2"/>
 	<property name="minor_version" value="3"/>
-	<property name="revision_version" value="0"/>
+	<property name="revision_version" value="2"/>
 	
 	
 	<!-- =========================== DEFAULT DIRECTORIES =========================== -->

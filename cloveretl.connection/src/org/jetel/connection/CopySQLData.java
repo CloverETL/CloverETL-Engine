@@ -77,8 +77,14 @@ public abstract class CopySQLData {
 
     protected boolean inBatchUpdate = false; // indicates whether batchMode is used when populating target DB
 
+<<<<<<< .working
 	static Log logger = LogFactory.getLog(CopySQLData.class);
 
+=======
+	private static String format;
+	private static char jetelType;
+
+>>>>>>> .merge-right.r3414
 	/**
 	 *  Constructor for the CopySQLData object
 	 *
@@ -242,7 +248,7 @@ public abstract class CopySQLData {
 		int i = 0;
 		for (ListIterator iterator = fieldTypes.listIterator(); iterator.hasNext(); ) {
 			transMap[i] = createCopyObject(((Integer) iterator.next()).shortValue(),
-					record.getMetadata().getFieldType(i),
+					record.getField(i).getMetadata(),
 					record, i, i);
 			i++;
 		}
@@ -276,7 +282,7 @@ public abstract class CopySQLData {
 		
 		while (iterator.hasNext()) {
 			transMap[i] = createCopyObject(((Integer) iterator.next()).shortValue(),
-					record.getMetadata().getFieldType(i),
+					record.getField(i).getMetadata(),
 					record, i, i);
 			i++;
 		}
@@ -303,7 +309,6 @@ public abstract class CopySQLData {
 		int fromIndex = 0;
 		int toIndex = 0;
 		short jdbcType;
-		char jetelFieldType;
 
 		CopySQLData[] transMap = new CopySQLData[fieldTypes.size()];
 		ListIterator iterator = fieldTypes.listIterator();
@@ -312,12 +317,12 @@ public abstract class CopySQLData {
 			jdbcType = ((Integer) iterator.next()).shortValue();
 			// from index is index of specified cloverField in the Clover record
 			fromIndex = record.getMetadata().getFieldPosition(cloverFields[i]);
-			jetelFieldType = record.getMetadata().getFieldType(fromIndex);
 			if (fromIndex == -1) {
 				throw new JetelException(" Field \"" + cloverFields[i] + "\" does not exist in DataRecord !");
 			}
 			// we copy from Clover's field to JDBC - toIndex/fromIndex is switched here
-			transMap[i++] = createCopyObject(jdbcType, jetelFieldType, record, toIndex, fromIndex);
+			transMap[i++] = createCopyObject(jdbcType, record.getField(fromIndex).getMetadata(), 
+					record, toIndex, fromIndex);
 			toIndex++;// we go one by one - order defined by insert/update statement
 
 		}
@@ -342,8 +347,7 @@ public abstract class CopySQLData {
         int fromIndex = 0;
         int toIndex = 0;
         short jdbcType;
-        char jetelFieldType;
-
+     
         CopySQLData[] transMap = new CopySQLData[fieldTypes.size()];
         ListIterator iterator = fieldTypes.listIterator();
 
@@ -351,15 +355,14 @@ public abstract class CopySQLData {
             jdbcType = ((Integer) iterator.next()).shortValue();
             // from index is index of specified cloverField in the Clover record
             fromIndex = cloverFields[i];
-            jetelFieldType = record.getMetadata().getFieldType(fromIndex);
             if (fromIndex == -1) {
                 throw new JetelException(" Field \"" + cloverFields[i]
                         + "\" does not exist in DataRecord !");
             }
             // we copy from Clover's field to JDBC - toIndex/fromIndex is
             // switched here
-            transMap[i++] = createCopyObject(jdbcType, jetelFieldType, record,
-                    toIndex, fromIndex);
+            transMap[i++] = createCopyObject(jdbcType, record.getField(fromIndex).getMetadata(), 
+            		record, toIndex, fromIndex);
             toIndex++;// we go one by one - order defined by insert/update statement
 
         }
@@ -394,7 +397,7 @@ public abstract class CopySQLData {
             toIndex=i;
             // we copy from Clover's field to JDBC - toIndex/fromIndex is
             // switched here
-            transMap[i] = createCopyObject(jdbcType, jetelField.getType(), record,
+            transMap[i] = createCopyObject(jdbcType, jetelField, record,
                     toIndex, fromIndex);
         }
         return transMap;
@@ -404,13 +407,16 @@ public abstract class CopySQLData {
 	 *  Creates copy object - bridge between JDBC data types and Clover data types
 	 *
 	 * @param  SQLType         Description of the Parameter
-	 * @param  jetelFieldType  Description of the Parameter
+	 * @param  fieldMetadata  Description of the Parameter
 	 * @param  record          Description of the Parameter
 	 * @param  fromIndex       Description of the Parameter
 	 * @param  toIndex         Description of the Parameter
 	 * @return                 Description of the Return Value
 	 */
-	private static CopySQLData createCopyObject(int SQLType, char jetelFieldType, DataRecord record, int fromIndex, int toIndex) {
+	private static CopySQLData createCopyObject(int SQLType, DataFieldMetadata fieldMetadata, 
+			DataRecord record, int fromIndex, int toIndex) {
+		format = fieldMetadata.getFormatStr();
+		jetelType = fieldMetadata.getType();
 		switch (SQLType) {
 			case Types.CHAR:
 			case Types.LONGVARCHAR:
@@ -429,24 +435,39 @@ public abstract class CopySQLData {
 				// fix for copying when target is numeric and
 				// clover source is integer - no precision can be
 				// lost so we can use CopyInteger
-				if (jetelFieldType == DataFieldMetadata.INTEGER_FIELD) {
+				if (jetelType == DataFieldMetadata.INTEGER_FIELD) {
 					return new CopyInteger(record, fromIndex, toIndex);
-				} else if (jetelFieldType == DataFieldMetadata.LONG_FIELD) {
+				} else if (jetelType == DataFieldMetadata.LONG_FIELD) {
 					return new CopyLong(record, fromIndex, toIndex);
-				} else if(jetelFieldType == DataFieldMetadata.NUMERIC_FIELD) {
+				} else if(jetelType == DataFieldMetadata.NUMERIC_FIELD) {
 				    return new CopyNumeric(record, fromIndex, toIndex);
 				} else {
 					return new CopyDecimal(record, fromIndex, toIndex);
 				}
 			case Types.DATE:
-				return new CopyDate(record, fromIndex, toIndex);
+				if (StringUtils.isEmpty(format)) {
+					return new CopyDate(record, fromIndex, toIndex);
+				}				
 			case Types.TIME:
-				return new CopyTime(record, fromIndex, toIndex);
+				if (StringUtils.isEmpty(format)) {
+					return new CopyTime(record, fromIndex, toIndex);
+				}				
 			case Types.TIMESTAMP:
-				return new CopyTimestamp(record, fromIndex, toIndex);
+				if (StringUtils.isEmpty(format)) {
+					return new CopyTimestamp(record, fromIndex, toIndex);
+				}
+				boolean isDate = fieldMetadata.isDateFormat();
+				boolean isTime = fieldMetadata.isTimeFormat();
+				if (isDate && isTime) {
+					return new CopyTimestamp(record, fromIndex, toIndex);
+				}else if (isDate) {
+					return new CopyDate(record, fromIndex, toIndex);
+				}else{
+					return new CopyTime(record, fromIndex, toIndex);
+				}
 			case Types.BOOLEAN:
 			case Types.BIT:
-				if (jetelFieldType == DataFieldMetadata.STRING_FIELD) {
+				if (jetelType == DataFieldMetadata.STRING_FIELD) {
 					return new CopyBoolean(record, fromIndex, toIndex);
 				}
             case Types.BINARY:

@@ -84,7 +84,7 @@ public class MultiFileReader {
     private static final String DEFAULT_VALUE = "default_value";
     
     public static final String[] AUTOFILLING = new String[] {DEFAULT_VALUE, GLOBAL_ROW_COUNT, SOURCE_ROW_COUNT, METADATA_ROW_COUNT, 
-    	METADATA_SOURCE_ROW_COUNT, SOURCE_NAME, SOURCE_TIMESTAMP};
+    	METADATA_SOURCE_ROW_COUNT, SOURCE_NAME, SOURCE_TIMESTAMP, "ErrCode", "ErrText"};
     
     /**
 	 * Sole ctor.

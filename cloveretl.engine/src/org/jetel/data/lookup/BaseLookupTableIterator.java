@@ -50,16 +50,20 @@ public class BaseLookupTableIterator implements LookupTableIterator {
 	 * @see org.jetel.data.lookup.LookupTableIterator#get(org.jetel.data.DataRecord)
 	 */
 	public DataRecord get(DataRecord keyRecord) {
-		lookupTable.setLookupKey(lookupKey);
-		return lookupTable.get(keyRecord);
+		synchronized (lookupTable) {
+			lookupTable.setLookupKey(lookupKey);
+			return lookupTable.get(keyRecord);
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.lookup.LookupTableIterator#getNext()
 	 */
 	public DataRecord getNext() {
-		lookupTable.setLookupKey(lookupKey);
-		return lookupTable.getNext();
+		synchronized (lookupTable) {
+			lookupTable.setLookupKey(lookupKey);
+			return lookupTable.getNext();
+		}
 	}
 
 }

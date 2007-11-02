@@ -1,13 +1,13 @@
 <plugin
    id="org.jetel.lookup"
-   version="2.3.0"
+   version="2.3.2"
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>
 		<library path="../../../cloveretl.lookup/bin/"/>
    	</runtime> 
 	
-	<requires engine-version="2.3.0">
+	<requires engine-version="2.3.2">
 		<import plugin-id="org.jetel.connection"/>
 	</requires>
 	
