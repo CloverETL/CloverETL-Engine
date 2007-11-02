@@ -223,7 +223,7 @@ public class TransformationGraphAnalyzer {
 							//TODO: potential problem if port is not backed by EDGE - this should not happen
 							Object edge=startNode.getInputPort(i);
 							//assert edge instanceof Edge : "Port not backed by Edge object !";
-							if(((Edge)edge).getEdgeType() == EdgeTypeEnum.DIRECT) {
+							if(((Edge)edge).getEdgeType() == EdgeTypeEnum.DIRECT || ((Edge)edge).getEdgeType() == EdgeTypeEnum.DIRECT_FAST_PROPAGATE) {
 								((Edge)edge).setEdgeType(EdgeTypeEnum.BUFFERED);
 								// DEBUG
 								//System.out.println(((Edge)edge).getID()+" edge should be set to TYPE_BUFFERED.");
