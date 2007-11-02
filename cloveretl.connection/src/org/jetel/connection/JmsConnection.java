@@ -39,11 +39,13 @@ import javax.naming.NamingException;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
+import org.jetel.util.crypto.Enigma;
 import org.w3c.dom.Element;
 
 /**
@@ -87,6 +89,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 	private static final String XML_CON_FACTORY_ATTRIBUTE = "connectionFactory";
 	private static final String XML_USERNAME_ATTRIBUTE = "username";
 	private static final String XML_PASSWORD_ATTRIBUTE = "password";
+	private static final String XML_PASSWORD_ENCRYPTED = "passwordEncrypted";
 	private static final String XML_DESTINATION_ATTRIBUTE = "destId";
 
 	private String iniCtxFtory;
@@ -95,13 +98,14 @@ public class JmsConnection extends GraphElement implements IConnection {
 	private String user;
 	private String pwd;
 	private String destId;
+	private boolean passwordEncrypted;
 	
 	private Connection connection = null;
 	private Session session = null;
 	private Destination destination = null;
 
 	JmsConnection(String id, String iniCtxFtory, String providerUrl, String conFtory,
-			String user, String pwd, String destId) {
+			String user, String pwd, String destId, boolean passwordEncrypted) {
 		super(id);
 		this.iniCtxFtory = iniCtxFtory;
 		this.providerUrl = providerUrl;
@@ -109,6 +113,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 		this.user = user;
 		this.pwd = pwd;
 		this.destId = destId;
+		this.passwordEncrypted = passwordEncrypted;
 	}
 	
 	private static Properties readConfig(URL contextURL, String cfgFile) {
@@ -152,8 +157,25 @@ public class JmsConnection extends GraphElement implements IConnection {
 			} else {	// use jndi.properties
 				ctx = new InitialContext();
 			}
-		    ConnectionFactory ftory = (ConnectionFactory)ctx.lookup(conFtory);		    
-			connection = ftory.createConnection(user, pwd);
+		    ConnectionFactory ftory = (ConnectionFactory)ctx.lookup(conFtory);	
+		    
+		    if (passwordEncrypted) {
+	            Enigma enigma = Enigma.getInstance();
+	            String decryptedPassword = null;
+	            try {
+	                decryptedPassword = enigma.decrypt(pwd);
+	            } catch (JetelException e) {
+	                throw new ComponentNotReadyException("Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.", e);
+	            }
+	            // If password decryption fails, try to use the unencrypted password
+	            if (decryptedPassword != null) {
+	                pwd = decryptedPassword;
+	                passwordEncrypted = false;
+	            }
+
+		    }
+
+		    connection = ftory.createConnection(user, pwd);
 			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);			
 			destination = (Destination)ctx.lookup(destId);
 			connection.start();
@@ -227,7 +249,8 @@ public class JmsConnection extends GraphElement implements IConnection {
 						config.getProperty(XML_CON_FACTORY_ATTRIBUTE, null),
 						config.getProperty(XML_USERNAME_ATTRIBUTE, null),
 						config.getProperty(XML_PASSWORD_ATTRIBUTE, null),
-						config.getProperty(XML_DESTINATION_ATTRIBUTE, null));
+						config.getProperty(XML_DESTINATION_ATTRIBUTE, null),
+						Boolean.valueOf(config.getProperty(XML_PASSWORD_ENCRYPTED, "false")));
 			} else {
 				con = new JmsConnection(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_INICTX_FACTORY_ATTRIBUTE, null),
@@ -235,7 +258,8 @@ public class JmsConnection extends GraphElement implements IConnection {
 						xattribs.getString(XML_CON_FACTORY_ATTRIBUTE, null),
 						xattribs.getString(XML_USERNAME_ATTRIBUTE, null),
 						xattribs.getString(XML_PASSWORD_ATTRIBUTE, null),
-						xattribs.getString(XML_DESTINATION_ATTRIBUTE, null));
+						xattribs.getString(XML_DESTINATION_ATTRIBUTE, null),
+						xattribs.getBoolean(XML_PASSWORD_ENCRYPTED, false));
 			}
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());

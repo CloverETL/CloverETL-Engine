@@ -1,6 +1,6 @@
 <plugin
    id="org.jetel.tlfunction"
-   version="2.3.0"
+   version="2.3.2"
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>

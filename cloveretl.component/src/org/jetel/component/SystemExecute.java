@@ -414,7 +414,7 @@ public class SystemExecute extends Node{
 				resultMsg = (resultMsg == null ? "" : resultMsg) + sendErrToFile.getResultMsg() + "\n" + sendErrToFile.getResultException();
 			}
 		}
-		broadcastEOF();
+//		broadcastEOF();
 		if (!runIt) {
 			resultMsg = resultMsg + "\n" + "STOPPED";
 			ok = false;;

@@ -104,7 +104,11 @@ public class TLVariable {
         if (this.value.type!=value.type&&this.value.type.isNumeric()) {
             this.value.getNumeric().setValue(value.getNumeric());
         }else {
-            this.value=value;
+			if (value.type != TLValueType.NULL) {
+				this.value = value;
+			}else{
+				this.value = new TLValue(this.getType(), null);
+			}
         }
     }
     

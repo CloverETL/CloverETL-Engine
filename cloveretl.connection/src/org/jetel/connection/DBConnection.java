@@ -248,7 +248,7 @@ public class DBConnection extends GraphElement implements IConnection {
      * @see java.sql.Connection#setTransactionIsolation(int)
      */
     private void connect() {
-        logger.debug("DBConenction (" + getId() +"), component ["+Thread.currentThread().getName() +"] attempts to connect to the database");
+        logger.debug("DBConnection (" + getId() +"), component ["+Thread.currentThread().getName() +"] attempts to connect to the database");
 
         if(!isInitialized()) {
             throw new RuntimeException("DBConnection (" + getId() +") is not initialized.");

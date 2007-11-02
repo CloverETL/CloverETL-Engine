@@ -18,6 +18,12 @@ Changes/bug fixes:
 + some components have optional "rejected port(s)" (AproxMergeJoin, CheckForeignKey, DBJoin, 
 	LookupJoin)
 
+REL 2-3-1 
+---------
+Release in particular repairing bugs from 2.3.0 version.
+
+Changes/bug fixes:
++ fixed race condition occuring during multiple concurrent accesses to one lookup table.
 
 REL 2-3-0 commercial purpose release
 ---------
