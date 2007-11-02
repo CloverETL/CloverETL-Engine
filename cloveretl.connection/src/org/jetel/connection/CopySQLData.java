@@ -77,14 +77,8 @@ public abstract class CopySQLData {
 
     protected boolean inBatchUpdate = false; // indicates whether batchMode is used when populating target DB
 
-<<<<<<< .working
 	static Log logger = LogFactory.getLog(CopySQLData.class);
 
-=======
-	private static String format;
-	private static char jetelType;
-
->>>>>>> .merge-right.r3414
 	/**
 	 *  Constructor for the CopySQLData object
 	 *
@@ -415,8 +409,8 @@ public abstract class CopySQLData {
 	 */
 	private static CopySQLData createCopyObject(int SQLType, DataFieldMetadata fieldMetadata, 
 			DataRecord record, int fromIndex, int toIndex) {
-		format = fieldMetadata.getFormatStr();
-		jetelType = fieldMetadata.getType();
+		String format = fieldMetadata.getFormatStr();
+		char jetelType = fieldMetadata.getType();
 		switch (SQLType) {
 			case Types.CHAR:
 			case Types.LONGVARCHAR:
@@ -474,7 +468,6 @@ public abstract class CopySQLData {
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
             case Types.BLOB:
-        		String format = record.getField(toIndex).getMetadata().getFormatStr();
             	if (!StringUtils.isEmpty(format) && format.equalsIgnoreCase(SQLUtil.BLOB_FORMAT_STRING)) {
                 	return new CopyBlob(record, fromIndex, toIndex);
             	}
