@@ -10,7 +10,7 @@ import java.util.Iterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.formatter.Formatter;
-import org.jetel.data.formatter.getter.FormatterGetter;
+import org.jetel.data.formatter.provider.FormatterProvider;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -31,7 +31,7 @@ public class TargetFile {
 	private String fileURL;							// output file url
 	private URL contextURL;							// output context url
     private Iterator<WritableByteChannel> channels; // output channel
-	private FormatterGetter formatterGetter;		// creates new formatter
+	private FormatterProvider formatterProvider;		// creates new formatter
 	private DataRecordMetadata metadata;			// metadata
 	
     private Iterator<String> fileNames;				// returns filename string
@@ -64,16 +64,16 @@ public class TargetFile {
     	this.metadata = metadata;
     }
     
-    public TargetFile(String fileURL, URL contextURL, FormatterGetter formatterGetter, DataRecordMetadata metadata) {
+    public TargetFile(String fileURL, URL contextURL, FormatterProvider formatterProvider, DataRecordMetadata metadata) {
     	this.fileURL = fileURL;
     	this.contextURL = contextURL;
-    	this.formatterGetter = formatterGetter;
+    	this.formatterProvider = formatterProvider;
     	this.metadata = metadata;
     }
     
-    public TargetFile(Iterator<WritableByteChannel> channels, FormatterGetter formatterGetter, DataRecordMetadata metadata) {
+    public TargetFile(Iterator<WritableByteChannel> channels, FormatterProvider formatterProvider, DataRecordMetadata metadata) {
     	this.channels = channels;
-    	this.formatterGetter = formatterGetter;
+    	this.formatterProvider = formatterProvider;
     	this.metadata = metadata;
     }
 
@@ -179,7 +179,7 @@ public class TargetFile {
      * @throws ComponentNotReadyException 
      */
     private void initOutput() throws IOException, ComponentNotReadyException {
-    	if (formatter == null) formatter = formatterGetter.getNewFormatter();
+    	if (formatter == null) formatter = formatterProvider.getNewFormatter();
     	formatter.init(metadata);
     	setNextOutput();
     }
