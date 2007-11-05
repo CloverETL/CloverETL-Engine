@@ -86,8 +86,10 @@ import org.w3c.dom.Element;
  * <td>
  * <h4><i>Description:</i></h4>
  * </td>
- * <td>This component loads data to mysql database using the mysql utility. There is created mysql command (LOAD DATA INFILE)
- * depending on input parameters. Data are read from given input file or from the input port and loaded to database.<br>
+ * <td>This component loads data to mysql database using the mysql utility. It is faster then DBOutputTable. 
+ * Load formats data pages directly, while avoiding most of the overhead of individual row processing that inserts incur.<br>
+ * There is created mysql command (LOAD DATA INFILE) depending on input parameters. Data are read from given input file or 
+ * from the input port and loaded to database.<br>
  * Any generated commands/files can be optionally logged to help diagnose problems.<br>
  * Before you use this component, make sure that mysql client is installed and configured on the machine where CloverETL runs and
  * mysql command line tool available. </td>
@@ -1175,6 +1177,16 @@ public class MysqlDataWriter2 extends Node {
 			cmdList.add(command);
 		}
 
+		/**
+		 *  If paramName is in properties adds: 
+		 *  "<i><b>switchMark</b>switchString</i>"<br>
+		 *  When paramName isn't in properties and defaultValue==true then it is added too.
+		 *  for exmaple:  --compress
+		 * 
+		 * @param paramName
+		 * @param switchString
+		 * @param defaultValue
+		 */
 		private void addBooleanParam(String paramName, String switchString, boolean defaultValue) {
 			if (params.containsKey(paramName)) {
 				addBooleanParam(paramName, switchString);
@@ -1186,12 +1198,29 @@ public class MysqlDataWriter2 extends Node {
 			}
 		}
 
+		/**
+		 *  If paramName is in properties adds: 
+		 *  "<i><b>switchMark</b>switchString</i>"<br>
+		 *  for exmaple:  --compress
+		 * 
+		 * @param paramName
+		 * @param switchString
+		 */
 		private void addBooleanParam(String paramName, String switchString) {
 			if (params.containsKey(paramName) && !"false".equalsIgnoreCase(params.getProperty(paramName))) {
 				cmdList.add(SWITCH_MARK + switchString);
 			}
 		}
 
+		/**
+		 * if paramValue isn't null or paramName is in properties adds:
+		 *  "<i><b>switchMark</b>switchString</i>paramValue"<br>
+		 *  for exmaple:  --host=localhost
+		 * 
+		 * @param paramName
+		 * @param switchString
+		 * @param paramValue
+		 */
 		private void addParam(String paramName, String switchString, String paramValue) {
 			if (paramValue == null && (paramName == null || !params.containsKey(paramName))) {
 				return;
