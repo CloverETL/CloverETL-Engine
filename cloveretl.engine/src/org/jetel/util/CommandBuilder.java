@@ -360,8 +360,8 @@ public class CommandBuilder {
 	
 	/**
 	 * if paramValue isn't null or paramName is in properties adds to the end of command:
-	 *  " <i><b>switchMark</b>switchChar</i>paramValue"<br>
-	 *  for exmaple:  --host="localhost"
+	 *  " <i><b>switchMark</b>switchString</i>paramValue"<br>
+	 *  for exmaple:  --host=localhost
 	 * 
 	 * @param paramName
 	 * @param switchString
@@ -384,8 +384,8 @@ public class CommandBuilder {
 	}
 	
 	/**
-	 * if paramName is in properties adds to the end of command: 
-	 *  " <i><b>switchMark</b>switchChar</i>"<br>
+	 *  If paramName is in properties adds to the end of command: 
+	 *  " <i><b>switchMark</b>switchString</i>"<br>
 	 *  for exmaple:  --compress
 	 * 
 	 * @param paramName
@@ -400,8 +400,9 @@ public class CommandBuilder {
 	}
 	
 	/**
-	 * if paramName is in properties adds to the end of command: 
-	 *  " <i><b>switchMark</b>switchChar</i>"<br>
+	 *  If paramName is in properties adds to the end of command: 
+	 *  " <i><b>switchMark</b>switchString</i>"<br>
+	 *  When paramName isn't in properties and defaultValue==true then it is added too.
 	 *  for exmaple:  --compress
 	 * 
 	 * @param paramName
