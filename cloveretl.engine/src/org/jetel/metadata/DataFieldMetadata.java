@@ -58,7 +58,7 @@ public class DataFieldMetadata implements Serializable {
 	 */
 	private String delimiter = null;
 	/**
-	 *  Format of Number, Date, DateTime or empty if not applicable
+	 *  Format of Number, Date, DateTime, String(regExp) or empty if not applicable
 	 */
 	private String formatStr;
 	/**
