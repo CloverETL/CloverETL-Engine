@@ -29,6 +29,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.text.RuleBasedCollator;
 
+import org.jetel.data.primitive.StringFormat;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.ByteBufferUtils;
@@ -48,8 +49,9 @@ import org.jetel.util.Compare;
  * @see         org.jetel.metadata.DataFieldMetadata
  */
 public class StringDataField extends DataField implements CharSequence{
-
+	
 	private StringBuilder value;
+	private StringFormat stringFormat = null;
 	
 	// Attributes
 	/**
@@ -89,6 +91,12 @@ public class StringDataField extends DataField implements CharSequence{
         } else {
             value = new StringBuilder(_metadata.getSize());
         }
+        // handle format string
+        String regExp;
+        regExp = _metadata.getFormatStr();
+        if ((regExp != null) && (regExp.length() != 0)) {
+        	stringFormat = StringFormat.create(regExp);
+        } 
     }
     
 
@@ -117,7 +125,6 @@ public class StringDataField extends DataField implements CharSequence{
 	    this.value.append(_value);
 	}
 	
-   
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataField#copy()
@@ -337,6 +344,8 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
 	 */
 	public void fromString(CharSequence seq) {
+		if (stringFormat != null && !stringFormat.matches(seq.toString()))
+			throw new BadDataFormatException("doesn't match with "+stringFormat.getPattern(), seq.toString());
 		setValue(seq);
 	}
 
