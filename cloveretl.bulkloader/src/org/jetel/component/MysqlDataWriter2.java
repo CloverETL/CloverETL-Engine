@@ -739,7 +739,7 @@ public class MysqlDataWriter2 extends Node {
 
 		// [(col_name_or_user_var,...)]
 		if (properties.containsKey(LOAD_COLUMNS_PARAM)) {
-			command.append(properties.getProperty(LOAD_COLUMNS_PARAM));
+			command.append("'" + properties.getProperty(LOAD_COLUMNS_PARAM) + "'");
 		}
 
 		return command.getCommand();
@@ -788,12 +788,7 @@ public class MysqlDataWriter2 extends Node {
 		}
 		
 		commandLine = createCommandLineForDbLoader();
-		StringBuffer msg = new StringBuffer("System command: \"");
-		msg.append(commandLine[0]).append("\" with parameters:\n");
-		for (int idx = 1; idx < commandLine.length; idx++) {
-			msg.append(idx).append(": ").append(commandLine[idx]).append("\n");
-		}
-		logger.info(msg.toString());
+		printCommandLineToLog(commandLine);
 
 		if (isDataReadFromPort) {
 			InputPort inPort = getInputPort(READ_FROM_PORT);
@@ -820,6 +815,19 @@ public class MysqlDataWriter2 extends Node {
 		}
 	}
 
+	/**
+	 * Print system command with it's parameters to log. 
+	 * @param command
+	 */
+	private void printCommandLineToLog(String[] command) {
+		StringBuilder msg = new StringBuilder("System command: \"");
+		msg.append(command[0]).append("\" with parameters:\n");
+		for (int idx = 1; idx < command.length; idx++) {
+			msg.append(idx).append(": ").append(command[idx]).append("\n");
+		}
+		logger.debug(msg.toString());
+	}
+	
 	/**
 	 * Create instance of Properties from String. 
 	 * Parse parameters from string "parameters" and fill properties by them.
@@ -879,7 +887,7 @@ public class MysqlDataWriter2 extends Node {
 		// check combination
 		if (properties.containsKey(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)
 				&& !properties.containsKey(LOAD_FIELDS_ENCLOSED_BY_PARAM)) {
-			logger.warn("Attribute" + StringUtils.quote(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)
+			logger.warn("Attribute " + StringUtils.quote(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)
 					+ " is ignored because it has to be used in combination with "
 					+ StringUtils.quote(LOAD_FIELDS_ENCLOSED_BY_PARAM) + " attribute.");
 		}
@@ -1214,7 +1222,7 @@ public class MysqlDataWriter2 extends Node {
 
 		/**
 		 * if paramValue isn't null or paramName is in properties adds:
-		 *  "<i><b>switchMark</b>switchString</i>paramValue"<br>
+		 *  "<i><b>switchMark</b>switchString</i>=paramValue"<br>
 		 *  for exmaple:  --host=localhost
 		 * 
 		 * @param paramName
