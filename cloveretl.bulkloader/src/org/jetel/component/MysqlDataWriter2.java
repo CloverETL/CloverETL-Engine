@@ -164,7 +164,7 @@ import org.w3c.dom.Element;
  * <td>Import data to the MySQL server on the given host. The default host is localhost.</td>
  * </tr>
  * <tr>
- * <td><b>user</b><br>
+ * <td><b>username</b><br>
  * <i>optional</i></td>
  * <td>The MySQL username to use when connecting to the server.</td>
  * </tr>
@@ -367,7 +367,7 @@ public class MysqlDataWriter2 extends Node {
 	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
 	private static final String XML_COLUMN_DELIMITER_ATTRIBUTE = "columnDelimiter";
 	private static final String XML_HOST_ATTRIBUTE = "host";
-	private static final String XML_USER_ATTRIBUTE = "user";
+	private static final String XML_USER_ATTRIBUTE = "username";
 	private static final String XML_PASSWORD_ATTRIBUTE = "password";
 	private static final String XML_COMMAND_URL_ATTRIBUTE = "commandURL";
 	private static final String XML_IGNORE_ROWS_ATTRIBUTE = "ignoreRows";
@@ -1397,9 +1397,9 @@ public class MysqlDataWriter2 extends Node {
 						" has different type from string.");
 			}
 			
-			// check if second field of errMetadata is string - errMsg
+			// check if third field of errMetadata is string - errMsg
 			if (errMetadata.getFieldType(ERR_MSG_FIELD_NO) != DataFieldMetadata.STRING_FIELD) {
-				throw new ComponentNotReadyException("Second field of " +  StringUtils.quote(errMetadata.getName()) +  
+				throw new ComponentNotReadyException("Third field of " +  StringUtils.quote(errMetadata.getName()) +  
 						" has different type from string.");
 			}
 		}
