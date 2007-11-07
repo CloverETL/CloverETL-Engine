@@ -26,12 +26,12 @@
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${WORKSPACE}\data\delimited\mssql.dat" guiHeight="25" guiName="DELIMITED_DATA_READER0" guiWidth="50" guiX="31" guiY="28" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
-<Node bcpUtilityPath="bcp" database="test" enabled="enabled" fileURL="${WORKSPACE}\output\exchange.bcp" guiHeight="25" guiName="MS_SQL_DATA_WRITER0" guiWidth="50" guiX="282" guiY="28" id="MS_SQL_DATA_WRITER0" owner="dbo" parameters="characterType|trustedConnection|codePageSpecifier=ACP|errFile=${WORKSPACE}\output\err.bcp|fieldTerminator=&quot;|&quot;" table="test" type="MS_SQL_DATA_WRITER"/>
+<Node bcpUtilityPath="bcp" database="test" enabled="enabled" fileURL="${WORKSPACE}\output\exchange.bcp" guiHeight="25" guiName="MS_SQL_DATA_WRITER0" guiWidth="50" guiX="282" guiY="28" id="MS_SQL_DATA_WRITER0" owner="dbo" parameters="characterType|userName=test|password=test|codePageSpecifier=ACP|errFile=${WORKSPACE}\output\err.bcp|fieldTerminator=&quot;|&quot;" table="test" type="MS_SQL_DATA_WRITER"/>
 <Edge debugMode="true" fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="MS_SQL_DATA_WRITER0:0"/>
 </Phase>
 <Phase number="1">
 <Node append="false" charset="UTF-8" enabled="enabled" fileURL="${WORKSPACE}\output\out.txt" guiHeight="25" guiName="DELIMITED_DATA_WRITER0" guiWidth="50" guiX="282" guiY="168" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
-<Node bcpUtilityPath="bcp" database="test" enabled="enabled" fileURL="${WORKSPACE}\data\delimited\mssql.dat" guiHeight="25" guiName="MS_SQL_DATA_WRITER1" guiWidth="50" guiX="31" guiY="168" id="MS_SQL_DATA_WRITER1" owner="dbo" parameters="characterType|trustedConnection|codePageSpecifier=ACP|errFile=${WORKSPACE}\output\err.bcp|fieldTerminator=&quot;;&quot;" table="test" type="MS_SQL_DATA_WRITER"/>
+<Node bcpUtilityPath="bcp" database="test" enabled="enabled" fileURL="${WORKSPACE}\data\delimited\mssql.dat" guiHeight="25" guiName="MS_SQL_DATA_WRITER1" guiWidth="50" guiX="31" guiY="168" id="MS_SQL_DATA_WRITER1" owner="dbo" parameters="characterType|userName=test|password=test|codePageSpecifier=ACP|errFile=${WORKSPACE}\output\err.bcp|fieldTerminator=&quot;;&quot;" table="test" type="MS_SQL_DATA_WRITER"/>
 <Edge debugMode="true" fromNode="MS_SQL_DATA_WRITER1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="MetadataOut" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER0:0"/>
 </Phase>
 </Graph>
