@@ -3,8 +3,6 @@ package org.jetel.data.primitive;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import junit.framework.TestCase;
-
 /**
  * String formatter/validator.
  * 
@@ -84,28 +82,9 @@ public class StringFormat {
 	}
 
 	/**
-	 * Test case
+	 * Returns compilled regExp. 
+	 * @return
 	 */
-	public static class Test extends TestCase {
-
-		private static void t(String regexp, String expected, String input, String outputFormat) {
-			String result = StringFormat.create(regexp).format(input, outputFormat);
-			assertEquals(expected, result);
-		}
-
-		public void testFormat() throws Exception {
-			t("(\\d*)(?:\\D*)(\\d*)", "00420123456789", "00420- -123456789", null);
-			t("(?:\\d*)(?:\\D*)(\\d*)", "+420 123456789", "00420- -123456789", "+420 $1");
-			t(".*", "abcd", "abcd", null);
-			t("(\\w+)(\\s)\\s*(?:\\w+\\s+)?(\\w+)", "Martin Varecha", "Martin Bubak Varecha", null);
-			t("(\\w+)(\\s)\\s*(?:\\w+\\s+)?(\\w+)", "Martin Varecha", "Martin Varecha", null);
-			t("(\\w+)\\s*(?:\\w+\\s+)?(\\w+)", "Varecha Martin", "Martin Varecha", "$2 $1");
-			t("(\\w+)\\s*(?:\\w+\\s+)?(\\w+)", "lastName:Varecha firstName:Martin", "Martin Bubak Varecha", "lastName:$2 firstName:$1");
-			this.assertTrue(StringFormat.create("\\w*").matches("bubak"));
-			this.assertTrue(StringFormat.create("\\W*").matches("/'[];,"));
-		}
-	}
-
 	public Pattern getPattern() {
 		return regExpPattern;
 	}
