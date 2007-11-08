@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.util;
+package org.jetel.util.property;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.string.StringUtils;
 
 /**
  *  Helper class for resolving references within string values to Properties.<br>

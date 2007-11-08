@@ -39,7 +39,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ByteBufferUtils;
+import org.jetel.util.bytes.ByteBufferUtils;
 
 /**
  * Outputs data record in form coherent with given mask. 

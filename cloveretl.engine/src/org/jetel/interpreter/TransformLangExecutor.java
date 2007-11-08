@@ -97,8 +97,8 @@ import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.interpreter.data.TLVariable;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.Compare;
-import org.jetel.util.StringUtils;
+import org.jetel.util.string.Compare;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Executor of FilterExpression parse tree.

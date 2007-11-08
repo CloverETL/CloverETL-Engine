@@ -29,7 +29,7 @@ import java.nio.charset.CharsetEncoder;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.NullDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.StringUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  *  A class that represents data field (its value).

@@ -31,8 +31,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
 /**

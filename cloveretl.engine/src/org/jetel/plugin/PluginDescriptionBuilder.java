@@ -21,7 +21,7 @@ package org.jetel.plugin;
 
 import javax.naming.directory.InvalidAttributesException;
 
-import org.jetel.util.StringUtils;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;

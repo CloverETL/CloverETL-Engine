@@ -36,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.StringUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  *  Various utilities for working with Databases

@@ -47,7 +47,7 @@ import org.jetel.data.primitive.HugeDecimal;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.StringUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  *  Class for creating mappings between CloverETL's DataRecords and JDBC's

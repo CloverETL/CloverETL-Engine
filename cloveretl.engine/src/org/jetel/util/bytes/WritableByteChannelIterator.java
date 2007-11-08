@@ -1,4 +1,4 @@
-package org.jetel.util;
+package org.jetel.util.bytes;
 
 import java.nio.channels.WritableByteChannel;
 import java.util.Iterator;

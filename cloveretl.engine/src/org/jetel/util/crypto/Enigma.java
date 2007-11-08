@@ -26,7 +26,6 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 
 import org.jetel.exception.JetelException;
-import org.jetel.util.Base64;
 
 /**
  * Class for encrypting/decrypting strings (mostly passwords) stored by CloverETL

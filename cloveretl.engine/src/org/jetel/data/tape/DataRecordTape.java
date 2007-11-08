@@ -33,7 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.util.ByteBufferUtils;
+import org.jetel.util.bytes.ByteBufferUtils;
 
 
 /**

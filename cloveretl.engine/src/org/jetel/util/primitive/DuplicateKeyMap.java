@@ -21,7 +21,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package org.jetel.util;
+package org.jetel.util.primitive;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -199,7 +199,7 @@ public class DuplicateKeyMap implements Map {
      * which was used for the last get() method call.<br>
      * 
      * @return next value or null if no more values stored
-     * @see org.jetel.util.DuplicateKeyMap#get(java.lang.Object)
+     * @see org.jetel.util.primitive.DuplicateKeyMap#get(java.lang.Object)
      */
     public Object getNext() {
         if (savedKey!=null){
@@ -219,7 +219,7 @@ public class DuplicateKeyMap implements Map {
      * 
      * 
      * @return next value 
-     * @see org.jetel.util.DuplicateKeyMap#get(java.lang.Object)
+     * @see org.jetel.util.primitive.DuplicateKeyMap#get(java.lang.Object)
      */
     public Object getNext(Object key) {
         if (savedKey!=key){

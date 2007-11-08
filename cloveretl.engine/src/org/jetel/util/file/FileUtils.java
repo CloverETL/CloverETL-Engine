@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.util;
+package org.jetel.util.file;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -45,6 +45,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.MultiOutFile;
 
 import sun.misc.BASE64Encoder;
 /**

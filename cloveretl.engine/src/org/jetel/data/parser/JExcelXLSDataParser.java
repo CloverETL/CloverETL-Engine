@@ -43,8 +43,8 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.NumberIterator;
-import org.jetel.util.StringUtils;
-import org.jetel.util.WcardPattern;
+import org.jetel.util.file.WcardPattern;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Parsing data from xls file using JExcelAPI.

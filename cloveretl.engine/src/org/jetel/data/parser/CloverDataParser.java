@@ -41,7 +41,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ByteBufferUtils;
+import org.jetel.util.bytes.ByteBufferUtils;
 
 /**
  * Class for reading data saved in Clover internal format

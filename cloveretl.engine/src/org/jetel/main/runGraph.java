@@ -42,9 +42,9 @@ import org.jetel.graph.TransformationGraphAnalyzer;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.runtime.GraphRuntimeParameters;
 import org.jetel.plugin.Plugins;
-import org.jetel.util.FileUtils;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.crypto.Enigma;
+import org.jetel.util.file.FileUtils;
 
 /*
  *  - runGraph.main()

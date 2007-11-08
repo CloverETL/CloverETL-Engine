@@ -35,8 +35,8 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
-import org.jetel.util.DynamicJavaCode;
-import org.jetel.util.FileUtils;
+import org.jetel.util.compile.DynamicJavaCode;
+import org.jetel.util.file.FileUtils;
 
 public class RecordTransformFactory {
 

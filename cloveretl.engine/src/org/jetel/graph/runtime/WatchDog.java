@@ -54,8 +54,8 @@ import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.TrackingDetail.PortType;
-import org.jetel.util.DuplicateKeyMap;
-import org.jetel.util.StringUtils;
+import org.jetel.util.primitive.DuplicateKeyMap;
+import org.jetel.util.string.StringUtils;
 
 
 /**

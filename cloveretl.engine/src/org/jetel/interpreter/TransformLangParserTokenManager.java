@@ -3,9 +3,10 @@ package org.jetel.interpreter;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.interpreter.ASTnode.*;
-import org.jetel.util.StringUtils;
-import org.jetel.util.FileUtils;
-import org.jetel.util.CharSequenceReader;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.string.CharSequenceReader;
+import org.jetel.util.string.StringUtils;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;

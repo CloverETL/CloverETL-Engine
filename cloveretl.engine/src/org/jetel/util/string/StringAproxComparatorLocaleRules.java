@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.util;
+package org.jetel.util.string;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,14 +38,14 @@ public class StringAproxComparatorLocaleRules {
 	private static Map rules=new HashMap();
 
 	public static final String[] CZ_RULES={
-		"a=á=A=Á",
+		"a=á=A=�?",
 		"c=č=C=Č",
 		"d=ď=D=Ď",
 		"e=é=ě=E=É=Ě",
 		"i=í=I=Í",
-		"n=ň=N=Ň",
+		"n=�?=N=Ň",
 		"o=ó=O=Ó",
-		"r=ř=R=Ř",
+		"r=ř=R=�?",
 		"s=š=S=Š",
 		"t=ť=T=Ť",
 		"u=ů=ú=U=Ů=Ú",
@@ -56,9 +56,9 @@ public class StringAproxComparatorLocaleRules {
 	public static final String[] PL_RULES={
 		"a=ą=A=Ą",
 		"c=ć=C=Ć",
-		"e=ę=E=Ę",
-		"l=ł=L=Ł",
-		"n=ń=N=Ń",
+		"e=ę=E=�?",
+		"l=ł=L=�?",
+		"n=ń=N=�?",
 		"o=ó=O=Ó",
 		"s=ś=S=Ś",
 		"z=ż=ź=Z=Ż=Ź"

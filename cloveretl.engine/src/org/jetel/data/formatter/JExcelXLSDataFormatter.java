@@ -47,7 +47,7 @@ import org.jetel.data.primitive.Decimal;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
-import org.jetel.util.StringUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Writes records to xls sheet using JExcelAPI

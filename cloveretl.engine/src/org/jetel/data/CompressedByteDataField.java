@@ -27,8 +27,8 @@ import java.nio.charset.CharsetEncoder;
 import java.util.Arrays;
 
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.ByteBufferUtils;
-import org.jetel.util.ZipUtils;
+import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.file.ZipUtils;
 
 /**
  * Class implementing field which represents gzip-compressed array of bytes. 

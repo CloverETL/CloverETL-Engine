@@ -27,7 +27,7 @@ import java.util.Arrays;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.ByteBufferUtils;
+import org.jetel.util.bytes.ByteBufferUtils;
 
 /**
  *  A class that represents array of bytes field.<br>

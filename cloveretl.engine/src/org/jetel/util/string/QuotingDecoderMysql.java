@@ -18,7 +18,7 @@
 *
 */
 
-package org.jetel.util;
+package org.jetel.util.string;
 
 /**
  * Quoting decoder for mysql client output 

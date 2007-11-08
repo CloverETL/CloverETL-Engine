@@ -43,8 +43,8 @@ import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.StringUtils;
-import org.jetel.util.WcardPattern;
+import org.jetel.util.file.WcardPattern;
+import org.jetel.util.string.StringUtils;
 
 /**
  * 

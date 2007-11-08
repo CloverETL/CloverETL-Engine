@@ -28,7 +28,7 @@ import java.util.NoSuchElementException;
 
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.BitArray;
+import org.jetel.util.primitive.BitArray;
 
 /**
  *  A class that represents one data record with structure based on provided

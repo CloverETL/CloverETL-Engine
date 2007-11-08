@@ -21,7 +21,7 @@
  * 
  */
 
-package org.jetel.util;
+package org.jetel.util.compile;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;

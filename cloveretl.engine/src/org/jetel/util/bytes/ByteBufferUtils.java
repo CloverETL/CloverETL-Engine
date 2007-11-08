@@ -18,7 +18,7 @@
 *
 */
 
-package org.jetel.util;
+package org.jetel.util.bytes;
 
 import java.io.IOException;
 import java.io.InputStream;
