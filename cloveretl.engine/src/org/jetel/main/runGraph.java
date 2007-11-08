@@ -45,6 +45,7 @@ import org.jetel.plugin.Plugins;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.protocols.CloverURLStreamHandlerFactory;
 
 /*
  *  - runGraph.main()
@@ -133,6 +134,13 @@ public class runGraph {
             Enigma.getInstance().init(password);
         }
         
+        //init url protocols
+        try {
+			URL.setURLStreamHandlerFactory(new CloverURLStreamHandlerFactory());
+		} catch (Error e) {
+			logger.warn("SFtp protocol cannot be provided: " + e.getMessage());
+		}
+		
         //init framework constants
         Defaults.init();
 
