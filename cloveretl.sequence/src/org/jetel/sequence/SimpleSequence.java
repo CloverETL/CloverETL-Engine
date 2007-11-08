@@ -72,11 +72,11 @@ public class SimpleSequence extends GraphElement implements Sequence {
     
     public static Log logger = LogFactory.getLog(SimpleSequence.class);
     
-    String filename;
+    final String filename;
     long sequenceValue;
-    int step;
-    int start;
-    int numCachedValues;
+    final int step;
+    final int start;
+    final int numCachedValues;
     boolean alreadyIncremented = false;
     
     int counter;
@@ -113,7 +113,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
     
     synchronized public long currentValueLong(){
         if(!isInitialized()) {
-            throw new RuntimeException("Can't get currentValue for not initialized sequence.");
+            throw new RuntimeException("Can't get currentValue for non-initialized sequence "+getId());
         }
 
         return alreadyIncremented ? sequenceValue - step : sequenceValue;
@@ -121,7 +121,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
     
     synchronized public long nextValueLong(){
         if(!isInitialized()) {
-            throw new RuntimeException("Can't call nextValue for not initialized sequence.");
+            throw new RuntimeException("Can't call nextValue for non-initialized sequence "+getId());
         }
 
         if (counter<=0){
@@ -154,7 +154,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
     
     synchronized public void reset(){
         if(!isInitialized()) {
-            throw new RuntimeException("Can't reset not initialized sequence.");
+            throw new RuntimeException("Can't reset non-initialized sequence "+getId());
         }
         sequenceValue=start;
         alreadyIncremented = false;
@@ -187,7 +187,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
                 lock = io.tryLock();
                 if (lock == null) {
                     // report non-locked sequence
-                    logger.warn("Can't obtain file lock for sequence: " + getName());
+                    logger.warn("Can't obtain file lock for sequence: " + getName()+" id: "+getId());
                 }
                 io.force(true);
                 io.read(buffer);
@@ -209,8 +209,8 @@ public class SimpleSequence extends GraphElement implements Sequence {
             io.position(0);
             io.write(buffer);
         }catch(IOException ex){
-            logger.error("I/O error when accessing sequence "+getName()+" - "+ex.getMessage());
-            throw new RuntimeException("I/O error when accessing sequence "+getName()+" - "+ex.getMessage());
+            logger.error("I/O error when accessing sequence "+getName()+" id: "+getId()+" - "+ex.getMessage(),ex);
+            throw new RuntimeException("I/O error when accessing sequence "+getName()+" id: "+getId()+" - "+ex.getMessage(),ex);
         }
     }
     
@@ -224,19 +224,21 @@ public class SimpleSequence extends GraphElement implements Sequence {
         try {
             if (lock != null) {
                 lock.release();
+                lock=null;
             }
             if (io != null && io.isOpen()) {
                 io.close();
+                io=null;
             }
         } catch (IOException ex) {
-            logger.error("I/O error when accessing sequence " + getName() + " - " + ex.getMessage());
+            logger.error("I/O error when freeing sequence " + getName() + " - " + ex.getMessage(),ex);
             //throw new RuntimeException("I/O error when accessing sequence " + getName() + " - " + ex.getMessage());
         }
     }
     
-    public void delete() {
+    public synchronized void delete() {
         if(!isInitialized()) {
-            throw new RuntimeException("Can't delete not initialized sequence.");
+            throw new RuntimeException("Can't delete non-initialized sequence "+getId());
         }
         File sequenceFile;
         free();
@@ -262,9 +264,6 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		return filename;
 	}
 
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
 
 	static public SimpleSequence fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
