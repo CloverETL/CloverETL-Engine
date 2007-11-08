@@ -29,7 +29,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.Base64;
+import org.jetel.util.crypto.Base64;
 
 /**
  * Calculates MD5 on the aggregation group.
