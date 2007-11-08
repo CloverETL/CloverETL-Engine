@@ -44,10 +44,10 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.ByteBufferUtils;
-import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.DynamicJavaCode;
-import org.jetel.util.FileUtils;
+import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.compile.DynamicJavaCode;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
 /**

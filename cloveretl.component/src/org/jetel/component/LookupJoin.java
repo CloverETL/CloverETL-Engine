@@ -40,9 +40,9 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.FileUtils;
-import org.jetel.util.StringUtils;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**

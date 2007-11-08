@@ -37,7 +37,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.Base64;
+import org.jetel.util.crypto.Base64;
 
 /**
  *  Represent aggregate function of agregate component.

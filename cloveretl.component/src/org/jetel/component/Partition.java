@@ -49,11 +49,11 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.RangeLookupTable;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.DynamicJavaCode;
-import org.jetel.util.FileUtils;
-import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.compile.DynamicJavaCode;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
