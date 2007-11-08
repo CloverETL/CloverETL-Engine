@@ -46,8 +46,11 @@ import java.util.zip.ZipOutputStream;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.MultiOutFile;
+import org.jetel.util.protocols.sftp.SFTPConnection;
 
 import sun.misc.BASE64Encoder;
+
+import com.jcraft.jsch.ChannelSftp;
 /**
  *  Helper class with some useful methods regarding file manipulation
  *
@@ -296,7 +299,7 @@ public class FileUtils {
             //resolve url format for gzip files
     		isGzip = true;
     		input = input.substring(5);
-        } else if (input.startsWith("ftp")) {
+        } else if (input.startsWith("ftp") || input.startsWith("sftp") || input.startsWith("scp")) {
         	isFtp = true;
         }
 
@@ -304,8 +307,10 @@ public class FileUtils {
         OutputStream os = null;
 		if(isFtp) {
 			// ftp output stream
-			URL url = FileUtils.getFileURL(contextURL, input); 
-			os = url.openConnection().getOutputStream();
+			URL url = FileUtils.getFileURL(contextURL, input);
+			URLConnection urlConnection = url.openConnection();
+			if (urlConnection instanceof SFTPConnection) ((SFTPConnection)urlConnection).setMode(appendData ? ChannelSftp.APPEND : ChannelSftp.OVERWRITE);
+			os = urlConnection.getOutputStream();
 		} else {
 			// file input stream 
 			os = new FileOutputStream(input, appendData);
