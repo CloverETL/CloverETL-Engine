@@ -23,7 +23,7 @@
 /**
  * 
  */
-package org.jetel.util;
+package org.jetel.util.string;
 
 import java.io.IOException;
 import java.io.Reader;

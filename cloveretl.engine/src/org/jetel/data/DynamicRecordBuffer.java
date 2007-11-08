@@ -19,8 +19,8 @@
 */
 package org.jetel.data;
 
-import static org.jetel.util.ByteBufferUtils.decodeLength;
-import static org.jetel.util.ByteBufferUtils.encodeLength;
+import static org.jetel.util.bytes.ByteBufferUtils.decodeLength;
+import static org.jetel.util.bytes.ByteBufferUtils.encodeLength;
 
 import java.io.File;
 import java.io.IOException;

@@ -19,7 +19,7 @@
  * Created on 24.11.2005
  *
  */
-package org.jetel.util;
+package org.jetel.util.primitive;
 
 import java.util.ArrayList;
 import java.util.Iterator;

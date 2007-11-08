@@ -23,6 +23,8 @@ package org.jetel.util;
 
 import java.util.Properties;
 
+import org.jetel.util.string.StringUtils;
+
 /**
  * Class for creating command from string pieces and parameters
  * 

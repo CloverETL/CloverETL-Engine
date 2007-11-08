@@ -33,7 +33,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.StringUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  *  This class serves the role of DataRecords comparator.<br>

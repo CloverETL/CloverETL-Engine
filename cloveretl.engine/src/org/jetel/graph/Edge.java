@@ -234,13 +234,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 			}
 		}
 		if (edge == null) {
-			if (edgeType == EdgeTypeEnum.BUFFERED) {
-			    edge = new BufferedEdge(this);
-			} else if (edgeType == EdgeTypeEnum.PHASE_CONNECTION) {
-			    edge = new PhaseConnectionEdge(this);
-			} else {
-				edge = edgeType == EdgeTypeEnum.DIRECT_FAST_PROPAGATE ? (EdgeBase) new DirectEdgeFastPropagate(this) : new DirectEdge(this);
-			}
+			edge = edgeType.createEdgeBase(this);
 		}
         if(debugMode) {
             String debugFileName = getDebugFileName();

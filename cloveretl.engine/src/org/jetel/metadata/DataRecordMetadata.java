@@ -30,9 +30,9 @@ import java.util.Properties;
 
 import org.jetel.data.Defaults;
 import org.jetel.exception.InvalidGraphObjectNameException;
-import org.jetel.util.BitArray;
-import org.jetel.util.StringUtils;
-import org.jetel.util.TypedProperties;
+import org.jetel.util.primitive.BitArray;
+import org.jetel.util.primitive.TypedProperties;
+import org.jetel.util.string.StringUtils;
 
 /**
  *  A class that represents metadata describing DataRecord

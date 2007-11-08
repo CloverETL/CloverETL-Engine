@@ -50,7 +50,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
-import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;

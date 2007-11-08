@@ -23,7 +23,7 @@ import org.apache.commons.logging.Log;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
-import org.jetel.util.StringUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Instances of this class are collected in ConfigurationStatus, which is return value of

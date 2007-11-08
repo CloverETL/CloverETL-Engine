@@ -30,7 +30,7 @@ import java.util.Map.Entry;
 import org.jetel.data.Defaults;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.ExtensionParameter;
-import org.jetel.util.StringUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  * JDBC driver descriptor. This class is a container for all information loaded from 'jdbcDriver' extension point.

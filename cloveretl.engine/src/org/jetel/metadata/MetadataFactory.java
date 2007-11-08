@@ -26,7 +26,7 @@ import java.nio.channels.Channels;
 import java.sql.SQLException;
 
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.FileUtils;
+import org.jetel.util.file.FileUtils;
 import org.w3c.dom.DOMException;
 
 

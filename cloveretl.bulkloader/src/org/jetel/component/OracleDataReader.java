@@ -40,13 +40,13 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.StringUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.FileDataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.PortDataConsumer;
 import org.jetel.util.exec.ProcBox;
+import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**

@@ -26,6 +26,8 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jetel.util.string.StringUtils;
+
 /**
  * @author avackova (agata.vackova@javlinconsulting.cz) ; 
  * (c) JavlinConsulting s.r.o.

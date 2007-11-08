@@ -1,4 +1,4 @@
-package org.jetel.util;
+package org.jetel.util.crypto;
 /**
  * Encodes and decodes to and from Base64 notation.
  *

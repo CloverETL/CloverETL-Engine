@@ -19,7 +19,7 @@
 */
 package org.jetel.plugin;
 
-import org.jetel.util.StringUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  * This class represents plugin prerequisite. Plugin depends on plugin defined by this class.

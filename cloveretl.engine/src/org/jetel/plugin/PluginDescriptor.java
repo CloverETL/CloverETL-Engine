@@ -35,8 +35,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.util.FileUtils;
-import org.jetel.util.StringUtils;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 

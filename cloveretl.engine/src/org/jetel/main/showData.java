@@ -52,8 +52,8 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeParameters;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.FileUtils;
 import org.jetel.util.JetelVersion;
+import org.jetel.util.file.FileUtils;
 
 /**
  *  class for reading and showing data over input components<br><br>

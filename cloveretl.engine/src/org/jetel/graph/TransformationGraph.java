@@ -45,9 +45,9 @@ import org.jetel.graph.runtime.CloverRuntime;
 import org.jetel.graph.runtime.GraphRuntimeParameters;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.FileUtils;
-import org.jetel.util.PropertyRefResolver;
-import org.jetel.util.TypedProperties;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.primitive.TypedProperties;
+import org.jetel.util.property.PropertyRefResolver;
 /*
  *  import org.apache.log4j.Logger;
  *  import org.apache.log4j.BasicConfigurator;

@@ -35,9 +35,9 @@ import org.jetel.interpreter.Stack;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
-import org.jetel.util.Compare;
 import org.jetel.util.DateUtils;
-import org.jetel.util.StringUtils;
+import org.jetel.util.string.Compare;
+import org.jetel.util.string.StringUtils;
 
 public class StringLib extends TLFunctionLibrary {
 

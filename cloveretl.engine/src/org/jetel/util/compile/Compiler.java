@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.util;
+package org.jetel.util.compile;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author Martin Zatopek, JavlinConsulting,s.r.o.

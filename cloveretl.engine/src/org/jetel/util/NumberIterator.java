@@ -3,6 +3,8 @@ package org.jetel.util;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import org.jetel.util.string.StringUtils;
+
 
 /**
  * Class for resolving integer number from given mask.<br>

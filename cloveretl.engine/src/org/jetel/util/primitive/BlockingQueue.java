@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.util;
+package org.jetel.util.primitive;
 
 /**
  * Implementation of simple queue (First In First Out - FIFO), bounded and blocking queue.
@@ -39,7 +39,7 @@ public class BlockingQueue extends Queue {
 	/**
 	 * Adds item at the end of FIFO.
 	 * If queue is full wait.
-	 * @see org.jetel.util.Queue#add(java.lang.Object)
+	 * @see org.jetel.util.primitive.Queue#add(java.lang.Object)
 	 */
 	synchronized public boolean add(Object item) {
 		while(isFull()) {
@@ -57,7 +57,7 @@ public class BlockingQueue extends Queue {
 	 * Gets the next element stored in the FIFO (in FIFO order) - the oldest one
 	 * If queue is empty wait.
 	 * @return Oldest object in the FIFO, null upon empty FIFO
-	 * @see org.jetel.util.Queue#get()
+	 * @see org.jetel.util.primitive.Queue#get()
 	 */
 	synchronized public Object get() {
 		while(isEmpty()) {
@@ -89,21 +89,21 @@ public class BlockingQueue extends Queue {
 	}
 
 	/**
-	 * @see org.jetel.util.Queue#isEmpty()
+	 * @see org.jetel.util.primitive.Queue#isEmpty()
 	 */
 	synchronized public boolean isEmpty() {
 		return super.isEmpty();
 	}
 	
 	/**
-	 * @see org.jetel.util.Queue#isFull()
+	 * @see org.jetel.util.primitive.Queue#isFull()
 	 */
 	synchronized public boolean isFull() {
 		return super.isFull();
 	}
 	
 	/**
-	 * @see org.jetel.util.Queue#removeAll()
+	 * @see org.jetel.util.primitive.Queue#removeAll()
 	 */
 	synchronized public void removeAll() {
 		super.removeAll();

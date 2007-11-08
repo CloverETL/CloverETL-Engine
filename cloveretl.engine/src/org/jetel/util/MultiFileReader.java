@@ -37,6 +37,8 @@ import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.WcardPattern;
 
 /**
  * A class for transparent reading of clover data records from multiple input files.

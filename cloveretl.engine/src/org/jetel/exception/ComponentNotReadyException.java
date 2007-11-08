@@ -24,7 +24,7 @@ package org.jetel.exception;
 
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
-import org.jetel.util.StringUtils;
+import org.jetel.util.string.StringUtils;
 
 /** A class that represents general Jetel exception
  * 

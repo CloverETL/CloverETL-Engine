@@ -41,7 +41,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ByteBufferUtils;
+import org.jetel.util.bytes.ByteBufferUtils;
 
 
 /**

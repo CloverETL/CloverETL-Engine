@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.util;
+package org.jetel.util.compile;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -32,6 +32,7 @@ import java.util.zip.Checksum;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.util.file.FileUtils;
 
 /**
  * Helper class for dynamic compiling of Java source code. Offers instantiating of compiled code.

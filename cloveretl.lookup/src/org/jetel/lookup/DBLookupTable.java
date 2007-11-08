@@ -48,9 +48,9 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.SimpleCache;
-import org.jetel.util.StringUtils;
+import org.jetel.util.primitive.SimpleCache;
+import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**

@@ -10,7 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
-import org.jetel.util.StringUtils;
+import org.jetel.util.string.StringUtils;
 
 
 /**

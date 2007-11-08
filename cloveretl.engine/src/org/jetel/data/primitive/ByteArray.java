@@ -27,8 +27,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.util.Base64;
-import org.jetel.util.ZipUtils;
+import org.jetel.util.crypto.Base64;
+import org.jetel.util.file.ZipUtils;
 
 /**
  * A class that represents dynamic array of bytes.<br>

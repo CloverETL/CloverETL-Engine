@@ -25,7 +25,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
 

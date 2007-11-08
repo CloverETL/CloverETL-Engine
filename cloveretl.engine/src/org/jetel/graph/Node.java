@@ -43,7 +43,7 @@ import org.jetel.graph.runtime.CloverRuntime;
 import org.jetel.graph.runtime.ErrorMsgBody;
 import org.jetel.graph.runtime.Message;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.StringUtils;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 

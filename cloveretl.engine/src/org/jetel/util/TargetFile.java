@@ -13,6 +13,7 @@ import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.provider.FormatterProvider;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileUtils;
 
 /**
  * TargetFile is used for basic operation over output files or streams and formatter. It support methods
