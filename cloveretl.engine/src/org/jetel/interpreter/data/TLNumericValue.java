@@ -1,0 +1,150 @@
+/*
+ *    jETeL/Clover - Java based ETL application framework.
+ *    Copyright (C) 2002-2007  David Pavlis <david.pavlis@centrum.cz> and others.
+ *    
+ *    This library is free software; you can redistribute it and/or
+ *    modify it under the terms of the GNU Lesser General Public
+ *    License as published by the Free Software Foundation; either
+ *    version 2.1 of the License, or (at your option) any later version.
+ *    
+ *    This library is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ *    Lesser General Public License for more details.
+ *    
+ *    You should have received a copy of the GNU Lesser General Public
+ *    License along with this library; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Created on 31.10.2007 by dadik
+ *
+ */
+
+package org.jetel.interpreter.data;
+
+import org.jetel.data.DataField;
+import org.jetel.data.primitive.CloverDouble;
+import org.jetel.data.primitive.CloverInteger;
+import org.jetel.data.primitive.CloverLong;
+import org.jetel.data.primitive.DecimalFactory;
+import org.jetel.data.primitive.Numeric;
+
+@SuppressWarnings("unchecked")
+public class TLNumericValue<T extends Numeric> extends TLValue {
+
+	  public static final TLValue NUM_ZERO_VAL = new TLNumericValue(TLValueType.INTEGER,new CloverInteger(0));
+	  public static final TLValue NUM_ONE_VAL = new TLNumericValue(TLValueType.INTEGER,new CloverInteger(1)); 
+	  public static final TLValue NUM_MINUS_ONE_VAL = new TLNumericValue(TLValueType.INTEGER,new CloverInteger(-1)); 
+	  public static final TLValue NUM_PI_VAL = new TLNumericValue(TLValueType.DOUBLE,new CloverDouble(Math.PI));
+	  public static final TLValue NUM_E_VAL = new TLNumericValue(TLValueType.DOUBLE,new CloverDouble(Math.E));
+	
+	
+		private T value;
+	
+		public TLNumericValue(TLValueType type){
+			super(type);
+			switch(type){
+			case INTEGER:
+	            value= (T) new CloverInteger(0);
+	        case DOUBLE:
+	            value= (T)new CloverDouble(0);
+	        case LONG:
+	            value= (T)new CloverLong(0);
+	        case DECIMAL:
+	            value= (T)DecimalFactory.getDecimal();
+			}
+		}
+	
+		public TLNumericValue(TLValueType type,T value){
+			super(type);
+			this.value=value;
+		}
+		
+		
+		public T getValue(){
+			return value;
+		}
+		
+		public int getInteger(){
+			return value.getInt();
+		}
+		
+		public long getLong(){
+			return value.getLong();
+		}
+		
+		public double getDouble(){
+			return value.getDouble();
+		}
+		
+		public Numeric getNumeric(){
+			return value;
+		}
+		
+		
+		public void setValue(Object _value){
+			throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
+		}
+
+		public void setValue(Numeric value){
+			this.value.setValue(value);
+			
+		}
+		
+		public void setValue(Number value){
+			this.value.setValue(value);
+		}
+		
+		public void setInt(int value){
+			this.value.setValue(value);
+		}
+		
+		public void setLong(long value){
+			this.value.setValue(value);
+			
+		}
+		
+		public void setDouble(double value){
+			this.value.setValue(value);
+			
+		}
+		
+		@Override public int compareTo(TLValue o){
+			   if (this.value==null) return -1;
+		        else if (o.getValue()==null) return 1;
+			   if (! o.type.isNumeric()) throw new IllegalArgumentException("Can't compare value type: " + type + " with type: "+o.type);
+			   return this.value.compareTo((Numeric)o);
+		}
+		
+	  @Override
+ 	  public int hashCode() {
+		      return value.hashCode();
+	 }
+
+	  
+	  	  
+	public void copyToDataField(DataField field) {
+		if (field instanceof Numeric){
+			field.setValue(value);
+		}else{
+			field.fromString(field.toString());
+		}
+		
+	}
+
+
+	public TLValue duplicate() {
+		TLNumericValue<Numeric> newVal=new TLNumericValue<Numeric>(type);
+		newVal.value=value.duplicateNumeric();
+		return newVal;
+	}
+
+	public void setValue(DataField field) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override public String toString(){
+		return value.toString();
+	}
+}

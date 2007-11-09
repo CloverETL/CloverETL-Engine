@@ -23,51 +23,51 @@
  */
 package org.jetel.interpreter.data;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.jetel.data.DataField;
-import org.jetel.data.primitive.Numeric;
 
-import com.sun.org.apache.xpath.internal.operations.Equals;
 
+/**
+ * Named Container for TLLanguage values
+ * 
+ * 
+ * @author dpavlis <david.pavlis@javlinconsulting.cz>
+ *
+ */
 public class TLVariable {
       
     TLValue value;
     protected String name;
+    TLValueType type;
+    boolean isNull;
     
     public TLVariable(String name,TLValue value) {
         this.value=value;
+        this.type=value.getType();
         this.name=name;
+        this.isNull= (value==TLValue.NULL_VAL) ? false :true;
     }
     
     public TLVariable(String name,TLValueType type) {
         this.name=name;
-        this.value=new TLValue(type);
-    }
-    
-    protected TLVariable(String name) {
-        this.name=name;
-        this.value=null;
+        this.type=type;
+        this.value=TLValue.create(type);
+        this.isNull=true;
     }
     
     public TLValueType getType() {
-        return value.type;
+        return type;
     }
     
     public final boolean isPrimitive() {
-        return value.type.isPrimitive();
+        return type.isPrimitive();
     }
  
     public final boolean isArray() {
-        return value.type.isArray();
+        return type.isArray();
     }
     
     public final  boolean isMap() {
-        return value.type==TLValueType.MAP;
+        return type==TLValueType.MAP;
     }
     
     public final boolean isObject() {
@@ -75,76 +75,64 @@ public class TLVariable {
     }
     
     public boolean isNULL() {
-        return value.isNull();
+        return isNull;
     }
     
     public String getName() {
         return name;
     }
     
-    public int getLength() {
-        return -1;
-    }
     
     public TLValue getValue() {
-        return value;
+        return isNull ? TLValue.NULL_VAL:value;
     }
     
-    public TLValue getValue(int index) {
-     throw new UnsupportedOperationException() ;
-            
+    public boolean setValue(TLValue value) {
+    	if (value==TLValue.NULL_VAL){
+    		isNull=true;
+    		return true;
+    	}
+   		this.value.setValue(value);
+   		return true;
     }
     
-    public TLValue getValue(String key) {
-        throw new UnsupportedOperationException() ;
+    public boolean setValue(TLVariable variable) {
+    	if (variable.isNull){
+    		isNull=true;
+    		return true;
+    	}
+   		this.value.setValue(variable.value);
+    	return false;
     }
     
-    public void setValue(TLValue value) {
-    	//small hack
-        if (this.value.type!=value.type&&this.value.type.isNumeric()) {
-            this.value.getNumeric().setValue(value.getNumeric());
-        }else {
-			if (value.type != TLValueType.NULL) {
-				this.value = value;
-			}else{
-				this.value = new TLValue(this.getType(), null);
-			}
-        }
-    }
-    
+        
     public boolean setValueStrict(TLValue value) {
-        if (this.value.type == value.type) {
-            this.value = value;
+    	if (value==TLValue.NULL_VAL){
+    		isNull=true;
+    		return true;
+    	}
+    	if (this.value.type == value.type) {
+            this.value.setValue(value);
             return true;
         } else {
             return false;
         }
     }
     
-    public void setValue(int index,TLValue value) {
-        throw new UnsupportedOperationException() ;
+    public boolean setValue(int index,TLValue value) {
+    	((TLContainerValue)this.value).setStoredValue(index,value);
+    	return true;
     }
     
-    public void setValue(String key,TLValue value) {
-        throw new UnsupportedOperationException() ;
+    public boolean setValue(TLValue key,TLValue value) {
+    	((TLContainerValue)this.value).setStoredValue(key,value);
+   		return true;
     }
     
     public void setValue(DataField fieldValue) {
-       setValue(new TLValue(fieldValue));
+    	this.value.setValue(fieldValue);
     }
     
-    public void setValueStrict(DataField fieldValue) {
-        setValueStrict(new TLValue(fieldValue));
-     }
-   
-    public void setValue(int index,DataField fieldValue) {
-        throw new UnsupportedOperationException() ;
-    }
-    
-    public void setValue(String key,DataField fieldValue) {
-        throw new UnsupportedOperationException() ;
-    }
- 
     @Override
     public int hashCode() {
         return name.hashCode();
@@ -152,12 +140,12 @@ public class TLVariable {
     
     @Override public boolean equals(Object obj) {
         if (obj instanceof TLVariable) {
-            return ((TLVariable)obj).name.equals(name);
+            return ((TLVariable)obj).name.equals(name) && ((TLVariable)obj).type==type;
         }
         return false;
     }
     
     @Override public String toString() {
-        return name+" : "+value.type.getName()+" : "+value.toString();
+        return name+" : "+type.getName()+" : "+value.toString();
     }
 }
