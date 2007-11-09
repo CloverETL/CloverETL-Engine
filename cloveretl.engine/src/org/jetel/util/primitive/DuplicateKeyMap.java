@@ -50,6 +50,7 @@ public class DuplicateKeyMap implements Map {
     
     protected Map map;
     protected Object savedKey;
+    protected boolean savedKeyIsNull = false;
     protected int savedIndex;
     protected ArrayList savedData;
     protected static final Iterator emptyIterator = new Iterator() {
@@ -183,6 +184,7 @@ public class DuplicateKeyMap implements Map {
      */
     public Object get(Object key) {
         ArrayList data=(ArrayList)map.get(key);
+        savedKeyIsNull = key == null;
         if (data!=null){
             savedKey=key;
             savedIndex=0;
@@ -199,10 +201,10 @@ public class DuplicateKeyMap implements Map {
      * which was used for the last get() method call.<br>
      * 
      * @return next value or null if no more values stored
-     * @see org.jetel.util.primitive.DuplicateKeyMap#get(java.lang.Object)
+     * @see org.jetel.util.DuplicateKeyMap#get(java.lang.Object)
      */
     public Object getNext() {
-        if (savedKey!=null){
+        if (savedKey!=null || savedKeyIsNull){
             savedIndex++;
             if (savedData.size()>savedIndex){
                 return savedData.get(savedIndex);
@@ -219,7 +221,7 @@ public class DuplicateKeyMap implements Map {
      * 
      * 
      * @return next value 
-     * @see org.jetel.util.primitive.DuplicateKeyMap#get(java.lang.Object)
+     * @see org.jetel.util.DuplicateKeyMap#get(java.lang.Object)
      */
     public Object getNext(Object key) {
         if (savedKey!=key){
