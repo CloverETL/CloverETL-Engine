@@ -6,6 +6,9 @@ import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
 
 public class CLVFEvalNode extends SimpleNode {
+	
+ public boolean expMode;
+	
   public CLVFEvalNode(int id) {
     super(id);
   }
@@ -18,5 +21,9 @@ public class CLVFEvalNode extends SimpleNode {
   /** Accept the visitor. **/
   public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
     return visitor.visit(this, data);
+  }
+  
+  public void setExpMode(boolean isExp){
+	  this.expMode=isExp;
   }
 }
