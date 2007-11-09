@@ -810,6 +810,22 @@ public class StringUtils {
     }
     
     /**
+     * Returns number of occurrences of given char in the char sequence
+     * 
+     * @param input input string
+     * @param ch char to find
+     * @return number of occurrences
+     */
+    public static int count(CharSequence input, char ch) {
+    	int result = 0;
+    	int index = -1;
+    	while ((index = indexOf(input, ch, index + 1)) > -1) {
+    		result++;
+    	}
+    	return result;
+    }
+    
+    /**
      * Translates single characters in a string to different characters:
      * replaces single characters at a time, translating the <i>n</i>th character in the match 
      * set with the <i>n</i>th character in the replacement set
@@ -819,7 +835,7 @@ public class StringUtils {
      * @param replaceSet replacing characters
      * @return original string with replaced requested characters
      */
-    public static CharSequence translate(CharSequence in, 
+    private static CharSequence translate(CharSequence in, 
     		CharSequence searchSet,	CharSequence replaceSet){
     	if (searchSet.length() < SEQUENTIAL_TRANLATE_LENGTH) {
     		return translateSequentialSearch(in, searchSet, replaceSet);
@@ -828,7 +844,7 @@ public class StringUtils {
     	}
     }
     
-    public static CharSequence translateOneByOne(CharSequence in, 
+    private static CharSequence translateOneByOne(CharSequence in, 
     		CharSequence searchSet,	CharSequence replaceSet){
     	Character[] result = new Character[in.length()];
     	for (int i=0; i< result.length; i++){
@@ -861,7 +877,7 @@ public class StringUtils {
     	return out;
     }
     
-    public static CharSequence translateMapSearch(CharSequence in, 
+    private static CharSequence translateMapSearch(CharSequence in, 
     		CharSequence searchSet,	CharSequence replaceSet){
     	HashMap<Character, Character> replacement = new HashMap<Character, Character>(searchSet.length());
     	int replaceSetLength = replaceSet.length();
@@ -884,7 +900,7 @@ public class StringUtils {
     	return result;
     }
     
-    public static CharSequence translateBinarySearch(CharSequence in, 
+    private static CharSequence translateBinarySearch(CharSequence in, 
     		CharSequence searchSet,	CharSequence replaceSet){
     	CharPair[] replacement = new CharPair[searchSet.length()];
     	int replaceSetLength = replaceSet.length();
