@@ -4,7 +4,7 @@ import java.util.HashMap;
 import junit.framework.TestCase;
 
 import org.jetel.connection.QueryAnalyzer;
-import org.jetel.util.DuplicateKeyMap;
+import org.jetel.util.primitive.DuplicateKeyMap;
 
 /*
  *    jETeL/Clover - Java based ETL application framework.

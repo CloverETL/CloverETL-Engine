@@ -35,8 +35,8 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.JetelException;
-import org.jetel.util.DuplicateKeyMap;
-import org.jetel.util.StringUtils;
+import org.jetel.util.primitive.DuplicateKeyMap;
+import org.jetel.util.string.StringUtils;
 
 /**
  * This class is prepared statement with CopySQLData[] object prepared to work with concrete record.

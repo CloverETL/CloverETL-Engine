@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jetel.util.DuplicateKeyMap;
-import org.jetel.util.StringUtils;
+import org.jetel.util.primitive.DuplicateKeyMap;
+import org.jetel.util.string.StringUtils;
 
 /**
  * This class can be used for analyzing sql queries which contain mapping between clover and db fields.
