@@ -18,6 +18,7 @@ Changes/bug fixes:
 	 - integer index_of(string, string, integer)
 + some components have optional "rejected port(s)" (AproxMergeJoin, CheckForeignKey, DBJoin, 
 	LookupJoin)
++ DBOutputTable can accept more query at once. New jetel-sql query syntax introduced.
 
 REL 2-3-1 
 ---------
