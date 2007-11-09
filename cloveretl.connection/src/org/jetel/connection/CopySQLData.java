@@ -41,6 +41,7 @@ import org.jetel.data.DecimalDataField;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
 import org.jetel.data.NumericDataField;
+import org.jetel.data.RecordKey;
 import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.HugeDecimal;
@@ -250,7 +251,34 @@ public abstract class CopySQLData {
 		return transMap;
 	}
 
-	
+	/**
+	 *  Creates translation array for copying data from Database record into Jetel
+	 *  record
+	 *
+	 * @param fieldTypes
+	 * @param metadata Metadata describing Jetel data record
+	 * @param record Jetel data record
+	 * @param keyFields fields used for creating translation array
+	 * @return Array of CopySQLData objects which can be used when getting
+	 *      data from DB into Jetel record
+	 */
+	public static CopySQLData[] sql2JetelTransMap(List fieldTypes, DataRecordMetadata metadata, DataRecord record,
+			String[] keyFields){
+
+		if (fieldTypes.size() != keyFields.length){
+			throw new RuntimeException("Number of db fields (" + fieldTypes.size() + ") is diffrent then " +
+					"number of key fields " + keyFields.length + ")." );
+		}
+		CopySQLData[] transMap = new CopySQLData[fieldTypes.size()];
+		for (int i=0; i < keyFields.length; i++) {
+			transMap[i] = createCopyObject(((Integer) fieldTypes.get(i)).shortValue(),
+					record.getField(keyFields[i]).getMetadata(),
+					record, i, metadata.getFieldPosition(keyFields[i]));
+		}
+		
+		return transMap;
+		
+	}
 
 	/**
 	 *  Creates translation array for copying data from Jetel record into Database
