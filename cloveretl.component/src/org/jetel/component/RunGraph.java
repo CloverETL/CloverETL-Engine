@@ -114,12 +114,14 @@ import org.w3c.dom.Element;
  *&lt;attr name="outputFile"&gt;data/data.txt&lt;/attr&gt;
  *&lt;/Node&gt;
  *</pre>
+ *
 /**
 * @author jvicenik <juraj.vicenik@javlinconsulting.cz> ; 
 * (c) JavlinConsulting s.r.o.
 *	www.javlinconsulting.cz
 *	@created September 26, 2007
  */
+
 public class RunGraph extends Node{
 		
 	private static final String XML_ERROR_LINES_ATTRIBUTE = "capturedErrorLines";
@@ -129,17 +131,15 @@ public class RunGraph extends Node{
 	private final static String cloverCmdLine = "java -cp";
 	private final static String cloverRunClass = "org.jetel.main.runGraph";
 	
-	
 	public static String COMPONENT_TYPE = "RUN_GRAPH";
-
+	
 	private final static int INPUT_PORT = 0;
 	private final static int OUTPUT_PORT = 0;
 	
 	private final static int ERROR_LINES=2;
 
 	public  final static long KILL_PROCESS_WAIT_TIME = 1000;
-	
-	 	
+		 	
 	private String graphName = null;
 	private String classPath;
 	private int capturedErrorLines;
@@ -320,7 +320,7 @@ public class RunGraph extends Node{
 		Process	process;
 		
 		logger.info("Processing file " + graphName);
-		String commandLine = cloverCmdLine + " " + classPath + " " + cloverRunClass + " " + org.jetel.main.runGraph.cmdLineArgs + " " + graphName;
+		String commandLine = cloverCmdLine + " " + classPath + " " + cloverRunClass + " " + org.jetel.main.runGraph.getCmdLineArgs() + " " + graphName;
 		logger.info("Executing command: \"" + commandLine + "\"");
 		
 		process = Runtime.getRuntime().exec(commandLine);
