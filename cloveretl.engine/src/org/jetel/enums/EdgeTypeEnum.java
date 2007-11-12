@@ -3,6 +3,7 @@ package org.jetel.enums;
 import java.lang.reflect.InvocationTargetException;
 
 import org.jetel.graph.BufferedEdge;
+import org.jetel.graph.DirectEdge;
 import org.jetel.graph.DirectEdgeFastPropagate;
 import org.jetel.graph.Edge;
 import org.jetel.graph.EdgeBase;
@@ -11,7 +12,7 @@ import org.jetel.graph.PhaseConnectionEdge;
 
 public enum EdgeTypeEnum {
 	/**  Proxy represents Direct Edge */
-	DIRECT("direct", BufferedEdge.class),
+	DIRECT("direct", DirectEdge.class),
 	/**  Proxy represents Direct Edge fast propagate */
 	DIRECT_FAST_PROPAGATE("directFastPropagate", DirectEdgeFastPropagate.class),
 	/**  Proxy represents Buffered Edge */
