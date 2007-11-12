@@ -83,7 +83,7 @@ public class RecordTransformTL implements RecordTransform {
 		
 		wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
 		
-		return result == null ? true : result.getBoolean();
+		return result == null ? true : (result==TLValue.TRUE_VAL);
  	}
 
 	
@@ -91,7 +91,7 @@ public class RecordTransformTL implements RecordTransform {
 			throws TransformException{
 		TLValue result = wrapper.executePreparedFunction(inputRecords,
 				outputRecords,null);
-		return result == null ? true : result.getBoolean();
+		return result == null ? true : (result==TLValue.TRUE_VAL);
     }
 	
 
