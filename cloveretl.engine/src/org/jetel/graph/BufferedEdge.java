@@ -116,8 +116,9 @@ public class BufferedEdge extends EdgeBase {
 	 */
 
 	public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
-        inputRecordCounter++;
-        return recordBuffer.readRecord(record);
+        DataRecord ret = recordBuffer.readRecord(record);
+        if(ret != null) inputRecordCounter++;
+        return ret;
     }
 
 
@@ -131,8 +132,9 @@ public class BufferedEdge extends EdgeBase {
 	 * @since                            August 13, 2002
 	 */
 	public boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
-        inputRecordCounter++;
-        return recordBuffer.readRecod(record);
+        boolean ret = recordBuffer.readRecord(record);
+        if(ret) inputRecordCounter++;
+        return ret;
     }
 
 
@@ -145,8 +147,8 @@ public class BufferedEdge extends EdgeBase {
 	 * @since                            April 2, 2002
 	 */
 	public void writeRecord(DataRecord record) throws IOException, InterruptedException {
-        outputRecordCounter++;
         byteCounter += recordBuffer.writeRecord(record);
+        outputRecordCounter++;
 	}
 
 
@@ -159,8 +161,8 @@ public class BufferedEdge extends EdgeBase {
 	 * @since                            August 13, 2002
 	 */
 	public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
-        outputRecordCounter++;
 	    byteCounter += recordBuffer.writeRecord(record);
+        outputRecordCounter++;
     }
 
 	/**
