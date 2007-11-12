@@ -139,6 +139,9 @@ public class DataFieldMetadata implements Serializable {
 
 	/**  Description of the Field */
 	public final static char BYTE_FIELD = 'B';
+	
+	/**  Description of the Field */
+	public final static char BOOLEAN_FIELD = 'b';
 
 	/**  Description of the Field */
 	public final static char BYTE_FIELD_COMPRESSED = 'Z';
@@ -627,6 +630,8 @@ public class DataFieldMetadata implements Serializable {
 				return "long";
 			case DataFieldMetadata.DECIMAL_FIELD:
 			    return "decimal";
+			case DataFieldMetadata.BOOLEAN_FIELD:
+			    return "boolean";
 			case DataFieldMetadata.BYTE_FIELD:
 			    return "byte";
 			case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
@@ -653,6 +658,8 @@ public class DataFieldMetadata implements Serializable {
 		    return DataFieldMetadata.LONG_FIELD;
 		else if(fieldType.compareToIgnoreCase("decimal") == 0)
 		    return DataFieldMetadata.DECIMAL_FIELD;
+		else if(fieldType.compareToIgnoreCase("boolean") == 0)
+		    return DataFieldMetadata.BOOLEAN_FIELD;
 		else if(fieldType.compareToIgnoreCase("byte") == 0)
 		    return DataFieldMetadata.BYTE_FIELD;
 		else if(fieldType.compareToIgnoreCase("cbyte") == 0)
