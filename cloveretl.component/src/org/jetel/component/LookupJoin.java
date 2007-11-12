@@ -305,7 +305,9 @@ public class LookupJoin extends Node {
 
 	@Override
 	public void free() {
+        if(!isInitialized()) return;
 		super.free();
+		
 		if (freeLookupTable) {
 			lookupTable.free();
 		}
@@ -347,7 +349,9 @@ public class LookupJoin extends Node {
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		// Initializing lookup table
 		lookupTable = getGraph().getLookupTable(lookupTableName);
 		if (lookupTable == null) {

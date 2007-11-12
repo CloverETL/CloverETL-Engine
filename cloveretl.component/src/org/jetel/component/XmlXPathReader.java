@@ -229,7 +229,9 @@ public class XmlXPathReader extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
         // initialize multifile reader based on prepared parser
         reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
         reader.setLogger(logger);

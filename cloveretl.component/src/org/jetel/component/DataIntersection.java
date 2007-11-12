@@ -366,7 +366,9 @@ public class DataIntersection extends Node {
 	 * @since April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		if (slaveOverrideKeys == null) {
 			slaveOverrideKeys = joinKeys;
 		}

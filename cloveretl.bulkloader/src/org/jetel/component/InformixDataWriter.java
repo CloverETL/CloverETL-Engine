@@ -363,6 +363,7 @@ public class InformixDataWriter extends Node {
      * @since                                  April 4, 2002
      */
     public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
 
 		isDataReadFromPort = !getInPorts().isEmpty() && StringUtils.isEmpty(command);
@@ -509,6 +510,7 @@ public class InformixDataWriter extends Node {
     
     @Override
 	public synchronized void free() {
+        if(!isInitialized()) return;
 		super.free();
 		deleteCommandFile();
 		deleteDataFile();

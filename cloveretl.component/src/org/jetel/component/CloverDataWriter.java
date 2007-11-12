@@ -205,7 +205,9 @@ public class CloverDataWriter extends Node {
 	
 	@Override
 	public synchronized void free() {
+        if(!isInitialized()) return;
 		super.free();
+		
 		formatter.close();
 		try {
 			out.close();
@@ -239,7 +241,9 @@ public class CloverDataWriter extends Node {
 	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		inPort = getInputPort(READ_FROM_PORT);
 		metadata = inPort.getMetadata();
 		try{//create output stream and rewrite existing data

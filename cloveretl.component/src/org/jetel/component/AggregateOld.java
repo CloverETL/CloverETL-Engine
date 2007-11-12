@@ -177,6 +177,7 @@ public class AggregateOld extends Node {
 	 * Initialize method of aggregate component
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
 		
 		recordKey = new RecordKey(aggregateKeys, getInputPort(READ_FROM_PORT).getMetadata());

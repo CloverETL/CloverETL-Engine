@@ -222,7 +222,9 @@ public class StructureWriter extends Node {
 	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		initLookupTable();
 
 		// based on file mask, create/open output file

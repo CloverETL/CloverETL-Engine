@@ -244,7 +244,9 @@ public class DBJoin extends Node {
 	
 	@Override
 	public void free() {
+        if(!isInitialized()) return;
 		super.free();
+		
 		lookupTable.free();
 	}
 
@@ -306,7 +308,9 @@ public class DBJoin extends Node {
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		//Initializing lookup table
 		IConnection conn = getGraph().getConnection(connectionName);
         if(conn == null) {

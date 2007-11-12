@@ -440,6 +440,7 @@ public class RunGraph extends Node{
 		
 	@Override
 	public void free() {
+        if(!isInitialized()) return;
 		super.free();		
 	}	
 
@@ -447,6 +448,7 @@ public class RunGraph extends Node{
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	@Override public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
 	
 		//prepare output file

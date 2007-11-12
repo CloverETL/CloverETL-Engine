@@ -411,6 +411,7 @@ public class DBConnection extends GraphElement implements IConnection {
      * @exception  SQLException  Description of the Exception
      */
     synchronized public void free() {
+        if(!isInitialized()) return;
         super.free();
 
         if(threadSafeConnections) {

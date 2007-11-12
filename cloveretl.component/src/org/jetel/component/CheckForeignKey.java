@@ -184,6 +184,7 @@ import org.w3c.dom.Element;
          *                Description of the Exception
          */
         public void init() throws ComponentNotReadyException {
+            if(isInitialized()) return;
     		super.init();
 
     		(primaryKey = new RecordKey(primaryKeys, getInputPort(PRIMARY_ON_PORT)

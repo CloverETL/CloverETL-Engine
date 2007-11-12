@@ -119,7 +119,9 @@ public class SimpleCopy extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 		if (recordBuffer == null) {
 			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:" +

@@ -564,6 +564,9 @@ public class AproxMergeJoin extends Node {
 	
 	
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
+        super.init();
+        
         //Checking metadata on input and on  NOT_MATCH_DRIVER_OUT and NOT_MATCH_SLAVE_OUT outputs
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[2];
 		inMetadata[0]=getInputPort(DRIVER_ON_PORT).getMetadata();

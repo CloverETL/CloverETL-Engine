@@ -246,7 +246,9 @@ public class MultiLevelReader extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		if (seltor == null && seltorCode != null) {
 			seltor = createSelectorDynamic(seltorCode);
 		} else {

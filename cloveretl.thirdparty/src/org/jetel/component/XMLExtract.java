@@ -911,7 +911,9 @@ public class XMLExtract extends Node {
      * Perform sanity checks.
      */
     public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
         // test that we have at least one input port and one output
         if (outPorts.size() < 1) {
             throw new ComponentNotReadyException(getId()

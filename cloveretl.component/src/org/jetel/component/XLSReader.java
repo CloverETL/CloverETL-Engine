@@ -223,7 +223,9 @@ public class XLSReader extends Node {
 
 	@Override
 	public void free() {
+        if(!isInitialized()) return;
 		super.free();
+		
 		reader.close();
 	}
 	/*
@@ -421,6 +423,7 @@ public class XLSReader extends Node {
 	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
 		
 		if (sheetNumber != null) {

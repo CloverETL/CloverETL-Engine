@@ -219,6 +219,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
      * this method.
      */
     synchronized public void free() {
+        if(!isInitialized()) return;
         super.free();
 
         try {

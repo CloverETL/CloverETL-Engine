@@ -222,7 +222,9 @@ public class CloverDataReader extends Node {
 	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		//set start record
 		if (startRecord != -1) {
 			try{

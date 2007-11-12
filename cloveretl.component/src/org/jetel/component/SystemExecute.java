@@ -437,7 +437,9 @@ public class SystemExecute extends Node{
 	
 	@Override
 	public void free() {
+        if(!isInitialized()) return;
 		super.free();
+		
 		deleteBatch();
 	}
 	
@@ -453,7 +455,9 @@ public class SystemExecute extends Node{
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	@Override public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		//create tmp file with commands and string to execute
 		if (interpreter!=null){
 			try {

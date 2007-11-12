@@ -239,6 +239,7 @@ public class DataReader extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
         super.init();
         
 		// initialize multifile reader based on prepared parser

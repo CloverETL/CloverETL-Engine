@@ -181,7 +181,9 @@ public class DBExecute extends Node {
 	 * @since                                  September 27, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		// get dbConnection from graph
 	    if (dbConnection == null){
 	        IConnection conn = getGraph().getConnection(dbConnectionName);

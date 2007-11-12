@@ -334,7 +334,9 @@ import org.w3c.dom.Element;
 	}
 		
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		inPort = getInputPort(READ_FROM_PORT);
 		inMetadata=inPort.getMetadata();
 		outPort = getOutputPort(WRITE_TO_PORT);

@@ -335,7 +335,9 @@ public class MergeJoin extends Node {
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		inputCnt = inPorts.size();
 		slaveCnt = inputCnt - 1;
 		if (joiners.length < 1) {

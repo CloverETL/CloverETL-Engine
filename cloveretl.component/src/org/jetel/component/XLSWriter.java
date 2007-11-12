@@ -215,7 +215,9 @@ public class XLSWriter extends Node {
 	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		initLookupTable();
 		
 		if (fileURL != null) {

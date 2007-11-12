@@ -180,7 +180,9 @@ public class DataGenerator extends Node {
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
         super.init();
+        
         metadata = getOutputPort(0).getMetadata();
         specialValue = new Object[metadata.getNumFields()][4];
         //create and initialize output record

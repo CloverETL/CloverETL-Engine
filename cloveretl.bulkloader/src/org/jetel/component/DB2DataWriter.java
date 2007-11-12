@@ -761,7 +761,9 @@ public class DB2DataWriter extends Node {
 	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		//read parameters from string to properties
 		if (parameters != null){
 			String[] param = StringUtils.split(parameters);
