@@ -38,13 +38,15 @@ public class TLVariable {
     TLValue value;
     protected String name;
     TLValueType type;
-    boolean isNull;
+    boolean isNull;		// does this variable represents NULL value ?
+    boolean nullable;	// can this variable be assigned with null ?
     
     public TLVariable(String name,TLValue value) {
         this.value=value;
         this.type=value.getType();
         this.name=name;
         this.isNull= (value==TLValue.NULL_VAL) ? false :true;
+        this.nullable=true;
     }
     
     public TLVariable(String name,TLValueType type) {
@@ -52,6 +54,7 @@ public class TLVariable {
         this.type=type;
         this.value=TLValue.create(type);
         this.isNull=true;
+        this.nullable=true;
     }
     
     public TLValueType getType() {
@@ -83,12 +86,13 @@ public class TLVariable {
     }
     
     
-    public TLValue getValue() {
+    public TLValue getTLValue() {
         return isNull ? TLValue.NULL_VAL:value;
     }
     
-    public boolean setValue(TLValue value) {
+    public boolean setTLValue(TLValue value) {
     	if (value==TLValue.NULL_VAL){
+    		if (!nullable) return false; // optionally throw exception
     		isNull=true;
     		return true;
     	}
@@ -96,8 +100,9 @@ public class TLVariable {
    		return true;
     }
     
-    public boolean setValue(TLVariable variable) {
+    public boolean setTLValue(TLVariable variable) {
     	if (variable.isNull){
+    		if (!nullable) return false; // optionally throw exception
     		isNull=true;
     		return true;
     	}
@@ -106,8 +111,9 @@ public class TLVariable {
     }
     
         
-    public boolean setValueStrict(TLValue value) {
+    public boolean setTLValueStrict(TLValue value) {
     	if (value==TLValue.NULL_VAL){
+    		if (!nullable) return false; // optionally throw exception
     		isNull=true;
     		return true;
     	}
@@ -119,18 +125,22 @@ public class TLVariable {
         }
     }
     
-    public boolean setValue(int index,TLValue value) {
+    public boolean setTLValue(int index,TLValue value) {
+    	if (value==TLValue.NULL_VAL && !nullable) return false; // optionally throw exception
     	((TLContainerValue)this.value).setStoredValue(index,value);
     	return true;
     }
     
-    public boolean setValue(TLValue key,TLValue value) {
+    public boolean setTLValue(TLValue key,TLValue value) {
+    	if (value==TLValue.NULL_VAL && !nullable) return false; // optionally throw exception
     	((TLContainerValue)this.value).setStoredValue(key,value);
    		return true;
     }
     
-    public void setValue(DataField fieldValue) {
+    public boolean setTLValue(DataField fieldValue) {
+    	if (fieldValue.isNull() && !nullable) return false; // optionally throw exception
     	this.value.setValue(fieldValue);
+    	return true;
     }
     
     @Override
@@ -148,4 +158,12 @@ public class TLVariable {
     @Override public String toString() {
         return name+" : "+type.getName()+" : "+value.toString();
     }
+
+	public boolean isNullable() {
+		return nullable;
+	}
+
+	public void setNullable(boolean nullable) {
+		this.nullable = nullable;
+	}
 }

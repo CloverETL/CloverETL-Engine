@@ -67,27 +67,39 @@ public abstract class TLValue implements Comparable<TLValue>{
     }
 
     public static  TLValue convertValue(DataField field) {
+    	TLValue newval=null;;
     	if (field.isNull())
     		return NULL_VAL;
         switch(field.getMetadata().getType()) {
         case DataFieldMetadata.INTEGER_FIELD:
-            return new TLNumericValue<CloverInteger>(TLValueType.INTEGER,new CloverInteger((Numeric)field));
+        	newval= new TLNumericValue<CloverInteger>(TLValueType.INTEGER,new CloverInteger((Numeric)field));
+        	break;
         case DataFieldMetadata.LONG_FIELD:
-            return new TLNumericValue<CloverLong>(TLValueType.LONG,new CloverLong((Numeric)field));
+        	newval = new TLNumericValue<CloverLong>(TLValueType.LONG,new CloverLong((Numeric)field));
+        	break;
         case DataFieldMetadata.NUMERIC_FIELD:
-            return new TLNumericValue<CloverDouble>(TLValueType.DOUBLE,new CloverDouble((Numeric)field));
+        	newval = new TLNumericValue<CloverDouble>(TLValueType.DOUBLE,new CloverDouble((Numeric)field));
+        	break;
         case DataFieldMetadata.DECIMAL_FIELD:
-            return new TLNumericValue<Decimal>(TLValueType.DECIMAL,((Decimal)field).createCopy());
+        	newval= new TLNumericValue<Decimal>(TLValueType.DECIMAL,((Decimal)field).createCopy());
+        	break;
         case DataFieldMetadata.DATE_FIELD:
-           return new TLDateValue((Date)field.getValueDuplicate());
+        	newval= new TLDateValue((Date)field.getValueDuplicate());
+        	break;
+        case DataFieldMetadata.BOOLEAN_FIELD:
+        	newval = TLBooleanValue.FALSE;
+        	break;
     /*    case DataFieldMetadata.BYTE_FIELD:
         	return new TLValue(TLValueType.BYTE,field.getValue());*/
         case DataFieldMetadata.STRING_FIELD:
-            return new TLStringValue((String)field.getValueDuplicate());
+        	newval= new TLStringValue((String)field.getValueDuplicate());
+        	break;
         default:
             throw new IllegalArgumentException("Don't know how to convert "+field.getType());
         
         }
+        newval.setValue(field);
+        return newval;
     }
     
     public abstract void copyToDataField(DataField field);    

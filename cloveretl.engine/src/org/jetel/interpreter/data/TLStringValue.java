@@ -31,7 +31,7 @@ public class TLStringValue extends TLValue {
 	
 	public TLStringValue(){
 		super(TLValueType.STRING);
-		value=new StringBuilder();
+		value=new StringBuilder(40);
 	}
 	
 	

@@ -46,6 +46,9 @@ public class TLBooleanValue extends TLValue {
 		this.value=value;
 	}
 
+	public static TLBooleanValue getInstance(boolean val){
+		return val ? TRUE : FALSE;
+	}
 	
 
 	@Override
