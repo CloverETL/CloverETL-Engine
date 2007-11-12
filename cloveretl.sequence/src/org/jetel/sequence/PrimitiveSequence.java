@@ -87,6 +87,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      */
     @Override
     synchronized public void free() {
+        if(!isInitialized()) return;
         super.free();
         //no op
     }

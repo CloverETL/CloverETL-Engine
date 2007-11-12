@@ -187,6 +187,7 @@ public class LdapWriter extends Node {
 	 * @since                                  September, 2006
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
 
 		this.formatter = new LdapFormatter(this.ldapUrl, this.action, this.user, this.passwd);

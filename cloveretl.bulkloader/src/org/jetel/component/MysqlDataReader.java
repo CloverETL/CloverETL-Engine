@@ -237,7 +237,9 @@ public class MysqlDataReader extends Node {
 
 	@Override
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		outPort = getOutputPort(OUTPUT_PORT);
 		if (outPort == null && outputFile == null) {
 			throw new ComponentNotReadyException(getId() + ": missing output");			

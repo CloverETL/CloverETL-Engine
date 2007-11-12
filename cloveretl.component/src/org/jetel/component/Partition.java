@@ -341,6 +341,7 @@ public class Partition extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
 		
 		DataRecordMetadata inMetadata = getInputPort(0).getMetadata();

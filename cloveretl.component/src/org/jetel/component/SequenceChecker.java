@@ -179,6 +179,7 @@ public class SequenceChecker extends Node {
 
 	@Override
 	public void free() {
+        if(!isInitialized()) return;
 		super.free();
 	}
 	/**
@@ -198,7 +199,9 @@ public class SequenceChecker extends Node {
 	 * @since                                  January 5, 2007
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		int keyFields[];
         Integer position;
         keyFields = new int[keyFieldNames.length];

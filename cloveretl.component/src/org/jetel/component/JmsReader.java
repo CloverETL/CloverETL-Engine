@@ -159,7 +159,9 @@ public class JmsReader extends Node {
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		if (psorClass == null && psorCode == null && psorURL == null) {
 			throw new ComponentNotReadyException("Message processor not specified");
 		}

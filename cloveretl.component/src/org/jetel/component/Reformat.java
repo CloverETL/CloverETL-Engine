@@ -216,6 +216,7 @@ public class Reformat extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
         
         //create input metadata

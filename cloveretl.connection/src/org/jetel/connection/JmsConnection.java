@@ -190,6 +190,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 	 * @see org.jetel.graph.GraphElement#free()
 	 */
 	synchronized public void free() {
+        if(!isInitialized()) return;
         super.free();
 
         try {

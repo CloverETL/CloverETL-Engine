@@ -190,7 +190,9 @@ public class DelimitedDataWriter extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		initLookupTable();
         
         // initialize multifile writer based on prepared formatter

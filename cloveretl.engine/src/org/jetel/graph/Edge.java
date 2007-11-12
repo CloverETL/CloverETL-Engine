@@ -219,7 +219,9 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @since                   April 2, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		/* if metadata is null and we have metadata stub, try to
 		 * load metadata from JDBC
 		 */
@@ -410,6 +412,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      * @see org.jetel.graph.GraphElement#free()
      */
     public void free() {
+        if(!isInitialized()) return;
         super.free();
 
         edge.free();

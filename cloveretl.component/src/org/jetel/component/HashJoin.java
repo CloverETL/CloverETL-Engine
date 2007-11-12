@@ -277,6 +277,7 @@ public class HashJoin extends Node {
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
 
 		driverPort = getInputPort(DRIVER_ON_PORT);

@@ -568,6 +568,7 @@ public class MsSqlDataWriter extends Node {
      * @since                                  April 4, 2002
      */
     public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
 
 		parseParameters();
@@ -694,7 +695,9 @@ public class MsSqlDataWriter extends Node {
     
     @Override
 	public synchronized void free() {
+        if(!isInitialized()) return;
 		super.free();
+		
 		deleteDataFile();
 		deleteErrFile();
 	}

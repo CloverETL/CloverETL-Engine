@@ -124,6 +124,9 @@ public class LookupTableReaderWriter extends Node {
 
 	@Override
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
+        super.init();
+        
 		//set reading or writing mode
 		if (outPorts.size() > 0) {
 			readFromTable = true;
@@ -163,7 +166,9 @@ public class LookupTableReaderWriter extends Node {
 	
 	@Override
 	public void free() {
+        if(!isInitialized()) return;
 		super.free();
+		
 		if (freeLookupTable){
 			lookupTable.free();
 		}

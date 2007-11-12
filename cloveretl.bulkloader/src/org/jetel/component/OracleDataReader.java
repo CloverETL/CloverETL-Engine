@@ -263,7 +263,9 @@ public class OracleDataReader extends Node {
 
 	@Override
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		fileWriter = null;
 		outPort = getOutputPort(OUTPUT_PORT);
 		if (outPort == null && outputFile == null) {

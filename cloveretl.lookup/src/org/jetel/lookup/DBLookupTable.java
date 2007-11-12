@@ -559,6 +559,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *  Deallocates resources
 	 */
     synchronized public void free() {
+        if(!isInitialized()) return;
         super.free();
         
         try {

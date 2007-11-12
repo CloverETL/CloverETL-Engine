@@ -182,7 +182,9 @@ public class Pacemaker extends Node {
 	 * @exception ComponentNotReadyException
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 		if (recordBuffer == null) {
 			throw new ComponentNotReadyException(

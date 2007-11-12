@@ -231,7 +231,9 @@ public class Merge extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		// initialize key
 		comparisonKey = new RecordKey(mergeKeys, getInputPort(0).getMetadata());
 		try {

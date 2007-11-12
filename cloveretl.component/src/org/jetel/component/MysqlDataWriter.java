@@ -186,6 +186,7 @@ public class MysqlDataWriter extends Node {
 
 	@Override
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
 
 		inPort = getInputPort(INPUT_PORT);

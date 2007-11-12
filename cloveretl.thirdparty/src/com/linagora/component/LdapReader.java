@@ -175,7 +175,9 @@ public class LdapReader extends Node {
 	}
 
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		if(this.user != null) {
 			this.parser = new LdapParser(this.ldapUrl, this.base, this.filter, this.scope, this.user, this.passwd);
 		} else {

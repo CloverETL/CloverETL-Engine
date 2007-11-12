@@ -356,6 +356,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	}
 	
 	synchronized public void free() {
+        if(!isInitialized()) return;
         super.free();
 
         if (lookupTable!=null){
