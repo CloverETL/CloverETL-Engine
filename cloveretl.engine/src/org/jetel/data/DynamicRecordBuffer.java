@@ -315,13 +315,14 @@ public class DynamicRecordBuffer {
 	 *  Reads next record from the buffer - FIFO order.
 	 *
 	 *@param  record             ByteBuffer into which store data
-	 *@return                  true if successfull, otherwise false - meaning no more
+	 *@return                  true if successful, otherwise false - meaning no more
      *records in buffer (EOF)
 	 *@exception  IOException  Description of the Exception
 	 */
-	public boolean readRecod(ByteBuffer record) throws IOException {
+	public boolean readRecord(ByteBuffer record) throws IOException {
 		if(isClosed){
-			throw new IOException("Buffer has been closed !");
+			return false;
+			//throw new IOException("Buffer has been closed !");
 		}
 
         // test that we have enough data
@@ -356,8 +357,9 @@ public class DynamicRecordBuffer {
      * @since 27.11.2006
      */
     public DataRecord readRecord(DataRecord record) throws IOException{
-        if(isClosed){
-            throw new IOException("Buffer has been closed !");
+        if(isClosed) {
+        	return null;
+            //throw new IOException("Buffer has been closed !");
         }
 
         // test that we have enough data
