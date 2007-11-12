@@ -27,6 +27,7 @@ import java.util.Date;
 
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
+import org.jetel.interpreter.data.TLDateValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataFieldMetadata;
@@ -45,26 +46,26 @@ public class TLContext<T> {
 
     public static TLContext<TLValue> createStringContext() {
         TLContext<TLValue> context = new TLContext<TLValue>();
-        context.setContext(new TLValue(TLValueType.STRING, new StringBuilder(40)));
+        context.setContext(TLValue.create(TLValueType.STRING));
         return context;
     }
 
     public static TLContext<TLValue> createIntegerContext() {
         TLContext<TLValue> context = new TLContext<TLValue>();
-        context.setContext(new TLValue(TLValueType.INTEGER,new CloverInteger(0)));
+        context.setContext(TLValue.create(TLValueType.INTEGER));
         return context;
     }
 
     public static TLContext<TLValue> createDoubleContext() {
         TLContext<TLValue> context = new TLContext<TLValue>();
-        context.setContext(new TLValue(TLValueType.DOUBLE,new CloverDouble(0)));
+        context.setContext(TLValue.create(TLValueType.DOUBLE));
         return context;
 
     }
 
     public static TLContext<TLValue> createDateContext() {
         TLContext<TLValue> context = new TLContext<TLValue>();
-        context.setContext(new TLValue(TLValueType.DATE,new Date(0)));
+        context.setContext(TLValue.create(TLValueType.DATE));
         return context;
 
     }
