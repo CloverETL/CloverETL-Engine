@@ -52,6 +52,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -184,10 +185,16 @@ public class DBConnection extends GraphElement implements IConnection {
      * @param configProperties
      */
 	private void loadProperties(Properties configProperties) {
+		PropertyRefResolver resolver;
+		if (getGraph() != null) {
+			resolver = new PropertyRefResolver(getGraph());
+		}else{//can resolve parameters from system and environment properties 
+			resolver = new PropertyRefResolver(new Properties());
+		}
         Set<Object> keys = configProperties.keySet();
         for (Object key : keys) {
 			String name = (String) key;
-			String value = configProperties.getProperty(name);
+			String value = resolver.resolveRef(configProperties.getProperty(name));
 			if (!name.startsWith(XML_JDBC_PROPERTIES_PREFIX)) {
 				config.setProperty(name, value);
 			} else {

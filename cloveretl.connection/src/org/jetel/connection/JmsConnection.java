@@ -46,6 +46,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertyRefResolver;
 import org.w3c.dom.Element;
 
 /**
@@ -116,7 +117,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 		this.passwordEncrypted = passwordEncrypted;
 	}
 	
-	private static Properties readConfig(URL contextURL, String cfgFile) {
+	private static Properties readConfig(URL contextURL, String cfgFile, TransformationGraph graph) {
 		Properties config = new Properties();
 		try {
             InputStream stream = Channels.newInputStream(FileUtils.getReadableChannel(contextURL, cfgFile));
@@ -137,6 +138,13 @@ public class JmsConnection extends GraphElement implements IConnection {
 		} catch (Exception ex) {
 			throw new RuntimeException("Config file for JMS connection not found (" + cfgFile +")", ex);
 		}
+		PropertyRefResolver resolver;
+		if (graph != null) {
+			resolver = new PropertyRefResolver(graph);
+		}else{//can resolve parameters from system and environment properties 
+			resolver = new PropertyRefResolver(new Properties());
+		}
+		resolver.resolveAll(config);
 		return config;
 	}
 
@@ -243,7 +251,8 @@ public class JmsConnection extends GraphElement implements IConnection {
 		JmsConnection con;
 		try {
 			if (xattribs.exists(XML_CONFIG_ATTRIBUTE)) {
-				Properties config = readConfig(graph.getRuntimeParameters().getProjectURL(), xattribs.getString(XML_CONFIG_ATTRIBUTE));
+				Properties config = readConfig(graph.getRuntimeParameters().getProjectURL(), 
+						xattribs.getString(XML_CONFIG_ATTRIBUTE), graph);
 				con = new JmsConnection(xattribs.getString(XML_ID_ATTRIBUTE),
 						config.getProperty(XML_INICTX_FACTORY_ATTRIBUTE, null),
 						config.getProperty(XML_PROVIDER_URL_ATTRIBUTE, null),
