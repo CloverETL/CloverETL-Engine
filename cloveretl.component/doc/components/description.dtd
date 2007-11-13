@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT componentsDoc (componentDescription+)>
+<!ELEMENT componentDescription (componentName, componentType, category, sinceVersion, briefDesc,fullDesc, inputPorts, outputPorts, attribute+, example+ )>
+
+<!ELEMENT attribute  (attrName, attrIsMandatory, attrDesc, attrDefaultVal)>
+
+<!ELEMENT inputPorts (port+)>
+<!ELEMENT outputPorts (port+)>
+<!ELEMENT port (portName, portDesc, portLongDesc, portMandatory)> 
+<!ELEMENT example (exampleXml, exampleImg, exampleDesc)>
+
+<!ELEMENT componentName   (#PCDATA)>
+<!ELEMENT componentType     (#PCDATA)>
+<!ELEMENT category  (#PCDATA)>
+<!ELEMENT sinceVersion (#PCDATA)>
+<!ELEMENT briefDesc  (#PCDATA)>
+<!ELEMENT fullDesc  (#PCDATA)>
+
+<!ELEMENT portName   (#PCDATA)>
+<!ELEMENT portDesc   (#PCDATA)>
+<!ELEMENT portLongDesc   (#PCDATA)>
+<!ELEMENT portMandatory   (#PCDATA)>
+
+<!-- <!ELEMENT category (readers|writers|transformers|joiners|others)>  -->
+
+<!ELEMENT attrName  (#PCDATA)>
+<!ELEMENT attrIsMandatory  (#PCDATA)>
+<!ELEMENT attrDesc  (#PCDATA)>
+<!ELEMENT attrDefaultVal  (#PCDATA)>
+
+<!ELEMENT exampleXml  (#PCDATA)>
+<!ELEMENT exampleImg  (#PCDATA)>
+<!ELEMENT exampleDesc  (#PCDATA)>

@@ -27,7 +27,7 @@
 	</fileset>
 
 	<!-- =========================== TARGETS ============================== -->
-	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file"/>
+	<target name="build" depends="compile,package,transformXMLDocs" description="Compiles sources and creates a JAR file"/>
 
 	<target name="dist.src"  description="Creates source distribution">
 		<condition property="dist.src" value="dist.src">
@@ -84,6 +84,30 @@
 		<echo message="Using directory for dist: ${dir.dist}"/>
 	</target>
 	
+	<target name="transformXMLDocs" description="Convert the documentation of component from xml to html. 
+		Display a warning if some of the sources is more recent than the XML description">
+		
+		<property name="component.dir.doc" value="${dir.doc.default}/components"/>
+		
+		<uptodate property="docUpToDate" targetfile="${component.dir.doc}/ComponentsDoc.xml" >
+			<srcfiles dir= "${dir.src}" includes="**/*.java"/>
+		</uptodate>
+
+		<antcall target="documentationOutdatedWarning"/>
+		
+		<xslt in="${component.dir.doc}/ComponentsDoc.xml" out="${component.dir.doc}/html/ComponentsDoc.html"
+			style="${component.dir.doc}/description.xsl"
+			/>
+	</target>
+
+	<target name="documentationOutdatedWarning" unless="docUpToDate">
+		<echo level="error">
+!!!!!WARNING!!!!!
+It seems like the documentation file ${component.dir.doc}/ComponentsDoc.xml is out of date.
+!!!!!WARNING!!!!!
+		</echo>
+	</target>
+			
 	<!-- compile temp copy of source -->
 	<target name="compile" depends="checkproperties,copy_src" description="Compile sources">
 		<!-- Create directory for binaries. -->
