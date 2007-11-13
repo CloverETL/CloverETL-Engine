@@ -185,12 +185,7 @@ public class DBConnection extends GraphElement implements IConnection {
      * @param configProperties
      */
 	private void loadProperties(Properties configProperties) {
-		PropertyRefResolver resolver;
-		if (getGraph() != null) {
-			resolver = new PropertyRefResolver(getGraph());
-		}else{//can resolve parameters from system and environment properties 
-			resolver = new PropertyRefResolver(new Properties());
-		}
+		PropertyRefResolver resolver = new PropertyRefResolver(getGraph());
         Set<Object> keys = configProperties.keySet();
         for (Object key : keys) {
 			String name = (String) key;

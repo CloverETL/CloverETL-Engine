@@ -60,14 +60,19 @@ public class PropertyRefResolver {
 	private boolean resolve=true; //default behaviour is to resolve references
     
 	
+	public PropertyRefResolver(){
+		Pattern pattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
+		regexMatcher = pattern.matcher("");
+       // Pattern pattern2 = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_ESCAPE_REGEX);
+       // regexEscapeMatcher = pattern2.matcher("");
+		properties = new Properties();
+	}
+	
 	/**Constructor for the PropertyRefResolver object */
 	public PropertyRefResolver(TransformationGraph graph) {
-		properties = graph.getGraphProperties();
-		if (properties != null) {
-			Pattern pattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
-			regexMatcher = pattern.matcher("");
-          //  Pattern pattern2 = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_ESCAPE_REGEX);
-          //  regexEscapeMatcher = pattern2.matcher("");
+		this();
+		if (graph != null) {
+			properties = graph.getGraphProperties();
 		}
 	}
 
@@ -78,12 +83,9 @@ public class PropertyRefResolver {
 	 * @param  properties  Description of the Parameter
 	 */
 	public PropertyRefResolver(Properties properties) {
-		this.properties = properties;
-		if (this.properties != null) {
-			Pattern pattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
-			regexMatcher = pattern.matcher("");
-           // Pattern pattern2 = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_ESCAPE_REGEX);
-           // regexEscapeMatcher = pattern2.matcher("");
+		this();
+		if (properties != null) {
+			this.properties = properties;
 		}
 	}
 
@@ -230,7 +232,7 @@ public class PropertyRefResolver {
 	 * @param properties
 	 */
 	public void resolveAll(Properties properties){
-		for (Entry property : properties.entrySet()) {
+		for (Entry<Object, Object> property : properties.entrySet()) {
 			properties.setProperty((String)property.getKey(), resolveRef((String)property.getValue()));
 		}
 	}
