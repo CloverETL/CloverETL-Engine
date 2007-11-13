@@ -23,6 +23,7 @@ package org.jetel.connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,6 +51,7 @@ public class SQLDataParser implements Parser {
 	protected DBConnection dbConnection;
 	protected String sqlQuery;
 	protected Statement statement;
+	protected QueryAnalyzer analyzer;
 
 	protected ResultSet resultSet = null;
 	protected CopySQLData[] transMap=null;
@@ -72,7 +74,8 @@ public class SQLDataParser implements Parser {
 	 * @param sqlQuery query to be executed against DB
 	 */
 	public SQLDataParser(String sqlQuery) {
-		this.sqlQuery = sqlQuery;
+		analyzer = new QueryAnalyzer(sqlQuery);
+		this.sqlQuery = analyzer.getNotInsertQuery();
 	}
 	
 
@@ -198,7 +201,14 @@ public class SQLDataParser implements Parser {
 	
 	protected void initSQLMap(DataRecord record){
 		try{
-			transMap = CopySQLData.sql2JetelTransMap( SQLUtil.getFieldTypes(resultSet.getMetaData()),metadata, record);
+			HashMap<String, String> cloverDbMap = analyzer.getCloverDbFieldMap();
+			if (cloverDbMap.size() > 0 ) {
+				transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultSet.getMetaData()), metadata, 
+						record, cloverDbMap.values().toArray(new String[0]));
+			}else{
+				transMap = CopySQLData.sql2JetelTransMap( SQLUtil.getFieldTypes(resultSet.getMetaData()),metadata, 
+						record);
+			}
 			fieldCount = transMap.length;
 		}catch (Exception ex) {
             logger.debug(ex.getMessage(),ex);
