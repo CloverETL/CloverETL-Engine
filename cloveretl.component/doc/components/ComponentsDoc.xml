@@ -1,0 +1,247 @@
+<?xml version="1.0"?>
+<!DOCTYPE componentsDoc SYSTEM "description.dtd">
+
+<componentsDoc>
+
+	
+<componentDescription> 
+<componentName>RunGraph</componentName>
+<componentType>RUN_GRAPH</componentType>
+<category>others</category>
+<sinceVersion>1.8.3</sinceVersion>
+<briefDesc>This component runs other graphs which are read from the input edge or specified as a parameter</briefDesc>
+<fullDesc>This component runs specified graphs. Filenames of the graphs to be executed 
+  can be supplied by the input edge. The first field in input metadata must be String.
+  In case the input is not connected a single filename must be specified as the
+  attribute graphName. 
+  Output includes a status message for each graph in the last field if it's of 
+  the String type.
+  Metadata of the output can be the same as input or it can contain an extra 
+  String field specially for the status message.  
+  The output of the cloverETL engine executed by this component can be directed
+  to a file specified as the attribute outputFileName
+</fullDesc>
+
+<inputPorts>
+<port> 	
+	<portName>graph names</portName>
+	<portDesc> First field must be String, if not connected, graphName must be specified </portDesc>
+	<portLongDesc/>
+	<portMandatory>no</portMandatory>
+</port>
+</inputPorts>
+
+<outputPorts>
+<port>	
+	<portName>status messages</portName>
+	<portDesc> Status message for each graph in the last field if it's of the String type</portDesc>
+	<portLongDesc/>
+	<portMandatory>no</portMandatory>
+</port>
+</outputPorts>
+
+<attribute>
+	<attrName>graphName</attrName>
+	<attrIsMandatory>no</attrIsMandatory>	
+	<attrDesc>Name of a graph to execute of the input is not connected</attrDesc>	
+	<attrDefaultVal>null</attrDefaultVal>
+</attribute>
+<attribute>
+	<attrName>outputFile</attrName>
+	<attrIsMandatory>no</attrIsMandatory>	
+	<attrDesc>Name of the file where to redirect output of the executed graphs</attrDesc>	
+	<attrDefaultVal>null</attrDefaultVal>
+</attribute>
+
+<example>
+	<exampleXml> &lt;Node id="RUN_GRAPH0" type="RUN_GRAPH"&gt;
+  &lt;attr name="capturedErrorLines"&gt;3&lt;/attr&gt;
+  &lt;attr name="graphName"&gt;graphAggregate.grf&lt;/attr&gt;
+  &lt;/Node&gt;
+ &lt;Node id="RUN_GRAPH0" type="RUN_GRAPH"&gt;
+ &lt;attr name="ouputAppend"&gt;true &lt;/attr&gt;
+ &lt;attr name="outputFile"&gt;data/data.txt&lt;/attr&gt;
+ &lt;/Node&gt;			 
+	</exampleXml>
+	<exampleImg> wiki_graph.png </exampleImg>
+	<exampleDesc> This is an example </exampleDesc>
+</example>
+
+</componentDescription>
+
+
+
+
+<componentDescription> 
+<componentName>Dedup</componentName>
+		
+<componentType>DEDUP</componentType>
+<category>transformers</category>
+	
+<sinceVersion></sinceVersion>
+	
+<briefDesc>
+   Dedup (remove duplicate records) from sorted incoming records based on specified key.
+   The key is name (or combination of names) of field(s) from input record.
+   It keeps either First or Last record from the group based on the parameter {keep} specified.
+   All duplicated records are rejected to the second optional port.
+</briefDesc>
+	
+<fullDesc>
+	
+</fullDesc>
+
+<inputPorts>
+<port> 	
+	<portName>Input</portName>
+	<portDesc></portDesc>
+	<portLongDesc/>
+	<portMandatory>yes</portMandatory>
+</port>
+</inputPorts> 
+	
+<outputPorts>	
+<port>	
+	<portName>Output without duplicities</portName>
+	<portDesc></portDesc>
+	<portLongDesc/>
+	<portMandatory>yes</portMandatory>
+</port>	
+<port>	
+	<portName>Rejected records</portName>
+	<portDesc></portDesc>
+	<portLongDesc/>
+	<portMandatory>yes</portMandatory>
+</port>
+</outputPorts>
+
+
+<attribute>
+	<attrName>dedupKey</attrName>
+	<attrIsMandatory></attrIsMandatory>
+	
+	<attrDesc>field names separated by :;|  {colon, semicolon, pipe} or can be empty, then all records belong to one group</attrDesc>	
+	<attrDefaultVal></attrDefaultVal>
+</attribute>
+<attribute>
+	<attrName>keep</attrName>
+	<attrIsMandatory></attrIsMandatory>
+	
+	<attrDesc>one of "First|Last|Unique" {the fist letter is sufficient, if not defined, then First}</attrDesc>	
+	<attrDefaultVal></attrDefaultVal>
+</attribute>
+<attribute>
+	<attrName>equalNULL</attrName>
+	<attrIsMandatory>no</attrIsMandatory>
+	
+	<attrDesc>specifies whether two fields containing NULL values are considered equal. Default is TRUE.</attrDesc>	
+	<attrDefaultVal></attrDefaultVal>
+</attribute>
+
+<example>
+	<exampleXml> 
+&lt;Node id="DISTINCT" type="DEDUP" dedupKey="Name" keep="First"/&gt;			 
+	</exampleXml>
+	<exampleImg>  </exampleImg>
+	<exampleDesc>  </exampleDesc>
+</example>
+
+</componentDescription>
+
+
+<componentDescription> 
+<componentName>Aggregate</componentName>
+<componentType>AGGREGATE</componentType>
+<category>transformers</category>
+<sinceVersion></sinceVersion>
+<!-- category should by one of: readers, writers, joiners,   others -->	
+<briefDesc>
+Aggregate functions are applied on input data flow base on specified key.
+The key is name (or combination of names) of field(s) from input record.
+Data flow can be sorted or not.	
+</briefDesc>
+	
+<fullDesc>
+	
+</fullDesc>
+
+
+<inputPorts>
+
+<port> 	
+	<portName>Input</portName>
+	<portDesc></portDesc>
+	<portLongDesc></portLongDesc>
+	<portMandatory>yes</portMandatory>
+</port>
+</inputPorts> 
+	
+<outputPorts>
+	
+<port>	
+	<portName>Output</portName>
+	<portDesc></portDesc>
+	<portLongDesc></portLongDesc>
+	<portMandatory>yes</portMandatory>
+</port>
+</outputPorts>	
+
+<attribute>
+	<attrName>aggregateKey</attrName>
+	<attrIsMandatory></attrIsMandatory>	
+	<attrDesc>aggregation key, field names separated by :;|  {colon, semicolon, pipe}</attrDesc>	
+	<attrDefaultVal></attrDefaultVal>
+</attribute>
+<attribute>
+	<attrName>mapping</attrName>
+	<attrIsMandatory></attrIsMandatory>	
+	<attrDesc>
+		aggregation function mappings separated by :;|  {colon, semicolon, pipe}. 
+   Each mapping can be in the form of $output_field=$input_field or $output_field=function($input_field).
+   The first form copies fields from input to output without applying any aggregation function 
+   (the input field must be part of the key). The second form applies an aggregation function on all values
+   of the input field (within an aggregation group implied by the aggregation key) and copies the result
+   to the output field. Some function don't require an input field
+   as a parameter (then the function mapping is in the form output_field=function(). Available functions 
+   are count, min, max, sum, avg, stdev, CRC32, MD5, first, last, firstnonnull, lastnonnull. The 
+   function names are case insensitive
+	</attrDesc>	
+	<attrDefaultVal></attrDefaultVal>
+</attribute>
+<attribute>
+	<attrName>sorted</attrName>
+	<attrIsMandatory></attrIsMandatory>
+	
+	<attrDesc>if input data flow is sorted (true)</attrDesc>	
+	<attrDefaultVal></attrDefaultVal>
+</attribute>
+<attribute>
+	<attrName>equalNULL</attrName>
+	<attrIsMandatory></attrIsMandatory>
+		
+	<attrDesc>specifies whether two fields containing NULL values are considered equal. Default is FALSE. </attrDesc>	
+	<attrDefaultVal></attrDefaultVal>
+</attribute>
+<attribute>
+	<attrName>charset</attrName>
+	<attrIsMandatory></attrIsMandatory>
+	
+	<attrDesc>character encoding of the input data stream for CRC32 and MD5 functions (if not specified, then value from defaultProperties DataFormatter.DEFAULT_CHARSET_ENCODER is used)</attrDesc>	
+	<attrDefaultVal></attrDefaultVal>
+</attribute>	
+
+
+	
+<example>
+	<exampleXml> 
+	&lt;Node id="AGGREGATE_NODE" type="AGGREGATE" aggregateKey="FirstName" aggregateFunctions="count(); min(Age); avg(Salery); min(HireDate)" sorted="false" /&gt;				 
+	</exampleXml>
+	<exampleImg>  </exampleImg>
+	<exampleDesc>  </exampleDesc>
+</example>
+
+</componentDescription>
+	
+</componentsDoc>
+
+
