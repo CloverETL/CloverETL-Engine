@@ -45,9 +45,7 @@ import org.w3c.dom.Text;
  *  <h3>DatabaseInputTable Component</h3>
  *
  * <!-- This component reads data from DB. It first executes specified query on DB and then
- *  extracts all the rows returned.The metadata provided throuh output port/edge must precisely
- *  describe the structure of read rows. Use DBAnalyze utilitity to analyze DB structures and
- *  create Jetel/Clover metadata. -->
+ *  extracts all the rows returned. -->
  *
  * <table border="1">
  * <th>Component:</th>
@@ -57,10 +55,7 @@ import org.w3c.dom.Text;
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>This component reads data from DB. It first executes specified query on DB and then
- *  extracts all the rows returned.<br>
- *  The metadata provided throuh output port/edge must precisely describe the structure of
- *  read rows.<br>
- *  Use DBAnalyze utilitity to analyze DB structures and create Jetel/Clover metadata.</td></tr>
+ *  extracts all the rows returned.</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
@@ -73,8 +68,14 @@ import org.w3c.dom.Text;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"DB_INPUT_TABLE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
- *  <tr><td><b>sqlQuery</b><br><i>optional</i></td><td>query to be sent to database<br><i><code>sqlQuery</code> or <code>url</code> must be defined</i></td>
- *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by url</td>
+ *  <tr><td><b>sqlQuery</b><br><i>optional</i></td><td>query to be sent to database. The query can contain mapping between clover and 
+ *  database fields eg. query: <code>select $field1:=dbField1, $field2:=dbField2 from mytable</code> is interpreted as: 
+ *  <code>select dbField1, dbField2 from mytable</code> and output field <i>field1</i> will be filled by value from
+ *  <i>dbField1</i> and <i>field2</i> will be filled by value from <i>dbField2</i>. The query can be written without
+ *  mapping also; then output fields will be fulfilled from the first in order data flows from database<br>
+ *  <i>sqlQuery</i> or <i>url</i> must be defined</td>
+ *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file 
+ *  referenced by url. Syntax of the query must be as described above.</td>
  *  <tr><td><b>charset </b><i>optional</i></td><td>encoding of extern query</td></tr>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  <tr><td><b>fetchSize</b><br><i>optional</i></td><td>how many records should be fetched from db at once. <i>See JDBC's java.sql.Statement.setFetchSize()</i><br><b><code>MIN_INT</code></b> constant
@@ -99,6 +100,10 @@ import org.w3c.dom.Text;
  *  &lt;/Node&gt;
  *  </pre>
  *
+ *  <h4>Example:</h4>
+ *  <pre>&lt;Node dbConnection="DBConnection0" id="INPUT" 
+ *  sqlQuery="select $last_name:=last_name,$full_name:=full_name from employee" type="DB_INPUT_TABLE"/&gt;</pre>
+ *	
  * @author      dpavlis
  * @since       September 27, 2002
  * @revision    $Revision$
