@@ -138,13 +138,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 		} catch (Exception ex) {
 			throw new RuntimeException("Config file for JMS connection not found (" + cfgFile +")", ex);
 		}
-		PropertyRefResolver resolver;
-		if (graph != null) {
-			resolver = new PropertyRefResolver(graph);
-		}else{//can resolve parameters from system and environment properties 
-			resolver = new PropertyRefResolver(new Properties());
-		}
-		resolver.resolveAll(config);
+		(new PropertyRefResolver(graph)).resolveAll(config);
 		return config;
 	}
 
