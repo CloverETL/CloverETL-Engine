@@ -20,6 +20,7 @@
 package org.jetel.util.property;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -220,6 +221,17 @@ public class PropertyRefResolver {
 			return found;
 		} else {
 			return false;
+		}
+	}
+	
+	/**
+	 * This method replaces all parameters by their values
+	 * 
+	 * @param properties
+	 */
+	public void resolveAll(Properties properties){
+		for (Entry property : properties.entrySet()) {
+			properties.setProperty((String)property.getKey(), resolveRef((String)property.getValue()));
 		}
 	}
 
