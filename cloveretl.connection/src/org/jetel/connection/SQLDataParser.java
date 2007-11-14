@@ -204,7 +204,7 @@ public class SQLDataParser implements Parser {
 			HashMap<String, String> cloverDbMap = analyzer.getCloverDbFieldMap();
 			if (cloverDbMap.size() > 0 ) {
 				transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultSet.getMetaData()), metadata, 
-						record, cloverDbMap.values().toArray(new String[0]));
+						record, cloverDbMap.keySet().toArray(new String[0]));
 			}else{
 				transMap = CopySQLData.sql2JetelTransMap( SQLUtil.getFieldTypes(resultSet.getMetaData()),metadata, 
 						record);
