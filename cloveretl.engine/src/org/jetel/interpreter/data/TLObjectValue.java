@@ -16,7 +16,7 @@
  *    License along with this library; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Created on 1.11.2007 by dadik
+ * Created on 12.11.2007 by dadik
  *
  */
 
@@ -24,52 +24,54 @@ package org.jetel.interpreter.data;
 
 import org.jetel.data.DataField;
 
-public class TLNullValue extends TLValue {
+public class TLObjectValue extends TLValue {
 
+	Object value;
 	
-	private static TLNullValue instance= new TLNullValue();
-	
-	public static TLNullValue getInstance(){
-		return instance;
-	}
-	
-	private TLNullValue(){
-		super(TLValueType.NULL);
+	public TLObjectValue(){
+		super(TLValueType.OBJECT);
 	}
 	
-	@Override
-	public void copyToDataField(DataField field) {
-		field.setNull(true);
+	public TLObjectValue(Object value){
+		super(TLValueType.OBJECT);
+		this.value=value;
 	}
-
-	@Override
-	public Object getValue() {
-		return null;
-	}
-
-	@Override
-	public void setValue(Object _value) {
-		throw new IllegalArgumentException("Can NOT assign value to TLValue type NULL !");
-	}
-
-	@Override
-	public String toString(){
-		return "<null>";
-	}
-
-	@Override
-	public void setValue(DataField field) {
-		throw new IllegalArgumentException("Can NOT assign value to TLValue type NULL !");
-	}
-
+	
 	@Override
 	public int compareTo(TLValue arg0) {
-		return -1;
+		return 0;
+	}
+
+	@Override
+	public void copyToDataField(DataField field) {
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override
 	public TLValue duplicate() {
-		return this;
+		return new TLObjectValue(value);
 	}
-	
+
+	@Override
+	public Object getValue() {
+		return value;
+	}
+
+	@Override
+	public void setValue(Object _value) {
+		this.value=_value;
+	}
+
+	@Override
+	public void setValue(DataField field) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return value.toString();
+	}
+
 }

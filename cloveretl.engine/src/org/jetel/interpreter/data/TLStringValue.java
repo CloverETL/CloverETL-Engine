@@ -25,19 +25,19 @@ package org.jetel.interpreter.data;
 import org.jetel.data.DataField;
 import org.jetel.util.string.Compare;
 
-public class TLStringValue extends TLValue {
+public class TLStringValue extends TLValue implements CharSequence {
 
 	StringBuilder value;
 	
 	public TLStringValue(){
 		super(TLValueType.STRING);
-		value=new StringBuilder(40);
+		value=new StringBuilder();
 	}
 	
 	
 	public TLStringValue(CharSequence value){
 		super(TLValueType.STRING);
-		this.value=new StringBuilder();
+		this.value=new StringBuilder(value.length());
 		this.value.append(value);
 	}
 	
@@ -52,6 +52,10 @@ public class TLStringValue extends TLValue {
 	
 	
 	public Object getValue(){
+		return value;
+	}
+	
+	public CharSequence getCharSequence(){
 		return value;
 	}
 	
@@ -98,6 +102,21 @@ public class TLStringValue extends TLValue {
 	
 	@Override public String toString(){
 		return value.toString();
+	}
+
+
+	public char charAt(int arg0) {
+		return value.charAt(arg0);
+	}
+
+
+	public int length() {
+		return value.length();
+	}
+
+
+	public CharSequence subSequence(int arg0, int arg1) {
+		return value.subSequence(arg0, arg1);
 	}
 
 }

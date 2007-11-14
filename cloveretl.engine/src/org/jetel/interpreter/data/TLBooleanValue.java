@@ -93,6 +93,9 @@ public class TLBooleanValue extends TLValue {
 	}
 
 	
+	public boolean getBoolean(){
+		return value;
+	}
 	
 	@Override
 	public void setValue(Object _value) {

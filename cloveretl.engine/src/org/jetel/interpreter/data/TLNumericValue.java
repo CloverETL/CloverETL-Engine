@@ -22,15 +22,18 @@
 
 package org.jetel.interpreter.data;
 
+import java.math.BigDecimal;
+
 import org.jetel.data.DataField;
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
+import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 
 @SuppressWarnings("unchecked")
-public class TLNumericValue<T extends Numeric> extends TLValue {
+public class TLNumericValue<T extends Numeric> extends TLValue implements Numeric{
 
 	  public static final TLValue NUM_ZERO_VAL = new TLNumericValue(TLValueType.INTEGER,new CloverInteger(0));
 	  public static final TLValue NUM_ONE_VAL = new TLNumericValue(TLValueType.INTEGER,new CloverInteger(1)); 
@@ -65,7 +68,7 @@ public class TLNumericValue<T extends Numeric> extends TLValue {
 			return value;
 		}
 		
-		public int getInteger(){
+		public int getInt(){
 			return value.getInt();
 		}
 		
@@ -140,11 +143,83 @@ public class TLNumericValue<T extends Numeric> extends TLValue {
 	}
 
 	public void setValue(DataField field) {
-		// TODO Auto-generated method stub
-		
+		if (field instanceof Numeric)
+			this.value.setValue((Numeric)field);
+		else
+			throw new IllegalArgumentException("Can't assign value to: "+type+" from DataField: "+field.getMetadata().getTypeAsString());
 	}
 	
 	@Override public String toString(){
 		return value.toString();
+	}
+
+	public void abs() {
+		value.abs();
+	}
+
+	public void add(Numeric a) {
+		value.add(a);
+	}
+
+	public int compareTo(Numeric value) {
+		return value.compareTo(value);
+	}
+
+	public void div(Numeric a) {
+		value.div(a);
+		
+	}
+
+	public Numeric duplicateNumeric() {
+		return value.duplicateNumeric();
+	}
+
+	public BigDecimal getBigDecimal() {
+		return value.getBigDecimal();
+	}
+
+	public Decimal getDecimal() {
+		return value.getDecimal();
+	}
+
+	public Decimal getDecimal(int precision, int scale) {
+		return value.getDecimal(precision, scale);
+	}
+
+	public boolean isNull() {
+		return value.isNull();
+	}
+
+	public void mod(Numeric a) {
+		value.mod(a);
+	}
+
+	public void mul(Numeric a) {
+		value.mul(a);
+	}
+
+	public void neg() {
+		value.neg();
+	}
+
+	public void setNull() {
+		value.setNull();
+	}
+
+	public void setValue(int value) {
+		this.value.setValue(value);
+		
+	}
+
+	public void setValue(long value) {
+		this.value.setValue(value);
+	}
+
+	public void setValue(double value) {
+		this.value.setValue(value);
+	}
+
+	public void sub(Numeric a) {
+		this.value.sub(a);
 	}
 }

@@ -35,9 +35,9 @@ import org.jetel.data.DataField;
  */
 public class TLVariable {
       
-    TLValue value;
+    final TLValue value;
     protected String name;
-    TLValueType type;
+    final TLValueType type;
     boolean isNull;		// does this variable represents NULL value ?
     boolean nullable;	// can this variable be assigned with null ?
     

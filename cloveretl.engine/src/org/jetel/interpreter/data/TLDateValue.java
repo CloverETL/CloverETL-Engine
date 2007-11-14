@@ -72,7 +72,11 @@ public class TLDateValue extends TLValue {
 	}
 	
 	
-	public Date getValue(){
+	public Object getValue(){
+		return value;
+	}
+	
+	public Date getDate(){
 		return value;
 	}
 	
