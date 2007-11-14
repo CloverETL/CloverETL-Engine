@@ -89,11 +89,13 @@
 		
 		<property name="component.dir.doc" value="${dir.doc.default}/components"/>
 		
+		<!-- Annoying, must remove or improve.
 		<uptodate property="docUpToDate" targetfile="${component.dir.doc}/ComponentsDoc.xml" >
 			<srcfiles dir= "${dir.src}" includes="**/*.java"/>
 		</uptodate>
 
 		<antcall target="documentationOutdatedWarning"/>
+		-->
 		
 		<xslt in="${component.dir.doc}/ComponentsDoc.xml" out="${component.dir.doc}/html/ComponentsDoc.html"
 			style="${component.dir.doc}/description.xsl"
