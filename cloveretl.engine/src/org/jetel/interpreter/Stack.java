@@ -23,10 +23,9 @@ import java.util.Arrays;
 import java.util.Calendar;
 
 import org.jetel.data.primitive.CloverInteger;
-import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.Numeric;
+import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
-import org.jetel.interpreter.data.TLValueType;
 import org.jetel.interpreter.data.TLVariable;
 
 /**
@@ -52,7 +51,7 @@ public class Stack {
     public static final TLValue NUM_ONE = TLValue.NUM_ONE_VAL;
     public static final TLValue NUM_MINUS_ONE = TLValue.NUM_MINUS_ONE_VAL; 
 	
-    public static final TLValue EMPTY_STRING=new TLValue(TLValueType.STRING,new StringBuilder(0));
+    public static final TLValue EMPTY_STRING=new TLStringValue("");
     
     public static final Numeric NUM_ONE_P = new CloverInteger(1);
     public static final Numeric NUM_MINUS_ONE_P = new CloverInteger(-1);
