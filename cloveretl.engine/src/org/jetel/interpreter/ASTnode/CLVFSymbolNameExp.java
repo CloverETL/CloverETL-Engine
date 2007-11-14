@@ -4,11 +4,12 @@ package org.jetel.interpreter.ASTnode;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
+import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 public class CLVFSymbolNameExp extends SimpleNode {
     
-    public TLValue typeValue;
+    public TLNumericValue typeValue;
     int typeConst;
     
   public CLVFSymbolNameExp(int id) {
@@ -27,12 +28,12 @@ public class CLVFSymbolNameExp extends SimpleNode {
   
   public void setType(int type) {
       this.typeConst=type;
-      typeValue=new TLValue(TLValueType.SYM_CONST,new CloverInteger(typeConst));
+      typeValue=new TLNumericValue(TLValueType.SYM_CONST,new CloverInteger(typeConst));
   }
   
   @Override public void init(){
   	  super.init();
-      typeValue=new TLValue(TLValueType.SYM_CONST,new CloverInteger(typeConst));
+      typeValue=new TLNumericValue(TLValueType.SYM_CONST,new CloverInteger(typeConst));
   }
   
 }
