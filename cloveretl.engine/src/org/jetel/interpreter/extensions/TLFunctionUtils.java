@@ -3,17 +3,18 @@ package org.jetel.interpreter.extensions;
 import java.util.Calendar;
 
 import org.jetel.interpreter.TransformLangParserConstants;
+import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 
 public class TLFunctionUtils implements TransformLangParserConstants  {
 
 	public static int astToken2CalendarField(TLValue astToken) {
-		if (astToken.type!= TLValueType.SYM_CONST){
+		if (astToken.getType()!= TLValueType.SYM_CONST){
 			throw new IllegalArgumentException("Argument is not of SYMBOLIC CONSTANT type: " + astToken);
 		}
 		int field = 0;
-		switch (astToken.getInt()) {
+		switch (((TLNumericValue)astToken).getInt()) {
 		case YEAR:
 			field = Calendar.YEAR;
 			break;
@@ -46,11 +47,11 @@ public class TLFunctionUtils implements TransformLangParserConstants  {
 	}
 	
 	public static TLValueType astToken2ValueType(TLValue astToken){
-		if (astToken.type!= TLValueType.SYM_CONST){
+		if (astToken.getType()!= TLValueType.SYM_CONST){
 			throw new IllegalArgumentException("Argument is not of SYMBOLIC CONSTANT type: " + astToken);
 		}
 		
-		switch(astToken.getInt()){
+		switch(((TLNumericValue)astToken).getInt()){
 			case INT_VAR: return TLValueType.INTEGER;
 			  case LONG_VAR: return TLValueType.LONG ;
 			  case DATE_VAR: return TLValueType.DATE ;
