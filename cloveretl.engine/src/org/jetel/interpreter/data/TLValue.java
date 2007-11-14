@@ -37,7 +37,7 @@ import org.jetel.metadata.DataFieldMetadata;
 public abstract class TLValue implements Comparable<TLValue>{
    
 
-	TLValueType type;
+	public final TLValueType type;
 	
     public static final TLValue NULL_VAL=TLNullValue.getInstance();
     public static final TLValue TRUE_VAL=TLBooleanValue.TRUE;
