@@ -60,7 +60,9 @@ public abstract class TLValue implements Comparable<TLValue>{
     public abstract Object getValue();
     
     
-    //public final boolean isNull();
+    /*public final boolean isNull(){
+    	return (this instanceof TLNullValue);
+    }*/
     
     public TLValueType getType(){
     	return type;

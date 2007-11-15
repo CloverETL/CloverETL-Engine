@@ -44,12 +44,13 @@ public class TLListValue extends TLContainerValue {
         valueList=new ArrayList<TLValue>(initialSize);      
     }
     
-    /* 
-     * Returns CloverInteger object containing actual
-     * length of this list
-     */
+    
     public Object getValue() {
-    	return new CloverInteger(valueList.size());
+    	return valueList;
+    }
+    
+    public List<TLValue> getList(){
+    	return valueList;
     }
     
     public TLValue getStoredValue(int index) {
