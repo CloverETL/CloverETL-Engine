@@ -20,7 +20,6 @@
 
 package org.jetel.component;
 
-import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
@@ -41,6 +40,7 @@ import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
+import org.jetel.interpreter.data.TLValue;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -184,7 +184,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 				}
                 record.deserialize(recordBuffer);
 				executor.visit(recordFilter,null);
-				if (executor.getResult().getBoolean()){
+				if (executor.getResult()==TLValue.TRUE_VAL){
                     recordBuffer.rewind();
 					outPort.writeRecordDirect(recordBuffer);
 				}else if (rejectedPort!=null){
