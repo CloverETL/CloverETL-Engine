@@ -79,7 +79,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 		addInpuRecordIdentifier = wrapper.prepareFunctionExecution(ADDINPUT_FUNCTION_NAME);
 		getOutputRecordIdentifier = wrapper.prepareFunctionExecution(GETOUTPUT_FUNCTION_NAME);
 		
-		return result == null ? true : result.getBoolean();
+		return result == null ? true : result==TLValue.TRUE_VAL;
 	}
 
 	/* (non-Javadoc)
@@ -88,7 +88,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	public boolean addInputRecord(DataRecord inRecord) {
 		TLValue result = wrapper.executePreparedFunction(addInpuRecordIdentifier , 
 				inRecord, null);
-		return result == null ? true : result.getBoolean();
+		return result == null ? true : result==TLValue.TRUE_VAL;
 	}
 
 	/* (non-Javadoc)
@@ -97,7 +97,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	public boolean getOutputRecord(DataRecord outRecord) {
 		TLValue result = wrapper.executePreparedFunction(getOutputRecordIdentifier, 
 				null, new DataRecord[]{outRecord},null);
-		return result == null ? true : result.getBoolean();
+		return result == null ? true : result==TLValue.TRUE_VAL;
 	}
 
 	/* (non-Javadoc)
