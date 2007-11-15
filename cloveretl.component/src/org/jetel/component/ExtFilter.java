@@ -261,9 +261,9 @@ public class ExtFilter extends org.jetel.graph.Node {
 		try{
 			filter = new ExtFilter(xattribs.getString(XML_ID_ATTRIBUTE));
 			if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)){
-				filter.setFilterExpression(xattribs.getString(XML_FILTEREXPRESSION_ATTRIBUTE));
+				filter.setFilterExpression(xattribs.getString(XML_FILTEREXPRESSION_ATTRIBUTE, false));
 			}else{
-				filter.setFilterExpression(xattribs.getText(xmlElement));
+				filter.setFilterExpression(xattribs.getText(xmlElement, false));
 			}
 			return filter;
 		}catch(Exception ex){

@@ -53,7 +53,7 @@ public class PropertyRefResolver {
 	private Properties properties;
 
 	private static final int MAX_RECURSION_DEPTH=10;
-    private static final boolean DEFAULT_STRICT_OPTION=true;  // default behaviour is to be strict when referencing missing
+    public static final boolean DEFAULT_RESOLVE_SPEC_CHAR = true;  // default behaviour is to resolve special characters
 
 	Log logger = LogFactory.getLog(PropertyRefResolver.class);
 	
@@ -120,23 +120,28 @@ public class PropertyRefResolver {
 	 *  It can handle nested reference - when global property is referencing another property 
 	 *
 	 * @param  value  String potentially containing one or more references to property
+	 * @param resolveSpecChars <b>true</b> if special characters should be resolved; {@link StringUtils.StringToSpecChar}
 	 * @return        String with all references resolved
 	 * @see           org.jetel.data.Defaults
      * @throws AttributeNotFoundException if referenced property does not exist
 	 */
 	
-	public String resolveRef(String value,boolean strict) {
-		if (resolve){
-		    StringBuffer strBuf = new StringBuffer(value);
-		    resolveRef2(strBuf,strict);
-		    return StringUtils.stringToSpecChar(strBuf);
-		}else{
-		    return value;
+	public String resolveRef(String value, boolean resolveSpecChars) {
+		if(!resolve) {
+			return value;
 		}
+		
+	    StringBuffer strBuf = new StringBuffer(value);
+	    resolveRef2(strBuf);
+	    if(resolveSpecChars) {
+	    	return StringUtils.stringToSpecChar(strBuf);
+	    } else {
+	    	return strBuf.toString();
+	    }
 	}
     
     public String resolveRef(String value) {
-        return resolveRef(value,DEFAULT_STRICT_OPTION);
+        return resolveRef(value, DEFAULT_RESOLVE_SPEC_CHAR);
     }
 	
     
@@ -148,24 +153,28 @@ public class PropertyRefResolver {
      *  It can handle nested reference - when global property is referencing another property 
      * 
 	 * @param value
+	 * @param resolveSpecChars <b>true</b> if special characters should be resolved; {@link StringUtils.StringToSpecChar}
 	 * @return value with all references resolved
 	 * @throws AttributeNotFoundException @throws AttributeNotFoundException if referenced property does not exist
 	 */
-	public boolean resolveRef(StringBuffer value,boolean strict) {
+	public boolean resolveRef(StringBuffer value, boolean resolveSpecChars) {
 	    if (!resolve) {
             return false;
 	    }
         boolean result = true;
-	    result =  resolveRef2(value,strict);
-	    String tmp = StringUtils.stringToSpecChar(value);
-	    value.setLength(0);
-	    value.append(tmp);
+	    result =  resolveRef2(value);
+	    
+	    if(resolveSpecChars) {
+		    String tmp = StringUtils.stringToSpecChar(value);
+		    value.setLength(0);
+		    value.append(tmp);
+	    }
         
 	    return result;
 	}
 	
     public boolean resolveRef(StringBuffer value) {
-        return resolveRef(value,DEFAULT_STRICT_OPTION);
+        return resolveRef(value, DEFAULT_RESOLVE_SPEC_CHAR);
     }
     
     
@@ -175,10 +184,9 @@ public class PropertyRefResolver {
 	 * 
 	 * @param value	String buffer containing plain text mixed with references to 
 	 * global properties - > reference is in form ${<i>..property_name..</i>}
-     * @param strict    if True, then references to non-existent properties cause AttributeNotFoundException be thrown
 	 * @return true if at least one reference to global property was found and resolved
 	 */
-	private boolean resolveRef2(StringBuffer value,boolean strict)  {
+	private boolean resolveRef2(StringBuffer value)  {
 		String reference;
 		String resolvedReference;
 		boolean found=false;
