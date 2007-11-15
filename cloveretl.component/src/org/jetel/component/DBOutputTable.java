@@ -353,7 +353,9 @@ public class DBOutputTable extends Node {
 	 * @since                                  September 27, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		// get dbConnection from graph
         IConnection conn = getGraph().getConnection(dbConnectionName);
         if(conn == null) {
