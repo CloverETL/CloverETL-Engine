@@ -28,6 +28,8 @@ import java.text.SimpleDateFormat;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
+import org.jetel.interpreter.data.TLDateValue;
+import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.interpreter.extensions.DateLib.CalendarStore;
@@ -86,21 +88,21 @@ public class ConvertLib extends TLFunctionLibrary {
         public TLValue execute(TLValue[] params, TLContext context) {
             TLValue val = (TLValue)context.getContext();
             TLValue input=params[0];
-            StringBuilder strBuf = (StringBuilder)val.value;
+            StringBuilder strBuf = (StringBuilder)val.getValue();
             strBuf.setLength(0);
             
-            if (params[0].isNull()) {
+            if (params[0]==TLValue.NULL_VAL) {
                 throw new TransformLangExecutorRuntimeException(params,
                         Function.NUM2STR.name()+" - NULL value not allowed");
             }
             int radix=10;
             
             if (params.length>1) {
-                if (params[1].isNull() || !params[1].type.isNumeric() ){
+                if (params[1]==TLValue.NULL_VAL || !params[1].type.isNumeric() ){
                     throw new TransformLangExecutorRuntimeException(params,
                         Function.NUM2STR.name()+" - wrong type of literals");
                 }
-                radix=params[1].getInt();
+                radix=((TLNumericValue)params[1]).getInt();
             }
             
                 if (radix == 10) {
@@ -108,13 +110,13 @@ public class ConvertLib extends TLFunctionLibrary {
                 } else {
                     switch(input.type) {
                     case INTEGER:
-                        strBuf.append(Integer.toString(input.getInt(),radix));
+                        strBuf.append(Integer.toString(((TLNumericValue)input).getInt(),radix));
                         break;
                     case LONG:
-                        strBuf.append(Long.toString(input.getLong(),radix));
+                        strBuf.append(Long.toString(((TLNumericValue)input).getLong(),radix));
                         break;
                     case DOUBLE:
-                        strBuf.append(Double.toHexString(input.getDouble()));
+                        strBuf.append(Double.toHexString(((TLNumericValue)input).getDouble()));
                         break;
                     default:
                     throw new TransformLangExecutorRuntimeException(params,
@@ -152,10 +154,10 @@ public class ConvertLib extends TLFunctionLibrary {
         public TLValue execute(TLValue[] params, TLContext context) {
             TLValue val = ((Date2StrContext)context.getContext()).value;
             SimpleDateFormat format=((Date2StrContext)context.getContext()).format;
-            StringBuilder strBuf = (StringBuilder)val.value;
+            StringBuilder strBuf = (StringBuilder)val.getValue();
             strBuf.setLength(0);
             
-            if (params[0].isNull() || params[1].isNull()) {
+            if (params[0]==TLValue.NULL_VAL || params[1]==TLValue.NULL_VAL) {
                 throw new TransformLangExecutorRuntimeException(params,
                         Function.DATE2STR.name()+" - NULL value not allowed");
             }
@@ -165,7 +167,7 @@ public class ConvertLib extends TLFunctionLibrary {
                     "date2str - wrong type of literal");
 
             format.applyPattern(params[1].toString());
-            strBuf.append(format.format(params[0].getDate()));
+            strBuf.append(format.format(((TLDateValue)params[0]).getDate()));
             return val;
         }
 
@@ -202,7 +204,7 @@ public class ConvertLib extends TLFunctionLibrary {
             SimpleDateFormat format=((Str2DateContext)context.getContext()).format;
             
             
-            if (params[0].isNull() || params[1].isNull()) {
+            if (params[0]==TLValue.NULL_VAL || params[1]==TLValue.NULL_VAL) {
                 throw new TransformLangExecutorRuntimeException(params,
                         Function.STR2DATE.name()+" - NULL value not allowed");
             }
@@ -213,7 +215,7 @@ public class ConvertLib extends TLFunctionLibrary {
 
             format.applyPattern(params[1].toString());
             try {
-                val.getDate().setTime(format.parse(params[0].toString()).getTime());
+                ((TLDateValue)val).getDate().setTime(format.parse(params[0].toString()).getTime());
             }catch (java.text.ParseException ex) {
                 throw new TransformLangExecutorRuntimeException(params,
                         Function.STR2DATE.name()+" - can't convert \"" + params[0] + "\"");
@@ -252,8 +254,8 @@ public class ConvertLib extends TLFunctionLibrary {
         	}
         	CalendarStore calStore=(CalendarStore) context.getContext();
         	
-        	calStore.calStart.setTime(params[0].getDate());
-        	calStore.value.getNumeric().setValue(calStore.calStart.get(TLFunctionUtils.astToken2CalendarField(params[1])));
+        	calStore.calStart.setTime(((TLDateValue)params[0]).getDate());
+        	((TLNumericValue)calStore.value).getNumeric().setValue(calStore.calStart.get(TLFunctionUtils.astToken2CalendarField(params[1])));
 
         	return calStore.value;
         }
@@ -294,24 +296,24 @@ public class ConvertLib extends TLFunctionLibrary {
         	}
         	int radix=10;
         	if (params.length>2){
-        		radix=params[2].getInt();
+        		radix=((TLNumericValue)params[2]).getInt();
         	}
         	
         	try{
                 switch (valType) {
                 case INTEGER:
-                	value.getNumeric().setValue(Integer.parseInt(params[0].getString(), radix));
+                	((TLNumericValue)value).setValue(Integer.parseInt(params[0].toString(), radix));
                     break;
                 case LONG:
-                    value.getNumeric().setValue(Long.parseLong(params[0].getString(), radix));
+                	((TLNumericValue)value).setValue(Long.parseLong(params[0].toString(), radix));
                     break;
                 case DECIMAL:
                     if (radix == 10) {
-                    	Decimal d = DecimalFactory.getDecimal(params[0].getString());
+                    	Decimal d = DecimalFactory.getDecimal(params[0].toString());
                     	if (value != null) {
-                    		value.getNumeric().setValue(d);
+                    		((TLNumericValue)value).setValue(d);
                     	}else{
-                    		value = new TLValue(TLValueType.DECIMAL,d);
+                    		value = new TLNumericValue(TLValueType.DECIMAL,d);
                     		context.setContext(value);                    		
                     	}
 //                    	value.getNumeric().setValue (DecimalFactory.getDecimal(params[0].getString()));
@@ -322,7 +324,7 @@ public class ConvertLib extends TLFunctionLibrary {
                     break;
                 case DOUBLE:
                 	if (radix==10 || radix==16){
-                    	value.getNumeric().setValue(Double.parseDouble(params[0].getString()));
+                		((TLNumericValue)value).setValue(Double.parseDouble(params[0].toString()));
                 }else{
                         throw new TransformLangExecutorRuntimeException(params,
                                 "str2num - can't convert string to number/double number using specified radix");
