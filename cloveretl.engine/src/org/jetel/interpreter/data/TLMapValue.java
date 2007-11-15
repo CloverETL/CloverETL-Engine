@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.jetel.data.DataField;
-import org.jetel.data.primitive.CloverInteger;
 
 public class TLMapValue extends TLContainerValue {
 
@@ -52,7 +51,11 @@ public class TLMapValue extends TLContainerValue {
      * Returns CloverInteger containing length/size of map
      */
     public Object getValue() {
-    	return new CloverInteger(valueMap.size());
+    	return valueMap;
+    }
+    
+    public Map getMap(){
+    	return valueMap;
     }
     
     public TLValue getValue(int index) {
