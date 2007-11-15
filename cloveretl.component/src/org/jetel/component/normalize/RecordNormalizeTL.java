@@ -28,6 +28,7 @@ import org.jetel.data.primitive.CloverInteger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
+import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -82,14 +83,20 @@ public class RecordNormalizeTL implements RecordNormalize {
 		lenghtFunctionIdentifier = wrapper.prepareFunctionExecution(LENGTH_FUNCTION_NAME);
 		transformFunctionIdentifier = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
 		
-		return result == null ? true : result.getBoolean();
+		return result == null ? true : result==TLValue.TRUE_VAL;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordNormalize#count(org.jetel.data.DataRecord)
 	 */
 	public int count(DataRecord source) {
-		return wrapper.executePreparedFunction(lenghtFunctionIdentifier,source,null).getInt();
+		TLValue value;
+		value=wrapper.executePreparedFunction(lenghtFunctionIdentifier,source,null);
+		if (value.type.isNumeric()){
+			return ((TLNumericValue)value).getInt();
+		}else{
+			throw new RuntimeException("Normalizer - count() functions does not return integer value !");
+		}
 	}
 
 	/* (non-Javadoc)
@@ -99,8 +106,8 @@ public class RecordNormalizeTL implements RecordNormalize {
 			throws TransformException {
 		TLValue result = wrapper.executePreparedFunction(transformFunctionIdentifier, 
 				new DataRecord[]{source}, new DataRecord[]{target}, 
-				new TLValue[]{new TLValue(TLValueType.INTEGER, new CloverInteger(idx))});
-		return result == null ? true : result.getBoolean();
+				new TLValue[]{new TLNumericValue(TLValueType.INTEGER,new CloverInteger(idx))});
+		return result == null ? true : result==TLValue.TRUE_VAL;
 	}
 
 	/* (non-Javadoc)
