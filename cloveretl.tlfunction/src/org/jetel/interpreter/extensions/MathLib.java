@@ -23,8 +23,8 @@
  */
 package org.jetel.interpreter.extensions;
 
-import org.jetel.data.primitive.CloverDouble;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
+import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 
@@ -89,9 +89,9 @@ public class MathLib implements ITLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
-                TLValue retVal=(TLValue)context.getContext();
+                TLNumericValue retVal=(TLNumericValue)context.getContext();
                 try {
-                    ((CloverDouble)retVal.getValue()).setValue(Math.sqrt(params[0].getDouble()));
+                    retVal.setValue(Math.sqrt(((TLNumericValue)params[0]).getDouble()));
                     return retVal;
                 } catch (Exception ex) {
                     throw new TransformLangExecutorRuntimeException(
@@ -117,9 +117,9 @@ public class MathLib implements ITLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
-                TLValue retVal=(TLValue)context.getContext();
+                TLNumericValue retVal=(TLNumericValue)context.getContext();
                 try {
-                    ((CloverDouble)retVal.getValue()).setValue(Math.log(params[0].getDouble()));
+                    retVal.setValue(Math.log(((TLNumericValue)params[0]).getDouble()));
                     return retVal;
                 } catch (Exception ex) {
                     throw new TransformLangExecutorRuntimeException(
@@ -144,9 +144,9 @@ public class MathLib implements ITLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
-                TLValue retVal=(TLValue)context.getContext();
+                TLNumericValue retVal=(TLNumericValue)context.getContext();
                 try {
-                    ((CloverDouble)retVal.getValue()).setValue(Math.log10(params[0].getDouble()));
+                    retVal.setValue(Math.log10(((TLNumericValue)params[0]).getDouble()));
                     return retVal;
                 } catch (Exception ex) {
                     throw new TransformLangExecutorRuntimeException(
@@ -171,9 +171,9 @@ public class MathLib implements ITLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
-                TLValue retVal=(TLValue)context.getContext();
+                TLNumericValue retVal=(TLNumericValue)context.getContext();
                 try {
-                    ((CloverDouble)retVal.getValue()).setValue(Math.exp(params[0]
+                    retVal.setValue(Math.exp(((TLNumericValue)params[0])
                                     .getDouble()));
                     return retVal;
                 } catch (Exception ex) {
@@ -199,9 +199,9 @@ public class MathLib implements ITLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
-                TLValue retVal=(TLValue)context.getContext();
+                TLNumericValue retVal=(TLNumericValue)context.getContext();
                 try {
-                    ((CloverDouble)retVal.getValue()).setValue(Math.round(params[0]
+                   retVal.setValue(Math.round(((TLNumericValue)params[0])
                                     .getDouble()));
                     return retVal;
                 } catch (Exception ex) {
@@ -227,9 +227,9 @@ public class MathLib implements ITLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
-                TLValue retVal=(TLValue)context.getContext();
+                TLNumericValue retVal=(TLNumericValue)context.getContext();
                 try {
-                    ((CloverDouble)retVal.getValue()).setValue(Math.pow(params[0].getDouble(),params[1].getDouble()));
+                    retVal.setValue(Math.pow(((TLNumericValue)params[0]).getDouble(),((TLNumericValue)params[1]).getDouble()));
                     return retVal;
                 } catch (Exception ex) {
                     throw new TransformLangExecutorRuntimeException(
@@ -277,9 +277,9 @@ public class MathLib implements ITLFunctionLibrary {
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
-                TLValue retVal=(TLValue)context.getContext();
+                TLNumericValue retVal=(TLNumericValue)context.getContext();
                 try {
-                    retVal.getNumeric().setValue(Math.random());
+                    retVal.setValue(Math.random());
                 } catch (Exception ex) {
                     throw new TransformLangExecutorRuntimeException(
                             "Error when executing RANDOM function", ex);

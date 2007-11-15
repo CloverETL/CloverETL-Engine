@@ -26,6 +26,8 @@ package org.jetel.interpreter.extensions;
 import java.util.Calendar;
 
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
+import org.jetel.interpreter.data.TLDateValue;
+import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 
@@ -75,7 +77,7 @@ public class DateLib extends TLFunctionLibrary {
     
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
-            TLValue val=(TLValue)context.getContext();
+            TLDateValue val=(TLDateValue)context.getContext();
             val.getDate().setTime(Calendar.getInstance().getTimeInMillis()); 
             return  val;
         }
@@ -105,9 +107,9 @@ public class DateLib extends TLFunctionLibrary {
 						"dateadd - wrong type of literal(s)");
 			}
 
-			calStore.calStart.setTime(params[0].getDate());
-			calStore.calStart.add(TLFunctionUtils.astToken2CalendarField(params[2]),params[1].getInt());
-			calStore.value.getDate().setTime(calStore.calStart.getTimeInMillis());
+			calStore.calStart.setTime(((TLDateValue)params[0]).getDate());
+			calStore.calStart.add(TLFunctionUtils.astToken2CalendarField(params[2]),((TLNumericValue)params[1]).getInt());
+			((TLDateValue)calStore.value).getDate().setTime(calStore.calStart.getTimeInMillis());
 			return calStore.value;
 		}
 
@@ -139,7 +141,7 @@ public class DateLib extends TLFunctionLibrary {
 						"datediff - wrong type of literal(s)");
 			}
 
-			long diffSec = (params[0].getDate().getTime() - params[1].getDate().getTime()) / 1000;
+			long diffSec = (((TLDateValue)params[0]).getDate().getTime() - ((TLDateValue)params[1]).getDate().getTime()) / 1000;
             int diff = 0;
             int calendarField=TLFunctionUtils.astToken2CalendarField(params[2]);
             switch (calendarField) {
@@ -163,26 +165,26 @@ public class DateLib extends TLFunctionLibrary {
                 diff = (int) diffSec / 604800;
                 break;
             case Calendar.MONTH:
-                calStore.calStart.setTime(params[0].getDate());
-                calStore.calEnd.setTime(params[1].getDate());
+                calStore.calStart.setTime(((TLDateValue)params[0]).getDate());
+                calStore.calEnd.setTime(((TLDateValue)params[1]).getDate());
                 diff = ( calStore.calStart.get(Calendar.MONTH) + calStore.calStart
                         .get(Calendar.YEAR) * 12)
                         - (calStore.calEnd.get(Calendar.MONTH) + calStore.calEnd
                                 .get(Calendar.YEAR) * 12);
                 break;
             case Calendar.YEAR:
-            	calStore.calStart.setTime(params[0].getDate());
-                calStore.calEnd.setTime(params[1].getDate());
+            	calStore.calStart.setTime(((TLDateValue)params[0]).getDate());
+                calStore.calEnd.setTime(((TLDateValue)params[1]).getDate());
                 diff = calStore.calStart.get(calendarField)
                         - calStore.calEnd.get(calendarField);
                 break;
             default:
-                Object arguments[] = { new Integer(params[2].getInt()) };
+                Object arguments[] = { new Integer(((TLNumericValue)params[2]).getInt()) };
                 throw new TransformLangExecutorRuntimeException(arguments,
                         "datediff - wrong difference unit");
 			
             }
-            calStore.value.getNumeric().setValue(diff);
+            ((TLNumericValue)calStore.value).setValue(diff);
                 
 			return calStore.value;
 		}
@@ -222,15 +224,15 @@ public class DateLib extends TLFunctionLibrary {
 			}
 
 			if (type==TLValueType.DATE ) {
-	            store.cal.setTime(params[0].getDate());
+	            store.cal.setTime(((TLDateValue)params[0]).getDate());
 	            store.cal.set(Calendar.HOUR_OF_DAY, 0);
 	            store.cal.set(Calendar.MINUTE , 0);
 	            store.cal.set(Calendar.SECOND , 0);
 	            store.cal.set(Calendar.MILLISECOND , 0);
 	            
-	            store.value.getDate().setTime(store.cal.getTimeInMillis());
+	            ((TLDateValue)store.value).getDate().setTime(store.cal.getTimeInMillis());
 	        }else if (type.isNumeric()){
-	        	store.value.getNumeric().setValue(params[0].getNumeric());
+	        	store.value.setValue(params[0]);
 	        }else {
 	            throw new TransformLangExecutorRuntimeException(params,
 	                    "trunc - wrong type of literal");
