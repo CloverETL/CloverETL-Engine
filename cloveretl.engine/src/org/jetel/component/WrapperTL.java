@@ -20,8 +20,6 @@
 
 package org.jetel.component;
 
-import java.io.ByteArrayInputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -150,16 +148,7 @@ public class WrapperTL {
 	public void init() throws ComponentNotReadyException{
         CLVFStart parseTree=null;
         //creating parser
-        try {
-			if (sourceMetadata != null) {
-				parser = new TransformLangParser(sourceMetadata, targetMetadata, 
-						new ByteArrayInputStream(srcCode.getBytes("UTF-8")), "UTF-8");
-			}else{
-				parser = new TransformLangParser(new ByteArrayInputStream(srcCode.getBytes("UTF-8")), "UTF-8");
-			}
-		} catch (UnsupportedEncodingException e) {
-			// can't happen: coding and encoding with the same charset
-		}
+		parser = new TransformLangParser(sourceMetadata, targetMetadata,srcCode); 
 		//initializing parser
         try {
             parseTree = parser.Start();
