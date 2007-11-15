@@ -30,6 +30,8 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.interpreter.data.TLNumericValue;
+import org.jetel.interpreter.data.TLValue;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -66,7 +68,13 @@ public class PartitionTL implements PartitionFunction {
 	 * @see org.jetel.component.partition.PartitionFunction#getOutputPort(org.jetel.data.DataRecord)
 	 */
 	public int getOutputPort(DataRecord record) {
-		return wrapper.executePreparedFunction(record, null).getInt();
+		TLValue value;
+		value=wrapper.executePreparedFunction(record, null);
+		if (value.type.isNumeric()){
+			return ((TLNumericValue)value).getInt();
+		}else{
+			throw new RuntimeException("Partition - getOutputPort() functions does not return integer value !");
+		}
 	}
 
 	/* (non-Javadoc)
