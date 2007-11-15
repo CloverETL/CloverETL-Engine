@@ -26,16 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.graph.TransformationGraph;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-
-import org.apache.commons.logging.Log;
 
 /**
  *  Helper class (wrapper) around NamedNodeMap with possibility to parse string
@@ -175,25 +171,24 @@ public class ComponentXMLAttributes {
      * reference to global parameter/property included in atribute's textual/string value
 	 */
 	public String getString(String key) throws AttributeNotFoundException {
-		return getString(key,true);
+		return getString(key, true);
 	}
     
     /**
      * Returns the String value of specified XML attribute
      * 
      * @param key   name of the attribute
-     * @param strictlyResolve   if true, any unresolvable reference to global parameter/property causes AttributeNotFoundException be
-     * thrown 
+     * @param resolveSpecChars if true, all special characters will be resolved; @see StringUtils.stringToSpecChar()
      * @return  The string value
      * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
      * reference to global parameter/property included in atribute's textual/string value
      */
-    public String getString(String key,boolean strictlyResolve) throws AttributeNotFoundException {
+    public String getString(String key, boolean resolveSpecChars) throws AttributeNotFoundException {
         String value=nodeXML.getAttribute(key);
         if (value.length()==0){
             throw new AttributeNotFoundException(key);
         }
-        return refResolver.resolveRef(value,strictlyResolve);
+        return refResolver.resolveRef(value, resolveSpecChars);
     }
 
 
@@ -210,6 +205,21 @@ public class ComponentXMLAttributes {
             return defaultValue;
         }
         return refResolver.resolveRef(value);
+	}
+
+	/**
+	 *  Returns the String value of specified XML attribute
+	 *
+	 * @param  key           name of the attribute
+	 * @param  defaultValue  default value to be returned when attribute can't be found
+	 * @return               The string value
+	 */
+	public String getString(String key, String defaultValue, boolean resolveSpecChars) {
+        String value=nodeXML.getAttribute(key);
+        if (value.length()==0){
+            return defaultValue;
+        }
+        return refResolver.resolveRef(value, resolveSpecChars);
 	}
 
     /**
@@ -510,13 +520,12 @@ public class ComponentXMLAttributes {
 	 *  Returns first TEXT_NODE child under specified XML Node
 	 *
 	 * @param  nodeXML  XML node from which to start searching
-     * @param strictlyResolve   if true, any unresolvable reference to global parameter/property causes AttributeNotFoundException be
-     * thrown 
+     * @param resolveSpecChars if true, all special characters will be resolved; @see StringUtils.stringToSpecChar()
 	 * @return          The TEXT_NODE value (String) if any exist or null
      * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
      * reference to global parameter/property included in atribute's textual/string value
      */
-	public String getText(org.w3c.dom.Node nodeXML,boolean strictlyResolve) throws AttributeNotFoundException{
+	public String getText(org.w3c.dom.Node nodeXML, boolean resolveSpecChars) throws AttributeNotFoundException{
 		org.w3c.dom.Node childNode;
 		org.w3c.dom.NodeList list;
 		if (nodeXML.hasChildNodes()) {
@@ -524,7 +533,7 @@ public class ComponentXMLAttributes {
 			for (int i = 0; i < list.getLength(); i++) {
 				childNode = list.item(i);
 				if (childNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
-					return refResolver.resolveRef(childNode.getNodeValue(),strictlyResolve);
+					return refResolver.resolveRef(childNode.getNodeValue(), resolveSpecChars);
 				}
 			}
 		}

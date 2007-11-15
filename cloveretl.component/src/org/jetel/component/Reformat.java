@@ -297,7 +297,7 @@ public class Reformat extends Node {
 		try {
             reformat = new Reformat(
                             xattribs.getString(XML_ID_ATTRIBUTE),
-                            xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+                            xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null, false), 
                             xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
                             xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null));
 			reformat.setTransformationParameters(xattribs.attributes2Properties(

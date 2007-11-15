@@ -318,7 +318,7 @@ public class Normalizer extends Node {
 		try {
 			norm = new Normalizer(
 					xattribs.getString(XML_ID_ATTRIBUTE),					
-					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null, false), 
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
 					xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE, null));
             if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {

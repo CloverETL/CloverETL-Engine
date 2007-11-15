@@ -405,7 +405,7 @@ public class Denormalizer extends Node {
 		try {
 			denorm = new Denormalizer(
 					xattribs.getString(XML_ID_ATTRIBUTE),					
-					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null, false), 
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
 					xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE, null),
 					parseKeyList(xattribs.getString(XML_KEY_ATTRIBUTE, null)),

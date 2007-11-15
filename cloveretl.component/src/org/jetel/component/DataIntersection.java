@@ -474,7 +474,7 @@ public class DataIntersection extends Node {
 			intersection = new DataIntersection(
                     xattribs.getString(XML_ID_ATTRIBUTE),
                     xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-                    xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+                    xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null, false), 
                     xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
                     xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null));
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {

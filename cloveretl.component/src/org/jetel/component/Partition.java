@@ -535,7 +535,7 @@ public class Partition extends Node {
 					StringUtils.split(xattribs.getString(XML_RANGES_ATTRIBUTE)) :
 						null;		
 		    partition = new Partition(xattribs.getString(XML_ID_ATTRIBUTE),
-		    		xattribs.getString(XML_PARTIONSOURCE_ATTRIBUTE, null),
+		    		xattribs.getString(XML_PARTIONSOURCE_ATTRIBUTE, null, false),
 		    		xattribs.getString(XML_PARTITIONCLASS_ATTRIBUTE, null),
 		    		xattribs.getString(XML_PARTITIONURL_ATTRIBUTE, null), 
 		    		key, ranges);
