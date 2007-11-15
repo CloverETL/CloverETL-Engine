@@ -272,8 +272,8 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *
 	 *@return    Collection of input ports metadata
 	 */
-	public Collection getInMetadata() {
-		List ret = new ArrayList(inPorts.size());
+	public Collection<DataRecordMetadata> getInMetadata() {
+		List<DataRecordMetadata> ret = new ArrayList<DataRecordMetadata>(inPorts.size());
 		for(Iterator it = getInPorts().iterator(); it.hasNext();) {
 		    ret.add(((InputPort) (it.next())).getMetadata());
 		}
