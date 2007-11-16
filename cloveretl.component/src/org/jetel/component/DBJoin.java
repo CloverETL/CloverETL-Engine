@@ -278,7 +278,8 @@ public class DBJoin extends Node {
             dbMetadata = getGraph().getDataRecordMetadata(metadataName);
     		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
     		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
-            lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),(DBConnection) conn,dbMetadata,query,maxCached);
+            lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),((DBConnection) conn).getConnection(getId()),
+            		dbMetadata,query,maxCached);
             lookupTable.checkConfig(status);
 //    		lookupTable.init();
     		try {
@@ -324,7 +325,8 @@ public class DBJoin extends Node {
         dbMetadata = getGraph().getDataRecordMetadata(metadataName);
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
-        lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),(DBConnection) conn,dbMetadata,query,maxCached);
+        lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),((DBConnection) conn).getConnection(getId()),
+        		dbMetadata,query,maxCached);
         lookupTable.checkConfig(null);
 		lookupTable.init();
 		try {

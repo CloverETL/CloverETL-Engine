@@ -21,6 +21,7 @@ package org.jetel.component;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.connection.DBConnection;
 import org.jetel.connection.SQLDataParser;
 import org.jetel.data.DataRecord;
 import org.jetel.database.IConnection;
@@ -133,7 +134,7 @@ public class DBInputTable extends Node {
 	public final static String COMPONENT_TYPE = "DB_INPUT_TABLE";
 	private final static int WRITE_TO_PORT = 0;
 	private String url = null;
-	private IConnection connection; 
+	private DBConnection connection; 
 
 	/**
 	 *Constructor for the DBInputTable object
@@ -165,10 +166,14 @@ public class DBInputTable extends Node {
 		//set fetch size (if defined)
 		if (fetchSize!=0) parser.setFetchSize(fetchSize);
 		// try to open file & initialize data parser
-        connection = getGraph().getConnection(dbConnectionName);
-        if (connection==null){
+        IConnection conn = getGraph().getConnection(dbConnectionName);
+        if (conn==null){
             throw new ComponentNotReadyException("Can't obtain DBConnection object: \""+dbConnectionName+"\"");
         }
+        if(!(conn instanceof DBConnection)) {
+            throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
+        }
+        connection = (DBConnection)conn;
         connection.init();
 		parser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
 	}
@@ -181,7 +186,7 @@ public class DBInputTable extends Node {
 		record.init();
 		record.reset();
 		try {
-			parser.setDataSource(connection);
+			parser.setDataSource(connection.getConnection(getId()));
 			parser.initSQLDataMap(record);
 
 			// till it reaches end of data or it is stopped from outside
