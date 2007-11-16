@@ -20,6 +20,7 @@
 
 package org.jetel.connection;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -48,7 +49,7 @@ public class SQLDataParser implements Parser {
 	protected int recordCounter;
 	protected int fieldCount = 0;
 
-	protected DBConnection dbConnection;
+	protected Connection dbConnection;
 	protected String sqlQuery;
 	protected Statement statement;
 	protected QueryAnalyzer analyzer;
@@ -237,21 +238,21 @@ public class SQLDataParser implements Parser {
 		
 		//outRecord.init();
         // get dbConnection from graph
-        if (! (inputDataSource instanceof DBConnection)){
-            throw new RuntimeException("Need DBConnection object !");
+        if (! (inputDataSource instanceof Connection)){
+            throw new RuntimeException("Need java.sql.Connection object !");
         }
-        dbConnection= (DBConnection) inputDataSource;
+        dbConnection= (Connection) inputDataSource;
         
         try{
             // try to set autocommit to false
-            dbConnection.getConnection().setAutoCommit(false);
+            dbConnection.setAutoCommit(false);
         }catch (Exception e) {
             logger.warn(e);
         }
         try {
             // connection is created up front
             //dbConnection.connect();
-            statement = dbConnection.getStatement();
+            statement = dbConnection.createStatement();
             /*ResultSet.TYPE_FORWARD_ONLY,
                     ResultSet.CONCUR_READ_ONLY,ResultSet.CLOSE_CURSORS_AT_COMMIT);*/
         } catch (SQLException e) {
@@ -282,7 +283,7 @@ public class SQLDataParser implements Parser {
             resultSet.setFetchSize(fetchSize);
         }catch (SQLException e){
             // do nothing - just attempt
-            logger.debug("unable to set FetchDirection & FetchSize for DB connection ["+dbConnection.getId()+"]");
+            logger.debug("unable to set FetchDirection & FetchSize for DB connection ["+dbConnection.toString()+"]");
         }
 		this.recordCounter = 1;
 	}
@@ -296,8 +297,8 @@ public class SQLDataParser implements Parser {
 				resultSet.close();
 			}
 			// try to commit (as some DBs apparently need commit even when data is read only
-			if (!dbConnection.getConnection().getAutoCommit()) {
-				dbConnection.getConnection().commit();
+			if (!dbConnection.getAutoCommit()) {
+				dbConnection.commit();
 			}            
 			// close statement
 			statement.close();
