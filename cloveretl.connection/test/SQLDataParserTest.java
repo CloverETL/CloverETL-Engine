@@ -54,7 +54,7 @@ public class SQLDataParserTest extends TestCase {
 		aParser2 = new SQLDataParser("connection", "SELECT * FROM good");
 		try {
 			aParser2.init(metadata);
-			aParser2.setDataSource(aDBConnection);
+			aParser2.setDataSource(aDBConnection.getConnection(aDBConnection.getId()));
 			aParser2.initSQLDataMap(record);
 		} catch (ComponentNotReadyException e1) {
 			e1.printStackTrace();

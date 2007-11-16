@@ -218,14 +218,14 @@ public class AnalyzeDB {
 			System.exit(0);
 		}
 		// Execute Query
-		ResultSet resultSet = connection.getStatement().executeQuery(query);
+		ResultSet resultSet = connection.getConnection(connection.getId()).createStatement().executeQuery(query);
 		ResultSetMetaData metadata = resultSet.getMetaData();
 
 		// here we print XML description of data 
 		print.print("<?xml version=\"1.0\"");
 		if (utf8Encoding) print.println(" encoding=\""+DEFAULT_XML_ENCODING+"\" ?>");
 		else print.println("?>");
-		print.println("<!-- Automatically generated from database " + connection.getConnection().getMetaData().getURL() + " -->");
+		print.println("<!-- Automatically generated from database " + connection.getConnection(connection.getId()).getMetaData().getURL() + " -->");
 		print.println("<Record name=\"" + metadata.getTableName(1) + "\" type=\"delimited\">");
 
 		for (int i = 1; i <= metadata.getColumnCount(); i++) {

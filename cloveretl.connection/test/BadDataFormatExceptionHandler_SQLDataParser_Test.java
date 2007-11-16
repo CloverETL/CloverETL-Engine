@@ -54,9 +54,9 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test  extends TestCase 
 	aParser1 = new SQLDataParser("connection","SELECT * FROM good");
 	try {
 		aParser1.init(metadata);
-		aParser1.setDataSource(aDBConnection);
+		aParser1.setDataSource(aDBConnection.getConnection(aDBConnection.getId()));
 		aParser2.init(metadata);
-		aParser2.setDataSource(aDBConnection);
+		aParser2.setDataSource(aDBConnection.getConnection(aDBConnection.getId()));
 	} catch (ComponentNotReadyException e1) {
 		e1.printStackTrace();
 	}
