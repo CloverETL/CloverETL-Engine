@@ -19,6 +19,7 @@
 */
 package org.jetel.lookup;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -87,7 +88,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     protected String connectionId;
 
 	protected DataRecordMetadata dbMetadata;
-	protected DBConnection dbConnection;
+	protected Connection dbConnection;
 	protected PreparedStatement pStatement;
 	protected RecordKey lookupKey;
 	protected int[] keyFields;
@@ -122,7 +123,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@param  dbRecordMetadata  Description of the Parameter
 	 *@param  sqlQuery          Description of the Parameter
 	 */
-  public DBLookupTable(String id, DBConnection dbConnection, 
+  public DBLookupTable(String id, Connection dbConnection, 
           DataRecordMetadata dbRecordMetadata, String sqlQuery) {
       super(id);
 		this.dbConnection = dbConnection;
@@ -138,12 +139,12 @@ public class DBLookupTable extends GraphElement implements LookupTable {
    *@param  sqlQuery          Description of the Parameter
    * @param dbFieldTypes      List containing the types of the final record
    */
-  public DBLookupTable(String id, DBConnection dbConnection, 
+  public DBLookupTable(String id, Connection dbConnection, 
           DataRecordMetadata dbRecordMetadata, java.lang.String sqlQuery, java.util.List dbFieldTypes) {
       this(id, dbConnection,dbRecordMetadata,sqlQuery);
   }
   
-  public DBLookupTable(String id, DBConnection dbConnection, 
+  public DBLookupTable(String id, Connection dbConnection, 
           DataRecordMetadata dbRecordMetadata, String sqlQuery, int numCached) {
       super(id);
       this.dbConnection = dbConnection;
@@ -456,11 +457,17 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		super.init();
 		
 		if (dbConnection == null) {
-			dbConnection = (DBConnection)getGraph().getConnection(connectionId);
-		}
-		if (dbConnection == null) {
-			throw new ComponentNotReadyException("Connection " + StringUtils.quote(connectionId) + 
-					" does not exist!!!");
+			DBConnection tmp = (DBConnection)getGraph().getConnection(connectionId);
+			if (tmp == null) {
+				throw new ComponentNotReadyException("Connection " + StringUtils.quote(connectionId) + 
+						" does not exist!!!");
+			}
+			tmp.init();
+			try {
+				dbConnection = tmp.getConnection(getId());
+			} catch (RuntimeException e) {
+				throw new ComponentNotReadyException("Can't cconnect to database: " + e.getMessage());
+			}
 		}
 		
         // if caching is required, crate map to store records
@@ -469,9 +476,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
             resultCache.enableDuplicity();
              
         }
-        // first try to connect to db
         try {
-            dbConnection.init();
             pStatement = dbConnection.prepareStatement(sqlQuery);
             /*ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY,
                     ResultSet.CLOSE_CURSORS_AT_COMMIT);*/
@@ -610,11 +615,11 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         super.checkConfig(status);
 
 		if (dbConnection == null) {
-			dbConnection = (DBConnection)getGraph().getConnection(connectionId);
-		}
-		if (dbConnection == null) {
-			status.add(new ConfigurationProblem("Connection " + StringUtils.quote(connectionId) + 
-					" does not exist!!!", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION));
+			DBConnection tmp = (DBConnection)getGraph().getConnection(connectionId);
+			if (tmp == null) {
+				status.add(new ConfigurationProblem("Connection " + StringUtils.quote(connectionId) + 
+						" does not exist!!!", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION));
+			}
 		}
 
         return status;
@@ -658,7 +663,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         			query.setLength(whereIndex);
         		}
         	}
-        	Statement statement = dbConnection.getStatement(); 
+        	Statement statement = dbConnection.createStatement(); 
 			resultSet = statement.executeQuery(query.toString());
 			ArrayList<DataRecord> records = new ArrayList<DataRecord>();
 			while (fetch()){
