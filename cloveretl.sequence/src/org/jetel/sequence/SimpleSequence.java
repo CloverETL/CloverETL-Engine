@@ -72,7 +72,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
     
     public static Log logger = LogFactory.getLog(SimpleSequence.class);
     
-    final String filename;
+    String filename;
     long sequenceValue;
     final int step;
     final int start;
@@ -265,6 +265,12 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		return filename;
 	}
 
+	public void setFilename(String filename) {
+		if(isInitialized()) {
+			throw new RuntimeException("Attempt to set file name for initialized sequence '" + toString() + "'.");
+		}
+		this.filename = filename;
+	}
 
 	static public SimpleSequence fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
