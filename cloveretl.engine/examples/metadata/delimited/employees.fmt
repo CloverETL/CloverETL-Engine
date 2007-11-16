@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Record name="Employees" recordDelimiter="" recordSize="-1" type="delimited">
 <Field delimiter=";" name="EmployeeID" nullable="true" shift="0" type="integer"/>
-<Field delimiter=";" format="#" name="LastName" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" format="" name="LastName" nullable="true" shift="0" type="string"/>
 <Field delimiter=";" name="FirstName" nullable="true" shift="0" type="string"/>
 <Field delimiter=";" name="Title" nullable="true" shift="0" type="string"/>
 <Field delimiter=";" name="TitleInCourtesy" nullable="true" shift="0" type="string"/>
