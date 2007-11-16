@@ -234,7 +234,7 @@ public class DBExecute extends Node {
 		Statement sqlStatement=null;
 		// this does not work for some drivers
 		try {
-			dbConnection.getConnection().setAutoCommit(false);
+			dbConnection.getConnection(getId()).setAutoCommit(false);
 		} catch (SQLException ex) {
 			if (oneTransaction) {
 				logger.fatal("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
@@ -245,7 +245,7 @@ public class DBExecute extends Node {
 		try {
 			// let's create statement - based on what do we execute
             if (!procedureCall){
-                sqlStatement = dbConnection.getStatement();
+                sqlStatement = dbConnection.getConnection(getId()).createStatement();
             }
             
 			for (int i = 0; i < dbSQL.length; i++) {
@@ -258,12 +258,12 @@ public class DBExecute extends Node {
 					logger.info(dbSQL[i]);
 				}
                 if (sqlStatement==null){
-                        sqlStatement=dbConnection.getConnection().prepareCall(dbSQL[i]);
+                        sqlStatement=dbConnection.getConnection(getId()).prepareCall(dbSQL[i]);
                 }
 				sqlStatement.executeUpdate(dbSQL[i]);
 				// shall we commit each statemetn ?
 				if (!oneTransaction) {
-					dbConnection.getConnection().commit();
+					dbConnection.getConnection(getId()).commit();
 				}
                 if (procedureCall){
                     sqlStatement.close();
@@ -271,7 +271,7 @@ public class DBExecute extends Node {
                 }
 			}
 			// let's commit what remains
-			dbConnection.getConnection().commit();
+			dbConnection.getConnection(getId()).commit();
 			if(sqlStatement!=null) { sqlStatement.close(); }
 
 		} catch (Exception ex) {
@@ -286,7 +286,7 @@ public class DBExecute extends Node {
 	/**  Description of the Method */
 	private void performRollback() {
 		try {
-			dbConnection.getConnection().rollback();
+			dbConnection.getConnection(getId()).rollback();
 		} catch (Exception ex) {
 		}
 	}
