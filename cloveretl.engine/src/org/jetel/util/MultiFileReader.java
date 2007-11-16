@@ -238,40 +238,7 @@ public class MultiFileReader {
             sourceCounter++;
             throw e;
         }
-        if(rec != null) {
-            autoFillingData = autoFillingMap.get(rec.getMetadata());
-            if (autoFillingData == null) {
-            	autoFillingData = addAutoFillingFields(rec.getMetadata());
-            }
-           	for (int i : autoFillingData.globalRowCount) {
-           		rec.getField(i).setValue(globalCounter);
-           	}
-           	for (int i : autoFillingData.sourceRowCount) {
-           		rec.getField(i).setValue(sourceCounter);
-           	}
-           	for (int i : autoFillingData.metadataRowCount) {
-           		rec.getField(i).setValue(autoFillingData.counter);
-           	}
-           	for (int i : autoFillingData.metadataSourceRowCount) {
-           		rec.getField(i).setValue(autoFillingData.sourceCounter);
-           	}
-           	for (int i : autoFillingData.sourceName) {
-           		rec.getField(i).setValue(filename);
-           	}
-           	for (int i : autoFillingData.sourceTimestamp) {
-           		rec.getField(i).setValue(fileTimestamp);
-           	}
-           	for (int i : autoFillingData.sourceSize) {
-           		rec.getField(i).setValue(fileSize);
-           	}
-           	for (int i : autoFillingData.defaultValue) {
-           		rec.getField(i).setToDefaultValue();
-           	}
-            globalCounter++;
-            sourceCounter++;
-            autoFillingData.counter++;
-            autoFillingData.sourceCounter++;
-        }
+        setAutoFillingFields(rec);
         
         return rec;
 	}		
@@ -307,43 +274,53 @@ public class MultiFileReader {
             globalCounter++;
             throw e;
         }
-        if(rec != null) {
-            autoFillingData = autoFillingMap.get(rec.getMetadata());
-            if (autoFillingData == null) {
-            	autoFillingData = addAutoFillingFields(rec.getMetadata());
-            }
-           	for (int i : autoFillingData.globalRowCount) {
-           		rec.getField(i).setValue(globalCounter);
-           	}
-           	for (int i : autoFillingData.sourceRowCount) {
-           		rec.getField(i).setValue(sourceCounter);
-           	}
-           	for (int i : autoFillingData.metadataRowCount) {
-           		rec.getField(i).setValue(autoFillingData.counter);
-           	}
-           	for (int i : autoFillingData.metadataSourceRowCount) {
-           		rec.getField(i).setValue(autoFillingData.sourceCounter);
-           	}
-           	for (int i : autoFillingData.sourceName) {
-           		rec.getField(i).setValue(filename);
-           	}
-           	for (int i : autoFillingData.sourceTimestamp) {
-           		rec.getField(i).setValue(fileTimestamp);
-           	}
-           	for (int i : autoFillingData.sourceSize) {
-           		rec.getField(i).setValue(fileSize);
-           	}
-           	for (int i : autoFillingData.defaultValue) {
-           		rec.getField(i).setToDefaultValue();
-           	}
-            globalCounter++;
-            sourceCounter++;
-            autoFillingData.counter++;
-            autoFillingData.sourceCounter++;
-        }
+        setAutoFillingFields(rec);
+        
         return rec;
 	}		
 
+	/**
+	 * Sets autofilling fields in data record.
+	 * 
+	 * @param rec
+	 */
+	private void setAutoFillingFields(DataRecord rec) {
+        if(rec == null) return;
+
+        autoFillingData = autoFillingMap.get(rec.getMetadata());
+        if (autoFillingData == null) {
+        	autoFillingData = addAutoFillingFields(rec.getMetadata());
+        }
+       	for (int i : autoFillingData.globalRowCount) {
+       		rec.getField(i).setValue(globalCounter);
+       	}
+       	for (int i : autoFillingData.sourceRowCount) {
+       		rec.getField(i).setValue(sourceCounter);
+       	}
+       	for (int i : autoFillingData.metadataRowCount) {
+       		rec.getField(i).setValue(autoFillingData.counter);
+       	}
+       	for (int i : autoFillingData.metadataSourceRowCount) {
+       		rec.getField(i).setValue(autoFillingData.sourceCounter);
+       	}
+       	for (int i : autoFillingData.sourceName) {
+       		rec.getField(i).setValue(filename);
+       	}
+       	for (int i : autoFillingData.sourceTimestamp) {
+       		rec.getField(i).setValue(fileTimestamp);
+       	}
+       	for (int i : autoFillingData.sourceSize) {
+       		rec.getField(i).setValue(fileSize);
+       	}
+       	for (int i : autoFillingData.defaultValue) {
+       		rec.getField(i).setToDefaultValue();
+       	}
+        globalCounter++;
+        sourceCounter++;
+        autoFillingData.counter++;
+        autoFillingData.sourceCounter++;
+	}
+	
 	/**
 	 * Releases resources held by the instance
 	 *
