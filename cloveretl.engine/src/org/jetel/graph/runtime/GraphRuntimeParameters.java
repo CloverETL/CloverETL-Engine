@@ -28,7 +28,7 @@ import java.net.URL;
 
 import org.jetel.data.Defaults;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.FileUtils;
+import org.jetel.util.file.FileUtils;
 
 public class GraphRuntimeParameters {
 	
