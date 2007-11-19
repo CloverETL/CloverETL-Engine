@@ -42,6 +42,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  *  <h3>Data records Generator - helper for DataGenerator component</h3> 
