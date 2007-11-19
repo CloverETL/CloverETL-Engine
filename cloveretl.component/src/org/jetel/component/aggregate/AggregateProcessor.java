@@ -406,7 +406,6 @@ public class AggregateProcessor {
 		}
 		
 		public void storeResult(DataRecord outRecord) {
-			outRecord.setToNull();
 			applyFieldMapping(outRecord);
 			applyConstantMapping(outRecord);
 			for (AggregateFunction function : functions) {
