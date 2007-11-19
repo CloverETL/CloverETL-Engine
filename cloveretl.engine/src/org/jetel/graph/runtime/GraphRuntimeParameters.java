@@ -22,12 +22,13 @@
 
 package org.jetel.graph.runtime;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.jetel.data.Defaults;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.file.FileUtils;
+import org.jetel.util.FileUtils;
 
 public class GraphRuntimeParameters {
 	
@@ -93,7 +94,8 @@ public class GraphRuntimeParameters {
 
 	public String getGraphFilename() {
 		try {
-			return FileUtils.getFile(getProjectURL(), graphFileURL);
+			URL url = FileUtils.getFileURL(getProjectURL(), graphFileURL);
+			return new File(url.getPath()).getName();
 		} catch (MalformedURLException ex) {
 			// do nothing, return null
 			return null;

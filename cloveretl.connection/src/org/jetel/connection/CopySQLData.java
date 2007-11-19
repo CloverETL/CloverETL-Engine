@@ -338,6 +338,9 @@ public abstract class CopySQLData {
 		while (iterator.hasNext()) {
 			jdbcType = ((Integer) iterator.next()).shortValue();
 			// from index is index of specified cloverField in the Clover record
+			if (i >= cloverFields.length) {
+				throw new JetelException(" Number of db fields (" + fieldTypes.size() + ") is diffrent then number of clover fields (" + cloverFields.length + ") !" );
+			}
 			fromIndex = record.getMetadata().getFieldPosition(cloverFields[i]);
 			if (fromIndex == -1) {
 				throw new JetelException(" Field \"" + cloverFields[i] + "\" does not exist in DataRecord !");
