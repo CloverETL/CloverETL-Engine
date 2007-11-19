@@ -57,6 +57,8 @@ public class FunctionRegistry {
 		registerFunction(new LastNonNull());
 		registerFunction(new CRC32());
 		registerFunction(new MD5());
+		registerFunction(new Median());
+		registerFunction(new Modus());
 	}
 
 	/**
