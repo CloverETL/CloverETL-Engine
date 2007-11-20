@@ -24,7 +24,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
- * Aggregate funtion that finds the first element, which can be null.
+ * Aggregate function that finds the first element, which can be null.
  * 
  * Output field must be of the same type as the input field.
  * 
@@ -86,7 +86,7 @@ public class First extends AggregateFunction {
 	 */
 	@Override
 	public void storeResult(DataField outputField) {
-		outputField.copyFrom(data);
+		outputField.setValue(data);
 	}
 
 	/* (non-Javadoc)

@@ -88,7 +88,7 @@ public class FirstNonNull extends AggregateFunction {
 	 */
 	@Override
 	public void storeResult(DataField outputField) {
-		outputField.copyFrom(data);
+		outputField.setValue(data);
 	}
 
 	/* (non-Javadoc)
@@ -103,7 +103,7 @@ public class FirstNonNull extends AggregateFunction {
 		}
 		
 		if (data.isNull() && !input.isNull()) {
-			data = input.duplicate();
+			data.setValue(input);
 		}
 	}
 	

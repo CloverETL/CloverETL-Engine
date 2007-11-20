@@ -88,7 +88,7 @@ public class LastNonNull extends AggregateFunction {
 	 */
 	@Override
 	public void storeResult(DataField outputField) {
-		outputField.copyFrom(data);
+		outputField.setValue(data);
 	}
 
 	/* (non-Javadoc)
@@ -98,8 +98,12 @@ public class LastNonNull extends AggregateFunction {
 	public void update(DataRecord record) {
 		DataField input = record.getField(inputFieldIndex);
 
-		if ((data == null) || (!input.isNull())) {
-			data = input.duplicate();
+		if (!input.isNull()) {
+			if (data == null) {
+				data = input.duplicate();
+			} else {
+				data.setValue(input);
+			}
 		}
 	}
 	

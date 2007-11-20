@@ -86,7 +86,7 @@ public class Last extends AggregateFunction {
 	 */
 	@Override
 	public void storeResult(DataField outputField) {
-		outputField.copyFrom(data);
+		outputField.setValue(data);
 	}
 
 	/* (non-Javadoc)
@@ -95,7 +95,12 @@ public class Last extends AggregateFunction {
 	@Override
 	public void update(DataRecord record) {
 		DataField input = record.getField(inputFieldIndex);
-		data = input.duplicate();
+		
+		if (data == null) {
+			data = input.duplicate();
+		} else {
+			data.setValue(input);
+		}
 	}
 	
 	/* (non-Javadoc)
