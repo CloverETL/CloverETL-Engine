@@ -91,7 +91,7 @@ public class Min extends AggregateFunction {
 			outputField.setNull(true);
 			return;
 		}
-		outputField.copyFrom(min);
+		outputField.setValue(min);
 	}
 
 	/* (non-Javadoc)
@@ -104,8 +104,10 @@ public class Min extends AggregateFunction {
 			return;
 		}
 		
-		if ((min == null) || (input.compareTo(min) == -1)) {
+		if (min == null) {
 			min = input.duplicate();
+		} else if (input.compareTo(min) == -1) {
+			min.setValue(input);
 		}
 	}
 	

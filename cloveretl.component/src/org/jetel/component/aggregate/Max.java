@@ -90,7 +90,7 @@ public class Max extends AggregateFunction {
 			outputField.setNull(true);
 			return;
 		}
-		outputField.copyFrom(max);
+		outputField.setValue(max);
 	}
 
 	/* (non-Javadoc)
@@ -103,8 +103,10 @@ public class Max extends AggregateFunction {
 			return;
 		}
 		
-		if ((max == null) || (input.compareTo(max) == 1)) {
+		if (max == null) {
 			max = input.duplicate();
+		} else if (input.compareTo(max) == 1) {
+			max.setValue(input);
 		}
 	}
 	
