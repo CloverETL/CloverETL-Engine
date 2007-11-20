@@ -72,7 +72,8 @@ import org.w3c.dom.Element;
  *  of the input field (within an aggregation group implied by the aggregation key) and copies the result
  *  to the output field. Some function don't require an input field
  *  as a parameter (then the function mapping is in the form output_field=function(). Available functions 
- *  are count, min, max, sum, avg, stdev, CRC32, MD5, first, last, firstnonnull, lastnonnull. The 
+ *  are count, countunique, min, max, sum, avg, stdev, CRC32, MD5, first, last, firstnonnull, lastnonnull, 
+ *  median, modus. The 
  *  function names are case insensitive</td>
  *  <tr><td><b>sorted</b></td><td>if input data flow is sorted (true)</td>
  *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is FALSE.</td></tr>
