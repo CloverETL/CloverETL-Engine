@@ -533,20 +533,36 @@ public class AggregateMappingParser {
 		private String inputField;
 		private String outputField;
 		
+		/**
+		 * Allocates a new <tt>FunctionMapping</tt> object.
+		 *
+		 * @param functionName
+		 * @param inputField
+		 * @param outputField
+		 */
 		public FunctionMapping(String functionName, String inputField, String outputField) {
 			this.functionName = functionName;
 			this.inputField = inputField;
 			this.outputField = outputField;
 		}
 
+		/**
+		 * @return name of the function.
+		 */
 		public String getFunctionName() {
 			return functionName;
 		}
 
+		/**
+		 * @return name of the input field.
+		 */
 		public String getInputField() {
 			return inputField;
 		}
 
+		/**
+		 * @return name of the output field.
+		 */
 		public String getOutputField() {
 			return outputField;
 		}
@@ -564,15 +580,27 @@ public class AggregateMappingParser {
 		private String inputField;
 		private String outputField;
 
+		/**
+		 * Allocates a new <tt>FieldMapping</tt> object.
+		 *
+		 * @param inputField
+		 * @param outputField
+		 */
 		public FieldMapping(String inputField, String outputField) {
 			this.inputField = inputField;
 			this.outputField = outputField;
 		}
 
+		/**
+		 * @return name of the input field.
+		 */
 		public String getInputField() {
 			return inputField;
 		}
 
+		/**
+		 * @return name of the output field.
+		 */
 		public String getOutputField() {
 			return outputField;
 		}
