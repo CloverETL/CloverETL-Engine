@@ -23,17 +23,17 @@
 				<metaField>
 					<fieldType>int</fieldType>
 					<fieldNullable>false</fieldNullable>
-					<fieldDesc>ddd</fieldDesc>
+					<fieldDesc>record number</fieldDesc>
 				</metaField>				
 				<metaField>
 					<fieldType>string</fieldType>
 					<fieldNullable>false</fieldNullable>
-					<fieldDesc>ddd</fieldDesc>
+					<fieldDesc>wrong value - the value that cannot be set into field</fieldDesc>
 				</metaField>
 				<metaField>
 					<fieldType>string</fieldType>
 					<fieldNullable>false</fieldNullable>
-					<fieldDesc>ffff</fieldDesc>
+					<fieldDesc>error message - detail information about this error</fieldDesc>
 				</metaField>
 			</portMetadata>
          </port>
