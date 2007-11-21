@@ -43,4 +43,9 @@
 		<parameter id="className" value="org.jetel.component.MysqlDataWriter2"/>
 	</extension>
 	
+	<extension point-id="component">
+		<parameter id="type" value="POSTGRESQL_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.PostgreSqlDataWriter"/>
+	</extension>
+	
 </plugin>
