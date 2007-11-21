@@ -713,6 +713,14 @@ public class DataFieldMetadata implements Serializable {
 		int anotherFieldLength;
 		int anotherFieldScale;
 		switch (fieldType) {
+		case BOOLEAN_FIELD:
+			switch (anotherField.getType()) {
+			case STRING_FIELD:
+			case BOOLEAN_FIELD:
+				return true;
+			default:
+				return false;
+			}
 		case BYTE_FIELD:
 		case BYTE_FIELD_COMPRESSED:
 			switch (anotherField.getType()) {
