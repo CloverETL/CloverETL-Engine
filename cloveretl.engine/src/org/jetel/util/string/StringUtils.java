@@ -45,6 +45,7 @@ public class StringUtils {
     //  quoting characters
 	public final static char QUOTE_CHAR='\'';
 	public final static char DOUBLE_QUOTE_CHAR='"';
+	public final static String ILLICIT_CHAR_REPLACEMENT = "_";
 	
 	public final static char DECIMAL_POINT='.';
 	public final static char EXPONENT_SYMBOL = 'e';
@@ -239,6 +240,23 @@ public class StringUtils {
 		return true;
 	}
 
+	/**
+	 * This method changes all characters, which can be part of identifier, in given string to "_"
+	 * 
+	 * @param seq
+	 * @return
+	 */
+	public static String normalizeName(CharSequence seq) {
+        if(seq == null) return null;
+        
+        StringBuilder result = new StringBuilder(seq);
+		for (int i = 0; i < seq.length(); i++) {
+			if (!Character.isUnicodeIdentifierPart(seq.charAt(i))) {
+				result.replace(i, i + 1, ILLICIT_CHAR_REPLACEMENT);
+			}
+		}
+		return result.toString();
+	}
 	/**
 	 * Returns true if the passed-in character is quote ['] or double
 	 * quote ["].
