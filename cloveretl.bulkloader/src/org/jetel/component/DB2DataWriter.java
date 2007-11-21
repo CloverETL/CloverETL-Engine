@@ -744,13 +744,14 @@ public class DB2DataWriter extends Node {
         
         try {
             init();
-            free();
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }
             status.add(problem);
+        } finally {
+        	free();
         }
         
         return status;

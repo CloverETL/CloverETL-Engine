@@ -1109,17 +1109,17 @@ public class DBOutputTable extends Node {
     	 boolean isQueryNull = sqlQuery == null;
          try {
              init();
-             free();
          } catch (ComponentNotReadyException e) {
              ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
              if(!StringUtils.isEmpty(e.getAttributeName())) {
                  problem.setAttributeName(e.getAttributeName());
              }
              status.add(problem);
-         }finally{
+         } finally {
              if (isQueryNull) {
             	 sqlQuery = null;
-             }        	 
+             }
+             free();
          }
          
          return status;

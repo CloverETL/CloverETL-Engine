@@ -242,7 +242,6 @@ public class Pacemaker extends Node {
 
 		try {
 			init();
-			free();
 		} catch (ComponentNotReadyException e) {
 			ConfigurationProblem problem = new ConfigurationProblem(
 					e.getMessage(), ConfigurationStatus.Severity.ERROR, this,
@@ -251,6 +250,8 @@ public class Pacemaker extends Node {
 				problem.setAttributeName(e.getAttributeName());
 			}
 			status.add(problem);
+        } finally {
+        	free();
 		}
 
 		return status;
