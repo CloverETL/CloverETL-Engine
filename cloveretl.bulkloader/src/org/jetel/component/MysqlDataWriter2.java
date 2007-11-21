@@ -1117,7 +1117,6 @@ public class MysqlDataWriter2 extends Node {
 
 		try {
 			init();
-			free();
 		} catch (ComponentNotReadyException e) {
 			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(),
 					ConfigurationStatus.Severity.ERROR, this,ConfigurationStatus.Priority.NORMAL);
@@ -1125,6 +1124,8 @@ public class MysqlDataWriter2 extends Node {
 				problem.setAttributeName(e.getAttributeName());
 			}
 			status.add(problem);
+        } finally {
+        	free();
 		}
 
 		return status;
