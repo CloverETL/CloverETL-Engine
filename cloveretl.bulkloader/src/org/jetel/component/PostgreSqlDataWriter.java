@@ -83,7 +83,7 @@ public class PostgreSqlDataWriter extends Node {
 	private static final String XML_DATABASE_ATTRIBUTE = "database";
 	private static final String XML_COMMAND_URL_ATTRIBUTE = "commandURL";
 	private static final String XML_HOST_ATTRIBUTE = "host";
-	private static final String XML_USER_ATTRIBUTE = "user";
+	private static final String XML_USER_ATTRIBUTE = "username";
 //	private static final String XML_PASSWORD_ATTRIBUTE = "password";
 	
 	// attributes for copy statement	
