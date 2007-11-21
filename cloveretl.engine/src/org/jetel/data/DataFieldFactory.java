@@ -57,6 +57,8 @@ public class DataFieldFactory {
 				return new CompressedByteDataField(fieldMetadata,plain);
 			case DataFieldMetadata.LONG_FIELD:
 				return new LongDataField(fieldMetadata,plain);
+			case DataFieldMetadata.BOOLEAN_FIELD:
+				return new BooleanDataField(fieldMetadata);
 			default:
 				throw new RuntimeException("Unsupported data type: " + fieldType);
 		}
