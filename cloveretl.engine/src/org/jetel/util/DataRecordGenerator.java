@@ -149,6 +149,7 @@ public class DataRecordGenerator {
         		fieldType = metadata.getField(i).getType();
         		//prepare special values for random field
         		switch (fieldType) {
+				case DataFieldMetadata.BOOLEAN_FIELD:
 				case DataFieldMetadata.BYTE_FIELD:
 				case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
 				case DataFieldMetadata.STRING_FIELD:
@@ -336,6 +337,9 @@ public class DataRecordGenerator {
 						value = Math.floor(((Double)value).doubleValue());
 						break;
 					case DataFieldMetadata.DECIMAL_FIELD:
+					case DataFieldMetadata.BOOLEAN_FIELD:
+						value = Boolean.valueOf( Math.random() > 0.5 );
+						break;
 					case DataFieldMetadata.NUMERIC_FIELD:
 						//get random double from given interval
 						value = (Double)specialValue[j][MIN] + random.nextDouble()*
