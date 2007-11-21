@@ -867,11 +867,13 @@ public class MysqlDataWriter2 extends Node {
 					StringUtils.quote(XML_DATABASE_ATTRIBUTE) + " attribute have to be set.");
 		}
 
-		if (StringUtils.isEmpty(table)) {
+		if (StringUtils.isEmpty(table) && !fileExists(commandURL)) {
 			throw new ComponentNotReadyException(this, 
-					StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute have to be set.");
+					StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
+					StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) + 
+					" attribute has to be specified and file at the URL must exists.");
 		}
-
+		
 		if (!isDataReadFromPort && StringUtils.isEmpty(dataURL)
 				&& (StringUtils.isEmpty(commandURL) || !(new File(commandURL).exists()))) {
 			throw new ComponentNotReadyException(this, "Input port or " + 
@@ -923,6 +925,19 @@ public class MysqlDataWriter2 extends Node {
 						+ " is ignored because it is used only when data is read directly from file.");
 			}
 		}
+	}
+	
+	/**
+	 * Return true if fileURL exists.
+	 * @param fileURL
+	 * @return
+	 */
+	private boolean fileExists(String fileURL) {
+		if (StringUtils.isEmpty(fileURL) || !(new File(fileURL).exists())) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	/**
