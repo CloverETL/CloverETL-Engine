@@ -21,9 +21,7 @@
 
 package org.jetel.data.parser;
 
-import java.util.Iterator;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import javax.naming.InvalidNameException;
 
@@ -37,7 +35,6 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.NumberIterator;
-import org.jetel.util.string.StringUtils;
 
 /**
  * Parses data from xls file. Order of method calling:
@@ -69,6 +66,9 @@ public abstract class XLSParser implements Parser {
 	public final static int MAP_NAMES = 3;
 	public final static int CLOVER_FIELDS_AND_XLS_NAMES = 4;
 
+	protected final static String DEFAULT_FIELD_DELIMITER = ";";
+	protected final static String DEFAULT_LAST_FIELD_DELIMITER = "\n";
+	
 	static Log logger = LogFactory.getLog(XLSParser.class);
 
 	protected DataRecordMetadata metadata = null;
@@ -437,7 +437,12 @@ public abstract class XLSParser implements Parser {
 	 * (or setFirstRow if metadata row was not been set)  
 	 */
 	public abstract String[] getNames();
-
+	
+	/**
+	 * @return metadata created from actual file, sheet, metadata row and first data row
+	 */
+	public abstract DataRecordMetadata createMetadata();
+	
 	public int getLastRow() {
 		return lastRow;
 	}
@@ -445,5 +450,9 @@ public abstract class XLSParser implements Parser {
 	public void setLastRow(int lastRow) {
 		this.lastRowAttribute = lastRow;
 	}
+	
+	public abstract String[] getSheets();
+	
+	public abstract String getSheetName(int index);
 
 }

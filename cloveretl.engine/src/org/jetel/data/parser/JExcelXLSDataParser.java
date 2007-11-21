@@ -24,11 +24,14 @@ package org.jetel.data.parser;
 import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
 import jxl.Cell;
+import jxl.CellType;
 import jxl.DateCell;
 import jxl.NumberCell;
 import jxl.Sheet;
@@ -42,6 +45,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.NumberIterator;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.string.StringUtils;
@@ -139,6 +143,61 @@ public class JExcelXLSDataParser extends XLSParser {
 		return names.toArray(new String[0]);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.XLSParser#createMetadata()
+	 */
+	@Override
+	public DataRecordMetadata createMetadata(){
+		if (wb == null) return null;
+		String name = sheet.getName();
+		if (!StringUtils.isValidObjectName(name)) {
+			name = StringUtils.normalizeName(name);
+		}
+		DataRecordMetadata xlsMetadata = new DataRecordMetadata(name, DataRecordMetadata.DELIMITED_RECORD);
+		Cell[] namesRow;
+		if (metadataRow > -1) {
+			 namesRow = sheet.getRow(metadataRow);
+		}else{
+			namesRow = sheet.getRow(firstRow);
+		}
+		Cell[] dataRow = sheet.getRow(firstRow);
+		//go through each cell
+		CellType type;
+		DataFieldMetadata field;
+		Cell nameCell, dataCell;
+		for (int i=0;i<namesRow.length;i++){
+			nameCell = namesRow[i];
+			dataCell = dataRow[i];
+			type = dataCell.getType();
+			name = namesRow != dataRow ? nameCell.getContents() : XLSFormatter.getCellCode(i);
+			if (!StringUtils.isValidObjectName(name)) {
+				name = StringUtils.normalizeName(name);
+			}
+			if (type == CellType.EMPTY && namesRow != dataRow && nameCell.getType() == CellType.EMPTY){
+				continue;
+			}else if (type == CellType.BOOLEAN) {
+				field = new DataFieldMetadata(name, DataFieldMetadata.BOOLEAN_FIELD, 
+						i < namesRow.length -1 ? DEFAULT_FIELD_DELIMITER : DEFAULT_LAST_FIELD_DELIMITER);
+				xlsMetadata.addField(field);
+			}else if (type == CellType.DATE){
+				field = new DataFieldMetadata(name, DataFieldMetadata.DATE_FIELD,  
+						i < namesRow.length -1 ? DEFAULT_FIELD_DELIMITER : DEFAULT_LAST_FIELD_DELIMITER);
+				field.setFormatStr(((SimpleDateFormat)((DateCell)dataCell).getDateFormat()).toPattern());
+				xlsMetadata.addField(field);
+			}else if (type == CellType.NUMBER) {
+				field = new DataFieldMetadata(name, DataFieldMetadata.NUMERIC_FIELD,  
+						i < namesRow.length -1 ? DEFAULT_FIELD_DELIMITER : DEFAULT_LAST_FIELD_DELIMITER);
+				field.setFormatStr(((DecimalFormat)((NumberCell)dataCell).getNumberFormat()).toPattern());
+				xlsMetadata.addField(field);
+			}else{
+				field = new DataFieldMetadata(name, DataFieldMetadata.STRING_FIELD,  
+						i < namesRow.length -1 ? DEFAULT_FIELD_DELIMITER : DEFAULT_LAST_FIELD_DELIMITER);
+				xlsMetadata.addField(field);
+			}
+		}
+		return xlsMetadata;
+	}
+	
 	@Override
 	protected void mapNames(Map fieldNames) throws ComponentNotReadyException {
 		//getting metadata row
@@ -313,4 +372,19 @@ public class JExcelXLSDataParser extends XLSParser {
 		return charset;
 	}
 
+	public void setCharset(String charset){
+		this.charset = charset;
+	}
+
+	@Override
+	public String[] getSheets() {
+		if (wb == null) return null;
+		return wb.getSheetNames();
+	}
+
+	@Override
+	public String getSheetName(int index) {
+		if (wb == null) return null;
+		return wb.getSheet(index).getName();
+	}
 }
