@@ -60,6 +60,14 @@ public abstract class TLValue implements Comparable<TLValue>{
     public abstract Object getValue();
     
     
+    public Date getDate(){
+    	throw new UnsupportedOperationException();
+    }
+    
+    public Numeric getNumeric(){
+    	throw new UnsupportedOperationException();
+    }
+    
     /*public final boolean isNull(){
     	return (this instanceof TLNullValue);
     }*/
