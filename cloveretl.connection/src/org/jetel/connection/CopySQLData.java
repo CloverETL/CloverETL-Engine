@@ -33,6 +33,7 @@ import javax.sql.rowset.serial.SerialBlob;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.BooleanDataField;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -41,8 +42,6 @@ import org.jetel.data.DecimalDataField;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
 import org.jetel.data.NumericDataField;
-import org.jetel.data.RecordKey;
-import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.HugeDecimal;
 import org.jetel.exception.JetelException;
@@ -1003,14 +1002,9 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 */
 	static class CopyBoolean extends CopySQLData {
-		private static String _TRUE_ = "T";
-		private static String _FALSE_ = "F";
-		private static char _TRUE_CHAR_ = 'T';
-		private static char _TRUE_SMCHAR_ = 't';
-
 
 		/**
-		 *  Constructor for the CopyString object
+		 *  Constructor for the CopyBoolean object
 		 *
 		 * @param  record      Description of Parameter
 		 * @param  fieldSQL    Description of Parameter
@@ -1023,7 +1017,7 @@ public abstract class CopySQLData {
 
 
 		/**
-		 *  Sets the Jetel attribute of the CopyString object
+		 *  Sets the Jetel attribute of the CopyBoolean object
 		 *
 		 * @param  resultSet         The new Jetel value
 		 * @exception  SQLException  Description of Exception
@@ -1033,7 +1027,7 @@ public abstract class CopySQLData {
 			if (resultSet.wasNull()) {
 				field.setValue((Object)null);
 			}else{
-				field.fromString(resultSet.getBoolean(fieldSQL) ? _TRUE_ : _FALSE_);	
+				field.setValue( resultSet.getBoolean(fieldSQL) );	
 			}
 			
 		}
@@ -1048,8 +1042,8 @@ public abstract class CopySQLData {
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
-				char value = ((StringDataField) field).getCharSequence().charAt(0);
-				pStatement.setBoolean(fieldSQL,	((value == _TRUE_CHAR_) || (value == _TRUE_SMCHAR_)));
+				boolean value = ((BooleanDataField) field).getBoolean();
+				pStatement.setBoolean(fieldSQL,	value);
 			}else{
 				pStatement.setNull(fieldSQL, java.sql.Types.BOOLEAN);
 			}
