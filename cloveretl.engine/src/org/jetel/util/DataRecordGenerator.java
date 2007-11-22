@@ -37,8 +37,11 @@ import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.data.sequence.Sequence;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.PolicyType;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -57,7 +60,7 @@ import org.jetel.util.string.StringUtils;
  * www.javlinconsulting.cz
  * @created Nov 9, 2007
  */
-public class DataRecordGenerator {
+public class DataRecordGenerator implements Parser{
 	
     static Log logger = LogFactory.getLog(DataRecordGenerator.class);
 
@@ -83,6 +86,11 @@ public class DataRecordGenerator {
 	private boolean[] randomField;//indicates if i-th field is to fill by random value
 	private Object[][] specialValue;//for each field if it is not set from pattern: 0  - min random, 1 - max random, 2 - multiplier = (max random - min random)/(possible max random - possible min random),3 - move  
 
+	private int recordNumber; 
+	private int counter = 0;
+
+	private boolean initialized = false;
+	
 	/**
 	 * 
 	 * @param component: instance of component which uses this recordGenerator; May be null if this generator is used without component.
@@ -108,20 +116,18 @@ public class DataRecordGenerator {
 	 * @throws ComponentNotReadyException
 	 * @see DataGenerator for more info
 	 */
-	public DataRecordGenerator(Node component, DataRecordMetadata metadata, String pattern, String randomFields, long randomSeed, String sequenceFields) throws ComponentNotReadyException {
+	public DataRecordGenerator(Node component, DataRecordMetadata metadata, String pattern, String randomFields, long randomSeed, String sequenceFields, int recordsNumber) throws ComponentNotReadyException {
+		this.recordNumber = recordsNumber; 
 		this.component = component;
 		this.metadata = metadata;
 		this.pattern = pattern;
 		this.setRandomFields(randomFields);
 		this.setRandomSeed(randomSeed);
 		this.setSequenceFields(sequenceFields);
-		init();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#init()
-	 */
-	private void init() throws ComponentNotReadyException {
+	public void init() throws ComponentNotReadyException {
+		counter = 0;
         specialValue = new Object[metadata.getNumFields()][4];
         //create and initialize output record
 		patternRecord = new DataRecord(metadata);
@@ -238,7 +244,7 @@ public class DataRecordGenerator {
 							/ ((double) Long.MAX_VALUE - (double) Long.MIN_VALUE);
 					break;
 				default:
-					throw new IllegalArgumentException("Unknown data field type " + 
+					throw new ComponentNotReadyException("Unknown data field type " + 
 							metadata.getField(i).getName() + " : " + metadata.getField(i).getTypeAsString());
 				}
         	}else{//field not found among random fields
@@ -291,30 +297,55 @@ public class DataRecordGenerator {
 			try {
 				patternRecord = parser.getNext();
 				if (patternRecord == null) {
-					throw new ComponentNotReadyException(component, "Can't get record from pattern: " + StringUtils.quote(pattern));
+					throw new ComponentNotReadyException(component, "Can't get record from pattern. Specified pattern:" + StringUtils.quote(pattern));
 				}
+			} catch (BadDataFormatException e){
+				throw new ComponentNotReadyException(component, "Can't get record from pattern: " + StringUtils.quote(pattern) + " "+e.getMessage());
 			} catch (JetelException e) {
 				throw new ComponentNotReadyException(component, "Can't get record from pattern: " + StringUtils.quote(pattern));
 			}
 			parser.close();
-		}		
+		}
+		initialized = true;		
 	}
-	
+
+	/**
+	 * Creates and returns new DataRecord according to preset rules. 
+	 * @return
+	 * @throws JetelException
+	 */
+	public DataRecord next() throws JetelException {
+		return getNext();
+	}
+
+	/**
+	 * Creates and returns new DataRecord according to preset rules. 
+	 */
+	public DataRecord getNext() throws JetelException {
+		DataRecord record = new DataRecord(metadata);
+		record.init();
+		return getNext(record);
+	}
+
 	/**
 	 * Creates and returns new DataRecord according to preset rules. 
 	 * @return
 	 * @throws Exception
 	 */
-	public DataRecord next() throws Exception {
-		DataRecord record = new DataRecord(metadata);
-		record.init();
+	@Override
+	public DataRecord getNext(DataRecord record) throws JetelException {
+		if (!initialized)
+			throw new JetelException("Generator is not initialized!");
+		if (counter >= this.recordNumber)
+			return null;
+		counter++;
 		boolean[] set = record.copyFieldsByName(patternRecord);
 		Object value = null;
 		Sequence sequence;
 		//set constant fields from pattern
 		for (int j = 0; j < set.length; j++) {
 			if (!set[j]){//j-th field have not been set yet 
-				if (randomField[j]) {//set random value
+				if (randomField!=null && randomField[j]) {//set random value
 					switch (record.getField(j).getType()) {
 					case DataFieldMetadata.BYTE_FIELD:
 					case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
@@ -352,7 +383,11 @@ public class DataRecordGenerator {
 					}
 					record.getField(j).setValue(value);
 				}else {//not from pattern, not random, so sequence
+					if (specialValue==null || component==null)
+						continue;
 					sequence = component.getGraph().getSequence((String)specialValue[j][0]);
+					if (sequence==null)
+						continue;
 					switch (record.getField(j).getType()) {
 					case DataFieldMetadata.BYTE_FIELD:
 					case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
@@ -410,6 +445,8 @@ public class DataRecordGenerator {
 	 * @param randomFields the randomFields to set in form fieldName=random(min,max)
 	 */
 	private void setRandomFields(String randomFields) {
+		if (randomFields == null)
+			return;
 		String[] fields = StringUtils.split(randomFields);
 		this.randomFields = new String[fields.length];
 		this.randomRanges = new String[fields.length][2];//0 - number, 1 - min, 2 - max
@@ -457,6 +494,8 @@ public class DataRecordGenerator {
 	 * @param sequenceFields the sequenceFields to set in form fieldName=sequenceName or fieldName only
 	 */
 	private void setSequenceFields(String sequenceFields) {
+		if (sequenceFields==null)
+			return;
 		String[] fields = sequenceFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 		this.sequenceFields = new String[fields.length];
 		this.sequenceIDs = new String[fields.length];
@@ -512,6 +551,56 @@ public class DataRecordGenerator {
 			return fields.toString();
 		}
 		return null;
+	}
+
+	@Override
+	public void close() {
+		counter = recordNumber;
+	}
+
+	@Override
+	public IParserExceptionHandler getExceptionHandler() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public PolicyType getPolicyType() {
+		return PolicyType.STRICT;
+	}
+
+	@Override
+	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
+		this.metadata = metadata;
+		init();
+	}
+
+	@Override
+	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
+		// nonsence for this implementation
+		
+	}
+
+	@Override
+	public void setExceptionHandler(IParserExceptionHandler handler) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void setReleaseDataSource(boolean releaseInputSource) {
+		// nonsence for this implementation
+	}
+
+	@Override
+	public int skip(int rec) throws JetelException {
+		if (counter+rec > recordNumber){
+			int i = recordNumber - counter;
+			counter = recordNumber;
+			return i;
+		} else {
+			counter += rec;
+			return rec;
+		}
 	}
 	
 }
