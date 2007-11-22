@@ -45,7 +45,9 @@ public class TLDateValue extends TLValue {
 	
 	@Override
 	public void setValue(Object _value) {
-		if (_value instanceof Timestamp )
+		if (_value instanceof Date){
+			setValue((Date)_value);
+		}else if (_value instanceof Timestamp )
 			this.value.setTime(((Timestamp)_value).getTime());
 		else if (_value instanceof java.sql.Date)
 			this.value.setTime(((java.sql.Date)_value).getTime());
@@ -57,6 +59,13 @@ public class TLDateValue extends TLValue {
 	public void setValue(Date _value){
 		if (_value!=null)
 			this.value.setTime(_value.getTime());
+		else
+			throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
+	}
+	
+	public void setValue(TLValue _value){
+		if (_value.type==type)
+			setValue(_value.getDate());
 		else
 			throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
 	}

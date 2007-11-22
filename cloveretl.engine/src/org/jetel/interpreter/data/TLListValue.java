@@ -72,6 +72,11 @@ public class TLListValue extends TLContainerValue {
         }
     }
     
+    public void setValue(TLValue value){
+    	setStoredValue(value);
+    }
+    
+    
     public Collection<TLValue> getCollection(){
     	return valueList;
     }

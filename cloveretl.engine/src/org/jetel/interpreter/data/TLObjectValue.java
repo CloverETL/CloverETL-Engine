@@ -62,6 +62,11 @@ public class TLObjectValue extends TLValue {
 	public void setValue(Object _value) {
 		this.value=_value;
 	}
+	
+	@Override
+	public void setValue(TLValue _value) {
+		this.value=_value.getValue();
+	}
 
 	@Override
 	public void setValue(DataField field) {

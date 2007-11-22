@@ -110,6 +110,13 @@ public class TLBooleanValue extends TLValue {
 	}
 
 	@Override
+	public void setValue(TLValue _value) {
+		if (_value!=this){
+			throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
+		}
+	}
+	
+	@Override
 	public void setValue(DataField field) {
 		switch(field.getType()){
 		case DataFieldMetadata.INTEGER_FIELD:

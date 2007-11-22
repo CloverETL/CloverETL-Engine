@@ -26,6 +26,7 @@ package org.jetel.interpreter.data;
 import java.util.Date;
 
 import org.jetel.data.DataField;
+import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
@@ -54,6 +55,8 @@ public abstract class TLValue implements Comparable<TLValue>{
     
     
     public abstract void setValue(Object _value);
+    
+    public abstract void setValue(TLValue _value);
     
     public abstract void setValue(DataField field);
     
@@ -102,7 +105,7 @@ public abstract class TLValue implements Comparable<TLValue>{
     /*    case DataFieldMetadata.BYTE_FIELD:
         	return new TLValue(TLValueType.BYTE,field.getValue());*/
         case DataFieldMetadata.STRING_FIELD:
-        	newval= new TLStringValue((String)field.getValueDuplicate());
+        	newval= new TLStringValue((StringBuilder)field.getValueDuplicate());
         	break;
         default:
             throw new IllegalArgumentException("Don't know how to convert "+field.getType());
@@ -144,6 +147,6 @@ public abstract class TLValue implements Comparable<TLValue>{
 
 	public abstract int compareTo(TLValue arg0);
     
-	public abstract String toString(); 
+	@Override public abstract String toString(); 
 	
 }

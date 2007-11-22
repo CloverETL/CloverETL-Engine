@@ -68,13 +68,21 @@ public class TLMapValue extends TLContainerValue {
     }
     
     public void setValue(TLValue value) {
-    	if (value instanceof TLContainerValue){
-    		putCollection(((TLContainerValue)value).getCollection());
-    	}else{
-            throw new RuntimeException("incompatible value type: "+value.type);
-        }
+    	setStoredValue(value);
     }
     
+    
+    public void setStoredValue(TLValue value){
+    	if (value==TLValue.NULL_VAL){
+        	valueMap.clear();
+    	}else if (value instanceof TLMapValue){
+    		valueMap.putAll(((TLMapValue)value).valueMap);
+    	}else if (value instanceof TLContainerValue){
+    		putCollection(((TLContainerValue)value).getCollection());
+    	}else{
+            throw new RuntimeException("can't store into Map value type: "+value.type+" without specified key");
+        }
+    }
     
     public void setStoredValue(int index,TLValue value) {
         throw new UnsupportedOperationException();
