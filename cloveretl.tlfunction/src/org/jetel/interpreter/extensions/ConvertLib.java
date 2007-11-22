@@ -218,7 +218,7 @@ public class ConvertLib extends TLFunctionLibrary {
                 ((TLDateValue)val).getDate().setTime(format.parse(params[0].toString()).getTime());
             }catch (java.text.ParseException ex) {
                 throw new TransformLangExecutorRuntimeException(params,
-                        Function.STR2DATE.name()+" - can't convert \"" + params[0] + "\"");
+                        Function.STR2DATE.name()+" - can't convert \"" + params[0] + "\" using format "+format.toPattern());
             }
             
             return val;
