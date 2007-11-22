@@ -29,6 +29,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.DecimalFactory;
+import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
@@ -476,12 +477,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 ((TLDateValue)node.nodeVal).getDate().setTime(result.getTimeInMillis());
                 stack.push(node.nodeVal);
             } else if (a.type==TLValueType.STRING) {
-                CharSequence a1 = ((TLStringValue)a).getCharSequence();
+                //CharSequence a1 = ((TLStringValue)a).getCharSequence();
                 StringBuilder buf=(StringBuilder)node.nodeVal.getValue();
                 buf.setLength(0);
-                StringUtils.strBuffAppend(buf,a1);
+                buf.append(a.getValue());
                 if (b.type==TLValueType.STRING) {
-                    StringUtils.strBuffAppend(buf,((TLStringValue)b).getCharSequence());
+                    buf.append(b.getValue());
                 } else {
                     buf.append(b);
                 }
@@ -523,7 +524,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         
         if(a.type.isNumeric()) {
             node.nodeVal.setValue(a);
-            ((TLNumericValue)node.nodeVal).sub(((TLNumericValue)b));
+            ((TLNumericValue)node.nodeVal).sub(((TLNumericValue)b).getNumeric());
             stack.push(node.nodeVal);
         } else if (a.type==TLValueType.DATE) {
             Calendar result = Calendar.getInstance();
@@ -562,7 +563,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         	node.nodeVal.setValue(a);
         }
         
-        ((TLNumericValue)node.nodeVal).mul((TLNumericValue)b);
+        ((TLNumericValue)node.nodeVal).mul(((TLNumericValue)b).getNumeric()); //TODO: hack due to IntegerDecimal problem..
         stack.push(node.nodeVal);
         return data;
         
@@ -592,7 +593,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         }
         
         try {
-            ((TLNumericValue)node.nodeVal).div((TLNumericValue)b);
+            ((TLNumericValue)node.nodeVal).div(((TLNumericValue)b).getNumeric()); //TODO: hack due to IntegerDecimal problem.
         }catch(ArithmeticException ex){
             throw new TransformLangExecutorRuntimeException(node, new Object[] { a,b },
                     "div - arithmetic exception",ex);
@@ -627,7 +628,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         	node.nodeVal.setValue(a);
         }
       
-        ((TLNumericValue)node.nodeVal).mod((TLNumericValue)b);
+        ((TLNumericValue)node.nodeVal).mod(((TLNumericValue)b).getNumeric()); //TODO: hack due to IntegerDecimal problem.
         stack.push(node.nodeVal);
         return data;
     }
@@ -1290,7 +1291,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 					((TLContainerValue)variableToAssign.getTLValue()).setStoredValue(null, valueToAssign);
 				}
 			} else {
-				variableToAssign.getTLValue().setValue(valueToAssign);
+				try {
+					variableToAssign.getTLValue().setValue(valueToAssign);
+				} catch (Exception ex) {
+					throw new TransformLangExecutorRuntimeException(node,
+							"invalid assignment of \"" + valueToAssign
+									+ "\" to variable \"" + varNode.varName
+									+ "\"", ex);
+				}
 			}
 			break;
         case BYTE_VAR:
@@ -1333,10 +1341,19 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         default:
             TLValueType type=variableToAssign.getType();
             if (type.isCompatible(valueToAssign.type)) {
+            	try{
                     variableToAssign.setTLValue(valueToAssign);
+            	}catch(Exception ex){
+            		throw new TransformLangExecutorRuntimeException(node,"invalid assignment of \"" + valueToAssign.toString()
+                                + "\" [" + valueToAssign.type
+                                + "] to variable \""
+                                + variableToAssign.getName() + "\" ["
+                                + variableToAssign.getType()
+                                + "] \" - "+ex.getMessage(),ex);
+            	}
             } else {
                 throw new TransformLangExecutorRuntimeException(node,
-                        "invalid assignment of \"" + valueToAssign
+                        "invalid assignment of \"" + valueToAssign.toString()
                                 + "\" [" + valueToAssign.type
                                 + "] to variable \""
                                 + variableToAssign.getName() + "\" ["
@@ -1406,7 +1423,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 ex.setNode(node);
                 throw ex;
             } catch (Exception ex){
-            	String msg="Java exception ["+ex.getClass().getName()+"] occured during external function call !";
+            	String msg="Java exception ["+ex.getClass().getName()+"] occured during call of external function: "+node.externalFunction.getLibrary()+"."+node.externalFunction.getName();
             	logger.debug(msg,ex);
             	throw new TransformLangExecutorRuntimeException(node,msg,ex);
             }
