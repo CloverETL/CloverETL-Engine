@@ -401,7 +401,7 @@ public final class IntegerDecimal implements Decimal {
         } else if(a instanceof DecimalDataField || a instanceof Decimal) {
             Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
-                value *= convertToInnerForm(((double) ((IntegerDecimal) d).value));
+                value *= convertToOuterForm(((double) ((IntegerDecimal) d).value));
             } else {
                 setValue(getBigDecimal().multiply(d.getBigDecimal()));
             }
