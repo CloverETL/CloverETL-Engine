@@ -119,7 +119,7 @@ public class LookupTableFactory {
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
             return (LookupTable) method.invoke(null, new Object[] {graph, nodeXML});
         } catch(Exception ex) {
-            logger.error("Can't create object of : " + lookupTableType + " exception: " + ex);
+            logger.error("Can't create object of : " + lookupTableType + " exception: " + ex, ex);
             throw new RuntimeException("Can't create object of : " + lookupTableType + " exception: " + ex);
         }
     }
