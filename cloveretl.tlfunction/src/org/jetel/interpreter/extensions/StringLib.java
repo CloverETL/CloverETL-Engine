@@ -563,6 +563,7 @@ public class StringLib extends TLFunctionLibrary {
             RegexStore regex = (RegexStore) context.getContext();
             if (regex.pattern==null){
             	regex.initRegex(params[1].toString(), ((TLStringValue)params[0]).getCharSequence(),true,new TLStringValue());
+            	regex.strbuf=new StringBuffer();
             }else{
             	// can we reuse pattern/matcher
             	if(regex.storedRegex!=params[1].getValue() &&  Compare.compare(regex.storedRegex,((TLStringValue)params[1]).getCharSequence())!=0){
@@ -574,12 +575,13 @@ public class StringLib extends TLFunctionLibrary {
             }
             
             String replacement=params[2].toString();
-            StringBuffer sb=(StringBuffer)regex.result.getValue();
-            sb.setLength(0);
+            regex.strbuf.setLength(0);
+            regex.strbuf.append(regex.result.getValue());
             while ( regex.matcher.find()) {
-                regex.matcher.appendReplacement(sb, replacement);
+                regex.matcher.appendReplacement(regex.strbuf, replacement);
             }
-            regex.matcher.appendTail(sb);
+            regex.matcher.appendTail(regex.strbuf);
+            regex.result.setValue(regex.strbuf);
             
 			return regex.result;
 
@@ -935,16 +937,13 @@ public class StringLib extends TLFunctionLibrary {
          public TLValue execute(TLValue[] params, TLContext context) {
              TLValue val = (TLValue)context.getContext();
 
-             if (params[0]==TLValue.NULL_VAL || params[1]==TLValue.NULL_VAL || params[2]==TLValue.NULL_VAL) {
-            	 val.setValue((String)null);
-             }else if (!(params[0].type == TLValueType.STRING && 
-            		 	 params[1].type == TLValueType.STRING &&
-            		 	 params[2].type == TLValueType.STRING)){
+             if (params[0]==TLValue.NULL_VAL || params[1]==TLValue.NULL_VAL || 
+            		 params[0].type != TLValueType.STRING || params[1].type != TLValueType.STRING || ( params[2].type != TLValueType.STRING && params[2]!=TLValue.NULL_VAL)) {
                  throw new TransformLangExecutorRuntimeException(params,
                          "translate - wrong type of literal(s)");
              }else{
                  val.setValue(StringUtils.translateSequentialSearch(((TLStringValue)params[0]).getCharSequence(), 
-                		 ((TLStringValue)params[1]).getCharSequence(), ((TLStringValue)params[2]).getCharSequence()));
+                		 ((TLStringValue)params[1]).getCharSequence(), params[2]!=TLValue.NULL_VAL ?  ((TLStringValue)params[2]).getCharSequence() : "" ));
              }
              return val;
          }
@@ -1049,12 +1048,14 @@ public class StringLib extends TLFunctionLibrary {
 	    public Matcher matcher;
 	    public String storedRegex;
 	    public TLValue result;
+	    public StringBuffer strbuf;
 	    
 	    public void initRegex(String regex,CharSequence input,boolean initMatcher,TLValue value){
         	pattern=Pattern.compile(regex);
         	if (initMatcher) matcher=pattern.matcher(input);
         	storedRegex=regex;
         	result=value;
+        	strbuf=null;
         }
 	    
 	    public void resetPattern(String regex){
