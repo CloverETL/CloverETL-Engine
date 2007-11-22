@@ -27,11 +27,15 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
+import org.jetel.data.primitive.StringFormat;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
- * Instance of this class represents boolean value. 
+ * Instance of this class represents boolean value.
+ * Use formatString attribute of metadata to specify string values, which will be evaluated as true.
+ * It's regExp which is used by method fromString() to recognize true values.
+ * It's case sensitive and default is "T|TRUE|YES|Y||t|true|1|yes|y".
  * 
  * @author Martin Varecha <martin.varecha@javlinconsulting.cz>
  * (c) JavlinConsulting s.r.o.
@@ -42,8 +46,10 @@ import org.jetel.metadata.DataFieldMetadata;
 public class BooleanDataField extends DataField implements Comparable{
 
 	private boolean value;
+	private StringFormat stringFormat = null;
 	// standard size of field in serialized form
 	private final static int FIELD_SIZE_BYTES = 1;
+	private static final String DEFAULT_REGEXP_TRUE_STRING = "T|TRUE|YES|Y||t|true|1|yes|y";
 
     /**
      *  Constructor for the BooleanDataField object
@@ -63,6 +69,13 @@ public class BooleanDataField extends DataField implements Comparable{
 	private BooleanDataField(DataFieldMetadata _metadata, boolean _value){
 	    super(_metadata);
 	    setValue(_value);
+        // handle format string
+        String regExpTrueString;
+        regExpTrueString = _metadata.getFormatStr();
+        if ((regExpTrueString == null) || (regExpTrueString.length() == 0)) {
+        	regExpTrueString = DEFAULT_REGEXP_TRUE_STRING;
+        }
+    	stringFormat = StringFormat.create(regExpTrueString);
 	}
 	
 	/* (non-Javadoc)
@@ -238,7 +251,7 @@ public class BooleanDataField extends DataField implements Comparable{
 		    setNull(true);
 			return;
 		}
-		value = Boolean.valueOf( seq.toString() );
+		value = stringFormat.matches(seq.toString());
 		setNull(false);
 	}
 
