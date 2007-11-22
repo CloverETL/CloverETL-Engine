@@ -946,8 +946,8 @@ public class StringUtils {
     public static CharSequence translateSequentialSearch(CharSequence in, 
     		CharSequence searchSet,	CharSequence replaceSet){
     	StringBuilder result = new StringBuilder();
-    	char[] search =  searchSet.toString().toCharArray();
-    	char[] replace = replaceSet.toString().toCharArray();
+    	char[] search =  charSequence2char(searchSet);
+    	char[] replace = charSequence2char(replaceSet);
     	int length = replace.length;
     	int index;
     	char ch;
@@ -964,6 +964,14 @@ public class StringUtils {
     	return result;
     }
    
+    public static char[] charSequence2char(final CharSequence in){
+    	char[] array=new char[in.length()];
+    	for(int i=0;i<in.length();i++){
+    		array[i]=in.charAt(i);
+    	}
+    	return array;
+    }
+    
     private static int indexOf(char[] array, char ch){
     	for (int i=0;i<array.length; i++) {
 			if (array[i] == ch) return i;
@@ -973,7 +981,7 @@ public class StringUtils {
 /*
  *  End class StringUtils
  */
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		
 		StringBuilder in = new StringBuilder();
 		StringBuilder searchSet = new StringBuilder();
@@ -1062,7 +1070,7 @@ public class StringUtils {
 		if (!t1.toString().equals(t2.toString()) || !t1.toString().equals(t3.toString())
 				|| !t1.toString().equals(t4.toString())) 
 			throw new RuntimeException();
-}
+}*/
 
 }
 
