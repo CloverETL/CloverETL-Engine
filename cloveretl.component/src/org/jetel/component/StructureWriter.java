@@ -49,7 +49,7 @@ import org.w3c.dom.Element;
 /**
  *  <h3>StructureWriter Component</h3>
  *
- * <!-- All records from "body input port' are formatted due to given mask and written to specified file -->
+ * <!-- All records from "body input port" [0] are formatted due to given mask and written to specified file -->
  * 
  * <table border="1">
  *  <th>Component:</th>
@@ -58,16 +58,16 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>All records from "body input port" are formatted due to given mask and written to specified file.
- * There can be specified different masks for "header input port" and "footer input port". If there is specified
- * header mask, all records from "header input port" [0] are  formatted due to this mask and written to file,
- * then are processed records from "body input port" [1] and then is written footer, created from records read 
+ * <td>All records from "body input port" [0] are formatted due to given mask and written to specified file.
+ * There can be specified different masks for "header input port" [1] and "footer input port" [2]. If there is specified
+ * header mask, all records from "header input port" [1] are  formatted due to this mask and written to file,
+ * then are processed records from "body input port" [0] and then is written footer, created from records read 
  * from "footer input port" [2]. Header and footer are created in the same time and footer is stored in memory
  * until all records from "body port" are not written to the file.</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
- * <td>[0]- input records - if there are not connected ports [1] and [2], this is "body port" else this is "header port"
- * 	   [1]- input records - "body port"
- * 	   [2]- input records - "footer port"
+ * <td>[0] - input records - "body port"<br>
+ * 	   [1] (optional) - input records - "header port"<br>
+ * 	   [2] (optional) - input records - "footer port"
  * </td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
  * <td></td></tr>
@@ -168,11 +168,10 @@ public class StructureWriter extends Node {
 
 	public final static String COMPONENT_TYPE = "STRUCTURE_WRITER";
 
-	private final static int HEADER_DEFAULT_PORT = 0;
-	private final static int BODY_DEFAULT_PORT = 1;
-	private final static int FOOTER_DEFAULT_PORT = 2;
+	private final static int BODY_PORT = 0;
+	private final static int HEADER_PORT = 1;
+	private final static int FOOTER_PORT = 2;
 	
-	private int bodyPortNo;
 	private String charset;
 
 	/**
@@ -224,12 +223,12 @@ public class StructureWriter extends Node {
 		Producer headerProducer = null, footerProducer = null;
 		//prepare header
 		if (headerFormatter != null) {
-			headerProducer = new Producer(getInputPort(HEADER_DEFAULT_PORT), headerFormatter);
+			headerProducer = new Producer(getInputPort(HEADER_PORT), headerFormatter);
 			headerProducer.run();
 		}
 		//prepare footer
 		if (footerFormatter != null){
-			footerProducer = new Producer(getInputPort(FOOTER_DEFAULT_PORT), footerFormatter);
+			footerProducer = new Producer(getInputPort(FOOTER_PORT), footerFormatter);
 			footerProducer.run();
 		}
 		//wait for header
@@ -248,7 +247,7 @@ public class StructureWriter extends Node {
 			formatterProvider.setFooter(footerOutput.toString(footerFormatter.getCharsetName()));
 		}
 		//main loop: processing "body" records
-		InputPort bodyPort = getInputPort(bodyPortNo);
+		InputPort bodyPort = getInputPort(BODY_PORT);
 		DataRecord record = new DataRecord(bodyPort.getMetadata());
 		record.init();
         writer.init(bodyPort.getMetadata());
@@ -319,9 +318,8 @@ public class StructureWriter extends Node {
         writer.setPartitionKeyNames(partitionKey);
         writer.setPartitionFileTag(partitionFileTagType);
         
-        bodyPortNo = getInPorts().size() > 1 ? BODY_DEFAULT_PORT : 0;
 		if (headerMask != null) {
-			if (bodyPortNo == 1) {
+			if (getInPorts().size() > 1) {
 				headerFormatter = new StructureFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 				headerFormatter.setMask(headerMask);
 			}else{
@@ -329,7 +327,7 @@ public class StructureWriter extends Node {
 			}
 		}
 		if (footerMask != null){
-			if (bodyPortNo == 1) {
+			if (getInPorts().size() > 1) {
 				footerFormatter = new StructureFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 				footerFormatter.setMask(footerMask);
 			}else{
@@ -338,12 +336,12 @@ public class StructureWriter extends Node {
 		}
         if (headerFormatter != null) {
         	headerOutput = new ByteArrayOutputStream();
-        	headerFormatter.init(getInputPort(HEADER_DEFAULT_PORT).getMetadata());
+        	headerFormatter.init(getInputPort(HEADER_PORT).getMetadata());
         	headerFormatter.setDataTarget(Channels.newChannel(headerOutput));
         }
         if (footerFormatter != null){
         	footerOutput = new ByteArrayOutputStream();
-        	footerFormatter.init(getInputPort(FOOTER_DEFAULT_PORT).getMetadata());
+        	footerFormatter.init(getInputPort(FOOTER_PORT).getMetadata());
         	footerFormatter.setDataTarget(Channels.newChannel(footerOutput));
         }
 	}
