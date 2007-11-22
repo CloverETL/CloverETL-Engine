@@ -96,7 +96,7 @@ public final class HugeDecimal implements Decimal {
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
-            throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
+            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + _value + ")");
         }
 	}
 
@@ -112,7 +112,7 @@ public final class HugeDecimal implements Decimal {
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
-            throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
+            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + _value + ")");
         }
 	}
 
@@ -128,7 +128,7 @@ public final class HugeDecimal implements Decimal {
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
-            throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
+            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + _value + ")");
         }
 		setNaN(false);
 	}
@@ -145,7 +145,7 @@ public final class HugeDecimal implements Decimal {
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
-            throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
+            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + _value + ")");
         }
     }
 
@@ -161,7 +161,7 @@ public final class HugeDecimal implements Decimal {
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
-            throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
+            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + _value + ")");
         }
     }
     
