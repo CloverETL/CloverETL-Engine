@@ -54,6 +54,10 @@ public abstract class TLContainerValue extends TLValue {
 		 throw new UnsupportedOperationException("Can't assign Object value to ContainerValue");
 	 }
 	 
+	 public void setValue(TLValue _value){
+		 throw new UnsupportedOperationException("Can't assign TLValue value to ContainerValue");
+	 }
+	 
 	 public void setValue(DataField fieldValue) {
 	        throw new UnsupportedOperationException();
 	 }

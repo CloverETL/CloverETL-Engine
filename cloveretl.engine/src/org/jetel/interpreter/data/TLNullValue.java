@@ -22,7 +22,10 @@
 
 package org.jetel.interpreter.data;
 
+import java.util.Date;
+
 import org.jetel.data.DataField;
+import org.jetel.data.primitive.Numeric;
 
 public class TLNullValue extends TLValue {
 
@@ -46,12 +49,25 @@ public class TLNullValue extends TLValue {
 	public Object getValue() {
 		return null;
 	}
-
+	
+	public Date getDate(){
+		throw new RuntimeException("this is a TLNull value");
+	}
+	    
+	public Numeric getNumeric(){
+	    throw new RuntimeException("this is a TLNull value");
+	}
+	  
 	@Override
 	public void setValue(Object _value) {
 		throw new IllegalArgumentException("Can NOT assign value to TLValue type NULL !");
 	}
 
+	@Override
+	public void setValue(TLValue _value) {
+		throw new IllegalArgumentException("Can NOT assign value to TLValue type NULL !");
+	}
+	
 	@Override
 	public String toString(){
 		return "<null>";

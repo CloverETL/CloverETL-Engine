@@ -41,6 +41,11 @@ public class TLStringValue extends TLValue implements CharSequence {
 		this.value.append(value);
 	}
 	
+	public TLStringValue(StringBuilder value){
+		super(TLValueType.STRING);
+		this.value=value;
+	}
+	
 	public void setValue(TLValue value){
 		this.value.setLength(0);
 		if (value instanceof TLStringValue){
@@ -97,7 +102,7 @@ public class TLStringValue extends TLValue implements CharSequence {
 	
 	@Override
 	public TLValue duplicate() {
-		return new TLStringValue(value);
+		return new TLStringValue(new StringBuilder(value));
 	}
 	
 	@Override public String toString(){

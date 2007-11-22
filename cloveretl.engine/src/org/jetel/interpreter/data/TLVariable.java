@@ -35,7 +35,7 @@ import org.jetel.data.DataField;
  */
 public class TLVariable {
       
-    final TLValue value;
+    TLValue value;
     protected String name;
     final TLValueType type;
     boolean isNull;		// does this variable represents NULL value ?
@@ -45,7 +45,7 @@ public class TLVariable {
         this.value=value;
         this.type=value.getType();
         this.name=name;
-        this.isNull= (value==TLValue.NULL_VAL) ? false :true;
+        this.isNull= (value==TLValue.NULL_VAL) ? true : false;
         this.nullable=true;
     }
     
@@ -95,9 +95,15 @@ public class TLVariable {
     		if (!nullable) return false; // optionally throw exception
     		isNull=true;
     		return true;
+    	}else if (value instanceof TLBooleanValue){
+    		this.value=value;
+    		isNull=false;
+    		return true;
+    	}else{
+    		this.value.setValue(value);
+    		isNull=false;
+    		return true;
     	}
-   		this.value.setValue(value);
-   		return true;
     }
     
     public boolean setTLValue(TLVariable variable) {
@@ -105,9 +111,15 @@ public class TLVariable {
     		if (!nullable) return false; // optionally throw exception
     		isNull=true;
     		return true;
+    	}else if (variable.type==TLValueType.BOOLEAN){
+    		this.value=variable.value;
+    		isNull=false;
+    		return true;
+    	}else{
+    		this.value.setValue(variable.value);
+    		isNull=false;
+    		return true;
     	}
-   		this.value.setValue(variable.value);
-    	return false;
     }
     
         
@@ -118,7 +130,12 @@ public class TLVariable {
     		return true;
     	}
     	if (this.value.type == value.type) {
-            this.value.setValue(value);
+    		if (value.type==TLValueType.BOOLEAN){
+    			this.value=value;
+    		}else{
+    			this.value.setValue(value);
+    		}
+            isNull=false;
             return true;
         } else {
             return false;
@@ -138,8 +155,13 @@ public class TLVariable {
     }
     
     public boolean setTLValue(DataField fieldValue) {
-    	if (fieldValue.isNull() && !nullable) return false; // optionally throw exception
+    	if (fieldValue.isNull()){
+    		if (!nullable) return false; // optionally throw exception
+    		isNull=true;
+    		return true;
+    	}
     	this.value.setValue(fieldValue);
+    	isNull=false;
     	return true;
     }
     

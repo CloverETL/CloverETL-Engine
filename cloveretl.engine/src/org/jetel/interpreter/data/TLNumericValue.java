@@ -42,29 +42,37 @@ public class TLNumericValue<T extends Numeric> extends TLValue implements Numeri
 	  public static final TLValue NUM_E_VAL = new TLNumericValue(TLValueType.DOUBLE,new CloverDouble(Math.E));
 	
 	
-		private T value;
+		private Numeric value;
 	
 		public TLNumericValue(TLValueType type){
 			super(type);
 			switch(type){
 			case INTEGER:
 	            value= (T) new CloverInteger(0);
+	            break;
 	        case DOUBLE:
 	            value= (T)new CloverDouble(0);
+	            break;
 	        case LONG:
 	            value= (T)new CloverLong(0);
+	            break;
 	        case DECIMAL:
 	            value= (T)DecimalFactory.getDecimal();
+	            break;
+	            default:
+	            	throw new RuntimeException("Can't handle value type: "+type);
 			}
 		}
 	
 		public TLNumericValue(TLValueType type,T value){
 			super(type);
+			if (!type.isNumeric())
+				throw new RuntimeException("Can't handle value type: "+type);
 			this.value=value;
 		}
 		
 		
-		public T getValue(){
+		public Numeric getValue(){
 			return value;
 		}
 		
@@ -84,17 +92,32 @@ public class TLNumericValue<T extends Numeric> extends TLValue implements Numeri
 			return value;
 		}
 		
-		
 		public void setValue(Object _value){
-			throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
+			if (_value instanceof Numeric){
+				setValue((Numeric)_value);
+			}else if (_value instanceof Number){
+				setValue((Number)_value);
+			}else{
+				throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
+			}
 		}
 
-		public void setValue(Numeric value){
+		
+		@Override
+		public void setValue(TLValue _value) {
+			if (_value.type.isNumeric()){
+				setValue((Numeric)_value);
+			}else{
+				throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
+			}
+		}
+		
+		public final void setValue(Numeric value){
 			this.value.setValue(value);
 			
 		}
 		
-		public void setValue(Number value){
+		public final void setValue(Number value){
 			this.value.setValue(value);
 		}
 		
