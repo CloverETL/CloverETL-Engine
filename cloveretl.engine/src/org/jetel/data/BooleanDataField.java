@@ -250,7 +250,10 @@ public class BooleanDataField extends DataField implements Comparable{
 	 */
 	public void serialize(ByteBuffer buffer) {
 		try {
-       		buffer.put( value ? (byte)1 : (byte)0 ); // dataBuffer accepts only bytes
+			if (isNull())
+				buffer.put((byte)-1);
+			else
+				buffer.put( value ? (byte)1 : (byte)0 ); // dataBuffer accepts only bytes
 		} catch (BufferOverflowException e) {
 			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
 		}
@@ -264,7 +267,7 @@ public class BooleanDataField extends DataField implements Comparable{
 	 */
 	public void deserialize(ByteBuffer buffer) {
 		byte tmpl = buffer.get();
-		if (tmpl == 0) {
+		if (tmpl == (byte)-1) {
 			setNull(true);
 			return;
 		}
@@ -280,15 +283,20 @@ public class BooleanDataField extends DataField implements Comparable{
 	 * @return      
 	 */
 	public boolean equals(Object obj) {
-	    if (isNull || obj==null) return false;
+	    if (obj==null) return false;
 	    
 	    if (obj instanceof BooleanDataField){
-	        return ( this.value == ((BooleanDataField) obj).value );
+	    	BooleanDataField objBool = (BooleanDataField)obj; 
+	    	if (isNull && objBool.isNull) 
+	    		return true;
+	    	if (!isNull && !objBool.isNull)
+	    		return ( this.value == ((BooleanDataField) obj).value );
 	    } else if (obj instanceof Boolean){
+	    	if (isNull) 
+	    		return false;
 	        return this.value == ((Boolean)obj).booleanValue() ;
-	    }else{
-	        return false;
 	    }
+	    return false;
 	}
 
 	/**
