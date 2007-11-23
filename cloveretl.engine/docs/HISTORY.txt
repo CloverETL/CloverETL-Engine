@@ -23,6 +23,7 @@ Changes/bug fixes:
 	--> some classes (SQLDataParser, DBLookupTable) now work with java.sql.Connection instead of org.jetel.connection.DBConnection
 + DBOutputTable can accept more query at once. New jetel-sql query syntax introduced.
 + DBOutputTable has new attribute "errorAction" - COMMIT or ROLLBACK on errors
++ StructureWriter has 3 input ports:"body", "header" and "footer". There can be different masks for each input port
 
 REL 2-3-1 
 ---------
