@@ -34,10 +34,13 @@ import junit.framework.*;
 public class AllTests {
 	public static Test suite() {
 		TestSuite suite = new TestSuite();
-		suite.addTest(UtilTestSuite.suite());
-		suite.addTest(MetadataTestSuite.suite());
-		suite.addTest(ExceptionTestSuite.suite());
+		suite.addTest(new TestSuite(org.jetel.component.CustomizedRecordTransformTest.class));
 		suite.addTest(DataTestSuite.suite());
+		suite.addTest(ExceptionTestSuite.suite());
+		suite.addTest(new TestSuite(org.jetel.graph.EdgeTest.class));
+		suite.addTest(new TestSuite(org.jetel.interpreter.TestInterpreter.class));
+		suite.addTest(MetadataTestSuite.suite());
+		suite.addTest(UtilTestSuite.suite());
 		return suite;
 	}
 
