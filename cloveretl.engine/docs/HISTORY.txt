@@ -18,7 +18,11 @@ Changes/bug fixes:
 	 - integer index_of(string, string, integer)
 + some components have optional "rejected port(s)" (AproxMergeJoin, CheckForeignKey, DBJoin, 
 	LookupJoin)
++ DBConnection - for threadSave connections java.sql.Connections are stored upon element id 
+	--> method getConnection() replaced by getConnection(String)
+	--> some classes (SQLDataParser, DBLookupTable) now work with java.sql.Connection instead of org.jetel.connection.DBConnection
 + DBOutputTable can accept more query at once. New jetel-sql query syntax introduced.
++ DBOutputTable has new attribute "errorAction" - COMMIT or ROLLBACK on errors
 
 REL 2-3-1 
 ---------
