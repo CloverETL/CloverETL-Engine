@@ -562,7 +562,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         }else{
         	node.nodeVal.setValue(a);
         }
-        
         ((TLNumericValue)node.nodeVal).mul(((TLNumericValue)b).getNumeric()); //TODO: hack due to IntegerDecimal problem..
         stack.push(node.nodeVal);
         return data;
