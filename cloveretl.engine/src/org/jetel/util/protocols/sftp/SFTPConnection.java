@@ -5,11 +5,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Vector;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
@@ -70,6 +72,42 @@ public class SFTPConnection extends URLConnection {
 		}
     }
 
+	/**
+	 * Lists actual path.
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+    public Vector ls() throws IOException {
+		connect();
+		try {
+			ChannelSftp c = getChannelSftp();
+			return c.ls(url.getPath());
+		} catch (JSchException e) {
+			throw new IOException(e.getMessage());
+		} catch (SftpException e) {
+			throw new IOException(e.getMessage());
+		}
+    }
+
+    /**
+     * Gets informations for actual path.
+     * 
+     * @return
+     * @throws IOException
+     */
+    public SftpATTRS stat() throws IOException {
+		connect();
+		try {
+			ChannelSftp c = getChannelSftp();
+			return c.stat(url.getPath());
+		} catch (JSchException e) {
+			throw new IOException(e.getMessage());
+		} catch (SftpException e) {
+			throw new IOException(e.getMessage());
+		}
+    }
+    
 	@Override
 	public void connect() throws IOException {
 		JSch jsch = new JSch();
@@ -79,7 +117,7 @@ public class SFTPConnection extends URLConnection {
 			if (url.getPort() == 0) {
 				session = jsch.getSession(user[0], url.getHost());
 			} else {
-				session = jsch.getSession(user[0], url.getHost(), url.getPort());
+				session = jsch.getSession(user[0], url.getHost(), url.getPort() == -1 ? 22 : url.getPort());
 			}
 
 			// password will be given via UserInfo interface.
