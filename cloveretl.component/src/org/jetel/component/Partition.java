@@ -364,7 +364,7 @@ public class Partition extends Node {
 		}else {
 			if (partitionSource == null && partitionURL != null) {
 				partitionSource = FileUtils.getStringFromURL(
-						getGraph().getRuntimeParameters().getProjectURL(), partitionURL, 
+						getGraph().getProjectURL(), partitionURL, 
 						charset);
 			}
 			if (partitionSource != null) {

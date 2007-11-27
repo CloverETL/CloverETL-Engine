@@ -256,7 +256,7 @@ public class XLSReader extends Node {
 				parser.setSheetName(sheetName);
 			}
 	        //because of stdin try{//sheet number OK, check file name
-	            reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
+	            reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
 	            //reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	            reader.close();
 	        /*}catch(ComponentNotReadyException e){
@@ -465,7 +465,7 @@ public class XLSReader extends Node {
 		}else{
 			parser.setMappingType(XLSParser.NO_METADATA_INFO);
 		}
-        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
+        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
         reader.setLogger(logger);
         reader.setNumRecords(numRecords);
         reader.init(getOutputPort(OUTPUT_PORT).getMetadata());

@@ -233,7 +233,7 @@ public class XmlXPathReader extends Node {
 		super.init();
 		
         // initialize multifile reader based on prepared parser
-        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
+        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
         reader.setLogger(logger);
         reader.setSkip(skipRows);
         reader.setNumRecords(numRecords);

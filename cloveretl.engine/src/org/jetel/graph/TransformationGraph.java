@@ -20,10 +20,12 @@
 // FILE: c:/projects/jetel/org/jetel/graph/TransformationGraph.java
 
 package org.jetel.graph;
+import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,15 +41,18 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.database.IConnection;
 import org.jetel.enums.EdgeTypeEnum;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.runtime.CloverRuntime;
-import org.jetel.graph.runtime.GraphRuntimeParameters;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.string.StringUtils;
 /*
  *  import org.apache.log4j.Logger;
  *  import org.apache.log4j.BasicConfigurator;
@@ -61,7 +66,11 @@ import org.jetel.util.property.PropertyRefResolver;
  * @see         org.jetel.graph.runtime.WatchDog
  */
 
-public final class TransformationGraph {
+public final class TransformationGraph extends GraphElement {
+
+	private static final String DEFAULT_GRAPH_ID = "DEFAULT_GRAPH_ID";
+	
+	public static final String PROJECT_DIR_PROPERTY = "PROJECT_DIR";
 
 	private Map <Integer,Phase> phases;
 
@@ -81,8 +90,10 @@ public final class TransformationGraph {
 	
 	private Map <String, DataRecordMetadata> dataRecordMetadata;
 
-	private String name;
-    
+	private String password = null;
+	
+	private Enigma enigma = null;
+	
     private boolean debugMode = true;
     
     private String debugModeStr;
@@ -94,21 +105,20 @@ public final class TransformationGraph {
 	private WatchDog watchDog;
 
 	private TypedProperties graphProperties;
-	
-	private GraphRuntimeParameters runtimeParameters;
-	
-    public TransformationGraph() {
-        this(null);
-    }
-    
+
+	public TransformationGraph() {
+		this(DEFAULT_GRAPH_ID);
+	}
+
 	/**
 	 *Constructor for the TransformationGraph object
 	 *
 	 * @param  _name  Name of the graph
 	 * @since         April 2, 2002
 	 */
-	public TransformationGraph(String _name) {
-		this.name = _name;
+	public TransformationGraph(String id) {
+		super(id);
+		
 		phases = new HashMap<Integer,Phase>();
 		nodes = new HashMap<String,Node>();
 		edges = new HashMap<String,Edge>();
@@ -121,28 +131,41 @@ public final class TransformationGraph {
 		graphProperties = new TypedProperties();
 	}
 
+	private static boolean firstCallProjectURL = true; //have to be reset
+	private static URL projectURL = null;
+    public URL getProjectURL() {
+        if(firstCallProjectURL) {
+            firstCallProjectURL = false;
+            String projectURLStr = null;
+            if(getGraphProperties().containsKey(PROJECT_DIR_PROPERTY)) {
+                projectURLStr = getGraphProperties().getStringProperty(PROJECT_DIR_PROPERTY);
+            } else {
+            	//maybe any other default project directory
+            }
+            
+            if(projectURLStr != null) {
+                try {
+                    projectURL = FileUtils.getFileURL(null, projectURLStr);
+                } catch (MalformedURLException e) {
+                    getLogger().warn("Home project dir is not in valid URL format - " + projectURLStr);
+                }
+            }
+        }
 
-	/**
-	 *  Sets the Name attribute of the TransformationGraph object
-	 *
-	 * @param  _name  The new Name value
-	 * @since         April 10, 2002
-	 */
-	public void setName(String _name) {
-		this.name = _name;
-	}
+        return projectURL;
+    }
 
-
-	/**
-	 *  Gets the Name attribute of the TransformationGraph object
-	 *
-	 * @return    The Name value
-	 * @since     April 10, 2002
-	 */
-	public String getName() {
-		return name;
-	}
-
+    public void setPassword(String password) {
+    	this.password = password;
+    }
+    
+    public Enigma getEnigma() {
+    	if(enigma == null && !StringUtils.isEmpty(password)) {
+    		enigma = new Enigma(password);
+    	}
+    	return enigma;
+    }
+    
 	/**
      * Sets debug mode on the edges.
 	 * @param debug
@@ -339,49 +362,6 @@ public final class TransformationGraph {
     }
     
 	/**
-	 * An operation that starts execution of graph
-	 *
-	 * @return    True if all nodes successfully started, otherwise False
-	 * @since     April 2, 2002
-	 */
-	public Result run() {
-        long timestamp = System.currentTimeMillis();
-        watchDog = new WatchDog(this, phasesArray);
-
-        logger.info("Starting WatchDog thread ...");
-        watchDog.start();
-        try {
-            watchDog.join();
-        } catch (InterruptedException ex) {
-            logger.error(ex);
-            return Result.ABORTED;
-        }
-        logger.info("WatchDog thread finished - total execution time: "
-                + (System.currentTimeMillis() - timestamp) / 1000 + " (sec)");
-
-        freeResources();
-
-        switch (watchDog.getStatus()) {
-        case FINISHED_OK:
-            logger.info("Graph execution finished successfully");
-            break;
-        case ABORTED:
-            logger.error("!!! Graph execution aborted !!!");
-            break;
-        case ERROR:
-            logger.error("!!! Graph execution finished with errors !!!");
-            break;
-        default:
-            logger.fatal("Unexpected result when executing graph !");
-        }
-        
-        return watchDog.getStatus();
-
-    }
-
-
-
-	/**
 	 * An operation that aborts execution of graph
 	 *
 	 * @since    April 2, 2002
@@ -403,7 +383,12 @@ public final class TransformationGraph {
 	 * sent to commons-logging.
 	 */
 	@Deprecated public boolean init(OutputStream out) {
-		return init();
+		try {
+			init();
+		} catch (ComponentNotReadyException e) {
+			return false;
+		}
+		return true;
 	}
 	
 	/**
@@ -412,7 +397,7 @@ public final class TransformationGraph {
 	 * @return      returns TRUE if succeeded or FALSE if some Node or Edge failed initialization
 	 * @since       Sept. 16, 2005
 	 */
-	public boolean init() {
+	public void init() throws ComponentNotReadyException {
 		Iterator iterator;
 		IConnection dbCon = null;
 		Sequence seq = null;
@@ -430,7 +415,7 @@ public final class TransformationGraph {
 			} catch (Exception ex) {
 				logger.info(dbCon + " ... !!! ERROR !!!");
 				logger.error("Can't connect to database", ex);
-				return false;
+				throw new ComponentNotReadyException("Can't connect to database", ex);
 			}
 		}
 		// initialize sequences
@@ -445,7 +430,7 @@ public final class TransformationGraph {
 			} catch (Exception ex) {
 				logger.info(seq + " ... !!! ERROR !!!");
 				logger.error("Can't initialize sequence", ex);
-				return false;
+				throw new ComponentNotReadyException("Can't initialize sequence", ex);
 			}
 		}
 		
@@ -466,7 +451,7 @@ public final class TransformationGraph {
             nodesList = TransformationGraphAnalyzer.analyzeGraphTopology(nodesList);
 		} catch (GraphConfigurationException ex) {
 			logger.error(ex.getMessage(),ex);
-			return false;
+			throw new ComponentNotReadyException("Graph topology analyze failed: " + ex.getMessage(), ex);
 		}
 		TransformationGraphAnalyzer.analyzeEdges(edgesList);
 		TransformationGraphAnalyzer.analyzeMultipleFeeds(nodesList);
@@ -474,7 +459,6 @@ public final class TransformationGraph {
         edgesList=null;
         nodesList=null;
 		// initialized OK
-		return true;
 	}
 
 	/**  Free all allocated resources which need special care */
@@ -761,7 +745,7 @@ public final class TransformationGraph {
 		}
 		InputStream inStream;
         try {
-        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getRuntimeParameters().getProjectURL(), fileURL));
+        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getProjectURL(), fileURL));
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
             throw e;
@@ -781,7 +765,7 @@ public final class TransformationGraph {
         }
         InputStream inStream;
         try {
-        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getRuntimeParameters().getProjectURL(), fileURL));
+        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getProjectURL(), fileURL));
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
             throw e;
@@ -905,20 +889,6 @@ public final class TransformationGraph {
         return watchDog;
     }
     
-    
-    public void setRuntimeParameters(GraphRuntimeParameters runtimeParameters){
-    	this.runtimeParameters=runtimeParameters;
-    	runtimeParameters.setGraph(this);
-    }
-    
-    public GraphRuntimeParameters getRuntimeParameters(){
-    	// if nothing set, then use defaults
-    	if (runtimeParameters==null){
-    		runtimeParameters=new GraphRuntimeParameters(this);
-    	}
-    	return runtimeParameters;
-    }
-
 	public Log getLogger() {
 		return TransformationGraph.logger;
 	}

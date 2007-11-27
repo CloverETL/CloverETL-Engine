@@ -66,7 +66,7 @@ public class RecordTransformFactory {
             //get transformation from link to the compiled class
             transformation = RecordTransformFactory.loadClass(logger, transformClass);
         }else if (transform == null && transformURL != null){
-        	transform = FileUtils.getStringFromURL(node.getGraph().getRuntimeParameters().getProjectURL(), transformURL, charset);
+        	transform = FileUtils.getStringFromURL(node.getGraph().getProjectURL(), transformURL, charset);
         }
         if (transformClass == null) {
             

@@ -278,7 +278,7 @@ public class StructureWriter extends Node {
         checkOutputPorts(status, 0, 0);
 
         try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() 
+        	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 
         			: null, fileURL);
         } catch (ComponentNotReadyException e) {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,
@@ -300,7 +300,7 @@ public class StructureWriter extends Node {
 
 		// based on file mask, create/open output file
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = Channels.newChannel(System.out);

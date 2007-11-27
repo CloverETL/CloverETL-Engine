@@ -320,7 +320,8 @@ public class RunGraph extends Node{
 		Process	process;
 		
 		logger.info("Processing file " + graphName);
-		String commandLine = cloverCmdLine + " " + classPath + " " + cloverRunClass + " " + org.jetel.main.runGraph.getCmdLineArgs() + " " + graphName;
+		//TODO Juro je to potreba udelat jinak
+		String commandLine = cloverCmdLine + " " + classPath + " " + cloverRunClass + " " /*+ org.jetel.main.runGraph.getCmdLineArgs()*/ + " " + graphName;
 		logger.info("Executing command: \"" + commandLine + "\"");
 		
 		process = Runtime.getRuntime().exec(commandLine);

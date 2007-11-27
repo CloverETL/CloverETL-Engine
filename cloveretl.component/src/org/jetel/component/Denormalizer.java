@@ -230,7 +230,7 @@ public class Denormalizer extends Node {
 			if (xformClass != null) {
 				denorm = createDenormalizer(xformClass);
 			}else if (xform == null && xformURL != null){
-				xform = FileUtils.getStringFromURL(getGraph().getRuntimeParameters().getProjectURL(), xformURL, charset);
+				xform = FileUtils.getStringFromURL(getGraph().getProjectURL(), xformURL, charset);
 			}
 			if (xformClass == null) {
 				switch (guessTransformType(xform)) {

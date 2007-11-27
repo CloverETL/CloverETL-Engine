@@ -798,7 +798,7 @@ public class DB2DataWriter extends Node {
 
 		if (!getInPorts().isEmpty()) {
 			//prepare name for temporary data file/pipe
-			String tmpDir = getGraph().getRuntimeParameters().getTmpDir();
+			String tmpDir = System.getProperty("java.io.tmpdir");
 			if (!tmpDir.endsWith(File.separator)) {
 				tmpDir = tmpDir.concat(File.separator);
 			}
