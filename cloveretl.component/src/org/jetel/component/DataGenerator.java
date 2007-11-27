@@ -153,11 +153,18 @@ public class DataGenerator extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
-        super.init();
         
         metadata = getOutputPort(0).getMetadata();
-        
-        recordGenerator = new DataRecordGenerator(this, metadata, pattern, this.randomFieldsString, this.randomSeed, this.sequenceFieldsString);
+
+        try {
+            recordGenerator = new DataRecordGenerator(this, metadata, pattern, this.randomFieldsString, this.randomSeed, this.sequenceFieldsString, this.recordsNumber);
+            recordGenerator.init();
+        } catch (ComponentNotReadyException e){
+        	throw e;
+        } catch (Exception e){
+			throw new ComponentNotReadyException(this, "Can't initialize record generator", e);
+        }
+        super.init();
 	}
 	
 
@@ -204,7 +211,7 @@ public class DataGenerator extends Node {
 	@Override
 	public Result execute() throws Exception {
 		for (int i=0;i<recordsNumber && runIt;i++){
-			DataRecord record = recordGenerator.next();
+			DataRecord record = recordGenerator.getNext();
 			writeRecordBroadcast(record);
 		}
 		broadcastEOF();
