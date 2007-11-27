@@ -142,6 +142,26 @@ public class JExcelXLSDataParser extends XLSParser {
 		}
 		return names.toArray(new String[0]);
 	}
+	
+	public String[][] getPreview(int length){
+		if (sheet == null) return null;
+		
+		String[][] result = new String[length][];
+		Cell[] row;
+		String cellContents;
+		for (int i=0; i<length; i++){
+			row = sheet.getRow(i);
+			result[i] = new String[row.length];
+			for (int j = 0; j < row.length; j++) {
+				cellContents = row[j].getContents();
+				result[i][j] = cellContents.substring(0, Math.min(cellContents.length(), MAX_NAME_LENGTH));
+				if (cellContents.length() > MAX_NAME_LENGTH) {
+					result[i][j] += "...";
+				}
+			}
+		}
+		return result;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.XLSParser#createMetadata()
@@ -299,6 +319,7 @@ public class JExcelXLSDataParser extends XLSParser {
 			throws ComponentNotReadyException {
 		if (releaseInputSource && wb != null) {
 			wb.close();
+			sheetNumberIterator = null;
 		}
         WorkbookSettings settings = new WorkbookSettings();
 		settings.setEncoding(charset);
@@ -366,6 +387,19 @@ public class JExcelXLSDataParser extends XLSParser {
 			lastRow = lastRowAttribute;
 		}
 		return true;
+	}
+	
+	@Override
+	public boolean getSheet(int sheetNumber){
+		if (sheetNumber >= wb.getNumberOfSheets()) return false;
+		sheet = wb.getSheet(sheetNumber);
+		return true;
+	}
+
+	@Override
+	public boolean getSheet(String sheetName){
+		sheet = wb.getSheet(sheetName);
+		return sheet != null;
 	}
 
 	public String getCharset() {

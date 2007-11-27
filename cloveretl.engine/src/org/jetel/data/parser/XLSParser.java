@@ -91,7 +91,7 @@ public abstract class XLSParser implements Parser {
 	protected final int XLS_NUMBER = 0;
 	protected final int CLOVER_NUMBER = 1;
 	
-	protected final static int MAX_NAME_LENGTH = 10;
+	public final static int MAX_NAME_LENGTH = 15;
 
 
 	/* (non-Javadoc)
@@ -196,6 +196,22 @@ public abstract class XLSParser implements Parser {
 		return nRec;
 	}
 
+	/**
+	 * Changes current sheet to requested
+	 * 
+	 * @param sheetNumber
+	 * @return true if requested sheet exists in current workbook
+	 */
+	public abstract boolean getSheet(int sheetNumber);
+	
+	/**
+	 * Changes current sheet to requested
+	 * 
+	 * @param sheetName
+	 * @return true if requested sheet exists in current workbook
+	 */
+	public abstract boolean getSheet(String sheetName);
+	
 	/**
 	 * Assembles error message when exception occures during parsing
 	 * 
@@ -451,8 +467,15 @@ public abstract class XLSParser implements Parser {
 		this.lastRowAttribute = lastRow;
 	}
 	
+	/**
+	 * @return sheets in current workbook
+	 */
 	public abstract String[] getSheets();
 	
+	/**
+	 * @param index
+	 * @return sheet name in current workbook
+	 */
 	public abstract String getSheetName(int index);
 
 }
