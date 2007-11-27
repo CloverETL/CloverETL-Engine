@@ -319,7 +319,13 @@ import org.w3c.dom.Element;
  * <td>rowTerminator</td>
  * <td>Specifies the row terminator. The default is <b>\n</b> (newline character). Use this parameter to override the default
  * row terminator. For more information, see <a href="http://technet.microsoft.com/en-us/library/ms191485.aspx">Specifying Field
- * and Row Terminators</a>.</td>
+ * and Row Terminators</a>.<br>
+ * When both <i>rowTerminator</i> and <i>recordDelimiter</i> are defined then <i>rowTerminator</i> is ignored.
+ * </td>
+ * </tr>
+ * <td>recordDelimiter</td>
+ * <td>This is an alias for rowTerminator.
+ * When both <i>rowTerminator</i> and <i>recordDelimiter</i> are used defined <i>rowTerminator</i> is ignored.</td>
  * </tr>
  * <tr>
  * <td>inputFile</td>
@@ -455,7 +461,7 @@ import org.w3c.dom.Element;
  * fileURL=&quot;${WORKSPACE}\in1.bcp&quot;
  * username="test"
  * password="test" 
- * parameters=&quot;characterType|trustedConnection|codePageSpecifier=ACP|errFile=&quot;${WORKSPACE}\err.bcp&quot;|fieldTerminator=&quot;;&quot;&quot;
+ * parameters=&quot;characterType|codePageSpecifier=ACP|errFile=&quot;${WORKSPACE}\err.bcp&quot;|fieldTerminator=&quot;;&quot;&quot;
  * id=&quot;MS_SQL_DATA_WRITER0&quot;
  * type=&quot;MS_SQL_DATA_WRITER&quot;
  *  /&gt;
@@ -471,7 +477,7 @@ import org.w3c.dom.Element;
  * table=&quot;test&quot;
  * username="test"
  * password="test" 
- * parameters=&quot;characterType|trustedConnection|codePageSpecifier=ACP|fieldTerminator=&quot;|&quot;&quot;
+ * parameters=&quot;characterType|codePageSpecifier=ACP|fieldTerminator=&quot;|&quot;&quot;
  * id=&quot;MS_SQL_DATA_WRITER0&quot;
  * type=&quot;MS_SQL_DATA_WRITER&quot;
  *  /&gt;
@@ -527,7 +533,8 @@ public class MsSqlDataWriter extends Node {
 	private final static char MS_SQL_CODE_PAGE_SPECIFIER_SWITCH = 'C';
 	private final static String MS_SQL_COLUMN_DELIMITER_PARAM = "fieldTerminator";
 	private final static char MS_SQL_COLUMN_DELIMITER_SWITCH = 't';
-	private final static String MS_SQL_RECORD_DELIMITER_PARAM = "rowTerminator";
+	private final static String MS_SQL_RECORD_DELIMITER_ALIAS_PARAM = "rowTerminator";
+	private final static String MS_SQL_RECORD_DELIMITER_PARAM = "recordDelimiter";
 	private final static char MS_SQL_RECORD_DELIMITER_SWITCH = 'r';
 	private final static String MS_SQL_INPUT_FILE_PARAM = "inputFile";
 	private final static char MS_SQL_INPUT_FILE_SWITCH = 'i';
@@ -582,6 +589,7 @@ public class MsSqlDataWriter extends Node {
 	private String parameters;
 	private String errFileName = null; // errFile insert by user or tmpErrFile for parsing bad rows
 	private boolean isErrFileFromUser; // true if errFile was inserted by user; false when errFile is tmpErrFile
+	private String recordDelimiter;
 
 	private Properties properties = new Properties();
 	private DataConsumer consumer; // consume data from out stream of bcp
@@ -735,7 +743,7 @@ public class MsSqlDataWriter extends Node {
 		command.addParameterBooleanSwitch(MS_SQL_QUOTED_IDENTIFIER_PARAM, MS_SQL_QUOTED_IDENTIFIER_SWITCH);
 		command.addParameterSwitch(MS_SQL_CODE_PAGE_SPECIFIER_PARAM, MS_SQL_CODE_PAGE_SPECIFIER_SWITCH);
 		command.addParameterSwitch(MS_SQL_COLUMN_DELIMITER_PARAM, MS_SQL_COLUMN_DELIMITER_SWITCH);
-		command.addParameterSwitch(MS_SQL_RECORD_DELIMITER_PARAM, MS_SQL_RECORD_DELIMITER_SWITCH);
+		command.addSwitch(MS_SQL_RECORD_DELIMITER_SWITCH, recordDelimiter);
 		command.addParameterSwitch(MS_SQL_INPUT_FILE_PARAM, MS_SQL_INPUT_FILE_SWITCH);
 		command.addParameterSwitch(MS_SQL_OUTPUT_FILE_PARAM, MS_SQL_OUTPUT_FILE_SWITCH);
 		command.addParameterSwitch(MS_SQL_PACKET_SIZE_PARAM, MS_SQL_PACKET_SIZE_SWITCH);
@@ -781,6 +789,7 @@ public class MsSqlDataWriter extends Node {
 		parseParameters();
 		checkParams();
 		getUserAndPassword();
+		getRecordDelimiter();
 
 		isDataReadFromPort = !getInPorts().isEmpty();
 		isDataWrittenToPort = !getOutPorts().isEmpty();
@@ -837,6 +846,26 @@ public class MsSqlDataWriter extends Node {
 		}
 	}
 
+	/**
+	 * Get record delimiter from properties and save 
+	 * it to "recordDelimiter" attribute.
+	 */
+	private void getRecordDelimiter() {
+		if (properties.containsKey(MS_SQL_RECORD_DELIMITER_PARAM)) {
+			recordDelimiter= properties.getProperty(MS_SQL_RECORD_DELIMITER_PARAM);
+		}
+		
+		if (properties.containsKey(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM)) {
+			if (recordDelimiter == null) {
+				user = properties.getProperty(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM);
+			} else {
+				logger.warn("Parameter " + StringUtils.quote(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM) + " in attribute "
+						+ StringUtils.quote(XML_PARAMETERS_ATTRIBUTE) + " is ignored. Parameter "
+						+ StringUtils.quote(MS_SQL_RECORD_DELIMITER_PARAM) + " is used.");
+			}
+		}
+	}
+	
 	/**
 	 * Get user and password from properties and save 
 	 * them to "user" and "password" attribute.
@@ -901,8 +930,11 @@ public class MsSqlDataWriter extends Node {
 			setMsSqlDateFormat(metadata.getField(idx), idx);
 		}
 		int lastIndex = metadata.getNumFields() - 1;
-		metadata.getField(lastIndex).setDelimiter(properties.getProperty(
-				MS_SQL_RECORD_DELIMITER_PARAM, DEFAULT_RECORD_DELIMITER));
+		if (recordDelimiter != null) {
+			metadata.getField(lastIndex).setDelimiter(recordDelimiter);
+		} else {
+			metadata.getField(lastIndex).setDelimiter(DEFAULT_RECORD_DELIMITER);
+		}
 		setMsSqlDateFormat(metadata.getField(lastIndex), lastIndex);
 
 		return metadata;
