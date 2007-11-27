@@ -323,10 +323,10 @@ public class MsSqlDataWriter extends Node {
     private final static char MS_SQL_QUOTED_IDENTIFIER_SWITCH = 'q';
     private final static String MS_SQL_CODE_PAGE_SPECIFIER_PARAM = "codePageSpecifier";
     private final static char MS_SQL_CODE_PAGE_SPECIFIER_SWITCH = 'C';
-    private final static String MS_SQL_FIELD_TERMINATOR_PARAM = "fieldTerminator";
-    private final static char MS_SQL_FIELD_TERMINATOR_SWITCH = 't';
-    private final static String MS_SQL_ROW_TERMINATOR_PARAM = "rowTerminator";
-    private final static char MS_SQL_ROW_TERMINATOR_SWITCH = 'r';
+    private final static String MS_SQL_COLUMN_DELIMITER_PARAM = "fieldTerminator";
+    private final static char MS_SQL_COLUMN_DELIMITER_SWITCH = 't';
+    private final static String MS_SQL_RECORD_DELIMITER_PARAM = "rowTerminator";
+    private final static char MS_SQL_RECORD_DELIMITER_SWITCH = 'r';
     private final static String MS_SQL_INPUT_FILE_PARAM = "inputFile";
     private final static char MS_SQL_INPUT_FILE_SWITCH = 'i';
     private final static String MS_SQL_OUTPUT_FILE_PARAM = "outputFile";
@@ -361,8 +361,8 @@ public class MsSqlDataWriter extends Node {
     private final static String ERROR_FILE_NAME_SUFFIX = ".log";
     private final static File TMP_DIR = new File(".");
     private final static String CHARSET_NAME = "UTF-8";
-    private final static String DEFAULT_FIELD_DELIMITER = "\t"; // according bcp
-    private final static String DEFAULT_ROW_DELIMITER = "\n"; // according bcp
+    private final static String DEFAULT_COLUMN_DELIMITER = "\t"; // according bcp
+    private final static String DEFAULT_RECORD_DELIMITER = "\n"; // according bcp
     
     private final static String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
     private final static String DEFAULT_DATE_FORMAT = "MM/dd/yyyy"; 
@@ -527,13 +527,13 @@ public class MsSqlDataWriter extends Node {
 	    command.addParameterSwitch(MS_SQL_FILE_FORMAT_VERSION_PARAM, MS_SQL_FILE_FORMAT_VERSION_SWITCH);
 	    command.addParameterBooleanSwitch(MS_SQL_QUOTED_IDENTIFIER_PARAM, MS_SQL_QUOTED_IDENTIFIER_SWITCH);
 	    command.addParameterSwitch(MS_SQL_CODE_PAGE_SPECIFIER_PARAM, MS_SQL_CODE_PAGE_SPECIFIER_SWITCH);
-	    command.addParameterSwitch(MS_SQL_FIELD_TERMINATOR_PARAM, MS_SQL_FIELD_TERMINATOR_SWITCH);
-	    command.addParameterSwitch(MS_SQL_ROW_TERMINATOR_PARAM, MS_SQL_ROW_TERMINATOR_SWITCH);
+	    command.addParameterSwitch(MS_SQL_COLUMN_DELIMITER_PARAM, MS_SQL_COLUMN_DELIMITER_SWITCH);
+	    command.addParameterSwitch(MS_SQL_RECORD_DELIMITER_PARAM, MS_SQL_RECORD_DELIMITER_SWITCH);
 	    command.addParameterSwitch(MS_SQL_INPUT_FILE_PARAM, MS_SQL_INPUT_FILE_SWITCH);
 	    command.addParameterSwitch(MS_SQL_OUTPUT_FILE_PARAM, MS_SQL_OUTPUT_FILE_SWITCH);
 	    command.addParameterSwitch(MS_SQL_PACKET_SIZE_PARAM, MS_SQL_PACKET_SIZE_SWITCH);
 	    command.addParameterSwitch(MS_SQL_SERVER_NAME_PARAM, MS_SQL_SERVER_NAME_SWITCH);
-	    command.addParameterSwitch(MS_SQL_USER_NAME_PARAM, MS_SQL_USER_NAME_SWITCH);
+  	    command.addParameterSwitch(MS_SQL_USER_NAME_PARAM, MS_SQL_USER_NAME_SWITCH);
 	    command.addParameterSwitch(MS_SQL_PASSWORD_PARAM, MS_SQL_PASSWORD_SWITCH);
 	    command.addParameterBooleanSwitch(MS_SQL_TRUSTED_CONNECTION_PARAM, MS_SQL_TRUSTED_CONNECTION_SWITCH);
 	    command.addParameterBooleanSwitch(MS_SQL_REGIONAL_ENABLE_PARAM, MS_SQL_REGIONAL_ENABLE_SWITCH);
@@ -661,12 +661,12 @@ public class MsSqlDataWriter extends Node {
 		metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
 		for (int idx = 0; idx < metadata.getNumFields() - 1; idx++) {
 			metadata.getField(idx).setDelimiter(properties.getProperty(
-					MS_SQL_FIELD_TERMINATOR_PARAM, DEFAULT_FIELD_DELIMITER));
+					MS_SQL_COLUMN_DELIMITER_PARAM, DEFAULT_COLUMN_DELIMITER));
 			setMsSqlDateFormat(metadata.getField(idx), idx);
 		}
 		int lastIndex = metadata.getNumFields() - 1;
 		metadata.getField(lastIndex).setDelimiter(properties.getProperty(
-				MS_SQL_ROW_TERMINATOR_PARAM, DEFAULT_ROW_DELIMITER));
+				MS_SQL_RECORD_DELIMITER_PARAM, DEFAULT_RECORD_DELIMITER));
 		setMsSqlDateFormat(metadata.getField(lastIndex), lastIndex);
 	
 		return metadata;
@@ -937,7 +937,7 @@ public class MsSqlDataWriter extends Node {
         	}
         	
         	for (DataFieldMetadata fieldMetadata: metadata) {
-        		fieldMetadata.setDelimiter(DEFAULT_FIELD_DELIMITER);
+        		fieldMetadata.setDelimiter(DEFAULT_COLUMN_DELIMITER);
         		
         		if (fieldMetadata.getType() == DataFieldMetadata.DATE_FIELD ||
         				fieldMetadata.getType() == DataFieldMetadata.DATETIME_FIELD) {
@@ -945,7 +945,7 @@ public class MsSqlDataWriter extends Node {
         		}
         	}
         	// re-set last delimiter
-        	metadata.getField(metadata.getNumFields() - 1).setDelimiter(DEFAULT_ROW_DELIMITER);
+        	metadata.getField(metadata.getNumFields() - 1).setDelimiter(DEFAULT_RECORD_DELIMITER);
         	
         	logger.info(metadata);
         	
@@ -1021,7 +1021,7 @@ public class MsSqlDataWriter extends Node {
 
 	        			// read bad row
 	        			if ((line = reader.readLine()) != null) {
-	        				line = line + DEFAULT_ROW_DELIMITER;
+	        				line = line + DEFAULT_RECORD_DELIMITER;
 		        			dbParser.setDataSource(getInputStream(line));
 		        			try {
 								if (dbParser.getNext(dbOutRecord) != null) {
