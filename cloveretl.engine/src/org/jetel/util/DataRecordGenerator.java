@@ -332,7 +332,6 @@ public class DataRecordGenerator implements Parser{
 	 * @return
 	 * @throws Exception
 	 */
-	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		if (!initialized)
 			throw new JetelException("Generator is not initialized!");
@@ -553,45 +552,37 @@ public class DataRecordGenerator implements Parser{
 		return null;
 	}
 
-	@Override
 	public void close() {
 		counter = recordNumber;
 	}
 
-	@Override
 	public IParserExceptionHandler getExceptionHandler() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public PolicyType getPolicyType() {
 		return PolicyType.STRICT;
 	}
 
-	@Override
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		this.metadata = metadata;
 		init();
 	}
 
-	@Override
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
 		// nonsence for this implementation
 		
 	}
 
-	@Override
 	public void setExceptionHandler(IParserExceptionHandler handler) {
 		// TODO Auto-generated method stub
 	}
 
-	@Override
 	public void setReleaseDataSource(boolean releaseInputSource) {
 		// nonsence for this implementation
 	}
 
-	@Override
 	public int skip(int rec) throws JetelException {
 		if (counter+rec > recordNumber){
 			int i = recordNumber - counter;
