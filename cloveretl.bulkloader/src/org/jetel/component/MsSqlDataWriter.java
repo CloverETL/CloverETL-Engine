@@ -902,6 +902,10 @@ public class MsSqlDataWriter extends Node {
 						+ StringUtils.quote(MS_SQL_RECORD_DELIMITER_PARAM) + " is used.");
 			}
 		}
+		
+		if (recordDelimiter == null) {
+			recordDelimiter = DEFAULT_RECORD_DELIMITER;
+		}
 	}
 	
 	/**
@@ -967,11 +971,7 @@ public class MsSqlDataWriter extends Node {
 			setMsSqlDateFormat(metadata.getField(idx), idx);
 		}
 		int lastIndex = metadata.getNumFields() - 1;
-		if (recordDelimiter != null) {
-			metadata.getField(lastIndex).setDelimiter(recordDelimiter);
-		} else {
-			metadata.getField(lastIndex).setDelimiter(DEFAULT_RECORD_DELIMITER);
-		}
+		metadata.getField(lastIndex).setDelimiter(recordDelimiter);
 		setMsSqlDateFormat(metadata.getField(lastIndex), lastIndex);
 
 		return metadata;
