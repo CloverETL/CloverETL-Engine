@@ -21,7 +21,7 @@ package org.jetel.util;
 
 import junit.framework.TestCase;
 
-import org.jetel.util.Queue;
+import org.jetel.util.primitive.Queue;
 
 /**
  *  A test case for the FIFO class.

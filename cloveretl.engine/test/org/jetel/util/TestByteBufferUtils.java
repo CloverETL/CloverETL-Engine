@@ -24,9 +24,10 @@
 package org.jetel.util;
 
 import java.nio.ByteBuffer;
-import org.jetel.util.ByteBufferUtils;
 
 import junit.framework.TestCase;
+
+import org.jetel.util.bytes.ByteBufferUtils;
 
 public class TestByteBufferUtils extends TestCase {
 

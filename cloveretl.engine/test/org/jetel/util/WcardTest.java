@@ -21,6 +21,8 @@ package org.jetel.util;
 
 import junit.framework.TestCase;
 
+import org.jetel.util.file.WcardPattern;
+
 /**
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz) 
  * 

@@ -21,7 +21,8 @@
 package org.jetel.util;
 
 import junit.framework.TestCase;
-import org.jetel.util.StringUtils;
+
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author Wes Maciorowski
