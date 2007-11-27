@@ -20,7 +20,6 @@
 package org.jetel.interpreter;
 
 import java.io.ByteArrayInputStream;
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.Date;
@@ -43,11 +42,8 @@ import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
-import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLVariable;
-import org.jetel.interpreter.JavaCharStream;
-import org.jetel.interpreter.TransformLangParserTokenManager;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -208,8 +204,7 @@ public class TestInterpreter extends TestCase {
 		try {
 		      print_code(expStr);
 
-		      TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+		      TransformLangParser parser = new TransformLangParser(record.getMetadata(), expStr);
 		      CLVFStart parseTree = parser.Start();
 
 		      System.out.println("Initializing parse tree..");
@@ -247,8 +242,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
  		      System.out.println("Initializing parse tree..");
@@ -289,8 +283,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
 		      System.out.println("Initializing parse tree..");
@@ -341,9 +334,8 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
-		      CLVFStartExpression parseTree = parser.StartExpression();
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(), expStr);
+			  CLVFStart parseTree = parser.Start();
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
@@ -432,8 +424,7 @@ public class TestInterpreter extends TestCase {
 		
 	      print_code(expStr);
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
   		      System.out.println("Initializing parse tree..");
@@ -471,8 +462,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 		
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
  		      System.out.println("Initializing parse tree..");
@@ -510,8 +500,7 @@ public class TestInterpreter extends TestCase {
 						"b4='hi'; print_err(b4);";
 	      print_code(expStr);
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 		      
 		      if (parser.getParseExceptions().size()>0){
@@ -572,8 +561,7 @@ public class TestInterpreter extends TestCase {
 
 	      print_code(expStr);
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
  		      System.out.println("Initializing parse tree..");
@@ -628,8 +616,7 @@ public class TestInterpreter extends TestCase {
 
 	      print_code(expStr);
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
 		      System.out.println("Initializing parse tree..");
@@ -683,8 +670,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
  		      System.out.println("Initializing parse tree..");
@@ -737,8 +723,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
   		      System.out.println("Initializing parse tree..");
@@ -790,8 +775,7 @@ public class TestInterpreter extends TestCase {
 
 	      print_code(expStr);
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
  		      System.out.println("Initializing parse tree..");
@@ -836,8 +820,7 @@ public class TestInterpreter extends TestCase {
 
 	      print_code(expStr);
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
  		      System.out.println("Initializing parse tree..");
@@ -899,8 +882,7 @@ public class TestInterpreter extends TestCase {
 
 	      print_code(expStr);
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
 		      System.out.println("Initializing parse tree..");
@@ -944,8 +926,7 @@ public class TestInterpreter extends TestCase {
 
 	      print_code(expStr);
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
 		      System.out.println("Initializing parse tree..");
@@ -993,8 +974,7 @@ public class TestInterpreter extends TestCase {
 
 	      print_code(expStr);
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
  		      System.out.println("Initializing parse tree..");
@@ -1032,8 +1012,7 @@ public class TestInterpreter extends TestCase {
 
 	      print_code(expStr);
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
  		      System.out.println("Initializing parse tree..");
@@ -1071,8 +1050,7 @@ public class TestInterpreter extends TestCase {
 		
 	      print_code(expStr);
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStartExpression parseTree = parser.StartExpression();
 
  		      System.out.println("Initializing parse tree..");
@@ -1193,8 +1171,7 @@ public class TestInterpreter extends TestCase {
 
 	      print_code(expStr);
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
 		      System.out.println("Initializing parse tree..");
@@ -1267,8 +1244,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
 		      System.out.println("Initializing parse tree..");
@@ -1308,8 +1284,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
  		      System.out.println("Initializing parse tree..");
@@ -1356,8 +1331,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
 		      System.out.println("Initializing parse tree..");
@@ -1405,8 +1379,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
 		      if (parser.getParseExceptions().size()>0){
@@ -1454,8 +1427,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
 		      if (parser.getParseExceptions().size()>0){
@@ -1509,8 +1481,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
  		      System.out.println("Initializing parse tree..");
@@ -1553,8 +1524,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
  		      System.out.println("Initializing parse tree..");
@@ -1607,8 +1577,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
  		      System.out.println("Initializing parse tree..");
@@ -1649,8 +1618,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
  		      System.out.println("Initializing parse tree..");
@@ -1696,8 +1664,7 @@ public class TestInterpreter extends TestCase {
 	      print_code(expStr);
 
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
 		      System.out.println("Initializing parse tree..");
@@ -1733,9 +1700,9 @@ public class TestInterpreter extends TestCase {
         				 "seznam[1]=999; seznam2[3]='hello'; \n"+
         				 "fields=split('a,b,c,d,e,f,g,h',','); fields[]=null;"+
         				 "int length=length(seznam); print_err('length: '+length);\n print_err(seznam);\n print_err(seznam2); print_err(fields);\n"+
-        				 "list novy; novy[]=mapa; mapa2['f2']='xxx'; novy[]=mapa2; mapa['f1']=99; novy[]=mapa; \n" +
+        				 "list novy; novy[]=mapa; print_err('novy1:'+novy); mapa2['f2']='xxx'; novy[]=mapa2; mapa['f1']=99; novy[]=mapa; \n" +
         				 "print_err('novy='+novy); print_err(novy[1]); \n" +
-        				 "mapa3=novy[3]; print_err(mapa2['f2']); print_err(mapa3); \n" +
+        				 "print_err('novy[3]:'+novy[3]); mapa3=novy[3]; print_err(mapa2['f2']); print_err(mapa3); \n" +
         				 "fields=seznam2; print_err(fields);\n" +
         				 "print_err(join(':del:',seznam,mapa,novy[1]));\n";
         print_code(expStr);
@@ -1833,8 +1800,7 @@ public class TestInterpreter extends TestCase {
 
 	      print_code(expStr);
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
 		      if (parser.getParseExceptions().size()>0){
@@ -2075,8 +2041,7 @@ public class TestInterpreter extends TestCase {
 
 	      print_code(expStr);
 		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
 		      CLVFStart parseTree = parser.Start();
 
  		      System.out.println("Initializing parse tree..");
