@@ -202,7 +202,7 @@ public class Normalizer extends Node {
 			if (xformClass != null) {
 				norm = createNormalizer(xformClass);
 			}else if (xform == null) {
-				xform = FileUtils.getStringFromURL(getGraph().getRuntimeParameters().getProjectURL(), xformURL, charset);
+				xform = FileUtils.getStringFromURL(getGraph().getProjectURL(), xformURL, charset);
 			}
 			if (xformClass == null) {
 				switch (guessTransformType(xform)) {

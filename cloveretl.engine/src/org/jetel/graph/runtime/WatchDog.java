@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
@@ -65,7 +66,7 @@ import org.jetel.util.string.StringUtils;
  * @since       July 29, 2002
  * @revision    $Revision$
  */
-public class WatchDog extends Thread implements CloverRuntime {
+public class WatchDog implements Callable<Result>, CloverRuntime {
     
     private int trackingInterval;
 	private Result watchDogStatus;
@@ -84,7 +85,7 @@ public class WatchDog extends Thread implements CloverRuntime {
     private volatile boolean runIt;
     private boolean threadCpuTimeIsSupported;
     private boolean provideJMX=true;
-    
+    private IGraphRuntimeContext runtimeContext;
     
     private PrintTracking printTracking;
 
@@ -104,11 +105,10 @@ public class WatchDog extends Thread implements CloverRuntime {
 	 * @param  phases  Description of the Parameter
 	 * @since          September 02, 2003
 	 */
-	public WatchDog(TransformationGraph graph, Phase[] phases) {
-		super("WatchDog");
-		setDaemon(true);
+	public WatchDog(TransformationGraph graph, IGraphRuntimeContext runtimeContext) {
 		this.graph = graph;
-		this.phases = phases;
+		this.phases = graph.getPhases();
+		this.runtimeContext = runtimeContext;
 		currentPhase = null;
 		watchDogStatus = Result.READY;
 		javaRuntime = Runtime.getRuntime();
@@ -118,29 +118,15 @@ public class WatchDog extends Thread implements CloverRuntime {
         
         inMsgQueue=new PriorityBlockingQueue<Message>();
         outMsgMap=new DuplicateKeyMap(Collections.synchronizedMap(new HashMap()));
-        trackingInterval=graph.getRuntimeParameters().getTrackingInterval();
+        trackingInterval=runtimeContext.getTrackingInterval();
         
         //is JMX turned on?
-        provideJMX = graph.getRuntimeParameters().isUseJMX();
-	}
-
-
-	/**
-	 *Constructor for the WatchDog object
-	 *
-	 * @param  out       Description of Parameter
-	 * @param  tracking  Description of Parameter
-	 * @param  graph     Description of the Parameter
-	 * @param  phases    Description of the Parameter
-	 * @since            September 02, 2003
-	 */
-	@Deprecated public WatchDog(TransformationGraph graph, Phase[] phases, int tracking) {
-		this(graph,phases);
+        provideJMX = runtimeContext.useJMX();
 	}
 
 
 	/**  Main processing method for the WatchDog object */
-	public void run() {
+	public Result call() {
 		watchDogStatus = Result.RUNNING;
         Result result=Result.N_A;
         runIt=true;
@@ -148,7 +134,6 @@ public class WatchDog extends Thread implements CloverRuntime {
 		logger.info("Running on " + javaRuntime.availableProcessors() + " CPU(s)"
 			+ " max available memory for JVM " + javaRuntime.maxMemory() / 1024 + " KB");
 		// renice - lower the priority
-		setPriority(Thread.MIN_PRIORITY);
 		
         printTracking=new PrintTracking(true);
        
@@ -183,7 +168,7 @@ public class WatchDog extends Thread implements CloverRuntime {
 			try {
 				while (runIt
 						&& (System.currentTimeMillis() - timestamp) < WAITTIME_FOR_STOP_SIGNAL)
-					sleep(250);
+					Thread.sleep(250);
 			} catch (InterruptedException ex) {
 				// do nothing
 			}
@@ -192,6 +177,8 @@ public class WatchDog extends Thread implements CloverRuntime {
         // disabled by Kokon
 //        trackingThread.interrupt();
 		printPhasesSummary();
+		
+		return result;
 	}
 
 
@@ -207,7 +194,7 @@ public class WatchDog extends Thread implements CloverRuntime {
         // shall we really registre our MBEAN ?
         if (!register) return mbean;
         
-        String mbeanName=graph.getRuntimeParameters().getGraphFilename();
+        String mbeanName=graph.getId();
         
         // Construct the ObjectName for the MBean we will register
         try {
@@ -245,7 +232,6 @@ public class WatchDog extends Thread implements CloverRuntime {
         logger.info("Running on " + javaRuntime.availableProcessors() + " CPU(s)"
             + " max available memory for JVM " + javaRuntime.freeMemory() / 1024 + " KB");
         // renice - lower the priority
-        setPriority(Thread.MIN_PRIORITY);
         currentPhaseNum=-1;
         
         printTracking=new PrintTracking(true);

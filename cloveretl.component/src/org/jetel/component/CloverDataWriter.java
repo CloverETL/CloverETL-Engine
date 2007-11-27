@@ -226,7 +226,7 @@ public class CloverDataWriter extends Node {
         checkOutputPorts(status, 0, 0);
 
         try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() 
+        	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 
         			: null, fileURL);
         } catch (ComponentNotReadyException e) {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,

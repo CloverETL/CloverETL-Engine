@@ -36,25 +36,13 @@ import org.jetel.exception.JetelException;
  */
 public class Enigma {
     
-    private static Enigma singleton;
-    
     private boolean initialized = false;
     
     private SecretKey key;
     private Object algorithmParameters;
     private Cipher cipher;
     
-    private Enigma() {
-    }
-    
-    public static Enigma getInstance() {
-        if(singleton == null) {
-            singleton = new Enigma();
-        }
-        return singleton;
-    }
-    
-    public void init(String password) {
+    public Enigma(String password) {
         //by default is used the EncryptDESWithMD5 class as encrypt/decrypt algorithm
         EncryptAlgorithm encrypter = new EncryptDESWithMD5();
         key = encrypter.createSecretKey(password);
@@ -65,13 +53,13 @@ public class Enigma {
             initialized = true;
         }
     }
-
+    
     /**
      * @param input
      * @return
      * @throws JetelException if enigma is not valid initialized
      */
-    public String encrypt(String input) throws JetelException {
+    public synchronized String encrypt(String input) throws JetelException {
         if(!initialized) {
             throw new JetelException("Enigma is not valid initialized.");
         }
@@ -85,7 +73,7 @@ public class Enigma {
         }
     }
 
-    public String decrypt(String input) throws JetelException {
+    public synchronized String decrypt(String input) throws JetelException {
         if(!initialized) {
             throw new JetelException("Enigma is not valid initialized.");
         }
@@ -124,11 +112,10 @@ public class Enigma {
             System.out.println("Usage: org.jetel.util.Enigma <password> <text_to_encrypt>");
             return;
         }
-        Enigma enigma = Enigma.getInstance();
         String password = args[0];
         String text = args[1];
+        Enigma enigma = new Enigma(password);
         
-        enigma.init(password);
         try {
             System.out.println(enigma.encrypt(text));
         } catch (JetelException e) {

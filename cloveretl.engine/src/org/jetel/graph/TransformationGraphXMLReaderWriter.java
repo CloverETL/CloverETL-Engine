@@ -282,6 +282,8 @@ public class TransformationGraphXMLReaderWriter {
 		NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
 		instantiateEdges(edgeElements, metadata, graph.isDebugMode());
 
+        //remove disabled components and their edges
+        TransformationGraphAnalyzer.disableNodesInPhases(graph);
 	}
 
 

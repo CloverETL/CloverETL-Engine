@@ -208,7 +208,7 @@ public class DBConnection extends GraphElement implements IConnection {
         
         if(!StringUtils.isEmpty(configFileName)) {
             try {
-                InputStream stream = Channels.newInputStream(FileUtils.getReadableChannel(getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, configFileName));
+                InputStream stream = Channels.newInputStream(FileUtils.getReadableChannel(getGraph() != null ? getGraph().getProjectURL() : null, configFileName));
 
 //old code - last usage in 2.0                 
 //                if (!new File(configFileName).exists()) {
@@ -373,7 +373,7 @@ public class DBConnection extends GraphElement implements IConnection {
                             for(int i=0;i<libraryPaths.length;i++){
                                 try {
                                     // valid url
-                                    myURLs[i] = FileUtils.getFileURL(getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, libraryPaths[i]);
+                                    myURLs[i] = FileUtils.getFileURL(getGraph() != null ? getGraph().getProjectURL() : null, libraryPaths[i]);
                                 } catch (MalformedURLException ex1) {
                                     throw new RuntimeException("Malformed URL: " + ex1.getMessage());
                                 }
@@ -662,7 +662,7 @@ public class DBConnection extends GraphElement implements IConnection {
      */
     private void decryptPassword(Properties configProperties) {
         if (isPasswordEncrypted){
-            Enigma enigma = Enigma.getInstance();
+            Enigma enigma = getGraph().getEnigma();
             String decryptedPassword = null;
             try {
                 decryptedPassword = enigma.decrypt(configProperties.getProperty(XML_PASSWORD_ATTRIBUTE));

@@ -27,12 +27,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 import org.apache.log4j.net.SocketAppender;
 import org.jetel.data.Defaults;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
@@ -40,7 +43,9 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphAnalyzer;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
-import org.jetel.graph.runtime.GraphRuntimeParameters;
+import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.graph.runtime.GraphExecutor;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.crypto.Enigma;
@@ -114,89 +119,22 @@ public class runGraph {
     public final static String NO_JMX = "-noJMX";
     public final static String MBEAN_NAME = "-mbean";
 	
-    public static String cmdLineArgs;
-    
-    public static String getCmdLineArgs() {
-    	return cmdLineArgs;
-    }
-    
-    /**
-     * Clover.ETL engine initialization. Should be called only once.
-     * @param pluginsRootDirectory directory path, where plugins specification is located 
-     *        (can be null, then is used constant from Defaults.DEFAULT_PLUGINS_DIRECTORY)
-     * @param password password for encrypting some hidden part of graphs
-     *        <br>i.e. connections password can be encrypted
-     *        <br>can be null
-     */
-    public static void initEngine(String pluginsRootDirectory, String password) {
-        
-        //init password decryptor
-        if(password != null) {
-            Enigma.getInstance().init(password);
-        }
-        
-        //init url protocols
-        try {
-			URL.setURLStreamHandlerFactory(new CloverURLStreamHandlerFactory());
-		} catch (Error e) {
-			logger.warn("SFtp protocol cannot be provided: " + e.getMessage());
-		}
-		
-        //init framework constants
-        Defaults.init();
-
-        //init clover plugins system
-        Plugins.init(pluginsRootDirectory);
-      
-    }
-    
-    
-    /**
-     * Instantiates transformation graph from a given input stream and presets a given properties.
-     * @param inStream
-     * @param properties
-     * @return
-     * @throws XMLConfigurationException
-     * @throws GraphConfigurationException
-     */
-    public static TransformationGraph loadGraph(InputStream inStream, Properties properties) throws XMLConfigurationException, GraphConfigurationException {
-        TransformationGraph graph = new TransformationGraph();
-        TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(graph);
-        if(properties != null) {
-            graph.loadGraphProperties(properties);
-        }
-
-        graphReader.read(inStream);
-        
-        //remove disabled components and their edges
-        TransformationGraphAnalyzer.disableNodesInPhases(graph);
-
-        return graph;
-    }
-    
 	/**
 	 *  Description of the Method
 	 *
 	 * @param  args  Description of the Parameter
 	 */
 	public static void main(String args[]) {
-        boolean verbose = false;
+		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+		
         boolean loadFromSTDIN = false;
-        Properties properties = new Properties();
-        int trackingInterval = -1;
         String pluginsRootDirectory = null;
-        String password = null;
-        String logHost = null;
         boolean onlyCheckConfig = false;
+        String logHost = null;
+        String password = null;
         String graphFileName = null;
-        String mbeanName=null;
-        boolean noJMX=false;        
         
-        boolean appendArg=true;  
-        StringBuffer arguments = new StringBuffer("");
-        
-        System.out
-                .println("***  CloverETL framework/transformation graph runner ver "
+        System.out.println("***  CloverETL framework/transformation graph runner ver "
                         + RUN_GRAPH_VERSION
                         + ", (c) 2002-06 D.Pavlis, released under GNU Lesser General Public License  ***");
         System.out.println(" Running with framework version: "
@@ -208,14 +146,15 @@ public class runGraph {
         // process command line arguments
         for (int i = 0; i < args.length; i++) {
             if (args[i].startsWith(VERBOSE_SWITCH)) {
-                verbose = true;
+                runtimeContext.setVerboseMode(true);
             } else if (args[i].startsWith(PROPERTY_FILE_SWITCH)) {
                 i++;
-                arguments.append(args[i]+" ");
                 try {
                     InputStream inStream = new BufferedInputStream(
                             new FileInputStream(args[i]));
+                    Properties properties = new Properties();
                     properties.load(inStream);
+                    runtimeContext.addAdditionalProperties(properties);
                 } catch (IOException ex) {
                     logger.error(ex.getMessage(), ex);
                     System.exit(-1);
@@ -224,90 +163,53 @@ public class runGraph {
                 // String[]
                 // nameValue=args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"").split("=");
                 // properties.setProperty(nameValue[0],nameValue[1]);
-                String tmp = args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,
-                        "");
-                properties.setProperty(tmp.substring(0, tmp.indexOf("=")), tmp
-                        .substring(tmp.indexOf("=") + 1));
+                String tmp = args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH, "");
+                runtimeContext.addAdditionalProperty(tmp.substring(0, tmp.indexOf("=")), tmp.substring(tmp.indexOf("=") + 1));
             } else if (args[i].startsWith(TRACKING_INTERVAL_SWITCH)) {
-            	arguments.append(args[i]+" ");
                 i++;
                 try {
-                    trackingInterval = Integer.parseInt(args[i]);
+                    runtimeContext.setTrackingInterval(Integer.parseInt(args[i]) * 1000);
                 } catch (NumberFormatException ex) {
-                    System.err.println("Invalid tracking parameter: \""
-                            + args[i] + "\"");
+                    System.err.println("Invalid tracking parameter: \"" + args[i] + "\"");
                     System.exit(-1);
                 }
             } else if (args[i].startsWith(INFO_SWITCH)) {
                 printInfo();
                 System.exit(0);
             } else if (args[i].startsWith(PLUGINS_SWITCH)) {
-            	arguments.append(args[i]+" ");
                 i++;
                 pluginsRootDirectory = args[i];
             } else if (args[i].startsWith(PASSWORD_SWITCH)) {
-            	arguments.append(args[i]+" ");
                 i++;
                 password = args[i];
             } else if (args[i].startsWith(LOAD_FROM_STDIN_SWITCH)) {
                 loadFromSTDIN = true;
             } else if (args[i].startsWith(LOG_HOST_SWITCH)) {
-            	arguments.append(args[i]+" ");
                 i++;
                 logHost = args[i];
             } else if (args[i].startsWith(CHECK_CONFIG_SWITCH)) {
                 onlyCheckConfig = true;
             } else if (args[i].startsWith(MBEAN_NAME)){
-            	arguments.append(args[i]+" ");
                 i++;
-                mbeanName = args[i];
+                //TODO
+                //runtimeContext.set  --> mbeanName = args[i];
             } else if (args[i].startsWith(NO_JMX)){
-                noJMX = true;
+                runtimeContext.setUseJMX(false);
             } else if (args[i].startsWith("-")) {
                 System.err.println("Unknown option: " + args[i]);
                 System.exit(-1);
             } else {
                 graphFileName = args[i];
-                appendArg = false;
-            }
-            
-            if(appendArg) {
-            	arguments.append(args[i]+" ");
-            } else {
-            	appendArg = true;
             }
         }
-        cmdLineArgs = arguments.toString();
 
         if (graphFileName == null) {
             printHelp();
             System.exit(-1);
         }
 
-        // setup log4j appenders
-        if (logHost != null) {
-            String[] hostAndPort = logHost.split(":");
-            if (hostAndPort[0].length() == 0 || hostAndPort.length > 2) {
-                System.err
-                        .println("Invalid log destination, i.e. -loghost localhost:4445");
-                System.exit(-1);
-            }
-            int port = 4445;
-            try {
-                if (hostAndPort.length == 2) {
-                    port = Integer.parseInt(hostAndPort[1]);
-                }
-            } catch (NumberFormatException e) {
-                System.err
-                        .println("Invalid log destination, i.e. -loghost localhost:4445");
-                System.exit(-1);
-            }
-            Logger.getRootLogger().addAppender(
-                    new SocketAppender(hostAndPort[0], port));
-        }
-
         // engine initialization - should be called only once
-        runGraph.initEngine(pluginsRootDirectory, password);
+        EngineInitializer.initEngine(pluginsRootDirectory, logHost);
 
         // prepare input stream with XML graph definition
         InputStream in = null;
@@ -319,76 +221,60 @@ public class runGraph {
             try {
                 in = Channels.newInputStream(FileUtils.getReadableChannel(null, graphFileName));
             } catch (IOException e) {
-                System.err
-                        .println("Error - graph definition file can't be read: "
-                                + e.getMessage());
+                System.err.println("Error - graph definition file can't be read: " + e.getMessage());
                 System.exit(-1);
             }
         }
 
-        // loading graph from the input stream
-        TransformationGraph graph = null;
-        try {
-            graph = runGraph.loadGraph(in, properties);
 
-            // check graph elements configuration
-            logger.info("Checking graph configuration...");
-            try {
-                ConfigurationStatus status = graph.checkConfig(null);
-                status.log();
-            } catch(Exception e) {
-                logger.error("Checking graph failed! (" + e.getMessage() + ")");
-            } finally {
-                if(onlyCheckConfig) System.exit(0);
-            }
-
-            if (!graph.init()) {
-                throw new GraphConfigurationException(
-                        "Graph initialization failed.");
-            }
-
-            if (verbose) {
-                // this can be called only after graph.init()
-                graph.dumpGraphConfiguration();
-            }
-        } catch (XMLConfigurationException ex) {
-            logger.error("Error in reading graph from XML !", ex);
-            if (verbose) {
-                ex.printStackTrace(System.err);
-            }
-            System.exit(-1);
-        } catch (GraphConfigurationException ex) {
-            logger.error("Error - graph's configuration invalid !", ex);
-            if (verbose) {
-                ex.printStackTrace(System.err);
-            }
-            System.exit(-1);
-        } catch (RuntimeException ex) {
-            logger.error("Error during graph initialization !", ex);
-            if (verbose) {
-                ex.printStackTrace(System.err);
-            }
-            System.exit(-1);
-        }
-
-        // set graph runtime parameters
-        GraphRuntimeParameters runtimePar = graph.getRuntimeParameters();
-        if (trackingInterval != -1) runtimePar.setTrackingInterval(trackingInterval * 1000);
-        runtimePar.setGraphFileURL(graphFileName);
-        runtimePar.setUseJMX(!noJMX);
+        GraphExecutor graphExecutor = new GraphExecutor();
         
-        // start all Nodes (each node is one thread)
-        Result result = Result.N_A;
-        try {
-            result = graph.run();
-        } catch (RuntimeException ex) {
-            System.err.println("Fatal error during graph run !");
-            System.err.println(ex.getCause().getMessage());
-            if (verbose) {
-                ex.printStackTrace();
+        Future<Result> futureResult = null;
+		try {
+			futureResult = graphExecutor.runGraph(in, runtimeContext, password);
+        } catch (XMLConfigurationException e) {
+            logger.error("Error in reading graph from XML !", e);
+            if (runtimeContext.isVerboseMode()) {
+                e.printStackTrace(System.err);
+            }
+            System.exit(-1);
+        } catch (GraphConfigurationException e) {
+            logger.error("Error - graph's configuration invalid !", e);
+            if (runtimeContext.isVerboseMode()) {
+                e.printStackTrace(System.err);
+            }
+            System.exit(-1);
+		} catch (ComponentNotReadyException e) {
+            logger.error("Error during graph initialization !", e);
+            if (runtimeContext.isVerboseMode()) {
+                e.printStackTrace(System.err);
+            }
+            System.exit(-1);
+        } catch (RuntimeException e) {
+            logger.error("Error during graph initialization !", e);
+            if (runtimeContext.isVerboseMode()) {
+                e.printStackTrace(System.err);
             }
             System.exit(-1);
         }
+        
+        Result result = Result.N_A;
+		try {
+			result = futureResult.get();
+		} catch (InterruptedException e) {
+            logger.error("Graph was unexpectedly interrupted !", e);
+            if (runtimeContext.isVerboseMode()) {
+                e.printStackTrace(System.err);
+            }
+            System.exit(-1);
+		} catch (ExecutionException e) {
+            logger.error("Error during graph processing !", e);
+            if (runtimeContext.isVerboseMode()) {
+                e.printStackTrace(System.err);
+            }
+            System.exit(-1);
+		}
+        
         switch (result) {
 
         case FINISHED_OK:
