@@ -598,7 +598,6 @@ public class MsSqlDataWriter extends Node {
 	private String parameters;
 	private String errFileName = null; // errFile insert by user or tmpErrFile for parsing bad rows
 	private boolean isErrFileFromUser; // true if errFile was inserted by user; false when errFile is tmpErrFile
-	private String recordDelimiter;
 	private String columnDelimiter;
 
 	private Properties properties = new Properties();
@@ -752,8 +751,8 @@ public class MsSqlDataWriter extends Node {
 		command.addParameterSwitch(MS_SQL_FILE_FORMAT_VERSION_PARAM, MS_SQL_FILE_FORMAT_VERSION_SWITCH);
 		command.addParameterBooleanSwitch(MS_SQL_QUOTED_IDENTIFIER_PARAM, MS_SQL_QUOTED_IDENTIFIER_SWITCH);
 		command.addParameterSwitch(MS_SQL_CODE_PAGE_SPECIFIER_PARAM, MS_SQL_CODE_PAGE_SPECIFIER_SWITCH);
-		command.addSwitch(MS_SQL_COLUMN_DELIMITER_SWITCH, columnDelimiter);
-		command.addSwitch(MS_SQL_RECORD_DELIMITER_SWITCH, recordDelimiter);
+		command.addSwitch(MS_SQL_COLUMN_DELIMITER_SWITCH, getColumnDelimiter());
+		command.addSwitch(MS_SQL_RECORD_DELIMITER_SWITCH, getRecordDelimiter());
 		command.addParameterSwitch(MS_SQL_INPUT_FILE_PARAM, MS_SQL_INPUT_FILE_SWITCH);
 		command.addParameterSwitch(MS_SQL_OUTPUT_FILE_PARAM, MS_SQL_OUTPUT_FILE_SWITCH);
 		command.addParameterSwitch(MS_SQL_PACKET_SIZE_PARAM, MS_SQL_PACKET_SIZE_SWITCH);
@@ -784,6 +783,20 @@ public class MsSqlDataWriter extends Node {
 			throw new ComponentNotReadyException(this, StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute or "
 					+ StringUtils.quote(XML_VIEW_ATTRIBUTE) + " attribute must be set.");
 		}
+		
+		// report on ignoring some attributes
+		if (columnDelimiter != null && properties.containsKey(MS_SQL_COLUMN_DELIMITER_PARAM)) {
+			logger.warn("Parameter " + StringUtils.quote(MS_SQL_COLUMN_DELIMITER_PARAM) + " in attribute "
+					+ StringUtils.quote(XML_PARAMETERS_ATTRIBUTE) + " is ignored. Attribute "
+					+ StringUtils.quote(XML_COLUMN_DELIMITER_ATTRIBUTE) + " is used.");
+		}
+		
+		if (properties.containsKey(MS_SQL_RECORD_DELIMITER_PARAM) && 
+				properties.containsKey(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM) ) {
+			logger.warn("Parameter " + StringUtils.quote(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM) + " in attribute "
+					+ StringUtils.quote(XML_PARAMETERS_ATTRIBUTE) + " is ignored. Parameter "
+					+ StringUtils.quote(MS_SQL_RECORD_DELIMITER_PARAM) + " is used.");
+		}
 	}
 
 	/**
@@ -799,7 +812,6 @@ public class MsSqlDataWriter extends Node {
 		parseParameters();
 		checkParams();
 		getUserAndPassword();
-		getDelimiters();
 
 		isDataReadFromPort = !getInPorts().isEmpty();
 		isDataWrittenToPort = !getOutPorts().isEmpty();
@@ -855,57 +867,35 @@ public class MsSqlDataWriter extends Node {
 			badRowReaderWriter = new MsSqlBadRowReaderWriter(getOutputPort(WRITE_TO_PORT));
 		}
 	}
-
-	/**
-	 * Get column and record delimiter from properties.
-	 */
-	private void getDelimiters() {
-		getColumnDelimiter();
-		getRecordDelimiter();
-	}
 	
 	/**
-	 * Get column delimiter from properties and save 
-	 * it to "columnDelimiter" attribute.
+	 * Get column delimiter.
 	 */
-	private void getColumnDelimiter() {
-		if (properties.containsKey(MS_SQL_COLUMN_DELIMITER_PARAM)) {
-			if (columnDelimiter == null) {
-				columnDelimiter = properties.getProperty(MS_SQL_COLUMN_DELIMITER_PARAM);
-			} else {
-				logger.warn("Parameter " + StringUtils.quote(MS_SQL_COLUMN_DELIMITER_PARAM) + " in attribute "
-						+ StringUtils.quote(XML_PARAMETERS_ATTRIBUTE) + " is ignored. Attribute "
-						+ StringUtils.quote(XML_COLUMN_DELIMITER_ATTRIBUTE) + " is used.");
-			}
-		} else {
-			if (columnDelimiter == null) {
-				columnDelimiter = DEFAULT_COLUMN_DELIMITER;
-			}
+	private String getColumnDelimiter() {
+		if (columnDelimiter != null) {
+			return columnDelimiter;
 		}
+		
+		if (properties.containsKey(MS_SQL_COLUMN_DELIMITER_PARAM)) {
+			return properties.getProperty(MS_SQL_COLUMN_DELIMITER_PARAM);
+		}
+		
+		return DEFAULT_COLUMN_DELIMITER;
 	}
 	
 	/**
-	 * Get record delimiter from properties and save 
-	 * it to "recordDelimiter" attribute.
+	 * Get record delimiter.
 	 */
-	private void getRecordDelimiter() {
+	private String getRecordDelimiter() {
 		if (properties.containsKey(MS_SQL_RECORD_DELIMITER_PARAM)) {
-			recordDelimiter= properties.getProperty(MS_SQL_RECORD_DELIMITER_PARAM);
+			return properties.getProperty(MS_SQL_RECORD_DELIMITER_PARAM);
 		}
 		
 		if (properties.containsKey(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM)) {
-			if (recordDelimiter == null) {
-				user = properties.getProperty(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM);
-			} else {
-				logger.warn("Parameter " + StringUtils.quote(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM) + " in attribute "
-						+ StringUtils.quote(XML_PARAMETERS_ATTRIBUTE) + " is ignored. Parameter "
-						+ StringUtils.quote(MS_SQL_RECORD_DELIMITER_PARAM) + " is used.");
-			}
+			return properties.getProperty(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM);
 		}
 		
-		if (recordDelimiter == null) {
-			recordDelimiter = DEFAULT_RECORD_DELIMITER;
-		}
+		return DEFAULT_RECORD_DELIMITER;
 	}
 	
 	/**
@@ -967,11 +957,11 @@ public class MsSqlDataWriter extends Node {
 		DataRecordMetadata metadata = originalMetadata.duplicate();
 		metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
 		for (int idx = 0; idx < metadata.getNumFields() - 1; idx++) {
-			metadata.getField(idx).setDelimiter(columnDelimiter);
+			metadata.getField(idx).setDelimiter(getColumnDelimiter());
 			setMsSqlDateFormat(metadata.getField(idx), idx);
 		}
 		int lastIndex = metadata.getNumFields() - 1;
-		metadata.getField(lastIndex).setDelimiter(recordDelimiter);
+		metadata.getField(lastIndex).setDelimiter(getRecordDelimiter());
 		setMsSqlDateFormat(metadata.getField(lastIndex), lastIndex);
 
 		return metadata;
