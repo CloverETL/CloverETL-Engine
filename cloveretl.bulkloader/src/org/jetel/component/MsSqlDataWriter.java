@@ -183,6 +183,14 @@ import org.w3c.dom.Element;
  * This attribute has the same meaning as parameter <i>password</i> in attribute <i>parameters</i>. When this attribute is
  * defined, this attribute is used and <i>password</i> parameter is ignored.</td>
  * </tr>
+ * <td><b>columnDelimiter</b><br>
+ * <i>optional</i></td>
+ * <td>Specifies the field terminator. The default is <b>\t</b> (tab character). Use this parameter to override the default
+ * field terminator. For more information, see <a href="http://technet.microsoft.com/en-us/library/ms191485.aspx">Specifying Field
+ * and Row Terminators</a>.<br>
+ * This attribute has the same meaning as parameter <i>fieldTerminator</i> in attribute <i>parameters</i>. When this attribute is
+ * defined, this attribute is used and <i>fieldTerminator</i> parameter is ignored.</td>
+ * </tr>
  * <tr>
  * <td><b>parameters</b><br>
  * <i>optional</i></td>
@@ -504,6 +512,7 @@ public class MsSqlDataWriter extends Node {
 	private final static String XML_PARAMETERS_ATTRIBUTE = "parameters";
 	private final static String XML_USER_ATTRIBUTE = "username";
 	private final static String XML_PASSWORD_ATTRIBUTE = "password";
+	private static final String XML_COLUMN_DELIMITER_ATTRIBUTE = "columnDelimiter";
 
 	private final static String MS_SQL_MAX_ERRORS_PARAM = "maxErrors";
 	private final static char MS_SQL_MAX_ERRORS_SWITCH = 'm';
@@ -590,6 +599,7 @@ public class MsSqlDataWriter extends Node {
 	private String errFileName = null; // errFile insert by user or tmpErrFile for parsing bad rows
 	private boolean isErrFileFromUser; // true if errFile was inserted by user; false when errFile is tmpErrFile
 	private String recordDelimiter;
+	private String columnDelimiter;
 
 	private Properties properties = new Properties();
 	private DataConsumer consumer; // consume data from out stream of bcp
@@ -742,7 +752,7 @@ public class MsSqlDataWriter extends Node {
 		command.addParameterSwitch(MS_SQL_FILE_FORMAT_VERSION_PARAM, MS_SQL_FILE_FORMAT_VERSION_SWITCH);
 		command.addParameterBooleanSwitch(MS_SQL_QUOTED_IDENTIFIER_PARAM, MS_SQL_QUOTED_IDENTIFIER_SWITCH);
 		command.addParameterSwitch(MS_SQL_CODE_PAGE_SPECIFIER_PARAM, MS_SQL_CODE_PAGE_SPECIFIER_SWITCH);
-		command.addParameterSwitch(MS_SQL_COLUMN_DELIMITER_PARAM, MS_SQL_COLUMN_DELIMITER_SWITCH);
+		command.addSwitch(MS_SQL_COLUMN_DELIMITER_SWITCH, columnDelimiter);
 		command.addSwitch(MS_SQL_RECORD_DELIMITER_SWITCH, recordDelimiter);
 		command.addParameterSwitch(MS_SQL_INPUT_FILE_PARAM, MS_SQL_INPUT_FILE_SWITCH);
 		command.addParameterSwitch(MS_SQL_OUTPUT_FILE_PARAM, MS_SQL_OUTPUT_FILE_SWITCH);
@@ -789,7 +799,7 @@ public class MsSqlDataWriter extends Node {
 		parseParameters();
 		checkParams();
 		getUserAndPassword();
-		getRecordDelimiter();
+		getDelimiters();
 
 		isDataReadFromPort = !getInPorts().isEmpty();
 		isDataWrittenToPort = !getOutPorts().isEmpty();
@@ -846,6 +856,34 @@ public class MsSqlDataWriter extends Node {
 		}
 	}
 
+	/**
+	 * Get column and record delimiter from properties.
+	 */
+	private void getDelimiters() {
+		getColumnDelimiter();
+		getRecordDelimiter();
+	}
+	
+	/**
+	 * Get column delimiter from properties and save 
+	 * it to "columnDelimiter" attribute.
+	 */
+	private void getColumnDelimiter() {
+		if (properties.containsKey(MS_SQL_COLUMN_DELIMITER_PARAM)) {
+			if (columnDelimiter == null) {
+				columnDelimiter = properties.getProperty(MS_SQL_COLUMN_DELIMITER_PARAM);
+			} else {
+				logger.warn("Parameter " + StringUtils.quote(MS_SQL_COLUMN_DELIMITER_PARAM) + " in attribute "
+						+ StringUtils.quote(XML_PARAMETERS_ATTRIBUTE) + " is ignored. Attribute "
+						+ StringUtils.quote(XML_COLUMN_DELIMITER_ATTRIBUTE) + " is used.");
+			}
+		} else {
+			if (columnDelimiter == null) {
+				columnDelimiter = DEFAULT_COLUMN_DELIMITER;
+			}
+		}
+	}
+	
 	/**
 	 * Get record delimiter from properties and save 
 	 * it to "recordDelimiter" attribute.
@@ -925,8 +963,7 @@ public class MsSqlDataWriter extends Node {
 		DataRecordMetadata metadata = originalMetadata.duplicate();
 		metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
 		for (int idx = 0; idx < metadata.getNumFields() - 1; idx++) {
-			metadata.getField(idx).setDelimiter(properties.getProperty(
-					MS_SQL_COLUMN_DELIMITER_PARAM, DEFAULT_COLUMN_DELIMITER));
+			metadata.getField(idx).setDelimiter(columnDelimiter);
 			setMsSqlDateFormat(metadata.getField(idx), idx);
 		}
 		int lastIndex = metadata.getNumFields() - 1;
@@ -1028,6 +1065,9 @@ public class MsSqlDataWriter extends Node {
 			if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
 				msSqlDataWriter.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
+        		msSqlDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
+			}
 			if (xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
 				msSqlDataWriter.setParameters(xattribs.getString(XML_PARAMETERS_ATTRIBUTE));
 			}
@@ -1061,6 +1101,9 @@ public class MsSqlDataWriter extends Node {
 		}
 		if (!StringUtils.isEmpty(password)) {
 			xmlElement.setAttribute(XML_PASSWORD_ATTRIBUTE, password);
+		}
+		if (!DEFAULT_COLUMN_DELIMITER.equals(columnDelimiter)) {
+			xmlElement.setAttribute(XML_COLUMN_DELIMITER_ATTRIBUTE, columnDelimiter);
 		}
 		if (!StringUtils.isEmpty(parameters)) {
 			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, parameters);
@@ -1132,6 +1175,10 @@ public class MsSqlDataWriter extends Node {
 
 	private void setPassword(String password) {
 		this.password = password;
+	}
+	
+	private void setColumnDelimiter(String columnDelimiter) {
+		this.columnDelimiter = columnDelimiter;
 	}
 
 	/**
