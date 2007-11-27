@@ -33,8 +33,15 @@ public class UtilTestSuite extends TestSuite {
 
 		TestSuite suite = new TestSuite("All org.jetel.util Tests");
 
-		suite.addTest(new TestSuite(org.jetel.util.StringUtilsTest.class));
+		suite.addTest(new TestSuite(org.jetel.util.CompareTest.class));
 		suite.addTest(new TestSuite(org.jetel.util.CompileTest.class));
+		suite.addTest(new TestSuite(org.jetel.util.DuplicateKeyMapTest.class));
+		suite.addTest(new TestSuite(org.jetel.util.FifoTest.class));
+		suite.addTest(new TestSuite(org.jetel.util.NumberIteratorTest.class));
+		suite.addTest(new TestSuite(org.jetel.util.PropertyRefResolverTest.class));
+		suite.addTest(new TestSuite(org.jetel.util.StringUtilsTest.class));
+		suite.addTest(new TestSuite(org.jetel.util.TestByteBufferUtils.class));
+		suite.addTest(new TestSuite(org.jetel.util.WcardTest.class));
 		return suite;
 
 	}

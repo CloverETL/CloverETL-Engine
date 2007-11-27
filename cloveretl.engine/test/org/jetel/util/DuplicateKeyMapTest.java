@@ -25,9 +25,9 @@ package org.jetel.util;
 
 import java.util.HashMap;
 
-import org.jetel.util.DuplicateKeyMap;
-
 import junit.framework.TestCase;
+
+import org.jetel.util.primitive.DuplicateKeyMap;
 
 public class DuplicateKeyMapTest extends TestCase {
 

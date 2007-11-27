@@ -23,15 +23,13 @@
  */
 package org.jetel.util;
 
-import java.util.HashMap;
 import java.util.Properties;
 
-import javax.swing.DefaultBoundedRangeModel;
+import junit.framework.TestCase;
 
 import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
-
-import junit.framework.TestCase;
+import org.jetel.util.property.PropertyRefResolver;
 
 public class PropertyRefResolverTest extends TestCase {
 

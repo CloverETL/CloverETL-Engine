@@ -34,11 +34,17 @@ public class DataTestSuite  extends TestSuite  {
 	
 		suite.addTest(new TestSuite(org.jetel.data.ByteDataFieldTest.class));
 		suite.addTest(new TestSuite(org.jetel.data.DateDataFieldTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.DecimalDataFieldTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.DynamicRecordBuffer.class));
+		suite.addTest(new TestSuite(org.jetel.data.FixLenDataFormatterTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.FixLenDataParser2Test.class));
 		suite.addTest(new TestSuite(org.jetel.data.IntegerDataFieldTest.class));
 		suite.addTest(new TestSuite(org.jetel.data.NumericDataFieldTest.class));
-		suite.addTest(new TestSuite(org.jetel.data.StringDataFieldTest.class));
-		suite.addTest(new TestSuite(org.jetel.data.FixLenDataParser2Test.class));
-		suite.addTest(new TestSuite(org.jetel.data.FixLenDataFormatterTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.primitive.ByteArrayTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.primitive.DecimalNumericTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.primitive.StringFormatTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.sequence.SimpleSequenceTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.tape.DataRecordTapeTest.class));
 		return suite;
 	
 	}

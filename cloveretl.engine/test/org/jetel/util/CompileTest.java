@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.jetel.exception.ClassCompilationException;
-import org.jetel.util.Compiler;
 
 import junit.framework.TestCase;
 
@@ -110,13 +109,13 @@ protected void tearDown() {
  */
 
 public void testCompilerClass() {
-	Compiler compiler;
+	org.jetel.util.compile.Compiler compiler;
 
-	compiler = new Compiler(testJavaFile1,true,classDirectory);
+	compiler = new org.jetel.util.compile.Compiler(testJavaFile1,true,classDirectory);
 	compiler.compile();
 	assertTrue(new File(classDirectory+File.separator+testJavaClassFile1).exists());
 
-	compiler = new Compiler(testJavaFile2,true,classDirectory);
+	compiler = new org.jetel.util.compile.Compiler(testJavaFile2,true,classDirectory);
 	compiler.compile();
 	System.out.print(compiler.getCapturedOutput());
 	assertFalse(new File(classDirectory+File.separator+testJavaClassFile2).exists());
