@@ -82,7 +82,7 @@ public class SFTPConnection extends URLConnection {
 		connect();
 		try {
 			ChannelSftp c = getChannelSftp();
-			return c.ls(url.getPath());
+			return c.ls(url.getFile());
 		} catch (JSchException e) {
 			throw new IOException(e.getMessage());
 		} catch (SftpException e) {
@@ -100,7 +100,7 @@ public class SFTPConnection extends URLConnection {
 		connect();
 		try {
 			ChannelSftp c = getChannelSftp();
-			return c.stat(url.getPath());
+			return c.stat(url.getFile());
 		} catch (JSchException e) {
 			throw new IOException(e.getMessage());
 		} catch (SftpException e) {
