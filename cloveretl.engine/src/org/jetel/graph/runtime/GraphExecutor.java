@@ -170,14 +170,9 @@ public class GraphExecutor {
      */
 	public static TransformationGraph loadGraph(InputStream graphStream, Properties properties)
 	throws XMLConfigurationException, GraphConfigurationException {
+        TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(properties);
 
-		TransformationGraph graph = new TransformationGraph();
-        graph.setGraphProperties(properties);
-        TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(graph);
-
-        graphReader.read(graphStream);
-
-        return graph;
+        return graphReader.read(graphStream);
     }
 
 	private static class GraphThreadFactory implements ThreadFactory {

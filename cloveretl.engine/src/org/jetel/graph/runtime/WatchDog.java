@@ -90,7 +90,7 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
     private PrintTracking printTracking;
 
     public final static String TRACKING_LOGGER_NAME = "Tracking";
-    public final static String MBEAN_NAME_PREFIX = "CLOVERJMX";
+    public final static String MBEAN_NAME_PREFIX = "CLOVERJMX_";
     public final static int WAITTIME_FOR_STOP_SIGNAL = 5000; //milliseconds
     private int[] _MSG_LOCK=new int[0];
     
@@ -191,15 +191,15 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
         // register MBean
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
-        // shall we really registre our MBEAN ?
+        // shall we really register our MBEAN ?
         if (!register) return mbean;
         
-        String mbeanName=graph.getId();
+        String mbeanId = graph.getId();
         
         // Construct the ObjectName for the MBean we will register
         try {
             ObjectName name = new ObjectName(
-                    createMBeanName(mbeanName != null ? mbeanName : graph.getName())
+                    createMBeanName(mbeanId != null ? mbeanId : graph.getName())
             );
             // Register the  MBean
             mbs.registerMBean(mbean, name);
