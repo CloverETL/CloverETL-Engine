@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -51,6 +52,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -179,35 +181,19 @@ public class TransformationGraphXMLReaderWriter {
 	
     private TransformationGraph graph;
     
+    private Properties additionalProperties;
+    
 	/**
 	 *Constructor for the TransformationGraphXMLReaderWriter object
 	 *
 	 * @since    May 24, 2002
 	 */
-	public TransformationGraphXMLReaderWriter(TransformationGraph graph) {
-	    this.graph = graph;
+	public TransformationGraphXMLReaderWriter(Properties properties) {
+		this.additionalProperties = (properties != null) ? properties : new Properties();
 	}
 
-
-	/**
-	 *Constructor for the read object
-	 *
-	 * @param  in     Description of Parameter
-	 * @param  graph  Description of Parameter
-	 * @return        Description of the Returned Value
-	 * @since         May 21, 2002
-	 */
-	public void read(InputStream in) throws XMLConfigurationException,GraphConfigurationException {
+	private static Document prepareDocument(InputStream in) throws XMLConfigurationException {
 		Document document;
-		Iterator colIterator;
-		Map metadata = new HashMap(ALLOCATE_MAP_SIZE);
-	//	List<Phase> phases = new LinkedList<Phase>();
-	//	Map<String,Node> allNodes = new LinkedHashMap<String,Node>(ALLOCATE_MAP_SIZE);
-	//	Map<String,Edge> edges = new HashMap<String,Edge>(ALLOCATE_MAP_SIZE);
-
-		// delete all Nodes & Edges possibly held by TransformationGraph
-		graph.free();
-
 		try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
  
@@ -236,10 +222,59 @@ public class TransformationGraphXMLReaderWriter {
             logger.error("Error when parsing graph's XML definition",ex);
             throw new XMLConfigurationException(ex);
 		}
+		
+		return document;
+	}
+	
+	/**
+	 * Reads graph identifier from the given graph in XML form.
+	 * @param in
+	 * @return
+	 * @throws XMLConfigurationException
+	 */
+	public String readId(InputStream in) throws XMLConfigurationException {
+		Document document = prepareDocument(in);
 
-		// process document
-		// get graph name
 		NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
+		String id = ((Element)graphElement.item(0)).getAttribute("id");
+		
+		if(StringUtils.isEmpty(id)) {
+			id = ((Element)graphElement.item(0)).getAttribute("name");
+		}
+		
+		return id;
+	}
+	
+	/**
+	 *Constructor for the read object
+	 *
+	 * @param  in     Description of Parameter
+	 * @param  graph  Description of Parameter
+	 * @return        Description of the Returned Value
+	 * @since         May 21, 2002
+	 */
+	public TransformationGraph read(InputStream in) throws XMLConfigurationException,GraphConfigurationException {
+		Document document;
+		Iterator colIterator;
+		Map metadata = new HashMap(ALLOCATE_MAP_SIZE);
+	//	List<Phase> phases = new LinkedList<Phase>();
+	//	Map<String,Node> allNodes = new LinkedHashMap<String,Node>(ALLOCATE_MAP_SIZE);
+	//	Map<String,Edge> edges = new HashMap<String,Edge>(ALLOCATE_MAP_SIZE);
+
+		// delete all Nodes & Edges possibly held by TransformationGraph
+		//graph.free();
+		graph = null;
+
+		//create XML document
+		document = prepareDocument(in);
+		
+		// process document
+		NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
+		String id = ((Element)graphElement.item(0)).getAttribute("id");
+        //get graph id
+		graph = new TransformationGraph(id);
+		graph.loadGraphProperties(additionalProperties);
+		// get graph name
 		ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes((Element)graphElement.item(0), graph);
 		try{
 			graph.setName(grfAttributes.getString("name"));
@@ -284,6 +319,8 @@ public class TransformationGraphXMLReaderWriter {
 
         //remove disabled components and their edges
         TransformationGraphAnalyzer.disableNodesInPhases(graph);
+        
+        return graph;
 	}
 
 

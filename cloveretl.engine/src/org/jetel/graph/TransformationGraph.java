@@ -68,7 +68,7 @@ import org.jetel.util.string.StringUtils;
 
 public final class TransformationGraph extends GraphElement {
 
-	private static final String DEFAULT_GRAPH_ID = "DEFAULT_GRAPH_ID";
+	public static final String DEFAULT_GRAPH_ID = "DEFAULT_GRAPH_ID";
 	
 	public static final String PROJECT_DIR_PROPERTY = "PROJECT_DIR";
 
