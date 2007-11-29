@@ -98,17 +98,17 @@ public class TLListValue extends TLContainerValue {
         		else
         			valueList.remove(index);
         } else {
-            	if (value instanceof TLContainerValue){
-            		if (index<0)
-            			valueList.addAll(((TLContainerValue)value).getCollection());
-            		else
-            			valueList.addAll(index,((TLContainerValue)value).getCollection());
-            	}else{
+//            	if (value instanceof TLContainerValue){
+//            		if (index<0)
+//            			valueList.addAll(((TLContainerValue)value).getCollection());
+//            		else
+//            			valueList.addAll(index,((TLContainerValue)value).getCollection());
+//            	}else{
             		if (index<0)
             			valueList.add(value);
             		else
             			valueList.set(index, value);
-            	}
+//            	}
         }
     }
     
@@ -169,4 +169,7 @@ public class TLListValue extends TLContainerValue {
     	return false;
     }
     
+    @Override public void clear(){
+    	valueList.clear();
+    }
 }

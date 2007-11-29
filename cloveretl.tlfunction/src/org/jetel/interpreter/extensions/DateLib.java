@@ -26,6 +26,7 @@ package org.jetel.interpreter.extensions;
 import java.util.Calendar;
 
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
+import org.jetel.interpreter.data.TLContainerValue;
 import org.jetel.interpreter.data.TLDateValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
@@ -217,9 +218,8 @@ public class DateLib extends TLFunctionLibrary {
 					store.value=TLValue.create(TLValueType.DATE);
 				}else if (type.isNumeric()) {
 					store.value=TLValue.create(TLValueType.LONG);
-				}else{
-					throw new TransformLangExecutorRuntimeException(params,
-                    "trunc - wrong type of literal(s)");
+				}else if (type.isArray()){
+					store.value=TLValue.NULL_VAL;
 				}
 			}
 
@@ -233,6 +233,8 @@ public class DateLib extends TLFunctionLibrary {
 	            ((TLDateValue)store.value).getDate().setTime(store.cal.getTimeInMillis());
 	        }else if (type.isNumeric()){
 	        	store.value.setValue(params[0]);
+	        }else if (type.isArray()) {
+	        	((TLContainerValue)params[0]).clear();
 	        }else {
 	            throw new TransformLangExecutorRuntimeException(params,
 	                    "trunc - wrong type of literal");
