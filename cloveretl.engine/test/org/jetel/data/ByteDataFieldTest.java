@@ -19,6 +19,7 @@
 
 package org.jetel.data;
 
+import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 
 import junit.framework.TestCase;
@@ -28,7 +29,6 @@ import junit.framework.TestCase;
  *
  */
 public class ByteDataFieldTest  extends TestCase {
-//TODO implement ByteDataFieldTest
     byte[] byteArray=new byte[]{0x01,0x02,0x03,0x04,0x05,0x40};
     Byte[] ByteArray=new Byte[byteArray.length+1];
     
@@ -37,6 +37,8 @@ public class ByteDataFieldTest  extends TestCase {
     static final String TEST_STRING="THIS is test !@#$%^&*()ěščřžýíé";
     
 protected void setUp() {
+    runGraph.initEngine(null, null);
+
     int i=0;
     for(byte b: byteArray){
         ByteArray[i++]=new Byte(b);
@@ -56,7 +58,10 @@ protected void tearDown() {
 	 */
 	public void test_1_setValue() {
         byteField.setValue(byteArray);
-        assertEquals(byteArray, byteField.getByteArray());
+        byte[] data = byteField.getByteArray();
+        for (int i = 0; i < data.length; i++) {
+			assertEquals(byteArray[i], data[i] );
+		}
         byteField.fromString(TEST_STRING,"UTF-8");
         assertEquals(TEST_STRING, byteField.toString("UTF-8"));
 	}
@@ -78,7 +83,10 @@ protected void tearDown() {
 	 */
 	public void test_3_setValue() {
         byteField.setValue((Object)byteArray);
-        assertEquals(byteArray,byteField.getValue());
+        byte[] data = (byte[])byteField.getValue();
+        for (int i = 0; i < data.length; i++) {
+			assertEquals(byteArray[i], data[i] );
+		}
 	}
 
 	/**
