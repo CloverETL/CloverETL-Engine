@@ -187,4 +187,8 @@ public class TLMapValue extends TLContainerValue {
 		return false;
 	}
 	
+	@Override public void clear(){
+		valueMap.clear();
+	}
+	
 }

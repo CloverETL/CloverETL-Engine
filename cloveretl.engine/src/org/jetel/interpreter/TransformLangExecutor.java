@@ -1265,7 +1265,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 					variableToAssign.setTLValue(valueToAssign);
 				} else {
 					throw new TransformLangExecutorRuntimeException(node,
-							"invalid assignment of scalar value to list/array \""
+							"invalid assignment of scalar value \""+valueToAssign+"\" to list/array \""
 									+ varNode.varName + "\"");
 				}
 			}

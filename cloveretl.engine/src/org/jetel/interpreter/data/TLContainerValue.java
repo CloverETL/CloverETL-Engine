@@ -61,4 +61,11 @@ public abstract class TLContainerValue extends TLValue {
 	 public void setValue(DataField fieldValue) {
 	        throw new UnsupportedOperationException();
 	 }
+	 
+	 /**
+	 * clear/remove all items stored in container
+	 */
+	public void clear(){
+		 throw new UnsupportedOperationException("Can't clear value of ContainerValue");
+	 }
 }
