@@ -91,6 +91,25 @@ public class SFTPConnection extends URLConnection {
     }
 
     /**
+     * Gets file from remote host.
+     * 
+     * @param remore - remote path
+     * @param os - output stream
+     * @throws IOException
+     */
+    public void get(String remore, OutputStream os) throws IOException {
+		connect();
+		try {
+			ChannelSftp c = getChannelSftp();
+			c.get(remore, os);
+		} catch (JSchException e) {
+			throw new IOException(e.getMessage());
+		} catch (SftpException e) {
+			throw new IOException(e.getMessage());
+		}
+    }
+
+    /**
      * Gets informations for actual path.
      * 
      * @return
