@@ -366,10 +366,10 @@ public class DataRecordGenerator implements Parser{
 								+ (Double) specialValue[j][MOVE];
 						value = Math.floor(((Double)value).doubleValue());
 						break;
-					case DataFieldMetadata.DECIMAL_FIELD:
 					case DataFieldMetadata.BOOLEAN_FIELD:
 						value = Boolean.valueOf( Math.random() > 0.5 );
 						break;
+					case DataFieldMetadata.DECIMAL_FIELD:
 					case DataFieldMetadata.NUMERIC_FIELD:
 						//get random double from given interval
 						value = (Double)specialValue[j][MIN] + random.nextDouble()*
