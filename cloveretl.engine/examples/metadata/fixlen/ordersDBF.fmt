@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Record name="ORDERS_DBF" type="fixed" dataOffset="481" recordSize="265" charset="US-ASCII">
-	<Field name="_DELETED_" type="string" size="1" nullable="true" />
-	<Field name="ORDERID" type="numeric" size="20" nullable="true" />
-	<Field name="CUSTOMERID" type="string" size="5" nullable="true" />
-	<Field name="EMPLOYEEID" type="numeric" size="20" nullable="true" />
-	<Field name="ORDERDATE" type="date" size="8" format="yyyyMMdd" nullable="true" />
-	<Field name="REQUIREDDA" type="date" size="8" format="yyyyMMdd" nullable="true" />
-	<Field name="SHIPPEDDAT" type="string" size="8" format="yyyyMMdd" nullable="true" default="19000101" />
-	<Field name="SHIPVIA" type="numeric" size="20" nullable="true" />
-	<Field name="FREIGHT" type="numeric" size="20" nullable="true" />
-	<Field name="SHIPNAME" type="string" size="40" nullable="true" />
-	<Field name="SHIPADDRES" type="string" size="60" nullable="true" />
-	<Field name="SHIPCITY" type="string" size="15" nullable="true" />
-	<Field name="SHIPREGION" type="string" size="15" nullable="true" />
-	<Field name="SHIPPOSTAL" type="string" size="10" nullable="true" />
-	<Field name="SHIPCOUNTR" type="string" size="15" nullable="true" />
+<Record charset="US-ASCII" dataOffset="481" name="ORDERS_DBF" recordSize="265" type="fixed">
+<Field name="_DELETED_" nullable="true" shift="0" size="1" type="string"/>
+<Field name="ORDERID" nullable="true" shift="0" size="20" type="numeric"/>
+<Field name="CUSTOMERID" nullable="true" shift="0" size="5" type="string"/>
+<Field name="EMPLOYEEID" nullable="true" shift="0" size="20" type="numeric"/>
+<Field format="yyyyMMdd" name="ORDERDATE" nullable="true" shift="0" size="8" type="date"/>
+<Field format="yyyyMMdd" name="REQUIREDDA" nullable="true" shift="0" size="8" type="date"/>
+<Field default="19000101" format="[12][0-9]{3}[01][0-9][0-3][0-9]" trim="true" name="SHIPPEDDAT" nullable="true" shift="0" size="8" type="string"/>
+<Field name="SHIPVIA" nullable="true" shift="0" size="20" type="numeric"/>
+<Field name="FREIGHT" nullable="true" shift="0" size="20" type="numeric"/>
+<Field name="SHIPNAME" nullable="true" shift="0" size="40" type="string"/>
+<Field name="SHIPADDRES" nullable="true" shift="0" size="60" type="string"/>
+<Field name="SHIPCITY" nullable="true" shift="0" size="15" type="string"/>
+<Field name="SHIPREGION" nullable="true" shift="0" size="15" type="string"/>
+<Field name="SHIPPOSTAL" nullable="true" shift="0" size="10" type="string"/>
+<Field name="SHIPCOUNTR" nullable="true" shift="0" size="15" type="string"/>
 </Record>
