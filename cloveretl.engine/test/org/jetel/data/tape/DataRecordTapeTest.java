@@ -24,8 +24,7 @@ import java.nio.ByteBuffer;
 import junit.framework.TestCase;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.tape.DataRecordTape;
-import org.jetel.main.runGraph;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -56,7 +55,7 @@ protected void setUp() {
     testRecordA.getField(2).setValue(new Integer(-1234567));
     testRecordB.copyFieldsByPosition(testRecordA);
     
-    runGraph.initEngine(null, null);
+	EngineInitializer.initEngine(null, null);
 }
 
 

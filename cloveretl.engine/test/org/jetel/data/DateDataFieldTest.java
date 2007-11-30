@@ -47,7 +47,7 @@ protected void setUp() {
 	Date trialTime1 = null;
 	trialTime1 = calendar.getTime(); 
 	DataFieldMetadata fixedFieldMeta1 = new DataFieldMetadata("Field1",'D',(short)3);
-//	fixedFieldMeta1.setFormatStr("MM/dd/yyyy");
+	fixedFieldMeta1.setFormatStr("MM/dd/yyyy");
 	aDateDataField1 = new DateDataField(fixedFieldMeta1, trialTime1);
 	
 	DataFieldMetadata fixedFieldMeta2 = new DataFieldMetadata("Field2",'D',(short)3);
@@ -93,7 +93,7 @@ public void test_1_DateDataField() {
 	assertTrue(aDateDataField4.getMetadata().isTimeFormat());
 	assertFalse(aDateDataField4.getMetadata().isDateFormat());
 	assertTrue(aDateDataField1.getMetadata().isDateFormat());
-	assertTrue(aDateDataField1.getMetadata().isTimeFormat());
+	assertFalse(aDateDataField1.getMetadata().isTimeFormat());
 	}
 
 
@@ -170,13 +170,13 @@ public void test_1_DateDataField() {
 	 */
 	public void test_fromString() {
 		aDateDataField3.fromString("07/10/1996");
-		assertEquals(aDateDataField1.toString(),"07/10/1996");
+		assertEquals(aDateDataField3.toString(),"07/10/1996");
 	
 		aDateDataField3.fromString(null);
-		assertTrue(aDateDataField1.isNull());
+		assertTrue(aDateDataField3.isNull());
 	
 		aDateDataField3.fromString("");
-		assertTrue(aDateDataField1.isNull());
+		assertTrue(aDateDataField3.isNull());
 		
 		try {
 			aDateDataField2.fromString("");

@@ -24,18 +24,17 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import org.jetel.data.DataRecord;
+import junit.framework.TestCase;
+
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
-import org.jetel.main.runGraph;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
-
-import junit.framework.TestCase;
 
 /**
  * @author maciorowski
@@ -49,7 +48,7 @@ private DataRecord record;
 	
 protected void setUp() { 
 	
-	runGraph.initEngine(null, null);
+	EngineInitializer.initEngine(null, null);
 	FileInputStream in = null;
 	FileInputStream in2 = null;
 //	FileInputStream in3 = null;

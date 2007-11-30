@@ -19,6 +19,7 @@
 
 package org.jetel.data;
 
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -37,7 +38,7 @@ public class ByteDataFieldTest  extends TestCase {
     static final String TEST_STRING="THIS is test !@#$%^&*()ěščřžýíé";
     
 protected void setUp() {
-    runGraph.initEngine(null, null);
+	EngineInitializer.initEngine(null, null);
 
     int i=0;
     for(byte b: byteArray){

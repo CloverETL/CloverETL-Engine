@@ -20,12 +20,11 @@
 package org.jetel.graph;
 
 import java.io.IOException;
+
 import junit.framework.TestCase;
 
 import org.jetel.data.DataRecord;
-import org.jetel.graph.DirectEdge;
-import org.jetel.graph.Edge;
-import org.jetel.main.runGraph;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -39,7 +38,7 @@ public class EdgeTest extends TestCase {
 	
 	protected void setUp() { 
 		
-		runGraph.initEngine(null, null);
+		EngineInitializer.initEngine(null, null);
 		
 		aDelimitedDataRecordMetadata = new DataRecordMetadata("record2",DataRecordMetadata.DELIMITED_RECORD);
 		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,";"));
@@ -129,7 +128,17 @@ public class EdgeTest extends TestCase {
 		assertEquals(ProducerThread.NUM_REC,thread2.getCounter());
 		
 		// ROUND 2 - MIN , MAX priority
-	    assertTrue(!edge.isEOF());
+	    assertTrue(edge.isEOF());
+	    
+		edge=new DirectEdge(new Edge("testEdge",aDelimitedDataRecordMetadata));
+		
+		try{
+		    edge.init();
+		}catch(IOException ex){
+		    throw new RuntimeException(ex);
+		}
+	    
+		assertFalse(edge.isEOF());
 		assertFalse(edge.hasData());
 		thread1=new ProducerThread(record1,(DirectEdge)edge);
 		thread2=new ConsumerThread(record2,(DirectEdge)edge);
