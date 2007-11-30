@@ -344,6 +344,10 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
 	 */
 	public void fromString(CharSequence seq) {
+		if (seq == null) {
+		    setNull(true);
+			return;
+		}
 		if (stringFormat != null && !stringFormat.matches(seq.toString()))
 			throw new BadDataFormatException("doesn't match with "+stringFormat.getPattern(), seq.toString());
 		setValue(seq);
