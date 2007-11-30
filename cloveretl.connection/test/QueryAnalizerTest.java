@@ -52,6 +52,16 @@ public class QueryAnalizerTest extends TestCase {
 		assertEquals(dbCloverMap.get("f2"), "lname");
 		System.out.println();
 
+		query = "select $field1:=tab1.f1,$field2:= tab1.f2,  $field3:=tab.2f3 \n from mytable where f1=$fname and f2 = $lname";
+		analizer.setQuery(query);
+		System.out.println(query);
+		System.out.println(analizer.getNotInsertQuery());
+		dbCloverMap = analizer.getDbCloverFieldMap();
+		cloverDbMap = analizer.getCloverDbFieldMap();
+		assertEquals(cloverDbMap.get("field1"), "tab1.f1");
+		assertEquals(dbCloverMap.get("f2"), "lname");
+		System.out.println();
+		
 		query = "select f1,f2,  f3 \n from mytable where f1=? and f2 = ?";
 		analizer.setQuery(query);
 		System.out.println(query);
