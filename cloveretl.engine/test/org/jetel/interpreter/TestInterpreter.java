@@ -40,11 +40,11 @@ import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLVariable;
-import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
@@ -63,7 +63,7 @@ public class TestInterpreter extends TestCase {
     LookupTable lkp;
 	
 	protected void setUp() {
-	    runGraph.initEngine(null, null);
+		EngineInitializer.initEngine(null, null);
 	    
         graph=new TransformationGraph();
         

@@ -21,6 +21,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -38,7 +39,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 	protected void setUp() throws Exception {
 		transform = new CustomizedRecordTransform(LogFactory.getLog(this.getClass()));
 		
-	    runGraph.initEngine(null, null);
+		EngineInitializer.initEngine(null, null);
 	    
         graph=new TransformationGraph();
         

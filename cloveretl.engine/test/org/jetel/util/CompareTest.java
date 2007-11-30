@@ -44,9 +44,9 @@ public class CompareTest extends TestCase {
         cmp=Compare.compare("abcd", "abcd", col);
         assertEquals(cmp, 0);
         cmp=Compare.compare("abčd", "abcd", col);
-        assertTrue(cmp>0);
+        assertTrue(cmp != 0);
         cmp=Compare.compare("abcd", "abcď", col);
-        assertTrue(cmp<0);
+        assertTrue(cmp != 0);
     
     }
 

@@ -1,15 +1,14 @@
 
 package org.jetel.data;
 
-import java.text.NumberFormat;
 import java.util.Properties;
 
+import junit.framework.TestCase;
+
 import org.jetel.data.primitive.Decimal;
-import org.jetel.main.runGraph;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-
-import junit.framework.TestCase;
 
 public class DecimalDataFieldTest extends TestCase {
 	
@@ -18,7 +17,7 @@ public class DecimalDataFieldTest extends TestCase {
 	
 	@Override
 	protected void setUp() throws Exception {
-		runGraph.initEngine(null, null);
+		EngineInitializer.initEngine(null, null);
 		fieldMetadata = new DataFieldMetadata("field1",	DataFieldMetadata.DECIMAL_FIELD,";");  
 	}
 	
