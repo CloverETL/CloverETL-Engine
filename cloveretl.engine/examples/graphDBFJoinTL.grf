@@ -1,25 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed Nov 22 10:24:41 CET 2006" description="This graph illustrates complex transformation. It reads data about orders made and&#10;combines them (joins) with data about which items were purchased. It then adds&#10;information about which company made particular order/bought particular item.&#10;It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.&#10;&#10;It also shows how to embed data transformation routine directly into transformation&#10;graph layou file (both joins have the transformations embedded - see below).&#10;&#10;Note: It is faster to reference record's fields by index as opposite to names - used&#10;in this example.&#10;" guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Mon Mar 05 14:46:16 CET 2007" name="ComplexTransformation" revision="1.10">
+<Graph created="Wed Nov 22 10:24:41 CET 2006" description="This graph illustrates complex transformation. It reads data about orders made and&#10;combines them (joins) with data about which items were purchased. It then adds&#10;information about which company made particular order/bought particular item.&#10;It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.&#10;&#10;It also shows how to embed data transformation routine directly into transformation&#10;graph layou file (both joins have the transformations embedded - see below).&#10;&#10;Note: It is faster to reference record's fields by index as opposite to names - used&#10;in this example.&#10;" guiVersion="1.8" id="1196411890471" licenseType="Evaluation license." modified="Fri Nov 30 13:19:41 CET 2007" name="ComplexTransformation" revision="1.13">
 <Global>
+<Metadata fileURL="metadata/delimited/customers.fmt" id="Metadata0"/>
 <Metadata fileURL="metadata/delimited/ordersInfo.fmt" id="Metadata3"/>
 <Metadata fileURL="metadata/fixlen/odetailsDBF.fmt" id="Metadata1"/>
-<Metadata fileURL="metadata/delimited/customers.fmt" id="Metadata0"/>
 <Metadata fileURL="metadata/fixlen/ordersDBF.fmt" id="Metadata2"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" filterExpression="$CUSTOMER!=&quot;N/A&quot;" guiHeight="25" guiName="FILTER" guiWidth="50" guiX="716" guiY="235" id="FILTER" type="EXT_FILTER"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/customers_delimited.txt" guiHeight="25" guiName="IN_CUSTOMERS" guiWidth="50" guiX="389" guiY="102" id="IN_CUSTOMERS" type="DELIMITED_DATA_READER"/>
 <Node charset="ISO-8859-1" enabled="enabled" fileURL="${WORKSPACE}/data/other/ODETAILS.DBF" guiHeight="25" guiName="IN_DETAILS" guiWidth="50" guiX="20" guiY="194" id="IN_DETAILS" type="DBF_DATA_READER"/>
 <Node charset="ISO-8859-1" enabled="enabled" fileURL="${WORKSPACE}/data/other/ORDERS.DBF" guiHeight="25" guiName="IN_ORDERS" guiWidth="50" guiX="20" guiY="281" id="IN_ORDERS" type="DBF_DATA_READER"/>
+<Node enabled="enabled" guiHeight="25" guiName="SORT_DETAILS" guiWidth="50" guiX="196" guiY="194" id="SORT_DETAILS" sortKey="ORDERID" sortOrder="Ascending" type="SORT"/>
+<Node enabled="enabled" guiHeight="25" guiName="SORT_ORDERS" guiWidth="50" guiX="196" guiY="281" id="SORT_ORDERS" sortKey="ORDERID" sortOrder="Ascending" type="SORT"/>
+<Edge debugMode="false" fromNode="IN_DETAILS:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SORT_DETAILS:0"/>
+<Edge debugMode="false" fromNode="IN_ORDERS:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SORT_ORDERS:0"/>
+<Edge debugMode="true" fromNode="SORT_DETAILS:0" guiBendpoints="" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" toNode="JOIN:1"/>
+<Edge debugMode="true" fromNode="SORT_ORDERS:0" guiBendpoints="" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="JOIN:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" filterExpression="$CUSTOMER!=&quot;N/A&quot;" guiHeight="25" guiName="FILTER" guiWidth="50" guiX="716" guiY="235" id="FILTER" type="EXT_FILTER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/customers_delimited.txt" guiHeight="25" guiName="IN_CUSTOMERS" guiWidth="50" guiX="389" guiY="102" id="IN_CUSTOMERS" type="DELIMITED_DATA_READER"/>
 <Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="389" guiY="235" id="JOIN" joinKey="ORDERID" leftOuterJoin="true" type="MERGE_JOIN">
-<attr name="transform">
+<attr name="transform"><![CDATA[
 //#TL
 function price_per_unit(unit_price,quantity,discount){
 	return (unit_price*quantity - discount)/quantity
 }
 function ship_time(ordered,shipped){
-	if (shipped.lt.ordered) return
+	if (shipped.lt.ordered) raise_error("Ship time can't be lower than order date");
 	else return datediff(shipped,ordered,day);
 }
 
@@ -27,7 +35,7 @@ function transform(){
 	string datum;
 	int shiptime;
 	datum = $ORDERS_DBF.SHIPPEDDAT;
-	if (datum .ne. "        ") {
+	if (!isnull(datum)) {
 		shiptime=ship_time($ORDERS_DBF.ORDERDATE,str2date(datum,"yyyyMMdd")); 
 	} else { shiptime=-1;}
 	$ORDERS_Info.ORDERID:=$ORDERS_DBF.ORDERID;
@@ -39,10 +47,10 @@ function transform(){
 	$ORDERS_Info.DISCOUNT:=$Bigodata_dbf.DISCOUNT;
 	$ORDERS_Info.SHIPTIME:=shiptime;
 }
-</attr>
+]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="25" guiName="JOIN_CUSTOMER" guiWidth="50" guiX="557" guiY="235" id="JOIN_CUSTOMER" joinKey="CUSTOMERID" leftOuterJoin="true" type="HASH_JOIN">
-<attr name="transform">
+<attr name="transform"><![CDATA[
 //#TL
 function copyFields(){
 	$ORDERS_Info.ORDERID:=$ORDERS_Info.ORDERID;
@@ -65,20 +73,14 @@ function transform(){
 	$ORDERS_Info.CUSTOMER:= nvl($Customer.CompanyName,"N/A");
  }
 
-</attr>
+]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="25" guiName="SORT_DETAILS" guiWidth="50" guiX="196" guiY="194" id="SORT_DETAILS" sortKey="ORDERID" sortOrder="Ascending" type="SORT"/>
-<Node enabled="enabled" guiHeight="25" guiName="SORT_ORDERS" guiWidth="50" guiX="196" guiY="281" id="SORT_ORDERS" sortKey="ORDERID" sortOrder="Ascending" type="SORT"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/joinedDBForders.out" guiHeight="25" guiName="WRITER1" guiWidth="50" guiX="882" guiY="189" id="WRITER1" type="DELIMITED_DATA_WRITER"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/joinedDBFordersNA.out" guiHeight="25" guiName="WRITER2" guiWidth="50" guiX="882" guiY="285" id="WRITER2" type="DELIMITED_DATA_WRITER"/>
-<Edge fromNode="FILTER:0" guiBendpoints="" id="Edge7" inPort="0 (WRITER1)" metadata="Metadata3" outPort="0 (FILTER)" toNode="WRITER1:0"/>
-<Edge fromNode="FILTER:1" guiBendpoints="" id="Edge8" inPort="0 (WRITER2)" metadata="Metadata3" outPort="1 (FILTER)" toNode="WRITER2:0"/>
-<Edge debugMode="false" fromNode="IN_CUSTOMERS:0" guiBendpoints="" id="Edge15" inPort="1 (JOIN_CUSTOMER)" metadata="Metadata0" outPort="0 (IN_CUSTOMERS)" toNode="JOIN_CUSTOMER:1"/>
-<Edge debugMode="false" fromNode="IN_DETAILS:0" guiBendpoints="" id="Edge1" inPort="0 (SORT_DETAILS)" metadata="Metadata1" outPort="0 (IN_DETAILS)" toNode="SORT_DETAILS:0"/>
-<Edge debugMode="false" fromNode="IN_ORDERS:0" guiBendpoints="" id="Edge0" inPort="0 (SORT_ORDERS)" metadata="Metadata2" outPort="0 (IN_ORDERS)" toNode="SORT_ORDERS:0"/>
-<Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" id="Edge11" inPort="0 (JOIN_CUSTOMER)" metadata="Metadata3" outPort="0 (JOIN)" toNode="JOIN_CUSTOMER:0"/>
-<Edge debugMode="true" fromNode="JOIN_CUSTOMER:0" guiBendpoints="" id="Edge13" inPort="0 (FILTER)" metadata="Metadata3" outPort="0 (JOIN_CUSTOMER)" toNode="FILTER:0"/>
-<Edge fromNode="SORT_DETAILS:0" guiBendpoints="" id="Edge3" inPort="1 (JOIN)" metadata="Metadata1" outPort="0 (SORT_DETAILS)" toNode="JOIN:1"/>
-<Edge debugMode="false" fromNode="SORT_ORDERS:0" guiBendpoints="" id="Edge2" inPort="0 (JOIN)" metadata="Metadata2" outPort="0 (SORT_ORDERS)" toNode="JOIN:0"/>
+<Edge fromNode="FILTER:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="WRITER1:0"/>
+<Edge fromNode="FILTER:1" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (rejected)" toNode="WRITER2:0"/>
+<Edge debugMode="false" fromNode="IN_CUSTOMERS:0" guiBendpoints="" id="Edge15" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="JOIN_CUSTOMER:1"/>
+<Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" id="Edge11" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 0 (out)" toNode="JOIN_CUSTOMER:0"/>
+<Edge debugMode="true" fromNode="JOIN_CUSTOMER:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="FILTER:0"/>
 </Phase>
 </Graph>
