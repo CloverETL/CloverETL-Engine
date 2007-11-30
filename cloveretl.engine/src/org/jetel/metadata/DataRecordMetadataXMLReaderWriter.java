@@ -510,6 +510,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String localeStr = null;
 			String compressed = null;
 			String autoFilling = null;
+			String trim = null;
 			char fieldType = ' ';
 			Properties fieldProperties = new Properties();
 
@@ -535,6 +536,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					nullable = itemValue;
 				} else if (itemName.equalsIgnoreCase("locale")) {
 					localeStr = itemValue;
+				}else if (itemName.equalsIgnoreCase("trim")) {
+					trim = itemValue;
 				} else if (itemName.equalsIgnoreCase(COMPRESSED_ATTR)) {
 					compressed = itemValue;
 				} else if (itemName.equalsIgnoreCase(AUTO_FILLING_ATTR)) {
@@ -618,6 +621,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 
 			if (autoFilling != null) {
 				field.setAutoFilling(autoFilling);
+			}
+			
+			if (trim != null) {
+				field.setTrim(nullable.matches("^[tTyY].*"));
 			}
 			
 			recordMetadata.addField(field);
