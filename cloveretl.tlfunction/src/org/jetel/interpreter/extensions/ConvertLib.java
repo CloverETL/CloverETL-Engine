@@ -24,15 +24,18 @@
 package org.jetel.interpreter.extensions;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLDateValue;
+import org.jetel.interpreter.data.TLNullValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.interpreter.extensions.DateLib.CalendarStore;
+import org.jetel.util.string.StringUtils;
 
 public class ConvertLib extends TLFunctionLibrary {
 
@@ -215,7 +218,11 @@ public class ConvertLib extends TLFunctionLibrary {
 
             format.applyPattern(params[1].toString());
             try {
-                ((TLDateValue)val).getDate().setTime(format.parse(params[0].toString()).getTime());
+                if (params[0].toString().length() != 0) {
+					((TLDateValue) val).getDate().setTime(format.parse(params[0].toString()).getTime());
+				}else{
+					return TLValue.NULL_VAL;
+				}
             }catch (java.text.ParseException ex) {
                 throw new TransformLangExecutorRuntimeException(params,
                         Function.STR2DATE.name()+" - can't convert \"" + params[0] + "\" using format "+format.toPattern());
