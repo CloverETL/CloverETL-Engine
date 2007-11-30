@@ -11,6 +11,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
@@ -29,7 +30,7 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test  extends TestCase 
 	
  protected void setUp() { 
 	 
-	 runGraph.initEngine("../cloveretl.engine/plugins", null);
+	EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
 	DBConnection aDBConnection = null;
 	 DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 			

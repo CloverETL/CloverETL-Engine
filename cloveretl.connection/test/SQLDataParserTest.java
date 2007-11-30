@@ -7,6 +7,7 @@ import org.jetel.connection.SQLDataParser;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
@@ -27,7 +28,7 @@ public class SQLDataParserTest extends TestCase {
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 		DBConnection aDBConnection = null;
 
-		runGraph.initEngine("../cloveretl.engine/plugins", null);
+		EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
 		try {
 			// metadata = xmlReader.read(new
 			// FileInputStream("config\\test\\rec_def\\db_null_def_rec.xml"));
