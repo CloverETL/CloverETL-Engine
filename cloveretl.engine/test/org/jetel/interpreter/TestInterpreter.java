@@ -418,7 +418,8 @@ public class TestInterpreter extends TestCase {
 		String expStr = "date d3; d3=2006-08-01; print_err(d3);\n"+
 						"date d2; d2=2006-08-02 15:15:00 ; print_err(d2);\n"+
 						"date d1; d1=2006-1-1 1:2:3; print_err(d1);\n"+
-						"date born; born=$0.Born; print_err(born);";
+						"date born; born=$0.Born; print_err(born);\n" +
+						"date dnull = null; print_err(dnull);\n";
 		GregorianCalendar born = new GregorianCalendar(1973,03,23);
 		record.getField("Born").setValue(born.getTime());
 		
@@ -1876,7 +1877,9 @@ public class TestInterpreter extends TestCase {
         		"boolean isDate=is_date('20.11.2007','dd.MM.yyyy');print_err(str2date('20.11.2007','dd.MM.yyyy'));\n" +
         		"boolean isDate1=is_date('20.11.2007','dd-MM-yyyy');\n" +
         		"boolean isDate2=is_date('24:00 20.11.2007','HH:mm dd.MM.yyyy');print_err(str2date('24:00 20.11.2007','HH:mm dd.MM.yyyy'));\n" +
-        		"boolean isDate4=is_date('test 20.11.2007','hhmm dd.MM.yyyy');\n";
+        		"boolean isDate4=is_date('test 20.11.2007','hhmm dd.MM.yyyy');\n" +
+        		"boolean isDate7=is_date('','HH:mm dd.MM.yyyy');print_err(str2date('','HH:mm dd.MM.yyyy'));\n" +
+        		"boolean isDate8=is_date('                ','HH:mm dd.MM.yyyy');\n";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
@@ -1924,6 +1927,8 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate4")).getTLValue()==TLValue.TRUE_VAL));
 		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate5")).getTLValue()==TLValue.TRUE_VAL));
 		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate6")).getTLValue()==TLValue.TRUE_VAL));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate7")).getTLValue()==TLValue.TRUE_VAL));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate8")).getTLValue()==TLValue.TRUE_VAL));
 
         } catch (ParseException e) {
             System.err.println(e.getMessage());
