@@ -106,6 +106,8 @@ public class DateUtils {
      */
     public static boolean isDate(CharSequence str, String pattern, Locale loc){
     	
+    	if (str == null || str.length() == 0) return true;
+    	
     	//constants initialization
     	if (era == null || (loc == null && locale != null) || (loc != null && !loc.equals(locale))) {
     		createDateTimeConstants(locale);
