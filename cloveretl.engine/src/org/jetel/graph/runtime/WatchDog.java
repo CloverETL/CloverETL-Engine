@@ -86,6 +86,7 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
     private boolean threadCpuTimeIsSupported;
     private boolean provideJMX=true;
     private IGraphRuntimeContext runtimeContext;
+    private String fatalErrorSourceID = "";
     
     private PrintTracking printTracking;
 
@@ -318,6 +319,7 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
 					TimeUnit.MILLISECONDS);
 			if (message != null) {
 				if (message.getType() == Message.Type.ERROR) {
+					fatalErrorSourceID = message.getSenderID();
 					causeException = ((ErrorMsgBody) message.getBody())
 							.getSourceException();
 					causeNodeID = message.getSenderID();
@@ -493,7 +495,14 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
 		}
 		logger.info("------------------------------** End of Summary **---------------------------");
 	}
-
+	
+	public int getTotalRunTime() {
+		int total = 0;
+		for (Phase phase : phases) {
+			if(phase.getPhaseTracking()!=null) total += phase.getPhaseTracking().getExecTimeSec(); 
+		}
+		return total;
+	}
 
 	/**
 	 * aborts execution of current phase
@@ -802,6 +811,11 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
 
 	public void setUseJMX(boolean useJMX) {
 		this.provideJMX = useJMX;
+	}
+
+
+	public String getFatalErrorSourceID() {
+		return fatalErrorSourceID;
 	}
 
     
