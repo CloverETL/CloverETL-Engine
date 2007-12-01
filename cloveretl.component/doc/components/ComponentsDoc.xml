@@ -5340,39 +5340,113 @@
       <componentName>Run graph</componentName>
       <componentType>RUN_GRAPH</componentType>
       <category>others</category>
-      <sinceVersion></sinceVersion>
-      <author></author>
-      <lastUpdated></lastUpdated>
-      <briefDesc></briefDesc>
-      <fullDesc>Runs a graph in another instance of clover.</fullDesc>
+      <sinceVersion>1.8.3</sinceVersion>
+      <author>jvicenik</author>
+      <lastUpdated>22.11.2007</lastUpdated>
+      <briefDesc>Runs specified graph(s) optionally in another instance of clover.</briefDesc>
+      <fullDesc>Runs specified graph(s) optionally in another instance of clover. If <attrLink> graphName </attrLink> is
+			  specified, the component is in pipeline mode. That means it only executes the specified graph if some data 
+			comes through the input edge or the input is not connected. If the execution of the graph is successful, an
+		  information record is sent to the first output port, otherwise to the second one. Any of these port may not be 
+		  connected as well. If <attrLink> graphName </attrLink> isn't specified, graph names are read from the input edge
+		  (in this case the first field of input metadata must be string) and status messages are sent to the first output 
+		  port. </fullDesc>
       <inputPorts>
          <port>
             <portName>0</portName>
-            <portDesc>input of filenames</portDesc>
+            <portDesc>in pipeline mode: a record which triggers execution of the graph. Otherwise names of the graphs to be executed</portDesc>
             <portMandatory>no</portMandatory>
-         </port>
-         
-         
+			 <portMetadata>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>Name of the processed graph</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>Status</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>In a case of error: ID of the component where the problem occured</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>In a case of error: ID of the component where the problem occured</fieldDesc>
+				</metadataField>
+			</portMetadata>
+         </port>                  
       </inputPorts>
       <outputPorts>
          <port>
             <portName>0</portName>
-            <portDesc>output of filenames and optionally status messages</portDesc>
+            <portDesc>regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing</portDesc>
             <portMandatory>no</portMandatory>
+			<portMetadata>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>Name of the processed graph</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>Status</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>In a case of error: The error message</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>In a case of error: ID of the component where the problem occured</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>decimal</fieldType>
+					<fieldDesc>Run time (sec)</fieldDesc>
+				</metadataField>
+			</portMetadata>
          </port>
-         
-         
+		 <port>
+            <portName>1</portName>
+            <portDesc>in pipeline mode an information record in case of an error, otherwise nothing</portDesc>
+            <portMandatory>no</portMandatory>
+			<portMetadata>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>Name of the processed graph</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>Status</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>In a case of error: The error message</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>In a case of error: ID of the component where the problem occured</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>decimal</fieldType>
+					<fieldDesc>Run time (sec)</fieldDesc>
+				</metadataField>
+			</portMetadata>
+         </port>                  
       </outputPorts>
       <attribute>
          <attrName>graphName</attrName>
          <attrIsMandatory>no</attrIsMandatory>
-         <attrType>
-            multiline
-            
-         </attrType>
-         <attrDesc>graphName</attrDesc>
+         <attrType>file</attrType>
+         <attrDesc>name of the graph to be executed; if this parameter is specified, the pipeline mode is activated</attrDesc>
          <attrDefaultVal></attrDefaultVal>
       </attribute>
+	  <attribute>
+         <attrName>sameInstance</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>boolean</attrType>
+         <attrDesc>if false, run the graph in separate instance of clover, otherwise run it in the same instance</attrDesc>
+         <attrDefaultVal>true</attrDefaultVal>
+      </attribute>
+	   
       <attribute>
          <attrName>capturedErrorLines</attrName>
          <attrIsMandatory>no</attrIsMandatory>
@@ -5384,13 +5458,13 @@
          <attrDefaultVal></attrDefaultVal>
       </attribute>
       <attribute>
-         <attrName>outputFile</attrName>
+         <attrName>logFile</attrName>
          <attrIsMandatory>no</attrIsMandatory>
          <attrType>
             file
             
          </attrType>
-         <attrDesc>outputFile</attrDesc>
+         <attrDesc>Name of the file into which all the standard output of the executed graphs is redirected</attrDesc>
          <attrDefaultVal></attrDefaultVal>
       </attribute>
       <attribute>
@@ -5400,7 +5474,7 @@
             bool
             
          </attrType>
-         <attrDesc>outputAppend</attrDesc>
+         <attrDesc>Whether to append the output into the log file <attrLink>logFile</attrLink> </attrDesc>
          <attrDefaultVal>false</attrDefaultVal>
       </attribute>
       <example>
@@ -5408,58 +5482,8 @@
          <exampleDesc></exampleDesc>
       </example>
    </componentDescription>
-   <componentDescription>
-      <componentName>Validator</componentName>
-      <componentType>VALIDATOR</componentType>
-      <category>others</category>
-      <sinceVersion></sinceVersion>
-      <author></author>
-      <lastUpdated></lastUpdated>
-      <briefDesc></briefDesc>
-      <fullDesc></fullDesc>
-      <inputPorts>
-         <port>
-            <portName>0</portName>
-            <portDesc></portDesc>
-            <portMandatory>yes</portMandatory>
-         </port>
-         			
-         		
-      </inputPorts>
-      <outputPorts>
-         			
-         <port>
-            <portName>1..N</portName>
-            <portDesc></portDesc>
-            <portMandatory>yes</portMandatory>
-         </port> 
-         		
-      </outputPorts>
-      <attribute>
-         <attrName>conditions</attrName>
-         <attrIsMandatory>no</attrIsMandatory>
-         <attrType>
-            				multiline
-            			
-         </attrType>
-         <attrDesc>conditions</attrDesc>
-         <attrDefaultVal></attrDefaultVal>
-      </attribute>
-      <attribute>
-         <attrName>invalidConditionsLimit</attrName>
-         <attrIsMandatory>no</attrIsMandatory>
-         <attrType>
-            				int
-            			
-         </attrType>
-         <attrDesc>invalidConditionsLimit</attrDesc>
-         <attrDefaultVal></attrDefaultVal>
-      </attribute>
-      <example>
-         <exampleXml></exampleXml>
-         <exampleDesc></exampleDesc>
-      </example>
-   </componentDescription>
+	
+   
    
    <componentDescription>
       <componentName>PostgreSql Data Writer</componentName>
@@ -5590,4 +5614,4 @@
       </example>
       
    </componentDescription>
-</componentsDoc>
+</componentsDoc>  
