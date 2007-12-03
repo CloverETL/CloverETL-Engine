@@ -22,8 +22,8 @@ import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.lookup.RangeLookupTable;
-import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -33,13 +33,12 @@ public class RangeLookupTest extends TestCase {
     DataRecordMetadata lookupMetadata, metadata;
     DataRecord record;
     Random random = new Random();
-    String enginePath = ".." + File.separatorChar + "cloveretl.engine";
     
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
      */
     protected void setUp() throws Exception {
-        runGraph.initEngine(enginePath + "" + File.separatorChar + "plugins", null);
+	    EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
     }
 
     public void test_getDataRecord() throws IOException,ComponentNotReadyException{
@@ -422,7 +421,7 @@ public class RangeLookupTest extends TestCase {
         XLSParser parser = new JExcelXLSDataParser();
         parser.setSheetNumber("0");
         parser.init(lookupMetadata);
-        parser.setDataSource(new FileInputStream(enginePath + "" + File.separatorChar + "data" + File.separatorChar + "rangeLookup.dat.xls"));
+        parser.setDataSource(new FileInputStream("../cloveretl.engine/data" + File.separatorChar + "rangeLookup.dat.xls"));
         
         lookup = LookupTableFactory.createLookupTable(null, "rangeLookup", 
         		new Object[]{"RangeLookup",lookupMetadata,new String[]{"s1","s2","s3","s4","s5","s6","s7","s8"},
@@ -466,7 +465,7 @@ public class RangeLookupTest extends TestCase {
        	
        	DelimitedDataParser dataParser = new DelimitedDataParser();
        	dataParser.init(metadata);
-       	dataParser.setDataSource(new FileInputStream(enginePath + "" + File.separatorChar + "data" + File.separatorChar + "data.dat"));
+       	dataParser.setDataSource(new FileInputStream("../cloveretl.engine/data" + File.separatorChar + "data.dat"));
 
     	for (int i=0;i<500;i++){
     		record = dataParser.getNext();

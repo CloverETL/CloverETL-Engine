@@ -32,7 +32,12 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
+<<<<<<< .working
 import org.jetel.graph.runtime.EngineInitializer;
+=======
+import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.main.runGraph;
+>>>>>>> .merge-right.r3636
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
@@ -48,7 +53,11 @@ private DataRecord record;
 	
 protected void setUp() { 
 	
+<<<<<<< .working
 	EngineInitializer.initEngine(null, null);
+=======
+    EngineInitializer.initEngine(null, null);
+>>>>>>> .merge-right.r3636
 	FileInputStream in = null;
 	FileInputStream in2 = null;
 //	FileInputStream in3 = null;

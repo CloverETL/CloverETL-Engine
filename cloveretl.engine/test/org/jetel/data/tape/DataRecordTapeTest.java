@@ -24,7 +24,13 @@ import java.nio.ByteBuffer;
 import junit.framework.TestCase;
 
 import org.jetel.data.DataRecord;
+<<<<<<< .working
 import org.jetel.graph.runtime.EngineInitializer;
+=======
+import org.jetel.data.tape.DataRecordTape;
+import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.main.runGraph;
+>>>>>>> .merge-right.r3636
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -55,7 +61,11 @@ protected void setUp() {
     testRecordA.getField(2).setValue(new Integer(-1234567));
     testRecordB.copyFieldsByPosition(testRecordA);
     
+<<<<<<< .working
 	EngineInitializer.initEngine(null, null);
+=======
+    EngineInitializer.initEngine(null, null);
+>>>>>>> .merge-right.r3636
 }
 
 

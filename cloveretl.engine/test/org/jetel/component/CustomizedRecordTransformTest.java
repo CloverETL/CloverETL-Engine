@@ -39,7 +39,11 @@ public class CustomizedRecordTransformTest extends TestCase {
 	protected void setUp() throws Exception {
 		transform = new CustomizedRecordTransform(LogFactory.getLog(this.getClass()));
 		
+<<<<<<< .working
 		EngineInitializer.initEngine(null, null);
+=======
+	    EngineInitializer.initEngine(null, null);
+>>>>>>> .merge-right.r3636
 	    
         graph=new TransformationGraph();
         

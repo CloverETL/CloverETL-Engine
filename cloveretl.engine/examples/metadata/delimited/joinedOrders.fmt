@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Record name="joinOrders" recordDelimiter="" recordSize="-1" type="delimited">
+<Record name="joinOrders" recordSize="-1" type="delimited">
 <Field delimiter="|" format="#" name="OrderID" nullable="true" shift="0" type="numeric"/>
 <Field delimiter="|" name="CustomerID" nullable="true" shift="0" type="string"/>
-<Field delimiter="|" format="#" name="EmployeeID" nullable="true" shift="0" type="string"/>
-<Field delimiter="|" format="#" name="EmployeeID2" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" name="EmployeeID" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" name="EmployeeID2" nullable="true" shift="0" type="string"/>
 <Field delimiter="\n" name="LastName" nullable="true" shift="0" type="string"/>
 </Record>
