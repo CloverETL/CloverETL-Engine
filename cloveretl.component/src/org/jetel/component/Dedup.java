@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.DynamicRecordBuffer;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -32,6 +33,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -68,6 +70,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>dedupKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe} or can be empty, then all records belong to one group</td>
  *  <tr><td><b>keep</b></td><td>one of "First|Last|Unique" {the fist letter is sufficient, if not defined, then First}</td></tr>
  *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is TRUE.</td></tr>
+ *  <tr><td><b>noDupRecord</b><br><i>optional</i></td><td>number of duplicate record to be written to out port. Default is 1.</td></tr>
  *  </table>
  *
  *  <h4>Example:</h4>
@@ -82,6 +85,7 @@ public class Dedup extends Node {
 	private static final String XML_KEEP_ATTRIBUTE = "keep";
 	private static final String XML_DEDUPKEY_ATTRIBUTE = "dedupKey";
 	private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
+	private static final String XML_NO_DUP_RECORD_ATTRIBUTE = "noDupRecord";
 	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DEDUP";
@@ -95,12 +99,14 @@ public class Dedup extends Node {
 	private final static int KEEP_LAST = -1;
 	private final static int KEEP_UNIQUE = 0;
 	
-
+	private final static int DEFAULT_NO_DUP_RECORD = 1;
+	
 	private int keep;
 	private String[] dedupKeys;
 	private RecordKey recordKey;
 	private boolean equalNULLs = true;
 	private boolean hasRejectedPort;
+	private int noDupRecord = DEFAULT_NO_DUP_RECORD; // number of duplicate record to be written to out port
 
     //runtime variables
     int current;
@@ -153,16 +159,20 @@ public class Dedup extends Node {
         current = 1;
         previous = 0;
 
-        switch(keep) {
-        case KEEP_FIRST:
-            executeFirst();
-            break;
-        case KEEP_LAST:
-            executeLast();
-            break;
-        case KEEP_UNIQUE:
-            executeUnique();
-            break;
+        if (dedupKeys == null) {
+        	writeAllRecordsToOutPort();
+        } else {
+        	switch(keep) {
+            case KEEP_FIRST:
+                executeFirst();
+                break;
+            case KEEP_LAST:
+                executeLast();
+                break;
+            case KEEP_UNIQUE:
+                executeUnique();
+                break;
+            }
         }
 		
         broadcastEOF();
@@ -176,24 +186,32 @@ public class Dedup extends Node {
      * @throws InterruptedException
      */
 	private void executeFirst() throws IOException, InterruptedException {
-        while (records[current] != null && runIt) {
-            records[current] = inPort.readRecord(records[current]);
-            if (records[current] != null) {
-                if (isFirst) {
-                    writeRecord(WRITE_TO_PORT, records[current]);
-                    isFirst = false;
-                } else {
-                    if (isChange(records[current], records[previous])) {
-                        writeRecord(WRITE_TO_PORT, records[current]);
-                    } else {
-                        writeRejectedRecord(records[current]);
-                    }
-                }
-                // swap indexes
-                current = current ^ 1;
-                previous = previous ^ 1;
-            }
-        }
+		int groupItems = 0;
+		while (records[current] != null && runIt) {
+			records[current] = inPort.readRecord(records[current]);
+			if (records[current] != null) {
+				if (isFirst) {
+					writeOutRecord(records[current]);
+					groupItems++;
+					isFirst = false;
+				} else {
+					if (isChange(records[current], records[previous])) {
+						writeOutRecord(records[current]);
+						groupItems = 1;
+					} else {
+						if (groupItems < noDupRecord) {
+							writeOutRecord(records[current]);
+							groupItems++;
+						} else {
+							writeRejectedRecord(records[current]);
+						}
+					}
+				}
+				// swap indexes
+				current = current ^ 1;
+              	previous = previous ^ 1;
+			}
+		}
     }
 
     /**
@@ -203,28 +221,30 @@ public class Dedup extends Node {
      * @throws InterruptedException
      */
     public void executeLast() throws IOException, InterruptedException {
-        while (records[current] != null && runIt) {
+    	RingRecordBuffer ringBuffer = new RingRecordBuffer(noDupRecord, inPort.getMetadata());
+		ringBuffer.init();
+
+    	while (records[current] != null && runIt) {
             records[current] = inPort.readRecord(records[current]);
             if (records[current] != null) {
                 if (isFirst) {
                     isFirst = false;
                 } else {
                     if (isChange(records[current], records[previous])) {
-                        writeRecord(WRITE_TO_PORT, records[previous]);
-                    } else {
-                        writeRejectedRecord(records[previous]);
+                    	ringBuffer.flushRecords();
+                    	ringBuffer.clear();
                     }
                 }
+                ringBuffer.writeRecord(records[current]);
 
                 // swap indexes
                 current = current ^ 1;
                 previous = previous ^ 1;
-            } else {
-                if (!isFirst) {
-                    writeRecord(WRITE_TO_PORT, records[previous]);
-                }
             }
         }
+    	
+    	ringBuffer.flushRecords();
+        ringBuffer.free();
     }
 
     /**
@@ -268,7 +288,19 @@ public class Dedup extends Node {
             }
         }
     }
-
+    
+    /**
+     * Write all records to output port.
+     * Uses when all records belong to one group.
+     * 
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    private void writeAllRecordsToOutPort() throws IOException, InterruptedException {
+    	while (runIt && (records[0] = inPort.readRecord(records[0])) != null) {
+    		writeOutRecord(records[0]);
+      }
+    }
     
     /**
      * Tries to write given record to the rejected port, if is connected.
@@ -280,6 +312,17 @@ public class Dedup extends Node {
         if(hasRejectedPort) {
             writeRecord(REJECTED_PORT, record);
         }
+    }
+    
+    /**
+     * Writes given record to the out port.
+     * 
+     * @param record
+     * @throws InterruptedException 
+     * @throws IOException 
+     */
+    private void writeOutRecord(DataRecord record) throws IOException, InterruptedException {
+        writeRecord(WRITE_TO_PORT, record);
     }
     
 	/**
@@ -302,6 +345,12 @@ public class Dedup extends Node {
         }
         
         hasRejectedPort = (getOutPorts().size() == 2);
+        
+        if (noDupRecord < 1) {
+        	throw new ComponentNotReadyException(this, 
+        			StringUtils.quote(XML_NO_DUP_RECORD_ATTRIBUTE) 
+        			+ " must be positive number.");
+        }
 	}
 
 
@@ -334,6 +383,10 @@ public class Dedup extends Node {
 		
 		// equal NULL attribute
 		xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULLs));
+		
+		if (noDupRecord != DEFAULT_NO_DUP_RECORD) {
+			xmlElement.setAttribute(XML_NO_DUP_RECORD_ATTRIBUTE, String.valueOf(noDupRecord));
+		}
 	}
 
 
@@ -356,6 +409,9 @@ public class Dedup extends Node {
 					    xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ll].*") ? KEEP_LAST : KEEP_UNIQUE);
 			if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
 			    dedup.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_NO_DUP_RECORD_ATTRIBUTE)){
+			    dedup.setNumberRecord(xattribs.getInteger(XML_NO_DUP_RECORD_ATTRIBUTE));
 			}
 			
 		} catch (Exception ex) {
@@ -395,6 +451,134 @@ public class Dedup extends Node {
 	
 	public void setEqualNULLs(boolean equal){
 	    this.equalNULLs=equal;
+	}
+
+	public void setNumberRecord(int numberRecord) {
+		this.noDupRecord = numberRecord;
+	}
+	
+	
+	/**
+	 * Class containing DynamicRecordBuffer backed by temporary file - i.e. unlimited
+	 * size<br>
+	 * Data is written by writeRecord() method - when buffer is full (user defined 
+	 * number of records) then the oldest record in buffer is removed and pass to 
+	 * writeRejectedRecord() method. 
+	 * At last remaining data from buffer is pass to writeOutRecord() method.
+	 * 
+	 * @author 		Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz)
+	 *		   		(c) Javlin Consulting (www.javlinconsulting.cz)
+	 * @since 		30.11.2007
+	 */
+	private class RingRecordBuffer {
+		private DynamicRecordBufferExt recordBuffer;
+		private long sizeOfBuffer; // max number of records presented in buffer
+								   // state (number of records) before or after call any of method
+		private DataRecordMetadata metadata;
+		
+		
+		/**
+		 * @param sizeOfBuffer max number of records presented in buffer
+		 * @param metadata metadat of records that will be stored in buffer.
+		 */
+		public RingRecordBuffer(long sizeOfBuffer, DataRecordMetadata metadata) {
+			this.sizeOfBuffer = sizeOfBuffer;
+			this.metadata = metadata;
+		}
+
+		
+		/**
+	     * Initializes the buffer. Must be called before any write or read operation
+	     * is performed.
+	     */
+		public void init() {
+			recordBuffer = new DynamicRecordBufferExt();
+			recordBuffer.init();
+		}
+		
+		/**
+		 *  Closes buffer, removes temporary file (is exists).
+		 */
+		public void free() {
+			try {
+	            recordBuffer.close();
+	        } catch (IOException e) {
+	            //do nothing
+	        }
+		}
+		
+		
+		/**
+		 * Adds record to the ring buffer - when buffer is full then the oldest 
+		 * record in buffer is removed and pass to writeRejectedRecord() method. 
+		 * @param record record that will be added to the ring buffer
+		 * @throws IOException
+		 * @throws InterruptedException
+		 */
+		public void writeRecord(DataRecord record) throws IOException, InterruptedException {
+			recordBuffer.writeRecord(record);
+
+			if (recordBuffer.getBufferedRecords() > sizeOfBuffer) {
+				if (!recordBuffer.hasData()) {
+					recordBuffer.swapBuffers();
+				}
+				
+				DataRecord rejectedRecord = new DataRecord(metadata);
+				rejectedRecord.init();
+				rejectedRecord = recordBuffer.readRecord(rejectedRecord);
+				writeRejectedRecord(rejectedRecord);
+			}
+		}
+		
+		/**
+		 * Flush all records from buffer to out port.
+		 * @throws IOException
+		 * @throws InterruptedException
+		 */
+		public void flushRecords() throws IOException, InterruptedException {
+			DataRecord record = new DataRecord(metadata);
+			record.init();
+			
+			while (recordBuffer.getBufferedRecords() > 0) {
+				if (!recordBuffer.hasData()) {
+					recordBuffer.swapBuffers();
+				}
+				record = recordBuffer.readRecord(record);
+				writeOutRecord(record);
+			}
+		}
+		
+		/**
+		 * Clears the buffer. Temp file (if it was created) remains
+		 * unchanged size-wise
+		 */
+		public void clear() {
+			recordBuffer.clear();
+		}
+	}
+	
+	/**
+	 * Class extends DynamicRecordBuffer backed by temporary file - i.e. unlimited
+	 * size<br>
+	 * Only extension is that swapBuffers() method is added.
+ 	 *  
+	 * 
+	 * @author 		Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz)
+	 *		   		(c) Javlin Consulting (www.javlinconsulting.cz)
+	 * @since 		30.11.2007
+	 */
+	private class DynamicRecordBufferExt extends DynamicRecordBuffer {
+
+		public DynamicRecordBufferExt() {
+			super(Defaults.Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE);
+		}
+		
+		/**
+	     * Remove data from writeDataBuffer and put it to readDataBuffer.
+	     */
+		public void swapBuffers() {
+			swapWriteBufferToReadBuffer();
+		}
 	}
 }
 
