@@ -106,7 +106,8 @@ public class Dedup extends Node {
 	private RecordKey recordKey;
 	private boolean equalNULLs = true;
 	private boolean hasRejectedPort;
-	private int noDupRecord = DEFAULT_NO_DUP_RECORD; // number of duplicate record to be written to out port
+	// number of duplicate record to be written to out port
+	private int noDupRecord = DEFAULT_NO_DUP_RECORD;
 
     //runtime variables
     int current;
@@ -296,7 +297,8 @@ public class Dedup extends Node {
      * @throws IOException
      * @throws InterruptedException
      */
-    private void writeAllRecordsToOutPort() throws IOException, InterruptedException {
+    private void writeAllRecordsToOutPort() throws IOException, 
+    		InterruptedException {
     	while (runIt && (records[0] = inPort.readRecord(records[0])) != null) {
     		writeOutRecord(records[0]);
       }
@@ -308,7 +310,8 @@ public class Dedup extends Node {
      * @throws InterruptedException 
      * @throws IOException 
      */
-    private void writeRejectedRecord(DataRecord record) throws IOException, InterruptedException {
+    private void writeRejectedRecord(DataRecord record) throws IOException, 
+    		InterruptedException {
         if(hasRejectedPort) {
             writeRecord(REJECTED_PORT, record);
         }
@@ -321,7 +324,8 @@ public class Dedup extends Node {
      * @throws InterruptedException 
      * @throws IOException 
      */
-    private void writeOutRecord(DataRecord record) throws IOException, InterruptedException {
+    private void writeOutRecord(DataRecord record) throws IOException, 
+    		InterruptedException {
         writeRecord(WRITE_TO_PORT, record);
     }
     
@@ -337,10 +341,11 @@ public class Dedup extends Node {
 		super.init();
 
         if(dedupKeys != null) {
-            recordKey = new RecordKey(dedupKeys, getInputPort(READ_FROM_PORT).getMetadata());
+            recordKey = new RecordKey(dedupKeys, 
+            		getInputPort(READ_FROM_PORT).getMetadata());
             recordKey.init();
-            // for DEDUP component, specify whether two fields with NULL value indicator set
-            // are considered equal
+            // for DEDUP component, specify whether two fields with NULL
+            // value indicator set are considered equal
             recordKey.setEqualNULLs(equalNULLs);
         }
         
@@ -472,10 +477,13 @@ public class Dedup extends Node {
 	 */
 	private class RingRecordBuffer {
 		private DynamicRecordBufferExt recordBuffer;
-		private long sizeOfBuffer; // max number of records presented in buffer
-								   // state (number of records) before or after call any of method
 		private DataRecordMetadata metadata;
 		
+		/**
+		 * Max number of records presented in buffer.
+		 * Atate (number of records) before or after call any of method.
+		 */
+		private long sizeOfBuffer;		
 		
 		/**
 		 * @param sizeOfBuffer max number of records presented in buffer
@@ -515,7 +523,8 @@ public class Dedup extends Node {
 		 * @throws IOException
 		 * @throws InterruptedException
 		 */
-		public void writeRecord(DataRecord record) throws IOException, InterruptedException {
+		public void writeRecord(DataRecord record) throws IOException, 
+				InterruptedException {
 			recordBuffer.writeRecord(record);
 
 			if (recordBuffer.getBufferedRecords() > sizeOfBuffer) {
