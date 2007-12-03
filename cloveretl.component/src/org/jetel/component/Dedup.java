@@ -477,9 +477,9 @@ public class Dedup extends Node {
 		
 		/**
 		 * Max number of records presented in buffer.
-		 * Atate (number of records) before or after call any of method.
+		 * State (number of records) before or after call any of method.
 		 */
-		private long sizeOfBuffer;		
+		private long sizeOfBuffer;
 		
 		/**
 		 * @param sizeOfBuffer max number of records presented in buffer
@@ -492,8 +492,8 @@ public class Dedup extends Node {
 
 		
 		/**
-	     * Initializes the buffer. Must be called before any write or read operation
-	     * is performed.
+	     * Initializes the buffer.
+	     * Must be called before any write or read operation is performed.
 	     */
 		public void init() {
 			recordBuffer = new DynamicRecordBufferExt();
