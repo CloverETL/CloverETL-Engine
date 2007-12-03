@@ -223,23 +223,21 @@ public class Dedup extends Node {
     	RingRecordBuffer ringBuffer = new RingRecordBuffer(noDupRecord, inPort.getMetadata());
 		ringBuffer.init();
 
-    	while (records[current] != null && runIt) {
-            records[current] = inPort.readRecord(records[current]);
-            if (records[current] != null) {
-                if (isFirst) {
-                    isFirst = false;
-                } else {
-                    if (isChange(records[current], records[previous])) {
-                    	ringBuffer.flushRecords();
-                    	ringBuffer.clear();
-                    }
+    	while (runIt && 
+    			(records[current] = inPort.readRecord(records[current])) != null) {
+            if (isFirst) {
+                isFirst = false;
+            } else {
+                if (isChange(records[current], records[previous])) {
+                	ringBuffer.flushRecords();
+                	ringBuffer.clear();
                 }
-                ringBuffer.writeRecord(records[current]);
-
-                // swap indexes
-                current = current ^ 1;
-                previous = previous ^ 1;
             }
+            ringBuffer.writeRecord(records[current]);
+
+            // swap indexes
+            current = current ^ 1;
+            previous = previous ^ 1;
         }
     	
     	ringBuffer.flushRecords();
