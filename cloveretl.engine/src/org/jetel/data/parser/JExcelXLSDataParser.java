@@ -85,7 +85,9 @@ public class JExcelXLSDataParser extends XLSParser {
 
 	@Override
 	public void close() {
-		wb.close();
+		if (wb != null) {
+			wb.close();
+		}
 	}
 
 	@Override

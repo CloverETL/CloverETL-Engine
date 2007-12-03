@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of Partition component.&#10;This component can be used to split input data flow into several&#10;output data flows according to specified key or range" guiVersion="1.8" licenseType="Evaluation license." modified="Mon Sep 24 13:23:40 CEST 2007" name="Partition data" revision="1.26">
+<Graph created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of Partition component.&#10;This component can be used to split input data flow into several&#10;output data flows according to specified key or range" guiVersion="1.8" id="1196682624808" licenseType="Evaluation license." modified="Mon Dec 03 12:50:24 CET 2007" name="Partition data" revision="1.27">
 <Global>
 <Metadata id="InMetadata">
-<Record name="Employees" recordDelimiter="" recordSize="-1" type="delimited">
+<Record name="Employees" recordSize="-1" type="delimited">
 <Field delimiter=";" name="EmployeeID" nullable="true" shift="0" type="integer"/>
-<Field delimiter=";" format="#" name="LastName" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="LastName" nullable="true" shift="0" type="string"/>
 <Field delimiter=";" name="FirstName" nullable="true" shift="0" type="string"/>
 <Field delimiter=";" name="Title" nullable="true" shift="0" type="string"/>
 <Field delimiter=";" name="TitleInCourtesy" nullable="true" shift="0" type="string"/>
@@ -36,7 +36,7 @@
 <Edge debugMode="true" fromNode="PARTITION:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (out)" toNode="TRASH1:0"/>
 <Edge debugMode="true" fromNode="PARTITION:1" guiBendpoints="" id="INNEREDGE2" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 1 (out)" toNode="TRASH2:0"/>
 <Edge debugMode="true" fromNode="PARTITION:2" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 2 (out)" toNode="TRASH3:0"/>
-<Edge fromNode="PARTITION:4" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 4 (out)" toNode="TRASH4:0"/>
 <Edge debugMode="true" fromNode="PARTITION:3" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 3 (out)" toNode="TRASH0:0"/>
+<Edge fromNode="PARTITION:4" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 4 (out)" toNode="TRASH4:0"/>
 </Phase>
 </Graph>

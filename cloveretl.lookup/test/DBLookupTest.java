@@ -10,8 +10,8 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.lookup.DBLookupTable;
-import org.jetel.main.runGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 
@@ -21,17 +21,18 @@ public class DBLookupTest extends TestCase {
 	DBLookupTable lookupTable;
 	DataRecord customer, employee = null;
 	SQLDataParser parser;
-	DBConnection aDBConnection;
+	java.sql.Connection aDBConnection;
 	@Override
 	protected void setUp() throws ComponentNotReadyException, FileNotFoundException, SQLException{
 
-		runGraph.initEngine("../cloveretl.engine/plugins", null);
-		aDBConnection = new DBConnection("conn", "../cloveretl.engine/examples/koule_postgre.cfg");
-		aDBConnection.init();
+	    EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
+		DBConnection conn = new DBConnection("conn", "../cloveretl.engine/examples/koule_postgre.cfg");
+		conn.init();
+		aDBConnection = conn.getConnection(conn.getId());
 
 		Properties p= new Properties();
 		p.put("sqlQuery", "select * from customer");
-		DataRecordMetadata customerMetadata = aDBConnection.createMetadata(p);
+		DataRecordMetadata customerMetadata = conn.createMetadata(p);
 		customer = new DataRecord(customerMetadata);
 		customer.init();
 		parser = new SQLDataParser("select * from customer");

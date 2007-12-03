@@ -24,7 +24,14 @@ import java.io.IOException;
 import junit.framework.TestCase;
 
 import org.jetel.data.DataRecord;
+<<<<<<< .working
 import org.jetel.graph.runtime.EngineInitializer;
+=======
+import org.jetel.graph.DirectEdge;
+import org.jetel.graph.Edge;
+import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.main.runGraph;
+>>>>>>> .merge-right.r3636
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -38,7 +45,11 @@ public class EdgeTest extends TestCase {
 	
 	protected void setUp() { 
 		
+<<<<<<< .working
 		EngineInitializer.initEngine(null, null);
+=======
+	    EngineInitializer.initEngine(null, null);
+>>>>>>> .merge-right.r3636
 		
 		aDelimitedDataRecordMetadata = new DataRecordMetadata("record2",DataRecordMetadata.DELIMITED_RECORD);
 		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,";"));

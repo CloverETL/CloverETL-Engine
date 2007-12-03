@@ -361,16 +361,16 @@ public final class TransformationGraph extends GraphElement {
         return phases.get(new Integer(phaseNum));
     }
     
-	/**
-	 * An operation that aborts execution of graph
-	 *
-	 * @since    April 2, 2002
-	 */
-	public void abort() {
-		if (watchDog != null) {
-			watchDog.abort();
-		}
-	}
+//	/**
+//	 * An operation that aborts execution of graph
+//	 *
+//	 * @since    April 2, 2002
+//	 */
+//	public void abort() {
+//		if (watchDog != null) {
+//			watchDog.abort();
+//		}
+//	}
 
 
 	/**
@@ -786,20 +786,20 @@ public final class TransformationGraph extends GraphElement {
 		graphProperties.putAll(properties);
 	}
 
-	/**
-	 * If graph is running (WatchDog thread is running) then
-	 * it returns which phase (number) is currently beeing executed.
-	 * Otherwise it returns -1;
-	 * 
-	 * @return Phase number or -1 is no phase is beeing executed
-	 */
-	public int getRunningPhaseNum(){
-		if (watchDog!=null){
-			return watchDog.getCurrentPhaseNum();
-		}else{
-			return -1;
-		}
-	}
+//	/**
+//	 * If graph is running (WatchDog thread is running) then
+//	 * it returns which phase (number) is currently beeing executed.
+//	 * Otherwise it returns -1;
+//	 * 
+//	 * @return Phase number or -1 is no phase is beeing executed
+//	 */
+//	public int getRunningPhaseNum(){
+//		if (watchDog!=null){
+//			return watchDog.getCurrentPhaseNum();
+//		}else{
+//			return -1;
+//		}
+//	}
 	/**
 	 * @param trackingInterval Sets the tracking interval. How often is the processing status printed  (in milliseconds).
 	 */
@@ -888,7 +888,11 @@ public final class TransformationGraph extends GraphElement {
     public WatchDog getWatchDog() {
         return watchDog;
     }
-    
+
+    public void setWatchDog(WatchDog watchDog) {
+        this.watchDog = watchDog;
+    }
+
 	public Log getLogger() {
 		return TransformationGraph.logger;
 	}

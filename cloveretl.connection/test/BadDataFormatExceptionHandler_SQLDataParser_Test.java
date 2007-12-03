@@ -30,7 +30,11 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test  extends TestCase 
 	
  protected void setUp() { 
 	 
+<<<<<<< .working
 	EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
+=======
+	    EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
+>>>>>>> .merge-right.r3636
 	DBConnection aDBConnection = null;
 	 DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 			

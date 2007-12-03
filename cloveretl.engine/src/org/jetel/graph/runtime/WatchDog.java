@@ -107,6 +107,7 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
 	 * @since          September 02, 2003
 	 */
 	public WatchDog(TransformationGraph graph, IGraphRuntimeContext runtimeContext) {
+		graph.setWatchDog(this);
 		this.graph = graph;
 		this.phases = graph.getPhases();
 		this.runtimeContext = runtimeContext;
@@ -178,6 +179,9 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
         // disabled by Kokon
 //        trackingThread.interrupt();
 		printPhasesSummary();
+		
+		//should be in a free() method
+		graph.setWatchDog(null);
 		
 		return result;
 	}

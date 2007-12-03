@@ -2,17 +2,21 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import junit.framework.TestCase;
+
 import org.jetel.connection.DBConnection;
 import org.jetel.connection.SQLDataParser;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+<<<<<<< .working
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.main.runGraph;
+=======
+import org.jetel.graph.runtime.EngineInitializer;
+>>>>>>> .merge-right.r3636
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
-
-import junit.framework.TestCase;
 
 /**
  * @author maciorowski
@@ -24,11 +28,15 @@ public class SQLDataParserTest extends TestCase {
 	private DataRecord record;
 
 	protected void setUp() {
+	    EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
 		DataRecordMetadata metadata = null;
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 		DBConnection aDBConnection = null;
 
+<<<<<<< .working
 		EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
+=======
+>>>>>>> .merge-right.r3636
 		try {
 			// metadata = xmlReader.read(new
 			// FileInputStream("config\\test\\rec_def\\db_null_def_rec.xml"));

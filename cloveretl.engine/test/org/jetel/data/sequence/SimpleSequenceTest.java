@@ -27,7 +27,12 @@ package org.jetel.data.sequence;
 import junit.framework.TestCase;
 
 import org.jetel.graph.TransformationGraph;
+<<<<<<< .working
 import org.jetel.graph.runtime.EngineInitializer;
+=======
+import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.main.runGraph;
+>>>>>>> .merge-right.r3636
 
 /**
  * @author david
@@ -44,7 +49,11 @@ public class SimpleSequenceTest extends TestCase {
      * @see junit.framework.TestCase#setUp()
      */
     protected void setUp() throws Exception {
+<<<<<<< .working
 		EngineInitializer.initEngine(null, null);
+=======
+	    EngineInitializer.initEngine(null, null);
+>>>>>>> .merge-right.r3636
         sequence = SequenceFactory.createSequence(null, "SIMPLE_SEQUENCE", 
         		new Object[]{"",null,"Test","sequence4.dat",0,1,17}, 
         		new Class[]{String.class,TransformationGraph.class,String.class,String.class,int.class,int.class,int.class});
