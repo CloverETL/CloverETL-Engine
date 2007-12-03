@@ -452,6 +452,18 @@ public class DynamicRecordBuffer {
         return bufferedRecords.get();
     }
     
+    
+    /**
+     * Remove data from writeDataBuffer and put it to readDataBuffer.
+     */
+    protected void swapWriteBufferToReadBuffer() {
+    	writeDataBuffer.flip();
+        readDataBuffer.clear();
+        readDataBuffer.put(writeDataBuffer);
+        readDataBuffer.flip();
+        writeDataBuffer.clear();
+    }
+    
     private static class DiskSlot {
         int slot;
         int usedBytes;
