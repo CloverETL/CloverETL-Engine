@@ -25,6 +25,8 @@ import java.io.InputStream;
 import java.util.StringTokenizer;
 import java.util.Scanner;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.BufferedReader;
@@ -49,9 +51,13 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
+
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.GraphRuntimeParameters;
+import org.jetel.graph.runtime.GraphExecutor;
+import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.graph.runtime.WatchDog;
+
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataFieldMetadata;
@@ -141,7 +147,9 @@ public class RunGraph extends Node{
 	private static final String XML_SAME_INSTANCE_ATTRIBUTE = "sameInstance";
 	private static final String XML_ALTERNATIVE_JVM = "alternativeJavaCmdLine";
 	private static final String XML_GRAPH_EXEC_CLASS = "graphExecClass";	
-	private final static String CLOVER_CMD_LINE = "java -cp";
+	private static final String XML_CLOVER_CMD_LINE = "cloverCmdLineArgs";
+	private final static String JAVA_CMD_LINE = "java -cp";
+	private final static String CLOVER_CMD_LINE = "";
 	private final static String CLOVER_RUN_CLASS = "org.jetel.main.runGraph";
 	private final static String ERROR_COMPONENT_REGEX = ".*Node ([A-Z](\\w)+) finished with status: ERROR.*";
 	
@@ -159,7 +167,8 @@ public class RunGraph extends Node{
 		 	
 	private String graphName = null;
 	private String classPath;
-	private String cloverCmdLine;
+	private String javaCmdLine;
+	private String cloverCmdLineArgs;
 	private String cloverRunClass;
 	
 		
@@ -180,12 +189,16 @@ public class RunGraph extends Node{
 	
 	static Log logger = LogFactory.getLog(RunGraph.class);
 	
-	public String getCloverCmdLine() {
-		return cloverCmdLine;
+	private void setCloverCmdLineArgs(String cloverCmdLineArgs) {
+		this.cloverCmdLineArgs = cloverCmdLineArgs;
 	}
 
-	public void setCloverCmdLine(String cloverCmdLine) {
-		this.cloverCmdLine = cloverCmdLine;
+	public String getCloverCmdLine() {
+		return javaCmdLine;
+	}
+
+	public void setJavaCmdLine(String javaCmdLine) {
+		this.javaCmdLine = javaCmdLine;
 	}
 
 	public String getCloverRunClass() {
@@ -271,7 +284,7 @@ public class RunGraph extends Node{
 	 * @throws Exception
 	 */
 
-	@Override
+	@Override	
 	public Result execute() throws Exception {
 		//Creating and initializing record from input port
 		boolean success;
@@ -377,7 +390,7 @@ public class RunGraph extends Node{
 		
 				
 		//TODO Juro je to potreba udelat jinak
-		String commandLine = cloverCmdLine + " " + classPath + " " + cloverRunClass + " " + org.jetel.main.runGraph.getCmdLineArgs() + " " + graphName;
+		String commandLine = javaCmdLine + " " + classPath + " " + cloverRunClass + " " + cloverCmdLineArgs + " " + graphName;
 		logger.info("Executing command: \"" + commandLine + "\"");
 		
 		process = Runtime.getRuntime().exec(commandLine);
@@ -529,16 +542,14 @@ public class RunGraph extends Node{
 						
 			return false;
 		}
-		if (exitValue!=0){
-			if (outputFile!=null) {
-				logger.error(graphName + ": Process exit value not 0");
-			}
+		if (exitValue!=0){			
 			resultMsg = (resultMsg == null ? "" : resultMsg) + "\n" + graphName + ": Process exit value not 0";
 				
 			if(output != null) {
 				if(status == null) output.getField(1).setValue("Error");
 				output.getField(2).setValue(resultMsg);
 			}			
+			logger.info(graphName + ": Processing with an ERROR: " + resultMsg);
 			return false;
 			
 			/*
@@ -553,6 +564,7 @@ public class RunGraph extends Node{
 			if(status == null && output != null) output.getField(1).setValue("Finished successfully");			
 			return true;
 		} else {
+			logger.info(graphName + ": Processing with an ERROR: " + resultMsg);
 			if(output!=null) output.getField(2).setValue(resultMsg);
 			throw new JetelException(resultMsg);
 		}
@@ -574,6 +586,68 @@ public class RunGraph extends Node{
 			output.getField(2).setValue("Error - graph definition file can't be read: " + e.getMessage());	
 			return false;
         }
+        
+        GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+        
+		GraphExecutor graphExecutor = new GraphExecutor();        
+        Future<Result> futureResult = null;
+                
+        
+        String password = null; // TODO
+        
+		try {
+			futureResult = graphExecutor.runGraph(in, runtimeContext, password);
+        } catch (XMLConfigurationException e) {            
+            output.getField(2).setValue("Error in reading graph from XML: " + e.getMessage());
+            return false;
+        } catch (GraphConfigurationException e) {
+        	output.getField(2).setValue("Error - graph's configuration invalid: " + e.getMessage());            
+            return false;
+		} catch (ComponentNotReadyException e) {
+			output.getField(2).setValue("Error during graph initialization: " + e.getMessage());           
+            return false;
+        } catch (RuntimeException e) {
+        	output.getField(2).setValue("Error during graph initialization: " +  e.getMessage());           
+            return false;
+        }
+        
+        Result result = Result.N_A;
+		try {
+			result = futureResult.get();
+		} catch (InterruptedException e) {
+			output.getField(2).setValue("Graph was unexpectedly interrupted !" + e.getMessage());            
+            return false;
+		} catch (ExecutionException e) {
+			output.getField(2).setValue("Error during graph processing !" + e.getMessage());            
+            return false;
+		}
+        
+		WatchDog watchdog = graphExecutor.getGraph().getWatchDog();
+        switch (result) {
+	        case FINISHED_OK:        	
+	    		output.getField(1).setValue("Finished OK");
+	    		output.getField(2).setValue("");
+	    		output.getField(3).setValue(""); 			
+	    		output.getField(4).setValue(watchdog.getTotalRunTime()); 
+	    		    		        	
+	            return true;
+	        case ABORTED:
+	        	output.getField(1).setValue("Aborted");
+	        	output.getField(2).setValue("Graph execution aborted. ");
+	        	output.getField(3).setValue(watchdog.getFatalErrorSourceID());
+	        	output.getField(4).setValue(watchdog.getTotalRunTime());
+	            return false;
+	            
+	        default:
+	        	output.getField(1).setValue(result.message());        	
+	        	output.getField(2).setValue("Execution of graph failed !");
+	        	output.getField(3).setValue(watchdog.getFatalErrorSourceID());
+	        	output.getField(4).setValue(watchdog.getTotalRunTime());
+	            System.err.println(graphFileName + ": " + "Execution of graph failed !");
+	            return false;
+        }
+		/*
+		
 		
 		// loading graph from the input stream		
         TransformationGraph graph = null;
@@ -627,29 +701,11 @@ public class RunGraph extends Node{
             output.getField(2).setValue("Fatal error during graph run: " + ex.getCause().getMessage());
             return false;            
         }
-        switch (result) {
-        case FINISHED_OK:        	
-    		output.getField(1).setValue("Finished OK");
-    		output.getField(2).setValue("");
-    		output.getField(3).setValue(""); 			
-    		output.getField(4).setValue(graph.getWatchDog().getTotalRunTime()); 
-    		    		        	
-            return true;
-        case ABORTED:
-        	output.getField(1).setValue("Aborted");
-        	output.getField(2).setValue("Graph execution aborted. ");
-        	output.getField(3).setValue(graph.getWatchDog().getFatalErrorSourceID());
-        	output.getField(4).setValue(graph.getWatchDog().getTotalRunTime());
-            return false;
-            
-        default:
-        	output.getField(1).setValue(result.message());        	
-        	output.getField(2).setValue("Execution of graph failed !");
-        	output.getField(3).setValue(graph.getWatchDog().getFatalErrorSourceID());
-        	output.getField(4).setValue(graph.getWatchDog().getTotalRunTime());
-            System.err.println(graphFileName + ": " + "Execution of graph failed !");
-            return false;
-        }
+        
+        */
+		
+		
+		
 	}
 		
 	@Override
@@ -789,8 +845,9 @@ public class RunGraph extends Node{
 					xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false),
 					xattribs.getBoolean(XML_SAME_INSTANCE_ATTRIBUTE, true));
 			
-			runG.setCloverCmdLine(CLOVER_CMD_LINE);
+			runG.setJavaCmdLine(JAVA_CMD_LINE);
 			runG.setCloverRunClass(CLOVER_RUN_CLASS);
+			runG.setCloverCmdLineArgs(CLOVER_CMD_LINE);
 									
 			if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
 				runG.setOutputFile(xattribs.getString(XML_OUTPUT_FILE_ATTRIBUTE));
@@ -800,11 +857,14 @@ public class RunGraph extends Node{
 			}
 			
 			if (xattribs.exists(XML_ALTERNATIVE_JVM)) {				
-				runG.setCloverCmdLine(xattribs.getString(XML_ALTERNATIVE_JVM));
+				runG.setJavaCmdLine(xattribs.getString(XML_ALTERNATIVE_JVM));
 			}
 			if (xattribs.exists(XML_GRAPH_EXEC_CLASS)) {				
 				runG.setCloverRunClass(xattribs.getString(XML_GRAPH_EXEC_CLASS));
 			}	
+			if (xattribs.exists(XML_CLOVER_CMD_LINE)) {
+				runG.setCloverCmdLineArgs(xattribs.getString(XML_CLOVER_CMD_LINE));
+			}
 										
 			return runG;
 		} catch (Exception ex) {
@@ -823,13 +883,15 @@ public class RunGraph extends Node{
 		if (outputFile!=null){
 			xmlElement.setAttribute(XML_OUTPUT_FILE_ATTRIBUTE,outputFileName);
 		}
-		if (cloverCmdLine.compareTo(CLOVER_CMD_LINE) != 0) {
-			xmlElement.setAttribute(XML_ALTERNATIVE_JVM, cloverCmdLine);
+		if (javaCmdLine.compareTo(JAVA_CMD_LINE) != 0) {
+			xmlElement.setAttribute(XML_ALTERNATIVE_JVM, javaCmdLine);
 		}
 		if (cloverRunClass.compareTo(CLOVER_RUN_CLASS) != 0) {
 			xmlElement.setAttribute(XML_GRAPH_EXEC_CLASS, cloverRunClass);
 		}
-		
+		if (cloverCmdLineArgs.compareTo(CLOVER_CMD_LINE) != 0) {
+			xmlElement.setAttribute(XML_CLOVER_CMD_LINE, cloverCmdLineArgs);
+		}
 	}
 	
 	/**
