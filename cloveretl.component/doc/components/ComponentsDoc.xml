@@ -1190,7 +1190,7 @@
       <category>transformers</category>
       <sinceVersion></sinceVersion>
       <author></author>
-      <lastUpdated></lastUpdated>
+      <lastUpdated>2007.12.03</lastUpdated>
       <briefDesc></briefDesc>
       <fullDesc>Dedup (remove duplicate records) from sorted incoming records based on specified key.
          The key is name (or combination of names) of field(s) from input record. It keeps either First or Last record from the group
@@ -1249,6 +1249,16 @@
             
          </attrType>
          <attrDesc>equalNULL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>noDupRecord</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>noDupRecord</attrDesc>
          <attrDefaultVal></attrDefaultVal>
       </attribute>
       <example>
