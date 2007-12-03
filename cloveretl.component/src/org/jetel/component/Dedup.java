@@ -264,7 +264,7 @@ public class Dedup extends Node {
                 } else {
                     if (isChange(records[current], records[previous])) {
                         if (groupItems == 1) {
-                            writeRecord(WRITE_TO_PORT, records[previous]);
+                            writeOutRecord(records[previous]);
                         } else {
                             writeRejectedRecord(records[previous]);
                         }
@@ -280,7 +280,7 @@ public class Dedup extends Node {
             } else {
                 if (!isFirst) {
                     if(groupItems == 1) {
-                        writeRecord(WRITE_TO_PORT, records[previous]);
+                        writeOutRecord(records[previous]);
                     } else {
                         writeRejectedRecord(records[previous]);
                     }
