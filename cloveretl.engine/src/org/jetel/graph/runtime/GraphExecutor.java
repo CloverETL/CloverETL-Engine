@@ -52,6 +52,12 @@ public class GraphExecutor {
 
 	private static ExecutorService executor = Executors.newCachedThreadPool(new GraphThreadFactory());
 	
+	private TransformationGraph graph;
+	
+	public TransformationGraph getGraph() {
+		return graph;
+	}
+
 	/**
 	 * Runs the given transformation graph in the given context.
 	 * 
@@ -84,7 +90,7 @@ public class GraphExecutor {
 	throws XMLConfigurationException, GraphConfigurationException, ComponentNotReadyException {
 		context = new UnconfigurableGraphRuntimeContext(context);
 
-		TransformationGraph graph = loadGraph(graphStream, context.getAdditionalProperties());
+		graph = loadGraph(graphStream, context.getAdditionalProperties());
 		
         graph.setPassword(password);
 
