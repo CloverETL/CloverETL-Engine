@@ -188,33 +188,31 @@ public class Dedup extends Node {
      */
 	private void executeFirst() throws IOException, InterruptedException {
 		int groupItems = 0;
-		while (records[current] != null && runIt) {
-			records[current] = inPort.readRecord(records[current]);
-			if (records[current] != null) {
-				if (isFirst) {
+		while (runIt && 
+				(records[current] = inPort.readRecord(records[current])) != null) {
+			if (isFirst) {
+				writeOutRecord(records[current]);
+				groupItems++;
+				isFirst = false;
+			} else {
+				if (isChange(records[current], records[previous])) {
 					writeOutRecord(records[current]);
-					groupItems++;
-					isFirst = false;
+					groupItems = 1;
 				} else {
-					if (isChange(records[current], records[previous])) {
+					if (groupItems < noDupRecord) {
 						writeOutRecord(records[current]);
-						groupItems = 1;
+						groupItems++;
 					} else {
-						if (groupItems < noDupRecord) {
-							writeOutRecord(records[current]);
-							groupItems++;
-						} else {
-							writeRejectedRecord(records[current]);
-						}
+						writeRejectedRecord(records[current]);
 					}
 				}
-				// swap indexes
-				current = current ^ 1;
-              	previous = previous ^ 1;
 			}
+			// swap indexes
+			current = current ^ 1;
+          	previous = previous ^ 1;
 		}
     }
-
+	
     /**
      * Execution a de-duplication with last function.
      * 
