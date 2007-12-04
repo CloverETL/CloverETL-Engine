@@ -19,11 +19,10 @@
 
 package org.jetel.data;
 
-import org.jetel.graph.runtime.EngineInitializer;
-import org.jetel.main.runGraph;
-import org.jetel.metadata.DataFieldMetadata;
-
 import junit.framework.TestCase;
+
+import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.metadata.DataFieldMetadata;
 
 /**
  * @author maciorowski
@@ -38,11 +37,7 @@ public class ByteDataFieldTest  extends TestCase {
     static final String TEST_STRING="THIS is test !@#$%^&*()ěščřžýíé";
     
 protected void setUp() {
-<<<<<<< .working
 	EngineInitializer.initEngine(null, null);
-=======
-    EngineInitializer.initEngine(null, null);
->>>>>>> .merge-right.r3636
 
     int i=0;
     for(byte b: byteArray){
