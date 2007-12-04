@@ -106,7 +106,6 @@ public class Dedup extends Node {
 	private String[] dedupKeys;
 	private RecordKey recordKey;
 	private boolean equalNULLs = true;
-	private boolean hasRejectedPort;
 	// number of duplicate record to be written to out port
 	private int noDupRecord = DEFAULT_NO_DUP_RECORD;
 
@@ -116,6 +115,7 @@ public class Dedup extends Node {
     boolean isFirst;
     InputPort inPort;
     OutputPort outPort;
+    OutputPort rejectedPort;
     DataRecord[] records;
 
     
@@ -309,8 +309,8 @@ public class Dedup extends Node {
      */
     private void writeRejectedRecord(DataRecord record) throws IOException, 
     		InterruptedException {
-        if(hasRejectedPort) {
-            writeRecord(REJECTED_PORT, record);
+        if(rejectedPort != null) {
+            rejectedPort.writeRecord(record);
         }
     }
     
@@ -349,6 +349,8 @@ public class Dedup extends Node {
 					"Output port (number " + WRITE_TO_PORT + ") must be defined.");
 		}
 		
+		rejectedPort = getOutputPort(REJECTED_PORT);
+		
         if(dedupKeys != null) {
             recordKey = new RecordKey(dedupKeys, 
             		getInputPort(READ_FROM_PORT).getMetadata());
@@ -357,8 +359,6 @@ public class Dedup extends Node {
             // value indicator set are considered equal
             recordKey.setEqualNULLs(equalNULLs);
         }
-        
-        hasRejectedPort = (getOutPorts().size() == 2);
         
         if (noDupRecord < 1) {
         	throw new ComponentNotReadyException(this, 
