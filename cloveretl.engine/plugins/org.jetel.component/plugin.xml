@@ -203,6 +203,11 @@
 	</extension>
 
 	<extension point-id="component">
+		<parameter id="type" value="IDOC_WRITER"/>
+		<parameter id="className" value="org.jetel.component.IDocWriter"/>
+	</extension>
+
+	<extension point-id="component">
 		<parameter id="type" value="NORMALIZER"/>
 		<parameter id="className" value="org.jetel.component.Normalizer"/>
 	</extension>
