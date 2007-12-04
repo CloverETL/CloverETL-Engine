@@ -151,7 +151,6 @@ public class Dedup extends Node {
 	public Result execute() throws Exception {
         
         isFirst = true; // special treatment for 1st record
-        inPort = getInputPort(READ_FROM_PORT);
         records = new DataRecord[2]; 
         records[0] = new DataRecord(inPort.getMetadata());
         records[0].init();
@@ -336,6 +335,12 @@ public class Dedup extends Node {
         if(isInitialized()) return;
 		super.init();
 
+		inPort = getInputPort(READ_FROM_PORT);
+		if (inPort == null) {
+			throw new ComponentNotReadyException(this, 
+					"Input port (number " + READ_FROM_PORT + ") must be defined.");
+		}
+		
         if(dedupKeys != null) {
             recordKey = new RecordKey(dedupKeys, 
             		getInputPort(READ_FROM_PORT).getMetadata());
@@ -429,7 +434,9 @@ public class Dedup extends Node {
          
          checkInputPorts(status, 1, 1);
          checkOutputPorts(status, 1, 2);
-         checkMetadata(status, getInputPort(READ_FROM_PORT).getMetadata(), getOutMetadata());
+         if (getInputPort(READ_FROM_PORT) != null) {
+        	 checkMetadata(status, getInputPort(READ_FROM_PORT).getMetadata(), getOutMetadata());
+         }
 
          try {
              init();
