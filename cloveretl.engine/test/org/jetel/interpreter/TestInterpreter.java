@@ -63,11 +63,7 @@ public class TestInterpreter extends TestCase {
     LookupTable lkp;
 	
 	protected void setUp() {
-<<<<<<< .working
-		EngineInitializer.initEngine(null, null);
-=======
 	    EngineInitializer.initEngine(null, null);
->>>>>>> .merge-right.r3636
 	    
         graph=new TransformationGraph();
         

@@ -6,12 +6,7 @@ import java.util.Properties;
 import junit.framework.TestCase;
 
 import org.jetel.data.primitive.Decimal;
-<<<<<<< .working
 import org.jetel.graph.runtime.EngineInitializer;
-=======
-import org.jetel.graph.runtime.EngineInitializer;
-import org.jetel.main.runGraph;
->>>>>>> .merge-right.r3636
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -22,11 +17,7 @@ public class DecimalDataFieldTest extends TestCase {
 	
 	@Override
 	protected void setUp() throws Exception {
-<<<<<<< .working
 		EngineInitializer.initEngine(null, null);
-=======
-	    EngineInitializer.initEngine(null, null);
->>>>>>> .merge-right.r3636
 		fieldMetadata = new DataFieldMetadata("field1",	DataFieldMetadata.DECIMAL_FIELD,";");  
 	}
 	
