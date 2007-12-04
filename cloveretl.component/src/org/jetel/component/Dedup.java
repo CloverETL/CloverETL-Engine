@@ -474,6 +474,7 @@ public class Dedup extends Node {
 	private class RingRecordBuffer {
 		private DynamicRecordBufferExt recordBuffer;
 		private DataRecordMetadata metadata;
+		private DataRecord tmpRecord;
 		
 		/**
 		 * Max number of records presented in buffer.
@@ -492,12 +493,15 @@ public class Dedup extends Node {
 
 		
 		/**
-	     * Initializes the buffer.
+	     * Initializes the buffer and temporary variables.
 	     * Must be called before any write or read operation is performed.
 	     */
 		public void init() {
 			recordBuffer = new DynamicRecordBufferExt();
 			recordBuffer.init();
+			
+			tmpRecord = new DataRecord(metadata);
+			tmpRecord.init();
 		}
 		
 		/**
@@ -528,10 +532,8 @@ public class Dedup extends Node {
 					recordBuffer.swapBuffers();
 				}
 				
-				DataRecord rejectedRecord = new DataRecord(metadata);
-				rejectedRecord.init();
-				rejectedRecord = recordBuffer.readRecord(rejectedRecord);
-				writeRejectedRecord(rejectedRecord);
+				tmpRecord = recordBuffer.readRecord(tmpRecord);
+				writeRejectedRecord(tmpRecord);
 			}
 		}
 		
@@ -541,15 +543,12 @@ public class Dedup extends Node {
 		 * @throws InterruptedException
 		 */
 		public void flushRecords() throws IOException, InterruptedException {
-			DataRecord record = new DataRecord(metadata);
-			record.init();
-			
 			while (recordBuffer.getBufferedRecords() > 0) {
 				if (!recordBuffer.hasData()) {
 					recordBuffer.swapBuffers();
 				}
-				record = recordBuffer.readRecord(record);
-				writeOutRecord(record);
+				tmpRecord = recordBuffer.readRecord(tmpRecord);
+				writeOutRecord(tmpRecord);
 			}
 		}
 		
