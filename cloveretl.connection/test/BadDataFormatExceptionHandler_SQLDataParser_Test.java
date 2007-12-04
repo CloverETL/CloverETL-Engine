@@ -3,6 +3,8 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import junit.framework.TestCase;
+
 import org.jetel.connection.DBConnection;
 import org.jetel.connection.SQLDataParser;
 import org.jetel.data.DataRecord;
@@ -12,11 +14,8 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.graph.runtime.EngineInitializer;
-import org.jetel.main.runGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
-
-import junit.framework.TestCase;
 
 /**
  * @author maciorowski
@@ -30,11 +29,7 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test  extends TestCase 
 	
  protected void setUp() { 
 	 
-<<<<<<< .working
-	EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
-=======
 	    EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
->>>>>>> .merge-right.r3636
 	DBConnection aDBConnection = null;
 	 DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 			
