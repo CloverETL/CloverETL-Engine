@@ -7,6 +7,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Vector;
 
+import org.jetel.util.protocols.CloverURLStreamHandlerFactory;
+
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -144,6 +146,30 @@ public class SFTPConnection extends URLConnection {
 
 			session.connect();
 		} catch (JSchException e) {
+			connect2();
+			throw new IOException(e.getMessage());
+		} catch (Exception e) {
+			connect2();
+			throw new IOException("Couldn't connect to: " + url.toExternalForm() + ": " + e.getMessage());
+		}
+	}
+
+	private void connect2() throws IOException {
+		JSch jsch = new JSch();
+
+		String[] user = url.getUserInfo().split(":");
+		try {
+			if (url.getPort() == 0) {
+				session = jsch.getSession(user[0], url.getHost());
+			} else {
+				session = jsch.getSession(user[0], url.getHost(), url.getPort() == -1 ? 22 : url.getPort());
+			}
+
+			// password will be given via UserInfo interface.
+			session.setUserInfo(new URLUserInfo(user.length == 2 ? user[1] : null));
+
+			session.connect();
+		} catch (JSchException e) {
 			throw new IOException(e.getMessage());
 		} catch (Exception e) {
 			throw new IOException("Couldn't connect to: " + url.toExternalForm() + ": " + e.getMessage());
@@ -168,11 +194,11 @@ public class SFTPConnection extends URLConnection {
      * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
 	 *         (c) Javlin Consulting (www.javlinconsulting.cz)
      */
-	public static class URLUserInfo implements UserInfo, UIKeyboardInteractive {
+	public static class URLUserInfoIteractive implements UserInfo, UIKeyboardInteractive {
 
 		private String password;
 
-		public URLUserInfo(String password) {
+		public URLUserInfoIteractive(String password) {
 			this.password = password;
 		}
 
@@ -204,5 +230,46 @@ public class SFTPConnection extends URLConnection {
 			return true ? new String[] { password } : null;
 		}
 	}
+	public static class URLUserInfo implements UserInfo {
 
+	    public boolean promptYesNo(String str){
+	        return true;
+	    }
+
+	    private String passwd=null;
+	    private String passphrase=null;
+
+	    public String getPassword(){  return passwd; }
+	    public String getPassphrase(){ return passphrase; }
+
+	    public boolean promptPassword(String message){
+	        return passwd!=null;
+	    }
+	      
+	    public boolean promptPassphrase(String message){
+	        return true;
+	    }
+	      
+	    public void showMessage(String message){
+	    }
+
+		public URLUserInfo(String password) {
+			this.passwd = password;
+		}
+	}
+
+	public static void main(String [] s) {
+        try {
+			URL.setURLStreamHandlerFactory(new CloverURLStreamHandlerFactory());
+			URL url = new URL("sftp://e-potrisalova:W8MPJYLm@eft.boehringer-ingelheim.com:/LSC/AED/Export/*");
+			//URL url = new URL("sftp://jausperger:relatko5@linuxweb:/home/jausperger/public_html/xml/*");
+			//URL url = new URL("sftp://jausperger:relatko5@home.javlinconsulting.cz:/home/jausperger/public_html/*");
+			URLConnection con = url.openConnection();
+			con.getInputStream();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		
+	}
+	
 }
