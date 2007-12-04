@@ -31,6 +31,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
@@ -114,6 +115,7 @@ public class Dedup extends Node {
     int previous;
     boolean isFirst;
     InputPort inPort;
+    OutputPort outPort;
     DataRecord[] records;
 
     
@@ -321,7 +323,7 @@ public class Dedup extends Node {
      */
     private void writeOutRecord(DataRecord record) throws IOException, 
     		InterruptedException {
-        writeRecord(WRITE_TO_PORT, record);
+        outPort.writeRecord(record);
     }
     
 	/**
@@ -339,6 +341,12 @@ public class Dedup extends Node {
 		if (inPort == null) {
 			throw new ComponentNotReadyException(this, 
 					"Input port (number " + READ_FROM_PORT + ") must be defined.");
+		}
+		
+		outPort = getOutputPort(WRITE_TO_PORT);
+		if (outPort == null) {
+			throw new ComponentNotReadyException(this, 
+					"Output port (number " + WRITE_TO_PORT + ") must be defined.");
 		}
 		
         if(dedupKeys != null) {
