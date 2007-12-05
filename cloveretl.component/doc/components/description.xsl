@@ -7,29 +7,29 @@
 <xsl:template name="singleDesc">
 		 		  
 	<a name="{componentName}" />
-    <h1>
+    <h2>
       <xsl:value-of select="componentName"/>
-    </h1>
+    </h2>
 	
 	
- <table border="1" cellspacing="0" cellpadding="5">
+ <table class="componentDesc">
       <tbody>       
         <tr align="left" valign="top">
-          <td align="left" valign="top">
+          <td  class="head" align="left" valign="top">
             <strong>
-			Name
+			Component type
 			</strong>
             
           </td>
           <td align="left" valign="top">
             <p>
-              <xsl:value-of select="componentName"/>
+              <xsl:value-of select="componentType"/>
             </p>
           </td>
           
         </tr>     
 		<tr align="left" valign="top">
-          <td align="left" valign="top">
+          <td class="head" align="left" valign="top">
             <strong>
 			Category
 			</strong>
@@ -43,7 +43,7 @@
           
         </tr>  
 		<tr align="left" valign="top">
-          <td align="left" valign="top">
+          <td class="head" align="left" valign="top">
             <strong>
 			Last updated
 			</strong>
@@ -57,7 +57,7 @@
           
         </tr> 
 		<tr align="left" valign="top">
-          <td align="left" valign="top">
+          <td class="head" align="left" valign="top">
             <strong>
 			Since version
 			</strong>
@@ -71,7 +71,7 @@
           
         </tr> 
 		<tr align="left" valign="top">
-          <td align="left" valign="top">
+          <td class="head" align="left" valign="top">
             <strong>
 			Brief Description
 			</strong>
@@ -88,7 +88,7 @@
 		
 		   
 		<tr align="left" valign="top">
-          <td align="left" valign="top">
+          <td class="head" align="left" valign="top">
             <strong>
 			Full description
 			</strong>
@@ -453,18 +453,18 @@ XML graph notation:
     <title>
       Description of the components
     </title>
-    <link rel="stylesheet" href="stylesheet.css" charset="ISO-8859-1" type="text/css"/> 
+    <link rel="stylesheet" charset="ISO-8859-1" type="text/css"/> 
   </head>
 		
   <body>
-	  <a name="readers"> <h2> Readers </h2> </a>
+	  <a name="readers"> <h1> Readers </h1> </a>
 	  <br/>	  
 		<xsl:for-each select="componentDescription[category='readers']">			
 			
 			<xsl:call-template name="singleDesc"/>
 		</xsl:for-each>
 	  
-	  <a name="writers"> <h2> Writers </h2> </a>	  
+	  <a name="writers"> <h1> Writers </h1> </a>	  
 	  <br/>	  
 		<xsl:for-each select="componentDescription[category='writers']">
 			
@@ -472,7 +472,7 @@ XML graph notation:
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 	  
-	  <a name="transformers"> <h2> Transformers </h2> </a>	  
+	  <a name="transformers"> <h1> Transformers </h1> </a>	  
 	  <br/>	  
 		<xsl:for-each select="componentDescription[category='transformers']">
 			
@@ -480,7 +480,7 @@ XML graph notation:
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 	  
-	  <a name="joiners"> <h2> Joiners </h2> </a>	  
+	  <a name="joiners"> <h1> Joiners </h1> </a>	  
 	  <br/>	  
 		<xsl:for-each select="componentDescription[category='joiners']">
 			
@@ -488,7 +488,7 @@ XML graph notation:
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 	  
-	  <a name="others"> <h2> Others </h2> </a>	  
+	  <a name="others"> <h1> Others </h1> </a>	  
 	  <br/>	  
 		<xsl:for-each select="componentDescription[category='others']">
 			
@@ -496,7 +496,7 @@ XML graph notation:
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 	  
-	  <a name="deprecated"> <h2> Deprecated </h2> </a>	  
+	  <a name="deprecated"> <h1> Deprecated </h1> </a>	  
 	  <br/>	  
 		<xsl:for-each select="componentDescription[category='deprecated']">
 			
