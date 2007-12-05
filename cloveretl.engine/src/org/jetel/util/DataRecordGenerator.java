@@ -130,8 +130,8 @@ public class DataRecordGenerator implements Parser{
 		counter = 0;
         specialValue = new Object[metadata.getNumFields()][4];
         //create and initialize output record
-		patternRecord = new DataRecord(metadata);
-		patternRecord.init();
+		DataRecord record = new DataRecord(metadata);
+		record.init();
 		//create metadata for pattern record - fields are set from pattern (not random and sequence values)
         DataRecordMetadata cutMetadata = metadata.duplicate();
  
@@ -184,14 +184,14 @@ public class DataRecordGenerator implements Parser{
 				case DataFieldMetadata.DATETIME_FIELD:
 				//prepare min and max from date, prepare multiplier and move	
 					if (!StringUtils.isBlank(randomRanges[randomIndex][MIN])){
-						tmpField = patternRecord.getField(i).duplicate();
+						tmpField = record.getField(i).duplicate();
 						((DateDataField)tmpField).fromString(randomRanges[randomIndex][MIN]);
 						specialValue[i][MIN] = ((DateDataField)tmpField).getDate().getTime();
 					}else{
 						specialValue[i][MIN] = Long.MIN_VALUE;
 					}
 					if (!StringUtils.isBlank(randomRanges[randomIndex][MAX])){
-						tmpField = patternRecord.getField(i).duplicate();
+						tmpField = record.getField(i).duplicate();
 						((DateDataField)tmpField).fromString(randomRanges[randomIndex][MAX]);
 						specialValue[i][MAX] = ((DateDataField)tmpField).getDate().getTime();
 					}else{
@@ -274,6 +274,8 @@ public class DataRecordGenerator implements Parser{
 			random = new Random();
 		}
 		if (cutMetadata.getNumFields() > 0) {
+			patternRecord = new DataRecord(cutMetadata);
+			patternRecord.init();
 			//prepare approperiate data parser
 			switch (metadata.getRecType()) {
 			case DataRecordMetadata.DELIMITED_RECORD:
@@ -566,7 +568,7 @@ public class DataRecordGenerator implements Parser{
 	}
 
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
-		this.metadata = metadata;
+		this.metadata = _metadata;
 		init();
 	}
 
