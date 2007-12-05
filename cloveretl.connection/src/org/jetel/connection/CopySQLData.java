@@ -141,10 +141,10 @@ public abstract class CopySQLData {
 		try {
 			setJetel(resultSet);
 		} catch (SQLException ex) {
-			throw new SQLException(ex.getMessage() + " with field " + field.getMetadata().getName());
+			throw new SQLException(ex.getMessage() + " with field " + field.getMetadata().getName(), ex);
 		} catch (ClassCastException ex){
 		    throw new SQLException("Incompatible Clover & JDBC field types - field "+field.getMetadata().getName()+
-		            " Clover type: "+SQLUtil.jetelType2Str(field.getMetadata().getType()));
+		            " Clover type: "+SQLUtil.jetelType2Str(field.getMetadata().getType()), ex);
 		}
 	}
 
@@ -491,9 +491,11 @@ public abstract class CopySQLData {
 				}
 			case Types.BOOLEAN:
 			case Types.BIT:
-				if (jetelType == DataFieldMetadata.STRING_FIELD) {
+				if (jetelType == DataFieldMetadata.BOOLEAN_FIELD) {
 					return new CopyBoolean(record, fromIndex, toIndex);
-				}
+				} 
+        		logger.warn("Metadata mismatch; type:" + jetelType + " SQLType:"+SQLType+" - using CopyString object.");
+				return new CopyString(record, fromIndex, toIndex);
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
