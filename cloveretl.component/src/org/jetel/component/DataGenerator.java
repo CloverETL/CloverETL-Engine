@@ -137,6 +137,8 @@ public class DataGenerator extends Node {
 	private String sequenceFieldsString;
 	private DataRecordGenerator recordGenerator;
 	
+	private final static int WRITE_TO_PORT = 0;
+
 	/**
 	 * @param id
 	 * @param pattern
@@ -210,8 +212,10 @@ public class DataGenerator extends Node {
 	 */
 	@Override
 	public Result execute() throws Exception {
+		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
+		record.init();
 		for (int i=0;i<recordsNumber && runIt;i++){
-			DataRecord record = recordGenerator.getNext();
+			 record = recordGenerator.getNext();
 			writeRecordBroadcast(record);
 		}
 		broadcastEOF();
