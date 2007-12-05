@@ -19,11 +19,16 @@
 */
 package org.jetel.connection;
 
+import java.io.File;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.channels.Channels;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -35,7 +40,9 @@ import javax.jms.Session;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.naming.NoInitialContextException;
 
+import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -83,17 +90,21 @@ import org.w3c.dom.Element;
 * @since 09/15/06  
 */
 public class JmsConnection extends GraphElement implements IConnection {
+	public static final String LIBRARY_PATH_SEPARATOR = Defaults.DEFAULT_PATH_SEPARATOR_REGEX;
 
-	public  static final String XML_CONFIG_ATTRIBUTE = "config";
-	private static final String XML_INICTX_FACTORY_ATTRIBUTE = "iniCtxFactory";
-	private static final String XML_PROVIDER_URL_ATTRIBUTE = "providerUrl";
-	private static final String XML_CON_FACTORY_ATTRIBUTE = "connectionFactory";
-	private static final String XML_USERNAME_ATTRIBUTE = "username";
-	private static final String XML_PASSWORD_ATTRIBUTE = "password";
-	private static final String XML_PASSWORD_ENCRYPTED = "passwordEncrypted";
-	private static final String XML_DESTINATION_ATTRIBUTE = "destId";
+	public static final String XML_CONFIG_ATTRIBUTE = "config";
+	public static final String XML_NAME_ATTRIBUTE = "name";
+	public static final String XML_LIBRARIES_ATTRIBUTE = "libraries";
+	public static final String XML_INICTX_FACTORY_ATTRIBUTE = "iniCtxFactory";
+	public static final String XML_PROVIDER_URL_ATTRIBUTE = "providerUrl";
+	public static final String XML_CON_FACTORY_ATTRIBUTE = "connectionFactory";
+	public static final String XML_USERNAME_ATTRIBUTE = "username";
+	public static final String XML_PASSWORD_ATTRIBUTE = "password";
+	public static final String XML_PASSWORD_ENCRYPTED = "passwordEncrypted";
+	public static final String XML_DESTINATION_ATTRIBUTE = "destId";
 
 	private String iniCtxFtory;
+	private String libraries;
 	private String providerUrl;
 	private String conFtory;
 	private String user;
@@ -104,9 +115,10 @@ public class JmsConnection extends GraphElement implements IConnection {
 	private Connection connection = null;
 	private Session session = null;
 	private Destination destination = null;
+	private URL[] librariesUrls = null;
 
-	JmsConnection(String id, String iniCtxFtory, String providerUrl, String conFtory,
-			String user, String pwd, String destId, boolean passwordEncrypted) {
+	public JmsConnection(String id, String iniCtxFtory, String providerUrl, String conFtory,
+			String user, String pwd, String destId, boolean passwordEncrypted, String libraries) {
 		super(id);
 		this.iniCtxFtory = iniCtxFtory;
 		this.providerUrl = providerUrl;
@@ -115,24 +127,13 @@ public class JmsConnection extends GraphElement implements IConnection {
 		this.pwd = pwd;
 		this.destId = destId;
 		this.passwordEncrypted = passwordEncrypted;
+		this.libraries = libraries;
 	}
 	
 	private static Properties readConfig(URL contextURL, String cfgFile, TransformationGraph graph) {
 		Properties config = new Properties();
 		try {
             InputStream stream = Channels.newInputStream(FileUtils.getReadableChannel(contextURL, cfgFile));
-            
-//            if (!new File(cfgFile).exists()) {
-//                // config file not found on file system - try classpath
-//                stream = JmsConnection.class.getClassLoader().getResourceAsStream(cfgFile);
-//                if(stream == null) {
-//                    throw new FileNotFoundException("Config file for JMS connection not found (" + cfgFile +")");
-//                }
-//                stream = new BufferedInputStream(stream);
-//            } else {
-//                stream = new BufferedInputStream(new FileInputStream(cfgFile));
-//            }
-            
 			config.load(stream);
 			stream.close();
 		} catch (Exception ex) {
@@ -145,11 +146,13 @@ public class JmsConnection extends GraphElement implements IConnection {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
+	/*
 	synchronized public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
 		
 		try {
+			this.librariesUrls = getLibrariesURL( libraries );
 			Context ctx = null;
 			if (iniCtxFtory != null) {
 				Hashtable<String, String> properties = new Hashtable<String, String>();
@@ -167,14 +170,13 @@ public class JmsConnection extends GraphElement implements IConnection {
 	            try {
 	                decryptedPassword = enigma.decrypt(pwd);
 	            } catch (JetelException e) {
-	                throw new ComponentNotReadyException("Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.", e);
+	                throw new ComponentNotReadyException("Can't decrypt password on JmsConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.", e);
 	            }
 	            // If password decryption fails, try to use the unencrypted password
 	            if (decryptedPassword != null) {
 	                pwd = decryptedPassword;
 	                passwordEncrypted = false;
 	            }
-
 		    }
 
 		    connection = ftory.createConnection(user, pwd);
@@ -186,8 +188,131 @@ public class JmsConnection extends GraphElement implements IConnection {
 		} catch (JMSException e) {
 			throw new ComponentNotReadyException(e);
 		}
-	}
+	}*/
 
+	synchronized public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
+		super.init();
+		
+		try {
+			
+			this.librariesUrls = getLibrariesURL( libraries );
+			Context ctx = null;
+
+			ClassLoader prevCl = null;
+			try {
+				prevCl = Thread.currentThread().getContextClassLoader();
+				// Create the class loader by using the given URL
+				URLClassLoader loader = new URLClassLoader( librariesUrls, prevCl );
+			    // Save the class loader so that you can restore it later
+			    Thread.currentThread().setContextClassLoader(loader);
+
+			    try {
+					if (iniCtxFtory != null) {
+						Hashtable<String, String> properties = new Hashtable<String, String>();
+						properties.put(Context.INITIAL_CONTEXT_FACTORY, iniCtxFtory);
+						properties.put(Context.PROVIDER_URL, providerUrl);
+						ctx = new InitialContext(properties);			
+					} else {	// use jndi.properties
+						ctx = new InitialContext();
+					}
+			    } catch (NoInitialContextException e){
+			    	if (e.getRootCause() instanceof ClassNotFoundException)
+			    		throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)");
+			    	else
+						throw new ComponentNotReadyException("Cannot create initial context", e);
+			    } catch (Exception e){
+					throw new ComponentNotReadyException("Cannot create initial context", e);
+			    } 
+			    ConnectionFactory ftory = (ConnectionFactory)ctx.lookup(conFtory);
+			    if (ftory == null)
+					throw new ComponentNotReadyException("Cannot create connection factory");
+			    
+			    if (passwordEncrypted) {
+	            	Enigma enigma = getGraph().getEnigma();
+		            //Enigma enigma = Enigma.getInstance();
+		            String decryptedPassword = null;
+		            try {
+		                decryptedPassword = enigma.decrypt(pwd);
+		            } catch (JetelException e) {
+		                throw new ComponentNotReadyException("Can't decrypt password on JmsConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.", e);
+		            }
+		            // If password decryption fails, try to use the unencrypted password
+		            if (decryptedPassword != null) {
+		                pwd = decryptedPassword;
+		                passwordEncrypted = false;
+		            }
+			    }
+
+			    try {
+				    connection = ftory.createConnection(user, pwd);
+			    } catch (Exception e){
+			    	throw new ComponentNotReadyException("Cannot establish JMS connection ("+e.getMessage()+")", e);
+			    }
+			    if (connection == null) 
+			    	throw new ComponentNotReadyException("Cannot establish JMS connection");
+				session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);			
+			    if (session == null) 
+			    	throw new ComponentNotReadyException("Cannot create JMS session");
+			    try {
+					destination = (Destination)ctx.lookup(destId);
+				} catch (NamingException e) {
+			    	throw new ComponentNotReadyException("Cannot find destination \""+destId+"\" in initial context");
+				}
+			    if (destination == null) 
+			    	throw new ComponentNotReadyException("Cannot find destination in \""+destId+"\" initial context");
+				connection.start();
+			} finally {
+			    Thread.currentThread().setContextClassLoader(prevCl);
+			}
+			
+		} catch (NamingException e) {
+	    	if (e.getRootCause() instanceof NoClassDefFoundError)
+	    		throw new ComponentNotReadyException("No class definition found for:" + e.getMessage() + " (add to classpath)");
+	    	else
+				throw new ComponentNotReadyException("Cannot create initial context", e);
+		} catch (JMSException e) {
+			throw new ComponentNotReadyException(e);
+		} 
+	}
+	
+	/*
+	private InitialContext createInitialContextWithClassLoader(Hashtable<String, String> initCtxProps) throws NamingException {
+		InitialContext ctx = null;
+		
+		ClassLoader prevCl = Thread.currentThread().getContextClassLoader();
+
+		// Create the class loader by using the given URL
+		// Use prevCl as parent to maintain current visibility
+		//ClassLoader urlCl = URLClassLoader.newInstance(new URL[]{new URL(url)}, prevCl);
+
+		//String initCtxClassName = (String)JmsConnectionPage.this.connectionProperties.get( JmsConnectionModel.INITCTX_FACTORY_PROPERTY );
+		String libs = (String)JmsConnectionPage.this.connectionProperties.get( JmsConnectionModel.LIBRARIES_PROPERTY );
+		URL[] urls = JmsConnection.getLibrariesURL(libs);
+		if (urls == null)
+			return null;
+		//GreedyURLClassLoader loader = new GreedyURLClassLoader( urls, prevCl );
+		URLClassLoader loader = new URLClassLoader( urls, prevCl );
+		
+		try {
+		    // Save the class loader so that you can restore it later
+		    Thread.currentThread().setContextClassLoader(loader);
+
+		    // Expect that the environment properties are in the
+		    // application resource file found at "url"
+		    ctx = new InitialContext(initCtxProps);
+
+		    ConnectionFactory ftory = (ConnectionFactory)ctx.lookup( config.getProperty(JmsConnectionModel.CONN_FACTORY_PROPERTY) );
+		    
+		    //System.out.println(ftory);
+		} finally {
+		    // Restore
+		    Thread.currentThread().setContextClassLoader(prevCl);
+		}
+		return ctx;
+	}*/
+	
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#free()
 	 */
@@ -196,16 +321,11 @@ public class JmsConnection extends GraphElement implements IConnection {
         super.free();
 
         try {
-			connection.close();
+        	if (connection != null)
+        		connection.close();
 		} catch (JMSException e1) {
 			// ignore it, the connection is probably already closed
 		}
-		// re-initialization
-//		try {
-//			init();
-//		} catch (ComponentNotReadyException e) {
-//			throw new RuntimeException("Unexpected exception", e);
-//		}
 	}
 
 	public DataRecordMetadata createMetadata(Properties parameters)
@@ -227,10 +347,14 @@ public class JmsConnection extends GraphElement implements IConnection {
 	}
 
 	public MessageProducer createProducer() throws JMSException {
+		if (session == null)
+			throw new IllegalStateException("JMS session is not initialized");
 		return session.createProducer(destination);		
 	}
 	
 	public MessageConsumer createConsumer(String selector) throws JMSException {
+		if (session == null)
+			throw new IllegalStateException("JMS session is not initialized");
 		return session.createConsumer(destination, selector);		
 	}
 		
@@ -254,7 +378,9 @@ public class JmsConnection extends GraphElement implements IConnection {
 						config.getProperty(XML_USERNAME_ATTRIBUTE, null),
 						config.getProperty(XML_PASSWORD_ATTRIBUTE, null),
 						config.getProperty(XML_DESTINATION_ATTRIBUTE, null),
-						Boolean.valueOf(config.getProperty(XML_PASSWORD_ENCRYPTED, "false")));
+						Boolean.valueOf(config.getProperty(XML_PASSWORD_ENCRYPTED, "false")), 
+						config.getProperty(XML_LIBRARIES_ATTRIBUTE, null)
+						);
 			} else {
 				con = new JmsConnection(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_INICTX_FACTORY_ATTRIBUTE, null),
@@ -263,7 +389,9 @@ public class JmsConnection extends GraphElement implements IConnection {
 						xattribs.getString(XML_USERNAME_ATTRIBUTE, null),
 						xattribs.getString(XML_PASSWORD_ATTRIBUTE, null),
 						xattribs.getString(XML_DESTINATION_ATTRIBUTE, null),
-						xattribs.getBoolean(XML_PASSWORD_ENCRYPTED, false));
+						xattribs.getBoolean(XML_PASSWORD_ENCRYPTED, false),
+						xattribs.getString(XML_LIBRARIES_ATTRIBUTE, null)
+						);
 			}
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
@@ -273,4 +401,46 @@ public class JmsConnection extends GraphElement implements IConnection {
 		return con;
 	}
 
+	/**
+	 * 
+	 * @param urls
+	 * @return
+	 */
+	public static String getLibrariesString(URL[] urls){
+		StringBuilder sb = new StringBuilder();
+		for (URL u : urls){
+			if (sb.length()>0)
+				sb.append(LIBRARY_PATH_SEPARATOR);
+			sb.append(u);
+		}
+		return sb.toString();
+	}
+	
+	/**
+	 * 
+	 * @param libraryPath
+	 * @return
+	 */
+	public static URL[] getLibrariesURL(String libraryPath) {
+		if (libraryPath == null || libraryPath.length() == 0) {
+			return new URL[0];
+		}
+		StringTokenizer libTok = new StringTokenizer(libraryPath, LIBRARY_PATH_SEPARATOR);
+		ArrayList newLibraries = new ArrayList(libTok.countTokens());
+		String libraryURLString = null;
+		while (libTok.hasMoreElements()) {
+				libraryURLString = libTok.nextToken(); 
+				try {
+					newLibraries.add(new URL(libraryURLString));
+				} catch (MalformedURLException e) {
+					// maybe it is ULR created via File class (no protocol)
+					try {
+						newLibraries.add(new File(libraryURLString).toURI().toURL());
+					} catch (MalformedURLException e1) {
+					}
+				}
+		}// while
+		return (URL[]) newLibraries.toArray(new URL[newLibraries.size()]);
+	}
+	
 }
