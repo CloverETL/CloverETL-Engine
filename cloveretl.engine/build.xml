@@ -245,6 +245,11 @@
 			<fileset dir="${dir.docs}"/>
 		</copy>
 
+		<!-- copy the generated documentation of components -->
+		<copy todir="${dir.dist}/docs/components" overwrite="true">
+			<fileset dir="${cloveretl.component}/doc/components/html" includes="**"/>
+		</copy>
+
 		<!-- copy all run scripts -->
 		<copy todir="${dir.dist}/bin">
 			<fileset file="${basedir}/scripts/*"/>
