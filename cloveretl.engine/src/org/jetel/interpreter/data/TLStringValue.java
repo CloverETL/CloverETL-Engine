@@ -23,6 +23,7 @@
 package org.jetel.interpreter.data;
 
 import org.jetel.data.DataField;
+import org.jetel.data.StringDataField;
 import org.jetel.util.string.Compare;
 
 public class TLStringValue extends TLValue implements CharSequence {
@@ -66,7 +67,11 @@ public class TLStringValue extends TLValue implements CharSequence {
 	
 	@Override
 	public void copyToDataField(DataField field) {
-		field.fromString(value);
+		if (field instanceof StringDataField) {
+			field.setValue(value);
+		}else{
+			field.fromString(value);
+		}
 	}
 
 	@Override
