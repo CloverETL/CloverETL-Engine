@@ -1,143 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE xsl:stylesheet [ <!ENTITY nbsp "&#160;"> ]>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
 
 <xsl:output method="html" encoding="ISO-8859-2"/>
 	
 	
 <xsl:template name="singleDesc">
-		 		  
-	<a name="{componentName}" />
-    <h2>
-      <xsl:value-of select="componentName"/>
-    </h2>
-	
+<a name="{componentName}" />
+<h2><xsl:value-of select="componentName"/></h2>
 	
  <table class="componentDesc">
-      <tbody>       
-        <tr align="left" valign="top">
-          <td  class="head" align="left" valign="top">
-            <strong>
-			Component type
-			</strong>
-            
-          </td>
-          <td align="left" valign="top">
-            <p>
-              <xsl:value-of select="componentType"/>
-            </p>
-          </td>
-          
-        </tr>     
-		<tr align="left" valign="top">
-          <td class="head" align="left" valign="top">
-            <strong>
-			Category
-			</strong>
-            
-          </td>
-          <td align="left" valign="top">
-            <p>
-              <xsl:value-of select="category"/>
-            </p>
-          </td>
-          
-        </tr>  
-		<tr align="left" valign="top">
-          <td class="head" align="left" valign="top">
-            <strong>
-			Last updated
-			</strong>
-            
-          </td>
-          <td align="left" valign="top">
-            <p>
-              <xsl:value-of select="lastUpdated"/>
-            </p>
-          </td>
-          
-        </tr> 
-		<tr align="left" valign="top">
-          <td class="head" align="left" valign="top">
-            <strong>
-			Since version
-			</strong>
-            
-          </td>
-          <td align="left" valign="top">
-            <p>
-              <xsl:value-of select="sinceVersion"/>
-            </p>
-          </td>
-          
-        </tr> 
-		<tr align="left" valign="top">
-          <td class="head" align="left" valign="top">
-            <strong>
-			Brief Description
-			</strong>
-            
-          </td>
-          <td align="left" valign="top">
-            <p>
-              <xsl:value-of select="briefDesc"/>
-            </p>
-          </td>
-          
+      <tbody>
+        <tr colspan="2">
+        	<td><xsl:value-of select="briefDesc"/></td>
         </tr>
-		  
-		
-		   
-		<tr align="left" valign="top">
-          <td class="head" align="left" valign="top">
-            <strong>
-			Full description
-			</strong>
-            
+        <tr><td>&nbsp;</td></tr>
+        <tr>
+          <td class="head">Component type</td>
+          <td>          
+              <xsl:value-of select="componentType"/>
           </td>
-          <td align="left" valign="top">
-            <p>
-			     <xsl:apply-templates select="fullDesc"/>
-            </p>
+        </tr>     
+		<tr>
+          <td class="head">Category</td>
+          <td>
+              <xsl:value-of select="category"/>
           </td>
-          
-        </tr>   
-		 
-		  
-		
-       
+        </tr>  
+		<tr>
+          <td class="head">Last updated</td>
+          <td>
+              <xsl:value-of select="lastUpdated"/>
+          </td>          
+        </tr> 
+		<tr>
+		  <td class="head">Since version</td>
+          <td>
+            <xsl:value-of select="sinceVersion"/>
+          </td>
+        </tr> 
       </tbody>
     </table>
-<br/>
 
-<strong>Inputs</strong>
- <table border="1" cellspacing="0" cellpadding="5">
+<p>
+	<xsl:value-of select="fullDesc"/>
+</p>
+&nbsp;<br/>
+
+ <table class="inputs">
       <tbody>       
-	<tr>
-		<th>
-			<p>
-			Number
-			</p>
-		</th>
-		<th>
-			<p>
-			Description
-			</p>
-		</th>
-		<th>
-			<p>
-			Detailed description
-			</p>
-		</th>
-		<th>
-			<p>
-			Mandatory
-			</p>
-		</th>
-	</tr>
+		<tr>
+		  <td class="title" colspan="4">
+		    Inputs
+		  </td>
+		</tr>
+		<tr>
+			<td class="head-framed">
+				Number
+			</td>
+			<td class="head-framed">
+				Description
+			</td>
+			<td class="head-framed">
+				Detailed description
+			</td>
+			<td class="head-framed">
+				Mandatory
+			</td>
+		</tr>
 		  
 		  <xsl:for-each select="inputPorts/port">
-        <tr align="left" valign="top">
-          <td align="left" valign="top">
+        <tr>
+          <td class="framed">
 			  <xsl:choose>
 				<xsl:when test="boolean(portMetadata)">
 					<a href="#_inport{portName}"> 
@@ -146,117 +81,50 @@
 				</xsl:when>
 				<xsl:otherwise><xsl:value-of select="portName"/></xsl:otherwise>
 			</xsl:choose>		
-			  			  			  
-             <p>
             <xsl:value-of select="portName"/>
-			</p>
+            &nbsp;
           </td>
-	  <td align="left" valign="top">
-             <p>
-            <xsl:value-of select="portDesc"/>
-		</p>
+	  	  <td class="framed">
+            <xsl:value-of select="portDesc"/>&nbsp;
           </td>
-	  <td align="left" valign="top">
-             <p>
-            <xsl:value-of select="portLongDesc"/>
-		</p>
+	  	  <td class="framed">
+            <xsl:value-of select="portLongDesc"/>&nbsp;
           </td>
-	  <td align="left" valign="top">
-             <p>
-            <xsl:value-of select="portMandatory"/>
-		</p>
-          </td>
-          
+	  	  <td class="framed">
+            <xsl:value-of select="portMandatory"/>&nbsp;
+          </td>          
         </tr>
 		</xsl:for-each>
        
        
       </tbody>
     </table>
-<br/>
-	
-<xsl:for-each select="inputPorts/port">
-	<xsl:if test="boolean(portMetadata)">
-		<a name="_inport{portName}"> <strong> Metadata for port <xsl:value-of select="portName"/> </strong> </a>
-		
-		<table border="1" cellspacing="0" cellpadding="5">
-		  <tbody>       
-				<tr>
-					<th>
-						<p>
-						Type
-						</p>
-					</th>
-					<th>
-						<p>
-						Nullable
-						</p>
-					</th>
-					<th>
-						<p>
-						Description
-						</p>
-					</th>					
-				</tr>
-			  
-			  <xsl:for-each select="portMetadata/metaField">
-				<tr align="left" valign="top">
-				  <td align="left" valign="top">
-					 <p>
-					<xsl:value-of select="fieldType"/>
-					</p>
-				  </td>
-			  <td align="left" valign="top">
-					 <p>
-					<xsl:value-of select="fieldNullable"/>
-				</p>
-				  </td>
-			  <td align="left" valign="top">
-					 <p>
-					<xsl:value-of select="fieldDesc"/>
-				</p>
-				  </td>							 
-				</tr>
-			</xsl:for-each>
-		   
-		   
-		  </tbody>
-    </table>
-		
-		
-	</xsl:if>
-</xsl:for-each>
-
-<strong>Outputs</strong>
-  <table border="1" cellspacing="0" cellpadding="5">
-      <tbody>       
-	<tr>
-		<th>
-			<p>
-			Number
-			</p>
-		</th>
-		<th>
-			<p>
-			Description
-			</p>
-		</th>
-		<th>
-			<p>
-			Detailed description
-			</p>
-		</th>
-		<th>
-			<p>
-			Mandatory
-			</p>
-		</th>
-	</tr>
-		  
+			
+  <table class="outputs">
+      <tbody>
+		<tr>
+		  <td class="title" colspan="4">
+		    Outputs
+		  </td>
+		</tr>
+		<tr>
+			<td class="head-framed">
+				Number
+			</td>
+			<td class="head-framed">
+				Description
+			</td>
+			<td class="head-framed">
+				Detailed description
+			</td>
+			<td class="head-framed">
+				Mandatory
+			</td>
+		</tr>
+             		  
 		  <xsl:for-each select="outputPorts/port">
-        <tr align="left" valign="top">
-          <td align="left" valign="top">
-             <p>				 
+        <tr>
+          <td class="framed">
 				<xsl:choose>
 				<xsl:when test="boolean(portMetadata)">
 					<a href="#_outport{portName}"> 
@@ -264,72 +132,108 @@
 					</a>
 				</xsl:when>
 				<xsl:otherwise><xsl:value-of select="portName"/></xsl:otherwise>
-				</xsl:choose>				 			            
-			</p>
+				</xsl:choose>
+				&nbsp;            
           </td>
-	  <td align="left" valign="top">
-             <p>
-            <xsl:value-of select="portDesc"/>
-		</p>
+	  	  <td class="framed">
+            <xsl:value-of select="portDesc"/>&nbsp;
           </td>
-	  <td align="left" valign="top">
-             <p>
-            <xsl:value-of select="portLongDesc"/>
-		</p>
+	  	  <td class="framed">
+            <xsl:value-of select="portLongDesc"/>&nbsp;
           </td>
-	  <td align="left" valign="top">
-             <p>
-            <xsl:value-of select="portMandatory"/>
-		</p>
+	  	  <td class="framed">
+            <xsl:value-of select="portMandatory"/>&nbsp;
           </td>
-          
         </tr>
 		</xsl:for-each>
-       
-       
-      </tbody>
+
+    	</tbody>
     </table>
-<br/>
+
+<div class="clear"/>
+&nbsp;<br/>
+	
+<xsl:for-each select="inputPorts/port">
+	<xsl:if test="boolean(portMetadata)">
+		<a name="_inport{portName}"/>
+		
+		<table class="fullwidth">
+		  <tbody>       
+		  	    <tr>
+		  	    	<td class="title" colspan="3">
+		  	    		Metadata for port <xsl:value-of select="portName"/>
+		  	    	</td>
+		  	    </tr>
+				<tr>
+					<td class="head-framed">
+						Type
+					</td>
+					<td class="head-framed">
+						Nullable
+					</td>
+					<td class="head-framed">
+						Description
+					</td>					
+				</tr>
+			  
+			  <xsl:for-each select="portMetadata/metaField">
+				<tr>
+				  <td class="framed">
+					<xsl:value-of select="fieldType"/>
+					&nbsp;
+				  </td>
+			  	  <td class="framed">
+					<xsl:value-of select="fieldNullable"/>
+					&nbsp;
+				  </td>
+			      <td class="framed">
+					<xsl:value-of select="fieldDesc"/>
+					&nbsp;
+				  </td>							 
+				</tr>
+			</xsl:for-each>		   
+		   
+		  </tbody>
+    </table>		
+	</xsl:if>
+</xsl:for-each>
+
 	
 <xsl:for-each select="outputPorts/port">
 	<xsl:if test="boolean(portMetadata)">
-		<a name="_outport{portName}"> <strong> Metadata for port <xsl:value-of select="portName"/> </strong> </a>
+		<a name="_outport{portName}"/>
 		
-		<table border="1" cellspacing="0" cellpadding="5">
+		<table class="fullwidth">
 		  <tbody>       
+		  	    <tr>
+		  	    	<td class="title" colspan="3">
+		  	    		Metadata for port <xsl:value-of select="portName"/>
+		  	    	</td>
+		  	    </tr>
 				<tr>
-					<th>
-						<p>
+					<td class="head-framed">
 						Type
-						</p>
-					</th>
-					<th>
-						<p>
+					</td>
+					<td class="head-framed">
 						Nullable
-						</p>
-					</th>
-					<th>
-						<p>
+					</td>
+					<td class="head-framed">
 						Description
-						</p>
-					</th>					
-				</tr>			  
+					</td>					
+				</tr>
 			  <xsl:for-each select="portMetadata/metaField">
-				<tr align="left" valign="top">
-				  <td align="left" valign="top">
-					 <p>
+				<tr>
+				  <td class="framed">
 					<xsl:value-of select="fieldType"/>
-					</p>
+					&nbsp;
 				  </td>
-			  <td align="left" valign="top">
-					 <p>
+			      <td class="framed">
 					<xsl:value-of select="fieldNullable"/>
-				</p>
+					&nbsp;
 				  </td>
-			  <td align="left" valign="top">
-					 <p>
+			  	  <td class="framed">
 					<xsl:value-of select="fieldDesc"/>
-				</p>
+					&nbsp;
 				  </td>							 
 				</tr>
 			</xsl:for-each>
@@ -341,36 +245,31 @@
 	</xsl:if>
 </xsl:for-each>
 	
+&nbsp;<br/>
 		 	
-<strong>Attributes</strong>
-    <table border="1" cellspacing="0" cellpadding="5">
+    <table class="fullwidth">
       <tbody>
         <tr>
-          <th>
-            <p>
+          <td class="title" colspan="5">
+          Attributes
+          </td>
+        </tr>
+        <tr>
+          <td class="head-framed">
               Name
-            </p>
-          </th>
-		  <th>
-            <p>
+          </td>
+		  <td class="head-framed">
               Type
-            </p>
-          </th>
-          <th>
-            <p>
+          </td>
+          <td class="head-framed">
               Mandatory
-            </p>
-          </th>
-		   <th>
-            <p>
+          </td>
+		  <td class="head-framed">
               Description
-            </p>
-          </th>
-		   <th>
-            <p>
+          </td>
+		  <td class="head-framed">
               Default value
-            </p>
-          </th>
+          </td>
         
        </tr>
 		   	
@@ -378,13 +277,12 @@
 		  
 		<a name="{attrName}"/>
 		   
-        <tr align="left" valign="top">
-          <td align="left" valign="top">
-            <p>
+        <tr>
+          <td class="framed">
               <xsl:value-of select="attrName"/>
-            </p>
+              &nbsp;
           </td>
-		  <td align="left" valign="top">
+		  <td class="framed">
 		  <xsl:variable name="normalizedAttrType"><xsl:value-of select="normalize-space(string(attrType))"/></xsl:variable>
 		    <xsl:choose>
 		    	<xsl:when test="count(document('TypesDoc.xml',document(''))/typesDoc/attributeType[attributeTypeName=$normalizedAttrType])>0">		    	
@@ -397,51 +295,43 @@
 		    		<xsl:value-of select="$normalizedAttrType"/>
 				</xsl:otherwise>
 		    </xsl:choose>
+		    &nbsp;
           </td>
-          <td align="left" valign="top">
-            <p>
+          <td class="framed">
              <xsl:value-of select="attrIsMandatory"/>
-            </p>
+             &nbsp;
           </td>
-	  <td align="left" valign="top">
-            <p>
+	  	  <td class="framed">
              <xsl:value-of select="attrDesc"/>
-            </p>
+             &nbsp;
           </td>
-	  <td align="left" valign="top">
-            <p>
+	  	  <td class="framed">
               <xsl:value-of select="attrDefaultVal"/>
-            </p>
+              &nbsp;
           </td>
-          
         </tr>
 		</xsl:for-each>
         
       </tbody>
     </table>
-<br/>		  
+		  
 		  	  
 		  
-<strong>Examples</strong>
+<div class="title">Examples</div>
  <xsl:for-each select="example">
-    <p>
        <img  src="{exampleImg}" alt="Example" border="0"/>
-    </p>
 
 XML graph notation:
 <pre>
 	<xsl:value-of select="exampleXml"/>
 </pre>
+
 <p>
 	<xsl:value-of select="exampleDesc"/>
 </p>
 	 
-	
-
 </xsl:for-each>				 
-
-	<br/>
-		   
+   
 </xsl:template>	  	 	   
 <!-- singleDesc -->
 
@@ -455,54 +345,37 @@ XML graph notation:
     <title>
       Description of the components
     </title>
-    <link rel="stylesheet" charset="ISO-8859-1" type="text/css"/> 
+    <link href="help.css" rel="stylesheet" charset="ISO-8859-1" type="text/css"/> 
   </head>
 		
   <body>
 	  <a name="readers"> <h1> Readers </h1> </a>
-	  <br/>	  
 		<xsl:for-each select="componentDescription[category='readers']">			
-			
 			<xsl:call-template name="singleDesc"/>
 		</xsl:for-each>
 	  
 	  <a name="writers"> <h1> Writers </h1> </a>	  
-	  <br/>	  
 		<xsl:for-each select="componentDescription[category='writers']">
-			
-			
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 	  
 	  <a name="transformers"> <h1> Transformers </h1> </a>	  
-	  <br/>	  
 		<xsl:for-each select="componentDescription[category='transformers']">
-			
-			<br/>
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 	  
 	  <a name="joiners"> <h1> Joiners </h1> </a>	  
-	  <br/>	  
 		<xsl:for-each select="componentDescription[category='joiners']">
-			
-			<br/>
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 	  
 	  <a name="others"> <h1> Others </h1> </a>	  
-	  <br/>	  
 		<xsl:for-each select="componentDescription[category='others']">
-			
-			<br/>
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 	  
 	  <a name="deprecated"> <h1> Deprecated </h1> </a>	  
-	  <br/>	  
 		<xsl:for-each select="componentDescription[category='deprecated']">
-			
-			<br/>
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 	  
