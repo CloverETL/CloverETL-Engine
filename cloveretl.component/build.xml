@@ -99,7 +99,12 @@
 		
 		<xslt in="${component.dir.doc}/ComponentsDoc.xml" out="${component.dir.doc}/html/ComponentsDoc.html"
 			style="${component.dir.doc}/description.xsl"
-			/>
+		/>
+			
+		<xslt in="${component.dir.doc}/TypesDoc.xml" out="${component.dir.doc}/html/TypesDoc.html"
+			style="${component.dir.doc}/types.xsl"
+		/>
+		
 	</target>
 
 	<target name="documentationOutdatedWarning" unless="docUpToDate">
