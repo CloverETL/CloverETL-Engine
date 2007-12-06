@@ -277,5 +277,10 @@
 	    <parameter id="className" value="org.jetel.component.SpeedLimiter"/>
 	    <parameter id="type" value="SPEED_LIMITER"/>
 	</extension>
+	
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.component.JavaExecute"/>
+		<parameter id="type" value="JAVA_EXECUTE"/>
+	</extension>
 
 </plugin>
