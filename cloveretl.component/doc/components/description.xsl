@@ -385,16 +385,18 @@
             </p>
           </td>
 		  <td align="left" valign="top">
-			  <xsl:choose>
-				  <xsl:when test="starts-with(normalize-space(string(attrType)), 'enumeration')">
-					              <xsl:value-of select="attrType"/>
-				  </xsl:when>
-				  <xsl:otherwise>
-					  <a href="TypesDoc.html#{attrType}"> 
-					  <xsl:value-of select="attrType"/>
-					  </a>
-				  </xsl:otherwise>			
-			  </xsl:choose>              
+		  <xsl:variable name="normalizedAttrType"><xsl:value-of select="normalize-space(string(attrType))"/></xsl:variable>
+		    <xsl:choose>
+		    	<xsl:when test="count(document('TypesDoc.xml',document(''))/typesDoc/attributeType[attributeTypeName=$normalizedAttrType])>0">		    	
+					<a href="TypesDoc.html#{$normalizedAttrType}"> 
+						<xsl:value-of select="$normalizedAttrType"/>
+					</a>	    	
+				</xsl:when>
+				
+				<xsl:otherwise>
+		    		<xsl:value-of select="$normalizedAttrType"/>
+				</xsl:otherwise>
+		    </xsl:choose>
           </td>
           <td align="left" valign="top">
             <p>
