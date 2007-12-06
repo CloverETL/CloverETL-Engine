@@ -1,0 +1,22 @@
+<typesDoc>
+	<attributeType>
+		<attributeTypeName>int</attributeTypeName>
+		<description>Integer value</description>
+		<example>8</example>
+	</attributeType>
+	<attributeType>
+		<attributeTypeName>bool</attributeTypeName>
+		<description>Boolean value, may be true or false</description>
+		<example>True</example>
+	</attributeType>
+	<attributeType>
+		<attributeTypeName>string</attributeTypeName>
+		<description>Arbitrary string</description>
+		<example>Hello world!</example>
+	</attributeType>
+	<attributeType>
+		<attributeTypeName>file</attributeTypeName>
+		<description>String describing path to files</description>
+		<example></example>
+	</attributeType>
+</typesDoc>
