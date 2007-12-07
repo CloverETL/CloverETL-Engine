@@ -25,7 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
-import org.jetel.main.runGraph;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -37,14 +37,7 @@ public class testDataParsing {
 	PrintStream out=null;
 	DataRecord record;
 	
-	System.out.println("Usage: testDataParsing <plugins directory>");
-
-	//initialization; must be present
-	if (args.length == 1) {
-		runGraph.initEngine(args[0], null);
-	}else{
-		runGraph.initEngine(null, null);
-	}
+	EngineInitializer.initEngine(null, null);
 	
 	try{
 		in=new FileInputStream("data/delimited/bonus.csv");
@@ -57,7 +50,9 @@ public class testDataParsing {
 	DataRecordMetadata metadata=new DataRecordMetadata("TestInput",DataRecordMetadata.DELIMITED_RECORD);
 	
 	metadata.addField(new DataFieldMetadata("Client_id",DataFieldMetadata.INTEGER_FIELD, ";"));
-	metadata.addField(new DataFieldMetadata("Revenue",DataFieldMetadata.NUMERIC_FIELD, ";"));
+	DataFieldMetadata numericField = new DataFieldMetadata("Revenue",DataFieldMetadata.NUMERIC_FIELD, ";");
+	numericField.setLocaleStr("pl");
+	metadata.addField(numericField);
 	metadata.addField(new DataFieldMetadata("Contract_nr",DataFieldMetadata.INTEGER_FIELD, "\r\n"));
 	
 	DelimitedDataParser parser=new DelimitedDataParser();

@@ -19,14 +19,15 @@
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.concurrent.Future;
 
-import org.jetel.component.ComponentFactory;
 import org.jetel.data.Defaults;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
-import org.jetel.main.runGraph;
-import org.jetel.plugin.Plugins;
+import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.graph.runtime.GraphExecutor;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 
 public class testXMLGraph{
 
@@ -41,13 +42,13 @@ public class testXMLGraph{
         //initialization; must be present
 		//initialization; must be present
 		if (args.length == 2) {
-			runGraph.initEngine(args[1], null);
+			EngineInitializer.initEngine(args[1], null);
 		}else{
-			runGraph.initEngine(null, null);
+			EngineInitializer.initEngine(null, null);
 		}
 
 		System.out.println("Graph definition file: "+args[0]);
-		System.out.println("Plugins directory: "+ args[1] != null ? args[1] : Defaults.DEFAULT_PLUGINS_DIRECTORY);
+		System.out.println("Plugins directory: "+ (args.length > 1 ? args[1] : Defaults.DEFAULT_PLUGINS_DIRECTORY));
 		
 		try{
 			in=new FileInputStream(args[0]);
@@ -59,24 +60,39 @@ public class testXMLGraph{
 		
 		
 		TransformationGraph graph= new TransformationGraph();
-		TransformationGraphXMLReaderWriter graphReader=new TransformationGraphXMLReaderWriter(graph);
+		TransformationGraphXMLReaderWriter graphReader=new TransformationGraphXMLReaderWriter(null);
 		
 		try{
-			graphReader.read(in);
+			graph = graphReader.read(in);
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
-		
-		if(!graph.init()){
-		System.err.println("Graph initialization failed !");
-		return;
+				
+		try{
+			graph.init();
+		}catch(Exception ex){
+			ex.printStackTrace();
 		}
-		
+
 		graph.dumpGraphConfiguration();
 		
-		if (!graph.run().equals(Result.FINISHED_OK)){ // start all Nodes (each node is one thread)
-		System.out.println("Failed starting all nodes!");
-		return;		
+		//prepare runtime parameters - JMX is turned off
+	    GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+	    runtimeContext.setUseJMX(false);
+	    
+		GraphExecutor executor = new GraphExecutor();
+		
+		Future<Result> result;
+		try{
+			result = executor.runGraph(graph, runtimeContext);
+			while (result.isDone()) {;}
+			if (!result.get().equals(Result.FINISHED_OK)){
+				System.out.println("Failed graph execution!\n");
+				return;		
+			}
+		}catch (Exception e) {
+			System.out.println("Failed graph execution!\n" + e.getMessage());
+			return;		
 		}
 	
 	}
