@@ -18,6 +18,7 @@
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.concurrent.Future;
 
 import org.jetel.component.DelimitedDataReader;
 import org.jetel.component.DelimitedDataWriter;
@@ -28,7 +29,9 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.main.runGraph;
+import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.graph.runtime.GraphExecutor;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
@@ -48,9 +51,9 @@ public class testGraphSort {
 	}
 	//initialization; must be present
 	if (args.length == 5) {
-		runGraph.initEngine(args[4], null);
+		EngineInitializer.initEngine(args[4], null);
 	}else{
-		runGraph.initEngine(null, null);
+		EngineInitializer.initEngine(null, null);
 	}
 
 	System.out.println("**************** Input parameters: ****************");
@@ -105,23 +108,26 @@ public class testGraphSort {
 	nodeSort.addOutputPort(0,outEdge);
 	nodeWrite.addInputPort(0,outEdge);
 	
+	//prepare runtime parameters - JMX is turned off
+    GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+    runtimeContext.setUseJMX(false);
+    
+	GraphExecutor executor = new GraphExecutor();
 	
-	if(!graph.init()){
-		System.err.println("Graph initialization failed !");
-		return;
-	}
-	
-	// output graph layout
-	//graph.dumpGraphConfiguration();
-	
-	
-	if (!graph.run().equals(Result.FINISHED_OK)){ // start all Nodes (each node is one thread)
-		System.out.println("Failed starting all nodes!");
+	Future<Result> result;
+	try{
+		result = executor.runGraph(graph, runtimeContext);
+		while (result.isDone()) {;}
+		if (!result.get().equals(Result.FINISHED_OK)){
+			System.out.println("Failed graph execution!\n");
+			return;		
+		}
+	}catch (Exception e) {
+		System.out.println("Failed graph execution!\n" + e.getMessage());
 		return;		
 	}
-		
-	}
 	
+	}
 } 
 
 
