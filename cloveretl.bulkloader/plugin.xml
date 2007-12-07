@@ -40,7 +40,7 @@
 	
 	<extension point-id="component">
 		<parameter id="type" value="MYSQL_DATA_WRITER"/>
-		<parameter id="className" value="org.jetel.component.MysqlDataWriter2"/>
+		<parameter id="className" value="org.jetel.component.MysqlDataWriter"/>
 	</extension>
 	
 	<extension point-id="component">
