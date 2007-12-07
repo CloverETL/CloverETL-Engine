@@ -30,12 +30,12 @@
 </Global>
 <Phase number="0">
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/out.dat" guiHeight="25" guiName="DELIMITED_DATA_WRITER0" guiWidth="50" guiX="245" guiY="107" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
-<Node columnDelimiter="," database="testdb" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/mysqlFlat.dat" guiHeight="25" guiName="MYSQL_DATA_WRITER0" guiWidth="50" guiX="20" guiY="107" id="MYSQL_DATA_WRITER0" mysqlPath="mysql" parameters="fieldsEnclosedBy=*|fieldsIsOptionallyEnclosed" table="test" type="MYSQL_DATA_WRITER" user="root"/>
+<Node columnDelimiter="," database="testdb" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/mysqlFlat.dat" guiHeight="25" guiName="MYSQL_DATA_WRITER0" guiWidth="50" guiX="20" guiY="107" id="MYSQL_DATA_WRITER0" mysqlPath="mysql" parameters="fieldsEnclosedBy=*|fieldsIsOptionallyEnclosed" table="test" type="MYSQL_DATA_WRITER" username="root"/>
 <Edge debugMode="true" fromNode="MYSQL_DATA_WRITER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER0:0"/>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/mysql.dat" guiHeight="25" guiName="DELIMITED_DATA_READER0" guiWidth="50" guiX="30" guiY="212" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
-<Node database="testdb" enabled="enabled" guiHeight="25" guiName="MYSQL_DATA_WRITER1" guiWidth="50" guiX="242" guiY="212" id="MYSQL_DATA_WRITER1" mysqlPath="mysql" table="test" type="MYSQL_DATA_WRITER" user="root"/>
+<Node database="testdb" enabled="enabled" guiHeight="25" guiName="MYSQL_DATA_WRITER1" guiWidth="50" guiX="242" guiY="212" id="MYSQL_DATA_WRITER1" mysqlPath="mysql" table="test" type="MYSQL_DATA_WRITER" username="root"/>
 <Edge debugMode="true" fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="MYSQL_DATA_WRITER1:0"/>
 </Phase>
 </Graph>
