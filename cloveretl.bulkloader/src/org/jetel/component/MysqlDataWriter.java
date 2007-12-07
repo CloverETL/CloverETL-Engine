@@ -356,9 +356,9 @@ import org.w3c.dom.Element;
  * @since 		24.9.2007
  * 
  */
-public class MysqlDataWriter2 extends Node {
+public class MysqlDataWriter extends Node {
 
-	private static Log logger = LogFactory.getLog(MysqlDataWriter2.class);
+	private static Log logger = LogFactory.getLog(MysqlDataWriter.class);
 
 	/** Description of the Field */
 	private static final String XML_MYSQL_PATH_ATTRIBUTE = "mysqlPath";
@@ -497,7 +497,7 @@ public class MysqlDataWriter2 extends Node {
 	 * 
 	 * @param id Description of the Parameter
 	 */
-	public MysqlDataWriter2(String id, String mysqlPath, String database, String table) {
+	public MysqlDataWriter(String id, String mysqlPath, String database, String table) {
 		super(id);
 		this.mysqlPath = mysqlPath;
 		this.database = database;
@@ -1038,7 +1038,7 @@ public class MysqlDataWriter2 extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
 		try {
-			MysqlDataWriter2 mysqlDataWriter = new MysqlDataWriter2(
+			MysqlDataWriter mysqlDataWriter = new MysqlDataWriter(
 					xattribs.getString(XML_ID_ATTRIBUTE), 
 					xattribs.getString(XML_MYSQL_PATH_ATTRIBUTE), 
 					xattribs.getString(XML_DATABASE_ATTRIBUTE), 
