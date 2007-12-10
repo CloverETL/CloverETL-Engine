@@ -385,11 +385,15 @@ XML graph notation:
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 
-	  <a name="uncategorized"> <h1> Uncategorized </h1> </a>	  
-		<xsl:for-each select="componentsDoc/componentDescription[category!='readers' and category!='writers' and category!='joiners' and category!='transformers' and category!='others' and category!='deprecated']">
-			<xsl:sort select="componentName"/>
-			<xsl:call-template name="singleDesc"/>					
-		</xsl:for-each>
+		<xsl:choose>
+			<xsl:when test="count(componentsDoc/componentDescription[category!='readers' and category!='writers' and category!='joiners' and category!='transformers' and category!='others' and category!='deprecated'])>0">		    	
+	  		<a name="uncategorized"> <h1> Uncategorized </h1> </a>	  
+				<xsl:for-each select="componentsDoc/componentDescription[category!='readers' and category!='writers' and category!='joiners' and category!='transformers' and category!='others' and category!='deprecated']">
+				<xsl:sort select="componentName"/>
+					<xsl:call-template name="singleDesc"/>					
+				</xsl:for-each>
+			</xsl:when>
+		</xsl:choose>
 
 	  
 	  <!--
