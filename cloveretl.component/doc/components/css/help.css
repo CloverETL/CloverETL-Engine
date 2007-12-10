@@ -72,3 +72,17 @@ div.clear {
 div.title {
 	font-weight: bold;
 }
+
+pre.programlisting { 
+    background: #F0F0F0; 
+    border: 1px solid gray; 
+    padding: 2px; 
+    font-size: 10pt;
+    white-space: pre;
+}
+
+p.framed { 
+    background: #F0F0F0; 
+    border: 1px solid gray; 
+    padding: 2px; 
+}

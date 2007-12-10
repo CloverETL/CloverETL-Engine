@@ -322,11 +322,11 @@
        <img  src="{exampleImg}" alt="Example" border="0"/>
 
 XML graph notation:
-<pre>
-	<xsl:value-of select="exampleXml"/>
+<pre class="programlisting">
+	<xsl:apply-templates select="exampleXml"/>
 </pre>
 
-<p>
+<p class="framed">
 	<xsl:apply-templates select="exampleDesc"/>
 </p>
 	 
@@ -412,14 +412,14 @@ XML graph notation:
 	<a href="ComponentsDoc.html#{.}"> <xsl:value-of select="."/> </a>		
 </xsl:template>
 
-<xsl:template match="fullDesc|briefDesc|portDesc|portLongDesc|attrDesc|fieldDesc|exampleDesc">
+<xsl:template match="fullDesc|briefDesc|portDesc|portLongDesc|attrDesc|fieldDesc|exampleDesc|exampleXml">
 <xsl:apply-templates/>
 </xsl:template>
 
-<xsl:template match="fullDesc//*|briefDesc//*|portDesc//*|portLongDesc//*|attrDesc//*|fieldDesc//*|exampleDesc//*">
+<xsl:template match="fullDesc//*|briefDesc//*|portDesc//*|portLongDesc//*|attrDesc//*|fieldDesc//*|exampleDesc//*|exampleXml//*">
 <xsl:copy>
 <xsl:apply-templates/>
 </xsl:copy>
 </xsl:template>
-	
+
 </xsl:stylesheet>
