@@ -12,8 +12,8 @@
 	
  <table class="componentDesc">
       <tbody>
-        <tr colspan="2">
-        	<td><xsl:value-of select="briefDesc"/></td>
+        <tr colspan="2">        	
+        	<td><xsl:apply-templates select="briefDesc"/></td>
         </tr>
         <tr><td>&nbsp;</td></tr>
         <tr>
@@ -44,7 +44,7 @@
     </table>
 
 <p>
-	<xsl:value-of select="fullDesc"/>
+	<xsl:apply-templates select="fullDesc"/>
 </p>
 &nbsp;<br/>
 
@@ -85,10 +85,10 @@
             &nbsp;
           </td>
 	  	  <td class="framed">
-            <xsl:value-of select="portDesc"/>&nbsp;
+	  	    <xsl:apply-templates select="portDesc"/>&nbsp;
           </td>
 	  	  <td class="framed">
-            <xsl:value-of select="portLongDesc"/>&nbsp;
+            <xsl:apply-templates select="portLongDesc"/>&nbsp;
           </td>
 	  	  <td class="framed">
             <xsl:value-of select="portMandatory"/>&nbsp;
@@ -136,10 +136,10 @@
 				&nbsp;            
           </td>
 	  	  <td class="framed">
-            <xsl:value-of select="portDesc"/>&nbsp;
+            <xsl:apply-templates select="portDesc"/>&nbsp;
           </td>
 	  	  <td class="framed">
-            <xsl:value-of select="portLongDesc"/>&nbsp;
+            <xsl:apply-templates select="portLongDesc"/>&nbsp;
           </td>
 	  	  <td class="framed">
             <xsl:value-of select="portMandatory"/>&nbsp;
@@ -187,7 +187,7 @@
 					&nbsp;
 				  </td>
 			      <td class="framed">
-					<xsl:value-of select="fieldDesc"/>
+					<xsl:apply-templates select="fieldDesc"/>
 					&nbsp;
 				  </td>							 
 				</tr>
@@ -232,7 +232,7 @@
 					&nbsp;
 				  </td>
 			  	  <td class="framed">
-					<xsl:value-of select="fieldDesc"/>
+					<xsl:apply-templates select="fieldDesc"/>
 					&nbsp;
 				  </td>							 
 				</tr>
@@ -302,7 +302,7 @@
              &nbsp;
           </td>
 	  	  <td class="framed">
-             <xsl:value-of select="attrDesc"/>
+             <xsl:apply-templates select="attrDesc"/>             
              &nbsp;
           </td>
 	  	  <td class="framed">
@@ -327,7 +327,7 @@ XML graph notation:
 </pre>
 
 <p>
-	<xsl:value-of select="exampleDesc"/>
+	<xsl:apply-templates select="exampleDesc"/>
 </p>
 	 
 </xsl:for-each>				 
@@ -411,7 +411,15 @@ XML graph notation:
 <xsl:template match="attrLink">
 	<a href="ComponentsDoc.html#{.}"> <xsl:value-of select="."/> </a>		
 </xsl:template>
-	
 
+<xsl:template match="fullDesc|briefDesc|portDesc|portLongDesc|attrDesc|fieldDesc|exampleDesc">
+<xsl:apply-templates/>
+</xsl:template>
+
+<xsl:template match="fullDesc//*|briefDesc//*|portDesc//*|portLongDesc//*|attrDesc//*|fieldDesc//*|exampleDesc//*">
+<xsl:copy>
+<xsl:apply-templates/>
+</xsl:copy>
+</xsl:template>
 	
 </xsl:stylesheet>
