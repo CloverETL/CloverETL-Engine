@@ -16,6 +16,7 @@
 	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
 	<property name="dir.bin.default" value="${basedir}/bin"/>
 	<property name="dir.doc.default" value="${basedir}/javadoc"/>
+	<property name="dir.component.doc.default" value="${basedir}/src-doc"/>
 	<property name="dir.dist.default" value="${basedir}/build"/>
 	<property name="dir.distribution" value="${basedir}/dist"/>
 	<property name="dir.lib" value="${basedir}/lib"/>
@@ -43,7 +44,7 @@
 	</filterset>
 		
 		<!-- =========================== TARGETS ============================== -->
-	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file">
+	<target name="build" depends="compile,package,transformXMLDocs" description="Compiles sources and creates a JAR file">
 		<foreach list="${plugin.list}" inheritall="true" target="plugin.build" param="plugin.dir"/>
 	</target>
 
@@ -320,9 +321,28 @@
 				<![CDATA[<address>Copyright &#169; 2002-2006 Javlin consulting s.r.o</address>]]>
 			</bottom>
 		</javadoc>
-		
+
 		<!-- create zip package for javadoc -->
 		<zip destfile="${dir.distribution}/cloverETL.javadoc.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${dir.doc}"/>
+	</target>
+	
+	<target name="generateDocContainer" description="Generates container XML, which contains docs from all components from all plugins">
+		<property name="engine.components.dir.doc" value="${}/components"/>
+			<xslt in="${dir.component.doc.default}/components/xsl/null.xml" out="${dir.component.doc.default}/components/ComponentDoc.xml"
+				style="${dir.component.doc.default}/components/xsl/componentsContainer.xsl"/>
+	</target>
+
+	<target name="transformXMLDocs" depends="generateDocContainer" description="Convert the documentation of component from xml to html. 
+		Display a warning if some of the sources is more recent than the XML description">
+		
+		<xslt in="${dir.component.doc.default}/components/xsl/TypesDoc.xml" out="${dir.component.doc.default}/components/html/TypesDoc.html"
+			style="${dir.component.doc.default}/components/xsl/types.xsl"
+		/>
+				
+		<xslt in="${dir.component.doc.default}/components/ComponentDoc.xml" out="${dir.component.doc.default}/components/html/ComponentsDoc.html"
+			style="${dir.component.doc.default}/components/xsl/description.xsl"
+		/>
+
 	</target>
 	
 </project>

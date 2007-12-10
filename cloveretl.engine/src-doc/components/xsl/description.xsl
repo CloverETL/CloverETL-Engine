@@ -335,9 +335,9 @@ XML graph notation:
 </xsl:template>	  	 	   
 <!-- singleDesc -->
 
+
 	
-	
-<xsl:template match="/componentsDoc">
+<xsl:template match="/Container">
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
@@ -350,43 +350,43 @@ XML graph notation:
 		
   <body>
 	  <a name="readers"> <h1> Readers </h1> </a>
-		<xsl:for-each select="componentDescription[category='readers']">
+		<xsl:for-each select="componentsDoc/componentDescription[category='readers']">
 			<xsl:sort select="componentName"/>		 			
 			<xsl:call-template name="singleDesc"/>
 		</xsl:for-each>
 	  
 	  <a name="writers"> <h1> Writers </h1> </a>	  
-		<xsl:for-each select="componentDescription[category='writers']">
+		<xsl:for-each select="componentsDoc/componentDescription[category='writers']">
 			<xsl:sort select="componentName"/>		
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 	  
 	  <a name="transformers"> <h1> Transformers </h1> </a>	  
-		<xsl:for-each select="componentDescription[category='transformers']">
+		<xsl:for-each select="componentsDoc/componentDescription[category='transformers']">
 			<xsl:sort select="componentName"/>		
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 	  
 	  <a name="joiners"> <h1> Joiners </h1> </a>	  
-		<xsl:for-each select="componentDescription[category='joiners']">
+		<xsl:for-each select="componentsDoc/componentDescription[category='joiners']">
 			<xsl:sort select="componentName"/>		
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 	  
 	  <a name="others"> <h1> Others </h1> </a>	  
-		<xsl:for-each select="componentDescription[category='others']">
+		<xsl:for-each select="componentsDoc/componentDescription[category='others']">
 			<xsl:sort select="componentName"/>		
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 	  
 	  <a name="deprecated"> <h1> Deprecated </h1> </a>	  
-		<xsl:for-each select="componentDescription[category='deprecated']">
+		<xsl:for-each select="componentsDoc/componentDescription[category='deprecated']">
 			<xsl:sort select="componentName"/>		
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 
 	  <a name="uncategorized"> <h1> Uncategorized </h1> </a>	  
-		<xsl:for-each select="componentDescription[category!='readers' and category!='writers' and category!='joiners' and category!='transformers' and category!='others' and category!='deprecated']">
+		<xsl:for-each select="componentsDoc/componentDescription[category!='readers' and category!='writers' and category!='joiners' and category!='transformers' and category!='others' and category!='deprecated']">
 			<xsl:sort select="componentName"/>
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
@@ -395,7 +395,7 @@ XML graph notation:
 	  <!--
 	  <xsl:for-each select="document('ComponentCategories.xml')/categories/category">
 		<h2> <xsl:value-of select="@name"/> </h2>
-			<xsl:for-each select="componentDescription[category='{name}']">
+			<xsl:for-each select="componentsDoc/componentDescription[category='{name}']">
 				<a href="ComponentsDoc.html#{componentName}"> <xsl:value-of select="componentName"/> </a>
 				<br/>
 				<xsl:call-template name="singleDesc"/>					
