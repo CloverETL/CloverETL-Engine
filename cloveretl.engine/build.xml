@@ -227,7 +227,7 @@
 	</target>
 
 	<!-- pack binary result of compile to jar file -->
-	<target name="package" depends="compile">
+	<target name="package" depends="compile,transformXMLDocs">
 		<!-- Create directory for dist. -->
 		<mkdir dir="${dir.dist}/lib"/>
 		
@@ -246,9 +246,9 @@
 			<fileset dir="${dir.docs}"/>
 		</copy>
 
-		<!-- copy the generated documentation of components -->
+		<!-- copy the generated documentation of components from other plugins -->
 		<copy todir="${dir.dist}/docs/components" overwrite="true">
-			<fileset dir="${cloveretl.component}/doc/components/html" includes="**"/>
+			<fileset dir="${cloveretl.engine}/src-doc/components/html" includes="**"/>
 		</copy>
 
 		<!-- copy all run scripts -->
