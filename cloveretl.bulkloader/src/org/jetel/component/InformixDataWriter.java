@@ -103,9 +103,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>type</b></td><td>"INFORMIX_DATA_WRITER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td></tr>
  *  <tr><td><b>dbLoaderPath</b></td><td>path to loadDb utility</td></tr>
- *  <tr><td><b>database</b></td><td>the name of the database to receive the data<br/>
- *  example 1: //server_name/directory_on_server/database_name<br/>
- *  example 2: //server_name/database_name</td></tr>
+ *  <tr><td><b>database</b></td><td>the name of the database to receive the data</td></tr>
+ *  <tr><td><b>host</b><br><i>optional</i></td><td>the name of informix server</td></tr>
  *  <tr><td><b>table</b><br><i>optional</i></td><td>table name, where data are loaded<br/>
  *  Note: table attribute or command attribute must be defined</td></tr>
  *  <tr><td><b>command</b><br><i>optional</i></td><td>a control script for the dbload utility;
@@ -161,6 +160,7 @@ public class InformixDataWriter extends Node {
 	private static final String XML_DB_LOADER_PATH_ATTRIBUTE = "dbLoaderPath";
     private static final String XML_COMMAND_ATTRIBUTE = "command";
     private static final String XML_DATABASE_ATTRIBUTE = "database";
+    private static final String XML_HOST_ATTRIBUTE = "host";
     private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
     private static final String XML_MAX_ERRORS_ATTRIBUTE = "maxErrors";
     private static final String XML_IGNORE_ROWS_ATTRIBUTE = "ignoreRows";
@@ -199,6 +199,7 @@ public class InformixDataWriter extends Node {
 	private String dbLoaderPath;
     private String command; //contains user-defined control script fot dbload utility
     private String database;
+    private String host;
     private String errorLog;
     private int maxErrors = UNUSED_INT;
     private int ignoreRows = UNUSED_INT;
@@ -333,6 +334,9 @@ public class InformixDataWriter extends Node {
 		cmdList.add(commandFileName);
 		
 		cmdList.add(INFORMIX_DATABASE_OPTION);
+		if (!StringUtils.isEmpty(host)) {
+			database = "//" + host + "/" + database;
+		}
 		cmdList.add(database);
 		
 		cmdList.add(INFORMIX_ERROR_LOG_OPTION);
@@ -674,6 +678,10 @@ public class InformixDataWriter extends Node {
         	if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
         		informixDataWriter.setInDataFileName(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
         	}
+        	if (xattribs.exists(XML_HOST_ATTRIBUTE)) {
+        		informixDataWriter.setHost(xattribs.getString(XML_HOST_ATTRIBUTE));
+        	}
+
        	
             return informixDataWriter;
         } catch (Exception ex) {
@@ -712,6 +720,9 @@ public class InformixDataWriter extends Node {
 		}
 		if (!StringUtils.isEmpty(dataURL)) {
 			xmlElement.setAttribute(XML_FILE_URL_ATTRIBUTE, dataURL);
+		}
+		if (!StringUtils.isEmpty(host)) {
+			xmlElement.setAttribute(XML_HOST_ATTRIBUTE, host);
 		}
 	}
 
@@ -772,6 +783,10 @@ public class InformixDataWriter extends Node {
     
     private void setTable(String table) {
     	this.table = table;
+	}
+    
+    private void setHost(String host) {
+    	this.host = host;
 	}
     
     /**
