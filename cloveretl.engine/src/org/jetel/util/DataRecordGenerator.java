@@ -299,7 +299,8 @@ public class DataRecordGenerator implements Parser{
 			try {
 				patternRecord = parser.getNext();
 				if (patternRecord == null) {
-					throw new ComponentNotReadyException(component, "Can't get record from pattern. Specified pattern:" + StringUtils.quote(pattern));
+					// removed 2007-12-12, empty pattern is allowed
+					//throw new ComponentNotReadyException(component, "Can't get record from pattern. Specified pattern:" + StringUtils.quote(pattern));
 				}
 			} catch (BadDataFormatException e){
 				throw new ComponentNotReadyException(component, "Can't get record from pattern: " + StringUtils.quote(pattern) + " "+e.getMessage());
