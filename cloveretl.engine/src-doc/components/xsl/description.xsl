@@ -316,19 +316,27 @@
     </table>
 		  
 		  	  
-		  
-<div class="title">Examples</div>
- <xsl:for-each select="example">
-       <img  src="{exampleImg}" alt="Example" border="0"/>
 
+<div class="title">Examples</div>
+
+<xsl:for-each select="example">
+	
+<xsl:if test="normalize-space(exampleImg)">
+		<img  src="{exampleImg}" alt="Example" border="0"/>
+</xsl:if>
+
+<xsl:if test="normalize-space(exampleXml)">
 XML graph notation:
 <pre class="programlisting">
 	<xsl:apply-templates select="exampleXml"/>
 </pre>
+</xsl:if>
 
-<p class="framed">
-	<xsl:apply-templates select="exampleDesc"/>
-</p>
+<xsl:if test="normalize-space(exampleDesc)">
+	<p class="framed">
+		<xsl:apply-templates select="exampleDesc"/>
+	</p>
+</xsl:if>
 	 
 </xsl:for-each>				 
    
@@ -385,15 +393,14 @@ XML graph notation:
 			<xsl:call-template name="singleDesc"/>					
 		</xsl:for-each>
 
-		<xsl:choose>
-			<xsl:when test="count(componentsDoc/componentDescription[category!='readers' and category!='writers' and category!='joiners' and category!='transformers' and category!='others' and category!='deprecated'])>0">		    	
-	  		<a name="uncategorized"> <h1> Uncategorized </h1> </a>	  
-				<xsl:for-each select="componentsDoc/componentDescription[category!='readers' and category!='writers' and category!='joiners' and category!='transformers' and category!='others' and category!='deprecated']">
-				<xsl:sort select="componentName"/>
-					<xsl:call-template name="singleDesc"/>					
-				</xsl:for-each>
-			</xsl:when>
-		</xsl:choose>
+
+		<xsl:if test="count(componentsDoc/componentDescription[category!='readers' and category!='writers' and category!='joiners' and category!='transformers' and category!='others' and category!='deprecated'])>0">		    	
+  		<a name="uncategorized"> <h1> Category Unkown </h1> </a>	  
+			<xsl:for-each select="componentsDoc/componentDescription[category!='readers' and category!='writers' and category!='joiners' and category!='transformers' and category!='others' and category!='deprecated']">
+			<xsl:sort select="componentName"/>
+				<xsl:call-template name="singleDesc"/>					
+			</xsl:for-each>
+		</xsl:if>
 
 	  
 	  <!--
