@@ -68,69 +68,7 @@ import org.w3c.dom.Element;
 
 
 /**
- *  <h3>System Execute Component</h3> 
- *  <!-- This component runs other graphs.-->
- * 
- *  <table border="1">
- *
- *    <th>
- *      Component:
- *    </th>
- *    <tr><td>
- *        <h4><i>Name:</i> </h4></td><td>RunGraph</td>
- *    </tr>
- *    <tr><td><h4><i>Category:</i> </h4></td><td></td>
- *    </tr>
- *    <tr><td><h4><i>Description:</i> </h4></td>
- *      <td>
- *  This component runs specified graphs. Filenames of the graphs to be executed 
- *  can be supplied by the input edge. The first field in input metadata must be String.
- *  In case the input is not connected a single filename must be specified as the
- *  attribute graphName. 
- *  Output includes a status message for each graph in the last field if it's of 
- *  the String type.
- *  Metadata of the output can be the same as input or it can contain an extra 
- *  String field specially for the status message.  
- *  The output of the cloverETL engine executed by this component can be directed
- *  to a file specified as the attribute outputFileName
  *  
- *      </td>
- *    </tr>
- *    <tr><td><h4><i>Inputs:</i> </h4></td>
- *    <td>
- *        [0]- filenames containing graphs to be executed <br>
- *    </td></tr>
- *    <tr><td> <h4><i>Outputs:</i> </h4>
- *      </td>
- *      <td>
- *        [0] - status of each graph
- *      </td></tr>
- *    <tr><td><h4><i>Comment:</i> </h4>
- *      </td>
- *      <td></td>
- *    </tr>
- *  </table>
- *  <br>
- *  <table border="1">
- *    <th>XML attributes:</th>
- *    <tr><td><b>type</b></td><td>RUN_GRAPH</td></tr>
- *    <tr><td><b>graphName</b></td><td> file containing graph<br>
- *    a file with .grf extension
- *    <tr><td><b>capturedErrorLines</b></td><td> number of lines that are print
- *    	 out to the log if command finishes with errors</td></tr> 
- *    <tr><td><b>outputFile</b></td><td>path to the output file</td></tr>
- *    <tr><td><b>outputAppend</b></td><td> whether to append data if output 
- *    file already exists or to replace it (values: true/false)</td></tr>
- *    </table>
- *    <h4>Example:</h4> <pre>&lt;Node id="RUN_GRAPH0" type="RUN_GRAPH"&gt;
- * &lt;attr name="capturedErrorLines"&gt;3&lt;/attr&gt;
- * &lt;attr name="graphName"&gt;graphAggregate.grf&lt;/attr&gt;
- * &lt;/Node&gt;
- *&lt;Node id="RUN_GRAPH0" type="RUN_GRAPH"&gt;
- *&lt;attr name="ouputAppend"&gt;true &lt;/attr&gt;
- *&lt;attr name="outputFile"&gt;data/data.txt&lt;/attr&gt;
- *&lt;/Node&gt;
- *</pre>
  *
 /**
 * @author jvicenik <juraj.vicenik@javlinconsulting.cz> ; 
@@ -152,15 +90,14 @@ public class RunGraph extends Node{
 	private final static String CLOVER_CMD_LINE = "";
 	private final static String CLOVER_RUN_CLASS = "org.jetel.main.runGraph";
 	private final static String ERROR_COMPONENT_REGEX = ".*Node ([A-Z](\\w)+) finished with status: ERROR.*";
-	
-	
+	private final static String ERROR_LAST_MSG_REGEX = "ERROR\\s*\\[main\\]\\s*-\\s*(.*)";	
+		
 	public static String COMPONENT_TYPE = "RUN_GRAPH";
 	
 	private final static int INPUT_PORT = 0;
 	private final static int OK_OUTPUT_PORT = 0;
 	private final static int ERR_OUTPUT_PORT = 1;
-	
-	
+		
 	private final static int ERROR_LINES=100;
 
 	public  final static long KILL_PROCESS_WAIT_TIME = 1000;
@@ -170,8 +107,7 @@ public class RunGraph extends Node{
 	private String javaCmdLine;
 	private String cloverCmdLineArgs;
 	private String cloverRunClass;
-	
-		
+			
 	private FileWriter outputFile = null;
 	
 	/* this indicates the mode in which a dummy record is sent to port 0 in case of successful termination of the 
@@ -358,10 +294,9 @@ public class RunGraph extends Node{
 				logger.error("Exception while processing " + fname + ": "+ e.getMessage());				
 			}			
 			
-			/*if(result == Result.ABORTED)
-				return Result.ABORTED; */
+			
 			outPort.writeRecord(outRec);
-			// writeOutputLine(succOutRecord, fname, result);				
+						
 		} 
 		broadcastEOF();	
 		
@@ -375,11 +310,11 @@ public class RunGraph extends Node{
 	
 	private boolean runSingleGraph(String graphName, DataRecord output) throws Exception {
 		boolean ok = true;		
-		Process	process;
-		// StringBuffer errmes = new StringBuffer();
+		Process	process;		
 		String status = null;
 		int duration = 0;
 		String errComp = null;
+		String lastErrMsg = null;
 		
 		if(sameInstance) {			
 			logger.info("********Running graph " + graphName + " in the same instance.");
@@ -388,8 +323,7 @@ public class RunGraph extends Node{
 		}
 		logger.info("Running graph " + graphName + " in separate instance of clover.");
 		
-				
-		//TODO Juro je to potreba udelat jinak
+						
 		String commandLine = javaCmdLine + " " + classPath + " " + cloverRunClass + " " + cloverCmdLineArgs + " " + graphName;
 		logger.info("Executing command: \"" + commandLine + "\"");
 		
@@ -400,25 +334,15 @@ public class RunGraph extends Node{
 		
 		BufferedInputStream process_err = new BufferedInputStream(process.getErrorStream());
 		// If there is input port read records and write them to input stream of the process	
-			
-		
-		SendDataToFile sendDataToFile = null;
-		SendDataToFile sendErrToFile = null;	
-		/*	
-		if (outputFile!=null){
-			sendDataToFile = new SendDataToFile(Thread.currentThread(),outputFile,process_out);
-			sendErrToFile = new SendDataToFile(Thread.currentThread(),outputFile, process_err);
-			sendDataToFile.start();
-			sendErrToFile.start();
-		}
-		*/
-		
+				
 		//if output is not sent to file log process error stream						
-		if (sendDataToFile==null ){			
+	
 			BufferedReader err=new BufferedReader(new InputStreamReader(process_err));
 			BufferedReader out=new BufferedReader(new InputStreamReader(process_out));
 			String line;			
 			int i=0;
+			
+			
 			while ((line=err.readLine())!=null){									
 				if (i<=ERROR_LINES) {
 					logger.warn("Processing " + graphName + ": " + line);
@@ -436,14 +360,16 @@ public class RunGraph extends Node{
 					}
 				}
 				*/
-				if(outputFile != null) outputFile.write(line);								
+				if(outputFile != null) outputFile.write(line + "\n");								
 			}
 			
+			Pattern patErr = Pattern.compile(ERROR_LAST_MSG_REGEX);
 			Pattern pt = Pattern.compile(ERROR_COMPONENT_REGEX);
 			while ((line=out.readLine())!=null){
 				int pos;
 				if(line.compareTo("Phase#            Finished Status         RunTime") == 0) {
 					if ((line=out.readLine())==null) break;
+					if(outputFile != null) outputFile.write(line);
 					StringTokenizer tk = new StringTokenizer(line);
 					for(int j=0; j<4 && tk.hasMoreTokens(); j++) tk.nextToken();
 					if(i==4) {
@@ -460,68 +386,32 @@ public class RunGraph extends Node{
 				if((pos=line.indexOf("WatchDog thread finished - total execution time")) != -1) { //TODO
 					Scanner sc = new Scanner(line.substring(pos));
 					while(sc.hasNext() && !sc.hasNextInt()) sc.next();
-					if(sc.hasNextInt()) duration = sc.nextInt();
-					
+					if(sc.hasNextInt()) duration = sc.nextInt();					
 				}
-				if(outputFile != null) outputFile.write(line);
-				// TODO error message
-			
-			}
+				
+				Matcher matchErr = patErr.matcher(line);
+				if(matchErr.matches()) lastErrMsg = matchErr.group(1);
+				 					
+				if(outputFile != null) outputFile.write(line + "\n");		
 						
+			}
+								
 			err.close();
 			out.close();
 			process_err.close();
 			process_out.close();		
-		}            
 		
 		// wait for executed process to finish
 		// wait for SendData and/or GetData threads to finish work
 		try {
-			exitValue=process.waitFor();
-			if (sendDataToFile!=null){
-				sendDataToFile.join(KILL_PROCESS_WAIT_TIME);
-				sendErrToFile.join(KILL_PROCESS_WAIT_TIME);
-			}			
+			exitValue=process.waitFor();			
 		} catch(InterruptedException ex){
 			logger.error("InterruptedException in "+this.getId(),ex);
 			process.destroy();
-			//interrupt threads if they run still
-		
-			if(sendDataToFile.resultCode == Result.ERROR) {
-				logger.error("Reason: error while reading stdout of the subprocess: " + sendDataToFile.resultMsg);
-			} 
-			if(sendErrToFile.resultCode == Result.ERROR) {
-				logger.error("Reason: error while reading error output of the subprocess: " + sendErrToFile.resultMsg);
-			}
-			if (sendDataToFile!=null) {
-				if (!kill(sendDataToFile,KILL_PROCESS_WAIT_TIME)){
-					throw new RuntimeException("Can't kill "+sendDataToFile.getName());
-				}
-				if (!kill(sendErrToFile,KILL_PROCESS_WAIT_TIME)){
-					throw new RuntimeException("Can't kill "+sendErrToFile.getName());
-				}
-			}
+			//interrupt threads if they run still					
 		}	
 		
-		String resultMsg = null;
-
-		if (sendDataToFile!=null){
-			if (!kill(sendDataToFile,KILL_PROCESS_WAIT_TIME)){
-				throw new RuntimeException("Can't kill " + sendDataToFile.getName());
-			}
-			if (sendDataToFile.getResultCode()==Result.ERROR){
-				ok = false;
-				resultMsg = (resultMsg == null ? "" : resultMsg) + sendDataToFile.getResultMsg() + "\n" + sendDataToFile.getResultException();
-			}
-			if (!kill(sendErrToFile,KILL_PROCESS_WAIT_TIME)){
-				throw new RuntimeException("Can't kill " + sendErrToFile.getName());
-			}
-			if (sendErrToFile.getResultCode()==Result.ERROR){
-				ok = false;
-				resultMsg = (resultMsg == null ? "" : resultMsg) + sendErrToFile.getResultMsg() + "\n" + sendErrToFile.getResultException();
-			}
-		}			
-		// create the information record
+		String resultMsg = null;		
 		
 		if(output != null) {
 			// if(status == null) status="*Finished OK";
@@ -533,11 +423,10 @@ public class RunGraph extends Node{
 		
 		if (!runIt) {			
 			resultMsg = (resultMsg == null ? "" : resultMsg) + "\n" + "STOPPED";
-			/*
-			ok = false;;  */	
+			
 			if(output != null) {
 				if(status == null) output.getField(1).setValue("Aborted");
-				output.getField(2).setValue(resultMsg);
+				output.getField(2).setValue((lastErrMsg!=null) ? lastErrMsg : resultMsg);
 			}
 						
 			return false;
@@ -547,7 +436,7 @@ public class RunGraph extends Node{
 				
 			if(output != null) {
 				if(status == null) output.getField(1).setValue("Error");
-				output.getField(2).setValue(resultMsg);
+				output.getField(2).setValue((lastErrMsg != null) ? lastErrMsg : resultMsg);
 			}			
 			logger.info(graphName + ": Processing with an ERROR: " + resultMsg);
 			return false;
@@ -565,14 +454,14 @@ public class RunGraph extends Node{
 			return true;
 		} else {
 			logger.info(graphName + ": Processing with an ERROR: " + resultMsg);
-			if(output!=null) output.getField(2).setValue(resultMsg);
+			if(output!=null) output.getField(2).setValue((lastErrMsg != null) ? lastErrMsg : resultMsg);
 			throw new JetelException(resultMsg);
 		}
 	}
 	
 	private boolean runGraphThisInstance(String graphFileName, DataRecord output) {
-		InputStream in = null;
-		Properties properties = new Properties();
+		InputStream in = null;		
+		WatchDog watchdog;
 		
 		output.getField(0).setValue(graphFileName);
 		output.getField(1).setValue("Error");
@@ -590,13 +479,13 @@ public class RunGraph extends Node{
         GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
         
 		GraphExecutor graphExecutor = new GraphExecutor();        
-        Future<Result> futureResult = null;
-                
+        Future<Result> futureResult = null;                
         
         String password = null; // TODO
         
 		try {
 			futureResult = graphExecutor.runGraph(in, runtimeContext, password);
+			watchdog = graphExecutor.getWatchDog();
         } catch (XMLConfigurationException e) {            
             output.getField(2).setValue("Error in reading graph from XML: " + e.getMessage());
             return false;
@@ -622,90 +511,35 @@ public class RunGraph extends Node{
             return false;
 		}
         
-		WatchDog watchdog = graphExecutor.getGraph().getWatchDog();
+		
         switch (result) {
 	        case FINISHED_OK:        	
 	    		output.getField(1).setValue("Finished OK");
 	    		output.getField(2).setValue("");
 	    		output.getField(3).setValue(""); 			
-	    		output.getField(4).setValue(watchdog.getTotalRunTime()); 
+	    		if(watchdog != null) output.getField(4).setValue(watchdog.getTotalRunTime()); 
 	    		    		        	
 	            return true;
 	        case ABORTED:
 	        	output.getField(1).setValue("Aborted");
 	        	output.getField(2).setValue("Graph execution aborted. ");
-	        	output.getField(3).setValue(watchdog.getFatalErrorSourceID());
-	        	output.getField(4).setValue(watchdog.getTotalRunTime());
+	        	if(watchdog != null) {
+	        		output.getField(3).setValue(watchdog.getFatalErrorSourceID());
+	        		output.getField(4).setValue(watchdog.getTotalRunTime());
+	        	}
+	        	System.err.println(graphFileName + ": " + "Execution of graph aborted !");
 	            return false;
 	            
 	        default:
 	        	output.getField(1).setValue(result.message());        	
 	        	output.getField(2).setValue("Execution of graph failed !");
-	        	output.getField(3).setValue(watchdog.getFatalErrorSourceID());
-	        	output.getField(4).setValue(watchdog.getTotalRunTime());
+	        	if(watchdog!=null) {	        			        	
+	        		output.getField(3).setValue(watchdog.getFatalErrorSourceID());
+	        		output.getField(4).setValue(watchdog.getTotalRunTime());
+	        	}
 	            System.err.println(graphFileName + ": " + "Execution of graph failed !");
 	            return false;
         }
-		/*
-		
-		
-		// loading graph from the input stream		
-        TransformationGraph graph = null;
-        try {
-            graph = runGraph.loadGraph(in, properties);
-
-            // check graph elements configuration
-            logger.info("Checking graph configuration...");
-            try {
-                ConfigurationStatus status = graph.checkConfig(null);
-             //   status.log();   We don't want to log messages from this to the main log
-            } catch(Exception e) {            	
-    			output.getField(2).setValue("Checking graph failed! (" + e.getMessage() + ")");    			
-                // logger.error("Checking graph failed! (" + e.getMessage() + ")");
-            } 
-            
-            if (!graph.init()) {            	
-                throw new GraphConfigurationException(
-                        "Graph initialization failed.");
-            }
-            
-        } catch (XMLConfigurationException ex) {
-        	output.getField(2).setValue("Error in reading graph from XML: "+ ex.getMessage());
-            // logger.error("Error in reading graph from XML !", ex);
-            
-            return false;
-        } catch (GraphConfigurationException ex) {
-        	output.getField(2).setValue("Error - graph's configuration invalid: " + ex.getMessage());
-            // logger.error("Error - graph's configuration invalid !", ex);            
-            return false;
-        } catch (RuntimeException ex) {
-        	output.getField(2).setValue("Error during graph initialization: " + ex.getMessage());
-            // logger.error("Error during graph initialization !", ex);          
-            return false;
-        }
-
-        // set graph runtime parameters
-        
-        GraphRuntimeParameters runtimePar = graph.getRuntimeParameters();   
-        runtimePar.setGraphFileURL(graphFileName);
-        runtimePar.setUseJMX(false);
-        
-        
-        // start all Nodes (each node is one thread)
-        Result result = Result.N_A;
-        try {
-            result = graph.run();
-        } catch (RuntimeException ex) {
-            System.err.println(graphFileName + ": " + "Fatal error during graph run !");
-            System.err.println(graphFileName + ": " + ex.getCause().getMessage());
-            output.getField(2).setValue("Fatal error during graph run: " + ex.getCause().getMessage());
-            return false;            
-        }
-        
-        */
-		
-		
-		
 	}
 		
 	@Override
@@ -815,6 +649,13 @@ public class RunGraph extends Node{
         	status.add(problem);
         	return status;
         }
+        
+        if(!sameInstance && (cloverCmdLineArgs == null || cloverCmdLineArgs.equals(""))) {
+        	ConfigurationProblem problem = new ConfigurationProblem("If the graph is executed in separate instance of clover, supplying the command line for clover is necessary (at least the -plugins argument)" , 
+        		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+        	status.add(problem);
+        	return status;
+        }
         	
         try {
             init();
@@ -837,9 +678,7 @@ public class RunGraph extends Node{
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		RunGraph runG;
-		
-		
-		
+					
 		try {
 			runG = new RunGraph(xattribs.getString(XML_ID_ATTRIBUTE),															
 					xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false),
