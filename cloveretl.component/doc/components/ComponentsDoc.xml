@@ -5012,7 +5012,7 @@
       <category>others</category>
       <sinceVersion>1.8.3</sinceVersion>
       <author>jvicenik</author>
-      <lastUpdated>22.11.2007</lastUpdated>
+      <lastUpdated>12.12.2007</lastUpdated>
       <briefDesc>Runs specified graph(s) optionally in another instance of clover.</briefDesc>
       <fullDesc>Runs specified graph(s) optionally in another instance of clover. If <attrLink> graphName </attrLink> is
 			  specified, the component is in pipeline mode. That means it only executes the specified graph if some data 
@@ -5118,33 +5118,57 @@
       </attribute>
 	   
       <attribute>
-         <attrName>capturedErrorLines</attrName>
-         <attrIsMandatory>no</attrIsMandatory>
-         <attrType>
-            int
-            
-         </attrType>
-         <attrDesc>capturedErrorLines</attrDesc>
-         <attrDefaultVal></attrDefaultVal>
-      </attribute>
-      <attribute>
          <attrName>logFile</attrName>
          <attrIsMandatory>no</attrIsMandatory>
          <attrType>
             file
             
          </attrType>
-         <attrDesc>Name of the file into which all the standard output of the executed graphs is redirected</attrDesc>
+         <attrDesc>Name of the file into which all the standard output of the executed graphs is redirected. It is only used when the graph is run in another instance of clover. </attrDesc>
          <attrDefaultVal></attrDefaultVal>
       </attribute>
       <attribute>
-         <attrName>outputAppend</attrName>
+         <attrName>logAppend</attrName>
          <attrIsMandatory>no</attrIsMandatory>
          <attrType>
             bool
             
          </attrType>
          <attrDesc>Whether to append the output into the log file <attrLink>logFile</attrLink> </attrDesc>
+         <attrDefaultVal>false</attrDefaultVal>
+      </attribute>
+	  
+	   
+	    
+	  <attribute>
+         <attrName>alternativeJavaCmdLine</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string            
+         </attrType>
+         <attrDesc>Aternative Java virtual machine with command line arguments </attrDesc>
+         
+      </attribute>
+	   
+	  <attribute>
+         <attrName>graphExecClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>Whichc clover class to execute</attrDesc>
+         <attrDefaultVal>org.jetel.graph.runGraph</attrDefaultVal>
+      </attribute>
+	   	
+	  <attribute>
+         <attrName>cloverCmdLineArguments</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>Command line arguments for clover; if <attrLink>sameInstance</attrLink> is false, at least the -plugins argument must be specified here</attrDesc>
          <attrDefaultVal>false</attrDefaultVal>
       </attribute>
       <example>
