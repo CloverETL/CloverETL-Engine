@@ -54,6 +54,12 @@ public class GraphExecutor {
 	
 	private TransformationGraph graph;
 	
+	WatchDog watchDog;
+	
+	public WatchDog getWatchDog() {
+		return watchDog;
+	}
+
 	public TransformationGraph getGraph() {
 		return graph;
 	}
@@ -132,7 +138,7 @@ public class GraphExecutor {
         }
 
 //        long timestamp = System.currentTimeMillis();
-        WatchDog watchDog = new WatchDog(graph, context);
+        watchDog = new WatchDog(graph, context);
 
         return executor.submit(watchDog);
         
