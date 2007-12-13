@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.data.tape.TapeCarousel;
+import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 
@@ -44,12 +45,13 @@ public class ExtSortDataRecordInternal {
 	private int numberOfTapes;
 	private String[] tmpDirs;
 	private String[] sortKeysNames;
-	private boolean sortOrderAscending;
+	private SortOrder sortOrderAscending;
 	private RecordKey sortKey;
 	DataRecordMetadata inMetadata;
 	private ByteBuffer recordBuffer;
 	private boolean[] sourceRecordsFlags;
 	private DataRecord[] sourceRecords;
+	int prevIndex;
 	
 	public ExtSortDataRecordInternal() {
 		super();
@@ -66,20 +68,21 @@ public class ExtSortDataRecordInternal {
 	 * @param numberOfTapes	Number of tapes to be used
 	 * @param tmpDirs	List of names of temporary directories to be used for external sorting buffer on disk
 	 */
-	public ExtSortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean sortAscending, int internalBufferCapacity,
+	public ExtSortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, SortOrder sortAscending, int internalBufferCapacity,
 			int numberOfTapes, String[] tmpDirs) {
 	
 		this.sortKeysNames = keyItems;		
 		this.sortOrderAscending = sortAscending;
 		this.numberOfTapes = numberOfTapes;
 		this.tmpDirs = tmpDirs;
+		this.prevIndex = -1;
 		
 		inMetadata = metadata;
 		
 		if (internalBufferCapacity>0){	
-            sorter = new SortDataRecordInternal(metadata, keyItems, sortAscending, false, internalBufferCapacity);
+            sorter = new SortDataRecordInternal(metadata, keyItems, sortAscending.getOrder(0), false, internalBufferCapacity);
         } else {
-            sorter = new SortDataRecordInternal(metadata, keyItems, sortAscending, false);
+            sorter = new SortDataRecordInternal(metadata, keyItems, sortAscending.getOrder(0), false);
         }
 		
 		recordBuffer = ByteBuffer
@@ -141,22 +144,28 @@ public class ExtSortDataRecordInternal {
 		
 		int index;
 		
+		
 		if (doMerge) {
-			
-			if (hasAnyData(sourceRecordsFlags)) {
-				if (sortOrderAscending) {
-                	index = getLowestIndex(sourceRecords, sourceRecordsFlags);
-            	} else {
-                	index = getHighestIndex(sourceRecords, sourceRecordsFlags);
-            	}
 
-				if (!tapeCarousel.getTape(index).get(sourceRecords[index])) {
-            		sourceRecordsFlags[index] = false;
-            	}
-            	            	
-            	return sourceRecords[index];
-            	
-			} else { 
+			if (prevIndex > -1) {
+				if (!tapeCarousel.getTape(prevIndex).get(sourceRecords[prevIndex])) {
+	                sourceRecordsFlags[prevIndex] = false;
+	            }
+			}
+			
+	        if (hasAnyData(sourceRecordsFlags)) {
+	        	
+	            if (sortOrderAscending.getOrder(0)) {
+	                index = getLowestIndex(sourceRecords, sourceRecordsFlags);
+	            } else {
+	                index = getHighestIndex(sourceRecords, sourceRecordsFlags);
+	            }
+	          
+	            prevIndex = index;
+	            
+	            SynchronizeUtils.cloverYield();
+	            return sourceRecords[index];
+	        } else { 
 				tapeCarousel.free();
 				return null;
 			}
@@ -265,7 +274,7 @@ public class ExtSortDataRecordInternal {
                     break;
                 }
                 while (hasAnyData(sourceRecordsFlags)) {
-                    if (sortOrderAscending) {
+                    if (sortOrderAscending.getOrder(0)) {
                         index = getLowestIndex(sourceRecords,
                                 sourceRecordsFlags);
                     } else {
@@ -320,6 +329,7 @@ public class ExtSortDataRecordInternal {
          */
         tapeCarousel.rewind();
         loadUpRecords(tapeCarousel, sourceRecords, sourceRecordsFlags);
+        
     }
     
     /**
