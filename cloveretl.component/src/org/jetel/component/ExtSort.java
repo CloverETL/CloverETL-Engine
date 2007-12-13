@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.ExtSortDataRecordInternal;
+import org.jetel.data.SortOrder;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -119,7 +120,7 @@ public class ExtSort extends Node {
 	private final static int READ_FROM_PORT = 0;
 
 	private ExtSortDataRecordInternal sorter;
-	private boolean sortOrderAscending;
+	private SortOrder sortOrderAscending;
 	private String[] sortKeysNames;    
 	
 	private InputPort inPort;
@@ -145,7 +146,7 @@ public class ExtSort extends Node {
      * @param sortOrder
      *            Description of the Parameter
      */
-    public ExtSort(String id, String[] sortKeys, boolean sortOrder) {
+    public ExtSort(String id, String[] sortKeys, SortOrder sortOrder) {
         super(id);
         this.sortOrderAscending = sortOrder;
         this.sortKeysNames = sortKeys;
@@ -162,7 +163,7 @@ public class ExtSort extends Node {
      *            Description of the Parameter
      */
     public ExtSort(String id, String[] sortKeys) {
-        this(id, sortKeys, DEFAULT_ASCENDING_SORT_ORDER);
+        this(id, sortKeys, new SortOrder(new boolean[] { DEFAULT_ASCENDING_SORT_ORDER }));
     }
 
     @Override
@@ -232,17 +233,6 @@ public class ExtSort extends Node {
         
     	sorter.free();
     }
-
-    /**
-     * Sets the sortOrderAscending attribute of the Sort object
-     * 
-     * @param ascending
-     *            The new sortOrderAscending value
-     */
-    public void setSortOrderAscending(boolean ascending) {
-    	sortOrderAscending = ascending;        
-    }
-    
     
     /**
      * What is the capacity of internal buffer used for
@@ -268,14 +258,11 @@ public class ExtSort extends Node {
        for (int i=1; i < this.sortKeysNames.length; i++) {
        		sortKeys += Defaults.Component.KEY_FIELDS_DELIMITER + sortKeysNames[i];
        }
-       xmlElement.setAttribute(XML_SORTKEY_ATTRIBUTE, sortKeys);
        
+       xmlElement.setAttribute(XML_SORTKEY_ATTRIBUTE, sortKeys);
+              
        // sortOrder attribute
-       if (this.sortOrderAscending == false) {
-       		xmlElement.setAttribute(XML_SORTORDER_ATTRIBUTE,"Descending");
-       }else{
-    	   xmlElement.setAttribute(XML_SORTORDER_ATTRIBUTE,"Ascending");
-       }
+       xmlElement.setAttribute(XML_SORTORDER_ATTRIBUTE, sortOrderAscending.toString());
        
        // numberOfTapes attribute
        if (getNumberOfTapes() != DEFAULT_NUMBER_OF_TAPES) {
@@ -290,7 +277,6 @@ public class ExtSort extends Node {
        if (tmpDirs!=null){
            xmlElement.setAttribute(XML_TEMPORARY_DIRS,StringUtils.stringArraytoString(tmpDirs,';') );
        }
-       
     }
 
 	/**
@@ -307,9 +293,12 @@ public class ExtSort extends Node {
             sort = new ExtSort(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(
                     XML_SORTKEY_ATTRIBUTE).split(
                     Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-            if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
+            /*if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
                 sort.setSortOrderAscending(xattribs.getString(XML_SORTORDER_ATTRIBUTE)
                         .matches("^[Aa].*"));
+            }*/
+            if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
+            	sort.setSortOrders(xattribs.getString(XML_SORTORDER_ATTRIBUTE), sort.getSortKeyCount());
             }
             if (xattribs.exists(XML_SORTERINITIALCAPACITY_ATTRIBUTE)){
                 //only for backward compatibility
@@ -331,6 +320,14 @@ public class ExtSort extends Node {
         }
         return sort;
     }
+
+	private int getSortKeyCount() {
+		return sortKeysNames.length;
+	}
+
+	private void setSortOrders(String string, int minLength) {
+		sortOrderAscending.fromString(string, minLength);
+	}
 
 	/**
      *  Description of the Method
