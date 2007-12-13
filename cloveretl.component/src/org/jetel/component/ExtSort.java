@@ -19,20 +19,17 @@
 */
 package org.jetel.component;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.RecordKey;
-import org.jetel.data.SortDataRecordInternal;
-import org.jetel.data.tape.DataRecordTape;
-import org.jetel.data.tape.TapeCarousel;
+import org.jetel.data.ExtSortDataRecordInternal;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -121,21 +118,17 @@ public class ExtSort extends Node {
 	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
 
-	private SortDataRecordInternal sorter;
-	private TapeCarousel tapeCarousel;
+	private ExtSortDataRecordInternal sorter;
 	private boolean sortOrderAscending;
-	private String[] sortKeysNames;
-	private ByteBuffer recordBuffer;
-	private boolean carouselInitialized;
-    private String[] tmpDirs;
+	private String[] sortKeysNames;    
 	
 	private InputPort inPort;
 	private DataRecord inRecord;
-	
-	private RecordKey sortKey;
-	
-	private int numberOfTapes;
+
 	private int internalBufferCapacity;
+	private String[] tmpDirs;
+	private int numberOfTapes;
+	private ByteBuffer recordBuffer;
 
 	private final static boolean DEFAULT_ASCENDING_SORT_ORDER = true; 
 	private final static int DEFAULT_NUMBER_OF_TAPES = 6;
@@ -156,8 +149,7 @@ public class ExtSort extends Node {
         super(id);
         this.sortOrderAscending = sortOrder;
         this.sortKeysNames = sortKeys;
-        carouselInitialized = false;
-        numberOfTapes=DEFAULT_NUMBER_OF_TAPES;
+        this.numberOfTapes = DEFAULT_NUMBER_OF_TAPES;
         internalBufferCapacity=-1;
     }
 
@@ -175,72 +167,31 @@ public class ExtSort extends Node {
 
     @Override
     public Result execute() throws Exception {
-        boolean doMerge = false;
+        
         inPort = getInputPort(READ_FROM_PORT);
         inRecord = new DataRecord(inPort.getMetadata());
         inRecord.init();
         DataRecord tmpRecord = inRecord;
-        /*
-         * PHASE SORT --
-         * 
-         * we read records from input till internal buffer is full, then we sort
-         * internal buffer and write it to tape. Then we continue till EOF and
-         * MERGING occures afterwards.
-         * 
-         * If we reach EOF on input before internal buffer is full, we just sort
-         * them and send directly to output
-         */
-        // --- store input records into internal buffer
+         
         while (tmpRecord != null && runIt) {
 			tmpRecord = inPort.readRecord(inRecord);
 			if (tmpRecord != null) {
-				if (!sorter.put(inRecord)) {
-					// we need to sort & flush buffer on to tape and merge it
-					// later
-					doMerge = true;
-					sorter.sort();
-					flushToTape();
-					sorter.reset();
-					if (!sorter.put(inRecord)) {
-						throw new RuntimeException(
-								"Can't store record into sorter !");
-					}
-					tmpRecord = inRecord;
-				}
+				sorter.put(inRecord);
 			}
 			SynchronizeUtils.cloverYield();
 		}
-        /*
-         * PHASE MERGE ------------
-         */
-        if (runIt) {
-			if (doMerge) {
-				// sort whatever remains in sorter
-				sorter.sort();
-				flushToTape();
-				// we don't need sorter any more - free all its resources
-				sorter.free();
-				// flush to disk whatever remains in tapes' buffers
-				// tapeCarousel.flush();
-				// merge partially sorted data from tapes
-				phaseMerge();
-
-			}
-			/*
-			 * SEND RECORDS FROM SORTER DIRECTLY --------
-			 */
-			else {
-				sorter.sort();
-				sorter.rewind();
-				recordBuffer.clear();
-				// --- read sorted records
-				while (sorter.get(recordBuffer) && runIt) {
-					writeRecordBroadcastDirect(recordBuffer);
-					recordBuffer.clear();
-					SynchronizeUtils.cloverYield();
-				}
-			}
+        
+        try {
+			sorter.sort();
+		} catch (Exception ex) {
+			throw new JetelException( "Error when sorting: " + ex.getMessage(),ex);
 		}
+		
+        while (sorter.get(recordBuffer) && runIt) {
+			writeRecordBroadcastDirect(recordBuffer);
+			recordBuffer.clear();
+		}
+		
 	    broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
@@ -256,23 +207,22 @@ public class ExtSort extends Node {
     public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
-		
-        recordBuffer = ByteBuffer
-                .allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-        if (recordBuffer == null) {
-            throw new ComponentNotReadyException(
-                    "Can NOT allocate internal record buffer ! Required size:"
-                            + Defaults.Record.MAX_RECORD_SIZE);
-        }
-        // create sorter
-        if (internalBufferCapacity>0){
-            sorter = new SortDataRecordInternal(getInputPort(READ_FROM_PORT)
-                    .getMetadata(), sortKeysNames, sortOrderAscending, false, internalBufferCapacity);
-        } else {
-            sorter = new SortDataRecordInternal(getInputPort(READ_FROM_PORT)
-                    .getMetadata(), sortKeysNames, sortOrderAscending, false);
-        }
         
+		try {
+			// create sorter
+			sorter = new ExtSortDataRecordInternal(getInputPort(READ_FROM_PORT)
+					.getMetadata(), sortKeysNames, sortOrderAscending, internalBufferCapacity, DEFAULT_NUMBER_OF_TAPES, tmpDirs);
+		} catch (Exception e) {
+            throw new ComponentNotReadyException(e);
+		}
+
+		recordBuffer = ByteBuffer
+    		.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+	
+		if (recordBuffer == null) {
+			throw new RuntimeException("Can NOT allocate internal record buffer ! Required size:"
+					+ Defaults.Record.MAX_RECORD_SIZE);
+		}
     }
     
     @Override
@@ -284,274 +234,15 @@ public class ExtSort extends Node {
     }
 
     /**
-     * Performs merge of partially sorted data records stored on tapes 
-     * (in external files).
-     * 
-     * @throws IOException
-     * @throws InterruptedException
-     */
-    private void phaseMerge() throws IOException, InterruptedException {
-        int index;
-        DataRecordTape targetTape;
-        TapeCarousel targetCarousel = new TapeCarousel(tapeCarousel.numTapes(), tmpDirs);
-        DataRecord[] sourceRecords = new DataRecord[tapeCarousel.numTapes()];
-        boolean[] sourceRecordsFlags = new boolean[tapeCarousel.numTapes()];
-
-        // initialize sort key which will be used when merging data
-        sortKey = new RecordKey(sortKeysNames, inRecord.getMetadata());
-        sortKey.init();
-
-        // initial creation & initialization of source records
-        for (int i = 0; i < sourceRecords.length; i++) {
-            sourceRecords[i] = new DataRecord(inRecord.getMetadata());
-            sourceRecords[i].init();
-        }
-
-        // rewind carousel with source data - so we can start reading it
-        tapeCarousel.rewind();
-        // open carousel into which we will merge data
-        targetCarousel.open();
-        // get first free tape from target carousel
-        targetTape = targetCarousel.getFirstTape();
-
-        /* 
-         * MAIN MERGING loop
-         */
-        do {
-            // if we need to perform only final merging (one lewel of chunks on source tapes)
-            // skip to final merge
-            if (tapeCarousel.getFirstTape().getNumChunks()==1) break;
-            /*
-             * semi-merging of one level of data chunks
-             */
-            do {
-                loadUpRecords(tapeCarousel, sourceRecords, sourceRecordsFlags);
-                if (hasAnyData(sourceRecordsFlags)) {
-                    targetTape.addDataChunk();
-                } else {
-                    break;
-                }
-                while (hasAnyData(sourceRecordsFlags)) {
-                    if (sortOrderAscending) {
-                        index = getLowestIndex(sourceRecords,
-                                sourceRecordsFlags);
-                    } else {
-                        index = getHighestIndex(sourceRecords,
-                                sourceRecordsFlags);
-                    }
-                    // write record to target tape
-                    recordBuffer.clear();
-                    sourceRecords[index].serialize(recordBuffer);
-                    recordBuffer.flip();
-                    targetTape.put(recordBuffer);
-                    // read in next record from tape from which we read last
-                    // record
-                    if (!tapeCarousel.getTape(index).get(sourceRecords[index])) {
-                        sourceRecordsFlags[index] = false;
-                    }
-                    SynchronizeUtils.cloverYield();
-                }
-                targetTape.flush(false);
-                targetTape = targetCarousel.getNextTape();
-                if (targetTape == null)
-                    targetTape = targetCarousel.getFirstTape();
-            } while (hasMoreChunks(tapeCarousel));
-            // switch source tapes and target tapes, then continue with merging
-            targetCarousel.rewind();
-            tapeCarousel.clear();
-            TapeCarousel tmp = tapeCarousel;
-            tapeCarousel = targetCarousel;
-            targetCarousel = tmp;
-            targetTape = targetCarousel.getFirstTape();
-
-        } while (tapeCarousel.getFirstTape().getNumChunks() > 1);
-
-        // we don't need target carousel - merged records will be sent to output port
-        targetCarousel.free();
-
-        // DEBUG START
-//        if (logger.isDebugEnabled()) {
-//		    logger.debug("*** Merged data: ***");
-//		    logger.debug("****** FINAL TAPE CAROUSEL REVIEW ***********");
-//		
-//		    DataRecordTape tape = tapeCarousel.getFirstTape();
-//		    while (tape != null) {
-//		    	logger.debug(tape);
-//		        tape = tapeCarousel.getNextTape();
-//		    }
-//        }
-        // DEBUG END
-        
-        /* 
-         * send data to output - final merge
-         */
-        tapeCarousel.rewind();
-        loadUpRecords(tapeCarousel, sourceRecords, sourceRecordsFlags);
-        while (hasAnyData(sourceRecordsFlags)) {
-            if (sortOrderAscending) {
-                index = getLowestIndex(sourceRecords, sourceRecordsFlags);
-            } else {
-                index = getHighestIndex(sourceRecords, sourceRecordsFlags);
-            }
-            // write record to out port
-            writeRecordBroadcast(sourceRecords[index]);
-            if (!tapeCarousel.getTape(index).get(sourceRecords[index])) {
-                sourceRecordsFlags[index] = false;
-            }
-            SynchronizeUtils.cloverYield();
-        }
-        // end-of-story
-        tapeCarousel.free();
-    }
-
-    /**
-     * Populates source records array with records from individual tapes (included in
-     * tape carousel). Sets flags in flags array for those records which contain valid data.
-     * 
-     * @param tapeCarousel
-     * @param sourceRecords
-     * @param sourceRecordsFlags
-     * @throws IOException
-     */
-    private final void loadUpRecords(TapeCarousel tapeCarousel,
-            DataRecord[] sourceRecords, boolean[] sourceRecordsFlags)
-            throws IOException {
-        for (int i = 0; i < tapeCarousel.numTapes(); i++) {
-            DataRecordTape tape = tapeCarousel.getTape(i);
-            if (tape.get(sourceRecords[i])) {
-                sourceRecordsFlags[i] = true;
-            } else {
-                sourceRecordsFlags[i] = false;
-            }
-        }
-    }
-
-    /**
-     * Checks whether tapes within tape carousel contains more data chunks
-     * to be processed.
-     * @param tapeCarousel
-     * @return true if more chunks are available
-     */
-    private final static boolean hasMoreChunks(TapeCarousel tapeCarousel) {
-        boolean hasMore = false;
-        for (int i = 0; i < tapeCarousel.numTapes(); i++) {
-            if (tapeCarousel.getTape(i).nextDataChunk()) {
-                hasMore = true;
-            }
-        }
-        return hasMore;
-    }
-
-    /**
-     * Returns index of the lowest record from the specified record array
-     * 
-     * @param sourceRecords array of source records
-     * @param flags array indicating which source records contain valid data
-     * @return index of the lowest record within source records array of -1 if no such record
-     * exists - i.e. there is no valid record
-     */
-    private final int getLowestIndex(DataRecord[] sourceRecords, boolean[] flags) {
-        int lowest = -1;
-        for (int i = 0; i < flags.length; i++) {
-            if (flags[i]) {
-                lowest = i;
-                break;
-            }
-        }
-        for (int i = lowest + 1; i < sourceRecords.length; i++) {
-            if (flags[i]
-                    && sortKey.compare(sourceRecords[lowest], sourceRecords[i]) == 1) {
-                lowest = i;
-            }
-        }
-        return lowest;
-    }
-
-    /**
-     * Returns index of the highest record from the specified record array
-     * 
-     * @param sourceRecords array of source records
-     * @param flags array indicating which source records contain valid data
-     * @return index of the highest record within source records array of -1 if no such record
-     * exists - i.e. there is no valid record
-     */
-    private final int getHighestIndex(DataRecord[] sourceRecords,
-            boolean[] flags) {
-        int highest = 1;
-        for (int i = 0; i < flags.length; i++) {
-            if (flags[i]) {
-                highest = i;
-                break;
-            }
-        }
-        for (int i = highest + 1; i < sourceRecords.length; i++) {
-            if (flags[i]
-                    && sortKey
-                            .compare(sourceRecords[highest], sourceRecords[i]) == -1) {
-                highest = i;
-            }
-        }
-        return highest;
-    }
-
-    /**
-     * Checks that at least one valid record exists
-     * @param flags
-     * @return true if flahs indicate that at least one valid record exists
-     */
-    private final static boolean hasAnyData(boolean[] flags) {
-        for (int i = 0; i < flags.length; i++) {
-            if (flags[i] == true)
-                return true;
-        }
-        return false;
-    }
-
-    private void flushToTape() throws IOException {
-        DataRecordTape tape;
-        if (!carouselInitialized) {
-            tapeCarousel = new TapeCarousel(numberOfTapes, tmpDirs);
-            tapeCarousel.open();
-            tape = tapeCarousel.getFirstTape();
-            carouselInitialized = true;
-        } else {
-            tape = tapeCarousel.getNextTape();
-            if (tape == null)
-                tape = tapeCarousel.getFirstTape();
-        }
-        tape.addDataChunk();
-
-        sorter.rewind();
-        recordBuffer.clear();
-        // --- read sorted records
-        while (sorter.get(recordBuffer) && runIt) {
-            tape.put(recordBuffer);
-            recordBuffer.clear();
-        }
-        tape.flush(false);
-    }
-
-    /**
      * Sets the sortOrderAscending attribute of the Sort object
      * 
      * @param ascending
      *            The new sortOrderAscending value
      */
     public void setSortOrderAscending(boolean ascending) {
-        sortOrderAscending = ascending;
+    	sortOrderAscending = ascending;        
     }
     
-    /**
-     * How many tapes will be used for merging
-     * @param numberOfTapes The numberOfTapes to set.
-     */
-    public void setNumberOfTapes(int numberOfTapes) {
-        if(numberOfTapes > 2) {
-            this.numberOfTapes = numberOfTapes / 2 * 2;
-        } else {
-            numberOfTapes = 2;
-        }
-    }
     
     /**
      * What is the capacity of internal buffer used for
@@ -587,8 +278,8 @@ public class ExtSort extends Node {
        }
        
        // numberOfTapes attribute
-       if (this.numberOfTapes != 6) {
-       		xmlElement.setAttribute(XML_NUMBEROFTAPES_ATTRIBUTE,String.valueOf(this.numberOfTapes));
+       if (getNumberOfTapes() != DEFAULT_NUMBER_OF_TAPES) {
+       		xmlElement.setAttribute(XML_NUMBEROFTAPES_ATTRIBUTE,String.valueOf(getNumberOfTapes()));
        }
        
        // sorterInitialCapacity
@@ -596,14 +287,13 @@ public class ExtSort extends Node {
        		xmlElement.setAttribute(XML_BUFFER_CAPACITY_ATTRIBUTE, String.valueOf(this.internalBufferCapacity));
        }
        
-       if (this.tmpDirs!=null){
+       if (tmpDirs!=null){
            xmlElement.setAttribute(XML_TEMPORARY_DIRS,StringUtils.stringArraytoString(tmpDirs,';') );
        }
        
-       
     }
 
-    /**
+	/**
      *  Description of the Method
      *
      * @param  nodeXML  Description of Parameter
@@ -637,12 +327,12 @@ public class ExtSort extends Node {
             }
             
         } catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage() + "asdfas fasdf ",ex);
         }
         return sort;
     }
 
-    /**
+	/**
      *  Description of the Method
      *
      * @return    Description of the Return Value
@@ -669,6 +359,22 @@ public class ExtSort extends Node {
         
         return status;
     }
+        
+    private int getNumberOfTapes() {
+    	return numberOfTapes;
+	}
+
+    private void setNumberOfTapes(int numberOfTapes) {
+    	this.numberOfTapes = numberOfTapes;
+	}
+    
+    public String[] getTmpDirs() {
+        return tmpDirs;
+    }
+
+    public void setTmpDirs(String[] tmpDirs) {
+    	this.tmpDirs = tmpDirs;        
+    }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.Node#getType()
@@ -677,12 +383,5 @@ public class ExtSort extends Node {
         return COMPONENT_TYPE;
     }
 
-    public String[] getTmpDirs() {
-        return tmpDirs;
-    }
-
-    public void setTmpDirs(String[] tmpDirs) {
-        this.tmpDirs = tmpDirs;
-    }
 }
 
