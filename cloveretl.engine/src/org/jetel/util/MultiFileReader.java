@@ -119,7 +119,7 @@ public class MultiFileReader {
         try {
             if(!nextSource()) {
                 noInputFile = true;
-                throw new ComponentNotReadyException("FileURL attribute (" + fileURL + ") doesn't contain valid file url.");
+                //throw new ComponentNotReadyException("FileURL attribute (" + fileURL + ") doesn't contain valid file url.");
             }
         } catch (JetelException e) {
             noInputFile = true;
