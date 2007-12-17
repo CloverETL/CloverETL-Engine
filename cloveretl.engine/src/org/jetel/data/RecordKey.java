@@ -55,9 +55,9 @@ import org.jetel.util.string.StringUtils;
  */
 public class RecordKey {
 
-	private int keyFields[];
-	private DataRecordMetadata metadata;
-	private String keyFieldNames[];
+	protected int keyFields[];
+	protected DataRecordMetadata metadata;
+	protected String keyFieldNames[];
 	private final static char KEY_ITEMS_DELIMITER = ':';
 	private final static int DEFAULT_STRING_KEY_LENGTH = 32;
 	private boolean isInitialized = false;

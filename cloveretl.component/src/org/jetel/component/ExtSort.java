@@ -20,13 +20,16 @@
 package org.jetel.component;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.ExtSortDataRecordInternal;
-import org.jetel.data.SortOrder;
+import org.jetel.data.ISortDataRecordInternal;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -119,8 +122,9 @@ public class ExtSort extends Node {
 	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
 
-	private ExtSortDataRecordInternal sorter;
-	private SortOrder sortOrderAscending;
+	private ISortDataRecordInternal sorter;
+//	private SortOrder sortOrderAscending;
+	private boolean[] sortOrderings;
 	private String[] sortKeysNames;    
 	
 	private InputPort inPort;
@@ -133,6 +137,8 @@ public class ExtSort extends Node {
 
 	private final static boolean DEFAULT_ASCENDING_SORT_ORDER = true; 
 	private final static int DEFAULT_NUMBER_OF_TAPES = 6;
+	private static final String KEY_FIELDS_ORDERING_1ST_DELIMETER = "(";
+	private static final String KEY_FIELDS_ORDERING_2ND_DELIMETER = ")";	
 	
 	static Log logger = LogFactory.getLog(ExtSort.class);
 
@@ -146,10 +152,26 @@ public class ExtSort extends Node {
      * @param sortOrder
      *            Description of the Parameter
      */
-    public ExtSort(String id, String[] sortKeys, SortOrder sortOrder) {
+    public ExtSort(String id, String[] sortKeys, boolean oldAscendingOrder) {
         super(id);
-        this.sortOrderAscending = sortOrder;
+
         this.sortKeysNames = sortKeys;
+        this.sortOrderings = new boolean[sortKeysNames.length];
+        Arrays.fill(sortOrderings, oldAscendingOrder);
+        
+        Pattern pat = Pattern.compile("^(.*)\\((.*)\\)$");
+        
+        for (int i = 0; i < sortKeys.length; i++) {
+        	Matcher matcher = pat.matcher(sortKeys[i]);
+        	if (matcher.find()) {
+	        	String keyPart = sortKeys[i].substring(matcher.start(1), matcher.end(1));
+	        	if (matcher.groupCount() > 1) {
+	        		sortOrderings[i] = (sortKeys[i].substring(matcher.start(2), matcher.end(2))).matches("^[Aa].*");	        		
+	        	}
+	        	sortKeys[i] = keyPart;
+        	}
+        }
+        
         this.numberOfTapes = DEFAULT_NUMBER_OF_TAPES;
         internalBufferCapacity=-1;
     }
@@ -162,9 +184,9 @@ public class ExtSort extends Node {
      * @param sortKeysNames
      *            Description of the Parameter
      */
-    public ExtSort(String id, String[] sortKeys) {
-        this(id, sortKeys, new SortOrder(new boolean[] { DEFAULT_ASCENDING_SORT_ORDER }));
-    }
+/*    public ExtSort(String id, String[] sortKeys) {
+        this(id, sortKeys);//, new SortOrder(new boolean[] { DEFAULT_ASCENDING_SORT_ORDER }));
+    }*/
 
     @Override
     public Result execute() throws Exception {
@@ -212,7 +234,7 @@ public class ExtSort extends Node {
 		try {
 			// create sorter
 			sorter = new ExtSortDataRecordInternal(getInputPort(READ_FROM_PORT)
-					.getMetadata(), sortKeysNames, sortOrderAscending, internalBufferCapacity, DEFAULT_NUMBER_OF_TAPES, tmpDirs);
+					.getMetadata(), sortKeysNames, sortOrderings, internalBufferCapacity, DEFAULT_NUMBER_OF_TAPES, tmpDirs);
 		} catch (Exception e) {
             throw new ComponentNotReadyException(e);
 		}
@@ -254,15 +276,19 @@ public class ExtSort extends Node {
        super.toXML(xmlElement);
        
        // sortKey attribute
-       String sortKeys = this.sortKeysNames[0];
+       String sortKeys = this.sortKeysNames[0] 
+            + KEY_FIELDS_ORDERING_1ST_DELIMETER + this.sortOrderings[0]
+            + KEY_FIELDS_ORDERING_2ND_DELIMETER;
        for (int i=1; i < this.sortKeysNames.length; i++) {
-       		sortKeys += Defaults.Component.KEY_FIELDS_DELIMITER + sortKeysNames[i];
+       		sortKeys += Defaults.Component.KEY_FIELDS_DELIMITER + sortKeysNames[i]
+       		+ KEY_FIELDS_ORDERING_1ST_DELIMETER + this.sortOrderings[i] 
+            + KEY_FIELDS_ORDERING_2ND_DELIMETER;
        }
        
        xmlElement.setAttribute(XML_SORTKEY_ATTRIBUTE, sortKeys);
-              
-       // sortOrder attribute
-       xmlElement.setAttribute(XML_SORTORDER_ATTRIBUTE, sortOrderAscending.toString());
+
+       // sortOrder attribute - deprecated
+       /*xmlElement.setAttribute(XML_SORTORDER_ATTRIBUTE, sortOrderingsString);*/
        
        // numberOfTapes attribute
        if (getNumberOfTapes() != DEFAULT_NUMBER_OF_TAPES) {
@@ -290,13 +316,17 @@ public class ExtSort extends Node {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         ExtSort sort;
         try {
-            sort = new ExtSort(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(
+        	boolean oldAscendingOrder;
+            if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) { 
+            	// this is for backwards compatibility
+            	oldAscendingOrder = xattribs.getString(XML_SORTORDER_ATTRIBUTE)
+                    .matches("^[Aa].*");
+            } else 
+            	oldAscendingOrder = true;
+
+        	sort = new ExtSort(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(
                     XML_SORTKEY_ATTRIBUTE).split(
-                    Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-            /*if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
-                sort.setSortOrderAscending(xattribs.getString(XML_SORTORDER_ATTRIBUTE)
-                        .matches("^[Aa].*"));
-            }*/
+                    Defaults.Component.KEY_FIELDS_DELIMITER_REGEX), oldAscendingOrder);
             if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
             	sort.setSortOrders(xattribs.getString(XML_SORTORDER_ATTRIBUTE), sort.getSortKeyCount());
             }
@@ -316,7 +346,7 @@ public class ExtSort extends Node {
             }
             
         } catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage() + "asdfas fasdf ",ex);
+	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
         return sort;
     }
@@ -326,7 +356,18 @@ public class ExtSort extends Node {
 	}
 
 	private void setSortOrders(String string, int minLength) {
-		sortOrderAscending.fromString(string, minLength);
+		
+		String[] tmp = string.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX); 
+		sortOrderings = new boolean[Math.max(tmp.length, minLength)];
+		boolean lastValue = true;
+		
+		for (int i = 0 ; i < tmp.length ; i++) {
+			lastValue = sortOrderings[i] = tmp[i].matches("^[Aa].*"); 
+		}
+		
+		for (int i = tmp.length; i < minLength; i++) {
+			sortOrderings[i] = lastValue;
+		}
 	}
 
 	/**
@@ -356,7 +397,7 @@ public class ExtSort extends Node {
         
         return status;
     }
-        
+
     private int getNumberOfTapes() {
     	return numberOfTapes;
 	}

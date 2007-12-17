@@ -49,17 +49,18 @@ import org.jetel.util.MiscUtils;
  *@author     dpavlis
  *@see	      org.jetel.data.RecordKey
  */
-public class SortDataRecordInternal {
+public class SortDataRecordInternal implements ISortDataRecordInternal {
 
 	private DataRecordCol currentRecordCol;
 	private int currentColSize;
 	private int currentColIndex;
-	private ByteBuffer dataBuffer;
-	private RecordKey key;
+//	private ByteBuffer dataBuffer;
+	private RecordOrderedKey key;
 	private DataRecordMetadata metadata;
 	private int recCounter;
 	private int lastFound;
-	private boolean sortOrderAscending;
+	//private boolean sortOrderAscending;
+	private boolean[] sortOrderings; 
 	private List recordColList;
 	private DataRecordCol[] recordColArray;
 	private int numCollections;
@@ -85,28 +86,29 @@ public class SortDataRecordInternal {
 	 * @param sortAscending	True if required sort order is Ascending, otherwise False
 	 * @param oneColCapacity	What is the initial capacity of 1 chunk/array of data records
 	 */
-	public SortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean sortAscending, boolean growingBuffer, int oneColCapacity) {
+	public SortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, boolean growingBuffer, int oneColCapacity) {
 		this.metadata = metadata;
         this.numCollections = growingBuffer ? DEFAULT_NUM_COLLECTIONS : 1;
+        this.sortOrderings = sortOrderings;
 		recordColList = new ArrayList(this.numCollections);
 		// allocate buffer for storing values
-		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		key = new RecordKey(keyItems, metadata);
+		//dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		key = new RecordOrderedKey(keyItems, sortOrderings, metadata);
 		key.init();
-		sortOrderAscending = sortAscending;
+//		sortOrderAscending = sortAscending;
 		recCounter=lastFound=currentColIndex= 0;
-		currentRecordCol=new DataRecordCol(oneColCapacity,metadata,sortOrderAscending);
+		currentRecordCol=new DataRecordCol(oneColCapacity, metadata);
 		currentColSize=oneColCapacity;
 		recordColList.add(currentRecordCol);
 	}
 
 
-    public SortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean sortAscending, boolean growingBuffer) {
-        this(metadata,keyItems,sortAscending, growingBuffer, DEFAULT_RECORD_COLLECTION_CAPACITY);
+    public SortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, boolean growingBuffer) {
+    	this(metadata,keyItems, sortOrderings, growingBuffer, DEFAULT_RECORD_COLLECTION_CAPACITY);
     }
 
-	public SortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean sortAscending){
-	    this(metadata,keyItems,sortAscending, true, DEFAULT_RECORD_COLLECTION_CAPACITY);
+	public SortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings){
+		this(metadata,keyItems, sortOrderings, true, DEFAULT_RECORD_COLLECTION_CAPACITY);
 	}
 	
 	public void setInitialBufferCapacity(int capacity){
@@ -121,7 +123,7 @@ public class SortDataRecordInternal {
 	public void reset() {
 		recCounter = 0;
 		lastFound=0;
-		dataBuffer.clear();
+		//dataBuffer.clear();
 		currentColIndex=0;
 		currentRecordCol=(DataRecordCol)recordColList.get(0);
 		for(Iterator i=recordColList.iterator();i.hasNext();){
@@ -129,8 +131,8 @@ public class SortDataRecordInternal {
 		}
 	}
 
-	/**
-	 * Frees all resources (buffers, collections, etc)
+	/* (non-Javadoc)
+	 * @see org.jetel.data.ISortDataRecordsInternal#free()
 	 */
 	public void free(){
 	    for(Iterator i=recordColList.iterator();i.hasNext();){
@@ -150,10 +152,8 @@ public class SortDataRecordInternal {
 	}
 
 
-	/**
-	 *  Stores additional record into internal buffer for sorting
-	 *
-	 *@param  record  DataRecord to be stored
+	/* (non-Javadoc)
+	 * @see org.jetel.data.ISortDataRecordsInternal#put(org.jetel.data.DataRecord)
 	 */
 	public boolean put(DataRecord record) {
 		if (!currentRecordCol.put(record)){
@@ -198,7 +198,7 @@ public class SortDataRecordInternal {
 	        // let's round it to 4B size (32bits)
 	        currentColSize=(((currentColSize*COLLECTION_GROW_FACTOR)/10)/32+1)*32;
             try{
-                currentRecordCol = new DataRecordCol(currentColSize, metadata, sortOrderAscending);
+                currentRecordCol = new DataRecordCol(currentColSize, metadata);
             }catch(OutOfMemoryError ex){
                 currentRecordCol = null;
                 throw new RuntimeException("Out of memory in internal sorter algorithm. Please, set maximum Java heap size via -Xmx<size> JVM command line parameter or decrease sorter buffer capacity.");
@@ -210,18 +210,18 @@ public class SortDataRecordInternal {
 	    return true;
 	}
 	
-	/**
-	 *  Sorts internal array containing individual records
+	/* (non-Javadoc)
+	 * @see org.jetel.data.ISortDataRecordsInternal#sort()
 	 */
 	public void sort() {
-        RecordComparator comparator;
+        RecordOrderedComparator comparator;
         if (useCollator){
             if (collatorLocale==null){
                 collatorLocale=Locale.getDefault();
             }
-            comparator=new RecordComparator(key.getKeyFields(),(RuleBasedCollator)Collator.getInstance(collatorLocale));
+            comparator=new RecordOrderedComparator(key.getKeyFields(), this.sortOrderings,  (RuleBasedCollator)Collator.getInstance(collatorLocale));
         }else{
-            comparator=new RecordComparator(key.getKeyFields());
+            comparator=new RecordOrderedComparator(key.getKeyFields(), this.sortOrderings);
         }
 	    DataRecordCol recordArray;
 	    for (Iterator iterator=recordColList.iterator();iterator.hasNext();){
@@ -235,30 +235,24 @@ public class SortDataRecordInternal {
 	}
 
 
-	/**
-	 *  Gets the next data record in sorted order
-	 *
-	 *@param  record  DataRecord which populate with data
-	 *@return         The next record or null if no more records
+	/* (non-Javadoc)
+	 * @see org.jetel.data.ISortDataRecordsInternal#get()
 	 */
 	public DataRecord get() {
 	    // optimization - if only 1 sorted buffer, then no merge sorting
 	    if (recordColArray.length==1){
 	        return recordColArray[0].get();
 	    }
-	    if (sortOrderAscending){
+	    /*if (sortOrderAscending){*/
 	        return getNextLowest();
-	    }else{
+	    /*}else{
 	        return getNextHighest();
-	    }
+	    }*/
 	}
 
 
-	/**
-	 *  Gets the next data record in sorted order
-	 *
-	 *@param  recordData  ByteBuffer into which copy next record's data
-	 *@return             True if there was next record or False
+	/* (non-Javadoc)
+	 * @see org.jetel.data.ISortDataRecordsInternal#get(java.nio.ByteBuffer)
 	 */
 	public boolean get(ByteBuffer recordDataBuffer) {
 		DataRecord record=get();
@@ -295,30 +289,6 @@ public class SortDataRecordInternal {
 	    return recordColArray[indexLowest].get();
 	}
 	
-	/**
-	 * Merge all sorted buffers
-	 * 
-	 * @return next highest Data Record based on specified key
-	 */
-	private DataRecord getNextHighest(){
-	    DataRecord record=null,recordNext=null;
-	    int index,indexHighest;
-	    for(index=lastFound;index<recordColArray.length;index++){
-	        record=recordColArray[index].peek();
-	        if (record!=null) break;
-	    }
-	    if (record==null) return null;
-	    indexHighest=lastFound=index;
-	    for(int i=index+1;i<recordColArray.length;i++){
-	        recordNext=recordColArray[i].peek();
-	        if ((recordNext!=null)&&(key.compare(record,recordNext)<0)){
-	        	record=recordNext;
-	        	indexHighest=i;
-	        }
-	    }
-	    return recordColArray[indexHighest].get();
-	}
-	
 	  /**
      * @return Returns the recCounter.
      */
@@ -338,17 +308,15 @@ public class SortDataRecordInternal {
 	private static class DataRecordCol{
 		DataRecord recordArray[];
 		DataRecordMetadata metadata;
-		boolean ascendingOrder;
 		int pointer;
 		int noItems;
 		
 		
-		DataRecordCol(int capacity,DataRecordMetadata metadata,boolean ascendingOrder){
+		DataRecordCol(int capacity,DataRecordMetadata metadata){
 			recordArray=new DataRecord[capacity];
 			noItems=0;
 			pointer=0;
 			this.metadata=metadata;
-			this.ascendingOrder=ascendingOrder;
 		}
 		
 		DataRecord[] getRecordArray(){
@@ -384,19 +352,11 @@ public class SortDataRecordInternal {
 //		}
 		
 		DataRecord get(){
-		    if (ascendingOrder){
-		        if (pointer<noItems){
-		            return recordArray[pointer++];
-		        }else{
-		            return null;
-		        }
-		    }else{
-		        if (pointer>=0){
-		            return recordArray[pointer--];
-		        }else{
-		            return null;
-		        }
-		    }
+	        if (pointer<noItems){
+	            return recordArray[pointer++];
+	        }else{
+	            return null;
+	        }
 		}
 		
 		/**
@@ -413,11 +373,7 @@ public class SortDataRecordInternal {
 		    }
 		}
 		void rewind(){
-		    if (ascendingOrder){
-		        pointer=0;
-		    }else{
-		        pointer=noItems-1;
-		    }
+		    pointer=0;
 		}
 		
 		void reset(){
@@ -478,4 +434,3 @@ public class SortDataRecordInternal {
     }
   
 }
-

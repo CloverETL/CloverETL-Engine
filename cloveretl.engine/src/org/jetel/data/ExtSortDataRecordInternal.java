@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.data.tape.TapeCarousel;
-import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 
@@ -36,7 +35,7 @@ import org.jetel.util.SynchronizeUtils;
  *@see	      org.jetel.data.RecordKey
  */
 
-public class ExtSortDataRecordInternal {
+public class ExtSortDataRecordInternal implements ISortDataRecordInternal {
 
 	private boolean doMerge = false;
 	private SortDataRecordInternal sorter;
@@ -45,8 +44,8 @@ public class ExtSortDataRecordInternal {
 	private int numberOfTapes;
 	private String[] tmpDirs;
 	private String[] sortKeysNames;
-	private SortOrder sortOrderAscending;
-	private RecordKey sortKey;
+	private boolean[] sortOrderings;
+	private RecordOrderedKey sortKey;
 	DataRecordMetadata inMetadata;
 	private ByteBuffer recordBuffer;
 	private boolean[] sourceRecordsFlags;
@@ -68,11 +67,11 @@ public class ExtSortDataRecordInternal {
 	 * @param numberOfTapes	Number of tapes to be used
 	 * @param tmpDirs	List of names of temporary directories to be used for external sorting buffer on disk
 	 */
-	public ExtSortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, SortOrder sortAscending, int internalBufferCapacity,
+	public ExtSortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, int internalBufferCapacity,
 			int numberOfTapes, String[] tmpDirs) {
 	
 		this.sortKeysNames = keyItems;		
-		this.sortOrderAscending = sortAscending;
+		this.sortOrderings = sortOrderings;
 		this.numberOfTapes = numberOfTapes;
 		this.tmpDirs = tmpDirs;
 		this.prevIndex = -1;
@@ -80,9 +79,9 @@ public class ExtSortDataRecordInternal {
 		inMetadata = metadata;
 		
 		if (internalBufferCapacity>0){	
-            sorter = new SortDataRecordInternal(metadata, keyItems, sortAscending.getOrder(0), false, internalBufferCapacity);
+            sorter = new SortDataRecordInternal(metadata, keyItems, sortOrderings, false, internalBufferCapacity);
         } else {
-            sorter = new SortDataRecordInternal(metadata, keyItems, sortAscending.getOrder(0), false);
+            sorter = new SortDataRecordInternal(metadata, keyItems, sortOrderings, false);
         }
 		
 		recordBuffer = ByteBuffer
@@ -95,12 +94,10 @@ public class ExtSortDataRecordInternal {
         
 	}
 
-	/**
-	 *  Stores additional record into internal buffer for sorting
-	 *
-	 *@param  record  DataRecord to be stored
+	/* (non-Javadoc)
+	 * @see org.jetel.data.ISortDataRecordInternal#put(org.jetel.data.DataRecord)
 	 */
-	public void put(DataRecord record) throws IOException {
+	public boolean put(DataRecord record) throws IOException {
 		if (!sorter.put(record)) {
 			// we need to sort & flush buffer on to tape and merge it
 			// later
@@ -113,12 +110,11 @@ public class ExtSortDataRecordInternal {
 						"Can't store record into sorter !");
 			}			
 		}
+		return true;
 	}
 	
-	/**
-	 *  Sorts internal array and flush it to disk, thus reading can start
-	 *  Note: in the case of external sorting, when merge is necessary, other name would be suitable,
-	 *  		it is named sort() to maintain consistency with SortDataRecordInternal
+	/* (non-Javadoc)
+	 * @see org.jetel.data.ISortDataRecordInternal#sort()
 	 */
 	public void sort() throws IOException, InterruptedException {
 		if (doMerge) {
@@ -134,16 +130,12 @@ public class ExtSortDataRecordInternal {
 		}
 	}
 	
-	/**
-	 *  Gets the next data record in sorted order
-	 *
-	 *@param  recordData  ByteBuffer into which copy next record's data
-	 *@return             True if there was next record or False
+	/* (non-Javadoc)
+	 * @see org.jetel.data.ISortDataRecordInternal#get()
 	 */
-	DataRecord get() throws IOException {		
+	public DataRecord get() throws IOException {		
 		
 		int index;
-		
 		
 		if (doMerge) {
 
@@ -155,12 +147,8 @@ public class ExtSortDataRecordInternal {
 			
 	        if (hasAnyData(sourceRecordsFlags)) {
 	        	
-	            if (sortOrderAscending.getOrder(0)) {
-	                index = getLowestIndex(sourceRecords, sourceRecordsFlags);
-	            } else {
-	                index = getHighestIndex(sourceRecords, sourceRecordsFlags);
-	            }
-	          
+	            index = getLowestIndex(sourceRecords, sourceRecordsFlags);
+
 	            prevIndex = index;
 	            
 	            SynchronizeUtils.cloverYield();
@@ -174,11 +162,8 @@ public class ExtSortDataRecordInternal {
 		}
 	}
 	
-	/**
-	 *  Gets the next data record in sorted order
-	 *
-	 *@param  recordData  ByteBuffer into which copy next record's data
-	 *@return             True if there was next record or False
+	/* (non-Javadoc)
+	 * @see org.jetel.data.ISortDataRecordInternal#get(java.nio.ByteBuffer)
 	 */
 	public boolean get(ByteBuffer recordDataBuffer) throws IOException {		
 		DataRecord record=get();
@@ -191,8 +176,8 @@ public class ExtSortDataRecordInternal {
 		}		
 	}
 
-	/**
-	 * Frees all resources (buffers, collections of internal sorter, etc) 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.ISortDataRecordInternal#free()
 	 */
 	public void free() {		
 		sorter.free();
@@ -240,7 +225,7 @@ public class ExtSortDataRecordInternal {
         sourceRecordsFlags = new boolean[tapeCarousel.numTapes()];
 
         // initialize sort key which will be used when merging data
-        sortKey = new RecordKey(sortKeysNames, inMetadata);
+        sortKey = new RecordOrderedKey(sortKeysNames, sortOrderings, inMetadata);
         sortKey.init();
 
         // initial creation & initialization of source records
@@ -274,13 +259,8 @@ public class ExtSortDataRecordInternal {
                     break;
                 }
                 while (hasAnyData(sourceRecordsFlags)) {
-                    if (sortOrderAscending.getOrder(0)) {
-                        index = getLowestIndex(sourceRecords,
+                    index = getLowestIndex(sourceRecords,
                                 sourceRecordsFlags);
-                    } else {
-                        index = getHighestIndex(sourceRecords,
-                                sourceRecordsFlags);
-                    }
                     // write record to target tape
                     recordBuffer.clear();
                     sourceRecords[index].serialize(recordBuffer);
@@ -355,33 +335,6 @@ public class ExtSortDataRecordInternal {
             }
         }
         return lowest;
-    }
-
-    /**
-     * Returns index of the highest record from the specified record array
-     * 
-     * @param sourceRecords array of source records
-     * @param flags array indicating which source records contain valid data
-     * @return index of the highest record within source records array of -1 if no such record
-     * exists - i.e. there is no valid record
-     */
-    private final int getHighestIndex(DataRecord[] sourceRecords,
-            boolean[] flags) {
-        int highest = 1;
-        for (int i = 0; i < flags.length; i++) {
-            if (flags[i]) {
-                highest = i;
-                break;
-            }
-        }
-        for (int i = highest + 1; i < sourceRecords.length; i++) {
-            if (flags[i]
-                    && sortKey
-                            .compare(sourceRecords[highest], sourceRecords[i]) == -1) {
-                highest = i;
-            }
-        }
-        return highest;
     }
     
     /**
