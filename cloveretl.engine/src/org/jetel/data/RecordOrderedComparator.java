@@ -1,82 +1,68 @@
-/*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
 package org.jetel.data;
 
-import java.nio.ByteBuffer;
-import java.text.Collator;
 import java.text.RuleBasedCollator;
-import java.util.Comparator;
 import java.util.Arrays;
+import java.util.Comparator;
 
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
-/**
- *  This class compares two records of the same structure (created based on
- *  the same or at least compatible metadata).<br> Used
- *  primarily for sorting data records when it can be passed
- *  into JDK's standard sorting methods.
- *
- *@author     dpavlis
- *@created    February 28, 2004
- *@since      February 28, 2004
- *@revision    $Revision:  $
- */
-public class RecordComparator implements Comparator{
-
-	protected int keyFields[];
-    protected RuleBasedCollator collator;
-    protected boolean equalNULLs = false; // specifies whether two NULLs are deemed equal
+public class RecordOrderedComparator extends RecordComparator implements
+		Comparator {
 	
+	private boolean[] keyOrderings;
+
 	/**
-	 *  Constructor for the RecordComparator object
+	 *  Constructor for the RecordOrderedComparator object
 	 *
-	 *@param  keyField  indexes of fields to be considered for sorting
-	 *@since                 May 2, 2002
+	 * @param  keyField  indexes of fields to be considered for sorting
+	 * @since                 May 2, 2002
 	 */
-	public RecordComparator(int keyFields[]) {
-		this(keyFields,null);
+	private RecordOrderedComparator(int[] keyFields) {
+		super(keyFields);
+		keyOrderings = new boolean[keyFields.length];
+		Arrays.fill(keyOrderings, true);
+	}
+
+	/**
+	 *  Constructor for the RecordOrderedComparator object
+ 	 * @param keyOrderings ordering of columns for each key (true=ascending)
+	 *
+	 * @param  keyField  indexes of fields to be considered for sorting
+	 */
+	public RecordOrderedComparator(int[] keyFields, boolean[] keyOrderings) {
+		super(keyFields);
+		this.keyOrderings = keyOrderings;
 	}
 
     /**
-     * Constructor for the RecordComparator object
+     * Constructor for the RecordOrderedComparator object
      * 
      * @param keyFields indexes of fields to be considered for sorting
      * @param collator  Collator which should be use for comparing String fields
      */
-    public RecordComparator(int keyFields[], RuleBasedCollator collator){
-        this.keyFields = keyFields;
-        this.collator=collator;
-    }
-    
-	/**
-	 *  Gets the keyFields attribute of the RecordKey object
-	 *
-	 *@return    The keyFields value
-	 */
-	public int[] getKeyFields() {
-		return keyFields;
+	private RecordOrderedComparator(int[] keyFields, RuleBasedCollator collator) {
+	
+		super(keyFields, collator);
+		keyOrderings = new boolean[keyFields.length];
+		Arrays.fill(keyOrderings, true);
+		
 	}
-
-
+	
 	/**
+     * Constructor for the RecordOrderedComparator object
+     * 
+     * @param keyFields indexes of fields to be considered for sorting
+     * @param collator  Collator which should be use for comparing String fields
+     */
+	public RecordOrderedComparator(int[] keyFields, boolean[] keyOrderings, RuleBasedCollator collator) {
+	
+		super(keyFields, collator);
+		this.keyOrderings = keyOrderings;
+				
+	}
+	
+		/**
 	 *  Compares two records (of the same layout) based on defined key-fields and returns (-1;0;1) if (< ; = ; >)
 	 *
 	 *@param  record1  Description of the Parameter
@@ -103,6 +89,9 @@ public class RecordComparator implements Comparator{
                     compResult = field1.compareTo(record2
                             .getField(keyFields[i]));
                 }
+                if (!keyOrderings[i]) {
+                	compResult = -compResult;
+                }
                 if (compResult != 0) {
                     if (equalNULLs) {
                         if (!(record1.getField(keyFields[i]).isNull && record2
@@ -120,7 +109,9 @@ public class RecordComparator implements Comparator{
             for (int i = 0; i < keyFields.length; i++) {
                 compResult = record1.getField(keyFields[i]).compareTo(
                         record2.getField(keyFields[i]));
-
+				if (!keyOrderings[i]) {
+                	compResult = -compResult;
+                }
                 if (compResult != 0) {
                     if (equalNULLs) {
                         if (!(record1.getField(keyFields[i]).isNull && record2
@@ -136,9 +127,8 @@ public class RecordComparator implements Comparator{
         return 0;
         // seem to be the same
     }
-
-
-	/**
+	
+		/**
      * Compares two records (can have different layout) based on defined
      * key-fields and returns (-1;0;1) if (< ; = ; >).<br>
      * The particular fields to be compared have to be of the same type !
@@ -152,6 +142,7 @@ public class RecordComparator implements Comparator{
      * @return -1 ; 0 ; 1
      */
 	public int compare(RecordKey secondKey, DataRecord record1, DataRecord record2) {
+	
 		int compResult;
 		int[] record2KeyFields = secondKey.getKeyFields();
 		if (keyFields.length != record2KeyFields.length) {
@@ -167,6 +158,10 @@ public class RecordComparator implements Comparator{
                  }else{
                      compResult = field1.compareTo(
                              record2.getField(record2KeyFields[i]));
+                 }
+                 
+                 if (!keyOrderings[i]) {
+                 	compResult = -compResult;
                  }
                  
                  if (compResult != 0) {
@@ -185,8 +180,13 @@ public class RecordComparator implements Comparator{
          }else{
         
 		for (int i = 0; i < keyFields.length; i++) {
+		
                 compResult = record1.getField(keyFields[i]).compareTo(
                         record2.getField(record2KeyFields[i]));
+                        
+				if (!keyOrderings[i]) {
+                 	compResult = -compResult;
+                 }
                 
                 if (compResult != 0) {
                     if (equalNULLs) {
@@ -204,72 +204,5 @@ public class RecordComparator implements Comparator{
 		// seem to be the same
 	}
 	
-	/* (non-Javadoc) Implemented to satisfy Comparator interface
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	public boolean equals(Object obj){
-		if (obj instanceof RecordComparator){
-			return Arrays.equals(this.keyFields,((RecordComparator)obj).getKeyFields()); 
-		}else{
-			return false;
-		}
-	}
 
-    public Collator getCollator() {
-        return collator;
-    }
-
-    public void setCollator(RuleBasedCollator collator) {
-        this.collator = collator;
-    }
-    
-    /**
-     * True if two NULL values (fields with NULL flag set) are considered equal
-     * 
-     * @return Returns the equalNULLs.
-     */
-    public boolean isEqualNULLs() {
-        return equalNULLs;
-    }
-    /**
-     * Sets whether two NULL values (fields with NULL flag set) are considered equal.<br>
-     * Default is false.
-     * 
-     * @param equalNULLs The equalNULLs to set.
-     */
-    public void setEqualNULLs(boolean equalNULLs) {
-        this.equalNULLs = equalNULLs;
-    }
-    
-    /**
-     * This method serializes (saves) content of key fields only (for specified record) into
-     * buffer.
-     * 
-     * @param buffer ByteBuffer into which serialize key fields
-     * @param record data record from which key fields will be serialized into ByteBuffer
-     */
-    public void serializeKeyFields(ByteBuffer buffer,DataRecord record) {
-        for (int i = 0; i < keyFields.length; i++) {
-            record.getField(keyFields[i]).serialize(buffer);
-        }
-    }
-    
-    /**
-     *  This method deserializes (restores) content of key fields only (for specified record) from
-     * buffer.
-     * 
-     * @param buffer ByteBuffer from which deserialize key fields
-     * @param record data record whose key fields will be deserialized from ByteBuffer
-     * @since 29.1.2007
-     */
-    public void deserializeKeyFileds(ByteBuffer buffer,DataRecord record){
-        for (int i = 0; i < keyFields.length; i++) {
-            record.getField(keyFields[i]).deserialize(buffer);
-        }
-    }
-    
-    
 }
-// end RecordKey
-
-

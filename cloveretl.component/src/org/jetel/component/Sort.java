@@ -20,6 +20,7 @@
 package org.jetel.component;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -190,8 +191,10 @@ public class Sort extends Node {
 					Defaults.Record.MAX_RECORD_SIZE);
 		}
 		// create sorter
+		boolean[] sortOrderings = new boolean[sortKeys.length];
+		Arrays.fill(sortOrderings, sortOrderAscending);
 		newSorter = new SortDataRecordInternal(
-		        getInputPort(READ_FROM_PORT).getMetadata(), sortKeys, sortOrderAscending);
+		        getInputPort(READ_FROM_PORT).getMetadata(), sortKeys, sortOrderings);
         if (useI18N){
             newSorter.setUseCollator(true);
         }
