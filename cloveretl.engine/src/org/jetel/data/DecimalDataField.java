@@ -459,11 +459,17 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 *@since                                October 31, 2002
 	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+		if (isNull) {
+			return;
+		}
 		value.toByteBuffer(dataBuffer, encoder, numericFormat);
 	}
-
+	
     @Override
     public void toByteBuffer(ByteBuffer dataBuffer) {
+    	if (isNull) {
+			return;
+		}
         value.toByteBuffer(dataBuffer);
     }
 
