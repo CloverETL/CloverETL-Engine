@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="1.8" id="1197377414922" licenseType="Evaluation license." modified="Tue Dec 11 15:36:00 CET 2007" name="graphInformixDataWriter.grf" revision="1.38">
+<Graph created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="1.8" id="1197377414922" licenseType="Evaluation license." modified="Tue Dec 18 12:50:43 CET 2007" name="graphInformixDataWriter.grf" revision="1.66">
 <Global>
 <Metadata id="MetadataIn">
 <Record name="inInformixData" recordSize="-1" type="delimited">
@@ -24,13 +24,23 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/informix.dat" guiHeight="25" guiName="DELIMITED_DATA_READER0" guiWidth="50" guiX="34" guiY="63" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
-<Node database="test" dbLoaderPath="dbload" enabled="enabled" guiHeight="25" guiName="INFORMIX_DATA_WRITER0" guiWidth="50" guiX="246" guiY="63" host="demo_on" id="INFORMIX_DATA_WRITER0" table="test" type="INFORMIX_DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/informix.dat" guiHeight="25" guiName="Delimited Data Reader" guiWidth="50" guiX="34" guiY="76" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+<Node columnDelimiter="|" database="test" dbLoaderPath="dbload" enabled="enabled" fileURL="${WORKSPACE}/output/out.txt" guiHeight="25" guiName="Informix Data Writer" guiWidth="50" guiX="249" guiY="76" host="demo_on" id="INFORMIX_DATA_WRITER0" table="test" type="INFORMIX_DATA_WRITER"/>
 <Edge debugMode="true" fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="MetadataIn" outPort="Port 0 (out)" toNode="INFORMIX_DATA_WRITER0:0"/>
 </Phase>
 <Phase number="1">
-<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/out.txt" guiHeight="25" guiName="DELIMITED_DATA_WRITER0" guiWidth="50" guiX="246" guiY="187" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
-<Node columnDelimiter=";" commitInterval="1000" database="test" dbLoaderPath="dbload" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/informixFlat.dat" guiHeight="25" guiName="INFORMIX_DATA_WRITER1" guiWidth="50" guiX="34" guiY="187" host="demo_on" id="INFORMIX_DATA_WRITER1" maxErrors="10" table="test" type="INFORMIX_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/errorDbload.txt" guiHeight="25" guiName="Delimited Data Writer" guiWidth="50" guiX="249" guiY="168" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
+<Node database="test" dbLoaderPath="dbload" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/informixFlat.dat" guiHeight="25" guiName="Informix Data Writer" guiWidth="50" guiX="34" guiY="168" host="demo_on" id="INFORMIX_DATA_WRITER1" table="test" type="INFORMIX_DATA_WRITER"/>
 <Edge debugMode="true" fromNode="INFORMIX_DATA_WRITER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="MetadataOut" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER0:0"/>
+</Phase>
+<Phase number="2">
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/informix.dat" guiHeight="25" guiName="Delimited Data Reader" guiWidth="50" guiX="34" guiY="266" id="DELIMITED_DATA_READER1" type="DELIMITED_DATA_READER"/>
+<Node database="test" dbLoaderPath="/home/student/informix_data/load2/load2-1.70/src/load" enabled="enabled" fileURL="${WORKSPACE}/output/tmp.dat" guiHeight="25" guiName="Informix Data Writer" guiWidth="50" guiX="249" guiY="266" host="demo_on" id="INFORMIX_DATA_WRITER3" maxErrors="10" password="informix" table="test" type="INFORMIX_DATA_WRITER" useLoadUtility="true" username="informix"/>
+<Edge debugMode="true" fromNode="DELIMITED_DATA_READER1:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="MetadataIn" outPort="Port 0 (out)" toNode="INFORMIX_DATA_WRITER3:0"/>
+</Phase>
+<Phase number="3">
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/errorLoad.txt" guiHeight="25" guiName="Delimited Data Writer" guiWidth="50" guiX="249" guiY="362" id="DELIMITED_DATA_WRITER1" type="DELIMITED_DATA_WRITER"/>
+<Node database="test" dbLoaderPath="/home/student/informix_data/load2/load2-1.70/src/load" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/informixFlat.dat" guiHeight="25" guiName="Informix Data Writer" guiWidth="50" guiX="34" guiY="362" host="demo_on" id="INFORMIX_DATA_WRITER2" table="test" type="INFORMIX_DATA_WRITER" useLoadUtility="true"/>
+<Edge debugMode="true" fromNode="INFORMIX_DATA_WRITER2:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="MetadataOut" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER1:0"/>
 </Phase>
 </Graph>
