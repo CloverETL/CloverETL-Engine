@@ -70,7 +70,7 @@ import org.w3c.dom.Element;
  *  <h3>Informix data writer</h3>
  *
  * <!-- All records from input port 0 are loaded into informix database. Connection to database is not through JDBC driver,
- * this component uses the dbload utility for this purpose. Bad rows send to output port 0.-->
+ * this component uses the dbload or load2 utility for this purpose. Bad rows send to output port 0.-->
  *
  * <table border="1">
  *  <th>Component:</th>
@@ -79,7 +79,7 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>This component loads data to Informix database using the dbload utility. 
+ * <td>This component loads data to Informix database using the dbload or load2 utility. 
  * There is created temporary file with dbload commands depending on input parameters. Data are read from given input file or from the input port and loaded to database. 
  * On Linux/Unix system data transfer can be processed by stdin.<br>
  * Any generated commands/files can be optionally logged to help diagnose problems.<br>
@@ -93,6 +93,7 @@ import org.w3c.dom.Element;
  * Metadata on this port must have the same type of field as input metadata. Output metadata 
  * has a additional fields with row number (integer) and error message (string).
  * These two fields are after data fields.
+ * Note: when load utility is used then data fields are empty.
  * </td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
@@ -102,9 +103,11 @@ import org.w3c.dom.Element;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"INFORMIX_DATA_WRITER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td></tr>
- *  <tr><td><b>dbLoaderPath</b></td><td>path to loadDb utility</td></tr>
+ *  <tr><td><b>dbLoaderPath</b></td><td>path to dbload or load2 utility</td></tr>
  *  <tr><td><b>database</b></td><td>the name of the database to receive the data</td></tr>
- *  <tr><td><b>host</b><br><i>optional</i></td><td>the name of informix server</td></tr>
+ *  <tr><td><b>host</b><br><i>optional</i></td><td>the name of the informix server</td></tr>
+ *  <tr><td><b>user</b><br><i>optional</i></td><td>user<br>Note: used only when <i>useLoadUtility</i> = true</td></tr>
+ *  <tr><td><b>password</b><br><i>optional</i></td><td>password<br>Note: used only when <i>useLoadUtility</i> = true</td></tr>
  *  <tr><td><b>table</b><br><i>optional</i></td><td>table name, where data are loaded<br/>
  *  Note: table attribute or command attribute must be defined</td></tr>
  *  <tr><td><b>command</b><br><i>optional</i></td><td>a control script for the dbload utility;
@@ -131,19 +134,37 @@ import org.w3c.dom.Element;
  *  There is one more meaning of this parameter. If input port is not specified, this file 
  *  is used only for reading by dbload utility and must already contain data in format expected by 
  *  load. The file is neither deleted nor overwritten.</td></tr>
+ *  <tr><td><b>useLoadUtility</b><br><i>optional</i></td><td>Defines if standard informix utility (false) or 
+ *  load utility (true) is used to loading data. (default = false).</td></tr>
+ *  <tr><td><b>ignoreUniqueKeyVialotion</b><br><i>optional</i></td><td>Defines if ignore unique key violation. (default = false).<br>
+ *  Note: used only when <i>useLoadUtility</i> = true</td></tr>
+ *  <tr><td><b>useInsertCursor</b><br><i>optional</i></td><td>Use insert cursor. Using insert cursor doubles data transfer performance. (default = true).<br>
+ *  Note: used only when <i>useLoadUtility</i> = true</td></tr>
  *  </table>
  *
  *	<h4>Example:</h4>
- *  Reading data from input port:
+ *  Reading data from input port (dbload):
  *  <pre>&lt;Node dbLoaderPath="dbload" commitInterval="1000" database="//demo_on/test" 
-	errorLog="error.log" table="customers" columnDelimiter="|" 
-	id="INFORMIX_DATA_WRITER0" type="INFORMIX_DATA_WRITER"/&gt;
+ *	errorLog="error.log" table="customers" columnDelimiter="|" 
+ *	id="INFORMIX_DATA_WRITER0" type="INFORMIX_DATA_WRITER"/&gt;
  *  </pre>
- *  Reading data from flat file:
+ *  Reading data from flat file (dbload):
  *  <pre>&lt;Node dbLoaderPath="dbload" database="//demo_on/test" 
-	errorLog="error.log" table="customers" columnDelimiter=";" 
-	fileURL="/home/student/informix_data/inPlain.txt"
-	id="INFORMIX_DATA_WRITER0" type="INFORMIX_DATA_WRITER"/&gt;
+ *	errorLog="error.log" table="customers" columnDelimiter=";" 
+ *	fileURL="/home/student/informix_data/inPlain.txt"
+ *	id="INFORMIX_DATA_WRITER0" type="INFORMIX_DATA_WRITER"/&gt;
+ *  </pre>
+ *  Reading data from input port (load2):
+ *  <pre>&lt;Node database="test" dbLoaderPath="${WORKSPACE}/bin/load"
+ *  username="informix" password="informix" table="test" useLoadUtility="true"
+ *  host="demo_on" id="INFORMIX_DATA_WRITER3" type="INFORMIX_DATA_WRITER"/&gt;
+ *  </pre>
+ *  Reading data from flat file (load2):
+ *  <pre>&lt;Node database="test" dbLoaderPath="${WORKSPACE}/bin/load"
+ *  fileURL="${WORKSPACE}/data/delimited/informixFlat.dat" 
+ *  host="demo_on" table="test" useLoadUtility="true"
+ *  id="INFORMIX_DATA_WRITER2" type="INFORMIX_DATA_WRITER"/&gt;
+ *  </pre>
  *
  * @author      Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz)
  *(c) Javlin Consulting (www.javlinconsulting.cz)
@@ -153,7 +174,6 @@ import org.w3c.dom.Element;
  * @since 		20.8.2007
  */
 public class InformixDataWriter extends Node {
-
 	private static Log logger = LogFactory.getLog(InformixDataWriter.class);
 
     /**  Description of the Field */
@@ -168,6 +188,11 @@ public class InformixDataWriter extends Node {
     private static final String XML_TABLE_ATTRIBUTE = "table";
     private static final String XML_COLUMN_DELIMITER_ATTRIBUTE = "columnDelimiter";
     private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
+    private static final String XML_USE_LOAD_UTILITY_ATTRIBUTE = "useLoadUtility";
+    private static final String XML_USER_ATTRIBUTE = "username";
+    private static final String XML_PASSWORD_ATTRIBUTE = "password";
+    private static final String XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE = "ignoreUniqueKeyViolation";
+    private static final String XML_USE_INSERT_CUROSOR_ATTRIBUTE = "useInsertCursor";
     
     public final static String COMPONENT_TYPE = "INFORMIX_DATA_WRITER";
     private final static int READ_FROM_PORT = 0;
@@ -179,6 +204,17 @@ public class InformixDataWriter extends Node {
     private final static String INFORMIX_ERRORS_OPTION = "-e";
     private final static String INFORMIX_IGNORE_ROWS_OPTION = "-i";
     private final static String INFORMIX_COMMIT_INTERVAL_OPTION = "-n";
+    
+    private final static String LOAD_DATABASE_OPTION = "-d";
+    private final static String LOAD_ERROR_LOG_OPTION = "-l";
+    private final static String LOAD_ERRORS_OPTION = "-i";
+    private final static String LOAD_COMMIT_INTERVAL_OPTION = "-n";
+    private final static String LOAD_HOST_OPTION = "-s"; // server
+    private final static String LOAD_USER_OPTION = "-u";
+    private final static String LOAD_PASSWORD_OPTION = "-p";
+    private final static String LOAD_TABLE_OPTION = "-t";
+    private final static String LOAD_IGNORE_UNIQUE_KEY_VIOLATION_OPTION = "-k";
+    private final static String LOAD_USE_INSERT_CURSOR_OPTION = "-z";
     
     private final static String DATA_FILE_NAME_PREFIX = "data";
     private final static String DATA_FILE_NAME_SUFFIX = ".dat";
@@ -194,6 +230,9 @@ public class InformixDataWriter extends Node {
     private final static String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private final static String DEFAULT_DATE_FORMAT = "MM/dd/yyyy"; 
     private final static String DEFAULT_TIME_FORMAT = "HH:mm:ss";
+    private final static boolean DEFAULT_USE_LOAD_UTILITY = false;
+    private final static boolean DEFAULT_IGNORE_UNIQUE_KEY_VIOLATION = false;
+    private final static boolean DEFAULT_USE_INSERT_CURSOR = true;
     
     // variables for dbload's command
 	private String dbLoaderPath;
@@ -208,6 +247,11 @@ public class InformixDataWriter extends Node {
     private String columnDelimiter = DEFAULT_COLUMN_DELIMITER;
     private String commandFileName; //file where dbload command is saved
     private String dataURL; // fileUrl from XML - data file that is used when no input port is connected
+    private boolean useLoadUtility = DEFAULT_USE_LOAD_UTILITY;
+    private String user;
+    private String password;
+    private boolean ignoreUniqueKeyViolation = DEFAULT_IGNORE_UNIQUE_KEY_VIOLATION;
+    private boolean useInsertCursor = DEFAULT_USE_INSERT_CURSOR;
 
     private String tmpDataFileName; // file that is used for exchange data between clover and dbload
     private DataRecordMetadata dbMetadata; // it correspond to dbload input format
@@ -227,7 +271,7 @@ public class InformixDataWriter extends Node {
      */
     private boolean isDataWrittenToPort;
     
-    /**
+	/**
      * Constructor for the InformixDataWriter object
      *
      * @param  id  Description of the Parameter
@@ -248,7 +292,7 @@ public class InformixDataWriter extends Node {
         int processExitValue = 0;
 
         if (isDataReadFromPort) {
-	        if (ProcBox.isWindowsPlatform() || dataURL != null) {
+	        if (!StringUtils.isEmpty(dataURL) || (ProcBox.isWindowsPlatform() && !useLoadUtility)) {
 	        	// temp file is used for exchange data
 	        	formatter.setDataTarget(Channels.newChannel(new FileOutputStream(tmpDataFileName)));
 	        	readFromPortAndWriteByFormatter();
@@ -270,7 +314,7 @@ public class InformixDataWriter extends Node {
         }
         
         if (processExitValue != 0) {
-        	throw new JetelException("Dbload utility has failed.");
+        	throw new JetelException((useLoadUtility ? "Load" : "Dbload") + " utility has failed.");
 		}
         
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -326,34 +370,79 @@ public class InformixDataWriter extends Node {
      * @return
      */
     private String[] createCommandLineForDbLoader() {
-		List<String> cmdList = new ArrayList<String>();
+    	List<String> cmdList = new ArrayList<String>();
 		
-		cmdList.add(dbLoaderPath);
-		
-		cmdList.add(INFORMIX_COMMAND_PATH_OPTION);
-		cmdList.add(commandFileName);
-		
-		cmdList.add(INFORMIX_DATABASE_OPTION);
-		if (!StringUtils.isEmpty(host)) {
-			database = "//" + host + "/" + database;
+		if (useLoadUtility) {
+			cmdList.add(dbLoaderPath);
+			
+			cmdList.add(LOAD_DATABASE_OPTION);
+			cmdList.add(database);
+			
+			if (!StringUtils.isEmpty(host)) {
+				cmdList.add(LOAD_HOST_OPTION);
+				cmdList.add(host);
+			}
+			if (!StringUtils.isEmpty(user)) {
+				cmdList.add(LOAD_USER_OPTION);
+				cmdList.add(user);
+			}
+			if (!StringUtils.isEmpty(password)) {
+				cmdList.add(LOAD_PASSWORD_OPTION);
+				cmdList.add(password);
+			}
+			cmdList.add(LOAD_TABLE_OPTION);
+			cmdList.add(table);
+			
+			if (commitInterval != UNUSED_INT) {
+				cmdList.add(LOAD_COMMIT_INTERVAL_OPTION);
+				cmdList.add(String.valueOf(commitInterval));
+			}
+			if (ignoreUniqueKeyViolation) {
+				cmdList.add(LOAD_IGNORE_UNIQUE_KEY_VIOLATION_OPTION);
+			}
+			if (useInsertCursor) {
+				cmdList.add(LOAD_USE_INSERT_CURSOR_OPTION);
+			}
+			if (maxErrors != UNUSED_INT) {
+				cmdList.add(LOAD_ERRORS_OPTION);
+				cmdList.add(String.valueOf(maxErrors));
+			}
+			if (!StringUtils.isEmpty(errorLog)) {
+				cmdList.add(LOAD_ERROR_LOG_OPTION);
+				cmdList.add(errorLog);
+			}
+			if (!isDataReadFromPort || !StringUtils.isEmpty(dataURL)) {
+				cmdList.add(tmpDataFileName);
+			} // else - when no file is defined stdio is used
+		} else {
+			cmdList.add(dbLoaderPath);
+			
+			cmdList.add(INFORMIX_COMMAND_PATH_OPTION);
+			cmdList.add(commandFileName);
+			
+			cmdList.add(INFORMIX_DATABASE_OPTION);
+			if (!StringUtils.isEmpty(host)) {
+				database = "//" + host + "/" + database;
+			}
+			cmdList.add(database);
+			
+			cmdList.add(INFORMIX_ERROR_LOG_OPTION);
+			cmdList.add(errorLog);
+			
+			if (maxErrors != UNUSED_INT) {
+				cmdList.add(INFORMIX_ERRORS_OPTION);
+				cmdList.add(String.valueOf(maxErrors));
+			}
+			if (ignoreRows != UNUSED_INT) {
+				cmdList.add(INFORMIX_IGNORE_ROWS_OPTION);
+				cmdList.add(String.valueOf(ignoreRows));
+			}
+			if (commitInterval != UNUSED_INT) {
+				cmdList.add(INFORMIX_COMMIT_INTERVAL_OPTION);
+				cmdList.add(String.valueOf(commitInterval));
+			}
 		}
-		cmdList.add(database);
 		
-		cmdList.add(INFORMIX_ERROR_LOG_OPTION);
-		cmdList.add(errorLog);
-		
-		if (maxErrors != UNUSED_INT) {
-			cmdList.add(INFORMIX_ERRORS_OPTION);
-			cmdList.add(String.valueOf(maxErrors));
-		}
-		if (ignoreRows != UNUSED_INT) {
-			cmdList.add(INFORMIX_IGNORE_ROWS_OPTION);
-			cmdList.add(String.valueOf(ignoreRows));
-		}
-		if (commitInterval != UNUSED_INT) {
-			cmdList.add(INFORMIX_COMMIT_INTERVAL_OPTION);
-			cmdList.add(String.valueOf(commitInterval));
-		}
 		
 		String[] ret = cmdList.toArray(new String[cmdList.size()]);
 		logger.debug("System command: " + Arrays.toString(ret));
@@ -367,58 +456,55 @@ public class InformixDataWriter extends Node {
      * @since                                  April 4, 2002
      */
     public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
+        if (isInitialized()) return;
 		super.init();
 
 		isDataReadFromPort = !getInPorts().isEmpty() && StringUtils.isEmpty(command);
 		isDataWrittenToPort = !getOutPorts().isEmpty();
 
-		checkAttributes();
-		
-		// prepare name for temporary data file
 		try {
-            commandFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, 
-            		CONTROL_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
-            
-            if (errorLog == null) {
-            	errorLog = new File(TMP_DIR, DEFAULT_ERROR_FILE).getCanonicalPath();
-            }
-            
-            if (isDataReadFromPort) {
-	        	if (ProcBox.isWindowsPlatform() || dataURL != null) {
-	        		if (dataURL != null) {
-	        			tmpDataFileName = new File(dataURL).getCanonicalPath();
-	        		} else {
-	        			tmpDataFileName = File.createTempFile(DATA_FILE_NAME_PREFIX, 
-		            			DATA_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
-	        		}
-	            } else {
-	            	tmpDataFileName = UNIX_STDIN;
+			checkAttributes();
+		} catch (ComponentNotReadyException cnre) {
+			free();
+			throw new ComponentNotReadyException(cnre);
+		}
+
+		// prepare name for temporary file
+		try {
+			if (!useLoadUtility) {
+	            commandFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, 
+	            		CONTROL_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
+	            
+	            if (errorLog == null) {
+	            	errorLog = new File(TMP_DIR, DEFAULT_ERROR_FILE).getCanonicalPath();
 	            }
-            } else {
-            	if (dataURL == null) {
-            		free();
-            		throw new ComponentNotReadyException(this, "There is neither input port nor " 
-            				+ StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute specified.");
-            	}
-            	if (!new File(dataURL).exists()) {
-					free();
-					throw new ComponentNotReadyException(this, "Data file "
-								+ StringUtils.quote(dataURL) + " not exists.");
-				}
-            	
-            	tmpDataFileName = new File(dataURL).getCanonicalPath();
-            }
-            
-        } catch(IOException e) {
-        	free();
-            throw new ComponentNotReadyException(this, "Some of the log files cannot be created.");
-        }
-
-        createCommandFile();
-
-        errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
-        
+	            
+	            if (isDataReadFromPort) {
+		        	if (ProcBox.isWindowsPlatform() || dataURL != null) {
+		        		if (dataURL != null) {
+		        			tmpDataFileName = new File(dataURL).getCanonicalPath();
+		        		} else {
+		        			tmpDataFileName = File.createTempFile(DATA_FILE_NAME_PREFIX, 
+			            			DATA_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
+		        		}
+		            } else {
+		            	tmpDataFileName = UNIX_STDIN;
+		            }
+	            } else { // loadUtility
+	            	tmpDataFileName = new File(dataURL).getCanonicalPath();
+	            }
+	
+		        createCommandFile();
+			} else {
+				if (dataURL != null || !isDataReadFromPort) {
+	    			tmpDataFileName = new File(dataURL).getCanonicalPath();
+	    		}
+			}
+		} catch (IOException ioe) {
+    		free();
+            throw new ComponentNotReadyException(this, "Some of the temporary files cannot be created.");
+		}
+		
         if (isDataReadFromPort) {
 	        InputPort inPort = getInputPort(READ_FROM_PORT);
 	
@@ -429,21 +515,27 @@ public class InformixDataWriter extends Node {
 	        formatter.init(dbMetadata);
         }
         
-        if (isDataWrittenToPort) {
-        	try {
-            	// create data consumer and check metadata
-            	consumer = new InformixPortDataConsumer(getOutputPort(WRITE_TO_PORT));
-            } catch (ComponentNotReadyException cnre) {
-            	free();
-            	throw new ComponentNotReadyException(this, "Error during initialization of InformixPortDataConsumer.", cnre);
-            }
-        } else {
-        	consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
+        try {
+	        if (isDataWrittenToPort) {
+	        	if (useLoadUtility) {
+	        		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
+	        		errConsumer = new InformixPortDataConsumer(getOutputPort(WRITE_TO_PORT), LoggerDataConsumer.LVL_ERROR);
+	        	} else { // dbload
+	        		consumer = new InformixPortDataConsumer(getOutputPort(WRITE_TO_PORT), LoggerDataConsumer.LVL_DEBUG);
+	        		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
+	        	}
+	        } else {
+        		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
+        		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
+	        }
+        } catch (ComponentNotReadyException cnre) {
+        	free();
+        	throw new ComponentNotReadyException(this, "Error during initialization of InformixPortDataConsumer.", cnre);
         }
     }
     
     /**
-     * Modify metadata so that they correspond to dbload input format. 
+     * Modify metadata so that they correspond to dbload or load input format. 
      * Each field is delimited and it has the same delimiter.
      * Only last field is delimited by '\n'.
      *
@@ -453,13 +545,19 @@ public class InformixDataWriter extends Node {
     private DataRecordMetadata createInformixMetadata(DataRecordMetadata originalMetadata) {
     	DataRecordMetadata metadata = originalMetadata.duplicate();
 		metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
+		
+		String colDel = columnDelimiter;
+		if (useLoadUtility) {
+			colDel = DEFAULT_COLUMN_DELIMITER;
+		}
+		
 		for (int idx = 0; idx < metadata.getNumFields() - 1; idx++) {
-			metadata.getField(idx).setDelimiter(columnDelimiter);
+			metadata.getField(idx).setDelimiter(colDel);
 			setInformixDateFormat(metadata.getField(idx));
 		}
 		metadata.getField(metadata.getNumFields() - 1).setDelimiter("\n");
 		setInformixDateFormat(metadata.getField(metadata.getNumFields() - 1));
-	
+		
 		return metadata;
     }
 
@@ -484,6 +582,13 @@ public class InformixDataWriter extends Node {
 		}
 	}
     
+    /**
+	 * Checks if mandatory attributes are defined.
+	 * And check combination of some parameters.
+	 * 
+	 * 
+	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
+	 */
     private void checkAttributes() throws ComponentNotReadyException {
     	if (columnDelimiter.length() != 1) {
 			throw new ComponentNotReadyException(this, XML_COLUMN_DELIMITER_ATTRIBUTE, "Max. length of column delimiter is one.");
@@ -498,17 +603,61 @@ public class InformixDataWriter extends Node {
     		throw new ComponentNotReadyException(this, XML_COMMIT_INTERVAL_ATTRIBUTE + " mustn't be less than 0.");
 		}
 		
-		// input port or dataURL or command have to be set
-		if (!isDataReadFromPort && StringUtils.isEmpty(dataURL) && StringUtils.isEmpty(command)) {
-			throw new ComponentNotReadyException(this, "Input port or " + 
-					StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute or " +
-					StringUtils.quote(XML_COMMAND_ATTRIBUTE) + " have to be set.");
-		}
-
 		// check if each of mandatory attributes is set
 		if (StringUtils.isEmpty(dbLoaderPath) || StringUtils.isEmpty(database) || 
 				(StringUtils.isEmpty(command) && StringUtils.isEmpty(table))) {
 			throw new ComponentNotReadyException(this, "dbLoaderPath, database or (table and command simultaneously) argument isn't fill.");
+		}
+		
+		if (!isDataReadFromPort) {
+			if (StringUtils.isEmpty(dataURL)) {
+        		throw new ComponentNotReadyException(this, "There is neither input port nor " 
+        				+ StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute specified.");
+        	}
+        	if (!new File(dataURL).exists()) {
+				throw new ComponentNotReadyException(this, "Data file "
+							+ StringUtils.quote(dataURL) + " not exists.");
+			}
+		}
+		
+		// report on ignoring some attributes
+		List<String> ignoredFields = new ArrayList<String>();
+		if (useLoadUtility) {
+			if (!StringUtils.isEmpty(command)) {
+				ignoredFields.add(XML_COMMAND_ATTRIBUTE);
+			}
+			if (ignoreRows != UNUSED_INT) {
+				ignoredFields.add(XML_IGNORE_ROWS_ATTRIBUTE);
+			}
+			if (!DEFAULT_COLUMN_DELIMITER.equals(columnDelimiter)) {
+				ignoredFields.add(XML_COLUMN_DELIMITER_ATTRIBUTE);
+			}
+		} else { // dbload
+			if (!StringUtils.isEmpty(user)) {
+				ignoredFields.add(XML_USER_ATTRIBUTE);
+			}
+			if (!StringUtils.isEmpty(password)) {
+				ignoredFields.add(XML_PASSWORD_ATTRIBUTE);
+			}
+			if (ignoreUniqueKeyViolation != DEFAULT_IGNORE_UNIQUE_KEY_VIOLATION) {
+				ignoredFields.add(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE);
+			}
+			if (useInsertCursor != DEFAULT_USE_INSERT_CURSOR) {
+				ignoredFields.add(XML_USE_INSERT_CUROSOR_ATTRIBUTE);
+			}
+		}
+		
+		if (!ignoredFields.isEmpty()) {
+			StringBuilder fields = new StringBuilder("(");
+			for (String field : ignoredFields) {
+				fields.append(StringUtils.quote(field));
+				fields.append(", ");
+			}
+			fields.replace(fields.length() - 2, fields.length(), ")");
+			
+			logger.warn("Attributes " + fields + " are ignored. " +
+					"They are used only when '" +
+					(useLoadUtility ? "dbload" : "load") + "' utility is used.");
 		}
     }
     
@@ -681,8 +830,21 @@ public class InformixDataWriter extends Node {
         	if (xattribs.exists(XML_HOST_ATTRIBUTE)) {
         		informixDataWriter.setHost(xattribs.getString(XML_HOST_ATTRIBUTE));
         	}
-
-       	
+        	if (xattribs.exists(XML_USE_LOAD_UTILITY_ATTRIBUTE)) {
+        		informixDataWriter.setUseLoadUtility(xattribs.getBoolean(XML_USE_LOAD_UTILITY_ATTRIBUTE));
+        	}
+        	if (xattribs.exists(XML_USER_ATTRIBUTE)) {
+        		informixDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
+        	}
+        	if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
+        		informixDataWriter.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
+        	}
+        	if (xattribs.exists(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE)) {
+        		informixDataWriter.setIgnoreUniqueKeyViolation(xattribs.getBoolean(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE));
+        	}
+        	if (xattribs.exists(XML_USE_INSERT_CUROSOR_ATTRIBUTE)) {
+        		informixDataWriter.setUseInsertCursor(xattribs.getBoolean(XML_USE_INSERT_CUROSOR_ATTRIBUTE));
+        	}
             return informixDataWriter;
         } catch (Exception ex) {
                throw new XMLConfigurationException(COMPONENT_TYPE + ":" + 
@@ -723,6 +885,21 @@ public class InformixDataWriter extends Node {
 		}
 		if (!StringUtils.isEmpty(host)) {
 			xmlElement.setAttribute(XML_HOST_ATTRIBUTE, host);
+		}
+		if (useLoadUtility != DEFAULT_USE_LOAD_UTILITY) {
+			xmlElement.setAttribute(XML_USE_LOAD_UTILITY_ATTRIBUTE, String.valueOf(useLoadUtility));
+		}
+		if (!StringUtils.isEmpty(user)) {
+			xmlElement.setAttribute(XML_USER_ATTRIBUTE, user);
+		}
+		if (!StringUtils.isEmpty(password)) {
+			xmlElement.setAttribute(XML_PASSWORD_ATTRIBUTE, password);
+		}
+		if (ignoreUniqueKeyViolation != DEFAULT_IGNORE_UNIQUE_KEY_VIOLATION) {
+			xmlElement.setAttribute(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE, String.valueOf(ignoreUniqueKeyViolation));
+		}
+		if (useInsertCursor != DEFAULT_USE_INSERT_CURSOR) {
+			xmlElement.setAttribute(XML_USE_INSERT_CUROSOR_ATTRIBUTE, String.valueOf(useInsertCursor));
 		}
 	}
 
@@ -789,6 +966,26 @@ public class InformixDataWriter extends Node {
     	this.host = host;
 	}
     
+    private void setUseLoadUtility(boolean useLoadUtility) {
+		this.useLoadUtility = useLoadUtility;
+	}
+
+	private void setUser(String user) {
+		this.user = user;
+	}
+
+	private void setPassword(String password) {
+		this.password = password;
+	}
+
+	private void setIgnoreUniqueKeyViolation(boolean ignoreUniqueKeyViolation) {
+		this.ignoreUniqueKeyViolation = ignoreUniqueKeyViolation;
+	}
+	
+	private void setUseInsertCursor(boolean useInsertCursor) {
+		this.useInsertCursor = useInsertCursor;
+	}
+    
     /**
      * Class for reading and parsing data from input stream, which is supposed to be connected to process' output,
      * and sends them to specified output port.
@@ -806,12 +1003,18 @@ public class InformixDataWriter extends Node {
     	private Parser dbParser;					// parse record from informix db output
     	private DataRecord errRecord = null;
     	private OutputPort errPort = null;
+    	private int logLevel;
     	
     	private DataRecordMetadata errMetadata;		// format as output port
     	
     	private Log logger = LogFactory.getLog(PortDataConsumer.class);
     	
+    	// pattern for output from dbload utility
     	private String strBadRowPattern = "Row number (\\d+) is bad";
+    	
+    	// pattern for output from load utility
+    	private String loadStrBadRowPattern = "ERROR:Line (\\d+): (.+)";
+
     	private Matcher badRowMatcher;
     	
     	private int rowNumberFieldNo; // last field -2
@@ -822,12 +1025,13 @@ public class InformixDataWriter extends Node {
     	 * @param port Output port receiving consumed data.
     	 * @throws ComponentNotReadyException 
     	 */
-    	public InformixPortDataConsumer(OutputPort errPort) throws ComponentNotReadyException {
+    	public InformixPortDataConsumer(OutputPort errPort, int logLevel) throws ComponentNotReadyException {
     		if (errPort == null) {
         		throw new ComponentNotReadyException("Output port wasn't found.");
     		}
 
     		this.errPort = errPort;
+    		this.logLevel = logLevel;
     		
     		errMetadata = errPort.getMetadata();
     		if (errMetadata == null) {
@@ -846,7 +1050,12 @@ public class InformixDataWriter extends Node {
 			errRecord = new DataRecord(errMetadata);
 			errRecord.init();
     		
-    		Pattern badRowPattern = Pattern.compile(strBadRowPattern);
+			Pattern badRowPattern;
+			if (useLoadUtility) {
+				badRowPattern = Pattern.compile(loadStrBadRowPattern);
+			} else {
+				badRowPattern = Pattern.compile(strBadRowPattern);
+			}
 			badRowMatcher = badRowPattern.matcher("");
 			
    			dbParser.init(dbOutMetadata);
@@ -890,15 +1099,25 @@ public class InformixDataWriter extends Node {
     	}
 
     	/**
-    	 * Example of bad row in stream:
-		 * In INSERT statement number 1 of raw data file /home/informix_data/./data21672.dat.
-	     * Row number 2 is bad.
-	     * abc|def|ghi|
-	     * Invalid month in date
-	     *
     	 * @see org.jetel.util.exec.DataConsumer
     	 */
     	public boolean consume() throws JetelException {
+    		if (useLoadUtility) {
+    			return consumeLoad();
+    		} else {
+    			return consumeDbload();
+    		}
+    	}
+    	
+    	/**
+    	 * Example of bad rows in stream:
+		 * ERROR:Line 4: not an integer format (-1213): 7S
+		 * ERROR:Line 5: not a date format (-1206): 09/33/2007
+		 * 
+    	 * @return
+    	 * @throws JetelException
+    	 */
+    	private boolean consumeLoad() throws JetelException {
     		try {
 				String line;
 				if ((line = readLine()) == null) {
@@ -908,7 +1127,40 @@ public class InformixDataWriter extends Node {
 				badRowMatcher.reset(line);
 				if (badRowMatcher.find()) {
         			int rowNumber = Integer.valueOf(badRowMatcher.group(1));
-        			if ((line = reader.readLine()) == null) {
+        			String errMsg = badRowMatcher.group(2); 
+        			
+					setErrRecord(errRecord, rowNumber, errMsg);
+					errPort.writeRecord(errRecord);
+        		}
+    		} catch (Exception e) {
+				throw new JetelException("Error while writing output record", e);
+			}
+    		
+    		SynchronizeUtils.cloverYield();
+    		return true;
+    	}
+    	
+    	/**
+    	 * Example of bad row in stream:
+		 * In INSERT statement number 1 of raw data file /home/informix_data/data21672.dat.
+	     * Row number 2 is bad.
+	     * abc|def|ghi|
+	     * Invalid month in date
+	     * 
+    	 * @return
+    	 * @throws JetelException
+    	 */
+    	private boolean consumeDbload() throws JetelException {
+    		try {
+				String line;
+				if ((line = readLine()) == null) {
+					return false;
+				}
+
+				badRowMatcher.reset(line);
+				if (badRowMatcher.find()) {
+        			int rowNumber = Integer.valueOf(badRowMatcher.group(1));
+        			if ((line = readLine()) == null) {
         				return false;
         			}
         			dbParser.setDataSource(getInputStream(line, CHARSET_NAME));
@@ -948,13 +1200,21 @@ public class InformixDataWriter extends Node {
     	private String readLine() throws IOException {
     		String line = reader.readLine();
     		if (!StringUtils.isEmpty(line)) {
-    			logger.debug(line);
+    			switch (logLevel) {
+	    			case LoggerDataConsumer.LVL_ERROR:
+	    				logger.error(line);
+	    				break;
+	    			case LoggerDataConsumer.LVL_DEBUG:
+	    			default:
+	    				logger.debug(line);
+    			}
     		}
     		return line;
     	}
     	
     	/**
-    	 * Set value in errRecord. In first field is set row number and other fields are copies from dbRecord
+    	 * Set value in errRecord. In last two field is set row number and error message
+    	 * and other fields are copies from dbRecord
     	 * @param dbRecord source record
     	 * @param errRecord destination record
     	 * @param rowNumber number of bad row
@@ -962,12 +1222,26 @@ public class InformixDataWriter extends Node {
     	 * @return destination record
     	 */
     	private DataRecord setErrRecord(DataRecord dbRecord, DataRecord errRecord, int rowNumber, String errMsg) {
-    		errRecord.reset();
-    		errRecord.getField(rowNumberFieldNo).setValue(rowNumber);
-    		errRecord.getField(errMsgFieldNo).setValue(errMsg);
+    		errRecord = setErrRecord(errRecord, rowNumber, errMsg);
     		for (int dbFieldNum = 0; dbFieldNum < dbRecord.getNumFields(); dbFieldNum++) {
     			errRecord.getField(dbFieldNum).setValue(dbRecord.getField(dbFieldNum));
     		}
+    		return errRecord;
+    	}
+    	
+    	/**
+    	 * Set value in errRecord. In last two field is set row number and error message.
+    	 * @param dbRecord source record
+    	 * @param errRecord destination record
+    	 * @param rowNumber number of bad row
+    	 * @param errMsg errorMsg
+    	 * @return destination record
+    	 */
+    	private DataRecord setErrRecord(DataRecord errRecord, int rowNumber, String errMsg) {
+    		errRecord.reset();
+    		errRecord.getField(rowNumberFieldNo).setValue(rowNumber);
+    		errRecord.getField(errMsgFieldNo).setValue(errMsg);
+
     		return errRecord;
     	}
     	
