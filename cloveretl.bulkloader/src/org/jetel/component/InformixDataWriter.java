@@ -106,7 +106,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>dbLoaderPath</b></td><td>path to dbload or load2 utility</td></tr>
  *  <tr><td><b>database</b></td><td>the name of the database to receive the data</td></tr>
  *  <tr><td><b>host</b><br><i>optional</i></td><td>the name of the informix server</td></tr>
- *  <tr><td><b>user</b><br><i>optional</i></td><td>user<br>Note: used only when <i>useLoadUtility</i> = true</td></tr>
+ *  <tr><td><b>username</b><br><i>optional</i></td><td>username<br>Note: used only when <i>useLoadUtility</i> = true</td></tr>
  *  <tr><td><b>password</b><br><i>optional</i></td><td>password<br>Note: used only when <i>useLoadUtility</i> = true</td></tr>
  *  <tr><td><b>table</b><br><i>optional</i></td><td>table name, where data are loaded<br/>
  *  Note: table attribute or command attribute must be defined</td></tr>
