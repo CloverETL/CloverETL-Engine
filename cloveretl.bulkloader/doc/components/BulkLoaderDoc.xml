@@ -239,9 +239,9 @@
       <author></author>
       <lastUpdated></lastUpdated>
       <briefDesc>Loads data into an Informix database.</briefDesc>
-      <fullDesc>This component loads data to an Informix database using the dbload utility. 
+      <fullDesc>This component loads data to an Informix database using the dbload or load2 utility. 
          		It creates a temporary file with dbload commands depending on input parameters. Data are read from given 
-         		input file or from input port and loaded to database. 
+         		input file, from input port or stdin and loaded to database. 
          		On Linux/Unix systems, data is transfered to the dbload utility via stdin.
          		To use this component Informix client must be installed and configured on the local host.
       </fullDesc>
@@ -361,6 +361,56 @@
             
          </attrType>
          <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>username</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>username</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>password</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>password</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>useLoadUtility</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>useLoadUtility</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>ignoreUniqueKeyViolation</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>ignoreUniqueKeyViolation</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>useInsertCursor</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>useInsertCursor</attrDesc>
          <attrDefaultVal></attrDefaultVal>
       </attribute>
       <example>
