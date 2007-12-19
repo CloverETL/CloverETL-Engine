@@ -100,6 +100,10 @@ public final class TransformationGraph extends GraphElement {
     
     private String debugDirectory;
     
+    private int debugMaxRecords = 0;
+    
+    private String debugMaxRecordsStr;
+    
 	static Log logger = LogFactory.getLog(TransformationGraph.class);
 
 	private WatchDog watchDog;
@@ -231,6 +235,21 @@ public final class TransformationGraph extends GraphElement {
         }
     }
     
+    /**
+     * Sets maximum debugged records on the edges.
+     * @param debugMaxRecords
+     */
+    public void setDebugMaxRecords(int debugMaxRecords) {
+    	this.debugMaxRecords = debugMaxRecords;
+    }
+    
+    /**
+     * @return maximum debugged records on the edges.
+     */
+    public int getDebugMaxRecords() {
+        return debugMaxRecords;
+    }
+
 //    /**
 //     * Returns URL from PROJECT_DIR graph property value.
 //     * It is used as context URL for conversion from relative to absolute path.
