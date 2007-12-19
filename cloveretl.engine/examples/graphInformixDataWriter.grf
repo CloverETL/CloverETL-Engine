@@ -35,12 +35,12 @@
 </Phase>
 <Phase number="2">
 <Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/informix.dat" guiHeight="25" guiName="Delimited Data Reader" guiWidth="50" guiX="34" guiY="266" id="DELIMITED_DATA_READER1" type="DELIMITED_DATA_READER"/>
-<Node database="test" dbLoaderPath="/home/student/informix_data/load2/load2-1.70/src/load" enabled="enabled" fileURL="${WORKSPACE}/output/tmp.dat" guiHeight="25" guiName="Informix Data Writer" guiWidth="50" guiX="249" guiY="266" host="demo_on" id="INFORMIX_DATA_WRITER3" maxErrors="10" password="informix" table="test" type="INFORMIX_DATA_WRITER" useLoadUtility="true" username="informix"/>
+<Node database="test" dbLoaderPath="${WORKSPACE}/lib/linux/load" enabled="enabled" fileURL="${WORKSPACE}/output/tmp.dat" guiHeight="25" guiName="Informix Data Writer" guiWidth="50" guiX="249" guiY="266" host="demo_on" id="INFORMIX_DATA_WRITER3" maxErrors="10" password="informix" table="test" type="INFORMIX_DATA_WRITER" useLoadUtility="true" username="informix"/>
 <Edge debugMode="true" fromNode="DELIMITED_DATA_READER1:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="MetadataIn" outPort="Port 0 (out)" toNode="INFORMIX_DATA_WRITER3:0"/>
 </Phase>
 <Phase number="3">
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/errorLoad.txt" guiHeight="25" guiName="Delimited Data Writer" guiWidth="50" guiX="249" guiY="362" id="DELIMITED_DATA_WRITER1" type="DELIMITED_DATA_WRITER"/>
-<Node database="test" dbLoaderPath="/home/student/informix_data/load2/load2-1.70/src/load" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/informixFlat.dat" guiHeight="25" guiName="Informix Data Writer" guiWidth="50" guiX="34" guiY="362" host="demo_on" id="INFORMIX_DATA_WRITER2" table="test" type="INFORMIX_DATA_WRITER" useLoadUtility="true"/>
+<Node database="test" dbLoaderPath="${WORKSPACE}/lib/linux/load" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/informixFlat.dat" guiHeight="25" guiName="Informix Data Writer" guiWidth="50" guiX="34" guiY="362" host="demo_on" id="INFORMIX_DATA_WRITER2" table="test" type="INFORMIX_DATA_WRITER" useLoadUtility="true"/>
 <Edge debugMode="true" fromNode="INFORMIX_DATA_WRITER2:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="MetadataOut" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER1:0"/>
 </Phase>
 </Graph>
