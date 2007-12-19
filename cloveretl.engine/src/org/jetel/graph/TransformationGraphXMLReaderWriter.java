@@ -287,6 +287,8 @@ public class TransformationGraphXMLReaderWriter {
         graph.setDebugMode(grfAttributes.getString("debugMode", "true"));
         //get debug directory
         graph.setDebugDirectory(grfAttributes.getString("debugDirectory", null));
+        //get debugMaxRecords
+        graph.setDebugMaxRecords(grfAttributes.getInteger("debugMaxRecords", 0));
         
 		// handle all defined Properties
 		NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
@@ -315,7 +317,7 @@ public class TransformationGraphXMLReaderWriter {
 		instantiatePhases(phaseElements);
 
 		NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
-		instantiateEdges(edgeElements, metadata, graph.isDebugMode());
+		instantiateEdges(edgeElements, metadata, graph.isDebugMode(), graph.getDebugMaxRecords());
 
         //remove disabled components and their edges
         TransformationGraphAnalyzer.disableNodesInPhases(graph);
@@ -472,13 +474,14 @@ public class TransformationGraphXMLReaderWriter {
 	 * @param  nodes         Description of Parameter
 	 * @since                May 24, 2002
 	 */
-	private void instantiateEdges(NodeList edgeElements, Map metadata, boolean graphDebugMode) throws XMLConfigurationException,GraphConfigurationException {
+	private void instantiateEdges(NodeList edgeElements, Map metadata, boolean graphDebugMode, int graphDebugMaxRecords) throws XMLConfigurationException,GraphConfigurationException {
 		String edgeID="unknown";
 		String edgeMetadataID;
 		String fromNodeAttr;
 		String toNodeAttr;
 		String edgeType = null;
         boolean debugMode = false;
+        int debugMaxRecords = 0;
         boolean fastPropagate = false;
 		String[] specNodePort;
 		int fromPort;
@@ -500,8 +503,15 @@ public class TransformationGraphXMLReaderWriter {
 			}catch(AttributeNotFoundException ex){
 				throw new XMLConfigurationException("Missing attribute at edge "+edgeID+" - "+ex.getMessage());
 			}
-            if(graphDebugMode)
-                debugMode = attributes.getBoolean("debugMode", false);
+            if (graphDebugMode) {
+            	debugMode = attributes.getBoolean("debugMode", false);
+            }
+            
+            if (graphDebugMaxRecords == 0) { // if this value isn't defined for whole graph 
+            	debugMaxRecords = attributes.getInteger("debugMaxRecords", 0);
+            } else {
+            	debugMaxRecords = graphDebugMaxRecords;
+            }
             
             fastPropagate = attributes.getBoolean("fastPropagate", false);
 			Object metadataObj = edgeMetadataID != null ? metadata.get(edgeMetadataID) : null;
@@ -517,6 +527,8 @@ public class TransformationGraphXMLReaderWriter {
 				graphEdge = new Edge(edgeID, (DataRecordMetadataStub) metadataObj);
 			}
 			graphEdge.setDebugMode(debugMode);
+			graphEdge.setDebugMaxRecords(debugMaxRecords);
+			
 			// set edge type
 			EdgeTypeEnum edgeTypeEnum = EdgeTypeEnum.valueOfIgnoreCase(edgeType);
 			if (edgeTypeEnum != null) graphEdge.setEdgeType(edgeTypeEnum);
