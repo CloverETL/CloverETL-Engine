@@ -155,11 +155,23 @@ public class RecordKey {
 	 * @return    The keyFields value
 	 */
 	public int[] getKeyFields() {
+		if (keyFields == null){
+			keyFields = getKeyFieldsIndexes(this.metadata, this.keyFieldNames);
+		}
 		return keyFields;
 	}
 
     
-    /**
+    private int[] getKeyFieldsIndexes(DataRecordMetadata mdata, String[] fieldNames) {
+    	int[] indexes = new int[fieldNames.length];
+    	Map<String, Integer> namesMap = mdata.getFieldNames();
+    	for (int i=0; i<fieldNames.length; i++){
+    		indexes[i] = namesMap.get(fieldNames[i]);
+    	}
+		return indexes;
+	}
+
+	/**
      * Gets fields (indexes) which are not part of the key
      * 
      * @return
