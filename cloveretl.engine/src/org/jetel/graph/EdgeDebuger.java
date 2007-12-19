@@ -24,6 +24,9 @@ public class EdgeDebuger {
     
     private DataRecordTape dataTape;
     
+    private int debugMaxRecords; // max debugged number records; 0 -> infinite
+    private int recordCounter = 0; // currently debugged records
+    
     /**
      * Constructor.
      * @param debugFile
@@ -31,6 +34,11 @@ public class EdgeDebuger {
     public EdgeDebuger(String debugFile, boolean isReadMode) {
         this.isReadMode = isReadMode;
         dataTape = new DataRecordTape(debugFile, !isReadMode, false);
+    }
+    
+    public EdgeDebuger(String debugFile, boolean isReadMode, int debugMaxRecords) {
+        this(debugFile, isReadMode);
+        this.debugMaxRecords = debugMaxRecords;
     }
     
     public void init() throws IOException {
@@ -44,16 +52,35 @@ public class EdgeDebuger {
         if (isReadMode){
             throw new RuntimeException("Error: Mixed read/write operation on DataRecordTape !");
         }
-        dataTape.put(record);
+        
+        if (ckeckNoOfDebuggedRecords()) {
+        	dataTape.put(record);
+        }
     }
 
     public void writeRecord(ByteBuffer record) throws IOException {
         if (isReadMode){
             throw new RuntimeException("Error: Mixed read/write operation on DataRecordTape !");
         }
-        dataTape.put(record);
+        
+        if (ckeckNoOfDebuggedRecords()) {
+        	dataTape.put(record);
+        }
     }
-
+    
+    /**
+     * Check if number of debugged records is lower 
+     * than maximum number of debugged records.
+     * @return false when max number of records was debugged; else true
+     */
+    private boolean ckeckNoOfDebuggedRecords() {
+    	if (debugMaxRecords == 0 || recordCounter < debugMaxRecords) {
+        	recordCounter++;
+        	return true;
+        }
+    	return false;
+    }
+    
     public DataRecord readRecord(DataRecord record) throws IOException {
         if (!isReadMode) {
             return null;
