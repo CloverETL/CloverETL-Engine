@@ -1,11 +1,14 @@
 package org.jetel.component;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -32,6 +35,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.sequence.PrimitiveSequence;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -218,6 +222,10 @@ public class XMLExtract extends Node {
     // Where the XML comes from
     private InputSource m_inputSource;
     
+    private String inputFile;
+	private Iterator<String> filenameItor;
+    private String filename;
+
     private boolean useNestedNodes = true;
     
     private int skipRows=0; // do not skip rows by default
@@ -684,11 +692,7 @@ public class XMLExtract extends Node {
             // }
             extract = new XMLExtract(xattribs.getString(XML_ID_ATTRIBUTE));
             
-            extract.setInputSource(
-            		new InputSource(
-            				Channels.newInputStream(
-            						FileUtils.getReadableChannel(null, xattribs.getString(XML_SOURCEURI_ATTRIBUTE)))
-            				));
+            extract.setInputFile(xattribs.getString(XML_SOURCEURI_ATTRIBUTE));
             
             if(xattribs.exists(XML_USENESTEDNODES_ATTRIBUTE)) {
                 extract.setUseNestedNodes(xattribs.getBoolean(XML_USENESTEDNODES_ATTRIBUTE));
@@ -890,7 +894,10 @@ public class XMLExtract extends Node {
         }
         
         try {
-            parser.parse(m_inputSource, new SAXHandler());
+    		do {
+                parser.parse(m_inputSource, new SAXHandler());
+    		} while (nextSource());
+    		
         } catch (SAXException ex) {
             if (!runIt) {
                 return true; // we were stopped by a stop signal... probably
@@ -925,8 +932,42 @@ public class XMLExtract extends Node {
                     getId()
                     + ": At least one mapping has to be defined.  <Mapping element=\"elementToMatch\" outPort=\"123\" [parentKey=\"key in parent\" generatedKey=\"new foreign key in target\"]/>");
         }
+        
+        if (inputFile != null) {
+            WcardPattern pat = new WcardPattern();
+            pat.addPattern(inputFile, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+            this.filenameItor = pat.filenames().iterator();
+
+            try {
+                if(!nextSource()) {
+                    throw new ComponentNotReadyException("FileURL attribute (" + inputFile + ") doesn't contain valid file url.");
+                }
+            } catch (JetelException e) {
+                throw new ComponentNotReadyException("FileURL attribute (" + inputFile + ") doesn't contain valid file url.");
+            }
+        }
     }
     
+	/**
+     * Switch to the next source file.
+	 * @return
+	 * @throws JetelException 
+	 */
+	private boolean nextSource() throws JetelException {
+		ReadableByteChannel stream = null; 
+		while (filenameItor.hasNext()) {
+			filename = filenameItor.next();
+			try {
+				stream = FileUtils.getReadableChannel(null, filename);
+				m_inputSource = new InputSource(Channels.newInputStream(stream));
+				return true;
+			} catch (IOException e) {
+				throw new JetelException("File is unreachable: " + filename, e);
+			}
+		}
+		return false;
+	}
+
     public String getType() {
         return COMPONENT_TYPE;
     }
@@ -951,6 +992,10 @@ public class XMLExtract extends Node {
         m_inputSource = inputSource;
     }
     
+    public void setInputFile(String inputFile) {
+    	this.inputFile = inputFile;
+    }
+
     public void setUseNestedNodes(boolean useNestedNodes) {
         this.useNestedNodes = useNestedNodes;
     }
