@@ -59,6 +59,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
     protected boolean debugMode;
     protected EdgeDebuger edgeDebuger;
+    protected int debugMaxRecords;
     
 	private EdgeTypeEnum edgeType;
 
@@ -96,7 +97,11 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
     public void setDebugMode(boolean debugMode) {
     	this.debugMode = debugMode;
-    }    
+    }
+    
+    public void setDebugMaxRecords(int debugMaxRecords) {
+    	this.debugMaxRecords = debugMaxRecords;
+    }
     
 	/**
 	 *  Sets the type attribute of the EdgeProxy object
@@ -241,7 +246,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         if(debugMode) {
             String debugFileName = getDebugFileName();
             logger.debug("Edge '" + getId() + "' is running in debug mode. (" + debugFileName + ")");
-            edgeDebuger = new EdgeDebuger(debugFileName, false);
+            edgeDebuger = new EdgeDebuger(debugFileName, false, debugMaxRecords);
             try{
                 edgeDebuger.init();
             }catch(IOException ex){
