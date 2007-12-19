@@ -78,6 +78,8 @@ public class MultiFileWriter {
 	private LookupTable lookupTable = null;
 	private String[] partitionKeyNames;
 	private RecordKey partitionKey;
+	private String[] partitionOutFields;
+	private int[] iPartitionOutFields;
 	
 	private boolean useNumberFileTag = true;
 	private int numberFileTag;
@@ -194,6 +196,15 @@ public class MultiFileWriter {
 	    if (partitionKeyNames != null) {
 			partitionKey = new RecordKey(partitionKeyNames, metadata);
 		}
+	    
+    	DataRecordMetadata metadata;
+    	if (lookupTable != null) {
+    		metadata = lookupTable.getMetadata();
+    	} else {
+    		metadata = this.metadata;
+    	}
+    	preparePartitionOutFields(metadata);
+    	
 	    if (partitionKey != null) {
 			try {
 				partitionKey.init();
@@ -247,7 +258,7 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException
      */
     private final void writeRecord2MultiTarget(DataRecord keyRecord, DataRecord record) throws IOException, ComponentNotReadyException {
-    	String keyString = partitionKey.getKeyString(keyRecord);
+    	String keyString = getKeyString(keyRecord);
     	if ((currentTarget = multiTarget.get(keyString)) == null) {
     		currentTarget = createNewTarget();
     		currentTarget.setFileTag(useNumberFileTag ? numberFileTag++ : keyString);
@@ -258,6 +269,27 @@ public class MultiFileWriter {
 		writeRecord2CurrentTarget(record);
     }
     
+    private String getKeyString(DataRecord record) {
+    	StringBuffer sb = new StringBuffer();
+    	for (int pos: iPartitionOutFields) {
+    		sb.append(record.getField(pos).getValue());    		
+    	}
+    	return sb.toString();
+    }
+    
+    private void preparePartitionOutFields(DataRecordMetadata metadata) throws ComponentNotReadyException {
+    	if (partitionOutFields != null) {
+        	iPartitionOutFields = new int[partitionOutFields.length];
+        	int pos;
+        	for (int i=0; i<iPartitionOutFields.length; i++) {
+        		pos = metadata.getFieldPosition(partitionOutFields[i]);
+        		if (pos == -1) throw new ComponentNotReadyException("Field name '" + partitionOutFields[i] + "' not found in partition object (lookup table or partition key)");
+        		iPartitionOutFields[i] = pos;
+        	}
+    	} else if (partitionKey != null) {
+    		iPartitionOutFields = partitionKey.getKeyFields();
+    	}
+    }
     
     /**
      * Writes the data record according to lookup table.
@@ -438,4 +470,13 @@ public class MultiFileWriter {
 		this.useNumberFileTag = partitionFileTagType == PartitionFileTagType.NUMBER_FILE_TAG;
 	}
 
+	/**
+	 * Sets field names for lookup table.
+	 * 
+	 * @param partitionOutFields
+	 */
+	public void setPartitionOutFields(String[] partitionOutFields) {
+		this.partitionOutFields = partitionOutFields;
+	}	
+	
 }
