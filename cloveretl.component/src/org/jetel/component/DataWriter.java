@@ -99,6 +99,7 @@ public class DataWriter extends Node {
 	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
 	private static final String XML_PARTITION_ATTRIBUTE = "partition";
+	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private String fileURL;
 	private boolean appendData;
@@ -113,8 +114,8 @@ public class DataWriter extends Node {
 
 	private String partition;
 	private String attrPartitionKey;
-	private String[] partitionKey;
 	private LookupTable lookupTable;
+	private String attrPartitionOutFields;
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 
 	static Log logger = LogFactory.getLog(DataWriter.class);
@@ -192,10 +193,14 @@ public class DataWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
-        writer.setLookupTable(lookupTable);
-        if (attrPartitionKey != null) partitionKey = attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-        writer.setPartitionKeyNames(partitionKey);
-        writer.setPartitionFileTag(partitionFileTagType);
+        if (attrPartitionKey != null) {
+            writer.setLookupTable(lookupTable);
+            writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+            writer.setPartitionFileTag(partitionFileTagType);
+        	if (attrPartitionOutFields != null) {
+        		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+        	}
+        }
         if(outputFieldNames) {
         	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
@@ -256,6 +261,9 @@ public class DataWriter extends Node {
 		if (attrPartitionKey != null) {
 			xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE, attrPartitionKey);
 		}
+		if (attrPartitionOutFields != null) {
+			xmlElement.setAttribute(XML_PARTITION_OUTFIELDS_ATTRIBUTE, attrPartitionOutFields);
+		}
 		xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
 	}
@@ -301,6 +309,9 @@ public class DataWriter extends Node {
             }
 			if(xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
 				aDataWriter.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
+            }
+			if(xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
+				aDataWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
             }
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -425,6 +436,15 @@ public class DataWriter extends Node {
 		return attrPartitionKey;
 	}
 	
+	/**
+	 * Sets fields which are used for file output name.
+	 * 
+	 * @param partitionOutFields
+	 */
+	public void setPartitionOutFields(String partitionOutFields) {
+		attrPartitionOutFields = partitionOutFields;
+	}
+
 	/**
 	 * Sets number file tag for data partition.
 	 * 
