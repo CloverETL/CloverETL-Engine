@@ -21,6 +21,8 @@
 
 package org.jetel.component;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -39,8 +41,6 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
-// TODO: not working property outputFile, which we want to use as a test for sample output of a property 
-// javaCommand, then continue according to KOrganizer todos, I have written and finish component   
 
 /**
  * <h3>Java Execute Component</h3>
@@ -86,11 +86,12 @@ public class JavaExecute extends Node {
 	private static final String XML_RUNNABLE_ATTRIBUTE = "runnable";
 	private static final String XML_RUNNABLEURL_ATTRIBUTE = "runnableURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+	private static final String XML_PROPERTIES_ATTRIBUTE = "properties";
 
     private String runnable = null;
 	private String runnableClass = null;
 	private String runnableURL = null;
-	private String charset = null;
+	private String charset = null;	
 	
 	private JavaRunnable codeToRun = null;
 
@@ -240,13 +241,14 @@ public class JavaExecute extends Node {
      * @param runnableClass	Name of CLASS with code (e.g. org.jetel.test.DemoRunnable)
      * @param runnableURL	URL of the source code with Java code to be executed
      */
-	public JavaExecute(String id, String runnable, String runnableClass, String runnableURL) {
+	public JavaExecute(String id, String runnable, String runnableClass, String runnableURL, Properties internalProperties) {
 		
 		super(id);
 		
 		this.runnable = runnable;
 		this.runnableClass = runnableClass;
 		this.runnableURL = runnableURL;
+		this.runnableParameters = internalProperties;
 		
 	}
 	
@@ -289,14 +291,6 @@ public class JavaExecute extends Node {
 		
 	}
 	
-    /**
-	 * @param transformationParameters
-	 *            The transformationParameters to set.
-	 */
-    public void setRunnableParameters(Properties runnableParameters) {
-        this.runnableParameters = runnableParameters;
-    }
-	
 	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
@@ -316,13 +310,15 @@ public class JavaExecute extends Node {
 		if (charset != null){
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
 		}
-		
-		Enumeration propertyAtts = runnableParameters.propertyNames();
+				
+		Enumeration propertyAtts = runnableParameters.propertyNames();		
+		StringBuffer result = new StringBuffer();
 		while (propertyAtts.hasMoreElements()) {
 			String attName = (String)propertyAtts.nextElement();
-			xmlElement.setAttribute(attName,runnableParameters.getProperty(attName));
+			result.append(attName + "=" + runnableParameters.getProperty(attName) + "\n");
+			
 		}
-
+		xmlElement.setAttribute(XML_PROPERTIES_ATTRIBUTE, result.toString());
 				
 	}
 
@@ -339,15 +335,22 @@ public class JavaExecute extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		
 		JavaExecute javaExecute;
+		Properties internalProperties;
 		
 		try {
+			try {
+            	internalProperties = new Properties();
+				internalProperties.load(new ByteArrayInputStream(xattribs.getString(XML_PROPERTIES_ATTRIBUTE,null).getBytes())); 
+    		} catch (IOException e){
+    			throw new RuntimeException("Unexpected IO exception in byte array reading.");
+    		}
             javaExecute = new JavaExecute(
                     xattribs.getString(XML_ID_ATTRIBUTE),
                     xattribs.getString(XML_RUNNABLE_ATTRIBUTE, null, false), 
                     xattribs.getString(XML_RUNNABLECLASS_ATTRIBUTE, null),
-                    xattribs.getString(XML_RUNNABLEURL_ATTRIBUTE,null));
-			javaExecute.setRunnableParameters(xattribs.attributes2Properties(
-					new String[]{XML_ID_ATTRIBUTE,XML_RUNNABLE_ATTRIBUTE,XML_RUNNABLECLASS_ATTRIBUTE}));
+                    xattribs.getString(XML_RUNNABLEURL_ATTRIBUTE,null),
+                    internalProperties);
+
             if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {            	
             	javaExecute.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
             }
