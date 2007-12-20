@@ -271,5 +271,9 @@
 	    <parameter id="className" value="org.jetel.component.SpeedLimiter"/>
 	    <parameter id="type" value="SPEED_LIMITER"/>
 	</extension>
-
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.XmlWriter"/>
+	    <parameter id="type" value="XML_WRITER"/>
+	</extension>	
 </plugin>
