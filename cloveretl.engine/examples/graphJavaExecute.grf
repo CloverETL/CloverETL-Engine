@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Tue Dec 04 12:35:56 CET 2007" guiVersion="1.8" id="1196771086318" licenseType="Evaluation license." modified="Thu Dec 06 10:01:51 CET 2007" name="graphJavaExecute" revision="1.57">
+<Graph created="Tue Dec 04 12:35:56 CET 2007" description="This graph illustrates the usage of JavaExecute component." guiVersion="1.8" id="1196771086318" licenseType="Evaluation license." modified="Thu Dec 06 10:01:51 CET 2007" name="graphJavaExecute" revision="1.57">
 <Global>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
