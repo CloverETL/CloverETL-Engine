@@ -283,4 +283,9 @@
 		<parameter id="type" value="JAVA_EXECUTE"/>
 	</extension>
 
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.XmlWriter"/>
+	    <parameter id="type" value="XML_WRITER"/>
+	</extension>
+
 </plugin>
