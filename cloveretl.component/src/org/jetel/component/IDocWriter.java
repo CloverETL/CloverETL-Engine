@@ -138,6 +138,7 @@ public class IDocWriter extends Node {
 	public static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
 	private static final String XML_PARTITION_ATTRIBUTE = "partition";
+	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 
 	private String fileURL;
@@ -150,8 +151,8 @@ public class IDocWriter extends Node {
 
 	private String partition;
 	private String attrPartitionKey;
-	private String[] partitionKey;
 	private LookupTable lookupTable;
+	private String attrPartitionOutFields;
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 	private String headerMask, bodyMask;
 	private String footer;
@@ -302,14 +303,18 @@ public class IDocWriter extends Node {
         bodyWriter.setSkip(skip);
         headerWriter.setNumRecords(numRecords);
         bodyWriter.setNumRecords(numRecords);
-        headerWriter.setLookupTable(lookupTable);
-        bodyWriter.setLookupTable(lookupTable);
-        if (attrPartitionKey != null) partitionKey = attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-        headerWriter.setPartitionKeyNames(partitionKey);
-        bodyWriter.setPartitionKeyNames(partitionKey);
-        headerWriter.setPartitionFileTag(partitionFileTagType);
-        bodyWriter.setPartitionFileTag(partitionFileTagType);
-        
+        if (attrPartitionKey != null) {
+        	headerWriter.setLookupTable(lookupTable);
+        	bodyWriter.setLookupTable(lookupTable);
+            headerWriter.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+            bodyWriter.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+            headerWriter.setPartitionFileTag(partitionFileTagType);
+            bodyWriter.setPartitionFileTag(partitionFileTagType);
+        	if (attrPartitionOutFields != null) {
+        		headerWriter.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+        		bodyWriter.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+        	}
+        }
 		if (footer != null){
 			bodyFormatterProvider.setFooter(footer);
 		}
@@ -365,6 +370,9 @@ public class IDocWriter extends Node {
 			if(xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
 				aDataWriter.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
             }
+			if(xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
+				aDataWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
+            }
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
 			return null;
@@ -403,6 +411,9 @@ public class IDocWriter extends Node {
 		}
 		if (attrPartitionKey != null) {
 			xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE, attrPartitionKey);
+		}
+		if (attrPartitionOutFields != null) {
+			xmlElement.setAttribute(XML_PARTITION_OUTFIELDS_ATTRIBUTE, attrPartitionOutFields);
 		}
 		xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
 	}
@@ -488,6 +499,15 @@ public class IDocWriter extends Node {
 		return attrPartitionKey;
 	}
 	
+	/**
+	 * Sets fields which are used for file output name.
+	 * 
+	 * @param partitionOutFields
+	 */
+	public void setPartitionOutFields(String partitionOutFields) {
+		attrPartitionOutFields = partitionOutFields;
+	}
+
 	/**
 	 * Sets number file tag for data partition.
 	 * 

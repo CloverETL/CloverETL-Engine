@@ -211,16 +211,16 @@ public class DelimitedDataWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
-        writer.setLookupTable(lookupTable);
         if (attrPartitionKey != null) {
+            writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             writer.setPartitionFileTag(partitionFileTagType);
         	if (attrPartitionOutFields != null) {
         		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
         	}
-            if(outputFieldNames) {
-            	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
-            }
+        }
+        if(outputFieldNames) {
+        	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
@@ -298,6 +298,9 @@ public class DelimitedDataWriter extends Node {
 		}
 		if (attrPartitionKey != null) {
 			xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE, attrPartitionKey);
+		}
+		if (attrPartitionOutFields != null) {
+			xmlElement.setAttribute(XML_PARTITION_OUTFIELDS_ATTRIBUTE, attrPartitionOutFields);
 		}
 		xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
 	}
@@ -467,6 +470,11 @@ public class DelimitedDataWriter extends Node {
 		this.partitionFileTagType = PartitionFileTagType.valueOfIgnoreCase(partitionFileTagType);
 	}
 
+	/**
+	 * Sets fields which are used for file output name.
+	 * 
+	 * @param partitionOutFields
+	 */
 	public void setPartitionOutFields(String partitionOutFields) {
 		attrPartitionOutFields = partitionOutFields;
 	}
