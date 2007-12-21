@@ -432,7 +432,7 @@ public class XmlWriter extends Node {
 						 String fieldName = dataRecord.getMetadata().getField(i).getName();
 						 if (portDefinition.fieldsAsExcept != null 
 								 && portDefinition.fieldsAsExcept.length>0
-								 && Arrays.binarySearch(portDefinition.fieldsAsExcept, 0, portDefinition.fieldsAsExcept.length , fieldName, null)>-1){
+								 && Arrays.binarySearch(portDefinition.fieldsAsExcept, (Object)fieldName, null)>-1){
 							 // found in exception list
 							 if (portDefinition.fieldsAsAttributes)
 								 fieldsAsElementsIndexes.add(i);
