@@ -295,7 +295,7 @@ public class XmlXPathReader extends Node {
      * @return
      * @throws XMLConfigurationException
      */
-    private static Document createDocumentFromString(String inString) throws XMLConfigurationException {
+    public static Document createDocumentFromString(String inString) throws XMLConfigurationException {
         InputSource is = new InputSource(new StringReader(inString));
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         Document doc;

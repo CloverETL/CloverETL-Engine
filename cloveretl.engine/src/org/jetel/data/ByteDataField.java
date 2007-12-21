@@ -75,8 +75,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 */
 	public ByteDataField(DataFieldMetadata _metadata, boolean plain) {
 		super(_metadata);
-		value = null;
-		setNull(true);
+        reset();
 	}
 
 
@@ -222,7 +221,7 @@ public class ByteDataField extends DataField implements Comparable{
          }else if (metadata.isDefaultValue()){
              setToDefaultValue();
          }else{
-             setValue(0);
+             value = null;
          }
      }    
 

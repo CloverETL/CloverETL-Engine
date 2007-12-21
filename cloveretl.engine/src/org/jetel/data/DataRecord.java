@@ -622,7 +622,7 @@ public class DataRecord implements Serializable, Comparable, Iterable<DataField>
         return new Iterator<DataField>() {
             private int idx = 0;
             public boolean hasNext() {
-                return fields.length < idx;
+                return fields.length > idx;
             }
 
             public DataField next() {

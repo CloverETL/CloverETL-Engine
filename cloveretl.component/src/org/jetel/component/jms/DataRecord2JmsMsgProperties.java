@@ -67,7 +67,7 @@ public class DataRecord2JmsMsgProperties extends DataRecord2JmsMsgBase {
 	public Message createMsg(DataRecord record) throws JMSException {
 		TextMessage msg = session.createTextMessage();
 		int fieldCnt = record.getNumFields();
-		if (bodyField > 0) {
+		if (bodyField > -1) {
 			msg.setText(record.getField(bodyField).toString());
 		}
 		for (int fieldIdx = 0; fieldIdx < fieldCnt; fieldIdx++) {

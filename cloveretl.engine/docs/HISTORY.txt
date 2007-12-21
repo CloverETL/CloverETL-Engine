@@ -2,8 +2,18 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
-REL 2-4-0
+REL 2-3-3
 ---------
+Release in particular repairing bugs from 2.3.2 version.
+
+Changes/bug fixes:
++ added a public method to the aggregate mapping parser, which creates the values of constants from
+	their string representations
+
+REL 2-3-2
+---------
+Release in particular repairing bugs from 2.3.1 version.
+
 Changes/bug fixes:
 + sftp protocol support for readers which uses multifile reader
 + possibility of coping ByteDataField as BLOB

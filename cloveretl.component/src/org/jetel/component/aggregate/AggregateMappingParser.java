@@ -181,6 +181,38 @@ public class AggregateMappingParser {
 	}
 	
 	/**
+	 * Creates the value of a constant.
+	 * 
+	 * @param text text of the constant.
+	 * @return value of the constant.
+	 * @throws AggregationException if the constant format is invalid.
+	 */
+	public static Object getConstantValue(String text) throws AggregationException {
+		String value = text.trim();
+
+		if (Pattern.compile("^" + MAPPING_STRING_REGEX + "$").matcher(value).matches()) {
+			return createString(value);
+		}
+		if (Pattern.compile("^" + MAPPING_INT_REGEX + "$").matcher(value).matches()) {
+			return createInt(value);
+		}
+		if (Pattern.compile("^" + MAPPING_DATE_REGEX + "$").matcher(value).matches()) {
+			return createDate(value);
+		}
+		if (Pattern.compile("^" + MAPPING_DATETIME_REGEX + "$").matcher(value).matches()) {
+			return createDatetime(value);
+		}
+		if (Pattern.compile("^" + MAPPING_DOUBLE_REGEX + "$").matcher(value).matches()) {
+			return createDouble(value);
+		}
+		if (Pattern.compile("^" + MAPPING_PARAM_REGEX + "$").matcher(value).matches()) {
+			return createString(value);
+		}
+		
+		throw new AggregationException("Invalid mapping format");
+	}
+	
+	/**
 	 * Parses the mapping.
 	 * 
 	 * @param mapping
@@ -342,12 +374,21 @@ public class AggregateMappingParser {
 		String constant = parsedExpression[1].trim();
 		String outputField = parseOutputField(parsedExpression[0]);
 		
-		Integer value = Integer.valueOf(constant);
+		Integer value = createInt(constant);
 		checkFieldExistence(outputField);
 		registerOutputFieldUsage(outputField);
 		constantMapping.add(ConstantMapping.createIntConstantMapping(value, constant, outputField));
 	}
 
+	/**
+	 * 
+	 * @param constant text of the constant.
+	 * @return integer value of the constant.
+	 */
+	private static Integer createInt(String constant) {
+		return Integer.valueOf(constant);
+	}
+	
 	/**
 	 * Parses a double constant mapping.
 	 * 
@@ -359,10 +400,19 @@ public class AggregateMappingParser {
 		String constant = parsedExpression[1].trim();
 		String outputField = parseOutputField(parsedExpression[0]);
 		
-		Double value = Double.valueOf(constant);
+		Double value = createDouble(constant);
 		checkFieldExistence(outputField);
 		registerOutputFieldUsage(outputField);
 		constantMapping.add(ConstantMapping.createDoubleConstantMapping(value, constant, outputField));
+	}
+	
+	/**
+	 * 
+	 * @param constant text of the constant.
+	 * @return double value of the constant.
+	 */
+	private static Double createDouble(String constant) {
+		return Double.valueOf(constant);
 	}
 
 	/**
@@ -375,8 +425,7 @@ public class AggregateMappingParser {
 		String[] parsedExpression = expression.split(ASSIGN_SIGN);
 		// remove the leading and trailing quotation marks
 		String constant = parsedExpression[1].trim().substring(1, parsedExpression[1].trim().length() - 1);
-		// replace \" with " 
-		constant = constant.replaceAll("\\\\\"", "\""); 
+		constant = createString(constant); 
 		String outputField = parseOutputField(parsedExpression[0]);
 		
 		checkFieldExistence(outputField);
@@ -384,6 +433,16 @@ public class AggregateMappingParser {
 		constantMapping.add(ConstantMapping.createStringConstantMapping(constant, outputField));
 	}
 
+	/**
+	 * 
+	 * @param constant text of the constant.
+	 * @return string value of the constant.
+	 */
+	private static String createString(String constant) {
+		// replace \" with " 
+		return constant.replaceAll("\\\\\"", "\""); 
+	}
+	
 	/**
 	 * Parses a date constant mapping.
 	 * 
@@ -395,17 +454,27 @@ public class AggregateMappingParser {
 		String constant = parsedExpression[1].trim();
 		String outputField = parseOutputField(parsedExpression[0]);
 		
-		Date value;
-		try {
-			value = DATE_FORMAT.parse(constant);
-		} catch (ParseException e) {
-			throw new AggregationException("Date is in invalid  format: " + constant, e);
-		}
+		Date value = createDate(constant);
+		
 		checkFieldExistence(outputField);
 		registerOutputFieldUsage(outputField);
 		constantMapping.add(ConstantMapping.createDateConstantMapping(value, constant, outputField));
 	}
 
+	/**
+	 * 
+	 * @param constant text of the constant
+	 * @return date value of the constant.
+	 * @throws AggregationException
+	 */
+	private static Date createDate(String constant) throws AggregationException {
+		try {
+			return DATE_FORMAT.parse(constant);
+		} catch (ParseException e) {
+			throw new AggregationException("Date is in invalid  format: " + constant, e);
+		}
+	}
+	
 	/**
 	 * Parses a datetime constant mapping.
 	 * 
@@ -417,15 +486,25 @@ public class AggregateMappingParser {
 		String constant = parsedExpression[1].trim();
 		String outputField = parseOutputField(parsedExpression[0]);
 		
-		Date value;
-		try {
-			value = DATETIME_FORMAT.parse(constant);
-		} catch (ParseException e) {
-			throw new AggregationException("Date is in invalid  format: " + constant, e);
-		}
+		Date value = createDatetime(constant);
+		
 		checkFieldExistence(outputField);
 		registerOutputFieldUsage(outputField);
 		constantMapping.add(ConstantMapping.createDateConstantMapping(value, constant, outputField));
+	}
+
+	/**
+	 * 
+	 * @param constant text of the constant
+	 * @return datetime value of the constant.
+	 * @throws AggregationException
+	 */
+	private static Date createDatetime(String constant) throws AggregationException {
+		try {
+			return DATETIME_FORMAT.parse(constant);
+		} catch (ParseException e) {
+			throw new AggregationException("Date is in invalid  format: " + constant, e);
+		}
 	}
 
 	/**
@@ -438,8 +517,7 @@ public class AggregateMappingParser {
 		String[] parsedExpression = expression.split(ASSIGN_SIGN);
 		// remove the leading and trailing quotation marks
 		String constant = parsedExpression[1].trim();
-		// replace \" with " 
-		constant = constant.replaceAll("\\\\\"", "\""); 
+		constant = createString(constant); 
 		String outputField = parseOutputField(parsedExpression[0]);
 		
 		checkFieldExistence(outputField);

@@ -421,11 +421,11 @@ public final class TransformationGraph extends GraphElement {
 		IConnection dbCon = null;
 		Sequence seq = null;
 		
-		// initialize DB Connections
-		// iterate through all dbConnection(s) and initialize them - try to connect to db
+		// initialize Connections
+		// iterate through all Connection(s) and initialize them - try to connect to db
 		iterator = connections.values().iterator();
 		while (iterator.hasNext()) {
-			logger.info("Initializing DB connection: ");
+			logger.info("Initializing connection: ");
 			try {
 				dbCon = (IConnection) iterator.next();
 				dbCon.init();
@@ -433,7 +433,7 @@ public final class TransformationGraph extends GraphElement {
 				logger.info(dbCon + " ... OK");
 			} catch (Exception ex) {
 				logger.info(dbCon + " ... !!! ERROR !!!");
-				logger.error("Can't connect to database", ex);
+				logger.error("Can't init connection", ex);
 				throw new ComponentNotReadyException("Can't connect to database", ex);
 			}
 		}
