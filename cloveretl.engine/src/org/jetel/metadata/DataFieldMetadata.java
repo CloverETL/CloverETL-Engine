@@ -275,6 +275,7 @@ public class DataFieldMetadata implements Serializable {
 //		ret.setCodeStr(getCodeStr());
 		ret.setLocaleStr(getLocaleStr());
 		ret.setAutoFilling(getAutoFilling());
+		ret.setTrim(isTrim());
 
 		//copy record properties
 		Properties target = new Properties();

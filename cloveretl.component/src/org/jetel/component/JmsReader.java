@@ -84,9 +84,12 @@ import org.w3c.dom.Element;
  *  <tr><td><b>charset</b><br><i>optional</i></td><td>encoding of extern source</td></tr>
  *  <tr><td><b>maxMsgCount</b></td><td>Maximal number of messages to be processed.
  *  0 means there's no constraint on count of messages.</td>
- *  <tr><td><b>timeout</b></td><td>Maximal time to await a message. 0 means forever</td>
+ *  <tr><td><b>timeout</b></td><td>Maximal time to await next message. 0 means forever</td>
  *  </tr>
  *  </table>
+ *  
+ *  When both attributes <b>maxMsgCount</b> and <b>timeout</b> are set to 0, node keeps awaiting for new messages. 
+ *  Also Phase, which this node is embedded in, never stops.
  *
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 09/15/06  

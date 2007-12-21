@@ -24,9 +24,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -62,14 +62,19 @@ import org.w3c.dom.Element;
  *  <table border="1">
  *  <th>XML attributes:</th>
  *  <tr><td><b>id</b></td><td>connection identification</td>
+ *  <tr><td><b>name</b></td><td>connection name</td>
  *  <tr><td><b>config</b></td><td>filename of the config file from which to take connection parameters<br>
- *  If used, then all other attributes are ignored.</td></tr>
+ *  If used, then all following attributes are ignored.</td></tr>
 *  <tr><td><b>iniCtxFactory</b></td><td>JNDI initial context factory</td>
 *  <tr><td><b>providerUrl</b></td><td>JNDI provider URL</td>
 *  <tr><td><b>connectionFactory</b></td><td>factory creating JMS connections</td>
 *  <tr><td><b>username</b></td><td>username for connection factory</td>
 *  <tr><td><b>password</b></td><td>password for connection factory</td>
+*  <tr><td><b>passwordEncrypted</b></td><td>if this flag is true, 
+*  attribute password is encrypted and 
+*  another password will be required to decrypt password attribute and establish this connection.</td>
 *  <tr><td><b>destId</b></td><td>JMS destination</td>
+*  <tr><td><b>libraries</b></td><td>List of URLs to libraries (jar or zip files) neccessery for JMS connector. URLs are separated by ";".</td>
  * </table>
  *  <h4>Example:</h4>
  * <pre>&lt;Connection id="dest" type="JMS"<br>
@@ -224,13 +229,20 @@ public class JmsConnection extends GraphElement implements IConnection {
 			    } catch (Exception e){
 					throw new ComponentNotReadyException("Cannot create initial context", e);
 			    } 
-			    ConnectionFactory ftory = (ConnectionFactory)ctx.lookup(conFtory);
+			    ConnectionFactory ftory = null;
+			    try {
+				    ftory = (ConnectionFactory)ctx.lookup(conFtory);
+			    } catch (NamingException e){
+			    	throw e;
+			    } catch (Exception e) {
+					throw new ComponentNotReadyException("Cannot create connection factory "+e.getMessage());
+			    }
 			    if (ftory == null)
 					throw new ComponentNotReadyException("Cannot create connection factory");
 			    
 			    if (passwordEncrypted) {
-	            	Enigma enigma = getGraph().getEnigma();
-		            //Enigma enigma = Enigma.getInstance();
+	            	//Enigma enigma = getGraph().getEnigma();
+		            Enigma enigma = Enigma.getInstance();
 		            String decryptedPassword = null;
 		            try {
 		                decryptedPassword = enigma.decrypt(pwd);
@@ -402,13 +414,26 @@ public class JmsConnection extends GraphElement implements IConnection {
 	}
 
 	/**
-	 * 
 	 * @param urls
 	 * @return
 	 */
 	public static String getLibrariesString(URL[] urls){
 		StringBuilder sb = new StringBuilder();
 		for (URL u : urls){
+			if (sb.length()>0)
+				sb.append(LIBRARY_PATH_SEPARATOR);
+			sb.append(u);
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * @param urls
+	 * @return
+	 */
+	public static String getLibrariesString(String[] urls){
+		StringBuilder sb = new StringBuilder();
+		for (String u : urls){
 			if (sb.length()>0)
 				sb.append(LIBRARY_PATH_SEPARATOR);
 			sb.append(u);
@@ -422,25 +447,40 @@ public class JmsConnection extends GraphElement implements IConnection {
 	 * @return
 	 */
 	public static URL[] getLibrariesURL(String libraryPath) {
+		String[] libs = getLibraries(libraryPath);
+		List<URL> result = new ArrayList<URL>();
+		for (int i=0; i< libs.length; i++) {
+			String libraryURLString = libs[i];
+			try {
+				result.add(new URL(libraryURLString));
+			} catch (MalformedURLException e) {
+				// maybe it is ULR created via File class (no protocol)
+				try {
+					result.add( new File(libraryURLString).toURI().toURL() );
+				} catch (MalformedURLException e1) {
+				}
+			}
+		}// for
+		return (URL[]) result.toArray(new URL[result.size()]);
+	}
+
+	/**
+	 * 
+	 * @param libraryPath
+	 * @return
+	 */
+	public static String[] getLibraries(String libraryPath) {
 		if (libraryPath == null || libraryPath.length() == 0) {
-			return new URL[0];
+			return new String[0];
 		}
 		StringTokenizer libTok = new StringTokenizer(libraryPath, LIBRARY_PATH_SEPARATOR);
-		ArrayList newLibraries = new ArrayList(libTok.countTokens());
+		List<String> newLibraries = new ArrayList<String>(libTok.countTokens());
 		String libraryURLString = null;
 		while (libTok.hasMoreElements()) {
 				libraryURLString = libTok.nextToken(); 
-				try {
-					newLibraries.add(new URL(libraryURLString));
-				} catch (MalformedURLException e) {
-					// maybe it is ULR created via File class (no protocol)
-					try {
-						newLibraries.add(new File(libraryURLString).toURI().toURL());
-					} catch (MalformedURLException e1) {
-					}
-				}
+				newLibraries.add(libraryURLString);
 		}// while
-		return (URL[]) newLibraries.toArray(new URL[newLibraries.size()]);
+		return (String[]) newLibraries.toArray(new String[newLibraries.size()]);
 	}
-	
+
 }

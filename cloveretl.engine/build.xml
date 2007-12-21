@@ -12,7 +12,6 @@
 	<property name="minor_version" value="4"/>
 	<property name="revision_version" value="0"/>
 	
-	
 	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
 	<property name="dir.bin.default" value="${basedir}/bin"/>
 	<property name="dir.doc.default" value="${basedir}/javadoc"/>

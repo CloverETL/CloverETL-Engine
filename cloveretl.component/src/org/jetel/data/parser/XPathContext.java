@@ -494,4 +494,7 @@ public class XPathContext {
 		this.sequenceFieldName = sequenceFieldName;
 	}
 	
+	public String toString(){
+		return "XPathContext#"+this.xpath + " "+ this.xpathContextList;
+	}
 }
