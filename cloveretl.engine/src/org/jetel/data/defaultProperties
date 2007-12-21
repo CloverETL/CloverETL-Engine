@@ -8,7 +8,7 @@
 #Clover at runtime allocates several internal buffers of MAX_RECORD_SIZE, thus increasing this value increases also 
 #memory utilization. 
 
-Record.MAX_RECORD_SIZE = 8192
+Record.MAX_RECORD_SIZE = 12288
 
 #Compression level for compressed data fields (cbyte).
 Record.DEFAULT_COMPRESSION_LEVEL=5
@@ -18,13 +18,13 @@ Record.DEFAULT_COMPRESSION_LEVEL=5
 #If you have data containing long text strings, increase this value. Could be 1024,2048 or even higher.
 #The impact on memory utilization is low as each parser your graph uses allocates only one such buffer. 
 
-DataParser.FIELD_BUFFER_LENGTH = 512
+DataParser.FIELD_BUFFER_LENGTH = 4096
 
 
 #the same as above, but for formatting data to text representation
 #should be set to the same value as above
 
-DataFormatter.FIELD_BUFFER_LENGTH = 512
+DataFormatter.FIELD_BUFFER_LENGTH = 4096
 
 
 #This constant determines the internal buffer clover components allocate for I/O operations. 
@@ -33,7 +33,7 @@ DataFormatter.FIELD_BUFFER_LENGTH = 512
 #It has been tested that the performance improvement is negligible. 
 #However, if you increase the size of MAX_RECORD_SIZE , make sure this value is minimally 2*MAX_RECORD_SIZE.
 
-DEFAULT_INTERNAL_IO_BUFFER_SIZE = 32768
+DEFAULT_INTERNAL_IO_BUFFER_SIZE = 49152
 
 #when creating InputStream or OutputStream objects, what
 #is the size of their internal buffer. Used mainly in
@@ -100,7 +100,7 @@ GraphProperties.PROPERTY_PLACEHOLDER_REGEX = \\$\\{(\\w+)\\}
 #data records when transmitted between two components.
 #The size should be at least MAX_RECORD_SIZE + 8, better
 #several times bigger
-#Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE = 8192
+#Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE = 24576
 
 
 #Size of internal buffer of BufferedEdge for storing/caching
