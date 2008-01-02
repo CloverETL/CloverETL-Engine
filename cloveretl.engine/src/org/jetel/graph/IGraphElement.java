@@ -48,6 +48,12 @@ public interface IGraphElement {
     public abstract void init() throws ComponentNotReadyException;
 
     /**
+     * Restore all internal element settings to the initial state.
+     * Cannot be called before init() and after free() method invokation. 
+     */
+    public abstract void reset() throws ComponentNotReadyException;
+
+    /**
      * Free all allocated resources.
      */
     public abstract void free();

@@ -34,6 +34,13 @@ public interface CloverJMXMBean {
      */
     public String getCloverVersion();
     
+    /**
+     * Client (JMX listener) has to give notification about itsself
+     * to the server. This information can be used for some kind
+     * of optimalization in case no clients are connected.
+     */
+    public void registerClient();
+    
     public int getUpdateInterval();
     public void setUpdateInterval(int updateInterval);
     

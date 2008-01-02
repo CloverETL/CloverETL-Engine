@@ -129,6 +129,12 @@ public class SimpleCopy extends Node {
 		}
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		
+		//DO NOTHING
+	}
 
 	/**
 	 *  Description of the Method

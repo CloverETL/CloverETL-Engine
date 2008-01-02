@@ -50,9 +50,9 @@ public class DirectEdge extends EdgeBase {
 	private int recordCounter;
     private long byteCounter;
     private AtomicInteger bufferedRecords; 
-	private boolean isClosed=false;
-    private boolean readerWait=false;
-    private volatile boolean writerWait=false;
+	private boolean isClosed;
+    private boolean readerWait;
+    private volatile boolean writerWait;
 	
 	private int readBufferLimit;
 
@@ -115,9 +115,24 @@ public class DirectEdge extends EdgeBase {
         bufferedRecords=new AtomicInteger(0);
 		readBuffer.flip(); // we start with empty read buffer
 		tmpDataRecord=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		isClosed=false;
+	    readerWait=false;
+	    writerWait=false;
 	}
 
-
+	@Override
+	public void reset() {
+		readBuffer.clear();
+		writeBuffer.clear();
+		recordCounter = 0;
+        byteCounter=0;
+        bufferedRecords.set(0);
+		readBuffer.flip(); // we start with empty read buffer
+		tmpDataRecord.clear();
+		isClosed=false;
+	    readerWait=false;
+	    writerWait=false;
+	}
 
 	// Operations
 	/**
@@ -302,20 +317,20 @@ public class DirectEdge extends EdgeBase {
 	    readBufferLimit=readBuffer.limit(); // save readRecord limit
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @since    April 2, 2002
-	 */
-	public void open() {
-		isClosed=false;
-		readBuffer.clear();
-		readBuffer.flip();
-		writeBuffer.clear();
-        bufferedRecords.set(0);
-        recordCounter=0;
-        byteCounter=0;
-	}
+//	/**
+//	 *  Description of the Method
+//	 *
+//	 * @since    April 2, 2002
+//	 */
+//	public void open() {
+//		isClosed=false;
+//		readBuffer.clear();
+//		readBuffer.flip();
+//		writeBuffer.clear();
+//        bufferedRecords.set(0);
+//        recordCounter=0;
+//        byteCounter=0;
+//	}
 
 
 	/**

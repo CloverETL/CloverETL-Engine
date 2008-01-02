@@ -52,7 +52,7 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     private long runTimeMS;
     private WatchDog watchDog;
     private boolean run;
-    
+    private volatile int clientsCounter = 0;
     
     private Map<String,TrackingDetail> trackingMap;
     
@@ -71,7 +71,14 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
 		runningGraphName = watchDog.getTransformationGraph().getName();
 	}
     
+    public boolean hasClients() {
+    	return run && clientsCounter > 0;
+    }
    
+    synchronized public void registerClient() {
+    	clientsCounter++;
+    }
+    
     public String getCloverVersion() {
        return cloverVersion;
     }

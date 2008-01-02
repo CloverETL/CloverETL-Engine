@@ -50,18 +50,24 @@ public class GraphExecutor {
 
 	private static Log logger = LogFactory.getLog(GraphExecutor.class);
 
-	private static ExecutorService executor = Executors.newCachedThreadPool(new GraphThreadFactory());
+	private ExecutorService executor = Executors.newCachedThreadPool(new GraphThreadFactory());
 	
-	private TransformationGraph graph;
 	
-	WatchDog watchDog;
-	
-	public WatchDog getWatchDog() {
-		return watchDog;
+	/**
+	 * Waits for all currently running graphs are already done
+	 * and finishes graph executor life cycle.
+	 * New graphs cannot be submitted after free invocation.
+	 */
+	public void free() {
+		executor.shutdown();
 	}
 
-	public TransformationGraph getGraph() {
-		return graph;
+	/**
+	 * Immediately finishes graph executor life cycle. All runnig
+	 * graphs are aborted.
+	 */
+	public void freeNow() {
+		executor.shutdownNow();
 	}
 
 	/**
@@ -96,7 +102,7 @@ public class GraphExecutor {
 	throws XMLConfigurationException, GraphConfigurationException, ComponentNotReadyException {
 		context = new UnconfigurableGraphRuntimeContext(context);
 
-		graph = loadGraph(graphStream, context.getAdditionalProperties());
+		TransformationGraph graph = loadGraph(graphStream, context.getAdditionalProperties());
 		
         graph.setPassword(password);
 
@@ -138,7 +144,7 @@ public class GraphExecutor {
         }
 
 //        long timestamp = System.currentTimeMillis();
-        watchDog = new WatchDog(graph, context);
+        WatchDog watchDog = new WatchDog(graph, context);
 
         return executor.submit(watchDog);
         

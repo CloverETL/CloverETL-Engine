@@ -66,7 +66,7 @@ import org.jetel.util.string.StringUtils;
  * @since       July 29, 2002
  * @revision    $Revision$
  */
-public class WatchDog implements Callable<Result>, CloverRuntime {
+public class WatchDog implements Callable<Result>, CloverPost {
     
     private int trackingInterval;
 	private Result watchDogStatus;
@@ -86,7 +86,6 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
     private boolean threadCpuTimeIsSupported;
     private boolean provideJMX=true;
     private IGraphRuntimeContext runtimeContext;
-    private String fatalErrorSourceID = "";
     
     private PrintTracking printTracking;
 
@@ -97,6 +96,8 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
     
     static Log logger = LogFactory.getLog(WatchDog.class);
     
+    static private MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+    private ObjectName jmxObjectName;
 
 
 	/**
@@ -165,7 +166,7 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
         mbean.graphFinished(result);
      
         // wait to get JMX chance to propagate the message
-		if (provideJMX) {
+		if (mbean.hasClients()) {
 			long timestamp = System.currentTimeMillis();
 			try {
 				while (runIt
@@ -182,6 +183,13 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
 		
 		//should be in a free() method
 		graph.setWatchDog(null);
+		if(provideJMX) {
+			try {
+				mbs.unregisterMBean(jmxObjectName);
+			} catch (Exception e) {
+				logger.error("JMX error - ObjectName cannot be unregistered.", e);
+			}
+		}
 		
 		return result;
 	}
@@ -194,8 +202,6 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
     private CloverJMX registerTrackingMBean(boolean register) {
        mbean = new CloverJMX(this,register);
         // register MBean
-        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-
         // shall we really register our MBEAN ?
         if (!register) return mbean;
         
@@ -203,11 +209,11 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
         
         // Construct the ObjectName for the MBean we will register
         try {
-            ObjectName name = new ObjectName(
+            jmxObjectName = new ObjectName(
                     createMBeanName(mbeanId != null ? mbeanId : graph.getName())
             );
             // Register the  MBean
-            mbs.registerMBean(mbean, name);
+            mbs.registerMBean(mbean, jmxObjectName);
 
         } catch (MalformedObjectNameException ex) {
             logger.error(ex);
@@ -323,7 +329,6 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
 					TimeUnit.MILLISECONDS);
 			if (message != null) {
 				if (message.getType() == Message.Type.ERROR) {
-					fatalErrorSourceID = message.getSenderID();
 					causeException = ((ErrorMsgBody) message.getBody())
 							.getSourceException();
 					causeNodeID = message.getSenderID();
@@ -430,7 +435,7 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
          
 		long elapsedNano=System.nanoTime()-startTimeNano;
 		// gather tracking information
-		for (Node node : phase.getNodes()){
+		for (Node node : phase.getNodes().values()){
 		    String nodeId=node.getId();
 		    NodeTrackingDetail trackingDetail=(NodeTrackingDetail)tracking.get(nodeId);
 		    int inPortsNum=node.getInPorts().size();
@@ -499,14 +504,7 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
 		}
 		logger.info("------------------------------** End of Summary **---------------------------");
 	}
-	
-	public int getTotalRunTime() {
-		int total = 0;
-		for (Phase phase : phases) {
-			if(phase.getPhaseTracking()!=null) total += phase.getPhaseTracking().getExecTimeSec(); 
-		}
-		return total;
-	}
+
 
 	/**
 	 * aborts execution of current phase
@@ -515,15 +513,11 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
 	 */
 	public void abort() {
         watchDogStatus=Result.ABORTED;
-		Iterator iterator = currentPhase.getNodes().iterator();
-		Node node;
 
 		// iterate through all the nodes and stop them
-		while (iterator.hasNext()) {
-			node = (Node) iterator.next();
+        for(Node node : currentPhase.getNodes().values()) {
 			node.abort();
-			logger.warn("Interrupted node: "
-				+ node.getId());
+			logger.warn("Interrupted node: " + node.getId());
 		}
 	}
 
@@ -536,7 +530,7 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
 	 * @since                 July 31, 2002
 	 */
 	private void startUpNodes(Phase phase) {
-		for(Node node: phase.getNodes()) {
+		for(Node node: phase.getNodes().values()) {
             Thread nodeThread = new Thread(node, node.getId());
           // this thread is daemon - won't live if main thread ends
             nodeThread.setDaemon(true);
@@ -555,12 +549,6 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
 	 */
 	private Result executePhase(Phase phase) {
 		currentPhase = phase;
-		//phase.checkConfig();
-		// init phase
-		if (!phase.init()) {
-			// something went wrong !
-			return Result.ERROR;
-		}
 		logger.info("Starting up all nodes in phase [" + phase.getPhaseNum() + "]");
 		startUpNodes(phase);
 		logger.info("Sucessfully started all nodes in phase!");
@@ -571,20 +559,6 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
             watchDogStatus = Result.ABORTED;
         }
         
-        // following code is not needed any more
-//        // check how nodes in phase finished
-//        Node node;
-//        for (Iterator i=phase.getNodes().iterator();i.hasNext();){
-//            node=(Node)i.next();
-//            // was there an uncaught error ?
-//            if (node.getResultCode()==Node.Result.ERROR){
-//               result=false;
-//               logger.error("in node "+node.getId()+" : "+node.getResultMsg());
-//            }
-//        }
-		
-        //end of phase, destroy it
-		phase.free();
         phase.setResult(watchDogStatus);
 		return watchDogStatus;
 	}
@@ -815,11 +789,6 @@ public class WatchDog implements Callable<Result>, CloverRuntime {
 
 	public void setUseJMX(boolean useJMX) {
 		this.provideJMX = useJMX;
-	}
-
-
-	public String getFatalErrorSourceID() {
-		return fatalErrorSourceID;
 	}
 
     

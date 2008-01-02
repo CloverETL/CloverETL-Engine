@@ -123,7 +123,19 @@ public class PhaseConnectionEdge extends EdgeBase {
 		}
 	}
 
-
+	@Override
+	public void reset() {
+		writeCounter = 0;
+		readCounter = 0;
+        writeByteCounter = 0;
+        readByteCounter = 0;
+		try {
+			dataTape.clear();
+		} catch (IOException e) {
+			throw new RuntimeException("Cannot clear data tape on a phase edge.", e);
+		}
+		dataTape.addDataChunk();
+	}
 
 	// Operations
 	/**

@@ -22,9 +22,9 @@ package org.jetel.graph;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -534,9 +534,6 @@ public class TransformationGraphXMLReaderWriter {
 			if (edgeTypeEnum != null) graphEdge.setEdgeType(edgeTypeEnum);
 			else if (fastPropagate) graphEdge.setEdgeType(EdgeTypeEnum.DIRECT_FAST_PROPAGATE);
             
-            // register edge within graph
-            graph.addEdge(graphEdge);
-			
             // assign edge to fromNode
 			specNodePort = fromNodeAttr.split(":");
 			if (specNodePort.length!=2){
@@ -578,6 +575,8 @@ public class TransformationGraphXMLReaderWriter {
 			}
 			graphNode.addInputPort(toPort, graphEdge);
 
+            // register edge within graph
+            graph.addEdge(graphEdge);
 			
 		}
 	}
@@ -792,7 +791,7 @@ public class TransformationGraphXMLReaderWriter {
 					rootElement.appendChild(phaseElement);
 				}
 				
-				List nodes = phases[i].getNodes();
+				Collection<Node> nodes = phases[i].getNodes().values();
 				Iterator iter = nodes.iterator();
 				while (iter.hasNext()) {
 					Node graphNode = (Node)iter.next();

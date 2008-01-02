@@ -65,13 +65,13 @@ public class TransformationGraphAnalyzer {
 	 * @exception  GraphConfigurationException  Description of the Exception
 	 * @since                                   July 29, 2002
 	 */
-	public static List analyzeGraphTopology(List nodes) throws GraphConfigurationException {
-		Set set1 = new HashSet();
-		Set set2 = new HashSet();
-		Set actualSet;
-		Set enumerationOfNodes = new LinkedHashSet(nodes.size());
-		Stack nodesStack = new Stack();
-		List rootNodes;
+	public static List<Node> analyzeGraphTopology(List<Node> nodes) throws GraphConfigurationException {
+		Set<Node> set1 = new HashSet<Node>();
+		Set<Node> set2 = new HashSet<Node>();
+		Set<Node> actualSet;
+		Set<Node> enumerationOfNodes = new LinkedHashSet<Node>(nodes.size());
+		Stack<AnalyzedNode> nodesStack = new Stack<AnalyzedNode>();
+		List<Node> rootNodes;
 		Node node;
 		Iterator iterator;
 
@@ -91,7 +91,7 @@ public class TransformationGraphAnalyzer {
 		}
 
 		// we need root nodes to traverse graph
-		rootNodes = new LinkedList(set1);
+		rootNodes = new LinkedList<Node>(set1);
 
 		// DETECTING CIRCULAR REFERENCES IN GRAPH
 		iterator = rootNodes.iterator();
@@ -308,8 +308,9 @@ public class TransformationGraphAnalyzer {
 	 * @param  nodes       Description of the Parameter
 	 * @param  edges       Description of the Parameter
 	 * @param  phases      Description of the Parameter
+	 * @throws GraphConfigurationException 
 	 */
-	public static void analyzeEdges(List edges) {
+	public static void analyzeEdges(List edges) throws GraphConfigurationException {
 		Phase readerPhase;
 		Phase writerPhase;
 		Edge edge;
@@ -320,15 +321,11 @@ public class TransformationGraphAnalyzer {
 			edge = (Edge) iterator.next();
 			readerPhase = edge.getReader().getPhase();
             writerPhase = edge.getWriter().getPhase();
-            readerPhase.getEdgesInPhase().add(edge); // assign edge to its reader phase
+            writerPhase.addEdge(edge);
 			if (readerPhase != writerPhase ) {
 				// edge connecting two nodes belonging to different phases
 				// has to be buffered
 				edge.setEdgeType(EdgeTypeEnum.PHASE_CONNECTION);
-				// because at the end of each phase, edges from that phase
-				// are destroyed (their references), we need to preserve
-				// references for those, which span two phases
-                writerPhase.getEdgesInPhase().add(edge);
 			}
 		}
 	}
@@ -392,15 +389,15 @@ public class TransformationGraphAnalyzer {
 
     /**
      * Apply disabled property of node to graph. Called in graph inital phase. 
+     * @throws GraphConfigurationException 
      */
-    public static void disableNodesInPhases(TransformationGraph graph) {
-        Set nodesToRemove = new HashSet();
+    public static void disableNodesInPhases(TransformationGraph graph) throws GraphConfigurationException {
+        Set<Node> nodesToRemove = new HashSet<Node>();
         Phase[] phases = graph.getPhases();
         
         for (int i = 0; i < phases.length; i++) {
             nodesToRemove.clear();
-            for (Iterator it = phases[i].getNodes().iterator(); it.hasNext();) {
-                Node node = (Node) it.next();
+            for (Node node : phases[i].getNodes().values()) {
                 if (node.getEnabled() == EnabledEnum.DISABLED) {
                     nodesToRemove.add(node);
                     disconnectAllEdges(node);
@@ -429,15 +426,18 @@ public class TransformationGraphAnalyzer {
                     }
                 }
             }
-            phases[i].getNodes().removeAll(nodesToRemove);
+            for(Node node : nodesToRemove) {
+            	phases[i].deleteNode(node);
+            }
         }
     }
     
     /**
      * Disconnect all edges connected to the given node.
      * @param node
+     * @throws GraphConfigurationException 
      */
-    private static void disconnectAllEdges(Node node) {
+    private static void disconnectAllEdges(Node node) throws GraphConfigurationException {
         for(Iterator it1 = node.getInPorts().iterator(); it1.hasNext();) {
             final Edge edge = (Edge) it1.next();
             Node writer = edge.getWriter();
