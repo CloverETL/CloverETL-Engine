@@ -527,6 +527,7 @@ mapping - attribute cloverFields added.
 + new component CheckForeignKey added - contributed by Stewart Jeacocke
 + altered Filter component to send rejected records to second output port
   (if connected)
++ updated EdgeDebuger to support debugging limited number of records, filtering and sampling
 
 Bugs corrected:
 + fixed problem in DataRecordMetadataXMLReaderWriter - part writing XML was wrongly
