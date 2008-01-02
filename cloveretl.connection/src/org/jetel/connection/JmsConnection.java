@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -241,8 +242,8 @@ public class JmsConnection extends GraphElement implements IConnection {
 					throw new ComponentNotReadyException("Cannot create connection factory");
 			    
 			    if (passwordEncrypted) {
-	            	//Enigma enigma = getGraph().getEnigma();
-		            Enigma enigma = Enigma.getInstance();
+	            	Enigma enigma = getGraph().getEnigma();
+		            //Enigma enigma = Enigma.getInstance();
 		            String decryptedPassword = null;
 		            try {
 		                decryptedPassword = enigma.decrypt(pwd);
