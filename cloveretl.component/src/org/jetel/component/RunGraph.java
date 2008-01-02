@@ -485,7 +485,7 @@ public class RunGraph extends Node{
         
 		try {
 			futureResult = graphExecutor.runGraph(in, runtimeContext, password);
-			watchdog = graphExecutor.getWatchDog();
+//			watchdog = graphExecutor.getWatchDog();
         } catch (XMLConfigurationException e) {            
             output.getField(2).setValue("Error in reading graph from XML: " + e.getMessage());
             return false;
@@ -512,34 +512,35 @@ public class RunGraph extends Node{
 		}
         
 		
-        switch (result) {
-	        case FINISHED_OK:        	
-	    		output.getField(1).setValue("Finished OK");
-	    		output.getField(2).setValue("");
-	    		output.getField(3).setValue(""); 			
-	    		if(watchdog != null) output.getField(4).setValue(watchdog.getTotalRunTime()); 
-	    		    		        	
-	            return true;
-	        case ABORTED:
-	        	output.getField(1).setValue("Aborted");
-	        	output.getField(2).setValue("Graph execution aborted. ");
-	        	if(watchdog != null) {
-	        		output.getField(3).setValue(watchdog.getFatalErrorSourceID());
-	        		output.getField(4).setValue(watchdog.getTotalRunTime());
-	        	}
-	        	System.err.println(graphFileName + ": " + "Execution of graph aborted !");
-	            return false;
-	            
-	        default:
-	        	output.getField(1).setValue(result.message());        	
-	        	output.getField(2).setValue("Execution of graph failed !");
-	        	if(watchdog!=null) {	        			        	
-	        		output.getField(3).setValue(watchdog.getFatalErrorSourceID());
-	        		output.getField(4).setValue(watchdog.getTotalRunTime());
-	        	}
-	            System.err.println(graphFileName + ": " + "Execution of graph failed !");
-	            return false;
-        }
+//        switch (result) {
+//	        case FINISHED_OK:        	
+//	    		output.getField(1).setValue("Finished OK");
+//	    		output.getField(2).setValue("");
+//	    		output.getField(3).setValue(""); 			
+//	    		if(watchdog != null) output.getField(4).setValue(watchdog.getTotalRunTime()); 
+//	    		    		        	
+//	            return true;
+//	        case ABORTED:
+//	        	output.getField(1).setValue("Aborted");
+//	        	output.getField(2).setValue("Graph execution aborted. ");
+//	        	if(watchdog != null) {
+//	        		output.getField(3).setValue(watchdog.getFatalErrorSourceID());
+//	        		output.getField(4).setValue(watchdog.getTotalRunTime());
+//	        	}
+//	        	System.err.println(graphFileName + ": " + "Execution of graph aborted !");
+//	            return false;
+//	            
+//	        default:
+//	        	output.getField(1).setValue(result.message());        	
+//	        	output.getField(2).setValue("Execution of graph failed !");
+//	        	if(watchdog!=null) {	        			        	
+//	        		output.getField(3).setValue(watchdog.getFatalErrorSourceID());
+//	        		output.getField(4).setValue(watchdog.getTotalRunTime());
+//	        	}
+//	            System.err.println(graphFileName + ": " + "Execution of graph failed !");
+//	            return false;
+//        }
+		return false;
 	}
 		
 	@Override
