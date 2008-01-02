@@ -256,6 +256,27 @@ public class DataReader extends Node {
         }
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		
+		//TODO je potreba zimplementovat reset multi file readeru a tim nahradit nasledujici kod 
+		//reader.reset();
+		
+		// initialize multifile reader based on prepared parser
+        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+        reader.setLogger(logger);
+        reader.setFileSkip(skipFirstLine ? 1 : 0);
+        reader.setSkip(skipRows);
+        reader.setNumRecords(numRecords);
+        try {
+            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+        } catch(ComponentNotReadyException e) {
+            e.setAttributeName(XML_FILE_ATTRIBUTE);
+            throw e;
+        }
+
+	}
 
 	/**
 	 *  Description of the Method

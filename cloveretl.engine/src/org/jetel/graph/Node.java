@@ -39,7 +39,7 @@ import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
-import org.jetel.graph.runtime.CloverRuntime;
+import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.ErrorMsgBody;
 import org.jetel.graph.runtime.Message;
 import org.jetel.metadata.DataRecordMetadata;
@@ -367,14 +367,14 @@ public abstract class Node extends GraphElement implements Runnable {
                 Message msg = Message.createErrorMessage(this,
                         new ErrorMsgBody(runResult.code(), 
                                 resultMessage != null ? resultMessage : runResult.message(), null));
-                getCloverRuntime().sendMessage(msg);
+                getCloverPost().sendMessage(msg);
             }
         } catch (IOException ex) {  // may be handled differently later
             runResult=Result.ERROR;
             resultException = ex;
             Message msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(runResult.code(), runResult.message(), ex));
-            getCloverRuntime().sendMessage(msg);
+            getCloverPost().sendMessage(msg);
             return;
         } catch (InterruptedException ex) {
             runResult=Result.ABORTED;
@@ -384,21 +384,21 @@ public abstract class Node extends GraphElement implements Runnable {
             resultException = ex;
             Message msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(runResult.code(), "Error occurred in nested transformation: " + runResult.message(), ex));
-            getCloverRuntime().sendMessage(msg);
+            getCloverPost().sendMessage(msg);
             return;
         } catch (SQLException ex){
             runResult=Result.ERROR;
             resultException = ex;
             Message msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(runResult.code(), runResult.message(), ex));
-            getCloverRuntime().sendMessage(msg);
+            getCloverPost().sendMessage(msg);
             return;
         } catch (Exception ex) { // may be handled differently later
             runResult=Result.ERROR;
             resultException = ex;
             Message msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(runResult.code(), runResult.message(), ex));
-            getCloverRuntime().sendMessage(msg);
+            getCloverPost().sendMessage(msg);
             return;
         }
 
@@ -469,8 +469,8 @@ public abstract class Node extends GraphElement implements Runnable {
      * @return
      * @since 13.12.2006
      */
-    public CloverRuntime getCloverRuntime(){
-        return getGraph().getRuntime();
+    public CloverPost getCloverPost(){
+        return getGraph().getPost();
     }
     
 	/**

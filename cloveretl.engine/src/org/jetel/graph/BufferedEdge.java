@@ -104,6 +104,15 @@ public class BufferedEdge extends EdgeBase {
         isEOF = false;
 	}
 
+	@Override
+	public void reset() {
+        recordBuffer.clear();
+        outputRecordCounter = 0;
+        inputRecordCounter = 0;
+        byteCounter=0;
+        isEOF = false;
+	}
+	
 	// Operations
 	/**
 	 * An operation that does read one DataRecord from Edge

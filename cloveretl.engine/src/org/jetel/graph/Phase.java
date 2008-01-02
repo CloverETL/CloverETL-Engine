@@ -18,18 +18,17 @@
 *
 */
 package org.jetel.graph;
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
-import org.jetel.graph.runtime.NodeTrackingDetail;
 import org.jetel.graph.runtime.PhaseTrackingDetail;
 import org.jetel.graph.runtime.TrackingDetail;
 
@@ -42,7 +41,7 @@ import org.jetel.graph.runtime.TrackingDetail;
  * @see         OtherClasses
  */
 
-public class Phase implements Comparable {
+public class Phase extends GraphElement implements Comparable {
 
 	// Attributes
 
@@ -50,8 +49,8 @@ public class Phase implements Comparable {
 	/**
 	 * @since    April 2, 2002
 	 */
-	private List <Node> nodesInPhase;
-	private List <Edge> edgesInPhase;
+	private Map<String, Node> nodes;
+	private Map<String, Edge> edges; //edges with the source component in this phase
     private List <Node> leafNodes;
 
 	// specifies the order of this phase within graph
@@ -76,9 +75,11 @@ public class Phase implements Comparable {
 	 * @since            April 2, 2002
 	 */
 	public Phase(int phaseNum) {
+		super(Integer.toString(phaseNum));
+		
 		this.phaseNum = phaseNum;
-		nodesInPhase = new LinkedList<Node> ();
-		edgesInPhase = new LinkedList<Edge> ();
+		nodes = new LinkedHashMap<String, Node>();
+		edges = new LinkedHashMap<String, Edge>();
         result=Result.N_A;
 	}
 
@@ -119,41 +120,18 @@ public class Phase implements Comparable {
 	 * @return      returns TRUE if succeeded or FALSE if some Node or Edge failed initialization
 	 * @since       April 10, 2002
 	 */
-	public boolean init() {
-		Node node = null;
-		Edge edge;
-		Iterator nodeIterator = nodesInPhase.iterator();
-		Iterator edgeIterator = edgesInPhase.iterator();
+	public void init() throws ComponentNotReadyException {
 
         // list of leaf nodes -will be filled later
         leafNodes = new LinkedList<Node>();
         
 		// if the output stream is specified, create logging possibility information
-		logger.info("[Clover] Initializing phase: "
-			+ phaseNum);
-
-		// iterate through all edges and initialize them
-		logger.debug(" initializing edges: ");
-		while (edgeIterator.hasNext()) {
-			try {
-				edge = (Edge) edgeIterator.next();
-                if(edge.getEdgeType() != EdgeTypeEnum.PHASE_CONNECTION || 
-                        edge.getWriter().getPhase() == this) { 
-                    edge.init(); //initialization is called only once also for phase edges
-                }
-			} catch (ComponentNotReadyException ex) {
-				logger.error(ex);
-				return false;
-			}
-		}
-		// if logger exists, print some out information
-		logger.debug(" all edges initialized successfully... ");
+		logger.info("[Clover] Initializing phase: "	+ phaseNum);
 
 		// iterate through all nodes and initialize them
 		logger.debug(" initializing nodes: ");
-		while (nodeIterator.hasNext()) {
+		for(Node node : nodes.values()) {
 			try {
-				node = (Node) nodeIterator.next();
                 // is it a leaf node ?
                 if (node.isLeaf() || node.isPhaseLeaf()) {
                     leafNodes.add(node);
@@ -162,24 +140,45 @@ public class Phase implements Comparable {
 				node.init();
 				logger.debug("\t" + node.getId() + " ...OK");
 			} catch (ComponentNotReadyException ex) {
-				logger.error("\t" + node.getId() + " ...FAILED !", ex);
-				return false;
+				throw new ComponentNotReadyException(node.getId() + " ...FAILED !", ex);
 			} catch (Exception ex) {
-				logger.error("\t" + node.getId() + " ...FATAL ERROR !", ex);
-				return false;
+				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !", ex);
 			}
 		}
         
-		logger.info("[Clover] phase: "
-			+ phaseNum 
-			+ " initialized successfully.");
+        //initialization of all edges
+		logger.debug(" initializing edges: ");
+        for(Edge edge : edges.values()) {
+        	edge.init();
+        }
+		logger.debug(" all edges initialized successfully... ");
+
+		logger.info("[Clover] phase: " + phaseNum + " initialized successfully.");
 		
         result = Result.READY;
-		return true;
 		// initialized OK
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		
+		//phase reset
+        result=Result.N_A;
+        setPhaseTracking(null);
+        
+		//reset all components
+		for(Node node : nodes.values()) {
+			node.reset();
+		}
+		
+		//reset all edges
+		for(Edge edge : edges.values()) {
+			edge.reset();
+		}
 
+	}
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -187,42 +186,17 @@ public class Phase implements Comparable {
 	 */
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         //check nodes configuration
-        for(Node node : getNodes()) {
+        for(Node node : nodes.values()) {
             node.checkConfig(status);
         }
-        
+
         //check edges configuration
-//        for(Edge edge : getEdgesInPhase()) {
-//            edge.checkConfig(status);
-//        }
-        
+        for(Edge edge : edges.values()) {
+            edge.checkConfig(status);
+        }
+
         return status;
 	}
-
-
-	/**
-	 * An operation that registers Node within current Phase.
-     * 
-	 *
-	 * @param  node  The feature to be added to the Node attribute
-	 * @since        April 2, 2002
-	 */
-	protected void assignNode(Node node) {
-		nodesInPhase.add(node);
-        node.setPhase(this);
-	}
-
-
-	/**
-	 *  Assigns Edge to belong (also) to this phase.<br> Needed
-     *  for cross-phase edges mostly
-	 *
-	 * @param  edge  The feature to be added to the Edge attribute
-	 */
-	@Deprecated protected void assignEdge(Edge edge) {
-        edgesInPhase.add(edge);
-	}
-
 
 	/**
 	 *  Adds node to the graph (through this Phase).<br>
@@ -234,33 +208,53 @@ public class Phase implements Comparable {
      * been registered withing graph
 	 */
 	public void addNode(Node node) throws GraphConfigurationException{
-	    assignNode(node);
-        graph.addNode(node,this);
-	}
-
-
-	/**
-	 *  Adds edge to the graph (through this Phase).<br>
-     *  Edge is registered globally within Graph 
-	 *
-	 * @param  edge  The feature to be added to the Edge attribute
-     * @throws GraphConfigurationException in case node with the same ID has already
-     * been registered withing graph
-	 */
-	public void addEdge(Edge edge) throws GraphConfigurationException {
-        assignEdge(edge);
-		graph.addEdge(edge);
+		nodes.put(node.getId(), node);
+        node.setPhase(this);
 	}
 
     /**
-     *  Deletes edge from the graph (through this Phase).<br>
-     *  Edge is registered globally within Graph. 
-     * @param edge the edge to be removed from th graph
+     *  Deletes node from the phase.
+     * @param node the node to be removed from the phase
+     */
+    public void deleteNode(Node node) {
+    	Node removedNode = nodes.remove(node.getId());
+        if(removedNode != null) {
+        	removedNode.setPhase(null);
+        }
+    }
+
+	public void addEdge(Edge edge) throws GraphConfigurationException{
+		Node writer = edge.getWriter();
+		if(writer == null) {
+			throw new GraphConfigurationException("Edge cannot be added into the phase without source component.");
+		}
+		if(writer.getPhase() != this) {
+			throw new GraphConfigurationException("Edge cannot be added to this phase.");
+		}
+
+		edges.put(edge.getId(), edge);
+	}
+
+    /**
+     *  Deletes edge from the phase.
+     * @param edge the edge to be removed from the edge
      */
     public void deleteEdge(Edge edge) {
-        graph.deleteEdge(edge);
-        edgesInPhase.remove(edge);
+    	edges.remove(edge.getId());
     }
+
+//	/**
+//	 *  Adds edge to the graph (through this Phase).<br>
+//     *  Edge is registered globally within Graph 
+//	 *
+//	 * @param  edge  The feature to be added to the Edge attribute
+//     * @throws GraphConfigurationException in case node with the same ID has already
+//     * been registered withing graph
+//	 */
+//	public void addEdge(Edge edge) throws GraphConfigurationException {
+//        assignEdge(edge);
+//		graph.addEdge(edge);
+//	}
 
 	/**
 	 *  Removes all Nodes from Phase
@@ -281,30 +275,25 @@ public class Phase implements Comparable {
     public void free() {
         
         //free all nodes in this phase
-        for(Node node : nodesInPhase) {
+        for(Node node : nodes.values()) {
             node.free();
         }
         
         //free all edges in this phase
-        for(Edge edge : edgesInPhase) {
-            if(edge.getEdgeType() != EdgeTypeEnum.PHASE_CONNECTION || 
-                    edge.getReader().getPhase() == this) { 
-                edge.free();
-            }
+        for(Edge edge : edges.values()) {
+        	edge.free();
         }
 
-        nodesInPhase.clear();
-        edgesInPhase.clear();
     }
-
+    
 	/**
 	 * Returns reference to Nodes contained in this phase.
 	 *
 	 * @return    The nodes value
 	 * @since     July 29, 2002
 	 */
-	public List<Node> getNodes() {
-		return nodesInPhase;
+	public Map<String, Node> getNodes() {
+		return Collections.unmodifiableMap(nodes);
 	}
 
 
@@ -313,8 +302,8 @@ public class Phase implements Comparable {
 	 *
 	 * @return    The edges value
 	 */
-	@Deprecated public List<Edge> getEdges() {
-		return edgesInPhase;
+	public Map<String, Edge> getEdges() {
+		return Collections.unmodifiableMap(edges);
 	}
 
 
@@ -386,17 +375,6 @@ public class Phase implements Comparable {
     public void setCheckPoint(boolean isCheckPoint) {
         this.isCheckPoint = isCheckPoint;
     }
-
-
-    public List<Edge> getEdgesInPhase() {
-        return edgesInPhase;
-    }
-
-
-    public void setEdgesInPhase(List<Edge> edgesInPhase) {
-        this.edgesInPhase = edgesInPhase;
-    }
-
 
     /**
      * @return the leafNodes

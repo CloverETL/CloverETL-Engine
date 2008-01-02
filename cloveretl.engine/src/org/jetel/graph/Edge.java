@@ -260,6 +260,15 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         }
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		
+		edge.reset();
+		//TODO dodelat az Mirek upravi debugovani hran
+		//edgeDebuger.reset();
+	}
+	
     /**
      * NOTE: same implementation must be also in clover gui Connector.getDebugFileName()
      * @return absoute path to debug file

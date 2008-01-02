@@ -57,7 +57,12 @@ public abstract class EdgeBase {
 	 */
 	public abstract void init() throws IOException;
 
-    
+
+	/**
+	 * Resets all internal settings to the initial state.
+	 */
+	public abstract void reset();
+	
 	// Operations
 	/**
 	 *  An operation that does read one DataRecord from Edge

@@ -100,7 +100,13 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         recordBuffer.open();
     }
 
-
+    @Override
+    public void reset() {
+        recordBuffer.reset();
+		recordCounter = 0;
+		byteCounter=0;
+		bufferedRecords.set(0);
+    }
 
     // Operations
     /**
@@ -383,6 +389,13 @@ public class DirectEdgeFastPropagate extends EdgeBase {
             notify();
         }
 
+        synchronized void reset() {
+            readPointer=0;
+            writePointer=0;
+        	
+        	open();
+        }
+        
         public boolean hasData(){
             if (readPointer!=writePointer){
                 return true;

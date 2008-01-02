@@ -20,7 +20,6 @@
 // FILE: c:/projects/jetel/org/jetel/graph/TransformationGraph.java
 
 package org.jetel.graph;
-import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -44,8 +44,9 @@ import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
-import org.jetel.graph.runtime.CloverRuntime;
-import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.dictionary.DictionaryValue;
+import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.crypto.Enigma;
@@ -74,15 +75,7 @@ public final class TransformationGraph extends GraphElement {
 
 	private Map <Integer,Phase> phases;
 
-	private Map <String,Node> nodes;
-    private Map <String,Edge> edges;
-    
-    // auxiliary variables
-	private Phase[] phasesArray;
-    private List <Node> nodesList;
-    private List <Edge> edgesList;
-
-	private Map <String,IConnection> connections;
+    private Map <String,IConnection> connections;
 
 	private Map <String, Sequence> sequences;
 
@@ -90,6 +83,8 @@ public final class TransformationGraph extends GraphElement {
 	
 	private Map <String, DataRecordMetadata> dataRecordMetadata;
 
+	private Dictionary dictionary;
+	
 	private String password = null;
 	
 	private Enigma enigma = null;
@@ -124,8 +119,6 @@ public final class TransformationGraph extends GraphElement {
 		super(id);
 		
 		phases = new HashMap<Integer,Phase>();
-		nodes = new HashMap<String,Node>();
-		edges = new HashMap<String,Edge>();
 		connections = new HashMap <String,IConnection> ();
 		sequences = new HashMap<String,Sequence> ();
 		lookupTables = new HashMap<String,LookupTable> ();
@@ -133,6 +126,7 @@ public final class TransformationGraph extends GraphElement {
 		// initialize logger - just basic
 		//BasicConfigurator.configure();
 		graphProperties = new TypedProperties();
+		dictionary = new Dictionary();
 	}
 
 	private static boolean firstCallProjectURL = true; //have to be reset
@@ -363,9 +357,12 @@ public final class TransformationGraph extends GraphElement {
 	 * @return Returns the Phases array.
 	 */
 	public Phase[] getPhases() {
-        Phase[] array=phases.values().toArray(new Phase[0]);
-        Arrays.sort(array);
-		return array; 
+		Phase[] ret;
+		
+		ret = phases.values().toArray(new Phase[0]);
+		Arrays.sort(ret);
+		
+		return ret; 
 	}
     
     /**
@@ -453,33 +450,50 @@ public final class TransformationGraph extends GraphElement {
 			}
 		}
 		
-        // initialize phases array (it is sorted according to phase number)
-        phasesArray = getPhases();
-        
-        // assemble new list of all Nodes (after disabling some)
-        nodesList = new ArrayList<Node> (nodes.size());
-        for(int i=0;i<phasesArray.length;i++){
-            nodesList.addAll(phasesArray[i].getNodes());
-        }
-        // list of edges - so they can be further analyzed
-        edgesList = new ArrayList<Edge>(edges.size());
-        edgesList.addAll(edges.values());  //.toArray(new Edge[0]));
-     
         // analyze graph's topology
+		List<Node> orderedNodeList;
         try {
-            nodesList = TransformationGraphAnalyzer.analyzeGraphTopology(nodesList);
+            orderedNodeList = TransformationGraphAnalyzer.analyzeGraphTopology(new ArrayList<Node>(getNodes().values()));
+    		TransformationGraphAnalyzer.analyzeEdges(new ArrayList<Edge>(getEdges().values()));
+    		TransformationGraphAnalyzer.analyzeMultipleFeeds(orderedNodeList);
 		} catch (GraphConfigurationException ex) {
 			logger.error(ex.getMessage(),ex);
 			throw new ComponentNotReadyException("Graph topology analyze failed: " + ex.getMessage(), ex);
 		}
-		TransformationGraphAnalyzer.analyzeEdges(edgesList);
-		TransformationGraphAnalyzer.analyzeMultipleFeeds(nodesList);
-		
-        edgesList=null;
-        nodesList=null;
+
+        //initialization of all phases
+        for(Phase phase : phases.values()) {
+        	phase.init();
+        }
 		// initialized OK
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		
+		//reset all phases
+		for(Phase phase : phases.values()) {
+			phase.reset();
+		}
+
+		//reset all connections
+		for(IConnection connection : connections.values()) {
+			connection.reset();
+		}
+		
+		//reset all lookup tables
+		for(LookupTable lookupTable : lookupTables.values()) {
+			lookupTable.reset();
+		}
+		
+		//reset all sequences
+		for(Sequence sequence: sequences.values()) {
+			sequence.reset();
+		}
+		
+	}
+	
 	/**  Free all allocated resources which need special care */
 	private void freeResources() {
 		// Free (close) all opened db connections
@@ -516,10 +530,14 @@ public final class TransformationGraph extends GraphElement {
 			    logger.warn("Can't free Sequence", ex);
 			}
 		}
+		
+		// free all phases
+		for(Phase phase : phases.values()) {
+			phase.free();
+		}
 		// any other deinitialization shoud go here
 		//
 	}
-
 
 	/**
 	 * An operation that registers Phase within current graph
@@ -532,88 +550,7 @@ public final class TransformationGraph extends GraphElement {
 		    throw new GraphConfigurationException("Phase already exists in graph "+phase);
         }
 		phase.setGraph(this);
-        getPhases(); // update array of phases
 	}
-
-
-	/**
-	 *  Adds Node to transformation graph - just for registration.<br>
-     *  This method should never be called directly - only from Phase class as
-     *  a result of phase.addNode() !.
-	 *
-	 * @param  node   The Node to be registered within graph attribute
-     * @param  phase    The Phase to which node belongs
-	 */
-	void addNode(Node node,Phase phase) throws GraphConfigurationException {
-		if (phase==null){
-		    throw new IllegalArgumentException("Phase parameter can NOT be null !");
-        }
-        if (nodes.put(node.getId(),node)!=null){
-            throw new GraphConfigurationException("Node already exists in graph "+node);
-        }
-		node.setGraph(this);
-        node.setPhase(phase);
-	}
-    
-    
-
-
-	/**  Description of the Method */
-	public void deleteNodes() {
-		nodes.clear();
-	}
-    
-    public void deleteNode(Node node){
-        nodes.remove(node.getId());
-    }
-
-	/**
-	 * An operation that registeres Edge within current graph.
-	 *
-	 * @param  edge  The feature to be added to the Edge attribute
-	 * @since        April 2, 2002
-	 */
-	public void addEdge(Edge edge) throws GraphConfigurationException  {
-		if (edges.put(edge.getId(),edge)!=null){
-            throw new GraphConfigurationException("Edge already exists in graph "+edge); 
-        }
-		edge.setGraph(this); // assign this graph reference to Edge
-	}
-
-
-	/**
-	 *  Removes all Edges from graph
-	 *
-	 * @since    April 2, 2002
-	 */
-	public void deleteEdges() {
-		edges.clear();
-	}
-
-    public void deleteEdge(Edge edge){
-        edges.remove(edge.getId());
-    }
-
-	/**
-	 *  Removes all Nodes from graph
-	 *
-	 * @since    April 2, 2002
-	 */
-	public void deletePhases() {
-		phases.clear();
-	}
-
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  phaseNo  Description of the Parameter
-	 * @return          Description of the Return Value
-	 */
-	public boolean deletePhase(int phaseNo) {
-		return phases.remove(phaseNo)!=null ? true : false;
-	}
-
 
 	/**
 	 *  Adds a feature to the IConnection attribute of the TransformationGraph object
@@ -671,58 +608,19 @@ public final class TransformationGraph extends GraphElement {
 	}
 	
 	/**
-	 *  Removes all DBConnection objects from Map
-	 *
-	 * @since    October 1, 2002
-	 */
-	public void deleteDBConnections() {
-		connections.clear();
-	}
-
-	/**
-	 *  Removes all sequences objects from Map
-	 *
-	 * @since    October 1, 2002
-	 */
-	public void deleteSequences() {
-		sequences.clear();
-	}
-
-	/**  Remove all lookup table definitions */
-	public void deleteLookupTables() {
-		lookupTables.clear();
-	}
-
-	/**
-	 *  Removes all metadata registrations. However, the metadata
-	 * objects may still survive as all Edges contain reference to them
-	 */
-	public void deleteDataRecordMetadata(){
-	    dataRecordMetadata.clear();
-	}
-	
-
-	/**
 	 * Good for debugging. Prints out all defined phases and nodes assigned to phases. Has to be
 	 * called after init()
 	 */
 	public void dumpGraphConfiguration() {
-		Iterator iterator;
-		Node node;
-		Edge edge;
 		logger.info("*** TRANSFORMATION GRAPH CONFIGURATION ***\n");
-		for (int i = 0; i < phasesArray.length; i++) {
-			logger.info("--- Phase [" + phasesArray[i].getPhaseNum() + "] ---");
+		for (Phase phase : getPhases()) {
+			logger.info("--- Phase [" + phase.getPhaseNum() + "] ---");
 			logger.info("\t... nodes ...");
-			iterator = phasesArray[i].getNodes().iterator();
-			while (iterator.hasNext()) {
-				node = (Node) iterator.next();
+			for(Node node : phase.getNodes().values()) {
 				logger.info("\t" + node.getId() + " : " + (node.getName() !=null ? node.getName() : "") + " phase: " + node.getPhase().getPhaseNum());
 			}
 			logger.info("\t... edges ...");
-			iterator = phasesArray[i].getEdgesInPhase().iterator();
-			while (iterator.hasNext()) {
-				edge = (Edge) iterator.next();
+			for(Edge edge : phase.getEdges().values()) {
 				logger.info("\t" + edge.getId() + " type: "
 					+ (edge.getEdgeType() == EdgeTypeEnum.BUFFERED ? "buffered" : "direct"));
 			}
@@ -841,21 +739,72 @@ public final class TransformationGraph extends GraphElement {
      */
     public void free() {
         freeResources();
-        deleteEdges();
-        deleteNodes();
-        deletePhases();
-        deleteDBConnections();
-        deleteSequences();
-        deleteLookupTables();
-        deleteDataRecordMetadata();
     }
     
+    /**
+     * @return list of all nodes in all phases of this graph
+     */
     public Map<String, Node> getNodes() {
-        return nodes;
+		Map<String, Node> ret = new LinkedHashMap<String, Node>();
+		
+		for(Phase phase : phases.values()) {
+			ret.putAll(phase.getNodes());
+		}
+
+		return ret;
     }
 
+    /**
+     * @return unmodifiable view to local <id, edge> map
+     */
     public Map<String, Edge> getEdges() {
-        return edges;
+		Map<String, Edge> ret = new LinkedHashMap<String, Edge>();
+		
+		for(Phase phase : phases.values()) {
+			ret.putAll(phase.getEdges());
+		}
+
+		return ret;
+    }
+    
+    /**
+     * Adds given edge into the appropriate phase.
+     * @param edge
+     * @throws GraphConfigurationException 
+     */
+    public void addEdge(Edge edge) throws GraphConfigurationException {
+    	Node writer = edge.getWriter();
+    	if(writer == null) {
+    		throw new GraphConfigurationException("An edge without source node cannot be added into the graph.");
+    	}
+    	Phase phase = writer.getPhase();
+    	if(phase == null) {
+    		throw new GraphConfigurationException("An edge without strict phase definition cannot be added into the graph.");
+    	}
+    	if(!phases.containsValue(phase)) {
+    		throw new GraphConfigurationException("An edge cannot be added into the graph - phase does not exist.");
+    	}
+    	phase.addEdge(edge);
+    }
+    
+    /**
+     * Deletes given edge from the appropriate phase.
+     * @param edge
+     * @throws GraphConfigurationException 
+     */
+    public void deleteEdge(Edge edge) throws GraphConfigurationException {
+    	Node writer = edge.getWriter();
+    	if(writer == null) {
+    		throw new GraphConfigurationException("An edge without source node cannot be removed from the graph.");
+    	}
+    	Phase phase = writer.getPhase();
+    	if(phase == null) {
+    		throw new GraphConfigurationException("An edge without strict phase definition cannot be removed from the graph.");
+    	}
+    	if(!phases.containsValue(phase)) {
+    		throw new GraphConfigurationException("An edge cannot be removed from the graph - phase does not exist.");
+    	}
+    	phase.deleteEdge(edge);
     }
     
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
@@ -878,11 +827,6 @@ public final class TransformationGraph extends GraphElement {
             sequence.checkConfig(status);
         }
         
-        //check edges configuration
-        for(Edge edge : getEdges().values()) {
-            edge.checkConfig(status);
-        }
-
         //check phases configuration
         for(Phase phase : getPhases()) {
             phase.checkConfig(status);
@@ -891,7 +835,7 @@ public final class TransformationGraph extends GraphElement {
         return status;
     }
     
-    public CloverRuntime getRuntime(){
+    public CloverPost getPost(){
         return watchDog;
     }
 
@@ -916,6 +860,14 @@ public final class TransformationGraph extends GraphElement {
 		return TransformationGraph.logger;
 	}
     
+	public DictionaryValue<?> getDictionaryValue(String key) {
+		return dictionary.get(key);
+	}
+	
+	public void setDictionaryEntry(String key, DictionaryValue<?> value) {
+		dictionary.put(key, value);
+	}
+	
 }
 /*
  *  end class TransformationGraph

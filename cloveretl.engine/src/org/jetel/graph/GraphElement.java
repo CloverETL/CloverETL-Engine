@@ -20,6 +20,7 @@ import org.jetel.util.string.StringUtils;
  * And three methods, which may be called in this order:
  *      checkConfig();  //checks whether has element valid parameters.
  *      init();         //allocate all necessarily resources
+ *      reset();		//can be called repeatedly to reset element to initial state
  *      free();         //free all allocated resources 
  * 
  * @author Martin Zatopek
@@ -101,6 +102,12 @@ public abstract class GraphElement implements IGraphElement {
         }
     }
 
+    synchronized public void reset() throws ComponentNotReadyException {
+        if(!isInitialized()) {
+            logger.error("Graph element " + this + " is not initialized, cannot be reseted before initialization or after element was released.");
+        }
+    }
+    
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#free()
      */

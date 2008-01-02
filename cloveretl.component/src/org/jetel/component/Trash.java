@@ -191,7 +191,37 @@ public class Trash extends Node {
 		}
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		
+		//TODO je potreba zimplementovat reset multi file writeru a tim nahradit nasledujici kod 
+		//writer.reset();
 
+		if (debugPrint) {
+            if(debugFilename != null) {
+        		formatter = new TextTableFormatter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+       	        try {
+					writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(
+							FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, debugFilename, false)
+					));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+            } else {
+    			if (writableByteChannel == null) {
+    				formatter = new TextTableFormatter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+    		        writableByteChannel = Channels.newChannel(System.out);
+        	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
+    			}
+            }
+            if (writer != null) {
+                writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+            	formatter.showCounter("Record", "# ");
+            }
+		}
+	}
+	
 	/**
 	 *  Description of the Method
 	 *
