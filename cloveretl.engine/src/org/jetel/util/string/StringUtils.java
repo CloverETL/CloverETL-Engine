@@ -23,7 +23,6 @@ import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Random;
 import java.util.regex.Pattern;
 
 import org.jetel.data.Defaults;
@@ -978,6 +977,24 @@ public class StringUtils {
 		}
     	return -1;
     }
+    
+    public static String[] toLowerCase(String... str){
+    	String[] result = new String[str.length];
+    	for (int i=0; i < str.length; i++){
+    		result[i] = str[i].toLowerCase();
+    	}
+    	return result;
+    }
+
+    public static String[] toUpperCase(String... str){
+    	String[] result = new String[str.length];
+    	for (int i=0; i < str.length; i++){
+    		result[i] = str[i].toUpperCase();
+    	}
+    	return result;
+    }
+
+    
 /*
  *  End class StringUtils
  */
