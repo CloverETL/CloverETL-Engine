@@ -27,7 +27,7 @@ public class DictionaryValue<T> {
 		this.value = value;
 	}
 	
-	T getValue() {
+	public T getValue() {
 		return value;
 	}
 	
