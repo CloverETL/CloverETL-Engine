@@ -114,7 +114,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		record1.getField("Value").setNull(true);
         
         Sequence seq = SequenceFactory.createSequence(graph, "PRIMITIVE_SEQUENCE", new Object[]{"ID",graph,"name"}, new Class[]{String.class,TransformationGraph.class,String.class});
-        graph.addSequence("ID", seq);
+        graph.addSequence(seq);
 		
         graph.getGraphProperties().setProperty("WORKSPACE", "/home/avackova/workspace");
         graph.getGraphProperties().setProperty("YourCity", "London");
