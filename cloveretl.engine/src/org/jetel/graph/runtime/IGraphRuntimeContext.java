@@ -56,7 +56,7 @@ public interface IGraphRuntimeContext {
     public boolean isVerboseMode();
 
     /**
-     * @return true if only checkConfiguration() should be proceed (without graph processing)
+     * @return true if configuration check should be proceed
      */
     public boolean isCheckConfig();
     
