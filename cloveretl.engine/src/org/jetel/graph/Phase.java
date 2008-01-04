@@ -91,9 +91,18 @@ public class Phase extends GraphElement implements Comparable {
 	 * @since         April 5, 2002
 	 */
 	public void setGraph(TransformationGraph graph) {
-		this.graph = graph;
+		super.setGraph(graph);
+		
+		//sets related graph to all included nodes
+		for(Node node : nodes.values()) {
+			node.setGraph(graph);
+		}
+		
+		//sets related graph to all included nodes
+		for(Edge edge : edges.values()) {
+			edge.setGraph(graph);
+		}
 	}
-
 
 	/**
 	 *  Gets the phaseNum attribute of the Phase object
