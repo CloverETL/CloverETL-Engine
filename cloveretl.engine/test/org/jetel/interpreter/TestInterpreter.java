@@ -121,7 +121,7 @@ public class TestInterpreter extends TestCase {
         
         Sequence seq = SequenceFactory.createSequence(graph, "PRIMITIVE_SEQUENCE", 
         		new Object[]{"test",graph,"test"}, new Class[]{String.class,TransformationGraph.class,String.class});
-        graph.addSequence("test", seq);
+        graph.addSequence(seq);
         
 //        LookupTable lkp=new SimpleLookupTable("LKP", metadata, new String[] {"Name"}, null);
         lkp = LookupTableFactory.createLookupTable(graph, "simpleLookup", 
@@ -129,7 +129,7 @@ public class TestInterpreter extends TestCase {
         		DataRecordMetadata.class, String[].class, Parser.class});
         try {
         lkp.init();
-        graph.addLookupTable("LKP",lkp);
+        graph.addLookupTable(lkp);
         }catch(Exception ex) {
             throw new RuntimeException(ex);
         }
