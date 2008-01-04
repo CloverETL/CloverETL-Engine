@@ -605,14 +605,13 @@ public class TransformationGraphXMLReaderWriter {
 
             // process IConnection element attributes "id" & "type"
             try {
-                connectionId = attributes.getString("id");
                 connectionType = attributes.getString("type");
 
                 //create connection
                 connection = ConnectionFactory.createConnection(graph, connectionType, connectionElement);
                 if (connection != null) {
                     //register connection in transformation graph
-                    graph.addConnection(connectionId, connection);
+                    graph.addConnection(connection);
                 }
             } catch (AttributeNotFoundException ex) {
                 throw new XMLConfigurationException("Attribute at Connection " + connectionId + " is missing - " + ex.getMessage());
@@ -638,14 +637,13 @@ public class TransformationGraphXMLReaderWriter {
 
             // process Sequence element attributes "id" & "type"
             try {
-                sequenceId = attributes.getString("id");
                 sequenceType = attributes.getString("type");
 
                 //create sequence
                 seq = SequenceFactory.createSequence(graph, sequenceType, sequenceElement);
     			if (seq != null) {
                     //register sequence in transformation graph
-    				graph.addSequence(sequenceId, seq);
+    				graph.addSequence(seq);
     			}
             } catch (AttributeNotFoundException ex) {
                 throw new XMLConfigurationException("Attribute at Sequence " + sequenceId + " is missing - " + ex.getMessage());
@@ -671,14 +669,13 @@ public class TransformationGraphXMLReaderWriter {
 
             // process Lookup table element attributes "id" & "type"
             try {
-                lookupTableId = attributes.getString("id");
                 lookupTableType = attributes.getString("type");
 
                 //create lookup table
                 lookup = LookupTableFactory.createLookupTable(graph, lookupTableType, lookupElement);
                 if(lookup != null) {
                     //register lookup table in transformation graph
-                    graph.addLookupTable(lookupTableId, lookup);
+                    graph.addLookupTable(lookup);
                 }
             } catch (AttributeNotFoundException ex) {
                 throw new XMLConfigurationException("Attribute at Lookup table " + lookupTableId + " is missing - " + ex.getMessage());

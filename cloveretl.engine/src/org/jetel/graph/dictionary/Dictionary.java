@@ -19,20 +19,54 @@
 */
 package org.jetel.graph.dictionary;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.GraphElement;
+import org.jetel.graph.TransformationGraph;
 
-public class Dictionary {
+public class Dictionary extends GraphElement {
+
+	private static final String DEFAULT_ID = "_DICTIONARY";
+	
+	public Dictionary(TransformationGraph graph) {
+		super(DEFAULT_ID, graph);
+	}
 
 	private Map<String, DictionaryValue<?>> dictionary;
+	private Map<String, DictionaryValue<?>> defaultDictionary;
+	
+	@Override
+	public synchronized void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
+		super.init();
+		
+		dictionary = new HashMap<String, DictionaryValue<?>>();
+		defaultDictionary = new HashMap<String, DictionaryValue<?>>();
+	}
+	
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		
+		dictionary.clear();
+	}
 	
 	public DictionaryValue<?> get(String key) {
-		return dictionary.get(key);
+		if(dictionary.containsKey(key)) {
+			return dictionary.get(key);
+		} else {
+			return defaultDictionary.get(key);
+		}
 	}
 	
 	public void put(String key, DictionaryValue<?> value) {
 		dictionary.put(key, value);
+	}
+	
+	public void putDefault(String key, DictionaryValue<?> value) {
+		defaultDictionary.put(key, value);
 	}
 	
 }

@@ -126,7 +126,7 @@ public final class TransformationGraph extends GraphElement {
 		// initialize logger - just basic
 		//BasicConfigurator.configure();
 		graphProperties = new TypedProperties();
-		dictionary = new Dictionary();
+		dictionary = new Dictionary(this);
 	}
 
 	private static boolean firstCallProjectURL = true; //have to be reset
@@ -414,6 +414,9 @@ public final class TransformationGraph extends GraphElement {
 	 * @since       Sept. 16, 2005
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
+		super.init();
+
 		Iterator iterator;
 		IConnection dbCon = null;
 		Sequence seq = null;
@@ -555,24 +558,22 @@ public final class TransformationGraph extends GraphElement {
 	/**
 	 *  Adds a feature to the IConnection attribute of the TransformationGraph object
 	 *
-	 * @param  name        Name(ID) under which the IConnection is registered
 	 * @param  connection  IConnection object to associate with ID
 	 * @since              October 1, 2002
 	 */
-	public void addConnection(String name, IConnection connection) {
-		connections.put(name, connection);
+	public void addConnection(IConnection connection) {
+		connections.put(connection.getId(), connection);
         connection.setGraph(this);
 	}
 
 	/**
 	 *  Adds a feature to the sequence attribute of the TransformationGraph object
 	 *
-	 * @param  name        Name(ID) under which the DBConnection is registered
 	 * @param  connection  DBConnection object to associate with ID
 	 * @since              October 1, 2002
 	 */
-	public void addSequence(String name, Sequence seq) {
-		sequences.put(name, seq);
+	public void addSequence(Sequence seq) {
+		sequences.put(seq.getId(), seq);
         seq.setGraph(this);
 	}
 
@@ -582,8 +583,8 @@ public final class TransformationGraph extends GraphElement {
 	 *
 	 * @param  lookupTable  The lookup table object to be registered
 	 */
-	public void addLookupTable(String name, LookupTable lookupTable) {
-		lookupTables.put(name, lookupTable);
+	public void addLookupTable(LookupTable lookupTable) {
+		lookupTables.put(lookupTable.getId(), lookupTable);
         lookupTable.setGraph(this);
 	}
 
@@ -591,11 +592,10 @@ public final class TransformationGraph extends GraphElement {
 	 * Registers record metadata object within TransformationGraph. It can be later
 	 * retrieved by calling getDataRecordMetadata().
 	 *
-	 * @param name  name/ID under which metadata object is registered
 	 * @param metadata reference to metadata object
 	 */
-	public void addDataRecordMetadata(String name, DataRecordMetadata metadata) {
-		this.dataRecordMetadata.put(name, metadata);
+	public void addDataRecordMetadata(DataRecordMetadata metadata) {
+		this.dataRecordMetadata.put(metadata.getName(), metadata);
 	}
 	
 	/**
@@ -603,7 +603,7 @@ public final class TransformationGraph extends GraphElement {
 	 * 
 	 * @param metadata	Map object containing metadata IDs and metadata objects
 	 */
-	public void addDataRecordMetadata(Map metadata){
+	public void addDataRecordMetadata(Map<String, DataRecordMetadata> metadata){
 	    dataRecordMetadata.putAll(metadata);
 	}
 	

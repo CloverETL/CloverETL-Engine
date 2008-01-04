@@ -122,13 +122,10 @@ public class GraphExecutor {
 		context = new UnconfigurableGraphRuntimeContext(context);
 
         // check graph elements configuration
-		
-        logger.info("Checking graph configuration...");
-        ConfigurationStatus status = graph.checkConfig(null);
-        status.log();
-
         if(context.isCheckConfig()) {
-        	return null;
+            logger.info("Checking graph configuration...");
+            ConfigurationStatus status = graph.checkConfig(null);
+            status.log();
         }
         
         graph.init();

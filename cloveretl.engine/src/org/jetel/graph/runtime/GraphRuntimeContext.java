@@ -40,7 +40,7 @@ public class GraphRuntimeContext implements IGraphRuntimeContext {
 	private boolean useJMX = true;
 	private boolean verboseMode = false;
 	private Properties additionalProperties = new Properties();
-	private boolean checkConfig = false;
+	private boolean checkConfig = true;
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IGraphRuntimeContext#createCopy()

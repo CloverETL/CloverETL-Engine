@@ -121,6 +121,8 @@ public class Phase extends GraphElement implements Comparable {
 	 * @since       April 10, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
+		super.init();
 
         // list of leaf nodes -will be filled later
         leafNodes = new LinkedList<Node>();
@@ -207,9 +209,10 @@ public class Phase extends GraphElement implements Comparable {
      * @throws GraphConfigurationException in case node with the same ID has already
      * been registered withing graph
 	 */
-	public void addNode(Node node) throws GraphConfigurationException{
+	public void addNode(Node node) throws GraphConfigurationException {
 		nodes.put(node.getId(), node);
         node.setPhase(this);
+        node.setGraph(getGraph());
 	}
 
     /**
@@ -220,6 +223,7 @@ public class Phase extends GraphElement implements Comparable {
     	Node removedNode = nodes.remove(node.getId());
         if(removedNode != null) {
         	removedNode.setPhase(null);
+        	removedNode.setGraph(null);
         }
     }
 
@@ -233,6 +237,7 @@ public class Phase extends GraphElement implements Comparable {
 		}
 
 		edges.put(edge.getId(), edge);
+		edge.setGraph(getGraph());
 	}
 
     /**
@@ -240,7 +245,11 @@ public class Phase extends GraphElement implements Comparable {
      * @param edge the edge to be removed from the edge
      */
     public void deleteEdge(Edge edge) {
-    	edges.remove(edge.getId());
+    	Edge removedEdge = edges.remove(edge.getId());
+    	
+    	if(removedEdge != null) {
+    		removedEdge.setGraph(null);
+    	}
     }
 
 //	/**
