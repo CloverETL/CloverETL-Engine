@@ -19,9 +19,13 @@
 */
 package org.jetel.component;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringReader;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -45,6 +49,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
+import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -54,6 +59,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MultiFileWriter;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -90,8 +96,8 @@ public class XmlWriter extends Node {
 	static Log logger = LogFactory.getLog(XmlWriter.class);
 	public final static String COMPONENT_TYPE = "XML_WRITER";
 
-	private static final String XML_RELATION_KEYS_TO_PARENT_ATTRIBUTE = "relationKeysToParent";
-	private static final String XML_RELATION_KEYS_FROM_PARENT_ATTRIBUTE = "relationKeysFromParent";
+	private static final String XML_RELATION_KEYS_TO_PARENT_ATTRIBUTE = "keyToParent";
+	private static final String XML_RELATION_KEYS_FROM_PARENT_ATTRIBUTE = "keyFromParent";
 	private static final String XML_FILE_URL_ATTRIBUTE = "fileUrl";
 	private static final String XML_KEYS_ATTRIBUTE = "key";
 	private static final String XML_INDEX_ATTRIBUTE = "inPort";
@@ -101,14 +107,14 @@ public class XmlWriter extends Node {
 	private static final String XML_ELEMENT_ATTRIBUTE = "element";
 	private static final String XML_FIELDS_AS_ATTRIBUTE = "fieldsAs";
 	private static final String XML_FIELDS_AS_EXCEPT_ATTRIBUTE = "fieldsAsExcept";
+	private static final String XML_FIELDS_IGNORE_ATTRIBUTE = "fieldsIgnore";
+	
+	private static final String XML_RECORDS_PER_FILE_ATTRIBUTE = "recordsPerFile";
+	private static final String XML_RECORDS_SKIP_ATTRIBUTE = "recordSkip";
+	private static final String XML_RECORDS_COUNT_ATTRIBUTE = "recordCount";
 	
 	private static final String ELEMENT_RECORDS = "records";
 	private static final String ELEMENT_RECORD = "record";
-	//private static final String ATTRIBUTE_METADATA_NAME = "metadataName";
-	//private static final String ATTRIBUTE_FIELD_NAME = "name";
-	//private static final String ATTRIBUTE_FIELD_TYPE = "type";
-	//private static final String ATTRIBUTE_FIELD_VALUE = "value";
-	//private static final String ELEMENT_FIELD = "field";
 	private static final String ATTRIBUTE_COMPONENT_ID = "component";
 	private static final String ATTRIBUTE_GRAPH_NAME = "graph";
 	private static final String XML_ROOT_ELEMENT_ATTRIBUTE = "rootElement";
@@ -121,9 +127,9 @@ public class XmlWriter extends Node {
 	 */
 	private Map<Integer, PortDefinition> allPortDefinitionMap;
 	/**
-	 * List of root port definitions. In Most cases it would be just one item in this list.
+	 * Root port definitions.
 	 */
-	private List<PortDefinition> rootPortDefinitionList;
+	private PortDefinition rootPortDefinition;
 	protected int portsCnt;
 	/**
 	 * URL of out XMl file.
@@ -134,11 +140,100 @@ public class XmlWriter extends Node {
 	 * */
 	private String rootElement;
 
+	private MultiFileWriter writer;
+	
 	/**
 	 * Charset of output XML.
 	 */
 	private String charset = null;
 
+	private int recordsSkip = 0;
+	private int recordsCount = 0;
+	private int recordsPerFile = 1;
+
+	/**
+	 * XmlFormatter which methods are called from MultiFileWriter. 
+	 * @author Martin Varecha <martin.varecha@javlinconsulting.cz>
+	 * (c) JavlinConsulting s.r.o.
+	 * www.javlinconsulting.cz
+	 * @created Jan 4, 2008
+	 */
+	protected class XmlFormatter implements Formatter {
+		//File outFile = null;
+		OutputStream os = null; 
+		TransformerHandler th = null;
+			
+		public void close() {
+		}
+
+		public void flush() throws IOException {
+		}
+
+		public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
+		 */
+		public void setDataTarget(Object outputDataTarget) {
+			WritableByteChannel channel = null;
+			if (outputDataTarget instanceof WritableByteChannel){
+				channel = (WritableByteChannel)outputDataTarget;
+				os = Channels.newOutputStream(channel); 
+			} else 
+				throw new IllegalArgumentException("parameter "+outputDataTarget+" is not instance of WritableByteChannel");
+			//outFile = (File)outputDataTarget;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.jetel.data.formatter.Formatter#writeHeader()
+		 */
+		public int writeHeader() throws IOException {
+			try {
+				th = createHeader(os);
+			} catch (Exception e) {
+				logger.error("error header", e);
+			}
+			return 0;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
+		 */
+		public int write(DataRecord record) throws IOException {
+			RecordKey recKey = new RecordKey( rootPortDefinition.keys, rootPortDefinition.metadata);
+			HashKey key = new HashKey(recKey, record);
+			TreeRecord tr = rootPortDefinition.dataMap.get(key);
+			List<DataRecord> records = new ArrayList<DataRecord>();
+			records.add(tr.record);
+			try {
+				addRecords(th, records, rootPortDefinition);
+			} catch (SAXException e) {
+				logger.error("error write", e);
+			}
+			return 0;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.jetel.data.formatter.Formatter#writeFooter()
+		 */
+		public int writeFooter() throws IOException {
+			try {
+				createFooter(os, th);
+			} catch (Exception e) {
+				logger.error("error footer", e);
+			}
+			th = null;
+			os = null;
+			return 0;
+		}
+
+	}// inner class XmlFormatter
+	
 	/**
 	 * Description of input port mapping and record's relations with records from another ports.
 	 * Also wrapper for read data records.
@@ -178,6 +273,8 @@ public class XmlWriter extends Node {
 		/** Comma separated list of fields which are exception for flag fieldsAsAttributes.
 		 *  (if flag is true, fields from this list will be written as elements) */
 		public String[] fieldsAsExcept;
+		/** Comma separated list of fields which will be kicked out of XML output. */
+		public String[] fieldsIgnore;
 		/** Name of element of record in out XMl. May be null, default is "record". */
 		String element = null;
 		/** lazy initialized list to simplify processing of XML output. */
@@ -294,14 +391,19 @@ public class XmlWriter extends Node {
 	 * @param fileUrl
 	 * @param rootElement
 	 * @param allPortDefinitionMap
+	 * @param recordsPerFile 
+	 * @param recordsCount 
 	 * @param rootPortDefinitionList
 	 */
-	public XmlWriter(String id, String fileUrl, String rootElement, Map<Integer, PortDefinition> allPortDefinitionMap, List<PortDefinition> rootPortDefinitionList) {
+	public XmlWriter(String id, String fileUrl, String rootElement, Map<Integer, PortDefinition> allPortDefinitionMap, PortDefinition rootPortDefinition, int recordsSkip, int recordsCount, int recordsPerFile) {
 		super(id);
 		this.fileUrl = fileUrl;
 		this.rootElement = rootElement;
 		this.allPortDefinitionMap = allPortDefinitionMap;
-		this.rootPortDefinitionList = rootPortDefinitionList;
+		this.rootPortDefinition = rootPortDefinition;
+		this.recordsSkip = recordsSkip;
+		this.recordsCount = recordsCount;
+		this.recordsPerFile = recordsPerFile;
 	}
 
 	/* (non-Javadoc)
@@ -317,13 +419,30 @@ public class XmlWriter extends Node {
         if (portsCnt < 1) {
             throw new ComponentNotReadyException(getId() + ": At least one output port has to be defined!");
         }
-        
-        if (rootPortDefinitionList.size() < 1) {
+
+        if (charset == null)
+        	charset = "UTF-8";
+            //throw new ComponentNotReadyException(getId() + ": Specify charset of out file");
+
+        /*
+        if (rootPortDefinition.size() < 1) {
             throw new ComponentNotReadyException(
                     getId()
                     + ": At least one mapping has to be defined.  <Mapping element=\"elementToCreate\" inPort=\"123\" ... />");
-        }
+        }*/
 
+        XmlFormatter formatter = new XmlFormatter(); 
+        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getProjectURL() : null, this.fileUrl);
+        writer.setLogger(logger);
+        writer.setRecordsPerFile(this.recordsPerFile);
+        writer.setAppendData(false);
+        writer.setSkip(this.recordsSkip);
+        writer.setNumRecords(this.recordsCount);
+		writer.setUseChannel(true);
+        writer.setLookupTable(null);
+        //writer.setPartitionKeyNames(partitionKey);
+        //writer.setPartitionFileTag(partitionFileTagType);
+        writer.init( this.rootPortDefinition.metadata );
 	}
 
 
@@ -356,7 +475,15 @@ public class XmlWriter extends Node {
 			}// while
 		}// for
 		try {
-			flushXmlSax();
+			
+			// and now ... data structure is read ... writing can be processed 
+			for (TreeRecord treeRecord : rootPortDefinition.dataMap.values()){
+				// multiWriter will call formatter.write
+				writer.write(treeRecord.record);
+			}// for 
+			writer.close();
+			
+			//flushXmlSax();
 		} catch (Exception e) {
 			logger.error("Error during creating XML file", e);
 		}
@@ -371,40 +498,56 @@ public class XmlWriter extends Node {
 	 * @throws SAXException
 	 * @throws IOException
 	 */
+	/*
 	private void flushXmlSax() throws TransformerConfigurationException, SAXException, IOException {
-		 FileOutputStream fos = new FileOutputStream(fileUrl);
-		 StreamResult streamResult = new StreamResult(fos);
-		 SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
-		 // SAX2.0 ContentHandler.
-		 TransformerHandler hd = tf.newTransformerHandler();
-		 Transformer serializer = hd.getTransformer();
-		 serializer.setOutputProperty(OutputKeys.ENCODING, this.charset);
-		 //serializer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM,"users.dtd");
-		 serializer.setOutputProperty(OutputKeys.INDENT,"yes");
-		 hd.setResult(streamResult);
-		 hd.startDocument();
-		 AttributesImpl atts = new AttributesImpl();
-		 atts.addAttribute( "", "", ATTRIBUTE_COMPONENT_ID,"CDATA", getId());
-		 atts.addAttribute("","",ATTRIBUTE_GRAPH_NAME,"CDATA",this.getGraph().getName());
-		 atts.addAttribute( "", "", ATTRIBUTE_CREATED,"CDATA", (new Date()).toString());
-		 String root = rootElement!=null ? rootElement : ELEMENT_RECORDS; 
-		 hd.startElement("","",root,atts);
 
-			// for each root port
-			for (PortDefinition portDefinition : rootPortDefinitionList){
-				// for each record of port
-				for (Map.Entry<HashKey, TreeRecord> e : portDefinition.dataMap.entrySet()){
-					TreeRecord record = e.getValue();
-					List<DataRecord> records = new ArrayList<DataRecord>();
-					records.add(record.record);
-					addRecords(hd, records, portDefinition);
-				}// for record
-			}// for root port
+		FileOutputStream fos = new FileOutputStream(fileUrl);
+		TransformerHandler hd = createHeader(fos);
+		PortDefinition portDefinition = rootPortDefinition;
+		// for each record of port
+		for (Map.Entry<HashKey, TreeRecord> e : portDefinition.dataMap.entrySet()){
+			TreeRecord record = e.getValue();
+			List<DataRecord> records = new ArrayList<DataRecord>();
+			records.add(record.record);
+			addRecords(hd, records, portDefinition);
+		}// for record
 
+		createFooter(fos, hd);
+	}*/
 
-		 hd.endElement("","",root);
-		 hd.endDocument();
-		 fos.close();
+	private TransformerHandler createHeader(OutputStream os) throws FileNotFoundException, TransformerConfigurationException, SAXException {
+		StreamResult streamResult = new StreamResult(os);
+		SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
+		// SAX2.0 ContentHandler.
+		TransformerHandler hd = tf.newTransformerHandler();
+		Transformer serializer = hd.getTransformer();
+		serializer.setOutputProperty(OutputKeys.ENCODING, this.charset);
+		//serializer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM,"users.dtd");
+		serializer.setOutputProperty(OutputKeys.INDENT,"yes");
+		hd.setResult(streamResult);
+		hd.startDocument();
+		// if there may be more then 1 record in document, there has to be wrapping root element 
+		if (recordsPerFile>1){
+			 AttributesImpl atts = new AttributesImpl();
+			 atts.addAttribute( "", "", ATTRIBUTE_COMPONENT_ID,"CDATA", getId());
+			 atts.addAttribute( "","",ATTRIBUTE_GRAPH_NAME,"CDATA",this.getGraph().getName());
+			 atts.addAttribute( "", "", ATTRIBUTE_CREATED,"CDATA", (new Date()).toString());
+			 String root = rootElement!=null ? rootElement : ELEMENT_RECORDS; 
+			 hd.startElement("","",root,atts);
+		}
+		return hd;
+	}
+
+	private void createFooter(OutputStream os, TransformerHandler hd) throws TransformerConfigurationException, SAXException, IOException {
+		try {
+			if (recordsPerFile>1){
+				 String root = rootElement!=null ? rootElement : ELEMENT_RECORDS; 
+				 hd.endElement("","",root);
+			}
+			hd.endDocument();
+		} finally {
+			 os.close();
+		}
 	}
 
 	/**
@@ -430,6 +573,12 @@ public class XmlWriter extends Node {
 				 List<Integer> fieldsAsElementsIndexes = new ArrayList<Integer>();
 				 for (int i=0; i<fieldsCnt; i++){
 						 String fieldName = dataRecord.getMetadata().getField(i).getName();
+
+						 // ignore field?
+						 if (portDefinition.fieldsIgnore != null
+								 && Arrays.binarySearch(portDefinition.fieldsIgnore, (Object)fieldName, null)>-1)
+							 continue;
+
 						 if (portDefinition.fieldsAsExcept != null 
 								 && portDefinition.fieldsAsExcept.length>0
 								 && Arrays.binarySearch(portDefinition.fieldsAsExcept, (Object)fieldName, null)>-1){
@@ -445,7 +594,7 @@ public class XmlWriter extends Node {
 							 else
 								 fieldsAsElementsIndexes.add(i);
 						 }
-				 }// for				 
+				 }// for
 				 portDefinition.fieldsAsAttributesIndexes = fieldsAsAttributesIndexes.toArray( new Integer[fieldsAsAttributesIndexes.size()]);
 				 portDefinition.fieldsAsElementsIndexes = fieldsAsElementsIndexes.toArray( new Integer[fieldsAsElementsIndexes.size()]);
 			 }//if
@@ -543,7 +692,7 @@ public class XmlWriter extends Node {
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		XmlWriter writer = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		List<PortDefinition> rootPortDefinitionList = new ArrayList<PortDefinition>();
+		PortDefinition rootPortDefinition = null;
 		Map<Integer, PortDefinition> allPortDefinitionMap = new HashMap<Integer,PortDefinition>();
 		try {
 	        if(xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
@@ -553,12 +702,16 @@ public class XmlWriter extends Node {
 	            
 	            Element mappingRoot = doc.getDocumentElement();
 				PortDefinition portDef = readInPortDef(graph, (PortDefinition)null, allPortDefinitionMap, mappingRoot);
-				rootPortDefinitionList.add(portDef);
+				rootPortDefinition = portDef;
 	        } else {
 	            //old-fashioned version of mapping definition
 	            //mapping xml elements are child nodes of the component
 	        	Element mappingParent = xmlElement; 
-				rootPortDefinitionList = readInPortsDefinitionFromXml(graph, mappingParent, (PortDefinition)null, allPortDefinitionMap);
+	        	List<PortDefinition> list = readInPortsDefinitionFromXml(graph, mappingParent, (PortDefinition)null, allPortDefinitionMap);
+	        	if (list.size() != 1)
+	 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," more then 1 mapping element") + ":");
+	        		
+	        	rootPortDefinition = list.get(0);
 	        }
 		} catch (AttributeNotFoundException e) {
 			logger.error("cannot instantiate node from XML", e);
@@ -566,7 +719,11 @@ public class XmlWriter extends Node {
 		
 		try {
 			String fileUrl = xattribs.getString(XML_FILE_URL_ATTRIBUTE);
-			writer = new XmlWriter(xattribs.getString(XML_ID_ATTRIBUTE), fileUrl, xattribs.getString(XML_ROOT_ELEMENT_ATTRIBUTE), allPortDefinitionMap, rootPortDefinitionList);
+			int recordsSkip = xattribs.getInteger(XML_RECORDS_SKIP_ATTRIBUTE, 0);
+			int recordsCount = xattribs.getInteger(XML_RECORDS_COUNT_ATTRIBUTE, 0);
+			int recordsPerFile = xattribs.getInteger(XML_RECORDS_PER_FILE_ATTRIBUTE, 1);
+			writer = new XmlWriter(xattribs.getString(XML_ID_ATTRIBUTE), fileUrl, xattribs.getString(XML_ROOT_ELEMENT_ATTRIBUTE), allPortDefinitionMap, rootPortDefinition, 
+					recordsSkip, recordsCount, recordsPerFile);
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE))
 				writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		} catch (Exception ex) {
@@ -627,6 +784,9 @@ public class XmlWriter extends Node {
 				throw new RuntimeException("Cannot recognize "+XML_FIELDS_AS_ATTRIBUTE+" attribute value:\""+s+"\" for XmlWriter component.");
 			}
 		}
+		
+		if (portAttribs.getString(XML_FIELDS_IGNORE_ATTRIBUTE, null) != null)
+			portData.fieldsIgnore = portAttribs.getString(XML_FIELDS_IGNORE_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 		if (portAttribs.getString(XML_FIELDS_AS_EXCEPT_ATTRIBUTE, null) != null)
 			portData.fieldsAsExcept = portAttribs.getString(XML_FIELDS_AS_EXCEPT_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 		if (portData.keysAttr != null)
