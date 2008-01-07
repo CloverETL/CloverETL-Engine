@@ -361,6 +361,8 @@ public class FileUtils {
 		boolean tmp;
 		//create file on given URL
 		try {
+			if (!multiOut.hasNext())
+				throw new IllegalStateException("no next file name; "+multiOut.getDigitCnt() + " digits specified in the file name mask \""+fileName+"\"");
 			url = getFileURL(contextURL, multiOut.next());
             if(!url.getProtocol().equalsIgnoreCase("file")) return true;
 			file = new File(url.getPath());
