@@ -29,6 +29,7 @@ Changes/bug fixes:
 + new graph processing facility
 + new component XmlWriter with example graphXmlWriter.grf
 + new component SpeedLimiter
++ XLSWriter can writes to different sheets depending on record's value
 
 REL 2-3-1 
 ---------
