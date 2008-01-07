@@ -67,7 +67,7 @@ import org.jetel.util.string.StringUtils;
  * @revision    $Revision$
  */
 public class WatchDog implements Callable<Result>, CloverPost {
-    
+    private GraphExecutor graphExecutor;
     private int trackingInterval;
 	private Result watchDogStatus;
 	private TransformationGraph graph;
@@ -107,7 +107,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 * @param  phases  Description of the Parameter
 	 * @since          September 02, 2003
 	 */
-	public WatchDog(TransformationGraph graph, IGraphRuntimeContext runtimeContext) {
+	public WatchDog(GraphExecutor graphExecutor, TransformationGraph graph, IGraphRuntimeContext runtimeContext) {
+		this.graphExecutor = graphExecutor;
 		graph.setWatchDog(this);
 		this.graph = graph;
 		this.phases = graph.getPhases();
@@ -789,6 +790,14 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	public void setUseJMX(boolean useJMX) {
 		this.provideJMX = useJMX;
+	}
+
+
+	/**
+	 * @return instance of graph executor, which was used to run this graph/watchdog
+	 */
+	public GraphExecutor getGraphExecutor() {
+		return graphExecutor;
 	}
 
     

@@ -141,7 +141,7 @@ public class GraphExecutor {
         }
 
 //        long timestamp = System.currentTimeMillis();
-        WatchDog watchDog = new WatchDog(graph, context);
+        WatchDog watchDog = new WatchDog(this, graph, context);
 
         return executor.submit(watchDog);
         
