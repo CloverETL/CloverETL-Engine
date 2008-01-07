@@ -78,8 +78,9 @@ import org.w3c.dom.Element;
  *  <tr><td><b>namesRow</b></td><td>index of row, where to write metadata names</td>
  *  <tr><td><b>firstDataRow</b></td><td>index of row, where to write first data record</td>
  *  <tr><td><b>firstColumn</b></td><td>code of column from which data will be written</td>
- *  <tr><td><b>sheetName</b></td><td>name of sheet for writing data. If it is not set 
- *   new sheet with default name is created</td>
+ *  <tr><td><b>sheetName</b></td><td>name of sheet for writing data. It can be list of input metadata field's names
+ *  preceded by dollar [$] and separated by :;| {colon, semicolon, pipe}. Then for different key values there are 
+ *  created separated sheets. If it is not set new sheet with default name is created</td>
  *  <tr><td><b>recordSkip</b></td><td>number of skipped records</td>
  *  <tr><td><b>recordCount</b></td><td>number of written records</td>
  *  <tr><td><b>recordsPerFile</b></td><td>max number of records in one output file</td>
@@ -102,7 +103,11 @@ import org.w3c.dom.Element;
  * <pre>&lt;Node append="true" fileURL="output/orders.partitioned.xls" 
  * id="XLS_WRITER2" namesRow="1" firstDataRow="3" sheetName="via3" type="XLS_WRITER"/&gt;
  * 
-/**
+ * <pre>&lt;Node append="true" fileURL="out.xls" firstDataRow="3" id="XLS_WRITER0" namesRow="1" 
+ * sheetName="$Field1;$Field2" type="XLS_WRITER"/&gt;
+ * 
+
+
 * @author avackova <agata.vackova@javlinconsulting.cz> ; 
 * (c) JavlinConsulting s.r.o.
 *	www.javlinconsulting.cz
