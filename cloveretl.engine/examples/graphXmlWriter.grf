@@ -12,15 +12,15 @@
 <Node dataPolicy="Strict" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/employees.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="23" guiY="103" id="INPUT2" type="DELIMITED_DATA_READER"/>
 <Node dataPolicy="Strict" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/customers_delimited.txt" guiHeight="25" guiName="INPUT3" guiWidth="50" guiX="24" guiY="182" id="INPUT3" type="DELIMITED_DATA_READER"/>
 <Node dataPolicy="Strict" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/addresses.dat" guiHeight="25" guiName="INPUT4" guiWidth="50" guiX="25" guiY="263" id="INPUT4" type="DELIMITED_DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="XML_OUT" guiWidth="50" guiX="266" guiY="117" id="XML_OUT" type="XML_WRITER">
+<Node enabled="enabled" guiHeight="25" guiName="XML_OUT" guiWidth="50" guiX="266" guiY="117" id="XML_OUT" type="XML_WRITER" recordsPerFile="2" recordSkip="5" recordCount="10" >
 <attr name="rootElement"><![CDATA[root]]></attr>
-<attr name="fileUrl"><![CDATA[output/xmlOut.xml]]></attr>
+<attr name="fileUrl"><![CDATA[zip:output/xmlOut_$$.zip]]></attr>
 <attr name="mapping"><![CDATA[
-          <Mapping element="customer" inPort="2" key="CUSTOMERID" fieldsAs="elements" fieldsAsExcept="CUSTOMERID;CompanyName" >
-              <Mapping element="order" inPort="0" key="OrderID" relationKeysToParent="CustomerID" fieldsAs="elements" fieldsAsExcept="OrderID">
-				<Mapping element="address" inPort="3" key="AddressID" relationKeysToParent="OrderID" fieldsAs="attributes" >
+          <Mapping element="customer" inPort="2" key="CUSTOMERID" fieldsAs="elements" fieldsAsExcept="CUSTOMERID;CompanyName" fieldsIgnore="CompanyName;State" >
+              <Mapping element="order" inPort="0" key="OrderID" keyToParent="CustomerID" fieldsAs="elements" fieldsAsExcept="OrderID">
+				<Mapping element="address" inPort="3" key="AddressID" keyToParent="OrderID" fieldsAs="attributes" >
 				</Mapping>
-				<Mapping element="employee" inPort="1" key="EmployeeID" relationKeysFromParent="EmployeeID" fieldsAs="elements" >
+				<Mapping element="employee" inPort="1" key="EmployeeID" keyFromParent="EmployeeID" fieldsAs="elements" >
 				</Mapping>
               </Mapping>
           </Mapping>
