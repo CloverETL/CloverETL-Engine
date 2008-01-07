@@ -24,6 +24,7 @@ package org.jetel.util;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
@@ -40,6 +41,7 @@ public class MultiOutFile implements Iterator<String> {
 	private int counter;
 	private String beforeNum;
 	private String afterNum;
+	private String mask; 
 	
 	/**
 	 * Sole ctor.
@@ -52,6 +54,7 @@ public class MultiOutFile implements Iterator<String> {
 		beforeNum = before.toString();
 		afterNum = after.toString();
 		counter = 0;
+		this.mask = mask;
 	}
 
 	/**
@@ -84,7 +87,7 @@ public class MultiOutFile implements Iterator<String> {
 
 	public String next() {
 		if (!hasNext()) {
-			return null;
+			throw new NoSuchElementException("no next file name; " + digitCnt + " digits specified in the file name mask:\""+mask+"\"");
 		}
 		if (digitCnt == 0) {
 			counter++;
@@ -97,5 +100,9 @@ public class MultiOutFile implements Iterator<String> {
 
 	public void remove() {
 		throw new UnsupportedOperationException();		
+	}
+	
+	public int getDigitCnt() {
+		return digitCnt;
 	}
 }
