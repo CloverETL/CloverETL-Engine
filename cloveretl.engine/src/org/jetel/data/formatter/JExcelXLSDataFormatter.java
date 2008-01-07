@@ -22,9 +22,10 @@ package org.jetel.data.formatter;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.naming.InvalidNameException;
 
@@ -43,6 +44,7 @@ import jxl.write.WritableWorkbook;
 import jxl.write.biff.RowsExceededException;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -61,11 +63,18 @@ import org.jetel.util.string.StringUtils;
  */
 public class JExcelXLSDataFormatter extends XLSFormatter {
 	
+	private static final String CLOVER_FIELD_PREFIX = "$";
+	
 	private WritableWorkbook wb;
 	private WritableSheet sheet;
+	private Map<String, SheetData> sheets = null;
+	private boolean multiSheetWriting;
 	private WritableCellFormat[] cellStyle;
 	private boolean open = false;
-
+	private String currentSheetName;
+	private int currentRow;
+	private SheetData currentSheet;
+	
 	/**
 	 * Constructor
 	 * 
@@ -84,6 +93,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 			try {
 				wb.write();
 				wb.close();
+				sheet = null;
 				open = false;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -102,42 +112,48 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	 * @see org.jetel.data.formatter.XLSFormatter#prepareSheet()
 	 */
 	public void prepareSheet(){
+		String tmpName = currentSheetName != null ? currentSheetName : sheetName;
+		
 		//get or create sheet depending of its existence and append attribute
-		if (sheetName != null){
-			sheet = wb.getSheet(sheetName);
+		if (tmpName != null){
+			sheet = wb.getSheet(tmpName);
 			if (sheet == null) {
-				sheet = wb.createSheet(sheetName, wb.getNumberOfSheets());
+				sheet = wb.createSheet(tmpName, wb.getNumberOfSheets());
 			}else if (!append){
-				int sheetIndex = StringUtils.findString(sheetName, wb.getSheetNames());
+				int sheetIndex = StringUtils.findString(tmpName, wb.getSheetNames());
 				wb.removeSheet(sheetIndex);
-				sheet = wb.createSheet(sheetName, wb.getNumberOfSheets());
+				sheet = wb.createSheet(tmpName, wb.getNumberOfSheets());
 			}
 		}else if (sheetNumber > -1){
 			try {
 				sheet = wb.getSheet(sheetNumber);
-				sheetName = sheet.getName();
+				tmpName = sheet.getName();
 			}catch(IndexOutOfBoundsException ex){
 				throw new IllegalArgumentException("There is no sheet with number \"" +	sheetNumber +"\"");
 			}
 		}else {
 			sheet = wb.createSheet("Sheet" + wb.getNumberOfSheets(), wb.getNumberOfSheets());
 		}
-		recCounter = 0;
-		//set recCounter for proper row
-		if (append) {
-			if (sheet.getRows() != 0){
-				recCounter = sheet.getRows() + 1;
-			}
-		}
 		try {
 			firstColumn = XLSFormatter.getCellNum(firstColumnIndex);
 		}catch(InvalidNameException ex){
 			throw new IllegalArgumentException(ex);
 		}
-		if (namesRow == -1 || (append && recCounter > 0)){//do not save metadata
-			if (firstRow > recCounter) {
-				recCounter = firstRow;
+		//set proper current row and save metadata field's names if required
+		currentRow = append ? sheet.getRows() : 0;
+		if (namesRow > -1) {
+			if (!append || sheet.getRows() == 0) {
+				currentRow = namesRow;
+				try {
+					saveNames();
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+				currentRow = namesRow + 1;
 			}
+		}
+		if (firstRow > currentRow) {
+			currentRow = firstRow;
 		}
 		//creating cell formats from metadata formats
 		cellStyle = new WritableCellFormat[metadata.getNumFields()];
@@ -171,6 +187,12 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 				cellStyle[i] = new WritableCellFormat(new DateFormat(format));
 			}
 		}
+		//Remember current sheet
+		if (multiSheetWriting) {
+			SheetData sheetData = new SheetData(sheet, currentRow);
+			sheets.put(tmpName, sheetData);
+			currentSheet = sheetData;
+		}
 		open = true;
 	}
 
@@ -193,34 +215,48 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
         }catch(Exception ex){
             throw new RuntimeException(ex);
         }
-        prepareSheet();
+        multiSheetWriting = !StringUtils.isEmpty(sheetName) && sheetName.startsWith(CLOVER_FIELD_PREFIX);
+        if (multiSheetWriting) {
+        	String[] fields = sheetName.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+        	for (int i = 0; i < fields.length; i++) {
+				fields[i] = fields[i].substring(1);
+			}
+        	setKeyFields(fields);
+        	sheets = new HashMap<String, SheetData>();
+        }
 	}
 
     /**
      * Method for saving names of columns
      */
     protected void saveNames() throws IOException{
-		recCounter = namesRow > -1 ? namesRow : 0;
+//		recCounter = namesRow > -1 ? namesRow : 0;
 		WritableFont font = new WritableFont(WritableFont.ARIAL, WritableFont.DEFAULT_POINT_SIZE, WritableFont.BOLD);
 		WritableCellFormat format = new WritableCellFormat(font);
 		Label name;
 		for (short i=0;i<metadata.getNumFields();i++){
-			name = new Label(firstColumn + i, recCounter, metadata.getField(i).getName(), format);
+			name = new Label(firstColumn + i, currentRow, metadata.getField(i).getName(), format);
 			try {
 				sheet.addCell(name);
 			} catch (Exception e) {
 				throw new IOException(e.getMessage());
 			}
 		}
-		if (firstRow > ++recCounter) {
-			recCounter = firstRow;
-		}
+//		if (firstRow > ++recCounter) {
+//			recCounter = firstRow;
+//		}
     }
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
 	public int write(DataRecord record) throws IOException {
+		if (multiSheetWriting) {
+			prepareSheet(record);
+			sheet = currentSheet.sheet;
+		}else if (sheet == null) {
+			prepareSheet();
+		}
 		char metaType;//metadata field type
 		Object value;//field value
 		Object valueXls = null;//value to set
@@ -232,52 +268,52 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 			if (value == null) continue;
 			if (metaType == DataFieldMetadata.BYTE_FIELD || metaType == DataFieldMetadata.BYTE_FIELD_COMPRESSED
 					|| metaType == DataFieldMetadata.STRING_FIELD){
-				valueXls = new Label(colNum,recCounter,value.toString());
+				valueXls = new Label(colNum,currentRow,value.toString());
 			}else{
 				switch (metaType) {
 				case DataFieldMetadata.DATE_FIELD:
 				case DataFieldMetadata.DATETIME_FIELD:
 					if (cellStyle[i] != null) {
-						valueXls = new DateTime(colNum, recCounter,
+						valueXls = new DateTime(colNum, currentRow,
 								(Date) value, cellStyle[i]);
 					}else{
-						valueXls = new DateTime(colNum, recCounter,
+						valueXls = new DateTime(colNum, currentRow,
 								(Date) value);
 					}
 					break;
 				case DataFieldMetadata.INTEGER_FIELD:
 					if (cellStyle[i] != null) {
-						valueXls = new Number(colNum, recCounter,
+						valueXls = new Number(colNum, currentRow,
 								(Integer) value, cellStyle[i]);
 					}else{
-						valueXls = new Number(colNum, recCounter,
+						valueXls = new Number(colNum, currentRow,
 								(Integer) value);
 					}
 					break;
 				case DataFieldMetadata.LONG_FIELD:
 					if (cellStyle[i] != null) {
-						valueXls = new Number(colNum, recCounter,
+						valueXls = new Number(colNum, currentRow,
 								(Long) value, cellStyle[i]);
 					}else{
-						valueXls = new Number(colNum, recCounter,
+						valueXls = new Number(colNum, currentRow,
 								(Long) value);
 					}
 					break;
 				case DataFieldMetadata.DECIMAL_FIELD:
 					if (cellStyle[i] != null) {
-						valueXls = new Number(colNum, recCounter,
+						valueXls = new Number(colNum, currentRow,
 								((Decimal)value).getDouble(), cellStyle[i]);
 					}else{
-						valueXls = new Number(colNum, recCounter,
+						valueXls = new Number(colNum, currentRow,
 								((Decimal)value).getDouble());
 					}
 					break;
 				case DataFieldMetadata.NUMERIC_FIELD:
 					if (cellStyle[i] != null) {
-						valueXls = new Number(colNum, recCounter,
+						valueXls = new Number(colNum, currentRow,
 								(Double) value, cellStyle[i]);
 					}else{
-						valueXls = new Number(colNum, recCounter,
+						valueXls = new Number(colNum, currentRow,
 								(Double) value);
 					}
 					break;
@@ -293,7 +329,10 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 				throw new IOException(e.getMessage());
 			}
 		}
-		recCounter++;
+		currentRow++;
+		if (multiSheetWriting) {
+			currentSheet.currentRow++;
+		}
         
         return 0;
 	}
@@ -303,4 +342,27 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		return 0;
 	}
 
+	@Override
+	public void prepareSheet(DataRecord record) {
+		currentSheetName = sheetNameKeyRecord.getKeyString(record);
+		if (sheets.containsKey(currentSheetName)) {
+			currentSheet = sheets.get(currentSheetName);
+			currentRow = currentSheet.currentRow;
+		}else{
+			prepareSheet();
+		}
+	}
+
+}
+
+class SheetData {
+	
+	WritableSheet sheet;
+	Integer currentRow = 0;
+	
+	SheetData(WritableSheet sheet, int currentRow) {
+		this.sheet = sheet;
+		this.currentRow = currentRow;
+	}
+	
 }

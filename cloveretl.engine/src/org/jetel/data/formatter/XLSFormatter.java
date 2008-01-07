@@ -25,6 +25,10 @@ import java.io.IOException;
 
 import javax.naming.InvalidNameException;
 
+import jxl.write.WritableSheet;
+
+import org.jetel.data.DataRecord;
+import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -55,13 +59,13 @@ public abstract class XLSFormatter implements Formatter {
 	protected DataRecordMetadata metadata;
 	protected FileOutputStream out;
 	protected int firstRow = 0;
-	protected int recCounter;
 	protected int namesRow = -1;
 	protected boolean append;
 	protected String sheetName = null;
 	protected int sheetNumber = -1;
 	protected String firstColumnIndex = "A";
 	protected int firstColumn;
+	protected RecordKey sheetNameKeyRecord;
 
 	/**
 	 * Constructor
@@ -86,6 +90,24 @@ public abstract class XLSFormatter implements Formatter {
 	 *  called there is created new sheet with default name.
 	 */
 	public abstract void prepareSheet();
+	
+	/**
+	 * Prepares sheet in xls file, which name is created from given record. Before calling this method, 
+	 * setKeyFields(String[]) method must be called.
+	 * 
+	 * @param record
+	 */
+	public abstract void prepareSheet(DataRecord record);
+	
+	/**
+	 * Sets from which fields from input metadata will be created sheet name for different records
+	 * 
+	 * @param fieldNames
+	 */
+	public void setKeyFields(String[] fieldNames){
+		sheetNameKeyRecord = new RecordKey(fieldNames, metadata);
+		sheetNameKeyRecord.init();
+	}
 
 	/**
 	 * Set name of sheet, data will be written to. It has higher prioryty then
@@ -226,11 +248,18 @@ public abstract class XLSFormatter implements Formatter {
 	}
 	
 	public int writeHeader() throws IOException {
-		if (!(namesRow == -1 || (append && recCounter > 0))){
-			saveNames();
-		}
+//		if (!(namesRow == -1 || (append && recCounter > 0))){
+//			saveNames();
+//		}
+		//saveNames() should be called from prepareSheet()
 		return 0;
 	}
 	
+	/**
+	 * Saves metadata field's names to current sheet
+	 * 
+	 * @throws IOException
+	 */
 	protected abstract void saveNames() throws IOException;
 }
+
