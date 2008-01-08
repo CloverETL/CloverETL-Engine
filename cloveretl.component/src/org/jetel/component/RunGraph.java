@@ -20,28 +20,24 @@
 package org.jetel.component;
 
 import java.io.BufferedInputStream;
-import java.io.InputStream;
-
-import java.util.StringTokenizer;
-import java.util.Scanner;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.channels.Channels;
-
+import java.util.Scanner;
+import java.util.StringTokenizer;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -51,16 +47,13 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
-
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphExecutor;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.WatchDog;
-
-import org.jetel.main.runGraph;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -68,14 +61,60 @@ import org.w3c.dom.Element;
 
 
 /**
- *  
- *
-/**
-* @author jvicenik <juraj.vicenik@javlinconsulting.cz> ; 
+* This component can run separated graph.
+* * run in the same JVM:
+* Graph is run by existing executor in current JVM instance. Log output is flushed together with current graph.
+* * run in separated JVM:
+* Graph is run as external process. Log output is written into specified file. Executed JVM will have the same classpath as current JVM.  
+* 
+* Attributes:
+* <ul>
+* <li>id
+* <li>type
+* <li>graphName - path to XML graph definition, which should be ran  
+* <li>sameInstance - if it's true, graph will be executed in the same instance of JVM; otherwise it will be executed as external process
+* </ul>
+* Attributes for execution in separated instance of JVM (sameInstance==false) 
+* <ul>
+* <li>logFile - path to file for logging output of external process
+* <li>logAppend - if true, log will be appended to existing, otherwise existing log will be overwritten 
+* <li>alternativeJavaCmdLine - command line to execute external process; default is just "java"
+* <li>graphExecClass - full class name which runs graph; default is "org.jetel.main.runGraph"
+* <li>cloverCmdLineArgs - additional parameters for graph exec class; 
+* </ul>
+* 
+* Outports:
+* There are 3 possibilities:
+* <ul>
+* <li>no edge is connected - nothing happens on the output
+* <li>one edge is connected - just one record is generated; it may describe fail or success
+* <li>two edges are connected - just one record is generated; it is put to port 0 if success, to port 1 otherwise
+* </ul> 
+* Metadata of output record:
+&lt;Metadata id="Metadata0">
+&lt;Record name="outdata" recordSize="-1" type="delimited">
+&lt;Field delimiter=";" name="graph" nullable="true" type="string"/>
+&lt;Field delimiter=";" name="result" nullable="true" type="string"/>
+&lt;Field delimiter=";" name="description" nullable="true" type="string"/>
+&lt;Field delimiter=";" name="message" nullable="true" type="string"/>
+&lt;Field delimiter="\\n" name="duration" nullable="true" type="long"/>
+&lt;/Record>
+&lt;/Metadata>
+
+* Output metadata fields:
+* <ul>
+* <li>graph - path to file with executed graph
+* <li>result "Finished OK" | "Aborted" | "Error"
+* <li>descriptor - text description usefull when graph fails 
+* <li>message - string value of org.jetel.graph.Result 
+* <li>duration - graph execution duration in milliseconds
+* </ul>
+* 
+* @author jvicenik <juraj.vicenik@javlinconsulting.cz> 
 * (c) JavlinConsulting s.r.o.
 *	www.javlinconsulting.cz
 *	@created September 26, 2007
- */
+*/
 
 public class RunGraph extends Node{
 			
@@ -110,11 +149,11 @@ public class RunGraph extends Node{
 			
 	private FileWriter outputFile = null;
 	
-	/* this indicates the mode in which a dummy record is sent to port 0 in case of successful termination of the 
+	/** this indicates the mode in which a dummy record is sent to port 0 in case of successful termination of the 
 	* graph specified as graphName OR to the port 1 of it terminated with an error
 	*/  
 	private boolean pipelineMode = false;
-	// whether to run the graph using another instance of JVM and clover (default: use this instance)
+	/** whether to run the graph using another instance of JVM and clover (default: use this instance) */
 	private boolean sameInstance = true;
 	
 	private boolean append;
@@ -477,15 +516,19 @@ public class RunGraph extends Node{
         }
         
         GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-        
-		GraphExecutor graphExecutor = new GraphExecutor();        
+		watchdog = getGraph().getWatchDog();
+		
+		//GraphExecutor graphExecutor = new GraphExecutor();
+		GraphExecutor graphExecutor =  watchdog.getGraphExecutor();
+		
         Future<Result> futureResult = null;                
         
         String password = null; // TODO
         
+        long startTime = System.currentTimeMillis();
 		try {
 			futureResult = graphExecutor.runGraph(in, runtimeContext, password);
-//			watchdog = graphExecutor.getWatchDog();
+			// graphExecutor.getWatchDog();
         } catch (XMLConfigurationException e) {            
             output.getField(2).setValue("Error in reading graph from XML: " + e.getMessage());
             return false;
@@ -510,37 +553,31 @@ public class RunGraph extends Node{
 			output.getField(2).setValue("Error during graph processing !" + e.getMessage());            
             return false;
 		}
-        
+        long totalTime = System.currentTimeMillis() - startTime;
 		
-//        switch (result) {
-//	        case FINISHED_OK:        	
-//	    		output.getField(1).setValue("Finished OK");
-//	    		output.getField(2).setValue("");
-//	    		output.getField(3).setValue(""); 			
-//	    		if(watchdog != null) output.getField(4).setValue(watchdog.getTotalRunTime()); 
-//	    		    		        	
-//	            return true;
-//	        case ABORTED:
-//	        	output.getField(1).setValue("Aborted");
-//	        	output.getField(2).setValue("Graph execution aborted. ");
-//	        	if(watchdog != null) {
-//	        		output.getField(3).setValue(watchdog.getFatalErrorSourceID());
-//	        		output.getField(4).setValue(watchdog.getTotalRunTime());
-//	        	}
-//	        	System.err.println(graphFileName + ": " + "Execution of graph aborted !");
-//	            return false;
-//	            
-//	        default:
-//	        	output.getField(1).setValue(result.message());        	
-//	        	output.getField(2).setValue("Execution of graph failed !");
-//	        	if(watchdog!=null) {	        			        	
-//	        		output.getField(3).setValue(watchdog.getFatalErrorSourceID());
-//	        		output.getField(4).setValue(watchdog.getTotalRunTime());
-//	        	}
-//	            System.err.println(graphFileName + ": " + "Execution of graph failed !");
-//	            return false;
-//        }
-		return false;
+        switch (result) {
+	        case FINISHED_OK:        	
+	    		output.getField(1).setValue("Finished OK");
+	    		output.getField(2).setValue("");
+	    		output.getField(3).setValue(""); 			
+    			output.getField(4).setValue(totalTime); 
+	            return true;
+	        case ABORTED:
+	        	output.getField(1).setValue("Aborted");
+	        	output.getField(2).setValue("Graph execution aborted. ");
+        		output.getField(3).setValue(result.message());
+        		output.getField(4).setValue(totalTime);
+	        	System.err.println(graphFileName + ": " + "Execution of graph aborted !");
+	            return false;
+	            
+	        default:
+	        	output.getField(1).setValue(result.message());        	
+	        	output.getField(2).setValue("Execution of graph failed !");
+        		output.getField(3).setValue(result.message());
+        		output.getField(4).setValue(totalTime);
+	            System.err.println(graphFileName + ": " + "Execution of graph failed !");
+	            return false;
+        }
 	}
 		
 	@Override
