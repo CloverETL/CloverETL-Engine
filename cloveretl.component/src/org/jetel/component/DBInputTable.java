@@ -185,8 +185,8 @@ public class DBInputTable extends Node {
 		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
 		record.init();
 		record.reset();
+		parser.setDataSource(connection.getConnection(getId()));
 		try {
-			parser.setDataSource(connection.getConnection(getId()));
 			parser.initSQLDataMap(record);
 
 			// till it reaches end of data or it is stopped from outside
