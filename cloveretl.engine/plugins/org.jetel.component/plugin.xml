@@ -164,6 +164,11 @@
 	</extension>
 
 	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.RunGraph"/>
+	    <parameter id="type" value="RUN_GRAPH"/>
+	</extension>
+
+	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.KeyGenerator"/>
 	    <parameter id="type" value="KEY_GEN"/>
 	</extension>
