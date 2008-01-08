@@ -115,7 +115,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		String tmpName = currentSheetName != null ? currentSheetName : sheetName;
 		
 		//get or create sheet depending of its existence and append attribute
-		if (tmpName != null){
+		if (!StringUtils.isEmpty(tmpName)){
 			sheet = wb.getSheet(tmpName);
 			if (sheet == null) {
 				sheet = wb.createSheet(tmpName, wb.getNumberOfSheets());
