@@ -97,8 +97,6 @@ public final class TransformationGraph extends GraphElement {
     
     private int debugMaxRecords = 0;
     
-    private String debugMaxRecordsStr;
-    
 	static Log logger = LogFactory.getLog(TransformationGraph.class);
 
 	private WatchDog watchDog;
