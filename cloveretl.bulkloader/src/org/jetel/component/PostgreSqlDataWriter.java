@@ -84,7 +84,6 @@ public class PostgreSqlDataWriter extends Node {
 	private static final String XML_COMMAND_URL_ATTRIBUTE = "commandURL";
 	private static final String XML_HOST_ATTRIBUTE = "host";
 	private static final String XML_USER_ATTRIBUTE = "username";
-//	private static final String XML_PASSWORD_ATTRIBUTE = "password";
 	
 	// attributes for copy statement	
 	private static final String XML_TABLE_ATTRIBUTE = "table";
@@ -121,7 +120,6 @@ public class PostgreSqlDataWriter extends Node {
 	private static final String PSQL_COMMAND_URL_SWITCH = "file";
 	private static final String PSQL_HOST_SWITCH = "host";
 	private static final String PSQL_USER_SWITCH = "username";
-//	private static final String PSQL_PASSWORD_SWITCH = "password";
 
 	// switches for psql client
 	private static final String PSQL_ECHO_ALL_SWITCH = "echo-all";
@@ -165,7 +163,6 @@ public class PostgreSqlDataWriter extends Node {
 	private String user;
 
 	// variables for copy statement
-	//	private String password;
 	private String table;
 	private String columnDelimiter = null;
 	private String dataURL; // fileUrl from XML - data file that is used when no input port is connected or for log
@@ -333,8 +330,6 @@ public class PostgreSqlDataWriter extends Node {
 		command.addBooleanParam(PSQL_QUIET_PARAM, PSQL_QUIET_SWITCH);
 		command.addBooleanParam(PSQL_NO_PSQLRC_PARAM, PSQL_NO_PSQLRC_SWITCH);
 		command.addBooleanParam(PSQL_SINGLE_TRANSACTION_PARAM, PSQL_SINGLE_TRANSACTION_SWITCH);
-		
-		//command.addParam(null, PSQL_PASSWORD_SWITCH, password);
 
 		return command.getCommand();
 	}
@@ -759,9 +754,6 @@ public class PostgreSqlDataWriter extends Node {
 				postgreSQLDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
 			}
 			
-//			if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
-//				postgreSQLDataWriter.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
-//			}
 			if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
 				postgreSQLDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
 			}
@@ -802,10 +794,6 @@ public class PostgreSqlDataWriter extends Node {
 		if (!StringUtils.isEmpty(user)) {
 			xmlElement.setAttribute(XML_USER_ATTRIBUTE, user);
 		}
-//		if (!StringUtils.isEmpty(password)) {
-//			xmlElement.setAttribute(XML_PASSWORD_ATTRIBUTE, password);
-//		}
-		
 		if (!StringUtils.isEmpty(table)) {
 			xmlElement.setAttribute(XML_TABLE_ATTRIBUTE, table);
 		}
@@ -879,10 +867,6 @@ public class PostgreSqlDataWriter extends Node {
 		this.user = user;
 	}
 
-//	private void setPassword(String password) {
-//		this.password = password;
-//	}
-	
 	private void setTable(String table) {
 		this.table = table;
 	}
