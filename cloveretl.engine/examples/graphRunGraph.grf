@@ -7,7 +7,7 @@
 <Field delimiter=";" name="result" nullable="true" type="string"/>
 <Field delimiter=";" name="description" nullable="true" type="string"/>
 <Field delimiter=";" name="message" nullable="true" type="string"/>
-<Field delimiter="\\n" name="duration" nullable="true" type="long"/>
+<Field delimiter="\\n" name="duration" nullable="true" type="decimal"/>
 </Record>
 </Metadata>
 
