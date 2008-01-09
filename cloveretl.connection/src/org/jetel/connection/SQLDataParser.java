@@ -24,7 +24,11 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Locale;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,6 +40,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author David Pavlis
@@ -271,8 +276,15 @@ public class SQLDataParser implements Parser {
             logger.warn(e);
         }
         
+        logger.debug("Time: "
+                + (new SimpleDateFormat("HH:mm:ss.SSS")).
+                format(Calendar.getInstance().getTime()) + " - Sending query " + 
+                StringUtils.quote(sqlQuery));
         try{
             resultSet = statement.executeQuery(sqlQuery);
+            logger.debug("Time: "
+                    + (new SimpleDateFormat("HH:mm:ss.SSS")).
+                    format(Calendar.getInstance().getTime()) + " - Query executed succesfuly");
         } catch (SQLException e) {
             logger.debug(e);
             throw new ComponentNotReadyException(e);
