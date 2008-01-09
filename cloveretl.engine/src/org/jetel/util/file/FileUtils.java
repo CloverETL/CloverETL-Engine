@@ -400,7 +400,7 @@ public class FileUtils {
 	 * @param source - input/output source
 	 * @return matcher or null
 	 */
-	private static Matcher getInnerInput(String source) {
+	public static Matcher getInnerInput(String source) {
 		Matcher matcher = INNER_SOURCE.matcher(source);
 		return matcher.find() ? matcher : null;
 	}
