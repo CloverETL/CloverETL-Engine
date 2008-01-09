@@ -89,7 +89,6 @@ public class PostgreSqlDataWriter extends Node {
 	private static final String XML_TABLE_ATTRIBUTE = "table";
 	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
 	private static final String XML_COLUMN_DELIMITER_ATTRIBUTE = "columnDelimiter";
-	private static final String XML_IGNORE_ROWS_ATTRIBUTE = "ignoreRows";
 	private static final String XML_PARAMETERS_ATTRIBUTE = "parameters";
 
 	// params for psql client
@@ -142,7 +141,6 @@ public class PostgreSqlDataWriter extends Node {
 	private final static String POSTGRESQL_FILE_NAME_PREFIX = "postgresql";
 	private final static String COMMAND_FILE_NAME_SUFFIX = ".ctl";
 	private final static File TMP_DIR = new File(".");
-	private final static int UNUSED_INT = -1;
 	private final static String EQUAL_CHAR = "=";
 	private final static String DEFAULT_COLUMN_DELIMITER = "\t";
 	private final static String DEFAULT_COLUMN_DELIMITER_IN_CSV_MODE = ",";
@@ -166,7 +164,6 @@ public class PostgreSqlDataWriter extends Node {
 	private String table;
 	private String columnDelimiter = null;
 	private String dataURL; // fileUrl from XML - data file that is used when no input port is connected or for log
-	private int ignoreRows = UNUSED_INT;
 	private String parameters;
 	
 	private File commandFile;
@@ -763,9 +760,6 @@ public class PostgreSqlDataWriter extends Node {
 			if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
 				postgreSQLDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_IGNORE_ROWS_ATTRIBUTE)) {
-				postgreSQLDataWriter.setIgnoreRows(xattribs.getInteger(XML_IGNORE_ROWS_ATTRIBUTE));
-			}
 			
 			if (xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
 				postgreSQLDataWriter.setParameters(xattribs.getString(XML_PARAMETERS_ATTRIBUTE));
@@ -802,9 +796,6 @@ public class PostgreSqlDataWriter extends Node {
 		}
 		if (!DEFAULT_COLUMN_DELIMITER.equals(columnDelimiter)) {
 			xmlElement.setAttribute(XML_COLUMN_DELIMITER_ATTRIBUTE, columnDelimiter);
-		}
-		if (ignoreRows != UNUSED_INT) {
-			xmlElement.setAttribute(XML_IGNORE_ROWS_ATTRIBUTE, String.valueOf(ignoreRows));
 		}
 		
 		if (!StringUtils.isEmpty(parameters)) {
@@ -869,10 +860,6 @@ public class PostgreSqlDataWriter extends Node {
 
 	private void setTable(String table) {
 		this.table = table;
-	}
-
-	private void setIgnoreRows(int ignoreRows) {
-		this.ignoreRows = ignoreRows;
 	}
 
 	private void setParameters(String parameters) {
