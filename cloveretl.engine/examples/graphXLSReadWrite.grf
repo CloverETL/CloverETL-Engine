@@ -1,29 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="1.7" licenseType="Unlicensed clover.GUI" modified="Mon Jun 25 12:09:41 CEST 2007" name="graphXLSRead" revision="1.21">
+<Graph created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="1.8" id="1199778867506" licenseType="Evaluation license." modified="Tue Jan 08 09:16:00 CET 2008" name="graphXLSRead" revision="1.25">
 <Global>
 <Metadata fileURL="metadata/delimited/orders.fmt" id="Metadata0"/>
 <Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Partition" guiWidth="0" guiX="272" guiY="168" id="PARTITION0" partitionKey="ShipVia" ranges="1;2;3" type="PARTITION"/>
-<Node enabled="enabled" fieldMap="OrderID=$A;CustomerID=$B;EmployeeID=$C;OrderDate=$D;RequiredDate=$E;ShippedDate=$F;ShipVia=$G;Freight=$H;ShipName=$I;ShipAddress=$J;ShipCity=$K;ShipRegion=$L;ShipPostalCode=$M;ShipCountry=$N" fileURL="${WORKSPACE}/data/other/O*.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="74" guiY="168" id="XLS_READER1" metadataRow="1" sheetNumber="*" type="XLS_READER"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/output/orders.partitioned$.xls" firstColumn="f" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="65" id="XLS_WRITER0" namesRow="2" recordsPerFile="100" sheetName="via1" type="XLS_WRITER">
+<Node enabled="enabled" fieldMap="OrderID=$A;CustomerID=$B;EmployeeID=$C;OrderDate=$D;RequiredDate=$E;ShippedDate=$F;ShipVia=$G;Freight=$H;ShipName=$I;ShipAddress=$J;ShipCity=$K;ShipRegion=$L;ShipPostalCode=$M;ShipCountry=$N" fileURL="${WORKSPACE}/data/other/O*.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="28" guiY="32" id="XLS_READER1" metadataRow="1" sheetNumber="*" type="XLS_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/output/ordersByCountry.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="264" guiY="32" id="XLS_WRITER0" namesRow="1" sheetName="$ShipCountry" type="XLS_WRITER">
 <attr name="saveNames"><![CDATA[true]]></attr>
 </Node>
-<Edge fromNode="PARTITION0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
-<Edge fromNode="PARTITION0:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="XLS_WRITER1:0"/>
-<Edge fromNode="PARTITION0:2" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="XLS_WRITER2:0"/>
-<Edge fromNode="XLS_READER1:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
-</Phase>
-<Phase number="1">
-<Node enabled="enabled" fileURL="${WORKSPACE}/output/orders.partitioned$.xls" firstDataRow="10" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="168" id="XLS_WRITER1" recordsPerFile="200" sheetName="via2" type="XLS_WRITER">
-<attr name="saveNames"><![CDATA[true]]></attr>
-</Node>
-</Phase>
-<Phase number="2">
-<Node append="true" enabled="enabled" fileURL="${WORKSPACE}/output/orders.partitioned$.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="274" id="XLS_WRITER2" recordsPerFile="300" sheetName="via3" type="XLS_WRITER">
-<attr name="saveNames"><![CDATA[true]]></attr>
-</Node>
+<Edge fromNode="XLS_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
 </Phase>
 </Graph>
