@@ -33,7 +33,7 @@ public class EdgeDebuger {
     
     private int debugMaxRecords; // max number of debugged records; 0 -> infinite
     private int debuggedRecords = 0; // currently number of debugged records
-    private boolean sampleMode;
+    private boolean sampleData;
     
     private String filterExpression;
     private DataRecordMetadata metadata;
@@ -50,12 +50,12 @@ public class EdgeDebuger {
     }
 
     public EdgeDebuger(String debugFile, boolean isReadMode, int debugMaxRecords, 
-    		String filterExpression, DataRecordMetadata metadata, boolean sampleMode) {
+    		String filterExpression, DataRecordMetadata metadata, boolean sampleData) {
         this(debugFile, isReadMode);
         this.debugMaxRecords = debugMaxRecords;
         this.filterExpression = filterExpression;
         this.metadata = metadata;
-        this.sampleMode = sampleMode;
+        this.sampleData = sampleData;
     }
     
     public void init() throws IOException {
@@ -71,7 +71,7 @@ public class EdgeDebuger {
     		}
         }
         
-        if (sampleMode) {
+        if (sampleData) {
         	sampler = new Sampler();
         }
     }
@@ -106,7 +106,7 @@ public class EdgeDebuger {
     private boolean checkRecordToWrite(DataRecord record) {
     	return checkNoOfDebuggedRecords() && 
     		(filter == null || filter.check(record)) &&
-    		(!sampleMode || sampler.sample());
+    		(!sampleData || sampler.sample());
     }
     
     /**
@@ -117,7 +117,7 @@ public class EdgeDebuger {
     private boolean checkRecordToWrite(ByteBuffer record) {
     	return checkNoOfDebuggedRecords() && 
     		(filter == null || filter.check(record)) &&
-    		(!sampleMode || sampler.sample());
+    		(!sampleData || sampler.sample());
     }
 
     /**
