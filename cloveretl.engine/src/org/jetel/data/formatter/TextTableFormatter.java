@@ -180,7 +180,7 @@ public class TextTableFormatter implements Formatter {
 			//change field value to bytes
 			fieldBuffer.clear();
 			fieldBuffer.put(prefix);
-			fieldBuffer.put(sCounter.getBytes());
+			fieldBuffer.put(sCounter.getBytes(encoder.charset().displayName()));
 			fieldBuffer.flip();
             
 			blank.clear();
@@ -255,7 +255,7 @@ public class TextTableFormatter implements Formatter {
         }
         for (int i=0; i<maskAnalize.length; i++) {
         	fName = fMetadata[maskAnalize[i].index].getName();
-        	sentBytes += writeString(fName.getBytes());
+        	sentBytes += writeString(fName.getBytes(encoder.charset().displayName()));
         	sentBytes += writeString(blank, maskAnalize[i].length-fName.length());
             sentBytes += writeString(TABLE_VERTICAL);
         }
