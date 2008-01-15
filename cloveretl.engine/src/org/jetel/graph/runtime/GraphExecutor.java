@@ -50,8 +50,9 @@ public class GraphExecutor {
 
 	private static Log logger = LogFactory.getLog(GraphExecutor.class);
 
-	private ExecutorService executor = Executors.newCachedThreadPool(new GraphThreadFactory());
+	private ExecutorService watchdogExecutor = Executors.newCachedThreadPool(new WatchdogThreadFactory());
 	
+	private ExecutorService nodeExecutor = Executors.newCachedThreadPool(new NodeThreadFactory());
 	
 	/**
 	 * Waits for all currently running graphs are already done
@@ -59,17 +60,32 @@ public class GraphExecutor {
 	 * New graphs cannot be submitted after free invocation.
 	 */
 	public void free() {
-		executor.shutdown();
+		watchdogExecutor.shutdown();
+		nodeExecutor.shutdown();
 	}
 
 	/**
-	 * Immediately finishes graph executor life cycle. All runnig
+	 * Immediately finishes graph executor life cycle. All running
 	 * graphs are aborted.
 	 */
 	public void freeNow() {
-		executor.shutdownNow();
+		watchdogExecutor.shutdownNow();
+		nodeExecutor.shutdownNow();
 	}
 
+	/**
+	 * Prepares graph for first run. Checks configuration and initializes.
+	 * @param graph
+	 * @throws ComponentNotReadyException
+	 */
+	public void initGraph(TransformationGraph graph) throws ComponentNotReadyException {
+		logger.info("Checking graph configuration...");
+		ConfigurationStatus status = graph.checkConfig(null);
+		status.log();
+        
+        graph.init();
+	}
+	
 	/**
 	 * Runs the given transformation graph in the given context.
 	 * 
@@ -106,6 +122,8 @@ public class GraphExecutor {
 		
         graph.setPassword(password);
 
+        initGraph(graph);
+        
         return runGraph(graph, context);
 	}
 
@@ -121,14 +139,14 @@ public class GraphExecutor {
 	throws ComponentNotReadyException {
 		context = new UnconfigurableGraphRuntimeContext(context);
 
-        // check graph elements configuration
-        if(context.isCheckConfig()) {
-            logger.info("Checking graph configuration...");
-            ConfigurationStatus status = graph.checkConfig(null);
-            status.log();
-        }
-        
-        graph.init();
+//        // check graph elements configuration
+//        if(context.isCheckConfig()) {
+//            logger.info("Checking graph configuration...");
+//            ConfigurationStatus status = graph.checkConfig(null);
+//            status.log();
+//        }
+//        
+//        graph.init();
 
         if (context.isVerboseMode()) {
             // this can be called only after graph.init()
@@ -143,7 +161,7 @@ public class GraphExecutor {
 //        long timestamp = System.currentTimeMillis();
         WatchDog watchDog = new WatchDog(this, graph, context);
 
-        return executor.submit(watchDog);
+        return watchdogExecutor.submit(watchDog);
         
 //        logger.info("Starting WatchDog thread ...");
 //        watchDog.start();
@@ -175,6 +193,15 @@ public class GraphExecutor {
 //        return watchDog.getStatus();
 	}
 
+	/**
+	 * Runs given runnable class via inner instance of executor service.
+	 * It suspects that the given runnable instance is a node representation.
+	 * @param runnable
+	 */
+	public void executeNode(Runnable node) {
+		nodeExecutor.execute(node);
+	}
+	
     /**
      * Instantiates transformation graph from a given input stream and presets a given properties.
      * @param graphStream graph in XML form stored in character stream
@@ -190,12 +217,22 @@ public class GraphExecutor {
         return graphReader.read(graphStream);
     }
 
-	private static class GraphThreadFactory implements ThreadFactory {
+	private static class WatchdogThreadFactory implements ThreadFactory {
 
 		public Thread newThread(Runnable r) {
 			return new Thread(r, "WatchDog");
 		}
 		
 	}
-	
+
+	private static class NodeThreadFactory implements ThreadFactory {
+
+		public Thread newThread(Runnable r) {
+			Thread thread = new Thread(r, "Node");
+			thread.setDaemon(true);
+			return thread;
+		}
+		
+	}
+
 }

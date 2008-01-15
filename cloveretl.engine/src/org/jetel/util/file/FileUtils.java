@@ -337,7 +337,7 @@ public class FileUtils {
 	}
     
 	/**
-	 * This method checks wheather is is possible to write to given file
+	 * This method checks whether is is possible to write to given file
 	 * 
 	 * @param contextURL
 	 * @param fileURL
@@ -361,8 +361,6 @@ public class FileUtils {
 		boolean tmp;
 		//create file on given URL
 		try {
-			if (!multiOut.hasNext())
-				throw new IllegalStateException("no next file name; "+multiOut.getDigitCnt() + " digits specified in the file name mask \""+fileName+"\"");
 			url = getFileURL(contextURL, multiOut.next());
             if(!url.getProtocol().equalsIgnoreCase("file")) return true;
 			file = new File(url.getPath());
@@ -438,7 +436,19 @@ public class FileUtils {
 			return input;
 		}
 	}
-	
+
+	/**
+	 * Adds final slash to the directory path, if it is necessary.
+	 * @param directoryPath
+	 * @return
+	 */
+	public static String appendSlash(String directoryPath) {
+		if(directoryPath.endsWith("/") || directoryPath.endsWith("\\")) {
+			return directoryPath;
+		} else {
+			return directoryPath + "/";
+		}
+	}
 }
 
 /*

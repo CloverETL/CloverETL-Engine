@@ -415,6 +415,9 @@ public final class TransformationGraph extends GraphElement {
         if(isInitialized()) return;
 		super.init();
 
+		//initialize dictionary
+		dictionary.init();
+		
 		Iterator iterator;
 		IConnection dbCon = null;
 		Sequence seq = null;
@@ -463,15 +466,21 @@ public final class TransformationGraph extends GraphElement {
 		}
 
         //initialization of all phases
-        for(Phase phase : phases.values()) {
-        	phase.init();
-        }
+		//phases have to be initialized separately and immediately before is run - in runtime after previous phase is finished
+		
+//        for(Phase phase : phases.values()) {
+//        	phase.init();
+//        }
+		
 		// initialized OK
 	}
 
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
+		
+		//reset dictionary
+		dictionary.reset();
 		
 		//reset all phases
 		for(Phase phase : phases.values()) {
@@ -736,6 +745,9 @@ public final class TransformationGraph extends GraphElement {
      * Clears/removes all registered objects (Edges,Nodes,Phases,etc.)
      */
     public void free() {
+    	//free dictionary
+    	dictionary.free();
+    	
         freeResources();
     }
     
@@ -806,9 +818,14 @@ public final class TransformationGraph extends GraphElement {
     }
     
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        if(status == null) {
+		super.checkConfig(status);
+
+    	if(status == null) {
             status = new ConfigurationStatus();
         }
+        
+        //check dictionary
+        dictionary.checkConfig(status);
         
         //check connections configuration
         for(IConnection connection : connections.values()) {

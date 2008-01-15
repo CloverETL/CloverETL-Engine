@@ -276,13 +276,14 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		super.reset();
 		
 		edge.reset();
-		//TODO dodelat az Mirek upravi debugovani hran
-		//edgeDebuger.reset();
+		if(edgeDebuger != null) {
+			edgeDebuger.reset();
+		}
 	}
 	
     /**
      * NOTE: same implementation must be also in clover gui Connector.getDebugFileName()
-     * @return absoute path to debug file
+     * @return absolute path to debug file
      */
     private String getDebugFileName() {
         String tmpFile = getGraph().getDebugDirectory();

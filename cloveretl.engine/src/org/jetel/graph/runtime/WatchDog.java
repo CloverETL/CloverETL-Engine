@@ -47,6 +47,7 @@ import javax.management.ObjectName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -71,7 +72,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
     private int trackingInterval;
 	private Result watchDogStatus;
 	private TransformationGraph graph;
-	private Phase[] phases;
 	private Phase currentPhase;
 	private int currentPhaseNum;
 	private Runtime javaRuntime;
@@ -111,7 +111,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		this.graphExecutor = graphExecutor;
 		graph.setWatchDog(this);
 		this.graph = graph;
-		this.phases = graph.getPhases();
 		this.runtimeContext = runtimeContext;
 		currentPhase = null;
 		watchDogStatus = Result.READY;
@@ -149,6 +148,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 //        trackingThread.setPriority(Thread.MIN_PRIORITY);
 //        trackingThread.start();
         
+       	Phase[] phases = graph.getPhases();
         for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
             result=executePhase(phases[currentPhaseNum]);
             if(result == Result.ABORTED)      { 
@@ -238,51 +238,51 @@ public class WatchDog implements Callable<Result>, CloverPost {
         return "org.jetel.graph.runtime:type=" + MBEAN_NAME_PREFIX + (mbeanIdentifier != null ? mbeanIdentifier : "");
     }
     
-    public void runPhase(int phaseNo){
-        watchDogStatus = Result.RUNNING;
-        logger.info("Thread started.");
-        logger.info("Running on " + javaRuntime.availableProcessors() + " CPU(s)"
-            + " max available memory for JVM " + javaRuntime.freeMemory() / 1024 + " KB");
-        // renice - lower the priority
-        currentPhaseNum=-1;
-        
-        printTracking=new PrintTracking(true);
-        Thread trackingThread=new Thread(printTracking, TRACKING_LOGGER_NAME);
-        trackingThread.setPriority(Thread.MIN_PRIORITY);
-        trackingThread.start();
-        
-        for (int i = 0; i < phases.length; i++) {
-            if (phases[i].getPhaseNum()==phaseNo){
-                currentPhaseNum=i;
-                break;
-            }
-        }
-        if (currentPhaseNum>=0){
-            switch( executePhase(phases[currentPhaseNum]) ) {
-            case ABORTED:
-                watchDogStatus = Result.ABORTED;
-                logger.error("!!! Phase execution aborted !!!");
-                return;
-            case ERROR:
-                watchDogStatus = Result.ERROR;
-                logger.error("!!! Phase finished with error - stopping graph run !!!");
-                return;
-            }
-        }else{
-            watchDogStatus = Result.ERROR;
-            logger.error("!!! No such phase: "+phaseNo);
-            return;
-        }
-        
-        logger.info("Forcing garbage collection ...");
-        javaRuntime.runFinalization();
-        javaRuntime.gc();
-        
-        trackingThread.interrupt();
-        
-        watchDogStatus = Result.FINISHED_OK;
-        printPhasesSummary();
-    }
+//    public void runPhase(int phaseNo){
+//        watchDogStatus = Result.RUNNING;
+//        logger.info("Thread started.");
+//        logger.info("Running on " + javaRuntime.availableProcessors() + " CPU(s)"
+//            + " max available memory for JVM " + javaRuntime.freeMemory() / 1024 + " KB");
+//        // renice - lower the priority
+//        currentPhaseNum=-1;
+//        
+//        printTracking=new PrintTracking(true);
+//        Thread trackingThread=new Thread(printTracking, TRACKING_LOGGER_NAME);
+//        trackingThread.setPriority(Thread.MIN_PRIORITY);
+//        trackingThread.start();
+//        
+//        for (int i = 0; i < phases.length; i++) {
+//            if (phases[i].getPhaseNum()==phaseNo){
+//                currentPhaseNum=i;
+//                break;
+//            }
+//        }
+//        if (currentPhaseNum>=0){
+//            switch( executePhase(phases[currentPhaseNum]) ) {
+//            case ABORTED:
+//                watchDogStatus = Result.ABORTED;
+//                logger.error("!!! Phase execution aborted !!!");
+//                return;
+//            case ERROR:
+//                watchDogStatus = Result.ERROR;
+//                logger.error("!!! Phase finished with error - stopping graph run !!!");
+//                return;
+//            }
+//        }else{
+//            watchDogStatus = Result.ERROR;
+//            logger.error("!!! No such phase: "+phaseNo);
+//            return;
+//        }
+//        
+//        logger.info("Forcing garbage collection ...");
+//        javaRuntime.runFinalization();
+//        javaRuntime.gc();
+//        
+//        trackingThread.interrupt();
+//        
+//        watchDogStatus = Result.FINISHED_OK;
+//        printPhasesSummary();
+//    }
 
 	/**
 	 * Execute transformation - start-up all Nodes & watch them running
@@ -383,7 +383,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			while (leafNodesIterator.hasNext()) {
 				Node node = (Node) leafNodesIterator.next();
 				// is this Node still alive - ? doing something
-				if (!node.getNodeThread().isAlive()) {
+				if (!(node.getResultCode() == Result.RUNNING)) {
 					leafNodesIterator.remove();
 				}
 			}
@@ -496,7 +496,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	void printPhasesSummary() {
 		logger.info("-----------------------** Summary of Phases execution **---------------------");
 		logger.info("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
-		for (Phase phase : phases) {
+		for (Phase phase : graph.getPhases()) {
 			Object nodeInfo[] = {new Integer(phase.getPhaseNum()), phase.getResult().message(),
                     phase.getPhaseTracking() != null ? new Integer(phase.getPhaseTracking().getExecTimeSec()) : "",
                     phase.getPhaseTracking() != null ? new Integer(phase.getPhaseTracking().getMemUtilizationKB()) : ""};
@@ -532,11 +532,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	private void startUpNodes(Phase phase) {
 		for(Node node: phase.getNodes().values()) {
-            Thread nodeThread = new Thread(node, node.getId());
-          // this thread is daemon - won't live if main thread ends
-            nodeThread.setDaemon(true);
-            node.setNodeThread(nodeThread);
-			nodeThread.start();
+//            Thread nodeThread = new Thread(node, node.getId());
+//          // this thread is daemon - won't live if main thread ends
+//            nodeThread.setDaemon(true);
+//            node.setNodeThread(nodeThread);
+//			nodeThread.start();
+			getGraphExecutor().executeNode(node);
 			logger.debug(node.getId()+ " ... started");
 		}
 	}
@@ -550,6 +551,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	private Result executePhase(Phase phase) {
 		currentPhase = phase;
+		logger.info("Initialization of phase [" + phase.getPhaseNum() + "]");
+		try {
+			phase.init();
+		} catch (ComponentNotReadyException e) {
+			logger.error("Phase initialization failed with reason: " + e.getMessage(), e);
+			return Result.ERROR;
+		}
 		logger.info("Starting up all nodes in phase [" + phase.getPhaseNum() + "]");
 		startUpNodes(phase);
 		logger.info("Sucessfully started all nodes in phase!");
