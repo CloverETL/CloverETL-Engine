@@ -504,12 +504,15 @@ public class DataIntersection extends Node {
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
+
+        //port number checking
+        if(!checkInputPorts(status, 2, 2)
+        		|| !checkOutputPorts(status, 3, 3)) {
+        	return status;
+        }
         
         DataRecordMetadata driverMetadata = getInputPort(DRIVER_ON_PORT).getMetadata();
         DataRecordMetadata slaveMetadata = getInputPort(SLAVE_ON_PORT).getMetadata();
-        //port number checking
-        checkInputPorts(status, 2, 2);
-        checkOutputPorts(status, 3, 3);
         //compiliance of input and output metadata checking
 		checkMetadata(status, driverMetadata, getOutputPort(WRITE_TO_PORT_A).getMetadata());
 		checkMetadata(status, slaveMetadata, getOutputPort(WRITE_TO_PORT_B).getMetadata());

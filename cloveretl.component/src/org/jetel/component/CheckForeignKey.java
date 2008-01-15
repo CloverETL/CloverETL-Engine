@@ -339,12 +339,15 @@ import org.w3c.dom.Element;
         @Override
         public ConfigurationStatus checkConfig(ConfigurationStatus status) {
             super.checkConfig(status);
-            
+
+    		if(!checkInputPorts(status, 2, 2)
+    				|| !checkOutputPorts(status, 1, 2)) {
+    			return status;
+    		}
+
     		DataRecordMetadata primaryMetadata = getInputPort(PRIMARY_ON_PORT).getMetadata();
     		DataRecordMetadata foreignMetadata = getInputPort(FOREIGN_ON_PORT).getMetadata();
 
-    		checkInputPorts(status, 2, 2);
-            checkOutputPorts(status, 1, 2);
         	checkMetadata(status, foreignMetadata, getOutMetadata());
 
         	primaryKey = new RecordKey(primaryKeys, primaryMetadata);

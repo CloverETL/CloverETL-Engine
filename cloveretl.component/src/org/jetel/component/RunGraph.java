@@ -646,8 +646,10 @@ public class RunGraph extends Node{
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
    		super.checkConfig(status);
 		 
-		checkInputPorts(status, 0, 1);
-        checkOutputPorts(status, 0, 2);               
+		if(!checkInputPorts(status, 0, 1)
+				|| !checkOutputPorts(status, 0, 2)) {
+			return status;
+		}
         
         DataRecordMetadata inMetadata=null;
         

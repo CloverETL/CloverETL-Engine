@@ -1103,8 +1103,10 @@ public class DBOutputTable extends Node {
      public ConfigurationStatus checkConfig(ConfigurationStatus status) {
          super.checkConfig(status);
          
-         checkInputPorts(status, 1, 1);
-         checkOutputPorts(status, 0, 2);
+         if(!checkInputPorts(status, 1, 1)
+        		 || !checkOutputPorts(status, 0, 2)) {
+        	 return status;
+         }
 
     	 boolean isQueryNull = sqlQuery == null;
          try {

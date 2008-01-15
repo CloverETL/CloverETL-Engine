@@ -370,8 +370,10 @@ public class DataReader extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        checkInputPorts(status, 0, 0);
-        checkOutputPorts(status, 1, 2);
+        if(!checkInputPorts(status, 0, 0)
+        		|| !checkOutputPorts(status, 1, 2)) {
+        	return status;
+        }
 
         try {
             init();

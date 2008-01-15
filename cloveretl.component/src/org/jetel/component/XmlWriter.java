@@ -832,8 +832,14 @@ public class XmlWriter extends Node {
 	 */
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
-		checkInputPorts(status, 1, Integer.MAX_VALUE);
-        checkOutputPorts(status, 0, 0);
+		
+		if(!checkInputPorts(status, 1, Integer.MAX_VALUE)
+				|| !checkOutputPorts(status, 0, 0)) {
+			return status;
+		}
+		
+		//...
+		
         return status;
 	}
 

@@ -814,8 +814,11 @@ public class AproxMergeJoin extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        checkInputPorts(status, 2, 2);
-        checkOutputPorts(status, 2, 4);
+        if(!checkInputPorts(status, 2, 2)
+        		|| !checkOutputPorts(status, 2, 4)) {
+        	return status;
+        }
+        
 		if (getOutputPort(NOT_MATCH_DRIVER_OUT) != null) {
 			checkMetadata(status, getInputPort(DRIVER_ON_PORT).getMetadata(),
 					getOutputPort(NOT_MATCH_DRIVER_OUT).getMetadata());

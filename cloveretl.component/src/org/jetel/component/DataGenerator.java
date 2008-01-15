@@ -194,8 +194,11 @@ public class DataGenerator extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
   		 
-		checkInputPorts(status, 0, 0);
-        checkOutputPorts(status, 1, Integer.MAX_VALUE);
+		if(!checkInputPorts(status, 0, 0)
+				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+			return status;
+		}
+		
         checkMetadata(status, getOutMetadata());
         
         //check if on all output ports are the same metadata

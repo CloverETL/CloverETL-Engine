@@ -321,8 +321,11 @@ public class LookupJoin extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        checkInputPorts(status, 1, 1);
-        checkOutputPorts(status, 1, 2);
+        if(!checkInputPorts(status, 1, 1)
+        		|| !checkOutputPorts(status, 1, 2)) {
+        	return status;
+        }
+        
         if (getOutputPort(REJECTED_PORT) != null) {
         	checkMetadata(status, getInputPort(READ_FROM_PORT).getMetadata(), 
         			getOutputPort(REJECTED_PORT).getMetadata());

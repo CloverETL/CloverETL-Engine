@@ -170,8 +170,10 @@ public class SimpleCopy extends Node {
         public ConfigurationStatus checkConfig(ConfigurationStatus status) {
     		super.checkConfig(status);
    		 
-    		checkInputPorts(status, 1, 1);
-            checkOutputPorts(status, 1, Integer.MAX_VALUE);
+    		if(!checkInputPorts(status, 1, 1)
+    				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+    			return status;
+    		}
             checkMetadata(status, getInMetadata(), getOutMetadata());
 
             try {

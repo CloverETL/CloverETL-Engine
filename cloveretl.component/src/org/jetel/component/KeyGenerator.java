@@ -379,8 +379,10 @@ import org.w3c.dom.Element;
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        checkInputPorts(status, 1, 1);
-        checkOutputPorts(status, 1, 1);
+        if(!checkInputPorts(status, 1, 1)
+        		|| !checkOutputPorts(status, 1, 1)) {
+        	return status;
+        }
 
         try {
             init();

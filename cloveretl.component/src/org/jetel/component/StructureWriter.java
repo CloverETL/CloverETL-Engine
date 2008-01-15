@@ -275,8 +275,10 @@ public class StructureWriter extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 		 
-		checkInputPorts(status, 1, 3);
-        checkOutputPorts(status, 0, 0);
+		if(!checkInputPorts(status, 1, 3)
+				|| !checkOutputPorts(status, 0, 0)) {
+			return status;
+		}
 
         try {
         	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 

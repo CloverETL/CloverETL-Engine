@@ -702,8 +702,10 @@ public class HashJoin extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        checkInputPorts(status, 2, Integer.MAX_VALUE);
-        checkOutputPorts(status, 1, 1);
+        if(!checkInputPorts(status, 2, Integer.MAX_VALUE)
+        		|| !checkOutputPorts(status, 1, 1)) {
+        	return status;
+        }
 
         try {
         	
