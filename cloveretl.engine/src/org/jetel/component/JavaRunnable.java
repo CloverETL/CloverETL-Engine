@@ -27,7 +27,7 @@ import org.jetel.graph.TransformationGraph;
 
 /**
  * Interface used by Java Execute component, which needs instance of this interface in order
- * to execute code require by it (by callind <i>run()</i> method).
+ * to execute code require by it (by calling <i>run()</i> method).
  * For most instances, it is good, to extend BasicJavaRunnable.java class and just implement
  * run() method, the class does the rest.
  * 

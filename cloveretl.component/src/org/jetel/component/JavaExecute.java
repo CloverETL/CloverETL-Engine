@@ -32,6 +32,8 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -39,6 +41,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 
@@ -80,7 +83,7 @@ import org.w3c.dom.Element;
 
 public class JavaExecute extends Node {
 
-	public static String COMPONENT_TYPE = "JAVA_EXECUTE";
+	public final static String COMPONENT_TYPE = "JAVA_EXECUTE";
 	
 	private static final String XML_RUNNABLECLASS_ATTRIBUTE = "runnableClass";
 	private static final String XML_RUNNABLE_ATTRIBUTE = "runnable";
@@ -110,12 +113,13 @@ public class JavaExecute extends Node {
 	 * @param node			Reference to actual node, from where factory method is called  
 	 * @param runnableParameters	Properties, which should be passed to a class
 	 * @param classLoader	Reference to classLoader to be used
+	 * @param doInit 		Set to true to call init of Runnable instnace created
 	 * @return		Instance of JavaRunnable class
 	 * @throws ComponentNotReadyException
 	 */
 	private static JavaRunnable createRunnable(String runnable,
 			String runnableClass, String runnableURL, String charset,
-			Node node, Properties runnableParameters, ClassLoader classLoader) throws ComponentNotReadyException {
+			Node node, Properties runnableParameters, ClassLoader classLoader, boolean doInit) throws ComponentNotReadyException {
 		
 		JavaRunnable codeToRun = null;
 		Log logger = LogFactory.getLog(node.getClass());
@@ -131,15 +135,19 @@ public class JavaExecute extends Node {
         	runnable = FileUtils.getStringFromURL(node.getGraph().getProjectURL(), runnableURL, charset);
         }
         
-        if (runnableClass == null) {        	
-        	DynamicJavaCode dynaRunnableCode = new DynamicJavaCode(runnable, classLoader);
-            codeToRun = JavaExecute.loadClassDynamic(
-                    logger, dynaRunnableCode);	
+        if (runnableClass == null) {
+        	try {
+        		DynamicJavaCode dynaRunnableCode = new DynamicJavaCode(runnable, classLoader);
+        		codeToRun = JavaExecute.loadClassDynamic(
+                    logger, dynaRunnableCode);
+        	} catch (RuntimeException e) {
+        		throw new ComponentNotReadyException(e);
+        	}
         }
         
         codeToRun.setGraph(node.getGraph()); 
         
-        if (!codeToRun.init(runnableParameters)) {
+        if (doInit && !codeToRun.init(runnableParameters)) {
             throw new ComponentNotReadyException("Error when initializing tranformation function !");        
         }
         
@@ -283,12 +291,39 @@ public class JavaExecute extends Node {
 		/* Init Parameters */
 		if (codeToRun != null) {
 			codeToRun.init(runnableParameters);
-		}
+		} else { 
 		
 		/* Create JavaRunnable instance to be executed by code */
 		codeToRun = JavaExecute.createRunnable(runnable, runnableClass, 
-				runnableURL, charset, this,	runnableParameters, this.getClass().getClassLoader());
+				runnableURL, charset, this,	runnableParameters, this.getClass().getClassLoader(), true);
+		}
 		
+	}
+	
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {		
+		super.checkConfig(status);
+		
+		@SuppressWarnings("unused")
+		JavaRunnable testCodeToRun = null;
+				
+		try {
+
+			/* Create JavaRunnable instance to be executed by code */
+			testCodeToRun = JavaExecute.createRunnable(runnable, runnableClass, 
+					runnableURL, charset, this,	runnableParameters, this.getClass().getClassLoader(), false);
+			
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        } finally {
+        	free();
+        } 
+        
+        return status;
 	}
 	
 	@Override
@@ -340,7 +375,10 @@ public class JavaExecute extends Node {
 		try {
 			try {
             	internalProperties = new Properties();
-				internalProperties.load(new ByteArrayInputStream(xattribs.getString(XML_PROPERTIES_ATTRIBUTE,null).getBytes())); 
+            	String stringProperties = xattribs.getString(XML_PROPERTIES_ATTRIBUTE,null);
+            	if (stringProperties != null) {
+            		internalProperties.load(new ByteArrayInputStream(stringProperties.getBytes()));
+            	}
     		} catch (IOException e){
     			throw new RuntimeException("Unexpected IO exception in byte array reading.");
     		}
@@ -372,6 +410,19 @@ public class JavaExecute extends Node {
 
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+	
+	// note: following two methods do nothing explicit as JavaExecute has got no internal state, that needs to
+	//		 be reset or freed.
+	
+	@Override	
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();  
+	}
+	
+	@Override
+	public synchronized void free() {	
+		super.free();
 	}
 
 }
