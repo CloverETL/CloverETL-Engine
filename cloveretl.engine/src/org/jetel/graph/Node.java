@@ -361,6 +361,9 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since    April 2, 2002
 	 */
 	public void run() {
+		//store the current thread like a node executor
+		setNodeThread(Thread.currentThread());
+		
         runResult=Result.RUNNING; // set running result, so we know run() method was started
         try {
             if((runResult = execute()) == Result.ERROR) {
@@ -421,7 +424,7 @@ public abstract class Node extends GraphElement implements Runnable {
         
 		if (runResult==Result.RUNNING){
 			runResult = Result.ABORTED;
-			getNodeThread().interrupt();
+//			getNodeThread().interrupt();
 		}
 	}
 
@@ -429,17 +432,17 @@ public abstract class Node extends GraphElement implements Runnable {
      * @return thread of running node; <b>null</b> if node does not runnig
      */
     public Thread getNodeThread() {
-        if(nodeThread == null) {
-            ThreadGroup defaultThreadGroup = Thread.currentThread().getThreadGroup();
-            Thread[] activeThreads = new Thread[defaultThreadGroup.activeCount() * 2];
-            int numThreads = defaultThreadGroup.enumerate(activeThreads, false);
-            
-            for(int i = 0; i < numThreads; i++) {
-                if(activeThreads[i].getName().equals(getId())) {
-                    nodeThread = activeThreads[i];
-                }
-            }
-        }
+//        if(nodeThread == null) {
+//            ThreadGroup defaultThreadGroup = Thread.currentThread().getThreadGroup();
+//            Thread[] activeThreads = new Thread[defaultThreadGroup.activeCount() * 2];
+//            int numThreads = defaultThreadGroup.enumerate(activeThreads, false);
+//            
+//            for(int i = 0; i < numThreads; i++) {
+//                if(activeThreads[i].getName().equals(getId())) {
+//                    nodeThread = activeThreads[i];
+//                }
+//            }
+//        }
         
         return nodeThread;
     }
@@ -448,7 +451,7 @@ public abstract class Node extends GraphElement implements Runnable {
      * Sets actual thread in which this node current running.
      * @param nodeThread
      */
-    public void setNodeThread(Thread nodeThread) {
+    private void setNodeThread(Thread nodeThread) {
         this.nodeThread = nodeThread;
     }
     
@@ -901,26 +904,44 @@ public abstract class Node extends GraphElement implements Runnable {
         outPortsSize = outPortsArray.length;
     }
     
-    protected ConfigurationStatus checkInputPorts(ConfigurationStatus status, int min, int max) {
+    /**
+     * Checks number of input ports, whether is in the given interval.
+     * @param status
+     * @param min
+     * @param max
+     * @return true if the number of input ports is in the given interval; else false
+     */
+    protected boolean checkInputPorts(ConfigurationStatus status, int min, int max) {
         if(getInPorts().size() < min) {
             status.add(new ConfigurationProblem("At least " + min + " input port must be defined!", Severity.ERROR, this, Priority.NORMAL));
+            return false;
         }
         if(getInPorts().size() > max) {
             status.add(new ConfigurationProblem("At most " + max + " input ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
+            return false;
         }
 
-        return status;
+        return true;
     }
 
-    protected ConfigurationStatus checkOutputPorts(ConfigurationStatus status, int min, int max) {
+    /**
+     * Checks number of output ports, whether is in the given interval.
+     * @param status
+     * @param min
+     * @param max
+     * @return true if the number of output ports is in the given interval; else false
+     */
+    protected boolean checkOutputPorts(ConfigurationStatus status, int min, int max) {
         if(getOutPorts().size() < min) {
             status.add(new ConfigurationProblem("At least " + min + " output port must be defined!", Severity.ERROR, this, Priority.NORMAL));
+            return false;
         }
         if(getOutPorts().size() > max) {
             status.add(new ConfigurationProblem("At most " + max + " output ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
+            return false;
         }
 
-        return status;
+        return true;
     }
     
     /**

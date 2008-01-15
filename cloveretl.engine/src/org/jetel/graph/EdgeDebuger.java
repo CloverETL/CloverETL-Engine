@@ -28,8 +28,9 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class EdgeDebuger {
 
-    private boolean isReadMode;
+    private final boolean isReadMode;
     private DataRecordTape dataTape;
+    private String debugFile;
     
     private int debugMaxRecords; // max number of debugged records; 0 -> infinite
     private int debuggedRecords = 0; // currently number of debugged records
@@ -46,6 +47,7 @@ public class EdgeDebuger {
      */
     public EdgeDebuger(String debugFile, boolean isReadMode) {
         this.isReadMode = isReadMode;
+        this.debugFile = debugFile;
         dataTape = new DataRecordTape(debugFile, !isReadMode, false);
     }
 
@@ -76,6 +78,28 @@ public class EdgeDebuger {
         }
     }
 
+	public void reset() throws ComponentNotReadyException {
+		//TODO DataRecordTape should be able to reset itself
+        //dataTape.reset();
+        dataTape = new DataRecordTape(debugFile, !isReadMode, false);
+        try {
+			dataTape.open();
+		} catch (IOException e) {
+			throw new ComponentNotReadyException("Edge debugging cannot be reseted, IO exception occured.", e);
+		}
+        dataTape.addDataChunk();
+        if(isReadMode) dataTape.rewind();
+
+		
+        if (filter != null) {
+        	filter.reset();
+        }
+        
+        if (sampler != null) {
+        	sampler.reset();
+        }
+	}
+	
     public void writeRecord(DataRecord record) throws IOException {
         if (isReadMode){
             throw new RuntimeException("Error: Mixed read/write operation on DataRecordTape !");
@@ -191,6 +215,10 @@ public class EdgeDebuger {
             tmpRecord.init();
     	}
 	
+    	public void reset() {
+    		//DO NOTHING
+    	}
+    	
 		public boolean check(DataRecord record) {
 			executor.setInputRecords(new DataRecord[] {record});
 			executor.visit(recordFilter, null);
@@ -217,16 +245,21 @@ public class EdgeDebuger {
     private static class Sampler {
     	private Random random;
         private int nextSample;
-        private int sampleAdeptCounter = 0; //currently processes records
+        private int sampleAdeptCounter; //currently processes records
         
         // 3 -> first, second or third record will be chosen as first sample
         private final static int FIRST_SAMPLE_RANGE = 3;
         
     	public Sampler() {
     		random = new Random();
-        	nextSample = random.nextInt(FIRST_SAMPLE_RANGE) + 1;
+    		reset();
     	}
-        
+    	
+    	public void reset() {
+        	nextSample = random.nextInt(FIRST_SAMPLE_RANGE) + 1;
+    		sampleAdeptCounter = 0;
+    	}
+    	
         /**
          * Decides if current record will be chosen as a sample to debug.
          * The more records is debugged the less often this method returns true.

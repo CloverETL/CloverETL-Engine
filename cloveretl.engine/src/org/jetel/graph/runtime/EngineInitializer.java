@@ -38,6 +38,8 @@ import org.jetel.util.string.StringUtils;
  */
 public class EngineInitializer {
 
+	private static boolean alreadyInitialized = false;
+	
     /**
      * Clover.ETL engine initialization. Should be called only once.
      * @param pluginsRootDirectory directory path, where plugins specification is located 
@@ -47,7 +49,11 @@ public class EngineInitializer {
      *        <br>can be null
      */
     public static void initEngine(String pluginsRootDirectory, String logHost) {
-
+    	if(alreadyInitialized) {
+    		//clover engine is already initialized
+    		return;
+    	}
+    	
     	//init logging
     	initLogging(logHost);
     	
@@ -63,7 +69,9 @@ public class EngineInitializer {
 
         //init clover plugins system
         Plugins.init(pluginsRootDirectory);
-      
+        
+        //make a note, engine is already initialized
+        alreadyInitialized = true;
     }
 
     private static void initLogging(String logHost) {

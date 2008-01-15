@@ -196,7 +196,9 @@ public class Phase extends GraphElement implements Comparable {
 	 * @return    Description of the Return Value
 	 */
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //check nodes configuration
+		super.checkConfig(status);
+
+		//check nodes configuration
         for(Node node : nodes.values()) {
             node.checkConfig(status);
         }
