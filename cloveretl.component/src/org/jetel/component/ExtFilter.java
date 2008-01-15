@@ -276,8 +276,11 @@ public class ExtFilter extends org.jetel.graph.Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        checkInputPorts(status, 1, 1);
-        checkOutputPorts(status, 1, 2);
+        if(!checkInputPorts(status, 1, 1)
+        		|| !checkOutputPorts(status, 1, 2)) {
+        	return status;
+        }
+        
         checkMetadata(status, getInMetadata(), getOutMetadata());
 
         try {

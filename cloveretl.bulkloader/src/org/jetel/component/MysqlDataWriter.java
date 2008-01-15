@@ -1127,8 +1127,10 @@ public class MysqlDataWriter extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
-		checkInputPorts(status, 0, 1);
-		checkOutputPorts(status, 0, 1);
+		if(!checkInputPorts(status, 0, 1)
+				|| !checkOutputPorts(status, 0, 1)) {
+			return status;
+		}
 
 		try {
 			init();

@@ -199,8 +199,10 @@ public class XLSWriter extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 		 
-		checkInputPorts(status, 1, 1);
-        checkOutputPorts(status, 0, 0);
+		if(!checkInputPorts(status, 1, 1)
+				|| !checkOutputPorts(status, 0, 0)) {
+			return status;
+		}
 
         try {
         	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 

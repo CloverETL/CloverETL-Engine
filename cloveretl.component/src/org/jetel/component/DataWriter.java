@@ -206,6 +206,40 @@ public class DataWriter extends Node {
         }
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
+
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		
+		// initialize multifile writer based on prepared formatter
+		if (fileURL != null) {
+	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+		} else {
+			if (writableByteChannel == null) {
+		        writableByteChannel = Channels.newChannel(System.out);
+			}
+	        writer = new MultiFileWriter(formatterProvider, new WritableByteChannelIterator(writableByteChannel));
+		}
+        writer.setLogger(logger);
+        writer.setBytesPerFile(bytesPerFile);
+        writer.setRecordsPerFile(recordsPerFile);
+        writer.setAppendData(appendData);
+        writer.setSkip(skip);
+        writer.setNumRecords(numRecords);
+        if (attrPartitionKey != null) {
+            writer.setLookupTable(lookupTable);
+            writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+            writer.setPartitionFileTag(partitionFileTagType);
+        	if (attrPartitionOutFields != null) {
+        		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+        	}
+        }
+        if(outputFieldNames) {
+        	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+        }
+        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+
+	}
 	
 	/**
 	 * Creates and initializes lookup table.
@@ -325,8 +359,10 @@ public class DataWriter extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        checkInputPorts(status, 1, 1);
-        checkOutputPorts(status, 0, 0);
+        if(!checkInputPorts(status, 1, 1)
+        		|| !checkOutputPorts(status, 0, 0)) {
+        	return status;
+        }
 
         try {
         	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 

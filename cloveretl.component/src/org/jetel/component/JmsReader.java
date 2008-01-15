@@ -19,11 +19,6 @@
 */
 package org.jetel.component;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -36,7 +31,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.jms.JmsMsg2DataRecord;
 import org.jetel.connection.JmsConnection;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -44,7 +38,6 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -383,8 +376,10 @@ public class JmsReader extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        checkInputPorts(status, 0, 0);
-        checkOutputPorts(status, 1, Integer.MAX_VALUE);
+        if(!checkInputPorts(status, 0, 0)
+        		|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+        	return status;
+        }
 
 //        try {
         	
