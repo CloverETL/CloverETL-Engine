@@ -24,7 +24,7 @@ import java.util.Arrays;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.SortDataRecordInternal;
+import org.jetel.data.InternalSortDataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -95,7 +95,7 @@ public class Sort extends Node {
 	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
 
-	private SortDataRecordInternal newSorter;
+	private InternalSortDataRecord newSorter;
 	private boolean sortOrderAscending;
 	private String[] sortKeys;
 	private ByteBuffer recordBuffer;
@@ -193,7 +193,7 @@ public class Sort extends Node {
 		// create sorter
 		boolean[] sortOrderings = new boolean[sortKeys.length];
 		Arrays.fill(sortOrderings, sortOrderAscending);
-		newSorter = new SortDataRecordInternal(
+		newSorter = new InternalSortDataRecord(
 		        getInputPort(READ_FROM_PORT).getMetadata(), sortKeys, sortOrderings);
         if (useI18N){
             newSorter.setUseCollator(true);

@@ -49,7 +49,7 @@ import org.jetel.util.MiscUtils;
  *@author     dpavlis
  *@see	      org.jetel.data.RecordKey
  */
-public class SortDataRecordInternal implements ISortDataRecordInternal {
+public class InternalSortDataRecord implements ISortDataRecord {
 
 	private DataRecordCol currentRecordCol;
 	private int currentColSize;
@@ -86,7 +86,7 @@ public class SortDataRecordInternal implements ISortDataRecordInternal {
 	 * @param sortAscending	True if required sort order is Ascending, otherwise False
 	 * @param oneColCapacity	What is the initial capacity of 1 chunk/array of data records
 	 */
-	public SortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, boolean growingBuffer, int oneColCapacity) {
+	public InternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, boolean growingBuffer, int oneColCapacity) {
 		this.metadata = metadata;
         this.numCollections = growingBuffer ? DEFAULT_NUM_COLLECTIONS : 1;
         this.sortOrderings = sortOrderings;
@@ -103,11 +103,11 @@ public class SortDataRecordInternal implements ISortDataRecordInternal {
 	}
 
 
-    public SortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, boolean growingBuffer) {
+    public InternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, boolean growingBuffer) {
     	this(metadata,keyItems, sortOrderings, growingBuffer, DEFAULT_RECORD_COLLECTION_CAPACITY);
     }
 
-	public SortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings){
+	public InternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings){
 		this(metadata,keyItems, sortOrderings, true, DEFAULT_RECORD_COLLECTION_CAPACITY);
 	}
 	
