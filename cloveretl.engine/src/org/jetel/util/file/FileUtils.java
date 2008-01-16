@@ -111,7 +111,7 @@ public class FileUtils {
         try {
             return new URL(contextURL, fileURL, urlStreamHandler);
         } catch(MalformedURLException ex) {
-            return new URL(contextURL, "file:" + fileURL, urlStreamHandler);
+            return getFileURL(contextURL, fileURL);
         }
     }
 
