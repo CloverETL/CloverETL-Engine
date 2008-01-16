@@ -35,10 +35,10 @@ import org.jetel.util.SynchronizeUtils;
  *@see	      org.jetel.data.RecordKey
  */
 
-public class ExtSortDataRecordInternal implements ISortDataRecordInternal {
+public class ExternalSortDataRecord implements ISortDataRecord {
 
 	private boolean doMerge = false;
-	private SortDataRecordInternal sorter;
+	private InternalSortDataRecord sorter;
 	private TapeCarousel tapeCarousel;
 	private boolean carouselInitialized;
 	private int numberOfTapes;
@@ -52,7 +52,7 @@ public class ExtSortDataRecordInternal implements ISortDataRecordInternal {
 	private DataRecord[] sourceRecords;
 	int prevIndex;
 	
-	public ExtSortDataRecordInternal() {
+	public ExternalSortDataRecord() {
 		super();
         carouselInitialized = false;
 	}
@@ -67,7 +67,7 @@ public class ExtSortDataRecordInternal implements ISortDataRecordInternal {
 	 * @param numberOfTapes	Number of tapes to be used
 	 * @param tmpDirs	List of names of temporary directories to be used for external sorting buffer on disk
 	 */
-	public ExtSortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, int internalBufferCapacity,
+	public ExternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, int internalBufferCapacity,
 			int numberOfTapes, String[] tmpDirs) {
 	
 		this.sortKeysNames = keyItems;		
@@ -79,9 +79,9 @@ public class ExtSortDataRecordInternal implements ISortDataRecordInternal {
 		inMetadata = metadata;
 		
 		if (internalBufferCapacity>0){	
-            sorter = new SortDataRecordInternal(metadata, keyItems, sortOrderings, false, internalBufferCapacity);
+            sorter = new InternalSortDataRecord(metadata, keyItems, sortOrderings, false, internalBufferCapacity);
         } else {
-            sorter = new SortDataRecordInternal(metadata, keyItems, sortOrderings, false);
+            sorter = new InternalSortDataRecord(metadata, keyItems, sortOrderings, false);
         }
 		
 		recordBuffer = ByteBuffer

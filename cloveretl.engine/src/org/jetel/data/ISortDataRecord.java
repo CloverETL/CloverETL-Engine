@@ -3,10 +3,29 @@ package org.jetel.data;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public interface ISortDataRecordInternal {
+/**
+ * 
+ * Common interface for sorting - 
+ * 
+ * @author Jakub Lehotsky (jakub.lehotsky@javlinconsulting.cz)
+ *         (c) Javlin Consulting (www.javlinconsulting.cz)
+ *
+ * @since Jan 16, 2008
+ */
+public interface ISortDataRecord {
 
 	/**
-	 *  Stores additional record into internal buffer for sorting
+	 *  Stores additional record into internal buffer for sorting. Implementors are sorters,
+	 *  which can be based on various algorithm. According to this interface, they must hold
+	 *  to this pattern:
+	 *  
+	 *  User calls:
+	 *  get() n-times
+	 *  sort()
+	 *  put() n-times
+	 *  
+	 *  User receives DataRecord items one by one by calling put() in sorted order.  
+	 *  
 	 *
 	 *@param  record  DataRecord to be stored
 	 */
@@ -15,7 +34,7 @@ public interface ISortDataRecordInternal {
 	/**
 	 *  Sorts internal array and flush it to disk, thus reading can start
 	 *  Note: in the case of external sorting, when merge is necessary, other name would be suitable,
-	 *  		it is named sort() to maintain consistency with SortDataRecordInternal
+	 *  		it is named sort() to maintain consistency with InternalSortDataRecord
 	 */
 	public abstract void sort() throws IOException, InterruptedException;
 

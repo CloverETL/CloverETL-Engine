@@ -28,8 +28,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.ExtSortDataRecordInternal;
-import org.jetel.data.ISortDataRecordInternal;
+import org.jetel.data.ExternalSortDataRecord;
+import org.jetel.data.ISortDataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -122,7 +122,7 @@ public class ExtSort extends Node {
 	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
 
-	private ISortDataRecordInternal sorter;
+	private ISortDataRecord sorter;
 //	private SortOrder sortOrderAscending;
 	private boolean[] sortOrderings;
 	private String[] sortKeysNames;    
@@ -233,7 +233,7 @@ public class ExtSort extends Node {
         
 		try {
 			// create sorter
-			sorter = new ExtSortDataRecordInternal(getInputPort(READ_FROM_PORT)
+			sorter = new ExternalSortDataRecord(getInputPort(READ_FROM_PORT)
 					.getMetadata(), sortKeysNames, sortOrderings, internalBufferCapacity, DEFAULT_NUMBER_OF_TAPES, tmpDirs);
 		} catch (Exception e) {
             throw new ComponentNotReadyException(e);
