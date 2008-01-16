@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -95,6 +96,24 @@ public class FileUtils {
         }
     }
 
+    /**
+     * Creates URL object based on specified fileURL string. Handles
+     * situations when <code>fileURL</code> contains only path to file
+     * <i>(without "file:" string)</i>. 
+     * 
+     * @param contextURL context URL for converting relative to absolute path (see TransformationGraph.getProjectURL()) 
+     * @param fileURL   string containing file URL
+     * @param urlStreamHandler   protocol handling
+     * @return  URL object or NULL if object can't be created (due to Malformed URL)
+     * @throws MalformedURLException  
+     */
+    public static URL getFileURL(URL contextURL, String fileURL, URLStreamHandler urlStreamHandler) throws MalformedURLException {
+        try {
+            return new URL(contextURL, fileURL, urlStreamHandler);
+        } catch(MalformedURLException ex) {
+            return new URL(contextURL, "file:" + fileURL, urlStreamHandler);
+        }
+    }
 
 	/**
 	 *  Calculates checksum of specified file.<br>Is suitable for short files (not very much buffered).
