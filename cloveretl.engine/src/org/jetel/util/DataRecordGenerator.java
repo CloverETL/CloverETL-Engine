@@ -91,6 +91,9 @@ public class DataRecordGenerator implements Parser{
 
 	private boolean initialized = false;
 	
+	private DataRecord reusableRecord;
+
+	
 	/**
 	 * 
 	 * @param component: instance of component which uses this recordGenerator; May be null if this generator is used without component.
@@ -132,6 +135,10 @@ public class DataRecordGenerator implements Parser{
         //create and initialize output record
 		DataRecord record = new DataRecord(metadata);
 		record.init();
+		
+		reusableRecord = new DataRecord(metadata);
+		reusableRecord.init();
+
 		//create metadata for pattern record - fields are set from pattern (not random and sequence values)
         DataRecordMetadata cutMetadata = metadata.duplicate();
  
@@ -325,9 +332,7 @@ public class DataRecordGenerator implements Parser{
 	 * Creates and returns new DataRecord according to preset rules. 
 	 */
 	public DataRecord getNext() throws JetelException {
-		DataRecord record = new DataRecord(metadata);
-		record.init();
-		return getNext(record);
+		return getNext(reusableRecord);
 	}
 
 	/**
@@ -560,7 +565,6 @@ public class DataRecordGenerator implements Parser{
 	}
 
 	public IParserExceptionHandler getExceptionHandler() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -575,11 +579,9 @@ public class DataRecordGenerator implements Parser{
 
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
 		// nonsence for this implementation
-		
 	}
 
 	public void setExceptionHandler(IParserExceptionHandler handler) {
-		// TODO Auto-generated method stub
 	}
 
 	public void setReleaseDataSource(boolean releaseInputSource) {
