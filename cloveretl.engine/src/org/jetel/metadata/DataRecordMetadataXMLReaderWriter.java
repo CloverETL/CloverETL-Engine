@@ -150,6 +150,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
     private static final String RECORD_SIZE_ATTR = "recordSize";
     public  static final String RECORD_DELIMITER_ATTR = "recordDelimiter";
 	private static final String DELIMITER_ATTR = "delimiter";
+	private static final String EOF_AS_DELIMITER_ATTR = "eofAsDelimiter";
 	private static final String FORMAT_ATTR = "format";
 	private static final String DEFAULT_ATTR = "default";
 	private static final String LOCALE_ATTR = "locale";
@@ -506,6 +507,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String size = null;
 			String shift = null;
 			String delimiter = null;
+			String eofAsDelimiter = null;
 			String nullable = null;
 			String localeStr = null;
 			String compressed = null;
@@ -528,6 +530,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					shift = itemValue;
 				} else if (itemName.equalsIgnoreCase("delimiter")) {
 					delimiter = itemValue;
+				} else if (itemName.equalsIgnoreCase(this.EOF_AS_DELIMITER_ATTR)) {
+					eofAsDelimiter = itemValue;
 				} else if (itemName.equalsIgnoreCase("format")) {
 					format = itemValue;
 				} else if (itemName.equalsIgnoreCase("default")) {
@@ -599,6 +603,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
                 }
 			}
 			
+            field.setEofAsDelimiter( Boolean.valueOf( eofAsDelimiter ).booleanValue() );
 			// set properties
 			field.setFieldProperties(fieldProperties);
 
