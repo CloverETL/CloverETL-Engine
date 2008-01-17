@@ -20,11 +20,10 @@
 package org.jetel.main;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
@@ -32,25 +31,18 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.net.SocketAppender;
-import org.jetel.data.Defaults;
+import org.apache.log4j.PropertyConfigurator;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Result;
-import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.TransformationGraphAnalyzer;
-import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphExecutor;
 import org.jetel.graph.runtime.GraphRuntimeContext;
-import org.jetel.plugin.Plugins;
 import org.jetel.util.JetelVersion;
-import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.protocols.CloverURLStreamHandlerFactory;
 
 /*
  *  - runGraph.main()
@@ -86,6 +78,8 @@ import org.jetel.util.protocols.CloverURLStreamHandlerFactory;
  *  <tr><td nowrap>-v</td><td>be verbose - print even graph layout</td></tr>
  *  <tr><td nowrap>-P:<i>properyName</i>=<i>propertyValue</i></td><td>add definition of property to global graph's property list</td></tr>
  *  <tr><td nowrap>-cfg <i>filename</i></td><td>load definitions of properties from specified file</td></tr>
+ *  <tr><td nowrap>-logcfg <i>filename</i></td><td>load log4j properties from specified file; if not specified, \"log4j.properties\" should be in classpath</td></tr>
+ *  <tr><td nowrap>-loglevel <i>ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF</i></td><td>overrides log4j configuration and sets specified logging level for rootLogger</td></tr>
  *  <tr><td nowrap>-tracking <i>seconds</i></td><td>how frequently output the processing status</td></tr>
  *  <tr><td nowrap>-info</td><td>print info about Clover library version</td></tr>
  *  <tr><td nowrap>-plugins <i>filename</i></td><td>directory where to look for plugins/components</td></tr>
@@ -108,6 +102,8 @@ public class runGraph {
 	private final static String RUN_GRAPH_VERSION = JetelVersion.MAJOR_VERSION+"."+JetelVersion.MINOR_VERSION;
 	public final static String VERBOSE_SWITCH = "-v";
 	public final static String PROPERTY_FILE_SWITCH = "-cfg";
+	public final static String LOG4J_PROPERTY_FILE_SWITCH = "-logcfg";
+	public final static String LOG4J_LOG_LEVEL_SWITCH = "-loglevel";
 	public final static String PROPERTY_DEFINITION_SWITCH = "-P:";
 	public final static String TRACKING_INTERVAL_SWITCH = "-tracking";
 	public final static String INFO_SWITCH = "-info";
@@ -143,6 +139,11 @@ public class runGraph {
                 + JetelVersion.LIBRARY_BUILD_DATETIME);
         System.out.println();
 
+
+        Logger.getLogger(runGraph.class); // make log4j to init itself
+        String log4jPropertiesFile = null;
+        Level logLevel = null;
+        
         // process command line arguments
         for (int i = 0; i < args.length; i++) {
             if (args[i].startsWith(VERBOSE_SWITCH)) {
@@ -159,6 +160,18 @@ public class runGraph {
                     logger.error(ex.getMessage(), ex);
                     System.exit(-1);
                 }
+            } else if (args[i].startsWith(LOG4J_PROPERTY_FILE_SWITCH)) {
+                i++;
+                log4jPropertiesFile = args[i];
+                File test = new File(log4jPropertiesFile);
+                if (!test.canRead()){
+                    System.err.println("Cannot read file: \"" + log4jPropertiesFile + "\"");
+                    System.exit(-1);
+                }
+            } else if (args[i].startsWith(LOG4J_LOG_LEVEL_SWITCH)){
+                i++;
+                String logLevelString = args[i];
+                logLevel = Level.toLevel(logLevelString, Level.DEBUG);
             } else if (args[i].startsWith(PROPERTY_DEFINITION_SWITCH)) {
                 // String[]
                 // nameValue=args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"").split("=");
@@ -207,6 +220,22 @@ public class runGraph {
             printHelp();
             System.exit(-1);
         }
+
+        if (log4jPropertiesFile != null){
+        	PropertyConfigurator.configure( log4jPropertiesFile );
+        } else {
+        	/*
+        	String wdFile = "./log4j.properties";
+        	File f = new File(wdFile);
+        	if (f.canRead())
+            	PropertyConfigurator.configure( wdFile );
+        	else
+        		BasicConfigurator.configure();
+        		*/
+        }
+        
+        if (logLevel != null)
+        	Logger.getRootLogger().setLevel(logLevel);
 
         // engine initialization - should be called only once
         EngineInitializer.initEngine(pluginsRootDirectory, logHost);
@@ -296,11 +325,13 @@ public class runGraph {
     
     
 	private static void printHelp() {
-		System.out.println("Usage: runGraph [-(v|cfg|P:|tracking|info|plugins|pass)] <graph definition file>");
+		System.out.println("Usage: runGraph [-(v|cfg|logcfg|loglevel|P:|tracking|info|plugins|pass)] <graph definition file>");
 		System.out.println("Options:");
 		System.out.println("-v\t\t\tbe verbose - print even graph layout");
 		System.out.println("-P:<key>=<value>\tadd definition of property to global graph's property list");
 		System.out.println("-cfg <filename>\t\tload definitions of properties from specified file");
+		System.out.println("-logcfg <filename>\tload log4j configuration from specified file; \n\t\t\tif not specified, \"log4j.properties\" should be in classpath");
+		System.out.println("-loglevel <level>\toverrides log4j configuration and sets specified logging level for rootLogger; \n\t\t\tpossible levels are: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF");
 		System.out.println("-tracking <seconds>\thow frequently output the graph processing status");
 		System.out.println("-info\t\t\tprint info about Clover library version");
         System.out.println("-plugins\t\tdirectory where to look for plugins/components");
