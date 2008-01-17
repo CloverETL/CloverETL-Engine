@@ -3,7 +3,7 @@
 <Global>
 <Metadata id="Metadata0">
 <Record name="Customer" recordSize="-1" type="delimited">
-<Field delimiter="#" name="xml" nullable="true" shift="0" type="string"/>
+<Field delimiter="#" eofAsDelimiter="true" name="xml" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
 <Metadata fileURL="metadata/delimited/customers.fmt" id="Metadata1"/>
@@ -52,8 +52,8 @@ public class reformatOrders extends DataRecordTransform{
 
 	public boolean init() throws ComponentNotReadyException {
 		String mapping = 
-	              " <Context xpath=\\"/records/customer\\" outPort=\\"0\\"> " + 
-	              " <Context xpath=\\"/records/customer/order\\" outPort=\\"1\\" /> " +
+	              " <Context xpath=\"/records/customer\" outPort=\"0\"> " + 
+	              " <Context xpath=\"/records/customer/order\" outPort=\"1\" /> " +
 	          	  " </Context> ";
 		
 		try {
