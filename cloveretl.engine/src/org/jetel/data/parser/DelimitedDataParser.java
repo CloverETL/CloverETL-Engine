@@ -75,6 +75,7 @@ public class DelimitedDataParser implements Parser {
 	private CharsetDecoder decoder;
 	private int recordCounter;
 	private char[][] delimiters;
+	private boolean[] eofAsDelimiters;
 	private char[] fieldTypes;
 	private boolean[] isAutoFilling;
 	private boolean isEof;
@@ -83,6 +84,8 @@ public class DelimitedDataParser implements Parser {
 	// Attributes
 	// maximum length of delimiter
 	private final static int DELIMITER_CANDIDATE_BUFFER_LENGTH = 32;
+
+	//private static final String EOF_DELIMITER = "EOF";
 	
 	private QuotingDecoder qdecoder;
 	
@@ -192,11 +195,13 @@ public class DelimitedDataParser implements Parser {
 
 		// create array of delimiters & initialize them
 		delimiters = new char[metadata.getNumFields()][];
+		eofAsDelimiters = new boolean[metadata.getNumFields()];
 		fieldTypes = new char[metadata.getNumFields()];
 		isAutoFilling = new boolean[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			fieldMetadata = metadata.getField(i);
 			delimiters[i] = fieldMetadata.getDelimiter().toCharArray();
+			eofAsDelimiters[i] = fieldMetadata.isEofAsDelimiter();
 			fieldTypes[i] = fieldMetadata.getType();
 			isAutoFilling[i] = fieldMetadata.getAutoFilling() != null;
 			// we handle only one character delimiters
@@ -370,6 +375,7 @@ public class DelimitedDataParser implements Parser {
 			fieldStringBuffer.clear();
 			character = 0;
 			isWithinQuotes=false;
+			boolean eofDelimiter = false;
 			// read data till we reach delimiter, end of file or exceed buffer size
 			// exceeded buffer is indicated by BufferOverflowException
 			charCounter = 0;
@@ -423,14 +429,20 @@ public class DelimitedDataParser implements Parser {
 						delimiterPosition++;
 					}
 					charCounter++;
-				}
+				}// while
 				if ((character == -1) && (totalCharCounter > 1)) {
-					//- incomplete record - do something
-					BadDataFormatException exception = new BadDataFormatException("Incomplete record");
-					exception.setRecordNumber(recordCounter);
-					exception.setFieldNumber(fieldCounter);
-					throw exception;
-				}
+					// EOF
+					// is EOF delimiter specified for this field?
+					if (eofAsDelimiters[fieldCounter]){
+						eofDelimiter = true;
+					} else {
+						//- incomplete record - do something
+						BadDataFormatException exception = new BadDataFormatException("Incomplete record");
+						exception.setRecordNumber(recordCounter);
+						exception.setFieldNumber(fieldCounter);
+						throw exception;
+					}
+				}// if
 			} catch (BadDataFormatException ex) {
                 throw ex;
 			} catch (Exception ex) {
@@ -446,7 +458,9 @@ public class DelimitedDataParser implements Parser {
 					e.printStackTrace();
 					throw new JetelException(e.getMessage());
 				}
-				return false;
+				// if not eofDelimiter, then skip this record 
+				if (!eofDelimiter)
+					return false;
 			}
 
 			// set field's value
