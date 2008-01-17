@@ -58,6 +58,11 @@ public class DataFieldMetadata implements Serializable {
 	 */
 	private String delimiter = null;
 	/**
+	 * If this switch is set to true, eof works as delimiter for this field.
+	 * It's usefull for last field in the record.
+	 */
+	private boolean eofAsDelimiter = false;
+	/**
 	 *  Format of Number, Date, DateTime, String(regExp) or empty if not applicable
 	 */
 	private String formatStr;
@@ -266,6 +271,7 @@ public class DataFieldMetadata implements Serializable {
 
 		ret.setName(getName());
 	    ret.setDelimiter(getDelimiter());
+		ret.setEofAsDelimiter(this.isEofAsDelimiter());
 	    ret.setFormatStr(getFormatStr());
 	    ret.setShift(getShift());
 	    ret.setSize(getSize());
@@ -918,6 +924,16 @@ public class DataFieldMetadata implements Serializable {
 			return false;
 		}
 		return TIME_ONLY_PATTERN.matcher(getFormatStr()).find();
+	}
+
+
+	public boolean isEofAsDelimiter() {
+		return eofAsDelimiter;
+	}
+
+
+	public void setEofAsDelimiter(boolean eofAsDelimiter) {
+		this.eofAsDelimiter = eofAsDelimiter;
 	}
 	
 }
