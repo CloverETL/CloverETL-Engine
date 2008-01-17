@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Mon Mar 05 11:32:38 CET 2007" description="This graph shows usage of DBJoin component: data are read from flat file and joined with the records from database due to conforming key field (lname in records read from file, last_name in records read from database)." guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Tue May 22 09:56:18 CEST 2007" name="graphDBJoin" revision="1.2">
+<Graph created="Mon Mar 05 11:32:38 CET 2007" description="This graph shows usage of DBJoin component: data are read from flat file and joined with the records from database due to conforming key field (lname in records read from file, last_name in records read from database)." guiVersion="1.8" id="1197027195231" licenseType="Evaluation license." modified="Thu Jan 17 10:25:24 CET 2008" name="graphDBJoin" revision="1.10">
 <Global>
 <Metadata id="Metadata0">
-<Record name="customer" recordDelimiter="" recordSize="213" type="fixed">
+<Record name="customer" recordDelimiter="\n" recordSize="212" type="fixed">
 <Field name="customer_id" nullable="true" shift="0" size="4" type="integer"/>
 <Field name="account_num" nullable="true" shift="0" size="11" type="long"/>
 <Field name="lname" nullable="true" shift="0" size="10" type="string"/>
@@ -28,7 +28,6 @@
 <Field name="occupation" nullable="true" shift="0" size="20" type="string"/>
 <Field name="houseowner" nullable="true" shift="0" size="1" type="string"/>
 <Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
-<Field locale="en" name="Field28" nullable="true" shift="0" size="1" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata1">
@@ -67,10 +66,10 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/fixlen/customers0.dat" guiHeight="66" guiName="Universal Data Reader" guiWidth="117" guiX="55" guiY="79" id="DATA_READER0" quotedStrings="false" type="DATA_READER"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${WORKSPACE}/data/fixlen/customers0.dat" guiHeight="66" guiName="Universal Data Reader" guiWidth="117" guiX="55" guiY="79" id="DATA_READER0" quotedStrings="false" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${WORKSPACE}/output/joined.txt" guiHeight="68" guiName="Universal Data Writer" guiWidth="127" guiX="469" guiY="79" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="62" guiName="DBJoin" guiWidth="122" guiX="260" guiY="79" id="DBJOIN0" joinKey="lname" sqlQuery="select * from employee where last_name=?" transformClass="TransformForDBjoin" type="DBJOIN"/>
-<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="0 (DBJoin)" metadata="Metadata0" outPort="0 (Universal Data Reader)" toNode="DBJOIN0:0"/>
-<Edge fromNode="DBJOIN0:0" guiBendpoints="" id="Edge1" inPort="0 (Universal Data Writer)" metadata="Metadata2" outPort="0 (DBJoin)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DBJOIN0:0"/>
+<Edge fromNode="DBJOIN0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
