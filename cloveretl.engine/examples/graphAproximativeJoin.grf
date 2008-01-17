@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Tue Oct 24 13:04:40 CEST 2006" description="This graph ilustrates usage of Aproximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator creates it) &#10;and be sorted by this key." guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Mon Mar 05 14:37:22 CET 2007" name="graphFixedLengthData" revision="1.9">
+<Graph created="Tue Oct 24 13:04:40 CEST 2006" description="This graph ilustrates usage of Aproximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator creates it) &#10;and be sorted by this key." guiVersion="1.8" id="1200561503662" licenseType="Evaluation license." modified="Thu Jan 17 10:18:23 CET 2008" name="graphFixedLengthData" revision="1.10">
 <Global>
 <Metadata id="Metadata4">
 <Record name="conforming_out" recordDelimiter="\n" recordSize="71" type="fixed">
@@ -134,40 +134,40 @@
 </Global>
 <Phase number="0">
 <Node conformity="0.8" enabled="enabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="444" guiY="176" id="APROX_MERGE_JOIN1" joinKey="lname 4 0.5 true false false false;fname 3 0.5 true false false false" matchingKey="key" slaveOverrideKey="last_name;first_name" transformClass="customizedTransformExample" type="APROX_MERGE_JOIN">
-<attr name="transformForSuspicious">${out.0.lname} = ${in.0.lname};
+<attr name="transformForSuspicious"><![CDATA[${out.0.lname} = ${in.0.lname};
 ${out.0.fname} = ${in.0.fname};
 ${out.0.birthdate} = ${in.0.birthdate};
 ${out.0.gender} = ${in.0.gender};
 ${out.0.first_name} = ${in.1.first_name};
 ${out.0.last_name} = ${in.1.last_name};
 ${out.0.birth_date} = ${in.1.birth_date};
-${out.0.gender1} = ${in.1.gender};</attr>
+${out.0.gender1} = ${in.1.gender};]]></attr>
 </Node>
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="7" guiY="259" id="DB_INPUT_TABLE1" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/suspicoius.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="596" guiY="135" id="DELIMITED_DATA_WRITER_NIO0" type="DELIMITED_DATA_WRITER"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/employee.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="596" guiY="303" id="DELIMITED_DATA_WRITER_NIO1" type="DELIMITED_DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="95" guiX="296" guiY="92" id="EXT_SORT0" sortKey="key" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="111" guiX="296" guiY="259" id="EXT_SORT1" sortKey="key" type="EXT_SORT"/>
-<Node byteMode="false" enabled="enabled" fileURL="${WORKSPACE}/data/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="7" guiY="92" id="FIXLEN_DATA_READER_NIO0" type="FIXLEN_DATA_READER">
-<attr name="OneRecordPerLine">true</attr>
+<Node byteMode="false" dataPolicy="controlled" enabled="enabled" fileURL="${WORKSPACE}/data/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="7" guiY="92" id="FIXLEN_DATA_READER_NIO0" type="FIXLEN_DATA_READER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/conforming.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="596" guiY="54" id="FIXLEN_DATA_WRITER_NIO0" type="FIXLEN_DATA_WRITER">
-<attr name="OneRecordPerLine">true</attr>
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/customers.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="596" guiY="215" id="FIXLEN_DATA_WRITER_NIO1" type="FIXLEN_DATA_WRITER">
-<attr name="OneRecordPerLine">true</attr>
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="70" guiName="Key generator" guiWidth="138" guiX="152" guiY="92" id="KEY_GEN0" keyExpression="lname 4;fname 3" type="KEY_GEN"/>
 <Node enabled="enabled" guiHeight="88" guiName="Key generator" guiWidth="145" guiX="152" guiY="259" id="KEY_GEN1" keyExpression="last_name 4;first_name 3" type="KEY_GEN"/>
-<Edge fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge0" inPort="0 (joined - similarity greater then 0.8)" metadata="Metadata4" outPort="0 (aproximative join)" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
-<Edge fromNode="APROX_MERGE_JOIN1:1" guiBendpoints="" id="Edge18" inPort="0 (joined - similarity less then 0.8)" metadata="Metadata5" outPort="1 (aproximative join)" toNode="DELIMITED_DATA_WRITER_NIO0:0"/>
-<Edge fromNode="APROX_MERGE_JOIN1:2" guiBendpoints="" id="Edge19" inPort="0 (customer without pair)" metadata="Metadata2" outPort="2 (aproximative join)" toNode="FIXLEN_DATA_WRITER_NIO1:0"/>
-<Edge fromNode="APROX_MERGE_JOIN1:3" guiBendpoints="" id="Edge20" inPort="0 (employee without pair)" metadata="Metadata3" outPort="3 (aproximative join)" toNode="DELIMITED_DATA_WRITER_NIO1:0"/>
-<Edge fromNode="DB_INPUT_TABLE1:0" guiBendpoints="" id="Edge2" inPort="0 (Key generator)" metadata="Metadata1" outPort="0 (employee)" toNode="KEY_GEN1:0"/>
-<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge6" inPort="0 (aproximative join)" metadata="Metadata2" outPort="0 (Ext Sort)" toNode="APROX_MERGE_JOIN1:0"/>
-<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge7" inPort="1 (aproximative join)" metadata="Metadata3" outPort="0 (Ext Sort)" toNode="APROX_MERGE_JOIN1:1"/>
-<Edge fromNode="FIXLEN_DATA_READER_NIO0:0" guiBendpoints="" id="Edge1" inPort="0 (Key generator)" metadata="Metadata0" outPort="0 (customer)" toNode="KEY_GEN0:0"/>
-<Edge fromNode="KEY_GEN0:0" guiBendpoints="" id="Edge5" inPort="0 (Ext Sort)" metadata="Metadata2" outPort="0 (Key generator)" toNode="EXT_SORT0:0"/>
-<Edge fromNode="KEY_GEN1:0" guiBendpoints="" id="Edge4" inPort="0 (Ext Sort)" metadata="Metadata3" outPort="0 (Key generator)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
+<Edge fromNode="APROX_MERGE_JOIN1:1" guiBendpoints="" id="Edge18" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" toNode="DELIMITED_DATA_WRITER_NIO0:0"/>
+<Edge fromNode="APROX_MERGE_JOIN1:2" guiBendpoints="" id="Edge19" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" toNode="FIXLEN_DATA_WRITER_NIO1:0"/>
+<Edge fromNode="APROX_MERGE_JOIN1:3" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" toNode="DELIMITED_DATA_WRITER_NIO1:0"/>
+<Edge fromNode="DB_INPUT_TABLE1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="KEY_GEN1:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN1:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge7" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN1:1"/>
+<Edge fromNode="FIXLEN_DATA_READER_NIO0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="KEY_GEN0:0"/>
+<Edge fromNode="KEY_GEN0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge fromNode="KEY_GEN1:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
 </Phase>
 </Graph>
