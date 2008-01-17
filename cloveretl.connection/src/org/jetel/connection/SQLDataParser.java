@@ -24,11 +24,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -276,15 +277,15 @@ public class SQLDataParser implements Parser {
             logger.warn(e);
         }
         
-        logger.debug("Time: "
-                + (new SimpleDateFormat("HH:mm:ss.SSS")).
-                format(Calendar.getInstance().getTime()) + " - Sending query " + 
-                StringUtils.quote(sqlQuery));
+        logger.debug( "Sending query " + StringUtils.quote(sqlQuery));
+        long startTime = System.currentTimeMillis();
         try{
             resultSet = statement.executeQuery(sqlQuery);
-            logger.debug("Time: "
-                    + (new SimpleDateFormat("HH:mm:ss.SSS")).
-                    format(Calendar.getInstance().getTime()) + " - Query executed succesfuly");
+            long executionTime = System.currentTimeMillis() - startTime;
+            SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
+            formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+            logger.debug("Query execution time: " + 
+            		formatter.format(new Date(executionTime)));
         } catch (SQLException e) {
             logger.debug(e);
             throw new ComponentNotReadyException(e);
