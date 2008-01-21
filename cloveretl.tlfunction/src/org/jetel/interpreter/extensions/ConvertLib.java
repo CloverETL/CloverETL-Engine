@@ -23,18 +23,24 @@
  */
 package org.jetel.interpreter.extensions;
 
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
+import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLDateValue;
 import org.jetel.interpreter.data.TLNullValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.interpreter.extensions.DateLib.CalendarStore;
+import org.jetel.interpreter.extensions.StringLib.DateFormatStore;
+import org.jetel.interpreter.extensions.StringLib.Function;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 
 public class ConvertLib extends TLFunctionLibrary {
@@ -192,40 +198,96 @@ public class ConvertLib extends TLFunctionLibrary {
         
         class Str2DateContext {
             TLValue value;
-            SimpleDateFormat format;
+       	 SimpleDateFormat formatter;
+    	 ParsePosition position;
+    	 String locale;
+    	 
+    	 public void init(String locale, String pattern){
+    		 formatter = (SimpleDateFormat)MiscUtils.createFormatter(DataFieldMetadata.DATE_FIELD, 
+    				 locale, pattern);
+    		 this.locale = locale;
+    		 position = new ParsePosition(0);
+    	 }
+    	 
+    	 public void reset(String newLocale, String newPattern) {
+			if (!newLocale.equals(locale)) {
+				formatter = (SimpleDateFormat) MiscUtils.createFormatter(
+						DataFieldMetadata.DATE_FIELD, newLocale, newPattern);
+				this.locale = newLocale;
+			}
+			resetPattern(newPattern);
+		}
+    	 
+    	 public void resetPattern(String newPattern) {
+			if (!newPattern.equals(formatter.toPattern())) {
+				formatter.applyPattern(newPattern);
+			}
+			position.setIndex(0);
+		}
+    	 
+    	 public void setLenient(boolean lenient){
+    		 formatter.setLenient(lenient);
+    	 }
         }
         
 
         public Str2DateFunction() {
-            super("string", "str2date", new TLValueType[] { TLValueType.STRING, TLValueType.STRING }, 
-                    TLValueType.DATE);
+            super("string", "str2date", new TLValueType[] { TLValueType.STRING, TLValueType.STRING, TLValueType.OBJECT, TLValueType.STRING }, 
+                    TLValueType.DATE, 4, 2);
         }
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
-            TLValue val = ((Str2DateContext)context.getContext()).value;
-            SimpleDateFormat format=((Str2DateContext)context.getContext()).format;
-            
-            
+        	Str2DateContext c = (Str2DateContext)context.getContext();
+            TLValue val = c.value;
+
             if (params[0]==TLValue.NULL_VAL || params[1]==TLValue.NULL_VAL) {
                 throw new TransformLangExecutorRuntimeException(params,
                         Function.STR2DATE.name()+" - NULL value not allowed");
             }
-            
-            if (params[0].type!=TLValueType.STRING || params[1].type!=TLValueType.STRING)
+            if (!(params[0].type == TLValueType.STRING && params[1].type == TLValueType.STRING)){
                 throw new TransformLangExecutorRuntimeException(params,
-                        Function.STR2DATE.name()+" - wrong type of literal");
-
-            format.applyPattern(params[1].toString());
-            try {
-                if (params[0].toString().length() != 0) {
-					((TLDateValue) val).getDate().setTime(format.parse(params[0].toString()).getTime());
-				}else{
-					return TLValue.NULL_VAL;
-				}
-            }catch (java.text.ParseException ex) {
+                		Function.STR2DATE.name()+" - wrong type of literal");
+            }
+            if (params.length == 3 && !(params[2].type == TLValueType.STRING || params[2].type == TLValueType.BOOLEAN)){
                 throw new TransformLangExecutorRuntimeException(params,
-                        Function.STR2DATE.name()+" - can't convert \"" + params[0] + "\" using format "+format.toPattern());
+                		Function.STR2DATE.name()+" - wrong type of literal");
+           }
+            if (params.length == 4 && !(params[3].type == TLValueType.BOOLEAN)){
+                throw new TransformLangExecutorRuntimeException(params,
+                		Function.STR2DATE.name()+" - wrong type of literal");
+            }
+            if (params[0].toString().length() == 0){
+            	return TLValue.NULL_VAL;
+            }else{
+                String pattern = params[1].toString();
+                String locale = params.length > 2 && params[2].type == TLValueType.STRING ? 
+                		params[2].toString() : null;
+                Boolean lenient = null;
+                if (params.length == 3 && params[2].type == TLValueType.BOOLEAN){
+                	lenient = ((TLBooleanValue)params[2]).getBoolean();
+                }else if (params.length == 4) {
+                	lenient = ((TLBooleanValue)params[2]).getBoolean();
+                }
+                if (c.formatter == null){
+                	c.init(locale, pattern);
+                }else if (locale != null) {
+                	c.reset(locale, pattern);
+                }else{
+                	c.resetPattern(pattern);
+                }
+                if (lenient != null){
+                	c.setLenient(lenient);
+                }else{
+                	c.setLenient(true);
+                }
+                Date result = c.formatter.parse(params[0].toString(), c.position);
+                if (c.position.getIndex() != 0) {
+                	((TLDateValue) val).getDate().setTime(result.getTime());
+                }else{
+                    throw new TransformLangExecutorRuntimeException(params,
+                            Function.STR2DATE.name()+" - can't convert \"" + params[0] + "\" using format "+c.formatter.toPattern());
+                }
             }
             
             return val;
@@ -235,7 +297,6 @@ public class ConvertLib extends TLFunctionLibrary {
         public TLContext createContext() {
             Str2DateContext con=new Str2DateContext();
             con.value=TLValue.create(TLValueType.DATE);
-            con.format=new SimpleDateFormat();
 
             TLContext<Str2DateContext> context=new TLContext<Str2DateContext>();
             context.setContext(con);
