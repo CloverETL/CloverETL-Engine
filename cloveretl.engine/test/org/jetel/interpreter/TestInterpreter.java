@@ -1871,15 +1871,18 @@ public class TestInterpreter extends TestCase {
         		"boolean isInteger2=is_integer('8982.8992');\n" +
         		"boolean isInteger3=is_integer('-766542378');print_err(str2num('-766542378'));\n" +
         		"boolean isLong=is_long('7864232568822234');\n" +
-        		"boolean isDate5=is_date('20Jul2000','ddMMMyyyy');print_err(str2date('20Jul2000','ddMMMyyyy'));\n" +
-        		"boolean isDate6=is_date('20July    2000','ddMMMMMMMMyyyy');print_err(str2date('20July    2000','ddMMMyyyy'));\n" +
+        		"boolean isDate5=is_date('20Jul2000','ddMMMyyyy','en.GB');print_err(str2date('20Jul2000','ddMMMyyyy','en.GB'));\n" +
+        		"boolean isDate6=is_date('20July    2000','ddMMMMMMMMyyyy','en.GB');print_err(str2date('20July    2000','ddMMMyyyy','en.GB'));\n" +
         		"boolean isDate3=is_date('4:42','HH:mm');print_err(str2date('4:42','HH:mm'));\n" +
         		"boolean isDate=is_date('20.11.2007','dd.MM.yyyy');print_err(str2date('20.11.2007','dd.MM.yyyy'));\n" +
         		"boolean isDate1=is_date('20.11.2007','dd-MM-yyyy');\n" +
         		"boolean isDate2=is_date('24:00 20.11.2007','HH:mm dd.MM.yyyy');print_err(str2date('24:00 20.11.2007','HH:mm dd.MM.yyyy'));\n" +
         		"boolean isDate4=is_date('test 20.11.2007','hhmm dd.MM.yyyy');\n" +
         		"boolean isDate7=is_date('','HH:mm dd.MM.yyyy');print_err(str2date('','HH:mm dd.MM.yyyy'));\n" +
-        		"boolean isDate8=is_date('                ','HH:mm dd.MM.yyyy');\n";
+        		"boolean isDate8=is_date('                ','HH:mm dd.MM.yyyy');\n"+
+        		"boolean isDate9=is_date('20-15-2007','dd-MM-yyyy');print_err(str2date('20-15-2007','dd-MM-yyyy'));\n" +
+        		"boolean isDate10=is_date('20-15-2007','dd-MM-yyyy',false);\n" +
+        		"boolean isDate11=is_date('20-15-2007','dd-MM-yyyy',true);\n";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
@@ -1929,6 +1932,9 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate6")).getTLValue()==TLValue.TRUE_VAL));
 		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate7")).getTLValue()==TLValue.TRUE_VAL));
 		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate8")).getTLValue()==TLValue.TRUE_VAL));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate9")).getTLValue()==TLValue.TRUE_VAL));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate10")).getTLValue()==TLValue.TRUE_VAL));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate11")).getTLValue()==TLValue.TRUE_VAL));
 
         } catch (ParseException e) {
             System.err.println(e.getMessage());

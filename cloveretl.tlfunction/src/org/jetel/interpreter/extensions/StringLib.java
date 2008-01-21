@@ -23,6 +23,8 @@
  */
 package org.jetel.interpreter.extensions;
 
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -32,13 +34,15 @@ import java.util.regex.Pattern;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.interpreter.Stack;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
+import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLListValue;
 import org.jetel.interpreter.data.TLMapValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
-import org.jetel.util.DateUtils;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.string.Compare;
 import org.jetel.util.string.StringUtils;
 
@@ -807,8 +811,8 @@ public class StringLib extends TLFunctionLibrary {
      class IsDateFunction extends TLFunctionPrototype {
 
             public IsDateFunction() {
-                super("string", "is_date", new TLValueType[] { TLValueType.STRING, TLValueType.STRING }, 
-                		TLValueType.BOOLEAN);
+                super("string", "is_date", new TLValueType[] { TLValueType.STRING, TLValueType.STRING, TLValueType.OBJECT, TLValueType.BOOLEAN }, 
+                		TLValueType.BOOLEAN, 4, 2);
             }
 
             @Override
@@ -820,15 +824,53 @@ public class StringLib extends TLFunctionLibrary {
                 }
                 if (!(params[0].type == TLValueType.STRING && params[1].type == TLValueType.STRING)){
                     throw new TransformLangExecutorRuntimeException(params,
-                    "is_integer - wrong type of literal");
+                    "is_date - wrong type of literal");
+                }
+                if (params.length == 3 && !(params[2].type == TLValueType.STRING || params[2].type == TLValueType.BOOLEAN)){
+                    throw new TransformLangExecutorRuntimeException(params,
+                    "is_date - wrong type of literal");
+               }
+                if (params.length == 4 && !(params[3].type == TLValueType.BOOLEAN)){
+                    throw new TransformLangExecutorRuntimeException(params,
+                    "is_date - wrong type of literal");
+                }
+                if (params[0].toString().length() == 0){
+                	return TLValue.TRUE_VAL;
                 }else{
-                    if (DateUtils.isDate(((TLStringValue)params[0]).getCharSequence(), params[1].toString()))
-                    	return TLValue.TRUE_VAL;
-                    else 
-                    	return TLValue.FALSE_VAL; 
+                    DateFormatStore formatter = (DateFormatStore) context.getContext();
+                    String pattern = params[1].toString();
+                    String locale = params.length > 2 && params[2].type == TLValueType.STRING ? 
+                    		params[2].toString() : null;
+                    Boolean lenient = null;
+                    if (params.length == 3 && params[2].type == TLValueType.BOOLEAN){
+                    	lenient = ((TLBooleanValue)params[2]).getBoolean();
+                    }else if (params.length == 4) {
+                    	lenient = ((TLBooleanValue)params[2]).getBoolean();
+                    }
+                    if (formatter.formatter == null){
+                    	formatter.init(locale, pattern);
+                    }else if (locale != null) {
+                    	formatter.reset(locale, pattern);
+                    }else{
+                    	formatter.resetPattern(pattern);
+                    }
+                    if (lenient != null){
+                    	formatter.setLenient(lenient);
+                    }else{
+                    	formatter.setLenient(true);
+                    }
+                    formatter.formatter.parse(params[0].toString(), formatter.position);
+                    return formatter.position.getIndex() != 0 ? TLValue.TRUE_VAL : TLValue.FALSE_VAL;
                 }
             }
 
+            @Override
+            public TLContext createContext() {
+                TLContext<DateFormatStore> context = new TLContext<DateFormatStore>();
+                context.setContext(new DateFormatStore());
+                return context;
+            }
+            
     }
 
      //  REMOVE DIACRITIC
@@ -1068,4 +1110,38 @@ public class StringLib extends TLFunctionLibrary {
 	    }
 	}
 
+     class DateFormatStore{
+    	 
+    	 SimpleDateFormat formatter;
+    	 ParsePosition position;
+    	 String locale;
+    	 
+    	 public void init(String locale, String pattern){
+    		 formatter = (SimpleDateFormat)MiscUtils.createFormatter(DataFieldMetadata.DATE_FIELD, 
+    				 locale, pattern);
+    		 this.locale = locale;
+    		 position = new ParsePosition(0);
+    	 }
+    	 
+    	 public void reset(String newLocale, String newPattern) {
+			if (!newLocale.equals(locale)) {
+				formatter = (SimpleDateFormat) MiscUtils.createFormatter(
+						DataFieldMetadata.DATE_FIELD, newLocale, newPattern);
+				this.locale = newLocale;
+			}
+			resetPattern(newPattern);
+		}
+    	 
+    	 public void resetPattern(String newPattern) {
+			if (!newPattern.equals(formatter.toPattern())) {
+				formatter.applyPattern(newPattern);
+			}
+			position.setIndex(0);
+		}
+    	 
+    	 public void setLenient(boolean lenient){
+    		 formatter.setLenient(lenient);
+    	 }
+     }
+     
 }
