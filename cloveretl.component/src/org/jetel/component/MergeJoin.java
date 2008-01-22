@@ -186,6 +186,7 @@ public class MergeJoin extends Node {
 //	private static Log logger = LogFactory.getLog(MergeJoin.class);
 	
 	static Log logger = LogFactory.getLog(HashJoin.class);
+	private boolean oldJoinKey = false;
 
 	private String[][] joiners;
 	private Join join;
@@ -204,6 +205,7 @@ public class MergeJoin extends Node {
 	int minCnt;
 
 	OutputPort outPort;
+	private String joinKeys;
 
 	/**
 	 *  Constructor for the SortedJoin object
@@ -218,8 +220,23 @@ public class MergeJoin extends Node {
 	public MergeJoin(String id, String[][] joiners, String transform,
 			String transformClass, String transformURL, Join join, boolean slaveDuplicates) {
 		super(id);
+		
+		this.oldJoinKey = true;
 		this.joiners = joiners;
 		this.transformSource = transform;
+		this.transformClassName = transformClass;
+		this.transformURL = transformURL;
+		this.join = join;
+		this.slaveDuplicates = slaveDuplicates;
+	}
+	
+	public MergeJoin(String id, String joinKey, String transform,
+			String transformClass, String transformURL, Join join, boolean slaveDuplicates) {
+		super(id);
+
+		this.oldJoinKey = false;
+		this.transformSource = transform;
+		this.joinKeys = joinKey;
 		this.transformClassName = transformClass;
 		this.transformURL = transformURL;
 		this.join = join;
@@ -340,26 +357,31 @@ public class MergeJoin extends Node {
 		
 		inputCnt = inPorts.size();
 		slaveCnt = inputCnt - 1;
-		if (joiners.length < 1) {
-			throw new ComponentNotReadyException("not enough join keys specified");
-		} else if (joiners.length < inputCnt) {
-			logger.warn("Join keys aren't specified for all slave inputs - deducing missing keys");
-			String[][] replJoiners = new String[inputCnt][];
-			for (int i = 0; i < joiners.length; i++) {
-				replJoiners[i] = joiners[i];
+		
+		if (oldJoinKey) {
+			if (joiners.length < 1) {
+				throw new ComponentNotReadyException("not enough join keys specified");
+			} else if (joiners.length < inputCnt) {
+				logger.warn("Join keys aren't specified for all slave inputs - deducing missing keys");
+				String[][] replJoiners = new String[inputCnt][];
+				for (int i = 0; i < joiners.length; i++) {
+					replJoiners[i] = joiners[i];
+				}
+				// use driver key list for all missing slave key specifications
+				for (int i = joiners.length; i < inputCnt; i++) {
+					replJoiners[i] = joiners[0];
+				}
+				joiners = replJoiners;
 			}
-			// use driver key list for all missing slave key specifications
-			for (int i = joiners.length; i < inputCnt; i++) {
-				replJoiners[i] = joiners[0];
+			driverKey = new RecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
+			driverKey.init();
+			slaveKeys = new RecordKey[slaveCnt];
+			for (int idx = 0; idx < slaveCnt; idx++) {
+				slaveKeys[idx] = new RecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
+				slaveKeys[idx].init();
 			}
-			joiners = replJoiners;
-		}
-		driverKey = new RecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
-		driverKey.init();
-		slaveKeys = new RecordKey[slaveCnt];
-		for (int idx = 0; idx < slaveCnt; idx++) {
-			slaveKeys[idx] = new RecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
-			slaveKeys[idx].init();
+		} else {
+			prepareKeys();
 		}
 		reader = new InputReader[inputCnt];
 		reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
@@ -429,7 +451,7 @@ public class MergeJoin extends Node {
 		if (charset != null){
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
 		}
-		xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, createJoinSpec(joiners));
+		xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, createJoinSpec(joiners));		
 		
 		xmlElement.setAttribute(XML_JOINTYPE_ATTRIBUTE,
 				join == Join.FULL_OUTER ? "fullOuter" : join == Join.LEFT_OUTER ? "leftOuter" : "inner");
@@ -445,25 +467,22 @@ public class MergeJoin extends Node {
 		}		
 	}
 
-	private static String createJoinSpec(String[][] joiners) {
-		String joinStr = "";
-		for (int i = 1; true; i++) {
-			if (joiners[i].length != joiners[0].length) {
-				return null;
-			}
-			for (int j = 0; true; j++) {
-				joinStr += joiners[0][j] + "=" + joiners[i][j];
-				if (j == joiners[i].length - 1) {
-					break;	// leave inner loop
-				}
-				joinStr += Defaults.Component.KEY_FIELDS_DELIMITER;
-			}
-			if (i == joiners.length - 1) {
-				break;	// leave outer loop
-			}
-			joinStr += "#";
+	private String createJoinSpec(String[][] joiners2) {
+		StringBuffer joinStr = new StringBuffer();		
+		
+		for (int i : driverKey.getKeyFields()) {
+			joinStr.append(driverKey.getMetadata().getField(i).getName());
 		}
-		return joinStr;
+		joinStr.append('#');
+		for (int i = 0; i < slaveKeys.length; i++ ) {
+			for (int j : slaveKeys[i].getKeyFields()) {
+				joinStr.append(driverKey.getMetadata().getField(j).getName());
+			}
+			joinStr.append('#');
+		}
+		
+		return joinStr.toString();		
+		
 	}
 
 	/**
@@ -523,6 +542,41 @@ public class MergeJoin extends Node {
 		}
 		return res;
 	}
+	
+	/**
+     * Prepares keys to join incomming data records.
+     * @param driverKey
+	 * @param rawKey
+	 * @return
+	 * @throws ComponentNotReadyException
+	 */
+	private void prepareKeys() throws ComponentNotReadyException {
+
+        //key is not defined
+        if(joinKeys == null) {
+        	throw new ComponentNotReadyException(this, "The key has to be defined.");            
+        }
+        
+        int portNum = getInPorts().size();
+        slaveKeys = new RecordKey[portNum-1];
+        
+		String[] portKeys = joinKeys.split("#");
+        if(portKeys.length != portNum) {
+            throw new ComponentNotReadyException(this, "The key definition does not have a separete key for each port.");
+        }
+        int i = 0;
+        for(String portKey : portKeys) {
+            String[] keyFields = portKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+            if (i == 0) {
+            	driverKey = new RecordKey(keyFields, getInputPort(i).getMetadata());
+            	driverKey.init();
+            } else {
+            	slaveKeys[i-1] = new RecordKey(keyFields, getInputPort(i).getMetadata());
+            	slaveKeys[i-1].init();
+            }
+        	i++;            
+        }
+	}
 
 	/**
 	 *  Description of the Method
@@ -534,10 +588,13 @@ public class MergeJoin extends Node {
 	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		MergeJoin join;
+		String joinKey;
 
 		try {
 			String joinStr = xattribs.getString(XML_JOINTYPE_ATTRIBUTE, "inner");
 			Join joinType;
+			boolean oldJoinKey;
+			
 			if (joinStr == null || joinStr.equalsIgnoreCase("inner")) {
 				joinType = Join.INNER;
 			} else if (joinStr.equalsIgnoreCase("leftOuter")) {
@@ -549,7 +606,16 @@ public class MergeJoin extends Node {
 						+ "Invalid joinType specification: " + joinStr);				
 			}
 
-			String[][] joiners = parseJoiners(xattribs.getString(XML_JOINKEY_ATTRIBUTE, ""));
+			joinKey = xattribs.getString(XML_JOINKEY_ATTRIBUTE, "");
+			
+			String[][] joiners = null;
+			
+			if ((joinKey.indexOf('=') != -1) || (joinKey.indexOf('#') == -1)) {
+				oldJoinKey = true;
+				joiners = parseJoiners(joinKey);
+			} else {
+				oldJoinKey = false;				
+			}
 
 			// legacy attributes handling {
 			if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE, false)) {
@@ -558,7 +624,7 @@ public class MergeJoin extends Node {
 			if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.getBoolean(XML_FULLOUTERJOIN_ATTRIBUTE, false)) {
 				joinType = Join.FULL_OUTER;
 			}
-			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
+			if (oldJoinKey && xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				String[] slaveKeys = xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 				if (slaveKeys.length != joiners[0].length) {
 					throw new XMLConfigurationException("Driver key and slave key doesn't match");
@@ -568,15 +634,25 @@ public class MergeJoin extends Node {
 				}
 			}
 			// }
-			
-            join = new MergeJoin(
-                    xattribs.getString(XML_ID_ATTRIBUTE),
-                    joiners,
-                    xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
-                    xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
-                    xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null),
-                    joinType,
-                    xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true));
+
+			if (oldJoinKey) {
+				join = new MergeJoin(
+						xattribs.getString(XML_ID_ATTRIBUTE),
+						joiners,
+						xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
+						xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null),
+						joinType,
+						xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true));
+			} else {
+				join = new MergeJoin(xattribs.getString(XML_ID_ATTRIBUTE),
+						joinKey,
+						xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
+						xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null),
+						joinType,
+						xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true));
+			}
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
@@ -603,29 +679,34 @@ public class MergeJoin extends Node {
 
             try {
             	
-        		inputCnt = inPorts.size();
-        		slaveCnt = inputCnt - 1;
-        		if (joiners.length < 1) {
-        			throw new ComponentNotReadyException("not enough join keys specified");
-        		} else if (joiners.length < inputCnt) {
-        			logger.warn("Join keys aren't specified for all slave inputs - deducing missing keys");
-        			String[][] replJoiners = new String[inputCnt][];
-        			for (int i = 0; i < joiners.length; i++) {
-        				replJoiners[i] = joiners[i];
-        			}
-        			// use driver key list for all missing slave key specifications
-        			for (int i = joiners.length; i < inputCnt; i++) {
-        				replJoiners[i] = joiners[0];
-        			}
-        			joiners = replJoiners;
-        		}
-        		driverKey = new RecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
-        		slaveKeys = new RecordKey[slaveCnt];
-        		for (int idx = 0; idx < slaveCnt; idx++) {
-        			slaveKeys[idx] = new RecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
-        			RecordKey.checkKeys(driverKey, XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
-        					XML_SLAVEOVERRIDEKEY_ATTRIBUTE, status, this);
-        		}
+            	inputCnt = inPorts.size();
+        		slaveCnt = inputCnt - 1;            	
+            	if (oldJoinKey) {
+	        		
+	        		if (joiners.length < 1) {
+	        			throw new ComponentNotReadyException("not enough join keys specified");
+	        		} else if (joiners.length < inputCnt) {
+	        			logger.warn("Join keys aren't specified for all slave inputs - deducing missing keys");
+	        			String[][] replJoiners = new String[inputCnt][];
+	        			for (int i = 0; i < joiners.length; i++) {
+	        				replJoiners[i] = joiners[i];
+	        			}
+	        			// use driver key list for all missing slave key specifications
+	        			for (int i = joiners.length; i < inputCnt; i++) {
+	        				replJoiners[i] = joiners[0];
+	        			}
+	        			joiners = replJoiners;
+	        		}
+	        		driverKey = new RecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
+	        		slaveKeys = new RecordKey[slaveCnt];
+	        		for (int idx = 0; idx < slaveCnt; idx++) {
+	        			slaveKeys[idx] = new RecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
+	        			RecordKey.checkKeys(driverKey, XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
+	        					XML_SLAVEOVERRIDEKEY_ATTRIBUTE, status, this);
+	        		}
+            	} else {
+            		prepareKeys();
+            	}
         		reader = new InputReader[inputCnt];
         		reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
         		if (slaveDuplicates) {
