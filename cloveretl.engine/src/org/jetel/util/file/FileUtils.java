@@ -109,9 +109,10 @@ public class FileUtils {
      */
     public static URL getFileURL(URL contextURL, String fileURL, URLStreamHandler urlStreamHandler) throws MalformedURLException {
         try {
-            return new URL(contextURL, fileURL, urlStreamHandler);
-        } catch(MalformedURLException ex) {
             return getFileURL(contextURL, fileURL);
+        } catch(Exception ex) {
+        	// ftp connection is connected via sftp handler, 22 port is ok but 21 is somehow blocked for the same connection
+            return new URL(contextURL, fileURL, urlStreamHandler);
         }
     }
 
