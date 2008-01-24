@@ -412,6 +412,13 @@ public class DecimalNumericTest extends TestCase {
 		}
 		
 	}
+	
+	public void test_compare(){
+		CloverInteger cint = new CloverInteger(1);
+		CloverDouble cdouble = new CloverDouble(1.5);
+		System.out.println(cint.compareTo(cdouble));
+		System.out.println(cdouble.compareTo(cint));
+	}
 
 	public void test_maths_add(){
 		aDouble=DecimalFactory.getDecimal(0,6,2);
