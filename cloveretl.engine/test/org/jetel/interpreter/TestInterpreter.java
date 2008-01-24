@@ -21,6 +21,7 @@ package org.jetel.interpreter;
 
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -61,6 +62,7 @@ public class TestInterpreter extends TestCase {
 	DataRecord record,record1,out,out1;
     TransformationGraph graph;
     LookupTable lkp;
+	private GregorianCalendar today;
 	
 	protected void setUp() {
 	    EngineInitializer.initEngine(null, null);
@@ -114,7 +116,8 @@ public class TestInterpreter extends TestCase {
 		SetVal.setDouble(record1,1,13.5);
 		SetVal.setString(record,2,"Some silly longer string.");
 		SetVal.setString(record1,2,"Prague");
-		SetVal.setValue(record1,3,Calendar.getInstance().getTime());
+	    today = (GregorianCalendar)Calendar.getInstance();
+		SetVal.setValue(record1,3,today.getTime());
 		record.getField("Born").setNull(true);
 		SetVal.setInt(record,4,-999);
 		record1.getField("Value").setNull(true);
@@ -2023,6 +2026,87 @@ public class TestInterpreter extends TestCase {
               
     }
 
+    public void test_functions4(){
+        System.out.println("\nFunctions test:");
+        String expStr = 
+	    		"string stringNo='12';\n" +
+	    		"int No;\n" +
+        		"function print_result(from,to, format){\n" +
+        		"	if (isnull(format)) {\n" +
+        		"		if (try_convert(from,to)) print_err('converted:'+from+'-->'+to);\n" +
+        		"		else print_err('cant convert:'+from+'-->'+to);\n" +
+        		"	}else{\n" +
+        		"		if (try_convert(from,to, format)) print_err('converted:'+from+'-->'+to);\n" +
+        		"		else print_err('cant convert:'+from+'-->'+to);\n" +
+        		"	}\n" +
+        		"};\n" +
+        		"print_result(stringNo,No,null);\n" +
+        		"stringNo='128a';\n" +
+        		"print_result(stringNo,No,null);\n" +
+        		"stringNo='1285,455346775544';\n" +
+        		"double no1=1.34;\n" +
+        		"print_result(stringNo,no1,'###0.00');\n" +
+        		"decimal(10,3) no2;\n" +
+        		"print_result(no1,no2,null);\n" +
+        		"print_result(34542.3,no2,null);\n" +
+        		"int no3;\n" +
+        		"print_result(34542.7,no3,null);\n" +
+        		"print_result(345427,no3,null);\n" +
+        		"print_result(3454876434468927,no3,null);\n" +
+        		"date date1 = $Born;\n" +
+        		"long no4;\n" +
+        		"print_result(date1,no4,null);\n" +
+        		"no4 = no4 + 1000*60*60*24;\n" +
+        		"print_result(no4,date1,null);\n" +
+        		"date date2;\n" +
+        		"print_result('20.9.2007',date2,'dd.MM.yyyy');\n" +
+        		"decimal(6,4) d1=73.8474;\n" +
+        		"decimal(4,2) d2;\n" +
+        		"print_result(d1,d2,null);\n" +
+        		"d2 = 75.32;\n" +
+        		"print_result(d2,d1,null);\n";
+        print_code(expStr);
+
+       Log logger = LogFactory.getLog(this.getClass());
+       
+        
+        try {
+              TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+                    new ByteArrayInputStream(expStr.getBytes()));
+              CLVFStart parseTree = parser.Start();
+
+              System.out.println("Initializing parse tree..");
+              parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+              System.out.println("Interpreting parse tree..");
+              TransformLangExecutor executor=new TransformLangExecutor();
+              executor.setInputRecords(new DataRecord[] {record1});
+              executor.setRuntimeLogger(logger);
+              executor.setGraph(graph);
+              executor.visit(parseTree,null);
+              System.out.println("Finished interpreting.");
+              
+		      assertEquals(12,(executor.getGlobalVariable(parser.getGlobalVariableSlot("No")).getTLValue().getNumeric().getInt()));
+		      assertEquals(1285.455346775544,(executor.getGlobalVariable(parser.getGlobalVariableSlot("no1")).getTLValue().getNumeric().getDouble()));
+		      assertEquals(DecimalFactory.getDecimal(34542.3, 10, 3),(executor.getGlobalVariable(parser.getGlobalVariableSlot("no2")).getTLValue().getNumeric()));
+		      assertEquals(345427,(executor.getGlobalVariable(parser.getGlobalVariableSlot("no3")).getTLValue().getNumeric().getInt()));
+		      today.add(Calendar.DATE, 1);
+		      assertEquals(today.getTime(),(executor.getGlobalVariable(parser.getGlobalVariableSlot("date1")).getTLValue().getDate()));
+		      assertEquals(today.getTimeInMillis(),(executor.getGlobalVariable(parser.getGlobalVariableSlot("no4")).getTLValue().getNumeric().getLong()));
+		      assertEquals(new GregorianCalendar(2007,8,20).getTime(),(executor.getGlobalVariable(parser.getGlobalVariableSlot("date2")).getTLValue().getDate()));
+		      assertEquals(DecimalFactory.getDecimal(75.32, 6, 4),(executor.getGlobalVariable(parser.getGlobalVariableSlot("d1")).getTLValue().getNumeric()));
+
+        } catch (ParseException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Parse exception",e);
+        }
+              
+    }
+
+    
     public void test_math_functions(){
 		System.out.println("\nMath functions test:");
 		String expStr = "number original;original=pi();\n" +
@@ -2315,9 +2399,21 @@ public class TestInterpreter extends TestCase {
     public void test_function(){
         System.out.println("\nFunction test:");
         String expStr = "function myFunction(idx){\n" +
-        		"if (idx==1) print_err('idx equals 1'); else print_err('idx does not equal 1');}\n" +
+        		"if (idx==1) print_err('idx equals 1');\n" +
+        		" else {\n" +
+        		"	print_err('idx does not equal 1');\n" +
+        		"	idx=1;\n" +
+        		"	}\n" +
+        		"}\n" +
         		"myFunction(1);\n" +
-        		"myFunction1(1);\n";
+        		"int in;\n" +
+        		"print_err('in='+in);\n"+
+        		"myFunction(in);\n" +
+        		"print_err('in='+in);\n" +
+        		"function init(){" +
+        		"print_err('in init');\n" +
+        		"};\n" +
+        		"init();";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
