@@ -125,6 +125,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 
 	@Override
 	public void reset() {
+		isReadMode=false;
 		writeCounter = 0;
 		readCounter = 0;
         writeByteCounter = 0;
