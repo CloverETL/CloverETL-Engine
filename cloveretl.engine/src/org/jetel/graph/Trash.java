@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -218,10 +219,8 @@ public class Trash implements OutputPort, OutputPortDirect {
 		byteCounter+=record.remaining();
         recordCounter++;
 	}
-    
 
-
-
+	
 	/**
 	 * An operation that does ...
 	 *
@@ -260,6 +259,15 @@ public class Trash implements OutputPort, OutputPortDirect {
     public void eof() throws InterruptedException {
         
     }
+
+    /*
+     * (non-Javadoc)
+     * @see org.jetel.graph.OutputPort#reset()
+     */
+	public void reset() throws ComponentNotReadyException {
+		recordCounter = 0;
+        byteCounter=0;
+	}
 
 }
 /*

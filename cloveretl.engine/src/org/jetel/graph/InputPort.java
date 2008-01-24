@@ -23,6 +23,7 @@
 package org.jetel.graph;
 import java.io.IOException;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -139,6 +140,11 @@ public interface InputPort {
      * @return
      */
     public int getInputPortNumber();
+
+    /**
+	 * Reset port for next graph execution. 
+     */
+	public void reset() throws ComponentNotReadyException;
 
 }
 /*
