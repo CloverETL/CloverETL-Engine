@@ -277,4 +277,13 @@ public class CloverDataParser implements Parser {
 		this.compressedData = compressedData;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#reset()
+	 */
+	public void reset() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("implement this method");
+	}
+
 }

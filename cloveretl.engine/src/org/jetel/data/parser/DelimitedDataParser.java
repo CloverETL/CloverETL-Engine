@@ -603,6 +603,21 @@ public class DelimitedDataParser implements Parser {
 	public void setTrim(Boolean trim) {
 		this.trim = trim;
 	}
+
+    /**
+	 * Reset parser for next graph execution. 
+     */
+	public void reset() {
+		if (releaseInputSource)	
+			releaseDataSource();
+
+		decoder.reset();// reset CharsetDecoder
+		dataBuffer.clear();
+        dataBuffer.flip();
+		charBuffer.clear();
+		charBuffer.flip();
+		recordCounter = 0;// reset record counter
+	}
 	
 }	
 /*

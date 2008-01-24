@@ -159,4 +159,13 @@ public class FixLenByteDataParser extends FixLenDataParser {
 		return byteBuffer.remaining();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#reset()
+	 */
+	public void reset() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("implement this method");
+	}
+
 }
