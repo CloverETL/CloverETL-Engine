@@ -1038,7 +1038,24 @@ public abstract class Node extends GraphElement implements Runnable {
 		outputMetadata.add(outMetadata);
 		return checkMetadata(status, inputMetadata, outputMetadata);
 	}
-    
+
+	/**
+	 * Reset node for next graph execution.
+	 */
+    synchronized public void reset() throws ComponentNotReadyException {
+    	super.reset();
+        for(OutputPort outPort : this.getOutPorts())
+        	outPort.reset();
+        for(InputPort inPort : this.getInPorts())
+        	inPort.reset();
+        if (logPort!=null)
+        	logPort.reset();
+    	runIt = true;
+        runResult=Result.READY;
+        resultMessage = null;
+        resultException = null;
+    }
+
 }
 /*
  *  end class Node
