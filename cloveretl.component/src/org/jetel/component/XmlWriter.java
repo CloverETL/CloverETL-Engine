@@ -20,7 +20,6 @@
 package org.jetel.component;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
@@ -28,6 +27,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -180,7 +180,7 @@ public class XmlWriter extends Node {
 			WritableByteChannel channel = null;
 			if (outputDataTarget instanceof WritableByteChannel){
 				channel = (WritableByteChannel)outputDataTarget;
-				os = Channels.newOutputStream(channel); 
+				os = Channels.newOutputStream(channel);
 			} else 
 				throw new IllegalArgumentException("parameter "+outputDataTarget+" is not instance of WritableByteChannel");
 			//outFile = (File)outputDataTarget;
@@ -283,6 +283,11 @@ public class XmlWriter extends Node {
 		public Integer[] fieldsAsElementsIndexes;
 		public String toString(){
 			return "PortDefinition#"+portIndex + " keys:"+keysAttr+" relationKeysToParent:"+relationKeysToParentAttr + " relationKeysFromParent:"+relationKeysFromParentAttr;
+		}
+		/** Resets this instance for next execution without graph init. */
+		public void reset() {
+			dataMap = new LinkedHashMap<HashKey, TreeRecord>();			
+			dataMapByRelationKey = new LinkedHashMap<HashKey, TreeRecord>();
 		}
 	}
 	
@@ -481,7 +486,6 @@ public class XmlWriter extends Node {
 				// multiWriter will call formatter.write
 				writer.write(treeRecord.record);
 			}// for 
-			writer.close();
 			
 			//flushXmlSax();
 		} catch (Exception e) {
@@ -845,6 +849,25 @@ public class XmlWriter extends Node {
 
 	private void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.Node#reset()
+	 */
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		this.writer.reset();
+		for (PortDefinition def : allPortDefinitionMap.values()){
+			def.reset();
+		}// for
+	}
+
+	@Override
+	public synchronized void free() {
+		super.free();
+		writer.close();
 	}
 
 	/**

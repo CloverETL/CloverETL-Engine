@@ -23,6 +23,8 @@ import java.nio.ByteBuffer;
 
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
@@ -30,6 +32,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -105,6 +108,34 @@ public class SpeedLimiter extends Node {
 		}		
 	}
 
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Return Value
+	 */
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
+
+		checkInputPorts(status, 1, 1);
+		checkOutputPorts(status, 1, Integer.MAX_VALUE);
+		checkMetadata(status, getInMetadata(), getOutMetadata());
+
+		try {
+			init();
+		} catch (ComponentNotReadyException e) {
+			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+			if(!StringUtils.isEmpty(e.getAttributeName())) {
+				problem.setAttributeName(e.getAttributeName());
+			}
+			status.add(problem);
+		} finally {
+			free();
+		}
+
+		return status;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.Node#init()
@@ -118,6 +149,14 @@ public class SpeedLimiter extends Node {
 					Defaults.Record.MAX_RECORD_SIZE);
 		}
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#reset()
+	 */
+    synchronized public void reset() throws ComponentNotReadyException {
+    	super.reset();
+    }
 	
 	/*
 	 * (non-Javadoc)

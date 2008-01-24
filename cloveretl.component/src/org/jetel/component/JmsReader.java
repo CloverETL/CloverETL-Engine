@@ -116,6 +116,10 @@ public class JmsReader extends Node {
 	private JmsConnection connection;
 	private MessageConsumer consumer;	
 	private JmsMsg2DataRecord psor;
+
+	private int msgCounter = 0;
+	private boolean exhausted = false;
+	private Message lastMsg = null;
 	
 	/** Sole ctor.
 	 * @param id Component ID
@@ -183,6 +187,30 @@ public class JmsReader extends Node {
 		psor.init(getOutputPort(0).getMetadata(), psorProperties);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#reset()
+	 */
+    synchronized public void reset() throws ComponentNotReadyException {
+    	super.reset();
+    	connection.reset();
+    	psor.reset();
+    	msgCounter = 0;
+    	exhausted = false;
+    	lastMsg = null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#free()
+     */
+	@Override
+	public synchronized void free() {
+		super.free();
+		psor.finished();
+        closeConnection();
+	}
+
 	/** Creates processor instance of a class specified by its name.
 	 * @param psorClass
 	 * @return
@@ -228,10 +256,6 @@ public class JmsReader extends Node {
         }
     }
 
-	private int msgCounter = 0;
-	private boolean exhausted = false;
-	private Message lastMsg = null;
-
 	/**
 	 * Receives next JMS message. 
 	 * @return null when processor doesn't require more messages or reader constraints forbid retrieving
@@ -274,8 +298,6 @@ public class JmsReader extends Node {
 		} catch (Exception e) {
 			throw e;
 		}finally{
-			psor.finished();
-	        closeConnection();
 	        broadcastEOF();
 		}
 		Result r = runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -433,7 +455,7 @@ public class JmsReader extends Node {
 					break;
 				}
 			}
-			closeConnection();
+			//closeConnection();
 		}
 	}
 

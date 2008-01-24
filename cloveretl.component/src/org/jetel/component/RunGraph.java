@@ -84,11 +84,9 @@ import org.w3c.dom.Element;
 * </ul>
 * 
 * Outports:
-* There are 3 possibilities:
 * <ul>
-* <li>no edge is connected - nothing happens on the output
-* <li>one edge is connected - just one record is generated; it may describe fail or success
-* <li>two edges are connected - just one record is generated; it is put to port 0 if success, to port 1 otherwise
+* <li>in/out mode- one edge is connected - one record is generated for each input record; it may describe fail or success
+* <li>pipeline mode - two edges are connected - just one record is generated; it is put to port 0 if success, to port 1 otherwise
 * </ul> 
 * Metadata of output record:
 &lt;Metadata id="Metadata0">
@@ -97,7 +95,7 @@ import org.w3c.dom.Element;
 &lt;Field delimiter=";" name="result" nullable="true" type="string"/>
 &lt;Field delimiter=";" name="description" nullable="true" type="string"/>
 &lt;Field delimiter=";" name="message" nullable="true" type="string"/>
-&lt;Field delimiter="\\n" name="duration" nullable="true" type="long"/>
+&lt;Field delimiter="\\n" name="duration" nullable="true" type="decimal"/>
 &lt;/Record>
 &lt;/Metadata>
 
@@ -322,6 +320,7 @@ public class RunGraph extends Node{
 			inRecord = readRecord(INPUT_PORT, inRecord);
 			if(inRecord == null) break;
 						
+			// read graph name - the first field on input port
 			DataField field = inRecord.getField(0);
 			Object val = field.getValue();
 			if(val == null) continue;
@@ -333,7 +332,7 @@ public class RunGraph extends Node{
 				logger.error("Exception while processing " + fname + ": "+ e.getMessage());				
 			}			
 			
-			
+			// writes everything to single outPort
 			outPort.writeRecord(outRec);
 						
 		} 
@@ -597,17 +596,7 @@ public class RunGraph extends Node{
 			pipelineMode = true;
 		} 
 		
-		//prepare output file
-		// if (getOutPorts().size()==0 && outputFileName!=null){
-		if (outputFileName!=null){
-			File outFile= new File(outputFileName);
-			try{
-				outFile.createNewFile();
-				this.outputFile = new FileWriter(outFile,append);
-			}catch(IOException ex){
-				throw new ComponentNotReadyException(ex);
-			}
-		}
+		initGraphOutputFile();
 	}
 
 	/* (non-Javadoc)
@@ -786,8 +775,32 @@ public class RunGraph extends Node{
 		this.graphName = graphName;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.Node#reset()
+	 */
+	synchronized public void reset() throws ComponentNotReadyException {
+		super.reset();
+		initGraphOutputFile();
+	}
+
+	/**
+	 * Prepares file for log output of executed graph.
+	 * @throws ComponentNotReadyException
+	 */
+	private void initGraphOutputFile() throws ComponentNotReadyException {
+		if (outputFileName!=null){
+			File outFile= new File(outputFileName);
+			try{
+				outFile.createNewFile();
+				this.outputFile = new FileWriter(outFile, append);
+			}catch(IOException ex){
+				throw new ComponentNotReadyException(ex);
+			}
+		}
+	}
 	
-private static class SendDataToFile extends Thread {
+	private static class SendDataToFile extends Thread {
 		
 	    BufferedInputStream process_out;
 		FileWriter outFile;
@@ -868,13 +881,7 @@ private static class SendDataToFile extends Thread {
 		public Throwable getResultException() {
 			return resultException;
 		}
-	}
-	
-}
-	/**
-	 * This is class for reading records from input port and writing them to Formatter  
-	 * 
-	 * @author avackova
-	 *
-	 */
+	} // nested class SendDataToFile
+
+}// class
 	
