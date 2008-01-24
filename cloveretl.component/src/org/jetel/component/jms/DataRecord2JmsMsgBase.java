@@ -76,4 +76,8 @@ public abstract class DataRecord2JmsMsgBase implements DataRecord2JmsMsg {
 		this.errMsg = errMsg;
 	}
 
+	public void reset() throws ComponentNotReadyException {
+		setErrorMsg(null);
+	}
+		
 }

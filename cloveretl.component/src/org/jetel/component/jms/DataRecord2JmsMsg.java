@@ -73,4 +73,9 @@ public interface DataRecord2JmsMsg {
 	 * @return
 	 */
 	public String getErrorMsg();
+
+	/**
+	 * Reset port for next graph execution. 
+	 */
+	public void reset() throws ComponentNotReadyException;
 }
