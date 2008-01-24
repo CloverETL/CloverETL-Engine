@@ -361,4 +361,14 @@ public class XPathParser implements Parser {
 	public void setGraph(TransformationGraph graph) {
 		this.graph = graph;
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#reset()
+	 */
+	public void reset() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("implement this method");
+	}
+	
 }
