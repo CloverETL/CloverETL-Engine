@@ -68,4 +68,9 @@ public interface JmsMsg2DataRecord {
 	 * @return
 	 */
 	public String getErrorMsg();
+
+	/**
+	 * Reset processor for next graph execution. 
+	 */
+	public void reset();
 }

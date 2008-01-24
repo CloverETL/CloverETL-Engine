@@ -66,4 +66,12 @@ public abstract class JmsMsg2DataRecordBase implements JmsMsg2DataRecord {
 		this.errMsg = errMsg;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.component.jms.JmsMsg2DataRecord#reset()
+	 */
+	public void reset() {
+		setErrorMsg(null);
+	}
+	
 }

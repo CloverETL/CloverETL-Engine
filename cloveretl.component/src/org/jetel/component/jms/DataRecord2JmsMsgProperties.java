@@ -80,4 +80,8 @@ public class DataRecord2JmsMsgProperties extends DataRecord2JmsMsgBase {
 		return msg;
 	}
 
+	public void reset() throws ComponentNotReadyException {
+		super.reset();
+	}
+
 }
