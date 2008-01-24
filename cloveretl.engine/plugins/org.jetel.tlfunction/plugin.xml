@@ -74,6 +74,7 @@
         <value>str2date</value>
         <value>date2num</value>
         <value>str2num</value>
+        <value>try_convert</value>
 		</parameter>
 	</extension>
 	
