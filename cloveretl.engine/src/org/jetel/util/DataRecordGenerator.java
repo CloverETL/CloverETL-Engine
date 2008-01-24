@@ -320,7 +320,7 @@ public class DataRecordGenerator implements Parser{
 	}
 
 	/**
-	 * Creates and returns new DataRecord according to preset rules. 
+	 * Returns reusable instance of DataRecord filled according to preset rules. 
 	 * @return
 	 * @throws JetelException
 	 */
@@ -329,14 +329,14 @@ public class DataRecordGenerator implements Parser{
 	}
 
 	/**
-	 * Creates and returns new DataRecord according to preset rules. 
+	 * Returns reusable instance of DataRecord filled according to preset rules. 
 	 */
 	public DataRecord getNext() throws JetelException {
 		return getNext(reusableRecord);
 	}
 
 	/**
-	 * Creates and returns new DataRecord according to preset rules. 
+	 * Fills specified instance of DataRecord according to preset rules. 
 	 * @return
 	 * @throws Exception
 	 */
@@ -597,6 +597,14 @@ public class DataRecordGenerator implements Parser{
 			counter += rec;
 			return rec;
 		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#reset()
+	 */
+	public void reset() {
+		counter = 0;
 	}
 	
 }

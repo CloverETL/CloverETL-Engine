@@ -69,7 +69,10 @@ public class MultiFileWriter {
     private int bytesPerFile;
     private boolean appendData;
     private Iterator<WritableByteChannel> channels;
+    /** counter which decreases with each skipped record */
     private int skip;
+    /** fixed value */
+    private int skipRecords;
 	private int numRecords;
 	private int counter;
 	private boolean useChannel = true;
@@ -124,6 +127,16 @@ public class MultiFileWriter {
     	prepareTargets();		// prepare output targets
     }
     
+    /**
+	 * Reset writer for next graph execution. 
+     */
+	public void reset() {
+		counter = 0;
+		numberFileTag = 0;
+		skip = skipRecords;
+		// formatterGetter
+	}
+	
     /**
      * Creates target array or target map.
      * 
@@ -380,6 +393,7 @@ public class MultiFileWriter {
      */
     public void setSkip(int skip) {
         this.skip = skip;
+        this.skipRecords = skip;
     }
 
     /**

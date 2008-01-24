@@ -112,9 +112,7 @@ public class MultiFileReader {
         autoFillingMap = new HashMap<DataRecordMetadata, AutoFillingData>();
     	if (metadata != null) autoFillingData = addAutoFillingFields(metadata);
         
-        WcardPattern pat = new WcardPattern();
-        pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-        this.filenameItor = pat.filenames().iterator();
+        initFileIterator();
 
         try {
             if(!nextSource()) {
@@ -396,5 +394,25 @@ public class MultiFileReader {
         autoFillingMap.put(metadata, data);
         return data;
     }
+
+    /**
+	 * Reset reader for next graph execution. 
+     */
+	public void reset() {
+		parser.reset();
+		globalCounter=0;
+		sourceCounter=0;
+		noInputFile = false;
+		autoFillingMap.clear();
+		autoFillingData = null;
+
+		initFileIterator();
+	}
+
+	private void initFileIterator() {
+		WcardPattern pat = new WcardPattern();
+        pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+        this.filenameItor = pat.filenames().iterator();
+	}
 
 }
