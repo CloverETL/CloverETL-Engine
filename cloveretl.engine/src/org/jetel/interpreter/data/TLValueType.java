@@ -78,9 +78,13 @@ public enum TLValueType {
         case OBJECT:
             return true;
         case BYTE:
+        case BOOLEAN:
         	if (_type.isNumeric() || _type==TLValueType.STRING)
         		return true;
+        case DATE:
+        	return _type == LONG;
         }
+        	
         if (_type==NULL) return true;
         return false;
     }
