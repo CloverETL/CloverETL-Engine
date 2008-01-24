@@ -750,6 +750,15 @@ public class DataParser implements Parser {
 	public void setTrim(Boolean trim) {
 		this.trim = trim;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#reset()
+	 */
+	public void reset() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("implement this method");
+	}
 }
 /*
 Default hodnoty jsou nyni definovany na urovni metadat a prirazovany do polozek pres

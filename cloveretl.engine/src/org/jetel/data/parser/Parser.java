@@ -106,6 +106,10 @@ public interface Parser {
     
     public PolicyType getPolicyType();
 
+    /**
+	 * Reset parser for next graph execution. 
+     */
+	public void reset();
     
 }
 /*

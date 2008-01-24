@@ -389,4 +389,13 @@ public class FixLenCharDataParser extends FixLenDataParser {
 		this.trim = trim;
 	}
 		
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#reset()
+	 */
+	public void reset() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("implement this method");
+	}
+	
 }
