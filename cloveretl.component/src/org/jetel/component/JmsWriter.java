@@ -19,11 +19,6 @@
 */
 package org.jetel.component;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -36,7 +31,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.jms.DataRecord2JmsMsg;
 import org.jetel.connection.JmsConnection;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -46,7 +40,6 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -172,6 +165,28 @@ public class JmsWriter extends Node {
 		psor.init(inPort.getMetadata(), connection.getSession(), psorProperties);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#reset()
+	 */
+    synchronized public void reset() throws ComponentNotReadyException {
+    	super.reset();
+    	connection.reset();
+    	psor.reset();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#free()
+     */
+	@Override
+	public synchronized void free() {
+		super.free();
+		psor.finished();
+        closeConnection();
+	}
+    
+    
 	/** Creates processor instance of a class specified by its name.
 	 * @param psorClass
 	 * @return
@@ -245,11 +260,7 @@ public class JmsWriter extends Node {
 				}
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}finally{
-			psor.finished();
-	        closeConnection();
+			logger.error("JmxWriter execute", e);
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}

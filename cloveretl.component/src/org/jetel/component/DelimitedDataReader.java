@@ -186,6 +186,16 @@ public class DelimitedDataReader extends Node {
         reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#reset()
+	 */
+    synchronized public void reset() throws ComponentNotReadyException {
+    	super.reset();
+    	reader.reset();
+    	//parser.reset();
+    }
+
 
 	/**
 	 *  Description of the Method
