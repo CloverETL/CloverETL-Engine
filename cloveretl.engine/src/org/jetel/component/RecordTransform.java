@@ -128,5 +128,10 @@ public interface RecordTransform {
     public void setGraph(TransformationGraph graph);
 	
     public TransformationGraph getGraph();
+
+    /**
+     * Reset transform for next graph execution.
+     */
+	public void reset();
 }
 

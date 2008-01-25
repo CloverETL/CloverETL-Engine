@@ -1433,7 +1433,16 @@ public class CustomizedRecordTransform implements RecordTransform {
 		params.append(')');
 		return params.toString();
 	}
-}	
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.component.RecordTransform#reset()
+	 */
+	public void reset() {
+		errorMessage = null;
+	}
+	
+}// class CustomizedRecordTransform
 
 	/**
 	 *Private class for storing transformation rules

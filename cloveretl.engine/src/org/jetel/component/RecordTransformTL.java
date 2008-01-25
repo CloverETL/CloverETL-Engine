@@ -45,12 +45,13 @@ public class RecordTransformTL implements RecordTransform {
     public static final String TRANSFORM_FUNCTION_NAME="transform";
     public static final String FINISHED_FUNCTION_NAME="finished";
     public static final String INIT_FUNCTION_NAME="init";
+    public static final String RESET_FUNCTION_NAME="reset";
     
     protected TransformationGraph graph;
     protected Log logger;
 
     protected String errorMessage;
-	
+	 
 	protected WrapperTL wrapper;
 
     /**Constructor for the DataRecordTransform object */
@@ -148,5 +149,18 @@ public class RecordTransformTL implements RecordTransform {
     public TransformationGraph getGraph() {
         return graph;
     }
+
+    /*
+     * (non-Javadoc)
+     * @see org.jetel.component.RecordTransform#reset()
+     */
+	public void reset() {
+        // execute reset transformFunction
+		try {
+			wrapper.execute(RESET_FUNCTION_NAME,null);
+		} catch (JetelException e) {
+			//do nothing: function reset is not necessary
+		}
+	}
 }
 
