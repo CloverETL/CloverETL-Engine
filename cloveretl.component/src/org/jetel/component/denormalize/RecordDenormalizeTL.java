@@ -118,4 +118,9 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 		return errorMessage;
 	}
 
+	public void reset() {
+		errorMessage = null;
+		wrapper.reset();
+	}
+
 }
