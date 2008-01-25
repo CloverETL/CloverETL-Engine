@@ -82,51 +82,9 @@ public class GraphExecutor {
 		logger.info("Checking graph configuration...");
 		ConfigurationStatus status = graph.checkConfig(null);
 		status.log();
-        
         graph.init();
 	}
 	
-	/**
-	 * Runs the given transformation graph in the given context.
-	 * 
-	 * @param graphURL URL, where should be XML graph specification stored
-	 * @param context runtime context in which graph will executed
-	 * @param password password for encrypting some hidden part of graphs, i.e. connections password can be encrypted
-	 * @return future result
-	 * @throws ComponentNotReadyException if occurs any initialization problem
-     * @throws XMLConfigurationException deserialization from XML fails for any reason.
-     * @throws GraphConfigurationException misconfigured graph
-	 */
-	public Future<Result> runGraph(URL graphURL, IGraphRuntimeContext context, String password) throws XMLConfigurationException, GraphConfigurationException, IOException, ComponentNotReadyException {
-		context = new UnconfigurableGraphRuntimeContext(context);
-		
-		return runGraph(graphURL.openStream(), context, password);
-	}
-
-	/**
-	 * Runs the given transformation graph in the given context.
-	 * 
-	 * @param graphStream graph in XML form
-	 * @param context runtime context in which graph will executed
-	 * @param password password for encrypting some hidden part of graphs, i.e. connections password can be encrypted
-	 * @return future result
-	 * @throws ComponentNotReadyException if occurs any initialization problem
-     * @throws XMLConfigurationException deserialization from XML fails for any reason.
-     * @throws GraphConfigurationException misconfigured graph
-	 */
-	public Future<Result> runGraph(InputStream graphStream, IGraphRuntimeContext context, String password) 
-	throws XMLConfigurationException, GraphConfigurationException, ComponentNotReadyException {
-		context = new UnconfigurableGraphRuntimeContext(context);
-
-		TransformationGraph graph = loadGraph(graphStream, context.getAdditionalProperties());
-		
-        graph.setPassword(password);
-
-        initGraph(graph);
-        
-        return runGraph(graph, context);
-	}
-
 	/**
 	 * Runs the given transformation graph in the given context.
 	 * 
@@ -213,10 +171,25 @@ public class GraphExecutor {
 	public static TransformationGraph loadGraph(InputStream graphStream, Properties properties)
 	throws XMLConfigurationException, GraphConfigurationException {
         TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(properties);
-
         return graphReader.read(graphStream);
     }
 
+	/**
+	 * 
+	 * @param graphStream
+	 * @param properties
+	 * @param password
+	 * @return
+	 * @throws XMLConfigurationException
+	 * @throws GraphConfigurationException
+	 */
+	public static TransformationGraph loadGraph(InputStream graphStream, Properties properties, String password)
+	throws XMLConfigurationException, GraphConfigurationException {
+		TransformationGraph graph = GraphExecutor.loadGraph(graphStream, properties);
+        graph.setPassword(password);
+        return graph; 
+    }
+	
 	private static class WatchdogThreadFactory implements ThreadFactory {
 
 		public Thread newThread(Runnable r) {
