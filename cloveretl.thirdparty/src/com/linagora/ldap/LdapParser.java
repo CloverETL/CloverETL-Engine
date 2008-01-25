@@ -81,6 +81,7 @@ public class LdapParser implements Parser {
 
 
 	/** List of DN matching the search filter */
+	List dnList = null; 
 	Iterator resultDn = null;
 	
 	/** Transformation object between Attributes  and DataRecord */
@@ -171,7 +172,7 @@ public class LdapParser implements Parser {
 			throw new ComponentNotReadyException(e);
 		}
 		
-		List dnList = new ArrayList();
+		dnList = new ArrayList();
 		int i = 0;
 		try {
 			while (ne.hasMore()) {
@@ -399,8 +400,8 @@ public class LdapParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
 	public void reset() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("implement this method");
+		resultDn = dnList.iterator();
+		recordCounter = 0;
 	}
 	
 }
