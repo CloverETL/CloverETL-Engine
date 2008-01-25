@@ -77,4 +77,9 @@ public interface RecordNormalize {
 	 */
 	public String getMessage();
 
+	/**
+	 * Resets normalizer for next graph execution. 
+	 */	
+	public void reset();
+
 }

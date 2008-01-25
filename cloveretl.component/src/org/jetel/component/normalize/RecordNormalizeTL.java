@@ -128,4 +128,13 @@ public class RecordNormalizeTL implements RecordNormalize {
 		return errorMessage;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.component.normalize.RecordNormalize#reset()
+	 */
+	public void reset() {
+		wrapper.reset();
+		errorMessage = null;
+	}
+
 }

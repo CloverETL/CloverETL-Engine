@@ -64,4 +64,12 @@ public abstract class DataRecordNormalize implements RecordNormalize {
 		return errorMessage;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.component.normalize.RecordNormalize#reset()
+	 */
+	public void reset() {
+		errorMessage = null;
+	}
+
 }
