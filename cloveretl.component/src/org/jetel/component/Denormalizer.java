@@ -515,4 +515,24 @@ public class Denormalizer extends Node {
 		this.charset = charset;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.Node#reset()
+	 */
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		denorm.reset();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#free()
+	 */
+	@Override
+	public synchronized void free() {
+		// TODO Auto-generated method stub
+		super.free();
+	}
+
 }

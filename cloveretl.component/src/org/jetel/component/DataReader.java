@@ -210,7 +210,6 @@ public class DataReader extends Node {
 		} catch (Exception e) {
 			throw e;
 		}finally{
-			reader.close();
 			broadcastEOF();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -259,10 +258,9 @@ public class DataReader extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		
-		//TODO je potreba zimplementovat reset multi file readeru a tim nahradit nasledujici kod 
-		//reader.reset();
-		
+		reader.reset();
+
+		/*
 		// initialize multifile reader based on prepared parser
         reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
         reader.setLogger(logger);
@@ -275,7 +273,7 @@ public class DataReader extends Node {
             e.setAttributeName(XML_FILE_ATTRIBUTE);
             throw e;
         }
-
+*/
 	}
 
 	/**
@@ -426,4 +424,10 @@ public class DataReader extends Node {
         this.policyType = policyType;
         parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
     }
+
+	@Override
+	public synchronized void free() {
+		super.free();
+		reader.close();
+	}
 }
