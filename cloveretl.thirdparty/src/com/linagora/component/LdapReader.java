@@ -213,8 +213,6 @@ public class LdapReader extends Node {
 		}finally{
 			// we are done, close all connected output ports to indicate end of stream
 			broadcastEOF();
-			//close the parser
-			parser.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -297,5 +295,27 @@ public class LdapReader extends Node {
 		
 		return aLdapReader;
 	}
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.Node#reset()
+	 */
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		parser.reset();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#free()
+	 */
+	@Override
+	public synchronized void free() {
+		super.free();
+		parser.close();
+	}
+
 	
 }
