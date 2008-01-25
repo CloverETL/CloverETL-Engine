@@ -230,7 +230,6 @@ public class LdapWriter extends Node {
 		} catch (Exception e) {
 			throw e;
 		}finally{
-			this.formatter.close();
 			broadcastEOF();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -354,6 +353,26 @@ public class LdapWriter extends Node {
 	 */
 	public String getType(){
 		return COMPONENT_TYPE;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.Node#reset()
+	 */
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		// no operations needed
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#free()
+	 */
+	@Override
+	public synchronized void free() {
+		super.free();
+		this.formatter.close();
 	}
 	
 }
