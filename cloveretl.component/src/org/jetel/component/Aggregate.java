@@ -210,7 +210,7 @@ public class Aggregate extends Node {
 		
 		recordKey = new RecordKey(aggregateKeys, getInputPort(READ_FROM_PORT).getMetadata());
 		recordKey.init();
-		// specify whether two fields with NULL value indicator set are considered equall
+		// specify whether two fields with NULL value indicator set are considered equal
 		recordKey.setEqualNULLs(equalNULLs);
 		
 		try {
@@ -373,4 +373,15 @@ public class Aggregate extends Node {
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#reset()
+	 */
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		processor.reset();
+	}
+	
+	
 }

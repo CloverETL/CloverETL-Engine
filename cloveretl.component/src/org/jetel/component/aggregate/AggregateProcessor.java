@@ -50,6 +50,7 @@ public class AggregateProcessor {
 	// constants mapping
 	private List<ConstantMappingItem> constantMapping = new ArrayList<ConstantMappingItem>();
 	
+	// indicates that the aggregator just detected the start of a new aggregation group in sorted input
 	private boolean sortedGroupChanged = false;
 	
 	private AggregationGroup sortedGroup;
@@ -102,6 +103,17 @@ public class AggregateProcessor {
 		fieldMappingSize = fieldMapping.keySet().size();
 	}
 
+	/**
+	 * Reset the processor to initial state.
+	 */
+	public void reset() {
+		previousRecord = null;
+		sortedGroupChanged = false;
+		sortedGroup = null;
+		if (unsortedGroups != null) {
+			unsortedGroups.clear();
+		}
+	}
 	
 	/**
 	 * 
