@@ -318,7 +318,7 @@ public class WrapperTL {
 	}
 
 	/**
-	 * This method exexutes function set before as default (see above)
+	 * This method executes function set before as default (see above)
 	 * 
 	 * @param inRecord
 	 * @return
@@ -346,8 +346,9 @@ public class WrapperTL {
 	public TLValue executePreparedFunction(TLValue[] data){
 		return executePreparedFunction(null, null, data);
 	}
+
 	/**
-	 * This method exexutes function set before as default (see above)
+	 * This method executes function set before as default (see above)
 	 * 
 	 * @return
 	 */
@@ -356,7 +357,7 @@ public class WrapperTL {
 	}
 	
 	/**
-	 * This method exexutes 0th function set before as default (see above)
+	 * This method executes 0th function set before as default (see above)
 	 * 
 	 * @return
 	 */
@@ -404,5 +405,12 @@ public class WrapperTL {
 	public void setMatadata(DataRecordMetadata metadata){
 		this.sourceMetadata = new DataRecordMetadata[]{metadata};
 		this.targetMetadata = new DataRecordMetadata[]{metadata};
+	}
+
+	/**
+	 * Resets this instance for next graph execution. 
+	 */
+	public void reset() {
+		errorMessage = null;
 	}
 }

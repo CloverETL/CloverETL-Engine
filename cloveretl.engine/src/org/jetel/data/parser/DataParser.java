@@ -352,7 +352,7 @@ public class DataParser implements Parser {
 						}
 					}
 				} catch (Exception ex) {
-					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, fieldCounter));
+					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, fieldCounter), ex);
 				}
 			} else { //fixlen data field
 				mark = 0;
@@ -756,9 +756,12 @@ public class DataParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
 	public void reset() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("implement this method");
+		if (releaseInputSource)	
+			releaseDataSource();
+		decoder.reset();// reset CharsetDecoder
+		recordCounter = 0;// reset record counter
 	}
+	
 }
 /*
 Default hodnoty jsou nyni definovany na urovni metadat a prirazovany do polozek pres

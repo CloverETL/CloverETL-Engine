@@ -223,5 +223,15 @@ public abstract class DataRecordTransform implements RecordTransform {
     public TransformationGraph getGraph() {
         return graph;
     }
+
+    /*
+     * (non-Javadoc)
+     * @see org.jetel.component.RecordTransform#reset()
+     */
+	public void reset() {
+		errorMessage = null;
+	}
+    
+    
 }
 
