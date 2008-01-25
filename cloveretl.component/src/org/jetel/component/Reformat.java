@@ -351,5 +351,26 @@ public class Reformat extends Node {
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.Node#reset()
+	 */
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		transformation.reset();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#free()
+	 */
+	@Override
+	public synchronized void free() {
+		super.free();
+		if (transformation != null)
+			transformation.finished();
+	}
 }
 

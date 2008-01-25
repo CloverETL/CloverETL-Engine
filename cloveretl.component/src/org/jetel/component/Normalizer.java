@@ -259,8 +259,7 @@ public class Normalizer extends Node {
 		} catch (Exception e) {
 			throw e;
 		}finally{
-			norm.finished();
-			setEOF(OUT_PORT);
+	        broadcastEOF();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -397,6 +396,26 @@ public class Normalizer extends Node {
 
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.Node#reset()
+	 */
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		norm.reset();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#free()
+	 */
+	@Override
+	public synchronized void free()  {
+		super.free();
+		norm.finished();
 	}
 
 }

@@ -159,8 +159,6 @@ public class DataWriter extends Node {
 			}
 		} catch (Exception e) {
 			throw e;
-		}finally{		
-			writer.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -210,34 +208,35 @@ public class DataWriter extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
+		writer.reset();
 		
 		// initialize multifile writer based on prepared formatter
-		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
-		} else {
-			if (writableByteChannel == null) {
-		        writableByteChannel = Channels.newChannel(System.out);
-			}
-	        writer = new MultiFileWriter(formatterProvider, new WritableByteChannelIterator(writableByteChannel));
-		}
-        writer.setLogger(logger);
-        writer.setBytesPerFile(bytesPerFile);
-        writer.setRecordsPerFile(recordsPerFile);
-        writer.setAppendData(appendData);
-        writer.setSkip(skip);
-        writer.setNumRecords(numRecords);
-        if (attrPartitionKey != null) {
-            writer.setLookupTable(lookupTable);
-            writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-            writer.setPartitionFileTag(partitionFileTagType);
-        	if (attrPartitionOutFields != null) {
-        		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-        	}
-        }
-        if(outputFieldNames) {
-        	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
-        }
-        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+//		if (fileURL != null) {
+//	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+//		} else {
+//			if (writableByteChannel == null) {
+//		        writableByteChannel = Channels.newChannel(System.out);
+//			}
+//	        writer = new MultiFileWriter(formatterProvider, new WritableByteChannelIterator(writableByteChannel));
+//		}
+//        writer.setLogger(logger);
+//        writer.setBytesPerFile(bytesPerFile);
+//        writer.setRecordsPerFile(recordsPerFile);
+//        writer.setAppendData(appendData);
+//        writer.setSkip(skip);
+//        writer.setNumRecords(numRecords);
+//        if (attrPartitionKey != null) {
+//            writer.setLookupTable(lookupTable);
+//            writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+//            writer.setPartitionFileTag(partitionFileTagType);
+//        	if (attrPartitionOutFields != null) {
+//        		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+//        	}
+//        }
+//        if(outputFieldNames) {
+//        	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+//        }
+//        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 
 	}
 	
@@ -497,5 +496,11 @@ public class DataWriter extends Node {
 	 */
 	public PartitionFileTagType getPartitionFileTag() {
 		return partitionFileTagType;
+	}
+
+	@Override
+	public synchronized void free() {
+		super.free();
+		writer.close();
 	}
 }

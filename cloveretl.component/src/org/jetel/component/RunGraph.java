@@ -523,35 +523,47 @@ public class RunGraph extends Node{
         Future<Result> futureResult = null;                
         
         String password = null; // TODO
-        
-        long startTime = System.currentTimeMillis();
+
+        TransformationGraph graph = null;
 		try {
-			futureResult = graphExecutor.runGraph(in, runtimeContext, password);
-			// graphExecutor.getWatchDog();
-        } catch (XMLConfigurationException e) {            
-            output.getField(2).setValue("Error in reading graph from XML: " + e.getMessage());
+			graph = GraphExecutor.loadGraph(in, runtimeContext.getAdditionalProperties(), password);
+        } catch (XMLConfigurationException e) {
+            output.getField(2).setValue("Error in reading graph from XML !" + e.getMessage());
             return false;
         } catch (GraphConfigurationException e) {
-        	output.getField(2).setValue("Error - graph's configuration invalid: " + e.getMessage());            
+            output.getField(2).setValue("Error - graph's configuration invalid !" + e.getMessage());
             return false;
-		} catch (ComponentNotReadyException e) {
-			output.getField(2).setValue("Error during graph initialization: " + e.getMessage());           
-            return false;
-        } catch (RuntimeException e) {
-        	output.getField(2).setValue("Error during graph initialization: " +  e.getMessage());           
-            return false;
-        }
-        
+		} 
+
+        long startTime = System.currentTimeMillis();
         Result result = Result.N_A;
-		try {
-			result = futureResult.get();
-		} catch (InterruptedException e) {
-			output.getField(2).setValue("Graph was unexpectedly interrupted !" + e.getMessage());            
-            return false;
-		} catch (ExecutionException e) {
-			output.getField(2).setValue("Error during graph processing !" + e.getMessage());            
-            return false;
-		}
+        try {
+    		try {
+    			futureResult = graphExecutor.runGraph( graph, runtimeContext);
+    			//futureResult = graphExecutor.runGraph(in, runtimeContext, password);
+    			// graphExecutor.getWatchDog();
+    		} catch (ComponentNotReadyException e) {
+    			output.getField(2).setValue("Error during graph initialization: " + e.getMessage());           
+                return false;
+            } catch (RuntimeException e) {
+            	output.getField(2).setValue("Error during graph initialization: " +  e.getMessage());           
+                return false;
+            }
+            
+    		try {
+    			result = futureResult.get();
+    		} catch (InterruptedException e) {
+    			output.getField(2).setValue("Graph was unexpectedly interrupted !" + e.getMessage());            
+                return false;
+    		} catch (ExecutionException e) {
+    			output.getField(2).setValue("Error during graph processing !" + e.getMessage());            
+                return false;
+    		}
+        } finally {
+    		if (graph!=null)
+    			graph.free();
+        }
+		
         long totalTime = System.currentTimeMillis() - startTime;
 		
         switch (result) {
