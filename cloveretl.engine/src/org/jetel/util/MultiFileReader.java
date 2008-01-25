@@ -407,6 +407,12 @@ public class MultiFileReader {
 		autoFillingData = null;
 
 		initFileIterator();
+        try {
+			if(!nextSource()) 
+			    noInputFile = true;
+		} catch (JetelException e) {
+			logger.error("reset", e);
+		}
 	}
 
 	private void initFileIterator() {
