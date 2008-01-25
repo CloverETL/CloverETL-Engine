@@ -38,6 +38,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphExecutor;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -256,11 +257,10 @@ public class runGraph {
         }
 
 
-        GraphExecutor graphExecutor = new GraphExecutor();
-        
-        Future<Result> futureResult = null;
+        TransformationGraph graph = null;
 		try {
-			futureResult = graphExecutor.runGraph(in, runtimeContext, password);
+			graph = GraphExecutor.loadGraph(in, runtimeContext.getAdditionalProperties(), password);
+	        runGraph(graph, runtimeContext);
         } catch (XMLConfigurationException e) {
             logger.error("Error in reading graph from XML !", e);
             if (runtimeContext.isVerboseMode()) {
@@ -273,6 +273,16 @@ public class runGraph {
                 e.printStackTrace(System.err);
             }
             System.exit(-1);
+		} 
+
+    }
+
+
+	private static void runGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) {
+        GraphExecutor graphExecutor = new GraphExecutor();
+        Future<Result> futureResult = null;
+		try {
+			futureResult = graphExecutor.runGraph( graph, runtimeContext);
 		} catch (ComponentNotReadyException e) {
             logger.error("Error during graph initialization !", e);
             if (runtimeContext.isVerboseMode()) {
@@ -304,6 +314,9 @@ public class runGraph {
             System.exit(-1);
 		}
         
+        System.out.println("Free graph resources.");
+		graph.free();
+		
         switch (result) {
 
         case FINISHED_OK:
@@ -320,8 +333,7 @@ public class runGraph {
             System.err.println("Execution of graph failed !");
             System.exit(result.code());
         }
-
-    }
+	}
     
     
 	private static void printHelp() {
