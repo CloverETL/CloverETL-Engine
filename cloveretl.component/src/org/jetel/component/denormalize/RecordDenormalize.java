@@ -78,4 +78,9 @@ public interface RecordDenormalize {
 	 */
 	public String getMessage();
 
+	/**
+	 * Reset denormalizer for next graph execution.
+	 */
+	public void reset();
+
 }
