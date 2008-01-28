@@ -172,19 +172,7 @@ public class DataGenerator extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-
-		//TODO je potreba zimplementovat reset data record generatoru 
-		//recordGenerator.reset();
-
-		try {
-            recordGenerator = new DataRecordGenerator(this, metadata, pattern, this.randomFieldsString, this.randomSeed, this.sequenceFieldsString, this.recordsNumber);
-            recordGenerator.init();
-        } catch (ComponentNotReadyException e){
-        	throw e;
-        } catch (Exception e){
-			throw new ComponentNotReadyException(this, "Can't initialize record generator", e);
-        }
-
+		recordGenerator.reset();
 	}
 
 	/* (non-Javadoc)
