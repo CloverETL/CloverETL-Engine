@@ -400,7 +400,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     throw new Error("Missing return statement in function");
   }
 
-//+TODO dodelat dalsi typu jako DATE, VARCHAR,...
+//+TODO dodelat dalsi typu jako DATE, VARCHAR, BOOLEAN...
   final public DataType dataType() throws ParseException {
         char type;
         Long temp = null;

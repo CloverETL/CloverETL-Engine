@@ -24,6 +24,7 @@ package org.jetel.interpreter.data;
 
 import javolution.text.TypeFormat;
 
+import org.jetel.data.BooleanDataField;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.StringDataField;
@@ -76,6 +77,9 @@ public class TLBooleanValue extends TLValue {
 			break;
 		case DataFieldMetadata.BYTE_FIELD:
 			((ByteDataField)field).setValue( value ? 1 : 0);
+			break;
+		case DataFieldMetadata.BOOLEAN_FIELD:
+			((BooleanDataField)field).setValue( value);
 			break;
 		default:
 			throw new IllegalArgumentException("Can't popula DateField type: " + field.getMetadata().getTypeAsString() + " from type: "+type);
@@ -130,6 +134,9 @@ public class TLBooleanValue extends TLValue {
 			break;
 		case DataFieldMetadata.BYTE_FIELD:
 			value = ((ByteDataField)field).getByte(0)!= 0;
+			break;
+		case DataFieldMetadata.BOOLEAN_FIELD:
+			value = ((BooleanDataField)field).getBoolean();
 			break;
 		default:
 			throw new IllegalArgumentException("Can't populate "+type+" from  DateField type: " + field.getMetadata().getTypeAsString());

@@ -329,9 +329,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				DataFieldMetadata.LONG_FIELD,
 				DataFieldMetadata.DECIMAL_FIELD, 
 				DataFieldMetadata.BYTE_FIELD, 
-				DataFieldMetadata.BYTE_FIELD_COMPRESSED };
+				DataFieldMetadata.BYTE_FIELD_COMPRESSED,
+				DataFieldMetadata.BOOLEAN_FIELD};
 		String[] fieldTypeParts = { "string", "date", "datetime", "numeric",
-				"integer", "long", "decimal", "byte", "cbyte" };
+				"integer", "long", "decimal", "byte", "cbyte", "boolean" };
 
 		Document doc = metadataElement.getOwnerDocument();
 		for (int i = 0; i < record.getNumFields(); i++) {

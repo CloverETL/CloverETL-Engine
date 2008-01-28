@@ -305,7 +305,7 @@ public class DBFAnalyzer {
 			case 'C': return DataFieldMetadata.STRING_FIELD;
 			case 'N': return DataFieldMetadata.NUMERIC_FIELD;
 			case 'D': return DataFieldMetadata.DATE_FIELD;
-			case 'L': return DataFieldMetadata.STRING_FIELD;
+			case 'L': return DataFieldMetadata.BOOLEAN_FIELD;
 			case 'M': return DataFieldMetadata.BYTE_FIELD;
 			default: return DataFieldMetadata.STRING_FIELD;
             //throw new DBFErrorException("Unsupported DBF field type: \""+String.valueOf(type)+"\" hex: "+Integer.toHexString(type));

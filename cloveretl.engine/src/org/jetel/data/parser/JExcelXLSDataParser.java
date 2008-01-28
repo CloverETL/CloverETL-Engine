@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
+import jxl.BooleanCell;
 import jxl.Cell;
 import jxl.CellType;
 import jxl.DateCell;
@@ -282,6 +283,10 @@ public class JExcelXLSDataParser extends XLSParser {
 				case DataFieldMetadata.NUMERIC_FIELD:
 					record.getField(fieldNumber[i][CLOVER_NUMBER]).setValue(
 							((NumberCell)cell).getValue());
+					break;
+				case DataFieldMetadata.BOOLEAN_FIELD:
+					record.getField(fieldNumber[i][CLOVER_NUMBER]).setValue(
+							((BooleanCell)cell).getValue());
 					break;
 				}
 			} catch (ClassCastException bdne) {//exception when trying get date or number from diffrent cell type
