@@ -70,6 +70,7 @@ public class XsdMetadata {
 		typeNames.put(new Character(DataFieldMetadata.LONG_FIELD), "CloverLong");
 		typeNames.put(new Character(DataFieldMetadata.NUMERIC_FIELD), "CloverNumeric");
 		typeNames.put(new Character(DataFieldMetadata.STRING_FIELD), "CloverString");
+		typeNames.put(new Character(DataFieldMetadata.BOOLEAN_FIELD), "CloverBoolean");
 
 		primitiveNames.put(new Character(DataFieldMetadata.BYTE_FIELD), "xsd:base64Binary");
 		primitiveNames.put(new Character(DataFieldMetadata.BYTE_FIELD_COMPRESSED), "xsd:base64Binary");
@@ -80,6 +81,7 @@ public class XsdMetadata {
 		primitiveNames.put(new Character(DataFieldMetadata.LONG_FIELD), "xsd:long");
 		primitiveNames.put(new Character(DataFieldMetadata.NUMERIC_FIELD), "xsd:decimal");
 		primitiveNames.put(new Character(DataFieldMetadata.STRING_FIELD), "xsd:string");
+		primitiveNames.put(new Character(DataFieldMetadata.BOOLEAN_FIELD), "xsd:boolean");
 	}
 
 	// XSD document

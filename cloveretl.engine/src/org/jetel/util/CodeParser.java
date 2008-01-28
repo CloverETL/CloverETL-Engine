@@ -579,6 +579,11 @@ public class CodeParser {
             code.append(")");
             code.append(".getValue()");
             break;
+        case DataFieldMetadata.BOOLEAN_FIELD:
+            code.insert(0, "((BooleanDataField)");
+            code.append(")");
+            code.append(".getValue()");
+            break;
         default:
             throw new RuntimeException("Can't translate field type !");
         }
@@ -736,6 +741,8 @@ public class CodeParser {
 			case DataFieldMetadata.BYTE_FIELD:
 			case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
 			    code.insert(0,"((ByteDataField)");
+			case DataFieldMetadata.BOOLEAN_FIELD:
+			    code.insert(0,"((BooleanDataField)");
 			break;
 			default:
 				throw new RuntimeException("Can't translate field type !");

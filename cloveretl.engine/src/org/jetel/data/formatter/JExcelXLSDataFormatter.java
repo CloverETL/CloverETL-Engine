@@ -31,6 +31,7 @@ import javax.naming.InvalidNameException;
 
 import jxl.CellView;
 import jxl.Workbook;
+import jxl.write.Boolean;
 import jxl.write.DateFormat;
 import jxl.write.DateTime;
 import jxl.write.Label;
@@ -315,6 +316,15 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 					}else{
 						valueXls = new Number(colNum, currentRow,
 								(Double) value);
+					}
+					break;
+				case DataFieldMetadata.BOOLEAN_FIELD:
+					if (cellStyle[i] != null) {
+						valueXls = new Boolean(colNum, currentRow,
+								(java.lang.Boolean) value, cellStyle[i]);
+					}else{
+						valueXls = new Boolean(colNum, currentRow,
+								(java.lang.Boolean) value);
 					}
 					break;
 				}

@@ -124,6 +124,8 @@ public enum TLValueType {
             return BYTE;
         case DataFieldMetadata.STRING_FIELD:
             return STRING;
+        case DataFieldMetadata.BOOLEAN_FIELD:
+            return BOOLEAN;
         default:
             return STRING;
         }
