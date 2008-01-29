@@ -274,7 +274,6 @@ public class runGraph {
             }
             System.exit(-1);
 		} 
-
     }
 
 
@@ -282,6 +281,8 @@ public class runGraph {
         GraphExecutor graphExecutor = new GraphExecutor();
         Future<Result> futureResult = null;
 		try {
+			if (!graph.isInitialized())
+				graphExecutor.initGraph(graph);
 			futureResult = graphExecutor.runGraph( graph, runtimeContext);
 		} catch (ComponentNotReadyException e) {
             logger.error("Error during graph initialization !", e);
