@@ -30,7 +30,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLStreamHandler;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -48,6 +47,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.MultiOutFile;
 import org.jetel.util.protocols.sftp.SFTPConnection;
+import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 
 import sun.misc.BASE64Encoder;
 
@@ -66,6 +66,10 @@ public class FileUtils {
 
 	// standard input/output source
 	private final static String STD_SOURCE = "-";
+	
+	// sftp protocol handler
+	public static final SFTPStreamHandler sFtpStreamHandler = new SFTPStreamHandler();
+
 	
 	/**
 	 *  Translates fileURL into full path with all references to ENV variables resolved
@@ -92,27 +96,12 @@ public class FileUtils {
         try {
             return new URL(contextURL, fileURL);
         } catch(MalformedURLException ex) {
-            return new URL(contextURL, "file:" + fileURL);
-        }
-    }
-
-    /**
-     * Creates URL object based on specified fileURL string. Handles
-     * situations when <code>fileURL</code> contains only path to file
-     * <i>(without "file:" string)</i>. 
-     * 
-     * @param contextURL context URL for converting relative to absolute path (see TransformationGraph.getProjectURL()) 
-     * @param fileURL   string containing file URL
-     * @param urlStreamHandler   protocol handling
-     * @return  URL object or NULL if object can't be created (due to Malformed URL)
-     * @throws MalformedURLException  
-     */
-    public static URL getFileURL(URL contextURL, String fileURL, URLStreamHandler urlStreamHandler) throws MalformedURLException {
-        try {
-            return getFileURL(contextURL, fileURL);
-        } catch(Exception ex) {
-        	// ftp connection is connected via sftp handler, 22 port is ok but 21 is somehow blocked for the same connection
-            return new URL(contextURL, fileURL, urlStreamHandler);
+        	try {
+            	// ftp connection is connected via sftp handler, 22 port is ok but 21 is somehow blocked for the same connection
+        		return new URL(contextURL, fileURL, sFtpStreamHandler);
+            } catch(Exception e) {
+                return new URL(contextURL, "file:" + fileURL);
+            }
         }
     }
 
