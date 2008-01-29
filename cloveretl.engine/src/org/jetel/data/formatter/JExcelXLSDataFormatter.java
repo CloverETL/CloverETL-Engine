@@ -158,7 +158,6 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		}
 		//creating cell formats from metadata formats
 		cellStyle = new WritableCellFormat[metadata.getNumFields()];
-		String format;
 		CellView view = new CellView();
 		view.setHidden(false);
 		if (metadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
@@ -169,24 +168,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 				view.setSize(metadata.getField(i).getSize() * 256);
 			}
 			sheet.setColumnView(firstColumn + i, view);
-			format = metadata.getField(i).getFormatStr();
-			if (format!=null){//apply format coherent to metadata format
-				cellStyle[i] = metadata.getField(i).getType() == DataFieldMetadata.DATE_FIELD
-						|| metadata.getField(i).getType() == DataFieldMetadata.DATETIME_FIELD 
-						? new WritableCellFormat(new DateFormat(format))
-						: new WritableCellFormat(new NumberFormat(format));
-			}else if (metadata.getField(i).getType() == DataFieldMetadata.DATE_FIELD || metadata.getField(i).getType() == DataFieldMetadata.DATETIME_FIELD){
-				//for date it has to be set an format (else data are sensless)
-				if (metadata.getField(i).getLocaleStr() != null) {
-					format = ((SimpleDateFormat) java.text.DateFormat
-							.getDateInstance(java.text.DateFormat.DEFAULT,
-									MiscUtils.createLocale(metadata.getField(i)
-											.getLocaleStr()))).toPattern();
-				}else{
-					format = new SimpleDateFormat().toPattern();
-				}
-				cellStyle[i] = new WritableCellFormat(new DateFormat(format));
-			}
+			cellStyle[i] = getCellFormat(metadata.getField(i));
 		}
 		//Remember current sheet
 		if (multiSheetWriting) {
@@ -195,6 +177,34 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 			currentSheet = sheetData;
 		}
 		open = true;
+	}
+	
+	/**
+	 * Prepares cell format depending on field format and locale
+	 * 
+	 * @param field
+	 * @return
+	 */
+	private static WritableCellFormat getCellFormat(DataFieldMetadata field){
+		if (!(field.isNumeric() || field.getType() == DataFieldMetadata.DATE_FIELD || field.getType() == DataFieldMetadata.DATETIME_FIELD)){
+			return null;
+		}
+		String format = field.getFormatStr() ;
+		if (field.isNumeric()) {
+			return format != null ? new WritableCellFormat(new NumberFormat(format)) : null;
+		}
+		//DateDataField
+		if (format != null) {
+			return new WritableCellFormat(new DateFormat(format));
+		}
+		//format is null
+		if (field.getLocaleStr() != null) {
+			format = ((SimpleDateFormat) java.text.DateFormat.getDateInstance(java.text.DateFormat.DEFAULT,
+							MiscUtils.createLocale(field.getLocaleStr()))).toPattern();
+		}else{
+			format = new SimpleDateFormat().toPattern();
+		}
+		return new WritableCellFormat(new DateFormat(format));
 	}
 
 	/* (non-Javadoc)
