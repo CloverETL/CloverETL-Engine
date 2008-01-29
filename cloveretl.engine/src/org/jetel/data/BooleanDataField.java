@@ -46,10 +46,10 @@ import org.jetel.metadata.DataFieldMetadata;
 public class BooleanDataField extends DataField implements Comparable{
 
 	private boolean value;
-	private StringFormat stringFormat = null;
+	private StringFormat trueStringFormat = null;
+	private StringFormat falseStringFormat = null;
 	// standard size of field in serialized form
 	private final static int FIELD_SIZE_BYTES = 1;
-	private static final String DEFAULT_REGEXP_TRUE_STRING = "T|TRUE|YES|Y||t|true|1|yes|y";
 
     /**
      *  Constructor for the BooleanDataField object
@@ -73,9 +73,10 @@ public class BooleanDataField extends DataField implements Comparable{
         String regExpTrueString;
         regExpTrueString = _metadata.getFormatStr();
         if ((regExpTrueString == null) || (regExpTrueString.length() == 0)) {
-        	regExpTrueString = DEFAULT_REGEXP_TRUE_STRING;
+        	regExpTrueString = Defaults.DEFAULT_REGEXP_TRUE_STRING;
         }
-    	stringFormat = StringFormat.create(regExpTrueString);
+    	trueStringFormat = StringFormat.create(regExpTrueString);
+    	falseStringFormat = StringFormat.create(Defaults.DEFAULT_REGEXP_FALSE_STRING);
 	}
 	
 	/* (non-Javadoc)
@@ -251,8 +252,16 @@ public class BooleanDataField extends DataField implements Comparable{
 		    setNull(true);
 			return;
 		}
-		value = stringFormat.matches(seq.toString());
-		setNull(false);
+		if (trueStringFormat.matches(seq.toString())) {
+			value = true;
+			setNull(false);
+		}
+		else if (falseStringFormat.matches(seq.toString())){
+			value = false;
+			setNull(false);
+		}else{
+			throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + seq, seq.toString());
+		}
 	}
 
 	/**
