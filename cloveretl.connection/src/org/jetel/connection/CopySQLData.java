@@ -1026,10 +1026,11 @@ public abstract class CopySQLData {
 		 * @since                    October 7, 2002
 		 */
 		void setJetel(ResultSet resultSet) throws SQLException {
+			boolean b = resultSet.getBoolean(fieldSQL);
 			if (resultSet.wasNull()) {
 				field.setValue((Object)null);
 			}else{
-				field.setValue( resultSet.getBoolean(fieldSQL) );	
+				field.setValue(b);	
 			}
 			
 		}
