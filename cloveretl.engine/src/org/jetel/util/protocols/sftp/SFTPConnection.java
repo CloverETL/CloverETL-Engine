@@ -8,6 +8,7 @@ import java.net.URLConnection;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.protocols.CloverURLStreamHandlerFactory;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -23,12 +24,16 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 /**
  * URL Connection for sftp protocol.
  * 
- * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
- *         (c) Javlin Consulting (www.javlinconsulting.cz)
+ * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz) (c) Javlin
+ *         Consulting (www.javlinconsulting.cz)
  */
 public class SFTPConnection extends URLConnection {
 
+	private static final JSch jsch = new JSch();
+	
 	protected Session session;
+	protected ChannelSftp channel;
+
 	protected int mode;
 
 	/**
@@ -42,157 +47,180 @@ public class SFTPConnection extends URLConnection {
 	}
 
 	/**
-	 * Supports sftp put mode that can be ChannelSftp.APPEND or ChannelSftp.OVERWRITE or ChannelSftp.RESUME value.
-	 * 
-	 * @param mode 
-	 */
-	public void setMode(int mode) {
-		this.mode = mode;
-	}
-	
-	@Override
-	public InputStream getInputStream() throws IOException {
-		connect();
-		try {
-			ChannelSftp c = getChannelSftp();
-			return c.get(url.getFile());
-		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
-		} catch (JSchException e) {
-			throw new IOException(e.getMessage());
-		}
-	}
-
-	@Override
-    public OutputStream getOutputStream() throws IOException {
-		connect();
-		try {
-			ChannelSftp c = getChannelSftp();
-			return c.put(url.getFile(), mode);
-		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
-		} catch (JSchException e) {
-			throw new IOException(e.getMessage());
-		}
-    }
-
-	public void setTimeout(int timeout) throws JSchException {
-		session.setTimeout(timeout);
-	}
-	
-	/**
-	 * Lists actual path.
+	 * Changes directory.
 	 * 
 	 * @return
 	 * @throws IOException
 	 */
-    public Vector ls() throws IOException {
+	public void cd(String path) throws IOException {
 		connect();
-		ChannelSftp c = null;
 		try {
-			c = getChannelSftp();
-			Vector v = c.ls(url.getFile());
-			return v;
+			channel = getChannelSftp();
+			channel.cd(path);
 		} catch (JSchException e) {
 			throw new IOException(e.getMessage());
 		} catch (SftpException e) {
 			throw new IOException(e.getMessage());
 		} finally {
-			if (c != null && c.isConnected()) c.disconnect();
 		}
-    }
-
-    /**
-     * Gets file from remote host.
-     * 
-     * @param remore - remote path
-     * @param os - output stream
-     * @throws IOException
-     */
-    public void get(String remore, OutputStream os) throws IOException {
-		connect();
-		ChannelSftp c = null;
-		try {
-			c = getChannelSftp();
-			c.get(remore, os);
-		} catch (JSchException e) {
-			throw new IOException(e.getMessage());
-		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
-		} finally {
-			if (c != null && c.isConnected()) c.disconnect();
-		}
-    }
-
-    /**
-     * Gets informations for actual path.
-     * 
-     * @return
-     * @throws IOException
-     */
-    public SftpATTRS stat() throws IOException {
-		connect();
-		ChannelSftp c = null;
-		try {
-			c = getChannelSftp();
-			return c.stat(url.getFile());
-		} catch (JSchException e) {
-			throw new IOException(e.getMessage());
-		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
-		} finally {
-			if (c != null && c.isConnected()) c.disconnect();
-		}
-    }
-    
-	@Override
-	public void connect() throws IOException {
-		if (session != null && session.isConnected()) return;
-		JSch jsch = new JSch();
-
-		String[] user = url.getUserInfo().split(":");
-		try {
-			if (url.getPort() == 0) {
-				session = jsch.getSession(user[0], url.getHost());
-			} else {
-				session = jsch.getSession(user[0], url.getHost(), url.getPort() == -1 ? 22 : url.getPort());
-			}
-
-			// password will be given via UserInfo interface.
-			session.setUserInfo(new URLUserInfo(user.length == 2 ? user[1] : null));
-
-			session.connect();
-		} catch (JSchException e) {
-			connect2();
-		} catch (Exception e) {
-			connect2();
-		}
-	}
-
-	public void disconnect() {
-		if (session != null && session.isConnected()) session.disconnect();
 	}
 	
-	private void connect2() throws IOException {
-		JSch jsch = new JSch();
-
-		String[] user = url.getUserInfo().split(":");
+	@Override
+	public void connect() throws IOException {
+		String[] user = getUserInfo();
 		try {
-			if (url.getPort() == 0) {
-				session = jsch.getSession(user[0], url.getHost());
-			} else {
-				session = jsch.getSession(user[0], url.getHost(), url.getPort() == -1 ? 22 : url.getPort());
-			}
+			connect(new URLUserInfo(user.length == 2 ? user[1] : null));
+		} catch (Exception e) {
+			connect(new URLUserInfoIteractive(user.length == 2 ? user[1] : null));
+		}
+	}
+
+	private void connect(AUserInfo aUserInfo) throws IOException {
+		if (session != null && session.isConnected()) return;
+		
+		String[] user = getUserInfo();
+		try {
+			if (url.getPort() == 0) session = jsch.getSession(user[0], url.getHost());
+			else session = jsch.getSession(user[0], url.getHost(), url.getPort() == -1 ? 22 : url.getPort());
 
 			// password will be given via UserInfo interface.
-			session.setUserInfo(new URLUserInfoIteractive(user.length == 2 ? user[1] : null));
-
+			session.setUserInfo(aUserInfo);
 			session.connect();
+		} catch (Exception e) {
+			throw new IOException(e.getMessage());
+		}
+	}
+
+	/**
+	 * Session disconnect.
+	 */
+	public void disconnect() {
+		if (session != null && session.isConnected())
+			session.disconnect();
+	}
+
+	/**
+	 * Gets file from remote host.
+	 * 
+	 * @param remore -
+	 *            remote path
+	 * @param os -
+	 *            output stream
+	 * @throws IOException
+	 */
+	public void get(String remore, OutputStream os) throws IOException {
+		connect();
+		try {
+			channel = getChannelSftp();
+			channel.get(remore, os);
 		} catch (JSchException e) {
 			throw new IOException(e.getMessage());
-		} catch (Exception e) {
-			throw new IOException("Couldn't connect to: " + url.toExternalForm() + ": " + e.getMessage());
+		} catch (SftpException e) {
+			throw new IOException(e.getMessage());
+		} finally {
 		}
+	}
+
+	@Override
+	public InputStream getInputStream() throws IOException {
+		connect();
+		try {
+			channel = getChannelSftp();
+			InputStream is = channel.get(url.getFile());
+			return is;
+		} catch (SftpException e) {
+			throw new IOException(e.getMessage());
+		} catch (JSchException e) {
+			throw new IOException(e.getMessage());
+		}
+	}
+
+	@Override
+	public OutputStream getOutputStream() throws IOException {
+		connect();
+		try {
+			channel = getChannelSftp();
+			return channel.put(url.getFile(), mode);
+		} catch (SftpException e) {
+			throw new IOException(e.getMessage());
+		} catch (JSchException e) {
+			throw new IOException(e.getMessage());
+		}
+	}
+
+	/**
+	 * Lists path.
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	public Vector ls(String path) throws IOException {
+		connect();
+		try {
+			channel = getChannelSftp();
+			return channel.ls(path);
+		} catch (JSchException e) {
+			throw new IOException(e.getMessage());
+		} catch (SftpException e) {
+			throw new IOException(e.getMessage());
+		} finally {
+		}
+	}
+
+	/**
+	 * Pwd command.
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	public String pwd() throws IOException {
+		connect();
+		try {
+			channel = getChannelSftp();
+			return channel.pwd();
+		} catch (JSchException e) {
+			throw new IOException(e.getMessage());
+		} finally {
+		}
+	}
+
+	/**
+	 * Supports sftp put mode that can be ChannelSftp.APPEND or
+	 * ChannelSftp.OVERWRITE or ChannelSftp.RESUME value.
+	 * 
+	 * @param mode
+	 */
+	public void setMode(int mode) {
+		this.mode = mode;
+	}
+
+	public void setTimeout(int timeout) throws JSchException {
+		session.setTimeout(timeout);
+	}
+
+	/**
+	 * Gets informations for actual path.
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	public SftpATTRS stat(String path) throws IOException {
+		connect();
+		try {
+			channel = getChannelSftp();
+			return channel.stat(path);
+		} catch (JSchException e) {
+			throw new IOException(e.getMessage());
+		} catch (SftpException e) {
+			throw new IOException(e.getMessage());
+		} finally {
+		}
+	}
+
+	private String[] getUserInfo() {
+		String userInfo;
+		return (userInfo = url.getUserInfo()) == null ? new String[] { "" }
+				: userInfo.split(":");
 	}
 
 	/**
@@ -201,15 +229,18 @@ public class SFTPConnection extends URLConnection {
 	 * @return ChannelSftp
 	 * @throws JSchException
 	 */
-    private ChannelSftp getChannelSftp() throws JSchException {
-    	ChannelSftp channel = (ChannelSftp) session.openChannel(url.getProtocol());
-		channel.connect();
+	private ChannelSftp getChannelSftp() throws JSchException {
+		if (channel == null || !channel.isConnected()) {
+			channel = (ChannelSftp) session.openChannel(url.getProtocol());
+			channel.connect();
+		}
 		return channel;
-    }
-    
-    public static abstract class AUserInfo implements UserInfo {
+	}
+
+	public static abstract class AUserInfo implements UserInfo {
 		protected String password;
-		protected String passphrase=null;
+
+		protected String passphrase = null;
 
 		public AUserInfo(String password) {
 			this.password = password;
@@ -217,7 +248,7 @@ public class SFTPConnection extends URLConnection {
 
 		public void showMessage(String message) {
 		}
-		
+
 		public boolean promptPassphrase(String message) {
 			return true;
 		}
@@ -225,19 +256,20 @@ public class SFTPConnection extends URLConnection {
 		public boolean promptYesNo(String str) {
 			return true;
 		}
-		
-	    public String getPassphrase(){ 
-	    	return passphrase; 
-	    }
-    }
-    
-    /**
-     * Class for password supporting.
-     * 
-     * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
-	 *         (c) Javlin Consulting (www.javlinconsulting.cz)
-     */
-	public static class URLUserInfoIteractive extends AUserInfo implements UIKeyboardInteractive {
+
+		public String getPassphrase() {
+			return passphrase;
+		}
+	}
+
+	/**
+	 * Class for password supporting.
+	 * 
+	 * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz) (c) Javlin
+	 *         Consulting (www.javlinconsulting.cz)
+	 */
+	public static class URLUserInfoIteractive extends AUserInfo implements
+			UIKeyboardInteractive {
 
 		public URLUserInfoIteractive(String password) {
 			super(password);
@@ -256,33 +288,52 @@ public class SFTPConnection extends URLConnection {
 			return true ? new String[] { password } : null;
 		}
 	}
+
 	public static class URLUserInfo extends AUserInfo {
 
 		public URLUserInfo(String password) {
 			super(password);
 		}
 
-	    public String getPassword(){  
-	    	return password; 
-	    }
-	    
-	    public boolean promptPassword(String message){
-	        return password!=null;
-	    }	      
-	      
+		public String getPassword() {
+			return password;
+		}
+
+		public boolean promptPassword(String message) {
+			return password != null;
+		}
+
 	}
 
-	public static void main(String [] s) {
-        try {
+	public static void main(String[] s) {
+		try {
+			FileUtils.getReadableChannel(null, "gzip:(sftp://jausperger:relatko5@linuxweb:/home/jausperger/public_html/employees0.dat.gz)");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		System.exit(0);
+		try {
 			URL.setURLStreamHandlerFactory(new CloverURLStreamHandlerFactory());
-			URL url = new URL("sftp://e-potrisalova:W8MPJYLm@eft.boehringer-ingelheim.com:/LSC/AED/Export/O_*");
-			//URL url = new URL("sftp://e-potrisalova:W8MPJYLm@eft.boehringer-ingelheim.com:/LSC/AED/Export/O_010_0000000000017003.xml");
-			//URL url = new URL("sftp://jausperger:relatko5@linuxweb:/home/jausperger/public_html/xml/*");
-			//URL url = new URL("sftp://jausperger:relatko5@home.javlinconsulting.cz:/home/jausperger/public_html/*");
-			SFTPConnection con = (SFTPConnection) url.openConnection();
-			//con.getInputStream();
 			
-			Vector v = con.ls();
+			// URL url = new
+			// URL("sftp://e-potrisalova:W8MPJYLm@eft.boehringer-ingelheim.com:/LSC/AED/Export/O_*");
+			// URL url = new
+			// URL("sftp://e-potrisalova:W8MPJYLm@eft.boehringer-ingelheim.com:/LSC/AED/Export/O_010_0000000000017003.xml");
+			URL url = new URL("sftp://jausperger:relatko5@linuxweb:/home/jausperger/public_html/");
+			/*URL url = new URL(
+					"sftp://jausperger:relatko5@home.javlinconsulting.cz:/home/jausperger/public_html/");*/
+			SFTPConnection con = (SFTPConnection) url.openConnection();
+			// con.getInputStream();
+
+			con.connect();
+			System.out.println(con.pwd());
+			con.cd("/home/jausperger/public_html/xml");
+			con.ls(con.pwd());
+			System.out.println(con.pwd());
+			
+			Vector v = con.ls(con.pwd());
 			Iterator it = v.iterator();
 			LsEntry entry;
 			while (it.hasNext()) {
@@ -290,11 +341,11 @@ public class SFTPConnection extends URLConnection {
 				con.get("/LSC/AED/Export/" + entry.getFilename(), System.out);
 			}
 			con.disconnect();
-			
+
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
 		System.exit(0);
 	}
-	
+
 }
