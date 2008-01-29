@@ -414,6 +414,8 @@ public class SQLUtil {
             case DataFieldMetadata.BYTE_FIELD:
             case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
                 return Types.BINARY;
+            case DataFieldMetadata.BOOLEAN_FIELD:
+            	return Types.BOOLEAN;
 			default:
 				return -1;
 			// unknown or not possible to translate
@@ -455,6 +457,8 @@ public class SQLUtil {
         		return Types.BLOB;
         	}
             return Types.BINARY;
+        case DataFieldMetadata.BOOLEAN_FIELD:
+        	return Types.BOOLEAN;
 		default:
 			return -1;
 		// unknown or not possible to translate
@@ -545,8 +549,9 @@ public class SQLUtil {
             case Types.BLOB:
                 return DataFieldMetadata.BYTE_FIELD;
 			//-----------------
-			// proximity assignment
 			case Types.BOOLEAN:
+				return DataFieldMetadata.BOOLEAN_FIELD;
+			// proximity assignment
 			case Types.BIT:
 				return DataFieldMetadata.STRING_FIELD;
 			default:
