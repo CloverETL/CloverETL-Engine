@@ -42,6 +42,9 @@ public class StrictParserExceptionHandler extends AbstractParserExceptionHandler
     protected void handle() {
     	BadDataFormatException ex = exception;
     	exception = null;
+    	if(getRawRecord() != null) {
+    		ex.setOffendingValue(getRawRecord());
+    	}
         throw ex;
     }
 

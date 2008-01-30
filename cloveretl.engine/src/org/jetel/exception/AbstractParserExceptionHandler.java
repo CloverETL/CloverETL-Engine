@@ -36,6 +36,8 @@ public abstract class AbstractParserExceptionHandler implements IParserException
     
     protected int recordNumber;
     
+    protected String rawRecord;
+    
     protected BadDataFormatException exception = null;
     
     public void handleException() {
@@ -98,6 +100,14 @@ public abstract class AbstractParserExceptionHandler implements IParserException
     }
         
     public abstract PolicyType getType();
+
+	public String getRawRecord() {
+		return rawRecord;
+	}
+
+	public void setRawRecord(String rawRecord) {
+		this.rawRecord = rawRecord;
+	}
 
 }
 

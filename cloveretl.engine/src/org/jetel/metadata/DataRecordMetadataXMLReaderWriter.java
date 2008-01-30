@@ -149,6 +149,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
     private static final String TYPE_ATTR = "type";
     private static final String RECORD_SIZE_ATTR = "recordSize";
     public  static final String RECORD_DELIMITER_ATTR = "recordDelimiter";
+    public  static final String FIELD_DELIMITER_ATTR = "fieldDelimiter";
 	private static final String DELIMITER_ATTR = "delimiter";
 	private static final String EOF_AS_DELIMITER_ATTR = "eofAsDelimiter";
 	private static final String FORMAT_ATTR = "format";
@@ -427,6 +428,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		String recordName = null;
 		String recordType = null;
 		String recordDelimiter = null;
+		String fieldDelimiter = null;
 		String sizeStr = null;
 		String recLocaleStr = null;
 		String itemName;
@@ -454,6 +456,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				recLocaleStr = itemValue;
 			} else if (itemName.equalsIgnoreCase(RECORD_DELIMITER_ATTR)) {
 				recordDelimiter = itemValue;
+			} else if (itemName.equalsIgnoreCase(FIELD_DELIMITER_ATTR)) {
+				fieldDelimiter = itemValue;
 			} else if (itemName.equalsIgnoreCase(RECORD_SIZE_ATTR)) {
 				sizeStr = itemValue;
 			} else {
@@ -481,6 +485,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		recordMetadata.setRecordProperties(recordProperties);
 		if(!StringUtils.isEmpty(recordDelimiter)) {
 			recordMetadata.setRecordDelimiter(recordDelimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX));
+		}
+		if(!StringUtils.isEmpty(fieldDelimiter)) {
+			recordMetadata.setFieldDelimiter(fieldDelimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX));
 		}
 
 		short recSize = 0;
@@ -582,11 +589,11 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 						getFieldSize(size));
                 field.setShift(shiftVal);
 			} else if (recordMetadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
-				if (delimiter == null) {
-					throw new DOMException(DOMException.NOT_FOUND_ERR,
-							"Attribute \"delimiter\" not defined for field #"
-									+ i);
-				}
+//				if (delimiter == null) {
+//					throw new DOMException(DOMException.NOT_FOUND_ERR,
+//							"Attribute \"delimiter\" not defined for field #"
+//									+ i);
+//				}
 				field = new DataFieldMetadata(name, fieldType, delimiter);
                 field.setShift(shiftVal);
 			} else { //mixed dataRecord type

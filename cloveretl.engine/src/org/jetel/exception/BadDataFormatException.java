@@ -82,10 +82,10 @@ public class BadDataFormatException extends RuntimeException implements Iterable
     public String getMessage() {
         StringBuffer ret = new StringBuffer();
         ret.append(super.getMessage());
-        if(offendingValue != null && offendingValue.length() > 0) {
-            ret.append(" : ");
-            ret.append(StringUtils.quote(StringUtils.specCharToString(offendingValue)));
-        }
+//        if(offendingValue != null && offendingValue.length() > 0) {
+//            ret.append(" : ");
+//            ret.append(StringUtils.quote(StringUtils.specCharToString(offendingValue)));
+//        }
         if(recordNumber >= 0) {
             ret.append(" in record # ");
             ret.append(recordNumber);
