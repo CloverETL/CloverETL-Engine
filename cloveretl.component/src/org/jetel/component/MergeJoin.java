@@ -185,7 +185,7 @@ public class MergeJoin extends Node {
 	
 //	private static Log logger = LogFactory.getLog(MergeJoin.class);
 	
-	static Log logger = LogFactory.getLog(HashJoin.class);
+	static Log logger = LogFactory.getLog(MergeJoin.class);
 	private boolean oldJoinKey = false;
 
 	private String[][] joiners;
