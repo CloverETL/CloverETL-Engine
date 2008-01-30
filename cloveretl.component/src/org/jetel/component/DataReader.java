@@ -190,9 +190,11 @@ public class DataReader extends Node {
 							// TODO implement log port framework
 							((IntegerDataField) logRecord.getField(0))
 									.setValue(bdfe.getRecordNumber());
-							((StringDataField) logRecord.getField(1)).setValue(bdfe
-									.getOffendingValue());
+							((IntegerDataField) logRecord.getField(1))
+									.setValue(bdfe.getFieldNumber());
 							((StringDataField) logRecord.getField(2)).setValue(bdfe
+									.getOffendingValue());
+							((StringDataField) logRecord.getField(3)).setValue(bdfe
 									.getMessage());
 							writeRecord(LOG_PORT, logRecord);
 						} else {
@@ -219,10 +221,11 @@ public class DataReader extends Node {
 	private boolean checkLogPortMetadata() {
         DataRecordMetadata logMetadata = getOutputPort(LOG_PORT).getMetadata();
 
-        boolean ret = logMetadata.getNumFields() == 3 
-            && logMetadata.getField(0).getType() == DataFieldMetadata.INTEGER_FIELD
-            && logMetadata.getField(1).getType() == DataFieldMetadata.STRING_FIELD
-            && logMetadata.getField(2).getType() == DataFieldMetadata.STRING_FIELD;
+        boolean ret = logMetadata.getNumFields() == 4 
+        	&& logMetadata.getField(0).getType() == DataFieldMetadata.INTEGER_FIELD
+        	&& logMetadata.getField(1).getType() == DataFieldMetadata.INTEGER_FIELD
+            && logMetadata.getField(2).getType() == DataFieldMetadata.STRING_FIELD
+            && logMetadata.getField(3).getType() == DataFieldMetadata.STRING_FIELD;
         
         if(!ret) {
             logger.warn("The log port metedata has invalid format (expected data fields - integer, string, string)");
