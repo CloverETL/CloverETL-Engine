@@ -467,7 +467,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @since
 	 */
 	public String[] getDelimiters() {
-		return delimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
+		return delimiter != null ? delimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX) : null;
 	}
 
 	/**
@@ -606,11 +606,11 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	public boolean isDelimited() {
-		return (delimiter != null);
+		return (size == 0);
 	}
 
 	public boolean isFixed() {
-		return (delimiter == null);
+		return (size != 0);
 	}
 	
 	/**
@@ -702,7 +702,7 @@ public class DataFieldMetadata implements Serializable {
 				return false;
 			}
 		}
-		//diffrent types
+		//different types
 		return false;
 	}
 	

@@ -115,6 +115,7 @@ public class DataParser implements Parser {
 		record = parseNext(record);
         if(exceptionHandler != null ) {  //use handler only if configured
             while(exceptionHandler.isExceptionThrowed()) {
+            	exceptionHandler.setRawRecord(getLogString());
                 exceptionHandler.handleException();
                 record = parseNext(record);
             }
@@ -129,6 +130,7 @@ public class DataParser implements Parser {
 		record = parseNext(record);
         if(exceptionHandler != null ) {  //use handler only if configured
             while(exceptionHandler.isExceptionThrowed()) {
+            	exceptionHandler.setRawRecord(getLogString());
                 exceptionHandler.handleException();
                 record = parseNext(record);
             }
@@ -161,8 +163,10 @@ public class DataParser implements Parser {
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			if(metadata.getField(i).isDelimited()) {
 				delimiters = metadata.getField(i).getDelimiters();
-				for(int j = 0; j < delimiters.length; j++) {
-					delimiterSearcher.addPattern(delimiters[j], i);
+				if(delimiters != null) {
+					for(int j = 0; j < delimiters.length; j++) {
+						delimiterSearcher.addPattern(delimiters[j], i);
+					}
 				}
 			}
 			isAutoFilling[i] = metadata.getField(i).getAutoFilling() != null;
@@ -184,6 +188,12 @@ public class DataParser implements Parser {
             } else {
                 delimiterSearcher.addPattern("\n", -2); //separator for skipping first line
             }
+		}
+		if(metadata.isSpecifiedFieldDelimiter()) {
+			delimiters = metadata.getFieldDelimiters();
+			for(int j = 0; j < delimiters.length; j++) {
+				delimiterSearcher.addPattern(delimiters[j], -3); //default field delimiter is searched under '-3' key
+			}
 		}
 		delimiterSearcher.compile();
 	
@@ -274,6 +284,7 @@ public class DataParser implements Parser {
 		boolean inQuote;
 		boolean skipBlanks;
 		char type;
+		boolean recordDelimiterFound = false;
 		
 		recordCounter++;
 		recordBuffer.clear();
@@ -325,20 +336,39 @@ public class DataParser implements Parser {
 								}
 							}
 						}
-						//test record delimiter
-						if (!inQuote && metadata.isSpecifiedRecordDelimiter()) {
-							if (isRecordDelimiter()) {
-								return parsingErrorFound("Unexpected record delimiter", record, fieldCounter);
-							}
-						}
+
 						//fieldDelimiter update
 						if(!skipBlanks) {
 						    fieldBuffer.append((char) character);
                         }
 
+						//test record delimiter
+						if (!inQuote && metadata.isSpecifiedRecordDelimiter()) {
+							if (isRecordDelimiter()) {
+								boolean hasDelimiter = metadata.getField(fieldCounter).getDelimiter() != null;
+								if(!hasDelimiter && fieldCounter + 1 == metadata.getNumFields() ) {
+									recordDelimiterFound = true;
+									if(!skipBlanks) {
+									    fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
+	                                }
+									if ((trim == Boolean.TRUE || (trim == null && metadata.getField(fieldCounter).isTrim()))) {
+										StringUtils.trimTrailing(fieldBuffer);
+									}
+									if(treatMultipleDelimitersAsOne)
+										while(followFieldDelimiter(fieldCounter));
+									break;
+								}
+								return parsingErrorFound("Unexpected record delimiter", record, fieldCounter);
+							}
+						}
+
 						//test field delimiter
 						if (!inQuote) {
-							if(delimiterSearcher.isPattern(fieldCounter)) {
+							boolean hasDelimiter = metadata.getField(fieldCounter).getDelimiter() != null;
+							boolean fieldDelimiterFound = hasDelimiter ? delimiterSearcher.isPattern(fieldCounter) : false;
+							boolean defaultFieldDelimiterFound = delimiterSearcher.isPattern(-3);
+							if((hasDelimiter && fieldDelimiterFound) ||
+									!hasDelimiter && defaultFieldDelimiterFound) {
 								if(!skipBlanks) {
 								    fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
                                 }
@@ -348,6 +378,9 @@ public class DataParser implements Parser {
 								if(treatMultipleDelimitersAsOne)
 									while(followFieldDelimiter(fieldCounter));
 								break;
+							}
+							if(hasDelimiter && defaultFieldDelimiterFound) {
+								return parsingErrorFound("Unexpected default field delimiter", record, fieldCounter);
 							}
 						}
 					}
@@ -410,9 +443,9 @@ public class DataParser implements Parser {
 			populateField(record, fieldCounter, fieldBuffer);
 		}
 		
-		if(metadata.isSpecifiedRecordDelimiter()) {
+		if(metadata.isSpecifiedRecordDelimiter() && !recordDelimiterFound) {
 			if(!followRecordDelimiter()) { //record delimiter is not found
-				return parsingErrorFound("Missing record delimiter", record, fieldCounter);
+				return parsingErrorFound("Too fields in record found", record, fieldCounter);
 			}
 		}
 
@@ -421,10 +454,10 @@ public class DataParser implements Parser {
 
 	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum) {
         if(exceptionHandler != null) {
-            exceptionHandler.populateHandler("Parsing error: " + exceptionMessage, record, recordCounter, fieldNum, getLogString(), new BadDataFormatException("Parsing error: " + exceptionMessage));
+            exceptionHandler.populateHandler("Parsing error: " + exceptionMessage, record, recordCounter, fieldNum + 1, null, new BadDataFormatException("Parsing error: " + exceptionMessage));
             return record;
         } else {
-			throw new RuntimeException("Parsing error: " + exceptionMessage + " when parsing record #" + recordCounter + " and " + fieldNum + ". field (" + recordBuffer.toString() + ")");
+			throw new RuntimeException("Parsing error: " + exceptionMessage + " when parsing record #" + recordCounter + " and " + (fieldNum + 1) + ". field (" + recordBuffer.toString() + ")");
 		}
 	}
 	
@@ -460,7 +493,7 @@ public class DataParser implements Parser {
 		try {
 			recordBuffer.put(character);
 		} catch (BufferOverflowException e) {
-			throw new RuntimeException("The size of data buffer is only " + recordBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+			throw new RuntimeException("Parse error: The size of data buffer for data record is only " + recordBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
 		}
 
 		return character;
@@ -499,11 +532,11 @@ public class DataParser implements Parser {
 	 * @param fieldNumber
 	 *            first incomlete field in record
 	 */
-	private void finishRecord(DataRecord record, int fieldNumber) {
-		for(int i = fieldNumber; i < metadata.getNumFields(); i++) {
-			record.getField(i).setToDefaultValue();
-		}
-	}
+//	private void finishRecord(DataRecord record, int fieldNumber) {
+//		for(int i = fieldNumber; i < metadata.getNumFields(); i++) {
+//			record.getField(i).setToDefaultValue();
+//		}
+//	}
 
 	/**
 	 * Populate field.
@@ -518,7 +551,7 @@ public class DataParser implements Parser {
 		} catch(BadDataFormatException bdfe) {
             if(exceptionHandler != null) {
                 exceptionHandler.populateHandler(bdfe.getMessage(), record,
-						recordCounter, fieldNum, data.toString(), bdfe);
+						recordCounter, fieldNum + 1, data.toString(), bdfe);
             } else {
                 bdfe.setRecordNumber(recordCounter);
                 bdfe.setFieldNumber(fieldNum);
@@ -585,13 +618,13 @@ public class DataParser implements Parser {
 		return (character != -1);
 	}
 
-    private void shiftToNextRecord(int fieldNum) {
-        if(metadata.isSpecifiedRecordDelimiter()) {
-            findFirstRecordDelimiter();
-        } else {
-            findEndOfRecord(fieldNum);
-        }
-    }
+//    private void shiftToNextRecord(int fieldNum) {
+//        if(metadata.isSpecifiedRecordDelimiter()) {
+//            findFirstRecordDelimiter();
+//        } else {
+//            findEndOfRecord(fieldNum);
+//        }
+//    }
 	/**
 	 * Is record delimiter in the input channel?
 	 * @return
@@ -601,7 +634,7 @@ public class DataParser implements Parser {
 	}
 	
 	/**
-	 * Folow field delimiter in the input channel?
+	 * Follow field delimiter in the input channel?
 	 * @param fieldNum field delimiter identifier
 	 * @return
 	 */
@@ -629,7 +662,7 @@ public class DataParser implements Parser {
 	}
 	
 	/**
-	 * Folow record delimiter in the input channel?
+	 * Follow record delimiter in the input channel?
 	 * @return
 	 */
 	private boolean followRecordDelimiter() {

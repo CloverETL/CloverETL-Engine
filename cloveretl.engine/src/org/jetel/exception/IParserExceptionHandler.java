@@ -19,8 +19,6 @@
 */
 package org.jetel.exception;
 
-import java.util.List;
-
 import org.jetel.data.DataRecord;
 
 /**
@@ -64,5 +62,8 @@ public interface IParserExceptionHandler {
     
     public abstract PolicyType getType();
 
-	
+	public String getRawRecord();
+
+	public void setRawRecord(String rawRecord);
+
 }

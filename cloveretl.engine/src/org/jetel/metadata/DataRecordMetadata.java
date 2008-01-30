@@ -62,6 +62,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private String name;
 	private char recType;
 	private String[] recordDelimiters;
+	private String[] fieldDelimiters;
 	private int recordSize=-1;
 	private String localeStr;
     private short numNullableFields;
@@ -579,6 +580,25 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		}
 
 	}
+
+	public void setFieldDelimiter(String[] fieldDelimiters) {
+		this.fieldDelimiters = fieldDelimiters;
+	}
+
+	public boolean isSpecifiedFieldDelimiter() {
+		return getFieldDelimiters() != null;
+	}
+
+	public String[] getFieldDelimiters() {
+        if(fieldDelimiters == null) {
+            String rd = getRecordProperties().getProperty(DataRecordMetadataXMLReaderWriter.FIELD_DELIMITER_ATTR);
+            if(rd != null) {
+                setFieldDelimiter(StringUtils.stringToSpecChar(rd).split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX));
+            }
+        }
+		return fieldDelimiters;
+	}
+	
 	
 	public void setRecordDelimiter(String[] recordDelimiters) {
 		this.recordDelimiters = recordDelimiters;

@@ -98,7 +98,18 @@ public class DataFormatter implements Formatter {
 		fieldLengths = new int[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			if(metadata.getField(i).isDelimited()) {
-                delimiters[i] = (metadata.getField(i).getDelimiters()[0]).getBytes();
+				String[] tempDelimiters = metadata.getField(i).getDelimiters();
+				byte[] tempDelimiter = null;
+				if(tempDelimiters == null || tempDelimiters.length == 0) {
+					if(i < metadata.getNumFields() - 1) {
+						tempDelimiter = (metadata.getFieldDelimiters()[0]).getBytes();
+					} else {
+						tempDelimiter = new byte[0];
+					}
+				} else {
+					tempDelimiter = tempDelimiters[0].getBytes();
+				}
+                delimiters[i] = tempDelimiter;
 				delimiterLength[i] = delimiters[i].length;
 			} else {
 				fieldLengths[i] = metadata.getField(i).getSize();
