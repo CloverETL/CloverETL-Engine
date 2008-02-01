@@ -226,6 +226,19 @@ public class Phase extends GraphElement implements Comparable {
         node.setGraph(getGraph());
 	}
 
+	/**
+     * Bulk adding nodes into this phase
+     * 
+     * @param edges
+     * @throws GraphConfigurationException
+     */
+    public void addNode(Node ... nodes) throws GraphConfigurationException{
+    	for(int i=0;i<nodes.length;i++){
+    		addNode(nodes[i]);
+    	}
+    }
+	
+	
     /**
      *  Deletes node from the phase.
      * @param node the node to be removed from the phase
@@ -251,6 +264,18 @@ public class Phase extends GraphElement implements Comparable {
 		edge.setGraph(getGraph());
 	}
 
+	/**
+     * Bulk adding edges into this phase
+     * 
+     * @param edges
+     * @throws GraphConfigurationException
+     */
+    public void addEdge(Edge ... edges) throws GraphConfigurationException{
+    	for(int i=0;i<edges.length;i++){
+    		addEdge(edges[i]);
+    	}
+    }
+	
     /**
      *  Deletes edge from the phase.
      * @param edge the edge to be removed from the edge
