@@ -115,8 +115,11 @@ public class TLBooleanValue extends TLValue {
 
 	@Override
 	public void setValue(TLValue _value) {
-		if (_value!=this){
+		if (!(_value instanceof TLBooleanValue)){
 			throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
+		}
+		if (_value != this) {
+			value = ((TLBooleanValue)_value).getBoolean();
 		}
 	}
 	
