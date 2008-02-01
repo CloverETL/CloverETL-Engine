@@ -329,7 +329,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					Defaults.WatchDog.WATCHDOG_SLEEP_INTERVAL,
 					TimeUnit.MILLISECONDS);
 			if (message != null) {
-				if (message.getType() == Message.Type.ERROR) {
+				switch(message.getType()){
+				case ERROR:
 					causeException = ((ErrorMsgBody) message.getBody())
 							.getSourceException();
 					causeNodeID = message.getSenderID();
@@ -347,10 +348,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					// phase.getPhaseNum());
 					printTracking.execute(true); // print tracking
 					return Result.ERROR;
-				} else {
+				case MESSAGE:
 					synchronized (_MSG_LOCK) {
 						outMsgMap.put(message.getRecipientID(), message);
 					}
+					break;
+					default:
+						// do notfing, just wake up
 				}
 			}
 
