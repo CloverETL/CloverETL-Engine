@@ -34,8 +34,8 @@ public class  Message<T> implements Comparable<Message>{
     
     public enum Type {
         MESSAGE,
-        ERROR,
-        NOTIFICATION
+        NOTIFICATION,
+        ERROR
     }
     
     protected Type type;
@@ -58,7 +58,7 @@ public class  Message<T> implements Comparable<Message>{
         this.senderID=senderID;
         this.senderThreadID=senderThreadID;
         this.recipientID=recipientID;
-        this.priority=0;
+        this.priority=type.ordinal();
     }
 
     
