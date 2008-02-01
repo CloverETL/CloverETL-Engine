@@ -23,14 +23,8 @@
  */
 package org.jetel.interpreter.extensions;
 
-import java.util.Date;
-
-import org.jetel.data.primitive.CloverDouble;
-import org.jetel.data.primitive.CloverInteger;
-import org.jetel.interpreter.data.TLDateValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
-import org.jetel.metadata.DataFieldMetadata;
 
 public class TLContext<T> {
 
@@ -56,6 +50,12 @@ public class TLContext<T> {
         return context;
     }
 
+    public static TLContext<TLValue> createLongContext() {
+        TLContext<TLValue> context = new TLContext<TLValue>();
+        context.setContext(TLValue.create(TLValueType.LONG));
+        return context;
+    }
+
     public static TLContext<TLValue> createDoubleContext() {
         TLContext<TLValue> context = new TLContext<TLValue>();
         context.setContext(TLValue.create(TLValueType.DOUBLE));
@@ -68,6 +68,12 @@ public class TLContext<T> {
         context.setContext(TLValue.create(TLValueType.DATE));
         return context;
 
+    }
+    
+    public static TLContext<TLValue> createNullContext() {
+		 TLContext<TLValue> context = new TLContext<TLValue>();
+	     context.setContext(null);
+	     return context;
     }
     
 }
