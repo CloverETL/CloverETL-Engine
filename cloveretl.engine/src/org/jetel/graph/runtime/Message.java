@@ -34,7 +34,8 @@ public class  Message<T> implements Comparable<Message>{
     
     public enum Type {
         MESSAGE,
-        ERROR
+        ERROR,
+        NOTIFICATION
     }
     
     protected Type type;
@@ -74,6 +75,9 @@ public class  Message<T> implements Comparable<Message>{
         return new Message<ErrorMsgBody>(node,null,Type.ERROR,exception);
     }
     
+    public static Message createNotificationMessage(Node node, Object body){
+    	return new Message<Object>(node,null,Type.NOTIFICATION,body);
+    }
     
     /**
      * @return the body
