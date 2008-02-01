@@ -615,6 +615,18 @@ public final class TransformationGraph extends GraphElement {
 	}
 	
 	/**
+	 * Bulk registration of metadata objects.
+	 * 
+	 * @param metadata
+	 */
+	public void addDataRecordMetadata(DataRecordMetadata ... metadata){
+		for(int i=0;i<metadata.length;i++){
+			this.dataRecordMetadata.put(metadata[i].getName(), metadata[i]);
+		}
+	}
+	
+	
+	/**
 	 * Good for debugging. Prints out all defined phases and nodes assigned to phases. Has to be
 	 * called after init()
 	 */
@@ -795,6 +807,19 @@ public final class TransformationGraph extends GraphElement {
     		throw new GraphConfigurationException("An edge cannot be added into the graph - phase does not exist.");
     	}
     	phase.addEdge(edge);
+    }
+    
+    
+    /**
+     * Bulk adding edges into appropriae phases
+     * 
+     * @param edges
+     * @throws GraphConfigurationException
+     */
+    public void addEdge(Edge ... edges) throws GraphConfigurationException{
+    	for(int i=0;i<edges.length;i++){
+    		addEdge(edges[i]);
+    	}
     }
     
     /**
