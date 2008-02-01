@@ -315,7 +315,7 @@ public class runGraph {
             System.exit(-1);
 		}
         
-        System.out.println("Free graph resources.");
+        System.out.println("Freeing graph resources.");
 		graph.free();
 		
         switch (result) {
