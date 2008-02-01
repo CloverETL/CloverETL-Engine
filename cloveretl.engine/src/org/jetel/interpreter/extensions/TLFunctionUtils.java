@@ -70,4 +70,24 @@ public class TLFunctionUtils implements TransformLangParserConstants  {
 		
 	}
 	
+	public static int valueType2astToken(TLValueType type){
+		
+		switch (type) {
+		case INTEGER:	return TransformLangParserConstants.INT_VAR;
+		case LONG:		return TransformLangParserConstants.LONG_VAR;
+		case DATE:		return TransformLangParserConstants.DATE_VAR;
+		case DOUBLE:	return TransformLangParserConstants.DOUBLE_VAR;
+		case DECIMAL:	return TransformLangParserConstants.DECIMAL_VAR;
+		case BOOLEAN:	return TransformLangParserConstants.BOOLEAN_VAR;
+		case STRING:	return TransformLangParserConstants.STRING_VAR;
+		case BYTE:		return TransformLangParserConstants.BYTE_VAR;
+		case LIST:		return TransformLangParserConstants.LIST_VAR;
+		case MAP:		return TransformLangParserConstants.MAP_VAR;
+		case RECORD:	return TransformLangParserConstants.RECORD_VAR;
+		case OBJECT:	return TransformLangParserConstants.OBJECT_VAR;
+		case SYM_CONST:return TransformLangParserConstants.ENUM;
+		default:
+			 throw new IllegalArgumentException("Unknown TL type: " + type.getName());
+		}
+	}
 }
