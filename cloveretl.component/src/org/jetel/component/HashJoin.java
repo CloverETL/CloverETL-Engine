@@ -208,6 +208,8 @@ public class HashJoin extends Node {
 	
 	private RecordKey[] driverKeys;
 	private RecordKey[] slaveKeys;
+	
+	private boolean slaveOverriden = false;
 
 	private HashMap<HashKey, MapItem>[] hashMap;
 	private int hashTableInitialCapacity;
@@ -235,7 +237,7 @@ public class HashJoin extends Node {
 	 * @param slaveDuplicates enables/disables duplicate slaves
 	 */
 	public HashJoin(String id, String[][] driverJoiners, String[][] slaveJoiners, String transform,
-			String transformClass, String transformURL, Join join) {
+			String transformClass, String transformURL, Join join, boolean slaveOverriden) {
 		super(id);
 		this.transformSource =transform;
 		this.transformClassName = transformClass;
@@ -244,11 +246,12 @@ public class HashJoin extends Node {
 		this.hashTableInitialCapacity = DEFAULT_HASH_TABLE_INITIAL_CAPACITY;
 		this.driverJoiners = driverJoiners;
 		this.slaveJoiners = slaveJoiners;
+		this.slaveOverriden = slaveOverriden;
 	}
 
 	public HashJoin(String id, String[][] driverJoiners, String[][] slaveJoiners, 
-			RecordTransform transform, Join join) {
-        this(id, driverJoiners, slaveJoiners, null, null, null, join);
+			RecordTransform transform, Join join, boolean slaveOverriden) {
+        this(id, driverJoiners, slaveJoiners, null, null, null, join, slaveOverriden);
 		this.transformation = transform;
 	}
 
@@ -634,10 +637,12 @@ public class HashJoin extends Node {
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		HashJoin join;
-
+		
 		try {
 			String joinStr = xattribs.getString(XML_JOINTYPE_ATTRIBUTE, "inner");
 			Join joinType;
+			boolean slaveOverriden = false;
+			
 			if (joinStr == null || joinStr.equalsIgnoreCase("inner")) {
 				joinType = Join.INNER;
 			} else if (joinStr.equalsIgnoreCase("leftOuter")) {
@@ -656,6 +661,7 @@ public class HashJoin extends Node {
 				joinType = Join.LEFT_OUTER;
 			}
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
+				slaveOverriden = true;
 				String[] slaveKeys = xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 				if (slaveKeys.length != joiners[0][0].length) {
 					throw new XMLConfigurationException("Driver key and slave key doesn't match");
@@ -672,7 +678,8 @@ public class HashJoin extends Node {
 					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
                     xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null),
-					joinType);
+					joinType, slaveOverriden);
+			
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
@@ -753,8 +760,14 @@ public class HashJoin extends Node {
     		for (int idx = 0; idx < slaveCnt; idx++) {
     			driverKeys[idx] = new RecordKey(driverJoiners[idx], driverPort.getMetadata());
     			slaveKeys[idx] = new RecordKey(slaveJoiners[idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
-    			RecordKey.checkKeys(driverKeys[idx], XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
-    					XML_SLAVEOVERRIDEKEY_ATTRIBUTE, status, this);
+    			
+    			if (slaveOverriden) {
+    				RecordKey.checkKeys(driverKeys[idx], XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
+    						XML_SLAVEOVERRIDEKEY_ATTRIBUTE, status, this);
+    			} else {
+    				RecordKey.checkKeys(driverKeys[idx], XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
+    						XML_JOINKEY_ATTRIBUTE, status, this);
+    			}
     		}
 
     		// allocate maps		
