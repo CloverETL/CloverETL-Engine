@@ -39,7 +39,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.Defaults;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
@@ -47,7 +46,6 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -300,8 +298,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 
         metadataElement.setAttribute(TYPE_ATTR, rt);
 
-        if(!StringUtils.isEmpty(record.getRecordDelimiter())) {
-            metadataElement.setAttribute(RECORD_DELIMITER_ATTR, StringUtils.specCharToString(record.getRecordDelimiter()));
+        if(record.isSpecifiedRecordDelimiter()) {
+            metadataElement.setAttribute(RECORD_DELIMITER_ATTR, StringUtils.specCharToString(record.getRecordDelimiterStr()));
         }
 
         if (record.getRecordSize() != 0) {
@@ -352,7 +350,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				fieldElement.setAttribute(SHIFT_ATTR, String.valueOf(field.getShift()));
 				if (record.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
 					fieldElement.setAttribute(DELIMITER_ATTR,
-					        StringUtils.specCharToString(field.getDelimiter()));
+					        StringUtils.specCharToString(field.getDelimiterStr()));
 				} else {
 					fieldElement.setAttribute(SIZE_ATTR, String.valueOf(field.getSize()));
 				}
@@ -484,10 +482,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		}
 		recordMetadata.setRecordProperties(recordProperties);
 		if(!StringUtils.isEmpty(recordDelimiter)) {
-			recordMetadata.setRecordDelimiter(recordDelimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX));
+			recordMetadata.setRecordDelimiters(recordDelimiter);
 		}
 		if(!StringUtils.isEmpty(fieldDelimiter)) {
-			recordMetadata.setFieldDelimiter(fieldDelimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX));
+			recordMetadata.setFieldDelimiter(fieldDelimiter);
 		}
 
 		short recSize = 0;

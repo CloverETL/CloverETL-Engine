@@ -22,7 +22,9 @@
 package org.jetel.metadata;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -49,6 +51,11 @@ public class DataFieldMetadata implements Serializable {
 	public static int DOUBLE_SCALE = 323;
 	public static int DOUBLE_LENGTH = DOUBLE_SCALE + 615;
 
+	/**
+	 * Parent data record metadata.
+	 */
+	private DataRecordMetadata dataRecordMetadata;
+	
 	/**
 	 *  Name of the field
 	 */
@@ -270,7 +277,7 @@ public class DataFieldMetadata implements Serializable {
 	    DataFieldMetadata ret = new DataFieldMetadata();
 
 		ret.setName(getName());
-	    ret.setDelimiter(getDelimiter());
+	    ret.setDelimiter(getDelimiterStr());
 		ret.setEofAsDelimiter(this.isEofAsDelimiter());
 	    ret.setFormatStr(getFormatStr());
 	    ret.setShift(getShift());
@@ -450,26 +457,71 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 
-	/**
-	 *  An operation that does ...
-	 *
-	 * @return    The Delimiter value
-	 * @since
-	 */
-	public String getDelimiter() {
-		return delimiter;
-	}
+//	/**
+//	 *  An operation that does ...
+//	 *
+//	 * @return    The Delimiter value
+//	 * @since
+//	 */
+//	public String getDelimiter() {
+//		if(isDelimited()) {
+//			if(delimiter != null) { 
+//				return delimiter;
+//			} else {
+//				if(getDataRecordMetadata().getField(getDataRecordMetadata().getNumFields() - 1) != this) {
+//					return getDataRecordMetadata().getFieldDelimiters()[0];
+//				} else {
+//					return null;
+//				}
+//			}
+//		} else {
+//			return null;
+//		}
+//	}
 
 	/**
-	 *  An operation that does ...
+	 * Returns anarray of all field delimiters assigned to this field.
+	 * In case no field delimiters are defined, default field delimiters from parent metadata are returned.
+	 * Delimiters for last field are extended by a record delimiter.
 	 *
 	 * @return    The Delimiter value
 	 * @since
 	 */
 	public String[] getDelimiters() {
-		return delimiter != null ? delimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX) : null;
+		if(isDelimited()) {
+			String[] ret;
+			if(delimiter != null) { 
+				ret = delimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
+				if(getDataRecordMetadata().getField(getDataRecordMetadata().getNumFields() - 1) == this) { //if field is last
+					if(getDataRecordMetadata().isSpecifiedRecordDelimiter()) {
+						List<String> tempDelimiters = new ArrayList<String>();
+						for(int i = 0; i < ret.length; i++) { //combine each field delimiter with each record delimiter
+							String[] recordDelimiters = getDataRecordMetadata().getRecordDelimiters();
+							for(int j = 0; j < recordDelimiters.length; j++) {
+								tempDelimiters.add(ret[i] + recordDelimiters[j]);
+							}
+						}
+						ret = tempDelimiters.toArray(new String[tempDelimiters.size()]);
+					}
+				}
+			} else {
+				if(getDataRecordMetadata().getField(getDataRecordMetadata().getNumFields() - 1) != this) { //if field is not last
+					ret = getDataRecordMetadata().getFieldDelimiters();
+				} else {
+					ret = getDataRecordMetadata().getRecordDelimiters();
+				}
+			}
+
+			return ret;
+		} else {
+			return null;
+		}
 	}
 
+	public String getDelimiterStr() {
+		return delimiter;
+	}
+	
 	/**
 	 *  Gets Format string specifying pattern which will be used when
 	 *  outputing field's value in text form
@@ -934,6 +986,16 @@ public class DataFieldMetadata implements Serializable {
 
 	public void setEofAsDelimiter(boolean eofAsDelimiter) {
 		this.eofAsDelimiter = eofAsDelimiter;
+	}
+
+
+	public DataRecordMetadata getDataRecordMetadata() {
+		return dataRecordMetadata;
+	}
+
+
+	public void setDataRecordMetadata(DataRecordMetadata dataRecordMetadata) {
+		this.dataRecordMetadata = dataRecordMetadata;
 	}
 	
 }

@@ -96,7 +96,7 @@ public class DelimitedDataFormatter implements Formatter {
 		delimiters = new String[metadata.getNumFields()];
 		delimiterLength= new int[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
-			delimiters[i] = metadata.getField(i).getDelimiter();
+			delimiters[i] = metadata.getField(i).getDelimiters()[0];
 			delimiterLength[i] = delimiters[i].length();
 		}
 		
@@ -105,7 +105,7 @@ public class DelimitedDataFormatter implements Formatter {
         //record delimiters initialization
         isRecordDelimiter = metadata.isSpecifiedRecordDelimiter();
         if(isRecordDelimiter) {
-            recordDelimiter = metadata.getRecordDelimiter();
+            recordDelimiter = metadata.getRecordDelimiters()[0];
         }
 	}
 

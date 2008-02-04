@@ -1064,9 +1064,9 @@ public class DB2DataWriter extends Node {
 			}
 			//if found first "good" delimiter set it for all fields
 			if (!delimiterFound && field.isDelimited()){
-				if (field.getDelimiter().length() == 1 && !Character.isWhitespace(field.getDelimiter().charAt(0))) {
+				if (field.getDelimiters()[0].length() == 1 && !Character.isWhitespace(field.getDelimiters()[0].charAt(0))) {
 					delimiterFound = true;
-					columnDelimiter = field.getDelimiter().charAt(0);
+					columnDelimiter = field.getDelimiters()[0].charAt(0);
 					delimiterFieldIndex = i;
 				}
 			}
