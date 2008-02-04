@@ -57,6 +57,9 @@ import org.jetel.util.string.StringUtils;
  */
 public class DataParser implements Parser {
 	
+	private static final int RECORD_DELIMITER_IDENTIFIER = -1;
+	private static final int DEFAULT_FIELD_DELIMITER_IDENTIFIER = -2;
+	
 	private IParserExceptionHandler exceptionHandler;
 
 	private DataRecordMetadata metadata;
@@ -77,8 +80,6 @@ public class DataParser implements Parser {
 
 	private int recordCounter;
 	
-	private StringBuffer logString;
-	
 	private AhoCorasick delimiterSearcher;
 
 	private boolean skipLeadingBlanks = true;
@@ -94,6 +95,10 @@ public class DataParser implements Parser {
 	private boolean[] isAutoFilling;
 	
 	private boolean releaseInputSource = true;
+	
+	private boolean hasRecordDelimiter = false;
+	
+	private boolean hasDefaultFieldDelimiter = false;
 	
 	public DataParser() {
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
@@ -149,7 +154,6 @@ public class DataParser implements Parser {
 		fieldBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		recordBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		logString = new StringBuffer(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		isAutoFilling = new boolean[metadata.getNumFields()];
 
 		//save metadata
@@ -163,10 +167,8 @@ public class DataParser implements Parser {
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			if(metadata.getField(i).isDelimited()) {
 				delimiters = metadata.getField(i).getDelimiters();
-				if(delimiters != null) {
-					for(int j = 0; j < delimiters.length; j++) {
-						delimiterSearcher.addPattern(delimiters[j], i);
-					}
+				for(int j = 0; j < delimiters.length; j++) {
+					delimiterSearcher.addPattern(delimiters[j], i);
 				}
 			}
 			isAutoFilling[i] = metadata.getField(i).getAutoFilling() != null;
@@ -174,25 +176,17 @@ public class DataParser implements Parser {
 
 		//aho-corasick initialize
 		if(metadata.isSpecifiedRecordDelimiter()) {
+			hasRecordDelimiter = true;
 			delimiters = metadata.getRecordDelimiters();
 			for(int j = 0; j < delimiters.length; j++) {
-				delimiterSearcher.addPattern(delimiters[j], -1);
-				delimiterSearcher.addPattern(delimiters[j], -2); //separator for skipping first line
+				delimiterSearcher.addPattern(delimiters[j], RECORD_DELIMITER_IDENTIFIER);
 			}
-		} else {
-            if(metadata.getField(metadata.getFields().length - 1).isDelimited()) {
-    			delimiters = metadata.getField(metadata.getFields().length - 1).getDelimiters();
-    			for(int j = 0; j < delimiters.length; j++) {
-    			    delimiterSearcher.addPattern(delimiters[j], -2); //separator for skipping first line
-    			}
-            } else {
-                delimiterSearcher.addPattern("\n", -2); //separator for skipping first line
-            }
 		}
 		if(metadata.isSpecifiedFieldDelimiter()) {
+			hasDefaultFieldDelimiter = true;
 			delimiters = metadata.getFieldDelimiters();
 			for(int j = 0; j < delimiters.length; j++) {
-				delimiterSearcher.addPattern(delimiters[j], -3); //default field delimiter is searched under '-3' key
+				delimiterSearcher.addPattern(delimiters[j], DEFAULT_FIELD_DELIMITER_IDENTIFIER);
 			}
 		}
 		delimiterSearcher.compile();
@@ -222,7 +216,6 @@ public class DataParser implements Parser {
 		fieldBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		recordBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		logString = new StringBuffer(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 
 		decoder.reset();// reset CharsetDecoder
 		byteBuffer.clear();
@@ -276,15 +269,12 @@ public class DataParser implements Parser {
 	}
 
 	private DataRecord parseNext(DataRecord record) {
-		int result;
 		int fieldCounter;
 		int character = -1;
 		int mark;
-		long size = 0;
 		boolean inQuote;
 		boolean skipBlanks;
 		char type;
-		boolean recordDelimiterFound = false;
 		
 		recordCounter++;
 		recordBuffer.clear();
@@ -322,12 +312,12 @@ public class DataParser implements Parser {
 						if (quotedStrings && type != DataFieldMetadata.BYTE_FIELD
 								&& type != DataFieldMetadata.BYTE_FIELD_COMPRESSED){
 							if (fieldBuffer.length() == 0) {
-								if (isCharacterQuote((char) character)) {
+								if (StringUtils.isQuoteChar((char) character)) {
 									inQuote = true;
 									continue;
 								}
 							} else {
-								if (inQuote && isCharacterQuote((char) character)) {
+								if (inQuote && StringUtils.isQuoteChar((char) character)) {
 									if (!followFieldDelimiter(fieldCounter)) { //after ending quote can i find delimiter
 										findFirstRecordDelimiter();
 										return parsingErrorFound("Bad quote format", record, fieldCounter);
@@ -342,33 +332,9 @@ public class DataParser implements Parser {
 						    fieldBuffer.append((char) character);
                         }
 
-						//test record delimiter
-						if (!inQuote && metadata.isSpecifiedRecordDelimiter()) {
-							if (isRecordDelimiter()) {
-								boolean hasDelimiter = metadata.getField(fieldCounter).getDelimiter() != null;
-								if(!hasDelimiter && fieldCounter + 1 == metadata.getNumFields() ) {
-									recordDelimiterFound = true;
-									if(!skipBlanks) {
-									    fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
-	                                }
-									if ((trim == Boolean.TRUE || (trim == null && metadata.getField(fieldCounter).isTrim()))) {
-										StringUtils.trimTrailing(fieldBuffer);
-									}
-									if(treatMultipleDelimitersAsOne)
-										while(followFieldDelimiter(fieldCounter));
-									break;
-								}
-								return parsingErrorFound("Unexpected record delimiter", record, fieldCounter);
-							}
-						}
-
 						//test field delimiter
 						if (!inQuote) {
-							boolean hasDelimiter = metadata.getField(fieldCounter).getDelimiter() != null;
-							boolean fieldDelimiterFound = hasDelimiter ? delimiterSearcher.isPattern(fieldCounter) : false;
-							boolean defaultFieldDelimiterFound = delimiterSearcher.isPattern(-3);
-							if((hasDelimiter && fieldDelimiterFound) ||
-									!hasDelimiter && defaultFieldDelimiterFound) {
+							if(delimiterSearcher.isPattern(fieldCounter)) {
 								if(!skipBlanks) {
 								    fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
                                 }
@@ -379,9 +345,16 @@ public class DataParser implements Parser {
 									while(followFieldDelimiter(fieldCounter));
 								break;
 							}
-							if(hasDelimiter && defaultFieldDelimiterFound) {
-								return parsingErrorFound("Unexpected default field delimiter", record, fieldCounter);
+							//test default field delimiter 
+							if(defaultFieldDelimiterFound()) {
+								findFirstRecordDelimiter();
+								return parsingErrorFound("Unexpected default field delimiter, probably record has too many fields.", record, fieldCounter);
 							}
+							//test record delimiter
+							if(recordDelimiterFound()) {
+								return parsingErrorFound("Unexpected record delimiter, probably record has too little fields.", record, fieldCounter);
+							}
+
 						}
 					}
 				} catch (Exception ex) {
@@ -443,11 +416,11 @@ public class DataParser implements Parser {
 			populateField(record, fieldCounter, fieldBuffer);
 		}
 		
-		if(metadata.isSpecifiedRecordDelimiter() && !recordDelimiterFound) {
-			if(!followRecordDelimiter()) { //record delimiter is not found
-				return parsingErrorFound("Too fields in record found", record, fieldCounter);
-			}
-		}
+//		if(metadata.isSpecifiedRecordDelimiter() && !recordDelimiterFound) {
+//			if(!followRecordDelimiter()) { //record delimiter is not found
+//				return parsingErrorFound("Too fields in record found", record, fieldCounter);
+//			}
+//		}
 
 		return record;
 	}
@@ -483,6 +456,8 @@ public class DataParser implements Parser {
 				byteBuffer.flip();
 				charBuffer.clear();
 				decodingResult = decoder.decode(byteBuffer, charBuffer, true);
+				decodingResult.throwException();
+				
 				charBuffer.flip();
 			} catch (Exception ex) {
 				throw new IOException("Exception when decoding characters: " + ex.getMessage());
@@ -564,16 +539,6 @@ public class DataParser implements Parser {
 	}
 
 	/**
-	 * Is character quote?
-	 * 
-	 * @param character
-	 * @return true if character is quote; false else
-	 */
-	private boolean isCharacterQuote(char character) {
-		return (character == '\'' || character == '"');
-	}
-
-	/**
 	 * Find first record delimiter in input channel.
 	 */
 	private boolean findFirstRecordDelimiter() {
@@ -585,7 +550,7 @@ public class DataParser implements Parser {
 			while ((character = readChar()) != -1) {
 				delimiterSearcher.update((char) character);
 				//test record delimiter
-				if (isRecordDelimiter()) {
+				if (recordDelimiterFound()) {
 					return true;
 				}
 			}
@@ -629,10 +594,26 @@ public class DataParser implements Parser {
 	 * Is record delimiter in the input channel?
 	 * @return
 	 */
-	private boolean isRecordDelimiter() {
-		return delimiterSearcher.isPattern(-1);
+	private boolean recordDelimiterFound() {
+		if(hasRecordDelimiter) {
+			return delimiterSearcher.isPattern(RECORD_DELIMITER_IDENTIFIER);
+		} else {
+			return false;
+		}
 	}
-	
+
+	/**
+	 * Is default field delimiter in the input channel?
+	 * @return
+	 */
+	private boolean defaultFieldDelimiterFound() {
+		if(hasDefaultFieldDelimiter) {
+			return delimiterSearcher.isPattern(DEFAULT_FIELD_DELIMITER_IDENTIFIER);
+		} else {
+			return false;
+		}
+	}
+
 	/**
 	 * Follow field delimiter in the input channel?
 	 * @param fieldNum field delimiter identifier
@@ -661,27 +642,27 @@ public class DataParser implements Parser {
 		return false;
 	}
 	
-	/**
-	 * Follow record delimiter in the input channel?
-	 * @return
-	 */
-	private boolean followRecordDelimiter() {
-		int count = 1;
-		int character;
-		try {
-			while ((character = readChar()) != -1) {
-				delimiterSearcher.update((char) character);
-				if(isRecordDelimiter()) {
-					return (count == delimiterSearcher.getMatchLength());
-				}
-				count++;
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(getErrorMessage(e.getMessage(), null, -1));
-		}
-		//end of file
-		return false;
-	}
+//	/**
+//	 * Follow record delimiter in the input channel?
+//	 * @return
+//	 */
+//	private boolean followRecordDelimiter() {
+//		int count = 1;
+//		int character;
+//		try {
+//			while ((character = readChar()) != -1) {
+//				delimiterSearcher.update((char) character);
+//				if(recordDelimiterFound()) {
+//					return (count == delimiterSearcher.getMatchLength());
+//				}
+//				count++;
+//			}
+//		} catch (IOException e) {
+//			throw new RuntimeException(getErrorMessage(e.getMessage(), null, -1));
+//		}
+//		//end of file
+//		return false;
+//	}
 
 	/**
 	 * Specifies whether leading blanks at each field should be skipped
@@ -796,12 +777,3 @@ public class DataParser implements Parser {
 	}
 	
 }
-/*
-Default hodnoty jsou nyni definovany na urovni metadat a prirazovany do polozek pres
-metodu fromString() (v metadatech ulozeno jako retezec, neni parsovano).
-
-Pridat option umoznujici zpracovat nekolik oddelovacu za sebou
-jako jeden - tedy "treat multiple delimiters as one".
-
-Komentare.
-*/

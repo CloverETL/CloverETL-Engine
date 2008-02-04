@@ -61,8 +61,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 	private String name;
 	private char recType;
-	private String[] recordDelimiters;
-	private String[] fieldDelimiters;
+	private String recordDelimiters;
+	private String fieldDelimiters;
 	private int recordSize=-1;
 	private String localeStr;
     private short numNullableFields;
@@ -122,7 +122,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	public DataRecordMetadata duplicate() {
 	    DataRecordMetadata ret = new DataRecordMetadata(getName(), getRecType());
 
-		ret.setRecordDelimiter(getRecordDelimiters());
+		ret.setRecordDelimiters(getRecordDelimiterStr());
+		ret.setFieldDelimiter(getFieldDelimiterStr());
 		ret.setLocaleStr(getLocaleStr());
 		ret.setRecordSize(getRecordSize());
 
@@ -496,6 +497,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @since
 	 */
 	public void addField(DataFieldMetadata _field) {
+		_field.setDataRecordMetadata(this);
 		fields.add(_field);
 		structureChanged();
 	}
@@ -581,7 +583,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 	}
 
-	public void setFieldDelimiter(String[] fieldDelimiters) {
+	public void setFieldDelimiter(String fieldDelimiters) {
 		this.fieldDelimiters = fieldDelimiters;
 	}
 
@@ -590,17 +592,17 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	public String[] getFieldDelimiters() {
-        if(fieldDelimiters == null) {
-            String rd = getRecordProperties().getProperty(DataRecordMetadataXMLReaderWriter.FIELD_DELIMITER_ATTR);
-            if(rd != null) {
-                setFieldDelimiter(StringUtils.stringToSpecChar(rd).split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX));
-            }
+        if(!StringUtils.isEmpty(fieldDelimiters)) {
+        	return fieldDelimiters.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
         }
+		return null;
+	}
+	
+	public String getFieldDelimiterStr() {
 		return fieldDelimiters;
 	}
 	
-	
-	public void setRecordDelimiter(String[] recordDelimiters) {
+	public void setRecordDelimiters(String recordDelimiters) {
 		this.recordDelimiters = recordDelimiters;
 	}
 
@@ -609,19 +611,16 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	public String[] getRecordDelimiters() {
-        if(recordDelimiters == null) {
-            String rd = getRecordProperties().getProperty(DataRecordMetadataXMLReaderWriter.RECORD_DELIMITER_ATTR);
-            if(rd != null) {
-                setRecordDelimiter(StringUtils.stringToSpecChar(rd).split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX));
-            }
+        if(!StringUtils.isEmpty(recordDelimiters)) {
+        	return recordDelimiters.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
         }
-		return recordDelimiters;
+		return null;
 	}
 
-    public String getRecordDelimiter() {
-        return getRecordDelimiters() == null ? "" : recordDelimiters[0];
-    }
-    
+	public String getRecordDelimiterStr() {
+		return recordDelimiters;
+	}
+	
     /**
      * Returns header with field names ended by field delimiters.
      * Used in flat file writers for file header describing data.
@@ -633,10 +632,10 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
         
         for (int i = 0; i < getNumFields(); i++) {
             ret.append(getField(i).getName());
-            fieldDelimiter = getField(i).getDelimiter(); 
+            fieldDelimiter = getField(i).getDelimiters()[0]; 
             ret.append(StringUtils.isEmpty(fieldDelimiter) ? ";" : fieldDelimiter);
         }
-        ret.append(getRecordDelimiter());
+        ret.append(getRecordDelimiters()[0]);
         
         return ret.toString();      
     }

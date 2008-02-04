@@ -509,7 +509,7 @@ public class OracleDataWriter extends Node {
             }
             if(fields[i].isDelimited()) {
                 ret.append(" TERMINATED BY '");
-                ret.append(StringUtils.specCharToString(fields[i].getDelimiter()));
+                ret.append(StringUtils.specCharToString(fields[i].getDelimiters()[0]));
                 ret.append('\'');
             } else { //fixlen field
                 fixlenCounter++;

@@ -126,9 +126,7 @@ public class AhoCorasick {
 		if(currentNode == null) currentNode = rootTrie;
 	}
 	
-	MyInt myInt = new MyInt();
 	public boolean isPattern(int idx) {
-		myInt.value = idx;
 		return currentNode.patternsFinal[idx - minPattern];
 	}
 	

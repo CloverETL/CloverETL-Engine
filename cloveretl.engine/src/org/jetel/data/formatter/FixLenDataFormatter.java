@@ -177,7 +177,7 @@ public class FixLenDataFormatter implements Formatter {
         isRecordDelimiter = metadata.isSpecifiedRecordDelimiter();
         if(isRecordDelimiter) {
             try {
-                recordDelimiter = metadata.getRecordDelimiter().getBytes(charSet);
+                recordDelimiter = metadata.getRecordDelimiters()[0].getBytes(charSet);
             } catch (UnsupportedEncodingException e) {
                 throw new ComponentNotReadyException(e);
             }

@@ -200,7 +200,7 @@ public class DelimitedDataParser implements Parser {
 		isAutoFilling = new boolean[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			fieldMetadata = metadata.getField(i);
-			delimiters[i] = fieldMetadata.getDelimiter().toCharArray();
+			delimiters[i] = fieldMetadata.getDelimiters()[0].toCharArray();
 			eofAsDelimiters[i] = fieldMetadata.isEofAsDelimiter();
 			fieldTypes[i] = fieldMetadata.getType();
 			isAutoFilling[i] = fieldMetadata.getAutoFilling() != null;

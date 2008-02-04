@@ -202,7 +202,7 @@ public class OracleDataReader extends Node {
 		if (metadata != null) {
 			param.setLength(0);
 			param.append("--record-delimiter=");
-			param.append(metadata.getRecordDelimiter());
+			param.append(metadata.isSpecifiedRecordDelimiter() ? metadata.getRecordDelimiters()[0] : "");
 			cmdList.add(param.toString());
 			for (int i = 0; i < metadata.getNumFields(); i++) {
 				param.setLength(0);
@@ -211,7 +211,7 @@ public class OracleDataReader extends Node {
 					param.append(field.getSize());
 				}
 				param.append(",");
-				param.append(field.getDelimiter() == null ? "" : field.getDelimiter());
+				param.append(field.getDelimiters() == null ? "" : field.getDelimiters()[0]);
 				if (param.length() > 0) {
 					cmdList.add(param.toString());
 				}

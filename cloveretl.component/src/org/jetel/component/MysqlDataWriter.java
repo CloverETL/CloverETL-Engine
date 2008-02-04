@@ -211,7 +211,7 @@ public class MysqlDataWriter extends Node {
 				metadata.getField(idx).setDelimiter("\t");
 			}
 			metadata.getField(metadata.getNumFields() - 1).setDelimiter("\n");
-			metadata.setRecordDelimiter(null);
+			metadata.setRecordDelimiters(null);
 			producer = new PortDataProducer(inPort, metadata);
 			consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
 			errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
