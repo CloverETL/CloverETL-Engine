@@ -192,6 +192,7 @@ public class MergeJoin extends Node {
 	private Join join;
 
 	private boolean slaveDuplicates;
+	private boolean slaveOverriden;
 
 	private int inputCnt;
 	private int slaveCnt;
@@ -205,7 +206,7 @@ public class MergeJoin extends Node {
 	int minCnt;
 
 	OutputPort outPort;
-	private String joinKeys;
+	private String joinKeys;	
 
 	/**
 	 *  Constructor for the SortedJoin object
@@ -218,7 +219,8 @@ public class MergeJoin extends Node {
 	 * @param slaveDuplicates enables/disables duplicate slaves
 	 */
 	public MergeJoin(String id, String[][] joiners, String transform,
-			String transformClass, String transformURL, Join join, boolean slaveDuplicates) {
+			String transformClass, String transformURL, Join join, boolean slaveDuplicates,
+			boolean slaveOverriden) {
 		super(id);
 		
 		this.oldJoinKey = true;
@@ -228,10 +230,12 @@ public class MergeJoin extends Node {
 		this.transformURL = transformURL;
 		this.join = join;
 		this.slaveDuplicates = slaveDuplicates;
+		this.slaveOverriden = slaveOverriden;
 	}
 	
 	public MergeJoin(String id, String joinKey, String transform,
-			String transformClass, String transformURL, Join join, boolean slaveDuplicates) {
+			String transformClass, String transformURL, Join join, boolean slaveDuplicates,
+			boolean slaveOverriden) {
 		super(id);
 
 		this.oldJoinKey = false;
@@ -241,11 +245,12 @@ public class MergeJoin extends Node {
 		this.transformURL = transformURL;
 		this.join = join;
 		this.slaveDuplicates = slaveDuplicates;
+		this.slaveOverriden = slaveOverriden;
 	}
 
 	public MergeJoin(String id, String[][] joiners, RecordTransform transform,
-			Join join, boolean slaveDuplicates) {
-		this(id, joiners, null, null, null, join, slaveDuplicates);
+			Join join, boolean slaveDuplicates, boolean slaveOverriden) {
+		this(id, joiners, null, null, null, join, slaveDuplicates, slaveOverriden);
 		this.transformation = transform;
 	}
 
@@ -594,6 +599,7 @@ public class MergeJoin extends Node {
 			String joinStr = xattribs.getString(XML_JOINTYPE_ATTRIBUTE, "inner");
 			Join joinType;
 			boolean oldJoinKey;
+			boolean slaveOverriden = false;
 			
 			if (joinStr == null || joinStr.equalsIgnoreCase("inner")) {
 				joinType = Join.INNER;
@@ -625,6 +631,8 @@ public class MergeJoin extends Node {
 				joinType = Join.FULL_OUTER;
 			}
 			if (oldJoinKey && xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
+				slaveOverriden = true;
+		
 				String[] slaveKeys = xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 				if (slaveKeys.length != joiners[0].length) {
 					throw new XMLConfigurationException("Driver key and slave key doesn't match");
@@ -643,7 +651,8 @@ public class MergeJoin extends Node {
 						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
 						xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null),
 						joinType,
-						xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true));
+						xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true),
+						slaveOverriden);
 			} else {
 				join = new MergeJoin(xattribs.getString(XML_ID_ATTRIBUTE),
 						joinKey,
@@ -651,7 +660,8 @@ public class MergeJoin extends Node {
 						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
 						xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null),
 						joinType,
-						xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true));
+						xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true),
+						slaveOverriden);
 			}
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
@@ -701,12 +711,20 @@ public class MergeJoin extends Node {
 	        		slaveKeys = new RecordKey[slaveCnt];
 	        		for (int idx = 0; idx < slaveCnt; idx++) {
 	        			slaveKeys[idx] = new RecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
-	        			RecordKey.checkKeys(driverKey, XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
-	        					XML_SLAVEOVERRIDEKEY_ATTRIBUTE, status, this);
 	        		}
             	} else {
             		prepareKeys();
             	}
+	        	for (int idx = 0; idx < slaveCnt; idx++) {
+        			if (slaveOverriden) {
+        				RecordKey.checkKeys(driverKey, XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
+        						XML_SLAVEOVERRIDEKEY_ATTRIBUTE, status, this);
+        			} else {
+        				RecordKey.checkKeys(driverKey, XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
+        						XML_JOINKEY_ATTRIBUTE, status, this);
+        			}
+        		}
+
         		reader = new InputReader[inputCnt];
         		reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
         		if (slaveDuplicates) {
