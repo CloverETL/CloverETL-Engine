@@ -156,9 +156,8 @@ public class SimpleSequence extends GraphElement implements Sequence {
         if(!isInitialized()) {
             throw new RuntimeException("Can't reset non-initialized sequence "+getId());
         }
-        sequenceValue=start;
-        alreadyIncremented = false;
         flushValue(sequenceValue);
+        alreadyIncremented = false;
     }
 
     public boolean isPersistent(){
@@ -200,7 +199,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
             throw new ComponentNotReadyException(ex);
         }
     }
-    
+
     private final void flushValue(long value) {
         try{
             buffer.rewind();
@@ -222,6 +221,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
         if(!isInitialized()) return;
         super.free();
 
+        flushValue(this.sequenceValue);
         try {
             if (lock != null) {
                 lock.release();
