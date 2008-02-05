@@ -329,5 +329,11 @@ public class Sort extends Node {
     public void setUseI18N(boolean useI18N) {
         this.useI18N = useI18N;
     }
+    
+    public void reset() throws ComponentNotReadyException {
+    	super.reset();
+    	newSorter.reset();
+    	recordBuffer.clear();
+    }
 }
 
