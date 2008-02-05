@@ -149,6 +149,12 @@ public class StructureFormatter implements Formatter {
 		}
 	}
 
+	public void reset() {
+		encoder.reset();
+		dataBuffer.reset();
+		fieldBuffer.reset();
+	}
+	
     /* (non-Javadoc)
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
      */
