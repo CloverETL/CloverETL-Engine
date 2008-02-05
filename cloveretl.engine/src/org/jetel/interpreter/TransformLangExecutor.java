@@ -29,7 +29,6 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.DecimalFactory;
-import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
@@ -100,7 +99,6 @@ import org.jetel.interpreter.data.TLValueType;
 import org.jetel.interpreter.data.TLVariable;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.string.CharSequenceReader;
-import org.jetel.util.string.StringUtils;
 
 /**
  * Executor of FilterExpression parse tree.
@@ -1586,7 +1584,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         
         switch(node.opType){
         case CLVFSequenceNode.OP_RESET:
-            node.sequence.reset();
+            node.sequence.resetValue();
             retVal=Stack.NUM_ZERO;
             break;
         case CLVFSequenceNode.OP_CURRENT:
