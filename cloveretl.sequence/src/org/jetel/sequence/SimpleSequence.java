@@ -152,12 +152,16 @@ public class SimpleSequence extends GraphElement implements Sequence {
         return Long.toString(nextValueLong());
     }
     
-    synchronized public void reset(){
+    /* (non-Javadoc)
+     * @see org.jetel.data.sequence.Sequence#resetValue()
+     */
+    synchronized public void resetValue(){
         if(!isInitialized()) {
             throw new RuntimeException("Can't reset non-initialized sequence "+getId());
         }
-        flushValue(sequenceValue);
+        sequenceValue=start;
         alreadyIncremented = false;
+        flushValue(sequenceValue);
     }
 
     public boolean isPersistent(){
@@ -200,6 +204,13 @@ public class SimpleSequence extends GraphElement implements Sequence {
         }
     }
 
+    @Override
+    public synchronized void reset() throws ComponentNotReadyException {
+    	super.reset();
+    	
+    	//DO NOTHING
+    }
+    
     private final void flushValue(long value) {
         try{
             buffer.rewind();
@@ -221,7 +232,6 @@ public class SimpleSequence extends GraphElement implements Sequence {
         if(!isInitialized()) return;
         super.free();
 
-        flushValue(this.sequenceValue);
         try {
             if (lock != null) {
                 lock.release();

@@ -24,7 +24,6 @@
 package org.jetel.data.sequence;
 
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.IGraphElement;
 
 
@@ -74,7 +73,7 @@ public interface Sequence extends IGraphElement {
     /**
      * Set the current sequence value to the defined start value;
      */
-    public void reset();
+    public void resetValue();
 
     /**
      * Informs whether the sequence is persistent - i.e. whether it keeps its value
