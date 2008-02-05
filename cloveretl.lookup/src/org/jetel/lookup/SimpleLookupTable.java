@@ -266,7 +266,36 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		numFound=0;
 	}
 	
-    public static SimpleLookupTable fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		DataRecord record=new DataRecord(metadata);
+	    record.init();
+		lookupTable.clear();
+	    //read records from file
+        if (dataParser != null) {
+            dataParser.reset();
+            try {
+				if (fileURL != null) {
+					dataParser.setDataSource(FileUtils.getReadableChannel(
+							getGraph() != null ? getGraph().getProjectURL() : null, 
+							fileURL));
+				}else if (data != null) {
+					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
+				}                
+				while (dataParser.getNext(record) != null) {
+                    DataRecord storeRecord = record.duplicate();
+                    lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
+                }
+            } catch (Exception e) {
+                throw new ComponentNotReadyException(this, e.getMessage(), e);
+            }
+            dataParser.close();
+        }
+		numFound=0;
+	}
+
+	public static SimpleLookupTable fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
         SimpleLookupTable lookupTable = null;
         String id;
@@ -480,14 +509,5 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     public LookupTableIterator getLookupTableIterator(Object lookupKey) {
     	return new BaseLookupTableIterator(lookupKey, this);
     }
-
-    /*
-     * (non-Javadoc)
-     * @see org.jetel.graph.GraphElement#reset()
-     */
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-	}
 }
 

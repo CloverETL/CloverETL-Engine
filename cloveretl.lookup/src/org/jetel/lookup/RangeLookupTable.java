@@ -318,6 +318,33 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 
 }
 	
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		tmpRecord.reset();
+		lookupTable.clear();
+	    //read records from file
+        if (dataParser != null) {
+            dataParser.reset();
+            try {
+				if (fileURL != null) {
+					dataParser.setDataSource(FileUtils.getReadableChannel(
+							getGraph() != null ? getGraph().getProjectURL() : null, 
+							fileURL));
+				}else if (data != null) {
+					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
+				}                
+				while (dataParser.getNext(tmpRecord) != null) {
+                    lookupTable.add(tmpRecord.duplicate());
+                }
+            } catch (Exception e) {
+                throw new ComponentNotReadyException(this, e.getMessage(), e);
+            }
+            dataParser.close();
+        }
+		numFound=0;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.lookup.LookupTable#get(java.lang.String)
 	 */

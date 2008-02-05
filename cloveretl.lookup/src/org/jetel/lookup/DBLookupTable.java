@@ -488,6 +488,14 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         cacheNumber = 0;
     }
     
+    @Override
+    public synchronized void reset() throws ComponentNotReadyException {
+    	super.reset();
+    	resultCache.clear();
+        totalNumber = 0;
+        cacheNumber = 0;
+    }
+    
     /**
      * We assume that query has already been executed and
      * we have resultSet available to get metadata.
@@ -523,18 +531,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.jetel.graph.GraphElement#reset()
-     */
-    @Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-        totalNumber = 0;
-        keyTransMap = null;
-	}
-    
-	public static LookupTable fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static LookupTable fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         DBLookupTable lookupTable = null;
         String id;
