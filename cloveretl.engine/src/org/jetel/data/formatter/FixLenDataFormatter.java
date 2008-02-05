@@ -55,9 +55,7 @@ public class FixLenDataFormatter implements Formatter {
 
 	private WritableByteChannel writer;
 	private CharsetEncoder encoder;
-	private int recordCounter;
 	private int recordLength;
-	private int bufferSize;
 	private ByteBuffer fieldFillerBuf;
 	private ByteBuffer recordFillerBuf;
 	private String charSet = null;
@@ -90,7 +88,6 @@ public class FixLenDataFormatter implements Formatter {
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 		metadata = null;
-		recordCounter = 0;
 	}
 
 
@@ -105,7 +102,6 @@ public class FixLenDataFormatter implements Formatter {
 		charSet = charEncoder;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		metadata = null;
-		recordCounter = 0;
 	}
 
 
@@ -233,7 +229,8 @@ public class FixLenDataFormatter implements Formatter {
 
 	public void reset() {
 		encoder.reset();
-		dataBuffer.reset();
+		dataBuffer.clear();
+		dataBuffer.flip();
 	}
 	
     /* (non-Javadoc)

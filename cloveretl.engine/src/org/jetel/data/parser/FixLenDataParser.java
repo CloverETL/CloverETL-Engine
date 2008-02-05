@@ -122,6 +122,14 @@ public abstract class FixLenDataParser implements Parser {
 		}
 	}
 
+	public void reset() {
+		if (releaseInputSource) releaseDataSource();
+		byteBuffer.clear();
+		byteBuffer.flip();
+		decoder.reset();
+		eof = true;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
@@ -286,17 +294,6 @@ public abstract class FixLenDataParser implements Parser {
 		} else {
 			return new FixLenCharDataParser();			
 		}			
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#reset()
-	 */
-	public void reset() {
-		if (releaseInputSource)	
-			releaseDataSource();
-		decoder.reset();// reset CharsetDecoder
-		eof = false;
 	}
 
 }
