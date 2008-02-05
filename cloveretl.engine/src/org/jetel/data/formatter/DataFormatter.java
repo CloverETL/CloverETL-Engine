@@ -106,7 +106,11 @@ public class DataFormatter implements Formatter {
 		}
 	}
 
-    /* (non-Javadoc)
+	public void reset() {
+		encoder.reset();
+	}
+	
+	/* (non-Javadoc)
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
      */
     public void setDataTarget(Object out) {

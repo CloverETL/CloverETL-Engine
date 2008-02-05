@@ -143,6 +143,11 @@ public class CloverDataFormatter implements Formatter {
         isOpen = true;
     }
 
+    public void reset() {
+    	buffer.reset();
+    	idxBuffer.reset();
+    	isOpen = false;
+	}
 	
 	/* (non-Javadoc)//			writer.close();
 
