@@ -25,6 +25,8 @@ import org.jetel.util.string.StringUtils;
  */
 public class NumberIterator implements Iterator<Integer>{
 	
+	private final static String ALL_NUMBERS_PATTERN = "*"; 
+	
 	private String pattern;
 	private String subPattern;
 	private int index = 0;
@@ -44,7 +46,7 @@ public class NumberIterator implements Iterator<Integer>{
 		this.first = first;
 		this.last = last;
 		this.pattern = pattern.trim();
-		if (pattern.equals("*")) {
+		if (pattern.equals(ALL_NUMBERS_PATTERN)) {
 			subPattern = pattern;
 		}
 		next = first - 1;
@@ -56,6 +58,11 @@ public class NumberIterator implements Iterator<Integer>{
 	}
 	
 	public void reset() {
+		if (!subPattern.equals(ALL_NUMBERS_PATTERN)) {
+			subPattern = null;
+		}
+		intervalIterator = null;
+		index = 0;
 		next = first - 1;
 		next = getNext();
 	}
