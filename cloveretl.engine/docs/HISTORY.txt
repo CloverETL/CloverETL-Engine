@@ -30,20 +30,24 @@ Changes/bug fixes:
 + new component XmlWriter with example graphXmlWriter.grf
 + new component SpeedLimiter
 + XLSWriter can writes to different sheets depending on record's value
++ data record metadata can specify a default field delimiter
++ the DataReader component recognizes too little or too many field per record
++ the DataReader component has extended error port metadata - field number, where an error occurs, is attached
++ !!!doplnit seznam novych komponent!!!
 
 REL 2-3-1 
 ---------
 Release in particular repairing bugs from 2.3.0 version.
 
 Changes/bug fixes:
-+ fixed race condition occuring during multiple concurrent accesses to one lookup table.
++ fixed race condition occurring during multiple concurrent accesses to one lookup table.
 
 REL 2-3-0 commercial purpose release
 ---------
 + new extension point for build-in JDBC drivers - a JDBC connection now can be defined also via
 	identifier of a build-in JDBC driver instead direct parameters 'dbDriver' and 'driverLibrary'
 + new engine plugin - 'org.jetel.jdbc', which now contains only MySQL build-in JDBC driver
-+ the Dedup compoment has new rejected port, where all duplicated records are resent
++ the Dedup component has new rejected port, where all duplicated records are resent
 + the set of available functions in the Clover transformation language was extended
 	- boolean is_blank(string)
 	- boolean is_ascii(string)
@@ -76,7 +80,7 @@ Changes/bug fixes:
 + the running scripts were renamed from 'run[.bat]' to 'clover[.bat]'
 + the default tracking interval was shorted to two seconds
 + in the DataGenerator component randomFields attribute can have inside minimal and maximal values these characters :;|
-  a value has to be quated
+  a value has to be quoted
 + the StringUtils class has new split method
 + the OracleDataWriter better handles a directory path with whitespaces
 + few other small fixes
@@ -213,9 +217,9 @@ depending on nullability flag
 + ByteDataField should now be working (many bugs have been fixed)
 + Transformation language has been greatly extended and thoroughly tested
 + Aggregate component now supports two more "aggregation functions" (CRC32 and MD5)
-+ CloverETL now distingushes between "core" components developed by CloverETL team and third
++ CloverETL now distinguishes between "core" components developed by CloverETL team and third
 party contributions - they are kept in separate "project"
-+ BadDataFormatException hangling has been reworked - see the source code for more info 
++ BadDataFormatException handling has been reworked - see the source code for more info 
 + Encryption of passwords in db connections has been reworked - see org.jetel.main.runGraph JavaDoc
 for new command-line option
 + StringDataField now uses StringBuilder class to store its value
@@ -230,7 +234,7 @@ Changes/bug fixes:
 + Removed Singleton pattern from TransformationGraph class - Clover now supports unlimited
 graphs within single JVM instance
 + Added DataReader/DataWriter - universal readers/writers of text files - support
-mixture of delimtied&fix-len fields, able to survive errors in data
+mixture of delimited & fix-len fields, able to survive errors in data
 + Added Transformation language - full-fledge programming language focused on creating
 data transformations (supported by Reformat, all joiners, DataIntersection components) -
 warning - this is still very untested. Examples will follow. 
@@ -244,7 +248,7 @@ REL 1-8-3
 ---------
 Changes/bug fixes:
 
-+ loading definition of custom transformaton components in org.jetel.main.runGraph()
++ loading definition of custom transformation components in org.jetel.main.runGraph()
   (added option to load/register additional transformation components)
 + fixed bug in fromXML() method which caused "Can't find <SQLCode> node !" error in graphs developed in GUI
 + set equalNulls parameter of dedup component to be true as default.
@@ -308,7 +312,7 @@ needs to be changed. Just edit the "defaultProperties" file.
 +component factory is now configured through "components.xml" definition file. User
 components can now easily be added through modifying this file and specifying component's
 ID and class name.
-+when defining graph layout and parameters for components in form of XML file, component parametes
++when defining graph layout and parameters for components in form of XML file, component parameters
 previously accepted only as XML nodes' attributes can be now defined in form of "child" nodes too.
 This is useful for long definitions or multiline parameters.
 
@@ -316,7 +320,7 @@ This is useful for long definitions or multiline parameters.
 Changes:
 +information messages & debugging messages are now output through
 Jakarta's CommonsLogging means - they are not sent directly to console any more.
-+fixed DelimitedDataFormatter - to properly handle OneRecordPerLine policy on differnet
++fixed DelimitedDataFormatter - to properly handle OneRecordPerLine policy on different
 OS (CR&LF issue on Windows, Unix)
 +fixed skipLeadingBlanks at FixLenDataParser
 +refactored interface org.jetel.data.Number to org.jetel.data.Numeric - Number collided with
@@ -358,7 +362,7 @@ New features:
 from external file - use "url" attribute. File can be accessed locally or
 through FTP or HTTP protocol - whatever is specified in "url".
 +RecordTransform interface now includes "finished()" method. Called
-when particual Node (e.g. Reformat, MergeJoin,..)finishes transforming data.
+when particular Node (e.g. Reformat, MergeJoin,..)finishes transforming data.
 +DataRecordTransform class has been updated to reflect changes in RecordTransform
 interface.
 
@@ -378,7 +382,7 @@ Changes:
 +enhanced MERGE_JOIN component to support full outer join.
 +introduced code which detect potential deadlocks between components in graph and changes
 direct-edge to buffered-edge.
-+transformation graph now registeres all DataRecord metadata defined (by their IDs) and offers
++transformation graph now registers all DataRecord metadata defined (by their IDs) and offers
 later retrieval of such metadata - good when using lookups which require metadata.
 +SQLDataParser supports (again) setting of fetch size, also improved reporting of possible
 parsing errors
@@ -402,7 +406,7 @@ int to short -> saves two bytes on each serialized field which speeds up
 processing. However, poses the limit that string can be max 32K chars long.
 + added duplicate() method to DataRecord and all field classes. It
 makes duplicating (making copies) of existing records easier and much faster
-(it doesn't perform several checkings which are not neccessary in this context).
+(it doesn't perform several checkings which are not necessary in this context).
 Creates new object.
 + added copyFrom() method to DataRecord and all field classes. Enables faster
 copying of content of one record into another. Does not create new object.
@@ -465,7 +469,7 @@ for Clover's internal transformation language interpreter.
 + for all data fields types, own hashCode() method implemented.
 
 Changes:
-+ All components which work on stream of records now contain yield() call (wihin
++ All components which work on stream of records now contain yield() call (within
 their main processing loop. This should improve thread scheduling and consequently
 help improve data flow throughout the graph.
 + introduced checking of name validity for Nodes (all components), Edges,
@@ -495,14 +499,14 @@ record on line - if required.
 REL 1-1-0
 ---------
 New features:
-+ change of lincese from GPL to LGPL
++ change of license from GPL to LGPL
 + enhanced DBOutputTable to allow for hand-written SQL/DML statements - this
 should give 100% flexibility when populating target DB table
 + improved CopySQL primitives to cope with basic datatype conversions - integer->decimal,
 date->datetime, etc. - it regards to Clover-DB interaction
 + graph layouts (component attributes) can now reference globally defined
 properties (through ${...property name...} ). These references are resolved
-when materializing componets/metadata.
+when materializing components/metadata.
 + added handling of NULLs when copying data to/from Database 
 for fields (String, Date, Integer, Numeric);
 + for components requiring transformation classes to be specified (e.g. Reformat,Joins..),
