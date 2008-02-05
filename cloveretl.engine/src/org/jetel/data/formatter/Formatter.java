@@ -45,6 +45,8 @@ public interface Formatter {
 	 *@param  _metadata  Description of the Parameter
 	 */
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException;
+	
+	public void reset();
 
     /**
      * Sets output data destination. Some of formatters allow to call this method repeatedly.
