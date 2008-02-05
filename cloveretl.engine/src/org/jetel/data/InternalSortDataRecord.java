@@ -125,9 +125,11 @@ public class InternalSortDataRecord implements ISortDataRecord {
 		lastFound=0;
 		//dataBuffer.clear();
 		currentColIndex=0;
-		currentRecordCol=(DataRecordCol)recordColList.get(0);
-		for(Iterator i=recordColList.iterator();i.hasNext();){
-		    ((DataRecordCol)i.next()).reset();
+		if (recordColList.size()>0) {
+			currentRecordCol=(DataRecordCol)recordColList.get(0);
+			for(Iterator i=recordColList.iterator();i.hasNext();){
+				((DataRecordCol)i.next()).reset();
+			}
 		}
 	}
 

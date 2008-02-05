@@ -55,6 +55,12 @@ public interface ISortDataRecord {
 	public abstract boolean get(ByteBuffer recordDataBuffer) throws IOException;
 
 	/**
+	 * Resets all resources (buffers, collections of internal sorter, etc), so component can
+	 * be used in next run again
+	 */
+	public abstract void reset();
+	
+	/**
 	 * Frees all resources (buffers, collections of internal sorter, etc) 
 	 */
 	public abstract void free();
