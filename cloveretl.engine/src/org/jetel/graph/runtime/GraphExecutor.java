@@ -19,9 +19,7 @@
 */
 package org.jetel.graph.runtime;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -96,6 +94,10 @@ public class GraphExecutor {
 	public Future<Result> runGraph(TransformationGraph graph, IGraphRuntimeContext context) 
 	throws ComponentNotReadyException {
 		context = new UnconfigurableGraphRuntimeContext(context);
+
+		if (!graph.isInitialized()) {
+			initGraph(graph);
+		}
 
 //        // check graph elements configuration
 //        if(context.isCheckConfig()) {
