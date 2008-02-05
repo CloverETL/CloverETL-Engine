@@ -353,10 +353,29 @@ public class DataIntersection extends Node {
 			flushSlaveOnly(slaveRecord, outPortB);
 			slaveRecord = slavePort.readRecord(slaveRecord);
 		}
-		transformation.finished();
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
      }
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.Node#reset()
+	 */
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		transformation.reset();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#free()
+	 */
+	@Override
+	public synchronized void free() {
+		super.free();
+		transformation.finished();
+	}
 
 	/**
 	 * Description of the Method

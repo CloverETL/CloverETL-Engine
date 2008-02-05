@@ -264,8 +264,18 @@ import org.w3c.dom.Element;
             return runIt ? Result.FINISHED_OK : Result.ABORTED;
        }
     
-       
-    	/**
+       /*
+        * (non-Javadoc)
+        * @see org.jetel.graph.Node#reset()
+        */
+    	@Override
+		public synchronized void reset() throws ComponentNotReadyException {
+			super.reset();
+			hashMap.clear();
+		}
+
+
+		/**
     	 *  Description of the Method
     	 *
     	 * @return    Description of the Returned Value
