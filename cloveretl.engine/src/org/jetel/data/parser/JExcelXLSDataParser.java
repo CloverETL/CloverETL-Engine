@@ -358,6 +358,17 @@ public class JExcelXLSDataParser extends XLSParser {
         }
 	}
 	
+	public void reset() {
+		if (releaseInputSource && wb != null) {
+			wb.close();
+		}
+        currentRow = firstRow;
+        sheetCounter = -1;
+        if (sheetNumber != null){
+        	sheetNumberIterator.reset();
+        }
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.XLSParser#getNextSheet()
 	 */
@@ -427,15 +438,6 @@ public class JExcelXLSDataParser extends XLSParser {
 	public String getSheetName(int index) {
 		if (wb == null) return null;
 		return wb.getSheet(index).getName();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#reset()
-	 */
-	public void reset() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("implement this method");
 	}
 	
 }
