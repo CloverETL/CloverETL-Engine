@@ -108,6 +108,10 @@ public class DelimitedDataFormatter implements Formatter {
             recordDelimiter = metadata.getRecordDelimiters()[0];
         }
 	}
+	
+	public void reset() {
+		encoder.reset();
+	}
 
     /* (non-Javadoc)
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)

@@ -139,6 +139,13 @@ public class TextTableFormatter implements Formatter {
 		}
 		dataRecords = new LinkedList<DataRecord>();
 	}
+	
+	public void reset() {
+		encoder.reset();
+		dataBuffer.reset();
+		fieldBuffer.reset();
+		dataRecords.clear();
+	}
 
     /* (non-Javadoc)
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
@@ -351,7 +358,7 @@ public class TextTableFormatter implements Formatter {
 			writeHeader = true;
 			flush();
 			writeHeader = false;
-			dataRecords = new LinkedList<DataRecord>();
+			dataRecords.clear();
 			return size;
 		} else 
 			throw new NullPointerException("dataRecords cannot be null");
@@ -413,7 +420,7 @@ public class TextTableFormatter implements Formatter {
 			for (DataRecord dataRecord : dataRecords) {
 				leftBytes += writeRecord(dataRecord);
 			}
-			dataRecords = new LinkedList<DataRecord>();
+			dataRecords.clear();
 		}
 		ByteBufferUtils.flush(dataBuffer,writer);
 	}
