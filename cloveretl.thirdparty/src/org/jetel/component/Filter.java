@@ -100,7 +100,6 @@ public class Filter extends Node {
 	private final static int WRITE_TO_PORT=0;
 	private final static int REJECTED_PORT=1;
 	
-	private ByteBuffer recordBuffer;
 	private RecordFilter recordFilter;
 	
 	public Filter(String id){
@@ -210,6 +209,16 @@ public class Filter extends Node {
     
     public String getType(){
 		return COMPONENT_TYPE;
+	}
+
+    /*
+     * (non-Javadoc)
+     * @see org.jetel.graph.Node#reset()
+     */
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		// no implementation needed
 	}
 
 }
