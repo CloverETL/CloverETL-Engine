@@ -143,7 +143,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 */
 	public void setEOF(int portNum) throws InterruptedException {
 		try {
-			((OutputPort) outPorts.get(new Integer(portNum))).close();
+			((OutputPort) outPorts.get(new Integer(portNum))).eof();
 		} catch (IndexOutOfBoundsException ex) {
 			ex.printStackTrace();
 		}
