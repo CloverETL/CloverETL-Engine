@@ -473,6 +473,12 @@ public class XLSReader extends Node {
         reader.setNumRecords(numRecords);
         reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
+	
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		reader.reset();
+	}
 
 	public void setSheetName(String sheetName) {
 		this.sheetName = sheetName;
