@@ -61,7 +61,7 @@ public class DataRecordMetadataTest extends TestCase {
 		aDataFieldMetadata  = aDelimitedDataRecordMetadata.getField(1);
 		if (aDataFieldMetadata==null) System.out.println("NULL returned!");
 		assertEquals(DataFieldMetadata.BYTE_FIELD, aDataFieldMetadata.getType() );
-		assertEquals(":", aDataFieldMetadata.getDelimiter() );
+		assertEquals(":", aDataFieldMetadata.getDelimiterStr() );
 		assertEquals("Field1", aDataFieldMetadata.getName());
 		aDataFieldMetadata  = aDelimitedDataRecordMetadata.getField(3);
 		assertEquals((short)23, aDataFieldMetadata.getSize() );
@@ -81,7 +81,7 @@ public class DataRecordMetadataTest extends TestCase {
 		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field4",DataFieldMetadata.INTEGER_FIELD,";"));
 		aDataFieldMetadata  = aDelimitedDataRecordMetadata.getField("Field1");
 		assertEquals(DataFieldMetadata.BYTE_FIELD, aDataFieldMetadata.getType() );
-		assertEquals(":", aDataFieldMetadata.getDelimiter() );
+		assertEquals(":", aDataFieldMetadata.getDelimiterStr());
 		assertEquals("Field1", aDataFieldMetadata.getName());
 		aDataFieldMetadata  = aDelimitedDataRecordMetadata.getField("Field3");
 		assertEquals((short)23, aDataFieldMetadata.getSize() );
