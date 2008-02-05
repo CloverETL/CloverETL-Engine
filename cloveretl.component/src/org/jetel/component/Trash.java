@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
+import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.TextTableFormatter;
@@ -71,6 +72,8 @@ import org.w3c.dom.Element;
  *  <td>True/False indicates whether input records should be printed to stdout. Default is False (no print).</td></tr>
  *  <tr><td><b>debugFilename</b><br><i>optional</i></td>
  *  <td>Filename - if defined, debugging output is sent to this file.</td></tr>
+ *  <tr><td><b>debugAppend</b><br><i>optional</i></td>
+ *  <td>Filename - if defined, debugging output is sent to this file.</td></tr>
  *  </table>
  *
  * @author      dpavlis
@@ -81,9 +84,11 @@ import org.w3c.dom.Element;
  * @see         org.jetel.graph.Edge
  */
 public class Trash extends Node {
+	private static final Logger log = Logger.getLogger(Trash.class);
 
 	private static final String XML_DEBUGFILENAME_ATTRIBUTE = "debugFilename";
 	private static final String XML_DEBUGPRINT_ATTRIBUTE = "debugPrint";
+	private static final String XML_DEBUGAPPEND_ATTRIBUTE = "debugAppend";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "TRASH";
 	private final static int READ_FROM_PORT = 0;
@@ -93,6 +98,7 @@ public class Trash extends Node {
 	private TextTableFormatter formatter;
 	private MultiFileWriter writer;
 	private WritableByteChannel writableByteChannel;
+    private boolean debugAppend = false;
 
 	/**
 	 *Constructor for the Trash object
@@ -151,11 +157,22 @@ public class Trash extends Node {
 		} catch (Exception e) {
 			throw e;
 		}finally{
-			if (writer != null) writer.close();
 			broadcastEOF();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#free()
+	 */
+	@Override
+	public synchronized void free() {
+		super.free();
+		if (writer != null) 
+			writer.close();
+	}
+
 
 	/**
 	 *  Description of the Method
@@ -172,7 +189,7 @@ public class Trash extends Node {
         		formatter = new TextTableFormatter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
        	        try {
 					writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(
-							FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, debugFilename, false)
+							FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, debugFilename, debugAppend)
 					));
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -185,6 +202,7 @@ public class Trash extends Node {
     			}
             }
             if (writer != null) {
+    	        writer.setAppendData(debugAppend);
                 writer.init(getInputPort(READ_FROM_PORT).getMetadata());
             	formatter.showCounter("Record", "# ");
             }
@@ -197,8 +215,24 @@ public class Trash extends Node {
 	 */
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
+		log.info("Trash reset "+ this.getId());
 		super.reset();
-		writer.reset();
+		if (writer != null){
+			if (debugPrint) {
+	            if(debugFilename != null) {
+	       	        try {
+						writer.setChannels( new WritableByteChannelIterator(
+								FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, debugFilename, debugAppend)
+						));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+	            } else {
+	       	        writer.setChannels(new WritableByteChannelIterator(writableByteChannel));
+	            }
+			}
+			writer.reset();
+		}
 	}
 	
 	/**
@@ -234,6 +268,9 @@ public class Trash extends Node {
 			}
 			if (xattribs.exists(XML_DEBUGFILENAME_ATTRIBUTE)) {
 				trash.setDebugFile(xattribs.getString(XML_DEBUGFILENAME_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_DEBUGAPPEND_ATTRIBUTE)) {
+				trash.setDebugAppend( xattribs.getBoolean(XML_DEBUGAPPEND_ATTRIBUTE) );
 			}
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -271,6 +308,16 @@ public class Trash extends Node {
 	
 	public String getType(){
 		return COMPONENT_TYPE;
+	}
+
+
+	public boolean isDebugAppend() {
+		return debugAppend;
+	}
+
+
+	public void setDebugAppend(boolean debugAppend) {
+		this.debugAppend = debugAppend;
 	}
 }
 
