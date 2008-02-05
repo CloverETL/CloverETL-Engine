@@ -354,6 +354,13 @@ public class DBJoin extends Node {
 		}
 	}
 	
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		lookupTable.reset();
+		transformation.reset();
+	}
+	
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		DBJoin dbjoin;

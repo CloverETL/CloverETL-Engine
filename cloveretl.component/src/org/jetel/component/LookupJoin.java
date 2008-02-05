@@ -388,6 +388,13 @@ public class LookupJoin extends Node {
 					"while left outer join is switched on");
 		}
 	}
+	
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		lookupTable.reset();
+		transformation.reset();
+	}
 
 	public static Node fromXML(TransformationGraph graph, Element xmlElement)
 			throws XMLConfigurationException {

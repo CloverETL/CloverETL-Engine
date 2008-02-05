@@ -143,6 +143,12 @@ public class LookupTableReaderWriter extends Node {
 	}
 	
 	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		lookupTable.reset();
+	}
+	
+	@Override
 	public Result execute() throws Exception {
 		if (readFromTable) {
 			//for each record from lookup table send to to the edge
