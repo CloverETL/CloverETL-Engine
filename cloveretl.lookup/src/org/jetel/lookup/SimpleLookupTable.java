@@ -480,5 +480,14 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     public LookupTableIterator getLookupTableIterator(Object lookupKey) {
     	return new BaseLookupTableIterator(lookupKey, this);
     }
+
+    /*
+     * (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#reset()
+     */
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+	}
 }
 
