@@ -120,9 +120,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		if (doMerge) {
 			// sort whatever remains in sorter
 			sorter.sort();
-			flushToTapeSynchronously();
-			// we don't need sorter any more - free all its resources
-			sorter.free();
+			flushToTapeSynchronously();		
 			phaseMerge();
 		} else {
 			sorter.sort();
@@ -155,6 +153,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	            return sourceRecords[index];
 	        } else { 
 				tapeCarousel.free();
+				carouselInitialized = false;
 				return null;
 			}
 		} else {			
@@ -176,13 +175,24 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		}		
 	}
 
+	public void reset() {
+		sorter.reset();
+		if (tapeCarousel != null) {
+			tapeCarousel.rewind();
+		}
+		recordBuffer.clear();
+
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.ISortDataRecordInternal#free()
 	 */
-	public void free() {		
+	public void free() {
+		if (carouselInitialized && (tapeCarousel!=null)) {
+			tapeCarousel.free(); // this shouldn't happen if component exited in clean way
+		}
 		sorter.free();
-	}
-	
+	}	
 	
 	
 	private void flushToTapeSynchronously() throws IOException {
