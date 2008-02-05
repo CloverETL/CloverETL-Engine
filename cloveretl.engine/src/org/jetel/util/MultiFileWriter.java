@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
+import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.formatter.Formatter;
@@ -55,6 +56,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created 2.11.2006
  */
 public class MultiFileWriter {
+	private static final Logger log = Logger.getLogger(MultiFileWriter.class);
 
 	// Default capacity of HashMap
 	private final static int tableInitialSize = 512;
@@ -129,12 +131,40 @@ public class MultiFileWriter {
     
     /**
 	 * Reset writer for next graph execution. 
+     * @throws ComponentNotReadyException 
      */
-	public void reset() {
+	public void reset() throws ComponentNotReadyException {
+		log.info("reset"+ this + " "+this.currentTarget);
 		counter = 0;
 		numberFileTag = 0;
 		skip = skipRecords;
-		// formatterGetter
+
+    	if (multiTarget != null) {
+        	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
+        		entry.getValue().close();
+        	}
+    	} else {
+    		currentTarget.close();
+    		currentTarget = null;
+    	}
+
+    	// prepare type of targets: lookpup/keyValue
+		if (partitionKey != null) {
+			multiTarget = new HashMap<Object, TargetFile>(tableInitialSize);
+			if (lookupTable != null) {
+				lookupTable.setLookupKey(partitionKey);
+			}
+		// prepare type of targets: single
+		} else {
+    		currentFormatter.init(metadata);
+    		currentTarget = createNewTarget(currentFormatter);
+    		try {
+				currentTarget.init();
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(e);
+			}
+		}
+    	
 	}
 	
     /**
@@ -156,6 +186,8 @@ public class MultiFileWriter {
 				currentFormatter = formatterGetter.getNewFormatter();	
 			}
     		currentFormatter.init(metadata);
+    		if (currentTarget != null)
+    			currentTarget.close();
     		currentTarget = createNewTarget(currentFormatter);
     		try {
 				currentTarget.init();
@@ -188,8 +220,10 @@ public class MultiFileWriter {
      */
     private TargetFile createNewTarget(Formatter formatter) {
     	TargetFile targetFile;
-		if (fileURL != null) targetFile = new TargetFile(fileURL, contextURL, formatter, metadata);
-		else targetFile = new TargetFile(channels, formatter, metadata);
+		if (fileURL != null) 
+			targetFile = new TargetFile(fileURL, contextURL, formatter, metadata);
+		else 
+			targetFile = new TargetFile(channels, formatter, metadata);
 		targetFile.setAppendData(appendData);
 		targetFile.setUseChannel(useChannel);
 		return targetFile;
@@ -491,6 +525,10 @@ public class MultiFileWriter {
 	 */
 	public void setPartitionOutFields(String[] partitionOutFields) {
 		this.partitionOutFields = partitionOutFields;
+	}
+
+	public void setChannels(Iterator<WritableByteChannel> channels) {
+		this.channels = channels;
 	}	
 	
 }
