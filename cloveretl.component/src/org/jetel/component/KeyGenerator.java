@@ -366,7 +366,17 @@ import org.w3c.dom.Element;
 	}
 	
 
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.Node#reset()
+	 */
+    @Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		// no implementation needed
+	}
+
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		try {
 			return new KeyGenerator(xattribs.getString(XML_ID_ATTRIBUTE),xattribs.getString(XML_KEY_EXPRESSION_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
