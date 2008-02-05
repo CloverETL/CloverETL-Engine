@@ -95,6 +95,7 @@ public class CloverDataParser implements Parser {
 	public void init(DataRecordMetadata _metadata)
 			throws ComponentNotReadyException {
 		this.metadata = _metadata;
+        recordBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 	}
 
 	/* (non-Javadoc)
@@ -154,7 +155,6 @@ public class CloverDataParser implements Parser {
                 }
             }
             recordFile = Channels.newChannel(this.in);
-            recordBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
             if (index > 0) {//reading not all records --> find index in record file
                 DataInputStream indexFile;
                 if (this.in instanceof ZipInputStream){//read index from archive
@@ -282,8 +282,8 @@ public class CloverDataParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
 	public void reset() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("implement this method");
+		recordBuffer.reset();
+		idx = 0;
 	}
 
 }
