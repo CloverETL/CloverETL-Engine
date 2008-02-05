@@ -104,7 +104,9 @@ public abstract class GraphElement implements IGraphElement {
 
     synchronized public void reset() throws ComponentNotReadyException {
         if(!isInitialized()) {
-            logger.error("Graph element " + this + " is not initialized, cannot be reseted before initialization or after element was released.");
+        	String msg = "Graph element " + this + " is not initialized, cannot be reseted before initialization or after element was released.";
+            logger.error(msg);
+        	throw new IllegalStateException(msg);
         }
     }
     
