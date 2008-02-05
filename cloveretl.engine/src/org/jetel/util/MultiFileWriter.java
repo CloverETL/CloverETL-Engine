@@ -139,32 +139,14 @@ public class MultiFileWriter {
 		numberFileTag = 0;
 		skip = skipRecords;
 
-    	if (multiTarget != null) {
-        	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
-        		entry.getValue().close();
-        	}
-    	} else {
-    		currentTarget.close();
-    		currentTarget = null;
-    	}
-
-    	// prepare type of targets: lookpup/keyValue
-		if (partitionKey != null) {
-			multiTarget = new HashMap<Object, TargetFile>(tableInitialSize);
-			if (lookupTable != null) {
-				lookupTable.setLookupKey(partitionKey);
-			}
-		// prepare type of targets: single
-		} else {
-    		currentFormatter.init(metadata);
-    		currentTarget = createNewTarget(currentFormatter);
-    		try {
-				currentTarget.init();
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(e);
-			}
+		if (lookupTable != null){
+			lookupTable.reset();
 		}
-    	
+		if (multiTarget != null){
+			multiTarget.clear();
+		}else{
+			currentTarget.reset();
+		}
 	}
 	
     /**

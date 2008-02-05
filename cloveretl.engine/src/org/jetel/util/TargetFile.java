@@ -98,6 +98,11 @@ public class TargetFile {
     	initOutput();
     }
     
+    public void reset() {
+    	((MultiOutFile)fileNames).reset();
+    	formatter.reset();
+	}
+    
     /**
      * FileURL can contains '#' mark, the string of marks is replaced the fileTag. If a file tag is Number,
      * there is used NumberFormat for definition of minimal lenght of the fileTag. Ie: ## and 5 is "05". 

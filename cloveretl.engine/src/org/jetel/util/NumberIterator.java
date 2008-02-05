@@ -55,6 +55,11 @@ public class NumberIterator implements Iterator<Integer>{
 		this(pattern, IntervalIterator.FIRST_ELEMENT, IntervalIterator.LAST_ELEMENT);
 	}
 	
+	public void reset() {
+		next = first - 1;
+		next = getNext();
+	}
+	
 	private Integer getNext(){
 		if (pattern.equals("*")) {
 			next++;
