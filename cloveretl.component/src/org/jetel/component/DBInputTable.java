@@ -178,6 +178,12 @@ public class DBInputTable extends Node {
 		parser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		connection.reset();
+		parser.reset();
+	}
 
 	@Override
 	public Result execute() throws Exception {

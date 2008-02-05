@@ -352,6 +352,14 @@ public class StructureWriter extends Node {
         }
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		writer.reset();
+		headerFormatter.reset();
+		footerFormatter.reset();
+	}
+	
 	/**
 	 * Creates and initializes lookup table.
 	 * 

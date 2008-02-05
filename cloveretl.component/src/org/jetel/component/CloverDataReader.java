@@ -243,6 +243,12 @@ public class CloverDataReader extends Node {
 		}
 	}
 	
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		parser.reset();
+	}
+	
 	public void setStartRecord(int startRecord){
 		this.startRecord = startRecord;
 	}

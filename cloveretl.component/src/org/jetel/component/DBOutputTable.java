@@ -528,6 +528,18 @@ public class DBOutputTable extends Node {
 	
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		inRecord.reset();
+		if (rejectedRecord != null) {
+			rejectedRecord.reset();
+		}		
+		if (returnKey) {
+			keysRecord.reset();
+		}
+	}
+	
 	/**
 	 * @param dbTableName The dbTableName to set.
 	 */

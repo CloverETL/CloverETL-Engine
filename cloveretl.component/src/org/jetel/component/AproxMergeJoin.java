@@ -656,6 +656,13 @@ public class AproxMergeJoin extends Node {
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 	}
 	
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		transformation.reset();
+		dataBuffer.reset();
+	}
+	
 	/**
 	 * This method finds out fields in outMetadata which are to be filled
 	 *  by computed conformity

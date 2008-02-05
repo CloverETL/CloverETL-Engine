@@ -286,6 +286,13 @@ public class CloverDataWriter extends Node {
 		formatter.init(metadata);
         formatter.setDataTarget(out);
 	}
+	
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		formatter.reset();
+	}
+	
 	/**
 	 *  Description of the Method
 	 *
