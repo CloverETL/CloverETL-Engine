@@ -638,6 +638,16 @@ public class Partition extends Node {
 		this.useI18N = useI18N;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.Node#reset()
+	 */
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		// no implementation neeeded
+	}
+
 
 	
 }

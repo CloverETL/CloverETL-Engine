@@ -264,4 +264,14 @@ public class Pacemaker extends Node {
 		return COMPONENT_TYPE;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.Node#reset()
+	 */
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		// no implementation neeeded
+	}
+
 }

@@ -186,12 +186,30 @@ public class MultiLevelReader extends Node {
 		} catch (Exception e) {
 			throw e;
 		}finally{
-			reader.close();
 			broadcastEOF();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.Node#reset()
+	 */
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		reader.reset();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#free()
+	 */
+	@Override
+	public synchronized void free() {
+		super.free();
+		reader.close();
+	}
 
 	/**
 	 * Creates denormalization instance using specified class.

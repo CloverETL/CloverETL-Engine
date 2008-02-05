@@ -191,10 +191,20 @@ public class TextTableWriter extends Node {
 			}
 		} catch (Exception e) {
 			throw e;
-		}finally{
-			writer.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		writer.reset();
+	}
+
+	@Override
+	public synchronized void free() {
+		super.free();
+		writer.close();
 	}
 
 	/* (non-Javadoc)
