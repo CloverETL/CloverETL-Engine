@@ -51,6 +51,5 @@ public class NumberIteratorTest extends TestCase {
     @Override
     protected void tearDown() throws Exception {
     	super.tearDown();
-    	System.out.println();
     }
 }
