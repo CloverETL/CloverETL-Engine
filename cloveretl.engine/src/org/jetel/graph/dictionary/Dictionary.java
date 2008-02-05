@@ -29,28 +29,30 @@ import org.jetel.graph.TransformationGraph;
 public class Dictionary extends GraphElement {
 
 	private static final String DEFAULT_ID = "_DICTIONARY";
-	
-	public Dictionary(TransformationGraph graph) {
-		super(DEFAULT_ID, graph);
-	}
 
 	private Map<String, DictionaryValue<?>> dictionary;
 	private Map<String, DictionaryValue<?>> defaultDictionary;
-	
+
+	public Dictionary(TransformationGraph graph) {
+		super(DEFAULT_ID, graph);
+		
+		dictionary = new HashMap<String, DictionaryValue<?>>();
+		defaultDictionary = new HashMap<String, DictionaryValue<?>>();
+
+	}
+
 	@Override
 	public synchronized void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
 		
-		dictionary = new HashMap<String, DictionaryValue<?>>();
-		defaultDictionary = new HashMap<String, DictionaryValue<?>>();
 	}
 	
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		
-		dictionary.clear();
+//TODO !!!		//dictionary.clear();
 	}
 	
 	public DictionaryValue<?> get(String key) {
