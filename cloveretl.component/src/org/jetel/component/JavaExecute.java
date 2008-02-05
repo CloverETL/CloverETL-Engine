@@ -319,8 +319,6 @@ public class JavaExecute extends Node {
                 problem.setAttributeName(e.getAttributeName());
             }
             status.add(problem);
-        } finally {
-        	free();
         } 
         
         return status;
