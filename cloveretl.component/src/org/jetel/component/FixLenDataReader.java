@@ -223,6 +223,13 @@ public class FixLenDataReader extends Node {
 
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		parser.reset();
+		reader.reset();
+	}
+
 
 	/**
 	 *  Description of the Method

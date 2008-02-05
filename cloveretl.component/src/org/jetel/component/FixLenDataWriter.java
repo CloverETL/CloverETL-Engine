@@ -217,6 +217,13 @@ public class FixLenDataWriter extends Node {
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 	
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		//super.reset();
+		writer.reset();
+	}
+
+	
 	/**
 	 * Creates and initializes lookup table.
 	 * 

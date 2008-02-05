@@ -164,8 +164,9 @@ public class FixLenByteDataParser extends FixLenDataParser {
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
 	public void reset() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("implement this method");
+		super.reset();
+		dataPos = 0;
+		dataLim = 0;
 	}
 
 }

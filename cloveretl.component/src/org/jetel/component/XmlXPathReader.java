@@ -242,6 +242,12 @@ public class XmlXPathReader extends Node {
         ports = parser.getPorts().toArray();
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		parser.reset();
+		reader.reset();
+	}
 
 	/**
 	 *  Description of the Method
