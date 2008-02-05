@@ -172,6 +172,8 @@ public class XmlWriter extends Node {
 		public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		}
 
+		public void reset() {
+		}
 		/*
 		 * (non-Javadoc)
 		 * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
