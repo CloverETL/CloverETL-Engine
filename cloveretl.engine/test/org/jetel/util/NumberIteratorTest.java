@@ -30,7 +30,11 @@ public class NumberIteratorTest extends TestCase {
     		numbers.next();
     		fail("There is not next elemet!!!");
     	}catch(NoSuchElementException e){
-    		
+     	}
+    	System.out.println();
+    	numbers.reset();
+    	for (int i=0;i<14;i++){
+    		System.out.print(numbers.next() + ",");
     	}
      }
     
