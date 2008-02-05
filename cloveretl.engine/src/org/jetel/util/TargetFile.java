@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.WritableByteChannel;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
@@ -149,15 +150,13 @@ public class TargetFile {
      */
     public void setNextOutput() throws IOException {
     	checkOutput();
-    	
+
         //write footer to the previous destination if it is not first call of this method
         if(byteChannel != null) {
         	formatter.writeFooter();
         }
         setOutput();
 
-        //write header
-        formatter.writeHeader();
         bytes = records = 0;
     }
 
