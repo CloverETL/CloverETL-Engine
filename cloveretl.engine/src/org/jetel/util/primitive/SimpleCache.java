@@ -165,6 +165,10 @@ public class SimpleCache {
     	return map.containsKey(key);
     }
     
+    public void clear(){
+    	map.clear();
+    }
+    
     /**
      * Class for storing limited numbers of entries
      * 
