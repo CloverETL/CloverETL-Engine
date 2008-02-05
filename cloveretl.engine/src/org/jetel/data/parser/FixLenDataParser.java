@@ -288,4 +288,15 @@ public abstract class FixLenDataParser implements Parser {
 		}			
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#reset()
+	 */
+	public void reset() {
+		if (releaseInputSource)	
+			releaseDataSource();
+		decoder.reset();// reset CharsetDecoder
+		eof = false;
+	}
+
 }
