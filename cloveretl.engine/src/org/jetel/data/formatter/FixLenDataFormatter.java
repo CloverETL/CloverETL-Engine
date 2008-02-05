@@ -231,6 +231,11 @@ public class FixLenDataFormatter implements Formatter {
 		}			
 	}
 
+	public void reset() {
+		encoder.reset();
+		dataBuffer.reset();
+	}
+	
     /* (non-Javadoc)
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
      */

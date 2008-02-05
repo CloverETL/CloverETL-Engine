@@ -237,6 +237,12 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
         }
 	}
 
+	public void reset() {
+		if (sheets != null){
+			sheets.clear();
+		}
+	}
+	
     /**
      * Method for saving names of columns
      */
