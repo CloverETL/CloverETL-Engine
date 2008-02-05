@@ -34,11 +34,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MultiFileWriter;
 import org.jetel.util.bytes.ByteBufferUtils;
 
 /**
@@ -53,6 +55,7 @@ import org.jetel.util.bytes.ByteBufferUtils;
  *
  */
 public class TextTableFormatter implements Formatter {
+	private static final Logger log = Logger.getLogger(TextTableFormatter.class);
 	
 	private DataRecordMetadata metadata;
 	private WritableByteChannel writer;
@@ -160,10 +163,7 @@ public class TextTableFormatter implements Formatter {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
-	 */
-	public int writeRecord(DataRecord record) throws IOException {
+	private int writeRecord(DataRecord record) throws IOException {
         int sentBytes=0;
         int mark;
         int lenght;
@@ -272,6 +272,7 @@ public class TextTableFormatter implements Formatter {
         }
         sentBytes += writeString(NL);
 
+        ByteBufferUtils.flush(dataBuffer,writer); // MVa
         return sentBytes;
 	}
 	
@@ -282,9 +283,11 @@ public class TextTableFormatter implements Formatter {
 			writeHeader();
 			writeHeader = false;
 		}
+		flush();
+		/*
 		if (!isMaskAnalized()) {
 			flush();
-		}
+		}*/
         int sentBytes=0;
         sentBytes += writeString(TABLE_CORNER);
         if (showCounter) {
@@ -297,6 +300,7 @@ public class TextTableFormatter implements Formatter {
         }
         sentBytes += writeString(NL);
 
+        ByteBufferUtils.flush(dataBuffer,writer); // MVa
 		return sentBytes;
 	}
 	
@@ -336,27 +340,21 @@ public class TextTableFormatter implements Formatter {
 	 * @throws IOException 
 	 */
 	public int write(DataRecord record) throws IOException {
+		log.info("TextTableFormatter write "+ this + " "+record);
 		int size;
 		if (dataRecords != null) {
 			dataRecords.add(record.duplicate());
-			writeHeader = true;
 			if (dataRecords.size() < MAX_ROW_ANALYZED) {
 				return 0;
 			}
-			analyzeRows(dataRecords, setOutputFieldNames);
-			size = writeHeader();
-			for (DataRecord dataRecord : dataRecords) {
-				size += writeRecord(dataRecord);
-			}
-			dataRecords = null;
+			size = dataRecords.size();
+			writeHeader = true;
+			flush();
+			writeHeader = false;
+			dataRecords = new LinkedList<DataRecord>();
 			return size;
-		}
-		size = writeRecord(record);
-		if (leftBytes > 0) {
-			size += leftBytes;
-			leftBytes = 0;
-		}
-		return size;
+		} else 
+			throw new NullPointerException("dataRecords cannot be null");
 	}
 	
 	private void analyzeRows(List<DataRecord> dataRecords, boolean header) {
@@ -407,14 +405,15 @@ public class TextTableFormatter implements Formatter {
 	 * @see org.jetel.data.formatter.Formatter#flush()
 	 */
 	public void flush() throws IOException {
-		if (dataRecords != null) {
-			analyzeRows(dataRecords, setOutputFieldNames);
+		if (dataRecords != null && dataRecords.size()>0) {
+			if (!isMaskAnalized()) 
+				analyzeRows(dataRecords, setOutputFieldNames);
 			ByteBufferUtils.flush(dataBuffer,writer);
 			leftBytes = writeHeader();
 			for (DataRecord dataRecord : dataRecords) {
 				leftBytes += writeRecord(dataRecord);
 			}
-			dataRecords = null;
+			dataRecords = new LinkedList<DataRecord>();
 		}
 		ByteBufferUtils.flush(dataBuffer,writer);
 	}
