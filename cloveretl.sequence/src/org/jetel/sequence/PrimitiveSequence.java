@@ -82,6 +82,13 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
 		super.init();
     }
 
+    @Override
+    public synchronized void reset() throws ComponentNotReadyException {
+    	super.reset();
+    	
+    	resetValue();
+    }
+    
     /**
      * @see org.jetel.graph.GraphElement#free()
      */
@@ -138,9 +145,9 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
     }
 
     /**
-     * @see org.jetel.data.sequence.Sequence#reset()
+     * @see org.jetel.data.sequence.Sequence#resetValue()
      */
-    public void reset() {
+    public void resetValue() {
         value = start;
     }
 
@@ -161,7 +168,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      */
     public void setStart(long start) {
         this.start = start;
-        reset();
+        resetValue();
     }
 
     public long getStep() {
@@ -183,7 +190,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
             PrimitiveSequence seq =  new PrimitiveSequence(
                 xattribs.getString(XML_ID_ATTRIBUTE),
                 graph,
-                xattribs.getString(XML_NAME_ATTRIBUTE));
+                xattribs.getString(XML_NAME_ATTRIBUTE, ""));
             if(xattribs.exists(XML_START_ATTRIBUTE)) {
                 seq.setStart(xattribs.getInteger(XML_START_ATTRIBUTE));
             }
