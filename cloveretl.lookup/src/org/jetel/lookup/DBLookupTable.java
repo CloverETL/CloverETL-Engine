@@ -523,7 +523,18 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
     }
 
-    public static LookupTable fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    /*
+     * (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#reset()
+     */
+    @Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+        totalNumber = 0;
+        keyTransMap = null;
+	}
+    
+	public static LookupTable fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         DBLookupTable lookupTable = null;
         String id;
