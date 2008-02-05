@@ -381,7 +381,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 			value = TypeFormat.parseInt(seq);
             setNull(this.value == Integer.MIN_VALUE);
 		} catch (Exception ex) {
-			throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + seq, seq.toString());
+			throw new BadDataFormatException(getMetadata().getName() + " cannot be set to \"" + seq + "\"", seq.toString());
 		}
 	}
 
