@@ -912,6 +912,14 @@ public class DB2DataWriter extends Node {
 		}
 	}
 	
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		if (formatter != null) {
+			formatter.reset();
+		}
+	}
+	
 	/**
 	 * From given metadata creates new metadata but with date/time format defined within 
 	 * params or if not defined all dates have to have the same format, all times 
