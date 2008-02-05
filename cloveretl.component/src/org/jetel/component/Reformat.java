@@ -203,7 +203,6 @@ public class Reformat extends Node {
 			}
 			SynchronizeUtils.cloverYield();
 		}
-		transformation.finished();
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
