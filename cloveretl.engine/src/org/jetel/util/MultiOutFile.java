@@ -57,6 +57,9 @@ public class MultiOutFile implements Iterator<String> {
 		this.mask = mask;
 	}
 
+	public void reset() {
+		counter = 0;
+	}
 	/**
 	 * 
 	 * @param mask
