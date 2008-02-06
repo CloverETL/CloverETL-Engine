@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
-import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.formatter.Formatter;
@@ -56,8 +55,6 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created 2.11.2006
  */
 public class MultiFileWriter {
-	private static final Logger log = Logger.getLogger(MultiFileWriter.class);
-
 	// Default capacity of HashMap
 	private final static int tableInitialSize = 512;
 
@@ -134,7 +131,6 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException 
      */
 	public void reset() throws ComponentNotReadyException {
-		log.info("reset"+ this + " "+this.currentTarget);
 		counter = 0;
 		numberFileTag = 0;
 		skip = skipRecords;
