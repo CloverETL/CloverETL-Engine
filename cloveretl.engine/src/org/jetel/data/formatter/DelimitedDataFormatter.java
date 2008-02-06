@@ -57,8 +57,6 @@ public class DelimitedDataFormatter implements Formatter {
 	private CharBuffer charBuffer;
 	private ByteBuffer dataBuffer;
 	private int numFields;
-	private boolean isRecordDelimiter;
-    private String recordDelimiter;
 	private String sFooter; 
 	private String sHeader; 
 	private ByteBuffer footer; 
@@ -101,12 +99,6 @@ public class DelimitedDataFormatter implements Formatter {
 		}
 		
 		numFields=metadata.getNumFields(); // buffer numFields
-        
-        //record delimiters initialization
-        isRecordDelimiter = metadata.isSpecifiedRecordDelimiter();
-        if(isRecordDelimiter) {
-            recordDelimiter = metadata.getRecordDelimiters()[0];
-        }
 	}
 	
 	public void reset() {
@@ -182,9 +174,6 @@ public class DelimitedDataFormatter implements Formatter {
 			charBuffer.put(fieldVal);
 			charBuffer.put(delimiters[i]);
 		}
-        if(isRecordDelimiter) {
-            charBuffer.put(recordDelimiter);
-        }
         
 		charBuffer.flip();
 		return encode();
