@@ -168,7 +168,7 @@ public class DynamicRecordBuffer {
 	 *  Clears the buffer. Temp file (if it was created) remains
 	 * unchanged size-wise
 	 */
-	public void clear() {
+	public void reset() {
 	    emptyFileBuffers.addAll(fullFileBuffers);
         fullFileBuffers.clear();
 		readDataBuffer.clear();
@@ -333,7 +333,6 @@ public class DynamicRecordBuffer {
         //int recordSize = readDataBuffer.getInt();
         int recordSize= decodeLength(readDataBuffer);
         if (recordSize==EOF){
-            close();
             return false;
         }
         
@@ -370,7 +369,6 @@ public class DynamicRecordBuffer {
         //int recordSize = readDataBuffer.getInt();
         int recordSize= decodeLength(readDataBuffer);
         if (recordSize==EOF){
-            close();
             return null;
         }
             
