@@ -460,7 +460,6 @@ public class DataParser implements Parser {
 				byteBuffer.flip();
 				charBuffer.clear();
 				decodingResult = decoder.decode(byteBuffer, charBuffer, true);
-				decodingResult.throwException();
 				
 				charBuffer.flip();
 			} catch (Exception ex) {
