@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
-import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.TextTableFormatter;
@@ -84,8 +83,6 @@ import org.w3c.dom.Element;
  * @see         org.jetel.graph.Edge
  */
 public class Trash extends Node {
-	private static final Logger log = Logger.getLogger(Trash.class);
-
 	private static final String XML_DEBUGFILENAME_ATTRIBUTE = "debugFilename";
 	private static final String XML_DEBUGPRINT_ATTRIBUTE = "debugPrint";
 	private static final String XML_DEBUGAPPEND_ATTRIBUTE = "debugAppend";
@@ -215,7 +212,6 @@ public class Trash extends Node {
 	 */
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
-		log.info("Trash reset "+ this.getId());
 		super.reset();
 		if (writer != null){
 			if (debugPrint) {
