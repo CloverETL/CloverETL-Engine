@@ -34,13 +34,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.MultiFileWriter;
 import org.jetel.util.bytes.ByteBufferUtils;
 
 /**
@@ -55,8 +53,6 @@ import org.jetel.util.bytes.ByteBufferUtils;
  *
  */
 public class TextTableFormatter implements Formatter {
-	private static final Logger log = Logger.getLogger(TextTableFormatter.class);
-	
 	private DataRecordMetadata metadata;
 	private WritableByteChannel writer;
 	private ByteBuffer fieldBuffer; 
@@ -347,7 +343,6 @@ public class TextTableFormatter implements Formatter {
 	 * @throws IOException 
 	 */
 	public int write(DataRecord record) throws IOException {
-		log.info("TextTableFormatter write "+ this + " "+record);
 		int size;
 		if (dataRecords != null) {
 			dataRecords.add(record.duplicate());
