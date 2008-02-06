@@ -106,7 +106,7 @@ public class BufferedEdge extends EdgeBase {
 
 	@Override
 	public void reset() {
-        recordBuffer.clear();
+        recordBuffer.reset();
         outputRecordCounter = 0;
         inputRecordCounter = 0;
         byteCounter=0;

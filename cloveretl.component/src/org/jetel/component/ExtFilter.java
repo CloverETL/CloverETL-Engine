@@ -308,6 +308,11 @@ public class ExtFilter extends org.jetel.graph.Node {
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
+	
+	public void reset() throws ComponentNotReadyException  {
+		super.reset();
+		// Nothing more to reinitialize
+	}
 }
 
 

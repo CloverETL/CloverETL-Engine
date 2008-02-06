@@ -575,7 +575,7 @@ public class Dedup extends Node {
 		 * unchanged size-wise
 		 */
 		public void clear() {
-			recordBuffer.clear();
+			recordBuffer.reset();
 		}
 	}
 	
