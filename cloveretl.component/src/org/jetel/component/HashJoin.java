@@ -360,6 +360,15 @@ public class HashJoin extends Node {
 		}
 	}
 
+	public void reset() {
+		for (HashMap<HashKey,MapItem> hashMapItem : hashMap) {
+			hashMapItem.clear();
+		}
+	}
+
+	public void free() {
+		hashMap = null;
+	}
 
 	/**
 	 * @param transformationParameters
