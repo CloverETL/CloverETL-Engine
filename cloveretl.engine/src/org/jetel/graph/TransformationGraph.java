@@ -479,6 +479,8 @@ public final class TransformationGraph extends GraphElement {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		
+		setWatchDog(null);
+		
 		//reset dictionary
 		dictionary.reset();
 		
@@ -758,6 +760,8 @@ public final class TransformationGraph extends GraphElement {
     public void free() {
     	//free dictionary
     	dictionary.free();
+    	
+    	setWatchDog(null);
     	
         freeResources();
     }

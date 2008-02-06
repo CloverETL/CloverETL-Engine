@@ -76,6 +76,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	protected Result runResult;
     protected Throwable resultException;
     protected String resultMessage;
+	protected boolean finished;
 	
     protected Phase phase;
 
@@ -115,6 +116,7 @@ public abstract class Node extends GraphElement implements Runnable {
 		logPort = null;
         phase = null;
         runResult=Result.N_A; // result is not known yet
+        finished = false;
 	}
 
     /**
@@ -404,7 +406,8 @@ public abstract class Node extends GraphElement implements Runnable {
             getCloverPost().sendMessage(msg);
             return;
         }
-
+        
+        finished = true;
     }
     
     public abstract Result execute() throws Exception;
@@ -1054,7 +1057,12 @@ public abstract class Node extends GraphElement implements Runnable {
         runResult=Result.READY;
         resultMessage = null;
         resultException = null;
+        finished = false;
     }
+
+	public boolean isFinished() {
+		return finished;
+	}
 
 }
 /*

@@ -47,7 +47,6 @@ import javax.management.ObjectName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -178,12 +177,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			}
 		}
         
-        // disabled by Kokon
-//        trackingThread.interrupt();
 		printPhasesSummary();
 		
-		//should be in a free() method
-		graph.setWatchDog(null);
 		if(provideJMX) {
 			try {
 				mbs.unregisterMBean(jmxObjectName);
@@ -306,7 +301,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		List<Node> leafNodes;
 
 		// let's create a copy of leaf nodes - we will watch them
-		leafNodes = new LinkedList<Node>(phase.getLeafNodes());
+		leafNodes = new LinkedList<Node>(phase.getNodes().values());
 		// assign tracking info
 		phase.setTracking(tracking);
 
@@ -354,7 +349,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					}
 					break;
 					default:
-						// do notfing, just wake up
+						// do nothing, just wake up
 				}
 			}
 
@@ -387,7 +382,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			while (leafNodesIterator.hasNext()) {
 				Node node = (Node) leafNodesIterator.next();
 				// is this Node still alive - ? doing something
-				if (!(node.getResultCode() == Result.RUNNING)) {
+				if (node.isFinished()) {
 					leafNodesIterator.remove();
 				}
 			}
