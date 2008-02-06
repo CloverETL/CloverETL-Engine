@@ -480,7 +480,7 @@ public class DataFieldMetadata implements Serializable {
 //	}
 
 	/**
-	 * Returns anarray of all field delimiters assigned to this field.
+	 * Returns an array of all field delimiters assigned to this field.
 	 * In case no field delimiters are defined, default field delimiters from parent metadata are returned.
 	 * Delimiters for last field are extended by a record delimiter.
 	 *
