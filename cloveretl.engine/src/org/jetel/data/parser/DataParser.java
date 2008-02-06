@@ -94,6 +94,8 @@ public class DataParser implements Parser {
 	
 	private boolean[] isAutoFilling;
 	
+	private boolean[] isSkipBlanks;
+
 	private boolean releaseInputSource = true;
 	
 	private boolean hasRecordDelimiter = false;
@@ -120,7 +122,7 @@ public class DataParser implements Parser {
 		record = parseNext(record);
         if(exceptionHandler != null ) {  //use handler only if configured
             while(exceptionHandler.isExceptionThrowed()) {
-            	exceptionHandler.setRawRecord(getLogString());
+            	exceptionHandler.setRawRecord(getLastRawRecord());
                 exceptionHandler.handleException();
                 record = parseNext(record);
             }
@@ -135,7 +137,7 @@ public class DataParser implements Parser {
 		record = parseNext(record);
         if(exceptionHandler != null ) {  //use handler only if configured
             while(exceptionHandler.isExceptionThrowed()) {
-            	exceptionHandler.setRawRecord(getLogString());
+            	exceptionHandler.setRawRecord(getLastRawRecord());
                 exceptionHandler.handleException();
                 record = parseNext(record);
             }
@@ -155,6 +157,7 @@ public class DataParser implements Parser {
 		recordBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		isAutoFilling = new boolean[metadata.getNumFields()];
+		isSkipBlanks = new boolean[metadata.getNumFields()];
 
 		//save metadata
 		this.metadata = metadata;
@@ -172,6 +175,9 @@ public class DataParser implements Parser {
 				}
 			}
 			isAutoFilling[i] = metadata.getField(i).getAutoFilling() != null;
+			isSkipBlanks[i] = skipLeadingBlanks
+					|| trim == Boolean.TRUE
+					|| (trim == null && metadata.getField(i).isTrim());
 		}
 
 		//aho-corasick initialize
@@ -283,9 +289,7 @@ public class DataParser implements Parser {
 			if (isAutoFilling[fieldCounter]) {
 				continue;
 			}
-			skipBlanks = skipLeadingBlanks
-					|| trim == Boolean.TRUE
-					|| (trim == null && metadata.getField(fieldCounter).isTrim());
+			skipBlanks = isSkipBlanks[fieldCounter];
 			if (metadata.getField(fieldCounter).isDelimited()) { //delimited data field
 				// field
 				// read data till we reach field delimiter, record delimiter,
@@ -684,10 +688,9 @@ public class DataParser implements Parser {
 		return recordCounter;
 	}
 	
-	public String getLogString() {
+	public String getLastRawRecord() {
         recordBuffer.flip();
-		return recordBuffer.toString(); //TODO kokon
-		//return logString;
+		return recordBuffer.toString();
 	}
 	
 	public void setQuotedStrings(boolean quotedStrings) {
