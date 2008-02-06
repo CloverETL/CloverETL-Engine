@@ -544,7 +544,7 @@ public class DataParser implements Parser {
 	/**
 	 * Find first record delimiter in input channel.
 	 */
-	private boolean findFirstRecordDelimiter() {
+	private boolean findFirstRecordDelimiter() throws JetelException {
         if(!metadata.isSpecifiedRecordDelimiter()) {
             return false;
         }
@@ -558,7 +558,7 @@ public class DataParser implements Parser {
 				}
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(getErrorMessage(e.getMessage(), null, -1));
+			throw new JetelException("Cannot find a record delimiter.", e);
 		}
 		//end of file
 		return false;
@@ -566,8 +566,9 @@ public class DataParser implements Parser {
 
 	/**
 	 * Find end of record for metadata without record delimiter specified.
+	 * @throws JetelException 
 	 */
-	private boolean findEndOfRecord(int fieldNum) {
+	private boolean findEndOfRecord(int fieldNum) throws JetelException {
 		int character = 0;
 		try {
 			for(int i = fieldNum + 1; i < metadata.getNumFields(); i++) {
@@ -580,7 +581,7 @@ public class DataParser implements Parser {
 				}
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(getErrorMessage(e.getMessage(), null, -1));
+			throw new JetelException("Cannot find end of record.", e);
 		}
 		
 		return (character != -1);
