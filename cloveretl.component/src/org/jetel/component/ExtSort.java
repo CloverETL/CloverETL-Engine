@@ -251,8 +251,10 @@ public class ExtSort extends Node {
     @Override
     public void free() {
         if(!isInitialized()) return;
-        super.free();        
-    	sorter.free(); 
+        super.free();
+        if (sorter != null) {
+        	sorter.free();
+        }
     }
     
     public void reset() throws ComponentNotReadyException {
