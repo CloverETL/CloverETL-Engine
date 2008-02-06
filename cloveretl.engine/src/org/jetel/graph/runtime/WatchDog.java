@@ -160,9 +160,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
             }
             
             // force running of garbage collector
-            logger.info("Forcing garbage collection ...");
-            javaRuntime.runFinalization();
-            javaRuntime.gc();
+//            logger.info("Forcing garbage collection ...");
+//            javaRuntime.runFinalization();
+//            javaRuntime.gc();
         }
         mbean.graphFinished(result);
      
@@ -555,13 +555,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	private Result executePhase(Phase phase) {
 		currentPhase = phase;
-		logger.info("Initialization of phase [" + phase.getPhaseNum() + "]");
-		try {
-			phase.init();
-		} catch (ComponentNotReadyException e) {
-			logger.error("Phase initialization failed with reason: " + e.getMessage(), e);
-			return Result.ERROR;
-		}
+//		logger.info("Initialization of phase [" + phase.getPhaseNum() + "]");
+//		try {
+//			phase.init();
+//		} catch (ComponentNotReadyException e) {
+//			logger.error("Phase initialization failed with reason: " + e.getMessage(), e);
+//			return Result.ERROR;
+//		}
 		logger.info("Starting up all nodes in phase [" + phase.getPhaseNum() + "]");
 		startUpNodes(phase);
 		logger.info("Sucessfully started all nodes in phase!");

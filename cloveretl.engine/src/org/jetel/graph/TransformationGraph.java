@@ -430,7 +430,7 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				dbCon = (IConnection) iterator.next();
 				dbCon.init();
-                dbCon.free();
+                //dbCon.free();
 				logger.info(dbCon + " ... OK");
 			} catch (Exception ex) {
 				logger.info(dbCon + " ... !!! ERROR !!!");
@@ -467,10 +467,10 @@ public final class TransformationGraph extends GraphElement {
 
         //initialization of all phases
 		//phases have to be initialized separately and immediately before is run - in runtime after previous phase is finished
-		
-//        for(Phase phase : phases.values()) {
-//        	phase.init();
-//        }
+		//temporarily solution
+        for(Phase phase : phases.values()) {
+        	phase.init();
+        }
 		
 		// initialized OK
 	}
@@ -619,12 +619,11 @@ public final class TransformationGraph extends GraphElement {
 	 * 
 	 * @param metadata
 	 */
-	public void addDataRecordMetadata(DataRecordMetadata ... metadata){
-		for(int i=0;i<metadata.length;i++){
-			this.dataRecordMetadata.put(metadata[i].getName(), metadata[i]);
+	public void addDataRecordMetadata(DataRecordMetadata... metadata){
+		for(DataRecordMetadata md : metadata) {
+			addDataRecordMetadata(md);
 		}
 	}
-	
 	
 	/**
 	 * Good for debugging. Prints out all defined phases and nodes assigned to phases. Has to be
@@ -809,16 +808,15 @@ public final class TransformationGraph extends GraphElement {
     	phase.addEdge(edge);
     }
     
-    
     /**
-     * Bulk adding edges into appropriae phases
+     * Bulk adding edges into appropriate phases
      * 
      * @param edges
      * @throws GraphConfigurationException
      */
-    public void addEdge(Edge ... edges) throws GraphConfigurationException{
-    	for(int i=0;i<edges.length;i++){
-    		addEdge(edges[i]);
+    public void addEdge(Edge... edges) throws GraphConfigurationException{
+    	for(Edge edge : edges) {
+    		addEdge(edge);
     	}
     }
     
