@@ -628,14 +628,15 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
      */
     public String getFieldNamesHeader() {
         StringBuilder ret = new StringBuilder();
-        String fieldDelimiter;
         
         for (int i = 0; i < getNumFields(); i++) {
             ret.append(getField(i).getName());
-            fieldDelimiter = getField(i).getDelimiters()[0]; 
-            ret.append(StringUtils.isEmpty(fieldDelimiter) ? ";" : fieldDelimiter);
+            if(getField(i).isDelimited()) {
+            	ret.append(getField(i).getDelimiters()[0]);
+            } else {
+            	ret.append(";");
+            }
         }
-        ret.append(getRecordDelimiters()[0]);
         
         return ret.toString();      
     }
