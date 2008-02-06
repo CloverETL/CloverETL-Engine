@@ -54,8 +54,6 @@ public class DataFormatter implements Formatter {
     private byte[][] delimiters;
 	private int delimiterLength[];
 	private int fieldLengths[];
-    private boolean isRecordDelimiter;
-    private byte[] recordDelimiter;
 	private ByteBuffer dataBuffer;
 	private String sFooter; 
 	private String sHeader; 
