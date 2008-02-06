@@ -77,8 +77,6 @@ public class CloverDataFormatter implements Formatter {
 	private WritableByteChannel idxWriter;
 	private ByteBuffer idxBuffer;
 	private boolean saveIndex;
-	private short index = 0;
-	private int recordSize;
 	private String fileURL;
 	private String fileName;
 	private File idxTmpFile;
@@ -267,10 +265,10 @@ public class CloverDataFormatter implements Formatter {
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
 	public int write(DataRecord record) throws IOException {
-		recordSize = record.getSizeSerialized();
+		int recordSize = record.getSizeSerialized();
 		if (saveIndex) {
 			//if size is grater then Short, change to negative Short
-			index = recordSize + LEN_SIZE_SPECIFIER <= Short.MAX_VALUE ? 
+			short index = recordSize + LEN_SIZE_SPECIFIER <= Short.MAX_VALUE ? 
 					(short)(recordSize + LEN_SIZE_SPECIFIER) : 
 					(short)(Short.MAX_VALUE - (recordSize + LEN_SIZE_SPECIFIER));
 			if (idxBuffer.remaining() < SHORT_SIZE_BYTES){
