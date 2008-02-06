@@ -54,7 +54,7 @@ public class SimpleSequenceTest extends TestCase {
 
     public void test_1(){
     	System.out.println("Test 1:");
-        sequence.reset();
+        sequence.resetValue();
         assertEquals("different",sequence.currentValueInt(),0);
         assertEquals("different",sequence.nextValueInt(),0);
         assertEquals("different",sequence.nextValueInt(),1);
