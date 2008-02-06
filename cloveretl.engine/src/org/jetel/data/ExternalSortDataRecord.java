@@ -181,6 +181,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 			tapeCarousel.rewind();
 		}
 		recordBuffer.clear();
+		this.prevIndex = -1;
 
 	}
 	
