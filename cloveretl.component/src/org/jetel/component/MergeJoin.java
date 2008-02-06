@@ -424,7 +424,20 @@ public class MergeJoin extends Node {
 					this.getClass().getClassLoader());
         }
 	}
-
+	
+	public void reset() throws ComponentNotReadyException {
+		super.reset();
+		reader[0].reset();
+		for (int i =0; i < slaveCnt; i++)
+			reader[i+1].reset(); 
+	}
+	
+	public void free() {
+		super.free();
+		reader[0].free();
+		for (int i =0; i < slaveCnt; i++)
+			reader[i+1].free(); 
+	}
 
     /**
      * @param transformationParameters The transformationParameters to set.
@@ -774,6 +787,10 @@ public class MergeJoin extends Node {
 		 */
 		public boolean loadNextRun() throws InterruptedException, IOException;
 
+		public void free();
+
+		public void reset() throws ComponentNotReadyException;
+
 		/**
 		 * Retrieves one record from current run. Modifies internal data so that next call
 		 * of this operation will return following record. 
@@ -833,6 +850,19 @@ public class MergeJoin extends Node {
 			recCounter = 0;
 			blocked = false;
 		}
+		
+		public void reset() throws ComponentNotReadyException {
+			inPort.reset();
+			this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
+			this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+			this.rec[CURRENT].init();
+			this.rec[NEXT].init();
+			recCounter = 0;
+		}
+		
+		public void free() {
+			inPort = null;
+		}
 
 		public boolean loadNextRun() throws InterruptedException, IOException {
 			if (inPort == null) {
@@ -841,7 +871,6 @@ public class MergeJoin extends Node {
 			if (recCounter == 0) {	// first call of this function
 				// load first record of the run
 				if (inPort.readRecord(rec[NEXT]) == null) {
-					inPort = null;
 					rec[NEXT] = rec[CURRENT] = null;
 					return false;
 				}
@@ -856,7 +885,6 @@ public class MergeJoin extends Node {
 			do {
 				swap();
 				if (inPort.readRecord(rec[NEXT]) == null) {
-					inPort = null;
 					rec[NEXT] = rec[CURRENT] = null;
 					return false;
 				}
@@ -879,7 +907,6 @@ public class MergeJoin extends Node {
 			}
 			swap();
 			if (inPort.readRecord(rec[NEXT]) == null) {
-				inPort = null;
 				rec[NEXT] = null;
 				blocked = false;
 			} else {
@@ -908,7 +935,7 @@ public class MergeJoin extends Node {
 				return -1;
 			}
 			return key.compare(other.getKey(), rec1, rec2);
-		}
+		}		
 
 	}
 	
@@ -943,6 +970,20 @@ public class MergeJoin extends Node {
 			this.firstRun = true;
 		}
 		
+		public void reset() throws ComponentNotReadyException {
+			inPort.reset();
+			this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
+			this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+			this.rec[CURRENT].init();
+			this.rec[NEXT].init();
+			recBuf.clear();
+			this.firstRun = true;
+		}
+		
+		public void free() {
+			inPort = null;
+		}
+		
 		private void swap() {
 			DataRecord tmp = rec[CURRENT];
 			rec[CURRENT] = rec[NEXT];
@@ -960,7 +1001,6 @@ public class MergeJoin extends Node {
 				// load first record of the run
 				if (inPort.readRecord(rec[NEXT]) == null) {
 					rec[CURRENT] = rec[NEXT] = null;
-					inPort = null;
 					return false;
 				}
 			}
@@ -970,7 +1010,6 @@ public class MergeJoin extends Node {
 				rec[NEXT].reset();
 				if (inPort.readRecord(rec[NEXT]) == null) {
 					rec[NEXT] = null;
-					inPort = null;
 					return true;
 				}
 				if (key.compare(rec[CURRENT], rec[NEXT]) != 0) {	// beginning of new run
@@ -1056,6 +1095,20 @@ public class MergeJoin extends Node {
 			this.needsRewind = true;
 		}
 		
+		public void reset() throws ComponentNotReadyException {
+			inPort.reset();
+			this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
+			this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+			this.rec[CURRENT].init();
+			this.rec[NEXT].init();
+			this.firstRun = true;
+			this.needsRewind = true;
+		}
+		
+		public void free() {
+			inPort = null;
+		}
+		
 		private void swap() {
 			DataRecord tmp = rec[CURRENT];
 			rec[CURRENT] = rec[NEXT];
@@ -1072,7 +1125,6 @@ public class MergeJoin extends Node {
 				// load first record of the run
 				if (inPort.readRecord(rec[NEXT]) == null) {
 					rec[CURRENT] = rec[NEXT] = null;
-					inPort = null;
 					return false;
 				}
 			}
@@ -1085,7 +1137,6 @@ public class MergeJoin extends Node {
 				rec[NEXT].reset();
 				if (inPort.readRecord(rec[NEXT]) == null) {
 					rec[NEXT] = null;
-					inPort = null;
 					return true;
 				}
 				if (key.compare(rec[CURRENT], rec[NEXT]) != 0) {	// beginning of new run
