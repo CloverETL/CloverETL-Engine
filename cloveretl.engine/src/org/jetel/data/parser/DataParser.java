@@ -374,6 +374,14 @@ public class DataParser implements Parser {
 							break;
 						}
 
+						//delimiter update
+						delimiterSearcher.update((char) character);
+
+						//test record delimiter
+						if(recordDelimiterFound()) {
+							return parsingErrorFound("Unexpected record delimiter, probably record is too short.", record, fieldCounter);
+						}
+
 						//skip leading blanks
 						if (skipBlanks) 
 							if(Character.isWhitespace(character)) continue; 
@@ -385,10 +393,18 @@ public class DataParser implements Parser {
 						} 
 						fieldBuffer.append((char) character);
 					}
+					//removes tailing blanks
 					if(character != -1 && fieldBuffer.length() > 0) {
 						fieldBuffer.setLength(fieldBuffer.length() - 
 								(fieldLengths[fieldCounter] - mark - 1));
 					}
+					//check record delimiter presence for last field
+					if(hasRecordDelimiter && fieldCounter + 1 == metadata.getNumFields()) {
+						if(!followRecordDelimiter()) { //record delimiter is not found
+							return parsingErrorFound("Too many characters found", record, fieldCounter);
+						}
+					}
+
 				} catch (Exception ex) {
 					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, fieldCounter));
 				}
@@ -419,12 +435,6 @@ public class DataParser implements Parser {
 			//populate field
 			populateField(record, fieldCounter, fieldBuffer);
 		}
-		
-//		if(metadata.isSpecifiedRecordDelimiter() && !recordDelimiterFound) {
-//			if(!followRecordDelimiter()) { //record delimiter is not found
-//				return parsingErrorFound("Too fields in record found", record, fieldCounter);
-//			}
-//		}
 
 		return record;
 	}
@@ -646,27 +656,27 @@ public class DataParser implements Parser {
 		return false;
 	}
 	
-//	/**
-//	 * Follow record delimiter in the input channel?
-//	 * @return
-//	 */
-//	private boolean followRecordDelimiter() {
-//		int count = 1;
-//		int character;
-//		try {
-//			while ((character = readChar()) != -1) {
-//				delimiterSearcher.update((char) character);
-//				if(recordDelimiterFound()) {
-//					return (count == delimiterSearcher.getMatchLength());
-//				}
-//				count++;
-//			}
-//		} catch (IOException e) {
-//			throw new RuntimeException(getErrorMessage(e.getMessage(), null, -1));
-//		}
-//		//end of file
-//		return false;
-//	}
+	/**
+	 * Follow record delimiter in the input channel?
+	 * @return
+	 */
+	private boolean followRecordDelimiter() {
+		int count = 1;
+		int character;
+		try {
+			while ((character = readChar()) != -1) {
+				delimiterSearcher.update((char) character);
+				if(recordDelimiterFound()) {
+					return (count == delimiterSearcher.getMatchLength());
+				}
+				count++;
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(getErrorMessage(e.getMessage(), null, -1));
+		}
+		//end of file
+		return false;
+	}
 
 	/**
 	 * Specifies whether leading blanks at each field should be skipped
