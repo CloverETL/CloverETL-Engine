@@ -48,9 +48,27 @@ public class GraphExecutor {
 
 	private static Log logger = LogFactory.getLog(GraphExecutor.class);
 
-	private ExecutorService watchdogExecutor = Executors.newCachedThreadPool(new WatchdogThreadFactory());
+	private ExecutorService watchdogExecutor; 
 	
-	private ExecutorService nodeExecutor = Executors.newCachedThreadPool(new NodeThreadFactory());
+	private ExecutorService nodeExecutor;
+	
+	/**
+	 * Constructor for default graph executor without thread limits.
+	 */
+	public GraphExecutor() {
+		watchdogExecutor = Executors.newCachedThreadPool(new WatchdogThreadFactory());
+		nodeExecutor = Executors.newCachedThreadPool(new WatchdogThreadFactory());
+	}
+
+	/**
+	 * Graph executor's constructor.
+	 * @param maxGraphs maximum number of simultaneously running graphs
+	 * @param maxNodes maximum number of simultaneously running nodes
+	 */
+	public GraphExecutor(int maxGraphs, int maxNodes) {
+		watchdogExecutor = Executors.newFixedThreadPool(maxGraphs, new WatchdogThreadFactory());
+		nodeExecutor = Executors.newFixedThreadPool(maxNodes, new WatchdogThreadFactory());
+	}
 	
 	/**
 	 * Waits for all currently running graphs are already done
