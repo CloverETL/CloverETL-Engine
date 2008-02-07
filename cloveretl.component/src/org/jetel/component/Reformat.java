@@ -203,6 +203,10 @@ public class Reformat extends Node {
 			}
 			SynchronizeUtils.cloverYield();
 		}
+
+		if (transformation != null)
+			transformation.finished();
+
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -368,8 +372,6 @@ public class Reformat extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		if (transformation != null)
-			transformation.finished();
 	}
 }
 

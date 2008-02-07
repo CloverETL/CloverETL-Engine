@@ -20,10 +20,6 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -33,7 +29,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.normalize.RecordNormalize;
 import org.jetel.component.normalize.RecordNormalizeTL;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
@@ -45,7 +40,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
-import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -260,6 +254,7 @@ public class Normalizer extends Node {
 			throw e;
 		}finally{
 	        broadcastEOF();
+			norm.finished();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -415,7 +410,6 @@ public class Normalizer extends Node {
 	@Override
 	public synchronized void free()  {
 		super.free();
-		norm.finished();
 	}
 
 }

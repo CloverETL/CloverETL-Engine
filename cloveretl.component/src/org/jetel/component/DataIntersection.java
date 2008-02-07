@@ -353,6 +353,9 @@ public class DataIntersection extends Node {
 			flushSlaveOnly(slaveRecord, outPortB);
 			slaveRecord = slavePort.readRecord(slaveRecord);
 		}
+
+		transformation.finished();
+
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
      }
@@ -374,7 +377,6 @@ public class DataIntersection extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		transformation.finished();
 	}
 
 	/**
