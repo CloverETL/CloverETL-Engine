@@ -247,7 +247,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 			try{
 				metadata=MetadataFactory.fromStub(metadataStub);
 			}catch(Exception ex){
-				throw new ComponentNotReadyException(ex.getMessage());
+				throw new ComponentNotReadyException("Creating metadata from db connection failed: ", ex);
 			}
 		}
 		if (edge == null) {

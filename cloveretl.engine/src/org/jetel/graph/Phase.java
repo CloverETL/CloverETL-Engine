@@ -139,6 +139,13 @@ public class Phase extends GraphElement implements Comparable {
 		// if the output stream is specified, create logging possibility information
 		logger.info("[Clover] Initializing phase: "	+ phaseNum);
 
+        //initialization of all edges
+		logger.debug(" initializing edges: ");
+        for(Edge edge : edges.values()) {
+        	edge.init();
+        }
+		logger.debug(" all edges initialized successfully... ");
+
 		// iterate through all nodes and initialize them
 		logger.debug(" initializing nodes: ");
 		for(Node node : nodes.values()) {
@@ -157,12 +164,6 @@ public class Phase extends GraphElement implements Comparable {
 			}
 		}
         
-        //initialization of all edges
-		logger.debug(" initializing edges: ");
-        for(Edge edge : edges.values()) {
-        	edge.init();
-        }
-		logger.debug(" all edges initialized successfully... ");
 
 		logger.info("[Clover] phase: " + phaseNum + " initialized successfully.");
 		
