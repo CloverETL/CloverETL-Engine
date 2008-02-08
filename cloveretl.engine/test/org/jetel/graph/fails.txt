@@ -1,0 +1,9 @@
+./graphLdapReader_Uninett.grf
+./graphInformixDataWriter.grf
+./graphJms.grf
+./graphPostgreSqlDataWriter.grf
+./graphXmlWriter.grf
+./graphJmsSingleXmlField.grf
+./graphMsSqlDataWriter.grf
+./graphMysqlDataWriter.grf
+./graphMysqlWriter.grf
