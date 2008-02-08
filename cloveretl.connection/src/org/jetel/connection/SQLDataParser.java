@@ -349,6 +349,16 @@ public class SQLDataParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
 	public void reset() {
+		try {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+			// close statement
+			statement.close();
+		}
+		catch (SQLException ex) {
+            logger.warn("SQLException when closing statement",ex);
+		}
 		recordCounter = 1;
 	}
 	
