@@ -89,7 +89,7 @@ public interface Formatter {
 	 */
 	public void flush() throws IOException;
 
-
+	public void finish() throws IOException;
 }
 /*
  *  end class DataFormatter

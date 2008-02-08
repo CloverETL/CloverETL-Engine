@@ -920,6 +920,14 @@ public class DB2DataWriter extends Node {
 		}
 	}
 	
+	@Override
+	public synchronized void free() {
+		super.free();
+		if (formatter != null) {
+			formatter.close();
+		}
+	}
+	
 	/**
 	 * From given metadata creates new metadata but with date/time format defined within 
 	 * params or if not defined all dates have to have the same format, all times 
@@ -1422,20 +1430,14 @@ public class DB2DataWriter extends Node {
 		proc = Runtime.getRuntime().exec(command);
 		formatter.setDataTarget(new FileOutputStream(dataFile));
 		box = new ProcBox(proc, null, consumer, errConsumer);
-		try {
-			while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
-				if (skipped >= recordSkip) {
-					formatter.write(inRecord);
-				}else{
-					skipped++;
-				}
+		while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
+			if (skipped >= recordSkip) {
+				formatter.write(inRecord);
+			}else{
+				skipped++;
 			}
-		} catch (Exception e) {
-			throw new JetelException("Problem with reading input", e);
-		}finally {
-			formatter.close();
 		}
-		
+		formatter.finish();
 		return box.join();
 	}
 	
@@ -1474,19 +1476,14 @@ public class DB2DataWriter extends Node {
 				if (!getInPorts().isEmpty()) {
 					//save data in temporary file
 					formatter.setDataTarget(new FileOutputStream(dataFile));
-					try {
-						while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
-							if (skipped >= recordSkip) {
-								formatter.write(inRecord);
-							}else{
-								skipped++;
-							}
+					while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
+						if (skipped >= recordSkip) {
+							formatter.write(inRecord);
+						}else{
+							skipped++;
 						}
-					} catch (Exception e) {
-						throw e;
-					}finally {
-						formatter.close();
 					}
+					formatter.finish();
 				}
 				//read data from file
 				if (runIt) {

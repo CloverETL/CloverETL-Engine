@@ -105,6 +105,14 @@ public class DataFormatter implements Formatter {
 	}
 
 	public void reset() {
+		if (writer != null && writer.isOpen()) {
+			try{
+				flush();
+				writer.close();
+			}catch(IOException ex){
+				ex.printStackTrace();
+			}
+		}
 		encoder.reset();
 	}
 	
@@ -142,6 +150,11 @@ public class DataFormatter implements Formatter {
 		writer = null;
 	}
 
+	public void finish() throws IOException {
+		flush();
+		writeFooter();
+		flush();
+	}
 
 	/**
 	 *  Description of the Method

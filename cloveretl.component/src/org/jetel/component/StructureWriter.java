@@ -252,19 +252,14 @@ public class StructureWriter extends Node {
 		DataRecord record = new DataRecord(bodyPort.getMetadata());
 		record.init();
         writer.init(bodyPort.getMetadata());
-		try {
-			while (record != null && runIt) {
-				record = bodyPort.readRecord(record);
-				if (record != null) {
-			        writer.write(record);
-				}
-				SynchronizeUtils.cloverYield();
+		while (record != null && runIt) {
+			record = bodyPort.readRecord(record);
+			if (record != null) {
+		        writer.write(record);
 			}
-		} catch (Exception e) {
-			throw e;
-		}finally{
-			writer.close();
+			SynchronizeUtils.cloverYield();
 		}
+		writer.finish();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
@@ -356,8 +351,18 @@ public class StructureWriter extends Node {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		writer.reset();
-		headerFormatter.reset();
-		footerFormatter.reset();
+		if (headerFormatter != null) {
+			headerFormatter.reset();
+		}
+		if (footerFormatter != null) {
+			footerFormatter.reset();
+		}
+	}
+	
+	@Override
+	public synchronized void free() {
+		super.free();
+		writer.close();
 	}
 	
 	/**

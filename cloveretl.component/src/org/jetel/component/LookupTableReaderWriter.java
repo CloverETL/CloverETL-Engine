@@ -145,7 +145,6 @@ public class LookupTableReaderWriter extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		lookupTable.reset();
 	}
 	
 	@Override

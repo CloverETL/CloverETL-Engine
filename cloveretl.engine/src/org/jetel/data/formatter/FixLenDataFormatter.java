@@ -228,9 +228,22 @@ public class FixLenDataFormatter implements Formatter {
 	}
 
 	public void reset() {
+		if (writer != null && writer.isOpen()) {
+			try {
+				flushBuffer();
+				writer.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
 		encoder.reset();
 		dataBuffer.clear();
-		dataBuffer.flip();
+	}
+	
+	public void finish() throws IOException {
+		flush();
+		writeFooter();
+		flush();
 	}
 	
     /* (non-Javadoc)

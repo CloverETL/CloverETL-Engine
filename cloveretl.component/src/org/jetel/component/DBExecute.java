@@ -19,19 +19,29 @@
 */
 package org.jetel.component;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.aggregate.AggregateMappingParser;
 import org.jetel.connection.DBConnection;
+import org.jetel.connection.SQLCloverCallableStatement;
+import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.LenientParserExceptionHandler;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.file.FileUtils;
@@ -113,12 +123,21 @@ public class DBExecute extends Node {
     private static final String XML_PROCEDURE_CALL_ATTRIBUTE = "callStatement";
     private static final String XML_STATEMENT_DELIMITER = "sqlStatementDelimiter";
     private static final String XML_CHARSET_ATTRIBUTE = "charset";
+    private static final String XML_IN_PARAMETERS = "inParameters";
+    private static final String XML_OUT_PARAMETERS = "outParameters";
+    private static final String XML_OUTPUT_FIELDS = "outputFields";
 	
+    private enum InTransaction {
+    	ONE,
+    	SET,
+    	ALL;
+    }
+    
 	private DBConnection dbConnection;
 	private String dbConnectionName;
 	private String sqlQuery;
     private String[] dbSQL;
-	private boolean oneTransaction = false;
+	private InTransaction transaction = InTransaction.SET;
 	private boolean printStatements = false;
 	private boolean procedureCall = false;
     private String sqlStatementDelimiter;
@@ -126,10 +145,20 @@ public class DBExecute extends Node {
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DB_EXECUTE";
 	private final static String DEFAULT_SQL_STATEMENT_DELIMITER = ";";
-
+	private final static String PARAMETERS_SET_DELIMITER = "#";
+	private final static String CLOVER_FIELD_INDICATOR = "$";
+	
+	private final static int READ_FROM_PORT = 0;
+	private final static int WRITE_TO_PORT = 0;
+	
 	static Log logger = LogFactory.getLog(DBExecute.class);
 	private String url = null;
-
+	private PreparedStatement[] sqlStatement;
+	private SQLCloverCallableStatement[] callableStatement;
+	
+	private DataRecord inRecord, outRecord;
+	private Map<Integer, String>[] inParams, outParams;
+	private String[] outputFields;
 
 	/**
 	 *  Constructor for the DBExecute object
@@ -202,9 +231,55 @@ public class DBExecute extends Node {
             String delimiter = sqlStatementDelimiter !=null ? sqlStatementDelimiter : DEFAULT_SQL_STATEMENT_DELIMITER;
             dbSQL=sqlQuery.split(delimiter);
         }
+		if (printStatements){
+			for (int i = 0; i < dbSQL.length; i++) {
+				logger.info(dbSQL[i]);
+			}
+		}
+		if (getInPorts().size() > 0) {
+			inRecord = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
+			inRecord.init();
+		}
+		if (getOutPorts().size() > 0) {
+			outRecord = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
+			outRecord.init();
+		}
+		Connection connection = dbConnection.getConnection(getId());
+		try {
+			if (procedureCall) {
+				callableStatement = new SQLCloverCallableStatement[dbSQL.length];
+				for (int i = 0; i < callableStatement.length; i++){
+					callableStatement[i] = new SQLCloverCallableStatement(connection, dbSQL[i], inRecord, outRecord);
+					if (inParams != null) {
+						callableStatement[i].setInParameters(inParams[i]);
+					}
+					if (outParams != null) {
+						callableStatement[i].setOutParameters(outParams[i]);
+					}
+					callableStatement[i].setOutputFields(outputFields);
+					callableStatement[i].prepareCall();
+				}
+			}else{
+				sqlStatement = new PreparedStatement[dbSQL.length];
+				for (int i = 0; i < sqlStatement.length; i++){
+					sqlStatement[i] = connection.prepareStatement(dbSQL[i]);
+				}
+			}
+		} catch (SQLException e) {
+			throw new ComponentNotReadyException(this, XML_SQLCODE_ELEMENT, e.getMessage());
+		}
 	}
 
-
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		if (inRecord != null) {
+			inRecord.reset();
+		}
+		if (outRecord != null){
+			outRecord.reset();
+		}
+	}
 
 
 	/**
@@ -212,8 +287,14 @@ public class DBExecute extends Node {
 	 *
 	 * @param  transaction  The new transaction value
 	 */
-	public void setTransaction(boolean transaction) {
-		oneTransaction = transaction;
+	public void setTransaction(String transaction){
+		try {
+			this.transaction = InTransaction.valueOf(transaction.toUpperCase());
+		} catch (IllegalArgumentException e) {
+			if (Boolean.parseBoolean(transaction)) {
+				this.transaction = InTransaction.ALL;
+			}
+		}
 	}
 
 	public void setPrintStatements(boolean printStatements){
@@ -231,64 +312,55 @@ public class DBExecute extends Node {
 	
 	@Override
 	public Result execute() throws Exception {
-		Statement sqlStatement=null;
+		Connection connection = dbConnection.getConnection(getId());
 		// this does not work for some drivers
 		try {
-			dbConnection.getConnection(getId()).setAutoCommit(false);
+			connection.setAutoCommit(false);
 		} catch (SQLException ex) {
-			if (oneTransaction) {
+			if (transaction == InTransaction.ONE) {
 				logger.fatal("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
 				throw new JetelException("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
 			}
 		}
 
+		InputPort inPort = getInputPort(READ_FROM_PORT);
+		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
 		try {
-			// let's create statement - based on what do we execute
-            if (!procedureCall){
-                sqlStatement = dbConnection.getConnection(getId()).createStatement();
-            }
-            
-			for (int i = 0; i < dbSQL.length; i++) {
-				// empty strings are skipped
-				if (dbSQL[i].trim().length() == 0) {
-					continue;
-				}
-				// shall we print what is sent to DB ?
-				if (printStatements){
-					logger.info(dbSQL[i]);
-				}
-                if (sqlStatement==null){
-                        sqlStatement=dbConnection.getConnection(getId()).prepareCall(dbSQL[i]);
-                }
-				sqlStatement.executeUpdate(dbSQL[i]);
-				// shall we commit each statemetn ?
-				if (!oneTransaction) {
-					dbConnection.getConnection(getId()).commit();
-				}
-                if (procedureCall){
-                    sqlStatement.close();
-                    sqlStatement=null;
-                }
+			if (inPort != null) {
+				inRecord = inPort.readRecord(inRecord);
 			}
-			// let's commit what remains
-			dbConnection.getConnection(getId()).commit();
-			if(sqlStatement!=null) { sqlStatement.close(); }
-
+			do {
+				for (int i = 0; i < dbSQL.length; i++){
+					if (procedureCall) {
+						callableStatement[i].executeCall();
+						if (outPort != null) {
+							callableStatement[i].isNext();
+							do {
+								outPort.writeRecord(callableStatement[i].getOutRecord());
+							}while (callableStatement[i].isNext());
+						}
+					}else{
+						sqlStatement[i].executeUpdate();
+					}
+					if (transaction == InTransaction.ONE){
+						connection.commit();
+					}
+				}
+				if (transaction == InTransaction.SET){
+					connection.commit();
+				}
+			} while (runIt && inRecord != null);
+			if (transaction == InTransaction.ALL){
+				connection.commit();
+			}
 		} catch (Exception ex) {
-			performRollback();
-			logger.fatal(ex);
-			throw new JetelException(ex.getMessage(),ex);
+			connection.rollback();
+			throw ex;
 		}	
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
-	}
-
-
-	/**  Description of the Method */
-	private void performRollback() {
-		try {
-			dbConnection.getConnection(getId()).rollback();
-		} catch (Exception ex) {
+		if (!runIt) {
+			connection.rollback();
 		}
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 	/**
@@ -303,15 +375,36 @@ public class DBExecute extends Node {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, this.dbConnectionName);
 		xmlElement.setAttribute(XML_PRINTSTATEMENTS_ATTRIBUTE, String.valueOf(this.printStatements));
-		xmlElement.setAttribute(XML_INTRANSACTION_ATTRIBUTE, String.valueOf(this.oneTransaction));
+		xmlElement.setAttribute(XML_INTRANSACTION_ATTRIBUTE, String.valueOf(this.transaction));
 		xmlElement.setAttribute(XML_PROCEDURE_CALL_ATTRIBUTE,String.valueOf(procedureCall));
         
         if (sqlStatementDelimiter!=null){
             xmlElement.setAttribute(XML_STATEMENT_DELIMITER, sqlStatementDelimiter);
         }
         
+        if (outputFields != null){
+        	xmlElement.setAttribute(XML_OUTPUT_FIELDS, StringUtils.stringArraytoString(outputFields, Defaults.Component.KEY_FIELDS_DELIMITER));
+        }
         
-		// use attribute for single SQL command, SQLCode element for multiple
+        StringBuilder attr = new StringBuilder();
+        if (inParams != null) {
+        	for (int i = 0; i < inParams.length; i++) {
+				attr.append(StringUtils.mapToString(inParams[i], AggregateMappingParser.ASSIGN_SIGN, Defaults.Component.KEY_FIELDS_DELIMITER));
+				attr.append(PARAMETERS_SET_DELIMITER);
+			}
+        	xmlElement.setAttribute(XML_IN_PARAMETERS, attr.toString());
+        }
+        
+        attr.setLength(0);
+        if (outParams != null) {
+        	for (int i = 0; i < outParams.length; i++) {
+				attr.append(StringUtils.mapToString(outParams[i], AggregateMappingParser.ASSIGN_SIGN, Defaults.Component.KEY_FIELDS_DELIMITER));
+				attr.append(PARAMETERS_SET_DELIMITER);
+			}
+        	xmlElement.setAttribute(XML_OUT_PARAMETERS, attr.toString());
+        }
+
+        // use attribute for single SQL command, SQLCode element for multiple
 		if (this.dbSQL.length == 1) {
 			xmlElement.setAttribute(XML_SQLQUERY_ATTRIBUTE, this.dbSQL[0]);
 		} else {
@@ -374,7 +467,7 @@ public class DBExecute extends Node {
 
             if (xattribs.exists(XML_INTRANSACTION_ATTRIBUTE)) {
                 executeSQL.setTransaction(xattribs
-                        .getBoolean(XML_INTRANSACTION_ATTRIBUTE));
+                        .getString(XML_INTRANSACTION_ATTRIBUTE));
             }
 
             if (xattribs.exists(XML_PRINTSTATEMENTS_ATTRIBUTE)) {
@@ -388,6 +481,15 @@ public class DBExecute extends Node {
             if (xattribs.exists(XML_PROCEDURE_CALL_ATTRIBUTE)){
                 executeSQL.setProcedureCall(xattribs.getBoolean(XML_PROCEDURE_CALL_ATTRIBUTE));
             }
+            if (xattribs.exists(XML_IN_PARAMETERS)){
+            	executeSQL.setInParameters(xattribs.getString(XML_IN_PARAMETERS));
+            }
+            if (xattribs.exists(XML_OUT_PARAMETERS)){
+            	executeSQL.setOutParameters(xattribs.getString(XML_OUT_PARAMETERS));
+            }
+            if (xattribs.exists(XML_OUTPUT_FIELDS)){
+            	executeSQL.setOutputFields(xattribs.getString(XML_OUTPUT_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+            }
             if (xattribs.exists(XML_STATEMENT_DELIMITER)){
                 executeSQL.setSqlStatementDelimiter(xattribs.getString(XML_STATEMENT_DELIMITER));
             }
@@ -400,6 +502,40 @@ public class DBExecute extends Node {
     }
 
 
+	public void setInParameters(String string) {
+		String[] inParameters = string.split(PARAMETERS_SET_DELIMITER);
+		inParams = new HashMap[inParameters.length];
+		for (int i = 0; i < inParameters.length; i++) {
+			inParams[i] = convertMappingToMap(inParameters[i]);
+		}
+	}
+
+	public void setOutParameters(String string) {
+		String[] outParameters = string.split(PARAMETERS_SET_DELIMITER);
+		outParams = new HashMap[outParameters.length];
+		for (int i = 0; i < outParameters.length; i++) {
+			outParams[i] = convertMappingToMap(outParameters[i]);
+		}
+	}
+
+	private Map<Integer, String> convertMappingToMap(String mapping){
+		String[] mappings = mapping.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		HashMap<Integer, String> result = null;
+		int index;
+		int assignSignLength = AggregateMappingParser.ASSIGN_SIGN.length();
+		for (int i = 0; i < inParams.length; i++) {
+			result = new HashMap<Integer, String>();
+			index = mappings[i].indexOf(AggregateMappingParser.ASSIGN_SIGN);
+			if (mappings[i].startsWith(CLOVER_FIELD_INDICATOR)) {
+				result.put(Integer.parseInt(mappings[i].substring(index + assignSignLength).trim()), 
+						mappings[i].substring(CLOVER_FIELD_INDICATOR.length(), index).trim());
+			}else{
+				result.put(Integer.parseInt(mappings[i].substring(0, index).trim()), 
+						mappings[i].substring(index + assignSignLength).trim().substring(CLOVER_FIELD_INDICATOR.length()));
+			}
+		}
+		return result;
+	}
 	/**
 	 *  Description of the Method
 	 *
@@ -409,8 +545,8 @@ public class DBExecute extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        if(!checkInputPorts(status, 0, 0)
-        		|| !checkOutputPorts(status, 0, 0)) {
+        if(!checkInputPorts(status, 0, 1)
+        		|| !checkOutputPorts(status, 0, 1)) {
         	return status;
         }
 
@@ -458,6 +594,11 @@ public class DBExecute extends Node {
     public void setSqlStatementDelimiter(String sqlStatementDelimiter) {
         this.sqlStatementDelimiter = sqlStatementDelimiter;
     }
+
+
+	public void setOutputFields(String[] outputFields) {
+		this.outputFields = outputFields;
+	}
 
 }
 

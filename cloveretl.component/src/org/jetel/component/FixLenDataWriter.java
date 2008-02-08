@@ -160,21 +160,21 @@ public class FixLenDataWriter extends Node {
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
 		
-		try {
-			while (record != null && runIt) {
-				record = inPort.readRecord(record);
-				if (record != null) {
-			        writer.write(record);
-				}
+		while (record != null && runIt) {
+			record = inPort.readRecord(record);
+			if (record != null) {
+		        writer.write(record);
 			}
-		} catch (Exception e) {
-			throw e;
-		}finally{		
-			writer.close();
 		}
+		writer.finish();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		writer.reset();
+	}
 
 	/**
 	 *  Description of the Method
@@ -216,13 +216,6 @@ public class FixLenDataWriter extends Node {
         }
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
-	
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		//super.reset();
-		writer.reset();
-	}
-
 	
 	/**
 	 * Creates and initializes lookup table.

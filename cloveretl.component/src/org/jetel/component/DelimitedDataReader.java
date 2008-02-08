@@ -142,29 +142,23 @@ public class DelimitedDataReader extends Node {
 		// we need to create data record - take the metadata from first output port
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
-		try {
-			while (record != null && runIt) {
-			    try {
-			        if((record = reader.getNext(record)) != null) {
-			            //broadcast the record to all connected Edges
-			            writeRecordBroadcast(record);
-			        }
-			    } catch(BadDataFormatException bdfe) {
-			        if(policyType == PolicyType.STRICT) {
-			            throw bdfe;
-			        } else {
-			            logger.info(bdfe.getMessage());
-			        }
-			    }
-			    SynchronizeUtils.cloverYield();
-			}
-		} catch (Exception e) {
-			throw e;
-		}finally{
-			reader.close();
-			broadcastEOF();
+		while (record != null && runIt) {
+		    try {
+		        if((record = reader.getNext(record)) != null) {
+		            //broadcast the record to all connected Edges
+		            writeRecordBroadcast(record);
+		        }
+		    } catch(BadDataFormatException bdfe) {
+		        if(policyType == PolicyType.STRICT) {
+		            throw bdfe;
+		        } else {
+		            logger.info(bdfe.getMessage());
+		        }
+		    }
+		    SynchronizeUtils.cloverYield();
 		}
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+		broadcastEOF();
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 	/**
@@ -196,6 +190,11 @@ public class DelimitedDataReader extends Node {
     	//parser.reset();
     }
 
+    @Override
+    public synchronized void free() {
+    	super.free();
+    	reader.close();
+    }
 
 	/**
 	 *  Description of the Method

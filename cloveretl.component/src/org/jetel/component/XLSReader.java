@@ -192,32 +192,26 @@ public class XLSReader extends Node {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
 		int errorCount = 0;
-		try {
-			while (((record) != null) && runIt) {
-				try {
-					record = reader.getNext(record);
-					if (record!=null){
-						writeRecordBroadcast(record);
-					}
-				}catch(BadDataFormatException bdfe){
-			        if(policyType == PolicyType.STRICT) {
-			            throw bdfe;
-			        } else {
-			            logger.info(bdfe.getMessage());
-			            if(maxErrorCount != -1 && ++errorCount > maxErrorCount) {
-			                logger.error("DataParser (" + getName() + "): Max error count exceeded.");
-			                break;
-			            }
-			        }
+		while (((record) != null) && runIt) {
+			try {
+				record = reader.getNext(record);
+				if (record!=null){
+					writeRecordBroadcast(record);
 				}
-				SynchronizeUtils.cloverYield();
+			}catch(BadDataFormatException bdfe){
+		        if(policyType == PolicyType.STRICT) {
+		            throw bdfe;
+		        } else {
+		            logger.info(bdfe.getMessage());
+		            if(maxErrorCount != -1 && ++errorCount > maxErrorCount) {
+		                logger.error("DataParser (" + getName() + "): Max error count exceeded.");
+		                break;
+		            }
+		        }
 			}
-		} catch (Exception e) {
-			throw e;
-		}finally{
-			parser.close();
-			broadcastEOF();
+			SynchronizeUtils.cloverYield();
 		}
+		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 

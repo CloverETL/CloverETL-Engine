@@ -136,20 +136,14 @@ public class CloverDataReader extends Node {
         record.init();
 		int diffRecord = (startRecord != -1) ? finalRecord - startRecord : finalRecord - 1;
 		int recordCount = 0;
-        try {
-			while ((record = parser.getNext(record))!=null && runIt){
-			    writeRecordBroadcast(record);
-				if(finalRecord != -1 && ++recordCount > diffRecord) {
-					break;
-				}
-				SynchronizeUtils.cloverYield();
+		while ((record = parser.getNext(record))!=null && runIt){
+		    writeRecordBroadcast(record);
+			if(finalRecord != -1 && ++recordCount > diffRecord) {
+				break;
 			}
-		} catch (Exception e) {
-			throw e;
-		}finally{
-			parser.close();
-			broadcastEOF();
+			SynchronizeUtils.cloverYield();
 		}
+		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
@@ -241,6 +235,12 @@ public class CloverDataReader extends Node {
 		}else{
 			parser.setDataSource(fileURL);
 		}
+	}
+	
+	@Override
+	public synchronized void free() {
+		super.free();
+		parser.close();
 	}
 	
 	@Override

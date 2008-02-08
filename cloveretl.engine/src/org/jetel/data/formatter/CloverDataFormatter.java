@@ -142,18 +142,22 @@ public class CloverDataFormatter implements Formatter {
     }
 
     public void reset() {
-    	buffer.reset();
-    	idxBuffer.reset();
-    	isOpen = false;
-	}
-	
-	/* (non-Javadoc)//			writer.close();
-
-	 * @see org.jetel.data.formatter.Formatter#close()
-	 */
-	public void close() {
 		if (!isOpen) return;
 		try{
+			if (out instanceof ZipOutputStream) {
+				((ZipOutputStream)out).closeEntry();
+			}else{
+				out.close();
+			}
+			isOpen = false;
+		}catch(IOException ex){
+			ex.printStackTrace();
+		}
+    	buffer.clear();
+    	idxBuffer.clear();
+	}
+	
+    public void finish() throws IOException{
 			flush();
 			if (saveIndex) {
 				idxReader = new FileInputStream(idxTmpFile).getChannel();
@@ -224,6 +228,15 @@ public class CloverDataFormatter implements Formatter {
 					idxWriter.close();
 				}
 			}
+    }
+    
+	/* (non-Javadoc)//			writer.close();
+
+	 * @see org.jetel.data.formatter.Formatter#close()
+	 */
+	public void close() {
+		if (!isOpen) return;
+		try{
 			if (out instanceof ZipOutputStream) {
 				((ZipOutputStream)out).closeEntry();
 			}else{

@@ -192,6 +192,10 @@ public class SQLCloverStatement {
 		return autoKeyGenerator.isStatementCreatedSuccessfully();
 	}
 	
+	public void reset() throws SQLException{
+		preparedStatement = autoKeyGenerator.reset();
+	}
+	
 	/**
 	 * Fills prepared statements with data obtained from input record and executes update on database
 	 * 

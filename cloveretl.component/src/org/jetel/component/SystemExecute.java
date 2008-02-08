@@ -248,9 +248,31 @@ public class SystemExecute extends Node{
 		//Creating and initializing record from input port
 		DataRecord in_record=null;
 		InputPort inPort = getInputPort(INPUT_PORT);
+		//If there is input port read metadadata, initialize in_record and create data formater
+		if (inPort!=null) {
+			DataRecordMetadata meta=inPort.getMetadata();
+			in_record = new DataRecord(meta);
+			in_record.init();
+			formatter = new DataFormatter();
+		}else{
+			formatter=null;
+		}
 //		Creating and initializing record to otput port
 		DataRecord out_record=null;
 		OutputPort outPort=getOutputPort(OUTPUT_PORT);
+		//If there is output port read metadadata, initialize out_record and create proper data parser
+		if (outPort!=null) {
+			DataRecordMetadata meta=outPort.getMetadata();
+			out_record= new DataRecord(meta);
+			out_record.init();
+			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
+				parser=new DelimitedDataParser();
+			}else {
+				parser= FixLenDataParser.createParser(meta.getRecordProperties().getBooleanProperty(DataRecordMetadata.BYTE_MODE_ATTR, false));
+			}
+		}else{
+			parser=null;
+		}
 
 		boolean ok = true;
 		StringBuffer msg = new StringBuffer("Executing command: \"");
@@ -274,6 +296,7 @@ public class SystemExecute extends Node{
 		// If there is input port read records and write them to input stream of the process
 		GetData getData=null; 
 		if (inPort!=null) {
+            formatter.init(getInputPort(INPUT_PORT).getMetadata());
             formatter.setDataTarget(Channels.newChannel(process_in));
             getData=new GetData(Thread.currentThread(),inPort, in_record, formatter);
 			getData.start();
@@ -283,6 +306,7 @@ public class SystemExecute extends Node{
 		SendDataToFile sendDataToFile = null;
 		SendDataToFile sendErrToFile = null;
 		if (outPort!=null){
+            parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
             parser.setDataSource(process_out);
             sendData=new SendData(Thread.currentThread(),outPort,out_record,parser);
 			//send all out_records to output ports
@@ -462,34 +486,8 @@ public class SystemExecute extends Node{
 				throw new ComponentNotReadyException(ex);
 			}
 		}
-		//If there is input port read metadadata, initialize in_record and create data formater
-		if (getInputPort(INPUT_PORT)!=null) {
-			formatter = new DataFormatter();
-            formatter.init(getInputPort(INPUT_PORT).getMetadata());
-		}
-		//If there is output port read metadadata, initialize out_record and create proper data parser
-		if (getOutputPort(OUTPUT_PORT)!=null) {
-			DataRecordMetadata meta=getOutputPort(OUTPUT_PORT).getMetadata();
-			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
-				parser=new DelimitedDataParser();
-			}else {
-				parser= FixLenDataParser.createParser(meta.getRecordProperties().getBooleanProperty(DataRecordMetadata.BYTE_MODE_ATTR, false));
-			}
-            parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
-		}
 	}
 
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		if (formatter != null){
-			formatter.reset();
-		}
-		if (parser != null){
-			parser.reset();
-		}
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#getType()
 	 */
