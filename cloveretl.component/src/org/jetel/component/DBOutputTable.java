@@ -531,13 +531,23 @@ public class DBOutputTable extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		inRecord.reset();
+		inRecord = new DataRecord(inPort.getMetadata());
+		inRecord.init();
 		if (rejectedRecord != null) {
 			rejectedRecord.reset();
 		}		
 		if (returnKey) {
 			keysRecord.reset();
 		}
+		for (SQLCloverStatement eachStatement : statement) {
+			try {
+				eachStatement.reset();
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, e.getMessage());
+			} 
+		}
+		recCount = 0;
+		countError = 0;
 	}
 	
 	/**

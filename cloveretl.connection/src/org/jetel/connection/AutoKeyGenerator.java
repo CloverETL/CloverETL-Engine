@@ -58,6 +58,10 @@ public class AutoKeyGenerator{
 		return connection.prepareStatement(sqlQuery);
 	}
 	
+	public PreparedStatement reset() throws SQLException{
+		return prepareStatement();
+	}
+	
 	/**
 	 * Fills keyRecord by values from input record and result set 
 	 * 
@@ -114,6 +118,7 @@ class MultiAutoKeyGenerator extends AutoKeyGenerator{
 	
 	private CopySQLData[] keyTransMap;
 	private DataRecord keyRecord;
+	private int[] columnIndexes;
 
 	MultiAutoKeyGenerator(Connection connection, String sqlQuery, String[] columns) {
 		super(connection, sqlQuery, columns);
@@ -133,7 +138,7 @@ class MultiAutoKeyGenerator extends AutoKeyGenerator{
 		int tableNameStart = StringUtils.findIdentifierBegining(sqlQuery,sqlQuery.toLowerCase().indexOf("into") + 4);
 		int tableNameEnd = StringUtils.findIdentifierEnd(sqlQuery, tableNameStart);
 		String table = sqlQuery.substring(tableNameStart, tableNameEnd);
-		int[] columnIndexes = new int[columns.length];
+		columnIndexes = new int[columns.length];
 		ResultSet columnInfo = connection.getMetaData().getColumns(
 				null, null, table, "%");
 		int index;
@@ -152,6 +157,13 @@ class MultiAutoKeyGenerator extends AutoKeyGenerator{
 					StringUtils.stringArraytoString(columns, ',') + ") found in table " + table);
 		}
 		statementCreatedSuccessfully = true;
+		return connection.prepareStatement(sqlQuery, columnIndexes);
+	}
+	
+	public PreparedStatement reset() throws SQLException{
+		if (columns == null || !sqlQuery.toLowerCase().startsWith("insert")) {
+			return super.reset();
+		}
 		return connection.prepareStatement(sqlQuery, columnIndexes);
 	}
 	
@@ -215,6 +227,14 @@ class SingleAutoKeyGenerator extends AutoKeyGenerator{
 			logger.info("Getting generated keys switched off !");
 		}				
 		return super.prepareStatement();
+	}
+	
+	@Override
+	public PreparedStatement reset() throws SQLException {
+		if (columns != null) {
+			return connection.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
+		}
+		return super.reset();
 	}
 	
 	@Override

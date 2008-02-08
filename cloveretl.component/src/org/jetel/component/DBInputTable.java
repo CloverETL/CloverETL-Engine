@@ -181,7 +181,6 @@ public class DBInputTable extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		connection.reset();
 		parser.reset();
 	}
 
@@ -192,30 +191,24 @@ public class DBInputTable extends Node {
 		record.init();
 		record.reset();
 		parser.setDataSource(connection.getConnection(getId()));
-		try {
-			parser.initSQLDataMap(record);
+		parser.initSQLDataMap(record);
 
-			// till it reaches end of data or it is stopped from outside
-			while (record != null && runIt){
-				try{
-					record = parser.getNext();
-					if (record != null) {
-						writeRecordBroadcast(record);
-					}
-				}catch(BadDataFormatException bdfe){
-			        if(policyType == PolicyType.STRICT) {
-			            throw bdfe;
-			        } else {
-			            logger.info(bdfe.getMessage());
-			        }
+		// till it reaches end of data or it is stopped from outside
+		while (record != null && runIt){
+			try{
+				record = parser.getNext();
+				if (record != null) {
+					writeRecordBroadcast(record);
 				}
+			}catch(BadDataFormatException bdfe){
+		        if(policyType == PolicyType.STRICT) {
+		            throw bdfe;
+		        } else {
+		            logger.info(bdfe.getMessage());
+		        }
 			}
-		} catch (Exception e) {
-			throw e;
-		}finally{
-			parser.close();
-			broadcastEOF();
 		}
+		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 

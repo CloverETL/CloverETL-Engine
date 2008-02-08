@@ -359,10 +359,11 @@ public class JExcelXLSDataParser extends XLSParser {
 	}
 	
 	public void reset() {
-		if (releaseInputSource && wb != null) {
+		if (wb != null) {
 			wb.close();
 		}
         currentRow = firstRow;
+        recordCounter = 1;
         sheetCounter = -1;
         if (sheetNumber != null){
         	sheetNumberIterator.reset();

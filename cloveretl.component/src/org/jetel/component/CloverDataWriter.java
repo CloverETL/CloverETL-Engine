@@ -181,25 +181,19 @@ public class CloverDataWriter extends Node {
 		long iRec = 0;
 		int recordTo = numRecords < 0 ? Integer.MAX_VALUE : (skip <= 0 ? numRecords+1 : skip+1 + numRecords);
 		record.init();
-		try {
-			while (record != null && runIt) {
-				iRec++;
-				record = inPort.readRecord(record);
-				if (skip >= iRec || recordTo <= iRec) continue;
-				if (record != null) {
-					formatter.write(record);
-				}
-				SynchronizeUtils.cloverYield();
+		while (record != null && runIt) {
+			iRec++;
+			record = inPort.readRecord(record);
+			if (skip >= iRec || recordTo <= iRec) continue;
+			if (record != null) {
+				formatter.write(record);
 			}
-		} catch (Exception e) {
-			throw e;
-		}finally{
-			formatter.close();
+			SynchronizeUtils.cloverYield();
 		}
+		formatter.finish();
 		if (saveMetadata){
 			saveMetadata();
 		}
-		out.close();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
@@ -291,6 +285,11 @@ public class CloverDataWriter extends Node {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		formatter.reset();
+		try {
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**

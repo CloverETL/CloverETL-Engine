@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.TextTableFormatter;
@@ -83,6 +85,8 @@ import org.w3c.dom.Element;
  * @see         org.jetel.graph.Edge
  */
 public class Trash extends Node {
+	private static final Log log = LogFactory.getLog(Trash.class);
+
 	private static final String XML_DEBUGFILENAME_ATTRIBUTE = "debugFilename";
 	private static final String XML_DEBUGPRINT_ATTRIBUTE = "debugPrint";
 	private static final String XML_DEBUGAPPEND_ATTRIBUTE = "debugAppend";
@@ -137,24 +141,23 @@ public class Trash extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
-		try {
-			int count = 0;
-			while (record != null && runIt) {
-				record = inPort.readRecord(record);
-				if (writer != null && record != null) {
-			        writer.write(record);
-					if (debugFilename == null) {
-						if (count >= TextTableFormatter.MAX_ROW_ANALYZED)
-							formatter.flush(); // if we debug into stdout
-					}
-					count++;
+		int count = 0;
+		while (record != null && runIt) {
+			record = inPort.readRecord(record);
+			if (writer != null && record != null) {
+		        writer.write(record);
+				if (debugFilename == null) {
+					if (count >= TextTableFormatter.MAX_ROW_ANALYZED)
+						formatter.flush(); // if we debug into stdout
 				}
-				SynchronizeUtils.cloverYield();
+				count++;
 			}
-		} catch (Exception e) {
-			throw e;
-		}finally{
-			broadcastEOF();
+			SynchronizeUtils.cloverYield();
+		}
+		if (writer != null){
+			writer.finish();
+		}else if (debugFilename != null && debugPrint){
+			formatter.finish();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}

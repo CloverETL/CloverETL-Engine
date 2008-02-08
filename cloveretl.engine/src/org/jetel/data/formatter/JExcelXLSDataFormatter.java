@@ -92,7 +92,6 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	public void close() {
 		if (open) {
 			try {
-				wb.write();
 				wb.close();
 				sheet = null;
 				open = false;
@@ -238,9 +237,22 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	}
 
 	public void reset() {
+		if (open) {
+			try {
+				wb.close();
+				sheet = null;
+				open = false;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}		
 		if (sheets != null){
 			sheets.clear();
 		}
+	}
+	
+	public void finish() throws IOException {
+		flush();
 	}
 	
     /**

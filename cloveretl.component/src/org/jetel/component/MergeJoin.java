@@ -430,6 +430,10 @@ public class MergeJoin extends Node {
 		reader[0].reset();
 		for (int i =0; i < slaveCnt; i++)
 			reader[i+1].reset(); 
+		transformation.reset();
+		for (int i = 0; i < inputCnt; i++) {
+			minIndicator[i] = true;
+		}
 	}
 	
 	public void free() {

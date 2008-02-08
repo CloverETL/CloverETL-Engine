@@ -282,7 +282,14 @@ public class CloverDataParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
 	public void reset() {
-		recordBuffer.reset();
+		if (recordFile.isOpen()) {
+			try {
+				recordFile.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+		recordBuffer.clear();
 		idx = 0;
 	}
 

@@ -102,6 +102,14 @@ public class DelimitedDataFormatter implements Formatter {
 	}
 	
 	public void reset() {
+		if (writer != null && writer.isOpen()) {
+			try{
+				flush();
+				writer.close();
+			}catch(IOException ex){
+				ex.printStackTrace();
+			}
+		}
 		encoder.reset();
 	}
 
@@ -136,9 +144,7 @@ public class DelimitedDataFormatter implements Formatter {
 		}
 
 		try{
-			dataBuffer.flip();
-			writer.write(dataBuffer);
-			dataBuffer.clear();
+			flush();
 			writer.close();
 		}catch(IOException ex){
 			ex.printStackTrace();
@@ -146,14 +152,21 @@ public class DelimitedDataFormatter implements Formatter {
 		writer = null;
 	}
 
+	public void finish() throws IOException {
+		flush();
+		writeFooter();
+		flush();
+	}
 
 	/**
 	 *  Description of the Method
 	 *
 	 * @since    March 28, 2002
 	 */
-	public void flush() {
-		
+	public void flush() throws IOException{
+		dataBuffer.flip();
+		writer.write(dataBuffer);
+		dataBuffer.clear();
 	}
 
 	/**

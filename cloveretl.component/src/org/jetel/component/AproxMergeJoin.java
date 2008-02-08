@@ -660,7 +660,7 @@ public class AproxMergeJoin extends Node {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		transformation.reset();
-		dataBuffer.reset();
+		dataBuffer.clear();
 	}
 	
 	/**
