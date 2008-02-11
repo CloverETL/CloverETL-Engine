@@ -99,8 +99,10 @@ public class TargetFile {
     }
     
     public void reset() {
-    	((MultiOutFile)fileNames).reset();
-    	formatter.reset();
+    	if (fileNames != null) {
+			((MultiOutFile) fileNames).reset();
+		}
+		formatter.reset();
 	}
     
     /**
@@ -165,15 +167,14 @@ public class TargetFile {
         bytes = records = 0;
     }
 
+    public void finish() throws IOException{
+    	formatter.finish();
+    }
+    
     /**
      * Closes underlying formatter.
      */
     public void close() {
-    	try {
-			formatter.writeFooter();
-		} catch (IOException e) {
-			logger.error(e);
-		}
         formatter.close();
     }
     

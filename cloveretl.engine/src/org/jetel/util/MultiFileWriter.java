@@ -131,18 +131,23 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException 
      */
 	public void reset() throws ComponentNotReadyException {
-		counter = 0;
-		numberFileTag = 0;
-		skip = skipRecords;
-
-		if (lookupTable != null){
-			lookupTable.reset();
+		if (multiTarget != null) {
+			for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
+				entry.getValue().reset();
+			}
+		} else {
+			currentTarget.reset();
 		}
 		if (multiTarget != null){
 			multiTarget.clear();
 		}else{
 			currentTarget.reset();
 		}
+		counter = 0;
+		numberFileTag = 0;
+		skip = skipRecords;
+    	preparePatitionKey();	// initialize partition key - if defined
+    	prepareTargets();		// prepare output targets
 	}
 	
     /**
@@ -371,6 +376,16 @@ public class MultiFileWriter {
         	}
     	} else {
     		currentTarget.close();
+    	}
+    }
+    
+    public void finish() throws IOException{
+    	if (multiTarget != null) {
+        	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
+        		entry.getValue().finish();
+        	}
+    	} else {
+    		currentTarget.finish();
     	}
     }
 
