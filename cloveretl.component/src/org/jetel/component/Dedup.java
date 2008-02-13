@@ -151,13 +151,7 @@ public class Dedup extends Node {
     
 	@Override
 	public Result execute() throws Exception {
-        
         isFirst = true; // special treatment for 1st record
-        records = new DataRecord[2]; 
-        records[0] = new DataRecord(inPort.getMetadata());
-        records[0].init();
-        records[1] = new DataRecord(inPort.getMetadata());
-        records[1].init();
         current = 1;
         previous = 0;
 
@@ -334,7 +328,7 @@ public class Dedup extends Node {
 	 * @since April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
+        if (isInitialized()) return;
 		super.init();
 
 		inPort = getInputPort(READ_FROM_PORT);
@@ -351,7 +345,7 @@ public class Dedup extends Node {
 		
 		rejectedPort = getOutputPort(REJECTED_PORT);
 		
-        if(dedupKeys != null) {
+        if (dedupKeys != null) {
             recordKey = new RecordKey(dedupKeys, 
             		getInputPort(READ_FROM_PORT).getMetadata());
             recordKey.init();
@@ -365,8 +359,22 @@ public class Dedup extends Node {
         			StringUtils.quote(XML_NO_DUP_RECORD_ATTRIBUTE) 
         			+ " must be positive number.");
         }
+        
+        records = new DataRecord[2];
+        records[0] = new DataRecord(inPort.getMetadata());
+        records[0].init();
+        records[1] = new DataRecord(inPort.getMetadata());
+        records[1].init();
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+	
+		for (DataRecord record : records) {
+			record.reset();
+		}
+	}
 
 	/**
 	 *  Description of the Method
