@@ -37,7 +37,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
-import org.jetel.exception.LenientParserExceptionHandler;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -349,10 +348,14 @@ public class DBExecute extends Node {
 				if (transaction == InTransaction.SET){
 					connection.commit();
 				}
+				if (inPort != null) {
+					inRecord = inPort.readRecord(inRecord);
+				}
 			} while (runIt && inRecord != null);
 			if (transaction == InTransaction.ALL){
 				connection.commit();
 			}
+			broadcastEOF();
 		} catch (Exception ex) {
 			connection.rollback();
 			throw ex;
@@ -519,12 +522,12 @@ public class DBExecute extends Node {
 	}
 
 	private Map<Integer, String> convertMappingToMap(String mapping){
-		String[] mappings = mapping.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-		HashMap<Integer, String> result = null;
+		String[] mappings = mapping.split(Defaults.Component.KEY_FIELDS_DELIMITER);
+		HashMap<Integer, String> result = new HashMap<Integer, String>();
 		int index;
+		//TODO jesli tylko lista to numeruj od 1,...
 		int assignSignLength = AggregateMappingParser.ASSIGN_SIGN.length();
-		for (int i = 0; i < inParams.length; i++) {
-			result = new HashMap<Integer, String>();
+		for (int i = 0; i < mappings.length; i++) {
 			index = mappings[i].indexOf(AggregateMappingParser.ASSIGN_SIGN);
 			if (mappings[i].startsWith(CLOVER_FIELD_INDICATOR)) {
 				result.put(Integer.parseInt(mappings[i].substring(index + assignSignLength).trim()), 
@@ -534,7 +537,7 @@ public class DBExecute extends Node {
 						mappings[i].substring(index + assignSignLength).trim().substring(CLOVER_FIELD_INDICATOR.length()));
 			}
 		}
-		return result;
+		return result.size() > 0 ? result : null;
 	}
 	/**
 	 *  Description of the Method
