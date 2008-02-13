@@ -151,6 +151,11 @@ public class Dedup extends Node {
     
 	@Override
 	public Result execute() throws Exception {
+		records = new DataRecord[2];
+        records[0] = new DataRecord(inPort.getMetadata());
+        records[0].init();
+        records[1] = new DataRecord(inPort.getMetadata());
+        records[1].init();
         isFirst = true; // special treatment for 1st record
         current = 1;
         previous = 0;
@@ -359,21 +364,13 @@ public class Dedup extends Node {
         			StringUtils.quote(XML_NO_DUP_RECORD_ATTRIBUTE) 
         			+ " must be positive number.");
         }
-        
-        records = new DataRecord[2];
-        records[0] = new DataRecord(inPort.getMetadata());
-        records[0].init();
-        records[1] = new DataRecord(inPort.getMetadata());
-        records[1].init();
 	}
 
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 	
-		for (DataRecord record : records) {
-			record.reset();
-		}
+		//DO NOTHING
 	}
 
 	/**
