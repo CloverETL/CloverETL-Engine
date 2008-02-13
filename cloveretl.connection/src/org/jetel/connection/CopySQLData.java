@@ -20,6 +20,7 @@
 package org.jetel.connection;
 import java.math.BigDecimal;
 import java.sql.Blob;
+import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -178,6 +179,7 @@ public abstract class CopySQLData {
 	 */
 	abstract void setJetel(ResultSet resultSet) throws SQLException;
 
+	abstract void setJetel(CallableStatement statement) throws SQLException;
 
 	/**
 	 *  Sets the SQL attribute of the CopySQLData object
@@ -437,7 +439,7 @@ public abstract class CopySQLData {
 	 * @param  toIndex         Description of the Parameter
 	 * @return                 Description of the Return Value
 	 */
-	private static CopySQLData createCopyObject(int SQLType, DataFieldMetadata fieldMetadata, 
+	public static CopySQLData createCopyObject(int SQLType, DataFieldMetadata fieldMetadata, 
 			DataRecord record, int fromIndex, int toIndex) {
 		String format = fieldMetadata.getFormatStr();
 		char jetelType = fieldMetadata.getType();
@@ -556,6 +558,14 @@ public abstract class CopySQLData {
 			}
 		}
 
+		void setJetel(CallableStatement statement) throws SQLException{
+			double i = statement.getDouble(fieldSQL);
+			if (statement.wasNull()) {
+				((NumericDataField) field).setValue((Object)null);
+			} else {
+				((NumericDataField) field).setValue(i);
+			}
+		}
 
 		/**
 		 *  Sets the SQL attribute of the CopyNumeric object
@@ -613,6 +623,14 @@ public abstract class CopySQLData {
 			}
 		}
 
+		void setJetel(CallableStatement statement) throws SQLException {
+			BigDecimal i = statement.getBigDecimal(fieldSQL);
+			if (statement.wasNull()) {
+				((DecimalDataField) field).setValue((Object)null);
+			} else {
+				((DecimalDataField) field).setValue(new HugeDecimal(i, Integer.parseInt(field.getMetadata().getProperty(DataFieldMetadata.LENGTH_ATTR)), Integer.parseInt(field.getMetadata().getProperty(DataFieldMetadata.SCALE_ATTR)), false));
+			}
+		}
 
 		/**
 		 *  Sets the SQL attribute of the CopyNumeric object
@@ -669,6 +687,14 @@ public abstract class CopySQLData {
 			}
 		}
 
+		void setJetel(CallableStatement statement) throws SQLException {
+			int i = statement.getInt(fieldSQL);
+			if (statement.wasNull()) {
+				((IntegerDataField) field).setValue((Object)null);
+			} else {
+				((IntegerDataField) field).setValue(i);
+			}
+		}
 
 		/**
 		 *  Sets the SQL attribute of the CopyNumeric object
@@ -717,6 +743,14 @@ public abstract class CopySQLData {
 			}
 		}
 
+		void setJetel(CallableStatement statement) throws SQLException {
+			long i = statement.getLong(fieldSQL);
+			if (statement.wasNull()) {
+				((LongDataField) field).setValue((Object)null);
+			} else {
+				((LongDataField) field).setValue(i);
+			}
+		}
 
 		/**
 		 *  Sets the SQL attribute of the CopyNumeric object
@@ -773,6 +807,14 @@ public abstract class CopySQLData {
 			}
 		}
 
+		void setJetel(CallableStatement statement) throws SQLException {
+			String fieldVal = statement.getString(fieldSQL);
+			if (statement.wasNull()) {
+				field.fromString(null);
+			} else {
+				field.fromString(fieldVal);
+			}
+		}
 
 		/**
 		 *  Sets the SQL attribute of the CopyString object
@@ -834,6 +876,15 @@ public abstract class CopySQLData {
 			
 		}
 
+		void setJetel(CallableStatement statement) throws SQLException {
+			Date date = statement.getDate(fieldSQL);
+			if (statement.wasNull()) {
+				((DateDataField) field).setValue((Object)null);
+			}else{
+				((DateDataField) field).setValue(date);
+			}
+			
+		}
 
 		/**
 		 *  Sets the SQL attribute of the CopyDate object
@@ -901,6 +952,15 @@ public abstract class CopySQLData {
 			
 		}
 
+		void setJetel(CallableStatement statement) throws SQLException {
+			Date time = statement.getTime(fieldSQL);
+			if (statement.wasNull()) {
+				((DateDataField) field).setValue((Object)null);
+			}else{
+				((DateDataField) field).setValue(time);
+			}
+			
+		}
 
 		/**
 		 *  Sets the SQL attribute of the CopyDate object
@@ -971,6 +1031,15 @@ public abstract class CopySQLData {
 			
 		}
 
+		void setJetel(CallableStatement statement) throws SQLException {
+			Timestamp timestamp = statement.getTimestamp(fieldSQL);
+			if (statement.wasNull()) {
+				((DateDataField) field).setValue((Object)null);
+			}else{
+				((DateDataField) field).setValue(timestamp);
+			}
+			
+		}
 
 		/**
 		 *  Sets the SQL attribute of the CopyTimestamp object
@@ -1035,6 +1104,15 @@ public abstract class CopySQLData {
 			
 		}
 
+		void setJetel(CallableStatement statement) throws SQLException {
+			boolean b = statement.getBoolean(fieldSQL);
+			if (statement.wasNull()) {
+				field.setValue((Object)null);
+			}else{
+				field.setValue(b);	
+			}
+			
+		}
 
 		/**
 		 *  Sets the SQL attribute of the CopyString object
@@ -1084,6 +1162,14 @@ public abstract class CopySQLData {
             }
         }
 
+        void setJetel(CallableStatement statement) throws SQLException {
+            byte[] i = statement.getBytes(fieldSQL);
+            if (statement.wasNull()) {
+                ((ByteDataField) field).setValue((Object)null);
+            } else {
+                ((ByteDataField) field).setValue(i);
+            }
+        }
 
         /**
          *  Sets the SQL attribute of the CopyByte object
@@ -1141,6 +1227,20 @@ public abstract class CopySQLData {
             }
         }
 
+        void setJetel(CallableStatement statement) throws SQLException {
+        	blob = statement.getBlob(fieldSQL);
+			if (blob != null) {
+				blob = new SerialBlob(blob);
+				if (blob.length() > Integer.MAX_VALUE) {
+					throw new SQLException("Blob value is too long: " + blob.length());
+				}
+			}            
+            if (statement.wasNull()) {
+                ((ByteDataField) field).setValue((Object)null);
+            } else {
+                ((ByteDataField) field).setValue(blob.getBytes(1, (int)blob.length()));
+            }
+        }
 
         /**
          *  Sets the SQL attribute of the CopyByte object
