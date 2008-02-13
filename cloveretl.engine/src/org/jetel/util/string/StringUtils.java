@@ -23,6 +23,8 @@ import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.jetel.data.Defaults;
@@ -491,6 +493,17 @@ public class StringUtils {
 	 * @return 
 	 */
 	public static String stringArraytoString(String[] strings,char delimiter){
+		return stringArraytoString(strings, String.valueOf(delimiter));
+	}
+	
+	/**
+	 * This method concates string array to one string. Parts are delimited by given string
+	 * 
+	 * @param strings - input array of strings
+	 * @param delimiter
+	 * @return 
+	 */
+	public static String stringArraytoString(String[] strings,String delimiter){
 		int length = strings.length;
 		if (length==0) {
 			return null;
@@ -505,10 +518,38 @@ public class StringUtils {
 		return result.toString();
 	}
 	
+	/**
+	 * This method concates string array to one string. Parts are delimited by ' ' (one space)
+	 * 
+	 * @param strings - input array of strings
+	 * @return 
+	 */
 	public static String stringArraytoString(String[] strings){
 		return stringArraytoString(strings,' ');
 	} 
   
+	/**
+	 * This method concates string array to one string. Parts are delimited by given string
+	 * 
+	 * @param strings - input array of strings
+	 * @param delimiter
+	 * @return 
+	 */
+	public static String mapToString(Map map,String assignChar, String delimiter){
+		if (map.size()==0) {
+			return null;
+		}
+		StringBuffer result = new StringBuffer();
+		for (Object entry : map.entrySet()){
+			result.append(((Entry)entry).getKey().toString());
+			result.append(assignChar);
+			result.append(((Entry)entry).getValue().toString());
+			result.append(delimiter);
+		}
+		result.setLength(result.length() - delimiter.length());
+		return result.toString();
+	}
+	
 	/**
 	 * Splits the given string into mapping items. It's compatible with double quoted
 	 * strings, so a delimiter in a double quoted string doesn't cause a split.
