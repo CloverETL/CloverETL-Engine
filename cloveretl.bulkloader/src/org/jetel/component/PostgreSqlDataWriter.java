@@ -232,6 +232,15 @@ public class PostgreSqlDataWriter extends Node {
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+	
+		if (formatter != null) {
+			formatter.reset();
+		}
+	}
+	
 	/**
 	 * Return error message according to error code.
 	 * @param exitValue error code of psql utility
