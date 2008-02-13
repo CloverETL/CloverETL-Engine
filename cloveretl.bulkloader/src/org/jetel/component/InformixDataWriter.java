@@ -319,6 +319,15 @@ public class InformixDataWriter extends Node {
         
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
+    
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+	
+		if (formatter != null) {
+			formatter.reset();
+		}
+	}
 
     /**
      * This method reads incoming data from port and sends them by formatter to dbload process.
