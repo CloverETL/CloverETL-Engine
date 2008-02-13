@@ -1,38 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph description="This graph illustrates how-to run SQL/DDL/DML commands againts database. Commands&#10;in SQLCode are delimited by semicolon and are executed one by one. If needed, they&#10;may be grouped into single transaction.&#10;&#10;This graph creates two tables (EMPLOYEE and EMPLOYEE_TMP) and populates table EMPLOYEE with sample data.&#10;" name="TestingDB2">
+<Graph created="Tue Dec 04 10:38:50 CET 2007" description="This graph illustrates how-to run SQL/DDL/DML commands againts database. Commands&#10;in SQLCode are delimited by semicolon and are executed one by one. If needed, they&#10;may be grouped into single transaction.&#10;&#10;This graph creates two tables (EMPLOYEE and EMPLOYEE_TMP) and populates table EMPLOYEE with sample data.&#10;MySql:&#10;CREATE PROCEDURE p (OUT ver_param VARCHAR(25), INOUT incr_param INT)&#10;BEGIN&#10;  # Set value of OUT parameter&#10;  SELECT VERSION() INTO ver_param;&#10;  # Increment value of INOUT parameter&#10;  SET incr_param = incr_param + 1;&#10;END;" guiVersion="1.9" id="1196767470169" licenseType="Evaluation license." modified="Wed Feb 13 13:36:08 CET 2008" name="TestingDB2" revision="1.144">
 <Global>
-<Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
+<Metadata id="Metadata3">
+<Record name="mssqltable" recordSize="-1" type="delimited">
+<Field delimiter=";" name="id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="string" nullable="true" shift="0" type="string"/>
+<Field delimiter="&#10;" format="dd-MM-yyyy hh:mm:ss" name="date" nullable="true" shift="0" type="date"/>
+</Record>
+</Metadata>
+<Connection dbConfig="mssql.cfg" id="Connection1" type="JDBC"/>
+<Sequence cached="0" fileURL="seq.txt" id="Sequence0" name="sequence" start="1" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
 <Phase number="0">
-<Node dbConnection="DBConnection0" enabled="enabled" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="26" guiY="25" id="DB_EXECUTE0" type="DB_EXECUTE">
-<attr name="sqlQuery">drop table employee1;
-drop table employee_TMP;
-
-create table employee1 (EMP_NO NUMERIC not null,FIRST_NAME  VARCHAR(15) not null,LAST_NAME VARCHAR(20) not null,PHONE_EXT VARCHAR(4),HIRE_DATE DATE not null,DEPT_NO CHAR(3) not null,JOB_CODE VARCHAR(5) not null,JOB_GRADE NUMERIC(4,2) not null,JOB_COUNTRY VARCHAR(15) not null,SALARY NUMERIC(15,2) not null,FULL_NAME VARCHAR(35));
-
-create table employee_TMP (EMP_NO NUMERIC, FIRST_NAME VARCHAR(15),LAST_NAME VARCHAR(20),PHONE_EXT VARCHAR(4),HIRE_DATE DATE,DEPT_NO CHAR(3),JOB_CODE VARCHAR(5),JOB_GRADE NUMERIC(4,2),JOB_COUNTRY VARCHAR(15),SALARY NUMERIC(15,2),FULL_NAME VARCHAR(35));
-
-insert into employee1 values(2,'Robert','Nelson','250','1988.12.28','600','VP',2.0,'USA',105900.0,'Nelson, Robert');
-insert into employee1 values(4,'Bruce','Young','233','1988.12.28','621','Eng',2.0,'USA',97500.0,'Young, Bruce');
-insert into employee1 values(5,'Kim','Lambert','22','1989.02.06','130','Eng',2.0,'USA',102750.0,'Lambert, Kim');
-insert into employee1 values(8,'Leslie','Johnson','410','1989.04.05','180','Mktg',3.0,'USA',64635.0,'Johnson, Leslie');
-insert into employee1 values(9,'Phil','Forest','229','1989.04.17','622','Mngr',3.0,'USA',75060.0,'Forest, Phil');
-insert into employee1 values(11,'K. J.','Weston','34','1990.01.17','130','SRep',4.0,'USA',86292.9375,'Weston, K. J.');
-insert into employee1 values(12,'Terri','Lee','256','1990.05.01','000','Admin',4.0,'USA',53793.0,'Lee, Terri');
-insert into employee1 values(14,'Stewart','Hall','227','1990.06.04','900','Finan',3.0,'USA',69482.625,'Hall, Stewart');
-insert into employee1 values(15,'Katherine','Young','231','1990.06.14','623','Mngr',3.0,'USA',67241.25,'Young, Katherine');
-insert into employee1 values(20,'Chris','Papadopoulos','887','1990.01.17','671','Mngr',3.0,'USA',89655.0,'Papadopoulos, Chris');
-insert into employee1 values(24,'Pete','Fisher','888','1990.09.12','671','Eng',3.0,'USA',81810.1875,'Fisher, Pete');
-insert into employee1 values(28,'Ann','Bennet','5','1991.02.11','120','Admin',5.0,'England',22935.0,'Bennet, Ann');
-insert into employee1 values(29,'Roger','De Souza','288','1991.02.19','623','Eng',3.0,'USA',69482.625,'De Souza, Roger');
-insert into employee1 values(34,'Janet','Baldwin','2','1991.03.11','110','Sales',3.0,'USA',61637.8125,'Baldwin, Janet');
-insert into employee1 values(36,'Roger','Reeves','6','1991.04.05','120','Sales',3.0,'England',33620.625,'Reeves, Roger');
-insert into employee1 values(37,'Willie','Stansbury','7','1991.04.28','120','Eng',4.0,'England',39224.0625,'Stansbury, Willie');
-insert into employee1 values(44,'Leslie','Phong','216','1991.06.17','623','Eng',4.0,'USA',56034.375,'Phong, Leslie');
-insert into employee1 values(45,'Ashok','Ramanathan','209','1991.08.07','621','Eng',3.0,'USA',80689.5,'Ramanathan, Ashok');
-insert into employee1 values(46,'Walter','Steadman','210','1991.08.14','900','CFO',1.0,'USA',116100.0,'Steadman, Walter');
-insert into employee1 values(52,'Carol','Nordstrom','420','1991.10.30','180','PRel',4.0,'USA',42742.5,'Nordstrom, Carol');
-</attr>
+<Node dbConnection="Connection1" enabled="enabled" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="26" guiY="21" id="DB_EXECUTE1" type="DB_EXECUTE">
+<attr name="sqlQuery"><![CDATA[drop table proc_table;
+create table proc_table (
+	id INTEGER,
+	string VARCHAR(80),
+	date DATETIME
+);
+drop procedure SPDownload;
+CREATE PROCEDURE SPDownload
+    @last_dl_ts DATETIME
+AS
+BEGIN
+     SELECT id, string, date
+       FROM proc_table
+          WHERE date >= @last_dl_ts
+END;]]></attr>
 </Node>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="26" guiY="100" id="DATA_GENERATOR2" randomFields="string=random(&quot;3&quot;,&quot;5&quot;);date=random(&quot;01-02-2002 12:00:00&quot;,&quot;29-02-2008 12:00:00&quot;)" recordsNumber="10" sequenceFields="id=Sequence0" type="DATA_GENERATOR"/>
+<Node dbConnection="Connection1" dbTable="proc_table" enabled="enabled" guiHeight="0" guiName="DB Output Table" guiWidth="0" guiX="215" guiY="102" id="DB_OUTPUT_TABLE1" type="DB_OUTPUT_TABLE"/>
+<Edge debugMode="true" fromNode="DATA_GENERATOR2:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DB_OUTPUT_TABLE1:0"/>
+</Phase>
+<Phase number="2">
+<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="26" guiY="187" id="DATA_GENERATOR3" pattern=";;" randomFields="date=random(&quot;01-02-2006 12:00:00&quot;,&quot;29-02-2008 12:00:00&quot;)" recordsNumber="2" type="DATA_GENERATOR"/>
+<Node callStatement="true" dbConnection="Connection1" enabled="enabled" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="215" guiY="187" id="DB_EXECUTE2" outputFields="id;string;date" type="DB_EXECUTE">
+<attr name="sqlQuery"><![CDATA[{call SPDownload(?)}]]></attr>
+<attr name="inParameters"><![CDATA[1:=$date]]></attr>
+</Node>
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="395" guiY="187" id="TRASH1" type="TRASH"/>
+<Edge debugMode="true" fromNode="DATA_GENERATOR3:0" guiBendpoints="" id="Edge5" inPort="Port 0 (input parameters)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DB_EXECUTE2:0"/>
+<Edge fromNode="DB_EXECUTE2:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (procedure output)" toNode="TRASH1:0"/>
 </Phase>
 </Graph>
