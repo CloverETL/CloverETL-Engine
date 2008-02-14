@@ -319,6 +319,13 @@ public class OracleDataReader extends Node {
 	}
 
     @Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		
+		// DO NOTHING
+	}
+    
+    @Override
 	public synchronized void free() {
 		if(!isInitialized()) return;
 		super.free();
