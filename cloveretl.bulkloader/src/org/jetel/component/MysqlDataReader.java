@@ -288,17 +288,8 @@ public class MysqlDataReader extends Node {
 			retval = pbox.join();
 		} catch (InterruptedException e1) {
 			throw e1;
-		}finally{
-			if (outPort != null) {
-				outPort.close();
-			} else {
-				try {
-					fileWriter.close();
-				} catch (IOException e) {
-					logger.warn("Unable to close output file " + outputFile, e);
-				}
-			}
 		}
+		
 		String resultMsg = errConsumer.getMsg();
 		if (retval != 0) {
 			logger.error(getId() + ": subprocess finished with error code " + retval + "\n" + resultMsg);
@@ -307,7 +298,26 @@ public class MysqlDataReader extends Node {
             return runIt ? Result.FINISHED_OK : Result.ABORTED;
 		}
 	}
-	
+
+	@Override
+	public synchronized void free() {
+		if(!isInitialized()) return;
+		super.free();
+		
+		if (outPort != null) {
+			try {
+				outPort.close();
+			} catch (InterruptedException e) {
+				logger.warn("Unable to close output port " + outPort, e);
+			}
+		} else {
+			try {
+				fileWriter.close();
+			} catch (IOException e) {
+				logger.warn("Unable to close output file " + outputFile, e);
+			}
+		}
+	}
 
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
