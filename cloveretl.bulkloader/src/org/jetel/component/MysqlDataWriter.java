@@ -681,7 +681,14 @@ public class MysqlDataWriter extends Node {
 		command.addParameterBooleanSwitch(LOAD_CONCURRENT_PARAM, LOAD_CONCURRENT_KEYWORD);
 		command.addParameterBooleanSwitch(LOAD_LOCAL_PARAM, LOAD_LOCAL_KEYWORD, true);
 		command.append(" INFILE ");
-		command.append(StringUtils.quote(dataFile.getCanonicalPath()));
+		
+		String dataFilePath = dataFile.getCanonicalPath();
+		if (ProcBox.isWindowsPlatform()) {
+			// convert "C:\examples\xxx.dat" to "C:\\examples\\xxx.dat"
+			dataFilePath = StringUtils.specCharToString(dataFilePath);
+		}		
+		command.append(StringUtils.quote(dataFilePath));
+	
 		command.append(LINE_SEPARATOR);
 
 		// [REPLACE | IGNORE]
