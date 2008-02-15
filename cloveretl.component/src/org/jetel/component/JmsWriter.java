@@ -87,7 +87,7 @@ import org.w3c.dom.Element;
 public class JmsWriter extends Node {
 	public final static String COMPONENT_TYPE = "JMS_READER";
 
-	static Log logger = LogFactory.getLog(MysqlDataReader.class);
+	static Log logger = LogFactory.getLog(JmsWriter.class);
 
 	private static final String XML_CONNECTION_ATTRIBUTE = "connection";
 	private static final String XML_PSORCODE_ATTRIBUTE = "processorCode";
