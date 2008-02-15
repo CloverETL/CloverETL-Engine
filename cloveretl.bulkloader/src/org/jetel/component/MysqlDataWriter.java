@@ -568,7 +568,7 @@ public class MysqlDataWriter extends Node {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			formatter.close();
+			formatter.flush();
 		}
 	}
 
@@ -1010,6 +1010,10 @@ public class MysqlDataWriter extends Node {
 	public synchronized void free() {
         if(!isInitialized()) return;
 		super.free();
+		
+		if (formatter != null) {
+			formatter.close();
+		}
 		
 		deleteDataFile();
 		deleteCommandFile();
