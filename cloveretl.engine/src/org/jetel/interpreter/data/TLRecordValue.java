@@ -22,10 +22,12 @@
 
 package org.jetel.interpreter.data;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.data.primitive.CloverInteger;
 import org.jetel.metadata.DataRecordMetadata;
 
 public class TLRecordValue extends TLContainerValue {
@@ -46,8 +48,11 @@ public class TLRecordValue extends TLContainerValue {
 	
 	@Override
 	public Collection<TLValue> getCollection() {
-		// TODO Auto-generated method stub
-		return null;
+		List<TLValue> col=new ArrayList<TLValue>(record.getNumFields());
+		for(DataField field: record ){
+			col.add(TLValue.convertValue(field));
+		}
+		return col;
 	}
 
 	@Override
@@ -63,7 +68,11 @@ public class TLRecordValue extends TLContainerValue {
 
 	@Override
 	public TLValue getStoredValue(TLValue key) {
-		return TLValue.convertValue(record.getField(key.toString()));
+		if (key.type.isNumeric()){
+			return TLValue.convertValue(record.getField(key.getNumeric().getInt()));
+		}else{
+			return TLValue.convertValue(record.getField(key.toString()));
+		}
 	}
 
 	@Override
@@ -73,7 +82,11 @@ public class TLRecordValue extends TLContainerValue {
 
 	@Override
 	public void setStoredValue(TLValue key, TLValue _value) {
-		_value.copyToDataField(record.getField(key.toString()));
+		if (key.type.isNumeric()){
+			_value.copyToDataField(record.getField(key.getNumeric().getInt()));
+		}else{
+			_value.copyToDataField(record.getField(key.toString()));
+		}
 	}
 
 	@Override
@@ -104,13 +117,35 @@ public class TLRecordValue extends TLContainerValue {
 
 	@Override
 	public Object getValue() {
-		return new CloverInteger(record.getNumFields());
+		return record;
 	}
+	
+	@Override
+	 public void setValue(Object _value){
+		if (_value instanceof DataRecord){
+			this.record=(DataRecord)_value;
+		}else{
+			throw new IllegalArgumentException("Can't assign value type: "+_value.getClass().getName());
+		}
+	}
+	
+	@Override
+	public void setValue(TLValue _value){
+		if (_value instanceof TLRecordValue){
+			this.record=((TLRecordValue)_value).record;
+		}else{
+			throw new IllegalArgumentException("Can't assign value type: "+_value.getType());
+		}
+	}
+	
 
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
 		return record.toString();
 	}
 
+	 @Override public void clear(){
+	    	record.reset();
+	 }
+	
 }

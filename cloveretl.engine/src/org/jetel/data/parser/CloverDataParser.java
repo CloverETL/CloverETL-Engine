@@ -68,6 +68,7 @@ public class CloverDataParser implements Parser {
 	private int recordSize;
 	private String indexFileURL;
 	private int compressedData = -1;
+	private String inData;
 	
 	private final static int LONG_SIZE_BYTES = 8;
     private final static int LEN_SIZE_SPECIFIER = 4;
@@ -110,7 +111,6 @@ public class CloverDataParser implements Parser {
      * parameter: data fiele name or {data file name, index file name}
      */
     public void setDataSource(Object in) throws ComponentNotReadyException {
-    	String inData;
         if (in instanceof String[]) {
         	inData = ((String[])in)[0];
         	indexFileURL = ((String[])in)[1];
@@ -156,41 +156,8 @@ public class CloverDataParser implements Parser {
             }
             recordFile = Channels.newChannel(this.in);
             if (index > 0) {//reading not all records --> find index in record file
-                DataInputStream indexFile;
-                if (this.in instanceof ZipInputStream){//read index from archive
-                    ZipInputStream tmpIn = new ZipInputStream(new FileInputStream(inData));
-                    indexFile = new DataInputStream(tmpIn);
-                    ZipEntry entry;
-                    //find entry INDEX/fileName.idx
-                    while((entry = tmpIn.getNextEntry()) != null) {
-                        if(entry.getName().equals(
-                                CloverDataFormatter.INDEX_DIRECTORY + fileName + 
-                                CloverDataFormatter.INDEX_EXTENSION)) {
-                            indexFile.skip(index);
-                            try {
-								idx = indexFile.readLong();//read index for reading records
-							} catch (EOFException e) {
-								throw new ComponentNotReadyException("Start record is greater than last record!!!");
-							}
-                            break;
-                        }
-                    }
-                    tmpIn.close();
-                    indexFile.close();
-                }else{//read index from binary file
-                    if (indexFileURL == null){
-                        File dir = new File(inData).getParentFile();
-                        indexFile = new DataInputStream(new FileInputStream(
-                        		(dir != null ? dir.getAbsolutePath() + CloverDataFormatter.FILE_SEPARATOR : "") 
-                                	+ fileName + CloverDataFormatter.INDEX_EXTENSION));
-                    }else{
-                        indexFile = new DataInputStream(new FileInputStream(indexFileURL));
-                    }
-                    indexFile.skip(index);
-                    idx = indexFile.readLong();
-                    indexFile.close();
-                }
-            }// if (index > 0)
+            	setStartIndex(fileName);
+            }
             //skip idx bytes from record file
             int i=0;
             do {
@@ -204,14 +171,55 @@ public class CloverDataParser implements Parser {
         }
     }
 
+    private void setStartIndex(String fileName) throws IOException, ComponentNotReadyException{
+        DataInputStream indexFile;
+        if (this.in instanceof ZipInputStream){//read index from archive
+            ZipInputStream tmpIn = new ZipInputStream(new FileInputStream(inData));
+            indexFile = new DataInputStream(tmpIn);
+            ZipEntry entry;
+            //find entry INDEX/fileName.idx
+            while((entry = tmpIn.getNextEntry()) != null) {
+                if(entry.getName().equals(
+                        CloverDataFormatter.INDEX_DIRECTORY + fileName + 
+                        CloverDataFormatter.INDEX_EXTENSION)) {
+                    indexFile.skip(index);
+                    try {
+						idx = indexFile.readLong();//read index for reading records
+					} catch (EOFException e) {
+			            tmpIn.close();
+			            indexFile.close();
+						throw new ComponentNotReadyException("Start record is greater than last record!!!");
+					}
+                    break;
+                }
+            }
+            tmpIn.close();
+            indexFile.close();
+        }else{//read index from binary file
+            if (indexFileURL == null){
+                File dir = new File(inData).getParentFile();
+                indexFile = new DataInputStream(new FileInputStream(
+                		(dir != null ? dir.getAbsolutePath() + CloverDataFormatter.FILE_SEPARATOR : "") 
+                        	+ fileName + CloverDataFormatter.INDEX_EXTENSION));
+            }else{
+                indexFile = new DataInputStream(new FileInputStream(indexFileURL));
+            }
+            indexFile.skip(index);
+            idx = indexFile.readLong();
+            indexFile.close();
+        }
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#close()
 	 */
 	public void close() {
-		try {
-			recordFile.close();
-		} catch (IOException ex) {
-			ex.printStackTrace();
+		if (recordFile != null) {
+			try {
+				recordFile.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 
@@ -277,20 +285,47 @@ public class CloverDataParser implements Parser {
 		this.compressedData = compressedData;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#reset()
-	 */
-	public void reset() {
+	private void resetInternal() throws IOException, ComponentNotReadyException{
 		if (recordFile.isOpen()) {
-			try {
-				recordFile.close();
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
+			recordFile.close();
 		}
 		recordBuffer.clear();
-		idx = 0;
+    	String fileName = new File(inData).getName();
+        if (this.in instanceof ZipInputStream){
+            this.in = new ZipInputStream(new FileInputStream(inData));
+            if (inData.endsWith(".zip")) {
+            	fileName = fileName.substring(0, fileName.length() - ".zip".length());
+            }
+            ZipEntry entry;
+            //find entry DATA/fileName
+            while((entry = ((ZipInputStream)this.in).getNextEntry()) != null) {
+                if(entry.getName().equals(
+                		CloverDataFormatter.DATA_DIRECTORY + fileName)) {
+                    break;
+                }
+            }
+        }else{
+        	this.in = new FileInputStream(inData);
+        }
+        recordFile = Channels.newChannel(this.in);
+        if (index > 0) {//reading not all records --> find index in record file
+        	setStartIndex(fileName);
+        }
+        //skip idx bytes from record file
+        int i=0;
+        do {
+            ByteBufferUtils.reload(recordBuffer,recordFile);
+            recordBuffer.flip();
+            i++;
+        }while (i*Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE < idx);
+        recordBuffer.position((int)idx%Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 	}
 
+	public void reset() {
+		try{
+			resetInternal();
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

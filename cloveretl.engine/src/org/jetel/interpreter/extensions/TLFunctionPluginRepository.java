@@ -86,4 +86,16 @@ public class TLFunctionPluginRepository {
         return null;
     }
 
+	public static List<TLFunctionPrototype> getAllFunctions() {
+		List<TLFunctionPrototype> ret = new ArrayList<TLFunctionPrototype>();
+		
+		for(TLFunctionLibraryDescription libraryDescription : functionLibraries) {
+			for (TLFunctionPrototype function : libraryDescription.getAllFunctions()) {
+				ret.add(function);
+			}
+		}
+		
+		return ret;
+	}
+
 }

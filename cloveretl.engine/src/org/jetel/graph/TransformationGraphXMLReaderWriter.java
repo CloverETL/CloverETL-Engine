@@ -804,7 +804,6 @@ public class TransformationGraphXMLReaderWriter {
 					if (xmlElement == null) {
 						xmlElement = outputXMLDocument.createElement(NODE_ELEMENT);
 					}
-					System.out.println("writing: " + graphNode.getName());
 					graphNode.toXML(xmlElement);
 					phaseElement.appendChild(xmlElement);
 				}

@@ -36,6 +36,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileWriter;
+import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.bytes.WritableByteChannelIterator;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -193,7 +194,7 @@ public class FixLenDataWriter extends Node {
 	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
-		        writableByteChannel = Channels.newChannel(System.out);
+		        writableByteChannel = new SystemOutByteChannel();
 			}
 	        writer = new MultiFileWriter(formatterProvider, new WritableByteChannelIterator(writableByteChannel));
 		}

@@ -238,7 +238,6 @@ public class JmsReader extends Node {
 	 */
 	private static JmsMsg2DataRecord createProcessorDynamic(String psorCode) throws ComponentNotReadyException {
 		DynamicJavaCode dynCode = new DynamicJavaCode(psorCode, JmsReader.class.getClassLoader());
-        dynCode.setCaptureCompilerOutput(true);
         logger.info(" (compiling dynamic source) ");
         // use DynamicJavaCode to instantiate transformation class
         Object transObject = null;

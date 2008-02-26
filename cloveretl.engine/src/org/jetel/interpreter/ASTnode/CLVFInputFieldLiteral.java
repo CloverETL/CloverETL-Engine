@@ -7,6 +7,7 @@ import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.TransformLangParserVisitor;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 public class CLVFInputFieldLiteral extends SimpleNode {
@@ -28,6 +29,10 @@ public class CLVFInputFieldLiteral extends SimpleNode {
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		return visitor.visit(this, data);
 	}
+	
+	 @Override public String toString() {
+	      return super.toString()+" record# \""+recordNo+"\" field# "+fieldNo+" field name: "+fieldName;
+	  }
 	
 	/**
      * Get field of input record (1st record)
@@ -61,6 +66,24 @@ public class CLVFInputFieldLiteral extends SimpleNode {
             }
         }
      
+     public void setRecordNameFieldNum(String fRecName) throws ParseException{
+         // get rid of leading '$' character (the 1st character)
+         String recFieldName[]=fRecName.substring(1).split("\\.");
+         recordNo=parser.getInRecordNum(recFieldName[0]);
+         DataRecordMetadata record=parser.getInRecordMeta(recordNo);
+         if (record==null){
+             throw new ParseException("Unknown data field ["+fRecName+"]"); 
+         }
+         try{
+        	 fieldNo=Integer.parseInt(recFieldName[1]);
+        	 DataFieldMetadata field = record.getField(fieldNo);
+        	 if (field==null)
+        		 throw new ParseException("Non exising data field ["+fRecName+"]");
+         }catch(Exception ex){
+             throw new ParseException("Unknown data field ["+fRecName+"]");
+         }
+     }
+     
      public void setRecordNumFieldName(String fRecName) throws ParseException{
          // get rid of leading '$' character (the 1st character)
          String recFieldName[]=fRecName.substring(1).split("\\.");
@@ -74,6 +97,39 @@ public class CLVFInputFieldLiteral extends SimpleNode {
              throw new ParseException("Unknown data field ["+fRecName+"]");
          }
      }   
+     
+     
+     public void setRecordNumFieldNum(String fRecFieldNum) throws ParseException { 
+    	 String items[]=fRecFieldNum.substring(1).split("\\.");
+    	 recordNo=Integer.parseInt(items[0]);
+         DataRecordMetadata record=parser.getInRecordMeta(recordNo);
+         if (record==null){
+             throw new ParseException("Unknown record number ["+fRecFieldNum+"]"); 
+         }
+         try{
+        	 fieldNo=Integer.parseInt(items[1]);
+        	 DataFieldMetadata field = record.getField(fieldNo);
+        	 if (field==null)
+        		 throw new ParseException("Non exising data field ["+fRecFieldNum+"]");
+         }catch(Exception ex){
+             throw new ParseException("Unknown data field ["+fRecFieldNum+"]");
+         }
+     }
+     
+     public void setRecordNum(String fRecNum) throws ParseException { 
+    	 recordNo=Integer.parseInt(fRecNum.substring(1));
+         DataRecordMetadata record=parser.getInRecordMeta(recordNo);
+         if (record==null){
+             throw new ParseException("Input record number ["+recordNo+"] does not exist"); 
+         }
+     }
+     
+     public void setRecordName(String recName) throws ParseException { 
+    	 recordNo=parser.getInRecordNum(recName.substring(1));
+         if (recordNo<0){
+             throw new ParseException("Input record name ["+recName+"] does not exist"); 
+         }
+     }
      
      
      public void bindToField(DataRecord[] records){

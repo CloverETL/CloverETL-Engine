@@ -23,12 +23,17 @@
  */
 package org.jetel.interpreter.extensions;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
+import org.jetel.interpreter.extensions.ConvertLib.Function;
 
-public class MathLib implements ITLFunctionLibrary {
+public class MathLib extends TLFunctionLibrary {
     
     private static final String LIBRARY_NAME = "Math";
     
@@ -57,6 +62,16 @@ public class MathLib implements ITLFunctionLibrary {
             }
             return null;
         }
+    }
+    
+    public  Collection<TLFunctionPrototype> getAllFunctions() {
+    	List<TLFunctionPrototype> ret = new ArrayList<TLFunctionPrototype>();
+    	Function[] fun = Function.values();
+    	for (Function function : fun) {
+    		ret.add(getFunction(function.name));
+		}
+    	
+    	return ret;
     }
     
     public MathLib() {

@@ -25,6 +25,7 @@ package org.jetel.interpreter.extensions;
 
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
+import org.jetel.interpreter.data.TLByteArrayValue;
 
 public class TLContext<T> {
 
@@ -66,6 +67,13 @@ public class TLContext<T> {
     public static TLContext<TLValue> createDateContext() {
         TLContext<TLValue> context = new TLContext<TLValue>();
         context.setContext(TLValue.create(TLValueType.DATE));
+        return context;
+
+    }
+    
+    public static TLContext<TLValue> createByteContext() {
+        TLContext<TLValue> context = new TLContext<TLValue>();
+        context.setContext(TLValue.create(TLValueType.BYTE));
         return context;
 
     }

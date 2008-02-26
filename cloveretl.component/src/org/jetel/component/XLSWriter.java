@@ -21,7 +21,6 @@
 
 package org.jetel.component;
 
-import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
 import org.apache.commons.logging.Log;
@@ -41,6 +40,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.bytes.WritableByteChannelIterator;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -187,6 +187,12 @@ public class XLSWriter extends Node {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
+	@Override
+	public synchronized void free() {
+		super.free();
+		writer.close();
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
@@ -227,7 +233,7 @@ public class XLSWriter extends Node {
 	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
-		        writableByteChannel = Channels.newChannel(System.out);
+		        writableByteChannel = new SystemOutByteChannel();
 			}
 	        writer = new MultiFileWriter(formatterProvider, new WritableByteChannelIterator(writableByteChannel));
 		}

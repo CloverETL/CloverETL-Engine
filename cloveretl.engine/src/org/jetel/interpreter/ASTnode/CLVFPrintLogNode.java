@@ -23,8 +23,36 @@ public class CLVFPrintLogNode extends SimpleNode {
     return visitor.visit(this, data);
   }
   
-  public void setLevel(int level){
-      this.level=level;
-  }
+  public boolean setLevel(String levelStr){
+		switch (levelStr.charAt(0)) {
+		case 't':
+		case 'T':
+			level = 1;
+			break;
+		case 'd':
+		case 'D':
+			level = 1;
+			break;
+		case 'i':
+		case 'I':
+			level = 2;
+			break;
+		case 'w':
+		case 'W':
+			level = 3;
+			break;
+		case 'e':
+		case 'E':
+			level = 4;
+			break;
+		case 'f':
+		case 'F':
+			level = 5;
+			break;
+			default:
+				throw new RuntimeException("Unknown log level type: \""+levelStr+"\"");
+		}
+		return true;
+	}
   
 }

@@ -1,6 +1,5 @@
 package org.jetel.graph;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -10,14 +9,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
 import junit.framework.AssertionFailedError;
-import junit.framework.Test;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,7 +44,7 @@ public class ResetTest extends TestCase{
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		EngineInitializer.initEngine( "../plugins", null);
+		EngineInitializer.initEngine( "../plugins", null, null);
 
 		runtimeContext = new GraphRuntimeContext();
 		runtimeContext.addAdditionalProperty("PROJECT_DIR", EXAMPLE_PATH); 
@@ -152,10 +148,12 @@ public class ResetTest extends TestCase{
 					fail();
 				}
 
-				try {
-					graph.reset();
-				} catch (ComponentNotReadyException e) {
-					fail("Graph reseting failed: " + e);
+				if (i < 4) {
+					try {
+						graph.reset();
+					} catch (ComponentNotReadyException e) {
+						fail("Graph reseting failed: " + e);
+					}
 				}
 			}
 
@@ -181,7 +179,7 @@ public class ResetTest extends TestCase{
 	public static void main(String[] args) throws Exception {
 		
 		// "../cloveretl.engine/plugins"
-		EngineInitializer.initEngine(args[0], null);
+		EngineInitializer.initEngine(args[0], null, null);
 
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.addAdditionalProperty("PROJECT_DIR", "."); // "/home/mvarecha/workspace/ex"
@@ -238,11 +236,13 @@ public class ResetTest extends TestCase{
 			System.exit(result.code());
 			}
 
-			try {
-				graph.reset();
-			} catch (ComponentNotReadyException e) {
-				System.err.println("Graph reseting failed !");
-				System.exit(-1);
+			if (i < 4) {
+				try {
+					graph.reset();
+				} catch (ComponentNotReadyException e) {
+					System.err.println("Graph reseting failed !");
+					System.exit(-1);
+				}
 			}
 		}
 

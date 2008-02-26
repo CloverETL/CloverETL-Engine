@@ -427,8 +427,10 @@ public abstract class Node extends GraphElement implements Runnable {
         
 		if (runResult==Result.RUNNING){
 			runResult = Result.ABORTED;
-//			getNodeThread().interrupt();
+			getNodeThread().interrupt();
 		}
+		
+		finished = true;
 	}
 
     /**
@@ -456,6 +458,7 @@ public abstract class Node extends GraphElement implements Runnable {
      */
     private void setNodeThread(Thread nodeThread) {
         this.nodeThread = nodeThread;
+		nodeThread.setName(getId());
     }
     
 	/**

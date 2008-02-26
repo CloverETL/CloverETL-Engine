@@ -91,6 +91,46 @@ public class CLVFMapping extends SimpleNode {
    }   
    
    
+   public void setRecordNumFieldNum(String fRecFieldNum) throws ParseException { 
+	   fieldName=fRecFieldNum;  
+	   String items[]=fRecFieldNum.substring(1).split("\\.");
+  	   recordNo=Integer.parseInt(items[0]);
+       DataRecordMetadata record=parser.getInRecordMeta(recordNo);
+       if (record==null){
+           throw new ParseException("Unknown data field ["+fRecFieldNum+"]"); 
+       }
+       try{
+      	 fieldNo=Integer.parseInt(items[1]);
+       }catch(Exception ex){
+           throw new ParseException("Unknown data field ["+fRecFieldNum+"]");
+       }
+   }
+   
+   public void setRecordNameFieldNum(String fRecName) throws ParseException {
+	    // get rid of leading '$' character (the 1st character)
+       fieldName=fRecName;   
+       String recFieldName[]=fRecName.substring(1).split("\\.");
+       DataRecordMetadata record;
+       try{
+     	  recordNo=parser.getOutRecordNum(recFieldName[0]);
+           record=parser.getOutRecordMeta(recordNo);
+       }catch(Exception ex){
+           throw new ParseException("Error accessing record \""+recFieldName[0]+"\" "+ex.getMessage());
+       }
+       if (record==null){
+           throw new ParseException("Unknown record \""+recFieldName[0]+"\""); 
+       }
+       try{
+        	 fieldNo=Integer.parseInt(recFieldName[1]);
+       }catch(Exception ex){
+             throw new ParseException("Unknown data field ["+recFieldName[1]+"]");
+        }
+       if (record.getField(fieldNo)==null){
+           throw new ParseException("Unknown data field ["+recFieldName[1]+"]");
+       }
+   }
+   
+   
    public void bindToField(DataRecord[] records){
        try{
            field=records[recordNo].getField(fieldNo);

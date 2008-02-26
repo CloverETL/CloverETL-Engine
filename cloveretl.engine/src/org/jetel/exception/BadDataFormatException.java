@@ -93,7 +93,7 @@ public class BadDataFormatException extends RuntimeException implements Iterable
         
         if(fieldNumber >= 0) {
             ret.append(" in field # ");
-            ret.append(fieldNumber);
+            ret.append(fieldNumber + 1);
         }
         
         return ret.toString();

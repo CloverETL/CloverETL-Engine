@@ -1,6 +1,6 @@
 <plugin
    id="org.jetel.tlfunction"
-   version="2.4.0"
+   version="2.4.1"
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>
@@ -62,6 +62,7 @@
 			<value>translate</value>
 			<value>join</value>
 			<value>index_of</value>
+			<value>count_char</value>
 		</parameter>
 	</extension>
 	
@@ -75,6 +76,12 @@
         <value>date2num</value>
         <value>str2num</value>
         <value>try_convert</value>
+        <value>base64byte</value>
+        <value>byte2base64</value>
+        <value>bits2str</value>
+        <value>str2bits</value>
+        <value>hex2byte</value>
+        <value>byte2hex</value>
 		<value>num2num</value>
         <value>num2bool</value>
         <value>bool2num</value>

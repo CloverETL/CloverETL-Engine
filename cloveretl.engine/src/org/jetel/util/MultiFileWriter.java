@@ -131,13 +131,7 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException 
      */
 	public void reset() throws ComponentNotReadyException {
-		if (multiTarget != null) {
-			for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
-				entry.getValue().reset();
-			}
-		} else {
-			currentTarget.reset();
-		}
+
 		if (multiTarget != null){
 			multiTarget.clear();
 		}else{

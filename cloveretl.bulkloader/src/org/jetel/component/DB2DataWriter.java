@@ -23,6 +23,7 @@ package org.jetel.component;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -1428,16 +1429,24 @@ public class DB2DataWriter extends Node {
 	 */
 	private int runWithPipe() throws IOException, InterruptedException, JetelException{
 		proc = Runtime.getRuntime().exec(command);
-		formatter.setDataTarget(new FileOutputStream(dataFile));
 		box = new ProcBox(proc, null, consumer, errConsumer);
-		while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
-			if (skipped >= recordSkip) {
-				formatter.write(inRecord);
-			}else{
-				skipped++;
+		new Thread(){
+			public void run() {
+				try {
+					formatter.setDataTarget(new FileOutputStream(dataFile));
+					while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
+						if (skipped >= recordSkip) {
+							formatter.write(inRecord);
+						}else{
+							skipped++;
+						}
+					}
+					formatter.finish();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
 			}
-		}
-		formatter.finish();
+		}.start();
 		return box.join();
 	}
 	

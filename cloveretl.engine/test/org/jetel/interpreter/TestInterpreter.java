@@ -21,7 +21,6 @@ package org.jetel.interpreter;
 
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Calendar;
@@ -46,7 +45,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
-import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLVariable;
 import org.jetel.metadata.DataFieldMetadata;
@@ -68,7 +66,7 @@ public class TestInterpreter extends TestCase {
 	private GregorianCalendar today;
 	
 	protected void setUp() {
-	    EngineInitializer.initEngine(null, null);
+		EngineInitializer.initEngine(null, null, null);
 	    
         graph=new TransformationGraph();
         

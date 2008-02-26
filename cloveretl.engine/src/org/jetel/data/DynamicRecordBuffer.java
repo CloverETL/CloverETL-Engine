@@ -163,12 +163,23 @@ public class DynamicRecordBuffer {
         readDataBuffer=null;
         writeDataBuffer=null;
 	}
+	
+	/**
+	 * Mark as closed (to prevent locking on reading from buffer). To free buffers, close() method must be called.
+	 * This method allows reuse of buffer after reset() is called.
+	 * 
+	 * @since Jan 11, 2008
+	 */
+	public void closeTemporarily() {
+		isClosed=true;
+	}	
 
 	/**
 	 *  Clears the buffer. Temp file (if it was created) remains
 	 * unchanged size-wise
 	 */
 	public void reset() {
+		isClosed=false;
 	    emptyFileBuffers.addAll(fullFileBuffers);
         fullFileBuffers.clear();
 		readDataBuffer.clear();
@@ -333,6 +344,7 @@ public class DynamicRecordBuffer {
         //int recordSize = readDataBuffer.getInt();
         int recordSize= decodeLength(readDataBuffer);
         if (recordSize==EOF){
+        	closeTemporarily();
             return false;
         }
         
@@ -369,6 +381,7 @@ public class DynamicRecordBuffer {
         //int recordSize = readDataBuffer.getInt();
         int recordSize= decodeLength(readDataBuffer);
         if (recordSize==EOF){
+        	closeTemporarily();
             return null;
         }
             

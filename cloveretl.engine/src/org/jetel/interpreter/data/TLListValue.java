@@ -23,8 +23,11 @@
  */
 package org.jetel.interpreter.data;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -59,18 +62,25 @@ public class TLListValue extends TLContainerValue {
     
     
     public TLValue getStoredValue(TLValue key) {
-        throw new UnsupportedOperationException("using key");
+        if (key.type.isNumeric()){
+        	return getStoredValue(key.getNumeric().getInt());
+        }else{
+        	throw new InvalidParameterException("invalid index - type: "+key.type);
+        }
     }
     
     public void setStoredValue(TLValue value) {
     	if (value instanceof TLContainerValue){
-    		valueList.addAll(((TLContainerValue)value).getCollection());
+    		for(TLValue val : ((TLContainerValue)value).getCollection()){
+    			valueList.add(val.duplicate());
+    		}
         }else if (value==TLValue.NULL_VAL){
         	valueList.clear();
         }else{
-            valueList.add(value);
+            throw new RuntimeException("incompatible value assigned - type: "+value.type);
         }
     }
+    
     
     public void setValue(TLValue value){
     	setStoredValue(value);
@@ -84,7 +94,6 @@ public class TLListValue extends TLContainerValue {
     /* (non-Javadoc)
      * Following operation is performed based on value type and index value
      * 
-     * Type=List, index = -1 -> append all values from list into this list
      * Type=anyother, index = -1 -> append value at the end of the list
      * Type=any, index >= 0 -> save the value at specified index of the list
      * Value is null, index = -1 -> remove last item from the list
@@ -98,24 +107,21 @@ public class TLListValue extends TLContainerValue {
         		else
         			valueList.remove(index);
         } else {
-//            	if (value instanceof TLContainerValue){
-//            		if (index<0)
-//            			valueList.addAll(((TLContainerValue)value).getCollection());
-//            		else
-//            			valueList.addAll(index,((TLContainerValue)value).getCollection());
-//            	}else{
             		if (index<0)
-            			valueList.add(value);
+            			valueList.add(value.duplicate());
             		else
-            			valueList.set(index, value);
-//            	}
+            			valueList.set(index, value.duplicate());
         }
     }
     
     
     
     public void setStoredValue(TLValue key, TLValue value) {
-    	 throw new UnsupportedOperationException("using key");
+    	if (key.type.isNumeric()){
+        	setStoredValue(key.getNumeric().getInt(),value);
+        }else{
+        	throw new InvalidParameterException("invalid index - type: "+key.type);
+        }
     }
     
     public int getLength() {
@@ -138,12 +144,22 @@ public class TLListValue extends TLContainerValue {
     
     public TLValue duplicate(){
     	TLListValue newVal=new TLListValue(valueList.size());
-    	newVal.valueList.addAll(valueList);
+    	for(TLValue item : valueList){
+    		newVal.valueList.add(item.duplicate());
+    	}
     	return newVal;
     }
     
+    
     public int compareTo(TLValue value){
-    	return -1; // not really implemented
+    	if (value instanceof TLContainerValue){
+    		TLValue maxVal1=Collections.max(valueList);
+    		TLValue maxVal2=Collections.max(((TLContainerValue)value).getCollection());
+    		return maxVal1.compareTo(maxVal2);
+    	}else{
+    		TLValue maxVal1=Collections.max(valueList);
+    		return maxVal1.compareTo(value);
+    	}
     }
     
     @Override public int hashCode(){
@@ -171,5 +187,9 @@ public class TLListValue extends TLContainerValue {
     
     @Override public void clear(){
     	valueList.clear();
+    }
+    
+    @Override public boolean contains(TLValue value){
+    	return valueList.contains(value);
     }
 }

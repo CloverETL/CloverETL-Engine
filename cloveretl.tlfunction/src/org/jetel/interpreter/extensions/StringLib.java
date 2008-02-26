@@ -25,6 +25,7 @@ package org.jetel.interpreter.extensions;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -35,12 +36,14 @@ import org.jetel.data.primitive.Numeric;
 import org.jetel.interpreter.Stack;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLBooleanValue;
+import org.jetel.interpreter.data.TLContainerValue;
 import org.jetel.interpreter.data.TLListValue;
 import org.jetel.interpreter.data.TLMapValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
+import org.jetel.interpreter.extensions.ConvertLib.Function;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.string.Compare;
@@ -56,9 +59,9 @@ public class StringLib extends TLFunctionLibrary {
                 "length"), SOUNDEX("soundex"), REPLACE("replace"), SPLIT("split"),CHAR_AT(
                 "char_at"), IS_BLANK("is_blank"), IS_ASCII("is_ascii"), IS_NUMBER("is_number"),
                 IS_INTEGER("is_integer"), IS_LONG("is_long"), IS_DATE("is_date"), 
-                REMOVE_DIACRITICS("remove_diacritic"), REMOVE_BLANK_SPACE("remove_blank_space"), 
+                REMOVE_DIACRITIC("remove_diacritic"), REMOVE_BLANK_SPACE("remove_blank_space"), 
                 GET_ALPHANUMERIC_CHARS("get_alphanumeric_chars"), TRANSLATE("translate"), 
-                JOIN("join"), INDEX_OF("index_of");
+                JOIN("join"), INDEX_OF("index_of"), COUNT_CHAR("count_char");
 
         public String name;
 
@@ -120,8 +123,8 @@ public class StringLib extends TLFunctionLibrary {
         	return new IsLongFunction();
         case IS_DATE:
         	return new IsDateFunction();
-        case REMOVE_DIACRITICS:
-        	return new RemoveDiacriticsFunction();
+        case REMOVE_DIACRITIC:
+        	return new RemoveDiacriticFunction();
         case REMOVE_BLANK_SPACE:
         	return new RemoveBlankSpaceFunction();
         case GET_ALPHANUMERIC_CHARS:
@@ -132,9 +135,21 @@ public class StringLib extends TLFunctionLibrary {
         	return new JoinFunction();
         case INDEX_OF:
         	return new IndexOfFunction();
+        case COUNT_CHAR:
+        	return new CountCharFunction();
         default:
             return null;
         }
+    }
+    
+    public  Collection<TLFunctionPrototype> getAllFunctions() {
+    	List<TLFunctionPrototype> ret = new ArrayList<TLFunctionPrototype>();
+    	Function[] fun = Function.values();
+    	for (Function function : fun) {
+    		ret.add(getFunction(function.name));
+		}
+    	
+    	return ret;
     }
 
     // CONCAT
@@ -425,12 +440,12 @@ public class StringLib extends TLFunctionLibrary {
             	intBuf.setValue(((TLStringValue)params[0]).getCharSequence().length());
             	break;
             case LIST:
-            	intBuf.setValue(((TLListValue)params[0]).getLength());
-            	break;
             case MAP:
-            	intBuf.setValue(((TLMapValue)params[0]).getLength());
+            case BYTE:
+            case RECORD:
+            	intBuf.setValue(((TLContainerValue)params[0]).getLength());
             	break;
-            	default:
+           	default:
                 throw new TransformLangExecutorRuntimeException(params,
                         "length - wrong type of literal");
             }
@@ -585,6 +600,7 @@ public class StringLib extends TLFunctionLibrary {
                 regex.matcher.appendReplacement(regex.strbuf, replacement);
             }
             regex.matcher.appendTail(regex.strbuf);
+            ((StringBuilder)regex.result.getValue()).setLength(0);
             regex.result.setValue(regex.strbuf);
             
 			return regex.result;
@@ -874,9 +890,9 @@ public class StringLib extends TLFunctionLibrary {
     }
 
      //  REMOVE DIACRITIC
-     class RemoveDiacriticsFunction extends TLFunctionPrototype {
+     class RemoveDiacriticFunction extends TLFunctionPrototype {
 
-         public RemoveDiacriticsFunction() {
+         public RemoveDiacriticFunction() {
              super("string", "remove_diacritic", new TLValueType[] { TLValueType.STRING }, 
             		 TLValueType.STRING);
          }
@@ -1084,6 +1100,36 @@ public class StringLib extends TLFunctionLibrary {
      }
 
 
+     // COUNT_CHAR
+     //int count_char(string search_string, char what)
+     //vrati pocet vyskytu "what" znaku v search_string
+     class CountCharFunction extends TLFunctionPrototype {
+
+		public CountCharFunction() {
+			super("string", "count_char", new TLValueType[] { TLValueType.STRING,
+					TLValueType.STRING },
+					TLValueType.INTEGER);
+		}
+
+		@Override
+		public TLValue execute(TLValue[] params, TLContext context) {
+			TLValue val = (TLValue) context.getContext();
+			Numeric result = (TLNumericValue) val;
+
+			if (params[0].type != TLValueType.STRING || params[1].type !=TLValueType.STRING) {
+				throw new TransformLangExecutorRuntimeException(params,
+						"count_char - wrong type of literal(s)");
+			} else {
+					result.setValue(StringUtils.count((CharSequence)params[1], ((CharSequence)params[0]).charAt(0)));
+			}
+			return val;
+		}
+
+		@Override
+		public TLContext createContext() {
+			return TLContext.createIntegerContext();
+		}
+	}
 
      class RegexStore{
 	    public Pattern pattern;

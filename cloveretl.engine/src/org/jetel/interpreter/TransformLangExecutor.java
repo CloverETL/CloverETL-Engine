@@ -32,72 +32,22 @@ import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.interpreter.ASTnode.CLVFAddNode;
-import org.jetel.interpreter.ASTnode.CLVFAnd;
-import org.jetel.interpreter.ASTnode.CLVFAssignment;
-import org.jetel.interpreter.ASTnode.CLVFBlock;
-import org.jetel.interpreter.ASTnode.CLVFBreakStatement;
-import org.jetel.interpreter.ASTnode.CLVFBreakpointNode;
-import org.jetel.interpreter.ASTnode.CLVFCaseExpression;
-import org.jetel.interpreter.ASTnode.CLVFComparison;
-import org.jetel.interpreter.ASTnode.CLVFContinueStatement;
-import org.jetel.interpreter.ASTnode.CLVFDivNode;
-import org.jetel.interpreter.ASTnode.CLVFDoStatement;
-import org.jetel.interpreter.ASTnode.CLVFEvalNode;
-import org.jetel.interpreter.ASTnode.CLVFForStatement;
-import org.jetel.interpreter.ASTnode.CLVFForeachStatement;
-import org.jetel.interpreter.ASTnode.CLVFFunctionCallStatement;
-import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
-import org.jetel.interpreter.ASTnode.CLVFIfStatement;
-import org.jetel.interpreter.ASTnode.CLVFIffNode;
-import org.jetel.interpreter.ASTnode.CLVFImportSource;
-import org.jetel.interpreter.ASTnode.CLVFIncrDecrStatement;
-import org.jetel.interpreter.ASTnode.CLVFInputFieldLiteral;
-import org.jetel.interpreter.ASTnode.CLVFIsNullNode;
-import org.jetel.interpreter.ASTnode.CLVFLiteral;
-import org.jetel.interpreter.ASTnode.CLVFLookupNode;
-import org.jetel.interpreter.ASTnode.CLVFMapping;
-import org.jetel.interpreter.ASTnode.CLVFMinusNode;
-import org.jetel.interpreter.ASTnode.CLVFModNode;
-import org.jetel.interpreter.ASTnode.CLVFMulNode;
-import org.jetel.interpreter.ASTnode.CLVFNVL2Node;
-import org.jetel.interpreter.ASTnode.CLVFNVLNode;
-import org.jetel.interpreter.ASTnode.CLVFOperator;
-import org.jetel.interpreter.ASTnode.CLVFOr;
-import org.jetel.interpreter.ASTnode.CLVFOutputFieldLiteral;
-import org.jetel.interpreter.ASTnode.CLVFPostfixExpression;
-import org.jetel.interpreter.ASTnode.CLVFPrintErrNode;
-import org.jetel.interpreter.ASTnode.CLVFPrintLogNode;
-import org.jetel.interpreter.ASTnode.CLVFPrintStackNode;
-import org.jetel.interpreter.ASTnode.CLVFRaiseErrorNode;
-import org.jetel.interpreter.ASTnode.CLVFRegexLiteral;
-import org.jetel.interpreter.ASTnode.CLVFReturnStatement;
-import org.jetel.interpreter.ASTnode.CLVFSequenceNode;
-import org.jetel.interpreter.ASTnode.CLVFStart;
-import org.jetel.interpreter.ASTnode.CLVFStartExpression;
-import org.jetel.interpreter.ASTnode.CLVFStatementExpression;
-import org.jetel.interpreter.ASTnode.CLVFSubNode;
-import org.jetel.interpreter.ASTnode.CLVFSwitchStatement;
-import org.jetel.interpreter.ASTnode.CLVFSymbolNameExp;
-import org.jetel.interpreter.ASTnode.CLVFTryCatchStatement;
-import org.jetel.interpreter.ASTnode.CLVFUnaryExpression;
-import org.jetel.interpreter.ASTnode.CLVFVarDeclaration;
-import org.jetel.interpreter.ASTnode.CLVFVariableLiteral;
-import org.jetel.interpreter.ASTnode.CLVFWhileStatement;
-import org.jetel.interpreter.ASTnode.Node;
-import org.jetel.interpreter.ASTnode.SimpleNode;
+import org.jetel.interpreter.ASTnode.*;
 import org.jetel.interpreter.data.TLBooleanValue;
+import org.jetel.interpreter.data.TLByteArrayValue;
 import org.jetel.interpreter.data.TLContainerValue;
 import org.jetel.interpreter.data.TLDateValue;
 import org.jetel.interpreter.data.TLListValue;
 import org.jetel.interpreter.data.TLMapValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLObjectValue;
+import org.jetel.interpreter.data.TLRecordValue;
 import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.interpreter.data.TLVariable;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.CharSequenceReader;
 
 /**
@@ -341,8 +291,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object visit(CLVFComparison node, Object data) {
         int cmpResult = 2;
         boolean lValue = false;
+        TLValue a;
+        TLValue b;
+        
+        switch(node.cmpType){
+        case REGEX_EQUAL:
         // special handling for Regular expression
-        if (node.cmpType == REGEX_EQUAL) {
             node.jjtGetChild(0).jjtAccept(this, data);
             TLValue field1 = stack.pop();
             node.jjtGetChild(1).jjtAccept(this, data);
@@ -362,14 +316,49 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                         arguments, "regex equal - wrong type of literal(s)");
             }
 
-            // other types of comparison
-        } else {
+            break;
+        case IN_OPER:
+        	// other types of comparison
+        	TLContainerValue list=null;
             node.jjtGetChild(0).jjtAccept(this, data);
-            TLValue a = stack.pop();
+            a = stack.pop();
             node.jjtGetChild(1).jjtAccept(this, data);
-            TLValue b = stack.pop();
-
+            b = stack.pop();
+            try{
+            	list = (TLContainerValue)b;
+            }catch(Exception ex){
+            	Object[] arguments = { a, b};
+                throw new TransformLangExecutorRuntimeException(node,
+                        arguments, "in - wrong type of literal(s)");
+            	
+            }     
+        	// SPECIAL hanadling of IN in case a is NULL
+        	if (a==Stack.NULL_VAL){
+        		stack.push(Stack.FALSE_VAL);
+                return data;
+        	}
+        	try{
+       			lValue=list.contains(a);
+       		}catch(Exception ex){
+       			Object[] arguments = { a, b };
+                   throw new TransformLangExecutorRuntimeException(node,
+                            arguments, "in - incompatible literals/expressions");
+       		}
+        	break;
+   		default:
+            // other types of comparison
+            node.jjtGetChild(0).jjtAccept(this, data);
+            a = stack.pop();
+            node.jjtGetChild(1).jjtAccept(this, data);
+            b = stack.pop();
+            
             if (!a.type.isCompatible(b.type)) {
+            	// SPECIAL hanadling of EQUAL in case a is NULL
+            	if (a==Stack.NULL_VAL && node.cmpType==EQUAL){
+            		stack.push(Stack.FALSE_VAL);
+                    return data;
+            	}
+            	
                 Object arguments[] = { a, b };
                 throw new TransformLangExecutorRuntimeException(node,
                         arguments,
@@ -382,7 +371,17 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             case DECIMAL:
             case DATE:
             case STRING:
+            case LIST:
+            case MAP:
+            case RECORD:
+            	try{
                 cmpResult = a.compareTo(b);
+            	}catch(Exception ex){
+            		Object arguments[] = { a, b };
+                    throw new TransformLangExecutorRuntimeException(node,
+                            arguments,
+                            "compare - error during comparison of literals/expressions");
+            	}
                 break;
             case BOOLEAN:
                 if (node.cmpType == EQUAL || node.cmpType == NON_EQUAL) {
@@ -678,7 +677,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
     public Object visit(CLVFLiteral node, Object data) {
-        stack.push(node.valueTL);
+        stack.push(node.value);
         return data;
     }
 
@@ -688,24 +687,39 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 			stack.push(Stack.NULL_VAL);
 			return null;
 		}
-		
-		node.field = record.getField(node.fieldNo);
-        if (node.field.isNull()){
-                stack.push(Stack.NULL_VAL);
-        		return null;
-        }
-        
-        if (node.value==null){
-        	node.value=TLValue.convertValue(node.field);
-		}else{
-			node.value.setValue(node.field);
+
+		if (node.fieldNo < 0) { // record context
+			if (node.value == null) {
+				node.value = new TLRecordValue(record);
+			} else {
+				node.value.setValue(record);
+			}
+
+			stack.push(node.value);
+
+			// we return reference to DataField so we can
+			// perform extra checking in special cases
+			return record;
+
+		} else {
+			node.field = record.getField(node.fieldNo);
+			if (node.field.isNull()) {
+				stack.push(Stack.NULL_VAL);
+				return null;
+			}
+
+			if (node.value == null) {
+				node.value = TLValue.convertValue(node.field);
+			} else {
+				node.value.setValue(node.field);
+			}
+			stack.push(node.value);
+
+			// we return reference to DataField so we can
+			// perform extra checking in special cases
+			return node.field;
 		}
         
-        stack.push(node.value);
-
-        // we return reference to DataField so we can
-        // perform extra checking in special cases
-        return node.field;
     }
 
     public Object visit(CLVFOutputFieldLiteral node, Object data) {
@@ -847,28 +861,41 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         }catch(ArrayIndexOutOfBoundsException ex){
             body=emptyNode;
         }
-        Iterator<TLValue> iter;
         switch(arrayVariable.getType()) {
         case LIST:
-            iter=((TLContainerValue)arrayVariable.getTLValue()).getCollection().iterator();
-            break;
-        case MAP:
-            iter=((TLContainerValue)arrayVariable.getTLValue()).getCollection().iterator();
-            break;
-            default:
-                throw new TransformLangExecutorRuntimeException(node,"not a Map or List variable");
-        }
-        while(iter.hasNext()) {
-            variableToAssign.setTLValue(iter.next());
-            body.jjtAccept(this, data);
-            stack.pop(); // in case there is anything on top of stack
-            // check for break or continue statements
-            if (breakFlag){ 
-                breakFlag=false;
-                if (breakType==BREAK_BREAK || breakType==BREAK_RETURN) {
-                    return data;
+        case RECORD:
+        case BYTE:
+        	TLContainerValue container=(TLContainerValue)arrayVariable.getTLValue();
+            for(int i=0; i<container.getLength();i++) {
+                variableToAssign.setTLValue(container.getStoredValue(i));
+                body.jjtAccept(this, data);
+                stack.pop(); // in case there is anything on top of stack
+                // check for break or continue statements
+                if (breakFlag){ 
+                    breakFlag=false;
+                    if (breakType==BREAK_BREAK || breakType==BREAK_RETURN) {
+                        return data;
+                    }
                 }
             }
+            break;
+        case MAP:
+        	Iterator<TLValue> iter = ((TLContainerValue)arrayVariable.getTLValue()).getCollection().iterator();
+            while(iter.hasNext()) {
+                variableToAssign.setTLValue(iter.next());
+                body.jjtAccept(this, data);
+                stack.pop(); // in case there is anything on top of stack
+                // check for break or continue statements
+                if (breakFlag){ 
+                    breakFlag=false;
+                    if (breakType==BREAK_BREAK || breakType==BREAK_RETURN) {
+                        return data;
+                    }
+                }
+            }
+            break;
+        default:
+                throw new TransformLangExecutorRuntimeException(node,"not a Map/List/Record/ByteArray variable");
         }
         return data;
     }
@@ -1022,8 +1049,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             node.jjtGetChild(0).jjtAccept(this, data); // evaluate the
         } catch (Exception ex) {
         	//	 populate chosen variable with exception name
+        	// TODO: check that variable is of type String
         	CLVFVariableLiteral varLit = (CLVFVariableLiteral)node.jjtGetChild(1);
         	TLVariable var=stack.getVar(varLit.localVar, varLit.varSlot);
+        	if (var.getType()!=TLValueType.STRING){
+        		throw new TransformLangExecutorRuntimeException(node,"variable \""+var.getName()+"\" is not of type string in catch() block");
+        	}
         	var.getTLValue().setValue(ex.getClass().getName());
         	
         	// call the catch block
@@ -1122,6 +1153,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             value = new TLNumericValue(TLValueType.DOUBLE);
             break;
         case DECIMAL_VAR:
+        {
             if (node.length > 0) {
                 if (node.precision > 0) {
                     value = new TLNumericValue(TLValueType.DECIMAL, DecimalFactory.getDecimal(node.length,
@@ -1132,6 +1164,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             } else {
                 value = new TLNumericValue(TLValueType.DECIMAL,DecimalFactory.getDecimal());
             }
+        }
             break;
         case STRING_VAR:
             value = new TLStringValue();
@@ -1143,24 +1176,48 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             value = Stack.FALSE_VAL;
             break;
         case BYTE_VAR:
-        	value = null; // TODO: TLValue.create(TLValueType.BYTE);
+        {
+            if (node.length>0) {
+                value = new TLByteArrayValue(node.length);
+            }else {
+                value = new TLByteArrayValue();
+            }
+        }   
         	break;
         case LIST_VAR:
+        {
             if (node.length>0) {
                 value = new TLListValue(node.length);
                 ((TLListValue)value).fill(Stack.NULL_VAL, node.length);
             }else {
                 value = new TLListValue();
             }
-            
+        }   
             break;
         case MAP_VAR:
+        {
             if (node.length>0){
                 value = new TLMapValue(node.length);
             }else {
                 value = new TLMapValue();
             }
+        }
             break;
+        case RECORD_VAR:
+        	DataRecordMetadata metadata =null;
+        	try{
+        		metadata = graph.getDataRecordMetadata(node.metadataId);
+        	}catch(Exception ex){
+        		throw new TransformLangExecutorRuntimeException(node,"error in Record declaration",ex);
+        	}
+        	if (metadata==null){
+        		throw new TransformLangExecutorRuntimeException(node,
+                        "record variable declaration - "
+                                + "can't find metadata ID \""
+                                + (node.metadataId!=null ? node.metadataId : "<unknown ID>") + "\"");
+        	}
+        	value = new TLRecordValue(metadata);
+        	break;
         default:
             throw new TransformLangExecutorRuntimeException(node,
                     "variable declaration - "
@@ -1172,17 +1229,18 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         TLVariable variable=new TLVariable(node.name,value);
         stack.storeVar(node.localVar, node.varSlot,variable );
 
-        if (node.jjtHasChildren()) {
-            node.jjtGetChild(0).jjtAccept(this, data);
+        if (node.hasInitValue) {
+        	// can have spec node & initialization
+            node.jjtGetChild(node.jjtGetNumChildren()>1 ?  1 : 0).jjtAccept(this, data);
             TLValue initValue = stack.pop();
             TLValueType type =variable.getType();
-            if (type.isStrictlyCompatible(initValue.type)) {
+            if (type.isCompatible(initValue.type)) {
                   variable.setTLValue(initValue);
             }else {
                 throw new TransformLangExecutorRuntimeException(node,
                         "invalid assignment of \"" + initValue
-                                + "\" to variable \"" + node.name
-                                + "\" - incompatible data types");
+                                + "\" ("+initValue.type +")to variable \"" + node.name
+                                + "\" ("+type +")- incompatible data types");
             }
         }
         return data;
@@ -1204,8 +1262,43 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                     index = stack.pop();
                     stack.push(((TLContainerValue)var.getTLValue()).getStoredValue(index));
                     break;
-                }
-            } catch (Exception ex) {
+                case RECORD:
+					if (node.fieldID != null) {
+						if (node.arrayIndex == -1) {
+								node.arrayIndex = ((DataRecord) var
+										.getTLValue().getValue()).getMetadata()
+										.getFieldPosition(node.fieldID);
+							if (node.arrayIndex==-1) {
+								throw new TransformLangExecutorRuntimeException(
+										node, "invalid field ID \""
+												+ node.fieldID
+												+ "\" of variable \""
+												+ var.getName() + "\" - type "
+												+ var.getType().toString());
+							}
+						}
+						stack.push(((TLContainerValue) var.getTLValue())
+								.getStoredValue(node.arrayIndex));
+					} else {
+						node.jjtGetChild(0).jjtAccept(this, data);
+						index = stack.pop();
+						stack.push(((TLContainerValue) var.getTLValue())
+								.getStoredValue(index));
+					}
+					break;
+                case BYTE:
+                	node.jjtGetChild(0).jjtAccept(this, data);
+                    index = stack.pop();
+                    stack.push(((TLContainerValue)var.getTLValue()).getStoredValue(((TLNumericValue)index).getInt()));
+                    break;
+                default:
+                		throw new TransformLangExecutorRuntimeException(node,"invalid usage if index for variable \""
+												+ var.getName() + "\" - type "
+												+ var.getType().toString());
+				}
+            }catch (TransformLangExecutorRuntimeException ex1){
+            	throw ex1;
+        	}catch (Exception ex) {
                 throw new TransformLangExecutorRuntimeException(node,
                         "invalid index \"" + index + "\" of variable \""
                         + var.getName() + "\" - type "
@@ -1233,14 +1326,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         
         switch (varNode.varType) {
         case LIST_VAR:
-        	 TLNumericValue indexList = null;
-			if (varNode.usedIndex) {
+        	 TLNumericValue index2List = null;
+			if (varNode.scalarContext) {
 				try {
 					if (varNode.indexSet) {
 						varNode.jjtGetChild(0).jjtAccept(this, data);
-						indexList = (TLNumericValue)stack.pop();
+						index2List = (TLNumericValue)stack.pop();
 						variableToAssign
-								.setTLValue(indexList.getInt(), valueToAssign);
+								.setTLValue(index2List.getInt(), valueToAssign);
 					} else {
 						variableToAssign.setTLValue(-1, valueToAssign);
 					}
@@ -1248,8 +1341,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 					throw new TransformLangExecutorRuntimeException(
 							node,
 							"index \""
-									+ indexList
-									+ "\" is outside current limits of list/array \""
+									+ index2List
+									+ "\" is outside current limits of list/array: \""
 									+ varNode.varName + "\"", ex);
 				} catch (Exception ex) {
 					throw new TransformLangExecutorRuntimeException(node,
@@ -1259,19 +1352,55 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 				}
 			} else {
 				// list context
-				if (valueToAssign.type == variableToAssign.getType()) {
+				if (valueToAssign.type.isArray() ) {
 					variableToAssign.setTLValue(valueToAssign);
 				} else {
 					throw new TransformLangExecutorRuntimeException(node,
-							"invalid assignment of scalar value \""+valueToAssign+"\" to list/array \""
+							"invalid assignment of value \""+valueToAssign+"\" to list/array \""
 									+ varNode.varName + "\"");
 				}
 			}
 
 			break;
+        case RECORD_VAR:
+			TLValue fieldIndex = null;
+			if (varNode.scalarContext) {
+				try {
+					if (varNode.fieldID != null) {
+						if (varNode.arrayIndex == -1) {
+							varNode.arrayIndex = ((DataRecord) variableToAssign
+									.getTLValue().getValue()).getMetadata()
+									.getFieldPosition(varNode.fieldID);
+						}
+						((TLContainerValue) variableToAssign.getTLValue())
+								.setStoredValue(varNode.arrayIndex,
+										valueToAssign);
+					} else {
+						varNode.jjtGetChild(0).jjtAccept(this, data);
+						fieldIndex = stack.pop();
+						((TLContainerValue) variableToAssign.getTLValue())
+								.setStoredValue(fieldIndex, valueToAssign);
+					}
+				} catch (Exception ex) {
+					throw new TransformLangExecutorRuntimeException(node,
+							"invalid assignment of \"" + valueToAssign
+									+ "\" to variable \"" + varNode.varName
+									+ "\"", ex);
+				}
+			} else {
+				try {
+					variableToAssign.getTLValue().setValue(valueToAssign);
+				} catch (Exception ex) {
+					throw new TransformLangExecutorRuntimeException(node,
+							"invalid assignment of \"" + valueToAssign
+									+ "\" to variable \"" + varNode.varName
+									+ "\"", ex);
+				}
+			}
+			break;
         case MAP_VAR:
         	TLValue indexMap=null;
-        	if (varNode.usedIndex) {
+        	if (varNode.scalarContext) {
 				if (varNode.indexSet) {
 					try {
 						varNode.jjtGetChild(0).jjtAccept(this, data);
@@ -1284,8 +1413,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 										+ "\"", ex);
 					}
 				} else {
-					// no key specified, we add values from map
-					((TLContainerValue)variableToAssign.getTLValue()).setStoredValue(null, valueToAssign);
+					if (valueToAssign instanceof TLContainerValue)
+						((TLContainerValue)variableToAssign.getTLValue()).setValue(valueToAssign);
+					// no key specified, 
+					else throw new TransformLangExecutorRuntimeException(node,
+							"no key defined when assigning to Map variable \"" + varNode.varName);
 				}
 			} else {
 				try {
@@ -1300,7 +1432,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 			break;
         case BYTE_VAR:
         	TLNumericValue indexByteArray = null;
-        	if (varNode.usedIndex) {
+        	if (varNode.scalarContext) {
 				try {
 					// scalar context
 					if (varNode.indexSet) {
@@ -1326,11 +1458,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 				}
 			} else {
 				// list context
-				if (valueToAssign.type == variableToAssign.getType()) {
+				if (valueToAssign.type.isArray() || valueToAssign==Stack.NULL_VAL) {
 					variableToAssign.setTLValue(valueToAssign);
 				} else {
 					throw new TransformLangExecutorRuntimeException(node,
-							"invalid assignment of scalar value byte array \""
+							"invalid assignment of scalar value to byte array \""
 									+ varNode.varName + "\"");
 				}
 			}
@@ -1385,8 +1517,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 throw new TransformLangExecutorRuntimeException(node,"can't assign NULL to \"" + node.fieldName + "\"");
             }
             
-            throw new TransformLangExecutorRuntimeException(node,"data format exception when mapping \"" + node.fieldName + "\" - assigning \""
-                        + value + "\"");
+            throw new TransformLangExecutorRuntimeException(node,"bad data when mapping field \"" + node.fieldName + "\" ("+field.getMetadata().getName()+":"+field.getMetadata().getTypeAsString()+
+            		") - assigning \"" + value + "\" ("+value.type+")");
         }catch(TransformLangExecutorRuntimeException ex){
         	throw ex;
     	}catch(Exception ex){
@@ -1584,7 +1716,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         
         switch(node.opType){
         case CLVFSequenceNode.OP_RESET:
-            node.sequence.resetValue();
+        	try{
+        		node.sequence.reset();
+        	}catch(ComponentNotReadyException ex){
+        		throw new TransformLangExecutorRuntimeException(node,"Error when resetting sequence \""+node.sequenceName+"\"",ex);
+        	}
             retVal=Stack.NUM_ZERO;
             break;
         case CLVFSequenceNode.OP_CURRENT:
@@ -1617,7 +1753,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     
     public Object visit(CLVFLookupNode node, Object data) {
 		DataRecord record = null;
+		boolean needLookupKey=false;
 		if (node.lookup == null) {
+			needLookupKey=true;
 			node.lookup = graph.getLookupTable(node.lookupName);
 			if (node.lookup == null) {
 				throw new TransformLangExecutorRuntimeException(node,
@@ -1658,6 +1796,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 				node.jjtGetChild(i).jjtAccept(this, data);
 				keys[i] = stack.pop().getValue();
 			}
+			if (needLookupKey)
+				node.lookup.setLookupKey(keys);
 			record = node.lookup.get(keys);
 			break;
 		default: // CLVFLookupNode.OP_NEXT:
@@ -1826,4 +1966,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 		return data;
 	}
 
+	public Object visit(CLVFListOfLiterals node, Object data) {
+		stack.push(node.value);
+		return data;
+	}
+	
 }

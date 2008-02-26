@@ -73,7 +73,7 @@ public abstract class AbstractParserExceptionHandler implements IParserException
 		StringBuilder errorMess = new StringBuilder();
 		for (BadDataFormatException ex : exception) {
 			errorMess.append("Field number: ");
-			errorMess.append(ex.getFieldNumber());
+			errorMess.append(ex.getFieldNumber() + 1);
 			errorMess.append(", offending value: ");
 			errorMess.append(ex.getOffendingValue());
 			errorMess.append(", message: ");

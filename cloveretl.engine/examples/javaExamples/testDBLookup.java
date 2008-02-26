@@ -32,34 +32,38 @@ public class testDBLookup{
 	DBConnection dbCon;
 	
     //initialization; must be present
-	EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
 	
-	if (args.length < 3){
-		System.out.println("Usage: testDBLookup <driver properties file> <sql query> <key> <db metadata file>");
+	if (args.length < 4){
+		System.out.println("Usage: testDBLookup <plugin directory> <driver properties file> <sql query> <key> <db metadata file>");
+		System.out.println("Eg: testDBLookup ../plugins koule_postgre.cfg \"select * from employee where employee_id = ?\" 10");
 		System.exit(1);
 	}
+	
+	EngineInitializer.initEngine(args[0], args[1], null);
+
 	System.out.println("**************** Input parameters: ****************");
-	System.out.println("Driver propeties: "+args[0]);
-	System.out.println("SQL query: "+args[1]);
-	System.out.println("Key: "+args[2]);
-	if (args.length == 4) {
-		System.out.println("Metadata file: " + args[3]);
+	System.out.println("Plugins directory: "+ args[0]);
+	System.out.println("Driver propeties: "+args[1]);
+	System.out.println("SQL query: "+args[2]);
+	System.out.println("Key: "+args[3]);
+	if (args.length == 5) {
+		System.out.println("Metadata file: " + args[4]);
 	}
 	System.out.println("***************************************************");
 	
 	DataRecordMetadata metadataIn = null;
 	DataRecord data;
 	
-	if (args.length == 4) {
+	if (args.length == 5) {
 		DataRecordMetadataXMLReaderWriter metaReader = new DataRecordMetadataXMLReaderWriter();
 		try {
-			metadataIn = metaReader.read(new FileInputStream(args[3]));
+			metadataIn = metaReader.read(new FileInputStream(args[4]));
 		} catch (FileNotFoundException ex) {
 			throw new RuntimeException(ex.getMessage());
 		}
 	}
 	//create connection object. Get driver and connect string from cfg file specified as a first argument
-	dbCon=new DBConnection("Conn0",args[0]);
+	dbCon=new DBConnection("Conn0",args[1]);
 	try{
 		dbCon.init();
 		
@@ -67,14 +71,13 @@ public class testDBLookup{
 		// is specified as a second parameter
 		// query string should contain ? (questionmark) in where clause
 		// e.g. select * from customers where customer_id = ? and customer_city= ?
-		DBLookupTable lookup=new DBLookupTable("lookup",dbCon.getConnection(dbCon.getId()),metadataIn,args[1]);
+		DBLookupTable lookup=new DBLookupTable("lookup",dbCon.getConnection(dbCon.getId()),metadataIn,args[2]);
 		
 		/*
 		* in case the DB doesn't support getMetadata, use following constructor:
 		* (don't forget to create metadata object first. For example by analyzing DB
 		* first and then using DataRecordMetadataXMLReaderWriter
 		
-		 DBLookupTable lookup=new DBLookupTable(dbCon,metadataIn,args[1]);
 		
 		
 		*/
@@ -87,14 +90,17 @@ public class testDBLookup{
 		//call get(Object[])
 		
 		
-		data=lookup.get(args[2]);
+		data=lookup.get(args[3]);
+		
+		if (data == null) {
+			System.out.println("Nothing found for given key");
+		}
 		
 		//in case query returns more than one record, continue displaying it.
 		while(data!=null){
 			System.out.println(data);
 			data=lookup.getNext();
 		}
-		//System.out.println(lookup.get(args[4]));
 		
 	}catch(Exception ex){
 		ex.printStackTrace();

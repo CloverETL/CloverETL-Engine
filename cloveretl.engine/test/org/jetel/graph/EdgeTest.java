@@ -38,7 +38,7 @@ public class EdgeTest extends TestCase {
 	
 	protected void setUp() { 
 		
-	    EngineInitializer.initEngine(null, null);
+		EngineInitializer.initEngine(null, null, null);
 		
 		aDelimitedDataRecordMetadata = new DataRecordMetadata("record2",DataRecordMetadata.DELIMITED_RECORD);
 		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,";"));

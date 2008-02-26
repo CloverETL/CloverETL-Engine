@@ -166,6 +166,12 @@ public class ByteArray implements Comparable, Iterable {
 		System.arraycopy(fromVal,0, value, 0, fromVal.length());
 		count=fromVal.length();
 	}
+	
+	public void setValue(byte[] fromVal){
+		ensureCapacity(fromVal.length);
+		System.arraycopy(fromVal,0, value, 0, fromVal.length);
+		count=fromVal.length;
+	}
 
 	/**
 	 * FromByte method writes the value at the beginning of the byte array and 
@@ -277,6 +283,15 @@ public class ByteArray implements Comparable, Iterable {
         }catch(UnsupportedEncodingException ex){
             throw new RuntimeException(ex);
         }
+	}
+	
+	public String toHexString(){
+		StringBuilder str=new StringBuilder(value.length*2);
+		for(int i=0;i<count; i++){
+			str.append(Character.forDigit((value[i]&0xF0)>>4,16));
+			str.append(Character.forDigit(value[i]&0x0F,16));
+		}
+		return str.toString();
 	}
 	
 	/**
@@ -535,6 +550,14 @@ public class ByteArray implements Comparable, Iterable {
 		count=newlen;
 		return this;
 		
+	}
+	
+	public ByteArray append(ByteArray source) {
+		int len = count + source.count;
+		ensureCapacity(len);
+		System.arraycopy(source.value, 0, value, count, source.count);
+		count = len;
+		return this;
 	}
 	
 	/**
@@ -916,6 +939,16 @@ public class ByteArray implements Comparable, Iterable {
 	}
 
 	/**
+	 * Decodes bytes in base64 and stores them in
+	 * this ByteArray
+	 * 
+	 * @param base64  binary data in base64 encoding
+	 */
+	public void decodeBase64(String base64){
+		setValue(Base64.decode(base64));
+	}
+	
+	/**
 	 * The 'data' byte array is encoded to base64 and putted to internal byte array.
 	 * 
 	 * @param data   byte array to be encoded
@@ -924,6 +957,11 @@ public class ByteArray implements Comparable, Iterable {
 		fromString(Base64.encodeBytes(data));
 	}
 
+	public String encodeBase64(){
+		return Base64.encodeBytes(value, 0, count);
+	}
+	
+	
 	/**
 	 * Appends bit sequence like string "010011" into byte array.
 	 * 
@@ -935,15 +973,14 @@ public class ByteArray implements Comparable, Iterable {
         if(seq == null || seq.length() == 0) {
             return;
         }
-        String source = seq.toString();
-        int size = ((source.length()-1) >> 3) + count + 1;
+        int size = ((seq.length()-1) >> 3) + count + 1;
         if (value.length < size) {
         	ensureCapacity(size);
         }
-        int len = source.length()+count;
+        int len = seq.length()+count;
         if (bitValue) {
         	for (int i=count; i<len; i++) {
-            	if (source.charAt(i-count) == bitChar) {          		
+            	if (seq.charAt(i-count) == bitChar) {          		
         			value[i >> 3] |= ((byte) (1 << (i % 8)));
         		} else {
         			value[i >> 3] &= (~((byte) (1 << (i % 8))));
@@ -951,7 +988,7 @@ public class ByteArray implements Comparable, Iterable {
         	}
         } else {
         	for (int i=count; i<len; i++) {
-            	if (source.charAt(i-count) != bitChar) {
+            	if (seq.charAt(i-count) != bitChar) {
            			value[i >> 3] |= ((byte) (1 << (i % 8)));
            		} else {
            			value[i >> 3] &= (~((byte) (1 << (i % 8))));
@@ -972,15 +1009,14 @@ public class ByteArray implements Comparable, Iterable {
         if(seq == null || seq.length() == 0) {
             return;
         }
-        String source = seq.toString();
-        int size = ((source.length()-1) >> 3) + 1;
+        int size = ((seq.length()-1) >> 3) + 1;
         if (value.length < size) {
         	ensureCapacity(size);
         }
-        int len = source.length();
+        int len = seq.length();
         if (bitValue) {
         	for (int i=0; i<len; i++) {
-            	if (source.charAt(i) == bitChar) {          		
+            	if (seq.charAt(i) == bitChar) {          		
         			value[i >> 3] |= ((byte) (1 << (i % 8)));
         		} else {
         			value[i >> 3] &= (~((byte) (1 << (i % 8))));
@@ -988,7 +1024,7 @@ public class ByteArray implements Comparable, Iterable {
         	}
         } else {
         	for (int i=0; i<len; i++) {
-            	if (source.charAt(i) != bitChar) {
+            	if (seq.charAt(i) != bitChar) {
            			value[i >> 3] |= ((byte) (1 << (i % 8)));
            		} else {
            			value[i >> 3] &= (~((byte) (1 << (i % 8))));
@@ -1012,7 +1048,7 @@ public class ByteArray implements Comparable, Iterable {
             throw new IndexOutOfBoundsException("start " + start + ", end " + end + ", end-start " + (end-start));
 		
 		StringBuilder sb = new StringBuilder(end - start);
-		for (int i=start; i<end+1; i++) {
+		for (int i=start; i<=end; i++) {
 			sb.append(getBit(i) ? trueValue : falseValue);
 		}
 		return sb;
@@ -1219,6 +1255,27 @@ public class ByteArray implements Comparable, Iterable {
 		return dataCompressed;
 	}
 
+	public byte max() {
+	    byte max = value[0];   // start with the first value
+	    for (int i=1; i<count; i++) {
+	        if (value[i] > max) {
+	            max = value[i];   // new maximum
+	        }
+	    }
+	    return max;
+	}
+	
+	public byte min() {
+	    byte min = value[0];   // start with the first value
+	    for (int i=1; i<count; i++) {
+	        if (value[i] < min) {
+	            min = value[i];   // new maximum
+	        }
+	    }
+	    return min;
+	}
+	
+	
 	/**
 	 * Byte array iterator.
 	 */

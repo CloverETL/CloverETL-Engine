@@ -24,7 +24,6 @@ package org.jetel.util;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Random;
 
 import org.apache.commons.logging.Log;
@@ -317,12 +316,12 @@ public class DataRecordGenerator implements Parser{
 			}
 			parser.close();
 		}
-		if (component != null) {
-			Iterator<String> sequences = component.getGraph().getSequences();
-			while (sequences.hasNext()) {
-				component.getGraph().getSequence(sequences.next()).init();
-			}
-		}
+//		if (component != null) {
+//			Iterator<String> sequences = component.getGraph().getSequences();
+//			while (sequences.hasNext()) {
+//				component.getGraph().getSequence(sequences.next()).init();
+//			}
+//		}
 		initialized = true;		
 	}
 

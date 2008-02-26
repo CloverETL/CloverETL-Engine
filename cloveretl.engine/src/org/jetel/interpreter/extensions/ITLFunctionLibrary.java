@@ -19,6 +19,7 @@
 */
 package org.jetel.interpreter.extensions;
 
+import java.util.Collection;
 /**
  * This interface have to be implemented by all TL function engine plugins and 
  * this class name have to be passed via className attribute in plugin.xml
@@ -30,7 +31,9 @@ package org.jetel.interpreter.extensions;
  * @created 30.5.2007
  */
 public interface ITLFunctionLibrary {
-
+	
     public TLFunctionPrototype getFunction(String functionName);
+    
+    abstract public Collection<TLFunctionPrototype> getAllFunctions();
     
 }

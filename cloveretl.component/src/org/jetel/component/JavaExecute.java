@@ -218,7 +218,6 @@ public class JavaExecute extends Node {
      */
     private static JavaRunnable loadClassDynamic(Log logger,DynamicJavaCode dynamicRunnableCode)
             throws ComponentNotReadyException {
-        dynamicRunnableCode.setCaptureCompilerOutput(true);
         logger.info(" (compiling dynamic source) ");
         // use DynamicJavaCode to instantiate transformation class
         Object runnObject = null;

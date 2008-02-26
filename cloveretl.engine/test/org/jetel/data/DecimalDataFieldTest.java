@@ -17,7 +17,7 @@ public class DecimalDataFieldTest extends TestCase {
 	
 	@Override
 	protected void setUp() throws Exception {
-		EngineInitializer.initEngine(null, null);
+		EngineInitializer.initEngine(null, null, null);
 		fieldMetadata = new DataFieldMetadata("field1",	DataFieldMetadata.DECIMAL_FIELD,";");  
 	}
 	

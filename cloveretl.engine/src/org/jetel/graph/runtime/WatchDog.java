@@ -47,6 +47,7 @@ import javax.management.ObjectName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -129,6 +130,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	/**  Main processing method for the WatchDog object */
 	public Result call() {
+		long startTimestamp = System.currentTimeMillis();
+		
 		watchDogStatus = Result.RUNNING;
         Result result=Result.N_A;
         runIt=true;
@@ -187,6 +190,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			}
 		}
 		
+		logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
+
 		return result;
 	}
 
@@ -530,14 +535,20 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 * @since                 July 31, 2002
 	 */
 	private void startUpNodes(Phase phase) {
-		for(Node node: phase.getNodes().values()) {
-//            Thread nodeThread = new Thread(node, node.getId());
-//          // this thread is daemon - won't live if main thread ends
-//            nodeThread.setDaemon(true);
-//            node.setNodeThread(nodeThread);
-//			nodeThread.start();
-			getGraphExecutor().executeNode(node);
-			logger.debug(node.getId()+ " ... started");
+		GraphExecutor graphExecutor = getGraphExecutor();
+
+		synchronized(graphExecutor) {
+			while(graphExecutor.getFreeThreadsCount() < phase.getNodes().size()) { //it is sufficient, not necessary - so we have to time to time wake up and check it again
+				try {
+					graphExecutor.wait(); //from time to time thread is woken up to check the condition again
+				} catch (InterruptedException e) {
+					//DO NOTHING
+				}
+			}
+			for(Node node: phase.getNodes().values()) {
+				getGraphExecutor().executeNode(node);
+				logger.debug(node.getId()+ " ... started");
+			}
 		}
 	}
 
@@ -550,13 +561,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	private Result executePhase(Phase phase) {
 		currentPhase = phase;
-//		logger.info("Initialization of phase [" + phase.getPhaseNum() + "]");
-//		try {
-//			phase.init();
-//		} catch (ComponentNotReadyException e) {
-//			logger.error("Phase initialization failed with reason: " + e.getMessage(), e);
-//			return Result.ERROR;
-//		}
+		try {
+			phase.init();
+		} catch (ComponentNotReadyException e) {
+			logger.error("Phase initialization failed with reason: " + e.getMessage(), e);
+			return Result.ERROR;
+		}
 		logger.info("Starting up all nodes in phase [" + phase.getPhaseNum() + "]");
 		startUpNodes(phase);
 		logger.info("Sucessfully started all nodes in phase!");
@@ -565,6 +575,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
             watchDogStatus = watch(phase);
         }catch(InterruptedException ex){
             watchDogStatus = Result.ABORTED;
+        }
+        
+        //now we can notify all waiting phases for free threads
+        GraphExecutor graphExecutor = getGraphExecutor();
+        synchronized(graphExecutor) {
+        	graphExecutor.releaseNodeThreads(phase.getNodes().size());
+            graphExecutor.notifyAll();
         }
         
         phase.setResult(watchDogStatus);

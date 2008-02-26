@@ -549,6 +549,10 @@ public class AproxMergeJoin extends Node {
 				case 1:
 					throw new JetelException("Driver record out of order!");
 				}
+			}else{
+				while (slavePort.readRecord(slaveRecords[CURRENT]) != null) {
+					//Wait for eof on slave
+				}
 			}
 			// switch temporary --> current
 			tmpRec = driverRecords[CURRENT];

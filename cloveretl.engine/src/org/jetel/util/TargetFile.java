@@ -160,7 +160,8 @@ public class TargetFile {
 
         //write footer to the previous destination if it is not first call of this method
         if(byteChannel != null) {
-        	formatter.writeFooter();
+//        	formatter.writeFooter();
+        	formatter.finish();
         }
         setOutput();
 

@@ -35,7 +35,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
@@ -175,11 +174,9 @@ public class OracleDataWriter extends Node {
         InputStream processOut = new BufferedInputStream(process.getInputStream());
         InputStream processErr = new BufferedInputStream(process.getErrorStream());
 
-        //init of data formatter
-        formatter = new DataFormatter();
-        formatter.init(inPort.getMetadata());
+        //set target for data formatter
         formatter.setDataTarget(Channels.newChannel(processIn));
-        
+
         //all stdout and stderr data I send into black hole
         StreamReader outStreamReader = new StreamReader(processOut);
         outStreamReader.start();
@@ -187,19 +184,14 @@ public class OracleDataWriter extends Node {
         errStreamReader.start();
         
         //reading incoming data and sending them into sqlldr process
-        try {
-            while (record != null && runIt) {
-                record = inPort.readRecord(record);
-                if (record != null) {
-                    formatter.write(record);
-                }
+        while (record != null && runIt) {
+            record = inPort.readRecord(record);
+            if (record != null) {
+                formatter.write(record);
             }
-        } catch (Exception e) {
-            throw e;
-        }finally{
-            //close data stream
-            formatter.close();
         }
+
+        formatter.finish();
         
         //waiting for sqlldr process termination
         if(process.waitFor() != 0) {
@@ -213,6 +205,13 @@ public class OracleDataWriter extends Node {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
 
+    @Override
+    public synchronized void free() {
+    	super.free();
+    	
+    	formatter.close();
+    }
+    
     /**
      * Create command line for process, where sqlldr utility is running.
      * Example: c:\Oracle\Client\bin\sqlldr.exe control=loader.ctl userid=user/password@schema log=loader.log bad=loader.bad data=\"=\"
@@ -262,9 +261,19 @@ public class OracleDataWriter extends Node {
         
         //compute userId as sqlldr parameter
         userId = getUserId();
+        
+        //init of data formatter
+        formatter = new DataFormatter();
+        formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
     }
 
-
+    @Override
+    public synchronized void reset() throws ComponentNotReadyException {
+    	super.reset();
+    	
+    	formatter.reset();
+    }
+    
     /**
      * Creates userid parameter for sqlldr utility. Builds string this form: "user/password@schema" 
      * @return

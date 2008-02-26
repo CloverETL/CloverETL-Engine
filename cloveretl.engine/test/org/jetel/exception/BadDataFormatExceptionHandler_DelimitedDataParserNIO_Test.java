@@ -25,8 +25,8 @@ import java.io.FileNotFoundException;
 import junit.framework.TestCase;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.data.parser.DelimitedDataParser;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
@@ -43,6 +43,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	private DataRecordMetadata metadata = null;
 	
 	protected void setUp() { 
+		EngineInitializer.initEngine(null, null, null);
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 			
 		try {
@@ -53,7 +54,6 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 			e.printStackTrace();
 		}
 		
-		Defaults.init();
 	
 		aParser2 = new DelimitedDataParser();
 
@@ -292,8 +292,8 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 			fail("Should raise an BadDataFormatException");
 		} catch (BadDataFormatException e){	
 		} catch (Exception ee){
-			fail("Should not throw Exception");
 			ee.printStackTrace();
+			fail("Should not throw Exception");
 		}
 		assertEquals(0,recCount);
 		aParser2.close();

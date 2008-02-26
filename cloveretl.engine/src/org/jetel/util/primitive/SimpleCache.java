@@ -167,6 +167,7 @@ public class SimpleCache {
     
     public void clear(){
     	map.clear();
+    	savedKey = null;
     }
     
     /**

@@ -112,19 +112,19 @@ import org.w3c.dom.Text;
  */
 public class DBExecute extends Node {
 
-	private static final String XML_PRINTSTATEMENTS_ATTRIBUTE = "printStatements";
-	private static final String XML_INTRANSACTION_ATTRIBUTE = "inTransaction";
-	private static final String XML_SQLCODE_ELEMENT = "SQLCode";
-	private static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
-	private static final String XML_SQLQUERY_ATTRIBUTE = "sqlQuery";
-    private static final String XML_DBSQL_ATTRIBUTE = "dbSQL";
-	private static final String XML_URL_ATTRIBUTE = "url";
-    private static final String XML_PROCEDURE_CALL_ATTRIBUTE = "callStatement";
-    private static final String XML_STATEMENT_DELIMITER = "sqlStatementDelimiter";
-    private static final String XML_CHARSET_ATTRIBUTE = "charset";
-    private static final String XML_IN_PARAMETERS = "inParameters";
-    private static final String XML_OUT_PARAMETERS = "outParameters";
-    private static final String XML_OUTPUT_FIELDS = "outputFields";
+	public static final String XML_PRINTSTATEMENTS_ATTRIBUTE = "printStatements";
+	public static final String XML_INTRANSACTION_ATTRIBUTE = "inTransaction";
+	public static final String XML_SQLCODE_ELEMENT = "SQLCode";
+	public static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
+	public static final String XML_SQLQUERY_ATTRIBUTE = "sqlQuery";
+    public static final String XML_DBSQL_ATTRIBUTE = "dbSQL";
+	public static final String XML_URL_ATTRIBUTE = "url";
+    public static final String XML_PROCEDURE_CALL_ATTRIBUTE = "callStatement";
+    public static final String XML_STATEMENT_DELIMITER = "sqlStatementDelimiter";
+    public static final String XML_CHARSET_ATTRIBUTE = "charset";
+    public static final String XML_IN_PARAMETERS = "inParameters";
+    public static final String XML_OUT_PARAMETERS = "outParameters";
+    public static final String XML_OUTPUT_FIELDS = "outputFields";
 	
     private enum InTransaction {
     	ONE,
@@ -145,13 +145,12 @@ public class DBExecute extends Node {
 	public final static String COMPONENT_TYPE = "DB_EXECUTE";
 	private final static String DEFAULT_SQL_STATEMENT_DELIMITER = ";";
 	private final static String PARAMETERS_SET_DELIMITER = "#";
-	private final static String CLOVER_FIELD_INDICATOR = "$";
+	public final static String CLOVER_FIELD_INDICATOR = "$";
 	
 	private final static int READ_FROM_PORT = 0;
 	private final static int WRITE_TO_PORT = 0;
 	
 	static Log logger = LogFactory.getLog(DBExecute.class);
-	private String url = null;
 	private PreparedStatement[] sqlStatement;
 	private SQLCloverCallableStatement[] callableStatement;
 	
@@ -272,8 +271,12 @@ public class DBExecute extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		if (inRecord != null) {
-			inRecord.reset();
+		if (procedureCall && getInPorts().size() > 0) {
+			inRecord = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
+			inRecord.init();
+			for (SQLCloverCallableStatement statement : callableStatement) {
+				statement.setInRecord(inRecord);
+			}
 		}
 		if (outRecord != null){
 			outRecord.reset();
@@ -301,14 +304,6 @@ public class DBExecute extends Node {
 	}
 
 	
-	public void setURL(String url) {
-		this.url = url;
-	}
-	
-	public String getURL() {
-		return(this.url = null);
-	}
-	
 	@Override
 	public Result execute() throws Exception {
 		Connection connection = dbConnection.getConnection(getId());
@@ -328,15 +323,20 @@ public class DBExecute extends Node {
 			if (inPort != null) {
 				inRecord = inPort.readRecord(inRecord);
 			}
+			boolean sendOut;
 			do {
 				for (int i = 0; i < dbSQL.length; i++){
+					sendOut = outParams != null && outParams[i] != null;
 					if (procedureCall) {
 						callableStatement[i].executeCall();
 						if (outPort != null) {
-							callableStatement[i].isNext();
+							sendOut = sendOut || callableStatement[i].isNext();
 							do {
-								outPort.writeRecord(callableStatement[i].getOutRecord());
-							}while (callableStatement[i].isNext());
+								if (sendOut) {
+									outPort.writeRecord(callableStatement[i].getOutRecord());
+								}
+								sendOut = callableStatement[i].isNext();
+							}while (sendOut);
 						}
 					}else{
 						sqlStatement[i].executeUpdate();
@@ -364,6 +364,12 @@ public class DBExecute extends Node {
 			connection.rollback();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+	
+	@Override
+	public synchronized void free() {
+		super.free();
+		dbConnection.free();
 	}
 
 	/**
@@ -478,9 +484,6 @@ public class DBExecute extends Node {
                         .getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
             }
 
-            if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-                executeSQL.setURL(xattribs.getString(XML_URL_ATTRIBUTE));
-            }
             if (xattribs.exists(XML_PROCEDURE_CALL_ATTRIBUTE)){
                 executeSQL.setProcedureCall(xattribs.getBoolean(XML_PROCEDURE_CALL_ATTRIBUTE));
             }
@@ -521,20 +524,30 @@ public class DBExecute extends Node {
 		}
 	}
 
-	private Map<Integer, String> convertMappingToMap(String mapping){
+	public static Map<Integer, String> convertMappingToMap(String mapping){
 		String[] mappings = mapping.split(Defaults.Component.KEY_FIELDS_DELIMITER);
 		HashMap<Integer, String> result = new HashMap<Integer, String>();
-		int index;
-		//TODO jesli tylko lista to numeruj od 1,...
+		int assignIndex;
+		boolean isFieldInicator = mapping.indexOf(CLOVER_FIELD_INDICATOR) > -1;
 		int assignSignLength = AggregateMappingParser.ASSIGN_SIGN.length();
 		for (int i = 0; i < mappings.length; i++) {
-			index = mappings[i].indexOf(AggregateMappingParser.ASSIGN_SIGN);
-			if (mappings[i].startsWith(CLOVER_FIELD_INDICATOR)) {
-				result.put(Integer.parseInt(mappings[i].substring(index + assignSignLength).trim()), 
-						mappings[i].substring(CLOVER_FIELD_INDICATOR.length(), index).trim());
+			assignIndex = mappings[i].indexOf(AggregateMappingParser.ASSIGN_SIGN);
+			if (assignIndex > -1) {
+				if (mappings[i].startsWith(CLOVER_FIELD_INDICATOR)) {
+					result.put(Integer.parseInt(mappings[i].substring(assignIndex + assignSignLength).trim()), 
+							isFieldInicator ? 
+									mappings[i].substring(CLOVER_FIELD_INDICATOR.length(), assignIndex).trim() :
+									mappings[i].substring(0, assignIndex).trim());
+				} else {
+					result.put(Integer.parseInt(mappings[i].substring(0, assignIndex).trim()), 
+							isFieldInicator ?
+									mappings[i].substring(assignIndex + assignSignLength).trim().substring(CLOVER_FIELD_INDICATOR.length()):
+									mappings[i].substring(assignIndex + assignSignLength).trim());
+				}
 			}else{
-				result.put(Integer.parseInt(mappings[i].substring(0, index).trim()), 
-						mappings[i].substring(index + assignSignLength).trim().substring(CLOVER_FIELD_INDICATOR.length()));
+				result.put(i+1, isFieldInicator ?
+						mappings[i].trim().substring(CLOVER_FIELD_INDICATOR.length()) :
+						mappings[i].trim());
 			}
 		}
 		return result.size() > 0 ? result : null;
@@ -555,14 +568,13 @@ public class DBExecute extends Node {
 
         try {
             init();
+        	free();
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }
             status.add(problem);
-        } finally {
-        	free();
         }
         
         return status;

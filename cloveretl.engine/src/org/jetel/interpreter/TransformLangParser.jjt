@@ -254,13 +254,15 @@ SPECIAL_TOKEN :
     < SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")? > 
 } 
 
-SPECIAL_TOKEN: { <"#include"> : WithinInclude }
-<WithinInclude> SPECIAL_TOKEN:
-{
-	<"\n"> : DEFAULT
-}
-<WithingInclude> MORE: { <~[]> }
 
+/*
+SPECIAL_TOKEN: { <"'"> : WithinSingleQuote }
+<WithinSingleQuote> SPECIAL_TOKEN:
+{
+	<"'"> : DEFAULT
+}
+<WithinSingleQuote> MORE: { <~[]> }
+*/
 
 /* Literals */
 TOKEN : {
@@ -273,11 +275,11 @@ TOKEN : {
 |  <OCTAL_LITERAL: "0" (["0"-"7"])*>
 |<FLOATING_POINT_LITERAL:  (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
 |  <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+>
-|<STRING_LITERAL: <QUOTED_STRING> | <DQUOTED_STRING> >
-|  <#QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\'">
+|<STRING_LITERAL: /* <QUOTED_STRING> | */ <DQUOTED_STRING> >
+//  <#QUOTED_STRING: "\'" (~["\"","\\","\n","\r"])* "\'">
 |  <#DQUOTED_STRING: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\"">
-| <UNTERMINATED_STRING_LITERAL: <UNTERMINATED_QUOTED_STRING> | <UNTERMINATED_DQUOTED_STRING> >
-|  <#UNTERMINATED_QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* (["\n","\r"])? >
+| <UNTERMINATED_STRING_LITERAL: /*<UNTERMINATED_QUOTED_STRING> | */ <UNTERMINATED_DQUOTED_STRING> >
+// |  <#UNTERMINATED_QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* (["\n","\r"])? >
 |  <#UNTERMINATED_DQUOTED_STRING: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* (["\n","\r"])? >
 |<BOOLEAN_LITERAL: <TRUE> | <FALSE> >
 | <#TRUE: "true">
@@ -290,28 +292,43 @@ TOKEN : {
 |<NULL_LITERAL: "null">
 }
 
-/**** DEBUG/TESTING
+
 TOKEN: {
-	< STRING_LITERAL:
-      "\""
-      (   (~["\"","\\","\n","\r"])
-        | ("\\"
-            ( ["n","t","b","r","f","\\","'","\""]
-            | ["0"-"7"] ( ["0"-"7"] )?
-            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
-            )
-          )
-        | ("\\u"
-        	["0"-"9","A"-"F","a"-"f"]
-        	["0"-"9","A"-"F","a"-"f"]
-        	["0"-"9","A"-"F","a"-"f"]
-        	["0"-"9","A"-"F","a"-"f"]
-          )
-      )*
-      "\""
-  >
+	< STRING_PLAIN_LITERAL:
+      "'"
+        >
+        {
+        	char inChar,prevChar=' ';
+        	image.setLength(0);
+        	int startLine=input_stream.getBeginLine();
+        	int startCol=input_stream.getBeginColumn();
+        	try{
+        		LOOP: while(true){
+        			inChar=input_stream.readChar();
+        			switch(inChar){
+        			case '\'':
+        				if (prevChar=='\\')
+        					image.setLength(image.length()-1);
+        				else
+        					break LOOP;
+        			break;
+        			case '\r':
+        			case '\n':
+        				if (prevChar=='\\')
+        					image.setLength(image.length()-1);
+        				else
+        					throw new TokenMgrError("unterminated string on line "+startLine+" column "+startCol,0);
+        				break;
+        			}
+        			image.append(inChar);
+        			prevChar=inChar;
+        		}
+        	}catch(java.io.IOException ioe){
+        		throw new TokenMgrError(ioe.getMessage(),0);
+        	}
+        	matchedToken.image=image.toString();
+        }
 }
-****/
 
 TOKEN : {
 <MAPPING: ":=">
@@ -329,6 +346,7 @@ TOKEN [IGNORE_CASE]: {
 TOKEN [IGNORE_CASE]: {
   < EQUAL: "==" | ".eq.">
 | < NON_EQUAL: "!=" | "<>" | ".ne." >
+| < IN_OPER:  ".in." >
 | < LESS_THAN: "<" | ".lt." >
 | < LESS_THAN_EQUAL: "<=" | "=<" | ".le." >
 | < GREATER_THAN: ">" | ".gt.">
@@ -353,6 +371,7 @@ TOKEN: {
 | <TILDA: "~" >
 }
 
+
 /* Clover Field Identifiers */
 TOKEN: {
   < FIELD_ID: "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
@@ -360,8 +379,16 @@ TOKEN: {
 
 /* Clover Record Field Identifiers */
 TOKEN: {
-  < REC_NAME_FIELD_ID:  "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." (<LETTER>|<DIGIT>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+  < REC_NAME_FIELD_ID:  "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+  | < REC_NAME_FIELD_NUM:  "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." <DIGIT> (<DIGIT>)* >
   | < REC_NUM_FIELD_ID:  "$" <DIGIT> (<DIGIT>)* "." (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+  | < REC_NUM_FIELD_NUM: "$" <DIGIT> (<DIGIT>)* "." <DIGIT> (<DIGIT>)* >
+}
+
+/* Clover Record Identifiers */
+TOKEN: {
+	<REC_NUM_ID: "@" (<DIGIT>) (<DIGIT>)* >
+	|<REC_NAME_ID: "@" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
 }
 
 
@@ -420,6 +447,12 @@ TOKEN :  /* date parts */
   |<MINUTE: "minute" >
   |<SECOND: "second" >
   |<MILLISEC: "millisec" >
+}
+
+
+TOKEN : /* IDENTIFIERS */
+{
+  < IDENTIFIER: (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
 }
   
 
@@ -480,7 +513,9 @@ void CompilationUnit() #void :
    <EOF>
 }
 
-void ImportSource() :{	Token t;}{	// must parse whole tree and insert it at this place	<IMPORT> t=<STRING_LITERAL> 	{		String filenameURL=unquote(t.image);
+void ImportSource() :{	Token t;
+	String filenameURL;}{	// must parse whole tree and insert it at this place	<IMPORT> ( t=<STRING_LITERAL> { filenameURL=unquote(t.image); }
+				| t=<STRING_PLAIN_LITERAL> { filenameURL=t.image; } )	{		
 		InputStream stream;
 		try{
 			stream=Channels.newInputStream(FileUtils. getReadableChannel(null, filenameURL)); 
@@ -553,24 +588,35 @@ void FunctionDeclaration() :
 
 void VarDeclaration():
 {  Token t,l,p;  int varSlot;
-}{  try {
-  	
-    (<INT_VAR> |  <LONG_VAR> | <DOUBLE_VAR> | <DECIMAL_VAR> | <STRING_VAR>		| <DATE_VAR> | <BYTE_VAR> | <BOOLEAN_VAR> | <LIST_VAR> | <MAP_VAR> | <OBJECT_VAR> | <RECORD_VAR>    ) 
+}{    (<INT_VAR> |  <LONG_VAR> | <DOUBLE_VAR> | <DECIMAL_VAR> | <STRING_VAR>		| <DATE_VAR> | <BYTE_VAR> | <BOOLEAN_VAR> | <LIST_VAR> | <MAP_VAR> | <OBJECT_VAR> | <RECORD_VAR> ) 
     
     {
     	jjtThis.setType(getToken(0).kind);
     }
 
-    ["(" l=<INTEGER_LITERAL> { jjtThis.setLength(l.image);} [ "," p=<INTEGER_LITERAL>  { jjtThis.setPrecision(p.image); } ] ")"   ] 
+    [	"("  VarSpec(jjtThis)
+    ")"   ] 
       
     t = <IDENTIFIER>{      if (!parserHelper.addVariable(t.image,jjtThis.getType())){        throw new ParseException(t, "variable ["+t.image+"] already declared");
       }      else {        // is it local variable declaration ?
 		if (parserHelper.inFunctionDeclaration){          jjtThis.setVarSlot(parserHelper.getLocalVariableSlot(t.image));          jjtThis.setLocalVariale(true);        }        else {          jjtThis.setVarSlot(parserHelper.getGlobalVariableSlot(t.image));          jjtThis.setLocalVariale(false);        }        jjtThis.setName(t.image);      }    }
     
-    ["=" ConditionalOrExpression()]
+    ["=" ConditionalOrExpression() {jjtThis.hasInitValue(true);} ]
     
- }catch (ParseException e){    parseExceptions.add(e);//following code causes parser to cough     
-//do {//      t = getNextToken();//    }//    while (t.kind != SEMICOLON);  }}
+    
+// }catch (ParseException e){//    parseExceptions.add(e);//following code causes parser to cough     
+//do {//      t = getNextToken();//    }//    while (t.kind != SEMICOLON);//  }}
+
+void VarSpec(CLVFVarDeclaration node) #void : 
+{
+	Token l,p;
+}
+{
+	  l=<IDENTIFIER> { node.setMetadataId(l.image);} 
+  	|  		
+  	l=<INTEGER_LITERAL> { node.setLength(l.image);} [ "," p=<INTEGER_LITERAL>  { node.setPrecision(p.image); } ]
+   	
+}
 
 void Expression() #void : {}
 {
@@ -596,7 +642,9 @@ void Mapping() : // assignment of value to Clover field
   	/*OutputFieldExp() */
   (	t = <FIELD_ID> { jjtThis.setFieldName(t.image); } 
   | t = <REC_NAME_FIELD_ID> { jjtThis.setRecordFieldName(t.image); }
+  | t= <REC_NAME_FIELD_NUM>  { jjtThis.setRecordNameFieldNum(t.image); }
   | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t.image); }
+  | t = <REC_NUM_FIELD_NUM> { jjtThis.setRecordNumFieldNum(t.image); } 
   	)
   	<MAPPING> 
   	
@@ -625,6 +673,8 @@ void EqualityExpression() #void :
      <EQUAL> RelationalExpression() { jjtThis.cmpType=EQUAL; } #Comparison(2)
    |
      <NON_EQUAL> RelationalExpression() { jjtThis.cmpType=NON_EQUAL; } #Comparison(2)
+   |
+     <IN_OPER> RelationalExpression() { jjtThis.cmpType=IN_OPER; } #Comparison(2)
   )*
 }
 
@@ -708,7 +758,7 @@ void UnaryExpression() #UnaryExpression(>1) :
 
 void PrimaryExpression() #void : {}
 {
-	 LOOKAHEAD(3) FunctionCall()
+	 LOOKAHEAD(3 /*<IDENTIFIER> "(" */ ) FunctionCall()
 	 | SymbolNameExp()
      |LitExp()
 	 |VarExp()
@@ -720,7 +770,7 @@ void PrimaryExpression() #void : {}
 
 void FunctionCall() #void : {}
 {
- 	LOOKAHEAD(2) BuildInFunction()
+ 	 BuildInFunction()
  	| FunctionCallStatement()
  	
 }
@@ -740,6 +790,8 @@ void LitExp() #void :            //
   	{ jjtThis.setVal(INTEGER_LITERAL,t.image);}   #Literal
  |t=<STRING_LITERAL>
   	{ jjtThis.setVal(STRING_LITERAL,StringUtils.stringToSpecChar(unquote(t.image))); }   #Literal
+ | t=<STRING_PLAIN_LITERAL>
+ 	{ jjtThis.setVal(STRING_LITERAL,t.image); }   #Literal
  |t=<BOOLEAN_LITERAL>
   	{ jjtThis.setVal(BOOLEAN_LITERAL,t.image);}   #Literal
  |t=<DATE_LITERAL>
@@ -748,15 +800,27 @@ void LitExp() #void :            //
   	{ jjtThis.setVal(DATETIME_LITERAL,t.image);}   #Literal
  |t=<NULL_LITERAL>
  	{ jjtThis.setVal(NULL_LITERAL,t.image); } #Literal
+ | ListOfLiterals()
  |t = <UNTERMINATED_STRING_LITERAL>
   {
-       throw new ParseException(t,"unterminated string literal");
+       throw new ParseException(t,"unterminated string literal (starts at line "+t.beginLine+", column "+t.beginColumn+")");
   }
 }
 
-void InputFieldExp() #void :// IDExp -> ID
+void ListOfLiterals() :
+{
+}
+{
+	"[" LitExp() ( "," LitExp() )* "]"	
+}
+
+void InputFieldExp() #void :
 {  Token t;}{  t = <FIELD_ID> { jjtThis.setFieldName(t.image); } #InputFieldLiteral  | t = <REC_NAME_FIELD_ID> { jjtThis.setRecordFieldName(t.image); } #InputFieldLiteral
-  | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t.image); } #InputFieldLiteral}/*
+  | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t.image); } #InputFieldLiteral
+  | t = <REC_NUM_FIELD_NUM> { jjtThis.setRecordNumFieldNum(t.image); } #InputFieldLiteral
+  | t= <REC_NAME_FIELD_NUM>  { jjtThis.setRecordNameFieldNum(t.image); } #InputFieldLiteral
+  | t= <REC_NAME_ID> { jjtThis.setRecordName(t.image); }  #InputFieldLiteral
+  | t= <REC_NUM_ID> { jjtThis.setRecordNum(t.image); }  #InputFieldLiteral}/*
 void OutputFieldExp() #void :// IDExp -> ID
 {
   Token t;
@@ -773,7 +837,7 @@ void VarExp() #VariableLiteral :
 {
 	Token t,u;
 	int varSlot;
-	int varType;
+	int varType=0;
 	//boolean indexSet=false;
 }
 {
@@ -799,8 +863,14 @@ void VarExp() #VariableLiteral :
   	jjtThis.setVarType(varType); 
   	} 
   	
-  	 // it may be element of LIST or MAP
-	 [  "[" [AdditiveExpression() {jjtThis.indexSet=true;} ] "]" {jjtThis.usedIndex=true;} ]
+  	 // it may be element of LIST , MAP or RECORD
+	 [  "[" 
+	 		[ 
+	 			LOOKAHEAD( 2 ) u=<IDENTIFIER> { jjtThis.setFieldID(u.image); jjtThis.indexSet=true; } 
+	 			|  AdditiveExpression() {jjtThis.indexSet=true;} 
+	 		]  
+	 	"]" {jjtThis.scalarContext=true;} 
+	 ]
   	
 //  	{//  	if (!indexset){//  		if (varType==LIST_VAR)//	  		throw new ParseException(t,"variable ["+t.image+"] is a list and requires index to be specified");//	  	else if (varType==MAP_VAR)//	  		throw new ParseException(t,"variable ["+t.image+"] is a map and requires key to be specified");//  	}
 //  	}
@@ -811,12 +881,13 @@ void VarExp() #VariableLiteral :
 	
 }
 
-void RegexLiteral() #void :
+void RegexLiteral() :
 {
 	Token t;
 }
 {
-  t=<STRING_LITERAL> { jjtThis.setRegex(t.image); } #RegexLiteral
+  t=<STRING_LITERAL> { jjtThis.setRegex(unquote(t.image)); } 
+  |t=<STRING_PLAIN_LITERAL>	{ jjtThis.setRegex(t.image); } 
 }
 
 
@@ -1064,35 +1135,35 @@ void FunctionCallParameter() #void : {}
 void BuildInFunction() #void :
 { }
 {
-	"isnull" "(" AdditiveExpression() ")" #IsNullNode(1)
-	|"nvl" "(" AdditiveExpression() "," AdditiveExpression() ")" #NVLNode(2)
-	|"nvl2" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression()  ")" #NVL2Node(3)
-	|"iif" "(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #IffNode(3) // (condition, express if true, express else)
+	"isnull(" AdditiveExpression() ")" #IsNullNode(1)
+	|"nvl(" AdditiveExpression() "," AdditiveExpression() ")" #NVLNode(2)
+	|"nvl2(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression()  ")" #NVL2Node(3)
+	|"iif(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #IffNode(3) // (condition, express if true, express else)
 	|SequenceNode()
 	|LookupNode()
 	|EvalNode()
 
 // 	procedures 
 	|PrintErrNode()
-	|"print_stack" "(" ")" #PrintStackNode(0)
-	|"breakpoint" "(" ")" #BreakpointNode(0)
+	|"print_stack(" ")" #PrintStackNode(0)
+	|"breakpoint(" ")" #BreakpointNode(0)
 	| PrintLogNode()
-	|"raise_error" "(" AdditiveExpression() ")" #RaiseErrorNode(1)
+	|"raise_error(" AdditiveExpression() ")" #RaiseErrorNode(1)
 }
 
 
 void PrintErrNode() :
 { Token t;}
 {
-	"print_err" "(" AdditiveExpression() [ "," t=<BOOLEAN_LITERAL> {jjtThis.setPrintLine(Boolean.parseBoolean(t.image));} ] ")" 
+	"print_err(" AdditiveExpression() [ "," t=<BOOLEAN_LITERAL> {jjtThis.setPrintLine(Boolean.parseBoolean(t.image));} ] ")" 
 }
 
 
 void EvalNode() :
 {}
 {
-   "eval" "(" AdditiveExpression() ["," AdditiveExpression() ] ")" { hasEvalNode=true;  jjtThis.setExpMode(false); }
-   | "eval_exp" "(" AdditiveExpression() ")" { jjtThis.setExpMode(true); }
+   "eval(" AdditiveExpression() ["," AdditiveExpression() ] ")" { hasEvalNode=true;  jjtThis.setExpMode(false); }
+   | "eval_exp(" AdditiveExpression() ")" { jjtThis.setExpMode(true); }
 }
 
 void PrintLogNode() : 
@@ -1100,28 +1171,30 @@ void PrintLogNode() :
 	Token t;
 }
 {
-	"print_log" "("
-	
-	(
-	 "trace" { jjtThis.setLevel(0); }
-	| "debug" { jjtThis.setLevel(1); }
-	| "info" { jjtThis.setLevel(2); }
-	| "warn" { jjtThis.setLevel(3); }
-	| "error" { jjtThis.setLevel(4); }
-	| "fatal" { jjtThis.setLevel(5); }
-	)
+	"print_log(" 
+	( <IDENTIFIER> )
+		
+
+	{
+		try{
+			jjtThis.setLevel(getToken(0).image);
+		}catch (Exception ex){
+			throw new ParseException(getToken(0),ex.getMessage());
+		}
+	}
 	
 	","
 	AdditiveExpression()
 	")"
 }
 
+
 void SequenceNode() :
 {
 	Token t;
 }
 {
-	"sequence" "(" 
+	"sequence(" 
 	t=<IDENTIFIER> { jjtThis.setName(t.image); } 
 	[ ","
 	(  <INT_VAR> { jjtThis.setReturnType(INT_VAR); }
@@ -1143,25 +1216,26 @@ void LookupNode() :
 {
 	(
 	(
-	"lookup" "("
+	"lookup("
 		t=<IDENTIFIER> { jjtThis.setOperation(0); jjtThis.setLookupName(t.image); }// LOOKUP NAME/ID
 		"," AdditiveExpression() //KEYS GO HERE
 		("," AdditiveExpression())*
 		")"
-		"." k=<IDENTIFIER> { jjtThis.setLookupField(k.image); }  // WHICH FIELD 
+		["." k=<IDENTIFIER> { jjtThis.setLookupField(k.image); } ]  // WHICH FIELD 
 		) 
 	
-	|("lookup_next"	"("
+	|("lookup_next("
 		t=<IDENTIFIER> { jjtThis.setOperation(1); jjtThis.setLookupName(t.image); }
-		")" "." k=<IDENTIFIER> { jjtThis.setLookupField(k.image); } 
+		")" 
+		[ "." k=<IDENTIFIER> { jjtThis.setLookupField(k.image); } ] 
 		) 
 	|(// how many records we have found
-		"lookup_found" "("
+		"lookup_found("
 		t=<IDENTIFIER> { jjtThis.setOperation(2); jjtThis.setLookupName(t.image); }
 		")"
 		) 
 	|(// do something with lookup
-		"lookup_admin" "("
+		"lookup_admin("
 		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","
 		(
 			( "init" 	{jjtThis.setOperation(3);} )
@@ -1174,11 +1248,6 @@ void LookupNode() :
 
 TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" | "sec" | "second" | "millisec" | "millisecond" > }
 
-
-TOKEN : /* IDENTIFIERS */
-{
-  < IDENTIFIER: (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
-}
 
 /* error token which is generated by lexer if it can't match with any other */
 TOKEN:

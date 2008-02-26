@@ -380,18 +380,30 @@ public abstract class XLSParser implements Parser {
 	}
 
 	/**
-	 * Sets row, names of columns will be read from
+	 * Sets row, names of columns will be read from. -1 means no line
 	 * 
 	 * @param metadataRow
 	 * @throws ComponentNotReadyException
 	 */
 	public void setMetadataRow(int metadataRow) throws ComponentNotReadyException{
 		if (metadataRow < 0) 
-			throw new ComponentNotReadyException("Number of metadata row has to be greter then 0");
+			throw new ComponentNotReadyException("Number of metadata row has to be greater then 0");
 		this.metadataRow = metadataRow;
 		if (firstRow == 0) {
 			firstRow = this.metadataRow +1;
 		}
+	}
+	
+	/**
+	 * Sets row, names of columns will be read from. -1 means no metadata line
+	 * 
+	 * @param metadataRow
+	 * @throws ComponentNotReadyException
+	 */
+	public void setMetadataRowWithAllowedNone(int metadataRow) throws ComponentNotReadyException{
+		if (metadataRow < -1) 
+			throw new ComponentNotReadyException("Number of metadata row has to be greater then -1");
+		this.metadataRow = metadataRow;
 	}
 
 	/**

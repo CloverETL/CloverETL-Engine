@@ -34,6 +34,7 @@ import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  *  A class that represents integer number field (32bit signed)
@@ -386,7 +387,8 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 			value = TypeFormat.parseLong(seq);
             setNull(this.value == Long.MIN_VALUE);
 		} catch (Exception ex) {
-			throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + seq, seq.toString());
+			throw new BadDataFormatException(getMetadata().getName() + " (" + DataFieldMetadata.type2Str(getType()) 
+					+ ") cannot be set to " + StringUtils.quote(seq), seq.toString());
 		}
 	}
 

@@ -31,7 +31,7 @@ import java.util.Map;
  *
  * @created 30.5.2007
  */
-public class TLFunctionLibrary implements ITLFunctionLibrary {
+public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
 
     protected Map<String, TLFunctionPrototype> library;
 
@@ -42,5 +42,5 @@ public class TLFunctionLibrary implements ITLFunctionLibrary {
     public TLFunctionPrototype getFunction(String functionName) {
         return library.get(functionName);
     }
-    
+
 }

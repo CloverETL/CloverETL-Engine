@@ -2,38 +2,86 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 2-4-1
+---------
+Release in particular repairing bugs from 2.4.0 version.
+
+Changes/bug fixes:
++ only minor changes for GUI release purpose (1.9.0)
+
 REL 2-4-0
 ---------
 Changes/bug fixes:
-+ sftp protocol support for readers which uses multifile reader
-+ possibility of coping ByteDataField as BLOB
++ new wrapper SystemOutByteChannel protects System.out against close() 
++ sftp protocol support for readers which use multifile reader
++ possibility of copying ByteDataField as BLOB
 + new implementation of "partition by range" feature with range lookup table usage 
-+ field's unquoting before setting value by delimited and universal data parsers
-+ the set of available functions in the Clover transformation language was extended
++ field unquoting before setting value by delimited and universal data parsers
++ the set of available functions in the Clover transformation language was extended:
 	 - string remove_blank_space(string );
 	 - string get_alphanumeric_chars(string,boolean,boolean);
 	 - string translate(string, string,string );
 	 - string join(anytype,....);
 	 - boolean is_long(string)
 	 - integer index_of(string, string, integer)
-+ some components have optional "rejected port(s)" (AproxMergeJoin, CheckForeignKey, DBJoin, 
-	LookupJoin)
-+ DBConnection - for threadSave connections java.sql.Connections are stored upon element id 
-	--> method getConnection() replaced by getConnection(String)
-	--> some classes (SQLDataParser, DBLookupTable) now work with java.sql.Connection instead of org.jetel.connection.DBConnection
-+ DBOutputTable can accept more query at once. New jetel-sql query syntax introduced.
+     - boolean try_convert(anytype, anytype, string)
+     - numeric num2num(numeric, symbol) 
+     - bool num2bool(numeric)
+     - numeric bool2num(bool, symbol)
+     - bool str2bool(string)
+     - date long2date(long)
+     - long date2long(date)
+     - string to_string(anytype)
+	 - byte base64byte(string)
+	 - string byte2base64(byte)
+	 - string bits2str(byte)
+	 - byte str2bits(string)
+	 - byte hex2byte(string)
+	 - string byte2hex(byte)
++ Clover transformation language supports two new variable types, byte array and record
++ some components have new optional "rejected" port(s) (AproxMergeJoin, CheckForeignKey, DBJoin, LookupJoin)
++ DBConnection - for threadSafe connections java.sql.Connections are stored specifically for element ids 
+	--> method getConnection() was replaced by getConnection(String)
+	--> some classes (SQLDataParser, DBLookupTable) now work with java.sql.Connection 
+		instead of org.jetel.connection.DBConnection
++ DBOutputTable accepts more queries at once; new jetel-sql query syntax introduced
 + DBOutputTable has new attribute "errorAction" - COMMIT or ROLLBACK on errors
-+ StructureWriter has 3 input ports:"body", "header" and "footer". There can be different masks for each input port
++ StructureWriter has 3 input ports: "body", "header" and "footer". There can be different masks for each input port
 + all component attributes, which contain a java code or a Clover TL language code, are not resolved for special
 	characters
-+ new graph processing facility
++ new graph processing facility - GraphExecutor, GraphPool.
 + new component XmlWriter with example graphXmlWriter.grf
 + new component SpeedLimiter
-+ XLSWriter can writes to different sheets depending on record's value
++ XLSWriter can write to different sheets depending on record's value
 + data record metadata can specify a default field delimiter
-+ the DataReader component recognizes too little or too many field per record
-+ the DataReader component has extended error port metadata - field number, where an error occurs, is attached
-+ !!!doplnit seznam novych komponent!!!
++ the DataReader component recognizes too few or too many fields per record
++ the DataReader component has extended error port metadata - field number where an error occurs is attached
++ new JavaExecute component
++ new component attribute type - properties
++ ascending/descending flag in sort component can be specified per each key field
+
+REL 2-3-4
+---------
+Release in particular repairing bugs from 2.3.3 version.
+
+Changes/bug fixes:
++ only minor changes for GUI release purpose
+
+REL 2-3-3
+---------
+Release in particular repairing bugs from 2.3.2 version.
+
+Changes/bug fixes:
++ added a public method to the aggregate mapping parser, which creates the values of constants from
+	their string representations
+
+REL 2-3-2
+---------
+Release in particular repairing bugs from 2.3.1 version.
+
+Changes/bug fixes:
++ fix in the clover TL - last line comment doesn't need to be finished with a new line character(s)
++ fix in DBLookupTable's caching algorithm
 
 REL 2-3-1 
 ---------
@@ -47,7 +95,7 @@ REL 2-3-0 commercial purpose release
 + new extension point for build-in JDBC drivers - a JDBC connection now can be defined also via
 	identifier of a build-in JDBC driver instead direct parameters 'dbDriver' and 'driverLibrary'
 + new engine plugin - 'org.jetel.jdbc', which now contains only MySQL build-in JDBC driver
-+ the Dedup component has new rejected port, where all duplicated records are resent
++ the Dedup compoment has new rejected port, where all duplicated records are resent
 + the set of available functions in the Clover transformation language was extended
 	- boolean is_blank(string)
 	- boolean is_ascii(string)

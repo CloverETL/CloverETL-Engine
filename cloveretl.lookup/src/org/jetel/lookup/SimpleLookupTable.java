@@ -160,6 +160,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	 * @return            Associated DataRecord or NULL if not found
 	 */
 	public DataRecord get(String keyString) {
+		if (lookupData==null) throw new RuntimeException("Lookup key was not set/defined for lookup \""+this.getId()+"\"");
 	    lookupData.getField(0).fromString(keyString);
 	    return get();
 	}
@@ -168,6 +169,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	 * @see org.jetel.data.lookup.LookupTable#get(org.jetel.data.DataRecord)
 	 */
 	public DataRecord get(DataRecord keyRecord){
+		if (lookupKey==null) throw new RuntimeException("Lookup key was not set/defined for lookup \""+this.getId()+"\"");
 	    lookupKey.setDataRecord(keyRecord);
 	    return get();
 	}
@@ -177,7 +179,8 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	 * @see org.jetel.data.lookup.LookupTable#get(java.lang.Object[])
 	 */
 	public DataRecord get(Object[] keys) {
-	    for(int i=0;i<keys.length;i++){
+		if (lookupData==null) throw new RuntimeException("Lookup key was not set/defined for lookup \""+this.getId()+"\"");
+		for(int i=0;i<keys.length;i++){
 	        lookupData.getField(i).setValue(keys[i]);
 	    }
 	    return get();
@@ -436,6 +439,14 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     		status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_LOOKUP_KEY));
     	}
     
+    	if (fileURL != null){
+    		try {
+				FileUtils.getReadableChannel(getGraph().getProjectURL(), fileURL);
+			} catch (IOException e) {
+	    		status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_FILE_URL));
+			}
+    	}
+    	
         return status;
     }
     

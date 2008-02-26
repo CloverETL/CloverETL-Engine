@@ -27,10 +27,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import junit.framework.TestCase;
 
-import org.jetel.data.Defaults;
-import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
-import org.jetel.metadata.XsdMetadata;
+import org.jetel.graph.runtime.EngineInitializer;
 
 public class XsdMetadataTest extends TestCase  { 
 	private String xmlMetadata =
@@ -51,7 +48,7 @@ public class XsdMetadataTest extends TestCase  {
 	
     protected void setUp() throws Exception {
         super.setUp();
-        Defaults.init();
+    	EngineInitializer.initEngine(null, null, null);
         DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
         metadata = xmlReader.read(new ByteArrayInputStream(xmlMetadata.getBytes()));
     }

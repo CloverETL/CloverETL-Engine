@@ -1,0 +1,1 @@
+clover.bat -noJMX -config ./bin/defaultProperties $1 - -server -Xmx512M -XX:+UseParallelGC

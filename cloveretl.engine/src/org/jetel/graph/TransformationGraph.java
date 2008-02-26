@@ -468,9 +468,9 @@ public final class TransformationGraph extends GraphElement {
         //initialization of all phases
 		//phases have to be initialized separately and immediately before is run - in runtime after previous phase is finished
 		//temporarily solution
-        for(Phase phase : phases.values()) {
-        	phase.init();
-        }
+//        for(Phase phase : phases.values()) {
+//        	phase.init();
+//        }
 		
 		// initialized OK
 	}

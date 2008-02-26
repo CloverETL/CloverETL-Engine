@@ -54,7 +54,7 @@ import org.jetel.util.bytes.ByteBufferUtils;
  */
 public class TextTableFormatter implements Formatter {
 	private DataRecordMetadata metadata;
-	private WritableByteChannel writer;
+	private WritableByteChannel writerChannel;
 	private ByteBuffer fieldBuffer; 
 	private ByteBuffer dataBuffer;
 	private CharsetEncoder encoder;
@@ -68,7 +68,6 @@ public class TextTableFormatter implements Formatter {
 	private int leftBytes = 0;
 	private DataFieldParams[] maskAnalize;
 	private String[] mask;
-	private boolean writeHeader = false;
 	private boolean showCounter;
 	private int counter;
 	private byte[] header;
@@ -76,7 +75,11 @@ public class TextTableFormatter implements Formatter {
 	private String sCounter;
 	private int counterLenght;
 	private int prefixOffset; 
-	private int headerOffset; 
+	private int headerOffset;
+	
+	/** this switch indicates, that header has been written already for current set of records; 
+	 * it has to be reset to false just after footer is written */
+	private boolean headerWritten = false;
 
 	public static final int MAX_ROW_ANALYZED = 20;
 	private static final int PADDING_SPACE = 3;
@@ -137,10 +140,10 @@ public class TextTableFormatter implements Formatter {
 	}
 	
 	public void reset() {
-		if (writer != null && writer.isOpen()) {
+		if (writerChannel != null && writerChannel.isOpen()) {
 			try {
 				flush();
-				writer.close();
+				writerChannel.close();
 			} catch (IOException ex) {
 				ex.printStackTrace();
 			}
@@ -162,19 +165,19 @@ public class TextTableFormatter implements Formatter {
      */
     public void setDataTarget(Object out) {
         close();
-        writer = (WritableByteChannel) out;
+        writerChannel = (WritableByteChannel) out;
     }
     
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
 	public void close() {
-        if (writer == null || !writer.isOpen()) {
+        if (writerChannel == null || !writerChannel.isOpen()) {
             return;
         }
 		try{
 			flush();
-			writer.close();
+			writerChannel.close();
 		}catch(IOException ex){
 			ex.printStackTrace();
 		}
@@ -246,7 +249,8 @@ public class TextTableFormatter implements Formatter {
 	}
 
 	public int writeHeader() throws IOException {
-		if (!setOutputFieldNames || !writeHeader) return 0; // writeHeader depends on MAX_COUNT_ANALYZED_COUNT
+		//if (!setOutputFieldNames || !writeHeader) return 0; // writeHeader depends on MAX_COUNT_ANALYZED_COUNT
+		if (!setOutputFieldNames || headerWritten) return 0; 
 		if (!isMaskAnalized()) {
 			analyzeRows(dataRecords, setOutputFieldNames);
 		}
@@ -289,22 +293,15 @@ public class TextTableFormatter implements Formatter {
         }
         sentBytes += writeString(NL);
 
-        ByteBufferUtils.flush(dataBuffer,writer); // MVa
+        headerWritten = true;
         return sentBytes;
 	}
 	
 	public int writeFooter() throws IOException {
 		if (!setOutputFieldNames) return 0;
-		if (!writeHeader) {
-			writeHeader = true;
-			writeHeader();
-			writeHeader = false;
-		}
+		
+		writeHeader();
 		flush();
-		/*
-		if (!isMaskAnalized()) {
-			flush();
-		}*/
         int sentBytes=0;
         sentBytes += writeString(TABLE_CORNER);
         if (showCounter) {
@@ -317,7 +314,8 @@ public class TextTableFormatter implements Formatter {
         }
         sentBytes += writeString(NL);
 
-        ByteBufferUtils.flush(dataBuffer,writer); // MVa
+        ByteBufferUtils.flush(dataBuffer,writerChannel); 
+        headerWritten = false;
 		return sentBytes;
 	}
 	
@@ -364,9 +362,7 @@ public class TextTableFormatter implements Formatter {
 				return 0;
 			}
 			size = dataRecords.size();
-			writeHeader = true;
 			flush();
-			writeHeader = false;
 			dataRecords.clear();
 			return size;
 		} else 
@@ -424,18 +420,18 @@ public class TextTableFormatter implements Formatter {
 		if (dataRecords != null && dataRecords.size()>0) {
 			if (!isMaskAnalized()) 
 				analyzeRows(dataRecords, setOutputFieldNames);
-			ByteBufferUtils.flush(dataBuffer,writer);
+			ByteBufferUtils.flush(dataBuffer,writerChannel);
 			leftBytes = writeHeader();
 			for (DataRecord dataRecord : dataRecords) {
 				leftBytes += writeRecord(dataRecord);
 			}
 			dataRecords.clear();
 		}
-		ByteBufferUtils.flush(dataBuffer,writer);
+		ByteBufferUtils.flush(dataBuffer,writerChannel);
 	}
 	
 	private void directFlush() throws IOException {
-		ByteBufferUtils.flush(dataBuffer,writer);
+		ByteBufferUtils.flush(dataBuffer,writerChannel);
 	}
 
 	public int getLeftBytes() {

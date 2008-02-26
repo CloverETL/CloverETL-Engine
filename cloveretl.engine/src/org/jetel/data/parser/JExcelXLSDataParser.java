@@ -181,7 +181,8 @@ public class JExcelXLSDataParser extends XLSParser {
 		if (metadataRow > -1) {
 			 namesRow = sheet.getRow(metadataRow);
 		}else{
-			namesRow = sheet.getRow(firstRow);
+			metadataRow = -1;
+  			namesRow = sheet.getRow(firstRow);
 		}
 		Cell[] dataRow = sheet.getRow(firstRow);
 		//go through each cell
@@ -192,7 +193,7 @@ public class JExcelXLSDataParser extends XLSParser {
 			nameCell = namesRow[i];
 			dataCell = dataRow[i];
 			type = dataCell.getType();
-			name = namesRow != dataRow ? nameCell.getContents() : XLSFormatter.getCellCode(i);
+			name = (metadataRow>-1) ? nameCell.getContents() : XLSFormatter.getCellCode(i);
 			if (!StringUtils.isValidObjectName(name)) {
 				name = StringUtils.normalizeName(name);
 			}

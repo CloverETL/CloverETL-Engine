@@ -30,6 +30,7 @@ import java.nio.charset.CharsetEncoder;
 import org.jetel.data.primitive.StringFormat;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Instance of this class represents boolean value.
@@ -260,7 +261,8 @@ public class BooleanDataField extends DataField implements Comparable{
 			value = false;
 			setNull(false);
 		}else{
-			throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + seq, seq.toString());
+			throw new BadDataFormatException(getMetadata().getName() + " (" + DataFieldMetadata.type2Str(getType()) 
+					+ ") cannot be set to " + StringUtils.quote(seq), seq.toString());
 		}
 	}
 

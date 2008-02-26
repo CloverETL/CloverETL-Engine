@@ -25,10 +25,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
@@ -40,6 +38,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
+import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -63,6 +62,8 @@ public class SQLDataParser implements Parser {
 	protected ResultSet resultSet = null;
 	protected CopySQLData[] transMap=null;
 	protected DataRecord outRecord = null;
+
+	private GraphElement parentNode;
 
 	protected int fetchSize = DEFAULT_SQL_FETCH_SIZE_ROWS;
 	
@@ -277,14 +278,15 @@ public class SQLDataParser implements Parser {
             logger.warn(e);
         }
         
-        logger.debug( "Sending query " + StringUtils.quote(sqlQuery));
+        logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Sending query " + 
+        		StringUtils.quote(sqlQuery));
         long startTime = System.currentTimeMillis();
         try{
             resultSet = statement.executeQuery(sqlQuery);
             long executionTime = System.currentTimeMillis() - startTime;
             SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
             formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-            logger.debug("Query execution time: " + 
+            logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Query execution time: " + 
             		formatter.format(new Date(executionTime)));
         } catch (SQLException e) {
             logger.debug(e);
@@ -359,7 +361,16 @@ public class SQLDataParser implements Parser {
 		catch (SQLException ex) {
             logger.warn("SQLException when closing statement",ex);
 		}
+		transMap = null;
 		recordCounter = 1;
+	}
+
+	public GraphElement getParentNode() {
+		return parentNode;
+	}
+
+	public void setParentNode(GraphElement parentNode) {
+		this.parentNode = parentNode;
 	}
 	
 }

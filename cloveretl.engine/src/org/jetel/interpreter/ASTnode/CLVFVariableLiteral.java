@@ -4,10 +4,11 @@ package org.jetel.interpreter.ASTnode;
 
 import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.ParseException;
+import org.jetel.interpreter.TransformLangParserConstants;
 import org.jetel.interpreter.TransformLangParserVisitor;
 	
 
-public class CLVFVariableLiteral extends SimpleNode {
+public class CLVFVariableLiteral extends SimpleNode implements TransformLangParserConstants{
     
     public int varSlot;
     public String varName;
@@ -16,7 +17,8 @@ public class CLVFVariableLiteral extends SimpleNode {
     public int arrayIndex=-1;
     public String mapKey;
     public boolean indexSet=false;
-    public boolean usedIndex=false;
+    public boolean scalarContext=false;
+    public String fieldID;
     
   public CLVFVariableLiteral(int id) {
     super(id);
@@ -49,7 +51,7 @@ public class CLVFVariableLiteral extends SimpleNode {
   }
   
   public String toString(){
-      return super.toString()+" name \""+varName+"\" type \""+varType+"\" slot "+varSlot+" local "+localVar;
+      return super.toString()+" name \""+varName+"\" type "+tokenImage[varType]+" slot "+varSlot+" local "+localVar;
   }
 
   
@@ -72,4 +74,9 @@ public void setArrayIndex(String sIndex) throws ParseException {
 public void setMapKey(String mapKey) {
     this.mapKey = mapKey;
 }
+
+public void setFieldID(String id){
+	this.fieldID=id;
+}
+
 }

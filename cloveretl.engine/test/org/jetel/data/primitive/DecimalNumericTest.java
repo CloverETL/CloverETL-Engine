@@ -1,11 +1,10 @@
 package org.jetel.data.primitive;
 
-import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 
 import junit.framework.TestCase;
 
-import org.jetel.data.Defaults;
+import org.jetel.graph.runtime.EngineInitializer;
 
 public class DecimalNumericTest extends TestCase {
 	
@@ -13,7 +12,7 @@ public class DecimalNumericTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		Defaults.init();
+		EngineInitializer.initEngine(null, null, null);
 		
 		 anInt=DecimalFactory.getDecimal(0);
 		 aLong=DecimalFactory.getDecimal((long)0);

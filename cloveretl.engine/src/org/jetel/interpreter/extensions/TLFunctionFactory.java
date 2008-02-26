@@ -90,4 +90,13 @@ public class TLFunctionFactory {
         }
     }
     
+    public static Map<String,TLFunctionPrototype> registerAndGetAllFunctions() {
+    	
+    	for(TLFunctionPrototype function : TLFunctionPluginRepository.getAllFunctions()) {
+    		registerFunction(function);
+    	}
+    	return functionLib;
+    	
+    }
+    
 }

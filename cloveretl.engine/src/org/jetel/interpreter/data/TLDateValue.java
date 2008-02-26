@@ -26,6 +26,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 import org.jetel.data.DataField;
+import org.jetel.data.primitive.Numeric;
 import org.jetel.metadata.DataFieldMetadata;
 
 public class TLDateValue extends TLValue {
@@ -51,6 +52,8 @@ public class TLDateValue extends TLValue {
 			this.value.setTime(((Timestamp)_value).getTime());
 		else if (_value instanceof java.sql.Date)
 			this.value.setTime(((java.sql.Date)_value).getTime());
+		else if (_value instanceof Numeric)
+			this.value.setTime(((Numeric)_value).getLong());
 		else
 			throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
 		
@@ -66,6 +69,8 @@ public class TLDateValue extends TLValue {
 	public void setValue(TLValue _value){
 		if (_value.type==type)
 			setValue(_value.getDate());
+		else if (_value.type==TLValueType.LONG)
+			setValue(_value.getNumeric());
 		else
 			throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
 	}

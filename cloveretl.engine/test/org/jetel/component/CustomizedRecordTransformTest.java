@@ -38,7 +38,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 	protected void setUp() throws Exception {
 		transform = new CustomizedRecordTransform(LogFactory.getLog(this.getClass()));
 		
-	    EngineInitializer.initEngine(null, null);
+	    EngineInitializer.initEngine(null, null, null);
 	    
         graph=new TransformationGraph();
         

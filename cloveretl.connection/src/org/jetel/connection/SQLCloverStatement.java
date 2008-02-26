@@ -192,8 +192,18 @@ public class SQLCloverStatement {
 		return autoKeyGenerator.isStatementCreatedSuccessfully();
 	}
 	
+	/**
+	 * Resets this object. For complete reset method setInRecord must be called too.
+	 * 
+	 * @throws SQLException
+	 */
 	public void reset() throws SQLException{
 		preparedStatement = autoKeyGenerator.reset();
+	}
+	
+	public void setInRecord(DataRecord inRecord) {
+		this.record = inRecord;
+		CopySQLData.resetDataRecord(transMap, record);
 	}
 	
 	/**

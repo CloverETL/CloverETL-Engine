@@ -25,6 +25,7 @@ package org.jetel.interpreter.data;
 
 import java.util.Date;
 
+import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.CloverDouble;
@@ -102,8 +103,9 @@ public abstract class TLValue implements Comparable<TLValue>{
         case DataFieldMetadata.BOOLEAN_FIELD:
         	newval = TLBooleanValue.FALSE;
         	break;
-    /*    case DataFieldMetadata.BYTE_FIELD:
-        	return new TLValue(TLValueType.BYTE,field.getValue());*/
+       case DataFieldMetadata.BYTE_FIELD:
+    	   	newval = new TLByteArrayValue(((ByteDataField)field).getByteArray());
+        	break;
         case DataFieldMetadata.STRING_FIELD:
         	newval= new TLStringValue((StringBuilder)field.getValueDuplicate());
         	break;
@@ -131,7 +133,7 @@ public abstract class TLValue implements Comparable<TLValue>{
         case STRING:
             return new TLStringValue();
         case BYTE:
-        	return null; //TLValue(type, new ByteArray());
+        	return new TLByteArrayValue();
         case BOOLEAN:
             return TLValue.FALSE_VAL;
         case LIST:

@@ -34,18 +34,13 @@ public class testXMLGraph{
 	public static void main(String args[]){
 		
 		if (args.length<1){
-			System.out.println("Usage: testXMLGraph <graph file name> <plug-ins directory>");
+			System.out.println("Usage: testXMLGraph <graph file name> <plug-ins directory> <default properties file>");
 		}
 		
 		FileInputStream in;
         
         //initialization; must be present
-		//initialization; must be present
-		if (args.length == 2) {
-			EngineInitializer.initEngine(args[1], null);
-		}else{
-			EngineInitializer.initEngine(null, null);
-		}
+		EngineInitializer.initEngine(args.length > 1 ? args[1] : null, args.length > 2 ? args[2] : null, null);
 
 		System.out.println("Graph definition file: "+args[0]);
 		System.out.println("Plugins directory: "+ (args.length > 1 ? args[1] : Defaults.DEFAULT_PLUGINS_DIRECTORY));

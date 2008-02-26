@@ -210,6 +210,8 @@ public class XmlWriter extends Node {
 		 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 		 */
 		public int write(DataRecord record) throws IOException {
+			if (th == null)
+				writeHeader();
 			RecordKey recKey = new RecordKey( rootPortDefinition.keys, rootPortDefinition.metadata);
 			HashKey key = new HashKey(recKey, record);
 			TreeRecord tr = rootPortDefinition.dataMap.get(key);
@@ -229,6 +231,8 @@ public class XmlWriter extends Node {
 		 */
 		public int writeFooter() throws IOException {
 			try {
+				if (th == null)
+					writeHeader();
 				createFooter(os, th);
 			} catch (Exception e) {
 				logger.error("error footer", e);
@@ -496,6 +500,8 @@ public class XmlWriter extends Node {
 			//flushXmlSax();
 		} catch (Exception e) {
 			logger.error("Error during creating XML file", e);
+		} finally {
+			writer.finish();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
