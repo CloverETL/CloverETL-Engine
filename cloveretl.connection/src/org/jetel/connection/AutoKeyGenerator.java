@@ -164,6 +164,7 @@ class MultiAutoKeyGenerator extends AutoKeyGenerator{
 		if (columns == null || !sqlQuery.toLowerCase().startsWith("insert")) {
 			return super.reset();
 		}
+		keyRecord = null;
 		return connection.prepareStatement(sqlQuery, columnIndexes);
 	}
 	

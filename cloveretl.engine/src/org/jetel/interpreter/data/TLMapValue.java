@@ -24,6 +24,7 @@
 package org.jetel.interpreter.data;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -76,7 +77,7 @@ public class TLMapValue extends TLContainerValue {
     	if (value==TLValue.NULL_VAL){
         	valueMap.clear();
     	}else if (value instanceof TLMapValue){
-    		valueMap.putAll(((TLMapValue)value).valueMap);
+    		putAll(((TLMapValue)value).valueMap);
     	}else if (value instanceof TLContainerValue){
     		putCollection(((TLContainerValue)value).getCollection());
     	}else{
@@ -91,17 +92,19 @@ public class TLMapValue extends TLContainerValue {
     public void setStoredValue(TLValue key,TLValue value) {
     	if(value==TLValue.NULL_VAL){
     		valueMap.remove(key);
+    	}else if (value instanceof TLMapValue){
+    			putAll(((TLMapValue)value).valueMap);
     	}else{
-        	valueMap.put(key, value);
+        	valueMap.put(key.duplicate(), value.duplicate());
         }
     }
     
-//    private final void putAll(Map<TLValue,TLValue> pairs){
-//    	for (Map.Entry<TLValue,TLValue> entry: pairs.entrySet()){
-//    		valueMap.put(entry.getKey(), entry.getValue().duplicate());
-//    	}
-//    	
-//    }
+    private final void putAll(Map<TLValue,TLValue> pairs){
+    	for (Map.Entry<TLValue,TLValue> entry: pairs.entrySet()){
+    		valueMap.put(entry.getKey().duplicate(), entry.getValue().duplicate());
+    	}
+    	
+    }
     
     private final void putCollection(Collection<TLValue> col){
     	Iterator<TLValue> iter=col.iterator();
@@ -109,7 +112,7 @@ public class TLMapValue extends TLContainerValue {
     		TLValue key=iter.next();
     		if (iter.hasNext()){
     			TLValue val=iter.next();
-    			valueMap.put(key, val);
+    			valueMap.put(key.duplicate(), val.duplicate());
     		}else{
     			break;
     		}
@@ -153,15 +156,24 @@ public class TLMapValue extends TLContainerValue {
 	
 
 	@Override
-	public int compareTo(TLValue arg0) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int compareTo(TLValue value) {
+		if (value instanceof TLContainerValue){
+    		TLValue maxVal1=Collections.max(valueMap.values());
+    		TLValue maxVal2=Collections.max(((TLContainerValue)value).getCollection());
+    		return maxVal1.compareTo(maxVal2);
+    	}else{
+    		TLValue maxVal1=Collections.max(valueMap.values());
+    		return maxVal1.compareTo(value);
+    	}
 	}
 
 	@Override
 	public TLValue duplicate() {
-		// TODO Auto-generated method stub
-		return null;
+		TLMapValue newVal=new TLMapValue(valueMap.size());
+		for (Map.Entry<TLValue,TLValue> entry: valueMap.entrySet()){
+			newVal.valueMap.put(entry.getKey(), entry.getValue().duplicate());
+		}
+		return newVal;
 	}
 
 	@Override public int hashCode(){
@@ -190,5 +202,9 @@ public class TLMapValue extends TLContainerValue {
 	@Override public void clear(){
 		valueMap.clear();
 	}
+	
+	@Override public boolean contains(TLValue value){
+    	return valueMap.containsValue(value);
+    }
 	
 }

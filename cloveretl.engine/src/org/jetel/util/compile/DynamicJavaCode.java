@@ -22,6 +22,8 @@ package org.jetel.util.compile;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -32,11 +34,16 @@ import java.util.zip.Checksum;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.janino.Java;
+import org.codehaus.janino.Parser;
+import org.codehaus.janino.Scanner;
+import org.codehaus.janino.SimpleCompiler;
+import org.codehaus.janino.Parser.ParseException;
+import org.jetel.data.Defaults;
 import org.jetel.util.file.FileUtils;
 
 /**
  * Helper class for dynamic compiling of Java source code. Offers instantiating of compiled code.
- *
  *
  * @author      David Pavlis
  * @since       21. January 2004
@@ -49,15 +56,36 @@ public class DynamicJavaCode {
 
     private static Log logger = LogFactory.getLog(DynamicJavaCode.class);
 
-    private String srcPath;
+    /** contains source code which should be compiler */
 	private String srcCode;
+	/** contains className obtained by regExp from srcCode */
 	private String className;
-	private String fileName;
-	private String compilerOutput;
+	/** optional class loader specified by constructor */
 	private ClassLoader classLoader;
-    
-	private boolean captureCompilerOutput = true; 
+
+	/* jdk tools compiler specific  */
 	
+	/** contains path for temporary src files */
+    private String srcPath;
+	/** fileName which will be used for temporary storage of srcCode, which is neccessary for jdk tools compiler */
+	private String fileName;
+	/** capture compiler output or not? */
+	private boolean captureCompilerOutput = true;
+	/** captured compiler output */
+	private String compilerOutput;
+
+	public enum CompilerType {
+		/** internal compiler, Janino; default */
+		internal,
+		/** jdk tools compiler */
+		jdk
+	} 
+	
+	/**
+	 * 
+	 * @param srcCode
+	 * @param classLoader
+	 */
 	public DynamicJavaCode(String srcCode, ClassLoader classLoader) {
         this.classLoader = classLoader;
 		this.srcCode = srcCode;
@@ -72,10 +100,18 @@ public class DynamicJavaCode {
 		}
 	}
 
+	/**
+	 * Creates instance without specific class loader.
+	 * @param srcCode
+	 */
     public DynamicJavaCode(String srcCode) {
         this(srcCode, null);
     }
 
+    /**
+     * Stores srcCode into dist file, which is neccessary for jdk tools compiler.
+     * This method is for compiling by javax.tools compiler.
+     */
 	private void saveSrc() {
 		long checkSumFile;
 		fileName = srcPath + className + ".java";
@@ -98,6 +134,9 @@ public class DynamicJavaCode {
 		}
 	}
 	
+	/**
+     * This method is for compiling by jdk tools compiler.
+	 */
 	private void compile() {
 		Compiler compiler = new Compiler(fileName, captureCompilerOutput);
         compiler.setClassLoader(classLoader);
@@ -116,11 +155,69 @@ public class DynamicJavaCode {
 	}
 	
 	/**
-	 *  Description of the Method
-	 *
+	 * Compiles specified sourceCode and returns instance of compiled class.
+	 *  
 	 * @return    Description of the Return Value
 	 */
 	public Object instantiate() {
+		if (Defaults.DEFAULT_JAVA_COMPILER == CompilerType.jdk)
+			return instantiateByJdkTools();
+		else
+			return this.instantiateByJanino();
+	}
+
+	/**
+	 * Compiles specified sourceCode by Janino library and returns instance of compiled class. 
+	 * @return
+	 */
+	public Object instantiateByJanino() {
+		Object instance = null;
+		try {
+		    logger.info("compile Class: " + className + " by Janino compiler");
+
+			SimpleCompiler compiler = new SimpleCompiler();
+			if (classLoader != null)
+				compiler.setParentClassLoader( classLoader );
+			else
+				compiler.setParentClassLoader( Thread.currentThread().getContextClassLoader() );
+
+			compiler.cook(srcCode);
+			
+			ClassLoader loader = compiler.getClassLoader();
+
+			/*
+			 * obtain className by creating AST
+			 */
+			Reader srcReader = new StringReader(srcCode);
+			Java.CompilationUnit cu = new Parser(new Scanner(null, srcReader)).parseCompilationUnit();
+			Java.PackageMemberTypeDeclaration[] declarations = cu.getPackageMemberTypeDeclarations();
+			className = declarations[0].getClassName(); // we expect single class in whole compilation unit
+			
+			Class tClass = loader.loadClass(className);
+			instance = tClass.newInstance();
+
+		} catch (ParseException ex){
+		    logger.error("Can not compile class:  " + className + " : " + ex.getMessage());
+		    compilerOutput = ex.getMessage();
+			throw new RuntimeException("Can not compile class: " + className + " : " + ex, ex);
+		} catch (ClassNotFoundException ex) {
+		    logger.error("Can not find class: " + ex);
+		    ex.printStackTrace();
+			throw new RuntimeException("Can not find class: " + className + " : " + ex, ex);
+		} catch (Exception ex) {
+			logger.error("Error when creating object of class: " + ex.getMessage(), ex);
+            throw new RuntimeException(ex);
+		}
+    	return instance;
+    }
+	
+	/**
+	 * Compiles specified sourceCode by javax tools compiler and returns instance of compiled class. 
+	 * @return
+     * This method is for compiling by jdk tools compiler.
+	 */
+	public Object instantiateByJdkTools() {
+	    logger.info("compile Class: " + className + " by jdk tools compiler");
 		Class tClass;
 		String urlString = "file:" + srcPath;
 		URL[] myURLs;
@@ -172,7 +269,10 @@ public class DynamicJavaCode {
 	}
 
 
-	/**  Deletes dynamicaly created file. */
+	/**  
+	 * Deletes dynamicaly created file. 
+     * This method is for compiling by jdk tools compiler.
+	 * */
 	public void clean() {
 		try {
             if(fileName != null) {
@@ -197,6 +297,7 @@ public class DynamicJavaCode {
      * Only when captureCompilerOutput is set to true!
      * 
      * @return compiler's output (both STDOUT & STDERR)
+     * This method is for compiling by jdk tools compiler.
      */
     public String getCompilerOutput() {
         return compilerOutput;
@@ -204,14 +305,17 @@ public class DynamicJavaCode {
     
     /**
      * @return status of capturing compiler's output
+     * This method is for compiling by jdk tools compiler.
      */
     public boolean isCaptureCompilerOutput() {
         return captureCompilerOutput;
     }
+    
     /**
      * Sets on/off capturing compiler's output
      * 
      * @param captureCompilerOutput
+     * This method is for compiling by jdk tools compiler.
      */
     public void setCaptureCompilerOutput(boolean captureCompilerOutput) {
         this.captureCompilerOutput = captureCompilerOutput;

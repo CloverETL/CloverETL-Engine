@@ -23,15 +23,14 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import junit.framework.TestCase;
+
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.FixLenDataParser;
-import org.jetel.exception.BadDataFormatException;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
-
-import junit.framework.TestCase;
 
 /**
  * @author maciorowski
@@ -57,7 +56,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 			e.printStackTrace();
 		}
 		
-		Defaults.init();
+		EngineInitializer.initEngine(null, null, null);
 	
 		aParser2 = new FixLenCharDataParser();
 

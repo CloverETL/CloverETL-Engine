@@ -541,6 +541,7 @@ public class DBOutputTable extends Node {
 		}
 		for (SQLCloverStatement eachStatement : statement) {
 			try {
+				eachStatement.setInRecord(inRecord);
 				eachStatement.reset();
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, e.getMessage());

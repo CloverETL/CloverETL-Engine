@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -613,6 +614,19 @@ public class ComponentXMLAttributes {
 	 * @return Properties object with pairs [attribute name]-[attribute value]
 	 */
 	public Properties attributes2Properties(String[] exclude)  {
+		return attributes2Properties(exclude, PropertyRefResolver.DEFAULT_RESOLVE_SPEC_CHAR);
+	}
+	
+	/**
+	 * Converts XML Node's attributes to Properties object - hash of key-value pairs.
+	 * Can omit/exclude certain attributes based on specified array of Strings - attribute
+	 * names.
+	 * @param exclude	array of Strings - names of attributes to be excluded (can be null)
+	 * @param resolveSpecChars specifies whether special characters (\n, etc) should be resolved. 
+	 * {@link StringUtils#stringToSpecChar(CharSequence)}
+	 * @return Properties object with pairs [attribute name]-[attribute value]
+	 */
+	public Properties attributes2Properties(String[] exclude, boolean resolveSpecChars) {
 	    Properties properties=new Properties();
 	    Set<String> exception=new HashSet<String>();
 	    String name;
@@ -623,7 +637,7 @@ public class ComponentXMLAttributes {
 	        name=attributes.item(i).getNodeName();
 	        if (!exception.contains(name)){
 	            properties.setProperty(name,
-	                    refResolver.resolveRef(attributes.item(i).getNodeValue()));
+	                    refResolver.resolveRef(attributes.item(i).getNodeValue(), resolveSpecChars));
 	        }
 	    }
 	    return properties;

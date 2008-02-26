@@ -89,6 +89,7 @@ import org.jetel.util.file.FileUtils;
  *  <tr><td nowrap>-loghost</td><td>define host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445</td></tr>
  *  <tr><td nowrap>-checkconfig</td><td>only check graph configuration</td></tr>
  *  <tr><td nowrap>-noJMX</td><td>this switch turns off sending graph tracking information; this switch is recommended if the tracking information are not necessary</td></tr>
+ *  <tr><td nowrap>-config <i>filename</i></td><td>load default engine properties from specified file</td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>filename or URL of the file (even remote) containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  </table>
  *  </pre></tt>
@@ -114,6 +115,7 @@ public class runGraph {
     public final static String LOG_HOST_SWITCH = "-loghost";
     public final static String CHECK_CONFIG_SWITCH = "-checkconfig";
     public final static String NO_JMX = "-noJMX";
+    public final static String CONFIG_SWITCH = "-config";
     public final static String MBEAN_NAME = "-mbean";
 	
 	/**
@@ -130,6 +132,7 @@ public class runGraph {
         String logHost = null;
         String password = null;
         String graphFileName = null;
+        String configFileName = null;
         
         System.out.println("***  CloverETL framework/transformation graph runner ver "
                         + RUN_GRAPH_VERSION
@@ -209,6 +212,9 @@ public class runGraph {
                 //runtimeContext.set  --> mbeanName = args[i];
             } else if (args[i].startsWith(NO_JMX)){
                 runtimeContext.setUseJMX(false);
+            } else if (args[i].startsWith(CONFIG_SWITCH)) {
+                i++;
+                configFileName = args[i];
             } else if (args[i].startsWith("-")) {
                 System.err.println("Unknown option: " + args[i]);
                 System.exit(-1);
@@ -239,7 +245,7 @@ public class runGraph {
         	Logger.getRootLogger().setLevel(logLevel);
 
         // engine initialization - should be called only once
-        EngineInitializer.initEngine(pluginsRootDirectory, logHost);
+        EngineInitializer.initEngine(pluginsRootDirectory, configFileName, logHost);
 
         // prepare input stream with XML graph definition
         InputStream in = null;

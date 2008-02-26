@@ -18,8 +18,8 @@
 			<value>round</value>
 			<value>pow</value>
 			<value>pi</value>
-			<value>random</value>
 			<value>e</value>
+			<value>random</value>
 		</parameter>
 	</extension>
 
@@ -75,6 +75,13 @@
         <value>date2num</value>
         <value>str2num</value>
         <value>try_convert</value>
+		<value>num2num</value>
+        <value>num2bool</value>
+        <value>bool2num</value>
+        <value>str2bool</value>
+        <value>long2date</value>
+        <value>date2long</value>
+        <value>to_string</value>
 		</parameter>
 	</extension>
 	

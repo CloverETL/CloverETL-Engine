@@ -98,6 +98,8 @@ WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = 2500
 			
 GraphProperties.PROPERTY_PLACEHOLDER_REGEX = \\$\\{(\\w+)\\}
 
+InternalSortDataRecord.DEFAULT_INTERNAL_SORT_BUFFER_CAPACITY = 2000
+
 #Size of internal buffer of DirectEdge for storing
 #data records when transmitted between two components.
 #The size should be at least MAX_RECORD_SIZE + 8, better
@@ -119,4 +121,8 @@ GraphProperties.PROPERTY_PLACEHOLDER_REGEX = \\$\\{(\\w+)\\}
 #Minimum size is 1. Default is 4. Higher number can help increasing
 #processing speed but not much.
 Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS = 4
-			
+
+# type of java compiler, which is used for compilation of java code specified in graphs
+# possible values are: "internal" | "jdk"
+# if "jdk" value is set, tools.jar has to be in classpath
+DEFAULT_JAVA_COMPILER=internal

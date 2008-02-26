@@ -494,6 +494,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     	resultCache.clear();
         totalNumber = 0;
         cacheNumber = 0;
+        keyTransMap = null;
     }
     
     /**

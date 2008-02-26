@@ -431,7 +431,7 @@ public class DBConnection extends GraphElement implements IConnection {
             openedConnections.clear();
         } else {
             try {
-                if (!dbConnection.isClosed()) {
+                if (dbConnection!=null && !dbConnection.isClosed()) {
                     if (!dbConnection.getAutoCommit()) {
                         dbConnection.commit();
                     }

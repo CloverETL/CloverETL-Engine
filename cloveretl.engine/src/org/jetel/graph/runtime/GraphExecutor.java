@@ -21,10 +21,10 @@ package org.jetel.graph.runtime;
 
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,26 +48,49 @@ public class GraphExecutor {
 
 	private static Log logger = LogFactory.getLog(GraphExecutor.class);
 
-	private ExecutorService watchdogExecutor; 
+	private static int DEFAULT_MAX_GRAPHS_QUEUE_SIZE = 10;
 	
-	private ExecutorService nodeExecutor;
+	/**
+	 * Maximum size of queue for scheduled graphs.
+	 */
+	private int maxGraphsQueueSize = DEFAULT_MAX_GRAPHS_QUEUE_SIZE;
+	
+	private ThreadPoolExecutor watchdogExecutor; 
+	
+	private ThreadPoolExecutor nodeExecutor;
+	
+	private int maxNodes = 0;
+	
+	private int maxGraphs = 0;
+	
+	private int runningNodes = 0;
 	
 	/**
 	 * Constructor for default graph executor without thread limits.
 	 */
 	public GraphExecutor() {
-		watchdogExecutor = Executors.newCachedThreadPool(new WatchdogThreadFactory());
-		nodeExecutor = Executors.newCachedThreadPool(new WatchdogThreadFactory());
+		this(0,0); //graph executor without any limits
 	}
 
 	/**
 	 * Graph executor's constructor.
-	 * @param maxGraphs maximum number of simultaneously running graphs
-	 * @param maxNodes maximum number of simultaneously running nodes
+	 * @param maxGraphs maximum number of simultaneously running graphs; zero means without limit
+	 * @param maxNodes maximum number of simultaneously running nodes; zero means without limit
 	 */
 	public GraphExecutor(int maxGraphs, int maxNodes) {
-		watchdogExecutor = Executors.newFixedThreadPool(maxGraphs, new WatchdogThreadFactory());
-		nodeExecutor = Executors.newFixedThreadPool(maxNodes, new WatchdogThreadFactory());
+		this.maxGraphs = maxGraphs;
+		this.maxNodes = maxNodes;
+		
+		if(maxGraphs <= 0) {
+			watchdogExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool(new WatchdogThreadFactory());
+		} else {
+			watchdogExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(maxGraphs, new WatchdogThreadFactory());
+		}
+		if(maxNodes <= 0) {
+			nodeExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool(new NodeThreadFactory());
+		} else {
+			nodeExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(maxNodes, new NodeThreadFactory());
+		}
 	}
 	
 	/**
@@ -94,7 +117,7 @@ public class GraphExecutor {
 	 * @param graph
 	 * @throws ComponentNotReadyException
 	 */
-	public void initGraph(TransformationGraph graph) throws ComponentNotReadyException {
+	public static void initGraph(TransformationGraph graph) throws ComponentNotReadyException {
 		logger.info("Checking graph configuration...");
 		ConfigurationStatus status = graph.checkConfig(null);
 		status.log();
@@ -111,6 +134,12 @@ public class GraphExecutor {
 	 */
 	public Future<Result> runGraph(TransformationGraph graph, IGraphRuntimeContext context) 
 	throws ComponentNotReadyException {
+
+		//runtime exception is thrown in case too many graphs scheduled 
+		if(watchdogExecutor.getQueue().size() > maxGraphsQueueSize) {
+			throw new RuntimeException("Out of resources to run a graph.");
+		}
+
 		context = new UnconfigurableGraphRuntimeContext(context);
 
 		if (!graph.isInitialized()) {
@@ -136,39 +165,8 @@ public class GraphExecutor {
             graph.dumpGraphConfiguration();
         }
 
-//        long timestamp = System.currentTimeMillis();
         WatchDog watchDog = new WatchDog(this, graph, context);
-
         return watchdogExecutor.submit(watchDog);
-        
-//        logger.info("Starting WatchDog thread ...");
-//        watchDog.start();
-//        try {
-//            watchDog.join();
-//        } catch (InterruptedException ex) {
-//            logger.error(ex);
-//            return Result.ABORTED;
-//        }
-//        logger.info("WatchDog thread finished - total execution time: "
-//                + (System.currentTimeMillis() - timestamp) / 1000 + " (sec)");
-//
-//        freeResources();
-//
-//        switch (watchDog.getStatus()) {
-//        case FINISHED_OK:
-//            logger.info("Graph execution finished successfully");
-//            break;
-//        case ABORTED:
-//            logger.error("!!! Graph execution aborted !!!");
-//            break;
-//        case ERROR:
-//            logger.error("!!! Graph execution finished with errors !!!");
-//            break;
-//        default:
-//            logger.fatal("Unexpected result when executing graph !");
-//        }
-//        
-//        return watchDog.getStatus();
 	}
 
 	/**
@@ -176,8 +174,29 @@ public class GraphExecutor {
 	 * It suspects that the given runnable instance is a node representation.
 	 * @param runnable
 	 */
-	public void executeNode(Runnable node) {
+	synchronized public void executeNode(Runnable node) {
 		nodeExecutor.execute(node);
+		runningNodes++;
+	}
+	
+	/**
+	 * Returns the approximate number of available free threads.
+	 * @return number of threads
+	 */
+	synchronized public int getFreeThreadsCount() {
+		if(maxNodes > 0) {
+			return maxNodes - runningNodes;
+		} else {
+			return Integer.MAX_VALUE;
+		}
+	}
+	
+	/**
+	 * Decreases number of used threads.
+	 * @param nodeThreadsToRelease
+	 */
+	synchronized public void releaseNodeThreads(int nodeThreadsToRelease) {
+		runningNodes -= nodeThreadsToRelease;
 	}
 	
     /**
@@ -223,9 +242,18 @@ public class GraphExecutor {
 		public Thread newThread(Runnable r) {
 			Thread thread = new Thread(r, "Node");
 			thread.setDaemon(true);
+			thread.setPriority(1);
 			return thread;
 		}
 		
+	}
+
+	/**
+	 * Sets maximum size of queued graphs.
+	 * @param maxGraphsQueueSize
+	 */
+	public void setMaxGraphsQueueSize(int maxGraphsQueueSize) {
+		this.maxGraphsQueueSize = maxGraphsQueueSize;
 	}
 
 }

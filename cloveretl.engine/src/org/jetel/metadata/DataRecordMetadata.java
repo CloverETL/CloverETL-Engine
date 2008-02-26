@@ -55,8 +55,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private List<DataFieldMetadata> fields;
 	private BitArray fieldNullSwitch;
     
-	private Map fieldNames;
-	private Map fieldTypes;
+	private Map<String, Integer> fieldNames;
+	private Map<Integer, String> fieldTypes;
 	private Map<String, Integer> fieldOffset;
 
 	private String name;

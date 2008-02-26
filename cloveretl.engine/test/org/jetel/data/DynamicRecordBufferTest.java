@@ -25,14 +25,12 @@ package org.jetel.data;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Calendar;
-
-import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataRecordMetadata;
-
-import sun.nio.ByteBuffered;
 
 import junit.framework.TestCase;
+
+import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * @author david
@@ -54,7 +52,7 @@ public class DynamicRecordBufferTest extends TestCase {
      */
     protected void setUp() throws Exception {
         super.setUp();
-        Defaults.init();
+    	EngineInitializer.initEngine(null, null, null);
         buffer=new DynamicRecordBuffer(Defaults.Record.MAX_RECORD_SIZE);
         buffer.init();
         byteBuffer1=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);

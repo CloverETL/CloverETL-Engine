@@ -188,7 +188,7 @@ public class FixLenDataReader extends Node {
 			        if(policyType == PolicyType.STRICT) {
 			            throw bdfe;
 			        } else {
-			            logger.info(bdfe.getMessage());
+			            logger.warn(bdfe.getMessage());
 			        }
 			    }
 			    SynchronizeUtils.cloverYield();

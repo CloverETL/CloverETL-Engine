@@ -142,19 +142,9 @@ public class CloverDataFormatter implements Formatter {
     }
 
     public void reset() {
-		if (!isOpen) return;
-		try{
-			if (out instanceof ZipOutputStream) {
-				((ZipOutputStream)out).closeEntry();
-			}else{
-				out.close();
-			}
-			isOpen = false;
-		}catch(IOException ex){
-			ex.printStackTrace();
+		if (isOpen) {
+			close();
 		}
-    	buffer.clear();
-    	idxBuffer.clear();
 	}
 	
     public void finish() throws IOException{

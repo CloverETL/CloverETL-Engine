@@ -37,7 +37,11 @@ public class testDataParsing {
 	PrintStream out=null;
 	DataRecord record;
 	
-	EngineInitializer.initEngine(null, null);
+	EngineInitializer.initEngine(args.length > 0 ? args[0] : null, args.length > 1 ? args[1] : null, null);
+	System.out.println("**************** Input parameters: ****************");
+	System.out.println("Plugins directory: "+ (args.length > 0 ? args[0] : " default"));
+	System.out.println("Default properties file: "+ (args.length > 1 ? args[1] : " default"));
+	System.out.println("***************************************************");
 	
 	try{
 		in=new FileInputStream("data/delimited/bonus.csv");

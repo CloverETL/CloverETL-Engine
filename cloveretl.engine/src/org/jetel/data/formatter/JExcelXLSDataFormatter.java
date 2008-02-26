@@ -105,7 +105,9 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	 * @see org.jetel.data.formatter.Formatter#flush()
 	 */
 	public void flush() throws IOException {
-		wb.write();
+		if (sheet != null) {//at least one record was written 
+			wb.write();
+		}
 	}
 
 	/* (non-Javadoc)

@@ -67,7 +67,6 @@ public class InternalSortDataRecord implements ISortDataRecord {
     private Locale collatorLocale;
     private boolean useCollator=false;
     
-	private final static int DEFAULT_RECORD_COLLECTION_CAPACITY = 2000;
 	private final static int DEFAULT_NUM_COLLECTIONS = 8;
 
 	/**
@@ -104,11 +103,11 @@ public class InternalSortDataRecord implements ISortDataRecord {
 
 
     public InternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, boolean growingBuffer) {
-    	this(metadata,keyItems, sortOrderings, growingBuffer, DEFAULT_RECORD_COLLECTION_CAPACITY);
+    	this(metadata,keyItems, sortOrderings, growingBuffer, Defaults.InternalSortDataRecord.DEFAULT_INTERNAL_SORT_BUFFER_CAPACITY);
     }
 
 	public InternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings){
-		this(metadata,keyItems, sortOrderings, true, DEFAULT_RECORD_COLLECTION_CAPACITY);
+		this(metadata,keyItems, sortOrderings, true, Defaults.InternalSortDataRecord.DEFAULT_INTERNAL_SORT_BUFFER_CAPACITY);
 	}
 	
 	public void setInitialBufferCapacity(int capacity){

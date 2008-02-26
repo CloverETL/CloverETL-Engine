@@ -43,7 +43,7 @@
 	</filterset>
 		
 		<!-- =========================== TARGETS ============================== -->
-	<target name="build" depends="compile,package,transformXMLDocs" description="Compiles sources and creates a JAR file">
+	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file">
 		<foreach list="${plugin.list}" inheritall="true" target="plugin.build" param="plugin.dir"/>
 	</target>
 
@@ -226,7 +226,7 @@
 	</target>
 
 	<!-- pack binary result of compile to jar file -->
-	<target name="package" depends="compile,transformXMLDocs">
+	<target name="package" depends="compile">
 		<!-- Create directory for dist. -->
 		<mkdir dir="${dir.dist}/lib"/>
 		
@@ -246,9 +246,11 @@
 		</copy>
 
 		<!-- copy the generated documentation of components from other plugins -->
+		<!-- Commented out until the component documentation has correct content
 		<copy todir="${dir.dist}/docs/components" overwrite="true">
 			<fileset dir="${cloveretl.engine}/src-doc/components/html" includes="**"/>
 		</copy>
+		-->
 
 		<!-- copy all run scripts -->
 		<copy todir="${dir.dist}/bin">

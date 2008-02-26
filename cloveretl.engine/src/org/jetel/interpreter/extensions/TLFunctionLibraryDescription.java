@@ -19,6 +19,7 @@
 */
 package org.jetel.interpreter.extensions;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -98,4 +99,11 @@ public class TLFunctionLibraryDescription {
         
         return functionLibrary;
     }
+
+	public Collection<TLFunctionPrototype> getAllFunctions() {
+		
+		ITLFunctionLibrary a = getFunctionLibrary();
+
+		return a.getAllFunctions();
+	}
 }

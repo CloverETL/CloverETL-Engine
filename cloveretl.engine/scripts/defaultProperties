@@ -1,0 +1,122 @@
+#MAX_RECORD_SIZE - this limits the maximum size of data record in binary form. The binary form is the form used by Clover 
+#when manipulating data.
+#Parser are here to convert text representation or database representation of data records to Clover's internal. 
+#Some data can have larger representation in text form - dates, numbers and some shorter - strings, for example 
+#(java stores strings in unicode - 16bits per character).
+#If you start getting buffer overflow or similar errors, increase this value. The limit is theoretically 2^31 , 
+#but you should keep it under 64K.
+#Clover at runtime allocates several internal buffers of MAX_RECORD_SIZE, thus increasing this value increases also 
+#memory utilization. 
+
+Record.MAX_RECORD_SIZE = 131072
+
+#Compression level for compressed data fields (cbyte).
+Record.DEFAULT_COMPRESSION_LEVEL=5
+
+#FIELD_BUFFER_LENGTH - this is constant for textual data parsers. 
+#It determines what is the maximum size of one particular data field in text format. 
+#If you have data containing long text strings, increase this value. Could be 1024,2048 or even higher.
+#The impact on memory utilization is low as each parser your graph uses allocates only one such buffer. 
+
+DataParser.FIELD_BUFFER_LENGTH = 16384
+
+
+#the same as above, but for formatting data to text representation
+#should be set to the same value as above
+
+DataFormatter.FIELD_BUFFER_LENGTH = 16384
+
+
+#This constant determines the internal buffer clover components allocate for I/O operations. 
+#Again, increasing this value does not have big impact on overall memory utilization as only 
+#few such buffers are used at runtime. There is no sence in increasing this value to speed up something. 
+#It has been tested that the performance improvement is negligible. 
+#However, if you increase the size of MAX_RECORD_SIZE , make sure this value is minimally 2*MAX_RECORD_SIZE.
+
+DEFAULT_INTERNAL_IO_BUFFER_SIZE = 262144
+
+#when creating InputStream or OutputStream objects, what
+#is the size of their internal buffer. Used mainly in
+#creating Channels from these streams.
+
+DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE = 4096
+
+
+DEFAULT_DATE_FORMAT = yyyy-MM-dd
+DEFAULT_TIME_FORMAT = HH:mm:ss
+DEFAULT_DATETIME_FORMAT = yyyy-MM-dd HH:mm:ss
+DEFAULT_LOCALE_STR_DELIMITER_REGEX = \\.
+
+#Default path to external binary files.
+DEFAULT_BINARY_PATH = ./
+
+#Regex for separator of filenames in list of filenames - path separator.
+DEFAULT_PATH_SEPARATOR_REGEX = \\s*;\\s*
+
+#List of directories, where plugins are located.
+#Paths separator is defined in DEFAULT_PATH_SEPARATOR_REGEX property.
+DEFAULT_PLUGINS_DIRECTORY = ./plugins
+
+#Default charset used when parsing data from text representation
+DataParser.DEFAULT_CHARSET_DECODER = ISO-8859-1
+
+#Default charset used when parsing data from text representation
+DataFormatter.DEFAULT_CHARSET_ENCODER = ISO-8859-1
+
+#maximum size of one buffer allocated for sorting 
+Data.DATA_RECORDS_BUFFER_SIZE = 10485760
+
+#maximum number of buffers allocated for sorting
+Data.MAX_BUFFERS_ALLOCATED = 99
+			
+#the initial capacity of lookup table when created without specifying
+#the size			
+Lookup.LOOKUP_INITIAL_CAPACITY = 512
+
+#Determines default precision of decimal data field metatada.
+# Example: <Field type="decimal" name="usrid" <b>length="10"</b> scale="2" delimiter=";"  nullable="true" />
+DataFieldMetadata.DECIMAL_LENGTH = 8
+
+#Determines default scale od decimal data field metadata.<br>
+# Example: <Field type="decimal" name="usrid" length="10" <b>scale="2"</b> delimiter=";"  nullable="true" />
+DataFieldMetadata.DECIMAL_SCALE = 2
+
+#****************************************************************************
+# !!! DO NOT EDIT BELOW UNLESS YOU ARE ABSOLUTELY SURE WHAT YOU ARE DOING !!!
+#****************************************************************************
+
+DataFormatter.DELIMITER_DELIMITERS_REGEX = \\\\\\|
+			
+Component.KEY_FIELDS_DELIMITER_REGEX = \\s*[:;|]\\s*
+Component.KEY_FIELDS_DELIMITER = ;
+					
+WatchDog.WATCHDOG_SLEEP_INTERVAL = 500
+WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL = 2000
+WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = 5
+			
+GraphProperties.PROPERTY_PLACEHOLDER_REGEX = \\$\\{(\\w+)\\}
+
+#Size of internal buffer of DirectEdge for storing
+#data records when transmitted between two components.
+#The size should be at least MAX_RECORD_SIZE + 8, better
+#several times bigger
+# or 16384
+Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE = 16384
+
+
+#Size of internal buffer of BufferedEdge for storing/caching
+#data records. BufferedEdge is used when engine needs to compensate
+#fact that component reads data from two different ports and there might
+#be some interdependencies between the source data flows.
+#The size should be at least Defaults.Record.MAX_RECORD_SIZE*10, better
+#several times bigger - 128kB or more
+
+Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE = 262144
+
+#Number of internal buffers for storing/buffering records
+#transmitted through FastPropagate Edge. One buffer can
+#store one data record.
+#Minimum size is 1. Default is 4. Higher number can help increasing
+#processing speed but not much.
+Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS = 4
+		

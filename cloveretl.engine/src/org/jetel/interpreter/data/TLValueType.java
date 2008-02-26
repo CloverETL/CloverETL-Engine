@@ -63,14 +63,14 @@ public enum TLValueType {
     public final boolean isArray() {return array;}
     
     public boolean isCompatible(TLValueType _type) {
-        if (_type == this)
+        if (_type == this || _type == NULL)
             return true;
         switch (this) {
         case INTEGER:
         case LONG:
         case DOUBLE:
         case DECIMAL:
-            if (_type!=NULL && _type.isNumeric())
+            if (_type.isNumeric())
                 return true;
             break;
         case STRING:
@@ -78,33 +78,42 @@ public enum TLValueType {
         case OBJECT:
             return true;
         case BYTE:
-        case BOOLEAN:
-        	if (_type.isNumeric() || _type==TLValueType.STRING)
+        	if (_type.isArray() || _type.isNumeric() || _type==STRING)
         		return true;
+        	break;
+        case BOOLEAN:
+        	 break;
         case DATE:
-        	return _type == LONG;
+        	if ( _type == LONG ) return true;
+        	break;
+        case MAP:
+        case LIST:
+        	if (_type.isArray()) return true;
+        	break;
+        case RECORD:
+        	break; // record compatible only with record
         }
-        	
-        if (_type==NULL) return true;
         return false;
     }
 
     public boolean isStrictlyCompatible(TLValueType _type) {
-        if (_type == this)
+        if (_type == this || _type==NULL)
             return true;
         switch (this) {
         // not needed to be considered case INTEGER:
         case LONG:
             if (_type == INTEGER)
                 return true;
+            break;
         case DOUBLE:
             if (_type == LONG || _type == INTEGER)
                 return true;
+            break;
         case DECIMAL:
-            if (_type!=NULL && _type.isNumeric())
+            if (_type.isNumeric())
                 return true;
+            break;
         }
-        if (_type==NULL) return true;
         return false;
     }
 

@@ -46,6 +46,7 @@ import java.util.zip.ZipOutputStream;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.MultiOutFile;
+import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 
@@ -290,7 +291,7 @@ public class FileUtils {
 		
 		// std input (console)
 		if (input.equals(STD_SOURCE)) {
-			return Channels.newChannel(System.out);
+			return new SystemOutByteChannel();
 		}
 		
 		// prepare string/path to output file

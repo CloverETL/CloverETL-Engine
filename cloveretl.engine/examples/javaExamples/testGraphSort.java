@@ -46,21 +46,19 @@ public class testGraphSort {
 	if (args.length < 4){
 		System.out.println("Example graph which sorts input data according to specified key.");
 		System.out.println("The key must be a name of field(or comma delimited fields) from input data.");
-		System.out.println("Usage: testGraphSort <input data filename> <output sorted filename> <metadata filename> <key> [<plugin directory>]");
+		System.out.println("Usage: testGraphSort <input data filename> <output sorted filename> <metadata filename> <key> [<plugin directory> <default properties file>]");
 		System.exit(1);
 	}
 	//initialization; must be present
-	if (args.length == 5) {
-		EngineInitializer.initEngine(args[4], null);
-	}else{
-		EngineInitializer.initEngine(null, null);
-	}
+	EngineInitializer.initEngine(args.length > 4 ? args[4] : null, args.length  > 5 ? args[5] : null, null);
 
 	System.out.println("**************** Input parameters: ****************");
 	System.out.println("Input file: "+args[0]);
 	System.out.println("Output file: "+args[1]);
 	System.out.println("Input Metadata: "+args[2]);
 	System.out.println("Key: "+args[3]);
+	System.out.println("Plugins directory: "+ (args.length > 4 ? args[4] : " default"));
+	System.out.println("Default properties file: "+ (args.length > 5 ? args[5] : " default"));
 	System.out.println("***************************************************");
 	
 	DataRecordMetadata metadataIn;
@@ -87,26 +85,25 @@ public class testGraphSort {
 	Node nodeSort=new Sort("Sorter",sortKeys, true);
 	Node nodeWrite=new DelimitedDataWriter("DataWriter",args[1],false);
 	
-	// add	Edges & Nodes & Phases to graph
-	try {
-		graph.addEdge(inEdge);
-		graph.addEdge(outEdge);
-		
-		graph.addPhase(_PHASE_1);
-		_PHASE_1.addNode(nodeRead);
-		_PHASE_1.addNode(nodeSort);
-		graph.addPhase(_PHASE_2);
-		_PHASE_2.addNode(nodeWrite);
-	}catch (GraphConfigurationException ex){
-		ex.printStackTrace();
-	}
-	
-	
 	// assign ports (input & output)
 	nodeRead.addOutputPort(0,inEdge);
 	nodeSort.addInputPort(0,inEdge); 
 	nodeSort.addOutputPort(0,outEdge);
 	nodeWrite.addInputPort(0,outEdge);
+	
+	
+	// add	Edges & Nodes & Phases to graph
+	try {
+		graph.addPhase(_PHASE_1);
+		_PHASE_1.addNode(nodeRead);
+		_PHASE_1.addNode(nodeSort);
+		graph.addPhase(_PHASE_2);
+		_PHASE_2.addNode(nodeWrite);
+		graph.addEdge(inEdge);
+		graph.addEdge(outEdge);
+	}catch (GraphConfigurationException ex){
+		ex.printStackTrace();
+	}
 	
 	//prepare runtime parameters - JMX is turned off
     GraphRuntimeContext runtimeContext = new GraphRuntimeContext();

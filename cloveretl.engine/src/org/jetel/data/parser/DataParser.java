@@ -356,7 +356,7 @@ public class DataParser implements Parser {
 							}
 							//test record delimiter
 							if(recordDelimiterFound()) {
-								return parsingErrorFound("Unexpected record delimiter, probably record has too little fields.", record, fieldCounter);
+								return parsingErrorFound("Unexpected record delimiter, probably record has too few fields.", record, fieldCounter);
 							}
 
 						}
@@ -441,7 +441,7 @@ public class DataParser implements Parser {
 
 	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum) {
         if(exceptionHandler != null) {
-            exceptionHandler.populateHandler("Parsing error: " + exceptionMessage, record, recordCounter, fieldNum + 1, null, new BadDataFormatException("Parsing error: " + exceptionMessage));
+            exceptionHandler.populateHandler("Parsing error: " + exceptionMessage, record, recordCounter, fieldNum , null, new BadDataFormatException("Parsing error: " + exceptionMessage));
             return record;
         } else {
 			throw new RuntimeException("Parsing error: " + exceptionMessage + " when parsing record #" + recordCounter + " and " + (fieldNum + 1) + ". field (" + recordBuffer.toString() + ")");
@@ -539,7 +539,7 @@ public class DataParser implements Parser {
 		} catch(BadDataFormatException bdfe) {
             if(exceptionHandler != null) {
                 exceptionHandler.populateHandler(bdfe.getMessage(), record,
-						recordCounter, fieldNum + 1, data.toString(), bdfe);
+						recordCounter, fieldNum , data.toString(), bdfe);
             } else {
                 bdfe.setRecordNumber(recordCounter);
                 bdfe.setFieldNumber(fieldNum);
@@ -568,7 +568,7 @@ public class DataParser implements Parser {
 				}
 			}
 		} catch (IOException e) {
-			throw new JetelException("Cannot find a record delimiter.", e);
+			throw new JetelException("Can not find a record delimiter.", e);
 		}
 		//end of file
 		return false;
@@ -591,7 +591,7 @@ public class DataParser implements Parser {
 				}
 			}
 		} catch (IOException e) {
-			throw new JetelException("Cannot find end of record.", e);
+			throw new JetelException("Can not find end of record.", e);
 		}
 		
 		return (character != -1);

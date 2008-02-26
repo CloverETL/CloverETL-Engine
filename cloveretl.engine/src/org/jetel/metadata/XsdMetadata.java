@@ -38,7 +38,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.jetel.data.Defaults;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -306,7 +306,7 @@ public class XsdMetadata {
     			output = System.out;
     		}
 
-			Defaults.init();
+    	    EngineInitializer.initEngine(null, null, null);
     		
             DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
             DataRecordMetadata metadata;

@@ -23,7 +23,10 @@
  */
 package org.jetel.interpreter.extensions;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.List;
 
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLContainerValue;
@@ -31,6 +34,7 @@ import org.jetel.interpreter.data.TLDateValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
+import org.jetel.interpreter.extensions.ConvertLib.Function;
 
 public class DateLib extends TLFunctionLibrary {
 
@@ -67,6 +71,16 @@ public class DateLib extends TLFunctionLibrary {
         case TRUNC: return new TruncFunction();
         default: return null;
        }
+    }
+    
+    public  Collection<TLFunctionPrototype> getAllFunctions() {
+    	List<TLFunctionPrototype> ret = new ArrayList<TLFunctionPrototype>();
+    	Function[] fun = Function.values();
+    	for (Function function : fun) {
+    		ret.add(getFunction(function.name));
+		}
+    	
+    	return ret;
     }
 
     // TODAY

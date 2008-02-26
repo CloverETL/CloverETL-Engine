@@ -184,7 +184,13 @@ public class CompressedByteDataField extends ByteDataField {
             setNull(true);
             return;
         }
-        byte[] bytes = seq.toString().getBytes();
+        byte[] bytes;
+		try {
+			bytes = seq.toString().getBytes(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		} catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e.toString() + " when calling fromString() on field \""+
+                    this.metadata.getName()+"\"", e);
+		}
         setValue(bytes);
         dataLen = bytes.length;
         setNull(false);

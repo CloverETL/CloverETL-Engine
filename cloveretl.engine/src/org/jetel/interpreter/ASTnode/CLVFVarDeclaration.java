@@ -4,16 +4,19 @@ package org.jetel.interpreter.ASTnode;
 
 import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.ParseException;
+import org.jetel.interpreter.TransformLangParserConstants;
 import org.jetel.interpreter.TransformLangParserVisitor;
 
-public class CLVFVarDeclaration extends SimpleNode {
+public class CLVFVarDeclaration extends SimpleNode implements TransformLangParserConstants{
  
     public int type;
     public int varSlot; 
     public String name;
     public boolean localVar;
+    public boolean hasInitValue;
     public int length;
-    public int precision;
+	public int precision;
+	public String metadataId;
     
     public CLVFVarDeclaration(int id) {
     super(id);
@@ -49,6 +52,15 @@ public class CLVFVarDeclaration extends SimpleNode {
       this.localVar=isLocal;
   }
   
+  
+  public String toString(){
+      return super.toString()+" name \""+name+"\" type "+tokenImage[type];
+  }
+    
+  public void hasInitValue(boolean init){
+	  this.hasInitValue=init;
+  }
+  
   public void setLength(String lengthString) throws ParseException{
       try{
           this.length=Integer.parseInt(lengthString);
@@ -64,9 +76,9 @@ public class CLVFVarDeclaration extends SimpleNode {
           throw new ParseException("Error when parsing \"precision\" parameter value \""+precisionString+"\"");
       }
   }
-  
-  public String toString(){
-      return super.toString()+" name \""+name+"\" type "+type;
+	
+  public void setMetadataId(String id){
+	  this.metadataId=id;
   }
   
 }

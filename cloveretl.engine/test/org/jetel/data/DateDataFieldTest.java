@@ -170,13 +170,13 @@ public void test_1_DateDataField() {
 	 */
 	public void test_fromString() {
 		aDateDataField1.fromString("07/10/1996");
-		assertEquals(aDateDataField3.toString(),"07/10/1996");
+		assertEquals(aDateDataField1.toString(),"07/10/1996");
 	
 		aDateDataField1.fromString(null);
-		assertTrue(aDateDataField3.isNull());
+		assertTrue(aDateDataField1.isNull());
 	
 		aDateDataField1.fromString("");
-		assertTrue(aDateDataField3.isNull());
+		assertTrue(aDateDataField1.isNull());
 		
 		try {
 			aDateDataField2.fromString("");

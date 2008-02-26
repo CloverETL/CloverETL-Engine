@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Fri Feb 15 14:05:33 CET 2008" description="This graph ilustrates reading data saved in internal clover format. When reading&#10;not all records from input file, index file has to exist." guiVersion="1.9" id="1203080827883" licenseType="Evaluation license." modified="Fri Feb 15 14:34:14 CET 2008" name="graphCloverDataReader" revision="1.6">
+<Global>
+<Metadata id="Metadata0">
+<Record name="customer" recordDelimiter="&#10;" recordSize="212" type="fixed">
+<Field name="customer_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="account_num" nullable="true" shift="0" size="11" type="long"/>
+<Field name="lname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="fname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="mi" nullable="true" shift="0" size="4" type="string"/>
+<Field name="address1" nullable="true" shift="0" size="30" type="string"/>
+<Field name="city" nullable="true" shift="0" size="7" type="string"/>
+<Field name="state_province" nullable="true" shift="0" size="6" type="string"/>
+<Field name="postal_code" nullable="true" shift="0" size="5" type="string"/>
+<Field name="country" nullable="true" shift="0" size="5" type="string"/>
+<Field name="customer_region_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="phone1" nullable="true" shift="0" size="12" type="string"/>
+<Field name="phone2" nullable="true" shift="0" size="12" type="string"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="birthdate" nullable="true" shift="0" size="15" type="date"/>
+<Field name="marital_status" nullable="true" shift="0" size="1" type="string"/>
+<Field name="yearly_income" nullable="true" shift="0" size="13" type="string"/>
+<Field name="gender" nullable="true" shift="0" size="1" type="string"/>
+<Field name="total_children" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="num_children_at_home" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="education" nullable="true" shift="0" size="15" type="string"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="date_accnt_opened" nullable="true" shift="0" size="15" type="date"/>
+<Field name="member_card" nullable="true" shift="0" size="8" type="string"/>
+<Field name="occupation" nullable="true" shift="0" size="20" type="string"/>
+<Field name="houseowner" nullable="true" shift="0" size="1" type="string"/>
+<Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/fixlen/customers.clv" guiHeight="0" guiName="Clover Data Reader" guiWidth="0" guiX="23" guiY="19" id="CLOVER_READER0" indexFileURL="${WORKSPACE}/data/fixlen/customers.clv.idx" startRecord="10" type="CLOVER_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/output/strucured_customers.txt" footer="&lt;Footer record&gt;&#10;&#9;&lt;account number = $account_num&gt;&#10;&lt;/Footer record&gt;&#10;" guiHeight="0" guiName="Structured Data Writer" guiWidth="0" guiX="242" guiY="17" header="&lt;Header record&gt;&#10;&#9;&lt;customer id = $customer_id&gt;&#10;&lt;/Header record&gt;&#10;" id="STRUCTURE_WRITER0" mask="&lt;Customer id=$customer_id&gt;&#10;&#9;&lt;last name = $lname&gt;&#10;&#9;&lt;first name = $fname&gt;&#10;&lt;/Customer&gt;&#10;" type="STRUCTURE_WRITER"/>
+<Edge fromNode="CLOVER_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (Body port)" metadata="Metadata0" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
+<Edge fromNode="CLOVER_READER0:1" guiBendpoints="" id="Edge2" inPort="Port 1 (Header port)" metadata="Metadata0" outPort="Port 1 (out)" toNode="STRUCTURE_WRITER0:1"/>
+<Edge fromNode="CLOVER_READER0:2" guiBendpoints="" id="Edge5" inPort="Port 2 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="STRUCTURE_WRITER0:2"/>
+</Phase>
+</Graph>

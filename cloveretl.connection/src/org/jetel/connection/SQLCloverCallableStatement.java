@@ -31,8 +31,6 @@ import java.util.Map.Entry;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 
-import com.sun.java_cup.internal.internal_error;
-
 /**
  * @author Agata Vackova (agata.vackova@javlinconsulting.cz) ; 
  * (c) JavlinConsulting s.r.o.
@@ -157,6 +155,11 @@ public class SQLCloverCallableStatement {
 
 	public DataRecord getOutRecord() {
 		return outRecord;
+	}
+
+	public void setInRecord(DataRecord inRecord) {
+		this.inRecord = inRecord;
+		CopySQLData.resetDataRecord(inTransMap, inRecord);
 	}
 
 }

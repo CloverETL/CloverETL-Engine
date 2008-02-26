@@ -3,6 +3,7 @@
 package org.jetel.interpreter;
 
 import org.jetel.interpreter.ASTnode.*;
+				  
 
 public interface TransformLangParserVisitor
 {
@@ -26,6 +27,7 @@ public interface TransformLangParserVisitor
   public Object visit(CLVFPostfixExpression node, Object data);
   public Object visit(CLVFUnaryExpression node, Object data);
   public Object visit(CLVFLiteral node, Object data);
+  public Object visit(CLVFListOfLiterals node, Object data);
   public Object visit(CLVFInputFieldLiteral node, Object data);
   public Object visit(CLVFVariableLiteral node, Object data);
   public Object visit(CLVFRegexLiteral node, Object data);

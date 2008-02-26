@@ -198,7 +198,7 @@ public class DelimitedDataFormatter implements Formatter {
         
         result = encoder.encode(charBuffer, dataBuffer, true);
         if (result.isError()){
-            throw new IOException(result.toString() + " when converting to " + encoder.charset());
+            throw new IOException(result.toString() + " when converting to " + encoder.charset() + ": '" + charBuffer.toString() + "'");
         }
         
         int encLen = dataBuffer.position() - newStart;

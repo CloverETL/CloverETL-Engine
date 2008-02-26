@@ -250,13 +250,15 @@ SPECIAL_TOKEN :
     < SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")? > 
 } 
 
-SPECIAL_TOKEN: { <"#include"> : WithinInclude }
-<WithinInclude> SPECIAL_TOKEN:
-{
-	<"\n"> : DEFAULT
-}
-<WithingInclude> MORE: { <~[]> }
 
+/*
+SPECIAL_TOKEN: { <"'"> : WithinSingleQuote }
+<WithinSingleQuote> SPECIAL_TOKEN:
+{
+	<"'"> : DEFAULT
+}
+<WithinSingleQuote> MORE: { <~[]> }
+*/
 
 /* Literals */
 TOKEN : {
@@ -269,11 +271,11 @@ TOKEN : {
 |  <OCTAL_LITERAL: "0" (["0"-"7"])*>
 |<FLOATING_POINT_LITERAL:  (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
 |  <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+>
-|<STRING_LITERAL: <QUOTED_STRING> | <DQUOTED_STRING> >
-|  <#QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\'">
+|<STRING_LITERAL: /* <QUOTED_STRING> | */ <DQUOTED_STRING> >
+//  <#QUOTED_STRING: "\'" (~["\"","\\","\n","\r"])* "\'">
 |  <#DQUOTED_STRING: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\"">
-| <UNTERMINATED_STRING_LITERAL: <UNTERMINATED_QUOTED_STRING> | <UNTERMINATED_DQUOTED_STRING> >
-|  <#UNTERMINATED_QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* (["\n","\r"])? >
+| <UNTERMINATED_STRING_LITERAL: /*<UNTERMINATED_QUOTED_STRING> | */ <UNTERMINATED_DQUOTED_STRING> >
+// |  <#UNTERMINATED_QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* (["\n","\r"])? >
 |  <#UNTERMINATED_DQUOTED_STRING: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* (["\n","\r"])? >
 |<BOOLEAN_LITERAL: <TRUE> | <FALSE> >
 | <#TRUE: "true">
@@ -286,28 +288,43 @@ TOKEN : {
 |<NULL_LITERAL: "null">
 }
 
-/**** DEBUG/TESTING
+
 TOKEN: {
-	< STRING_LITERAL:
-      "\""
-      (   (~["\"","\\","\n","\r"])
-        | ("\\"
-            ( ["n","t","b","r","f","\\","'","\""]
-            | ["0"-"7"] ( ["0"-"7"] )?
-            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
-            )
-          )
-        | ("\\u"
-        	["0"-"9","A"-"F","a"-"f"]
-        	["0"-"9","A"-"F","a"-"f"]
-        	["0"-"9","A"-"F","a"-"f"]
-        	["0"-"9","A"-"F","a"-"f"]
-          )
-      )*
-      "\""
-  >
+	< STRING_PLAIN_LITERAL:
+      "'"
+        >
+        {
+        	char inChar,prevChar=' ';
+        	image.setLength(0);
+        	int startLine=input_stream.getBeginLine();
+        	int startCol=input_stream.getBeginColumn();
+        	try{
+        		LOOP: while(true){
+        			inChar=input_stream.readChar();
+        			switch(inChar){
+        			case '\'':
+        				if (prevChar=='\\')
+        					image.setLength(image.length()-1);
+        				else
+        					break LOOP;
+        			break;
+        			case '\r':
+        			case '\n':
+        				if (prevChar=='\\')
+        					image.setLength(image.length()-1);
+        				else
+        					throw new TokenMgrError("unterminated string on line "+startLine+" column "+startCol,0);
+        				break;
+        			}
+        			image.append(inChar);
+        			prevChar=inChar;
+        		}
+        	}catch(java.io.IOException ioe){
+        		throw new TokenMgrError(ioe.getMessage(),0);
+        	}
+        	matchedToken.image=image.toString();
+        }
 }
-****/
 
 TOKEN : {
 <MAPPING: ":=">
@@ -325,6 +342,7 @@ TOKEN [IGNORE_CASE]: {
 TOKEN [IGNORE_CASE]: {
   < EQUAL: "==" | ".eq.">
 | < NON_EQUAL: "!=" | "<>" | ".ne." >
+| < IN_OPER:  ".in." >
 | < LESS_THAN: "<" | ".lt." >
 | < LESS_THAN_EQUAL: "<=" | "=<" | ".le." >
 | < GREATER_THAN: ">" | ".gt.">
@@ -349,6 +367,7 @@ TOKEN: {
 | <TILDA: "~" >
 }
 
+
 /* Clover Field Identifiers */
 TOKEN: {
   < FIELD_ID: "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
@@ -356,8 +375,16 @@ TOKEN: {
 
 /* Clover Record Field Identifiers */
 TOKEN: {
-  < REC_NAME_FIELD_ID:  "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." (<LETTER>|<DIGIT>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+  < REC_NAME_FIELD_ID:  "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+  | < REC_NAME_FIELD_NUM:  "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." <DIGIT> (<DIGIT>)* >
   | < REC_NUM_FIELD_ID:  "$" <DIGIT> (<DIGIT>)* "." (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+  | < REC_NUM_FIELD_NUM: "$" <DIGIT> (<DIGIT>)* "." <DIGIT> (<DIGIT>)* >
+}
+
+/* Clover Record Identifiers */
+TOKEN: {
+	<REC_NUM_ID: "@" (<DIGIT>) (<DIGIT>)* >
+	|<REC_NAME_ID: "@" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
 }
 
 
@@ -416,6 +443,12 @@ TOKEN :  /* date parts */
   |<MINUTE: "minute" >
   |<SECOND: "second" >
   |<MILLISEC: "millisec" >
+}
+
+
+TOKEN : /* IDENTIFIERS */
+{
+  < IDENTIFIER: (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
 }
   
 
@@ -549,15 +582,17 @@ void ImportSource() :{/*@bgen(jjtree) ImportSource */
         boolean jjtc000 = true;
         jjtree.openNodeScope(jjtn000);
         jjtreeOpenNodeScope(jjtn000);
-/*@egen*/	Token t;}{/*@bgen(jjtree) ImportSource */
+/*@egen*/	Token t;
+	String filenameURL;}{/*@bgen(jjtree) ImportSource */
         try {
-/*@egen*/	// must parse whole tree and insert it at this place	<IMPORT> t=<STRING_LITERAL>/*@bgen(jjtree)*/
+/*@egen*/	// must parse whole tree and insert it at this place	<IMPORT> ( t=<STRING_LITERAL> { filenameURL=unquote(t.image); }
+				| t=<STRING_PLAIN_LITERAL> { filenameURL=t.image; } )/*@bgen(jjtree)*/
         {
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
           jjtreeCloseNodeScope(jjtn000);
         }
-/*@egen*/ 	{		String filenameURL=unquote(t.image);
+/*@egen*/	{		
 		InputStream stream;
 		try{
 			stream=Channels.newInputStream(FileUtils. getReadableChannel(null, filenameURL)); 
@@ -677,46 +712,57 @@ void VarDeclaration():
   jjtreeOpenNodeScope(jjtn000);
 /*@egen*/  Token t,l,p;  int varSlot;
 }{/*@bgen(jjtree) VarDeclaration */
-  try {
-/*@egen*/  try {
-  	
-    (<INT_VAR> |  <LONG_VAR> | <DOUBLE_VAR> | <DECIMAL_VAR> | <STRING_VAR>		| <DATE_VAR> | <BYTE_VAR> | <BOOLEAN_VAR> | <LIST_VAR> | <MAP_VAR> | <OBJECT_VAR> | <RECORD_VAR>    ) 
+    try {
+/*@egen*/    (<INT_VAR> |  <LONG_VAR> | <DOUBLE_VAR> | <DECIMAL_VAR> | <STRING_VAR>		| <DATE_VAR> | <BYTE_VAR> | <BOOLEAN_VAR> | <LIST_VAR> | <MAP_VAR> | <OBJECT_VAR> | <RECORD_VAR> ) 
     
     {
     	jjtn000.setType(getToken(0).kind);
     }
 
-    ["(" l=<INTEGER_LITERAL> { jjtn000.setLength(l.image);} [ "," p=<INTEGER_LITERAL>  { jjtn000.setPrecision(p.image); } ] ")"   ] 
+    [	"("  VarSpec(jjtn000)
+    ")"   ] 
       
     t = <IDENTIFIER>{      if (!parserHelper.addVariable(t.image,jjtn000.getType())){        throw new ParseException(t, "variable ["+t.image+"] already declared");
       }      else {        // is it local variable declaration ?
 		if (parserHelper.inFunctionDeclaration){          jjtn000.setVarSlot(parserHelper.getLocalVariableSlot(t.image));          jjtn000.setLocalVariale(true);        }        else {          jjtn000.setVarSlot(parserHelper.getGlobalVariableSlot(t.image));          jjtn000.setLocalVariale(false);        }        jjtn000.setName(t.image);      }    }
     
-    ["=" ConditionalOrExpression()]
+    ["=" ConditionalOrExpression() {jjtn000.hasInitValue(true);} ]/*@bgen(jjtree)*/
+    } catch (Throwable jjte000) {
+      if (jjtc000) {
+        jjtree.clearNodeScope(jjtn000);
+        jjtc000 = false;
+      } else {
+        jjtree.popNode();
+      }
+      if (jjte000 instanceof RuntimeException) {
+        throw (RuntimeException)jjte000;
+      }
+      if (jjte000 instanceof ParseException) {
+        throw (ParseException)jjte000;
+      }
+      throw (Error)jjte000;
+    } finally {
+      if (jjtc000) {
+        jjtree.closeNodeScope(jjtn000, true);
+        jjtreeCloseNodeScope(jjtn000);
+      }
+    }
+/*@egen*/
     
- }catch (ParseException e){    parseExceptions.add(e);//following code causes parser to cough     
-//do {//      t = getNextToken();//    }//    while (t.kind != SEMICOLON);  }/*@bgen(jjtree)*/
-  } catch (Throwable jjte000) {
-    if (jjtc000) {
-      jjtree.clearNodeScope(jjtn000);
-      jjtc000 = false;
-    } else {
-      jjtree.popNode();
-    }
-    if (jjte000 instanceof RuntimeException) {
-      throw (RuntimeException)jjte000;
-    }
-    if (jjte000 instanceof ParseException) {
-      throw (ParseException)jjte000;
-    }
-    throw (Error)jjte000;
-  } finally {
-    if (jjtc000) {
-      jjtree.closeNodeScope(jjtn000, true);
-      jjtreeCloseNodeScope(jjtn000);
-    }
-  }
-/*@egen*/}
+    
+// }catch (ParseException e){//    parseExceptions.add(e);//following code causes parser to cough     
+//do {//      t = getNextToken();//    }//    while (t.kind != SEMICOLON);//  }}
+
+void VarSpec(CLVFVarDeclaration node)       : 
+{
+	Token l,p;
+}
+{
+	  l=<IDENTIFIER> { node.setMetadataId(l.image);} 
+  	|  		
+  	l=<INTEGER_LITERAL> { node.setLength(l.image);} [ "," p=<INTEGER_LITERAL>  { node.setPrecision(p.image); } ]
+   	
+}
 
 void Expression()       : {}
 {
@@ -777,7 +823,9 @@ void Mapping() : // assignment of value to Clover field
   	/*OutputFieldExp() */
   (	t = <FIELD_ID> { jjtn000.setFieldName(t.image); } 
   | t = <REC_NAME_FIELD_ID> { jjtn000.setRecordFieldName(t.image); }
+  | t= <REC_NAME_FIELD_NUM>  { jjtn000.setRecordNameFieldNum(t.image); }
   | t = <REC_NUM_FIELD_ID> { jjtn000.setRecordNumFieldName(t.image); }
+  | t = <REC_NUM_FIELD_NUM> { jjtn000.setRecordNumFieldNum(t.image); } 
   	)
   	<MAPPING> 
   	
@@ -926,6 +974,29 @@ void EqualityExpression()       :
                                             jjtreeCloseNodeScope(jjtn002);
                                           }
                                         }
+/*@egen*/
+   |
+     <IN_OPER> RelationalExpression()/*@bgen(jjtree) #Comparison( 2) */
+                                      {
+                                        CLVFComparison jjtn003 = new CLVFComparison(this, JJTCOMPARISON);
+                                        boolean jjtc003 = true;
+                                        jjtree.openNodeScope(jjtn003);
+                                        jjtreeOpenNodeScope(jjtn003);
+                                      }
+                                      try {
+/*@egen*//*@bgen(jjtree)*/
+                                      {
+                                        jjtree.closeNodeScope(jjtn003,  2);
+                                        jjtc003 = false;
+                                        jjtreeCloseNodeScope(jjtn003);
+                                      }
+/*@egen*/ { jjtn003.cmpType=IN_OPER; }/*@bgen(jjtree)*/
+                                      } finally {
+                                        if (jjtc003) {
+                                          jjtree.closeNodeScope(jjtn003,  2);
+                                          jjtreeCloseNodeScope(jjtn003);
+                                        }
+                                      }
 /*@egen*/
   )*
 }
@@ -1356,7 +1427,7 @@ void UnaryExpression()                      :
 
 void PrimaryExpression()       : {}
 {
-	 LOOKAHEAD(3) FunctionCall()
+	 LOOKAHEAD(3 /*<IDENTIFIER> "(" */ ) FunctionCall()
 	 | SymbolNameExp()
      |LitExp()
 	 |VarExp()
@@ -1368,7 +1439,7 @@ void PrimaryExpression()       : {}
 
 void FunctionCall()       : {}
 {
- 	LOOKAHEAD(2) BuildInFunction()
+ 	 BuildInFunction()
  	| FunctionCallStatement()
  	
 }
@@ -1493,7 +1564,7 @@ void LitExp()       :            //
           }
         }
 /*@egen*/
- |t=<BOOLEAN_LITERAL>/*@bgen(jjtree) Literal */
+ | t=<STRING_PLAIN_LITERAL>/*@bgen(jjtree) Literal */
         {
           CLVFLiteral jjtn006 = new CLVFLiteral(this, JJTLITERAL);
           boolean jjtc006 = true;
@@ -1508,7 +1579,7 @@ void LitExp()       :            //
           jjtreeCloseNodeScope(jjtn006);
         }
 /*@egen*/
-  	{ jjtn006.setVal(BOOLEAN_LITERAL,t.image);}/*@bgen(jjtree)*/
+ 	{ jjtn006.setVal(STRING_LITERAL,t.image); }/*@bgen(jjtree)*/
         } finally {
           if (jjtc006) {
             jjtree.closeNodeScope(jjtn006, true);
@@ -1516,7 +1587,7 @@ void LitExp()       :            //
           }
         }
 /*@egen*/
- |t=<DATE_LITERAL>/*@bgen(jjtree) Literal */
+ |t=<BOOLEAN_LITERAL>/*@bgen(jjtree) Literal */
         {
           CLVFLiteral jjtn007 = new CLVFLiteral(this, JJTLITERAL);
           boolean jjtc007 = true;
@@ -1531,7 +1602,7 @@ void LitExp()       :            //
           jjtreeCloseNodeScope(jjtn007);
         }
 /*@egen*/
- 	{ jjtn007.setVal(DATE_LITERAL,t.image);}/*@bgen(jjtree)*/
+  	{ jjtn007.setVal(BOOLEAN_LITERAL,t.image);}/*@bgen(jjtree)*/
         } finally {
           if (jjtc007) {
             jjtree.closeNodeScope(jjtn007, true);
@@ -1539,7 +1610,7 @@ void LitExp()       :            //
           }
         }
 /*@egen*/
- |t=<DATETIME_LITERAL>/*@bgen(jjtree) Literal */
+ |t=<DATE_LITERAL>/*@bgen(jjtree) Literal */
         {
           CLVFLiteral jjtn008 = new CLVFLiteral(this, JJTLITERAL);
           boolean jjtc008 = true;
@@ -1554,7 +1625,7 @@ void LitExp()       :            //
           jjtreeCloseNodeScope(jjtn008);
         }
 /*@egen*/
-  	{ jjtn008.setVal(DATETIME_LITERAL,t.image);}/*@bgen(jjtree)*/
+ 	{ jjtn008.setVal(DATE_LITERAL,t.image);}/*@bgen(jjtree)*/
         } finally {
           if (jjtc008) {
             jjtree.closeNodeScope(jjtn008, true);
@@ -1562,7 +1633,7 @@ void LitExp()       :            //
           }
         }
 /*@egen*/
- |t=<NULL_LITERAL>/*@bgen(jjtree) Literal */
+ |t=<DATETIME_LITERAL>/*@bgen(jjtree) Literal */
         {
           CLVFLiteral jjtn009 = new CLVFLiteral(this, JJTLITERAL);
           boolean jjtc009 = true;
@@ -1577,7 +1648,7 @@ void LitExp()       :            //
           jjtreeCloseNodeScope(jjtn009);
         }
 /*@egen*/
- 	{ jjtn009.setVal(NULL_LITERAL,t.image); }/*@bgen(jjtree)*/
+  	{ jjtn009.setVal(DATETIME_LITERAL,t.image);}/*@bgen(jjtree)*/
         } finally {
           if (jjtc009) {
             jjtree.closeNodeScope(jjtn009, true);
@@ -1585,13 +1656,72 @@ void LitExp()       :            //
           }
         }
 /*@egen*/
+ |t=<NULL_LITERAL>/*@bgen(jjtree) Literal */
+        {
+          CLVFLiteral jjtn010 = new CLVFLiteral(this, JJTLITERAL);
+          boolean jjtc010 = true;
+          jjtree.openNodeScope(jjtn010);
+          jjtreeOpenNodeScope(jjtn010);
+        }
+        try {
+/*@egen*//*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn010, true);
+          jjtc010 = false;
+          jjtreeCloseNodeScope(jjtn010);
+        }
+/*@egen*/
+ 	{ jjtn010.setVal(NULL_LITERAL,t.image); }/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc010) {
+            jjtree.closeNodeScope(jjtn010, true);
+            jjtreeCloseNodeScope(jjtn010);
+          }
+        }
+/*@egen*/
+ | ListOfLiterals()
  |t = <UNTERMINATED_STRING_LITERAL>
   {
-       throw new ParseException(t,"unterminated string literal");
+       throw new ParseException(t,"unterminated string literal (starts at line "+t.beginLine+", column "+t.beginColumn+")");
   }
 }
 
-void InputFieldExp()       :// IDExp -> ID
+void ListOfLiterals() :
+{/*@bgen(jjtree) ListOfLiterals */
+  CLVFListOfLiterals jjtn000 = new CLVFListOfLiterals(this, JJTLISTOFLITERALS);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+  jjtreeOpenNodeScope(jjtn000);
+/*@egen*/
+}
+{/*@bgen(jjtree) ListOfLiterals */
+        try {
+/*@egen*/
+	"[" LitExp() ( "," LitExp() )* "]"/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+            jjtreeCloseNodeScope(jjtn000);
+          }
+        }
+/*@egen*/	
+}
+
+void InputFieldExp()       :
 {  Token t;}{  t = <FIELD_ID>/*@bgen(jjtree) InputFieldLiteral */
                  {
                    CLVFInputFieldLiteral jjtn001 = new CLVFInputFieldLiteral(this, JJTINPUTFIELDLITERAL);
@@ -1656,6 +1786,94 @@ void InputFieldExp()       :// IDExp -> ID
                                jjtreeCloseNodeScope(jjtn003);
                              }
                            }
+/*@egen*/
+  | t = <REC_NUM_FIELD_NUM>/*@bgen(jjtree) InputFieldLiteral */
+                            {
+                              CLVFInputFieldLiteral jjtn004 = new CLVFInputFieldLiteral(this, JJTINPUTFIELDLITERAL);
+                              boolean jjtc004 = true;
+                              jjtree.openNodeScope(jjtn004);
+                              jjtreeOpenNodeScope(jjtn004);
+                            }
+                            try {
+/*@egen*//*@bgen(jjtree)*/
+                            {
+                              jjtree.closeNodeScope(jjtn004, true);
+                              jjtc004 = false;
+                              jjtreeCloseNodeScope(jjtn004);
+                            }
+/*@egen*/ { jjtn004.setRecordNumFieldNum(t.image); }/*@bgen(jjtree)*/
+                            } finally {
+                              if (jjtc004) {
+                                jjtree.closeNodeScope(jjtn004, true);
+                                jjtreeCloseNodeScope(jjtn004);
+                              }
+                            }
+/*@egen*/
+  | t= <REC_NAME_FIELD_NUM>/*@bgen(jjtree) InputFieldLiteral */
+                             {
+                               CLVFInputFieldLiteral jjtn005 = new CLVFInputFieldLiteral(this, JJTINPUTFIELDLITERAL);
+                               boolean jjtc005 = true;
+                               jjtree.openNodeScope(jjtn005);
+                               jjtreeOpenNodeScope(jjtn005);
+                             }
+                             try {
+/*@egen*//*@bgen(jjtree)*/
+                             {
+                               jjtree.closeNodeScope(jjtn005, true);
+                               jjtc005 = false;
+                               jjtreeCloseNodeScope(jjtn005);
+                             }
+/*@egen*/  { jjtn005.setRecordNameFieldNum(t.image); }/*@bgen(jjtree)*/
+                             } finally {
+                               if (jjtc005) {
+                                 jjtree.closeNodeScope(jjtn005, true);
+                                 jjtreeCloseNodeScope(jjtn005);
+                               }
+                             }
+/*@egen*/
+  | t= <REC_NAME_ID>/*@bgen(jjtree) InputFieldLiteral */
+                     {
+                       CLVFInputFieldLiteral jjtn006 = new CLVFInputFieldLiteral(this, JJTINPUTFIELDLITERAL);
+                       boolean jjtc006 = true;
+                       jjtree.openNodeScope(jjtn006);
+                       jjtreeOpenNodeScope(jjtn006);
+                     }
+                     try {
+/*@egen*//*@bgen(jjtree)*/
+                     {
+                       jjtree.closeNodeScope(jjtn006, true);
+                       jjtc006 = false;
+                       jjtreeCloseNodeScope(jjtn006);
+                     }
+/*@egen*/ { jjtn006.setRecordName(t.image); }/*@bgen(jjtree)*/
+                     } finally {
+                       if (jjtc006) {
+                         jjtree.closeNodeScope(jjtn006, true);
+                         jjtreeCloseNodeScope(jjtn006);
+                       }
+                     }
+/*@egen*/
+  | t= <REC_NUM_ID>/*@bgen(jjtree) InputFieldLiteral */
+                    {
+                      CLVFInputFieldLiteral jjtn007 = new CLVFInputFieldLiteral(this, JJTINPUTFIELDLITERAL);
+                      boolean jjtc007 = true;
+                      jjtree.openNodeScope(jjtn007);
+                      jjtreeOpenNodeScope(jjtn007);
+                    }
+                    try {
+/*@egen*//*@bgen(jjtree)*/
+                    {
+                      jjtree.closeNodeScope(jjtn007, true);
+                      jjtc007 = false;
+                      jjtreeCloseNodeScope(jjtn007);
+                    }
+/*@egen*/ { jjtn007.setRecordNum(t.image); }/*@bgen(jjtree)*/
+                    } finally {
+                      if (jjtc007) {
+                        jjtree.closeNodeScope(jjtn007, true);
+                        jjtreeCloseNodeScope(jjtn007);
+                      }
+                    }
 /*@egen*/}/*
 void OutputFieldExp() #void :// IDExp -> ID
 {
@@ -1678,7 +1896,7 @@ void VarExp()                  :
 /*@egen*/
 	Token t,u;
 	int varSlot;
-	int varType;
+	int varType=0;
 	//boolean indexSet=false;
 }
 {/*@bgen(jjtree) VariableLiteral */
@@ -1706,8 +1924,14 @@ void VarExp()                  :
   	jjtn000.setVarType(varType); 
   	} 
   	
-  	 // it may be element of LIST or MAP
-	 [  "[" [AdditiveExpression() {jjtn000.indexSet=true;} ] "]" {jjtn000.usedIndex=true;} ]
+  	 // it may be element of LIST , MAP or RECORD
+	 [  "[" 
+	 		[ 
+	 			LOOKAHEAD( 2 ) u=<IDENTIFIER> { jjtn000.setFieldID(u.image); jjtn000.indexSet=true; } 
+	 			|  AdditiveExpression() {jjtn000.indexSet=true;} 
+	 		]  
+	 	"]" {jjtn000.scalarContext=true;} 
+	 ]
   	
 //  	{//  	if (!indexset){//  		if (varType==LIST_VAR)//	  		throw new ParseException(t,"variable ["+t.image+"] is a list and requires index to be specified");//	  	else if (varType==MAP_VAR)//	  		throw new ParseException(t,"variable ["+t.image+"] is a map and requires key to be specified");//  	}
 //  	}
@@ -1739,33 +1963,39 @@ void VarExp()                  :
 	
 }
 
-void RegexLiteral()       :
-{
+void RegexLiteral() :
+{/*@bgen(jjtree) RegexLiteral */
+        CLVFRegexLiteral jjtn000 = new CLVFRegexLiteral(this, JJTREGEXLITERAL);
+        boolean jjtc000 = true;
+        jjtree.openNodeScope(jjtn000);
+        jjtreeOpenNodeScope(jjtn000);
+/*@egen*/
 	Token t;
 }
-{
-  t=<STRING_LITERAL>/*@bgen(jjtree) RegexLiteral */
-                     {
-                       CLVFRegexLiteral jjtn001 = new CLVFRegexLiteral(this, JJTREGEXLITERAL);
-                       boolean jjtc001 = true;
-                       jjtree.openNodeScope(jjtn001);
-                       jjtreeOpenNodeScope(jjtn001);
-                     }
-                     try {
-/*@egen*//*@bgen(jjtree)*/
-                     {
-                       jjtree.closeNodeScope(jjtn001, true);
-                       jjtc001 = false;
-                       jjtreeCloseNodeScope(jjtn001);
-                     }
-/*@egen*/ { jjtn001.setRegex(t.image); }/*@bgen(jjtree)*/
-                     } finally {
-                       if (jjtc001) {
-                         jjtree.closeNodeScope(jjtn001, true);
-                         jjtreeCloseNodeScope(jjtn001);
-                       }
-                     }
+{/*@bgen(jjtree) RegexLiteral */
+  try {
 /*@egen*/
+  t=<STRING_LITERAL>/*@bgen(jjtree)*/
+                     {
+                       jjtree.closeNodeScope(jjtn000, true);
+                       jjtc000 = false;
+                       jjtreeCloseNodeScope(jjtn000);
+                     }
+/*@egen*/ { jjtn000.setRegex(unquote(t.image)); } 
+  |t=<STRING_PLAIN_LITERAL>/*@bgen(jjtree)*/
+                                {
+                                  jjtree.closeNodeScope(jjtn000, true);
+                                  jjtc000 = false;
+                                  jjtreeCloseNodeScope(jjtn000);
+                                }
+/*@egen*/	{ jjtn000.setRegex(t.image); }/*@bgen(jjtree)*/
+  } finally {
+    if (jjtc000) {
+      jjtree.closeNodeScope(jjtn000, true);
+      jjtreeCloseNodeScope(jjtn000);
+    }
+  }
+/*@egen*/ 
 }
 
 
@@ -2409,69 +2639,69 @@ void FunctionCallParameter()       : {}
 void BuildInFunction()       :
 { }
 {
-	"isnull" "(" AdditiveExpression()/*@bgen(jjtree) #IsNullNode( 1) */
-                                          {
-                                            CLVFIsNullNode jjtn001 = new CLVFIsNullNode(this, JJTISNULLNODE);
-                                            boolean jjtc001 = true;
-                                            jjtree.openNodeScope(jjtn001);
-                                            jjtreeOpenNodeScope(jjtn001);
-                                          }
-                                          try {
+	"isnull(" AdditiveExpression()/*@bgen(jjtree) #IsNullNode( 1) */
+                                       {
+                                         CLVFIsNullNode jjtn001 = new CLVFIsNullNode(this, JJTISNULLNODE);
+                                         boolean jjtc001 = true;
+                                         jjtree.openNodeScope(jjtn001);
+                                         jjtreeOpenNodeScope(jjtn001);
+                                       }
+                                       try {
 /*@egen*/ ")"/*@bgen(jjtree)*/
-                                          } finally {
-                                            if (jjtc001) {
-                                              jjtree.closeNodeScope(jjtn001,  1);
-                                              jjtreeCloseNodeScope(jjtn001);
-                                            }
-                                          }
+                                       } finally {
+                                         if (jjtc001) {
+                                           jjtree.closeNodeScope(jjtn001,  1);
+                                           jjtreeCloseNodeScope(jjtn001);
+                                         }
+                                       }
 /*@egen*/
-	|"nvl" "(" AdditiveExpression() "," AdditiveExpression()/*@bgen(jjtree) #NVLNode( 2) */
-                                                                 {
-                                                                   CLVFNVLNode jjtn002 = new CLVFNVLNode(this, JJTNVLNODE);
-                                                                   boolean jjtc002 = true;
-                                                                   jjtree.openNodeScope(jjtn002);
-                                                                   jjtreeOpenNodeScope(jjtn002);
-                                                                 }
-                                                                 try {
+	|"nvl(" AdditiveExpression() "," AdditiveExpression()/*@bgen(jjtree) #NVLNode( 2) */
+                                                              {
+                                                                CLVFNVLNode jjtn002 = new CLVFNVLNode(this, JJTNVLNODE);
+                                                                boolean jjtc002 = true;
+                                                                jjtree.openNodeScope(jjtn002);
+                                                                jjtreeOpenNodeScope(jjtn002);
+                                                              }
+                                                              try {
 /*@egen*/ ")"/*@bgen(jjtree)*/
-                                                                 } finally {
-                                                                   if (jjtc002) {
-                                                                     jjtree.closeNodeScope(jjtn002,  2);
-                                                                     jjtreeCloseNodeScope(jjtn002);
-                                                                   }
-                                                                 }
+                                                              } finally {
+                                                                if (jjtc002) {
+                                                                  jjtree.closeNodeScope(jjtn002,  2);
+                                                                  jjtreeCloseNodeScope(jjtn002);
+                                                                }
+                                                              }
 /*@egen*/
-	|"nvl2" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression()/*@bgen(jjtree) #NVL2Node( 3) */
+	|"nvl2(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression()/*@bgen(jjtree) #NVL2Node( 3) */
+                                                                                         {
+                                                                                           CLVFNVL2Node jjtn003 = new CLVFNVL2Node(this, JJTNVL2NODE);
+                                                                                           boolean jjtc003 = true;
+                                                                                           jjtree.openNodeScope(jjtn003);
+                                                                                           jjtreeOpenNodeScope(jjtn003);
+                                                                                         }
+                                                                                         try {
+/*@egen*/  ")"/*@bgen(jjtree)*/
+                                                                                         } finally {
+                                                                                           if (jjtc003) {
+                                                                                             jjtree.closeNodeScope(jjtn003,  3);
+                                                                                             jjtreeCloseNodeScope(jjtn003);
+                                                                                           }
+                                                                                         }
+/*@egen*/
+	|"iif(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression()/*@bgen(jjtree) #IffNode( 3) */
                                                                                             {
-                                                                                              CLVFNVL2Node jjtn003 = new CLVFNVL2Node(this, JJTNVL2NODE);
-                                                                                              boolean jjtc003 = true;
-                                                                                              jjtree.openNodeScope(jjtn003);
-                                                                                              jjtreeOpenNodeScope(jjtn003);
+                                                                                              CLVFIffNode jjtn004 = new CLVFIffNode(this, JJTIFFNODE);
+                                                                                              boolean jjtc004 = true;
+                                                                                              jjtree.openNodeScope(jjtn004);
+                                                                                              jjtreeOpenNodeScope(jjtn004);
                                                                                             }
                                                                                             try {
-/*@egen*/  ")"/*@bgen(jjtree)*/
+/*@egen*/ ")"/*@bgen(jjtree)*/
                                                                                             } finally {
-                                                                                              if (jjtc003) {
-                                                                                                jjtree.closeNodeScope(jjtn003,  3);
-                                                                                                jjtreeCloseNodeScope(jjtn003);
+                                                                                              if (jjtc004) {
+                                                                                                jjtree.closeNodeScope(jjtn004,  3);
+                                                                                                jjtreeCloseNodeScope(jjtn004);
                                                                                               }
                                                                                             }
-/*@egen*/
-	|"iif" "(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression()/*@bgen(jjtree) #IffNode( 3) */
-                                                                                               {
-                                                                                                 CLVFIffNode jjtn004 = new CLVFIffNode(this, JJTIFFNODE);
-                                                                                                 boolean jjtc004 = true;
-                                                                                                 jjtree.openNodeScope(jjtn004);
-                                                                                                 jjtreeOpenNodeScope(jjtn004);
-                                                                                               }
-                                                                                               try {
-/*@egen*/ ")"/*@bgen(jjtree)*/
-                                                                                               } finally {
-                                                                                                 if (jjtc004) {
-                                                                                                   jjtree.closeNodeScope(jjtn004,  3);
-                                                                                                   jjtreeCloseNodeScope(jjtn004);
-                                                                                                 }
-                                                                                               }
 /*@egen*/ // (condition, express if true, express else)
 	|SequenceNode()
 	|LookupNode()
@@ -2479,54 +2709,54 @@ void BuildInFunction()       :
 
 // 	procedures 
 	|PrintErrNode()
-	|"print_stack" "("/*@bgen(jjtree) #PrintStackNode( 0) */
-                           {
-                             CLVFPrintStackNode jjtn005 = new CLVFPrintStackNode(this, JJTPRINTSTACKNODE);
-                             boolean jjtc005 = true;
-                             jjtree.openNodeScope(jjtn005);
-                             jjtreeOpenNodeScope(jjtn005);
-                           }
-                           try {
+	|"print_stack("/*@bgen(jjtree) #PrintStackNode( 0) */
+                        {
+                          CLVFPrintStackNode jjtn005 = new CLVFPrintStackNode(this, JJTPRINTSTACKNODE);
+                          boolean jjtc005 = true;
+                          jjtree.openNodeScope(jjtn005);
+                          jjtreeOpenNodeScope(jjtn005);
+                        }
+                        try {
 /*@egen*/ ")"/*@bgen(jjtree)*/
-                           } finally {
-                             if (jjtc005) {
-                               jjtree.closeNodeScope(jjtn005,  0);
-                               jjtreeCloseNodeScope(jjtn005);
-                             }
-                           }
+                        } finally {
+                          if (jjtc005) {
+                            jjtree.closeNodeScope(jjtn005,  0);
+                            jjtreeCloseNodeScope(jjtn005);
+                          }
+                        }
 /*@egen*/
-	|"breakpoint" "("/*@bgen(jjtree) #BreakpointNode( 0) */
-                          {
-                            CLVFBreakpointNode jjtn006 = new CLVFBreakpointNode(this, JJTBREAKPOINTNODE);
-                            boolean jjtc006 = true;
-                            jjtree.openNodeScope(jjtn006);
-                            jjtreeOpenNodeScope(jjtn006);
-                          }
-                          try {
+	|"breakpoint("/*@bgen(jjtree) #BreakpointNode( 0) */
+                       {
+                         CLVFBreakpointNode jjtn006 = new CLVFBreakpointNode(this, JJTBREAKPOINTNODE);
+                         boolean jjtc006 = true;
+                         jjtree.openNodeScope(jjtn006);
+                         jjtreeOpenNodeScope(jjtn006);
+                       }
+                       try {
 /*@egen*/ ")"/*@bgen(jjtree)*/
-                          } finally {
-                            if (jjtc006) {
-                              jjtree.closeNodeScope(jjtn006,  0);
-                              jjtreeCloseNodeScope(jjtn006);
-                            }
-                          }
+                       } finally {
+                         if (jjtc006) {
+                           jjtree.closeNodeScope(jjtn006,  0);
+                           jjtreeCloseNodeScope(jjtn006);
+                         }
+                       }
 /*@egen*/
 	| PrintLogNode()
-	|"raise_error" "(" AdditiveExpression()/*@bgen(jjtree) #RaiseErrorNode( 1) */
-                                                {
-                                                  CLVFRaiseErrorNode jjtn007 = new CLVFRaiseErrorNode(this, JJTRAISEERRORNODE);
-                                                  boolean jjtc007 = true;
-                                                  jjtree.openNodeScope(jjtn007);
-                                                  jjtreeOpenNodeScope(jjtn007);
-                                                }
-                                                try {
+	|"raise_error(" AdditiveExpression()/*@bgen(jjtree) #RaiseErrorNode( 1) */
+                                             {
+                                               CLVFRaiseErrorNode jjtn007 = new CLVFRaiseErrorNode(this, JJTRAISEERRORNODE);
+                                               boolean jjtc007 = true;
+                                               jjtree.openNodeScope(jjtn007);
+                                               jjtreeOpenNodeScope(jjtn007);
+                                             }
+                                             try {
 /*@egen*/ ")"/*@bgen(jjtree)*/
-                                                } finally {
-                                                  if (jjtc007) {
-                                                    jjtree.closeNodeScope(jjtn007,  1);
-                                                    jjtreeCloseNodeScope(jjtn007);
-                                                  }
-                                                }
+                                             } finally {
+                                               if (jjtc007) {
+                                                 jjtree.closeNodeScope(jjtn007,  1);
+                                                 jjtreeCloseNodeScope(jjtn007);
+                                               }
+                                             }
 /*@egen*/
 }
 
@@ -2541,7 +2771,7 @@ void PrintErrNode() :
 {/*@bgen(jjtree) PrintErrNode */
         try {
 /*@egen*/
-	"print_err" "(" AdditiveExpression() [ "," t=<BOOLEAN_LITERAL> {jjtn000.setPrintLine(Boolean.parseBoolean(t.image));} ] ")"/*@bgen(jjtree)*/
+	"print_err(" AdditiveExpression() [ "," t=<BOOLEAN_LITERAL> {jjtn000.setPrintLine(Boolean.parseBoolean(t.image));} ] ")"/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -2576,19 +2806,19 @@ void EvalNode() :
 {/*@bgen(jjtree) EvalNode */
    try {
 /*@egen*/
-   "eval" "(" AdditiveExpression() ["," AdditiveExpression() ] ")"/*@bgen(jjtree)*/
-                                                                   {
-                                                                     jjtree.closeNodeScope(jjtn000, true);
-                                                                     jjtc000 = false;
-                                                                     jjtreeCloseNodeScope(jjtn000);
-                                                                   }
+   "eval(" AdditiveExpression() ["," AdditiveExpression() ] ")"/*@bgen(jjtree)*/
+                                                                {
+                                                                  jjtree.closeNodeScope(jjtn000, true);
+                                                                  jjtc000 = false;
+                                                                  jjtreeCloseNodeScope(jjtn000);
+                                                                }
 /*@egen*/ { hasEvalNode=true;  jjtn000.setExpMode(false); }
-   | "eval_exp" "(" AdditiveExpression() ")"/*@bgen(jjtree)*/
-                                             {
-                                               jjtree.closeNodeScope(jjtn000, true);
-                                               jjtc000 = false;
-                                               jjtreeCloseNodeScope(jjtn000);
-                                             }
+   | "eval_exp(" AdditiveExpression() ")"/*@bgen(jjtree)*/
+                                          {
+                                            jjtree.closeNodeScope(jjtn000, true);
+                                            jjtc000 = false;
+                                            jjtreeCloseNodeScope(jjtn000);
+                                          }
 /*@egen*/ { jjtn000.setExpMode(true); }/*@bgen(jjtree)*/
    } catch (Throwable jjte000) {
      if (jjtc000) {
@@ -2625,16 +2855,17 @@ void PrintLogNode() :
 {/*@bgen(jjtree) PrintLogNode */
         try {
 /*@egen*/
-	"print_log" "("
-	
-	(
-	 "trace" { jjtn000.setLevel(0); }
-	| "debug" { jjtn000.setLevel(1); }
-	| "info" { jjtn000.setLevel(2); }
-	| "warn" { jjtn000.setLevel(3); }
-	| "error" { jjtn000.setLevel(4); }
-	| "fatal" { jjtn000.setLevel(5); }
-	)
+	"print_log(" 
+	( <IDENTIFIER> )
+		
+
+	{
+		try{
+			jjtn000.setLevel(getToken(0).image);
+		}catch (Exception ex){
+			throw new ParseException(getToken(0),ex.getMessage());
+		}
+	}
 	
 	","
 	AdditiveExpression()
@@ -2662,6 +2893,7 @@ void PrintLogNode() :
 /*@egen*/
 }
 
+
 void SequenceNode() :
 {/*@bgen(jjtree) SequenceNode */
         CLVFSequenceNode jjtn000 = new CLVFSequenceNode(this, JJTSEQUENCENODE);
@@ -2674,7 +2906,7 @@ void SequenceNode() :
 {/*@bgen(jjtree) SequenceNode */
         try {
 /*@egen*/
-	"sequence" "(" 
+	"sequence(" 
 	t=<IDENTIFIER> { jjtn000.setName(t.image); } 
 	[ ","
 	(  <INT_VAR> { jjtn000.setReturnType(INT_VAR); }
@@ -2710,37 +2942,26 @@ void LookupNode() :
 /*@egen*/
 	(
 	(
-	"lookup" "("
+	"lookup("
 		t=<IDENTIFIER> { jjtn000.setOperation(0); jjtn000.setLookupName(t.image); }// LOOKUP NAME/ID
 		"," AdditiveExpression() //KEYS GO HERE
 		("," AdditiveExpression())*
 		")"
-		"." k=<IDENTIFIER>/*@bgen(jjtree)*/
-                                   {
-                                     jjtree.closeNodeScope(jjtn000, true);
-                                     jjtc000 = false;
-                                     jjtreeCloseNodeScope(jjtn000);
-                                   }
-/*@egen*/ { jjtn000.setLookupField(k.image); }  // WHICH FIELD 
+		["." k=<IDENTIFIER> { jjtn000.setLookupField(k.image); } ]  // WHICH FIELD 
 		) 
 	
-	|("lookup_next"	"("
+	|("lookup_next("
 		t=<IDENTIFIER> { jjtn000.setOperation(1); jjtn000.setLookupName(t.image); }
-		")" "." k=<IDENTIFIER>/*@bgen(jjtree)*/
-                                       {
-                                         jjtree.closeNodeScope(jjtn000, true);
-                                         jjtc000 = false;
-                                         jjtreeCloseNodeScope(jjtn000);
-                                       }
-/*@egen*/ { jjtn000.setLookupField(k.image); } 
+		")" 
+		[ "." k=<IDENTIFIER> { jjtn000.setLookupField(k.image); } ] 
 		) 
 	|(// how many records we have found
-		"lookup_found" "("
+		"lookup_found("
 		t=<IDENTIFIER> { jjtn000.setOperation(2); jjtn000.setLookupName(t.image); }
 		")"
 		) 
 	|(// do something with lookup
-		"lookup_admin" "("
+		"lookup_admin("
 		t=<IDENTIFIER> { jjtn000.setLookupName(t.image); } ","
 		(
 			( "init" 	{jjtn000.setOperation(3);} )
@@ -2774,11 +2995,6 @@ void LookupNode() :
 
 TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" | "sec" | "second" | "millisec" | "millisecond" > }
 
-
-TOKEN : /* IDENTIFIERS */
-{
-  < IDENTIFIER: (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
-}
 
 /* error token which is generated by lexer if it can't match with any other */
 TOKEN:

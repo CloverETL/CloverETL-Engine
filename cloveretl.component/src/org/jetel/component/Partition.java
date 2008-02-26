@@ -308,6 +308,9 @@ public class Partition extends Node {
 					if (!startInclude[intervalNumber]) {//there was "(" for this interval before
 						logger.warn("startInclude[" + intervalNumber + "] was set to \"false\" before");
 					}
+					if (intervalNumber != 0){
+						rangesData.append(COMMA);
+					}
 					break;
 				case END_OPENED:
 					if (endInclude[intervalNumber]) {//there was ">" for this interval before
@@ -455,7 +458,6 @@ public class Partition extends Node {
 			return function;
 		}else{//get partition function form java code
 			DynamicJavaCode dynCode = new DynamicJavaCode(partitionCode, this.getClass().getClassLoader());
-	        dynCode.setCaptureCompilerOutput(true);
 	        logger.info(" (compiling dynamic source) ");
 	        // use DynamicJavaCode to instantiate transformation class
 	        Object transObject = null;

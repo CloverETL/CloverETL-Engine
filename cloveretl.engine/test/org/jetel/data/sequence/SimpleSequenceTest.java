@@ -44,7 +44,7 @@ public class SimpleSequenceTest extends TestCase {
      * @see junit.framework.TestCase#setUp()
      */
     protected void setUp() throws Exception {
-	    EngineInitializer.initEngine(null, null);
+    	EngineInitializer.initEngine(null, null, null);
         sequence = SequenceFactory.createSequence(null, "SIMPLE_SEQUENCE", 
         		new Object[]{"",null,"Test","sequence4.dat",0,1,17}, 
         		new Class[]{String.class,TransformationGraph.class,String.class,String.class,int.class,int.class,int.class});

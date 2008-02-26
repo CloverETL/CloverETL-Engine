@@ -23,7 +23,6 @@
  */
 package org.jetel.interpreter.extensions;
 
-import org.jetel.interpreter.Stack;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 
@@ -38,15 +37,17 @@ public abstract class TLFunctionPrototype {
     
     protected String name;
     protected String library;
+    protected String description;
     protected TLValueType[] parameterTypes;
     protected TLValueType returnType;
     protected int maxParams;
     protected int minParams;
     
-    protected TLFunctionPrototype(String library,String name,TLValueType[] parameterTypes,
+    protected TLFunctionPrototype(String library,String name,String description,TLValueType[] parameterTypes,
             TLValueType returnType,int maxParams,int minParams) {
         this.name=name;
         this.library=library;
+        this.description=description;
         this.parameterTypes=parameterTypes;
         this.returnType=returnType;
         this.maxParams=maxParams;
@@ -55,7 +56,17 @@ public abstract class TLFunctionPrototype {
     
     protected TLFunctionPrototype(String library,String name,TLValueType[] parameterTypes,
             TLValueType returnType) {
-        this(library,name,parameterTypes,returnType,parameterTypes.length,parameterTypes.length);
+        this(library,name,null,parameterTypes,returnType,parameterTypes.length,parameterTypes.length);
+    }
+    
+    protected TLFunctionPrototype(String library,String name,TLValueType[] parameterTypes,
+            TLValueType returnType,int maxParams,int minParams) {
+    	this(library,name,null,parameterTypes,returnType,maxParams,minParams);
+    }
+    
+    protected TLFunctionPrototype(String library,String name,String description,TLValueType[] parameterTypes,
+            TLValueType returnType) {
+    	this(library,name,description,parameterTypes,returnType,parameterTypes.length,parameterTypes.length);
     }
     
     
@@ -128,5 +139,13 @@ public abstract class TLFunctionPrototype {
 
 	public int getMinParams() {
 		return minParams;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 }

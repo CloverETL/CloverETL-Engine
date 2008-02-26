@@ -193,7 +193,6 @@ public class RecordTransformFactory {
      */
     public static RecordTransform loadClassDynamic(Log logger,DynamicJavaCode dynamicTransformCode)
             throws ComponentNotReadyException {
-        dynamicTransformCode.setCaptureCompilerOutput(true);
         logger.info(" (compiling dynamic source) ");
         // use DynamicJavaCode to instantiate transformation class
         Object transObject = null;

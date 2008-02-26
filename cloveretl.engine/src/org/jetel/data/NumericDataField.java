@@ -39,6 +39,7 @@ import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.string.StringUtils;
 
 
 /**
@@ -467,7 +468,8 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 			}
             setNull(value == Double.NaN);
 		} catch (Exception ex) {
-			throw new BadDataFormatException(getMetadata().getName()+" cannot be set to " + seq.toString(), seq.toString());
+			throw new BadDataFormatException(getMetadata().getName() + " (" + DataFieldMetadata.type2Str(getType()) 
+					+ ") cannot be set to " + StringUtils.quote(seq), seq.toString());
 		}
 	}
 

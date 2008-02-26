@@ -6,7 +6,7 @@ import java.util.Iterator;
 
 import junit.framework.TestCase;
 
-import org.jetel.data.Defaults;
+import org.jetel.graph.runtime.EngineInitializer;
 
 public class ByteArrayTest extends TestCase {
 	
@@ -20,7 +20,7 @@ public class ByteArrayTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		Defaults.init();
+		EngineInitializer.initEngine(null, null, null);
 		sBytes = "Kašna na vodu";
 		bytes = sBytes.getBytes();
 		byteArrayEmpty = new ByteArray();

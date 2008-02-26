@@ -176,6 +176,7 @@ public class DBInputTable extends Node {
         connection = (DBConnection)conn;
         connection.init();
 		parser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
+		parser.setParentNode(this);
 	}
 
 	@Override

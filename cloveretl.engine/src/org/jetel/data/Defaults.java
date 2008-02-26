@@ -19,6 +19,7 @@
 */
 package org.jetel.data;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,9 +28,11 @@ import java.util.zip.Deflater;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.util.compile.DynamicJavaCode;
+import org.jetel.util.string.StringUtils;
 
 /**
- *  Helper class which contains some framework-wide constants defitions.<br>
+ *  Helper class which contains some framework-wide constants definitions.<br>
  *  Change the compile-time defaults here !
  *
  *@author     dpavlis
@@ -58,18 +61,33 @@ public final class Defaults {
         return in;
     }
 
-    private static void initProperties() {
-        InputStream in;
+    /**
+     * Load clover engine properties.
+     * @param configurationFile
+     */
+    private static void initProperties(String configurationFile) {
+        InputStream in = null;
         properties = new Properties();
+
+    	if(!StringUtils.isEmpty(configurationFile)) {
+    		//try to use given file name as a source of properties
+    		try {
+				in = new FileInputStream(configurationFile);
+			} catch (FileNotFoundException e) {
+	            logger.warn("Unable to load default properties from: " + configurationFile);
+			}
+    	}
+    	if(in == null) {
+    		//other way use bundled configuration file inside engine binary package
+	        in = loadProperties(System.getProperty("cloveretl.properties"));
+	        if (in == null) {
+	        	in = loadProperties("defaultProperties");
+	        }
+    	}
+    	
         try {
-            in = loadProperties(System.getProperty("cloveretl.properties"));
-            if (in == null) {
-                in = loadProperties("defaultProperties");
-            }
             properties.load(in);
             in.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -91,8 +109,12 @@ public final class Defaults {
         return new Boolean(properties.getProperty(key, Boolean.toString(def))).booleanValue();
     }
     
-    public static void init() {
-        initProperties();
+//    public static void init() {
+//    	init(null);
+//    }    
+    
+    public static void init(String configurationFile) {
+        initProperties(configurationFile);
         
         DEFAULT_INTERNAL_IO_BUFFER_SIZE = getIntProperties("DEFAULT_INTERNAL_IO_BUFFER_SIZE", 32768);
         DEFAULT_DATE_FORMAT = getStringProperties("DEFAULT_DATE_FORMAT", "yyyy-MM-dd");
@@ -105,7 +127,14 @@ public final class Defaults {
         DEFAULT_PATH_SEPARATOR_REGEX = getStringProperties("DEFAULT_FILENAME_SEPARATOR_REGEX", ";");
         DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE = getIntProperties("DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE", 2048);
         DEFAULT_PLUGINS_DIRECTORY = getStringProperties("DEFAULT_PLUGINS_DIRECTORY", "./plugins");
-        
+
+        String compiler = getStringProperties("DEFAULT_JAVA_COMPILER", DynamicJavaCode.CompilerType.internal.name());
+        try {
+            DEFAULT_JAVA_COMPILER = DynamicJavaCode.CompilerType.valueOf(compiler); 
+        } catch (Exception e){
+        	DEFAULT_JAVA_COMPILER = DynamicJavaCode.CompilerType.internal;
+        }
+
         Record.init();
         DataFieldMetadata.init();
         DataParser.init();
@@ -115,6 +144,7 @@ public final class Defaults {
         Lookup.init();
         WatchDog.init();
         GraphProperties.init();
+        InternalSortDataRecord.init();
         Graph.init();
     }
     
@@ -159,6 +189,11 @@ public final class Defaults {
      *  Paths separator is defined in DEFAULT_PATH_SEPARATOR_REGEX property.
      */
     public static String DEFAULT_PLUGINS_DIRECTORY;// = "./plugins"
+    
+    /**
+     * Which java compiler implementation will be used for all inline java code.
+     */
+    public static DynamicJavaCode.CompilerType DEFAULT_JAVA_COMPILER;
     
     /**
      *  Defaults regarding DataRecord structure/manipulation
@@ -361,7 +396,7 @@ public final class Defaults {
          * @since    July 30, 2002
          */
         
-        public static int WATCHDOG_SLEEP_INTERVAL;// = 500;     
+        public static int WATCHDOG_SLEEP_INTERVAL;// = 1;     
         /**
          *  how often is watchdog reporting about graph progress
          *
@@ -377,7 +412,7 @@ public final class Defaults {
          *
          * @since    October 1, 2002
          */
-        public static int NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;// = 5;
+        public static int NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;// = 2500;
 
     }
     
@@ -387,6 +422,17 @@ public final class Defaults {
         }
         
         public static String PROPERTY_PLACEHOLDER_REGEX;// = "\\$\\{(\\w+)\\}";
+    }
+    
+    public final static class InternalSortDataRecord {
+    	public static void init() {
+    		DEFAULT_INTERNAL_SORT_BUFFER_CAPACITY = getIntProperties("InternalSortDataRecord.DEFAULT_INTERNAL_SORT_BUFFER_CAPACITY", 2000);
+    	}
+    	
+    	/**
+    	 * Size of internal buffer of internal record sorter. Specified in record count.
+    	 */
+    	public static int DEFAULT_INTERNAL_SORT_BUFFER_CAPACITY;
     }
 
 

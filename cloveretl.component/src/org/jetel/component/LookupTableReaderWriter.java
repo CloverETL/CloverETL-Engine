@@ -205,18 +205,14 @@ public class LookupTableReaderWriter extends Node {
 			return status;
 		}
 
-        try {
-            init();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        } finally {
-        	free();
-        }
-        
+		lookupTable = getGraph().getLookupTable(lookupTableName);
+		if (lookupTable == null) {
+            ConfigurationProblem problem = new ConfigurationProblem("Lookup table \"" + lookupTableName + 
+        			"\" not found.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+             problem.setAttributeName(XML_LOOKUP_TABLE_ATTRIBUTE);
+             status.add(problem);
+		}
+
         return status;
 	}
 }

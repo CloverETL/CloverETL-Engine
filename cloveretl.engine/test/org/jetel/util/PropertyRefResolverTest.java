@@ -27,16 +27,15 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
-import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.util.property.PropertyRefResolver;
 
 public class PropertyRefResolverTest extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        Defaults.init();
-        
+    	EngineInitializer.initEngine(null, null, null);
     }
 
     protected void tearDown() throws Exception {

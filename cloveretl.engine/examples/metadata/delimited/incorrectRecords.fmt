@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="incorrectRecords" recordSize="-1" type="delimited">
+<Field delimiter=";" name="recNo" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="fieldNo" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="offendindValue" nullable="true" shift="0" type="string"/>
+<Field delimiter="\n" name="errmes" nullable="true" shift="0" type="string"/>
+</Record>

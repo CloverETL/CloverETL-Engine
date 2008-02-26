@@ -29,6 +29,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 import org.jetel.data.Defaults;
+import org.jetel.graph.runtime.EngineInitializer;
 
 /**
  * This class provides static methods for working with ByteBuffer in association
@@ -108,7 +109,7 @@ public final class ByteBufferUtils {
      */
     public static void rewrite(InputStream in, OutputStream out, long bytes)throws IOException{
     	if (Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE == 0){
-    		Defaults.init();
+    	    EngineInitializer.initEngine(null, null, null);
     	}
     	ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
     	ReadableByteChannel reader = Channels.newChannel(in);

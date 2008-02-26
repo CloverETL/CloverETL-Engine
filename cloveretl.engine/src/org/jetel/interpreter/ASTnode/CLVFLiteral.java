@@ -17,7 +17,6 @@ import org.jetel.interpreter.TransformLangParserVisitor;
 import org.jetel.interpreter.data.TLDateValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLStringValue;
-import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 
 public class CLVFLiteral extends SimpleNode implements TransformLangParserConstants {
@@ -31,8 +30,7 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
     private static DateFormat dateTimeFormat=new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
     
 	String valueImage; 
-    public Object value;
-    public TLValue valueTL;
+    public Object valueObj;
 	int literalType;
 	
 	public CLVFLiteral(int id) {
@@ -49,62 +47,63 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 	}
 	
 	public void init() throws org.jetel.interpreter.TransformLangExecutorRuntimeException {
+		super.init();
 		try{
 			switch(literalType){
 			case FLOATING_POINT_LITERAL:
                 if (valueImage.endsWith(DECIMAL_DISTINCTER_LOWERCASE) || 
                         valueImage.endsWith(DECIMAL_DISTINCTER_UPPERCASE)){
-                    valueTL=new TLNumericValue(TLValueType.DECIMAL,DecimalFactory.getDecimal(valueImage.substring(0,valueImage.length()-1)));
+                    value=new TLNumericValue(TLValueType.DECIMAL,DecimalFactory.getDecimal(valueImage.substring(0,valueImage.length()-1)));
                 }else{
-                    valueTL=new TLNumericValue(TLValueType.DOUBLE,new CloverDouble( Double.parseDouble(valueImage)));
+                    value=new TLNumericValue(TLValueType.DOUBLE,new CloverDouble( Double.parseDouble(valueImage)));
                 }
 				break;
 			case STRING_LITERAL:
-                 valueTL=new TLStringValue(valueImage);
+                 value=new TLStringValue(valueImage);
 				break;
 			case INTEGER_LITERAL:
                 // determine size of Integere literal
                 if (valueImage.endsWith(LONG_DISTINCTER_UPPERCASE) || 
                         valueImage.endsWith(LONG_DISTINCTER_LOWERCASE)) {
-                    valueTL=new TLNumericValue(TLValueType.LONG,new CloverLong(Long.parseLong(valueImage.substring(0,valueImage.length()-1))));
+                    value=new TLNumericValue(TLValueType.LONG,new CloverLong(Long.parseLong(valueImage.substring(0,valueImage.length()-1))));
                 } else {
                     // try to parse as INT first, if error then LONG
                     try {
-                        valueTL=new TLNumericValue(TLValueType.INTEGER,new CloverInteger(Integer.parseInt(valueImage)));
+                        value=new TLNumericValue(TLValueType.INTEGER,new CloverInteger(Integer.parseInt(valueImage)));
                     } catch (NumberFormatException ex) {
-                        valueTL=new TLNumericValue(TLValueType.LONG,new CloverLong(Long.parseLong(valueImage)));
+                        value=new TLNumericValue(TLValueType.LONG,new CloverLong(Long.parseLong(valueImage)));
                     }
                 }
 				break;
             case HEX_LITERAL:
                 // try to parse as INT first, if error then LONG
                 try{
-                    valueTL=new TLNumericValue(TLValueType.INTEGER,new CloverInteger(  Integer.parseInt(valueImage.substring(2),16)));
+                    value=new TLNumericValue(TLValueType.INTEGER,new CloverInteger(  Integer.parseInt(valueImage.substring(2),16)));
                 }catch(NumberFormatException ex){
-                    valueTL=new TLNumericValue(TLValueType.LONG,new CloverLong( Long.parseLong(valueImage.substring(2),16)));
+                    value=new TLNumericValue(TLValueType.LONG,new CloverLong( Long.parseLong(valueImage.substring(2),16)));
                 }
             break;
             case OCTAL_LITERAL:
                 // try to parse as INT first, if error then LONG
                 try{
-                    valueTL=new TLNumericValue(TLValueType.INTEGER,new CloverInteger(Integer.parseInt(valueImage.substring(1),8)));
+                    value=new TLNumericValue(TLValueType.INTEGER,new CloverInteger(Integer.parseInt(valueImage.substring(1),8)));
                 }catch(NumberFormatException ex){
-                    valueTL=new TLNumericValue(TLValueType.LONG,new CloverLong( Long.parseLong(valueImage.substring(1),8)));
+                    value=new TLNumericValue(TLValueType.LONG,new CloverLong( Long.parseLong(valueImage.substring(1),8)));
                 }
             break; 
 			case DATE_LITERAL:
 				//DateFormat dateFormat=new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
-                 valueTL=new TLDateValue(dateFormat.parse(valueImage));
+                 value=new TLDateValue(dateFormat.parse(valueImage));
 				break;
 			case DATETIME_LITERAL:
 				//DateFormat dateFormat2=new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
-                 valueTL=new TLDateValue(dateTimeFormat.parse(valueImage));
+                 value=new TLDateValue(dateTimeFormat.parse(valueImage));
 				break;
 			case BOOLEAN_LITERAL:
-                 valueTL=Boolean.parseBoolean(valueImage) ? Stack.TRUE_VAL : Stack.FALSE_VAL;
+                 value=Boolean.parseBoolean(valueImage) ? Stack.TRUE_VAL : Stack.FALSE_VAL;
 				break;
             case NULL_LITERAL:
-                valueTL=Stack.NULL_VAL;
+                value=Stack.NULL_VAL;
                 break;
 			default:
 				throw new TransformLangExecutorRuntimeException(this,new Object[0],"Can't handle datatype "
@@ -117,7 +116,7 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 		}catch(Exception ex){
 		    throw new TransformLangExecutorRuntimeException(this,new Object[0],ex.getClass().getName()+" : ["+tokenImage[literalType]+"] : Unrecognized value: "+valueImage);
 		}
-		value=valueTL.getValue();
+		valueObj=value.getValue();
 	}
 	
 	public void setVal(int literalType, String valueImage){

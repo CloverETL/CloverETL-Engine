@@ -288,8 +288,44 @@ public class CloverDataWriter extends Node {
 		try {
 			out.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new ComponentNotReadyException(e);
 		}
+		try{//create output stream and rewrite existing data
+			if (compressData) {
+				ZipInputStream zipData = null;
+//				if append=true existing file has to be renamed
+				File dataOriginal;
+				File data = new File(fileURL + ".tmp");
+				dataOriginal = new File(fileURL);
+				if (append && dataOriginal.exists()) {
+					dataOriginal.renameTo(data);
+					zipData = new ZipInputStream(new FileInputStream(data));
+					//find entry with data
+					while (!zipData.getNextEntry().getName().equalsIgnoreCase(
+							CloverDataFormatter.DATA_DIRECTORY + fileName)) {}
+				}
+				//create new zip file
+				out = new ZipOutputStream(new FileOutputStream(fileURL));
+				//set compress level if given
+				if (compressLevel != -1){
+					((ZipOutputStream)out).setLevel(compressLevel);
+				}
+				((ZipOutputStream)out).putNextEntry(new ZipEntry(
+						CloverDataFormatter.DATA_DIRECTORY + fileName));
+				//rewrite existing data to new zip file
+				if (append && data.exists()){
+					ByteBufferUtils.rewrite(zipData,out);
+					zipData.close();
+				}
+			}else{//compressData = false
+				String parentDir = new File(fileURL).getParent();
+				String dir = parentDir != null ? parentDir + CloverDataFormatter.FILE_SEPARATOR : "";
+				out = new FileOutputStream(dir + fileName, append);
+			}
+		}catch(IOException ex){
+			throw new ComponentNotReadyException(ex);
+		}
+        formatter.setDataTarget(out);
 	}
 	
 	/**

@@ -191,7 +191,7 @@ public class DataReader extends Node {
 							((IntegerDataField) logRecord.getField(0))
 									.setValue(bdfe.getRecordNumber());
 							((IntegerDataField) logRecord.getField(1))
-									.setValue(bdfe.getFieldNumber());
+									.setValue(bdfe.getFieldNumber() + 1);
 							((StringDataField) logRecord.getField(2)).setValue(bdfe
 									.getOffendingValue());
 							((StringDataField) logRecord.getField(3)).setValue(bdfe
@@ -228,7 +228,7 @@ public class DataReader extends Node {
             && logMetadata.getField(3).getType() == DataFieldMetadata.STRING_FIELD;
         
         if(!ret) {
-            logger.warn("The log port metedata has invalid format (expected data fields - integer, string, string)");
+            logger.warn("The log port metadata has invalid format (expected data fields - integer (record number), integer (field number), string (raw record), string (error message)");
         }
         
         return ret;

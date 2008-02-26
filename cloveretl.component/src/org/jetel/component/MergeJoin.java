@@ -335,6 +335,15 @@ public class MergeJoin extends Node {
 	@Override
 	public Result execute() throws Exception {
 		for (loadNext(); minCnt > 0 && runIt; loadNext()) {
+			if (!reader[DRIVER_ON_PORT].hasData()) {
+				for (int i = 1; i < reader.length; i++){
+					while (reader[i].hasData()) {
+						//wait for eof on slave
+						reader[i].loadNextRun();
+					}
+				}
+				break;
+			}
 			if (join == Join.INNER && minCnt != inputCnt) { // not all records for current key available
 				continue;
 			}
@@ -827,6 +836,8 @@ public class MergeJoin extends Node {
 		 * @return
 		 */
 		public int compare(InputReader other);
+		
+		public boolean hasData();
 	}
 
 	/**
@@ -862,6 +873,7 @@ public class MergeJoin extends Node {
 			this.rec[CURRENT].init();
 			this.rec[NEXT].init();
 			recCounter = 0;
+			blocked = false;
 		}
 		
 		public void free() {
@@ -939,6 +951,10 @@ public class MergeJoin extends Node {
 				return -1;
 			}
 			return key.compare(other.getKey(), rec1, rec2);
+		}
+
+		public boolean hasData() {
+			return rec[NEXT] != null;
 		}		
 
 	}
@@ -1070,6 +1086,11 @@ public class MergeJoin extends Node {
 			}
 			return key.compare(other.getKey(), rec1, rec2);
 		}
+		
+		public boolean hasData() {
+			return rec[NEXT] != null;
+		}		
+
 	}
 
 	/**
@@ -1183,6 +1204,11 @@ public class MergeJoin extends Node {
 			}
 			return key.compare(other.getKey(), rec1, rec2);
 		}
+	
+		public boolean hasData() {
+			return rec[NEXT] != null;
+		}		
+
 	}
 
 	public String getCharset() {
