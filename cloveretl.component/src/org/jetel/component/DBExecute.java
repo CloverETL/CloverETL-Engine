@@ -63,9 +63,9 @@ import org.w3c.dom.Text;
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>This component executes specified command(s) (SQL/DML) against specified DB</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
- * <td></td></tr>
+ * <td>[0]- stored procedure input parameters</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
- * <td></td></tr>
+ * <td>[0]- stored procedure output parameters and/or query result set</td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
  * </table>
@@ -75,14 +75,28 @@ import org.w3c.dom.Text;
  *  <tr><td><b>type</b></td><td>"DB_EXECUTE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
- *  <tr><td><b>sqlQuery</b></td><td>SQL/DML/DDL statement(s) which has to be executed on database.
- *  If several statements should be executed, separate them by [;] (semicolon - default value; see sqlStatementDelimiter). They will be executed one by one.</td>
+ *  <tr><td><b>sqlQuery</b></td><td>SQL/DML/DDL statement(s) which has to be executed on database. In case you want to
+ *  call stored procedure or function with parameters or producing output data set, it has to be in form:
+ *  <i>{[? = ]call procedreName([?[,?...]])}</i> (Note: remember to close statement in curly brackets), when input/output parameters
+ *  has to be set in proper attribute. If several statements should be executed, separate them by [;] (semicolon - default value; see sqlStatementDelimiter). They will be executed one by one.</td>
  *  </tr>
+ *  <tr><td><b>inParameters</b></td><td>when calling stored procedure/function with input parameters. Maps out 
+ *  which input fields would be treated as proper input parameters. Parameters are counted from 1. Form:<i>
+ *  1:=$inField1;...n:=$infieldN<i></td>
+ *  <tr><td><b>outParameters</b></td><td>when calling stored procedure/function with output parameters or returning value. Maps out 
+ *  which output fields would be treated as proper output parameters. Parameters are counted from 1. If function return 
+ *  a value, this is the first parameter Form:<i> 1:=$outField1;...n:=$outfieldN<i></td>
+ *  <tr><td><b>outputFields</b></td><td>when stored procedure/function returns set of data its output will be parsed
+ *  to given output fields. This is list of output fields delimited by semicolon.<i></td>
  *  <tr><td><b>sqlStatementDelimiter</b><br><i>optional</i></td><td>delimiter of sql statement in sqlQuery attribute</td>
  *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by the url</td>
  *  <tr><td><b>charset </b><i>optional</i></td><td>encoding of extern query</td></tr>
- *  <tr><td><b>inTransaction</b></td><td>boolean value (Y/N) specifying whether statement(s) should be executed
- * in transaction. If Yes, then failure of one statement means that all changes will be rolled back by database.<br>
+ *  <tr><td><b>inTransaction<br><i>optional</i></b></td><td>one of: <i>ONE,SET,ALL</i> specifying whether statement(s) should be executed
+ * in transaction. For <ul><li>ONE - commit is perform after each query execution</li>
+ * <li>SET - for each input record there are executed all statements. After set of statements there is called commit, so if 
+ * error occurred during execution of any statement, all statements for this record would be rolled back</li>
+ * <li>ALL - commit is called only after all statements, so if error occurred all operations would be rolled back</li></ul>
+ * Default is <i>SET</i>.<br>
  * <i>Works only if database supports transactions.</i></td></tr>
  *  <tr><td><b>printStatements</b><br><i>optional</i></td><td>Specifies whether SQL commands are outputted to stdout. Default - No</td></tr>
  *  <tr><td><b>callStatement</b><br><i>optional</i></td><td>boolean value (Y/N) - specifies whether SQL commands should be treated as stored procedure calls - using JDBC CallableStatement. Default - "N"</td></tr>
@@ -100,11 +114,28 @@ import org.w3c.dom.Text;
  *	insert into testTab ('nobody');
  *	insert into testTab ('somebody'); 
  *  &lt;/SQLCode&gt;
- *  &lt;/Node&gt;
- *  </pre>
- *  <br>
+ *  &lt;/Node&gt; </pre>
+ *  <pre>
+ *  &lt;Node dbConnection="Connection1" id="DB_EXECUTE1" type="DB_EXECUTE"&gt;
+ *    &lt;attr name="sqlQuery">create table proc_table (
+ *  	id INTEGER,
+ * 	    string VARCHAR(80),
+ * 	    date DATETIME
+ *    );
+ *    CREATE PROCEDURE SPDownload
+ *      &#64;last_dl_ts DATETIME
+ *    AS
+ *    BEGIN
+ *      SELECT id, string, date
+ *        FROM proc_table
+ *           WHERE date >=  &#64;last_dl_ts
+ *    END;&gt;&lt;/attr&gt;
+ * &lt;/Node&gt;</pre>
+ * <pre>
+ * &lt;Node callStatement="true" dbConnection="Connection1" id="DB_EXECUTE2" inParameters="1:=$date" 
+ * 			outputFields="id;string;date" type="DB_EXECUTE" sqlQuery="{call SPDownload(?)}" &gt;
  *
- * @author      dpavlis
+ * @author      dpavlis, avackova (avackova@javlinconsulting.cz)
  * @since       Jan 17 2004
  * @revision    $Revision$
  * @created     22. ?ervenec 2003
