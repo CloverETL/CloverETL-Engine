@@ -525,6 +525,7 @@ public class DBExecute extends Node {
 	}
 
 	public static Map<Integer, String> convertMappingToMap(String mapping){
+		if (StringUtils.isEmpty(mapping)) return null;
 		String[] mappings = mapping.split(Defaults.Component.KEY_FIELDS_DELIMITER);
 		HashMap<Integer, String> result = new HashMap<Integer, String>();
 		int assignIndex;
