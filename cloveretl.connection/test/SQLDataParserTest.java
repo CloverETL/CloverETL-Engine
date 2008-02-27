@@ -23,12 +23,11 @@ public class SQLDataParserTest extends TestCase {
 	private DataRecord record;
 
 	protected void setUp() {
-	    EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
+	    EngineInitializer.initEngine("../cloveretl.engine/plugins", null,null);
 		DataRecordMetadata metadata = null;
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 		DBConnection aDBConnection = null;
 
-		EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
 		try {
 			// metadata = xmlReader.read(new
 			// FileInputStream("config\\test\\rec_def\\db_null_def_rec.xml"));
