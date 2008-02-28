@@ -618,7 +618,11 @@ public class MysqlDataWriter extends Node {
 		command.addBooleanParam(MYSQL_COMPRESS_PARAM, MYSQL_COMPRESS_SWITCH);
 		command.addParam(MYSQL_DEFAULT_CHARACTER_SET_PARAM, MYSQL_DEFAULT_CHARACTER_SET_SWITCH, null);
 
-		command.addParam(null, MYSQL_EXECUTE_SWITCH, "source " + createCommandFile());
+		String commandFileName = createCommandFile();
+		if (ProcBox.isWindowsPlatform()) {
+			commandFileName = backslashToSlash(commandFileName);
+		}
+		command.addParam(null, MYSQL_EXECUTE_SWITCH, "source " + commandFileName);
 		command.addBooleanParam(MYSQL_FORCE_PARAM, MYSQL_FORCE_SWITCH);
 		command.addBooleanParam("", MYSQL_LOCAL_INFILE_SWITCH, true);
 		command.addBooleanParam(MYSQL_NO_BEEP_PARAM, MYSQL_NO_BEEP_SWITCH);
@@ -693,8 +697,8 @@ public class MysqlDataWriter extends Node {
 		
 		String dataFilePath = dataFile.getCanonicalPath();
 		if (ProcBox.isWindowsPlatform()) {
-			// convert "C:\examples\xxx.dat" to "C:\\examples\\xxx.dat"
-			dataFilePath = StringUtils.specCharToString(dataFilePath);
+			// convert "C:\examples\xxx.dat" to "C:/examples/xxx.dat"
+			dataFilePath = backslashToSlash(dataFilePath);
 		}		
 		command.append(StringUtils.quote(dataFilePath));
 	
@@ -761,6 +765,28 @@ public class MysqlDataWriter extends Node {
 		return command.getCommand();
 	}
 
+	/**
+	 * Convert each backslash in string to slash.
+	 * @param string string with backslashes
+	 * @return string with slashes
+	 */
+	private static String backslashToSlash(CharSequence string) {
+        if (string == null)
+        	return null;
+
+        StringBuffer copy = new StringBuffer();
+		char character;
+		for (int i = 0; i < string.length(); i++) {
+			character = string.charAt(i);
+			if (character == '\\') {
+				copy.append('/');
+			} else {
+				copy.append(character);
+			}
+		}
+		return copy.toString();
+	}
+	
 	/**
 	 * Description of the Method
 	 * 
