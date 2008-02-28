@@ -64,5 +64,10 @@ public interface IGraphRuntimeContext {
      * @return additional properties for processed graph
      */
     public Properties getAdditionalProperties();
-    
+
+    /**
+     * @return password for decryption connection's passwords
+     */
+    public String getPassword();
+
 }

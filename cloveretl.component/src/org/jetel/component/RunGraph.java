@@ -49,9 +49,11 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.GraphExecutor;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.WatchDog;
+import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
@@ -517,16 +519,13 @@ public class RunGraph extends Node{
         GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		watchdog = getGraph().getWatchDog();
 		
-		//GraphExecutor graphExecutor = new GraphExecutor();
-		GraphExecutor graphExecutor =  watchdog.getGraphExecutor();
-		
         Future<Result> futureResult = null;                
         
         String password = null; // TODO
 
         TransformationGraph graph = null;
 		try {
-			graph = GraphExecutor.loadGraph(in, runtimeContext.getAdditionalProperties(), password);
+			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext.getAdditionalProperties());
         } catch (XMLConfigurationException e) {
             output.getField(2).setValue("Error in reading graph from XML !" + e.getMessage());
             return false;
@@ -539,7 +538,8 @@ public class RunGraph extends Node{
         Result result = Result.N_A;
         try {
     		try {
-    			futureResult = graphExecutor.runGraph( graph, runtimeContext);
+    			EngineInitializer.initGraph(graph, runtimeContext);
+    			futureResult = runGraph.executeGraph(graph, runtimeContext);
     			//futureResult = graphExecutor.runGraph(in, runtimeContext, password);
     			// graphExecutor.getWatchDog();
     		} catch (ComponentNotReadyException e) {

@@ -385,9 +385,9 @@ public final class Defaults {
     
     public final static class WatchDog {
         public static void init() {
-            WATCHDOG_SLEEP_INTERVAL = getIntProperties("WatchDog.WATCHDOG_SLEEP_INTERVAL", 500);
-            DEFAULT_WATCHDOG_TRACKING_INTERVAL = getIntProperties("WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL", 30000);
-            NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = getIntProperties("WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS", 5);
+            WATCHDOG_SLEEP_INTERVAL = getIntProperties("WatchDog.WATCHDOG_SLEEP_INTERVAL", 1);
+            DEFAULT_WATCHDOG_TRACKING_INTERVAL = getIntProperties("WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL", 5000);
+            NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = getIntProperties("WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS", 1000);
         }
 
         /**
@@ -402,7 +402,7 @@ public final class Defaults {
          *
          * @since    July 30, 2002
          */
-        public static int DEFAULT_WATCHDOG_TRACKING_INTERVAL;// = 2000;
+        public static int DEFAULT_WATCHDOG_TRACKING_INTERVAL;// = 5000;
 
         /**
          *  One tick is one awakening of watch dog. Sleep interval * number_of_ticks
@@ -412,7 +412,7 @@ public final class Defaults {
          *
          * @since    October 1, 2002
          */
-        public static int NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;// = 2500;
+        public static int NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;// = 1000;
 
     }
     

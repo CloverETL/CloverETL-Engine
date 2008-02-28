@@ -34,14 +34,18 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.runtime.EngineInitializer;
-import org.jetel.graph.runtime.GraphExecutor;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.graph.runtime.IThreadManager;
+import org.jetel.graph.runtime.SimpleThreadManager;
+import org.jetel.graph.runtime.WatchDog;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.file.FileUtils;
 
@@ -124,13 +128,10 @@ public class runGraph {
 	 * @param  args  Description of the Parameter
 	 */
 	public static void main(String args[]) {
-		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-		
         boolean loadFromSTDIN = false;
         String pluginsRootDirectory = null;
         boolean onlyCheckConfig = false;
         String logHost = null;
-        String password = null;
         String graphFileName = null;
         String configFileName = null;
         
@@ -149,6 +150,7 @@ public class runGraph {
         Level logLevel = null;
         
         // process command line arguments
+		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
         for (int i = 0; i < args.length; i++) {
             if (args[i].startsWith(VERBOSE_SWITCH)) {
                 runtimeContext.setVerboseMode(true);
@@ -198,7 +200,7 @@ public class runGraph {
                 pluginsRootDirectory = args[i];
             } else if (args[i].startsWith(PASSWORD_SWITCH)) {
                 i++;
-                password = args[i];
+                runtimeContext.setPassword(args[i]);
             } else if (args[i].startsWith(LOAD_FROM_STDIN_SWITCH)) {
                 loadFromSTDIN = true;
             } else if (args[i].startsWith(LOG_HOST_SWITCH)) {
@@ -247,6 +249,9 @@ public class runGraph {
         // engine initialization - should be called only once
         EngineInitializer.initEngine(pluginsRootDirectory, configFileName, logHost);
 
+        //tohle je nutne odstranit - runtimeContext je potreba vytvorit az po initiazlizaci enginu!!! Kokon
+        runtimeContext.setTrackingInterval(Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL);
+        
         // prepare input stream with XML graph definition
         InputStream in = null;
         if (loadFromSTDIN) {
@@ -264,9 +269,10 @@ public class runGraph {
 
 
         TransformationGraph graph = null;
+        Future<Result> futureResult = null;;
 		try {
-			graph = GraphExecutor.loadGraph(in, runtimeContext.getAdditionalProperties(), password);
-	        runGraph(graph, runtimeContext);
+			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext.getAdditionalProperties());
+	        futureResult = executeGraph(graph, runtimeContext);
         } catch (XMLConfigurationException e) {
             logger.error("Error in reading graph from XML !", e);
             if (runtimeContext.isVerboseMode()) {
@@ -279,17 +285,6 @@ public class runGraph {
                 e.printStackTrace(System.err);
             }
             System.exit(-1);
-		} 
-    }
-
-
-	private static void runGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) {
-        GraphExecutor graphExecutor = new GraphExecutor();
-        Future<Result> futureResult = null;
-		try {
-			if (!graph.isInitialized())
-				graphExecutor.initGraph(graph);
-			futureResult = graphExecutor.runGraph( graph, runtimeContext);
 		} catch (ComponentNotReadyException e) {
             logger.error("Error during graph initialization !", e);
             if (runtimeContext.isVerboseMode()) {
@@ -302,7 +297,7 @@ public class runGraph {
                 e.printStackTrace(System.err);
             }
             System.exit(-1);
-        }
+		} 
         
         Result result = Result.N_A;
 		try {
@@ -340,6 +335,17 @@ public class runGraph {
             System.err.println("Execution of graph failed !");
             System.exit(result.code());
         }
+
+    }
+
+
+	public static Future<Result> executeGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
+		if (!graph.isInitialized())
+			EngineInitializer.initGraph(graph, runtimeContext);
+
+        IThreadManager threadManager = new SimpleThreadManager();
+        WatchDog watchDog = new WatchDog(threadManager, graph, runtimeContext);
+		return threadManager.executeWatchDog(watchDog);
 	}
     
     
