@@ -575,6 +575,10 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		@Override
 		public TLValue execute(TLValue[] params, TLContext context) {
+        	if (params[0].type!=TLValueType.LONG ){
+                throw new TransformLangExecutorRuntimeException(params,
+                        "long2date - wrong type of literals");
+        	}
 			TLValue val = (TLValue)context.getContext();
 			if (!(val instanceof TLDateValue)) {
 				val = TLValue.create(TLValueType.DATE);
@@ -599,6 +603,10 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		@Override
 		public TLValue execute(TLValue[] params, TLContext context) {
+        	if (params[0].type!=TLValueType.DATE ){
+                throw new TransformLangExecutorRuntimeException(params,
+                        "date2long - wrong type of literals");
+        	}
 			TLNumericValue value = (TLNumericValue)context.getContext();
         	if (value==null || !(value.type == TLValueType.LONG)){
         		// initialize
