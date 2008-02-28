@@ -36,12 +36,21 @@ import org.jetel.data.Defaults;
  */
 public class GraphRuntimeContext implements IGraphRuntimeContext {
 	
-	private int trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
-	private boolean useJMX = true;
-	private boolean verboseMode = false;
-	private Properties additionalProperties = new Properties();
-	private boolean checkConfig = true;
-
+	private int trackingInterval;
+	private boolean useJMX;
+	private boolean verboseMode;
+	private Properties additionalProperties;
+	private boolean checkConfig;
+	private String password;
+	
+	public GraphRuntimeContext() {
+		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
+		useJMX = true;
+		verboseMode = false;
+		additionalProperties = new Properties();
+		checkConfig = true;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IGraphRuntimeContext#createCopy()
 	 */
@@ -54,7 +63,7 @@ public class GraphRuntimeContext implements IGraphRuntimeContext {
 		ret.checkConfig = isCheckConfig();
 		ret.verboseMode = isVerboseMode();
 		ret.useJMX = useJMX();
-		
+		ret.password = getPassword();
 		return ret;
 	}
 
@@ -152,4 +161,19 @@ public class GraphRuntimeContext implements IGraphRuntimeContext {
 		return additionalProperties;
 	}
 
+	/**
+	 * Sets password for decryption of connection's passwords.
+	 * @param password
+	 */
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IGraphRuntimeContext#getPassword()
+	 */
+	public String getPassword() {
+		return password;
+	}
+	
 }

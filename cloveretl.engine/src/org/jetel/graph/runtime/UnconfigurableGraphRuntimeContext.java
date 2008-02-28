@@ -78,6 +78,13 @@ public class UnconfigurableGraphRuntimeContext implements IGraphRuntimeContext {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IGraphRuntimeContext#getPassword()
+	 */
+	public String getPassword() {
+		return innerRuntimeContext.getPassword();
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IGraphRuntimeContext#createCopy()
 	 */
 	public IGraphRuntimeContext createCopy() {

@@ -68,7 +68,7 @@ import org.jetel.util.string.StringUtils;
  * @revision    $Revision$
  */
 public class WatchDog implements Callable<Result>, CloverPost {
-    private GraphExecutor graphExecutor;
+    private IThreadManager threadManager;
     private int trackingInterval;
 	private Result watchDogStatus;
 	private TransformationGraph graph;
@@ -107,8 +107,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 * @param  phases  Description of the Parameter
 	 * @since          September 02, 2003
 	 */
-	public WatchDog(GraphExecutor graphExecutor, TransformationGraph graph, IGraphRuntimeContext runtimeContext) {
-		this.graphExecutor = graphExecutor;
+	public WatchDog(IThreadManager threadManager, TransformationGraph graph, IGraphRuntimeContext runtimeContext) {
+		this.threadManager = threadManager;
 		graph.setWatchDog(this);
 		this.graph = graph;
 		this.runtimeContext = runtimeContext;
@@ -125,6 +125,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
         
         //is JMX turned on?
         provideJMX = runtimeContext.useJMX();
+        
+        //passes a password from context to the running graph
+        graph.setPassword(runtimeContext.getPassword());
 	}
 
 
@@ -132,6 +135,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	public Result call() {
 		long startTimestamp = System.currentTimeMillis();
 		
+        if (runtimeContext.isVerboseMode()) {
+            // this can be called only after graph.init()
+            graph.dumpGraphConfiguration();
+        }
+
 		watchDogStatus = Result.RUNNING;
         Result result=Result.N_A;
         runIt=true;
@@ -398,7 +406,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			if ((ticker--) == 0) {
 				// reinitialize ticker
 				ticker = Defaults.WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
-
 				// gather tracking at nodes level
 				phaseMemUtilizationMax = gatherNodeLevelTracking(phase,
 						phaseMemUtilizationMax, startTimeNano, tracking);
@@ -535,18 +542,16 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 * @since                 July 31, 2002
 	 */
 	private void startUpNodes(Phase phase) {
-		GraphExecutor graphExecutor = getGraphExecutor();
-
-		synchronized(graphExecutor) {
-			while(graphExecutor.getFreeThreadsCount() < phase.getNodes().size()) { //it is sufficient, not necessary - so we have to time to time wake up and check it again
+		synchronized(threadManager) {
+			while(threadManager.getFreeThreadsCount() < phase.getNodes().size()) { //it is sufficient, not necessary - so we have to time to time wake up and check it again
 				try {
-					graphExecutor.wait(); //from time to time thread is woken up to check the condition again
+					threadManager.wait(); //from time to time thread is woken up to check the condition again
 				} catch (InterruptedException e) {
 					//DO NOTHING
 				}
 			}
 			for(Node node: phase.getNodes().values()) {
-				getGraphExecutor().executeNode(node);
+				threadManager.executeNode(node);
 				logger.debug(node.getId()+ " ... started");
 			}
 		}
@@ -578,10 +583,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
         }
         
         //now we can notify all waiting phases for free threads
-        GraphExecutor graphExecutor = getGraphExecutor();
-        synchronized(graphExecutor) {
-        	graphExecutor.releaseNodeThreads(phase.getNodes().size());
-            graphExecutor.notifyAll();
+        synchronized(threadManager) {
+        	threadManager.releaseNodeThreads(phase.getNodes().size());
+            threadManager.notifyAll();
         }
         
         phase.setResult(watchDogStatus);
@@ -816,14 +820,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		this.provideJMX = useJMX;
 	}
 
-
-	/**
-	 * @return instance of graph executor, which was used to run this graph/watchdog
-	 */
-	public GraphExecutor getGraphExecutor() {
-		return graphExecutor;
+	public IGraphRuntimeContext getGraphRuntimeContext() {
+		return runtimeContext;
 	}
-
-    
+	
 }
 

@@ -21,9 +21,14 @@ package org.jetel.graph.runtime;
 
 import java.net.URL;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 import org.apache.log4j.net.SocketAppender;
 import org.jetel.data.Defaults;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.protocols.CloverURLStreamHandlerFactory;
 import org.jetel.util.string.StringUtils;
@@ -37,6 +42,8 @@ import org.jetel.util.string.StringUtils;
  * @created 27.11.2007
  */
 public class EngineInitializer {
+
+	private static Log logger = LogFactory.getLog(EngineInitializer.class);
 
 	private static boolean alreadyInitialized = false;
 	
@@ -96,5 +103,19 @@ public class EngineInitializer {
 	    }
 	    Logger.getRootLogger().addAppender(new SocketAppender(hostAndPort[0], port));
     }
+
+	/**
+	 * Prepares graph for first run. Checks configuration and initializes.
+	 * @param graph
+	 * @throws ComponentNotReadyException
+	 */
+	public static void initGraph(TransformationGraph graph, IGraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
+		logger.info("Checking graph configuration (" + graph.getName() + ")");
+		graph.setPassword(runtimeContext.getPassword());
+		ConfigurationStatus status = graph.checkConfig(null);
+		status.log();
+		logger.info("Graph initialization (" + graph.getName() + ")");
+        graph.init();
+	}
 
 }

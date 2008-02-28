@@ -182,7 +182,21 @@ public class TransformationGraphXMLReaderWriter {
     private TransformationGraph graph;
     
     private Properties additionalProperties;
-    
+ 
+    /**
+     * Instantiates transformation graph from a given input stream and presets a given properties.
+     * @param graphStream graph in XML form stored in character stream
+     * @param properties additional properties
+     * @return transformation graph
+     * @throws XMLConfigurationException deserialization from XML fails for any reason.
+     * @throws GraphConfigurationException misconfigured graph
+     */
+	public static TransformationGraph loadGraph(InputStream graphStream, Properties properties)
+	throws XMLConfigurationException, GraphConfigurationException {
+        TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(properties);
+        return graphReader.read(graphStream);
+    }
+
 	/**
 	 *Constructor for the TransformationGraphXMLReaderWriter object
 	 *
