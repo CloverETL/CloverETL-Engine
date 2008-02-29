@@ -49,6 +49,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Edge;
+import org.jetel.graph.GraphElement;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -80,7 +81,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     private BlockingQueue <Message> inMsgQueue;
     private DuplicateKeyMap outMsgMap;
     private Throwable causeException;
-    private String causeNodeID;
+    private GraphElement causeGraphElement;
     private CloverJMX mbean;
     private volatile boolean runIt;
     private boolean threadCpuTimeIsSupported;
@@ -341,16 +342,14 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				case ERROR:
 					causeException = ((ErrorMsgBody) message.getBody())
 							.getSourceException();
-					causeNodeID = message.getSenderID();
-					logger
-							.fatal("!!! Fatal Error !!! - graph execution is aborting");
+					causeGraphElement = message.getSender();
+					logger.fatal("!!! Fatal Error !!! - graph execution is aborting");
 					logger.error("Node "
-							+ message.getSenderID()
+							+ message.getSender().getId()
 							+ " finished with status: "
 							+ ((ErrorMsgBody) message.getBody())
 									.getErrorMessage() + (causeException != null ? " caused by: " + causeException.getMessage() : ""));
-					logger.debug("Node " + message.getSenderID()
-							+ " error details:", causeException);
+					logger.debug("Node " + message.getSender().getId() + " error details:", causeException);
 					abort();
 					// printProcessingStatus(phase.getNodes().iterator(),
 					// phase.getPhaseNum());
@@ -358,12 +357,21 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					return Result.ERROR;
 				case MESSAGE:
 					synchronized (_MSG_LOCK) {
-						outMsgMap.put(message.getRecipientID(), message);
+						outMsgMap.put(message.getRecipient(), message);
 					}
 					break;
-					default:
+				case NODE_FINISHED:
+				default:
 						// do nothing, just wake up
 				}
+			}
+
+			// ------------------------------------
+			// Check that we still have some nodes running
+			// ------------------------------------
+
+			if(message != null && message.getType() == Message.Type.NODE_FINISHED) {
+				leafNodes.remove(message.getSender());
 			}
 
 			// is there any node running ?
@@ -385,19 +393,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				printTracking.execute(true);// print tracking
 				return Result.FINISHED_OK;
 				// nothing else to do in this phase
-			}
-
-			// ------------------------------------
-			// Check that we still have some nodes running
-			// ------------------------------------
-
-			leafNodesIterator = leafNodes.iterator();
-			while (leafNodesIterator.hasNext()) {
-				Node node = (Node) leafNodesIterator.next();
-				// is this Node still alive - ? doing something
-				if (node.isFinished()) {
-					leafNodesIterator.remove();
-				}
 			}
 
 			// -----------------------------------
@@ -430,7 +425,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				// we were forced to stop execution, stop all Nodes
 				logger.error("User has interrupted graph execution !!!");
 				abort();
-				causeNodeID = null;
+				causeGraphElement = null;
 				causeException = null;
 				return Result.ABORTED;
 			}
@@ -746,21 +741,20 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
     }
 
-    public Message[] receiveMessage(String recipientNodeID, @SuppressWarnings("unused")
-    final long wait) {
+    public Message[] receiveMessage(GraphElement recipient, @SuppressWarnings("unused") final long wait) {
         Message[] msg = null;
         synchronized (_MSG_LOCK) {
-            msg=(Message[])outMsgMap.getAll(recipientNodeID, new Message[0]);
+            msg=(Message[])outMsgMap.getAll(recipient, new Message[0]);
             if (msg!=null) {
-                outMsgMap.remove(recipientNodeID);
+                outMsgMap.remove(recipient);
             }
         }
         return msg;
     }
 
-    public boolean hasMessage(String recipientNodeID) {
+    public boolean hasMessage(GraphElement recipient) {
         synchronized (_MSG_LOCK ){
-            return outMsgMap.containsKey(recipientNodeID);
+            return outMsgMap.containsKey(recipient);
         }
     }
 
@@ -792,8 +786,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
      * @return the causeNodeID
      * @since 7.1.2007
      */
-    public String getCauseNodeID() {
-        return causeNodeID;
+    public GraphElement getCauseGraphElement() {
+        return causeGraphElement;
     }
 
 

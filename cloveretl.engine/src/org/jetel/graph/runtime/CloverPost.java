@@ -23,6 +23,8 @@
  */
 package org.jetel.graph.runtime;
 
+import org.jetel.graph.GraphElement;
+
 
 /**
  * @author david pavlis
@@ -32,9 +34,9 @@ package org.jetel.graph.runtime;
  */
 public interface CloverPost {
 
-    public void sendMessage(Message msg);
-    public Message[] receiveMessage(String recipientNodeID,long wait);
-    public boolean hasMessage(String recipientNodeID);
+    public void sendMessage(Message<?> msg);
+    public Message<?>[] receiveMessage(GraphElement recipient, long wait);
+    public boolean hasMessage(GraphElement recipient);
     
 //    public long getUsedMemory(Node node);
 //    public long getCpuTime(Node node);

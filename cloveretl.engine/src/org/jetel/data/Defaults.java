@@ -385,9 +385,9 @@ public final class Defaults {
     
     public final static class WatchDog {
         public static void init() {
-            WATCHDOG_SLEEP_INTERVAL = getIntProperties("WatchDog.WATCHDOG_SLEEP_INTERVAL", 1);
+            WATCHDOG_SLEEP_INTERVAL = getIntProperties("WatchDog.WATCHDOG_SLEEP_INTERVAL", 1000);
             DEFAULT_WATCHDOG_TRACKING_INTERVAL = getIntProperties("WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL", 5000);
-            NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = getIntProperties("WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS", 1000);
+            NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = getIntProperties("WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS", 1);
         }
 
         /**
@@ -396,7 +396,7 @@ public final class Defaults {
          * @since    July 30, 2002
          */
         
-        public static int WATCHDOG_SLEEP_INTERVAL;// = 1;     
+        public static int WATCHDOG_SLEEP_INTERVAL;// = 1000;     
         /**
          *  how often is watchdog reporting about graph progress
          *
@@ -412,7 +412,7 @@ public final class Defaults {
          *
          * @since    October 1, 2002
          */
-        public static int NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;// = 1000;
+        public static int NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;// = 1;
 
     }
     

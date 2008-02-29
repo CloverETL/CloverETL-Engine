@@ -23,6 +23,7 @@
  */
 package org.jetel.graph.runtime;
 
+import org.jetel.graph.GraphElement;
 import org.jetel.graph.Node;
 
 /**
@@ -30,18 +31,17 @@ import org.jetel.graph.Node;
  * @since  13.12.2006
  *
  */
-public class  Message<T> implements Comparable<Message>{
+public class Message<T> implements Comparable<Message>{
     
     public enum Type {
         MESSAGE,
-        NOTIFICATION,
+        NODE_FINISHED,
         ERROR
     }
     
     protected Type type;
-    protected String senderID;
-    protected long  senderThreadID;
-    protected String recipientID;
+    protected GraphElement sender;
+    protected GraphElement recipient;
     protected T body;
     protected int priority;
     
@@ -52,31 +52,26 @@ public class  Message<T> implements Comparable<Message>{
      * @param type
      * @param body
      */
-    public Message(String senderID,long senderThreadID,String recipientID,Type type,T body){
-        this.type=type;
-        this.body=body;
-        this.senderID=senderID;
-        this.senderThreadID=senderThreadID;
-        this.recipientID=recipientID;
-        this.priority=type.ordinal();
+    public Message(GraphElement sender, GraphElement recipient, Type type, T body) {
+        this.type = type;
+        this.body = body;
+        this.sender = sender;
+        this.recipient = recipient;
+        this.priority = type.ordinal();
     }
 
     
-    public Message(Node node,String recipientID,Type type,T body){
-        this(node.getId(),node.getNodeThread().getId(),recipientID,type,body);
-    }
-   
-    public Message(Node node,String recipientID,Type type){
-        this(node.getId(),node.getNodeThread().getId(),recipientID,type,null);
+    public Message(GraphElement sender, GraphElement recipient, Type type) {
+        this(sender, recipient, type, null);
     }
     
     
-    public static Message createErrorMessage(Node node,ErrorMsgBody exception){
-        return new Message<ErrorMsgBody>(node,null,Type.ERROR,exception);
+    public static Message<ErrorMsgBody> createErrorMessage(Node node, ErrorMsgBody exception) {
+        return new Message<ErrorMsgBody>(node, null, Type.ERROR, exception);
     }
     
-    public static Message createNotificationMessage(Node node, Object body){
-    	return new Message<Object>(node,null,Type.NOTIFICATION,body);
+    public static Message<Object> createNodeFinishedMessage(Node node) {
+    	return new Message<Object>(node, null, Type.NODE_FINISHED);
     }
     
     /**
@@ -99,48 +94,32 @@ public class  Message<T> implements Comparable<Message>{
      * @return the recipientID
      * @since 13.12.2006
      */
-    public String getRecipientID() {
-        return recipientID;
+    public GraphElement getRecipient() {
+        return recipient;
     }
 
     /**
      * @param recipientID the recipientID to set
      * @since 13.12.2006
      */
-    public void setRecipientID(String recipientID) {
-        this.recipientID = recipientID;
+    public void setRecipient(GraphElement recipient) {
+        this.recipient = recipient;
     }
 
     /**
      * @return the senderID
      * @since 13.12.2006
      */
-    public String getSenderID() {
-        return senderID;
+    public GraphElement getSender() {
+        return sender;
     }
 
     /**
      * @param senderID the senderID to set
      * @since 13.12.2006
      */
-    public void setSenderID(String senderID) {
-        this.senderID = senderID;
-    }
-
-    /**
-     * @return the senderThreadID
-     * @since 13.12.2006
-     */
-    public long getSenderThreadID() {
-        return senderThreadID;
-    }
-
-    /**
-     * @param senderThreadID the senderThreadID to set
-     * @since 13.12.2006
-     */
-    public void setSenderThreadID(long senderThreadID) {
-        this.senderThreadID = senderThreadID;
+    public void setSender(GraphElement sender) {
+        this.sender = sender;
     }
 
     /**
@@ -169,8 +148,8 @@ public class  Message<T> implements Comparable<Message>{
     
     @Override public String toString(){
         StringBuilder str=new StringBuilder(40);
-        str.append("Sender:").append(senderID).append("\n");
-        str.append("Recipient:").append(recipientID).append("\n");
+        str.append("Sender:").append(sender.getId()).append("\n");
+        str.append("Recipient:").append(recipient.getId()).append("\n");
         str.append("Type:").append(type).append("\n");
         return str.toString();
     }
