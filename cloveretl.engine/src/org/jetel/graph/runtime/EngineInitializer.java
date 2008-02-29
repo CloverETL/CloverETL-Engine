@@ -109,7 +109,7 @@ public class EngineInitializer {
 	 * @param graph
 	 * @throws ComponentNotReadyException
 	 */
-	public static void initGraph(TransformationGraph graph, IGraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
+	public static void initGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
 		logger.info("Checking graph configuration (" + graph.getName() + ")");
 		graph.setPassword(runtimeContext.getPassword());
 		ConfigurationStatus status = graph.checkConfig(null);

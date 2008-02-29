@@ -24,6 +24,7 @@ package org.jetel.graph.runtime;
 
 import java.util.Properties;
 
+import org.apache.log4j.lf5.LogLevel;
 import org.jetel.data.Defaults;
 
 /**
@@ -34,9 +35,13 @@ import org.jetel.data.Defaults;
  *
  * @created 27.11.2007
  */
-public class GraphRuntimeContext implements IGraphRuntimeContext {
-	
+public class GraphRuntimeContext {
+
+	private long runId;
+	private String logLocation;
+	private LogLevel logLevel;
 	private int trackingInterval;
+	private int trackingFlushInterval;
 	private boolean useJMX;
 	private boolean verboseMode;
 	private Properties additionalProperties;
@@ -54,7 +59,7 @@ public class GraphRuntimeContext implements IGraphRuntimeContext {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IGraphRuntimeContext#createCopy()
 	 */
-	public IGraphRuntimeContext createCopy() {
+	public GraphRuntimeContext createCopy() {
 		GraphRuntimeContext ret = new GraphRuntimeContext();
 		
 		ret.additionalProperties = new Properties();
@@ -174,6 +179,64 @@ public class GraphRuntimeContext implements IGraphRuntimeContext {
 	 */
 	public String getPassword() {
 		return password;
+	}
+
+	/**
+	 * @return the runId
+	 */
+	public long getRunId() {
+		return runId;
+	}
+
+	/**
+	 * @param runId
+	 */
+	public void setRunId(long runId) {
+		this.runId = runId;
+	}
+
+	/**
+	 * @return logLocation
+	 */
+	public String getLogLocation() {
+		return logLocation;
+	}
+
+	/**
+	 * Sets location and name of output log file.
+	 * @param logLocation to set
+	 */
+	public void setLogLocation(String logLocation) {
+		this.logLocation = logLocation;
+	}
+
+	/**
+	 * @return logLevel
+	 */
+	public LogLevel getLogLevel() {
+		return logLevel;
+	}
+
+	/**
+	 * @param logLevel the logLevel to set
+	 */
+	public void setLogLevel(LogLevel logLevel) {
+		this.logLevel = logLevel;
+	}
+
+	/**
+	 * @return trackingFlushInterval
+	 */
+	public int getTrackingFlushInterval() {
+		return trackingFlushInterval;
+	}
+
+	/**
+	 * Sets interval which is used for flushing of tracking info to logging output.
+	 * @param trackingFlushInterval to set
+	 */
+	public void setTrackingFlushInterval(int trackingFlushInterval) {
+		this.trackingFlushInterval = trackingFlushInterval;
 	}
 	
 }
