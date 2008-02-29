@@ -86,7 +86,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     private volatile boolean runIt;
     private boolean threadCpuTimeIsSupported;
     private boolean provideJMX=true;
-    private IGraphRuntimeContext runtimeContext;
+    private GraphRuntimeContext runtimeContext;
     
     private PrintTracking printTracking;
 
@@ -108,7 +108,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 * @param  phases  Description of the Parameter
 	 * @since          September 02, 2003
 	 */
-	public WatchDog(IThreadManager threadManager, TransformationGraph graph, IGraphRuntimeContext runtimeContext) {
+	public WatchDog(IThreadManager threadManager, TransformationGraph graph, GraphRuntimeContext runtimeContext) {
 		this.threadManager = threadManager;
 		graph.setWatchDog(this);
 		this.graph = graph;
@@ -814,7 +814,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		this.provideJMX = useJMX;
 	}
 
-	public IGraphRuntimeContext getGraphRuntimeContext() {
+	public GraphRuntimeContext getGraphRuntimeContext() {
 		return runtimeContext;
 	}
 	
