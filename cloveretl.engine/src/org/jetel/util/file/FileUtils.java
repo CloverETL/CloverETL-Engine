@@ -71,17 +71,13 @@ public class FileUtils {
 	// sftp protocol handler
 	public static final SFTPStreamHandler sFtpStreamHandler = new SFTPStreamHandler();
 
-	
-	/**
-	 *  Translates fileURL into full path with all references to ENV variables resolved
-	 *
-	 * @param  fileURL  fileURL possibly containing references to ENV variables
-	 * @return          The full path to file with ENV references resolved
-	 * @since           May 24, 2002
-	 */
-//	public static String getFullPath(String fileURL) {
-//		return fileURL;
-//	}
+    public static URL getFileURL(String fileURL) throws MalformedURLException {
+    	return getFileURL((URL) null, fileURL);
+    }
+
+    public static URL getFileURL(String contextURL, String fileURL) throws MalformedURLException {
+    	return getFileURL(getFileURL((URL) null, contextURL), fileURL);
+    }
     
     /**
      * Creates URL object based on specified fileURL string. Handles
