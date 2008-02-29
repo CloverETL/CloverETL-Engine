@@ -141,7 +141,7 @@ public final class TransformationGraph extends GraphElement {
             
             if(projectURLStr != null) {
                 try {
-                    projectURL = FileUtils.getFileURL(null, projectURLStr);
+                    projectURL = FileUtils.getFileURL(projectURLStr);
                 } catch (MalformedURLException e) {
                     getLogger().warn("Home project dir is not in valid URL format - " + projectURLStr);
                 }
