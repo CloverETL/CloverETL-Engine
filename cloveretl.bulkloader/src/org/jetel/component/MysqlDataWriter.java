@@ -606,6 +606,9 @@ public class MysqlDataWriter extends Node {
 	 * @throws ComponentNotReadyException when command file isn't created
 	 */
 	private String[] createCommandLineForDbLoader() throws ComponentNotReadyException {
+		if (ProcBox.isWindowsPlatform()) {
+			mysqlPath = backslashToSlash(mysqlPath);
+		}
 		MysqlCommandBuilder command = new MysqlCommandBuilder(mysqlPath, properties);
 
 		command.addBooleanParam(MYSQL_SKIP_AUTO_REHASH_PARAM, MYSQL_SKIP_AUTO_REHASH_SWITCH, true);
@@ -770,18 +773,34 @@ public class MysqlDataWriter extends Node {
 	 * @param string string with backslashes
 	 * @return string with slashes
 	 */
-	private static String backslashToSlash(CharSequence string) {
-        if (string == null)
-        	return null;
+	public static String backslashToSlash(CharSequence controlString) {
+        if(controlString == null) return null;
 
         StringBuffer copy = new StringBuffer();
 		char character;
-		for (int i = 0; i < string.length(); i++) {
-			character = string.charAt(i);
-			if (character == '\\') {
-				copy.append('/');
-			} else {
-				copy.append(character);
+		for (int i = 0; i < controlString.length(); i++) {
+			character = controlString.charAt(i);
+			switch (character) {
+				case '\n':
+					copy.append("/n");
+					break;
+				case '\t':
+					copy.append("/t");
+					break;
+				case '\r':
+					copy.append("/r");
+					break;
+                case '\b':
+                    copy.append("/b");
+                    break;
+                case '\f':
+                    copy.append("/f");
+                    break;
+                case '\\':
+                	copy.append("/");
+                	break;
+				default:
+					copy.append(character);
 			}
 		}
 		return copy.toString();
