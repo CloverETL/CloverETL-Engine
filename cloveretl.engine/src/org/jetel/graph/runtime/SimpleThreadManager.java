@@ -21,6 +21,7 @@ package org.jetel.graph.runtime;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadFactory;
 
 import org.jetel.graph.Result;
@@ -39,11 +40,10 @@ public class SimpleThreadManager implements IThreadManager {
 	public Future<Result> executeWatchDog(WatchDog watchDog) {
 		watchDog.startUpJMX();
 		
-		return Executors.newSingleThreadExecutor(new ThreadFactory() {
-			public Thread newThread(Runnable r) {
-				return new Thread(r, "WatchDog");
-			}
-		}).submit(watchDog);
+		FutureTask<Result> futureTask = new FutureTask<Result>(watchDog); 
+		new Thread(futureTask, "WatchDog").start();
+		
+		return futureTask;
 	}
 
 	/* (non-Javadoc)
