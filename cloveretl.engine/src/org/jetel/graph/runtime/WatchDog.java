@@ -86,6 +86,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     private volatile boolean runIt;
     private boolean threadCpuTimeIsSupported;
     private boolean provideJMX=true;
+    private boolean finishJMX = true; //whether the JMX mbean should be unregistered on the graph finish 
     private GraphRuntimeContext runtimeContext;
     
     private PrintTracking printTracking;
@@ -131,7 +132,34 @@ public class WatchDog implements Callable<Result>, CloverPost {
         graph.setPassword(runtimeContext.getPassword());
 	}
 
-
+	public void startUpJMX() {
+       	mbean=registerTrackingMBean(provideJMX);
+	}
+	
+	public void finishJMX() {
+        // wait to get JMX chance to propagate the message
+		if (mbean.hasClients()) {
+			long timestamp = System.currentTimeMillis();
+			try {
+				while (runIt
+						&& (System.currentTimeMillis() - timestamp) < WAITTIME_FOR_STOP_SIGNAL)
+					Thread.sleep(250);
+			} catch (InterruptedException ex) {
+				// do nothing
+			}
+		}
+        
+		printPhasesSummary();
+		
+		if(provideJMX) {
+			try {
+				mbs.unregisterMBean(jmxObjectName);
+			} catch (Exception e) {
+				logger.error("JMX error - ObjectName cannot be unregistered.", e);
+			}
+		}
+	}
+	
 	/**  Main processing method for the WatchDog object */
 	public Result call() {
 		long startTimestamp = System.currentTimeMillis();
@@ -151,7 +179,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		
         printTracking=new PrintTracking(true);
        
-       	mbean=registerTrackingMBean(provideJMX);
        	mbean.graphStarted();
 
         //disabled by Kokon
@@ -177,29 +204,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
         }
         mbean.graphFinished(result);
      
-        // wait to get JMX chance to propagate the message
-		if (mbean.hasClients()) {
-			long timestamp = System.currentTimeMillis();
-			try {
-				while (runIt
-						&& (System.currentTimeMillis() - timestamp) < WAITTIME_FOR_STOP_SIGNAL)
-					Thread.sleep(250);
-			} catch (InterruptedException ex) {
-				// do nothing
-			}
-		}
+        if(finishJMX) {
+        	finishJMX();
+        }
         
-		printPhasesSummary();
-		
-		if(provideJMX) {
-			try {
-				mbs.unregisterMBean(jmxObjectName);
-			} catch (Exception e) {
-				logger.error("JMX error - ObjectName cannot be unregistered.", e);
-			}
-		}
-		
-		logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
+        logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
 
 		return result;
 	}
@@ -816,6 +825,14 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	public GraphRuntimeContext getGraphRuntimeContext() {
 		return runtimeContext;
+	}
+
+	public boolean isFinishJMX() {
+		return finishJMX;
+	}
+
+	public void setFinishJMX(boolean finishJMX) {
+		this.finishJMX = finishJMX;
 	}
 	
 }
