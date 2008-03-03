@@ -229,7 +229,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
         // Construct the ObjectName for the MBean we will register
         try {
             jmxObjectName = new ObjectName(
-                    createMBeanName(mbeanId != null ? mbeanId : graph.getName())
+                    createMBeanName(mbeanId != null ? mbeanId : graph.getName(), this.getGraphRuntimeContext().getRunId())
             );
             // Register the  MBean
             mbs.registerMBean(mbean, jmxObjectName);
@@ -248,12 +248,21 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
     /**
      * Creates identifier for shared JMX mbean.
-     * 
      * @param defaultMBeanName
      * @return
      */
     public static String createMBeanName(String mbeanIdentifier) {
-        return "org.jetel.graph.runtime:type=" + MBEAN_NAME_PREFIX + (mbeanIdentifier != null ? mbeanIdentifier : "");
+    	return createMBeanName(mbeanIdentifier, 0);
+    }
+
+    /**
+     * Creates identifier for shared JMX mbean.
+     * @param mbeanIdentifier
+     * @param runId
+     * @return
+     */
+    public static String createMBeanName(String mbeanIdentifier, long runId) {
+        return "org.jetel.graph.runtime:type=" + MBEAN_NAME_PREFIX + (mbeanIdentifier != null ? mbeanIdentifier : "") + "_" + runId;
     }
     
 //    public void runPhase(int phaseNo){
@@ -827,12 +836,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		return runtimeContext;
 	}
 
-	public boolean isFinishJMX() {
-		return finishJMX;
-	}
-
-	public void setFinishJMX(boolean finishJMX) {
-		this.finishJMX = finishJMX;
+	public CloverJMX getCloverJmx() {
+		return mbean;
 	}
 	
 }
