@@ -19,13 +19,13 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node columnDelimiter="," database="testdb" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/postgreSqlFlat.dat" guiHeight="25" guiName="PostgreSql Data Writer" guiWidth="50" guiX="22" guiY="121" id="POSTGRESQL_DATA_WRITER0" psqlPath="psql" table="test" type="POSTGRESQL_DATA_WRITER">
+<Node columnDelimiter="," database="test" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/postgreSqlFlat.dat" guiHeight="25" guiName="PostgreSql Data Writer" guiWidth="50" guiX="22" guiY="121" id="POSTGRESQL_DATA_WRITER0" psqlPath="C:\Program Files\PostgreSQL\8.3\bin\psql.exe" table="test" host="koule" username="test" type="POSTGRESQL_DATA_WRITER">
 <attr name="parameters"><![CDATA[null=""]]></attr>
 </Node>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/postgreSqlFlat.dat" guiHeight="25" guiName="Delimited Data Reader" guiWidth="50" guiX="20" guiY="20" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
-<Node database="testdb" enabled="enabled" guiHeight="25" guiName="PostgreSql Data Writer" guiWidth="50" guiX="245" guiY="20" id="POSTGRESQL_DATA_WRITER1" psqlPath="psql" table="test" type="POSTGRESQL_DATA_WRITER" username="student" host="localhost"/>
+<Node database="test" enabled="enabled" guiHeight="25" guiName="PostgreSql Data Writer" guiWidth="50" guiX="245" guiY="20" id="POSTGRESQL_DATA_WRITER1" psqlPath="C:\Program Files\PostgreSQL\8.3\bin\psql.exe" table="test" type="POSTGRESQL_DATA_WRITER" host="koule" username="test"/>
 <Edge fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="POSTGRESQL_DATA_WRITER1:0"/>
 </Phase>
 </Graph>
