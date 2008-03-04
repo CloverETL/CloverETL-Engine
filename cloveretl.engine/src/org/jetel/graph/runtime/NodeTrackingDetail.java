@@ -159,13 +159,17 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
     }
     
     public void updateRows(PortType portType,int portNum,int rows){
-        avgRows[portType.ordinal()][portNum]=(int)((rows-totalRows[portType.ordinal()][portNum])*1000/timespan);
-        peakRows[portType.ordinal()][portNum]=Math.max(peakRows[portType.ordinal()][portNum], avgRows[portType.ordinal()][portNum]); 
-        totalRows[portType.ordinal()][portNum]=rows;
+    	if(timespan > 100) { // for too small time slice are statistic values too distorted
+	        avgRows[portType.ordinal()][portNum]=(int)((rows-totalRows[portType.ordinal()][portNum])*1000/timespan);
+	        peakRows[portType.ordinal()][portNum]=Math.max(peakRows[portType.ordinal()][portNum], avgRows[portType.ordinal()][portNum]);
+    	}
+	    totalRows[portType.ordinal()][portNum]=rows;
     }
 
     public void updateBytes(PortType portType,int portNum,long bytes){
-        avgBytes[portType.ordinal()][portNum]=(int)((bytes-totalBytes[portType.ordinal()][portNum])*1000/timespan);
+    	if(timespan > 100) { // for too small time slice are statistic values too distorted
+    		avgBytes[portType.ordinal()][portNum]=(int)((bytes-totalBytes[portType.ordinal()][portNum])*1000/timespan);
+    	}
         totalBytes[portType.ordinal()][portNum]=bytes;
     }
     
