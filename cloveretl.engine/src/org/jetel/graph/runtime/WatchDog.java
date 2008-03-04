@@ -429,7 +429,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			// -----------------------------------
 			// from time to time perform some task
 			// -----------------------------------
-			if ((ticker--) == 0) {
+			if (message == null && (ticker--) == 0) {
 				// reinitialize ticker
 				ticker = Defaults.WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
 				// gather tracking at nodes level
@@ -852,7 +852,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	public CloverJMX getCloverJmx() {
 		return mbean;
 	}
-	
+
 	public boolean isFinishJMX() {
 		return finishJMX;
 	}
