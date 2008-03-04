@@ -46,6 +46,7 @@ import javax.management.ObjectName;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.MDC;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Edge;
@@ -162,6 +163,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	
 	/**  Main processing method for the WatchDog object */
 	public Result call() {
+		MDC.put("runId", runtimeContext.getRunId());
+		
 		long startTimestamp = System.currentTimeMillis();
 		
         if (runtimeContext.isVerboseMode()) {
@@ -209,6 +212,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
         }
         
         logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
+
+        MDC.remove("runId");
 
 		return result;
 	}
