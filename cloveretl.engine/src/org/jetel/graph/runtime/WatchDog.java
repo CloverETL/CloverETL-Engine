@@ -845,5 +845,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		return mbean;
 	}
 	
+	public boolean isFinishJMX() {
+		return finishJMX;
+	}
+
+	public void setFinishJMX(boolean finishJMX) {
+		this.finishJMX = finishJMX;
+	}
+	
 }
 
