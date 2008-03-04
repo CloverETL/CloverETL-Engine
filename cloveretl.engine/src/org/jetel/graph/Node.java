@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
 
+import org.apache.log4j.MDC;
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
@@ -403,11 +404,13 @@ public abstract class Node extends GraphElement implements Runnable {
                     new ErrorMsgBody(runResult.code(), runResult.message(), ex));
             getCloverPost().sendMessage(msg);
             return;
+        } finally {
+	        //sends notification - node has finished
+	        Message<Object> msg = Message.createNodeFinishedMessage(this);
+	        getCloverPost().sendMessage(msg);
+	        
+	        setNodeThread(null);
         }
-
-        //sends notification - node has finished
-        Message<Object> msg = Message.createNodeFinishedMessage(this);
-        getCloverPost().sendMessage(msg);
     }
     
     public abstract Result execute() throws Exception;
@@ -456,7 +459,12 @@ public abstract class Node extends GraphElement implements Runnable {
      */
     private void setNodeThread(Thread nodeThread) {
         this.nodeThread = nodeThread;
-		nodeThread.setName(getId());
+		if(nodeThread != null) {
+			nodeThread.setName(getId());
+			MDC.put("runId", getGraph().getWatchDog().getGraphRuntimeContext().getRunId());
+		} else {
+			MDC.remove("runId");
+		}
     }
     
 	/**
