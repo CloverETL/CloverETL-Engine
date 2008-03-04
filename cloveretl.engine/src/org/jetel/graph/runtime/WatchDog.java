@@ -89,6 +89,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     private boolean provideJMX=true;
     private boolean finishJMX = true; //whether the JMX mbean should be unregistered on the graph finish 
     private GraphRuntimeContext runtimeContext;
+    private Result result = Result.N_A;
     
     private PrintTracking printTracking;
 
@@ -163,7 +164,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	
 	/**  Main processing method for the WatchDog object */
 	public Result call() {
-        Result result=Result.N_A;
        	try {
     		MDC.put("runId", runtimeContext.getRunId());
     		
@@ -217,10 +217,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
             logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
 
             MDC.remove("runId");
-       	}catch (Exception e){
-       		String m = "Error watchdog execution";
-       		logger.error(m, e);
-       		throw new RuntimeException(m, e);
+       	} catch (RuntimeException e) {
+       		causeException = e;
+       		causeGraphElement = null;
+       		result = Result.ERROR;
+       		logger.error("Fatal error watchdog execution", e);
+       		throw e;
        	}
 
 		return result;
@@ -859,6 +861,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	public void setFinishJMX(boolean finishJMX) {
 		this.finishJMX = finishJMX;
+	}
+
+	public Result getResult() {
+		return result;
 	}
 	
 }
