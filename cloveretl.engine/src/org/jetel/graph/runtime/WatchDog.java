@@ -163,57 +163,65 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	
 	/**  Main processing method for the WatchDog object */
 	public Result call() {
-		MDC.put("runId", runtimeContext.getRunId());
-		
-		long startTimestamp = System.currentTimeMillis();
-		
-        if (runtimeContext.isVerboseMode()) {
-            // this can be called only after graph.init()
-            graph.dumpGraphConfiguration();
-        }
-
-		watchDogStatus = Result.RUNNING;
         Result result=Result.N_A;
-        runIt=true;
-		logger.info("Thread started.");
-		logger.info("Running on " + javaRuntime.availableProcessors() + " CPU(s)"
-			+ " max available memory for JVM " + javaRuntime.maxMemory() / 1024 + " KB");
-		// renice - lower the priority
-		
-        printTracking=new PrintTracking(true);
-       
-       	mbean.graphStarted();
+       	try {
+    		MDC.put("runId", runtimeContext.getRunId());
+    		
+    		long startTimestamp = System.currentTimeMillis();
+    		
+            if (runtimeContext.isVerboseMode()) {
+                // this can be called only after graph.init()
+                graph.dumpGraphConfiguration();
+            }
 
-        //disabled by Kokon
-//        Thread trackingThread=new Thread(printTracking, TRACKING_LOGGER_NAME);
-//        trackingThread.setPriority(Thread.MIN_PRIORITY);
-//        trackingThread.start();
-        
-       	Phase[] phases = graph.getPhases();
-        for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
-            result=executePhase(phases[currentPhaseNum]);
-            if(result == Result.ABORTED)      { 
-                logger.error("!!! Phase execution aborted !!!");
-                break;
-            } else if(result == Result.ERROR) {
-                logger.error("!!! Phase finished with error - stopping graph run !!!");
-                break;
+    		watchDogStatus = Result.RUNNING;
+            runIt=true;
+    		logger.info("Thread started.");
+    		logger.info("Running on " + javaRuntime.availableProcessors() + " CPU(s)"
+    			+ " max available memory for JVM " + javaRuntime.maxMemory() / 1024 + " KB");
+    		// renice - lower the priority
+    		
+            printTracking=new PrintTracking(true);
+           
+           	mbean.graphStarted();
+
+            //disabled by Kokon
+//            Thread trackingThread=new Thread(printTracking, TRACKING_LOGGER_NAME);
+//            trackingThread.setPriority(Thread.MIN_PRIORITY);
+//            trackingThread.start();
+            
+           	Phase[] phases = graph.getPhases();
+
+           	for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
+                result=executePhase(phases[currentPhaseNum]);
+                if(result == Result.ABORTED)      { 
+                    logger.error("!!! Phase execution aborted !!!");
+                    break;
+                } else if(result == Result.ERROR) {
+                    logger.error("!!! Phase finished with error - stopping graph run !!!");
+                    break;
+                }
+                
+                // force running of garbage collector
+//                logger.info("Forcing garbage collection ...");
+//                javaRuntime.runFinalization();
+//                javaRuntime.gc();
+            }
+
+           	mbean.graphFinished(result);
+            
+            if(finishJMX) {
+            	finishJMX();
             }
             
-            // force running of garbage collector
-//            logger.info("Forcing garbage collection ...");
-//            javaRuntime.runFinalization();
-//            javaRuntime.gc();
-        }
-        mbean.graphFinished(result);
-     
-        if(finishJMX) {
-        	finishJMX();
-        }
-        
-        logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
+            logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
 
-        MDC.remove("runId");
+            MDC.remove("runId");
+       	}catch (Exception e){
+       		String m = "Error watchdog execution";
+       		logger.error(m, e);
+       		throw new RuntimeException(m, e);
+       	}
 
 		return result;
 	}
