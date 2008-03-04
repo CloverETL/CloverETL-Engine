@@ -409,7 +409,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	        Message<Object> msg = Message.createNodeFinishedMessage(this);
 	        getCloverPost().sendMessage(msg);
 	        
-	        setNodeThread(null);
+	        //setNodeThread(null);
         }
     }
     
