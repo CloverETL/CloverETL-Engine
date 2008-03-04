@@ -89,7 +89,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
     private boolean provideJMX=true;
     private boolean finishJMX = true; //whether the JMX mbean should be unregistered on the graph finish 
     private GraphRuntimeContext runtimeContext;
-    private Result result = Result.N_A;
     
     private PrintTracking printTracking;
 
@@ -191,13 +190,14 @@ public class WatchDog implements Callable<Result>, CloverPost {
 //            trackingThread.start();
             
            	Phase[] phases = graph.getPhases();
-
+           	
+           	Result phaseResult = Result.N_A;
            	for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
-                result=executePhase(phases[currentPhaseNum]);
-                if(result == Result.ABORTED)      { 
+                phaseResult = executePhase(phases[currentPhaseNum]);
+                if(phaseResult == Result.ABORTED)      { 
                     logger.error("!!! Phase execution aborted !!!");
                     break;
-                } else if(result == Result.ERROR) {
+                } else if(phaseResult == Result.ERROR) {
                     logger.error("!!! Phase finished with error - stopping graph run !!!");
                     break;
                 }
@@ -207,8 +207,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 //                javaRuntime.runFinalization();
 //                javaRuntime.gc();
             }
-
-           	mbean.graphFinished(result);
+           	watchDogStatus = phaseResult;
+           	
+           	mbean.graphFinished(watchDogStatus);
             
             if(finishJMX) {
             	finishJMX();
@@ -220,12 +221,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
        	} catch (RuntimeException e) {
        		causeException = e;
        		causeGraphElement = null;
-       		result = Result.ERROR;
+       		watchDogStatus = Result.ERROR;
        		logger.error("Fatal error watchdog execution", e);
        		throw e;
        	}
 
-		return result;
+		return watchDogStatus;
 	}
 
 
@@ -863,9 +864,5 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		this.finishJMX = finishJMX;
 	}
 
-	public Result getResult() {
-		return result;
-	}
-	
 }
 
