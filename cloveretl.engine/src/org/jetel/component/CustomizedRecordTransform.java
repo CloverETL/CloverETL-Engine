@@ -1251,7 +1251,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * 
 	 * @return rules
 	 */
-	public ArrayList<String> getRules() {
+	public ArrayList<String> getRulesAsStrings() {
 		ArrayList<String> list = new ArrayList<String>();
 		Entry<String, Rule> entry;
 		for (Iterator<Entry<String, Rule>> iterator = rules.entrySet().iterator();iterator.hasNext();) {
@@ -1453,6 +1453,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 */
 	public void reset() {
 		errorMessage = null;
+	}
+
+	public void setLogger(Log logger) {
+		this.logger = logger;
 	}
 	
 }// class CustomizedRecordTransform
