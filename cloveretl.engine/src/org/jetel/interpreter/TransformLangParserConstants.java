@@ -54,50 +54,52 @@ public interface TransformLangParserConstants {
   int REC_NAME_FIELD_NUM = 56;
   int REC_NUM_FIELD_ID = 57;
   int REC_NUM_FIELD_NUM = 58;
-  int REC_NUM_ID = 59;
-  int REC_NAME_ID = 60;
-  int OPEN_PAR = 61;
-  int CLOSE_PAR = 62;
-  int INT_VAR = 63;
-  int LONG_VAR = 64;
-  int DATE_VAR = 65;
-  int DOUBLE_VAR = 66;
-  int DECIMAL_VAR = 67;
-  int BOOLEAN_VAR = 68;
-  int STRING_VAR = 69;
-  int BYTE_VAR = 70;
-  int LIST_VAR = 71;
-  int MAP_VAR = 72;
-  int RECORD_VAR = 73;
-  int OBJECT_VAR = 74;
-  int BREAK = 75;
-  int CONTINUE = 76;
-  int ELSE = 77;
-  int FOR = 78;
-  int FOR_EACH = 79;
-  int FUNCTION = 80;
-  int IF = 81;
-  int RETURN = 82;
-  int WHILE = 83;
-  int CASE = 84;
-  int ENUM = 85;
-  int IMPORT = 86;
-  int SWITCH = 87;
-  int CASE_DEFAULT = 88;
-  int DO = 89;
-  int TRY = 90;
-  int CATCH = 91;
-  int YEAR = 92;
-  int MONTH = 93;
-  int WEEK = 94;
-  int DAY = 95;
-  int HOUR = 96;
-  int MINUTE = 97;
-  int SECOND = 98;
-  int MILLISEC = 99;
-  int IDENTIFIER = 100;
-  int DATE_FIELD_LITERAL = 128;
-  int ERROR = 129;
+  int REC_NUM_WILDCARD = 59;
+  int REC_NAME_WILDCARD = 60;
+  int REC_NUM_ID = 61;
+  int REC_NAME_ID = 62;
+  int OPEN_PAR = 63;
+  int CLOSE_PAR = 64;
+  int INT_VAR = 65;
+  int LONG_VAR = 66;
+  int DATE_VAR = 67;
+  int DOUBLE_VAR = 68;
+  int DECIMAL_VAR = 69;
+  int BOOLEAN_VAR = 70;
+  int STRING_VAR = 71;
+  int BYTE_VAR = 72;
+  int LIST_VAR = 73;
+  int MAP_VAR = 74;
+  int RECORD_VAR = 75;
+  int OBJECT_VAR = 76;
+  int BREAK = 77;
+  int CONTINUE = 78;
+  int ELSE = 79;
+  int FOR = 80;
+  int FOR_EACH = 81;
+  int FUNCTION = 82;
+  int IF = 83;
+  int RETURN = 84;
+  int WHILE = 85;
+  int CASE = 86;
+  int ENUM = 87;
+  int IMPORT = 88;
+  int SWITCH = 89;
+  int CASE_DEFAULT = 90;
+  int DO = 91;
+  int TRY = 92;
+  int CATCH = 93;
+  int YEAR = 94;
+  int MONTH = 95;
+  int WEEK = 96;
+  int DAY = 97;
+  int HOUR = 98;
+  int MINUTE = 99;
+  int SECOND = 100;
+  int MILLISEC = 101;
+  int IDENTIFIER = 102;
+  int DATE_FIELD_LITERAL = 130;
+  int ERROR = 131;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -162,6 +164,8 @@ public interface TransformLangParserConstants {
     "<REC_NAME_FIELD_NUM>",
     "<REC_NUM_FIELD_ID>",
     "<REC_NUM_FIELD_NUM>",
+    "<REC_NUM_WILDCARD>",
+    "<REC_NAME_WILDCARD>",
     "<REC_NUM_ID>",
     "<REC_NAME_ID>",
     "\"(\"",

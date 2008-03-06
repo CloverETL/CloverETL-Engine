@@ -36,6 +36,7 @@ import org.jetel.interpreter.ASTnode.*;
 import org.jetel.util.string.StringUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.CharSequenceReader;
+import org.jetel.component.CustomizedRecordTransform;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +52,8 @@ import java.nio.channels.Channels;
 public class TransformLangParser extends ExpParser {
 
 		public static final String SRC_ENCODING = "UTF-8";
+		
+	   boolean wildcardMappingActive=false;
 
        DataRecordMetadata[] inRecordsMetadata;
        DataRecordMetadata[] outRecordsMetadata;
@@ -58,7 +61,8 @@ public class TransformLangParser extends ExpParser {
        Map outDataRecordsMap;
 	   ParserHelper parserHelper;       
        List<Throwable> parseExceptions;
-       String sourceFilename;
+       CustomizedRecordTransform custRecordTransform;
+       String sourceFilename;       
        boolean hasEvalNode=false;
 
        public TransformLangParser(DataRecordMetadata recordMetadata,java.io.InputStream stream){
@@ -162,6 +166,14 @@ public class TransformLangParser extends ExpParser {
       	}
       }
       
+       public final DataRecordMetadata[] getInRecordMetadata(){
+             return inRecordsMetadata;
+      }
+      
+      public final DataRecordMetadata[] getOutRecordMetadata(){
+             return outRecordsMetadata;
+      }
+      
       
      /**
       *  Returns map of function symbols where
@@ -179,6 +191,12 @@ public class TransformLangParser extends ExpParser {
      	return (CLVFFunctionDeclaration) parserHelper.functionSymbol.get(name);
      }
       
+      
+     public CustomizedRecordTransform getCustRecordTransform() {
+		if (custRecordTransform==null)
+			custRecordTransform=new CustomizedRecordTransform(null);
+		return custRecordTransform;
+	}
      
      /**
       *  Returns map of global variable symbols where
@@ -383,6 +401,8 @@ TOKEN: {
   | < REC_NAME_FIELD_NUM:  "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." <DIGIT> (<DIGIT>)* >
   | < REC_NUM_FIELD_ID:  "$" <DIGIT> (<DIGIT>)* "." (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
   | < REC_NUM_FIELD_NUM: "$" <DIGIT> (<DIGIT>)* "." <DIGIT> (<DIGIT>)* >
+  | <REC_NUM_WILDCARD: "$" (<DIGIT>) (<DIGIT>)* "." "*" >
+  | <REC_NAME_WILDCARD: "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." "*" >
 }
 
 /* Clover Record Identifiers */
@@ -636,19 +656,44 @@ void Assignment() #Assignment :
 }
 
 
-void Mapping() : // assignment of value to Clover field
+void Mapping() #void : 
+{ }
+{	
+  	DirectMapping()
+  	|WildCardMapping()
+}
+
+
+void DirectMapping() : // assignment of value to Clover field
 { Token t ;}
 {	
   	/*OutputFieldExp() */
-  (	t = <FIELD_ID> { jjtThis.setFieldName(t.image); } 
-  | t = <REC_NAME_FIELD_ID> { jjtThis.setRecordFieldName(t.image); }
-  | t= <REC_NAME_FIELD_NUM>  { jjtThis.setRecordNameFieldNum(t.image); }
-  | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t.image); }
-  | t = <REC_NUM_FIELD_NUM> { jjtThis.setRecordNumFieldNum(t.image); } 
+  (	t = <FIELD_ID> { jjtThis.setFieldName(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); } 
+  | t = <REC_NAME_FIELD_ID> { jjtThis.setRecordFieldName(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); }
+  | t= <REC_NAME_FIELD_NUM>  { jjtThis.setRecordNameFieldNum(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); }
+  | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); }
+  | t = <REC_NUM_FIELD_NUM> { jjtThis.setRecordNumFieldNum(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); } 
   	)
   	<MAPPING> 
   	
   	ConditionalOrExpression() (":" ConditionalOrExpression())*
+}
+
+void WildCardMapping() :
+{ Token t,r;}
+{
+	 ( 	 LOOKAHEAD(3)
+	 t=<REC_NUM_WILDCARD> <MAPPING> r=<REC_NUM_WILDCARD> {jjtThis.setRule(t.image,r.image,getCustRecordTransform()); }
+	 | t=<REC_NUM_WILDCARD> <MAPPING> r=<REC_NAME_WILDCARD> {jjtThis.setRule(t.image,r.image,getCustRecordTransform()); }
+	 |LOOKAHEAD(3) t=<REC_NAME_WILDCARD> <MAPPING> r=<REC_NUM_WILDCARD> {jjtThis.setRule(t.image,r.image,getCustRecordTransform()); }
+	 | t=<REC_NAME_WILDCARD> <MAPPING> r=<REC_NAME_WILDCARD> {jjtThis.setRule(t.image,r.image,getCustRecordTransform()); }
+	 )
+	 {
+	 	if (!wildcardMappingActive){
+	 		jjtThis.activate();
+	 		wildcardMappingActive=true;
+	 	}
+	 }
 }
 
 /* Other nonterminals and their productions */

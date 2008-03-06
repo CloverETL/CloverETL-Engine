@@ -5,6 +5,9 @@ package org.jetel.interpreter;
 import org.jetel.interpreter.ASTnode.*;
 				  
 
+import org.jetel.interpreter.ASTnode.*;
+				  
+
 public interface TransformLangParserVisitor
 {
   public Object visit(SimpleNode node, Object data);
@@ -14,7 +17,8 @@ public interface TransformLangParserVisitor
   public Object visit(CLVFFunctionDeclaration node, Object data);
   public Object visit(CLVFVarDeclaration node, Object data);
   public Object visit(CLVFAssignment node, Object data);
-  public Object visit(CLVFMapping node, Object data);
+  public Object visit(CLVFDirectMapping node, Object data);
+  public Object visit(CLVFWildCardMapping node, Object data);
   public Object visit(CLVFOr node, Object data);
   public Object visit(CLVFAnd node, Object data);
   public Object visit(CLVFComparison node, Object data);

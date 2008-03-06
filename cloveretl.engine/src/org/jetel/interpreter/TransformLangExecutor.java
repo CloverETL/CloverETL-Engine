@@ -25,6 +25,7 @@ import java.util.regex.Matcher;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.CustomizedRecordTransform;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.CloverInteger;
@@ -1494,7 +1495,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
     
-    public Object visit(CLVFMapping node, Object data) {
+    public Object visit(CLVFDirectMapping node, Object data) {
         DataField field=outputRecords[node.recordNo].getField(node.fieldNo);
         int arity=node.jjtGetNumChildren(); // how many children we have defined
         TLValue value=null;
@@ -1531,12 +1532,32 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         }
         return data;
     }
+
     
-    
+    public Object visit(CLVFWildCardMapping node, Object data) {
+    	if (!node.initialized) {
+			try {
+				node.custTrans.setLogger(logger);
+				node.custTrans.init(null, parser.getInRecordMetadata(), parser
+						.getOutRecordMetadata());
+			} catch (ComponentNotReadyException ex) {
+				throw  new TransformLangExecutorRuntimeException(node,ex.getMessage(),ex);
+			}
+			node.initialized = true;
+		}
+		try {
+			node.custTrans.transform(inputRecords, outputRecords);
+		} catch (Exception ex) {
+			throw  new TransformLangExecutorRuntimeException(node,ex.getMessage(),ex);
+		}
+
+		return data;
+	}
+
     
     /*
-     * Declaration & calling of Functions here
-     */
+	 * Declaration & calling of Functions here
+	 */
     public Object visit(CLVFFunctionCallStatement node, Object data) {
         // EXTERNAL FUNCTION
         if (node.externalFunction != null) {

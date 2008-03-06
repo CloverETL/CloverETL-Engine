@@ -26,6 +26,7 @@ package org.jetel.interpreter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jetel.component.CustomizedRecordTransform;
 import org.jetel.interpreter.data.TLVariable;
 import org.jetel.interpreter.extensions.TLFunctionFactory;
 import org.jetel.interpreter.extensions.TLFunctionPrototype;
@@ -60,6 +61,7 @@ public class ParserHelper {
      int localVariableSlotCounter;
      boolean inFunctionDeclaration;
      String functionName;
+    
     
     /**
      * 
@@ -147,4 +149,5 @@ public class ParserHelper {
     void dumpExternalFunctions() {
         TLFunctionFactory.dump();
     }
+
 }

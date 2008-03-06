@@ -50,6 +50,11 @@ public abstract class ExpParser {
     public abstract DataRecordMetadata getInRecordMeta(int num);
  
     public abstract DataRecordMetadata getOutRecordMeta(int num);
+ 
+    public abstract DataRecordMetadata[] getInRecordMetadata();
+    
+    public abstract DataRecordMetadata[] getOutRecordMetadata();
+ 
     
     public abstract Map getFunctions();
 }
