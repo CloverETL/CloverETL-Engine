@@ -12,7 +12,7 @@
 	</extension>
 	<extension point-id="jdbcDriver">
 		<parameter id="database" value="POSTGRE"/>
-		<parameter id="name" value="POSTGRE"/>
+		<parameter id="name" value="PostgreSQL"/>
 		<parameter id="dbDriver" value="org.postgresql.Driver"/>
 		<parameter id="driverLibrary" value="lib/postgre/postgresql-8.3-603.jdbc3.jar"/>
 		<parameter id="urlHint" value="jdbc:postgresql://hostname/database"/>
