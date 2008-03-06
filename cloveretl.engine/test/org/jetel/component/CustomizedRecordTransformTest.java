@@ -196,12 +196,11 @@ public class CustomizedRecordTransformTest extends TestCase {
 		}
 		assertEquals(out.getField(0).toString(), record1.getField(3).getValue().toString());
 //		assertEquals(out.getField(1).getValue(), record.getField(1).getValue());
-		assertEquals(out.getField(2).getValue().toString(), record.getField(2).getValue().toString());
+		assertEquals(out.getField(2).getValue().toString(), record1.getField(2).getValue().toString());
 		assertEquals(out.getField(3).getValue(), record1.getField(3).getValue());
 		assertEquals(out1.getField(0).getValue().toString(), record1.getField(0).getValue().toString());
 		assertEquals(out1.getField(2).getValue().toString(), record.getField(2).getValue().toString());
 		assertEquals(out1.getField(3).getValue(), record.getField(3).getValue());
-		assertEquals(out1.getField(4).getValue(), ((Decimal)record.getField(4).getValue()).getInt());
 		assertEquals(out1.getField(1).getValue(), record.getField(4).getValue());
 	}
 
