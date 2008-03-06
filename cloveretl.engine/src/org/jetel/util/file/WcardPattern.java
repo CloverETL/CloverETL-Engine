@@ -82,7 +82,7 @@ public class WcardPattern {
 	/**
 	 * Wildcard characters.
 	 */
-	private final static char[] WCARD_CHAR = {'*', '?'};
+	public final static char[] WCARD_CHAR = {'*', '?'};
 	/**
 	 * Regex substitutions for wildcards. 
 	 */
