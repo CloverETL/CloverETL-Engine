@@ -151,7 +151,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		} catch (ComponentNotReadyException e) {
 			e.printStackTrace();
 		}
-		List<String> rules = transform.getRules();
+		List<String> rules = transform.getRulesAsStrings();
 		System.out.println("Rules:");
 		for (Iterator<String> i = rules.iterator();i.hasNext();){
 			System.out.println(i.next());
@@ -222,7 +222,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		} catch (ComponentNotReadyException e) {
 			e.printStackTrace();
 		}
-		List<String> rules = transform.getRules();
+		List<String> rules = transform.getRulesAsStrings();
 		System.out.println("Rules:");
 		for (Iterator<String> i = rules.iterator();i.hasNext();){
 			System.out.println(i.next());
@@ -297,7 +297,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		} catch (ComponentNotReadyException e) {
 			e.printStackTrace();
 		}
-		List<String> rules = transform.getRules();
+		List<String> rules = transform.getRulesAsStrings();
 		System.out.println("Rules:");
 		for (Iterator<String> i = rules.iterator();i.hasNext();){
 			System.out.println(i.next());
@@ -355,7 +355,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		} catch (ComponentNotReadyException e) {
 			e.printStackTrace();
 		}
-		List<String> rules = transform.getRules();
+		List<String> rules = transform.getRulesAsStrings();
 		System.out.println("Rules:");
 		for (Iterator<String> i = rules.iterator();i.hasNext();){
 			System.out.println(i.next());
@@ -419,7 +419,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		} catch (ComponentNotReadyException e) {
 			e.printStackTrace();
 		}
-		List<String> rules = transform.getRules();
+		List<String> rules = transform.getRulesAsStrings();
 		System.out.println("Rules:");
 		for (Iterator<String> i = rules.iterator();i.hasNext();){
 			System.out.println(i.next());
