@@ -126,6 +126,10 @@ public class DataFieldMetadata implements Serializable {
 	 */
 	private String localeStr;
 
+	public final static String BINARY_FORMAT_STRING = "binary";
+
+	public final static String BLOB_FORMAT_STRING = "blob";
+
 	// Attributes
 
 	/**  Description of the Field */
