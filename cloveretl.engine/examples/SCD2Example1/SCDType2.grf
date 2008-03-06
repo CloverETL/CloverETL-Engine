@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed May 02 10:25:31 CEST 2007" guiVersion="1.7" licenseType="Unlicensed clover.GUI" modified="Wed Aug 01 16:35:57 CEST 2007" name="SCDDataIntersection" revision="1.215">
+<Graph created="Wed May 02 10:25:31 CEST 2007" guiVersion="1.9" id="1204805969813" licenseType="Evaluation license." modified="Thu Mar 06 13:30:56 CET 2008" name="SCDDataIntersection" revision="1.219">
 <Global>
-<Metadata fileURL="${WORKSPACE}/SCD2/metadata/exchange_rate_DIM.fmt" id="Metadata0"/>
-<Metadata fileURL="${WORKSPACE}/SCD2/metadata/exchange_rate.fmt" id="Metadata1"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Sequence cached="0" fileURL="${WORKSPACE}/SCD2/sequences/exchange_rates_ID.seq" id="Sequence0" name="exchange_rates_ID" start="0" step="1" type="SIMPLE_SEQUENCE"/>
+<Metadata fileURL="${PROJECT}/${SCD2_DIR}/metadata/exchange_rate_DIM.fmt" id="Metadata0"/>
+<Metadata fileURL="${PROJECT}/${SCD2_DIR}/metadata/exchange_rate.fmt" id="Metadata1"/>
+<Property id="GraphParameter0" name="${SCD2_DIR}_DIR" value="${SCD2_DIR}Example1"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Sequence cached="0" fileURL="${PROJECT}/${SCD2_DIR}/sequences/exchange_rates_ID.seq" id="Sequence0" name="exchange_rates_ID" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="0" guiName="Data Intersection" guiWidth="0" guiX="448" guiY="222" id="DATA_INTERSECTION0" joinKey="Code;Country;Currency;Amount" type="DATA_INTERSECTION">
@@ -27,11 +28,11 @@ ${out.0.Valid_to} = ${in.0.Valid_to};
 ${out.0.Valid_from} = ${in.1.Valid_from};
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${WORKSPACE}/SCD2/input/daily.txt" guiHeight="0" guiName="Exchange rate source" guiWidth="0" guiX="14" guiY="34" id="DATA_READER0" skipFirstLine="false" skipRows="1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/SCD2/input/exchange_rates_DIM.txt" guiHeight="0" guiName="Exchange rate DIM" guiWidth="0" guiX="8" guiY="410" id="DATA_READER1" skipFirstLine="false" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/SCD2/output/exchange_rates_matched.txt" guiHeight="0" guiName="Matched records" guiWidth="0" guiX="635" guiY="17" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/SCD2/output/exchange_rates_DIM_insert.txt" guiHeight="0" guiName="Insert" guiWidth="0" guiX="1156" guiY="128" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/SCD2/output/exchange_rates_DIM_update.txt" guiHeight="0" guiName="Update" guiWidth="0" guiX="1162" guiY="355" id="DATA_WRITER2" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${PROJECT}/${SCD2_DIR}/input/daily.txt" guiHeight="0" guiName="Exchange rate source" guiWidth="0" guiX="14" guiY="34" id="DATA_READER0" skipFirstLine="false" skipRows="1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${PROJECT}/${SCD2_DIR}/input/exchange_rates_DIM.txt" guiHeight="0" guiName="Exchange rate DIM" guiWidth="0" guiX="8" guiY="410" id="DATA_READER1" skipFirstLine="false" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${PROJECT}/${SCD2_DIR}/output/exchange_rates_matched.txt" guiHeight="0" guiName="Matched records" guiWidth="0" guiX="635" guiY="17" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${PROJECT}/${SCD2_DIR}/output/exchange_rates_DIM_insert.txt" guiHeight="0" guiName="Insert" guiWidth="0" guiX="1156" guiY="128" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${PROJECT}/${SCD2_DIR}/output/exchange_rates_DIM_update.txt" guiHeight="0" guiName="Update" guiWidth="0" guiX="1162" guiY="355" id="DATA_WRITER2" type="DATA_WRITER"/>
 <Node enabled="enabled" filterExpression="isnull($Valid_to)" guiHeight="0" guiName="Ext Filter" guiWidth="0" guiX="169" guiY="413" id="EXT_FILTER0" type="EXT_FILTER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="346" guiY="83" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[${out.0.Country} = ${in.0.Country};
