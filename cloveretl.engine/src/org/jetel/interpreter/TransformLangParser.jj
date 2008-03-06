@@ -29,6 +29,7 @@ import org.jetel.interpreter.ASTnode.*;
 import org.jetel.util.string.StringUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.CharSequenceReader;
+import org.jetel.component.CustomizedRecordTransform;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +48,8 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 /*@egen*/
 
 		public static final String SRC_ENCODING = "UTF-8";
+		
+	   boolean wildcardMappingActive=false;
 
        DataRecordMetadata[] inRecordsMetadata;
        DataRecordMetadata[] outRecordsMetadata;
@@ -54,7 +57,8 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
        Map outDataRecordsMap;
 	   ParserHelper parserHelper;       
        List<Throwable> parseExceptions;
-       String sourceFilename;
+       CustomizedRecordTransform custRecordTransform;
+       String sourceFilename;       
        boolean hasEvalNode=false;
 
        public TransformLangParser(DataRecordMetadata recordMetadata,java.io.InputStream stream){
@@ -158,6 +162,14 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       	}
       }
       
+       public final DataRecordMetadata[] getInRecordMetadata(){
+             return inRecordsMetadata;
+      }
+      
+      public final DataRecordMetadata[] getOutRecordMetadata(){
+             return outRecordsMetadata;
+      }
+      
       
      /**
       *  Returns map of function symbols where
@@ -175,6 +187,12 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
      	return (CLVFFunctionDeclaration) parserHelper.functionSymbol.get(name);
      }
       
+      
+     public CustomizedRecordTransform getCustRecordTransform() {
+		if (custRecordTransform==null)
+			custRecordTransform=new CustomizedRecordTransform(null);
+		return custRecordTransform;
+	}
      
      /**
       *  Returns map of global variable symbols where
@@ -379,6 +397,8 @@ TOKEN: {
   | < REC_NAME_FIELD_NUM:  "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." <DIGIT> (<DIGIT>)* >
   | < REC_NUM_FIELD_ID:  "$" <DIGIT> (<DIGIT>)* "." (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
   | < REC_NUM_FIELD_NUM: "$" <DIGIT> (<DIGIT>)* "." <DIGIT> (<DIGIT>)* >
+  | <REC_NUM_WILDCARD: "$" (<DIGIT>) (<DIGIT>)* "." "*" >
+  | <REC_NAME_WILDCARD: "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." "*" >
 }
 
 /* Clover Record Identifiers */
@@ -810,22 +830,30 @@ void Assignment()             :
 }
 
 
-void Mapping() : // assignment of value to Clover field
-{/*@bgen(jjtree) Mapping */
-  CLVFMapping jjtn000 = new CLVFMapping(this, JJTMAPPING);
+void Mapping()       : 
+{ }
+{	
+  	DirectMapping()
+  	|WildCardMapping()
+}
+
+
+void DirectMapping() : // assignment of value to Clover field
+{/*@bgen(jjtree) DirectMapping */
+  CLVFDirectMapping jjtn000 = new CLVFDirectMapping(this, JJTDIRECTMAPPING);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);
 /*@egen*/ Token t ;}
-{/*@bgen(jjtree) Mapping */
+{/*@bgen(jjtree) DirectMapping */
   try {
 /*@egen*/	
   	/*OutputFieldExp() */
-  (	t = <FIELD_ID> { jjtn000.setFieldName(t.image); } 
-  | t = <REC_NAME_FIELD_ID> { jjtn000.setRecordFieldName(t.image); }
-  | t= <REC_NAME_FIELD_NUM>  { jjtn000.setRecordNameFieldNum(t.image); }
-  | t = <REC_NUM_FIELD_ID> { jjtn000.setRecordNumFieldName(t.image); }
-  | t = <REC_NUM_FIELD_NUM> { jjtn000.setRecordNumFieldNum(t.image); } 
+  (	t = <FIELD_ID> { jjtn000.setFieldName(t.image); jjtn000.updateMappingMatrix(getCustRecordTransform()); } 
+  | t = <REC_NAME_FIELD_ID> { jjtn000.setRecordFieldName(t.image); jjtn000.updateMappingMatrix(getCustRecordTransform()); }
+  | t= <REC_NAME_FIELD_NUM>  { jjtn000.setRecordNameFieldNum(t.image); jjtn000.updateMappingMatrix(getCustRecordTransform()); }
+  | t = <REC_NUM_FIELD_ID> { jjtn000.setRecordNumFieldName(t.image); jjtn000.updateMappingMatrix(getCustRecordTransform()); }
+  | t = <REC_NUM_FIELD_NUM> { jjtn000.setRecordNumFieldNum(t.image); jjtn000.updateMappingMatrix(getCustRecordTransform()); } 
   	)
   	<MAPPING> 
   	
@@ -850,6 +878,43 @@ void Mapping() : // assignment of value to Clover field
       jjtreeCloseNodeScope(jjtn000);
     }
   }
+/*@egen*/
+}
+
+void WildCardMapping() :
+{/*@bgen(jjtree) WildCardMapping */
+  CLVFWildCardMapping jjtn000 = new CLVFWildCardMapping(this, JJTWILDCARDMAPPING);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+  jjtreeOpenNodeScope(jjtn000);
+/*@egen*/ Token t,r;}
+{/*@bgen(jjtree) WildCardMapping */
+         try {
+/*@egen*/
+	 ( 	 LOOKAHEAD(3)
+	 t=<REC_NUM_WILDCARD> <MAPPING> r=<REC_NUM_WILDCARD> {jjtn000.setRule(t.image,r.image,getCustRecordTransform()); }
+	 | t=<REC_NUM_WILDCARD> <MAPPING> r=<REC_NAME_WILDCARD> {jjtn000.setRule(t.image,r.image,getCustRecordTransform()); }
+	 |LOOKAHEAD(3) t=<REC_NAME_WILDCARD> <MAPPING> r=<REC_NUM_WILDCARD> {jjtn000.setRule(t.image,r.image,getCustRecordTransform()); }
+	 | t=<REC_NAME_WILDCARD> <MAPPING> r=<REC_NAME_WILDCARD> {jjtn000.setRule(t.image,r.image,getCustRecordTransform()); }
+	 )/*@bgen(jjtree)*/
+         {
+           jjtree.closeNodeScope(jjtn000, true);
+           jjtc000 = false;
+           jjtreeCloseNodeScope(jjtn000);
+         }
+/*@egen*/
+	 {
+	 	if (!wildcardMappingActive){
+	 		jjtn000.activate();
+	 		wildcardMappingActive=true;
+	 	}
+	 }/*@bgen(jjtree)*/
+         } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
+             jjtreeCloseNodeScope(jjtn000);
+           }
+         }
 /*@egen*/
 }
 
