@@ -2,6 +2,7 @@
 
 package org.jetel.interpreter.ASTnode;
 
+import org.jetel.component.CustomizedRecordTransform;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.interpreter.ExpParser;
@@ -10,7 +11,7 @@ import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.TransformLangParserVisitor;
 import org.jetel.metadata.DataRecordMetadata;
 
-public class CLVFMapping extends SimpleNode {
+public class CLVFDirectMapping extends SimpleNode {
  
     public DataField field;
     public int recordNo=-1;
@@ -18,11 +19,11 @@ public class CLVFMapping extends SimpleNode {
     public String fieldName;
     public int arity;
     
-  public CLVFMapping(int id) {
+  public CLVFDirectMapping(int id) {
     super(id);
   }
 
-  public CLVFMapping(ExpParser p, int id) {
+  public CLVFDirectMapping(ExpParser p, int id) {
     super(p, id);
   }
 
@@ -69,6 +70,7 @@ public class CLVFMapping extends SimpleNode {
           if (fieldNo==-1){
               throw new ParseException("Unknown data field ["+fRecName+"]");
           }
+          
       }
    
    public void setRecordNumFieldName(String fRecName) throws ParseException{
@@ -137,6 +139,11 @@ public class CLVFMapping extends SimpleNode {
        }catch(NullPointerException ex){
            throw new TransformLangExecutorRuntimeException("can't determine "+fieldName);
        }
+   }
+   
+   
+   public void updateMappingMatrix(CustomizedRecordTransform custTrans){
+	   custTrans.deleteRule(recordNo, fieldNo);
    }
    
    public void setArity(int arity){
