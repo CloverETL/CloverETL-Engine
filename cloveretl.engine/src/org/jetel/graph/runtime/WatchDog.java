@@ -51,6 +51,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.GraphElement;
+import org.jetel.graph.IGraphElement;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -82,7 +83,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     private BlockingQueue <Message> inMsgQueue;
     private DuplicateKeyMap outMsgMap;
     private Throwable causeException;
-    private GraphElement causeGraphElement;
+    private IGraphElement causeGraphElement;
     private CloverJMX mbean;
     private volatile boolean runIt;
     private boolean threadCpuTimeIsSupported;
@@ -599,6 +600,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			phase.init();
 		} catch (ComponentNotReadyException e) {
 			logger.error("Phase initialization failed with reason: " + e.getMessage(), e);
+			causeException = e;
+			causeGraphElement = e.getGraphElement();
 			return Result.ERROR;
 		}
 		logger.info("Starting up all nodes in phase [" + phase.getPhaseNum() + "]");
@@ -820,7 +823,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
      * @return the causeNodeID
      * @since 7.1.2007
      */
-    public GraphElement getCauseGraphElement() {
+    public IGraphElement getCauseGraphElement() {
         return causeGraphElement;
     }
 
