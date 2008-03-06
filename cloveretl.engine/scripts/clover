@@ -58,7 +58,7 @@ if [ -z "$CLOVER_HOME" -o ! -d "$CLOVER_HOME" ] ; then
 	CLOVER_HOME=`cd "$CLOVER_HOME" && pwd`
 fi
 
-echo $CLOVER_HOME
+#echo $CLOVER_HOME
 
 
 # set CLOVER_LIB location
@@ -91,15 +91,15 @@ fi
 
 TRANSFORM_PATH="."
 
-echo $CLOVER_LIB/*
+#echo $CLOVER_LIB/*
 
 for i in $CLOVER_LIB/*.jar $CLOVER_LIB/*.zip; do
 	LOCAL_CLASSPATH="$LOCAL_CLASSPATH:$i"
 done;
 
-for i in `ls $CLOVER_LIB/*.jar`; do
-echo $i
-done;
+#for i in `ls $CLOVER_LIB/*.jar`; do
+#echo $i
+#done;
 
 
 clover_exec_command="exec \"$JAVACMD\" $CLOVER_OPTS $java_exec_args -classpath \"$TRANSFORM_PATH:$user_classpath::$LOCAL_CLASSPATH\" -Dclover.home=\"$CLOVER_HOME\" org.jetel.main.runGraph -plugins $CLOVER_HOME/plugins $clover_exec_args"
