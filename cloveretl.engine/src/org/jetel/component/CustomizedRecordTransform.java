@@ -249,6 +249,12 @@ public class CustomizedRecordTransform implements RecordTransform {
 	protected static final char DOT = '.';
 	protected static final char COLON =':';
 	protected static final char PARAMETER_CHAR = '$'; 
+	protected static final String[] WILDCARDS = new String[WcardPattern.WCARD_CHAR.length];
+	static {
+		for (int i = 0; i < WILDCARDS.length; i++) {
+			WILDCARDS[i] = String.valueOf(WcardPattern.WCARD_CHAR[i]);
+		}
+	}
 	
 	protected final static String PARAM_OPCODE_REGEX = "\\$\\{par\\.(.*)\\}";
 	protected final static Pattern PARAM_PATTERN = Pattern.compile(PARAM_OPCODE_REGEX);
@@ -836,6 +842,12 @@ public class CustomizedRecordTransform implements RecordTransform {
 	    return init();
 	}
 
+	private boolean containsWCard(String str){
+		for (int i = 0; i < WILDCARDS.length; i++) {
+			if (str.contains(WILDCARDS[i])) return true;
+		}
+		return false;
+	}
 	/**
 	 * Method with initialize user customized transformation with concrete metadata 
 	 * 
@@ -910,20 +922,19 @@ public class CustomizedRecordTransform implements RecordTransform {
 				//for each output field from pattern, put rule to map
 				Rule rule1;
 				for (int i=0;i<outFields.length;i++){
-					field = outFields[i];
-					//check if there is just any rule for given output field
-					transformMap.remove(getRecNo(field) + DOT + getFieldNo(field));
-					rule1 = rule.duplicate();
-//					if (rule1 instanceof FieldRule){
-//						((FieldRule)rule1).setFieldParams(inFields[0]);
-//					}
-					rule1.setGraph(getGraph());
-					rule1.setProperties(parameters);
-					rule1.setLogger(logger);
-					//prepare rule for concrete data field
-//					rule1.init(sourceMetadata, targetMetadata,getRecNo(field),
-//							getFieldNo(field),fieldPolicy);
-					transformMap.put(field, rule1);
+					if (!containsWCard(field) || !transformMap.containsKey(outFields[i])) {
+						rule1 = rule.duplicate();
+						//					if (rule1 instanceof FieldRule){
+						//						((FieldRule)rule1).setFieldParams(inFields[0]);
+						//					}
+						rule1.setGraph(getGraph());
+						rule1.setProperties(parameters);
+						rule1.setLogger(logger);
+						//prepare rule for concrete data field
+						//					rule1.init(sourceMetadata, targetMetadata,getRecNo(field),
+						//							getFieldNo(field),fieldPolicy);
+						transformMap.put(outFields[i], rule1);
+					}
 				}
 			}
 		}
@@ -992,7 +1003,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 		//find identical in corresponding records
 		for (int i = 0; (i < outFieldsName.length) && (i < inFieldsName.length); i++) {
 			for (int j = 0; j < outFieldsName[i].length; j++) {
-				if (outFieldsName[i][j] != null) {
+				if (outFieldsName[i][j] != null && !transformMap.containsKey(String.valueOf(i) + DOT + String.valueOf(j))) {
 					index = StringUtils.findString(outFieldsName[i][j],
 							inFieldsName[i]);
 					if (index > -1) {//output field name found amoung input fields
@@ -1009,7 +1020,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 		for (int i = 0; i < outFieldsName.length; i++) {
 			for (int j = 0; j < outFieldsName[i].length; j++) {
 				for (int k = 0; k < inFieldsName.length; k++) {
-					if ((outFieldsName[i][j] != null) && (k != i)) {
+					if ((outFieldsName[i][j] != null) && (k != i) && 
+							!transformMap.containsKey(String.valueOf(i) + DOT + String.valueOf(j))) {
 						index = StringUtils.findString(outFieldsName[i][j],
 								inFieldsName[k]);
 						if (index > -1) {//output field name found amoung input fields
@@ -1026,7 +1038,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 		//find ignore case in corresponding records
 		for (int i = 0; (i < outFieldsName.length) && (i < inFieldsName.length); i++) {
 			for (int j = 0; j < outFieldsName[i].length; j++) {
-				if (outFieldsName[i][j] != null) {
+				if (outFieldsName[i][j] != null && !transformMap.containsKey(String.valueOf(i) + DOT + String.valueOf(j))) {
 					index = StringUtils.findStringIgnoreCase(
 							outFieldsName[i][j], inFieldsName[i]);
 					if (index > -1) {//output field name found amoung input fields
@@ -1043,7 +1055,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 		for (int i = 0; i < outFieldsName.length; i++) {
 			for (int j = 0; j < outFieldsName[i].length; j++) {
 				for (int k = 0; k < inFieldsName.length; k++) {
-					if ((outFieldsName[i][j] != null) && (k != i)) {
+					if ((outFieldsName[i][j] != null) && (k != i) && 
+							!transformMap.containsKey(String.valueOf(i) + DOT + String.valueOf(j))) {
 						index = StringUtils.findStringIgnoreCase(
 								outFieldsName[i][j], inFieldsName[k]);
 						if (index > -1) {//output field name found amoung input fields
