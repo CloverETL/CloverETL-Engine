@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="1.9" id="1199778867506" licenseType="Commercial License javlinconsulting" modified="Mon Mar 03 14:37:30 CET 2008" name="graphXLSRead" revision="1.28">
+<Global>
+<Metadata fileURL="meta/delimited/orders.fmt" id="Metadata0"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fieldMap="OrderID=$A;CustomerID=$B;EmployeeID=$C;OrderDate=$D;RequiredDate=$E;ShippedDate=$F;ShipVia=$G;Freight=$H;ShipName=$I;ShipAddress=$J;ShipCity=$K;ShipRegion=$L;ShipPostalCode=$M;ShipCountry=$N" fileURL="${DATAIN_DIR}/other/O*.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="28" guiY="32" id="XLS_READER1" metadataRow="1" sheetNumber="*" type="XLS_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/ordersByCountry.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="264" guiY="32" id="XLS_WRITER0" namesRow="1" sheetName="$ShipCountry" type="XLS_WRITER">
+<attr name="saveNames"><![CDATA[true]]></attr>
+</Node>
+<Edge fromNode="XLS_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
+</Phase>
+</Graph>

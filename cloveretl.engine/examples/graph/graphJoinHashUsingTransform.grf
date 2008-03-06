@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Fri Feb 16 10:01:53 CET 2007" description="This graph demonstrates functionality of HASH_JOIN components. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted" guiVersion="1.9" id="1204547342769" licenseType="Commercial License javlinconsulting" modified="Mon Mar 03 15:01:49 CET 2008" name="Testing Hash Joiner" revision="1.7">
+<Global>
+<Metadata fileURL="meta/delimited/employees.fmt" id="Metadata0"/>
+<Metadata fileURL="meta/delimited/joinedOrders.fmt" id="Metadata2"/>
+<Metadata fileURL="meta/delimited/orders.fmt" id="Metadata1"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="20" guiY="107" id="INPUT2" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="195" guiY="20" id="JOIN" joinKey="EmployeeID" leftOuterJoin="false" type="HASH_JOIN">
+<attr name="transform"><![CDATA[${out.0.OrderID} = ${in.0.OrderID};
+${out.0.CustomerID} = ${in.0.CustomerID};
+${out.0.EmployeeID} = String.valueOf(${in.0.EmployeeID});
+${out.0.EmployeeID2} = String.valueOf(${in.1.EmployeeID});
+${out.0.LastName} = ${in.1.LastName}+":"+${in.1.FirstName};
+]]></attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DELIMITED_DATA_WRITER"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="JOIN:0"/>
+<Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="JOIN:1"/>
+<Edge fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="WRITER:0"/>
+</Phase>
+</Graph>

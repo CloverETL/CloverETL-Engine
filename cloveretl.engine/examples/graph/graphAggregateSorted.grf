@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates usage of the new Aggregate component. " guiVersion="1.9" id="1204535282174" licenseType="Evaluation license." modified="Tue Mar 04 12:32:12 CET 2008" name="TestingSort" revision="1.21">
+<Global>
+<Metadata fileURL="meta/delimited/orders.fmt" id="Metadata0"/>
+<Metadata fileURL="meta/delimited/ordersAggregate.fmt" id="Metadata1"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node aggregateKey="ShipCountry" enabled="enabled" guiHeight="25" guiName="AGGREGATE" guiWidth="50" guiX="498" guiY="24" id="AGGREGATE" mapping="$ShipCountry:=$ShipCountry;$Count:=count();$AvgFreight:=avg($Freight)" sorted="true" type="AGGREGATE"/>
+<Node dedupKey="ShipName;ShipCity;OrderID;CustomerID;EmployeeID;OrderDate;RequiredDate;ShippedDate;ShipVia;Freight;ShipAddress;ShipRegion;ShipPostalCode;ShipCountry" enabled="enabled" guiHeight="65" guiName="Dedup" guiWidth="89" guiX="330" guiY="24" id="DEDUP0" keep="first" type="DEDUP"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="24" id="INPUT1" type="DELIMITED_DATA_READER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="650" guiY="24" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="25" guiName="SORT" guiWidth="50" guiX="173" guiY="24" id="SORT" sortKey="ShipCountry" type="SORT"/>
+<Edge fromNode="AGGREGATE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+<Edge debugMode="false" fromNode="DEDUP0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (unique)" toNode="AGGREGATE:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SORT:0"/>
+<Edge debugMode="false" fromNode="SORT:0" guiBendpoints="" id="MIDDLE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+</Phase>
+</Graph>
