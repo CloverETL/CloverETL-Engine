@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Mon Mar 03 10:11:40 CET 2008" description="This graph illustrates usage of dynamic metadata generation based on SQL query. It&#10;allows unloading of database data without prior assembly of DB table metadata.&#10;Dynamic metadata can be for example used for easy migration of data between two different databases when&#10;one universal graph with parameters specifying which table should be unload/migrated can be used.&#10;&#10;This graph requires db_table parameter to be defined. When running this graph, use command like this one:&#10;java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph graphDBUnloadUniversal.grf -P:db_table=Employee&#10;&#10;&#10;Note: where clause 1=0 in SQL query in dynamic metadata definition is there only for speeding up&#10;query processing - no real data is needed, only metadata describing the result - thus we specify&#10;condition which ensures that no data should really be returned - it is up to database wheter it&#10;will optimize the execution plan based on this.&#10;" guiVersion="1.9" id="1204539729181" licenseType="Evaluation license." modified="Tue Mar 04 13:42:25 CET 2008" name="Testing DB Unload" revision="1.15">
+<Global>
+<Connection dbConfig="conn/postgre.cfg" id="InterbaseDB" type="JDBC"/>
+<Property id="GraphParameter0" name="db_table" value="employee"/>
+<Metadata id="InMetadata" connection="InterbaseDB" sqlQuery="select * from ${db_table} where 1=0"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+</Global>
+<Phase number="0">
+<Node dbConnection="InterbaseDB" enabled="enabled" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" sqlQuery="select * from ${db_table}" type="DB_INPUT_TABLE"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/${db_table}.output" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="245" guiY="20" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
+<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+</Phase>
+</Graph>

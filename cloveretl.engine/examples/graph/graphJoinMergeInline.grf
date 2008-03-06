@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Tue Jan 16 09:47:22 CET 2007" guiVersion="1.9" id="1204547632760" licenseType="Commercial License javlinconsulting" modified="Mon Mar 03 15:03:36 CET 2008" name="test" revision="1.73">
+<Global>
+<Metadata fileURL="meta/delimited/employees.fmt" id="Metadata0"/>
+<Metadata fileURL="meta/delimited/joinedOrders3way.fmt" id="Metadata2"/>
+<Metadata fileURL="meta/delimited/orders.fmt" id="Metadata1"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="0" guiName="Universal Data Reader" guiWidth="0" guiX="23" guiY="214" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="0" guiName="Delimited Data Reader" guiWidth="0" guiX="23" guiY="128" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="0" guiName="Delimited Data Writer" guiWidth="0" guiX="632" guiY="128" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="251" guiY="21" id="EXT_SORT0" sortKey="EmployeeID" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="251" guiY="128" id="EXT_SORT1" sortKey="EmployeeID" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="251" guiY="214" id="EXT_SORT2" sortKey="ReportsTo" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Ext Merge Join" guiWidth="0" guiX="456" guiY="128" id="MERGE_JOIN1" joinKey="EmployeeID=EmployeeID#EmployeeID=ReportsTo" type="EXT_MERGE_JOIN">
+<attr name="transform"><![CDATA[
+import org.jetel.component.DataRecordTransform;
+import org.jetel.data.*;
+
+
+public class reformatJoinTest3Way extends DataRecordTransform{
+
+	public boolean transform(DataRecord[] source, DataRecord[] target){
+		if (source[0] != null) {
+			target[0].getField(0).setValue(source[0].getField(0).getValue());	// OrderID
+  			target[0].getField(1).setValue(source[0].getField(1).getValue());	// CustomerID
+			target[0].getField(2).setValue(source[0].getField(2).getValue().toString());	// EmployeeID
+		} else {
+		    target[0].getField(1).setValue("*MISSING*");
+		}
+		if (source[1]!=null){
+			target[0].getField(4).setValue(source[1].getField(1).toString() + ", " + source[1].getField(2).toString());	// Name
+		} else {
+			target[0].getField(4).setValue("*MISSING*");
+		}
+		if (source[2]!=null){
+			target[0].getField(5).setValue(source[2].getField(1).toString() + ", " + source[2].getField(2).toString());	// Subordinate
+		} else {
+			target[0].getField(5).setValue("*MISSING*");
+		}
+		target[0].getField(3).setValue("*MISSING*");
+		return true;
+	}
+}
+
+]]></attr>
+</Node>
+<Node enabled="enabled" fieldMap="OrderID=$A;CustomerID=$B;EmployeeID=$C;OrderDate=$D;RequiredDate=$E;ShippedDate=$F;ShipVia=$G;Freight=$H;ShipName=$I;ShipAddress=$J;ShipCity=$K;ShipRegion=$L;ShipPostalCode=$M;ShipCountry=$N" fileURL="${DATAIN_DIR}/other/ORDERS.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="24" guiY="21" id="XLS_READER0" metadataRow="1" startRow="2" type="XLS_READER"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT2:0"/>
+<Edge fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="MERGE_JOIN1:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge4" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="MERGE_JOIN1:1"/>
+<Edge debugMode="false" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge5" inPort="Port 2 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="MERGE_JOIN1:2"/>
+<Edge debugMode="false" fromNode="MERGE_JOIN1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="XLS_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+</Phase>
+</Graph>

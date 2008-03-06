@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Thu Jan 25 12:46:12 CET 2007" guiVersion="1.9" id="1204545485437" licenseType="Commercial License javlinconsulting" modified="Mon Mar 03 12:59:58 CET 2008" name="Testing Filter" revision="1.6">
+<Global>
+<Metadata id="Metadata0">
+<Record name="employeesShort" recordSize="-1" type="delimited">
+<Field delimiter=";" name="EmployeeID" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="LastName" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="FirstName" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="BirthDate" nullable="true" shift="0" type="date"/>
+<Field delimiter=";" name="HireDate" nullable="true" shift="0" type="date"/>
+<Field delimiter=";" name="Memo" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata fileURL="meta/delimited/employees.fmt" id="Metadata1"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" filterExpression="$HireDate&lt;1993-12-31" guiHeight="25" guiName="FILTEREMPL1" guiWidth="50" guiX="184" guiY="298" id="FILTEREMPL1" type="EXT_FILTER"/>
+<Node enabled="enabled" filterExpression="$Memo~=&quot;.*fluent.*&quot;" guiHeight="25" guiName="FILTEREMPL2" guiWidth="50" guiX="184" guiY="16" id="FILTEREMPL2" type="EXT_FILTER"/>
+<Node enabled="enabled" guiHeight="92" guiName="Hash Join" guiWidth="96" guiX="500" guiY="109" id="HASH_JOIN0" joinKey="LastName;FirstName" type="HASH_JOIN">
+<attr name="transform"><![CDATA[${out.0.EmployeeID} = ${in.0.EmployeeID};
+${out.0.LastName} = ${in.0.LastName};
+${out.0.FirstName} = ${in.0.FirstName};
+${out.0.BirthDate} = ${in.0.BirthDate};
+${out.0.HireDate} = ${in.0.HireDate};
+${out.0.Memo} = ${in.0.Memo};
+]]></attr>
+</Node>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="8" guiY="197" id="INPUT1" type="DELIMITED_DATA_READER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/HireDateLT19931231" guiHeight="25" guiName="OUTPUT1" guiWidth="50" guiX="662" guiY="204" id="OUTPUT1" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/HireDateGT19931231" guiHeight="65" guiName="OUTPUT11" guiWidth="124" guiX="662" guiY="298" id="OUTPUT11" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/memoFluent.dat" guiHeight="25" guiName="OUTPUT2" guiWidth="50" guiX="662" guiY="16" id="OUTPUT2" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/fluentAndHireDateLT19931231" guiHeight="78" guiName="OUTPUT3" guiWidth="95" guiX="662" guiY="109" id="OUTPUT3" type="DELIMITED_DATA_WRITER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="65" guiName="Simple Copy" guiWidth="106" guiX="344" guiY="16" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="48" guiName="Simple Copy" guiWidth="104" guiX="344" guiY="204" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
+<Edge fromNode="FILTEREMPL1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" toNode="SIMPLE_COPY1:0"/>
+<Edge debugMode="false" fromNode="FILTEREMPL1:1" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected)" toNode="OUTPUT11:0"/>
+<Edge fromNode="FILTEREMPL2:0" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="false" fromNode="HASH_JOIN0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT3:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="FILTEREMPL1:0"/>
+<Edge fromNode="INPUT1:1" guiBendpoints="" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="FILTEREMPL2:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="HASH_JOIN0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="OUTPUT2:0"/>
+<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT1:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY1:1" guiBendpoints="" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 1 (out)" toNode="HASH_JOIN0:1"/>
+</Phase>
+</Graph>

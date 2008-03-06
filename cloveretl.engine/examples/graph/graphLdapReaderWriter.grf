@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Wed Mar 07 09:01:26 CET 2007" guiVersion="1.9" id="1204539735714" licenseType="Commercial License javlinconsulting" modified="Mon Mar 03 17:02:50 CET 2008" name="Testing Simple Copy" revision="1.4">
+<Global>
+<Metadata id="Metadata">
+<Record name="inEmployees" recordSize="-1" type="delimited">
+<Field delimiter=";" name="dn" nullable="true" shift="0" type="string"/>
+<Field delimiter="\n" name="sn" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="objectClass" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="cn" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node base="dc=javlinconsulting,dc=cz" enabled="enabled" filter="sn=*" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="22" id="INPUT1" ldapUrl="ldap://koule:389/" password="secret" scope="SUBTREE" type="LDAP_READER" user="cn=root,dc=javlinconsulting,dc=cz"/>
+<Node action="add_entry" enabled="enabled" guiHeight="25" guiName="OUTPUT1" guiWidth="50" guiX="433" guiY="22" id="OUTPUT1" ldapUrl="ldap://koule:389/" password="secret" type="LDAP_WRITER" user="cn=root,dc=javlinconsulting,dc=cz"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="236" guiY="22" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[
+${out.0.dn} = ${in.0.dn};
+${out.0.cn} = ${in.0.cn};
+${out.0.objectClass} = ${in.0.objectClass};
+${out.0.sn} = ${in.0.sn} + "x";
+]]></attr>
+</Node>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata" outPort="Port 0 (out)" toNode="OUTPUT1:0"/>
+</Phase>
+</Graph>

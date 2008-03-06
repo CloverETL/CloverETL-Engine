@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="1.9" id="1204803682775" licenseType="Evaluation license." modified="Thu Mar 06 12:41:55 CET 2008" name="MysqlDataWriter" revision="1.72">
+<Global>
+<Metadata id="Metadata1">
+<Record name="err" recordSize="-1" type="delimited">
+<Field delimiter="|" name="rowNo" nullable="true" shift="0" type="integer"/>
+<Field delimiter="|" name="colName" nullable="true" shift="0" type="string"/>
+<Field delimiter="\n" name="errMsg" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0">
+<Record name="test" recordSize="-1" type="delimited">
+<Field delimiter="," name="intT" nullable="true" shift="0" type="integer"/>
+<Field delimiter="," name="smallT" nullable="true" shift="0" type="integer"/>
+<Field delimiter="," length="8" name="decT" nullable="true" precision="5" scale="2" shift="0" type="decimal"/>
+<Field delimiter="," name="numT" nullable="true" precision="5" scale="2" shift="0" type="numeric"/>
+<Field delimiter="," length="8" name="floatT" nullable="true" precision="5" scale="2" shift="0" type="decimal"/>
+<Field delimiter="," length="8" name="realT" nullable="true" precision="5" scale="2" shift="0" type="decimal"/>
+<Field delimiter="," format="yyyy-MM-dd HH:mm:ss" name="datetimeT" nullable="true" shift="0" type="date"/>
+<Field delimiter="," format="yyyy-MM-dd HH:mm:ss" name="timestampT" nullable="true" shift="0" type="date"/>
+<Field delimiter="," format="yyyy-MM-dd" name="dateT" nullable="true" shift="0" type="date"/>
+<Field delimiter="," name="timeT" nullable="true" shift="0" type="string"/>
+<Field delimiter="," format="yyyy" name="yearT" nullable="true" shift="0" type="date"/>
+<Field delimiter="," name="charT" nullable="true" shift="0" type="string"/>
+<Field delimiter="," name="varcharT" nullable="true" shift="0" type="string"/>
+<Field delimiter="\n" name="textT" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/out.dat" guiHeight="25" guiName="DELIMITED_DATA_WRITER0" guiWidth="50" guiX="245" guiY="107" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
+<Node columnDelimiter="," database="test" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/mysqlFlat.dat" guiHeight="25" guiName="MYSQL_DATA_WRITER0" guiWidth="50" guiX="20" guiY="107" host="koule" id="MYSQL_DATA_WRITER0" mysqlPath="mysql" table="test" type="MYSQL_DATA_WRITER" username="test">
+<attr name="parameters"><![CDATA[port=3306|fieldsEnclosedBy=*|fieldsIsOptionallyEnclosed]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="MYSQL_DATA_WRITER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/mysql.dat" guiHeight="25" guiName="DELIMITED_DATA_READER0" guiWidth="50" guiX="30" guiY="212" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+<Node database="test" enabled="enabled" guiHeight="25" guiName="MYSQL_DATA_WRITER1" guiWidth="50" guiX="242" guiY="212" host="koule" id="MYSQL_DATA_WRITER1" mysqlPath="mysql" table="test" type="MYSQL_DATA_WRITER" username="test">
+<attr name="parameters"><![CDATA[port=3306]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="MYSQL_DATA_WRITER1:0"/>
+</Phase>
+</Graph>

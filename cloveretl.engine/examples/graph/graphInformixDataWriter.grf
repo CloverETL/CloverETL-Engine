@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="1.9" id="1197377414922" licenseType="Evaluation license." modified="Thu Mar 06 12:35:48 CET 2008" name="graphInformixDataWriter.grf" revision="1.72">
+<Global>
+<Metadata id="MetadataIn">
+<Record name="inInformixData" recordSize="-1" type="delimited">
+<Field delimiter="?" name="charT" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="integerT" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" format="MM/dd/yyyy" name="datT" nullable="true" shift="0" type="date"/>
+<Field delimiter=";" format="yyyy-MM-dd HH:mm:ss" name="datetimeT" nullable="true" shift="0" type="date"/>
+<Field delimiter="\n" length="8" name="decimalT" nullable="true" precision="5" scale="2" shift="0" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="MetadataOut">
+<Record name="outInformixData" recordSize="-1" type="delimited">
+<Field delimiter="|" name="charT" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" name="integerT" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" name="dateT" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" name="datetimeT" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" name="decimalT" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" name="rowNumber" nullable="true" shift="0" type="integer"/>
+<Field delimiter="\n" name="errorMsg" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/informix.dat" guiHeight="25" guiName="Delimited Data Reader" guiWidth="50" guiX="34" guiY="76" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+<Node columnDelimiter="|" database="test" dbLoaderPath="dbload" enabled="enabled" fileURL="${DATAOUT_DIR}/out.txt" guiHeight="25" guiName="Informix Data Writer" guiWidth="50" guiX="249" guiY="76" host="demo_on" id="INFORMIX_DATA_WRITER0" table="test" type="INFORMIX_DATA_WRITER"/>
+<Edge debugMode="true" fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="MetadataIn" outPort="Port 0 (out)" toNode="INFORMIX_DATA_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/errorDbload.txt" guiHeight="25" guiName="Delimited Data Writer" guiWidth="50" guiX="249" guiY="168" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
+<Node database="test" dbLoaderPath="dbload" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/informixFlat.dat" guiHeight="25" guiName="Informix Data Writer" guiWidth="50" guiX="34" guiY="168" host="demo_on" id="INFORMIX_DATA_WRITER1" table="test" type="INFORMIX_DATA_WRITER"/>
+<Edge debugMode="true" fromNode="INFORMIX_DATA_WRITER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="MetadataOut" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER0:0"/>
+</Phase>
+<Phase number="2">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/informix.dat" guiHeight="25" guiName="Delimited Data Reader" guiWidth="50" guiX="34" guiY="266" id="DELIMITED_DATA_READER1" type="DELIMITED_DATA_READER"/>
+<Node database="test" dbLoaderPath="${WORKSPACE}/lib/linux/load" enabled="enabled" fileURL="${DATATMP_DIR}/tmp.dat" guiHeight="25" guiName="Informix Data Writer" guiWidth="50" guiX="249" guiY="266" host="demo_on" id="INFORMIX_DATA_WRITER3" maxErrors="10" password="informix" table="test" type="INFORMIX_DATA_WRITER" useLoadUtility="true" username="informix"/>
+<Edge debugMode="true" fromNode="DELIMITED_DATA_READER1:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="MetadataIn" outPort="Port 0 (out)" toNode="INFORMIX_DATA_WRITER3:0"/>
+</Phase>
+<Phase number="3">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/errorLoad.txt" guiHeight="25" guiName="Delimited Data Writer" guiWidth="50" guiX="249" guiY="362" id="DELIMITED_DATA_WRITER1" type="DELIMITED_DATA_WRITER"/>
+<Node database="test" dbLoaderPath="${WORKSPACE}/lib/linux/load" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/informixFlat.dat" guiHeight="25" guiName="Informix Data Writer" guiWidth="50" guiX="34" guiY="362" host="demo_on" id="INFORMIX_DATA_WRITER2" table="test" type="INFORMIX_DATA_WRITER" useLoadUtility="true"/>
+<Edge debugMode="true" fromNode="INFORMIX_DATA_WRITER2:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="MetadataOut" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER1:0"/>
+</Phase>
+</Graph>

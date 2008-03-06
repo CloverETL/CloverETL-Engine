@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Tue Nov 27 15:42:58 CET 2007" guiVersion="1.9" id="1196692750273" licenseType="Commercial License javlinconsulting" modified="Mon Mar 03 12:54:21 CET 2008" name="Dedup" revision="1.65">
+<Global>
+<Metadata fileURL="meta/delimited/employees.fmt" id="Metadata0"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node dedupKey="Title;TitleInCourtesy" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="360" guiY="134" id="DEDUP0" keep="first" noDupRecord="2" type="DEDUP"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="0" guiName="Delimited Data Reader" guiWidth="0" guiX="11" guiY="134" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/out.txt" guiHeight="0" guiName="Delimited Data Writer" guiWidth="0" guiX="549" guiY="60" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/reject.txt" guiHeight="0" guiName="Delimited Data Writer" guiWidth="0" guiX="550" guiY="221" id="DELIMITED_DATA_WRITER1" type="DELIMITED_DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="192" guiY="134" id="EXT_SORT0" sortKey="Title;TitleInCourtesy" type="EXT_SORT"/>
+<Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (unique)" toNode="DELIMITED_DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="DEDUP0:1" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (duplicate)" toNode="DELIMITED_DATA_WRITER1:0"/>
+<Edge debugMode="true" fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+</Phase>
+</Graph>
