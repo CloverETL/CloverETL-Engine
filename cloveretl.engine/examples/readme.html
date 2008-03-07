@@ -3,8 +3,6 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE></TITLE>
-	<META NAME="CREATED" CONTENT="20061005;11474600">
-	<META NAME="CHANGED" CONTENT="20070605;9405100">
 	<STYLE TYPE="text/css">
 	<!--
 		@page { size: 8.5in 11in }
@@ -13,11 +11,11 @@
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
 <H1><FONT COLOR="#008000">Running CloverETL examples</FONT></H1>
-<I>by Agata Vackova, Last modified 
+<P STYLE="margin-bottom: 0in"><I>by Agata Vackova, Last modified 
 <SCRIPT LANGUAGE="javascript">
 document.writeln(document.lastModified)
 </SCRIPT>
-</I>
+</I></P>
 <HR>
 <H2>Preliminaries</H2>
 <P>Complete <A HREF="http://wiki.clovergui.net/">documentation to
@@ -37,45 +35,48 @@ or you built one from sources. Extract both zip files to the same
 directory.<BR>When executing examples, You have to be in directory
 where you unzipped the examples. Let's assume you have extracted the
 archives into <TT>/home</TT>. Then when executing any example, you
-have to be switched in <TT>/home/cloverETL/examples</TT> (the
-directory where the <TT>.grf</TT> files are). 
+have to be switched in <TT>/home/cloverETL/examples</TT> . 
 </P>
 <H2><A NAME="Common things|outline"></A>Common things</H2>
-<P>The examples presented here use various inputs and create various
-outputs. In general, input data is taken from files stored in <TT>data/</TT>
-subdirectory. Outputs are created in <TT>output/</TT> subdirectory
-and required metadata is read from <TT>metadata/</TT> subdirectory. 
-</P>
-<P>In the directory with examples there is file workspace.prm with
-WORKSPACE parameter definition. You have to change this parameter to
-proper value before running graphs. 
-</P>
-<P>For graphs, which connect to database you have to configure
-connection properly . Example configuration files (koule_postgre.cfg,
-interbase.cfg and oracle.cfg) are included to example package. 
-</P>
-<P>For graph with transformation code <TT>tools.jar</TT> should be in
-classpath (if you use CloverGUI set it in <TT>example</TT> project
-properties). 
+<P>The examples presented here have the structure as default
+Clover.ETL project: graph files are in <FONT FACE="Cumberland AMT, monospace">graph</FONT>
+subdirectory, input data are taken from files stored in <FONT FACE="Cumberland AMT, monospace">data-in</FONT>
+subdirectory, outputs are created in <FONT FACE="Cumberland AMT, monospace">data-out</FONT>
+subdirectory (sometimes we use <FONT FACE="Cumberland AMT, monospace">data-tmp</FONT>
+directory for reading or writing files), required metadata are read
+from <TT>meta</TT> subdirectory. Connection's configuration files are
+stored in <FONT FACE="Cumberland AMT, monospace">conn </FONT><FONT FACE="Thorndale AMT, serif">subdirectory
+(in example package you can found some example files), for
+transformations (source files as well as .class files) there is used
+<FONT FACE="Cumberland AMT, monospace">trans</FONT> directory. In
+</FONT><FONT FACE="Cumberland AMT, monospace">lookup </FONT><FONT FACE="Thorndale AMT, serif">directory
+can be data for lookup tables and </FONT><FONT FACE="Cumberland AMT, monospace">seq
+</FONT><FONT FACE="Thorndale AMT, serif">directory is used for
+sequences.</FONT></P>
+<P>In the main examples directory there is file workspace.prm with
+PROJECT parameter definition. You have to change this parameter to
+proper value before running graphs. This file contains more
+parameters: they defines all needed directory paths, and are defined
+by PROJECT parameter, so they don't need to by modified. 
 </P>
 <P>To run graphs you can use scripts (run.bat or run.sh) included in
 examples package. They assumes that environment variable JAVA_HOME is
 set to java home directory. Or you can use old fashion way: 
 </P>
-<PRE>  JARSPATH=&quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/poi-2.5.1.jar&quot;
+<PRE>  JARSPATH=&quot;../lib/cloveretl.engine.jar:../lib/commons-logging.jar&quot;
   JARSPATH=&quot;$JARSPATH:../lib/commons-cli-1.0.jar:../lib/jms.jar:../lib/jxl.jar&quot;
-  JARSPATH=&quot;$JARSPATH:../lib/log4j-1.2.12.zip:../lib/javolution.jar:javaExamples&quot;
-  java -cp &quot;$JARSPATH&quot; org.jetel.main.runGraph -plugins ../plugins graphSimpleCopy.grf</PRE><H3>
+  JARSPATH=&quot;$JARSPATH:../lib/log4j-1.2.12.zip:../lib/javolution.jar:trans&quot;
+  java -cp &quot;$JARSPATH&quot; org.jetel.main.runGraph -plugins ../plugins graph/graphSimpleCopy.grf</PRE><H3>
 Important notes</H3>
 <P>There is shown above how to run transformations on Linux (Unix)
 machine. If you have Windows installed, just change the <TT>java -cp
-&quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:../lib/javolution.jar:javaExamples&quot;
+&quot;../lib/cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:../lib/javolution.jar:trans&quot;
 </TT>into <TT>-cp
-<TT>&quot;../cloveretl.engine.jar;../lib/commons-logging.jar;../lib/log4j-1.2.12.zip;<TT>../lib/javolution.jar;javaExamples</TT>&quot;</TT></TT>
+<TT>&quot;../lib/cloveretl.engine.jar;../lib/commons-logging.jar;../lib/log4j-1.2.12.zip;<TT>../lib/javolution.jar;trans</TT>&quot;</TT></TT>
 - the Java classpath delimiter on Windows is <TT>;</TT> (semicolon)
 not <TT>:</TT> (colon). 
 </P>
-<P><B>CloverETL requires Java (JVM) version 1.5 or higher ! </B>
+<P><B>CloverETL requires Java (JVM) version 1.5 ! </B>
 </P>
 <H2><A NAME="Importing examples to Eclipse |outline"></A>Importing
 examples to Eclipse 
@@ -102,7 +103,7 @@ button to choose a directory or an archive file.
 <P>After clicking Finish button project will import to your
 workspace. 
 </P>
-<P><A HREF="#Common things|outline">Set WORKSPACE and connection
+<P><A HREF="#Common things|outline">Set PROJECT and connection
 parameters</A> and you can run graphs. 
 </P>
 <P><BR><BR>
