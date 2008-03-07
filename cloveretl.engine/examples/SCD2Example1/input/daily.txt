@@ -1,7 +1,7 @@
 27.Jul 2007 #144
 Country|Currency|Amount|Code|Rate
 Australia|dollar|1|AUD|17.678
-Bulgaria|lev|1|BGN|14.327
+Bulgaria|lev|100|BGN|14.327
 Canada|dollar|1|CAD|19.386
 China|renminbi|1|CNY|2.716
 Croatia|kuna|1|HRK|3.836
