@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed May 02 10:25:31 CEST 2007" guiVersion="1.9" id="1204805969813" licenseType="Evaluation license." modified="Thu Mar 06 13:30:56 CET 2008" name="SCDDataIntersection" revision="1.219">
+<Graph created="Wed May 02 10:25:31 CEST 2007" guiVersion="1.9" id="1204805969813" licenseType="Evaluation license." modified="Thu Mar 06 14:16:02 CET 2008" name="SCDDataIntersection" revision="1.221">
 <Global>
 <Metadata fileURL="${PROJECT}/${SCD2_DIR}/metadata/exchange_rate_DIM.fmt" id="Metadata0"/>
 <Metadata fileURL="${PROJECT}/${SCD2_DIR}/metadata/exchange_rate.fmt" id="Metadata1"/>
-<Property id="GraphParameter0" name="${SCD2_DIR}_DIR" value="${SCD2_DIR}Example1"/>
+<Property id="GraphParameter0" name="SCD2_DIR" value="SCD2Example1"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
 <Sequence cached="0" fileURL="${PROJECT}/${SCD2_DIR}/sequences/exchange_rates_ID.seq" id="Sequence0" name="exchange_rates_ID" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
