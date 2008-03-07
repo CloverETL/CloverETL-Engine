@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed May 02 10:25:31 CEST 2007" guiVersion="1.9" id="1204805969813" licenseType="Evaluation license." modified="Thu Mar 06 14:16:02 CET 2008" name="SCDDataIntersection" revision="1.221">
+<Graph created="Wed May 02 10:25:31 CEST 2007" guiVersion="1.9" id="1204805969813" licenseType="Evaluation license." modified="Fri Mar 07 12:40:40 CET 2008" name="SCDDataIntersection" revision="1.229">
 <Global>
 <Metadata fileURL="${PROJECT}/${SCD2_DIR}/metadata/exchange_rate_DIM.fmt" id="Metadata0"/>
 <Metadata fileURL="${PROJECT}/${SCD2_DIR}/metadata/exchange_rate.fmt" id="Metadata1"/>
-<Property id="GraphParameter0" name="SCD2_DIR" value="SCD2Example1"/>
+<Property id="GraphParameter11" name="SCD2_DIR" value="SCD2Example1"/>
+<Property id="GraphParameter0" name="today" value="12-31-2008"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
 <Sequence cached="0" fileURL="${PROJECT}/${SCD2_DIR}/sequences/exchange_rates_ID.seq" id="Sequence0" name="exchange_rates_ID" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
@@ -81,14 +82,14 @@ function transform() {
 <Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="SORT0:0"/>
 <Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_FILTER0:0"/>
 <Edge fromNode="EXT_FILTER0:0" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" toNode="SORT1:0"/>
-<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (set A)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (set A)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:0"/>
 <Edge fromNode="REFORMAT1:0" guiBendpoints="" id="Edge45" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER2:0"/>
 <Edge debugMode="false" fromNode="REFORMAT2:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 <Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge43" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
 <Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge44" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_GATHER0:1"/>
 <Edge fromNode="SIMPLE_GATHER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT2:0"/>
 <Edge fromNode="SORT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
-<Edge fromNode="SORT1:0" guiBendpoints="" id="Edge8" inPort="Port 1 (set B)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:1"/>
+<Edge debugMode="true" fromNode="SORT1:0" guiBendpoints="" id="Edge8" inPort="Port 1 (set B)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:1"/>
 <Edge fromNode="SORT1:1" guiBendpoints="" id="Edge19" inPort="Port 1 (set B)" metadata="Metadata0" outPort="Port 1 (out)" toNode="DATA_INTERSECTION1:1"/>
 </Phase>
 </Graph>
