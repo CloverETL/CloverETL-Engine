@@ -29,7 +29,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author Agata Vackova (agata.vackova@javlinconsulting.cz) ; 
@@ -82,7 +84,7 @@ public class SQLCloverCallableStatement {
 		this.outputFields = outputFields;
 	}
 
-	public boolean prepareCall() throws SQLException{
+	public boolean prepareCall() throws SQLException, ComponentNotReadyException{
 		statement = connection.prepareCall(query);
 		int fieldNumber;
 		int parameterNumber;
@@ -93,6 +95,10 @@ public class SQLCloverCallableStatement {
 			for (Entry<Integer, String> entry : inParameters.entrySet()) {
 				parameterNumber = entry.getKey();
 				fieldNumber = inMetadata.getFieldPosition(entry.getValue());
+				if (fieldNumber == -1) {
+					throw new ComponentNotReadyException("Field " + StringUtils.quote(entry.getValue()) + " doesn't exist in metadata " +
+							StringUtils.quote(inMetadata.getName()));
+				}
 				inTransMap[i++] = CopySQLData.createCopyObject(SQLUtil.jetelType2sql(inMetadata.getField(fieldNumber)), 
 						inMetadata.getField(fieldNumber), inRecord, parameterNumber - 1, fieldNumber);
 			}
@@ -143,7 +149,7 @@ public class SQLCloverCallableStatement {
 		// init transMap if null
 		if (resultOutMap == null){
 			resultOutMap = CopySQLData.sql2JetelTransMap( SQLUtil.getFieldTypes(resultSet.getMetaData()),
-					outRecord.getMetadata(), outRecord);
+					outRecord.getMetadata(), outRecord, outputFields);
 		}
 			
 		for (int i = 0; i < resultOutMap.length; i++) {

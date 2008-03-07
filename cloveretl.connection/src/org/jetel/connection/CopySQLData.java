@@ -271,9 +271,15 @@ public abstract class CopySQLData {
 					"number of key fields " + keyFields.length + ")." );
 		}
 		CopySQLData[] transMap = new CopySQLData[fieldTypes.size()];
+		int fieldIndex;
 		for (int i=0; i < keyFields.length; i++) {
+			fieldIndex = record.getMetadata().getFieldPosition(keyFields[i]);
+			if (fieldIndex == -1) {
+				throw new RuntimeException("Field " + StringUtils.quote(keyFields[i]) + " doesn't exist in metadata " +
+						StringUtils.quote(record.getMetadata().getName()));
+			}
 			transMap[i] = createCopyObject(((Integer) fieldTypes.get(i)).shortValue(),
-					record.getField(keyFields[i]).getMetadata(),
+					record.getField(fieldIndex).getMetadata(),
 					record, i, metadata.getFieldPosition(keyFields[i]));
 		}
 		
