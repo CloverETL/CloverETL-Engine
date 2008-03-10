@@ -27,12 +27,12 @@
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/mssql.dat" guiHeight="25" guiName="DELIMITED_DATA_READER0" guiWidth="50" guiX="31" guiY="28" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
 <Node bcpUtilityPath="bcp" columnDelimiter="|" database="test" enabled="enabled" fileURL="${DATAOUT_DIR}/exchange.bcp" guiHeight="25" guiName="MS_SQL_DATA_WRITER0" guiWidth="50" guiX="282" guiY="28" id="MS_SQL_DATA_WRITER0" owner="dbo" password="test" table="test" type="MS_SQL_DATA_WRITER" username="test">
-<attr name="parameters"><![CDATA[characterType|codePageSpecifier=ACP|errFile=${WORKSPACE}\output\err.bcp]]></attr>
+<attr name="parameters"><![CDATA[characterType|codePageSpecifier=ACP|errFile=${DATAOUT_DIR}\err.bcp]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="MS_SQL_DATA_WRITER0:0"/>
 </Phase>
 <Phase number="1">
-<Node append="false" charset="UTF-8" enabled="enabled" fileURL="${WORKSPACE}\output\out.txt" guiHeight="25" guiName="DELIMITED_DATA_WRITER0" guiWidth="50" guiX="282" guiY="168" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}\out.txt" guiHeight="25" guiName="DELIMITED_DATA_WRITER0" guiWidth="50" guiX="282" guiY="168" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
 <Node bcpUtilityPath="bcp" columnDelimiter=";" database="test" enabled="enabled" fileURL="${DATAIN_DIR}\data\delimited\mssql.dat" guiHeight="25" guiName="MS_SQL_DATA_WRITER1" guiWidth="50" guiX="31" guiY="168" id="MS_SQL_DATA_WRITER1" owner="dbo" password="test" table="test" type="MS_SQL_DATA_WRITER" username="test">
 <attr name="parameters"><![CDATA[characterType|codePageSpecifier=ACP|errFile=${DATAOUT_DIR}\err.bcp]]></attr>
 </Node>
