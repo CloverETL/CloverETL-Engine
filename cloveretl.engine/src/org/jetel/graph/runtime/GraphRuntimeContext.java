@@ -24,7 +24,7 @@ package org.jetel.graph.runtime;
 
 import java.util.Properties;
 
-import org.apache.log4j.lf5.LogLevel;
+import org.apache.log4j.Level;
 import org.jetel.data.Defaults;
 
 /**
@@ -39,7 +39,7 @@ public class GraphRuntimeContext {
 
 	private long runId;
 	private String logLocation;
-	private LogLevel logLevel;
+	private Level logLevel;
 	private int trackingInterval;
 	private int trackingFlushInterval;
 	private boolean useJMX;
@@ -213,14 +213,14 @@ public class GraphRuntimeContext {
 	/**
 	 * @return logLevel
 	 */
-	public LogLevel getLogLevel() {
+	public Level getLogLevel() {
 		return logLevel;
 	}
 
 	/**
 	 * @param logLevel the logLevel to set
 	 */
-	public void setLogLevel(LogLevel logLevel) {
+	public void setLogLevel(Level logLevel) {
 		this.logLevel = logLevel;
 	}
 
