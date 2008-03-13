@@ -170,7 +170,6 @@ public class XmlWriter extends Node {
 		}
 		
 		public void finish() throws IOException {
-			writeFooter();
 		}
 
 		public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
