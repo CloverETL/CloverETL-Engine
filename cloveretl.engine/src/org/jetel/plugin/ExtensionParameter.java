@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class represents extension's parameter. It could be only string value, although now is posible
+ * This class represents extension's parameter. It could be only string value, although now is possible
  * to assign to one key array of values.
  * 
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
