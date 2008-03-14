@@ -70,7 +70,7 @@ public class ComponentFactory {
 	
     public final static void registerComponents(ComponentDescription[] components) {
         for(int i = 0; i < components.length; i++) {
-            componentMap.put(components[i].getType(), components[i]);
+        	registerComponent(components[i]);
         }
     }
 	

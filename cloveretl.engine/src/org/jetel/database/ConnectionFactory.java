@@ -70,7 +70,7 @@ public class ConnectionFactory {
     
     public final static void registerConnection(ConnectionDescription[] connections) {
         for(int i = 0; i < connections.length; i++) {
-            connectionMap.put(connections[i].getType(), connections[i]);
+        	registerConnection(connections[i]);
         }
     }
     

@@ -21,20 +21,10 @@ package org.jetel.graph.dictionary;
 
 import org.jetel.exception.ComponentNotReadyException;
 
-public class DictionaryValue<T> implements IDictionaryValue<T> {
+public interface IDictionaryValue<T> {
 
-	protected T value;
+	public void init(Dictionary dictionary) throws ComponentNotReadyException;
 	
-	public DictionaryValue(T value) {
-		this.value = value;
-	}
+	public T getValue();
 
-	public void init(Dictionary dictionary) throws ComponentNotReadyException {
-		//EMPTY
-	}
-
-	public T getValue() {
-		return value;
-	}
-	
 }

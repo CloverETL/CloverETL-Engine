@@ -1,0 +1,11 @@
+<plugin
+   id="org.jetel.engine"
+   version="2.4.0"
+   provider-name="Javlin Consulting s.r.o.">
+
+	<extension point-id="dictionaryEntry">
+		<parameter id="type" value="string"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.StringDictionaryEntryProvider"/>
+	</extension>
+	
+</plugin>

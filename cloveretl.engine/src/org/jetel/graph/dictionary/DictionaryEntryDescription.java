@@ -19,22 +19,24 @@
 */
 package org.jetel.graph.dictionary;
 
-import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.data.GraphElementDescription;
+import org.jetel.plugin.Extension;
+import org.jetel.plugin.PluginDescriptor;
 
-public class DictionaryValue<T> implements IDictionaryValue<T> {
+/**
+ * @author Martin Zatopek
+ *
+ */
+public class DictionaryEntryDescription extends GraphElementDescription {
 
-	protected T value;
-	
-	public DictionaryValue(T value) {
-		this.value = value;
-	}
+    public final static String EXTENSION_POINT_ID = "dictionaryEntry";
+    
+	public DictionaryEntryDescription(String dictionaryEntryType, String className, PluginDescriptor pluginDescriptor) {
+	    super(EXTENSION_POINT_ID, dictionaryEntryType, className, pluginDescriptor);
+    }
 
-	public void init(Dictionary dictionary) throws ComponentNotReadyException {
-		//EMPTY
-	}
+    public DictionaryEntryDescription(Extension dictionaryExtension) {
+        super(EXTENSION_POINT_ID, dictionaryExtension);
+    }
 
-	public T getValue() {
-		return value;
-	}
-	
 }

@@ -19,22 +19,28 @@
 */
 package org.jetel.graph.dictionary;
 
-import org.jetel.exception.ComponentNotReadyException;
+import java.util.Properties;
 
-public class DictionaryValue<T> implements IDictionaryValue<T> {
+import org.jetel.exception.AttributeNotFoundException;
 
-	protected T value;
-	
-	public DictionaryValue(T value) {
-		this.value = value;
-	}
+/**
+ * This interface serves to provide ability to build up dictionary value from the given properties.
+ * It is intended to be implemented in various external plugins for their internal dictionary value types.
+ *  
+ * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
+ *         (c) Javlin Consulting (www.javlinconsulting.cz)
+ *
+ * @created 10.3.2008
+ */
+public interface DictionaryEntryProvider {
 
-	public void init(Dictionary dictionary) throws ComponentNotReadyException {
-		//EMPTY
-	}
+	public static final String DEFAULT_TYPE = "string";
 
-	public T getValue() {
-		return value;
-	}
+	/**
+	 * Returns a dictionary value based on the given properties.
+	 * @param properties
+	 * @return
+	 */
+	public IDictionaryValue<?> getValue(Properties properties) throws AttributeNotFoundException;
 	
 }

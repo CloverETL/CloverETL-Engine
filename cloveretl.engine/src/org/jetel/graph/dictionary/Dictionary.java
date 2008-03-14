@@ -30,14 +30,14 @@ public class Dictionary extends GraphElement {
 
 	private static final String DEFAULT_ID = "_DICTIONARY";
 
-	private Map<String, DictionaryValue<?>> dictionary;
-	private Map<String, DictionaryValue<?>> defaultDictionary;
+	private Map<String, IDictionaryValue<?>> dictionary;
+	private Map<String, IDictionaryValue<?>> defaultDictionary;
 
 	public Dictionary(TransformationGraph graph) {
 		super(DEFAULT_ID, graph);
 		
-		dictionary = new HashMap<String, DictionaryValue<?>>();
-		defaultDictionary = new HashMap<String, DictionaryValue<?>>();
+		dictionary = new HashMap<String, IDictionaryValue<?>>();
+		defaultDictionary = new HashMap<String, IDictionaryValue<?>>();
 
 	}
 
@@ -45,7 +45,11 @@ public class Dictionary extends GraphElement {
 	public synchronized void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
-		
+
+		//initialization of all default dictionary values
+		for(IDictionaryValue<?> dictionaryValue : defaultDictionary.values()) {
+			dictionaryValue.init(this);
+		}
 	}
 	
 	@Override
@@ -55,7 +59,7 @@ public class Dictionary extends GraphElement {
 //TODO !!!		//dictionary.clear();
 	}
 	
-	public DictionaryValue<?> get(String key) {
+	public IDictionaryValue<?> get(String key) {
 		if(dictionary.containsKey(key)) {
 			return dictionary.get(key);
 		} else {
@@ -63,11 +67,12 @@ public class Dictionary extends GraphElement {
 		}
 	}
 	
-	public void put(String key, DictionaryValue<?> value) {
+	public void put(String key, IDictionaryValue<?> value) {
+		//value.init(this);
 		dictionary.put(key, value);
 	}
 	
-	public void putDefault(String key, DictionaryValue<?> value) {
+	public void putDefault(String key, IDictionaryValue<?> value) {
 		defaultDictionary.put(key, value);
 	}
 	
