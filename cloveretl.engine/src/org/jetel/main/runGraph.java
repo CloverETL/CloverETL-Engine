@@ -135,14 +135,13 @@ public class runGraph {
         String graphFileName = null;
         String configFileName = null;
         
-        System.out.println("***  CloverETL framework/transformation graph runner ver "
+        logger.info("***  CloverETL framework/transformation graph runner ver "
                         + RUN_GRAPH_VERSION
                         + ", (c) 2002-06 D.Pavlis, released under GNU Lesser General Public License  ***");
-        System.out.println(" Running with framework version: "
+        logger.info(" Running with framework version: "
                 + JetelVersion.MAJOR_VERSION + "." + JetelVersion.MINOR_VERSION
                 + " build#" + JetelVersion.BUILD_NUMBER + " compiled "
                 + JetelVersion.LIBRARY_BUILD_DATETIME);
-        System.out.println();
 
 
         Logger.getLogger(runGraph.class); // make log4j to init itself
@@ -360,12 +359,13 @@ public class runGraph {
 		System.out.println("-tracking <seconds>\thow frequently output the graph processing status");
 		System.out.println("-info\t\t\tprint info about Clover library version");
         System.out.println("-plugins\t\tdirectory where to look for plugins/components");
-        System.out.println("-pass\t\tpassword for decrypting of hidden connections passwords");
-        System.out.println("-stdin\t\tload graph definition from STDIN");
+        System.out.println("-pass\t\t\tpassword for decrypting of hidden connections passwords");
+        System.out.println("-stdin\t\t\tload graph definition from STDIN");
         System.out.println("-loghost\t\tdefine host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445");
         System.out.println("-checkconfig\t\tonly check graph configuration");
        // System.out.println("-mbean <name>\t\tname under which register Clover's JMXBean");
-        System.out.println("-noJMX\t\tturns off sending graph tracking information");
+        System.out.println("-noJMX\t\t\tturns off sending graph tracking information");
+        System.out.println("-config <filename>\t\tload default engine properties from specified file");
         
         System.out.println();
         System.out.println("Note: <graph definition file> can be either local filename or URL of local/remote file");
