@@ -694,7 +694,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		if (fieldType.equalsIgnoreCase("boolean")) {
 			return DataFieldMetadata.BOOLEAN_FIELD;
 		}
-		throw new RuntimeException("Unrecognized field type specified!");
+		throw new RuntimeException("Unrecognized field type specified: '" + fieldType + "'.");
 	}
 
 	/**
