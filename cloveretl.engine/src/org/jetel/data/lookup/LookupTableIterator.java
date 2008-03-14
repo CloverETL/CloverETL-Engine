@@ -40,7 +40,7 @@ public interface LookupTableIterator {
 	public DataRecord get(DataRecord keyRecord);
 	
 	/**
-	 * Next DataRecord stored under the same key as the previous one sucessfully
+	 * Next DataRecord stored under the same key as the previous one successfully
 	 * retrieved while calling get() method.
 	 * 
 	 * @return DataRecord or <code>null</code> if no other DataRecord is stored under the same key.
