@@ -22,7 +22,6 @@ package org.jetel.plugin;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -137,7 +136,7 @@ public class PluginDescriptor {
             builder.read(doc);
         } catch (InvalidAttributesException e) {
             logger.error("Parse error occure in plugin manifest reading - " + manifest.getAbsolutePath() + ". (" + e.getMessage() + ")");
-            throw new ComponentNotReadyException("");
+            throw new ComponentNotReadyException(e);
         }
     }
     
