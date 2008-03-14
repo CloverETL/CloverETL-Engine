@@ -29,6 +29,9 @@ package org.jetel.util.string;
  * @since 10/11/06  
 */
 public class QuotingDecoder {
+	
+	private char startQuote;
+	
 	public QuotingDecoder() {
 	}
 
@@ -55,14 +58,18 @@ public class QuotingDecoder {
 	 * Checks whether a character is an opening quote.
 	 */
 	public boolean isStartQuote(char c) {
-		return c == '\"' || c == '\''; 
+		boolean isQuote = c == '\"' || c == '\''; 
+		if (isQuote) {
+			startQuote = c;
+		}
+		return isQuote;
 	}
 
 	/*
 	 * Checks whether a character is a closing quote.
 	 */
 	public boolean isEndQuote(char c) {
-		return c == '\"' || c == '\''; 
+		return c == startQuote; 
 	}
 
 	/*
