@@ -513,6 +513,9 @@ public class DataFieldMetadata implements Serializable {
 					ret = getDataRecordMetadata().getFieldDelimiters();
 				} else {
 					ret = getDataRecordMetadata().getRecordDelimiters();
+					if(ret == null) {
+						ret = getDataRecordMetadata().getFieldDelimiters();
+					}
 				}
 			}
 
