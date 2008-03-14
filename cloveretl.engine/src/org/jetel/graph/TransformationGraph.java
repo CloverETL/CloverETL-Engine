@@ -45,7 +45,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.dictionary.Dictionary;
-import org.jetel.graph.dictionary.DictionaryValue;
+import org.jetel.graph.dictionary.IDictionaryValue;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.metadata.DataRecordMetadata;
@@ -103,6 +103,8 @@ public final class TransformationGraph extends GraphElement {
 
 	private TypedProperties graphProperties;
 
+	private URL projectURL = null;
+
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
 	}
@@ -127,8 +129,7 @@ public final class TransformationGraph extends GraphElement {
 		dictionary = new Dictionary(this);
 	}
 
-	private static boolean firstCallProjectURL = true; //have to be reset
-	private static URL projectURL = null;
+	private boolean firstCallProjectURL = true; //have to be reset
     public URL getProjectURL() {
         if(firstCallProjectURL) {
             firstCallProjectURL = false;
