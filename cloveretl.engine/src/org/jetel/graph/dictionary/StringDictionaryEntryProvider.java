@@ -19,22 +19,28 @@
 */
 package org.jetel.graph.dictionary;
 
-import org.jetel.exception.ComponentNotReadyException;
+import java.util.Properties;
 
-public class DictionaryValue<T> implements IDictionaryValue<T> {
+/**
+ * Default dictionary entry provider type. It handles string dictionary elements in a "value" attribute.
+ * All other attributes are ignored.
+ * 
+ * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
+ *         (c) Javlin Consulting (www.javlinconsulting.cz)
+ *
+ * @created 10.3.2008
+ */
+public class StringDictionaryEntryProvider implements DictionaryEntryProvider {
 
-	protected T value;
+	private static final String VALUE_ATTRIBUTE = "value";
 	
-	public DictionaryValue(T value) {
-		this.value = value;
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.dictionary.DictionaryEntryProvider#getValue(java.util.Properties)
+	 */
+	public IDictionaryValue<?> getValue(Properties properties) {
+		String value = properties.getProperty(VALUE_ATTRIBUTE);
+		
+		return new DictionaryValue<String>(value);
 	}
 
-	public void init(Dictionary dictionary) throws ComponentNotReadyException {
-		//EMPTY
-	}
-
-	public T getValue() {
-		return value;
-	}
-	
 }

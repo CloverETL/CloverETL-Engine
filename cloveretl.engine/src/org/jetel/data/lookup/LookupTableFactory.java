@@ -69,7 +69,7 @@ public class LookupTableFactory {
     
     public final static void registerLookupTable(LookupTableDescription[] lookupTables) {
         for(int i = 0; i < lookupTables.length; i++) {
-            lookupTableMap.put(lookupTables[i].getType(), lookupTables[i]);
+        	registerLookupTable(lookupTables[i]);
         }
     }
     

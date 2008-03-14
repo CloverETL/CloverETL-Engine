@@ -70,7 +70,7 @@ public class SequenceFactory {
     
     public final static void registerSequences(SequenceDescription[] sequences) {
         for(int i = 0; i < sequences.length; i++) {
-            sequenceMap.put(sequences[i].getType(), sequences[i]);
+        	registerSequence(sequences[i]);
         }
     }
     

@@ -99,6 +99,7 @@
 			<fileset file="ant-contrib.jar" />
 			<fileset file="build.xml" />
 			<fileset file="build.properties" />
+			<fileset file="plugin.xml" />
 			<fileset file="readme.src.txt" />
 			<fileset file="readme.bin.txt" />
 		</copy>
@@ -238,6 +239,11 @@
 		<!-- copy all libraries from lib directory -->
 		<copy todir="${dir.dist}/lib">
 			<fileset dir="${dir.lib}"/>
+		</copy>
+
+		<!-- copy engine's plugin.xml to the plugins directory -->
+		<copy todir="${dir.dist}/plugins/org.jetel.engine">
+			<fileset file="plugin.xml"/>
 		</copy>
 
 		<!-- copy all documents from docs directory -->

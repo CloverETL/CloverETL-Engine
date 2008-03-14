@@ -903,11 +903,11 @@ public final class TransformationGraph extends GraphElement {
 		return TransformationGraph.logger;
 	}
     
-	public DictionaryValue<?> getDictionaryValue(String key) {
+	public IDictionaryValue<?> getDictionaryValue(String key) {
 		return dictionary.get(key);
 	}
 	
-	public void setDictionaryEntry(String key, DictionaryValue<?> value) {
+	public void setDictionaryEntry(String key, IDictionaryValue<?> value) {
 		dictionary.put(key, value);
 	}
 	

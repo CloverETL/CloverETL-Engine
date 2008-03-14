@@ -48,6 +48,9 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.dictionary.DictionaryEntryFactory;
+import org.jetel.graph.dictionary.DictionaryEntryProvider;
+import org.jetel.graph.dictionary.IDictionaryValue;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
@@ -160,6 +163,8 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String LOOKUP_TABLE_ELEMENT = "LookupTable";
 	private final static String METADATA_RECORD_ELEMENT = "Record";
 	private final static String PROPERTY_ELEMENT = "Property";
+	private final static String DICTIONARY_ELEMENT = "Dictionary";
+	private final static String DICTIONARY_ENTRY_ELEMENT = "Entry";
 
 	private final static int ALLOCATE_MAP_SIZE=64;
 	/**
@@ -307,6 +312,10 @@ public class TransformationGraphXMLReaderWriter {
 		// handle all defined Properties
 		NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
 		instantiateProperties(PropertyElements);
+
+		// handle dictionary
+		NodeList dictionaryElements = document.getElementsByTagName(DICTIONARY_ELEMENT);
+		instantiateDictionary(dictionaryElements);
 		
 		// handle all defined DB connections
 		NodeList dbConnectionElements = document.getElementsByTagName(CONNECTION_ELEMENT);
@@ -724,7 +733,27 @@ public class TransformationGraphXMLReaderWriter {
 	    }
 	    // we successfully instantiated all properties
 	}
-	
+
+	private void instantiateDictionary(NodeList dictionaryElements) throws  XMLConfigurationException {
+	    for (int i = 0; i < dictionaryElements.getLength(); i++) {
+	    	NodeList dicEntryElements = dictionaryElements.item(i).getChildNodes();
+		    for (int j = 0; j < dicEntryElements.getLength(); j++) {
+		    	if(dicEntryElements.item(j).getNodeName().equals(DICTIONARY_ENTRY_ELEMENT)) {
+			        ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element) dicEntryElements.item(j), graph);
+			        try {
+			        	String type = attributes.getString("type", DictionaryEntryProvider.DEFAULT_TYPE);
+			        	String name = attributes.getString("name");
+			        	DictionaryEntryProvider dictionaryEntryProvider = DictionaryEntryFactory.getDictionaryEntryProvider(type);
+			        	IDictionaryValue<?> dictionaryValue = dictionaryEntryProvider.getValue(attributes.attributes2Properties(null));
+			        	graph.setDictionaryEntry(name, dictionaryValue);
+			        } catch(AttributeNotFoundException ex){
+			            throw new XMLConfigurationException("Dictionary - Attributes missing " + ex.getMessage());
+			        }
+		    	}
+		    }
+	    }
+	}
+
 	public Document getOutputXMLDocumentReference() {
 		return(this.outputXMLDocument);
 	}
