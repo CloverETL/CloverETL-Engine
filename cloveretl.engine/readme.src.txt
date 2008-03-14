@@ -19,6 +19,7 @@ jms	(as JDK)			- http://java.sun.com/products/jms/
 javolution (BSD like)	- http://www.javolution.org/
 commons-cli (Apache)	- http://jakarta.apache.org/commons/cli/
 Saxon8 (MPL) 			- http://sourceforge.net/projects/saxon/
-
+JSch (BSD-style)		- http://www.jcraft.com/jsch/
+Janino (New BSD)		- http://www.janino.net/
 
 In case of problems, contact OpenSys at info@opensys.eu

@@ -23,7 +23,6 @@ package org.jetel.component;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -1105,7 +1104,7 @@ public class DB2DataWriter extends Node {
 			fMetadata.getField(i).setDelimiter(String.valueOf(columnDelimiter));
 		}
 		//check last field
-		newField = metadata.getField(metadata.getNumFields() - 1);
+		newField = metadata.getField(metadata.getNumFields() - 1).duplicate();
 		newField.setDelimiter("\n");
 		fMetadata.addField(newField);
 		return fMetadata;

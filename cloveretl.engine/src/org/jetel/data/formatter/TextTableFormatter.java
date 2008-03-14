@@ -68,6 +68,7 @@ public class TextTableFormatter implements Formatter {
 	private int leftBytes = 0;
 	private DataFieldParams[] maskAnalize;
 	private String[] mask;
+	private boolean writeHeader = false;
 	private boolean showCounter;
 	private int counter;
 	private byte[] header;
@@ -152,6 +153,8 @@ public class TextTableFormatter implements Formatter {
 		dataBuffer.clear();
 		fieldBuffer.clear();
 		dataRecords.clear();
+		headerWritten = false;
+		writeHeader = false;
 	}
 
 	public void finish() throws IOException {
@@ -249,8 +252,7 @@ public class TextTableFormatter implements Formatter {
 	}
 
 	public int writeHeader() throws IOException {
-		//if (!setOutputFieldNames || !writeHeader) return 0; // writeHeader depends on MAX_COUNT_ANALYZED_COUNT
-		if (!setOutputFieldNames || headerWritten) return 0; 
+		if (!setOutputFieldNames || !writeHeader || headerWritten) return 0; // writeHeader depends on MAX_COUNT_ANALYZED_COUNT
 		if (!isMaskAnalized()) {
 			analyzeRows(dataRecords, setOutputFieldNames);
 		}
@@ -293,15 +295,19 @@ public class TextTableFormatter implements Formatter {
         }
         sentBytes += writeString(NL);
 
-        headerWritten = true;
         return sentBytes;
 	}
 	
 	public int writeFooter() throws IOException {
 		if (!setOutputFieldNames) return 0;
-		
-		writeHeader();
-		flush();
+		if (!writeHeader) {
+			writeHeader = true;
+			writeHeader();
+			writeHeader = false;
+		}
+		if (!isMaskAnalized()) {
+			flush();
+		}
         int sentBytes=0;
         sentBytes += writeString(TABLE_CORNER);
         if (showCounter) {
@@ -314,8 +320,7 @@ public class TextTableFormatter implements Formatter {
         }
         sentBytes += writeString(NL);
 
-        ByteBufferUtils.flush(dataBuffer,writerChannel); 
-        headerWritten = false;
+        ByteBufferUtils.flush(dataBuffer,writerChannel); //xxx
 		return sentBytes;
 	}
 	
@@ -358,15 +363,20 @@ public class TextTableFormatter implements Formatter {
 		int size;
 		if (dataRecords != null) {
 			dataRecords.add(record.duplicate());
+			writeHeader = true;
 			if (dataRecords.size() < MAX_ROW_ANALYZED) {
 				return 0;
 			}
-			size = dataRecords.size();
-			flush();
+			analyzeRows(dataRecords, setOutputFieldNames);
+			size = writeHeader();
+			headerWritten = true;
+			for (DataRecord dataRecord : dataRecords) {
+				size += writeRecord(dataRecord);
+			}
 			dataRecords.clear();
 			return size;
-		} else 
-			throw new NullPointerException("dataRecords cannot be null");
+		} else //xxx
+			throw new NullPointerException("dataRecords cannot be null"); //xxx
 	}
 	
 	private void analyzeRows(List<DataRecord> dataRecords, boolean header) {
@@ -418,7 +428,7 @@ public class TextTableFormatter implements Formatter {
 	 */
 	public void flush() throws IOException {
 		if (dataRecords != null && dataRecords.size()>0) {
-			if (!isMaskAnalized()) 
+			if (!isMaskAnalized()) //xxx
 				analyzeRows(dataRecords, setOutputFieldNames);
 			ByteBufferUtils.flush(dataBuffer,writerChannel);
 			leftBytes = writeHeader();

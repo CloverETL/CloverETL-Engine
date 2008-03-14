@@ -34,8 +34,11 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
@@ -180,6 +183,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
         try{
             File file = new File(filename);
             if (!file.exists()) {
+            	logger.info("Sequence file " + filename + " doesn't exist. Creating new file.");
                 file.createNewFile();
                 io = new RandomAccessFile(file,ACCESS_MODE).getChannel();
                 lock = io.lock();
@@ -200,7 +204,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
             }
         } catch(IOException ex) {
             free();
-            throw new ComponentNotReadyException(ex);
+            throw new ComponentNotReadyException(this, XML_FILE_URL_ATTRIBUTE, ex.getMessage());
         }
     }
 
@@ -302,7 +306,14 @@ public class SimpleSequence extends GraphElement implements Sequence {
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
-        //TODO
+        
+        try {
+			if (!FileUtils.canWrite(getGraph().getProjectURL(), filename)) {
+	            throw new ComponentNotReadyException(this, XML_FILE_URL_ATTRIBUTE, "Can't write to " + filename);
+			}
+		} catch (ComponentNotReadyException e) {
+			status.add(e, Severity.ERROR, this, Priority.NORMAL, e.getAttributeName());
+		}
         return status;
     }
 

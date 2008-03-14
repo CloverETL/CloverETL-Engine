@@ -21,6 +21,7 @@ package org.jetel.util.file;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -180,8 +181,17 @@ public class WcardPattern {
 		for (int i = 0; i < patterns.size(); i++) {
 			StringBuffer dirName = new StringBuffer();
 			StringBuffer filePat = new StringBuffer();
-			if (!splitPattern(patterns.get(i), dirName, filePat)) {	// no wildcards
-				mfiles.add(patterns.get(i));
+			String fileName = patterns.get(i);
+			boolean fileProtocol = false;
+
+			try {
+				fileProtocol = FileUtils.getFileURL(null, fileName).getProtocol().equals("file");
+			} catch (MalformedURLException e) {
+				// NOTHING
+			}
+			
+			if (!fileProtocol || !splitPattern(fileName, dirName, filePat)) {	// no wildcards
+				mfiles.add(fileName);
 			} else {
 				File dir = new File(dirName.toString());
 				if (dir.exists()) {

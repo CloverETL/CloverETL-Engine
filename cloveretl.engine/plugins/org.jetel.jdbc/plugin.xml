@@ -7,9 +7,10 @@
 		<parameter id="database" value="MYSQL"/>
 		<parameter id="name" value="MySQL"/>
 		<parameter id="dbDriver" value="org.gjt.mm.mysql.Driver"/>
-		<parameter id="driverLibrary" value="lib/mysql/mysql-connector-java-5.1.5-bin.jar"/>
 		<parameter id="urlHint" value="jdbc:mysql://hostname:3306/database"/>
+		<parameter id="driverLibrary" value="../../../cloveretl.jdbc/lib/mysql/mysql-connector-java-5.1.5-bin.jar"/>
 	</extension>
+	
 	<extension point-id="jdbcDriver">
 		<parameter id="database" value="POSTGRE"/>
 		<parameter id="name" value="PostgreSQL"/>
@@ -17,5 +18,4 @@
 		<parameter id="driverLibrary" value="../../../cloveretl.jdbc/lib/postgre/postgresql-8.3-603.jdbc3.jar"/>
 		<parameter id="urlHint" value="jdbc:postgresql://hostname/database"/>
 	</extension>
-	
 </plugin>

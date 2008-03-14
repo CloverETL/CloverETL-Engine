@@ -817,7 +817,7 @@ public class ConvertLib extends TLFunctionLibrary {
         		params[1].setValue(params[0].getValue());
         		return TLValue.TRUE_VAL;
         	}
-
+        	
         	TLFunctionPrototype convertFunction = getConvertToFunction(fromType, toType);
         	if (convertFunction == null) {
         		return TLValue.FALSE_VAL;
@@ -892,7 +892,8 @@ public class ConvertLib extends TLFunctionLibrary {
     }
 
     private TLFunctionPrototype getConvertToFunction(TLValueType fromType, TLValueType toType){
-    	if (!(fromType.isCompatible(toType) || toType.isCompatible(fromType))) {
+    	if (fromType != TLValueType.BOOLEAN && toType != TLValueType.BOOLEAN &&
+    			!(fromType.isCompatible(toType) || toType.isCompatible(fromType))) {
     		return null;
     	}
     	switch (fromType) {

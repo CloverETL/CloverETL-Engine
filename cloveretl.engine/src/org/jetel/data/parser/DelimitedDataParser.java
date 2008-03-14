@@ -494,7 +494,10 @@ public class DelimitedDataParser implements Parser {
 			record.getField(fieldNum).fromString(strData);
 		} catch (BadDataFormatException bdfe) {
 			if(exceptionHandler != null ) {  //use handler only if configured
-                exceptionHandler.populateHandler(getErrorMessage(bdfe
+				bdfe.setRecordNumber(recordCounter);
+                bdfe.setFieldNumber(fieldNum);
+                bdfe.setOffendingValue(strData);
+                exceptionHandler.populateHandler(getErrorMessage(bdfe                
 						.getMessage(), data, recordCounter, fieldNum), record,
 						-1, fieldNum, strData.toString(), bdfe);
 			} else {

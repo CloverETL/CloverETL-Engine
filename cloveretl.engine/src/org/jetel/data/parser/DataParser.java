@@ -39,6 +39,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -101,6 +102,8 @@ public class DataParser implements Parser {
 	private boolean hasRecordDelimiter = false;
 	
 	private boolean hasDefaultFieldDelimiter = false;
+	
+	private QuotingDecoder qDecoder = new QuotingDecoder();
 	
 	public DataParser() {
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
@@ -315,13 +318,13 @@ public class DataParser implements Parser {
 						type = metadata.getField(fieldCounter).getType();
 						if (quotedStrings && type != DataFieldMetadata.BYTE_FIELD
 								&& type != DataFieldMetadata.BYTE_FIELD_COMPRESSED){
-							if (fieldBuffer.length() == 0) {
-								if (StringUtils.isQuoteChar((char) character)) {
+							if (fieldBuffer.length() == 0 && !inQuote) {
+								if (qDecoder.isStartQuote((char) character)) {
 									inQuote = true;
 									continue;
 								}
 							} else {
-								if (inQuote && StringUtils.isQuoteChar((char) character)) {
+								if (inQuote && qDecoder.isEndQuote((char) character)) {
 									if (!followFieldDelimiter(fieldCounter)) { //after ending quote can i find delimiter
 										findFirstRecordDelimiter();
 										return parsingErrorFound("Bad quote format", record, fieldCounter);
