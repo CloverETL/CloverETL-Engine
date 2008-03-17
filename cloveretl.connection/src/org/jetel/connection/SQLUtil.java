@@ -50,9 +50,6 @@ public class SQLUtil {
 
 	private final static String DEFAULT_DELIMITER = ";";
 	private final static String END_RECORD_DELIMITER = "\n";
-	public final static String BLOB_FORMAT_STRING = "blob";
-	public final static String BINARY_FORMAT_STRING = "binary";
-
 	static Log logger = LogFactory.getLog(SQLUtil.class);
 
 	/**
@@ -453,7 +450,7 @@ public class SQLUtil {
         case DataFieldMetadata.BYTE_FIELD:
         case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
         	if (!StringUtils.isEmpty(field.getFormatStr())
-					&& field.getFormatStr().equalsIgnoreCase(BLOB_FORMAT_STRING)) {
+					&& field.getFormatStr().equalsIgnoreCase(DataFieldMetadata.BLOB_FORMAT_STRING)) {
         		return Types.BLOB;
         	}
             return Types.BINARY;
@@ -558,6 +555,23 @@ public class SQLUtil {
 				logger.warn("Unknown SQL type is: " + sqlType);
 				return (char) -1;
 			// unknown or not possible to translate
+		}
+	}
+	
+	/**
+	 * Checks whether connection is valid/open. It
+	 * sends simple SQL query to DB and waits if
+	 * any exception occures
+	 * 
+	 * @param conn JDBC connection object
+	 * @return true if connection valid/open otherwise false
+	 */
+	public static boolean isActive(Connection conn){
+		try{
+			conn.createStatement().execute("select 1");
+			return true;
+		}catch(Exception ex){
+			return false;
 		}
 	}
 

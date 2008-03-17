@@ -508,10 +508,10 @@ public abstract class CopySQLData {
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
             case Types.BLOB:
-            	if (!StringUtils.isEmpty(format) && format.equalsIgnoreCase(SQLUtil.BLOB_FORMAT_STRING)) {
+            	if (!StringUtils.isEmpty(format) && format.equalsIgnoreCase(DataFieldMetadata.BLOB_FORMAT_STRING)) {
                 	return new CopyBlob(record, fromIndex, toIndex);
             	}
-            	if (!StringUtils.isEmpty(format) && !format.equalsIgnoreCase(SQLUtil.BINARY_FORMAT_STRING)){
+            	if (!StringUtils.isEmpty(format) && !format.equalsIgnoreCase(DataFieldMetadata.BINARY_FORMAT_STRING)){
             		logger.warn("Unknown format " + StringUtils.quote(format) + " - using CopyByte object.");
             	}
                 return new CopyByte(record, fromIndex, toIndex);
