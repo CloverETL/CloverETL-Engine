@@ -185,7 +185,7 @@ public class WcardPattern {
 			boolean fileProtocol = false;
 
 			try {
-				fileProtocol = FileUtils.getFileURL(null, fileName).getProtocol().equals("file");
+				fileProtocol = FileUtils.getFileURL(fileName).getProtocol().equals("file");
 			} catch (MalformedURLException e) {
 				// NOTHING
 			}
