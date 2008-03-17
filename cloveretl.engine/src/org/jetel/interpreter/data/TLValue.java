@@ -27,6 +27,7 @@ import java.util.Date;
 
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
+import org.jetel.data.DecimalDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
@@ -95,7 +96,7 @@ public abstract class TLValue implements Comparable<TLValue>{
         	newval = new TLNumericValue<CloverDouble>(TLValueType.DOUBLE,new CloverDouble((Numeric)field));
         	break;
         case DataFieldMetadata.DECIMAL_FIELD:
-        	newval= new TLNumericValue<Decimal>(TLValueType.DECIMAL,((Decimal)field).createCopy());
+        	newval= new TLNumericValue<Decimal>(TLValueType.DECIMAL,(Decimal)((DecimalDataField)field).getValueDuplicate());
         	break;
         case DataFieldMetadata.DATE_FIELD:
         	newval= new TLDateValue((Date)field.getValueDuplicate());
