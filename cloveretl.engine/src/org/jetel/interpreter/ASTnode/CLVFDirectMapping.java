@@ -45,11 +45,11 @@ public class CLVFDirectMapping extends SimpleNode {
       recordNo=0;
       DataRecordMetadata record= parser.getOutRecordMeta(0);
       if (record==null){
-          throw new ParseException("Unknown data field \""+fName+"\"");
+          throw new ParseException("Unknown output data field \""+fName+"\"");
       }
         fieldNo=record.getFieldPosition(fName.substring(1));
         if (fieldNo==-1){
-            throw new ParseException("Unknown data field \""+fName+"\"");
+            throw new ParseException("Unknown output data field \""+fName+"\"");
         }
     }
    public void setRecordFieldName(String fRecName) throws ParseException{
@@ -64,11 +64,11 @@ public class CLVFDirectMapping extends SimpleNode {
               throw new ParseException("Error accessing record \""+recFieldName[0]+"\" "+ex.getMessage());
           }
           if (record==null){
-              throw new ParseException("Unknown record \""+recFieldName[0]+"\""); 
+              throw new ParseException("Unknown output record \""+recFieldName[0]+"\""); 
           }
           fieldNo=record.getFieldPosition(recFieldName[1]);
           if (fieldNo==-1){
-              throw new ParseException("Unknown data field ["+fRecName+"]");
+              throw new ParseException("Unknown output data field ["+fRecName+"]");
           }
           
       }
@@ -84,11 +84,11 @@ public class CLVFDirectMapping extends SimpleNode {
        }catch(NumberFormatException ignore){
        }
        if (record==null){
-           throw new ParseException("Unknown record \""+recFieldName[0]+"\""); 
+           throw new ParseException("Unknown output record \""+recFieldName[0]+"\""); 
        }
        fieldNo=record.getFieldPosition(recFieldName[1]);
        if (fieldNo==-1){
-           throw new ParseException("Unknown data field \""+fRecName+"\"");
+           throw new ParseException("Unknown output data field \""+fRecName+"\"");
        }
    }   
    
@@ -99,12 +99,12 @@ public class CLVFDirectMapping extends SimpleNode {
   	   recordNo=Integer.parseInt(items[0]);
        DataRecordMetadata record=parser.getInRecordMeta(recordNo);
        if (record==null){
-           throw new ParseException("Unknown data field ["+fRecFieldNum+"]"); 
+           throw new ParseException("Unknown output data field ["+fRecFieldNum+"]"); 
        }
        try{
       	 fieldNo=Integer.parseInt(items[1]);
        }catch(Exception ex){
-           throw new ParseException("Unknown data field ["+fRecFieldNum+"]");
+           throw new ParseException("Unknown output data field ["+fRecFieldNum+"]");
        }
    }
    
@@ -120,15 +120,15 @@ public class CLVFDirectMapping extends SimpleNode {
            throw new ParseException("Error accessing record \""+recFieldName[0]+"\" "+ex.getMessage());
        }
        if (record==null){
-           throw new ParseException("Unknown record \""+recFieldName[0]+"\""); 
+           throw new ParseException("Unknown output record \""+recFieldName[0]+"\""); 
        }
        try{
         	 fieldNo=Integer.parseInt(recFieldName[1]);
        }catch(Exception ex){
-             throw new ParseException("Unknown data field ["+recFieldName[1]+"]");
+             throw new ParseException("Unknown output data field ["+recFieldName[1]+"]");
         }
        if (record.getField(fieldNo)==null){
-           throw new ParseException("Unknown data field ["+recFieldName[1]+"]");
+           throw new ParseException("Unknown output data field ["+recFieldName[1]+"]");
        }
    }
    
