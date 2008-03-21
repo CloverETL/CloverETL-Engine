@@ -26,8 +26,8 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.runtime.EngineInitializer;
-import org.jetel.graph.runtime.GraphExecutor;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.main.runGraph;
 
 public class testXMLGraph{
 
@@ -75,11 +75,9 @@ public class testXMLGraph{
 	    GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 	    runtimeContext.setUseJMX(false);
 	    
-		GraphExecutor executor = new GraphExecutor();
-		
 		Future<Result> result;
 		try{
-			result = executor.runGraph(graph, runtimeContext);
+			result = runGraph.executeGraph(graph, runtimeContext);
 			while (result.isDone()) {;}
 			if (!result.get().equals(Result.FINISHED_OK)){
 				System.out.println("Failed graph execution!\n");
