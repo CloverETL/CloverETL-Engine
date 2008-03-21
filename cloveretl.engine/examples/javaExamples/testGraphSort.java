@@ -20,9 +20,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.Future;
 
-import org.jetel.component.DelimitedDataReader;
-import org.jetel.component.DelimitedDataWriter;
-import org.jetel.component.Sort;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.Node;
@@ -30,10 +27,12 @@ import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.EngineInitializer;
-import org.jetel.graph.runtime.GraphExecutor;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.main.runGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+
+import sun.misc.Sort;
 
 public class testGraphSort {
 	
@@ -109,11 +108,9 @@ public class testGraphSort {
     GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
     runtimeContext.setUseJMX(false);
     
-	GraphExecutor executor = new GraphExecutor();
-	
 	Future<Result> result;
 	try{
-		result = executor.runGraph(graph, runtimeContext);
+		result = runGraph.executeGraph(graph, runtimeContext);
 		while (result.isDone()) {;}
 		if (!result.get().equals(Result.FINISHED_OK)){
 			System.out.println("Failed graph execution!\n");
