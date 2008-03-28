@@ -44,6 +44,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.WcardPattern;
+import org.jetel.util.primitive.DuplicateKeyMap;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -239,7 +240,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * key: patternOut
 	 * value: proper descendant of Rule class
 	 */
-	protected Map<String, Rule> rules = new LinkedHashMap<String, Rule>();
+	protected DuplicateKeyMap rules = new DuplicateKeyMap(new LinkedHashMap<String, Rule>());
 	protected Rule[][] transformMapArray;//rules from "rules" map translated for concrete metadata
 	protected int[][] order;//order for assigning output fields (important if assigning sequence values)
 	
@@ -858,82 +859,87 @@ public class CustomizedRecordTransform implements RecordTransform {
 		//map storing transformation for concrete output fields
 		//key is in form: recNumber.fieldNumber 
 		Map<String, Rule> transformMap = new LinkedHashMap<String, Rule>();
-		Entry<String, Rule> rulesEntry;
-		Rule rule;
+		Entry<String, ArrayList<Rule>> rulesEntry;
+//		Rule rule;
 		String field;
 		String ruleString = null;
 		String[] outFields = new String[0];
 		String[] inFields;
 		//iteration over each user given rule
-		for (Iterator<Entry<String, Rule>> iterator = rules.entrySet().iterator();iterator.hasNext();){
+		for (Iterator<Entry<String, ArrayList<Rule>>> iterator = rules.entrySet().iterator();iterator.hasNext();){
 			rulesEntry = iterator.next();
-			rule = rulesEntry.getValue();
-			//find output fields pattern
-			field = resolveField(rulesEntry.getKey());
-			if (field == null){
-				errorMessage = "Wrong pattern for output fields: " + rulesEntry.getKey();
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(errorMessage);
-			}
-			//find output fields from pattern
-			outFields = findFields(field, targetMetadata).toArray(new String[0]);
-			if (outFields.length == 0){
-				errorMessage = "There is no output field matching \""
-					+ field + "\" pattern";
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(errorMessage);
-				
-			}
-			inFields = new String[0];
-			if (rulesEntry.getValue() instanceof DeleteRule){
-				for (int i = 0; i < outFields.length; i++) {
-					rule = transformMap.remove(outFields[i]);
-				}		
-				continue;
-			}
-			if (rulesEntry.getValue() instanceof FieldRule) {
-				//find input fields from pattern
-				ruleString = resolveField(rule.getSource());
-				if (ruleString == null){
-					errorMessage = "Wrong pattern for output fields: " + ruleString;
+			for (Rule rule : rulesEntry.getValue()) {
+				//find output fields pattern
+				field = resolveField(rulesEntry.getKey());
+				if (field == null) {
+					errorMessage = "Wrong pattern for output fields: "
+							+ rulesEntry.getKey();
 					logger.error(errorMessage);
 					throw new ComponentNotReadyException(errorMessage);
 				}
-				inFields = findFields(ruleString, sourceMetadata).toArray(new String[0]);
-				if (inFields.length == 0){
-					errorMessage = "There is no input field matching \""
-						+ ruleString + "\" pattern";
+				//find output fields from pattern
+				outFields = findFields(field, targetMetadata).toArray(
+						new String[0]);
+				if (outFields.length == 0) {
+					errorMessage = "There is no output field matching \""
+							+ field + "\" pattern";
 					logger.error(errorMessage);
 					throw new ComponentNotReadyException(errorMessage);
-					
+
 				}
-			}
-			if (rulesEntry.getValue() instanceof FieldRule && inFields.length > 1){
-				//find mapping by names
-				if (putMappingByNames(transformMap, outFields, inFields,
-						rule.getSource()) == 0) {
-					errorMessage = "Not found any field for mapping by names due to rule:\n" + 
-					field + " - output fields pattern\n" + 
-					ruleString + " - input fields pattern";
-					logger.error(errorMessage);
-					throw new ComponentNotReadyException(errorMessage);
+				inFields = new String[0];
+				if (rule instanceof DeleteRule) {
+					for (int i = 0; i < outFields.length; i++) {
+						rule = transformMap.remove(outFields[i]);
+					}
+					continue;
 				}
-			}else{//for each output field the same rule
-				//for each output field from pattern, put rule to map
-				Rule rule1;
-				for (int i=0;i<outFields.length;i++){
-					if (!containsWCard(field) || !transformMap.containsKey(outFields[i])) {
-						rule1 = rule.duplicate();
-						//					if (rule1 instanceof FieldRule){
-						//						((FieldRule)rule1).setFieldParams(inFields[0]);
-						//					}
-						rule1.setGraph(getGraph());
-						rule1.setProperties(parameters);
-						rule1.setLogger(logger);
-						//prepare rule for concrete data field
-						//					rule1.init(sourceMetadata, targetMetadata,getRecNo(field),
-						//							getFieldNo(field),fieldPolicy);
-						transformMap.put(outFields[i], rule1);
+				if (rule instanceof FieldRule) {
+					//find input fields from pattern
+					ruleString = resolveField(rule.getSource());
+					if (ruleString == null) {
+						errorMessage = "Wrong pattern for output fields: "
+								+ ruleString;
+						logger.error(errorMessage);
+						throw new ComponentNotReadyException(errorMessage);
+					}
+					inFields = findFields(ruleString, sourceMetadata).toArray(
+							new String[0]);
+					if (inFields.length == 0) {
+						errorMessage = "There is no input field matching \""
+								+ ruleString + "\" pattern";
+						logger.error(errorMessage);
+						throw new ComponentNotReadyException(errorMessage);
+
+					}
+				}
+				if (rule instanceof FieldRule && inFields.length > 1) {
+					//find mapping by names
+					if (putMappingByNames(transformMap, outFields, inFields,
+							rule.getSource()) == 0) {
+						errorMessage = "Not found any field for mapping by names due to rule:\n"
+								+ field
+								+ " - output fields pattern\n"
+								+ ruleString + " - input fields pattern";
+						logger.warn(errorMessage);
+					}
+				} else {//for each output field the same rule
+					//for each output field from pattern, put rule to map
+					Rule rule1;
+					for (int i=0;i<outFields.length;i++){
+						if (!containsWCard(field) || !transformMap.containsKey(outFields[i])) {
+							rule1 = rule.duplicate();
+							//					if (rule1 instanceof FieldRule){
+							//						((FieldRule)rule1).setFieldParams(inFields[0]);
+							//					}
+							rule1.setGraph(getGraph());
+							rule1.setProperties(parameters);
+							rule1.setLogger(logger);
+							//prepare rule for concrete data field
+							//					rule1.init(sourceMetadata, targetMetadata,getRecNo(field),
+							//							getFieldNo(field),fieldPolicy);
+							transformMap.put(outFields[i], rule1);
+						}
 					}
 				}
 			}
@@ -1253,11 +1259,15 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 */
 	public ArrayList<String> getRulesAsStrings() {
 		ArrayList<String> list = new ArrayList<String>();
-		Entry<String, Rule> entry;
-		for (Iterator<Entry<String, Rule>> iterator = rules.entrySet().iterator();iterator.hasNext();) {
+		Entry<String, ArrayList<Rule>> entry;
+		ArrayList<Rule> subList;
+		for (Iterator<Entry<String, ArrayList<Rule>>> iterator = rules.entrySet().iterator();iterator.hasNext();) {
 			entry = iterator.next();
-			list.add(entry.getValue().getType() + ":" + entry.getKey() + "=" + 
-					entry.getValue().getSource());
+			subList = entry.getValue();
+			for (int i = 0; i < subList.size(); i++) {
+				list.add(subList.get(i).getType() + ":" + entry.getKey()
+						+ "=" + subList.get(i).getSource());
+			}
 		}
 		return list;
 	}
