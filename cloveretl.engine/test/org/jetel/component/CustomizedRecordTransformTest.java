@@ -8,10 +8,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DecimalDataField;
 import org.jetel.data.SetVal;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
@@ -204,6 +206,79 @@ public class CustomizedRecordTransformTest extends TestCase {
 		assertEquals(out1.getField(1).getValue(), record.getField(4).getValue());
 	}
 
+	public void test_fieldToField2() {
+		System.out.println("Field to field test:");
+		
+		DataFieldMetadata decField = new DataFieldMetadata("DecimalValue",DataFieldMetadata.DECIMAL_FIELD, "\n");
+		metaOut.addField(decField);
+		metadata1.addField(decField.duplicate());
+		
+		record1 = new DataRecord(metadata1);
+		record1.init();
+		SetVal.setString(record1,0,"  My name ");
+		SetVal.setDouble(record1,1,13.25);
+		SetVal.setString(record1,2,"Prague");
+		SetVal.setValue(record1,3,Calendar.getInstance().getTime());
+		record1.getField("Value").setNull(true);
+		SetVal.setDouble(record1, "DecimalValue", 1.1);
+		out = new DataRecord(metaOut);
+		out.init();
+        
+		
+		System.out.println(record.getMetadata().getName() + ":\n" + record.toString());
+		System.out.println(record1.getMetadata().getName() + ":\n" + record1.toString());
+		transform.addFieldToFieldRule("0.*", "0.*");
+		transform.addFieldToFieldRule("0.*", "1.*");
+		try {
+			transform.init(null, new DataRecordMetadata[]{metadata, metadata1}, 
+				new DataRecordMetadata[]{metaOut,metaOut1});
+		} catch (ComponentNotReadyException e) {
+			e.printStackTrace();
+		}
+		List<String> rules = transform.getRulesAsStrings();
+		System.out.println("Rules:");
+		for (Iterator<String> i = rules.iterator();i.hasNext();){
+			System.out.println(i.next());
+		}
+		rules = transform.getResolvedRules();
+		System.out.println("Resolved rules:");
+		for (Iterator<String> i = rules.iterator();i.hasNext();){
+			System.out.println(i.next());
+		}
+		List<Integer[]> fields = transform.getFieldsWithoutRules();
+		System.out.println("Fields without rules:");
+		Integer[] index;
+		for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+			index = i.next();
+			System.out.println(outMatedata[index[0]].getName() + 
+					CustomizedRecordTransform.DOT + 
+					outMatedata[index[0]].getField(index[1]).getName());
+		}
+		fields = transform.getNotUsedFields();
+		System.out.println("Not used input fields:");
+		for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+			index = i.next();
+			System.out.println(inMetadata[index[0]].getName() + 
+					CustomizedRecordTransform.DOT + 
+					inMetadata[index[0]].getField(index[1]).getName());
+		}
+		try {
+			transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1});
+		} catch (TransformException e) {
+			System.out.println(e.getMessage());
+		}
+		for(int i = 0; i < metaOut.getNumFields() - 1; i++){
+			try {
+				assertEquals(out.getField(i), record.getField(i));
+			} catch (AssertionFailedError e) {
+				assertEquals(out.getField(i).toString(), record.getField(i).toString());
+			}
+		}
+		assertEquals(out.getField(metaOut.getNumFields() -1), record1.getField(metadata1.getNumFields() -1));
+		System.out.println(out.getMetadata().getName() + ":\n" + out.toString());
+		System.out.println(out1.getMetadata().getName() + ":\n" + out1.toString());
+	}
+	
 	public void test_constantToField(){
 		System.out.println("Constant to field test:");
 		transform.addConstantToFieldRule("*.Name", "Agata");
