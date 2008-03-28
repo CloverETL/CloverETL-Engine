@@ -24,7 +24,6 @@
 package org.jetel.util.string;
 
 import java.text.CollationElementIterator;
-import java.text.Collator;
 import java.text.RuleBasedCollator;
 
 /**

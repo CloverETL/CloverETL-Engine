@@ -7,8 +7,6 @@ package org.jetel.database;
 
 import java.util.Properties;
 
-import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.IGraphElement;
 import org.jetel.metadata.DataRecordMetadata;
 

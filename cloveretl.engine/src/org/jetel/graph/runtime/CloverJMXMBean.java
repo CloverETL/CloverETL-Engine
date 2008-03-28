@@ -23,7 +23,6 @@
  */
 package org.jetel.graph.runtime;
 
-import java.util.List;
 
 public interface CloverJMXMBean {
   

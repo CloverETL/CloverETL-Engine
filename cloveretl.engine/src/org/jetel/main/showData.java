@@ -19,41 +19,19 @@
  */
 package org.jetel.main;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.Map;
-import java.util.Properties;
 
-import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.net.SocketAppender;
 import org.jetel.component.ComponentFactory;
-import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.GraphConfigurationException;
-import org.jetel.exception.XMLConfigurationException;
-import org.jetel.graph.Edge;
 import org.jetel.graph.Node;
-import org.jetel.graph.Phase;
-import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.JetelVersion;
-import org.jetel.util.file.FileUtils;
 
 /**
  *  class for reading and showing data over input components<br><br>

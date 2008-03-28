@@ -19,9 +19,7 @@
 
 package org.jetel.metadata;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.channels.Channels;
 import java.sql.SQLException;
 

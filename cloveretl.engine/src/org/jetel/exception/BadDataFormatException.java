@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jetel.util.string.StringUtils;
-
 /**
  * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
  *

@@ -1,7 +1,5 @@
 package org.jetel.enums;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.jetel.graph.BufferedEdge;
 import org.jetel.graph.DirectEdge;
 import org.jetel.graph.DirectEdgeFastPropagate;

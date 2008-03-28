@@ -25,8 +25,6 @@ import java.io.IOException;
 
 import javax.naming.InvalidNameException;
 
-import jxl.write.WritableSheet;
-
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
