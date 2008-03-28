@@ -23,7 +23,6 @@
  */
 package org.jetel.graph.runtime;
 
-import org.jetel.graph.Node;
 
 public class ErrorMsgBody {
     

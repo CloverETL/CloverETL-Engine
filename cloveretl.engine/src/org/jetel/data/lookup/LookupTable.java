@@ -21,7 +21,6 @@ package org.jetel.data.lookup;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.IGraphElement;
 import org.jetel.metadata.DataRecordMetadata;

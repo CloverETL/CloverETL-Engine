@@ -23,7 +23,6 @@
  */
 package org.jetel.graph.runtime;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.management.AttributeChangeNotification;
@@ -32,7 +31,6 @@ import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 
 import org.jetel.data.Defaults;
-import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.runtime.TrackingDetail.PortType;

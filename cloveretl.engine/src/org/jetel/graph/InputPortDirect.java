@@ -19,8 +19,8 @@
 */
 
 package org.jetel.graph;
-import java.nio.*;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * An interface defining operations expected from InputPortDirect object

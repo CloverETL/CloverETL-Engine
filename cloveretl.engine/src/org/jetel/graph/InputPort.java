@@ -22,6 +22,7 @@
 
 package org.jetel.graph;
 import java.io.IOException;
+
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
