@@ -30,11 +30,16 @@ import java.util.List;
  */
 public class BadDataFormatException extends RuntimeException implements Iterable<BadDataFormatException>, Iterator<BadDataFormatException> {
     
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2277855196444066739L;
+
 	private CharSequence offendingValue;
     
-    private int recordNumber;
+    private int recordNumber=-1;
     
-    private int fieldNumber;
+    private int fieldNumber=-1;
     
     private BadDataFormatException next = null;
     
@@ -84,15 +89,17 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 //            ret.append(" : ");
 //            ret.append(StringUtils.quote(StringUtils.specCharToString(offendingValue)));
 //        }
-        if(recordNumber >= 0) {
-            ret.append(" in record # ");
-            ret.append(recordNumber);
-        }
-        
-        if(fieldNumber >= 0) {
+       
+        if(fieldNumber > -1) {
             ret.append(" in field # ");
             ret.append(fieldNumber + 1);
         }
+        
+        if(recordNumber > -1) {
+            ret.append(" of record # ");
+            ret.append(recordNumber);
+        }
+        
         
         return ret.toString();
     }
