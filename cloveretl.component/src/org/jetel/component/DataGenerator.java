@@ -298,14 +298,14 @@ public class DataGenerator extends Node {
 	 * 
 	 * @param randomFields the randomFields to set in form fieldName=random(min,max)
 	 */
-	private void setRandomFields(String randomFields) {
+	public void setRandomFields(String randomFields) {
 		this.randomFieldsString = randomFields;
 	}
 
 	/**
 	 * @param randomSeed the randomSeed to set
 	 */
-	private void setRandomSeed(long randomSeed) {
+	public void setRandomSeed(long randomSeed) {
 		this.randomSeed = randomSeed;
 	}
 
@@ -315,7 +315,7 @@ public class DataGenerator extends Node {
 	 * 
 	 * @param sequenceFields the sequenceFields to set in form fieldName=sequenceName or fieldName only
 	 */
-	private void setSequenceFields(String sequenceFields) {
+	public void setSequenceFields(String sequenceFields) {
 		this.sequenceFieldsString = sequenceFields; 
 	}
 	
