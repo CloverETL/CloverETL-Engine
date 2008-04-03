@@ -18,7 +18,7 @@
  */ 
 package org.jetel.metadata; 
 import junit.framework.Test;
-import junit.framework.TestSuite; 
+import junit.framework.TestSuite;
 
 /**
  * @author maciorowski

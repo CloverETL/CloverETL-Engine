@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Fri Mar 28 09:27:47 CET 2008" description="This simple example can be used as parameter when running testXMLGraph program." guiVersion="1.9" id="1206693200572" licenseType="Evaluation license." modified="Fri Mar 28 09:36:20 CET 2008" name="example" revision="1.4">
+<Global>
+<Metadata fileURL="meta/bonus.fmt" id="Metadata0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="data/bonus.csv" guiHeight="0" guiName="Universal Data Reader" guiWidth="0" guiX="43" guiY="34" id="DATA_READER0" type="DATA_READER"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="272" guiY="34" id="TRASH0" type="TRASH"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="TRASH0:0"/>
+</Phase>
+</Graph>

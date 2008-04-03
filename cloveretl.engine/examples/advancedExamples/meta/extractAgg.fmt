@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="defaultName" recordDelimiter=";" recordSize="-1" type="delimited">
+<Field name="city" type="string"/>
+<Field name="state" type="string"/>
+<Field name="name" type="string"/>
+<Field name="units" type="string"/>
+<Field name="avg" scale="1" type="decimal"/>
+<Field name="min" scale="1" type="decimal"/>
+<Field name="max" scale="1" type="decimal"/>
+<Field name="startDate" type="date"/>
+<Field name="endDate" type="date"/>
+<Field name="moreWeatherInformation" type="string"/>
+</Record>

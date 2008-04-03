@@ -25,9 +25,9 @@ package org.jetel.util;
 
 import java.text.RuleBasedCollator;
 
-import org.jetel.util.string.Compare;
-
 import junit.framework.TestCase;
+
+import org.jetel.util.string.Compare;
 
 public class CompareTest extends TestCase {
 

@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Fri Feb 29 16:16:12 CET 2008" guiVersion="1.9" id="1204298432250" licenseType="Evaluation license." modified="Tue Apr 01 09:41:19 CEST 2008" name="SOAP_EXAMPLE" revision="1.279">
+<Global>
+<Metadata fileURL="${META_DIR}/extract.fmt" id="Metadata10"/>
+<Metadata fileURL="${META_DIR}/extractAgg.fmt" id="Metadata11"/>
+<Metadata fileURL="${META_DIR}/link.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/location_full.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/location_temp_header.fmt" id="Metadata5"/>
+<Metadata fileURL="${META_DIR}/location.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/temp_values_location_time.fmt" id="Metadata9"/>
+<Metadata fileURL="${META_DIR}/temp_values_location.fmt" id="Metadata8"/>
+<Metadata fileURL="${META_DIR}/temp_values.fmt" id="Metadata6"/>
+<Metadata fileURL="${META_DIR}/time_dim.fmt" id="Metadata7"/>
+<Metadata fileURL="${META_DIR}/time_layout.fmt" id="Metadata3"/>
+<Metadata fileURL="${META_DIR}/time_pairs.fmt" id="Metadata4"/>
+<Property fileURL="parameters.prm" id="GraphParameter10"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Sequence cached="0" fileURL="${SEQ_DIR}/time_seq.seq" id="Sequence1" name="time_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="0" fileURL="${SEQ_DIR}/temp_seq.seq" id="Sequence0" name="temp_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
+</Global>
+<Phase number="0">
+<Node aggregateKey="city;state" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="958" guiY="169" id="AGGREGATE0" mapping="$city:=$city;$state:=$state;$name:=first($name);$units:=first($units);$avg:=avg($value);$min:=min($value);$max:=max($value);$startDate:=min($startDateUTC);$endDate:=max($endDateUTC);$moreWeatherInformation:=first($moreWeatherInformation);" type="AGGREGATE"/>
+<Node dedupKey="applicable_location;time_layout" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="442" guiY="307" id="DEDUP0" keep="first" type="DEDUP"/>
+<Node dedupKey="layout_key" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="535" guiY="117" id="DEDUP1" keep="first" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="0" guiName="Join Location with additional info" guiWidth="0" guiX="203" guiY="14" id="EXT_HASH_JOIN0" joinKey="location_key=applicable_location;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[${out.0.location_key} = ${in.0.location_key};
+${out.0.city} = ${in.0.city};
+${out.0.state} = ${in.0.state};
+${out.0.moreWeatherInformation} = ${in.1.moreWeatherInformation};
+]]></attr>
+<attr name="guiDescription"><![CDATA[gdhgdh
+
+hg
+adgh
+adg
+hb
+adg
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Join temp value with time layout" guiWidth="0" guiX="150" guiY="299" id="EXT_HASH_JOIN1" joinKey="param_id=param_id;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[${out.0.value} = ${in.0.value};
+${out.0.applicable_location} = ${in.1.applicable_location};
+${out.0.time_layout} = ${in.1.time_layout};
+${out.0.type} = ${in.1.type};
+${out.0.units} = ${in.1.units};
+${out.0.name} = ${in.1.name};
+${out.0.temp_dim_id} = ${seq.Sequence0};
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Join time with layout key" guiWidth="0" guiX="201" guiY="107" id="EXT_HASH_JOIN2" joinKey="parent_id=id;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[${out.0.start_valid_time} = ${in.0.start_valid_time};
+${out.0.end_valid_time} = ${in.0.end_valid_time};
+${out.0.layout_key} = ${in.1.layout_key};
+${out.0.time_dim_id} = ${seq.Sequence1};
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Create synthetic key for temp value " guiWidth="0" guiX="440" guiY="403" id="EXT_HASH_JOIN3" joinKey="applicable_location=applicable_location;time_layout=time_layout;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[${out.0.applicable_location} = ${in.0.applicable_location};
+${out.0.time_layout} = ${in.0.time_layout};
+${out.0.type} = ${in.0.type};
+${out.0.units} = ${in.0.units};
+${out.0.name} = ${in.0.name};
+${out.0.value} = ${in.0.value};
+${out.0.temp_dim_id} = ${in.0.temp_dim_id} - ${in.1.temp_dim_id};
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Create synthetic key for time value" guiWidth="0" guiX="546" guiY="208" id="EXT_HASH_JOIN4" joinKey="layout_key=layout_key;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[${out.0.layout_key} = ${in.0.layout_key};
+${out.0.start_valid_time} = ${in.0.start_valid_time};
+${out.0.end_valid_time} = ${in.0.end_valid_time};
+${out.0.time_dim_id} = ${in.0.time_dim_id} - ${in.1.time_dim_id};
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Join time with temp" guiWidth="0" guiX="727" guiY="309" id="EXT_HASH_JOIN6" joinKey="time_layout=layout_key;temp_dim_id=time_dim_id;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[${out.0.applicable_location} = ${in.0.applicable_location};
+${out.0.type} = ${in.0.type};
+${out.0.units} = ${in.0.units};
+${out.0.name} = ${in.0.name};
+${out.0.value} = ${in.0.value};
+${out.0.start_valid_time} = ${in.1.start_valid_time};
+${out.0.end_valid_time} = ${in.1.end_valid_time};
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Join Location" guiWidth="0" guiX="789" guiY="30" id="EXT_HASH_JOIN7" joinKey="applicable_location=location_key;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#TL
+//Return index of sign of time offset
+//Return index of plus sign if any or index of the last minus sign in parameter
+function getIndexOfOffsetStart(encodedDate){
+	int offsetStart;
+	int actualLastMinus;
+	int lastMinus = -1;
+	
+	if ( index_of(encodedDate, '+') != -1 )
+		return index_of(encodedDate, '+');
+	
+	do {
+		actualLastMinus = index_of(encodedDate, '-', lastMinus+1);
+		if ( actualLastMinus != -1 )
+			lastMinus = actualLastMinus;
+	} while ( actualLastMinus != -1 )
+	return lastMinus;
+}
+
+//Decode string to date and convert it to UTC
+//Date format http://www.w3.org/TR/NOTE-datetime
+function decodeDate (encodedDate){
+	string dateString;
+	string offsetString;
+	date decodedDate;
+	date offsetDate;
+	int multiplicator;
+	int offsetStart = getIndexOfOffsetStart(encodedDate);
+	dateString = left(encodedDate, offsetStart);
+	offsetString = right(encodedDate, length(encodedDate) - offsetStart -1);
+	
+	decodedDate = str2date(dateString, "yyyy-MM-dd'T'HH:mm:ss");
+	offsetDate = str2date(offsetString, "HH:mm");
+	
+	if ( char_at(encodedDate, offsetStart) == '+' ){
+  		multiplicator = -1;
+	} else {
+		multiplicator = 1;
+	}
+
+	//convert to UTC
+	decodedDate = dateadd(decodedDate, multiplicator*date2num(offsetDate, hour), hour);
+	decodedDate = dateadd(decodedDate, multiplicator*date2num(offsetDate, minute), minute);
+	
+	return decodedDate;
+}
+
+//Convert temperature value from Fahrenheit to Celsius
+function convertFahrenheitToCelsius(value){
+	if ( isnull(value) )
+		return null;
+	return (5.0*(value - 32))/9;
+}
+
+
+function transform (){
+	$0.city := $1.city;
+	$0.state := $1.state;
+	$0.name := $0.name;
+	$0.units := "Celsius";
+	$0.value := convertFahrenheitToCelsius($0.value);
+	$0.start_valid_time := $0.start_valid_time;
+	$0.end_valid_time := $0.end_valid_time;
+	$0.moreWeatherInformation := $1.moreWeatherInformation;
+	$0.startDateUTC := decodeDate($0.start_valid_time);
+	$0.endDateUTC := decodeDate($0.end_valid_time);
+}]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="289" guiY="303" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="364" guiY="110" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="955" guiY="28" id="SIMPLE_COPY2" type="SIMPLE_COPY"/>
+<Node enabled="enabled" fileURL="${soap_req_full}" guiHeight="0" guiName="XML Reader" guiWidth="0" guiX="11" guiY="64" id="XML_XPATH_READER0" type="XML_XPATH_READER">
+<attr name="mapping"><![CDATA[<Context xpath="//data">
+	<Context xpath="location" outPort="0">
+		<Mapping xpath="./location-key/text()" cloverField="location_key"/>
+		<Mapping xpath="./city/@state" cloverField="state"/>
+    </Context>
+	<Context xpath="moreWeatherInformation" outPort="1" >
+		<Mapping xpath="./text()" cloverField="moreWeatherInformation"/>
+		<Mapping xpath="@applicable-location" cloverField="applicable_location"/>
+	</Context>
+
+    <Context xpath="time-layout" outPort="2" sequenceField="id" >
+		<Mapping xpath="layout-key/text()" cloverField="layout_key" />	
+		<Context xpath="start-valid-time" outPort="3" parentKey="id" generatedKey="parent_id" >
+			<Mapping xpath="./text()" cloverField="start_valid_time"/>
+			<Mapping xpath="following-sibling::end-valid-time[position()=1]/text()" cloverField="end_valid_time"/>
+		</Context>	
+    </Context>
+
+   <Context xpath="parameters" outPort="4" sequenceField="param_id" >
+		<Mapping xpath="@applicable-location" cloverField="applicable_location" />	
+		<Mapping xpath="./temperature/@time-layout" cloverField="time_layout" />	
+		<Mapping xpath="./temperature/@type" cloverField="type" />	
+		<Mapping xpath="./temperature/@units" cloverField="units" />	
+		<Mapping xpath="./temperature/name" cloverField="name" />	
+		<Context xpath="./temperature/value" outPort="5" parentKey="param_id" generatedKey="param_id">
+			<Mapping xpath="./text()" cloverField="value"/>
+		</Context>
+   </Context>
+
+</Context>
+
+
+
+
+]]></attr>
+</Node>
+<Edge fromNode="AGGREGATE0:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata11" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
+<Edge debugMode="false" fromNode="DEDUP0:0" guiBendpoints="" id="Edge12" inPort="Port 1 (slave)" metadata="Metadata8" outPort="Port 0 (unique)" toNode="EXT_HASH_JOIN3:1"/>
+<Edge fromNode="DEDUP1:0" guiBendpoints="" id="Edge17" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (unique)" toNode="EXT_HASH_JOIN4:1"/>
+<Edge debugMode="false" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" id="Edge8" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN7:1"/>
+<Edge debugMode="false" fromNode="EXT_HASH_JOIN1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata8" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="false" fromNode="EXT_HASH_JOIN2:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
+<Edge debugMode="false" fromNode="EXT_HASH_JOIN3:0" guiBendpoints="" id="Edge15" inPort="Port 0 (driver)" metadata="Metadata8" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN6:0"/>
+<Edge debugMode="false" fromNode="EXT_HASH_JOIN4:0" guiBendpoints="" id="Edge19" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN6:1"/>
+<Edge debugMode="false" fromNode="EXT_HASH_JOIN6:0" guiBendpoints="" id="Edge21" inPort="Port 0 (driver)" metadata="Metadata9" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN7:0"/>
+<Edge debugMode="true" fromNode="EXT_HASH_JOIN7:0" guiBendpoints="" id="Edge22" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="SIMPLE_COPY2:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata8" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge14" inPort="Port 0 (driver)" metadata="Metadata8" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN3:0"/>
+<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" id="Edge16" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 0 (out)" toNode="DEDUP1:0"/>
+<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" id="Edge18" inPort="Port 0 (driver)" metadata="Metadata7" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN4:0"/>
+<Edge fromNode="SIMPLE_COPY2:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
+<Edge fromNode="SIMPLE_COPY2:1" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 1 (out)" toNode="AGGREGATE0:0"/>
+<Edge debugMode="false" fromNode="XML_XPATH_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
+<Edge debugMode="false" fromNode="XML_XPATH_READER0:1" guiBendpoints="" id="Edge1" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge debugMode="false" fromNode="XML_XPATH_READER0:2" guiBendpoints="" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 2 (out)" toNode="EXT_HASH_JOIN2:1"/>
+<Edge debugMode="false" fromNode="XML_XPATH_READER0:3" guiBendpoints="" id="Edge4" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 3 (out)" toNode="EXT_HASH_JOIN2:0"/>
+<Edge debugMode="false" fromNode="XML_XPATH_READER0:4" guiBendpoints="" id="Edge2" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 4 (out)" toNode="EXT_HASH_JOIN1:1"/>
+<Edge debugMode="false" fromNode="XML_XPATH_READER0:5" guiBendpoints="" id="Edge5" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 5 (out)" toNode="EXT_HASH_JOIN1:0"/>
+</Phase>
+<Phase number="1">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/extract.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="1151" guiY="26" id="XLS_WRITER0" namesRow="1" type="XLS_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/extractAgg.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="1152" guiY="169" id="XLS_WRITER1" namesRow="1" type="XLS_WRITER"/>
+</Phase>
+</Graph>

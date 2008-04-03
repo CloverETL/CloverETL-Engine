@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Tue Dec 04 10:38:50 CET 2007" description="This graph illustrates how-to run SQL/DDL/DML commands againts database. Commands&#10;in SQLCode are delimited by semicolon and are executed one by one. If needed, they&#10;may be grouped into single transaction.&#10;&#10;This graph creates two tables (EMPLOYEE and EMPLOYEE_TMP) and populates table EMPLOYEE with sample data.&#10;MySql:&#10;CREATE PROCEDURE p (OUT ver_param VARCHAR(25), INOUT incr_param INT)&#10;BEGIN&#10;  # Set value of OUT parameter&#10;  SELECT VERSION() INTO ver_param;&#10;  # Increment value of INOUT parameter&#10;  SET incr_param = incr_param + 1;&#10;END;" guiVersion="1.9" id="1196767470169" licenseType="Evaluation license." modified="Thu Apr 03 10:58:08 CEST 2008" name="TestingDB2" revision="1.153">
+<Global>
+<Metadata id="Metadata3">
+<Record fieldDelimiter=";" name="mssqltable" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="id" nullable="true" shift="0" type="integer"/>
+<Field name="string" nullable="true" shift="0" type="string"/>
+<Field format="dd-MM-yyyy hh:mm:ss" name="date" nullable="true" shift="0" type="date"/>
+</Record>
+</Metadata>
+<Connection dbConfig="${CONN_DIR}/mssql.cfg" id="Connection1" type="JDBC"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Sequence cached="0" fileURL="${SEQ_DIR}/seq.txt" id="Sequence0" name="sequence" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+</Global>
+<Phase number="0">
+<Node dbConnection="Connection1" enabled="enabled" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="26" guiY="21" id="DB_EXECUTE1" type="DB_EXECUTE">
+<attr name="sqlQuery"><![CDATA[drop table proc_table;
+create table proc_table (
+	id INTEGER,
+	string VARCHAR(80),
+	date DATETIME
+);
+drop procedure SPDownload;
+CREATE PROCEDURE SPDownload
+    @last_dl_ts DATETIME
+AS
+BEGIN
+     SELECT id, string, date
+       FROM proc_table
+          WHERE date >= @last_dl_ts
+END;]]></attr>
+</Node>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="26" guiY="100" id="DATA_GENERATOR2" randomFields="string=random(&quot;3&quot;,&quot;5&quot;);date=random(&quot;01-02-2002 12:00:00&quot;,&quot;29-02-2008 12:00:00&quot;)" recordsNumber="10" sequenceFields="id=Sequence0" type="DATA_GENERATOR"/>
+<Node dbConnection="Connection1" dbTable="proc_table" enabled="enabled" guiHeight="0" guiName="DB Output Table" guiWidth="0" guiX="215" guiY="102" id="DB_OUTPUT_TABLE1" type="DB_OUTPUT_TABLE"/>
+<Edge debugMode="true" fromNode="DATA_GENERATOR2:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DB_OUTPUT_TABLE1:0"/>
+</Phase>
+<Phase number="2">
+<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="26" guiY="187" id="DATA_GENERATOR3" pattern=";&#10;" randomFields="date=random(&quot;01-02-2006 12:00:00&quot;,&quot;29-02-2008 12:00:00&quot;)" recordsNumber="2" type="DATA_GENERATOR"/>
+<Node callStatement="true" dbConnection="Connection1" enabled="enabled" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="215" guiY="187" id="DB_EXECUTE2" inParameters="1:=$date" outputFields="id;string;date" type="DB_EXECUTE">
+<attr name="sqlQuery"><![CDATA[{call SPDownload(?)}]]></attr>
+</Node>
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="395" guiY="187" id="TRASH1" type="TRASH"/>
+<Edge debugMode="true" fromNode="DATA_GENERATOR3:0" guiBendpoints="" id="Edge5" inPort="Port 0 (input parameters)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DB_EXECUTE2:0"/>
+<Edge fromNode="DB_EXECUTE2:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (procedure output)" toNode="TRASH1:0"/>
+</Phase>
+</Graph>

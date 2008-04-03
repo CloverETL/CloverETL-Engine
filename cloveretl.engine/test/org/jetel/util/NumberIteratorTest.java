@@ -2,7 +2,6 @@ package org.jetel.util;
 
 import java.util.NoSuchElementException;
 
-
 import junit.framework.TestCase;
 
 public class NumberIteratorTest extends TestCase {

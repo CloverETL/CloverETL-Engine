@@ -1,9 +1,0 @@
-<Metadata id="Metadata1">
-<Record name="exchange_rate" type="delimited">
-<Field delimiter="|" name="Country" nullable="true" shift="0" type="string"/>
-<Field delimiter="|" name="Currency" nullable="true" shift="0" type="string"/>
-<Field delimiter="|" name="Amount" nullable="true" shift="0" type="numeric"/>
-<Field delimiter="|" name="Code" nullable="false" shift="0" type="string"/>
-<Field delimiter="\n" name="Rate" nullable="true" shift="0" type="numeric"/>
-</Record>
-</Metadata>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Wed Nov 22 11:30:48 CET 2006" description="This graph ilustrates usage of JMS Reader/Writer Components. It reuires ACtiveMQ JMS server to be running on localhost!" guiVersion="1.9" id="1204546356214" licenseType="Commercial License javlinconsulting" modified="Mon Mar 03 13:12:36 CET 2008" name="graphSystemExecute" revision="1.2">
+<Global>
+<Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
+<Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" providerUrl="vm://localhost" type="JMS"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Input" guiWidth="50" guiX="20" guiY="20" id="Input" type="DELIMITED_DATA_READER"/>
+<Node connection="dest" enabled="enabled" guiHeight="25" guiName="JmsReader" guiWidth="50" guiX="20" guiY="107" id="JmsReader" maxMsgCount="0" timeout="4000" type="JMS_READER">
+<attr name="bodyField"><![CDATA[LastName]]></attr>
+<attr name="_processorClass"><![CDATA[org.jetel.component.JmsMsg2DataRecordProperties]]></attr>
+</Node>
+<Node connection="dest" enabled="enabled" guiHeight="25" guiName="JmsWriter" guiWidth="50" guiX="245" guiY="20" id="JmsWriter" type="JMS_WRITER">
+<attr name="bodyField"><![CDATA[LastName]]></attr>
+<attr name="_processorClass"><![CDATA[org.jetel.component.DataRecord2JmsMsgProperties]]></attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/jms.out" guiHeight="25" guiName="Output" guiWidth="50" guiX="245" guiY="107" id="Output" type="DELIMITED_DATA_WRITER"/>
+<Edge fromNode="Input:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="JmsWriter:0"/>
+<Edge fromNode="JmsReader:0" guiBendpoints="" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="Output:0"/>
+</Phase>
+</Graph>

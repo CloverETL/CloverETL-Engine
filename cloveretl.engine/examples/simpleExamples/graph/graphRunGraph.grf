@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Thu Dec 11 15:46:21 CET 2007" description="This graph uses runGraph component to execute graphXmlWriter example" guiVersion="1.9" id="1111111" licenseType="Evaluation license." modified="Thu Apr 03 11:39:54 CEST 2008" name="Testing RunGraph" revision="1.7">
+<Global>
+<Metadata id="Metadata0">
+<Record fieldDelimiter=";" name="outdata" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="graph" nullable="true" type="string"/>
+<Field name="result" nullable="true" type="string"/>
+<Field name="description" nullable="true" type="string"/>
+<Field name="message" nullable="true" type="string"/>
+<Field name="duration" nullable="true" type="decimal"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" graphName="${PROJECT}/graph/graphXmlWriter.grf" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="23" guiY="21" id="RUN1" logAppend="false" type="RUN_GRAPH">
+<attr name="dataPolicy"><![CDATA[Strict]]></attr>
+</Node>
+<Node debugFilename="${DATAOUT_DIR}/Trash1_output.txt" debugPrint="true" enabled="enabled" guiHeight="25" guiName="TRASH1" guiWidth="50" guiX="370" guiY="20" id="TRASH1" type="TRASH"/>
+<Node debugFilename="${DATAOUT_DIR}/Trash2_output.txt" debugPrint="true" enabled="enabled" guiHeight="25" guiName="TRASH2" guiWidth="50" guiX="470" guiY="120" id="TRASH2" type="TRASH"/>
+<Edge fromNode="RUN1:0" guiBendpoints="" id="INNEREDGE4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="TRASH1:0"/>
+<Edge fromNode="RUN1:1" guiBendpoints="" id="INNEREDGE5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (in pipeline mode an information record in case of an error, otherwise nothing)" toNode="TRASH2:0"/>
+</Phase>
+</Graph>

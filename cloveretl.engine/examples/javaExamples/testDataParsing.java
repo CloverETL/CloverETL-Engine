@@ -16,10 +16,13 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Properties;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.DelimitedDataParser;
@@ -30,21 +33,43 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 public class testDataParsing {
+	
+	private final static String PARAMETER_FILE = "params.txt"; 
+	private final static String PLUGINS_PROPERTY = "plugins";
+	private final static String PROPERTIES_FILE_PROPERTY = "propertiesFile";
 
 	public static void main(String args[]){
 		
+	String plugins = args.length > 0 ? args[0] : null;
+	String propertiesFile = args.length > 1 ? args[1] : null;
+		
+	if (plugins == null || propertiesFile == null) {
+		Properties arguments = new Properties();
+		if ((new File(PARAMETER_FILE)).exists()) {
+			try {
+				arguments.load(new FileInputStream(PARAMETER_FILE));
+			} catch (FileNotFoundException e) {
+				//do nothing: we checked it
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		plugins = arguments.getProperty(PLUGINS_PROPERTY);
+		propertiesFile = arguments.getProperty(PROPERTIES_FILE_PROPERTY);
+	}
+	
 	FileInputStream in=null;
 	PrintStream out=null;
 	DataRecord record;
 	
-	EngineInitializer.initEngine(args.length > 0 ? args[0] : null, args.length > 1 ? args[1] : null, null);
 	System.out.println("**************** Input parameters: ****************");
-	System.out.println("Plugins directory: "+ (args.length > 0 ? args[0] : " default"));
-	System.out.println("Default properties file: "+ (args.length > 1 ? args[1] : " default"));
+	System.out.println("Plugins directory: "+ plugins);
+	System.out.println("Default properties file: "+ propertiesFile);
 	System.out.println("***************************************************");
+	EngineInitializer.initEngine(plugins, propertiesFile, null);
 	
 	try{
-		in=new FileInputStream("data/delimited/bonus.csv");
+		in=new FileInputStream("data/bonus.csv");
 		out=new PrintStream(new FileOutputStream("output/bonus.out"));
 	}
 	catch(FileNotFoundException e){

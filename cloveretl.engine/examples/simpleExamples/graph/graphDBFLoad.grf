@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Mon Mar 05 11:32:38 CET 2007" description="This graph ilustrates reading data from DBF file." guiVersion="1.9" id="1204544905191" licenseType="Commercial License javlinconsulting" modified="Mon Mar 03 12:48:25 CET 2008" name="TestingDB2" revision="1.2">
+<Global>
+<Metadata fileURL="${META_DIR}/fixlen/supplierDBF.fmt" id="Metadata0"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/other/SUPPLIER.DBF" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DBF_DATA_READER"/>
+<Node debugFilename="${DATAOUT_DIR}/Trash1_output.txt" debugPrint="true" enabled="enabled" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" type="TRASH"/>
+<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+</Phase>
+</Graph>
