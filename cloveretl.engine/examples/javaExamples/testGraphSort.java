@@ -16,10 +16,16 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.Future;
 
+import org.jetel.component.DelimitedDataReader;
+import org.jetel.component.DelimitedDataWriter;
+import org.jetel.component.Sort;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.Node;
@@ -32,39 +38,78 @@ import org.jetel.main.runGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
-import sun.misc.Sort;
-
 public class testGraphSort {
 	
+	private final static String PARAMETER_FILE = "params.txt"; 
+	private final static String PLUGINS_PROPERTY = "plugins";
+	private final static String PROPERTIES_FILE_PROPERTY = "propertiesFile";
+	private final static String DATA_FILE_PROPERTY = "dataFile";
+	private final static String OUTPUT_FILE_PROPERTY = "outputFile";
+	private final static String METADATA_PROPERTY = "metadata";
+	private final static String KEY_PROPERTY = "sortKey";
+
+	private final static String[] ARGS = {DATA_FILE_PROPERTY, OUTPUT_FILE_PROPERTY, METADATA_PROPERTY, KEY_PROPERTY, PLUGINS_PROPERTY, 
+		PROPERTIES_FILE_PROPERTY
+	};
+	
+	private final static int DATA_FILE_PROPERTY_INDEX = 0;
+	private final static int OUTPUT_FILE_PROPERTY_INDEX = 1;
+	private final static int METADATA_PROPERTY_INDEX = 2;
+	private final static int KEY_PROPERTY_INDEX = 3;
+	private final static int PLUGINS_PROPERTY_INDEX = 4;
+	private final static int PROPERTIES_FILE_PROPERTY_INDEX = 5;
+
 	private static final Phase _PHASE_1=new Phase(1);
 	private static final Phase _PHASE_2=new Phase(2);
 
 	public static void main(String args[]){
 	
+		Properties arguments = new Properties();
+		if ((new File(PARAMETER_FILE)).exists()) {
+			try {
+				arguments.load(new FileInputStream(PARAMETER_FILE));
+			} catch (FileNotFoundException e) {
+				//do nothing: we checked it
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
     
-	if (args.length < 4){
-		System.out.println("Example graph which sorts input data according to specified key.");
-		System.out.println("The key must be a name of field(or comma delimited fields) from input data.");
-		System.out.println("Usage: testGraphSort <input data filename> <output sorted filename> <metadata filename> <key> [<plugin directory> <default properties file>]");
-		System.exit(1);
-	}
+		String[] arg = new String[ARGS.length];
+		
+		for (int i = 0; i < arg.length; i++){
+			if (args.length > i) {
+				arg[i] = args[i];
+			}else{
+				arg[i] = arguments.getProperty(ARGS[i]);
+				if (i < 4 && arg[i] == null) {
+					System.out.println("Required argument " + ARGS[i] + " not found");
+					System.out.println("Example graph which sorts input data according to specified key.");
+					System.out.println("The sortKey must be a name of field(or comma delimited fields) from input data.");
+					System.out.println("Usage: testGraphSort <input data filename> <output sorted filename> <metadata filename> <sortKey> [<plugin directory> <default properties file>]");
+					System.exit(1);
+				}
+			}
+		}
+
 	//initialization; must be present
-	EngineInitializer.initEngine(args.length > 4 ? args[4] : null, args.length  > 5 ? args[5] : null, null);
+	EngineInitializer.initEngine(arg[PLUGINS_PROPERTY_INDEX], arg[PROPERTIES_FILE_PROPERTY_INDEX], null);
 
 	System.out.println("**************** Input parameters: ****************");
-	System.out.println("Input file: "+args[0]);
-	System.out.println("Output file: "+args[1]);
-	System.out.println("Input Metadata: "+args[2]);
-	System.out.println("Key: "+args[3]);
-	System.out.println("Plugins directory: "+ (args.length > 4 ? args[4] : " default"));
-	System.out.println("Default properties file: "+ (args.length > 5 ? args[5] : " default"));
+	System.out.println("Input file: "+arg[DATA_FILE_PROPERTY_INDEX]);
+	System.out.println("Output file: "+arg[OUTPUT_FILE_PROPERTY_INDEX]);
+	System.out.println("Input Metadata: "+arg[METADATA_PROPERTY_INDEX]);
+	System.out.println("Key: "+arg[KEY_PROPERTY_INDEX]);
+	System.out.println("Plugins directory: "+ arg[PLUGINS_PROPERTY_INDEX]);
+	System.out.println("Default properties file: "+ arg[PROPERTIES_FILE_PROPERTY_INDEX]);
 	System.out.println("***************************************************");
 	
 	DataRecordMetadata metadataIn;
 	DataRecordMetadataXMLReaderWriter reader=new DataRecordMetadataXMLReaderWriter();
 		
 	try{
-	metadataIn=reader.read(new FileInputStream(args[2]));
+		metadataIn=reader.read(new FileInputStream(arg[METADATA_PROPERTY_INDEX]));
 	}catch(IOException ex){
 		System.err.println("Error when reading metadata!!");
 		throw new RuntimeException(ex);
@@ -79,10 +124,10 @@ public class testGraphSort {
 	Edge inEdge=new Edge("InEdge",metadataIn);
 	Edge outEdge=new Edge("OutEdge",metadataIn);
 	
-	Node nodeRead=new DelimitedDataReader("DataParser",args[0]);
-	String[] sortKeys=args[3].split(",");
+	Node nodeRead=new DelimitedDataReader("DataParser",arg[DATA_FILE_PROPERTY_INDEX]);
+	String[] sortKeys=arg[KEY_PROPERTY_INDEX].split(",");
 	Node nodeSort=new Sort("Sorter",sortKeys, true);
-	Node nodeWrite=new DelimitedDataWriter("DataWriter",args[1],false);
+	Node nodeWrite=new DelimitedDataWriter("DataWriter",arg[OUTPUT_FILE_PROPERTY_INDEX],false);
 	
 	// assign ports (input & output)
 	nodeRead.addOutputPort(0,inEdge);

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="defaultName" recordSize="-1" type="delimited">
+<Field name="id" type="integer"/>
+<Field name="layout_key" type="string"/>
+</Record>

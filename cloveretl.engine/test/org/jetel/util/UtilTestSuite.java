@@ -19,7 +19,8 @@
 
 package org.jetel.util;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * @author Wes Maciorowski

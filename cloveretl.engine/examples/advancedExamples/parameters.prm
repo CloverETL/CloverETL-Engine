@@ -1,0 +1,5 @@
+#Tue Mar 04 16:17:58 CET 2008
+soap_req=${DATAIN_DIR}/ndfdXMLclient.xml
+begin=2004-01-01
+end=2012-02-29
+soap_req_full=http\://www.weather.gov/forecasts/xml/SOAP_server/ndfdXMLclient.php?whichClient\=NDFDgenMultiCities&lat\=&lon\=&listLatLon\=&lat1\=&lon1\=&lat2\=&lon2\=&resolutionSub\=&listLat1\=&listLon1\=&listLat2\=&listLon2\=&resolutionList\=&endPoint1Lat\=&endPoint1Lon\=&endPoint2Lat\=&endPoint2Lon\=&listEndPoint1Lat\=&listEndPoint1Lon\=&listEndPoint2Lat\=&listEndPoint2Lon\=&zipCodeList\=&listZipCodeList\=&centerPointLat\=&centerPointLon\=&distanceLat\=&distanceLon\=&resolutionSquare\=&listCenterPointLat\=&listCenterPointLon\=&listDistanceLat\=&listDistanceLon\=&listResolutionSquare\=&citiesLevel\=12&listCitiesLevel\=&sector\=&gmlListLatLon\=&requestedTime\=&featureType\=&product\=time-series&begin\=${begin}&end\=${end}&maxt\=maxt&Submit\=Submit

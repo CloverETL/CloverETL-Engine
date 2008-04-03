@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="defaultName" recordSize="-1" type="delimited">
+<Field name="start_valid_time" type="string"/>
+<Field name="end_valid_time" type="string"/>
+<Field name="parent_id" type="integer"/>
+</Record>

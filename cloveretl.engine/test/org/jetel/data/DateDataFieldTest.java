@@ -24,11 +24,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.jetel.data.DateDataField;
+import junit.framework.TestCase;
+
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
-
-import junit.framework.TestCase;
 
 /**
  * @author maciorowski

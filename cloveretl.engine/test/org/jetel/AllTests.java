@@ -22,11 +22,13 @@ package org.jetel;
  * @version 1.0
  *
  */
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 import org.jetel.data.DataTestSuite;
 import org.jetel.exception.ExceptionTestSuite;
 import org.jetel.metadata.MetadataTestSuite;
 import org.jetel.util.UtilTestSuite;
-import junit.framework.*;
 /**
  * TestSuite that runs all the sample tests
  *

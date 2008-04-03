@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Mon Mar 05 11:32:38 CET 2007" description="This graph shows usage of DBJoin component: data are read from flat file and joined with the records from database due to conforming key field (lname in records read from file, last_name in records read from database)." guiVersion="1.9" id="1197027195231" licenseType="Evaluation license." modified="Thu Apr 03 10:59:42 CEST 2008" name="graphDBJoin" revision="1.17">
+<Global>
+<Metadata fileURL="${META_DIR}/delimited/employee.fmt" id="Metadata1"/>
+<Metadata id="Metadata0">
+<Record name="customer" recordDelimiter="\n" recordSize="212" type="fixed">
+<Field name="customer_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="account_num" nullable="true" shift="0" size="11" type="long"/>
+<Field name="lname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="fname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="mi" nullable="true" shift="0" size="4" type="string"/>
+<Field name="address1" nullable="true" shift="0" size="30" type="string"/>
+<Field name="city" nullable="true" shift="0" size="7" type="string"/>
+<Field name="state_province" nullable="true" shift="0" size="6" type="string"/>
+<Field name="postal_code" nullable="true" shift="0" size="5" type="string"/>
+<Field name="country" nullable="true" shift="0" size="5" type="string"/>
+<Field name="customer_region_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="phone1" nullable="true" shift="0" size="12" type="string"/>
+<Field name="phone2" nullable="true" shift="0" size="12" type="string"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="birthdate" nullable="true" shift="0" size="15" type="date"/>
+<Field name="marital_status" nullable="true" shift="0" size="1" type="string"/>
+<Field name="yearly_income" nullable="true" shift="0" size="13" type="string"/>
+<Field name="gender" nullable="true" shift="0" size="1" type="string"/>
+<Field name="total_children" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="num_children_at_home" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="education" nullable="true" shift="0" size="15" type="string"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="date_accnt_opened" nullable="true" shift="0" size="15" type="date"/>
+<Field name="member_card" nullable="true" shift="0" size="8" type="string"/>
+<Field name="occupation" nullable="true" shift="0" size="20" type="string"/>
+<Field name="houseowner" nullable="true" shift="0" size="1" type="string"/>
+<Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2">
+<Record fieldDelimiter=";" name="joined" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field locale="en.US" name="customer_id" nullable="true" shift="0" type="integer"/>
+<Field locale="en.US" name="lname" nullable="true" shift="0" type="string"/>
+<Field locale="en.US" name="fname" nullable="true" shift="0" type="string"/>
+<Field locale="en.US" name="city" nullable="true" shift="0" type="string"/>
+<Field locale="en.US" name="country" nullable="true" shift="0" type="string"/>
+<Field locale="en.US" name="employee_id" nullable="true" shift="0" type="integer"/>
+<Field locale="en.US" name="full_name" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Connection dbConfig="${CONN_DIR}/postgre.cfg" id="Connection0" type="JDBC"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="66" guiName="Universal Data Reader" guiWidth="117" guiX="55" guiY="79" id="DATA_READER0" quotedStrings="false" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined.txt" guiHeight="68" guiName="Universal Data Writer" guiWidth="127" guiX="469" guiY="79" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="62" guiName="DBJoin" guiWidth="122" guiX="260" guiY="79" id="DBJOIN0" joinKey="lname" sqlQuery="select * from employee where last_name=?" transformClass="TransformForDBjoin" type="DBJOIN"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DBJOIN0:0"/>
+<Edge fromNode="DBJOIN0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (joined records)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

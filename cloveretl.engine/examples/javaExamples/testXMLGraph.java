@@ -17,11 +17,13 @@
 */
 
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.Future;
 
-import org.jetel.data.Defaults;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
@@ -31,19 +33,50 @@ import org.jetel.main.runGraph;
 
 public class testXMLGraph{
 
+	private final static String PARAMETER_FILE = "params.txt"; 
+	private final static String PLUGINS_PROPERTY = "plugins";
+	private final static String PROPERTIES_FILE_PROPERTY = "propertiesFile";
+
 	public static void main(String args[]){
 		
+		Properties arguments = new Properties();
+		if ((new File(PARAMETER_FILE)).exists()) {
+			try {
+				arguments.load(new FileInputStream(PARAMETER_FILE));
+			} catch (FileNotFoundException e) {
+				//do nothing: we checked it
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
 		if (args.length<1){
-			System.out.println("Usage: testXMLGraph <graph file name> <plug-ins directory> <default properties file>");
+			System.out.println("Usage: testXMLGraph <graph file name> [<plug-ins directory> <default properties file>]");
+			System.exit(1);
 		}
 		
+		String plugins = null;
+		if (args.length > 1){
+			plugins = args[1];
+		}else {
+			plugins = arguments.getProperty(PLUGINS_PROPERTY);
+		}
+		
+		String propertiesFile = null;
+		if (args.length > 2) {
+			propertiesFile = args[2];
+		}else{
+			propertiesFile = arguments.getProperty(PROPERTIES_FILE_PROPERTY);
+		}
+			
 		FileInputStream in;
         
         //initialization; must be present
-		EngineInitializer.initEngine(args.length > 1 ? args[1] : null, args.length > 2 ? args[2] : null, null);
+		EngineInitializer.initEngine(plugins, propertiesFile, null);
 
 		System.out.println("Graph definition file: "+args[0]);
-		System.out.println("Plugins directory: "+ (args.length > 1 ? args[1] : Defaults.DEFAULT_PLUGINS_DIRECTORY));
+		System.out.println("Plugins directory: "+ plugins);
+		System.out.println("Default properties file: "+ propertiesFile);
 		
 		try{
 			in=new FileInputStream(args[0]);

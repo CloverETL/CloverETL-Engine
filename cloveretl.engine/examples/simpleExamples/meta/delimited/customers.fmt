@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="Customer" recordDelimiter="\n" type="delimited">
+<Field name="CUSTOMERID" type="string"/>
+<Field name="CompanyName" type="string"/>
+<Field name="Representative" type="string"/>
+<Field name="JobTitle" type="string"/>
+<Field name="Address" type="string"/>
+<Field name="City" type="string"/>
+<Field name="State" nullable="true" type="string"/>
+<Field name="PostCode" type="string"/>
+<Field name="Country" type="string"/>
+<Field name="Phone" type="string"/>
+<Field name="Fax" type="string"/>
+</Record>

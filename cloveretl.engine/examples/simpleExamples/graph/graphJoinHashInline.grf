@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Fri Feb 16 10:01:53 CET 2007" description="This graph demonstrates how to use HASH_JOIN component for 3way join. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted" guiVersion="1.9" id="1204547167052" licenseType="Evaluation license." modified="Tue Mar 04 14:06:01 CET 2008" name="Testing Hash Joiner" revision="1.12">
+<Global>
+<Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata3"/>
+<Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/delimited/joinedOrders3way.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata1"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="59" guiY="48" id="INPUT1" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="59" guiY="136" id="INPUT2" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="25" guiName="INPUT3" guiWidth="50" guiX="59" guiY="223" id="INPUT3" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="256" guiY="48" id="JOIN" joinKey="EmployeeID=EmployeeID#CustomerID=CUSTOMERID" joinType="leftOuter" slaveDuplicates="true" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[
+import org.jetel.component.DataRecordTransform;
+import org.jetel.data.*;
+
+
+public class reformatJoinTest3Way extends DataRecordTransform{
+
+	public boolean transform(DataRecord[] source, DataRecord[] target){
+		if (source[0] != null) {
+			target[0].getField(0).setValue(source[0].getField(0).getValue());	// OrderID
+  			target[0].getField(1).setValue(source[0].getField(1).getValue());	// CustomerID
+			target[0].getField(2).setValue(source[0].getField(2).getValue().toString());	// EmployeeID
+		} else {
+		    target[0].getField(1).setValue("*MISSING*");
+		}
+		if (source[1]!=null){
+			target[0].getField(4).setValue(source[1].getField(1).toString() + ", " + source[1].getField(2).toString());	// Name
+		} else {
+			target[0].getField(4).setValue("*MISSING*");
+		}
+		if (source[2]!=null){
+			target[0].getField(3).setValue(source[2].getField(1).getValue());	// Company
+		} else {
+			target[0].getField(3).setValue("*MISSING*");
+		}
+		target[0].getField(5).setValue("*MISSING*");
+		return true;
+	}
+}
+
+]]></attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="448" guiY="48" id="WRITER" type="DELIMITED_DATA_WRITER"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="JOIN:0"/>
+<Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="JOIN:1"/>
+<Edge fromNode="INPUT3:0" guiBendpoints="" id="INEDGE3" inPort="Port 2 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="JOIN:2"/>
+<Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="WRITER:0"/>
+</Phase>
+</Graph>

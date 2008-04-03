@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Wed Nov 14 08:50:54 CET 2007" description="This graph shows how to unload data from database with direct mapping usage. &#10;Mapping between clover and database fields is set directly in sql query." guiVersion="1.9" id="1204559175469" licenseType="Commercial License javlinconsulting" modified="Mon Mar 03 16:46:15 CET 2008" name="graphDBUnload2grf" revision="1.6">
+<Global>
+<Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
+<Connection dbConfig="${CONN_DIR}/postgre.cfg" id="Connection1" type="JDBC"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node dbConnection="Connection1" enabled="enabled" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="30" guiY="30" id="INPUT" sqlQuery="select $EmployeeID:=employee_id, $LastName:=last_name, $FirstName:=first_name, $Title:=position_title, $BirthDate:=birth_date, $HireDate:=hire_date from employee" type="DB_INPUT_TABLE"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.txt" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="205" guiY="30" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
+<Edge debugMode="true" fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+</Phase>
+</Graph>

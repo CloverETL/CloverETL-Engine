@@ -21,12 +21,10 @@ package org.jetel.data;
 
 import java.nio.ByteBuffer;
 
-import org.jetel.data.StringDataField;
-import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.NullDataFormatException;
-import org.jetel.metadata.DataFieldMetadata;
-
 import junit.framework.TestCase;
+
+import org.jetel.exception.BadDataFormatException;
+import org.jetel.metadata.DataFieldMetadata;
 
 /**
  * @author maciorowski

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="defaultName" recordSize="-1" type="delimited">
+<Field name="location_key" type="string"/>
+<Field name="city" type="string"/>
+<Field name="state" type="string"/>
+</Record>
