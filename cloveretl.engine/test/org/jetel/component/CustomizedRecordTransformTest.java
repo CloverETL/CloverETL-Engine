@@ -13,9 +13,7 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.DecimalDataField;
 import org.jetel.data.SetVal;
-import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
@@ -152,6 +150,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 				new DataRecordMetadata[]{metaOut,metaOut1});
 		} catch (ComponentNotReadyException e) {
 			e.printStackTrace();
+			fail();
 		}
 		List<String> rules = transform.getRulesAsStrings();
 		System.out.println("Rules:");
@@ -225,8 +224,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		out.init();
         
 		
-		System.out.println(record.getMetadata().getName() + ":\n" + record.toString());
-		System.out.println(record1.getMetadata().getName() + ":\n" + record1.toString());
+		transform.setUseAlternativeRules(true);
 		transform.addFieldToFieldRule("0.*", "0.*");
 		transform.addFieldToFieldRule("0.*", "1.*");
 		try {
@@ -269,12 +267,17 @@ public class CustomizedRecordTransformTest extends TestCase {
 		}
 		for(int i = 0; i < metaOut.getNumFields() - 1; i++){
 			try {
-				assertEquals(out.getField(i), record.getField(i));
+				if (!record.getField(i).isNull()) {
+					assertEquals(out.getField(i), record.getField(i));
+				}
 			} catch (AssertionFailedError e) {
 				assertEquals(out.getField(i).toString(), record.getField(i).toString());
 			}
 		}
 		assertEquals(out.getField(metaOut.getNumFields() -1), record1.getField(metadata1.getNumFields() -1));
+		assertEquals(out.getField("Born"), record1.getField("Born"));
+		System.out.println(record.getMetadata().getName() + ":\n" + record.toString());
+		System.out.println(record1.getMetadata().getName() + ":\n" + record1.toString());
 		System.out.println(out.getMetadata().getName() + ":\n" + out.toString());
 		System.out.println(out1.getMetadata().getName() + ":\n" + out1.toString());
 	}

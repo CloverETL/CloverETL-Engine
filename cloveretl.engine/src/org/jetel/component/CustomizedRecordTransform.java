@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
@@ -66,6 +67,7 @@ import org.jetel.util.string.StringUtils;
  * <ol>
  * <li>setGraph()</li>
  * <li>setFieldPolicy(PolicyType) - default value is STRICT</li>
+ * <li>setUseAlternativeRules(boolean) - default is <b>false</b>
  * <li>add...Rule(...)<br>
  * .<br></li>
  * <li>deleteRule(...)<br>
@@ -232,6 +234,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 	protected TransformationGraph graph;
 	
 	protected PolicyType fieldPolicy = PolicyType.STRICT;
+	protected boolean useAlternativeRules = false;
+	
 	protected Log logger;
 	protected String errorMessage;
 	
@@ -242,7 +246,9 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 */
 	protected DuplicateKeyMap rules = new DuplicateKeyMap(new LinkedHashMap<String, Rule>());
 	protected Rule[][] transformMapArray;//rules from "rules" map translated for concrete metadata
+	protected ArrayList<Rule[][]> alternativeTransformMapArrays;
 	protected int[][] order;//order for assigning output fields (important if assigning sequence values)
+	protected ArrayList<Integer[][]> alternativeOrder;
 	
 	protected static final int REC_NO = 0;
 	protected static final int FIELD_NO = 1;
@@ -843,6 +849,14 @@ public class CustomizedRecordTransform implements RecordTransform {
 	    return init();
 	}
 
+	/**
+	 * Checks if given string contans wild cards 
+	 * 
+	 * @see WcardPattern
+	 * 
+	 * @param str 
+	 * @return
+	 */
 	private boolean containsWCard(String str){
 		for (int i = 0; i < WILDCARDS.length; i++) {
 			if (str.contains(WILDCARDS[i])) return true;
@@ -859,8 +873,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 		//map storing transformation for concrete output fields
 		//key is in form: recNumber.fieldNumber 
 		Map<String, Rule> transformMap = new LinkedHashMap<String, Rule>();
+		ArrayList<Map<String,Rule>> alternativeTransformMaps = new ArrayList<Map<String,Rule>>();
 		Entry<String, ArrayList<Rule>> rulesEntry;
-//		Rule rule;
 		String field;
 		String ruleString = null;
 		String[] outFields = new String[0];
@@ -869,6 +883,9 @@ public class CustomizedRecordTransform implements RecordTransform {
 		for (Iterator<Entry<String, ArrayList<Rule>>> iterator = rules.entrySet().iterator();iterator.hasNext();){
 			rulesEntry = iterator.next();
 			for (Rule rule : rulesEntry.getValue()) {
+				rule.setGraph(getGraph());
+				rule.setLogger(logger);
+				rule.setProperties(parameters);
 				//find output fields pattern
 				field = resolveField(rulesEntry.getKey());
 				if (field == null) {
@@ -915,30 +932,23 @@ public class CustomizedRecordTransform implements RecordTransform {
 				}
 				if (rule instanceof FieldRule && inFields.length > 1) {
 					//find mapping by names
-					if (putMappingByNames(transformMap, outFields, inFields,
+					if (putMappingByNames(transformMap, alternativeTransformMaps, outFields, inFields,
 							rule.getSource()) == 0) {
-						errorMessage = "Not found any field for mapping by names due to rule:\n"
-								+ field
-								+ " - output fields pattern\n"
-								+ ruleString + " - input fields pattern";
-						logger.warn(errorMessage);
+						if (!useAlternativeRules) {
+							errorMessage = "Not found any field for mapping by names due to rule:\n"
+									+ field
+									+ " - output fields pattern\n"
+									+ ruleString + " - input fields pattern";
+							logger.warn(errorMessage);
+						}
 					}
 				} else {//for each output field the same rule
 					//for each output field from pattern, put rule to map
-					Rule rule1;
 					for (int i=0;i<outFields.length;i++){
-						if (!containsWCard(field) || !transformMap.containsKey(outFields[i])) {
-							rule1 = rule.duplicate();
-							//					if (rule1 instanceof FieldRule){
-							//						((FieldRule)rule1).setFieldParams(inFields[0]);
-							//					}
-							rule1.setGraph(getGraph());
-							rule1.setProperties(parameters);
-							rule1.setLogger(logger);
-							//prepare rule for concrete data field
-							//					rule1.init(sourceMetadata, targetMetadata,getRecNo(field),
-							//							getFieldNo(field),fieldPolicy);
-							transformMap.put(outFields[i], rule1);
+						if (!containsWCard(field) || !transformMap.containsKey(outFields[i])) {//check primary map
+							transformMap.put(outFields[i], rule.duplicate());
+						}else if (useAlternativeRules){//rule is in primery map --> put to alternative map
+							putRuleInAlternativeMap(outFields[i], rule, alternativeTransformMaps);
 						}
 					}
 				}
@@ -957,9 +967,51 @@ public class CustomizedRecordTransform implements RecordTransform {
 				(sourceMetadata, targetMetadata, getRecNo(field), getFieldNo(field), fieldPolicy);
 			index++;
 		}
+		//create and initialize alternative rules
+		if (useAlternativeRules && alternativeTransformMaps.size() > 0){
+			alternativeTransformMapArrays = new ArrayList<Rule[][]>(alternativeTransformMaps.size());
+			alternativeOrder = new ArrayList<Integer[][]>(alternativeTransformMaps.size());
+			for (Map<String,Rule> map : alternativeTransformMaps) {
+				Rule[][] ruleArray = new Rule[targetMetadata.length][maxNumFields(targetMetadata)];
+				alternativeTransformMapArrays.add(ruleArray);
+				Integer[][] orderArray = new Integer[map.size()][2];
+				alternativeOrder.add(orderArray);
+				index = 0;
+				for (Entry<String, Rule> i : map.entrySet()) {
+					field = i.getKey();
+					order[index][REC_NO] = getRecNo(field);
+					order[index][FIELD_NO] = getFieldNo(field);
+					ruleArray[order[index][REC_NO] ][order[index][FIELD_NO]] = i.getValue();
+					ruleArray[order[index][REC_NO]][order[index][FIELD_NO]].init
+						(sourceMetadata, targetMetadata, getRecNo(field), getFieldNo(field), fieldPolicy);
+					index++;
+				}
+			}
+		}
 		return true;
 	}
 	
+	/**
+	 * This method puts rule to the alternative map, which doesn't contain rule for this field.
+	 * If all alternative maps contain rule for requested field, new map is created and added to list 
+	 * 
+	 * @param field output field
+	 * @param rule rule to put
+	 * @param alternativeTransformMaps list of alternative maps
+	 * @return
+	 */
+	private void putRuleInAlternativeMap(String field, Rule rule, List<Map<String, Rule>> alternativeTransformMaps){
+		for (Map<String,Rule> map : alternativeTransformMaps) {
+			if (!map.containsKey(field)) {
+				map.put(field, rule.duplicate());
+				return;
+			}
+		}
+		//all maps checked --> create new one
+		Map<String, Rule> newMap = new LinkedHashMap<String, Rule>();
+		alternativeTransformMaps.add(newMap);
+		newMap.put(field, rule.duplicate());
+	}
 	
 	/**
 	 * Method, which puts mapping rules to map. First it tries to find fields with
@@ -988,11 +1040,12 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * 		<li>1.2 <-- 0.2</li></ul>
 	 * 
 	 * @param transformMap map to put rules
+	 * @param alternativeMaps list of alternative maps, used if useAlternativeRules=true and primery map contains output field
 	 * @param outFields output fields to mapping
 	 * @param inFields input fields for mapping
 	 * @return number of mappings put to transform map
 	 */
-	protected int putMappingByNames(Map<String, Rule> transformMap, 
+	protected int putMappingByNames(Map<String, Rule> transformMap, List<Map<String, Rule>> alternativeMaps,
 			String[] outFields, String[] inFields, String rule) throws ComponentNotReadyException{
 		int count = 0;
 		String[][] outFieldsName = new String[targetMetadata.length][maxNumFields(targetMetadata)];
@@ -1009,11 +1062,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 		//find identical in corresponding records
 		for (int i = 0; (i < outFieldsName.length) && (i < inFieldsName.length); i++) {
 			for (int j = 0; j < outFieldsName[i].length; j++) {
-				if (outFieldsName[i][j] != null && !transformMap.containsKey(String.valueOf(i) + DOT + String.valueOf(j))) {
+				if (outFieldsName[i][j] != null) {
 					index = StringUtils.findString(outFieldsName[i][j],
 							inFieldsName[i]);
 					if (index > -1) {//output field name found amoung input fields
-						if (putMapping(i, j, i, index, rule, transformMap)){
+						if (putMapping(i, j, i, index, rule, transformMap, alternativeMaps)){
 							count++;
 							outFieldsName[i][j] = null;
 							inFieldsName[i][index] = null;
@@ -1026,12 +1079,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 		for (int i = 0; i < outFieldsName.length; i++) {
 			for (int j = 0; j < outFieldsName[i].length; j++) {
 				for (int k = 0; k < inFieldsName.length; k++) {
-					if ((outFieldsName[i][j] != null) && (k != i) && 
-							!transformMap.containsKey(String.valueOf(i) + DOT + String.valueOf(j))) {
+					if ((outFieldsName[i][j] != null) && (k != i)) {
 						index = StringUtils.findString(outFieldsName[i][j],
 								inFieldsName[k]);
 						if (index > -1) {//output field name found amoung input fields
-							if (putMapping(i, j, k, index, rule, transformMap)){
+							if (putMapping(i, j, k, index, rule, transformMap, alternativeMaps)){
 								count++;
 								outFieldsName[i][j] = null;
 								inFieldsName[k][index] = null;
@@ -1044,11 +1096,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 		//find ignore case in corresponding records
 		for (int i = 0; (i < outFieldsName.length) && (i < inFieldsName.length); i++) {
 			for (int j = 0; j < outFieldsName[i].length; j++) {
-				if (outFieldsName[i][j] != null && !transformMap.containsKey(String.valueOf(i) + DOT + String.valueOf(j))) {
+				if (outFieldsName[i][j] != null) {
 					index = StringUtils.findStringIgnoreCase(
 							outFieldsName[i][j], inFieldsName[i]);
 					if (index > -1) {//output field name found amoung input fields
-						if (putMapping(i, j, i, index, rule, transformMap)){
+						if (putMapping(i, j, i, index, rule, transformMap, alternativeMaps)){
 							count++;
 							outFieldsName[i][j] = null;
 							inFieldsName[i][index] = null;
@@ -1061,12 +1113,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 		for (int i = 0; i < outFieldsName.length; i++) {
 			for (int j = 0; j < outFieldsName[i].length; j++) {
 				for (int k = 0; k < inFieldsName.length; k++) {
-					if ((outFieldsName[i][j] != null) && (k != i) && 
-							!transformMap.containsKey(String.valueOf(i) + DOT + String.valueOf(j))) {
+					if ((outFieldsName[i][j] != null) && (k != i)) {
 						index = StringUtils.findStringIgnoreCase(
 								outFieldsName[i][j], inFieldsName[k]);
 						if (index > -1) {//output field name found amoung input fields
-							if (putMapping(i, j, k, index, rule, transformMap)){
+							if (putMapping(i, j, k, index, rule, transformMap, alternativeMaps)){
 								count++;
 								outFieldsName[i][j] = null;
 								inFieldsName[k][index] = null;
@@ -1088,11 +1139,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param inRecNo number of record from input metadata
 	 * @param inFieldNo number of field from input metadata
 	 * @param transformMap
+	 * @param alternativeMaps list of alternative maps, used if useAlternativeRules=true and primery map contains output field
 	 * @return true if mapping was put into map, false in other case
 	 */
 	protected boolean putMapping(int outRecNo,int outFieldNo,int inRecNo, int inFieldNo, 
-			String ruleString, Map<String, Rule> transformMap) throws ComponentNotReadyException{
-		Rule rule;
+			String ruleString, Map<String, Rule> transformMap, List<Map<String, Rule>> alternativeMaps) throws ComponentNotReadyException{
 		if (!Rule.checkTypes(targetMetadata[outRecNo].getField(outFieldNo),
 				sourceMetadata[inRecNo].getField(inFieldNo),fieldPolicy)){
 			if (fieldPolicy == PolicyType.STRICT){
@@ -1119,12 +1170,13 @@ public class CustomizedRecordTransform implements RecordTransform {
 			}
 			return false;
 		}else{//map fields
-			transformMap.remove(String.valueOf(outRecNo) + DOT	+ outFieldNo);
-			rule = new FieldRule(ruleString);
-			rule.setLogger(logger);
-			((FieldRule)rule).setFieldParams(String.valueOf(inRecNo) + DOT	+ inFieldNo);
-//			rule.init(sourceMetadata, targetMetadata, outRecNo, outFieldNo, fieldPolicy);
-			transformMap.put(String.valueOf(outRecNo) + DOT + outFieldNo, rule);
+			FieldRule rule = new FieldRule(ruleString);
+			rule.setFieldParams(String.valueOf(inRecNo) + DOT + inFieldNo);
+			if (!transformMap.containsKey(String.valueOf(outRecNo) + DOT + outFieldNo)) {
+				transformMap.put(String.valueOf(outRecNo) + DOT + outFieldNo, rule);
+			}else if (useAlternativeRules){
+				putRuleInAlternativeMap(String.valueOf(outRecNo) + DOT + outFieldNo, rule, alternativeMaps);
+			}
 			return true;
 		}
 	}
@@ -1188,6 +1240,21 @@ public class CustomizedRecordTransform implements RecordTransform {
 
 	}
 
+	/**
+	 * Fills error message and throws exception
+	 * 
+	 * @param ruleArray
+	 * @param recNo
+	 * @param FieldNo
+	 * @param ex
+	 * @throws TransformException
+	 */
+	private void throwException(Rule[][] ruleArray, int recNo, int FieldNo, Exception ex) throws TransformException{
+		errorMessage = "TransformException caused by source: " + ruleArray[recNo][FieldNo].getSource();
+		logger.error(errorMessage,ex);
+		throw new TransformException(errorMessage, ex, recNo,FieldNo);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordTransform#transform(org.jetel.data.DataRecord[], org.jetel.data.DataRecord[])
 	 */
@@ -1195,37 +1262,87 @@ public class CustomizedRecordTransform implements RecordTransform {
 			throws TransformException {
 		//array "order" stores coordinates of output fields in order they will be assigned
 		for (int i = 0; i < order.length; i++) {
-			value = transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]]
-					.getValue(sources);
-			try {
-				target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(value);
-			} catch (BadDataFormatException e) {
-				//we can try to change value to String and set to output field
-				if (fieldPolicy != PolicyType.STRICT) {
-					try{
-						target[order[i][REC_NO]].getField(order[i][FIELD_NO])
-								.fromString(value.toString());
-					}catch(BadDataFormatException e1){
-						errorMessage = "TransformException caused by source: " + transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getSource();
-						logger.error(errorMessage,e1);
-						throw new TransformException(errorMessage, e1,
-								order[i][REC_NO],order[i][FIELD_NO]);
-					}catch (NullPointerException e1) {
-						errorMessage = "Null value not allowed";
-						logger.error(errorMessage,e1);
-						throw new TransformException(errorMessage, e1,
-								order[i][REC_NO],order[i][FIELD_NO]);
+			value = transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue(sources);
+			if (value != null || !useAlternativeRules){
+				try {
+					target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(value);
+				} catch (BadDataFormatException e) {
+					//we can try to change value to String and set to output field
+					if (value != null && fieldPolicy != PolicyType.STRICT) {
+						try {
+							target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(value.toString());
+						} catch (BadDataFormatException e1) {
+							if (!useAlternativeRules || 
+									!setAlternativeValue(sources, target, order[i][REC_NO], order[i][FIELD_NO], 0, e1)){
+								throwException(transformMapArray, order[i][REC_NO], order[i][FIELD_NO], e1);
+							}
+						}
+					}else if (!useAlternativeRules || 
+							!setAlternativeValue(sources, target, order[i][REC_NO], order[i][FIELD_NO], 0, e)) {//value is null or value can't be set to field
+						throwException(transformMapArray, order[i][REC_NO], order[i][FIELD_NO], e);
 					}
-				}else{
-					errorMessage = "TransformException caused by source: " + transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getSource();
-					logger.error(errorMessage,e);
-					throw new TransformException(errorMessage, e,
-							order[i][REC_NO],order[i][FIELD_NO]);
 				}
+			}else{//value is null and useuseAlternativeRules = true
+				setAlternativeValue(sources, target, order[i][REC_NO], order[i][FIELD_NO], 0, null);
 			}
 		}
 		return true;
 	}
+	
+	/**
+	 * Tries to set value due to given alternative rule
+	 * 
+	 * @param sources source records
+	 * @param target target records
+	 * @param trgRec target record number
+	 * @param trgField target field number
+	 * @param alternativeRuleNumber 
+	 * @param cause why we call alternative rule
+	 * @return true if value was set, in other case throws TransformException
+	 * @throws TransformException
+	 */
+	private boolean setAlternativeValue(DataRecord[] sources, DataRecord[] target, int trgRec, int trgField,
+			int alternativeRuleNumber, Exception cause) throws TransformException{
+		Rule[][] ruleArray = alternativeTransformMapArrays.get(alternativeRuleNumber);
+		if (ruleArray[trgRec][trgField] == null) {
+			throwException(ruleArray, trgRec, trgField, cause);
+		}
+		value = ruleArray[trgRec][trgField].getValue(sources);
+		if (value != null){
+			try{
+				target[trgRec].getField(trgField).setValue(value);
+				return true;
+			}catch (BadDataFormatException e) {
+				if (fieldPolicy != PolicyType.STRICT){
+					try{
+						target[trgRec].getField(trgField).fromString(value.toString());
+						return true;
+					}catch (BadDataFormatException e1) {
+						if (++alternativeRuleNumber < alternativeTransformMapArrays.size()){
+							return setAlternativeValue(sources, target, trgRec, trgField, alternativeRuleNumber, e1);
+						}else{
+							throwException(ruleArray, trgRec, trgField, e1);
+						}
+					}
+				}else if (++alternativeRuleNumber < alternativeTransformMapArrays.size()){
+					return setAlternativeValue(sources, target, trgRec, trgField, alternativeRuleNumber, e);
+				}else{
+					throwException(ruleArray, trgRec, trgField, e);
+				}
+			}
+		}else if (++alternativeRuleNumber < alternativeTransformMapArrays.size()){
+			return setAlternativeValue(sources, target, trgRec, trgField, alternativeRuleNumber, cause);
+		}else{//value is null
+			try {
+				target[trgRec].getField(trgField).setValue(value);
+				return true;
+			} catch (BadDataFormatException e) {
+				throwException(ruleArray, trgRec, trgField, e);
+			}
+		}
+		return true;
+	}
+	
 	
 	/**
 	 * Changes pattern given in one of possible format to record.field
@@ -1468,6 +1585,14 @@ public class CustomizedRecordTransform implements RecordTransform {
 	public void setLogger(Log logger) {
 		this.logger = logger;
 	}
+
+	public boolean isUseAlternativeRules() {
+		return useAlternativeRules;
+	}
+
+	public void setUseAlternativeRules(boolean useAlternativeRules) {
+		this.useAlternativeRules = useAlternativeRules;
+	}
 	
 }// class CustomizedRecordTransform
 
@@ -1695,7 +1820,12 @@ public class CustomizedRecordTransform implements RecordTransform {
 		
 		@Override
 		Rule duplicate() {
-			return new FieldRule(source);
+			FieldRule duplicate = new FieldRule(source);
+			duplicate.setFieldParams(fieldParams);
+			duplicate.setGraph(graph);
+			duplicate.setLogger(logger);
+			duplicate.setProperties(parameters);
+			return duplicate;
 		}
 	}
 	
@@ -1723,11 +1853,16 @@ public class CustomizedRecordTransform implements RecordTransform {
 		
 		@Override
 		Rule duplicate() {
+			SequenceRule duplicate;
 			if (value != null) {
-				return new SequenceRule(value);
+				duplicate = new SequenceRule(value);
 			}else{
-				return new SequenceRule(source);
+				duplicate = new SequenceRule(source);
 			}
+			duplicate.setGraph(graph);
+			duplicate.setLogger(logger);
+			duplicate.setProperties(parameters);
+			return duplicate;
 		}
 		
 		@Override
@@ -1925,11 +2060,16 @@ public class CustomizedRecordTransform implements RecordTransform {
 		
 		@Override
 		Rule duplicate() {
+			ConstantRule duplicate;
 			if (value != null) {
-				return new ConstantRule(value);
+				duplicate = new ConstantRule(value);
 			}else{
-				return new ConstantRule(source);
+				duplicate = new ConstantRule(source);
 			}
+			duplicate.setGraph(graph);
+			duplicate.setLogger(logger);
+			duplicate.setProperties(parameters);
+			return duplicate;
 		}
 		
 		@Override
@@ -1988,7 +2128,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 		
 		@Override
 		Rule duplicate() {
-			return new ParameterRule(source);
+			ParameterRule duplicate = new ParameterRule(source);
+			duplicate.setGraph(graph);
+			duplicate.setLogger(logger);
+			duplicate.setProperties(parameters);
+			return duplicate;
 		}
 		
 		@Override
@@ -2063,7 +2207,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 		
 		@Override
 		Rule duplicate() {
-			return new DeleteRule();
+			DeleteRule duplicate = new DeleteRule();
+			duplicate.setGraph(graph);
+			duplicate.setLogger(logger);
+			duplicate.setProperties(parameters);
+			return duplicate;
 		}
 		
 		@Override
