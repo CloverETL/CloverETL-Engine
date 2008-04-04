@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Thu Dec 21 08:55:10 CET 2006" description="This graph illustrates how to read not all records from database. This example is similar to graphDBJoin.grf, but found records from database are not sent to transformation function, but directly to output port." guiVersion="1.9" id="1204559496098" licenseType="Evaluation license." modified="Thu Apr 03 11:07:17 CEST 2008" name="graphDBUnloadParametrized" revision="1.16">
+<Graph created="Thu Dec 21 08:55:10 CET 2006" description="This graph illustrates how to read not all records from database. This example is similar to graphDBJoin.grf, but found records from database are not sent to transformation function, but directly to output port." guiVersion="1.9" id="1204559496098" licenseType="Evaluation license." modified="Fri Apr 04 12:15:33 CEST 2008" name="graphDBUnloadParametrized" revision="1.20">
 <Global>
-<Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/delimited/employee.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Connection dbConfig="${CONN_DIR}/postgre.cfg" id="Connection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
