@@ -1586,10 +1586,23 @@ public class CustomizedRecordTransform implements RecordTransform {
 		this.logger = logger;
 	}
 
+	/**
+	 * @return if transformation uses alternative rules
+	 * 
+	 * @see setUseAlternativeRules
+	 */
 	public boolean isUseAlternativeRules() {
 		return useAlternativeRules;
 	}
 
+	/**
+	 * Switchs on/off alternative rules. 
+	 * When alternative rules are switched on, more rules can be used for one field:
+	 * 	if value from primery rule is null or transformations failed trying to set it, there are used lternative rules.
+	 * Tranasformation fails if value of noone rule can be set to requested field. 
+	 * 
+	 * @param useAlternativeRules
+	 */
 	public void setUseAlternativeRules(boolean useAlternativeRules) {
 		this.useAlternativeRules = useAlternativeRules;
 	}
