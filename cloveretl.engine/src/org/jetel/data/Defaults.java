@@ -42,6 +42,12 @@ public final class Defaults {
     private static Properties properties;
     private static Log logger = LogFactory.getLog(Defaults.class);
 
+    public static Properties getPropertiesSnapshot(){
+    	Properties p = new Properties();
+    	p.putAll(properties);
+    	return p;
+    }
+    
     private static InputStream loadProperties(String resourcename) {
         if (resourcename == null || resourcename.length() == 0) {
             return null;
