@@ -99,6 +99,9 @@ public final class TransformationGraph extends GraphElement {
     
 	static Log logger = LogFactory.getLog(TransformationGraph.class);
 
+	/** Time stamp of instance creation time. */
+	private long created = System.currentTimeMillis();
+	
 	private WatchDog watchDog;
 
 	private TypedProperties graphProperties;
@@ -909,6 +912,10 @@ public final class TransformationGraph extends GraphElement {
 	
 	public void setDictionaryEntry(String key, IDictionaryValue<?> value) {
 		dictionary.put(key, value);
+	}
+
+	public long getCreated() {
+		return created;
 	}
 	
 }
