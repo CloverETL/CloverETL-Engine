@@ -145,7 +145,7 @@ public class DBConnection extends GraphElement implements IConnection {
     public final static String TRANSACTION_ISOLATION_PROPERTY_NAME="transactionIsolation";
     public final static String SQL_QUERY_PROPERTY = "sqlQuery";
 
-    public static final String XML_JNDI_ATTRIBUTE = "jndi";
+    public static final String XML_JNDI_ATTRIBUTE = "jndiName";
     public static final String XML_DBURL_ATTRIBUTE = "dbURL";
     public static final String XML_DBDRIVER_ATTRIBUTE = "dbDriver";
     public static final String XML_DBCONFIG_ATTRIBUTE = "dbConfig";
