@@ -278,7 +278,8 @@ public class JmsConnection extends GraphElement implements IConnection {
 			} finally {
 			    Thread.currentThread().setContextClassLoader(prevCl);
 			}
-			
+		} catch (NoClassDefFoundError e) {
+	    		throw new ComponentNotReadyException("No class definition found for:" + e.getMessage() + " (add to classpath)");
 		} catch (NamingException e) {
 	    	if (e.getRootCause() instanceof NoClassDefFoundError)
 	    		throw new ComponentNotReadyException("No class definition found for:" + e.getMessage() + " (add to classpath)");
