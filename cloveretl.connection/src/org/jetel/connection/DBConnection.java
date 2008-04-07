@@ -27,7 +27,6 @@ import java.net.URLClassLoader;
 import java.nio.channels.Channels;
 import java.sql.Connection;
 import java.sql.Driver;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -36,6 +35,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -67,6 +70,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>id</b></td><td>connection identification</td>
  *  <tr><td><b>dbConfig</b><br><i>optional</i></td><td>filename of the config file from which to take connection parameters<br>
  *  If used, then all other attributes are ignored.</td></tr>
+ *  <tr><td><b>jndi</b></td><td>JNDI name of JDBC data source. Use it to access data source specified by application server. If used, attributes dbDriver, dbURL, user, password and driverLibrary are ignored.</td></tr>
  *  <tr><td><b>dbDriver</b></td><td>name of the JDBC driver</td></tr>
  *  <tr><td><b>dbURL</b></td><td>URL of the database (aka connection string)</td></tr>
  *  <tr><td><b>user</b><br><i>optional</i></td><td>username to use when connecting to DB</td></tr>
@@ -141,6 +145,7 @@ public class DBConnection extends GraphElement implements IConnection {
     public final static String TRANSACTION_ISOLATION_PROPERTY_NAME="transactionIsolation";
     public final static String SQL_QUERY_PROPERTY = "sqlQuery";
 
+    public static final String XML_JNDI_ATTRIBUTE = "jndi";
     public static final String XML_DBURL_ATTRIBUTE = "dbURL";
     public static final String XML_DBDRIVER_ATTRIBUTE = "dbDriver";
     public static final String XML_DBCONFIG_ATTRIBUTE = "dbConfig";
@@ -338,6 +343,9 @@ public class DBConnection extends GraphElement implements IConnection {
      * @throws ComponentNotReadyException 
      */
     private void prepareDbDriver() throws ComponentNotReadyException {
+        if(!StringUtils.isEmpty(config.getProperty(XML_JNDI_ATTRIBUTE)))
+        	return;
+
         if (dbDriver==null){
             //database connection is parametrized by DB identifier to the list of build-in JDBC drivers
             if(!StringUtils.isEmpty(config.getProperty(XML_DATABASE_ATTRIBUTE))) {
@@ -451,25 +459,45 @@ public class DBConnection extends GraphElement implements IConnection {
      */
     public synchronized Connection getConnection(String elementId) {
         Connection con=null;
-        if (threadSafeConnections){
-            con=(Connection)openedConnections.get(elementId);
-            if(con==null){
-                connect();
-                con=dbConnection;
-                openedConnections.put(elementId,con);
-            }
-        }else{
-            try{
-                if (dbConnection == null || dbConnection.isClosed()){
+        
+        String jndi = config.getProperty(XML_JNDI_ATTRIBUTE);
+        if(!StringUtils.isEmpty(jndi)) {
+        	
+        	try {
+            	Context initContext = new InitialContext();
+            	/*
+               	Context envContext  = (Context)initContext.lookup("java:/comp/env");
+               	DataSource ds = (DataSource)envContext.lookup(jndi);
+               	con = ds.getConnection();
+               	*/
+           		DataSource ds = (DataSource)initContext.lookup(jndi);
+               	con = ds.getConnection();
+        	} catch (Exception e) {
+        		throw new RuntimeException("cannot establish DB connection to JNDI:" + jndi + " "+e.getMessage(), e);
+        	}
+        	
+        } else {
+            if (threadSafeConnections){
+                con=(Connection)openedConnections.get(elementId);
+                if(con==null){
                     connect();
+                    con=dbConnection;
+                    openedConnections.put(elementId,con);
                 }
-            }catch(SQLException ex){
-                throw new RuntimeException(
-                        "Can't establish or reuse existing connection : " + dbDriver
-                                + " ; " + config.getProperty(XML_DBURL_ATTRIBUTE));
+            }else{
+                try{
+                    if (dbConnection == null || dbConnection.isClosed()){
+                        connect();
+                    }
+                }catch(SQLException ex){
+                    throw new RuntimeException(
+                            "Can't establish or reuse existing connection : " + dbDriver
+                                    + " ; " + config.getProperty(XML_DBURL_ATTRIBUTE));
+                }
+                con=dbConnection;
             }
-            con=dbConnection;
         }
+        
         return con;
     }
 
@@ -628,6 +656,7 @@ public class DBConnection extends GraphElement implements IConnection {
     public String toString() {
         StringBuffer strBuf=new StringBuffer(255);
         strBuf.append("DBConnection driver[").append(config.getProperty(XML_DBDRIVER_ATTRIBUTE));
+        strBuf.append("]:jndi[").append(config.getProperty(XML_JNDI_ATTRIBUTE));
         strBuf.append("]:url[").append(config.getProperty(XML_DBURL_ATTRIBUTE));
         strBuf.append("]:user[").append(config.getProperty(XML_USER_ATTRIBUTE)).append("]");
         return strBuf.toString();
