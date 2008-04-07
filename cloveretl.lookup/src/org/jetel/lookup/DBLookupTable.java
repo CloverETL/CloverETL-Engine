@@ -466,7 +466,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 			try {
 				dbConnection = tmp.getConnection(getId());
 			} catch (RuntimeException e) {
-				throw new ComponentNotReadyException("Can't cconnect to database: " + e.getMessage());
+				throw new ComponentNotReadyException("Can't cconnect to database: " + e.getMessage(), e);
 			}
 		}
 		
@@ -491,7 +491,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     @Override
     public synchronized void reset() throws ComponentNotReadyException {
     	super.reset();
-    	resultCache.clear();
+    	if (resultCache != null)
+    		resultCache.clear();
         totalNumber = 0;
         cacheNumber = 0;
         keyTransMap = null;
