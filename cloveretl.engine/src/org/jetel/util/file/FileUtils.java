@@ -33,6 +33,8 @@ import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.Adler32;
@@ -390,6 +392,43 @@ public class FileUtils {
 			throw new ComponentNotReadyException("Can't write to: " + fileURL);
 		}
 		return true;
+	}
+	
+	/**
+	 * This method checks whether is is possible to write to given directory
+	 * 
+	 * @param dest
+	 * @return true if can write, false otherwise
+	 */
+	public static boolean canWrite(File dest){
+		if (dest.exists()) return dest.canWrite();
+		
+		List<File> dirs = getDirs(dest);
+		
+		boolean result = dest.mkdirs();
+				
+		//clean up
+		for (File dir : dirs) {
+			if (dir.exists()) dir.delete();
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * @param file
+	 * @return list of directories, which have to be created to create this directory (don't exist),
+	 * 	  empty list if requested directory exists
+	 */
+	private static List<File> getDirs(File file){
+		ArrayList<File> dirs = new ArrayList<File>();
+		File dir = file;
+		if (file.exists()) return dirs;
+		dirs.add(file);
+		while (!(dir = dir.getParentFile()).exists()) {
+			dirs.add(dir);
+		}
+		return dirs;
 	}
 	
 	/**
