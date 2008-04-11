@@ -28,8 +28,8 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.aggregate.AggregateMappingParser;
-import org.jetel.connection.DBConnection;
-import org.jetel.connection.SQLCloverCallableStatement;
+import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.SQLCloverCallableStatement;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
@@ -278,7 +278,8 @@ public class DBExecute extends Node {
 			if (procedureCall) {
 				callableStatement = new SQLCloverCallableStatement[dbSQL.length];
 				for (int i = 0; i < callableStatement.length; i++){
-					callableStatement[i] = new SQLCloverCallableStatement(connection, dbSQL[i], inRecord, outRecord);
+					callableStatement[i] = new SQLCloverCallableStatement(connection, dbConnection.getConfigBase(), 
+							dbSQL[i], inRecord, outRecord);
 					if (inParams != null) {
 						callableStatement[i].setInParameters(inParams[i]);
 					}

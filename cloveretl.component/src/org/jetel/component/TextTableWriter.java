@@ -21,7 +21,6 @@
 
 package org.jetel.component;
 
-import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
 import org.apache.commons.logging.Log;

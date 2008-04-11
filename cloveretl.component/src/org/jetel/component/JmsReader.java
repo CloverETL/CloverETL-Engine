@@ -29,7 +29,7 @@ import javax.jms.MessageConsumer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.jms.JmsMsg2DataRecord;
-import org.jetel.connection.JmsConnection;
+import org.jetel.connection.jms.JmsConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
@@ -42,6 +42,7 @@ import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
+
 
 /**
  *  <h3>JmsReader Component</h3>
