@@ -29,9 +29,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.jetel.connection.CopySQLData;
-import org.jetel.connection.DBConnection;
-import org.jetel.connection.SQLUtil;
+import org.jetel.connection.jdbc.CopySQLData;
+import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.SQLUtil;
+import org.jetel.connection.jdbc.config.JdbcBaseConfig;
+import org.jetel.connection.jdbc.config.JdbcBaseConfig.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
@@ -89,6 +91,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
 	protected DataRecordMetadata dbMetadata;
 	protected Connection dbConnection;
+	protected JdbcBaseConfig connectionConfig;
 	protected PreparedStatement pStatement;
 	protected RecordKey lookupKey;
 	protected int[] keyFields;
@@ -123,12 +126,13 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@param  dbRecordMetadata  Description of the Parameter
 	 *@param  sqlQuery          Description of the Parameter
 	 */
-  public DBLookupTable(String id, Connection dbConnection, 
+  public DBLookupTable(String id, Connection dbConnection, JdbcBaseConfig connectionConfig,
           DataRecordMetadata dbRecordMetadata, String sqlQuery) {
       super(id);
 		this.dbConnection = dbConnection;
 		this.dbMetadata = dbRecordMetadata;
 		this.sqlQuery = sqlQuery;
+		this.connectionConfig = connectionConfig;
 	}
 
   /**
@@ -139,19 +143,19 @@ public class DBLookupTable extends GraphElement implements LookupTable {
    *@param  sqlQuery          Description of the Parameter
    * @param dbFieldTypes      List containing the types of the final record
    */
-  public DBLookupTable(String id, Connection dbConnection, 
+  public DBLookupTable(String id, Connection dbConnection, JdbcBaseConfig connectionConfig,
           DataRecordMetadata dbRecordMetadata, java.lang.String sqlQuery, java.util.List dbFieldTypes) {
-      this(id, dbConnection,dbRecordMetadata,sqlQuery);
+      this(id, dbConnection,connectionConfig, dbRecordMetadata,sqlQuery);
   }
   
-  public DBLookupTable(String id, Connection dbConnection, 
+  public DBLookupTable(String id, Connection dbConnection, JdbcBaseConfig connectionconfig,
           DataRecordMetadata dbRecordMetadata, String sqlQuery, int numCached) {
       super(id);
       this.dbConnection = dbConnection;
       this.dbMetadata = dbRecordMetadata;
       this.sqlQuery = sqlQuery;
       this.maxCached=numCached;
-      
+      this.connectionConfig = connectionconfig;
 }
   
 	/**
@@ -205,7 +209,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	                // PreparedStatement parameterMetadata probably not implemented - use work-around
 	                // we only guess the correct data types on JDBC side
 	                try{
-	                    keyTransMap = CopySQLData.jetel2sqlTransMap(keyRecord,lookupKey.getKeyFields());
+	                    keyTransMap = CopySQLData.jetel2sqlTransMap(keyRecord,lookupKey.getKeyFields(), connectionConfig);
 	                }catch(JetelException ex1){
 	                    throw new RuntimeException("Can't create keyRecord transmap: "+ex1.getMessage());
 	                }catch(Exception ex1){
@@ -463,6 +467,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 						" does not exist!!!");
 			}
 			tmp.init();
+			connectionConfig = tmp.getConfigBase();
 			try {
 				dbConnection = tmp.getConnection(getId());
 			} catch (RuntimeException e) {
@@ -477,10 +482,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
              
         }
         try {
-            pStatement = dbConnection.prepareStatement(sqlQuery);
-            /*ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY,
-                    ResultSet.CLOSE_CURSORS_AT_COMMIT);*/
-            
+            pStatement = connectionConfig.createPreparedStatement(dbConnection, sqlQuery, OperationType.READ);
+            connectionConfig.optimizeStatement(pStatement, OperationType.READ);
         } catch (SQLException ex) {
             throw new ComponentNotReadyException("Can't create SQL statement: " + ex.getMessage());
         }
@@ -509,7 +512,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         // obtain dbMetadata info if needed
         if (dbMetadata == null) {
             try {
-                dbMetadata = SQLUtil.dbMetadata2jetel(resultSet.getMetaData());
+                dbMetadata = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), connectionConfig);
             } catch (SQLException ex) {
                 throw new RuntimeException(
                         "Can't automatically obtain dbMetadata (use other constructor and provide metadat for output record): "
@@ -523,7 +526,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         // create trans map which will be used for fetching data
         try {
             transMap = CopySQLData.sql2JetelTransMap(
-                    SQLUtil.getFieldTypes(dbMetadata), dbMetadata,
+                    SQLUtil.getFieldTypes(dbMetadata, connectionConfig), dbMetadata,
                     dbDataRecord);
         } catch (Exception ex) {
             throw new RuntimeException(
