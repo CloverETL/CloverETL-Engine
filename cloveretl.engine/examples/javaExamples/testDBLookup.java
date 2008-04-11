@@ -22,7 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.jetel.connection.DBConnection;
+import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.lookup.DBLookupTable;
