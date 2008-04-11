@@ -26,7 +26,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.DBConnection;
+import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
@@ -282,7 +282,7 @@ public class DBJoin extends Node {
     		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
     		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
             lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),((DBConnection) conn).getConnection(getId()),
-            		dbMetadata,query,maxCached);
+            		((DBConnection) conn).getConfigBase(), dbMetadata,query,maxCached);
             lookupTable.checkConfig(status);
 //    		lookupTable.init();
     		try {
@@ -329,7 +329,7 @@ public class DBJoin extends Node {
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
         lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),((DBConnection) conn).getConnection(getId()),
-        		dbMetadata,query,maxCached);
+        		((DBConnection) conn).getConfigBase(), dbMetadata,query,maxCached);
         lookupTable.checkConfig(null);
 		lookupTable.init();
 		try {
