@@ -4,8 +4,8 @@ import java.io.FileNotFoundException;
 
 import junit.framework.TestCase;
 
-import org.jetel.connection.DBConnection;
-import org.jetel.connection.SQLDataParser;
+import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.SQLDataParser;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
