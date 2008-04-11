@@ -9,10 +9,10 @@
 
 	<extension point-id="connection">
 		<parameter id="type" value="JDBC"/>
-		<parameter id="className" value="org.jetel.connection.DBConnection"/>
+		<parameter id="className" value="org.jetel.connection.jdbc.DBConnection"/>
 	</extension>
 	<extension point-id="connection">
 		<parameter id="type" value="JMS"/>
-		<parameter id="className" value="org.jetel.connection.JmsConnection"/>
+		<parameter id="className" value="org.jetel.connection.jms.JmsConnection"/>
 	</extension>
 </plugin>
