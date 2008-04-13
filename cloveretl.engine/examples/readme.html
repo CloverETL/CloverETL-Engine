@@ -3,6 +3,8 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE></TITLE>
+	<META NAME="CREATED" CONTENT="20080414;10125200">
+	<META NAME="CHANGED" CONTENT="20080414;10442000">
 	<STYLE TYPE="text/css">
 	<!--
 		@page { size: 8.5in 11in }
@@ -24,18 +26,19 @@ CloverETL</A>.
 <P>Detailed <A HREF="http://wiki.clovergui.net/www/doku.php?id=examples">examples
 description</A>. 
 </P>
-<P>Clover Examples zip file contains complete Eclipse project, so if
-you use CloverGUI you can <A HREF="#Importing examples to Eclipse |outline">import</A>
-it to your workspace. 
+<P>Clover Examples zip file contains 4 complete Eclipse project, so
+if you use CloverGUI you can <A HREF="#Importing examples to Eclipse |outline">import</A>
+them to your workspace. 
 </P>
 <H2>Prerequisites</H2>
-<P>I assume that you have <A HREF="http://www.cloveretl.org/downloads.php">downloaded</A>
+<P>I assume that you have <A HREF="http://www.cloveretl.org/download/clover-etl">downloaded</A>
 a binary package of <B>CloverETL engine</B> and <B>Clover Examples</B>
-or you built one from sources. Extract both zip files to the same
-directory.<BR>When executing examples, You have to be in directory
-where you unzipped the examples. Let's assume you have extracted the
-archives into <TT>/home</TT>. Then when executing any example, you
-have to be switched in <TT>/home/cloverETL/examples</TT> . 
+or you built one from sources. Extract examples zip file to the
+directory <FONT FACE="Cumberland AMT, monospace">examples</FONT> in
+CloverETL home directory.   Let's assume you have extracted the
+archives into <TT>/home</TT>. When executing any example, you have to
+be switched in requested example project directory eg.:
+<TT>/home/cloverETL/examples/simpleExamples</TT> . 
 </P>
 <H2><A NAME="Common things|outline"></A>Common things</H2>
 <P>The examples presented here have the structure as default
@@ -53,34 +56,34 @@ transformations (source files as well as .class files) there is used
 can be data for lookup tables and </FONT><FONT FACE="Cumberland AMT, monospace">seq
 </FONT><FONT FACE="Thorndale AMT, serif">directory is used for
 sequences.</FONT></P>
-<P>In the main examples directory there is file workspace.prm with
-PROJECT parameter definition. You have to change this parameter to
-proper value before running graphs. This file contains more
+<P>In the main examples directories there are files workspace.prm
+with PROJECT parameter definition. You have to change this parameter
+to proper value before running graphs. This file contains more
 parameters: they defines all needed directory paths, and are defined
 by PROJECT parameter, so they don't need to by modified. 
 </P>
-<P>To run graphs you can use scripts (run.bat or run.sh) included in
-examples package. They assumes that environment variable JAVA_HOME is
-set to java home directory. Or you can use old fashion way: 
+<P>To run graphs you can use scripts (clover.bat or clover) included
+in CloverETL package (<FONT FACE="Cumberland AMT, monospace">bin</FONT>
+directory). They assumes that environment variable JAVA_HOME is set
+to java home directory. Or you can use old fashion way: 
 </P>
-<PRE>  JARSPATH=&quot;../lib/cloveretl.engine.jar:../lib/commons-logging.jar&quot;
-  JARSPATH=&quot;$JARSPATH:../lib/commons-cli-1.0.jar:../lib/jms.jar:../lib/jxl.jar&quot;
-  JARSPATH=&quot;$JARSPATH:../lib/log4j-1.2.12.zip:../lib/javolution.jar:trans&quot;
-  java -cp &quot;$JARSPATH&quot; org.jetel.main.runGraph -plugins ../plugins graph/graphSimpleCopy.grf</PRE><H3>
+<PRE>  JARSPATH=&quot;../../lib/cloveretl.engine.jar:../../lib/commons-logging.jar&quot;
+  JARSPATH=&quot;$JARSPATH:../../lib/commons-cli-1.0.jar:../../lib/jms.jar&quot;
+  JARSPATH=&quot;$JARSPATH:../../lib/log4j-1.2.12.zip:../../lib/javolution.jar:trans&quot;
+  java -cp &quot;$JARSPATH&quot; org.jetel.main.runGraph -plugins ../../plugins graph/graphSimpleCopy.grf</PRE><H3>
 Important notes</H3>
 <P>There is shown above how to run transformations on Linux (Unix)
 machine. If you have Windows installed, just change the <TT>java -cp
-&quot;../lib/cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:../lib/javolution.jar:trans&quot;
+&quot;../../lib/cloveretl.engine.jar:../../lib/commons-logging.jar:../../lib/log4j-1.2.12.zip:../../lib/javolution.jar:trans&quot;
 </TT>into <TT>-cp
-<TT>&quot;../lib/cloveretl.engine.jar;../lib/commons-logging.jar;../lib/log4j-1.2.12.zip;<TT>../lib/javolution.jar;trans</TT>&quot;</TT></TT>
+<TT>&quot;../../lib/cloveretl.engine.jar;../../lib/commons-logging.jar;../../lib/log4j-1.2.12.zip;<TT>../../lib/javolution.jar;trans</TT>&quot;</TT></TT>
 - the Java classpath delimiter on Windows is <TT>;</TT> (semicolon)
 not <TT>:</TT> (colon). 
 </P>
 <P><B>CloverETL requires Java (JVM) version 1.5 ! </B>
 </P>
 <H2><A NAME="Importing examples to Eclipse |outline"></A>Importing
-examples to Eclipse 
-</H2>
+examples to Eclipse type filter text</H2>
 <H4>Step 1</H4>
 <P>Begin the import from the Eclipse File menu item. 
 </P>
