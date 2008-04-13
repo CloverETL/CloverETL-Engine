@@ -4,7 +4,7 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
-import org.jetel.connection.DBConnection;
+import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.SQLDataParser;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
