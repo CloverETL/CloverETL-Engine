@@ -67,6 +67,15 @@ public class JdbcInformixConfig extends JdbcBaseConfig {
 		}
 	}
 
+	public PreparedStatement createPreparedStatement(Connection con, String sql,OperationType operType) throws SQLException{
+		switch (operType) {
+			case READ:
+					return con.prepareStatement(sql,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			default:
+				return con.prepareStatement(sql);
+		}
+	}
+	
 	@Override
 	public PreparedStatement createPreparedStatement(Connection connection, String sqlQuery, String[] columns) throws SQLException {
 		if (columns != null) {

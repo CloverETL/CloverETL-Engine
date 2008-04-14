@@ -31,6 +31,9 @@ import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.connection.jdbc.config.JdbcBaseConfig;
+import org.jetel.connection.jdbc.config.JdbcConfigFactory;
+import org.jetel.connection.jdbc.config.JdbcBaseConfig.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.BadDataFormatException;
@@ -47,14 +50,13 @@ import org.jetel.util.string.StringUtils;
  *
  */
 public class SQLDataParser implements Parser {
-	private final static int DEFAULT_SQL_FETCH_SIZE_ROWS = 20;
-
 	protected IParserExceptionHandler exceptionHandler;
 	protected DataRecordMetadata metadata;
 	protected int recordCounter;
 	protected int fieldCount = 0;
 
 	protected Connection dbConnection;
+	protected JdbcBaseConfig connectionConfig;
 	protected String sqlQuery;
 	protected Statement statement;
 	protected QueryAnalyzer analyzer;
@@ -65,13 +67,14 @@ public class SQLDataParser implements Parser {
 
 	private GraphElement parentNode;
 
-	protected int fetchSize = DEFAULT_SQL_FETCH_SIZE_ROWS;
+	protected int fetchSize = -1;
 	
 	static Log logger = LogFactory.getLog(SQLDataParser.class);
 	
 	/**
 	 * @param sqlQuery
 	 */
+	@Deprecated
 	public SQLDataParser(String dbConnectionName,String sqlQuery) {
 		this(sqlQuery);
 	}
@@ -249,34 +252,25 @@ public class SQLDataParser implements Parser {
             throw new RuntimeException("Need java.sql.Connection object !");
         }
         dbConnection= (Connection) inputDataSource;
-        
-        try{
-            // try to set autocommit to false
-            dbConnection.setAutoCommit(false);
-        }catch (Exception e) {
-            logger.warn(e);
+
+        if (connectionConfig == null) {
+        	try {
+				//TODO
+				connectionConfig = JdbcConfigFactory.createConfig(dbConnection
+						.getMetaData().getDatabaseProductName());
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
         }
+        connectionConfig.optimizeConnection(dbConnection, OperationType.READ);
+        
         try {
-            // connection is created up front
-            //dbConnection.connect();
-            statement = dbConnection.createStatement();
-            /*ResultSet.TYPE_FORWARD_ONLY,
-                    ResultSet.CONCUR_READ_ONLY,ResultSet.CLOSE_CURSORS_AT_COMMIT);*/
+        	statement = connectionConfig.createStatement(dbConnection, OperationType.READ);
         } catch (SQLException e) {
             throw new ComponentNotReadyException(e);
         }
         
-        // !!! POTENTIALLY DANGEROUS - SOME DBs produce fatal error - Abstract method call !!
-        // this needs some detecting of supported features first (may-be which version of JDBC is implemented or so
-        try {
-            // following calls are not always supported (as it seems)
-            // if error occures, we just ignore it
-            statement.setFetchDirection(ResultSet.FETCH_FORWARD); 
-            statement.setFetchSize(fetchSize);
-        
-        } catch (Exception e) {
-            logger.warn(e);
-        }
+        connectionConfig.optimizeStatement(statement, OperationType.READ);
         
         logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Sending query " + 
         		StringUtils.quote(sqlQuery));
@@ -292,14 +286,17 @@ public class SQLDataParser implements Parser {
             logger.debug(e);
             throw new ComponentNotReadyException(e);
         }
-        // try to set up some cursor parameters (fetchSize, reading type)
-        try{
-            resultSet.setFetchDirection(ResultSet.TYPE_FORWARD_ONLY);
-            resultSet.setFetchSize(fetchSize);
-        }catch (SQLException e){
-            // do nothing - just attempt
-            logger.debug("unable to set FetchDirection & FetchSize for DB connection ["+dbConnection.toString()+"]");
+
+        connectionConfig.optimizeResultSet(resultSet, OperationType.READ);
+        if (fetchSize > -1) {
+        	try {
+				resultSet.setFetchSize(fetchSize);
+			} catch (SQLException e) {
+				logger.warn("Can't set fetch size to " + fetchSize);
+				logger.info("Using default value of fetch size");
+			}
         }
+        
 		this.recordCounter = 1;
 	}
 
@@ -373,6 +370,14 @@ public class SQLDataParser implements Parser {
 		this.parentNode = parentNode;
 	}
 
+	public JdbcBaseConfig getConnectionConfig() {
+		return connectionConfig;
+	}
+
+	public void setConnectionConfig(JdbcBaseConfig connectionConfig) {
+		this.connectionConfig = connectionConfig;
+	}
+		
 	public Object getPosition() {
 		// TODO Auto-generated method stub
 		return null;
@@ -382,5 +387,4 @@ public class SQLDataParser implements Parser {
 		// TODO Auto-generated method stub
 		
 	}
-	
 }

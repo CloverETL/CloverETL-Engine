@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 
+import org.jetel.connection.jdbc.config.JdbcBaseConfig.OperationType;
 import org.jetel.metadata.DataFieldMetadata;
 
 
@@ -69,6 +70,15 @@ public class JdbcMssqlConfig extends JdbcBaseConfig {
 		}
 	}
 
+	public PreparedStatement createPreparedStatement(Connection con, String sql,OperationType operType) throws SQLException{
+		switch (operType) {
+			case READ:
+					return con.prepareStatement(sql,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			default:
+				return con.prepareStatement(sql);
+		}
+	}
+	
 	@Override
 	public PreparedStatement createPreparedStatement(Connection connection,
 			String sqlQuery, String[] columns) throws SQLException {
@@ -91,11 +101,11 @@ public class JdbcMssqlConfig extends JdbcBaseConfig {
 			    return DataFieldMetadata.LONG_FIELD;
 			//-------------------
 			case Types.DECIMAL:
-			case Types.NUMERIC:
 				return DataFieldMetadata.DECIMAL_FIELD;
 			case Types.DOUBLE:
 			case Types.FLOAT:
 			case Types.REAL:
+			case Types.NUMERIC:
 				return DataFieldMetadata.NUMERIC_FIELD;
 			//------------------
 			case Types.CHAR:

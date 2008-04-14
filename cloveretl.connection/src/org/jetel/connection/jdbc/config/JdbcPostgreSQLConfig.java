@@ -38,8 +38,6 @@ import org.jetel.metadata.DataFieldMetadata;
  */
 public class JdbcPostgreSQLConfig extends JdbcBaseConfig {
 	
-	public static int DEFAULT_FETCH_SIZE=50;
-
 	private static JdbcPostgreSQLConfig instance=new JdbcPostgreSQLConfig();
 	
 	protected JdbcPostgreSQLConfig(){
@@ -76,18 +74,6 @@ public class JdbcPostgreSQLConfig extends JdbcBaseConfig {
 		return super.createPreparedStatement(connection, sqlQuery, columns);
 	}
 
-	public void optimizeResultSet(ResultSet res,OperationType operType){
-		switch(operType){
-		case READ:
-			try{
-				res.setFetchDirection(ResultSet.FETCH_FORWARD);
-				res.setFetchSize(DEFAULT_FETCH_SIZE);
-			}catch(SQLException ex){
-				//TODO: for now, do nothing
-			}
-		}
-	}
-	
 	public char sqlType2jetel(int sqlType) {
 		switch (sqlType) {
 			case Types.INTEGER:
@@ -99,11 +85,11 @@ public class JdbcPostgreSQLConfig extends JdbcBaseConfig {
 			    return DataFieldMetadata.LONG_FIELD;
 			//-------------------
 			case Types.DECIMAL:
-			case Types.NUMERIC:
 				return DataFieldMetadata.DECIMAL_FIELD;
 			case Types.DOUBLE:
 			case Types.FLOAT:
 			case Types.REAL:
+			case Types.NUMERIC:
 				return DataFieldMetadata.NUMERIC_FIELD;
 			//------------------
 			case Types.CHAR:

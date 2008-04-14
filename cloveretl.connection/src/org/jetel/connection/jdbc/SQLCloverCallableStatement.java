@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.jetel.connection.jdbc.config.JdbcBaseConfig;
+import org.jetel.connection.jdbc.config.JdbcBaseConfig.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -89,7 +90,9 @@ public class SQLCloverCallableStatement {
 	}
 
 	public boolean prepareCall() throws SQLException, ComponentNotReadyException{
-		statement = connection.prepareCall(query);
+		connectionConfig.optimizeConnection(connection, OperationType.CALL);
+		statement = connectionConfig.createCallableStatement(connection, query, OperationType.CALL);
+		connectionConfig.optimizeStatement(statement, OperationType.CALL);
 		int fieldNumber;
 		int parameterNumber;
 		if (inRecord != null && inParameters != null) {
@@ -138,6 +141,9 @@ public class SQLCloverCallableStatement {
 				//TODO dodac lapanie bledow, jak w sql2jete
 				outTransMap[i].setJetel(statement);
 			}
+		}
+		if (outRecord == null) {
+			connectionConfig.optimizeResultSet(resultSet, OperationType.READ);
 		}
 	}
 	
