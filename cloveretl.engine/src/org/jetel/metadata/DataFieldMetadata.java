@@ -663,6 +663,12 @@ public class DataFieldMetadata implements Serializable {
 			}
 		}
 	}
+	
+	public void setFieldProperty(String key, String value){
+		if (fieldProperties == null) setFieldProperties(new Properties());
+		
+		fieldProperties.setProperty(key, value);
+	}
 
 	public boolean isDelimited() {
 		return (size == 0);
