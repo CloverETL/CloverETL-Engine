@@ -149,6 +149,22 @@ public class SQLUtil {
 			fieldMetadata.setType(config.sqlType2jetel(type));
 			//for Date Data Field set proper format
 			switch (type) {
+			case Types.DECIMAL:
+				int scale;
+				int length;
+					try {
+						scale = dbMetadata.getScale(i);
+					} catch (SQLException e) {
+						scale = Defaults.DataFieldMetadata.DECIMAL_SCALE;
+					}
+					fieldMetadata.setFieldProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(scale));
+					try {
+						length = scale + dbMetadata.getPrecision(i);
+					} catch (SQLException e) {
+						length = scale + Defaults.DataFieldMetadata.DECIMAL_LENGTH;
+					}
+					fieldMetadata.setFieldProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(length));
+					break;
 			case Types.DATE:
 				fieldMetadata.setFormatStr(Defaults.DEFAULT_DATE_FORMAT);
 				break;

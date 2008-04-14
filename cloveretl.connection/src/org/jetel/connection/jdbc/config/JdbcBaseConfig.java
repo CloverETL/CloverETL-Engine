@@ -52,6 +52,8 @@ public class JdbcBaseConfig {
 		NONE
 	}
 
+	public final static int DEFAULT_FETCH_SIZE = 50;
+
 	protected static JdbcBaseConfig instance=new JdbcBaseConfig();
 	
 	protected static Log logger = LogFactory.getLog(JdbcBaseConfig.class);
@@ -138,7 +140,7 @@ public class JdbcBaseConfig {
 		case READ:
 			try{
 				res.setFetchDirection(ResultSet.FETCH_FORWARD);
-				//res.setFetchSize(-1); // some optimization/patch for MySQL
+				res.setFetchSize(DEFAULT_FETCH_SIZE);
 			}catch(SQLException ex){
 				//TODO: for now, do nothing
 			}
@@ -148,7 +150,13 @@ public class JdbcBaseConfig {
 	public Statement createStatement(Connection con, OperationType operType) throws SQLException{
 		switch (operType) {
 			case READ:
+				try {
 					return con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
+				} catch (SQLException e) {
+					logger.warn(e.getMessage());
+					logger.info("Result set hold ability ignored");
+					return con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				}
 			default:
 				return con.createStatement();
 		}
@@ -157,7 +165,13 @@ public class JdbcBaseConfig {
 	public PreparedStatement createPreparedStatement(Connection con, String sql,OperationType operType) throws SQLException{
 		switch (operType) {
 			case READ:
+				try {
 					return con.prepareStatement(sql,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
+				} catch (SQLException e) {
+					logger.warn(e.getMessage());
+					logger.info("Result set hold ability ignored");
+					return con.prepareStatement(sql,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				}
 			default:
 				return con.prepareStatement(sql);
 		}
@@ -220,11 +234,11 @@ public class JdbcBaseConfig {
 			    return DataFieldMetadata.LONG_FIELD;
 			//-------------------
 			case Types.DECIMAL:
-			case Types.NUMERIC:
 				return DataFieldMetadata.DECIMAL_FIELD;
 			case Types.DOUBLE:
 			case Types.FLOAT:
 			case Types.REAL:
+			case Types.NUMERIC:
 				return DataFieldMetadata.NUMERIC_FIELD;
 			//------------------
 			case Types.CHAR:
