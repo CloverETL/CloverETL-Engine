@@ -676,8 +676,10 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         			query.setLength(whereIndex);
         		}
         	}
-        	Statement statement = dbConnection.createStatement(); 
+        	Statement statement = connectionConfig.createStatement(dbConnection, OperationType.READ);
+			connectionConfig.optimizeStatement(statement, OperationType.READ);
 			resultSet = statement.executeQuery(query.toString());
+			connectionConfig.optimizeResultSet(resultSet, OperationType.READ);
 			ArrayList<DataRecord> records = new ArrayList<DataRecord>();
 			while (fetch()){
 				records.add(dbDataRecord.duplicate());
