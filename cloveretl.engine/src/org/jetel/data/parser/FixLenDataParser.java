@@ -75,6 +75,7 @@ public abstract class FixLenDataParser implements Parser {
 	protected int recordLength;
 	protected int fieldIdx;
 	protected int recordIdx;
+	protected int bytesProcessed;
 
 	private boolean releaseInputSource = true;
 	
@@ -128,6 +129,24 @@ public abstract class FixLenDataParser implements Parser {
 		byteBuffer.flip();
 		decoder.reset();
 		eof = true;
+		bytesProcessed = 0;
+	}
+
+	public Object getPosition() {
+		return bytesProcessed;
+	}
+
+	public void movePosition(Object position) {
+		int pos = 0;
+		if (position instanceof Integer) {
+			pos = ((Integer) position).intValue();
+		} else if (position != null) {
+			pos = Integer.parseInt(position.toString());
+		}
+		if (pos > 0) {
+			discardBytes(pos);
+			bytesProcessed = pos;
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -145,6 +164,7 @@ public abstract class FixLenDataParser implements Parser {
 		byteBuffer.clear();
 		byteBuffer.flip();
 		decoder.reset();
+		bytesProcessed = 0;
 
 		if (inputDataSource == null) {
 			eof = true;
@@ -158,6 +178,13 @@ public abstract class FixLenDataParser implements Parser {
 		}
 	}
 
+	/**
+	 * Discard bytes for incremental reading.
+	 * 
+	 * @param bytes
+	 */
+	protected abstract void discardBytes(int bytes);
+	
 	/**
 	 * Release data source.  
 	 */

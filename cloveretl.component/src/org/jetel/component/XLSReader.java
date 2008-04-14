@@ -21,6 +21,7 @@
 
 package org.jetel.component;
 
+import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.Iterator;
 
@@ -40,6 +41,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.WatchDog;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.NumberIterator;
 import org.jetel.util.SynchronizeUtils;
@@ -141,7 +143,10 @@ public class XLSReader extends Node {
 	public final static String XML_METADATAROW_ATTRIBUTE = "metadataRow";
 	public final static String XML_FIELDMAP_ATTRIBUTE = "fieldMap";
 	public final static String XML_CHARSET_ATTRIBUTE = "charset";
-	
+	private static final String XML_INCREMENTAL_FILE_ATTRIBUTE = "incrementalFile";
+	private static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
+
+
 	private final static String ASSIGMENT_STRING = "=";
 	private final static int OUTPUT_PORT = 0;
 	private final static int CLOVER_FIELDS = 0;
@@ -152,7 +157,9 @@ public class XLSReader extends Node {
 	private int finalRow = -1;
 	private int numRecords = -1;
 	private int maxErrorCount = -1;
-    
+    private String incrementalFile;
+    private String incrementalKey;
+
 	private XLSParser parser;
 	private MultiFileReader reader;
 	private PolicyType policyType = PolicyType.STRICT;
@@ -219,9 +226,24 @@ public class XLSReader extends Node {
 	public void free() {
         if(!isInitialized()) return;
 		super.free();
-		
+    	storeValues();
 		reader.close();
 	}
+	
+    /**
+     * Stores all values as incremental reading.
+     */
+    private void storeValues() {
+    	WatchDog watchDog = getGraph().getWatchDog();
+    	if (watchDog != null && watchDog.getStatus() == Result.FINISHED_OK) {
+    		try {
+				reader.storeIncrementalReading();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+    	}
+    }
+    
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -315,6 +337,12 @@ public class XLSReader extends Node {
 			}
 			if (xattribs.exists(XML_METADATAROW_ATTRIBUTE)){
 				aXLSReader.setMetadataRow(xattribs.getInteger(XML_METADATAROW_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
+				aXLSReader.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
+				aXLSReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
 			}
 		} catch (Exception ex) {
 		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -465,6 +493,8 @@ public class XLSReader extends Node {
         reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
         reader.setLogger(logger);
         reader.setNumRecords(numRecords);
+        reader.setIncrementalFile(incrementalFile);
+        reader.setIncrementalKey(incrementalKey);
         reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 	
@@ -495,4 +525,11 @@ public class XLSReader extends Node {
 		this.numRecords = numRecords;
 	}
 
+    public void setIncrementalFile(String incrementalFile) {
+    	this.incrementalFile = incrementalFile;
+    }
+
+    public void setIncrementalKey(String incrementalKey) {
+    	this.incrementalKey = incrementalKey;
+    }
 }

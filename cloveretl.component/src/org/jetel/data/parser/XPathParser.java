@@ -368,5 +368,15 @@ public class XPathParser implements Parser {
 	 */
 	public void reset() {
 	}
+
+	public Object getPosition() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void movePosition(Object position) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

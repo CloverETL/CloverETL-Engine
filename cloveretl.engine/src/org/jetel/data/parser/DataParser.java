@@ -105,6 +105,8 @@ public class DataParser implements Parser {
 	
 	private QuotingDecoder qDecoder = new QuotingDecoder();
 	
+	private int bytesProcessed;
+	
 	public DataParser() {
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
 		reader = null;
@@ -235,6 +237,7 @@ public class DataParser implements Parser {
 		tempReadBuffer.setLength(0);
 		
 		recordCounter = 0;// reset record counter
+		bytesProcessed = 0;
 
 		if (inputDataSource == null) {
 			reader = null;
@@ -247,7 +250,26 @@ public class DataParser implements Parser {
 		}
 	}
 
-
+	/**
+	 * Discard bytes for incremental reading.
+	 * 
+	 * @param bytes
+	 */
+	private void discardBytes(int bytes) {
+		while (bytes > 0) {
+			byteBuffer.clear();
+			if (bytes < Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) byteBuffer.limit(bytes);
+			try {
+				reader.read(byteBuffer);
+			} catch (IOException e) {
+				break;
+			}
+			bytes =- Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
+		}
+		byteBuffer.clear();
+		byteBuffer.flip();
+	}
+	
 	/**
 	 * Release data source
 	 *
@@ -468,6 +490,8 @@ public class DataParser implements Parser {
 			// if no more data, return -1
 			if (size == -1) {
 				return -1;
+			} else {
+            	bytesProcessed += size;
 			}
 			try {
 				byteBuffer.flip();
@@ -790,6 +814,24 @@ public class DataParser implements Parser {
 			releaseDataSource();
 		decoder.reset();// reset CharsetDecoder
 		recordCounter = 0;// reset record counter
+		bytesProcessed = 0;
 	}
-	
+
+	public Object getPosition() {
+		return bytesProcessed;
+	}
+
+	public void movePosition(Object position) {
+		int pos = 0;
+		if (position instanceof Integer) {
+			pos = ((Integer) position).intValue();
+		} else if (position != null) {
+			pos = Integer.parseInt(position.toString());
+		}
+		if (pos > 0) {
+			discardBytes(pos);
+			bytesProcessed = pos;
+		}
+	}
+
 }

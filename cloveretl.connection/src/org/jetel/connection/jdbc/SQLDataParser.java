@@ -372,5 +372,15 @@ public class SQLDataParser implements Parser {
 	public void setParentNode(GraphElement parentNode) {
 		this.parentNode = parentNode;
 	}
+
+	public Object getPosition() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void movePosition(Object position) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

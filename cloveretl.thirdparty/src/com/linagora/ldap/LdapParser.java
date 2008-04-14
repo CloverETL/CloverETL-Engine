@@ -403,5 +403,15 @@ public class LdapParser implements Parser {
 		resultDn = dnList.iterator();
 		recordCounter = 0;
 	}
+
+	public Object getPosition() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void movePosition(Object position) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

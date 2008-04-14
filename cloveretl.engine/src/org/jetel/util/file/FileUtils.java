@@ -73,6 +73,9 @@ public class FileUtils {
 	// sftp protocol handler
 	public static final SFTPStreamHandler sFtpStreamHandler = new SFTPStreamHandler();
 
+	// file protocol name
+	private static final String FILE_PROTOCOL = "file";
+	
     public static URL getFileURL(String fileURL) throws MalformedURLException {
     	return getFileURL((URL) null, fileURL);
     }
@@ -494,6 +497,56 @@ public class FileUtils {
 			return directoryPath + "/";
 		}
 	}
+	
+	/**
+	 * Parses address and returns true if the address contains a server.
+	 * 
+	 * @param input
+	 * @return
+	 * @throws IOException
+	 */
+	public static boolean isServerURL(URL url) throws IOException {
+		return url != null && !url.getProtocol().equals(FILE_PROTOCOL);
+	}
+	
+	/**
+	 * Gets the most inner url address.
+	 * 
+	 * @param input
+	 * @return
+	 * @throws IOException
+	 */
+	public static URL getInnerAddress(String input) throws IOException {
+        URL url = null;
+        
+		// get inner source
+		Matcher matcher = getInnerInput(input);
+		String innerSource;
+		if (matcher != null && (innerSource = matcher.group(2)) != null) {
+			url = getInnerAddress(innerSource);
+			input = matcher.group(1) + matcher.group(3);
+		}
+		
+		// std input (console)
+		if (input.equals(STD_SOURCE)) {
+			return null;
+		}
+		
+        //resolve url format for zip files
+        if(input.startsWith("zip:")) {
+            if(!input.contains("#")) { //url is given without anchor - later is returned channel from first zip entry 
+            	input = input.substring(input.indexOf(':') + 1);
+            } else {
+                input = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
+            }
+        }
+        else if (input.startsWith("gzip:")) {
+        	input = input.substring(input.indexOf(':') + 1);
+        }
+        
+        return url == null ? FileUtils.getFileURL(input) : url;
+	}
+	
 }
 
 /*

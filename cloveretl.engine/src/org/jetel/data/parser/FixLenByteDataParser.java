@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.JetelException;
 
@@ -37,6 +38,8 @@ public class FixLenByteDataParser extends FixLenDataParser {
 	private int dataPos;
 	private int dataLim;
 	
+	private int remaining; 
+		
 	/**
 	 * Create instance for specified charset.
 	 * @param charset
@@ -61,6 +64,26 @@ public class FixLenByteDataParser extends FixLenDataParser {
 		dataLim = 0;
 	}
 
+	/**
+	 * Discard bytes for incremental reading.
+	 * 
+	 * @param bytes
+	 */
+	protected void discardBytes(int bytes) {
+		while (bytes > 0) {
+			byteBuffer.clear();
+			if (bytes < Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) byteBuffer.limit(bytes);
+			try {
+				inChannel.read(byteBuffer);
+			} catch (IOException e) {
+				break;
+			}
+			bytes =- Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
+		}
+		byteBuffer.clear();
+		byteBuffer.flip();
+	}
+	
 	/**
 	 * Obtains raw data and tries to fill record fields with them.
 	 * @param record Output record, cannot be null.
@@ -150,9 +173,12 @@ public class FixLenByteDataParser extends FixLenDataParser {
 		}
 		if (byteBuffer.remaining() < dataLen) {	// not enough data available
 			eof = true;
-			dataPos += byteBuffer.remaining();
+			remaining = byteBuffer.remaining();
+			dataPos += remaining;
+        	bytesProcessed += remaining;
 		} else {
 			dataPos += dataLen;
+        	bytesProcessed += dataLen;
 		}
 		// set scope for requested piece of data
 		byteBuffer.limit(dataPos);

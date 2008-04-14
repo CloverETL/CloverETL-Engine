@@ -612,5 +612,15 @@ public class DataRecordGenerator implements Parser{
 	public void reset() {
 		counter = 0;
 	}
+
+	public Object getPosition() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void movePosition(Object position) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

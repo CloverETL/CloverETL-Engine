@@ -313,4 +313,8 @@ public class MultiLevelParser extends FixLenDataParser {
 		super.reset();
 	}
 
+	@Override
+	protected void discardBytes(int bytes) {
+		// TODO Auto-generated method stub
+	}
 }

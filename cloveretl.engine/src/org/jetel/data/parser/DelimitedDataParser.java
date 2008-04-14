@@ -80,7 +80,8 @@ public class DelimitedDataParser implements Parser {
 	private boolean[] isAutoFilling;
 	private boolean isEof;
 	private Boolean trim = null;
-
+	private int bytesProcessed;
+	
 	// Attributes
 	// maximum length of delimiter
 	private final static int DELIMITER_CANDIDATE_BUFFER_LENGTH = 32;
@@ -227,6 +228,7 @@ public class DelimitedDataParser implements Parser {
 		charBuffer.clear();
 		charBuffer.flip();
 		recordCounter = 1;// reset record counter
+		bytesProcessed = 0;
 
 		if (inputDataSource == null) {
 			isEof = true;
@@ -240,6 +242,26 @@ public class DelimitedDataParser implements Parser {
 		}
 	}
 
+	/**
+	 * Discard bytes for incremental reading.
+	 * 
+	 * @param bytes
+	 */
+	private void discardBytes(int bytes) {
+		while (bytes > 0) {
+			dataBuffer.clear();
+			if (bytes < Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) dataBuffer.limit(bytes);
+			try {
+				reader.read(dataBuffer);
+			} catch (IOException e) {
+				break;
+			}
+			bytes =- Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
+		}
+		dataBuffer.clear();
+        dataBuffer.flip();
+	}
+	
 	/**
 	 * Release data source
 	 *
@@ -313,9 +335,12 @@ public class DelimitedDataParser implements Parser {
         else
             dataBuffer.clear();
 
-        if (reader.read(dataBuffer) == -1) {
+        int i;
+        if ((i = reader.read(dataBuffer)) == -1) {
             isEof = true;
-        }
+        } else {
+        	bytesProcessed += i;
+        }        
         dataBuffer.flip();
 
         result = decoder.decode(dataBuffer, charBuffer, isEof);
@@ -323,8 +348,10 @@ public class DelimitedDataParser implements Parser {
             // try to load additional data
             dataBuffer.compact();
 
-            if (reader.read(dataBuffer) == -1) {
+            if ((i = reader.read(dataBuffer)) == -1) {
                 isEof = true;
+            } else {
+            	bytesProcessed += i;
             }
             dataBuffer.flip();
             decoder.decode(dataBuffer, charBuffer, isEof);
@@ -620,6 +647,24 @@ public class DelimitedDataParser implements Parser {
 		charBuffer.clear();
 		charBuffer.flip();
 		recordCounter = 0;// reset record counter
+		bytesProcessed = 0;
+	}
+
+	public Object getPosition() {
+		return bytesProcessed;
+	}
+
+	public void movePosition(Object position) {
+		int pos = 0;
+		if (position instanceof Integer) {
+			pos = ((Integer) position).intValue();
+		} else if (position != null) {
+			pos = Integer.parseInt(position.toString());
+		}
+		if (pos > 0) {
+			discardBytes(pos);
+			bytesProcessed = pos;
+		}
 	}
 	
 }	

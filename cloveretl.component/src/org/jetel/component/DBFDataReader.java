@@ -20,6 +20,8 @@
 
 package org.jetel.component;
 
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -34,6 +36,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.WatchDog;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -106,6 +109,9 @@ public class DBFDataReader extends Node {
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
     private static final String XML_RECORD_SKIP_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
+	private static final String XML_INCREMENTAL_FILE_ATTRIBUTE = "incrementalFile";
+	private static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
+
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DBF_DATA_READER";
 
@@ -117,7 +123,9 @@ public class DBFDataReader extends Node {
 	private String fileURL;
     private int skipRows=0; // do not skip rows by default
     private int numRecords = -1;
-	
+    private String incrementalFile;
+    private String incrementalKey;
+
 	private DBFDataParser parser;
 
 
@@ -195,9 +203,24 @@ public class DBFDataReader extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
+    	storeValues();
 		reader.close();
 	}
 
+    /**
+     * Stores all values as incremental reading.
+     */
+    private void storeValues() {
+    	WatchDog watchDog = getGraph().getWatchDog();
+    	if (watchDog != null && watchDog.getStatus() == Result.FINISHED_OK) {
+    		try {
+				reader.storeIncrementalReading();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+    	}
+    }
+    
 	/**
 	 *  Description of the Method
 	 *
@@ -213,9 +236,10 @@ public class DBFDataReader extends Node {
         reader.setLogger(logger);
         reader.setSkip(skipRows);
         reader.setNumRecords(numRecords);
-        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+        reader.setIncrementalFile(incrementalFile);
+        reader.setIncrementalKey(incrementalKey);
+		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
-
 
 	/**
 	 *  Description of the Method
@@ -274,7 +298,12 @@ public class DBFDataReader extends Node {
             if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
             	dbfDataReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
             }
-			
+			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
+				dbfDataReader.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
+				dbfDataReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+			}
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
@@ -352,6 +381,13 @@ public class DBFDataReader extends Node {
         parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 	}
 
-    
+    public void setIncrementalFile(String incrementalFile) {
+    	this.incrementalFile = incrementalFile;
+    }
+
+    public void setIncrementalKey(String incrementalKey) {
+    	this.incrementalKey = incrementalKey;
+    }
+
 }
 

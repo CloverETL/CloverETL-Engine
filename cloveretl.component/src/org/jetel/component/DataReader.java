@@ -19,6 +19,7 @@
 */
 package org.jetel.component;
 
+import java.io.IOException;
 import java.security.InvalidParameterException;
 
 import org.apache.commons.logging.Log;
@@ -37,6 +38,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.WatchDog;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileReader;
@@ -115,7 +117,9 @@ public class DataReader extends Node {
 	private final static String XML_FILE_ATTRIBUTE = "fileURL";
 	private final static String XML_CHARSET_ATTRIBUTE = "charset";
 	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
-	
+	private static final String XML_INCREMENTAL_FILE_ATTRIBUTE = "incrementalFile";
+	private static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
+
 	private final static int OUTPUT_PORT = 0;
 	private final static int LOG_PORT = 1;
 	private String fileURL;
@@ -123,7 +127,9 @@ public class DataReader extends Node {
 	private int skipRows = -1;
 	private int numRecords = -1;
 	private int maxErrorCount = -1;
-    
+    private String incrementalFile;
+    private String incrementalKey;
+
 	private DataParser parser;
     private MultiFileReader reader;
     private PolicyType policyType = PolicyType.STRICT;
@@ -241,6 +247,21 @@ public class DataReader extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+		initCommon();
+        try {
+            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+        } catch(ComponentNotReadyException e) {
+            e.setAttributeName(XML_FILE_ATTRIBUTE);
+            throw e;
+        }
+	}
+
+	private void checkConfig() throws ComponentNotReadyException {
+		initCommon();
+		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
+	}
+
+	private void initCommon() throws ComponentNotReadyException {
         if(isInitialized()) return;
         super.init();
         
@@ -250,12 +271,8 @@ public class DataReader extends Node {
         reader.setFileSkip(skipFirstLine ? 1 : 0);
         reader.setSkip(skipRows);
         reader.setNumRecords(numRecords);
-        try {
-            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
-        } catch(ComponentNotReadyException e) {
-            e.setAttributeName(XML_FILE_ATTRIBUTE);
-            throw e;
-        }
+        reader.setIncrementalFile(incrementalFile);
+        reader.setIncrementalKey(incrementalKey);
 	}
 
 	@Override
@@ -347,6 +364,12 @@ public class DataReader extends Node {
 			if (xattribs.exists(XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE)){
 				aDataReader.parser.setTreatMultipleDelimitersAsOne(xattribs.getBoolean(XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
+				aDataReader.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
+				aDataReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+			}
 		} catch (Exception ex) {
 		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -377,7 +400,7 @@ public class DataReader extends Node {
         }
 
         try {
-            init();
+            checkConfig();
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
@@ -431,6 +454,29 @@ public class DataReader extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
+    	storeValues();
 		reader.close();
 	}
+	
+    /**
+     * Stores all values as incremental reading.
+     */
+    private void storeValues() {
+    	WatchDog watchDog = getGraph().getWatchDog();
+    	if (watchDog != null && watchDog.getStatus() == Result.FINISHED_OK) {
+    		try {
+				reader.storeIncrementalReading();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+    	}
+    }
+    
+    public void setIncrementalFile(String incrementalFile) {
+    	this.incrementalFile = incrementalFile;
+    }
+
+    public void setIncrementalKey(String incrementalKey) {
+    	this.incrementalKey = incrementalKey;
+    }
 }

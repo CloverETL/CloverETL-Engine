@@ -231,6 +231,8 @@ public class XMLExtract extends Node {
     private int skipRows=0; // do not skip rows by default
     private int numRecords = -1;
 
+    private WcardPattern pat;
+    
     /**
      * SAX Handler that will dispatch the elements to the different ports.
      */
@@ -934,20 +936,33 @@ public class XMLExtract extends Node {
         }
         
         if (inputFile != null) {
-            WcardPattern pat = new WcardPattern();
+            pat = new WcardPattern();
             pat.addPattern(inputFile, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
             this.filenameItor = pat.filenames().iterator();
-
-            try {
-                if(!nextSource()) {
-                    throw new ComponentNotReadyException("FileURL attribute (" + inputFile + ") doesn't contain valid file url.");
-                }
-            } catch (JetelException e) {
-                throw new ComponentNotReadyException("FileURL attribute (" + inputFile + ") doesn't contain valid file url.");
-            }
+            prepareNextSource();
         }
     }
     
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		
+        if (pat != null) {
+            this.filenameItor = pat.filenames().iterator();
+            prepareNextSource();
+        }
+	}
+	
+	private void prepareNextSource() throws ComponentNotReadyException {
+        try {
+            if(!nextSource()) {
+                throw new ComponentNotReadyException("FileURL attribute (" + inputFile + ") doesn't contain valid file url.");
+            }
+        } catch (JetelException e) {
+            throw new ComponentNotReadyException("FileURL attribute (" + inputFile + ") doesn't contain valid file url.");
+        }
+	}
+
 	/**
      * Switch to the next source file.
 	 * @return

@@ -27,6 +27,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -69,6 +70,7 @@ public class JExcelXLSDataParser extends XLSParser {
 	private String charset = null;
 	private short sheetCounter;
 	private boolean releaseInputSource = true;
+	private Incremental incremental;
 	
 	/**
 	 * Default constructor
@@ -343,6 +345,7 @@ public class JExcelXLSDataParser extends XLSParser {
        }catch(Exception ex){
             throw new ComponentNotReadyException(ex);
         }
+       sheet = null;
         currentRow = firstRow;
          sheetCounter = -1;
          if (sheetNumber != null){
@@ -364,11 +367,29 @@ public class JExcelXLSDataParser extends XLSParser {
 			wb.close();
 		}
         currentRow = firstRow;
+        sheet = null;
         recordCounter = 1;
         sheetCounter = -1;
         if (sheetNumber != null){
         	sheetNumberIterator.reset();
         }
+	}
+
+	public Object getPosition() {
+		return incremental.getPosition();
+	}
+
+	public void movePosition(Object oPosition) {
+		incremental = new Incremental(oPosition.toString());
+		discardBytes();
+	}
+	
+	public void discardBytes() {
+		if (incremental == null) return;
+		Integer position = incremental.getRow(sheet.getName());
+		if (position != null && position.intValue() > 0) {
+			currentRow = position.intValue();
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -376,6 +397,10 @@ public class JExcelXLSDataParser extends XLSParser {
 	 */
 	@Override
 	public boolean getNextSheet() {
+		if (sheet != null) {
+			if (incremental == null) incremental = new Incremental();
+			incremental.setRow(sheet.getName(), currentRow);
+		}
     	if (sheetNumberIterator != null){//get next sheet conforming sheetNumber attribute
     		if (!sheetNumberIterator.hasNext()){
     			return false;
@@ -406,6 +431,8 @@ public class JExcelXLSDataParser extends XLSParser {
 		}else{
 			lastRow = lastRowAttribute;
 		}
+		
+		discardBytes();
 		return true;
 	}
 	
@@ -440,6 +467,66 @@ public class JExcelXLSDataParser extends XLSParser {
 	public String getSheetName(int index) {
 		if (wb == null) return null;
 		return wb.getSheet(index).getName();
+	}
+
+	/**
+	 * For incremental reading.
+	 */
+	private class Incremental {
+		private Map<String, Integer> sheetRow;
+
+		public Incremental() {
+			this(null);
+		}
+
+		public Incremental(String position) {
+			sheetRow = new HashMap<String, Integer>();
+			parsePosition(position);
+		}
+		
+		private void parsePosition(String position) {
+			if (position == null) return;
+			String[] all = position.split("#");
+			if (all.length != 2) return;
+			String[] tabs = all[0].split(",");
+			String[] rows = all[1].split(",");
+			if (tabs.length != rows.length) return;
+			
+			try {
+				for (int i=0; i<tabs.length; i++) {
+					sheetRow.put(tabs[i], Integer.parseInt(rows[i]));
+				}
+			} catch (NumberFormatException e) {
+				sheetRow.clear();
+				return;
+			}
+		}
+		
+		public Integer getRow(String sheetName) {
+			return sheetRow.get(sheetName);
+		}
+		
+		public void setRow(String sheetName, int row) {
+			sheetRow.put(sheetName, row);
+		}
+		
+		public void clear() {
+			sheetRow.clear();
+		}
+		
+		public String getPosition() {
+			StringBuilder sbKey = new StringBuilder();
+			StringBuilder sbValue = new StringBuilder();
+			if (sheetRow.size() <= 0) return "";
+			for (String key: sheetRow.keySet()) {
+				sbKey.append(key).append(",");
+				sbValue.append(sheetRow.get(key)).append(",");
+			}
+			sbKey.deleteCharAt(sbKey.length()-1);
+			sbValue.deleteCharAt(sbValue.length()-1);
+			sbKey.append("#");
+			return sbKey.append(sbValue.toString()).toString();
+		}
 	}
 	
 }
