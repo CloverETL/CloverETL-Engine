@@ -30,6 +30,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.aggregate.AggregateMappingParser;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverCallableStatement;
+import org.jetel.connection.jdbc.config.JdbcBaseConfig;
+import org.jetel.connection.jdbc.config.JdbcBaseConfig.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
@@ -274,11 +276,12 @@ public class DBExecute extends Node {
 			outRecord.init();
 		}
 		Connection connection = dbConnection.getConnection(getId());
+		JdbcBaseConfig config = dbConnection.getConfigBase();
 		try {
 			if (procedureCall) {
 				callableStatement = new SQLCloverCallableStatement[dbSQL.length];
 				for (int i = 0; i < callableStatement.length; i++){
-					callableStatement[i] = new SQLCloverCallableStatement(connection, dbConnection.getConfigBase(), 
+					callableStatement[i] = new SQLCloverCallableStatement(connection, config, 
 							dbSQL[i], inRecord, outRecord);
 					if (inParams != null) {
 						callableStatement[i].setInParameters(inParams[i]);
@@ -290,9 +293,11 @@ public class DBExecute extends Node {
 					callableStatement[i].prepareCall();
 				}
 			}else{
+				config.optimizeConnection(connection, OperationType.WRITE);
 				sqlStatement = new PreparedStatement[dbSQL.length];
 				for (int i = 0; i < sqlStatement.length; i++){
-					sqlStatement[i] = connection.prepareStatement(dbSQL[i]);
+					sqlStatement[i] = config.createPreparedStatement(connection, dbSQL[i], OperationType.WRITE);
+					config.optimizeStatement(sqlStatement[i], OperationType.WRITE);//as we call executeUpdate() then
 				}
 			}
 		} catch (SQLException e) {
@@ -339,15 +344,6 @@ public class DBExecute extends Node {
 	@Override
 	public Result execute() throws Exception {
 		Connection connection = dbConnection.getConnection(getId());
-		// this does not work for some drivers
-		try {
-			connection.setAutoCommit(false);
-		} catch (SQLException ex) {
-			if (transaction == InTransaction.ONE) {
-				logger.fatal("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
-				throw new JetelException("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
-			}
-		}
 
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
