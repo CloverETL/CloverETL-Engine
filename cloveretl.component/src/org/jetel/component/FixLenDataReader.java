@@ -25,6 +25,8 @@
  */
 package org.jetel.component;
 
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -42,6 +44,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.WatchDog;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -119,6 +122,9 @@ public class FixLenDataReader extends Node {
 	private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 	private static final String XML_TRIM_ATTRIBUTE = "trim";
+	private static final String XML_INCREMENTAL_FILE_ATTRIBUTE = "incrementalFile";
+	private static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
+
 	
 	static Log logger = LogFactory.getLog(FixLenDataReader.class);
 	
@@ -134,6 +140,8 @@ public class FixLenDataReader extends Node {
     private boolean skipFirstLine = false;
 	private int skipRows = 0; // do not skip rows by default
     private int numRecords = -1;
+    private String incrementalFile;
+    private String incrementalKey;
 
 	private boolean byteMode;
 
@@ -210,6 +218,16 @@ public class FixLenDataReader extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+		initCommon();
+		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+	}
+
+	private void checkConfig() throws ComponentNotReadyException {
+		initCommon();
+		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
+	}
+
+	private void initCommon() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
         
@@ -219,8 +237,8 @@ public class FixLenDataReader extends Node {
         reader.setFileSkip(skipFirstLine ? 1 : 0);
         reader.setSkip(skipRows);
         reader.setNumRecords(numRecords);
-        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
-
+        reader.setIncrementalFile(incrementalFile);
+        reader.setIncrementalKey(incrementalKey);
 	}
 
 	@Override
@@ -230,8 +248,28 @@ public class FixLenDataReader extends Node {
 		reader.reset();
 	}
 
+    @Override
+    public synchronized void free() {
+    	super.free();
+    	storeValues();
+    	reader.close();
+    }
 
-	/**
+    /**
+     * Stores all values as incremental reading.
+     */
+    private void storeValues() {
+    	WatchDog watchDog = getGraph().getWatchDog();
+    	if (watchDog != null && watchDog.getStatus() == Result.FINISHED_OK) {
+    		try {
+				reader.storeIncrementalReading();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+    	}
+    }
+    
+    /**
 	 *  Description of the Method
 	 *
 	 * @return    Description of the Returned Value
@@ -322,6 +360,12 @@ public class FixLenDataReader extends Node {
 			if (xattribs.exists(XML_TRIM_ATTRIBUTE)){
 				aFixLenDataReaderNIO.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
+				aFixLenDataReaderNIO.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
+				aFixLenDataReaderNIO.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+			}
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -353,7 +397,7 @@ public class FixLenDataReader extends Node {
         checkMetadata(status, getOutMetadata());
 
         try {
-            init();
+            checkConfig();
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
@@ -412,6 +456,14 @@ public class FixLenDataReader extends Node {
     	if (parser instanceof FixLenCharDataParser){
     		((FixLenCharDataParser)parser).setTrim(trim);
     	}
+    }
+    
+    public void setIncrementalFile(String incrementalFile) {
+    	this.incrementalFile = incrementalFile;
+    }
+
+    public void setIncrementalKey(String incrementalKey) {
+    	this.incrementalKey = incrementalKey;
     }
 }
 

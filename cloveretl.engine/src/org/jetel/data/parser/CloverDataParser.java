@@ -328,4 +328,14 @@ public class CloverDataParser implements Parser {
 			e.printStackTrace();
 		}
 	}
+
+	public Object getPosition() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void movePosition(Object position) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -111,6 +111,20 @@ public interface Parser {
      */
 	public void reset();
     
+	/**
+	 * Gets current position of source file.
+	 * 
+	 * @return position
+	 */
+	public Object getPosition();
+
+	/**
+	 * Sets position
+	 * 
+	 * @param position
+	 */
+	public void movePosition(Object position);
+
 }
 /*
  *  end class DataParser

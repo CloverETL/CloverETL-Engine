@@ -92,6 +92,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	public void close() {
 		if (open) {
 			try {
+				wb.write();
 				wb.close();
 				sheet = null;
 				open = false;

@@ -81,6 +81,8 @@ public class DBFDataParser implements Parser {
 
 	private boolean releaseInputSource = true;
 	
+	private int bytesProcessed;
+
     public DBFDataParser() {
     }
 
@@ -170,7 +172,10 @@ public class DBFDataParser implements Parser {
         int fieldCounter = 0;
         int limit = 0;
         int position = 0;
-        if (recordCounter >= totalRecords) { return null; }
+        if (recordCounter >= totalRecords) { 
+            bytesProcessed = dbfAnalyzer.getNumRows() * dbfAnalyzer.getRecSize();
+        	return null; 
+        }
         try {
             if (!populateCharBuffer()) { throw new JetelException(
                     "Data error - incomplete record read !"); }
@@ -191,6 +196,9 @@ public class DBFDataParser implements Parser {
             fieldCounter++;
         }
         recordCounter++;
+        if (recordCounter == 28) {
+        	System.err.print(1);
+        }
         return record;
     }
 
@@ -272,6 +280,7 @@ public class DBFDataParser implements Parser {
         
         dbfAnalyzer = new DBFAnalyzer();
         int read = 0;
+		bytesProcessed = 0;
         try {
         	read = dbfAnalyzer.analyze(dbfFile, metadata.getName());
         } catch (Exception ex) {
@@ -320,6 +329,27 @@ public class DBFDataParser implements Parser {
         recordCounter = 0;
     }
 
+	/**
+	 * Discard bytes for incremental reading.
+	 * 
+	 * @param bytes
+	 */
+	private void discardBytes(int bytes) {
+		while (bytes > 0) {
+			totalRecords -= bytes/dbfAnalyzer.getRecSize();
+			buffer.clear();
+			if (bytes < Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) buffer.limit(bytes);
+			try {
+				dbfFile.read(buffer);
+			} catch (IOException e) {
+				break;
+			}
+			bytes =- Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
+		}
+		buffer.clear();
+		buffer.flip();
+	}
+	
     /**
      * Method which populates charbuffer with the whole record. Then individual
      * fields are extracted using their size & calculated offset
@@ -340,7 +370,7 @@ public class DBFDataParser implements Parser {
             size = dbfFile.read(buffer);
             buffer.flip();
             // if no more data, return -1
-            if (size == -1) { return false; }
+            if (size == -1) return false;
             decodingResult = decoder.decode(buffer, charBuffer, false);
             if (charBuffer.position() < charBuffer.limit()) { return false; // still
                                                                             // not
@@ -438,6 +468,24 @@ public class DBFDataParser implements Parser {
 	 */
 	public void reset() {
 		recordCounter = 0;
+		bytesProcessed = 0;
+	}
+
+	public Object getPosition() {
+		return bytesProcessed;
+	}
+
+	public void movePosition(Object position) {
+		int pos = 0;
+		if (position instanceof Integer) {
+			pos = ((Integer) position).intValue();
+		} else if (position != null) {
+			pos = Integer.parseInt(position.toString());
+		}
+		if (pos > 0) {
+			discardBytes(pos);
+			bytesProcessed = pos;
+		}
 	}
 
 }

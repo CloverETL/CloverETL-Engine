@@ -120,6 +120,26 @@ public class FixLenCharDataParser extends FixLenDataParser {
 	}
 
 	/**
+	 * Discard bytes for incremental reading.
+	 * 
+	 * @param bytes
+	 */
+	protected void discardBytes(int bytes) {
+		while (bytes > 0) {
+			byteBuffer.clear();
+			if (bytes < Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) byteBuffer.limit(bytes);
+			try {
+				inChannel.read(byteBuffer);
+			} catch (IOException e) {
+				break;
+			}
+			bytes =- Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
+		}
+		byteBuffer.clear();
+		byteBuffer.flip();
+	}
+
+	/**
 	 * Obtains raw data and tries to fill record fields with them.
 	 * @param record Output record, cannot be null.
 	 * @return null when no more data are available, output record otherwise.
@@ -358,6 +378,7 @@ public class FixLenCharDataParser extends FixLenDataParser {
 		// set scope to current record
 		charBuffer.limit(charBuffer.position() + delimPos);
 		recordIdx++;
+    	bytesProcessed += delimPos;
 		return charBuffer;
 	}
 
@@ -401,5 +422,4 @@ public class FixLenCharDataParser extends FixLenDataParser {
 		_delimStartEnd[0] = -1;
 		_delimStartEnd[1] = 0;
 	}
-	
 }

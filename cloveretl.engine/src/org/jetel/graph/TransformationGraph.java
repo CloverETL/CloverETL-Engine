@@ -765,9 +765,9 @@ public final class TransformationGraph extends GraphElement {
     	//free dictionary
     	dictionary.free();
     	
-    	setWatchDog(null);
-    	
         freeResources();
+    	
+    	setWatchDog(null);
     }
     
     /**
