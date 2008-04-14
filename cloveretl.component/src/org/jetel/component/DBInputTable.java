@@ -149,7 +149,7 @@ public class DBInputTable extends Node {
 		this.dbConnectionName = dbConnectionName;
 		this.sqlQuery = sqlQuery;
 
-		parser = new SQLDataParser(dbConnectionName, sqlQuery);
+		parser = new SQLDataParser(sqlQuery);
 	}
 
 
@@ -177,6 +177,7 @@ public class DBInputTable extends Node {
         connection.init();
 		parser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
 		parser.setParentNode(this);
+		parser.setConnectionConfig(connection.getConfigBase());
 	}
 
 	@Override
