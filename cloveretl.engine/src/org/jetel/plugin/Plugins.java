@@ -103,6 +103,10 @@ public class Plugins {
         DictionaryEntryFactory.init();
     }
 
+    public static Map<String, PluginDescriptor> getPluginDescriptors(){
+    	return pluginDescriptors;
+    }
+    
     public static List<Extension> getExtensions(String extensionName) {
         List<Extension> ret = new ArrayList<Extension>();
         
