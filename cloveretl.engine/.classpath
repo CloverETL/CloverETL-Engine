@@ -12,6 +12,5 @@
 	<classpathentry exported="true" kind="lib" path="lib/commons-cli-1.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="lib" path="lib/janino.jar"/>
-	<classpathentry kind="lib" path="/usr/java/jdk1.6.0_03/lib/tools.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
