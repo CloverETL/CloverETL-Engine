@@ -33,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
+import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -475,7 +476,7 @@ public class HashJoin extends Node {
 						break;
 					}
 					slaveRecords[slaveIdx] = new MapItem();
-					slaveRecords[slaveIdx].records.add(null);
+					slaveRecords[slaveIdx].records.add(NullRecord.NULL_RECORD);
 				}
 				slaveRecords[slaveIdx].indicator = true;
 			}

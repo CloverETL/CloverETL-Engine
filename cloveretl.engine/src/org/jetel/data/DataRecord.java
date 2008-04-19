@@ -323,6 +323,9 @@ public class DataRecord implements Serializable, Comparable, Iterable<DataField>
 	    if (this==obj) return 0;
 	    
 	    if (obj instanceof DataRecord) {
+	    	if (this instanceof NullRecord) return -1;
+	    	if (obj instanceof NullRecord) return 1;
+	    	
             if (metadata != ((DataRecord) obj).getMetadata()) {
                 throw new RuntimeException("Can't compare - records have different metadata objects assigned!");
             }

@@ -166,6 +166,9 @@ public class DataFieldMetadata implements Serializable {
 	public final static char SEQUENCE_FIELD = 'q';
 
 	/**  Description of the Field */
+	public final static char NULL_FIELD = 'n';
+
+	/**  Description of the Field */
 	public final static char UNKNOWN_FIELD = ' ';
 
 	public final static String LENGTH_ATTR = "length";
@@ -712,6 +715,8 @@ public class DataFieldMetadata implements Serializable {
 			    return "datetime";
 			case DataFieldMetadata.SEQUENCE_FIELD:
 			    return "sequence";
+			case DataFieldMetadata.NULL_FIELD:
+			    return "null";
 			default:
 				return "!!! UNKNOWN !!!";
 		}
