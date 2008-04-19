@@ -59,6 +59,8 @@ public class DataFieldFactory {
 				return new LongDataField(fieldMetadata,plain);
 			case DataFieldMetadata.BOOLEAN_FIELD:
 				return new BooleanDataField(fieldMetadata);
+			case DataFieldMetadata.NULL_FIELD:
+				return NullField.NULL_FIELD;
 			default:
 				throw new RuntimeException("Unsupported data type: " + fieldType);
 		}
