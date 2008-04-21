@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.CustomizedRecordTransform;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.NullRecord;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.BadDataFormatException;
@@ -122,6 +123,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
      */
     public void setInputRecords(DataRecord[] inputRecords){
         this.inputRecords=inputRecords;
+        for (DataRecord record : this.inputRecords) {
+			if (record == null) record = NullRecord.NULL_RECORD;
+		}
     }
     
     /**

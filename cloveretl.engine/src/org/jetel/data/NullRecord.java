@@ -1,6 +1,22 @@
-/**
- * 
- */
+/*
+*    jETeL/Clover - Java based ETL application framework.
+*    Copyright (C) 2005-06  Javlin Consulting <info@javlinconsulting.cz>
+*    
+*    This library is free software; you can redistribute it and/or
+*    modify it under the terms of the GNU Lesser General Public
+*    License as published by the Free Software Foundation; either
+*    version 2.1 of the License, or (at your option) any later version.
+*    
+*    This library is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+*    Lesser General Public License for more details.
+*    
+*    You should have received a copy of the GNU Lesser General Public
+*    License along with this library; if not, write to the Free Software
+*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+*/
 package org.jetel.data;
 
 import java.nio.ByteBuffer;
@@ -12,15 +28,26 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * @author Jakubv
- *
+ * This class reprezents record will all fields with null value.
+ * 
+ * @author avackova (agata.vackova@javlinconsulting.cz) ; 
+ * (c) JavlinConsulting s.r.o.
+ *  www.javlinconsulting.cz
+ *  
+ *@since April 21, 2008
  */
 public class NullRecord extends DataRecord {
 	
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Constant used for representation of record will all fields with null value.
+	 */
 	public final static DataRecord NULL_RECORD = new NullRecord();
 	
+	/**
+	 * Creates NullRecord object based on NullMetadata
+	 */
 	private NullRecord(){
 		super(NullMetadata.NULL_METADATA);
 	}
@@ -35,7 +62,13 @@ public class NullRecord extends DataRecord {
 	}
 	
 	@Override
+	public void deserialize(ByteBuffer buffer) {
+		throw new UnsupportedOperationException("Can't deserialize NullRecord");
+	}
+	
+	@Override
 	public void deserialize(ByteBuffer buffer, int[] whichFields) {
+		throw new UnsupportedOperationException("Can't deserialize NullRecord");
 	}
 	
 	@Override
@@ -49,7 +82,13 @@ public class NullRecord extends DataRecord {
 	}
 	
 	@Override
+	public void serialize(ByteBuffer buffer) {
+		throw new UnsupportedOperationException("Can't serialize NullRecord");
+	}
+	
+	@Override
 	public void serialize(ByteBuffer buffer, int[] whichFields) {
+		throw new UnsupportedOperationException("Can't serialize NullRecord");
 	}
 	
 	@Override
@@ -75,10 +114,14 @@ public class NullRecord extends DataRecord {
 	
 	@Override
 	public boolean hasField(String name) {
-		return false;
+		return true;
 	}
 }
 
+/**
+ * Metadata for NullRecord
+ *
+ */
 final class NullMetadata extends DataRecordMetadata{
 
 	private static final long serialVersionUID = 1L;
@@ -138,6 +181,10 @@ final class NullMetadata extends DataRecordMetadata{
 	}
 }
 
+/**
+ * Fields of NullRecord
+ *
+ */
 final class NullField extends DataField{
 	
 	private static final long serialVersionUID = 1L;
@@ -163,6 +210,7 @@ final class NullField extends DataField{
 
 	@Override
 	public void deserialize(ByteBuffer buffer) {
+		throw new UnsupportedOperationException("Can't deserialize NullField");
 	}
 
 	@Override
@@ -209,6 +257,7 @@ final class NullField extends DataField{
 
 	@Override
 	public void serialize(ByteBuffer buffer) {
+		throw new UnsupportedOperationException("Can't serialize NullField");
 	}
 
 	@Override

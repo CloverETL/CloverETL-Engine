@@ -19,35 +19,24 @@
 
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.DataRecord;
+import org.jetel.data.NullRecord;
+import org.jetel.util.string.StringUtils;
 
 
 public class reformatJoinTest extends DataRecordTransform{
 
-	String message;
 	int counter=0;
-	int field=0;
-
 		
 	public boolean transform(DataRecord[] source, DataRecord target[]){
-		//System.out.println("reformat Join Test Called! #"+(counter++));
-		
-		System.out.print(source[0].getField(0).toString());
-		target[0].getField(0).setValue(source[0].getField(0).getValue());
-		System.out.print("|");
-		System.out.print(source[0].getField(1).toString());
-		target[0].getField(1).setValue(source[0].getField(1).getValue());
-		System.out.print("|");
-		System.out.print(source[0].getField(2).toString());
-		target[0].getField(2).setValue(source[0].getField(2).getValue().toString());
-		if (source[1]!=null){
-			System.out.print("|");
-			System.out.print(source[1].getField(0).toString());
-			target[0].getField(3).setValue(source[1].getField(0).getValue().toString());
-			System.out.print("|");
-			System.out.print(source[1].getField(1).toString());
-			target[0].getField(4).setValue(source[1].getField(1).getValue());
+		System.out.println("reformat Join Test Called! #"+(counter++));
+		if (source[1] == NullRecord.NULL_RECORD) {
+			System.out.println("Slave record not found for key " + StringUtils.quote(source[0].getField("EmployeeID").toString()));
 		}
-		System.out.println();
+		target[0].getField(0).setValue(source[0].getField(0));
+		target[0].getField(1).setValue(source[0].getField(1));
+		target[0].getField(2).setValue(source[0].getField(2));
+		target[0].getField(3).setValue(source[1].getField(0));
+		target[0].getField(4).setValue(source[1].getField(1));
 		
 		return true;
 	}
