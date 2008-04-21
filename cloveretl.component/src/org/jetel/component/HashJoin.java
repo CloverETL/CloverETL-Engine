@@ -417,7 +417,7 @@ public class HashJoin extends Node {
 	private void flushOrphaned() throws TransformException, IOException, InterruptedException {
 		// flush slaves without driver record
 		for (int idx = 0; idx < slaveCnt + 1; idx++) {
-			inRecords[idx] = null;
+			inRecords[idx] = NullRecord.NULL_RECORD;
 		}
 		for (int slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
 			for (Entry<HashKey, MapItem> pair: hashMap[slaveIdx].entrySet()) {

@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.FileRecordBuffer;
+import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -303,7 +304,7 @@ public class MergeJoin extends Node {
 	private boolean flushMin() throws IOException, InterruptedException, TransformException {
 		// create initial combination
 		for (int i = 0; i < inputCnt; i++) {
-				inRecords[i] = minIndicator[i] ? reader[i].next() : null;
+				inRecords[i] = minIndicator[i] ? reader[i].next() : NullRecord.NULL_RECORD;
 		}
 		while (true) {
 //			outRecords[0].reset();
