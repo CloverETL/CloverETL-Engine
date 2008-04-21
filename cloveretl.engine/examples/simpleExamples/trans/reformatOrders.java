@@ -28,7 +28,7 @@ public class reformatOrders extends DataRecordTransform{
 
 	public boolean transform(DataRecord[] source, DataRecord[] target){
 		StringBuffer strBuf=new StringBuffer(80);
-		if (source[0]==null){
+		if (source[0]==NullRecord.NULL_RECORD){
 		   System.err.println("NULL source[0]");
 		}
 		try{
