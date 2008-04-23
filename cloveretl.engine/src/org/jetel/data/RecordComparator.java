@@ -22,11 +22,10 @@ package org.jetel.data;
 import java.nio.ByteBuffer;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
-import java.util.Comparator;
 import java.util.Arrays;
+import java.util.Comparator;
 
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataRecordMetadata;
 
 /**
  *  This class compares two records of the same structure (created based on
@@ -209,12 +208,25 @@ public class RecordComparator implements Comparator{
 	 */
 	public boolean equals(Object obj){
 		if (obj instanceof RecordComparator){
-			return Arrays.equals(this.keyFields,((RecordComparator)obj).getKeyFields()); 
+			RecordComparator comp = (RecordComparator)obj;
+			boolean collatorEquals;
+			if (collator == null){
+				collatorEquals = comp.getCollator() == null;
+			}else{
+				collatorEquals = collator.equals(comp.getCollator());
+			}
+			return collatorEquals && Arrays.equals(this.keyFields,comp.getKeyFields()); 
 		}else{
 			return false;
 		}
 	}
 
+	@Override
+	public int hashCode() {
+		int hashCode = Arrays.hashCode(keyFields);
+		return 31*hashCode + (collator==null ? 0 : collator.hashCode());
+	}
+	
     public Collator getCollator() {
         return collator;
     }
