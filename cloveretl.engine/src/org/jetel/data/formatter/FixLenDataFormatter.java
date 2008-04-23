@@ -51,7 +51,6 @@ import org.jetel.metadata.DataRecordMetadata;
 public class FixLenDataFormatter implements Formatter {
 
 	private ByteBuffer dataBuffer;
-	private DataRecordMetadata metadata;
 
 	private WritableByteChannel writer;
 	private CharsetEncoder encoder;
@@ -87,7 +86,6 @@ public class FixLenDataFormatter implements Formatter {
 		writer = null;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
-		metadata = null;
 	}
 
 
@@ -101,7 +99,6 @@ public class FixLenDataFormatter implements Formatter {
 		writer = null;
 		charSet = charEncoder;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		metadata = null;
 	}
 
 
@@ -164,7 +161,6 @@ public class FixLenDataFormatter implements Formatter {
 	 */
 	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
 		// create array of field sizes & initialize them
-		this.metadata = metadata;
         
 		encoder = Charset.forName(charSet).newEncoder();
 		initFieldFiller(fieldFiller == null ? DEFAULT_FIELDFILLER_CHAR : fieldFiller.charValue());
@@ -335,6 +331,7 @@ public class FixLenDataFormatter implements Formatter {
 		dataBuffer.clear();
 	}
 
+	/* unused method
 	private void flushBuffer(int limit) throws IOException {
 		int savedLimit = dataBuffer.limit();
 		dataBuffer.limit(limit);
@@ -346,6 +343,7 @@ public class FixLenDataFormatter implements Formatter {
 		dataBuffer.position(dataBuffer.limit());
 		dataBuffer.limit(dataBuffer.capacity());
 	}
+	*/
 
 	/**
 	 *  Flushes the content of internal data buffer
