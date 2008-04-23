@@ -58,7 +58,7 @@
 
 	<target name="plugin.build" description="Private target for building usage. Don't call direct.">
 		<echo message="Building plugin - ${plugin.dir}"/>
-		<ant dir="${plugin.dir}" inheritAll="false">
+		<ant dir="../${plugin.dir}" inheritAll="false">
 			<property name="dir.dist" value="${dir.dist}"/>
 			<property name="major_version" value="${major_version}"/>
 			<property name="minor_version" value="${minor_version}"/>
