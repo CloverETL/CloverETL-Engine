@@ -24,6 +24,7 @@
 	<property name="dir.lib" value="${basedir}/lib"/>
 	<property name="dir.docs" value="${basedir}/docs"/>
 	<property name="dir.src" value="src"/>
+	<property name="dir.src.test" value="${basedir}/test"/>
 	<property name="dir.src.tmp" value="src_tmp"/>
 	<property name="dir.examples" value="examples"/>
 	<property name="dir.tmp" value="__tmp"/>
@@ -31,6 +32,7 @@
 	<property name="dir.testsresult" value="${dir.build}/testsresult"/>
 	<property name="dir.testsreport" value="${dir.build}/testsreport"/>
 	<property name="dir.findbugsreport" value="${dir.build}/findbugsreport"/>
+	<property name="dir.classestest" value="${dir.build}/classes-test"/>
 
 	<!--load external properties-->
 	<property file="build.properties"/>
@@ -369,11 +371,25 @@
 	<target name="reports-hudson" depends="reporttests,findbugs-xml">
 	</target>
 	
-	<target name="runtests" depends="init,compile" >
+	<target name="compile-tests" depends="init">
+		<mkdir dir="${dir.classestest}"/>
+		<javac debug="true" destdir="${dir.classestest}" target="1.5" source="1.5">
+			<classpath>
+				<pathelement path="${tools}"/>
+				<fileset refid="engine-libs"/>
+				<pathelement path="${dir.bin}"/>
+			    <pathelement path="${dir.tools}/junit-4.4.jar"/>
+			</classpath>
+			<src path="${dir.src.test}"/>
+		</javac>
+	</target>
+	
+	<target name="runtests" depends="init,compile,compile-tests" >
 		<mkdir dir="${dir.testsresult}"/>
 		<junit haltonerror="false" haltonfailure="false" printsummary="true">
 			<classpath>
 			    <pathelement path="${dir.bin}"/>
+			    <pathelement path="${dir.classestest}"/>
 				<fileset dir="${dir.lib}">
 					<include name="*.jar"/>
 				</fileset>
