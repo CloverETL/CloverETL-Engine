@@ -73,7 +73,6 @@ public class CloverDataFormatter implements Formatter {
 	private WritableByteChannel writer;
 	private OutputStream out;//FileOutputStream or ZipOutputStream
 	private ByteBuffer buffer;
-	private DataRecordMetadata metadata;
 	private WritableByteChannel idxWriter;
 	private ByteBuffer idxBuffer;
 	private boolean saveIndex;
@@ -105,7 +104,6 @@ public class CloverDataFormatter implements Formatter {
 	 */
 	public void init(DataRecordMetadata _metadata)
 			throws ComponentNotReadyException {
-		this.metadata = _metadata;
         buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
  	}
 
