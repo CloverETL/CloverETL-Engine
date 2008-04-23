@@ -7,7 +7,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/jms.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/javolution.jar"/>
 	<classpathentry kind="lib" path="lib/jxl.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.12.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.12.jar"/>
 	<classpathentry kind="lib" path="lib/jsch-0.1.34.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-cli-1.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
