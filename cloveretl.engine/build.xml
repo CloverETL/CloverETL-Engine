@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <project name="cloveretl.engine" default="build" basedir=".">
 	
+	<property name="dir.tools" value="${basedir}/tools"/>		
+	<property name="dir.findbugs" value="/opt/findbugs"/>
+	
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
 	  <classpath>
-	    <pathelement location="ant-contrib.jar"/>
+	    <pathelement location="${dir.tools}/ant-contrib.jar"/>
 	  </classpath>
 	</taskdef>
-	
+	    	
 	<!-- =========================== VERSIONs =========================== -->
 	<property name="major_version" value="2"/>
 	<property name="minor_version" value="4"/>
@@ -24,6 +27,10 @@
 	<property name="dir.src.tmp" value="src_tmp"/>
 	<property name="dir.examples" value="examples"/>
 	<property name="dir.tmp" value="__tmp"/>
+	<property name="dir.build" value="${basedir}/build"/>
+	<property name="dir.testsresult" value="${dir.build}/testsresult"/>
+	<property name="dir.testsreport" value="${dir.build}/testsreport"/>
+	<property name="dir.findbugsreport" value="${dir.build}/findbugsreport"/>
 
 	<!--load external properties-->
 	<property file="build.properties"/>
@@ -350,6 +357,71 @@
 			style="${dir.component.doc.default}/components/xsl/description.xsl"
 		/>
 
+	</target>
+
+	<target name="init">
+		<mkdir dir="${dir.build}"/>
+	</target>
+	
+	<target name="reports" depends="reporttests,findbugs-html">
+	</target>
+	
+	<target name="reports-hudson" depends="reporttests,findbugs-xml">
+	</target>
+	
+	<target name="runtests" depends="init,compile" >
+		<mkdir dir="${dir.testsresult}"/>
+		<junit haltonerror="false" haltonfailure="false" printsummary="true">
+			<classpath>
+			    <pathelement path="${dir.bin}"/>
+				<fileset dir="${dir.lib}">
+					<include name="*.jar"/>
+				</fileset>
+			    <pathelement path="${dir.tools}/junit-4.4.jar"/>
+			  </classpath>
+			<test name="org.jetel.AllTests" todir="${dir.testsresult}"></test>
+			<formatter type="plain"/>
+			<formatter type="xml"/>
+		</junit>
+	</target>
+	
+    <target name="reporttests" depends="runtests">
+    	<mkdir dir="${dir.testsreport}"/>
+    	<junitreport>
+    		<fileset dir="${dir.testsresult}">
+    			<include name="*.xml"/>
+    		</fileset>
+    		<report format="noframes" todir="${dir.testsreport}"/>
+    	</junitreport>            
+    </target>
+	
+	<target name="findbugs-init">
+		<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
+		  <classpath>
+		    <pathelement location="${dir.findbugs}/lib/findbugs-ant.jar"/>
+		  </classpath>
+		</taskdef>
+	</target>
+	
+	<target name="findbugs-html" depends="init,findbugs-init,compile">
+		<mkdir dir="${dir.findbugsreport}"/>
+		<findbugs 
+				home="${dir.findbugs}" 
+				output="html"
+				outputfile="${dir.findbugsreport}/bugreport.html" 
+				stylesheet="fancy-hist.xsl">
+			<class location="${dir.bin}"/>
+		</findbugs>
+	</target>
+	
+	<target name="findbugs-xml" depends="init,findbugs-init,compile">
+		<mkdir dir="${dir.findbugsreport}"/>
+		<findbugs 
+				home="${dir.findbugs}" 
+				output="xml"
+				outputfile="${dir.findbugsreport}/bugreport.xml" >
+			<class location="${dir.bin}"/>
+		</findbugs>
 	</target>
 	
 </project>
