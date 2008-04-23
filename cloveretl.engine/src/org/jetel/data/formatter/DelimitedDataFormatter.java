@@ -49,7 +49,6 @@ public class DelimitedDataFormatter implements Formatter {
 	
     private String charSet = null;
 	// Attributes
-	private DataRecordMetadata metadata;
 	private WritableByteChannel writer;
 	private CharsetEncoder encoder;
 	private String delimiters[];
@@ -71,7 +70,6 @@ public class DelimitedDataFormatter implements Formatter {
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
-		metadata = null;
 	}
 	
 	public DelimitedDataFormatter(String charEncoder) {
@@ -79,14 +77,12 @@ public class DelimitedDataFormatter implements Formatter {
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charSet = charEncoder;
-		metadata = null;
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
 	public void init(DataRecordMetadata metadata) {
-		this.metadata = metadata;
 		encoder = Charset.forName(charSet).newEncoder();
 		encoder.reset();
 
