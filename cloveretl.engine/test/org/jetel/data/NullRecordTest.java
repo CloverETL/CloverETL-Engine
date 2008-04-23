@@ -66,7 +66,7 @@ public class NullRecordTest extends TestCase {
 	}
 
 	public void testHasField() {
-		assertFalse(nullRecord.hasField("field1"));
+		assertTrue(nullRecord.hasField("field1"));
 	}
 
 	public void testGetNumFields() {
