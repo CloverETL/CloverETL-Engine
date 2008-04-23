@@ -427,6 +427,7 @@
 				outputfile="${dir.findbugsreport}/bugreport.html" 
 				stylesheet="fancy-hist.xsl">
 			<class location="${dir.bin}"/>
+			<sourcePath path="${dir.src}"/>
 		</findbugs>
 	</target>
 	
@@ -437,6 +438,7 @@
 				output="xml"
 				outputfile="${dir.findbugsreport}/bugreport.xml" >
 			<class location="${dir.bin}"/>
+			<sourcePath path="${dir.src}"/>
 		</findbugs>
 	</target>
 	
