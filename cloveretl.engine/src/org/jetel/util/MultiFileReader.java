@@ -228,7 +228,10 @@ public class MultiFileReader {
      */
     private void resetIncrementalReading() throws IOException {
     	storeIncrementalReading();
-		if (incrementalOutValues != null) incrementalInValues = (String[]) incrementalOutValues.toArray();
+		if (incrementalOutValues != null) {
+			incrementalInValues = new String[incrementalOutValues.size()];
+			incrementalOutValues.toArray(incrementalInValues);
+		}
     }
     
 	/**
