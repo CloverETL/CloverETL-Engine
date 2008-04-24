@@ -28,6 +28,10 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
+import org.jetel.data.reader.DriverReader;
+import org.jetel.data.reader.InputReader;
+import org.jetel.data.reader.SlaveReader;
+import org.jetel.data.reader.SlaveReaderDup;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
@@ -100,6 +104,9 @@ import org.w3c.dom.Element;
  *  <tr><td><b>transformURL</b></td><td>path to the file with transformation code</td></tr>
  *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
  *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is TRUE.</td></tr>
+ *  <tr><td><b>keyDuplicates</b><br><i>optional</i></td><td>true/false - allows records 
+ *  to have duplicate keys. False - multiple duplicate records are discarded - only the 
+ *  last one is sent to transformation. Default is TRUE.</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="INTERSEC" type="DATA_INTERSECT" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
  *<pre>&lt;Node id="INTERSEC" type="DATA_INTERSECT" joinKey="EmployeeID"&gt;
@@ -136,6 +143,7 @@ public class DataIntersection extends Node {
 	private static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
     private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
+	private static final String XML_KEY_DUPLICATES_ATTRIBUTE ="keyDuplicates";
 
 	private final static int WRITE_TO_PORT_A = 0;
 	private final static int WRITE_TO_PORT_A_B = 1;
@@ -152,6 +160,7 @@ public class DataIntersection extends Node {
 
 	private String[] joinKeys;
 	private String[] slaveOverrideKeys = null;
+	private boolean keyDuplicates;
 
 	private RecordKey recordKeys[];
     private boolean equalNULLs = true;
@@ -161,6 +170,12 @@ public class DataIntersection extends Node {
 	private DataRecord[] outRecords=new DataRecord[2];
 
 	private Properties transformationParameters;
+
+	private DriverReader driverReader;
+
+	private InputReader slaveReader;
+
+	private DataRecord tmp;
 	
 	static Log logger = LogFactory.getLog(DataIntersection.class);
 	
@@ -230,18 +245,31 @@ public class DataIntersection extends Node {
 	 * @exception  InterruptedException  Description of the Exception
 	 * @throws TransformException 
 	 */
-	private final boolean flushCombinations(DataRecord driver, DataRecord slave, DataRecord out, OutputPort port)
+	private final boolean flushCombinations(DriverReader driver, InputReader slave, 
+			DataRecord out, OutputPort port)
 	throws IOException, InterruptedException, TransformException {
-	    inRecords[0] = driver;
-	    inRecords[1] = slave;
 	    outRecords[0]= out;
-	    
-	    if (!transformation.transform(inRecords, outRecords)) {
-	        logger.warn(transformation.getMessage());
-	        return false;
-	    }
-	    port.writeRecord(out);
-	    return true;
+		if (keyDuplicates) {
+			while ((inRecords[0] = driver.next()) != null) {
+				while ((inRecords[1] = slave.next()) != null) {
+					if (!transformation.transform(inRecords, outRecords)) {
+						logger.warn(transformation.getMessage());
+						return false;
+					}
+					port.writeRecord(out);
+				}
+				slaveReader.rewindRun();
+			}
+		}else{
+			inRecords[0] = driver.last();
+			inRecords[1] = slave.next();
+			if (!transformation.transform(inRecords, outRecords)) {
+				logger.warn(transformation.getMessage());
+				return false;
+			}
+			port.writeRecord(out);
+		}
+		return true;
 }
 
 
@@ -255,28 +283,14 @@ public class DataIntersection extends Node {
 	 * @exception  IOException           Description of the Exception
 	 * @exception  InterruptedException  Description of the Exception
 	 */
-	private final boolean flushDriverOnly(DataRecord driver, OutputPort port) 
+	private final boolean flush(InputReader driver, OutputPort port) 
 			throws IOException,InterruptedException{
-		port.writeRecord(driver);
-		return true;
+		if ((tmp = driver.next()) != null) {
+			port.writeRecord(tmp);
+			return true;
+		}
+		return false;
 	}
-
-	/**
-	 *  If there is no corresponding driver record and is defined full outer join, then
-	 *  output slave only.
-	 *
-	 * @param  driver                    Description of the Parameter
-	 * @param  port                      Description of the Parameter
-	 * @return                           Description of the Return Value
-	 * @exception  IOException           Description of the Exception
-	 * @exception  InterruptedException  Description of the Exception
-	 */
-	private final boolean flushSlaveOnly(DataRecord slave, OutputPort port)
-				throws IOException,InterruptedException{
-	    port.writeRecord(slave);
-	    return true;
-	}
-
 
 	/**
 	 *  Description of the Method
@@ -297,61 +311,56 @@ public class DataIntersection extends Node {
 	
 	@Override
 	public Result execute() throws Exception {
-		// get all ports involved
-		InputPort driverPort = getInputPort(DRIVER_ON_PORT);
-		InputPort slavePort = getInputPort(SLAVE_ON_PORT);
+
 		OutputPort outPortA = getOutputPort(WRITE_TO_PORT_A);
 		OutputPort outPortB = getOutputPort(WRITE_TO_PORT_B);
 		OutputPort outPortAB = getOutputPort(WRITE_TO_PORT_A_B);
-
-		// initialize input records driver & slave
-		DataRecord driverRecord = new DataRecord(driverPort.getMetadata());
-		driverRecord.init();
-		DataRecord slaveRecord = new DataRecord(slavePort.getMetadata());
-		slaveRecord.init();
-
+		
 		// initialize output record
 		DataRecord outRecord = new DataRecord(outPortAB.getMetadata());
 		outRecord.init();
 		outRecord.reset();
+		driverReader.loadNextRun();
+		slaveReader.loadNextRun();
 
-		// first initial load of records
-		driverRecord = driverPort.readRecord(driverRecord);
-		slaveRecord = slavePort.readRecord(slaveRecord);
 		// main processing loop
-		while (runIt && driverRecord != null && slaveRecord != null) {
-			switch (recordKeys[DRIVER_ON_PORT].compare(
-					recordKeys[SLAVE_ON_PORT], driverRecord, slaveRecord)) {
+		 do {
+			switch (driverReader.compare(slaveReader)) {
 			case -1:
 				// driver lower
 				// no corresponding slave
-				flushDriverOnly(driverRecord, outPortA);
-				driverRecord = driverPort.readRecord(driverRecord);
+				flush(driverReader, outPortA);
+				driverReader.loadNextRun();
 				break;
 			case 0:
 				// match - perform transformation
-				flushCombinations(driverRecord, slaveRecord, outRecord,
+				flushCombinations(driverReader, slaveReader, outRecord,
 						outPortAB);
-				// load in new driver & slave
-				driverRecord = driverPort.readRecord(driverRecord);
-				slaveRecord = slavePort.readRecord(slaveRecord);
+				driverReader.loadNextRun();
+				slaveReader.loadNextRun();
 				break;
 			case 1:
 				// slave lover - no corresponding master
-				flushSlaveOnly(slaveRecord, outPortB);
-				slaveRecord = slavePort.readRecord(slaveRecord);
+				flush(slaveReader, outPortB);
+				slaveReader.loadNextRun();
 				break;
 			}
+		}while (runIt && driverReader.hasData() && slaveReader.hasData());
+		 
+		if (!runIt) {
+			return Result.ABORTED;
 		}
 		// flush remaining driver records
-		while (driverRecord != null) {
-			flushDriverOnly(driverRecord, outPortA);
-			driverRecord = driverPort.readRecord(driverRecord);
+		while (flush(driverReader, outPortA)) ;
+		while (driverReader.hasData()) {
+			driverReader.loadNextRun();
+			while (flush(driverReader, outPortA)) ;
 		}
 		// flush remaining slave records
-		while (slaveRecord != null) {
-			flushSlaveOnly(slaveRecord, outPortB);
-			slaveRecord = slavePort.readRecord(slaveRecord);
+		while (flush(slaveReader, outPortB)) ; 
+		while (slaveReader.hasData()) {
+			slaveReader.loadNextRun();
+			while (flush(slaveReader, outPortB)) ; 
 		}
 
 		transformation.finished();
@@ -368,6 +377,8 @@ public class DataIntersection extends Node {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		transformation.reset();
+		driverReader.reset();
+		slaveReader.reset();
 	}
 
 	/*
@@ -377,6 +388,8 @@ public class DataIntersection extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
+		driverReader.free();
+		slaveReader.free();
 	}
 
 	/**
@@ -390,12 +403,15 @@ public class DataIntersection extends Node {
         if(isInitialized()) return;
 		super.init();
 		
+		InputPort driverPort = getInputPort(DRIVER_ON_PORT);
+		InputPort slavePort = getInputPort(SLAVE_ON_PORT);
+
 		if (slaveOverrideKeys == null) {
 			slaveOverrideKeys = joinKeys;
 		}
 		recordKeys = new RecordKey[2];
-		recordKeys[0] = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
-		recordKeys[1] = new RecordKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
+		recordKeys[0] = new RecordKey(joinKeys, driverPort.getMetadata());
+		recordKeys[1] = new RecordKey(slaveOverrideKeys, slavePort.getMetadata());
 		recordKeys[0].init();
 		recordKeys[1].init();
 		//specify whether two fields with NULL value indicator set
@@ -416,6 +432,9 @@ public class DataIntersection extends Node {
 					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
 					this.getClass().getClassLoader());
         }
+		driverReader = new DriverReader(driverPort, recordKeys[DRIVER_ON_PORT]);
+		slaveReader = keyDuplicates ? new SlaveReaderDup(slavePort, recordKeys[SLAVE_ON_PORT]) :
+			new SlaveReader(slavePort, recordKeys[SLAVE_ON_PORT]);
 	}
 
 
@@ -468,7 +487,7 @@ public class DataIntersection extends Node {
         
 		// equal NULL attribute
         xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULLs));
-		
+		xmlElement.setAttribute(XML_KEY_DUPLICATES_ATTRIBUTE, String.valueOf(keyDuplicates));
 		if (transformationParameters != null) {
 			Enumeration propertyAtts = transformationParameters.propertyNames();
 			while (propertyAtts.hasMoreElements()) {
@@ -498,6 +517,8 @@ public class DataIntersection extends Node {
                     xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null, false), 
                     xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
                     xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null));
+        	intersection.setSlaveDuplicates(xattribs.getBoolean(
+        			XML_KEY_DUPLICATES_ATTRIBUTE, true));
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				intersection.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
@@ -565,6 +586,14 @@ public class DataIntersection extends Node {
 
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	public boolean isSlaveDuplicates() {
+		return keyDuplicates;
+	}
+
+	public void setSlaveDuplicates(boolean slaveDuplicates) {
+		this.keyDuplicates = slaveDuplicates;
 	}
 
 }
