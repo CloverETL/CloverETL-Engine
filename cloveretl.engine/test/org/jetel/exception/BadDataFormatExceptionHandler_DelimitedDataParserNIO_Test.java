@@ -45,7 +45,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	protected void setUp() { 
 		EngineInitializer.initEngine(null, null, null);
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
-			
+
 		try {
 			metadata = xmlReader.read(new FileInputStream("config/test/rec_def/DL_null_def_rec.xml"));
 			in = new FileInputStream("data/in/good/DL28_NL.txt");
@@ -291,6 +291,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 			}
 			fail("Should raise an BadDataFormatException");
 		} catch (BadDataFormatException e){	
+			e.printStackTrace();
 		} catch (Exception ee){
 			ee.printStackTrace();
 			fail("Should not throw Exception");
