@@ -183,7 +183,8 @@ public class JmsWriter extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		psor.finished();
+		if (psor != null)
+			psor.finished();
         closeConnection();
 	}
     
@@ -270,7 +271,8 @@ public class JmsWriter extends Node {
 	 */
 	private void closeConnection() {
 		try {
-			producer.close();
+			if (producer != null)
+				producer.close();
 		} catch (JMSException e) {
 			// ignore it, the connection is probably already closed
 		}
