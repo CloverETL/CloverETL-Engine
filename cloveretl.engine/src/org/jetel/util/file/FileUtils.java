@@ -324,7 +324,8 @@ public class FileUtils {
 			os = urlConnection.getOutputStream();
 		} else {
 			// file input stream 
-			os = new FileOutputStream(input, appendData);
+			String filePath = FileUtils.getFile(contextURL, input);
+			os = new FileOutputStream(filePath, appendData);
 		}
 
 		// create writable channel
