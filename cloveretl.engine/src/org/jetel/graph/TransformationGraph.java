@@ -439,7 +439,7 @@ public final class TransformationGraph extends GraphElement {
 			} catch (Exception ex) {
 				logger.info(dbCon + " ... !!! ERROR !!!");
 				logger.error("Can't init connection", ex);
-				throw new ComponentNotReadyException("Can't connect to database", ex);
+				throw new ComponentNotReadyException("Can't init connection "+ ex.getMessage(), ex);
 			}
 		}
 		// initialize sequences
