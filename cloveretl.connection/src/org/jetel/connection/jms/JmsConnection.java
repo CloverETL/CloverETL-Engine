@@ -202,16 +202,19 @@ public class JmsConnection extends GraphElement implements IConnection {
 		
 		try {
 			
-			this.librariesUrls = getLibrariesURL( libraries );
+			if (libraries != null)
+				this.librariesUrls = getLibrariesURL( libraries );
 			Context ctx = null;
 
 			ClassLoader prevCl = null;
 			try {
-				prevCl = Thread.currentThread().getContextClassLoader();
-				// Create the class loader by using the given URL
-				URLClassLoader loader = new URLClassLoader( librariesUrls, prevCl );
-			    // Save the class loader so that you can restore it later
-			    Thread.currentThread().setContextClassLoader(loader);
+				if (libraries != null){
+					prevCl = Thread.currentThread().getContextClassLoader();
+					// Create the class loader by using the given URL
+					URLClassLoader loader = new URLClassLoader( librariesUrls, prevCl );
+				    // Save the class loader so that you can restore it later
+				    Thread.currentThread().setContextClassLoader(loader);
+				}
 
 			    try {
 					if (iniCtxFtory != null) {
@@ -232,11 +235,18 @@ public class JmsConnection extends GraphElement implements IConnection {
 			    } 
 			    ConnectionFactory ftory = null;
 			    try {
-				    ftory = (ConnectionFactory)ctx.lookup(conFtory);
-			    } catch (NamingException e){
+			    	Object o = ctx.lookup(conFtory);
+			    	if (o instanceof ConnectionFactory)
+			    		ftory = (ConnectionFactory)o;
+			    	else
+						throw new ComponentNotReadyException("Cannot find connection factory "+ConnectionFactory.class + " with jndiName:"+conFtory + " found:"+o + " "+ (o != null ? (""+o.getClass()) : ""));
+			    		
+			    } catch (ComponentNotReadyException e) {
+			    	throw e;
+				} catch (NamingException e){
 			    	throw e;
 			    } catch (Exception e) {
-					throw new ComponentNotReadyException("Cannot create connection factory "+e.getMessage());
+					throw new ComponentNotReadyException("Cannot create connection factory; "+e.getMessage());
 			    }
 			    if (ftory == null)
 					throw new ComponentNotReadyException("Cannot create connection factory");
@@ -276,15 +286,18 @@ public class JmsConnection extends GraphElement implements IConnection {
 			    	throw new ComponentNotReadyException("Cannot find destination in \""+destId+"\" initial context");
 				connection.start();
 			} finally {
-			    Thread.currentThread().setContextClassLoader(prevCl);
+				if (libraries != null)
+					Thread.currentThread().setContextClassLoader(prevCl);
 			}
 		} catch (NoClassDefFoundError e) {
 	    		throw new ComponentNotReadyException("No class definition found for:" + e.getMessage() + " (add to classpath)");
 		} catch (NamingException e) {
 	    	if (e.getRootCause() instanceof NoClassDefFoundError)
-	    		throw new ComponentNotReadyException("No class definition found for:" + e.getMessage() + " (add to classpath)");
+	    		throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)");
+	    	else if (e.getRootCause() instanceof ClassNotFoundException)
+	    		throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)");
 	    	else
-				throw new ComponentNotReadyException("Cannot create initial context", e);
+				throw new ComponentNotReadyException("Cannot create initial context; "+e.getMessage(), e);
 		} catch (JMSException e) {
 			throw new ComponentNotReadyException(e);
 		} 
