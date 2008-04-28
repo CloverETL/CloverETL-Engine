@@ -338,7 +338,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	public Result watch(Phase phase) throws InterruptedException {
 		long phaseMemUtilizationMax;
-		Iterator leafNodesIterator;
 		Message message;
 		int ticker = Defaults.WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
 		long lastTimestamp;
@@ -538,7 +537,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		logger.info("-----------------------** Summary of Phases execution **---------------------");
 		logger.info("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
 		for (Phase phase : graph.getPhases()) {
-			Object nodeInfo[] = {new Integer(phase.getPhaseNum()), phase.getResult().message(),
+			Object nodeInfo[] = {Integer.valueOf(phase.getPhaseNum()), phase.getResult().message(),
                     phase.getPhaseTracking() != null ? new Integer(phase.getPhaseTracking().getExecTimeSec()) : "",
                     phase.getPhaseTracking() != null ? new Integer(phase.getPhaseTracking().getMemUtilizationKB()) : ""};
 			int nodeSizes[] = {-18, -24, 12, 18};
