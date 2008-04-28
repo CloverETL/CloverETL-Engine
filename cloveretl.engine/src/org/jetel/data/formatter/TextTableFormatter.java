@@ -499,7 +499,6 @@ public class TextTableFormatter implements Formatter {
 		int length;
 		
 		DataFieldParams(String name,int index, int length){
-			this.name = name;
 			this.index = index;
 			this.length = length;
 		}
