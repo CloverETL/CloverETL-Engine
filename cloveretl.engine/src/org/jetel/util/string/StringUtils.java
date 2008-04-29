@@ -31,7 +31,8 @@ import org.jetel.data.Defaults;
 import org.jetel.data.parser.AhoCorasick;
 import org.jetel.metadata.DataFieldMetadata;
 
-import sun.text.Normalizer;
+import com.ibm.icu.text.Normalizer;
+
 
 /**
  *  Helper class with some useful methods regarding string/text manipulation
