@@ -92,7 +92,7 @@ public class Trash implements OutputPort, OutputPortDirect {
 	 * @since            April 2, 2002
 	 */
 	public Trash(String id, DataRecordMetadata metadata) {
-		this.id = new String(id);
+		this.id = id;
 		this.metadata = metadata;
 		this.graph = null;
 		writer = null;

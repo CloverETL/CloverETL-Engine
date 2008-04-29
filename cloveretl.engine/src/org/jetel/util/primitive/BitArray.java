@@ -18,6 +18,7 @@
 *
 */
 package org.jetel.util.primitive;
+import java.io.Serializable;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -31,7 +32,7 @@ import java.util.Arrays;
  *@created    8. April 2003
  */
 
-public class BitArray {
+public class BitArray implements Serializable{
 
 	private  byte bits[];
 	private  int length;
