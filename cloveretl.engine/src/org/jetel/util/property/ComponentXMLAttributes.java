@@ -648,13 +648,14 @@ public class ComponentXMLAttributes {
         for (Iterator iter=properties.entrySet().iterator();iter.hasNext();){
             Map.Entry entry=(Map.Entry)iter.next();
             // check whether attribute of certain name already exists
-            if ((node=attributes.getNamedItem((String)entry.getKey())) != null){
+            node=attributes.getNamedItem((String)entry.getKey());
+            if (node!= null){
                node.setNodeValue((String)entry.getValue()); // just set the value
             }else{
                 // create new attribute
-                org.w3c.dom.Attr attr=node.getOwnerDocument().createAttribute((String)entry.getKey());
+                org.w3c.dom.Attr attr=nodeXML.getOwnerDocument().createAttribute((String)entry.getKey());
                 attr.setValue((String)entry.getValue());
-                node.appendChild(attr);
+                nodeXML.appendChild(attr);
             }
         }
     }
