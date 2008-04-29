@@ -27,11 +27,14 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -283,8 +286,8 @@ public class XmlWriter extends Node {
 		/** Comma separated list of fields which are exception for flag fieldsAsAttributes.
 		 *  (if flag is true, fields from this list will be written as elements) */
 		public String[] fieldsAsExcept;
-		/** Comma separated list of fields which will be kicked out of XML output. */
-		public String[] fieldsIgnore;
+		/** Set of fields which will be kicked out of XML output. */
+		public Set<String> fieldsIgnore;
 		/** Name of element of record in out XMl. May be null, default is "record". */
 		String element = null;
 		/** lazy initialized list to simplify processing of XML output. */
@@ -592,7 +595,7 @@ public class XmlWriter extends Node {
 
 						 // ignore field?
 						 if (portDefinition.fieldsIgnore != null
-								 && Arrays.binarySearch(portDefinition.fieldsIgnore, (Object)fieldName, null)>-1)
+								 && portDefinition.fieldsIgnore.contains(fieldName) )
 							 continue;
 
 						 if (portDefinition.fieldsAsExcept != null 
@@ -801,8 +804,11 @@ public class XmlWriter extends Node {
 			}
 		}
 		
-		if (portAttribs.getString(XML_FIELDS_IGNORE_ATTRIBUTE, null) != null)
-			portData.fieldsIgnore = portAttribs.getString(XML_FIELDS_IGNORE_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		if (portAttribs.getString(XML_FIELDS_IGNORE_ATTRIBUTE, null) != null){
+			String[] ss = portAttribs.getString(XML_FIELDS_IGNORE_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+			portData.fieldsIgnore = new HashSet<String>();
+			Collections.addAll(portData.fieldsIgnore, ss);
+		}
 		if (portAttribs.getString(XML_FIELDS_AS_EXCEPT_ATTRIBUTE, null) != null)
 			portData.fieldsAsExcept = portAttribs.getString(XML_FIELDS_AS_EXCEPT_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 		if (portData.keysAttr != null)
