@@ -368,7 +368,7 @@
 	<target name="reports" depends="reporttests,findbugs-html">
 	</target>
 	
-	<target name="reports-hudson" depends="reporttests,findbugs-xml">
+	<target name="reports-hudson" depends="reporttests,findbugs-xml,findbugs-html">
 	</target>
 	
 	<target name="compile-tests" depends="init">
