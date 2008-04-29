@@ -163,7 +163,10 @@ public class Plugins {
     }
 
     public static File[] getPluginDirectories() {
-        return pluginDirectories;
+    	// copy array to prevent array modification by caller
+    	final File[] ret = new File[pluginDirectories.length];
+    	System.arraycopy(pluginDirectories, 0, ret, 0, pluginDirectories.length);
+        return ret;
     }
 
     public static PluginDescriptor getPluginDescriptor(String pluginId) {
