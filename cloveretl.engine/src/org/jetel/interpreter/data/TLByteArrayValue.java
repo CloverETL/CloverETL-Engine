@@ -114,7 +114,7 @@ public class TLByteArrayValue extends TLContainerValue {
 		if (_value instanceof ByteArray){
 			this.value.append((ByteArray)_value);
 		}else if (_value instanceof byte[]){
-			this.value.append((ByteArray)_value);
+			this.value.append((byte[])_value);
 		}else if (_value instanceof CharSequence){
 			this.value.append((CharSequence)_value);
 		}else{
