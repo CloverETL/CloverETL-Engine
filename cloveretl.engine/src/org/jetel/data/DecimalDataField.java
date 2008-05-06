@@ -228,7 +228,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 *@since         August 19, 2002
 	 */
 	public void setValue(double _value) {
-		if (_value == Double.NaN) {
+		if (Double.isNaN(_value)) {
 		    setNull(true);
 			return;
 		}

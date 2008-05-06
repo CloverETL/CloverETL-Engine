@@ -153,7 +153,7 @@ public final class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Decimal#setValue(double)
      */
     public void setValue(double _value) {
-        if(_value == Double.NaN) {
+        if(Double.isNaN(_value)) {
             setNaN(true);
             return;
         }

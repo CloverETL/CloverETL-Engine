@@ -174,7 +174,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 	 * @since         August 19, 2002
 	 */
 	public void setValue(double value) {
-		if (value == Double.NaN) {
+		if (Double.isNaN(value)) {
 		    setNull(true);
 			return;
 		}

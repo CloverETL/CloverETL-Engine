@@ -88,7 +88,7 @@ public final class HugeDecimal implements Decimal {
 	 * @see org.jetel.data.primitive.Decimal#setValue(double)
 	 */
 	public void setValue(double _value) {
-		if(_value == Double.NaN) {
+		if(Double.isNaN(_value)) {
 			setNaN(true);
 			return;
 		}

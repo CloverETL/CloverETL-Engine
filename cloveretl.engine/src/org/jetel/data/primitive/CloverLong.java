@@ -103,7 +103,7 @@ public final class CloverLong extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#setValue(double)
 	 */
 	public void setValue(double value) {
-        if(value == Double.NaN)
+        if(Double.isNaN(value))
             this.value = Long.MIN_VALUE;
         else
             this.value = (long) value;
