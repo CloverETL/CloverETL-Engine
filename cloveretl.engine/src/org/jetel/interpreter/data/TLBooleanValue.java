@@ -33,8 +33,8 @@ import org.jetel.metadata.DataFieldMetadata;
 
 public class TLBooleanValue extends TLValue {
 
-	public static TLBooleanValue TRUE=new TLBooleanValue(true);
-	public static TLBooleanValue FALSE=new TLBooleanValue(false);
+	public static final TLBooleanValue TRUE=new TLBooleanValue(true);
+	public static final TLBooleanValue FALSE=new TLBooleanValue(false);
 	
 	private boolean value;
 	
