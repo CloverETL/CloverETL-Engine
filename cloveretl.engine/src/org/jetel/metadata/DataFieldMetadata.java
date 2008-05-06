@@ -46,10 +46,10 @@ public class DataFieldMetadata implements Serializable {
 	
 	private static final long serialVersionUID = -880873886732472663L;
   
-    public static int INTEGER_LENGTH = 9;
-	public static int LONG_LENGTH = 18;
-	public static int DOUBLE_SCALE = 323;
-	public static int DOUBLE_LENGTH = DOUBLE_SCALE + 615;
+    public static final int INTEGER_LENGTH = 9;
+	public static final int LONG_LENGTH = 18;
+	public static final int DOUBLE_SCALE = 323;
+	public static final int DOUBLE_LENGTH = DOUBLE_SCALE + 615;
 
 	/**
 	 * Parent data record metadata.
