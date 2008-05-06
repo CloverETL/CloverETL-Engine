@@ -3,6 +3,8 @@ package org.jetel.data.formatter.provider;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.TextTableFormatter;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * Provides support for getting the structure data formatter.
  * 
@@ -43,15 +45,16 @@ public class TextTableFormatterProvider implements FormatterProvider {
 		return formatter;
 	}
 
-	protected String getCharsetName() {
+	public String getCharsetName() {
 		return charSet ;
 	}
 
-	protected void setMask(String[] mask) {
+	@SuppressWarnings(value="EI2")
+	public void setMask(String[] mask) {
 		this.mask = mask;
 	}
 
-	protected void setOutputFieldNames(boolean setOutputFieldNames) {
+	public void setOutputFieldNames(boolean setOutputFieldNames) {
 		this.setOutputFieldNames = setOutputFieldNames;
 	}
 
