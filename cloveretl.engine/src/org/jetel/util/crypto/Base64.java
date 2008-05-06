@@ -1,4 +1,8 @@
 package org.jetel.util.crypto;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * Encodes and decodes to and from Base64 notation.
  *
@@ -72,7 +76,8 @@ public class Base64
     
     
 /* ********  P R I V A T E   F I E L D S  ******** */  
-    
+
+    private static final Log log = LogFactory.getLog(Base64.class);
     
     /** Maximum line length (76) of Base64 output. */
     private final static int MAX_LINE_LENGTH = 76;
@@ -344,10 +349,10 @@ public class Base64
         }   // end catch
         finally
         {
-            try{ oos.close();   } catch( Exception e ){}
-            try{ gzos.close();  } catch( Exception e ){}
-            try{ b64os.close(); } catch( Exception e ){}
-            try{ baos.close();  } catch( Exception e ){}
+            try{ oos.close();   } catch( Exception e ){log.error("error close oos",e);}
+            try{ gzos.close();  } catch( Exception e ){log.error("error close gzos",e);}
+            try{ b64os.close(); } catch( Exception e ){log.error("error close b64os",e);}
+            try{ baos.close();  } catch( Exception e ){log.error("error close baos",e);}
         }   // end finally
         
         // Return value according to relevant encoding.
@@ -473,9 +478,9 @@ public class Base64
             }   // end catch
             finally
             {
-                try{ gzos.close();  } catch( Exception e ){}
-                try{ b64os.close(); } catch( Exception e ){}
-                try{ baos.close();  } catch( Exception e ){}
+                try{ gzos.close();  } catch( Exception e ){log.error("error close gzos",e);}
+                try{ b64os.close(); } catch( Exception e ){log.error("error close b64os",e);}
+                try{ baos.close();  } catch( Exception e ){log.error("error close baos",e);}
             }   // end finally
 
             // Return value according to relevant encoding.
@@ -603,9 +608,9 @@ public class Base64
             }   // end catch
             finally
             {
-                try{ gzos.close();  } catch( Exception e ){}
-                try{ b64os.close(); } catch( Exception e ){}
-                try{ baos.close();  } catch( Exception e ){}
+                try{ gzos.close();  } catch( Exception e ){log.error("error close gzos",e);}
+                try{ b64os.close(); } catch( Exception e ){log.error("error close b64os",e);}
+                try{ baos.close();  } catch( Exception e ){log.error("error close baos",e);}
             }   // end finally
 
             return baos.toByteArray();
@@ -861,9 +866,9 @@ public class Base64
                 }   // end catch
                 finally
                 {
-                    try{ baos.close(); } catch( Exception e ){}
-                    try{ gzis.close(); } catch( Exception e ){}
-                    try{ bais.close(); } catch( Exception e ){}
+                    try{ baos.close(); } catch( Exception e ){log.error("error close baos",e);}
+                    try{ gzis.close(); } catch( Exception e ){log.error("error close gzis",e);}
+                    try{ bais.close(); } catch( Exception e ){log.error("error close bais",e);}
                 }   // end finally
 
             }   // end if: gzipped
@@ -1038,7 +1043,7 @@ public class Base64
         }   // end catch: IOException
         finally
         {
-            try{ bis.close(); } catch( Exception e) {}
+            try{ bis.close(); } catch( Exception e) {log.error("error close bis",e);}
         }   // end finally
         
         return decodedData;
