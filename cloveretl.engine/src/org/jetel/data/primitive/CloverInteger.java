@@ -103,7 +103,7 @@ public final class CloverInteger extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#setValue(double)
 	 */
 	public void setValue(double value) {
-        if(value == Double.NaN)
+        if(Double.isNaN(value))
             this.value = Integer.MIN_VALUE;
         else
             this.value = (int) value;

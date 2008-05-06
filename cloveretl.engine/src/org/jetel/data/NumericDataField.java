@@ -237,7 +237,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	 *@since         August 19, 2002
 	 */
 	public void setValue(double value) {
-		if (value == Double.NaN) {
+		if (Double.isNaN(value)) {
 		    setNull(true);
 			return;
 		}
@@ -299,7 +299,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
             return;
         }
         this.value = value.doubleValue();
-        setNull(this.value == Double.NaN);
+        setNull(Double.isNaN(this.value));
     }
 
 	/**
@@ -466,7 +466,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 			} else {
 				value = TypeFormat.parseDouble(seq);
 			}
-            setNull(value == Double.NaN);
+            setNull(Double.isNaN(value));
 		} catch (Exception ex) {
 			throw new BadDataFormatException(getMetadata().getName() + " (" + DataFieldMetadata.type2Str(getType()) 
 					+ ") cannot be set to " + StringUtils.quote(seq), seq.toString());

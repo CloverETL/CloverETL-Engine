@@ -69,7 +69,7 @@ public final class CloverDouble extends Number implements Numeric {
 	 * @see java.lang.Number#floatValue()
 	 */
 	public float floatValue() {
-        if(value == Double.NaN)
+        if(Double.isNaN(value))
             return Float.MIN_VALUE;
         else
             return (float) value;
@@ -132,7 +132,7 @@ public final class CloverDouble extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#getInt()
 	 */
 	public int getInt() {
-        if(value == Double.NaN)
+        if(Double.isNaN(value))
             return Integer.MIN_VALUE;
         else
             return (int) value;
@@ -142,7 +142,7 @@ public final class CloverDouble extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#getLong()
 	 */
 	public long getLong() {
-        if(value == Double.NaN)
+        if(Double.isNaN(value))
             return Long.MIN_VALUE;
         else
             return (long) value;
@@ -159,7 +159,7 @@ public final class CloverDouble extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#isNull()
 	 */
 	public boolean isNull() {
-		return value == Double.NaN;
+		return Double.isNaN(value);
 	}
 
     public void setNull(){
