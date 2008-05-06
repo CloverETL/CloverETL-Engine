@@ -81,7 +81,7 @@ public class ComponentXMLAttributes {
     private static final String STR_MIN_DOUBLE="MIN_DOUBLE";
     
 	protected NamedNodeMap attributes;
-	protected Element nodeXML;
+	final protected Element nodeXML;
 	protected PropertyRefResolver refResolver;
 	
 	public static final String XML_ATTRIBUTE_NODE_NAME = "attr";
