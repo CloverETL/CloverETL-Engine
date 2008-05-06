@@ -43,15 +43,15 @@ public class TextTableFormatterProvider implements FormatterProvider {
 		return formatter;
 	}
 
-	public String getCharsetName() {
+	protected String getCharsetName() {
 		return charSet ;
 	}
 
-	public void setMask(String[] mask) {
+	protected void setMask(String[] mask) {
 		this.mask = mask;
 	}
 
-	public void setOutputFieldNames(boolean setOutputFieldNames) {
+	protected void setOutputFieldNames(boolean setOutputFieldNames) {
 		this.setOutputFieldNames = setOutputFieldNames;
 	}
 
