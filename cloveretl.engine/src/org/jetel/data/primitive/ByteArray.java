@@ -65,10 +65,10 @@ public class ByteArray implements Comparable, Iterable {
 	private static final char[] DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
 		'9', 'A', 'B', 'C', 'D', 'E', 'F' };
 	
-	protected static int INT_SIZE_BYTES = Integer.SIZE >> 3;
-	protected static int LONG_SIZE_BYTES = Long.SIZE >> 3;
-	protected static int FLOAT_SIZE_BYTES = Float.SIZE >> 3;
-	protected static int DOUBLE_SIZE_BYTES = Double.SIZE >> 3;
+	protected static final int INT_SIZE_BYTES = Integer.SIZE >> 3;
+	protected static final int LONG_SIZE_BYTES = Long.SIZE >> 3;
+	protected static final int FLOAT_SIZE_BYTES = Float.SIZE >> 3;
+	protected static final int DOUBLE_SIZE_BYTES = Double.SIZE >> 3;
 
 	/**
 	 * Creates byte array with default value size.
