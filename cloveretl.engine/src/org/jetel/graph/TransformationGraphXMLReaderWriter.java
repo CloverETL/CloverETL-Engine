@@ -799,8 +799,8 @@ public class TransformationGraphXMLReaderWriter {
 				while (nameIterator.hasNext()) {
 					String requiredName = (String)nameIterator.next();
 					String requiredValue = (String)requiredAttributes.get(requiredName);
-					if (candidate.hasAttribute(requiredName) == false ||
-						candidate.getAttribute(requiredName) != requiredValue) {
+					if (!candidate.hasAttribute(requiredName) ||
+						!candidate.getAttribute(requiredName).equals(requiredValue)) {
 						// candidate is missing attribute/value
 						break;
 					} 
@@ -862,7 +862,7 @@ public class TransformationGraphXMLReaderWriter {
      * Simple implementation of Node, used for "disabled" and "pass through" nodes 
      * by reading graph from xml. In next graph processing will be this nodes removed from graph.
      */
-    class SimpleNode extends Node {
+    static class SimpleNode extends Node {
 
         public SimpleNode(String id) {
             super(id);
