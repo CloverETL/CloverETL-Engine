@@ -196,7 +196,7 @@ import org.w3c.dom.Element;
             try {
                 hashMap = new HashMap<HashKey, DataRecord>(hashTableInitialCapacity);
             } catch (OutOfMemoryError ex) {
-                logger.fatal(ex);
+				logger.fatal(ex);
             } finally {
                 if (hashMap == null) {
                     throw new ComponentNotReadyException(
