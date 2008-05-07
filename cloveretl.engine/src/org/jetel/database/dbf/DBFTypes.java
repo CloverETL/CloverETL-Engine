@@ -29,19 +29,19 @@ package org.jetel.database.dbf;
  */
 public class DBFTypes  {
 	
-	public static int[] KNOWN_TYPES={0x02,0x03,0x30,0x43,0x63,
+	public static final int[] KNOWN_TYPES={0x02,0x03,0x30,0x43,0x63,
 										0x83,0x8b,0x0cb,0x0f5,0x0fb};
 	
-	public static String[] KNOWN_TYPES_NAMES={
+	public static final String[] KNOWN_TYPES_NAMES={
 							"FoxBase","FoxBase+","VisualFoxPro","dBaseIV",
 							"dBaseIV_systemfile","FoxBase_memo","dBaseIV_memo",
 							"dBaseIV_sqltables","FoxPro2.x","FoxBASE"};
 	
-	public static String DATA_OFFSET_XML_ATTRIB_NAME="dataOffset";
-	public static String RECORD_SIZE_XML_ATTRIB_NAME="recordSize";
-	public static String DATA_ENCODING_XML_ATTRIB_NAME="charset";
+	public static final String DATA_OFFSET_XML_ATTRIB_NAME="dataOffset";
+	public static final String RECORD_SIZE_XML_ATTRIB_NAME="recordSize";
+	public static final String DATA_ENCODING_XML_ATTRIB_NAME="charset";
 	
-	public static String DATE_FORMAT_MASK="yyyyMMdd";
+	public static final String DATE_FORMAT_MASK="yyyyMMdd";
 	
 	/**
 	 * @param dBase codepage ID
