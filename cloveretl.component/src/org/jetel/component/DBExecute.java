@@ -344,6 +344,15 @@ public class DBExecute extends Node {
 	@Override
 	public Result execute() throws Exception {
 		Connection connection = dbConnection.getConnection(getId());
+		// this does not work for some drivers
+		try {
+			connection.setAutoCommit(false);
+		} catch (SQLException ex) {
+			if (transaction == InTransaction.ONE) {
+				logger.error("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
+				throw new JetelException("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
+			}
+		}
 
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		OutputPort outPort = getOutputPort(WRITE_TO_PORT);

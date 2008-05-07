@@ -20,6 +20,7 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -27,18 +28,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.FileRecordBuffer;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
-import org.jetel.data.reader.DriverReader;
 import org.jetel.data.reader.InputReader;
-import org.jetel.data.reader.SlaveReader;
-import org.jetel.data.reader.SlaveReaderDup;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -278,7 +278,7 @@ public class MergeJoin extends Node {
 				minCnt++;
 				minIndicator[i] = true;
 				break;
-			case 1: // current is lesser than minimal
+			case 1: // current is smaller than minimal
 				minCnt = 1;
 				minIdx = i;
 				minIndicator[i] = true;
@@ -308,7 +308,7 @@ public class MergeJoin extends Node {
 				inRecords[i] = minIndicator[i] ? reader[i].next() : NullRecord.NULL_RECORD;
 		}
 		while (true) {
-//			outRecords[0].reset();
+			outRecords[0].reset();
 			if (!transformation.transform(inRecords, outRecords)) {
 				return false;
 			}
@@ -336,16 +336,7 @@ public class MergeJoin extends Node {
 
 	@Override
 	public Result execute() throws Exception {
-		for (loadNext(); minCnt > 0 && runIt; loadNext()) {
-			if (!reader[DRIVER_ON_PORT].hasData()) {
-				for (int i = 1; i < reader.length; i++){
-					while (reader[i].hasData()) {
-						//wait for eof on slave
-						reader[i].loadNextRun();
-					}
-				}
-				break;
-			}
+		while (loadNext() > 0){
 			if (join == Join.INNER && minCnt != inputCnt) { // not all records for current key available
 				continue;
 			}
@@ -359,9 +350,39 @@ public class MergeJoin extends Node {
 				throw new JetelException(resultMsg);
 			}
 		}
+		while (areData()){//send incomplete combination or wait for all data
+			while (loadNext() > 0) {
+				if ((join == Join.LEFT_OUTER && reader[DRIVER_ON_PORT].hasData()) || join == Join.FULL_OUTER){
+					if (!flushMin()) {
+						String resultMsg = transformation.getMessage();
+						transformation.finished();
+						broadcastEOF();
+						throw new JetelException(resultMsg);
+					}
+				}
+			}
+		}
 		transformation.finished();
 		broadcastEOF();		
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+
+	/**
+	 * Checks if there are data on any writer avaible. Sets minIndicator to true for readers which have data
+	 * 
+	 * @return true if any of the readers have data, false in other case
+	 */
+	private boolean areData() {
+		boolean areData = false;
+		for (int i = 0; i < reader.length; i++) {
+			if (reader[i].hasData()) {
+				areData = true;
+				minIndicator[i] = true;
+			}else{
+				minIndicator[i] = false;
+			}
+		}
+		return areData;
 	}
 
 	/* (non-Javadoc)
@@ -788,6 +809,401 @@ public class MergeJoin extends Node {
 		return COMPONENT_TYPE;
 	}
 	
+	/**
+	 * Reader for driver input. Doesn't use record buffer but also doesn't support rewind operation.
+	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 */
+	private static class DriverReader implements InputReader {
+		private static final int CURRENT = 0;
+		private static final int NEXT = 1;
+
+		private InputPort inPort;
+		private RecordKey key;
+		private DataRecord[] rec = new DataRecord[2];
+		private int recCounter;
+		private boolean blocked;
+
+		public DriverReader(InputPort inPort, RecordKey key) {
+			this.inPort = inPort;
+			this.key = key;
+			this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
+			this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+			this.rec[CURRENT].init();
+			this.rec[NEXT].init();
+			recCounter = 0;
+			blocked = false;
+		}
+		
+		public void reset() throws ComponentNotReadyException {
+			inPort.reset();
+			this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
+			this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+			this.rec[CURRENT].init();
+			this.rec[NEXT].init();
+			recCounter = 0;
+			blocked = false;
+		}
+		
+		public void free() {
+			inPort = null;
+		}
+
+		public boolean loadNextRun() throws InterruptedException, IOException {
+			if (inPort == null) {
+				return false;
+			}
+			if (recCounter == 0) {	// first call of this function
+				// load first record of the run
+				if (inPort.readRecord(rec[NEXT]) == null) {
+					rec[NEXT] = rec[CURRENT] = null;
+					return false;
+				}
+				recCounter = 1;
+				return true;
+			}
+
+			if (blocked) {
+				blocked = false;
+				return true;
+			}
+			do {
+				swap();
+				if (inPort.readRecord(rec[NEXT]) == null) {
+					rec[NEXT] = rec[CURRENT] = null;
+					return false;
+				}
+				recCounter++;
+			} while (key.compare(rec[CURRENT], rec[NEXT]) == 0);
+			return true;
+		}
+
+		public void rewindRun() {
+			throw new UnsupportedOperationException();
+		}
+
+		public DataRecord getSample() {
+			return blocked ? rec[CURRENT] : rec[NEXT];
+		}
+
+		public DataRecord next() throws IOException, InterruptedException {
+			if (blocked || inPort == null) {
+				return null;
+			}
+			swap();
+			if (inPort.readRecord(rec[NEXT]) == null) {
+				rec[NEXT] = null;
+				blocked = false;
+			} else {
+				recCounter++;
+				blocked = key.compare(rec[CURRENT], rec[NEXT]) != 0;
+			}
+			return rec[CURRENT];
+		}
+		
+		private void swap() {
+			DataRecord tmp = rec[CURRENT];
+			rec[CURRENT] = rec[NEXT];
+			rec[NEXT] = tmp;
+		}
+
+		public RecordKey getKey() {
+			return key;
+		}
+		
+		public int compare(InputReader other) {
+			DataRecord rec1 = getSample();
+			DataRecord rec2 = other.getSample();
+			if (rec1 == null) {
+				return rec2 == null ? 0 : 1;	// null is greater than any other reader
+			} else if (rec2 == null) {
+				return -1;
+			}
+			return key.compare(other.getKey(), rec1, rec2);
+		}
+
+		public boolean hasData() {
+			return rec[NEXT] != null;
+		}		
+
+		@Override
+		public String toString() {
+			return getSample().toString();
+		}
+	}
+	
+	/**
+	 * Slave reader with duplicates support. Uses file buffer to store duplicate records. Support rewind operation.
+	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 */
+	private static class SlaveReaderDup implements InputReader {
+		private static final int CURRENT = 0;
+		private static final int NEXT = 1;
+
+		private InputPort inPort;
+		private RecordKey key;
+		private DataRecord[] rec = new DataRecord[2];
+		private FileRecordBuffer recBuf;
+		private ByteBuffer rawRec = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		private boolean firstRun;
+		private boolean getFirst;
+		DataRecord deserializedRec;
+
+		public SlaveReaderDup(InputPort inPort, RecordKey key) {
+			this.inPort = inPort;
+			this.key = key;
+			this.deserializedRec = new DataRecord(inPort.getMetadata());
+			this.deserializedRec.init();
+			this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
+			this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+			this.rec[CURRENT].init();
+			this.rec[NEXT].init();
+			this.recBuf = new FileRecordBuffer(null);
+			this.firstRun = true;
+		}
+		
+		public void reset() throws ComponentNotReadyException {
+			inPort.reset();
+			this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
+			this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+			this.rec[CURRENT].init();
+			this.rec[NEXT].init();
+			recBuf.clear();
+			this.firstRun = true;
+		}
+		
+		public void free() {
+			inPort = null;
+		}
+		
+		private void swap() {
+			DataRecord tmp = rec[CURRENT];
+			rec[CURRENT] = rec[NEXT];
+			rec[NEXT] = tmp;
+		}
+
+		public boolean loadNextRun() throws InterruptedException, IOException {
+			getFirst = true;
+			if (inPort == null) {
+				rec[CURRENT] = rec[NEXT] = null;
+				return false;
+			} 
+			if (firstRun) {	// first call of this function
+				firstRun = false;
+				// load first record of the run
+				if (inPort.readRecord(rec[NEXT]) == null) {
+					rec[CURRENT] = rec[NEXT] = null;
+					return false;
+				}
+			}
+			recBuf.clear();
+			swap();
+			while (true) {
+				rec[NEXT].reset();
+				if (inPort.readRecord(rec[NEXT]) == null) {
+					rec[NEXT] = null;
+					return true;
+				}
+				if (key.compare(rec[CURRENT], rec[NEXT]) != 0) {	// beginning of new run
+					return true;
+				}
+				// move record to buffer
+				rawRec.clear();
+				rec[NEXT].serialize(rawRec);
+				rawRec.flip();
+				recBuf.push(rawRec);				
+			}
+		}
+
+		public void rewindRun() {
+			getFirst = true;
+			recBuf.rewind();
+		}
+
+		public DataRecord getSample() {
+			if (firstRun) {
+				return null;
+			}
+			return rec[CURRENT];
+		}
+
+		public DataRecord next() throws IOException {
+			if (firstRun) {
+				return null;
+			}
+			if (getFirst) {
+				getFirst = false;
+				return rec[CURRENT];
+			}
+			rawRec.clear();
+			if (recBuf.shift(rawRec) == null) {
+				return null;
+			}
+			rawRec.flip();
+			deserializedRec.deserialize(rawRec);
+			return deserializedRec;
+		}
+
+		public RecordKey getKey() {
+			return key;
+		}
+		
+		public int compare(InputReader other) {
+			DataRecord rec1 = getSample();
+			DataRecord rec2 = other.getSample();
+//			if (rec1 == null) {
+//				return rec2 == null ? 0 : -1;
+//			} else if (rec2 == null) {
+//				return 1;
+//			}
+			if (rec1 == null) {
+				return rec2 == null ? 0 : 1;	// null is greater than any other reader (as in DriverReader)
+			} else if (rec2 == null) {
+				return -1;
+			}
+			return key.compare(other.getKey(), rec1, rec2);
+		}
+		
+		public boolean hasData() {
+			return rec[NEXT] != null;
+		}		
+
+		@Override
+		public String toString() {
+			return getSample().toString();
+		}
+
+	}
+
+	/**
+	 * Slave reader without duplicates support. Pretends that all runs contain only one record.
+	 * Doesn't use buffer, supports rewind operation.
+	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 */
+	private static class SlaveReader implements InputReader {
+		private static final int CURRENT = 0;
+		private static final int NEXT = 1;
+
+		private InputPort inPort;
+		private RecordKey key;
+		private DataRecord[] rec = new DataRecord[2];
+		private boolean firstRun;
+		private boolean needsRewind;
+
+		public SlaveReader(InputPort inPort, RecordKey key) {
+			this.inPort = inPort;
+			this.key = key;
+			this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
+			this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+			this.rec[CURRENT].init();
+			this.rec[NEXT].init();
+			this.firstRun = true;
+			this.needsRewind = true;
+		}
+		
+		public void reset() throws ComponentNotReadyException {
+			inPort.reset();
+			this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
+			this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+			this.rec[CURRENT].init();
+			this.rec[NEXT].init();
+			this.firstRun = true;
+			this.needsRewind = true;
+		}
+		
+		public void free() {
+			inPort = null;
+		}
+		
+		private void swap() {
+			DataRecord tmp = rec[CURRENT];
+			rec[CURRENT] = rec[NEXT];
+			rec[NEXT] = tmp;
+		}
+
+		public boolean loadNextRun() throws InterruptedException, IOException {
+			if (inPort == null) {
+				rec[CURRENT] = rec[NEXT] = null;
+				return false;
+			} 
+			if (firstRun) {	// first call of this function
+				firstRun = false;
+				// load first record of the run
+				if (inPort.readRecord(rec[NEXT]) == null) {
+					rec[CURRENT] = rec[NEXT] = null;
+					return false;
+				}
+			}
+			swap();
+			while (true) {
+			// current record is now the first one from the run to be loaded
+			// set current record to the last one from the run to be loaded and next record to the first one
+			// from the following run
+			needsRewind = false;
+				rec[NEXT].reset();
+				if (inPort.readRecord(rec[NEXT]) == null) {
+					rec[NEXT] = null;
+					return true;
+				}
+				if (key.compare(rec[CURRENT], rec[NEXT]) != 0) {	// beginning of new run
+					return true;
+				}
+				swap();
+			}
+		}
+
+		public void rewindRun() {
+			needsRewind = false;
+		}
+
+		public DataRecord getSample() {
+			if (firstRun) {
+				return null;
+			}
+			return rec[CURRENT];
+		}
+
+		public DataRecord next() throws IOException {
+			if (firstRun || needsRewind) {
+				return null;
+			}
+			needsRewind = true;
+			return rec[CURRENT];
+		}
+
+		public RecordKey getKey() {
+			return key;
+		}
+		
+		public int compare(InputReader other) {
+			DataRecord rec1 = getSample();
+			DataRecord rec2 = other.getSample();
+//			if (rec1 == null) {
+//				return rec2 == null ? 0 : -1;
+//			} else if (rec2 == null) {
+//				return 1;
+//			}
+			if (rec1 == null) {
+				return rec2 == null ? 0 : 1;	// null is greater than any other reader (as in DriverReader)
+			} else if (rec2 == null) {
+				return -1;
+			}
+			return key.compare(other.getKey(), rec1, rec2);
+		}
+	
+		public boolean hasData() {
+			return rec[NEXT] != null;
+		}		
+
+		@Override
+		public String toString() {
+			return getSample().toString();
+		}
+
+	}
+
 	public String getCharset() {
 		return charset;
 	}
