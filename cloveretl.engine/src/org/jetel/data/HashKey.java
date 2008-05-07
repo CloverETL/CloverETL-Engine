@@ -65,13 +65,18 @@ public class HashKey {
 	/**
 	 *  Description of the Method
 	 *
-	 * @param  obj  Description of the Parameter
+	 * @param  otherObject  Description of the Parameter
 	 * @return      Description of the Return Value
 	 */
-	public boolean equals(Object obj) {
+	public boolean equals(Object otherObject) {
+		if( otherObject == null || !(otherObject.getClass().equals(this.getClass()))){
+			return false;
+		}
+		final HashKey other = (HashKey) otherObject;
+		
 		int[] keyFields = recKey.getKeyFields();
-		DataRecord record2 = ((HashKey) obj).getDataRecord();
-		int key2Fields[] = ((HashKey) obj).getKeyFields();
+		DataRecord record2 = other.getDataRecord();
+		int key2Fields[] = other.getKeyFields();
 		
 		if (keyFields.length != key2Fields.length) {
 			return false;
