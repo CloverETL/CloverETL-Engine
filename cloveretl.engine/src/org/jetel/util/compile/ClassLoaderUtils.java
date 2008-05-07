@@ -32,6 +32,8 @@ import java.net.URLDecoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 
 /**
  * @author David Pavlis, JavlinConsulting, s.r.o.
@@ -44,6 +46,7 @@ public class ClassLoaderUtils {
     
     static Log logger = LogFactory.getLog(ClassLoaderUtils.class);
     
+    @SuppressWarnings(value="DE")
     public static String getClasspath(ClassLoader loader) {
         String classpath = "";
         URL[] urls = null;
@@ -54,7 +57,7 @@ public class ClassLoaderUtils {
             Method getAllURLs = loader.getClass().getMethod("getAllURLs", sig);
             Object[] args = {};
             urls = (URL[]) getAllURLs.invoke(loader, args);
-        } catch (Exception ex) {
+        } catch(Throwable ex){
             // ignore
         }
         try{
@@ -65,8 +68,7 @@ public class ClassLoaderUtils {
                 Method getAllURLs = loader.getClass().getMethod("getURLs", sig);
                 urls = (URL[]) getAllURLs.invoke(loader, args);
             }
-        }
-        catch(Exception ex){
+        } catch(Throwable ex){
             // ignore
         }
         
