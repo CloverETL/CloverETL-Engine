@@ -92,12 +92,22 @@ public class QueryAnalizerTest extends TestCase {
 		assertEquals(dbCloverMap.get("field"), "xyz");
 		System.out.println();
 		
+		query = "update abc set f1=?, f2=? where xyz= ?";
+		analizer.setQuery(query);
+		System.out.println(query);
+		System.out.println(analizer.getNotInsertQuery());
+		dbCloverMap = analizer.getDbCloverFieldMap();
+		assertEquals(dbCloverMap.get("f1"), null);
+		assertEquals(dbCloverMap.get("f2"), null);
+		System.out.println();
+
 		query = "Insert into abc (f1,f2,f3,f4) values(1,$f1 , $f2, $f3) ";
 		analizer.setQuery(query);
 		System.out.println(query);
 		System.out.println(analizer.getInsertQuery());
 		dbCloverMap = analizer.getDbCloverFieldMap();
 		assertEquals(dbCloverMap.get("f3"), "f2");
+		assertEquals(dbCloverMap.get("f1"), null);
 		System.out.println();
 		
 		query = "Insert into abc (f1,f2,f3,f4) values(1,$f1 , $f2, $f3) returning $field1:=f1,$field2:=f5";
@@ -118,7 +128,17 @@ public class QueryAnalizerTest extends TestCase {
 		dbCloverMap = analizer.getDbCloverFieldMap();
 		cloverDbMap = analizer.getCloverDbFieldMap();
 		assertEquals(0, cloverDbMap.size());
+		assertTrue(dbCloverMap.containsKey("f2"));
 		assertNull(dbCloverMap.get("f2"));
+		System.out.println();
+
+		query = "Insert into abc values(1,?, ?, \t ?) ";
+		analizer.setQuery(query);
+		System.out.println(query);
+		System.out.println(analizer.getInsertQuery());
+		dbCloverMap = analizer.getDbCloverFieldMap();
+		cloverDbMap = analizer.getCloverDbFieldMap();
+		assertEquals(0, cloverDbMap.size());
 		System.out.println();
 
 		query = "Insert into abc values($f1, sysdate , $f2, $f3) ";
