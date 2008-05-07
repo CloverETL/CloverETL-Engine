@@ -181,7 +181,9 @@ public class SimpleSequence extends GraphElement implements Sequence {
 
         buffer = ByteBuffer.allocateDirect(DATA_SIZE);
         try{
-            File file = new File(filename);
+            File file = new File(getGraph() != null ? 
+            		FileUtils.getFile(getGraph().getProjectURL(), filename) :
+            		filename);
             if (!file.exists()) {
             	logger.info("Sequence file " + filename + " doesn't exist. Creating new file.");
                 file.createNewFile();
