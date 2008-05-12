@@ -61,7 +61,7 @@ public class JdbcDriver {
     private String database;
     
     /**
-     * Name of this JDBC driver is used for comunication with user - for example in the clover.GUI.
+     * Name of this JDBC driver is used for communication with user - for example in the clover.GUI.
      */
     private String name;
     
@@ -92,7 +92,7 @@ public class JdbcDriver {
     private Extension extension;
     
     /**
-     * Class loader used to instancionalization of java.sql.Driver class.
+     * Class loader used to get instance of java.sql.Driver class.
      */
     private ClassLoader classLoader;
     
