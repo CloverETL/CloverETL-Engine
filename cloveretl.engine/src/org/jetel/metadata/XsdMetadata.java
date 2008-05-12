@@ -306,7 +306,7 @@ public class XsdMetadata {
     			output = System.out;
     		}
 
-    	    EngineInitializer.initEngine(null, null, null);
+    	    EngineInitializer.initEngine((String) null, null, null);
     		
             DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
             DataRecordMetadata metadata;

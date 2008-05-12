@@ -19,8 +19,13 @@
 */
 package org.jetel.plugin;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +42,7 @@ import org.jetel.database.jdbc.JdbcDriverFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.dictionary.DictionaryEntryFactory;
 import org.jetel.interpreter.extensions.TLFunctionPluginRepository;
+import org.jetel.util.file.FileUtils;
 
 /**
  * This class contains all static method, which provide access to all loadable plugins.
@@ -58,34 +64,46 @@ public class Plugins {
     
     private static Map<String, PluginDescriptor> deactivePlugins;
 
-    private static File[] pluginDirectories;
+    private static URL[] pluginDirectories;
     
     public static void init() {
-        init(null);
+        init((String) null);
     }
     
     public static void init(String directory) {
-        //remove all previous settings
-        pluginDescriptors = new HashMap<String, PluginDescriptor>();
-        activePlugins = new HashMap<String, PluginDescriptor>();
-        deactivePlugins = new HashMap<String, PluginDescriptor>();
 
         if(directory == null) {
             directory = Defaults.DEFAULT_PLUGINS_DIRECTORY;
         }
         
         //check plugin directories
-        List<File> pluginDirectories = new ArrayList<File>();
+        List<URL> pluginDirectories = new ArrayList<URL>();
         String[] dirs = directory.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
         for(String dir : dirs) {
-            File pluginDirectory = new File(dir);
-            if(!pluginDirectory.isDirectory()) {
+        	try {
+				pluginDirectories.add(new File(dir).toURL());
+			} catch (MalformedURLException e) {
                 logger.error("Plugin directory does not exists or is not directory. (" + directory + ")");
-            } else {
-                pluginDirectories.add(pluginDirectory);
-            }
+			}
         }
-        Plugins.pluginDirectories = pluginDirectories.toArray(new File[pluginDirectories.size()]);
+
+        init(pluginDirectories.toArray(new URL[pluginDirectories.size()]));
+    }
+
+    public static void init(URL[] pluginUrls) {
+        //remove all previous settings
+        pluginDescriptors = new HashMap<String, PluginDescriptor>();
+        activePlugins = new HashMap<String, PluginDescriptor>();
+        deactivePlugins = new HashMap<String, PluginDescriptor>();
+
+        if(pluginUrls == null || pluginUrls.length == 0) {
+        	logger.warn("Engine starts with no plugins repository.");
+        	if(pluginUrls == null) {
+        		pluginUrls = new URL[0];
+        	}
+        }
+        
+        Plugins.pluginDirectories = pluginUrls;
         
         //create all plugin descriptor
         loadPluginDescription();
@@ -102,7 +120,7 @@ public class Plugins {
         JdbcDriverFactory.init();
         DictionaryEntryFactory.init();
     }
-
+    
     public static Map<String, PluginDescriptor> getPluginDescriptors(){
     	return pluginDescriptors;
     }
@@ -118,28 +136,77 @@ public class Plugins {
     }
 
     private static void loadPluginDescription() {
-        for(File pluginDirectory : pluginDirectories) {
-            File[] pd = pluginDirectory.listFiles();
-            for(int i = 0; i < pd.length; i++) {
-                if(pd[i].isDirectory()) {
-                    File[] manifest = pd[i].listFiles(new FilenameFilter() {
-                        public boolean accept(File dir, String name) {
-                            return name.equals("plugin.xml");
-                        }
-                    });
-                    if(manifest.length == 1) {
-                        PluginDescriptor pluginDescriptor = new PluginDescriptor(manifest[0]);
-                        try {
-                            pluginDescriptor.init();
-                        } catch (ComponentNotReadyException e) {
-                            //manifest is not parsable
-                            continue;
-                        }
-                        pluginDescriptors.put(pluginDescriptor.getId(), pluginDescriptor);
-                        logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.\n" + pluginDescriptor.toString());
-                    }
-                }
-            }
+    	//iterates over all plugin repositories
+        for(URL pluginsRepositoryUrl : pluginDirectories) {
+        	//url uses file protocol - take advantage of ability to list a directory in a harddrive
+        	if(!(pluginsRepositoryUrl.getProtocol() == "file")) {
+        		File pluginRepositoryPath = new File(pluginsRepositoryUrl.getPath());
+        		File[] pd = pluginRepositoryPath.listFiles();
+        		if(pd == null) {
+        			logger.error("Plugins repository '" + pluginRepositoryPath + "' is not available (skipped).");
+        			continue;
+        		}
+        		for(int i = 0; i < pd.length; i++) {
+        			if(pd[i].isDirectory()) {
+        				File[] manifest = pd[i].listFiles(new FilenameFilter() {
+        					public boolean accept(File dir, String name) {
+        						return name.equals("plugin.xml");
+        					}
+        				});
+        				if(manifest.length == 1) {
+        					PluginDescriptor pluginDescriptor;
+							try {
+								pluginDescriptor = new PluginDescriptor(manifest[0].toURL());
+							} catch (MalformedURLException e1) {
+								logger.error("Plugin manifest is not available for '" + pd[i] + "' plugin.");
+								continue;
+							}
+        					try {
+        						pluginDescriptor.init();
+        					} catch (ComponentNotReadyException e) {
+        						//manifest is not parsable
+        						continue;
+        					}
+        					pluginDescriptors.put(pluginDescriptor.getId(), pluginDescriptor);
+        					logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.\n" + pluginDescriptor.toString());
+        				}
+        			}
+        		}
+        	} else {
+            	//url uses another protocol 
+	        	URL pluginListUrl;
+				try {
+					//try to find "pluginlist" file with a list of all contained plugins
+					pluginListUrl = FileUtils.getFileURL(pluginsRepositoryUrl, "pluginlist");
+		        	BufferedReader br = new BufferedReader(new InputStreamReader(pluginListUrl.openStream()));
+		        	String pluginId;
+		        	//process each plugin
+		        	while((pluginId = br.readLine()) != null) {
+		        		URL pluginManifestUrl;
+		        		try {
+		        			//find a plugin manifest "plugin.xml"
+		        			pluginManifestUrl = FileUtils.getFileURL(pluginListUrl, pluginId + "/plugin.xml");
+		    			} catch (MalformedURLException e) {
+		    				logger.error("Plugin '" + pluginId + "' is not available (skipped).", e);
+		    				continue;
+		    			}
+		        		PluginDescriptor pluginDescriptor = new PluginDescriptor(pluginManifestUrl);
+		        		try {
+		        			pluginDescriptor.init();
+		        		} catch (ComponentNotReadyException e) {
+		        			//manifest is not parsable
+		        			continue;
+		        		}
+		        		//stores prepared plugin descriptor
+		        		pluginDescriptors.put(pluginDescriptor.getId(), pluginDescriptor);
+		        		logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.\n" + pluginDescriptor.toString());
+		        	}
+				} catch (MalformedURLException e) {
+					logger.error("Plugins repository '" + pluginsRepositoryUrl + "' is not valid URL (skipped).", e);
+				} catch (IOException e) {
+					logger.error("Plugins repository '" + pluginsRepositoryUrl + "' does not contain pluginlist file (skipped).", e);
+				}
+        	}
         }
     }
 
@@ -162,11 +229,8 @@ public class Plugins {
         }
     }
 
-    public static File[] getPluginDirectories() {
-    	// copy array to prevent array modification by caller
-    	final File[] ret = new File[pluginDirectories.length];
-    	System.arraycopy(pluginDirectories, 0, ret, 0, pluginDirectories.length);
-        return ret;
+    public static URL[] getPluginDirectories() {
+        return pluginDirectories;
     }
 
     public static PluginDescriptor getPluginDescriptor(String pluginId) {

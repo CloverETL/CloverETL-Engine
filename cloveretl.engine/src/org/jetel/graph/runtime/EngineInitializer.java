@@ -66,11 +66,7 @@ public class EngineInitializer {
     	initLogging(logHost);
     	
         //init url protocols
-        try {
-			URL.setURLStreamHandlerFactory(new CloverURLStreamHandlerFactory());
-		} catch (Error e) {
-			System.err.println("SFTP protocol cannot be provided: " + e.getMessage());
-		}
+    	initUrlProtocols();
 		
         //init framework constants
         Defaults.init(defaultPropertiesFile);
@@ -82,6 +78,44 @@ public class EngineInitializer {
         alreadyInitialized = true;
     }
 
+    /**
+     * Clover.ETL engine initialization. Should be called only once.
+     * @param pluginsRootUrls URL, where plugins specification is located 
+     * @param defaultPropertiesFile file with external definition of default values usually stored in defaultProperties
+     * @param password password for encrypting some hidden part of graphs
+     *        <br>i.e. connections password can be encrypted
+     *        <br>can be null
+     */
+    public static void initEngine(URL[] pluginsRootUrls, String defaultPropertiesFile, String logHost) {
+    	if(alreadyInitialized) {
+    		//clover engine is already initialized
+    		return;
+    	}
+    	
+    	//init logging
+    	initLogging(logHost);
+    	
+        //init url protocols
+    	initUrlProtocols();
+		
+        //init framework constants
+        Defaults.init(defaultPropertiesFile);
+
+        //init clover plugins system
+        Plugins.init(pluginsRootUrls);
+        
+        //make a note, engine is already initialized
+        alreadyInitialized = true;
+    }
+
+    private static void initUrlProtocols() {
+        try {
+			URL.setURLStreamHandlerFactory(new CloverURLStreamHandlerFactory());
+		} catch (Error e) {
+			System.err.println("SFTP protocol cannot be provided: " + e.getMessage());
+		}
+    }
+    
     private static void initLogging(String logHost) {
     	if(StringUtils.isEmpty(logHost)) {
     		return;

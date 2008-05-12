@@ -19,7 +19,6 @@
 */
 package org.jetel.plugin;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -97,7 +96,7 @@ public class PluginDescriptor {
     /**
      * Link to manifest file (plugin.xml).
      */
-    private File manifest;
+    private URL manifest;
     
     
     /**
@@ -105,7 +104,7 @@ public class PluginDescriptor {
      */
     private boolean isActive = false;
     
-    public PluginDescriptor(File manifest) {
+    public PluginDescriptor(URL manifest) {
         this.manifest = manifest; 
         
         prerequisites = new ArrayList<PluginPrerequisite>();
@@ -119,23 +118,23 @@ public class PluginDescriptor {
         Document doc;
         
         try {
-            doc = dbf.newDocumentBuilder().parse(manifest);
+            doc = dbf.newDocumentBuilder().parse(manifest.openStream());
         } catch (SAXException e) {
-            logger.error("Parse error occure in plugin manifest reading - " + manifest.getAbsolutePath() + ". (" + e.getMessage() + ")");
-            throw new IllegalArgumentException();
+            logger.error("Parse error occure in plugin manifest reading - " + manifest + ". (" + e.getMessage() + ")");
+            throw new ComponentNotReadyException(e);
         } catch (IOException e) {
-            logger.error("IO error occure in plugin manifest reading - " + manifest.getAbsolutePath() + ". (" + e.getMessage() + ")");
-            throw new IllegalArgumentException();
+            logger.error("IO error occure in plugin manifest reading - " + manifest + ". (" + e.getMessage() + ")");
+            throw new ComponentNotReadyException(e);
         } catch (ParserConfigurationException e) {
-            logger.error("Parse error occure in plugin manifest reading - " + manifest.getAbsolutePath() + ". (" + e.getMessage() + ")");
-            throw new IllegalArgumentException();
+            logger.error("Parse error occure in plugin manifest reading - " + manifest+ ". (" + e.getMessage() + ")");
+            throw new ComponentNotReadyException(e);
         }
         
         PluginDescriptionBuilder builder = new PluginDescriptionBuilder(this);
         try {
             builder.read(doc);
         } catch (InvalidAttributesException e) {
-            logger.error("Parse error occure in plugin manifest reading - " + manifest.getAbsolutePath() + ". (" + e.getMessage() + ")");
+            logger.error("Parse error occure in plugin manifest reading - " + manifest + ". (" + e.getMessage() + ")");
             throw new ComponentNotReadyException(e);
         }
     }
@@ -168,11 +167,11 @@ public class PluginDescriptor {
         this.pluginClassName = className;
     }
 
-    public File getManifest() {
+    public URL getManifest() {
         return manifest;
     }
 
-    public void setManifest(File manifest) {
+    public void setManifest(URL manifest) {
         this.manifest = manifest;
     }
 
@@ -218,7 +217,7 @@ public class PluginDescriptor {
      * @throws MalformedURLException
      */
     public URL getURL(String path) throws MalformedURLException {
-        return FileUtils.getFileURL(manifest.getParentFile().toURL(), path);
+        return FileUtils.getFileURL(manifest, path);
     }
     
     public Extension addExtension(String pointId) {

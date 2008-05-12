@@ -48,7 +48,7 @@ public class XsdMetadataTest extends TestCase  {
 	
     protected void setUp() throws Exception {
         super.setUp();
-    	EngineInitializer.initEngine(null, null, null);
+    	EngineInitializer.initEngine((String) null, null, null);
         DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
         metadata = xmlReader.read(new ByteArrayInputStream(xmlMetadata.getBytes()));
     }

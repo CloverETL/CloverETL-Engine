@@ -55,7 +55,7 @@ protected void setUp() {
     testRecordA.getField(2).setValue(new Integer(-1234567));
     testRecordB.copyFieldsByPosition(testRecordA);
     
-	EngineInitializer.initEngine(null, null, null);
+	EngineInitializer.initEngine((String) null, null, null);
 }
 
 

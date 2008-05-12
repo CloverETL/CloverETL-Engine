@@ -55,7 +55,7 @@ private DataRecordMetadata metadata = null;
 	
 protected void setUp() { 
 	
-	EngineInitializer.initEngine(null, null, null);
+	EngineInitializer.initEngine((String) null, null, null);
 	FileInputStream in = null;
 //	FileInputStream in2 = null;
 	FileInputStream in3 = null;
