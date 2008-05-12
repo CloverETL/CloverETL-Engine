@@ -56,7 +56,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 			e.printStackTrace();
 		}
 		
-		EngineInitializer.initEngine(null, null, null);
+		EngineInitializer.initEngine((String) null, null, null);
 	
 		aParser2 = new FixLenCharDataParser();
 

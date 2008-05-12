@@ -52,7 +52,7 @@ public class DynamicRecordBufferTest extends TestCase {
      */
     protected void setUp() throws Exception {
         super.setUp();
-    	EngineInitializer.initEngine(null, null, null);
+    	EngineInitializer.initEngine((String) null, null, null);
         buffer=new DynamicRecordBuffer(Defaults.Record.MAX_RECORD_SIZE);
         buffer.init();
         byteBuffer1=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);

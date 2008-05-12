@@ -35,7 +35,7 @@ public class PropertyRefResolverTest extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-    	EngineInitializer.initEngine(null, null, null);
+    	EngineInitializer.initEngine((String) null, null, null);
     }
 
     protected void tearDown() throws Exception {

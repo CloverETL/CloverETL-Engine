@@ -12,7 +12,7 @@ public class DecimalNumericTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		EngineInitializer.initEngine(null, null, null);
+		EngineInitializer.initEngine((String) null, null, null);
 		
 		 anInt=DecimalFactory.getDecimal(0);
 		 aLong=DecimalFactory.getDecimal((long)0);

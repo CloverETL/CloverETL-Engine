@@ -20,7 +20,7 @@ public class ByteArrayTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		EngineInitializer.initEngine(null, null, null);
+		EngineInitializer.initEngine((String) null, null, null);
 		sBytes = "Kašna na vodu";
 		bytes = sBytes.getBytes();
 		byteArrayEmpty = new ByteArray();

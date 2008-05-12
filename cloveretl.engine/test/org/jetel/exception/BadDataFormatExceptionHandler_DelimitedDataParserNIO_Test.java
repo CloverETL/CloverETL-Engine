@@ -43,7 +43,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	private DataRecordMetadata metadata = null;
 	
 	protected void setUp() { 
-		EngineInitializer.initEngine(null, null, null);
+		EngineInitializer.initEngine((String) null, null, null);
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 
 		try {
