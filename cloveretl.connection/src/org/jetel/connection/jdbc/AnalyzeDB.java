@@ -192,7 +192,7 @@ public class AnalyzeDB {
 		if (delimiter == null) {
 			delimiter = DEFAULT_DELIMITER;
 		}
-		EngineInitializer.initEngine(null, engineConfig, null);
+		EngineInitializer.initEngine((String) null, engineConfig, null);
 		try {
 			doAnalyze(config);
 		}
