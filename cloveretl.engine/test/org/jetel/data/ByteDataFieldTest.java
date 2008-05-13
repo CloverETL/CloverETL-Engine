@@ -37,7 +37,7 @@ public class ByteDataFieldTest  extends TestCase {
     static final String TEST_STRING="THIS is test !@#$%^&*()ěščřžýíé";
     
 protected void setUp() {
-	EngineInitializer.initEngine(null, null, null);
+	EngineInitializer.initEngine((String) null, null, null);
 
     int i=0;
     for(byte b: byteArray){

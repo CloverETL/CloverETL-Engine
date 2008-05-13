@@ -66,7 +66,7 @@ public class TestInterpreter extends TestCase {
 	private GregorianCalendar today;
 	
 	protected void setUp() {
-		EngineInitializer.initEngine(null, null, null);
+		EngineInitializer.initEngine((String) null, null, null);
 	    
         graph=new TransformationGraph();
         
