@@ -1037,7 +1037,43 @@ public class StringUtils {
     	return result;
     }
 
-    
+    /**
+	 * Convert each backslash in string to slash.
+	 * @param string string with backslashes
+	 * @return string with slashes
+	 */
+	public static String backslashToSlash(CharSequence controlString) {
+        if(controlString == null) return null;
+
+        StringBuffer copy = new StringBuffer();
+		char character;
+		for (int i = 0; i < controlString.length(); i++) {
+			character = controlString.charAt(i);
+			switch (character) {
+				case '\n':
+					copy.append("/n");
+					break;
+				case '\t':
+					copy.append("/t");
+					break;
+				case '\r':
+					copy.append("/r");
+					break;
+                case '\b':
+                    copy.append("/b");
+                    break;
+                case '\f':
+                    copy.append("/f");
+                    break;
+                case '\\':
+                	copy.append("/");
+                	break;
+				default:
+					copy.append(character);
+			}
+		}
+		return copy.toString();
+	}
 /*
  *  End class StringUtils
  */
