@@ -26,8 +26,6 @@ package org.jetel.interpreter;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jetel.component.CustomizedRecordTransform;
-import org.jetel.interpreter.data.TLVariable;
 import org.jetel.interpreter.extensions.TLFunctionFactory;
 import org.jetel.interpreter.extensions.TLFunctionPrototype;
 
@@ -41,12 +39,10 @@ import org.jetel.interpreter.extensions.TLFunctionPrototype;
 public class ParserHelper {
 
     static class VarDeclaration {
-        String name;
         int type;
         int slot;
 
         VarDeclaration(String name, int type,int slot) {
-            this.name = name;
             this.type = type;
             this.slot = slot;
         }

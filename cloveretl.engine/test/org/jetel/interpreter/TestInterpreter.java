@@ -176,25 +176,23 @@ public class TestInterpreter extends TestCase {
 		   CLVFStartExpression parseTree=null;
 		   try{
 			   parseTree = parser.StartExpression();
+			   System.out.println("Initializing parse tree..");
+			      parseTree.init();
+			   System.out.println("Parse tree:");
+			      parseTree.dump("");
+
+			      
+			      
+			      /*
+			      System.out.println("Interpreting parse tree..");
+			      TransformLangExecutor executor=new TransformLangExecutor();
+			      executor.setInputRecords(new DataRecord[] {record});
+			      executor.visit(parseTree,null);
+			      */
+			      System.out.println("Finished interpreting.");
 		   }catch(ParseException ex){
 			   ex.printStackTrace();
 		   }
-		   System.out.println("Initializing parse tree..");
-		      parseTree.init();
-		   System.out.println("Parse tree:");
-		      parseTree.dump("");
-
-		      
-		      
-		      /*
-		      System.out.println("Interpreting parse tree..");
-		      TransformLangExecutor executor=new TransformLangExecutor();
-		      executor.setInputRecords(new DataRecord[] {record});
-		      executor.visit(parseTree,null);
-		      */
-		      System.out.println("Finished interpreting.");
-		
-		
 	}
 	
 	public void test_int(){

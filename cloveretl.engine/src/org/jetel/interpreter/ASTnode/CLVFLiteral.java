@@ -26,8 +26,8 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
     public static final String LONG_DISTINCTER_LOWERCASE="l";
     public static final String LONG_DISTINCTER_UPPERCASE="L";
     
-    private static DateFormat dateFormat=new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
-    private static DateFormat dateTimeFormat=new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
+    private static final DateFormat dateFormat = new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
+    private static final DateFormat dateTimeFormat = new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
     
 	String valueImage; 
     public Object valueObj;

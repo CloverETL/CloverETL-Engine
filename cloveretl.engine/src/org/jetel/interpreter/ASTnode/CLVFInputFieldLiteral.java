@@ -74,14 +74,14 @@ public class CLVFInputFieldLiteral extends SimpleNode {
          if (record==null){
              throw new ParseException("Unknown data field ["+fRecName+"]"); 
          }
-         try{
+         try {
         	 fieldNo=Integer.parseInt(recFieldName[1]);
-        	 DataFieldMetadata field = record.getField(fieldNo);
-        	 if (field==null)
-        		 throw new ParseException("Non exising data field ["+fRecName+"]");
-         }catch(Exception ex){
-             throw new ParseException("Unknown data field ["+fRecName+"]");
+         } catch(NumberFormatException ex){
+        	 throw new ParseException("Unknown data field ["+fRecName+"]");
          }
+    	 DataFieldMetadata field = record.getField(fieldNo);
+    	 if (field==null)
+    		 throw new ParseException("Non exising data field ["+fRecName+"]");
      }
      
      public void setRecordNumFieldName(String fRecName) throws ParseException{
@@ -111,7 +111,7 @@ public class CLVFInputFieldLiteral extends SimpleNode {
         	 DataFieldMetadata field = record.getField(fieldNo);
         	 if (field==null)
         		 throw new ParseException("Non exising data field ["+fRecFieldNum+"]");
-         }catch(Exception ex){
+         }catch(Throwable ex){
              throw new ParseException("Unknown data field ["+fRecFieldNum+"]");
          }
      }

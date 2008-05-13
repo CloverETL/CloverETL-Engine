@@ -21,6 +21,8 @@ package org.jetel.interpreter;
 
 import org.jetel.interpreter.ASTnode.SimpleNode;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * @author dpavlis
  * @since  9.9.2004
@@ -41,6 +43,7 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
 		this(node,arguments,message,null);
 	}
     
+    @SuppressWarnings(value="EI2")
     public TransformLangExecutorRuntimeException(SimpleNode node,Object[] arguments,String message,Throwable cause){
         super(message,cause);
         this.nodeInError=node;
@@ -79,6 +82,7 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
         nodeInError=inError;
     }
     
+    @SuppressWarnings(value="EI")
 	public Object[] getArguments(){
 		return arguments;
 	}

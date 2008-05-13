@@ -25,7 +25,6 @@ import java.util.regex.Matcher;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.CustomizedRecordTransform;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.NullRecord;
@@ -51,6 +50,8 @@ import org.jetel.interpreter.data.TLVariable;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.CharSequenceReader;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * Executor of FilterExpression parse tree.
@@ -121,6 +122,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
      * 
      * @param inputRecords array of input data records carrying values
      */
+   	@SuppressWarnings(value="EI2")
     public void setInputRecords(DataRecord[] inputRecords){
         this.inputRecords=inputRecords;
         for (DataRecord record : this.inputRecords) {
@@ -136,6 +138,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
      * 
      * @param outputRecords array of output data records for setting values
      */
+    @SuppressWarnings(value="EI2")
     public void setOutputRecords(DataRecord[] outputRecords){
         this.outputRecords=outputRecords;
     }
@@ -1324,8 +1327,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         TLValue valueToAssign = stack.pop();
         if (valueToAssign==null) {
             throw new TransformLangExecutorRuntimeException(node,
-                    "invalid assignment of \"" + valueToAssign
-                            + "\" to variable \"" + varNode.varName+"\"");
+                    "invalid assignment of null value to variable \"" + varNode.varName+"\"");
         }
         
         

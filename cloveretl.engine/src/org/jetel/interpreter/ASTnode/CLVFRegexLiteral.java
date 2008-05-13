@@ -30,7 +30,7 @@ public class CLVFRegexLiteral extends SimpleNode {
 	public void setRegex(String regex) throws ParseException {
 		try {
 			matcher = Pattern.compile(regex)
-					.matcher(new String("dummy"));
+					.matcher("dummy");
 		} catch (PatternSyntaxException ex) {
 			throw new ParseException(null, "Regex pattern error:"+ex.getMessage(), ex);
 		}
