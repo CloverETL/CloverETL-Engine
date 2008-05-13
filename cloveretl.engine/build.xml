@@ -27,6 +27,7 @@
 	<property name="dir.distribution" value="${basedir}/dist"/>
 	<property name="dir.lib" value="${basedir}/lib"/>
 	<property name="dir.docs" value="${basedir}/docs"/>
+	<property name="dir.build-scripts" value="${basedir}/build-scripts"/>
 	<property name="dir.src" value="src"/>
 	<property name="dir.src.test" value="${basedir}/test"/>
 	<property name="dir.src.tmp" value="src_tmp"/>
@@ -417,9 +418,10 @@
 				home="${dir.findbugs}" 
 				output="html"
 				outputfile="${dir.findbugsreport}/bugreport.html" 
-				stylesheet="fancy-hist.xsl">
+				stylesheet="fancy-hist.xsl"
+				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml">
 			<class location="${dir.bin}"/>
-			<sourcePath path="${dir.src}"/>
+			<sourcePath path="${dir.src}" />
 		</findbugs>
 	</target>
 	
