@@ -43,7 +43,6 @@ import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
-import org.jetel.interpreter.extensions.ConvertLib.Function;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.string.Compare;
@@ -595,12 +594,10 @@ public class StringLib extends TLFunctionLibrary {
             
             String replacement=params[2].toString();
             regex.strbuf.setLength(0);
-            regex.strbuf.append(regex.result.getValue());
             while ( regex.matcher.find()) {
                 regex.matcher.appendReplacement(regex.strbuf, replacement);
             }
             regex.matcher.appendTail(regex.strbuf);
-            ((StringBuilder)regex.result.getValue()).setLength(0);
             regex.result.setValue(regex.strbuf);
             
 			return regex.result;
