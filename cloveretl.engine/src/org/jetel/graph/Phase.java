@@ -158,9 +158,9 @@ public class Phase extends GraphElement implements Comparable {
 				node.init();
 				logger.debug("\t" + node.getId() + " ...OK");
 			} catch (ComponentNotReadyException ex) {
-				throw new ComponentNotReadyException(node.getId() + " ...FAILED !", ex);
+				throw new ComponentNotReadyException(node.getId() + " ...FAILED ! \nReason: " +  ex.getMessage(), ex);
 			} catch (Exception ex) {
-				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !", ex);
+				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !\nReason: " +  ex.getMessage(), ex);
 			}
 		}
         

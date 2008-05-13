@@ -157,6 +157,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String COMPRESSED_ATTR = "compressed";
 	private static final String SHIFT_ATTR = "shift";
 	private static final String SIZE_ATTR = "size";
+	private static final String SKIP_FIRST_LINE_ATTR = "skipFirstLine";
 	private static final String AUTO_FILLING_ATTR = "auto_filling";
 	
 	private static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
@@ -234,24 +235,24 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			document.normalize();
 
 		} catch (SAXParseException ex) {
-			logger.fatal("SAX Exception on line "
+			logger.error("SAX Exception on line "
 					+ ex.getLineNumber() + " row " + ex.getColumnNumber(), ex);
 			return null;
 		} catch (ParserConfigurationException ex) {
-			logger.fatal(ex.getMessage());
+			logger.error(ex.getMessage());
 			return null;
 		} catch (Exception ex) {
-			logger.fatal(ex.getMessage());
+			logger.error(ex.getMessage());
 			return null;
 		}
 
 		try {
 			return parseRecordMetadata(document, metadataId);
 		} catch (DOMException ex) {
-			logger.fatal(ex.getMessage());
+			logger.error(ex.getMessage());
 			return null;
 		} catch (Exception ex) {
-			logger.fatal("parseRecordMetadata method call: "
+			logger.error("parseRecordMetadata method call: "
 					+ ex.getMessage());
 			return null;
 		}
@@ -372,6 +373,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				}
 				fieldElement.setAttribute(NULLABLE_ATTR,
 				        String.valueOf(field.isNullable()));
+
+				fieldElement.setAttribute(SKIP_FIRST_LINE_ATTR, String.valueOf(record.isSkipFirstLine()));
 
 				// output field properties - if anything defined
 				prop = field.getFieldProperties();
@@ -522,6 +525,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String localeStr = null;
 			String compressed = null;
 			String autoFilling = null;
+			String skipFirstLine = null;
 			String trim = null;
 			char fieldType = ' ';
 			Properties fieldProperties = new Properties();
@@ -556,6 +560,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					compressed = itemValue;
 				} else if (itemName.equalsIgnoreCase(AUTO_FILLING_ATTR)) {
 					autoFilling = itemValue;
+				} else if (itemName.equalsIgnoreCase(SKIP_FIRST_LINE_ATTR)) {
+					skipFirstLine = itemValue;
 				} else {
 					if (fieldProperties == null) {
 						fieldProperties = new Properties();
@@ -636,6 +642,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 
 			if (autoFilling != null) {
 				field.setAutoFilling(autoFilling);
+			}
+			if (skipFirstLine != null) {
+				recordMetadata.setSkipFirstLine(Boolean.valueOf(skipFirstLine));
 			}
 			
 			if (trim != null) {

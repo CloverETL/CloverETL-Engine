@@ -2,6 +2,21 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 2-4-4
+---------
+Changes/bug fixes:
++ new extension point for dictionary entry type
+
+REL 2-4-3
+---------
+Release in particular repairing bugs from 2.4.2 version.
+
+Changes/bug fixes:
++ MergeJoin - fix for left outer join
++ DBOutputTable - fix problem with order in fieldMap attribute
++ AnalyzeDB - added engine initialization 
++ minor bugfixes
+
 REL 2-4-2
 ---------
 Release in particular repairing bugs from 2.4.1 version.

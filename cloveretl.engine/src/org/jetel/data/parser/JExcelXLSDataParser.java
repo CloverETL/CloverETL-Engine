@@ -179,6 +179,8 @@ public class JExcelXLSDataParser extends XLSParser {
 			name = StringUtils.normalizeName(name);
 		}
 		DataRecordMetadata xlsMetadata = new DataRecordMetadata(name, DataRecordMetadata.DELIMITED_RECORD);
+		xlsMetadata.setFieldDelimiter(DEFAULT_FIELD_DELIMITER);
+		xlsMetadata.setRecordDelimiters(DEFAULT_RECORD_DELIMITER);
 		Cell[] namesRow;
 		if (metadataRow > -1) {
 			 namesRow = sheet.getRow(metadataRow);
@@ -202,22 +204,18 @@ public class JExcelXLSDataParser extends XLSParser {
 			if (type == CellType.EMPTY && namesRow != dataRow && nameCell.getType() == CellType.EMPTY){
 				continue;
 			}else if (type == CellType.BOOLEAN) {
-				field = new DataFieldMetadata(name, DataFieldMetadata.BOOLEAN_FIELD, 
-						i < namesRow.length -1 ? DEFAULT_FIELD_DELIMITER : DEFAULT_LAST_FIELD_DELIMITER);
+				field = new DataFieldMetadata(name, DataFieldMetadata.BOOLEAN_FIELD,null);
 				xlsMetadata.addField(field);
 			}else if (type == CellType.DATE){
-				field = new DataFieldMetadata(name, DataFieldMetadata.DATE_FIELD,  
-						i < namesRow.length -1 ? DEFAULT_FIELD_DELIMITER : DEFAULT_LAST_FIELD_DELIMITER);
+				field = new DataFieldMetadata(name, DataFieldMetadata.DATE_FIELD,null);
 				field.setFormatStr(((SimpleDateFormat)((DateCell)dataCell).getDateFormat()).toPattern());
 				xlsMetadata.addField(field);
 			}else if (type == CellType.NUMBER) {
-				field = new DataFieldMetadata(name, DataFieldMetadata.NUMERIC_FIELD,  
-						i < namesRow.length -1 ? DEFAULT_FIELD_DELIMITER : DEFAULT_LAST_FIELD_DELIMITER);
+				field = new DataFieldMetadata(name, DataFieldMetadata.NUMERIC_FIELD,null);
 				field.setFormatStr(((DecimalFormat)((NumberCell)dataCell).getNumberFormat()).toPattern());
 				xlsMetadata.addField(field);
 			}else{
-				field = new DataFieldMetadata(name, DataFieldMetadata.STRING_FIELD,  
-						i < namesRow.length -1 ? DEFAULT_FIELD_DELIMITER : DEFAULT_LAST_FIELD_DELIMITER);
+				field = new DataFieldMetadata(name, DataFieldMetadata.STRING_FIELD,null);
 				xlsMetadata.addField(field);
 			}
 		}

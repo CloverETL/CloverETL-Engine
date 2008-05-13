@@ -89,6 +89,11 @@ public interface Formatter {
 	 */
 	public void flush() throws IOException;
 
+	/**
+	 * This method writes all data (header, body, footer) which are to write, but doesn't close underlying streams.
+	 * 
+	 * @throws IOException
+	 */
 	public void finish() throws IOException;
 }
 /*

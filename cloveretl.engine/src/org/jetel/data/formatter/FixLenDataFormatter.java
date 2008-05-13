@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.UnsupportedCharsetException;
@@ -273,18 +274,23 @@ public class FixLenDataFormatter implements Formatter {
 		}
 		// write fields
 		dataBuffer.limit(dataBuffer.capacity());
-		for (int i = 0; i < fieldCnt; i++) {
-			dataBuffer.position(recPos + fieldStart[i]);
-			record.getField(i).toByteBuffer(dataBuffer, encoder);
-			int remn = recPos + fieldEnd[i] - dataBuffer.position();	// remaining bytes to be written
-			if (remn > 0) {
-				fieldFillerBuf.rewind();
-				fieldFillerBuf.limit(remn);
-				dataBuffer.put(fieldFillerBuf);				
+		int i = 0;
+		try {
+			for (i = 0; i < fieldCnt; i++) {
+				dataBuffer.position(recPos + fieldStart[i]);
+				record.getField(i).toByteBuffer(dataBuffer, encoder);
+				int remn = recPos + fieldEnd[i] - dataBuffer.position();	// remaining bytes to be written
+				if (remn > 0) {
+					fieldFillerBuf.rewind();
+					fieldFillerBuf.limit(remn);
+					dataBuffer.put(fieldFillerBuf);				
+				}
 			}
+		} catch (CharacterCodingException e) {
+            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ". (original cause: " + e.getMessage() + ") \n\nRecord: " +record.toString(), e);
 		}
 		// fill gaps
-		for (int i = 0; i < gapCnt; i++) {
+		for (i = 0; i < gapCnt; i++) {
 			dataBuffer.position(0);	// to avoid exceptions being thrown while setting buffer limit
 			dataBuffer.limit(recPos + gapEnd[i]);
 			dataBuffer.position(recPos + gapStart[i]);

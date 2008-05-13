@@ -167,9 +167,9 @@ public class FixLenCharDataParser extends FixLenDataParser {
 			if (isAutoFilling[fieldIdx]) {
 				continue;
 			}
-			skipLBlanks = skipLeadingBlanks || trim
+			skipLBlanks = skipLeadingBlanks || (trim != null && trim)
 					|| (trim == null && metadata.getField(fieldIdx).isTrim());
-			skipTBlanks = skipTrailingBlanks || trim
+			skipTBlanks = skipTrailingBlanks || (trim != null && trim)
 					|| (trim == null && metadata.getField(fieldIdx).isTrim());
 			try {
 				if (recStart + fieldStart[fieldIdx] >= recEnd) {	// there are no data available for this field

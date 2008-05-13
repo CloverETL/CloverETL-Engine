@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.UnsupportedCharsetException;
@@ -220,34 +221,39 @@ public class TextTableFormatter implements Formatter {
         }
         
 		//for each record field which is in mask change its name to value
-        Object o;
-		for (int i=0;i<maskAnalize.length;i++){
-			if (dataBuffer.remaining() < fieldBuffer.limit()+blank.capacity()){
-				directFlush();
-			}
-			//change field value to bytes
-			fieldBuffer.clear();
-			record.getField(maskAnalize[i].index).toByteBuffer(fieldBuffer, encoder);
-			fieldBuffer.flip();
-            
-			blank.clear();
-			o = record.getField(maskAnalize[i].index);
-			if (o == null) {
-				blank.limit(maskAnalize[i].length);
-			} else {
-				lenght = maskAnalize[i].length - (new String(o.toString().getBytes(encoder.charset().displayName())).length()); // fieldBuffer.limit() is wrong - encoding
-				blank.limit(lenght > 0 ? lenght : 0); // analyzed just n record -> some rows can be longer  
-			}
-            mark=dataBuffer.position();
+		int i = 0;
+		try {
+	        Object o;
+			for (i=0;i<maskAnalize.length;i++){
+				if (dataBuffer.remaining() < fieldBuffer.limit()+blank.capacity()){
+					directFlush();
+				}
+				//change field value to bytes
+				fieldBuffer.clear();
+				record.getField(maskAnalize[i].index).toByteBuffer(fieldBuffer, encoder);
+				fieldBuffer.flip();
+	            
+				blank.clear();
+				o = record.getField(maskAnalize[i].index);
+				if (o == null) {
+					blank.limit(maskAnalize[i].length);
+				} else {
+					lenght = maskAnalize[i].length - (new String(o.toString().getBytes(encoder.charset().displayName())).length()); // fieldBuffer.limit() is wrong - encoding
+					blank.limit(lenght > 0 ? lenght : 0); // analyzed just n record -> some rows can be longer  
+				}
+	            mark=dataBuffer.position();
 
-			//put field value to data buffer
-			dataBuffer.put(fieldBuffer);
-			dataBuffer.put(encoder.encode(blank));
-            
-            sentBytes+=dataBuffer.position()-mark;
-            sentBytes += writeString(TABLE_VERTICAL);
+				//put field value to data buffer
+				dataBuffer.put(fieldBuffer);
+				dataBuffer.put(encoder.encode(blank));
+	            
+	            sentBytes+=dataBuffer.position()-mark;
+	            sentBytes += writeString(TABLE_VERTICAL);
+			}
+	        sentBytes += writeString(NL);
+		} catch (CharacterCodingException e) {
+            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ". (original cause: " + e.getMessage() + ") \n\nRecord: " +record.toString(), e);
 		}
-        sentBytes += writeString(NL);
         return sentBytes;
 	}
 

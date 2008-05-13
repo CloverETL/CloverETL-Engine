@@ -5,11 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Iterator;
 import java.util.Vector;
-
-import org.jetel.util.file.FileUtils;
-import org.jetel.util.protocols.CloverURLStreamHandlerFactory;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
@@ -19,7 +15,6 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
-import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 /**
  * URL Connection for sftp protocol.
@@ -126,7 +121,8 @@ public class SFTPConnection extends URLConnection {
 		connect();
 		try {
 			channel = getChannelSftp();
-			InputStream is = channel.get(url.getFile());
+			String file = url.getFile();
+			InputStream is = new SFTPInputStream(session, channel.get(file.equals("") ? "/" : file));
 			return is;
 		} catch (SftpException e) {
 			throw new IOException(e.getMessage());
@@ -140,7 +136,7 @@ public class SFTPConnection extends URLConnection {
 		connect();
 		try {
 			channel = getChannelSftp();
-			return channel.put(url.getFile(), mode);
+			return new SFTPOutputStream(session, channel.put(url.getFile(), mode));
 		} catch (SftpException e) {
 			throw new IOException(e.getMessage());
 		} catch (JSchException e) {
@@ -306,24 +302,20 @@ public class SFTPConnection extends URLConnection {
 	}
 
 	public static void main(String[] s) {
-		try {
+		/*try {
 			FileUtils.getReadableChannel(null, "gzip:(sftp://jausperger:relatko5@linuxweb:/home/jausperger/public_html/employees0.dat.gz)");
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		}
+		}*/
 		
-		System.exit(0);
 		try {
-			URL.setURLStreamHandlerFactory(new CloverURLStreamHandlerFactory());
+			//URL.setURLStreamHandlerFactory(new CloverURLStreamHandlerFactory());
 			
-			// URL url = new
 			// URL("sftp://e-potrisalova:W8MPJYLm@eft.boehringer-ingelheim.com:/LSC/AED/Export/O_*");
-			// URL url = new
 			// URL("sftp://e-potrisalova:W8MPJYLm@eft.boehringer-ingelheim.com:/LSC/AED/Export/O_010_0000000000017003.xml");
 			URL url = new URL("sftp://jausperger:relatko5@linuxweb:/home/jausperger/public_html/");
-			/*URL url = new URL(
-					"sftp://jausperger:relatko5@home.javlinconsulting.cz:/home/jausperger/public_html/");*/
+			/*URL url = new URL("sftp://jausperger:relatko5@home.javlinconsulting.cz:/home/jausperger/public_html/");*/
 			SFTPConnection con = (SFTPConnection) url.openConnection();
 			// con.getInputStream();
 
@@ -333,14 +325,14 @@ public class SFTPConnection extends URLConnection {
 			con.ls(con.pwd());
 			System.out.println(con.pwd());
 			
-			Vector v = con.ls(con.pwd());
+			/*Vector v = con.ls(con.pwd());
 			Iterator it = v.iterator();
 			LsEntry entry;
 			while (it.hasNext()) {
 				entry = (LsEntry) it.next();
 				con.get("/LSC/AED/Export/" + entry.getFilename(), System.out);
 			}
-			con.disconnect();
+			con.disconnect();*/
 
 		} catch (Exception e) {
 			System.err.println(e.getMessage());

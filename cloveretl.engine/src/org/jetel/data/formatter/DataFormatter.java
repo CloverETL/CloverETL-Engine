@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.UnsupportedCharsetException;
@@ -177,35 +178,40 @@ public class DataFormatter implements Formatter {
 	public int write(DataRecord record) throws IOException {
 		int size;
 		int encLen = 0;
-		for (int i = 0; i < metadata.getNumFields(); i++) {
-			if(metadata.getField(i).isDelimited()) {
-				fieldBuffer.clear();
-				record.getField(i).toByteBuffer(fieldBuffer, encoder);
-				int fieldLen = fieldBuffer.position() + delimiterLength[i];
-				if(fieldLen > dataBuffer.remaining()) {
-					flush();
+		int i = 0;
+		try {
+			for (i = 0; i < metadata.getNumFields(); i++) {
+				if(metadata.getField(i).isDelimited()) {
+					fieldBuffer.clear();
+					record.getField(i).toByteBuffer(fieldBuffer, encoder);
+					int fieldLen = fieldBuffer.position() + delimiterLength[i];
+					if(fieldLen > dataBuffer.remaining()) {
+						flush();
+					}
+					encLen += fieldLen;
+					fieldBuffer.flip();
+					dataBuffer.put(fieldBuffer);
+					dataBuffer.put(delimiters[i]);
+				} else { //fixlen field
+					if (fieldLengths[i] > dataBuffer.remaining()) {
+						flush();
+					}
+					fieldBuffer.clear();
+					record.getField(i).toByteBuffer(fieldBuffer, encoder);
+					size = fieldBuffer.position();
+					if (size < fieldLengths[i]) {
+						fieldFiller.rewind();
+						fieldFiller.limit(fieldLengths[i] - size);
+						fieldBuffer.put(fieldFiller);
+					}
+					encLen += size;
+					fieldBuffer.flip();
+					fieldBuffer.limit(fieldLengths[i]);
+					dataBuffer.put(fieldBuffer);
 				}
-				encLen += fieldLen;
-				fieldBuffer.flip();
-				dataBuffer.put(fieldBuffer);
-				dataBuffer.put(delimiters[i]);
-			} else { //fixlen field
-				if (fieldLengths[i] > dataBuffer.remaining()) {
-					flush();
-				}
-				fieldBuffer.clear();
-				record.getField(i).toByteBuffer(fieldBuffer, encoder);
-				size = fieldBuffer.position();
-				if (size < fieldLengths[i]) {
-					fieldFiller.rewind();
-					fieldFiller.limit(fieldLengths[i] - size);
-					fieldBuffer.put(fieldFiller);
-				}
-				encLen += size;
-				fieldBuffer.flip();
-				fieldBuffer.limit(fieldLengths[i]);
-				dataBuffer.put(fieldBuffer);
 			}
+		} catch (CharacterCodingException e) {
+            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ". (original cause: " + e.getMessage() + ") \n\nRecord: " +record.toString(), e);
 		}
         return encLen;
 	}
