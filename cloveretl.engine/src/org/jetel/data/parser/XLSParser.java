@@ -68,6 +68,7 @@ public abstract class XLSParser implements Parser {
 
 	protected final static String DEFAULT_FIELD_DELIMITER = ";";
 	protected final static String DEFAULT_LAST_FIELD_DELIMITER = "\n";
+	protected final static String DEFAULT_RECORD_DELIMITER = "\n";
 	
 	static Log logger = LogFactory.getLog(XLSParser.class);
 

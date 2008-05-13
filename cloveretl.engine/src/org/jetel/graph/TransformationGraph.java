@@ -918,6 +918,13 @@ public final class TransformationGraph extends GraphElement {
 		return created;
 	}
 	
+	public void setDefaultDictionaryEntry(String key, IDictionaryValue<?> value) {
+		dictionary.putDefault(key, value);
+	}
+
+	public Dictionary getDictionary() {
+		return dictionary;
+	}
 }
 /*
  *  end class TransformationGraph

@@ -85,7 +85,7 @@ public class TransformationGraphAnalyzer {
 		}
 
 		if (set1.isEmpty()) {
-			logger.fatal("No root Nodes detected! There must be at least one root node defined." +
+			logger.error("No root Nodes detected! There must be at least one root node defined." +
 					" (Root node is	node with output ports defined only.)");
 			throw new GraphConfigurationException("No root node!");
 		}
@@ -266,7 +266,7 @@ public class TransformationGraphAnalyzer {
 				nextNode = outPort.getReader();
 				if (nextNode != null) {
 					if (currentNode.getPhase().getPhaseNum() > nextNode.getPhase().getPhaseNum()) {
-						logger.fatal("Wrong phase order between components: " +
+						logger.error("Wrong phase order between components: " +
 								currentNode.getId() + " phase: " + currentNode.getPhase() + " and " +
 								nextNode.getId() + " phase: " + nextNode.getPhase());
 						throw new GraphConfigurationException("Wrong phase order !");

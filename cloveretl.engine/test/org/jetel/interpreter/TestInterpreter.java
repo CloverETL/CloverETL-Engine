@@ -1751,6 +1751,47 @@ public class TestInterpreter extends TestCase {
     }
     
 	
+	public void test_list_map2(){
+        System.out.println("\nList/Map test2:");
+        String expStr = "list novy=[1,2,3,4,5,6,7,8];\n"+
+        				 "int index=1; print_err('novy with index'+index);\n"+
+        				 "print_err(' content: '+novy[index]);\n";
+        print_code(expStr);
+
+       Log logger = LogFactory.getLog(this.getClass());
+       TransformLangParser parser=null;
+        
+        try {
+              parser = new TransformLangParser(record.getMetadata(),
+                    new ByteArrayInputStream(expStr.getBytes()));
+              CLVFStart parseTree = parser.Start();
+
+              System.out.println("Initializing parse tree..");
+              parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+              System.out.println("Interpreting parse tree..");
+              TransformLangExecutor executor=new TransformLangExecutor();
+              executor.setInputRecords(new DataRecord[] {record});
+              executor.setRuntimeLogger(logger);
+              executor.setGraph(graph);
+              executor.visit(parseTree,null);
+              System.out.println("Finished interpreting.");
+               
+              
+        } catch (ParseException e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+             
+                Iterator it=parser.getParseExceptions().iterator();
+                while(it.hasNext()){
+                	System.err.println(((Throwable)it.next()).getMessage());
+                }
+                throw new RuntimeException("Parse exception",e);
+        }
+    }
+	
 	
 	public void test_buildInFunctions(){
 		System.out.println("\nBuild-in functions test:");

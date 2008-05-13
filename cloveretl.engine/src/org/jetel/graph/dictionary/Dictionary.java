@@ -20,7 +20,9 @@
 package org.jetel.graph.dictionary;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.GraphElement;
@@ -75,5 +77,15 @@ public class Dictionary extends GraphElement {
 	public void putDefault(String key, IDictionaryValue<?> value) {
 		defaultDictionary.put(key, value);
 	}
+
+	public Set<String> getKeys() {
+		Set<String> result = new HashSet<String>();
+		result.addAll(dictionary.keySet());
+		result.addAll(defaultDictionary.keySet());
+		return result;
+	}
 	
+	public boolean isEmpty() {
+		return dictionary.isEmpty() && defaultDictionary.isEmpty();
+	}
 }

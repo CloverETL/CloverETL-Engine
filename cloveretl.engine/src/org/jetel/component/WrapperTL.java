@@ -178,6 +178,7 @@ public class WrapperTL {
         //initializing executor
         executor=new TransformLangExecutor(parameters);
         executor.setRuntimeLogger(logger);
+        executor.setParser(parser);
 		if (parameters != null) {
 			executor.setGlobalParameters(parameters);
 		}		

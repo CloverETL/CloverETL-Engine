@@ -62,7 +62,7 @@ public class AhoCorasick {
 			for(Iterator i = currentNodes.iterator(); i.hasNext(); ) {
 				qa = ((NodeTrie) i.next());
 				q = qa.parent;
-				c = q.transition;
+				c = qa.transition;
 				r = q.fail;
 				while(r != rootTrie && r.children[c] == null) {
 					r = r.fail;
@@ -232,10 +232,12 @@ public class AhoCorasick {
 			this.value = value;
 		}
 
+		@Override
 		public int hashCode() {
 	    	return value;
 	    }
 
+		@Override
 		public boolean equals(Object obj) {
 			return (((MyInt) obj).value == value);
 		}

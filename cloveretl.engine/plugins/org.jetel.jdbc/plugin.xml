@@ -1,6 +1,6 @@
 <plugin
 	id="org.jetel.jdbc"
-	version="2.4.0"
+	version="2.4.4"
 	provider-name="Javlin Consulting s.r.o.">
 
 	<extension point-id="jdbcDriver">

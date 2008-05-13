@@ -25,7 +25,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -34,6 +37,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
@@ -41,6 +45,10 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
+import org.jetel.graph.dictionary.DictionaryEntryFactory;
+import org.jetel.graph.dictionary.DictionaryEntryProvider;
+import org.jetel.graph.dictionary.IDictionaryValue;
+import org.jetel.graph.dictionary.SerializedDictionaryValue;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IThreadManager;
@@ -121,6 +129,7 @@ public class runGraph {
     public final static String NO_JMX = "-noJMX";
     public final static String CONFIG_SWITCH = "-config";
     public final static String MBEAN_NAME = "-mbean";
+    public final static String DICTIONARY_VALUE_DEFINITION_SWITCH = "-V:";
 	
 	/**
 	 *  Description of the Method
@@ -134,6 +143,8 @@ public class runGraph {
         String logHost = null;
         String graphFileName = null;
         String configFileName = null;
+        
+        List<SerializedDictionaryValue> dictionaryValues = new ArrayList<SerializedDictionaryValue>();
         
         logger.info("***  CloverETL framework/transformation graph runner ver "
                         + RUN_GRAPH_VERSION
@@ -216,6 +227,14 @@ public class runGraph {
             } else if (args[i].startsWith(CONFIG_SWITCH)) {
                 i++;
                 configFileName = args[i];
+            } else if (args[i].startsWith(DICTIONARY_VALUE_DEFINITION_SWITCH)) {
+            	String value = args[i].replaceFirst(DICTIONARY_VALUE_DEFINITION_SWITCH, "");
+            	try {
+            		dictionaryValues.add(SerializedDictionaryValue.fromString(value));
+            	} catch (IllegalArgumentException e) {
+                    System.err.println("Invalid dictionary value format: " + value);
+                    System.exit(-1);
+            	}
             } else if (args[i].startsWith("-")) {
                 System.err.println("Unknown option: " + args[i]);
                 System.exit(-1);
@@ -266,12 +285,12 @@ public class runGraph {
             }
         }
 
-
         TransformationGraph graph = null;
         Future<Result> futureResult = null;;
 		try {
 			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext.getAdditionalProperties());
-	        futureResult = executeGraph(graph, runtimeContext);
+			initializeDictionary(dictionaryValues, graph);
+	        runGraph(graph, runtimeContext);
         } catch (XMLConfigurationException e) {
             logger.error("Error in reading graph from XML !", e);
             if (runtimeContext.isVerboseMode()) {
@@ -284,6 +303,31 @@ public class runGraph {
                 e.printStackTrace(System.err);
             }
             System.exit(-1);
+		} 
+    }
+	
+	private static void initializeDictionary(List<SerializedDictionaryValue> dictionaryValues, TransformationGraph graph)
+	throws XMLConfigurationException {
+		for (SerializedDictionaryValue serializedDictionaryValue : dictionaryValues) {
+	        try {
+	        	String type = serializedDictionaryValue.getType() != null ? serializedDictionaryValue.getType() : DictionaryEntryProvider.DEFAULT_TYPE;
+	        	DictionaryEntryProvider dictionaryEntryProvider = DictionaryEntryFactory.getDictionaryEntryProvider(type);
+	        	IDictionaryValue<?> dictionaryValue = dictionaryEntryProvider.getValue(serializedDictionaryValue.getProperties());
+	        	graph.setDefaultDictionaryEntry(serializedDictionaryValue.getKey(), dictionaryValue);
+	        } catch(AttributeNotFoundException ex){
+	            throw new XMLConfigurationException("Dictionary - Attributes missing " + ex.getMessage());
+	        }
+		}
+	}
+	
+	private static void runGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) {
+        Future<Result> futureResult = null;
+		try {
+			if (!graph.isInitialized()) {
+				graph.init();
+				printDictionary("Initial dictionary content:", graph);
+			}
+			futureResult = executeGraph(graph, runtimeContext);			
 		} catch (ComponentNotReadyException e) {
             logger.error("Error during graph initialization !", e);
             if (runtimeContext.isVerboseMode()) {
@@ -301,6 +345,7 @@ public class runGraph {
         Result result = Result.N_A;
 		try {
 			result = futureResult.get();
+			printDictionary("Final dictionary content:", graph);
 		} catch (InterruptedException e) {
             logger.error("Graph was unexpectedly interrupted !", e);
             if (runtimeContext.isVerboseMode()) {
@@ -347,6 +392,17 @@ public class runGraph {
 		return threadManager.executeWatchDog(watchDog);
 	}
     
+	private static void printDictionary(String message, TransformationGraph graph) {
+		if(!graph.getDictionary().isEmpty()) {
+			logger.info(message);
+			
+			Set<String> keys = graph.getDictionary().getKeys();
+			for (String key : keys) {
+				logger.info(key + ":" + graph.getDictionaryValue(key));
+			}
+		}
+	}
+
     
 	private static void printHelp() {
 		System.out.println("Usage: runGraph [-(v|cfg|logcfg|loglevel|P:|tracking|info|plugins|pass)] <graph definition file>");

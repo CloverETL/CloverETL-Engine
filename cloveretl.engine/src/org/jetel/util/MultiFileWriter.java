@@ -22,6 +22,7 @@ package org.jetel.util;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.CharacterCodingException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -355,9 +356,17 @@ public class MultiFileWriter {
      * @throws IOException
      */
     private final void writeRecord2CurrentTarget(DataRecord record) throws IOException {
-    	currentTarget.setBytes(currentTarget.getBytes()+currentFormatter.write(record));
-    	currentTarget.setRecords(currentTarget.getRecords()+1);
-        counter++;
+    	try {
+        	currentTarget.setBytes(currentTarget.getBytes()+currentFormatter.write(record));
+        	currentTarget.setRecords(currentTarget.getRecords()+1);
+            counter++;
+    	} catch (RuntimeException e) {
+    		if (e.getCause() instanceof CharacterCodingException) {
+    			throw new IOException("Converting exception in the record: " + counter + ". " + e.getMessage());
+    		} else {
+    			throw e;
+    		}
+    	}
     }
     
     /**

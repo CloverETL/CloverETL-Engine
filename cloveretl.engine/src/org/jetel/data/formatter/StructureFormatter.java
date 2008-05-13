@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.UnsupportedCharsetException;
@@ -200,37 +201,42 @@ public class StructureFormatter implements Formatter {
         int sentBytes=0;
         int mark;
 		//for each record field which is in mask change its name to value
-		for (int i=0;i<maskAnalize.length;i++){
-			fieldIndex = fieldIndexes[i];
-			index  = maskAnalize[i].index;
-			if (dataBuffer.remaining() < index - lastIndex){
+		int i = 0;
+		try {
+			for (i=0;i<maskAnalize.length;i++){
+				fieldIndex = fieldIndexes[i];
+				index  = maskAnalize[i].index;
+				if (dataBuffer.remaining() < index - lastIndex){
+					flush();
+				}
+				//put bytes from mask from last field name to actual one to buffer
+	            mark=dataBuffer.position();
+				dataBuffer.put(maskBytes, lastIndex, index - lastIndex);
+				fieldBuffer.clear();
+				//change field value to bytes
+				record.getField(fieldIndex).toByteBuffer(fieldBuffer, encoder);
+				fieldBuffer.flip();
+	            sentBytes+=dataBuffer.position()-mark;
+				if (dataBuffer.remaining() < fieldBuffer.limit()){
+					flush();
+				}
+	            mark=dataBuffer.position();
+				//put field value to data buffer
+				dataBuffer.put(fieldBuffer);
+	            sentBytes+=dataBuffer.position()-mark;
+				//set processed part of mask to the end of field name identifier
+				lastIndex = index + maskAnalize[i].length;
+			}
+			//put rest of mask (after last data field) to data buffer
+			if (dataBuffer.remaining() < maskBytes.length - lastIndex){
 				flush();
 			}
-			//put bytes from mask from last field name to actual one to buffer
-            mark=dataBuffer.position();
-			dataBuffer.put(maskBytes, lastIndex, index - lastIndex);
-			fieldBuffer.clear();
-			//change field value to bytes
-			record.getField(fieldIndex).toByteBuffer(fieldBuffer, encoder);
-			fieldBuffer.flip();
-            sentBytes+=dataBuffer.position()-mark;
-			if (dataBuffer.remaining() < fieldBuffer.limit()){
-				flush();
-			}
-            mark=dataBuffer.position();
-			//put field value to data buffer
-			dataBuffer.put(fieldBuffer);
-            sentBytes+=dataBuffer.position()-mark;
-			//set processed part of mask to the end of field name identifier
-			lastIndex = index + maskAnalize[i].length;
+	        mark=dataBuffer.position();
+			dataBuffer.put(maskBytes, lastIndex, maskBytes.length - lastIndex);
+	        sentBytes+=dataBuffer.position()-mark;
+		} catch (CharacterCodingException e) {
+            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ". (original cause: " + e.getMessage() + ") \n\nRecord: " +record.toString(), e);
 		}
-		//put rest of mask (after last data field) to data buffer
-		if (dataBuffer.remaining() < maskBytes.length - lastIndex){
-			flush();
-		}
-        mark=dataBuffer.position();
-		dataBuffer.put(maskBytes, lastIndex, maskBytes.length - lastIndex);
-        sentBytes+=dataBuffer.position()-mark;
         
         return sentBytes;
 	}

@@ -66,6 +66,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private int recordSize=-1;
 	private String localeStr;
     private short numNullableFields;
+	private boolean skipFirstLine;
 
 	private TypedProperties recordProperties;
 
@@ -126,6 +127,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		ret.setFieldDelimiter(getFieldDelimiterStr());
 		ret.setLocaleStr(getLocaleStr());
 		ret.setRecordSize(getRecordSize());
+		ret.setSkipFirstLine(isSkipFirstLine());
 
 		//copy record properties
         ret.setRecordProperties(getRecordProperties());
@@ -654,6 +656,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
         buffer.append(", name = ").append(name);
         buffer.append(", recType = ").append(recType);
         buffer.append(", localeStr = ").append(localeStr);
+        buffer.append(", skipFirstLine = ").append(skipFirstLine);
         buffer.append(", recordProperties = ").append(recordProperties);
         buffer.append(", DELIMITED_RECORD = ").append(DELIMITED_RECORD);
         buffer.append(", FIXEDLEN_RECORD = ").append(FIXEDLEN_RECORD);
@@ -698,6 +701,14 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
      */
     public boolean isNullable() {
         return numNullableFields!=0;
+    }
+        
+    public void setSkipFirstLine(boolean isSkipFirstLine) {
+    	skipFirstLine = isSkipFirstLine;
+    }
+    
+    public boolean isSkipFirstLine() {
+    	return skipFirstLine;
     }
 
 

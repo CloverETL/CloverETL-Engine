@@ -49,4 +49,9 @@ public class DecimalDataFieldTest extends TestCase {
 		assertEquals(11.28, ((Decimal)record.getField(0).getValue()).getDouble());
 	}
 	
+	public void test_NaN(){
+		field1 = new DecimalDataField(fieldMetadata,50,10);
+		field1.setValue(Float.NaN);
+		assertNull(field1.getValue());
+	}
 }

@@ -49,6 +49,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.MultiOutFile;
 import org.jetel.util.bytes.SystemOutByteChannel;
+import org.jetel.util.protocols.ftp.FTPStreamHandler;
 import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 
@@ -65,13 +66,18 @@ import com.jcraft.jsch.ChannelSftp;
 public class FileUtils {
 
 	// for embedded source
-	private final static Pattern INNER_SOURCE = Pattern.compile("([^(]*)\\((.*)\\)([^)]*)");
+	//     "something   :       (         something   )       [#something]?
+	//      ([^:]*)     (:)     (\\()     (.*)        (\\))   (((#)(.*))|($))
+	private final static Pattern INNER_SOURCE = Pattern.compile("(([^:]*)([:])([\\(]))(.*)(\\))(((#)(.*))|($))");
 
 	// standard input/output source
 	private final static String STD_SOURCE = "-";
 	
 	// sftp protocol handler
 	public static final SFTPStreamHandler sFtpStreamHandler = new SFTPStreamHandler();
+
+	// ftp protocol handler
+	public static final FTPStreamHandler ftpStreamHandler = new FTPStreamHandler();
 
 	// file protocol name
 	private static final String FILE_PROTOCOL = "file";
@@ -186,9 +192,9 @@ public class FileUtils {
 		// get inner source
 		Matcher matcher = getInnerInput(input);
 		String innerSource;
-		if (matcher != null && (innerSource = matcher.group(2)) != null) {
+		if (matcher != null && (innerSource = matcher.group(5)) != null) {
 			innerStream = Channels.newInputStream(getReadableChannel(null, innerSource));
-			input = matcher.group(1) + matcher.group(3);
+			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
 		}
 		
 		// std input (console)
@@ -215,7 +221,7 @@ public class FileUtils {
         //open channel
         if (innerStream == null) {
         	url = FileUtils.getFileURL(contextURL, input);
-        	innerStream = url.openStream();
+        	innerStream = getAuthorizedStream(url);
         }
 
         if (isZip) {
@@ -248,12 +254,7 @@ public class FileUtils {
             return Channels.newChannel(gzin);
         }
         
-        // http or other connection
-        if (url != null) {
-            return Channels.newChannel(getAuthorizedStream(url));
-        } else {
-            return Channels.newChannel(innerStream);
-        }
+        return Channels.newChannel(innerStream);
     }
 
     private static InputStream getAuthorizedStream(URL url) throws IOException {
@@ -434,7 +435,7 @@ public class FileUtils {
 		}
 		return dirs;
 	}
-	
+
 	/**
 	 * Finds embedded source.
 	 * 
@@ -464,8 +465,8 @@ public class FileUtils {
 	public static String getFile(URL contextURL, String input) throws MalformedURLException {
 		Matcher matcher = getInnerInput(input);
 		String innerSource2, innerSource3;
-		if (matcher != null && (innerSource2 = matcher.group(2)) != null) {
-			if (!(innerSource3 = matcher.group(3)).equals("")) {
+		if (matcher != null && (innerSource2 = matcher.group(5)) != null) {
+			if (!(innerSource3 = matcher.group(7)).equals("")) {
 				return innerSource3.substring(1);
 			} else {
 				input = getFile(null, innerSource2);

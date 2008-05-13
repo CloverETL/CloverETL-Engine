@@ -264,6 +264,11 @@ public class TransformationGraphXMLReaderWriter {
 		return id;
 	}
 	
+	public TransformationGraph read(InputStream in) throws XMLConfigurationException,GraphConfigurationException {
+		Document document = prepareDocument(in);
+
+		return read(document);
+	}
 	/**
 	 *Constructor for the read object
 	 *
@@ -272,8 +277,7 @@ public class TransformationGraphXMLReaderWriter {
 	 * @return        Description of the Returned Value
 	 * @since         May 21, 2002
 	 */
-	public TransformationGraph read(InputStream in) throws XMLConfigurationException,GraphConfigurationException {
-		Document document;
+	public TransformationGraph read(Document document) throws XMLConfigurationException,GraphConfigurationException {
 		Iterator colIterator;
 		Map metadata = new HashMap(ALLOCATE_MAP_SIZE);
 	//	List<Phase> phases = new LinkedList<Phase>();
@@ -283,9 +287,6 @@ public class TransformationGraphXMLReaderWriter {
 		// delete all Nodes & Edges possibly held by TransformationGraph
 		//graph.free();
 		graph = null;
-
-		//create XML document
-		document = prepareDocument(in);
 		
 		// process document
 		NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
@@ -376,11 +377,11 @@ public class TransformationGraphXMLReaderWriter {
 				try{
 				    recordMetadata=MetadataFactory.fromFile(graph, fileURL);
                 }catch(IOException ex){
-                    logger.fatal("Error when reading/parsing record metadata definition file: "+fileURL);
+                    logger.error("Error when reading/parsing record metadata definition file: "+fileURL);
                     throw new XMLConfigurationException("Can't parse metadata: "+metadataID,ex);
                 }
 					if (recordMetadata==null){
-						logger.fatal("Error when reading/parsing record metadata definition file: "+fileURL);
+						logger.error("Error when reading/parsing record metadata definition file: "+fileURL);
 						throw new XMLConfigurationException("Can't parse metadata: "+metadataID);
 					}
 			}// metadata from analyzing DB table (JDBC) - will be resolved

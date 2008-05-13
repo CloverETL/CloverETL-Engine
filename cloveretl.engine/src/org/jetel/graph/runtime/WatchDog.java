@@ -377,7 +377,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					causeException = ((ErrorMsgBody) message.getBody())
 							.getSourceException();
 					causeGraphElement = message.getSender();
-					logger.fatal("!!! Fatal Error !!! - graph execution is aborting");
+					logger.error("!!! Fatal Error !!! - graph execution is aborting");
 					logger.error("Node "
 							+ message.getSender().getId()
 							+ " finished with status: "

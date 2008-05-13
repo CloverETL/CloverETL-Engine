@@ -30,7 +30,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.plugin.Plugins;
-import org.jetel.util.protocols.CloverURLStreamHandlerFactory;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -65,9 +64,6 @@ public class EngineInitializer {
     	//init logging
     	initLogging(logHost);
     	
-        //init url protocols
-    	initUrlProtocols();
-		
         //init framework constants
         Defaults.init(defaultPropertiesFile);
 
@@ -95,9 +91,6 @@ public class EngineInitializer {
     	//init logging
     	initLogging(logHost);
     	
-        //init url protocols
-    	initUrlProtocols();
-		
         //init framework constants
         Defaults.init(defaultPropertiesFile);
 
@@ -108,14 +101,6 @@ public class EngineInitializer {
         alreadyInitialized = true;
     }
 
-    private static void initUrlProtocols() {
-        try {
-			URL.setURLStreamHandlerFactory(new CloverURLStreamHandlerFactory());
-		} catch (Error e) {
-			System.err.println("SFTP protocol cannot be provided: " + e.getMessage());
-		}
-    }
-    
     private static void initLogging(String logHost) {
     	if(StringUtils.isEmpty(logHost)) {
     		return;
