@@ -430,7 +430,8 @@
 		<findbugs 
 				home="${dir.findbugs}" 
 				output="xml"
-				outputfile="${dir.findbugsreport}/bugreport.xml" >
+				outputfile="${dir.findbugsreport}/bugreport.xml" 
+				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml">
 			<class location="${dir.bin}"/>
 			<sourcePath path="${dir.src}"/>
 		</findbugs>
