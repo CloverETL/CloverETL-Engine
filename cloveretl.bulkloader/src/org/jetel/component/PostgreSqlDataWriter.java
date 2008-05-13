@@ -311,44 +311,6 @@ public class PostgreSqlDataWriter extends Node {
 		}
 		return new ProcBox(process, null, consumer, errConsumer);
 	}
-
-	/**
-	 * Convert each backslash in string to slash.
-	 * @param string string with backslashes
-	 * @return string with slashes
-	 */
-	public static String backslashToSlash(CharSequence controlString) {
-        if(controlString == null) return null;
-
-        StringBuffer copy = new StringBuffer();
-		char character;
-		for (int i = 0; i < controlString.length(); i++) {
-			character = controlString.charAt(i);
-			switch (character) {
-				case '\n':
-					copy.append("/n");
-					break;
-				case '\t':
-					copy.append("/t");
-					break;
-				case '\r':
-					copy.append("/r");
-					break;
-                case '\b':
-                    copy.append("/b");
-                    break;
-                case '\f':
-                    copy.append("/f");
-                    break;
-                case '\\':
-                	copy.append("/");
-                	break;
-				default:
-					copy.append(character);
-			}
-		}
-		return copy.toString();
-	}
 	
 	/**
 	 * Create command line for process, where psql utility is running. 
@@ -359,7 +321,7 @@ public class PostgreSqlDataWriter extends Node {
 	 */
 	private String[] createCommandLineForDbLoader() throws ComponentNotReadyException {
 		if (ProcBox.isWindowsPlatform()) {
-			psqlPath = backslashToSlash(psqlPath);
+			psqlPath = StringUtils.backslashToSlash(psqlPath);
 		}
 		PsqlCommandBuilder command = new PsqlCommandBuilder(psqlPath, properties);
 

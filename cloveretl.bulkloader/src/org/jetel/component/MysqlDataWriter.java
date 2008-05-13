@@ -607,7 +607,7 @@ public class MysqlDataWriter extends Node {
 	 */
 	private String[] createCommandLineForDbLoader() throws ComponentNotReadyException {
 		if (ProcBox.isWindowsPlatform()) {
-			mysqlPath = backslashToSlash(mysqlPath);
+			mysqlPath = StringUtils.backslashToSlash(mysqlPath);
 		}
 		MysqlCommandBuilder command = new MysqlCommandBuilder(mysqlPath, properties);
 
@@ -623,7 +623,7 @@ public class MysqlDataWriter extends Node {
 
 		String commandFileName = createCommandFile();
 		if (ProcBox.isWindowsPlatform()) {
-			commandFileName = backslashToSlash(commandFileName);
+			commandFileName = StringUtils.backslashToSlash(commandFileName);
 		}
 		command.addParam(null, MYSQL_EXECUTE_SWITCH, "source " + commandFileName);
 		command.addBooleanParam(MYSQL_FORCE_PARAM, MYSQL_FORCE_SWITCH);
@@ -701,7 +701,7 @@ public class MysqlDataWriter extends Node {
 		String dataFilePath = dataFile.getCanonicalPath();
 		if (ProcBox.isWindowsPlatform()) {
 			// convert "C:\examples\xxx.dat" to "C:/examples/xxx.dat"
-			dataFilePath = backslashToSlash(dataFilePath);
+			dataFilePath = StringUtils.backslashToSlash(dataFilePath);
 		}		
 		command.append(StringUtils.quote(dataFilePath));
 	
@@ -766,44 +766,6 @@ public class MysqlDataWriter extends Node {
 		}
 
 		return command.getCommand();
-	}
-
-	/**
-	 * Convert each backslash in string to slash.
-	 * @param string string with backslashes
-	 * @return string with slashes
-	 */
-	public static String backslashToSlash(CharSequence controlString) {
-        if(controlString == null) return null;
-
-        StringBuffer copy = new StringBuffer();
-		char character;
-		for (int i = 0; i < controlString.length(); i++) {
-			character = controlString.charAt(i);
-			switch (character) {
-				case '\n':
-					copy.append("/n");
-					break;
-				case '\t':
-					copy.append("/t");
-					break;
-				case '\r':
-					copy.append("/r");
-					break;
-                case '\b':
-                    copy.append("/b");
-                    break;
-                case '\f':
-                    copy.append("/f");
-                    break;
-                case '\\':
-                	copy.append("/");
-                	break;
-				default:
-					copy.append(character);
-			}
-		}
-		return copy.toString();
 	}
 	
 	/**
