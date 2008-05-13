@@ -11,10 +11,8 @@ import org.jetel.metadata.DataRecordMetadata;
 
 public class CLVFOutputFieldLiteral extends SimpleNode {
   
-    DataField field;
     int recordNo;
     int fieldNo;
-    String fieldName;  
     
   public CLVFOutputFieldLiteral(int id) {
     super(id);
@@ -77,9 +75,9 @@ public class CLVFOutputFieldLiteral extends SimpleNode {
    
    public void bindToField(DataRecord[] records){
        try{
-           field=records[recordNo].getField(fieldNo);
+           records[recordNo].getField(fieldNo);
        }catch(NullPointerException ex){
-           throw new TransformLangExecutorRuntimeException("can't determine "+fieldName);
+           throw new TransformLangExecutorRuntimeException("can't determine "+recordNo);
        }
    }
     

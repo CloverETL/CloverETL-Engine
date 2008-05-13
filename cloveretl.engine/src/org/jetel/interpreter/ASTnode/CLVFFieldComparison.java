@@ -9,8 +9,6 @@ import org.jetel.interpreter.TransformLangParserVisitor;
 
 public class CLVFFieldComparison extends SimpleNode implements TransformLangParserConstants {
 	
-	int cmpType;
-	
 	public CLVFFieldComparison(int id) {
 		super(id);
 	}
