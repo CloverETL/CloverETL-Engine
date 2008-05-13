@@ -139,7 +139,7 @@ public class Plugins {
     	//iterates over all plugin repositories
         for(URL pluginsRepositoryUrl : pluginDirectories) {
         	//url uses file protocol - take advantage of ability to list a directory in a harddrive
-        	if(!(pluginsRepositoryUrl.getProtocol() == "file")) {
+        	if(pluginsRepositoryUrl.getProtocol() == "file") {
         		File pluginRepositoryPath = new File(pluginsRepositoryUrl.getPath());
         		File[] pd = pluginRepositoryPath.listFiles();
         		if(pd == null) {
