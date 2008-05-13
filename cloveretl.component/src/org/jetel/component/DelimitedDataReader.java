@@ -175,19 +175,14 @@ public class DelimitedDataReader extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
-		initCommon();
-		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
-	}
-
-	private void checkConfig() throws ComponentNotReadyException {
-		initCommon();
-		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
-	}
-
-	private void initCommon() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
 
+		prepareMultiFileReader();
+		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+	}
+
+	private void prepareMultiFileReader() throws ComponentNotReadyException {
         // initialize multifile reader based on prepared parser
         reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
         reader.setLogger(logger);
@@ -340,7 +335,8 @@ public class DelimitedDataReader extends Node {
         checkMetadata(status, getOutMetadata());
 
         try {
-            checkConfig();
+    		prepareMultiFileReader();
+    		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
