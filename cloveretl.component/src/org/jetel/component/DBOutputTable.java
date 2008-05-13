@@ -404,6 +404,7 @@ public class DBOutputTable extends Node {
 		} catch (SQLException e) {
 			ComponentNotReadyException ex = new ComponentNotReadyException(this, e);
 			ex.setAttributeName(XML_DBCONNECTION_ATTRIBUTE);
+			throw ex;
 		}
 		try {
 			if (keysPort != null && !dbConnection.getConnection(getId()).getMetaData().supportsGetGeneratedKeys()){
@@ -413,6 +414,7 @@ public class DBOutputTable extends Node {
 		} catch (SQLException e) {
 			ComponentNotReadyException ex = new ComponentNotReadyException(this, e);
 			ex.setAttributeName(XML_DBCONNECTION_ATTRIBUTE);
+			throw ex;
 		}
 		if (useBatch && returnKey){
 			logger.warn("Getting generated keys in batch mode is not supported -> switching it off !");
