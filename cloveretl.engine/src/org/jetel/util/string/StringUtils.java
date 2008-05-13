@@ -91,6 +91,7 @@ public class StringUtils {
                     break;
                 case '\\':
                 	copy.append("\\\\");
+                	break;
 				default:
 					copy.append(character);
 			}
