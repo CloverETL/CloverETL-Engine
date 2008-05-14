@@ -1197,7 +1197,13 @@ class CharPair implements Comparable{
 
 	@Override
 	public boolean equals(Object obj) {
-		return 0==compareTo(obj);
+		return 0 == compareTo(obj);
 	}
+
+	@Override
+	public int hashCode() {
+		return key.hashCode() + 31 * value.hashCode();
+	}
+	
 	
 }
