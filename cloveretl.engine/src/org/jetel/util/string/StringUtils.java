@@ -1194,5 +1194,10 @@ class CharPair implements Comparable{
 		}		
 		throw new ClassCastException();
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return 0==compareTo(obj);
+	}
 	
 }
