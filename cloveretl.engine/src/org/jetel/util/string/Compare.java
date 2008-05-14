@@ -98,7 +98,8 @@ public class Compare {
                 return 1; // first sequence seems to be longer than second
             }
         }
-        if ((elementB = iterB.next()) != CollationElementIterator.NULLORDER){
+        elementB = iterB.next();
+        if (elementB != CollationElementIterator.NULLORDER){
             return -1; // second sequence seems to be longer than first
         }else{
             return 0; // equal
