@@ -419,7 +419,8 @@
 				output="html"
 				outputfile="${dir.findbugsreport}/bugreport.html" 
 				stylesheet="fancy-hist.xsl"
-				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml">
+				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
+				effort="max">
 			<class location="${dir.bin}"/>
 			<sourcePath path="${dir.src}" />
 		</findbugs>
@@ -431,7 +432,8 @@
 				home="${dir.findbugs}" 
 				output="xml"
 				outputfile="${dir.findbugsreport}/bugreport.xml" 
-				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml">
+				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
+				effort="max">
 			<class location="${dir.bin}"/>
 			<sourcePath path="${dir.src}"/>
 		</findbugs>
