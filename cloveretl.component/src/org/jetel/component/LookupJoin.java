@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableIterator;
@@ -282,6 +283,9 @@ public class LookupJoin extends Node {
 				inRecords[1] = iterator.get(inRecord);
 				do {
 					if ((inRecords[1] != null || leftOuterJoin)) {
+						if (inRecords[1] == null) {
+							inRecords[1] = NullRecord.NULL_RECORD;
+						}
 						if (transformation.transform(inRecords, outRecord)) {
 							writeRecord(WRITE_TO_PORT, outRecord[0]);
 						}else{
