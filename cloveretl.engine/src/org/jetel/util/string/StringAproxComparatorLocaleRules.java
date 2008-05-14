@@ -37,15 +37,15 @@ public class StringAproxComparatorLocaleRules {
 
 	private static Map rules=new HashMap();
 
-	public static final String[] CZ_RULES={
-		"a=á=A=�?",
+	private static final String[] CZ_RULES={
+		"a=á=A=�?",
 		"c=č=C=Č",
 		"d=ď=D=Ď",
 		"e=é=ě=E=É=Ě",
 		"i=í=I=Í",
-		"n=�?=N=Ň",
+		"n=�?=N=Ň",
 		"o=ó=O=Ó",
-		"r=ř=R=�?",
+		"r=ř=R=�?",
 		"s=š=S=Š",
 		"t=ť=T=Ť",
 		"u=ů=ú=U=Ů=Ú",
@@ -53,12 +53,12 @@ public class StringAproxComparatorLocaleRules {
 		"z=ž=Z=Ž"
 		};
 	
-	public static final String[] PL_RULES={
+	private static final String[] PL_RULES={
 		"a=ą=A=Ą",
 		"c=ć=C=Ć",
-		"e=ę=E=�?",
-		"l=ł=L=�?",
-		"n=ń=N=�?",
+		"e=ę=E=�?",
+		"l=ł=L=�?",
+		"n=ń=N=�?",
 		"o=ó=O=Ó",
 		"s=ś=S=Ś",
 		"z=ż=ź=Z=Ż=Ź"
