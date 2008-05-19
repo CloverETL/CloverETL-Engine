@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jetel.data.Defaults;
 import org.jetel.util.primitive.DuplicateKeyMap;
 import org.jetel.util.string.StringUtils;
 
@@ -49,14 +50,11 @@ import org.jetel.util.string.StringUtils;
  */
 public class QueryAnalyzer {
 	
-	public final static String ASSIGN_SIGN = ":=";
-	public final static char CLOVER_FIELD_PREFIX_CHAR = '$';
-	public final static String CLOVER_FIELD_PREFIX = String.valueOf(CLOVER_FIELD_PREFIX_CHAR);
-
-	private final static Pattern CLOVER_DB_MAPPING_PATTERN = Pattern.compile("(\\$([\\w\\?]+)\\s*" + ASSIGN_SIGN + "\\s*)([\\w.]+)");//$cloverField:=dbfield
+	private final static Pattern CLOVER_DB_MAPPING_PATTERN = Pattern.compile(
+			"(\\$([\\w\\?]+)\\s*" + Defaults.ASSIGN_SIGN + "\\s*)([\\w.]+)");//$cloverField:=dbfield
 	private final static Pattern DB_CLOVER_MAPPING_PATTERN = Pattern.compile("(([\\w]+)\\s*=)\\s*[\\?\\$](\\w*)");//dbField = $cloverField or dbField = ?
 	private final static Pattern FIELDS_PATTERN = Pattern.compile("\\$?([\\w.]+)|\\?");//[$]field or ?
-	private final static Pattern CLOVER_FIELDS_PATTERN = Pattern.compile("\\$\\w+");//$cloverField
+	private final static Pattern CLOVER_FIELDS_PATTERN = Pattern.compile(Defaults.CLOVER_FIELD_REGEX);//$cloverField
 	private final static Pattern DB_FIELDS_PATTERN = Pattern.compile("\\w+");//dbField
 	private final static Pattern FIELDS_LIST_PATTERN = Pattern.compile("\\((\\s*\\$?\\w+|\\?)[\\.,\\s\\$\\w\\?]*\\)");//(dbfield1,dbField2,..) or (smth, $field1, ...)
 	
@@ -156,7 +154,7 @@ public class QueryAnalyzer {
 			if (size > 0 && index >= size) {
 				throw new SQLException("Error in sql query: " + query);
 			}
-			if (cloverFieldsMatcher.group().startsWith(CLOVER_FIELD_PREFIX)) {
+			if (cloverFieldsMatcher.group().startsWith(Defaults.CLOVER_FIELD_INDICATOR)) {
 				dbCloverFieldMap.put(size > 0 ? dbFields.get(index) : null, cloverFieldsMatcher.group(1));
 			}else if (index < size){
 				dbCloverFieldMap.put(dbFields.get(index), null);
