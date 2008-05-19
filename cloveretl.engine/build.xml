@@ -176,6 +176,7 @@
 	<!-- The "clean" target deletes previously compiled files. -->
 	<target name="clean" depends="checkproperties" description="Delete old compiled files">
 		<delete dir="${dir.bin}"/>
+		<delete dir="${dir.build}"/>
 		<delete dir="${dir.dist}"/>
 		<delete dir="${dir.distribution}"/>
 		<delete dir="${dir.doc}"/>
