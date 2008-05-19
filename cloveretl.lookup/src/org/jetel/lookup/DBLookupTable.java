@@ -536,7 +536,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
     }
 
-    public static LookupTable fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static DBLookupTable fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         DBLookupTable lookupTable = null;
         String id;
