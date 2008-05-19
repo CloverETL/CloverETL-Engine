@@ -178,7 +178,6 @@ public class DBExecute extends Node {
 	public final static String COMPONENT_TYPE = "DB_EXECUTE";
 	private final static String DEFAULT_SQL_STATEMENT_DELIMITER = ";";
 	private final static String PARAMETERS_SET_DELIMITER = "#";
-	public final static String CLOVER_FIELD_INDICATOR = "$";
 	
 	private final static int READ_FROM_PORT = 0;
 	private final static int WRITE_TO_PORT = 0;
@@ -435,7 +434,7 @@ public class DBExecute extends Node {
         StringBuilder attr = new StringBuilder();
         if (inParams != null) {
         	for (int i = 0; i < inParams.length; i++) {
-				attr.append(StringUtils.mapToString(inParams[i], AggregateMappingParser.ASSIGN_SIGN, Defaults.Component.KEY_FIELDS_DELIMITER));
+				attr.append(StringUtils.mapToString(inParams[i], Defaults.ASSIGN_SIGN, Defaults.Component.KEY_FIELDS_DELIMITER));
 				attr.append(PARAMETERS_SET_DELIMITER);
 			}
         	xmlElement.setAttribute(XML_IN_PARAMETERS, attr.toString());
@@ -444,7 +443,7 @@ public class DBExecute extends Node {
         attr.setLength(0);
         if (outParams != null) {
         	for (int i = 0; i < outParams.length; i++) {
-				attr.append(StringUtils.mapToString(outParams[i], AggregateMappingParser.ASSIGN_SIGN, Defaults.Component.KEY_FIELDS_DELIMITER));
+				attr.append(StringUtils.mapToString(outParams[i], Defaults.ASSIGN_SIGN, Defaults.Component.KEY_FIELDS_DELIMITER));
 				attr.append(PARAMETERS_SET_DELIMITER);
 			}
         	xmlElement.setAttribute(XML_OUT_PARAMETERS, attr.toString());
@@ -566,25 +565,25 @@ public class DBExecute extends Node {
 		String[] mappings = mapping.split(Defaults.Component.KEY_FIELDS_DELIMITER);
 		HashMap<Integer, String> result = new HashMap<Integer, String>();
 		int assignIndex;
-		boolean isFieldInicator = mapping.indexOf(CLOVER_FIELD_INDICATOR) > -1;
-		int assignSignLength = AggregateMappingParser.ASSIGN_SIGN.length();
+		boolean isFieldInicator = mapping.indexOf(Defaults.CLOVER_FIELD_INDICATOR) > -1;
+		int assignSignLength = Defaults.ASSIGN_SIGN.length();
 		for (int i = 0; i < mappings.length; i++) {
-			assignIndex = mappings[i].indexOf(AggregateMappingParser.ASSIGN_SIGN);
+			assignIndex = mappings[i].indexOf(Defaults.ASSIGN_SIGN);
 			if (assignIndex > -1) {
-				if (mappings[i].startsWith(CLOVER_FIELD_INDICATOR)) {
+				if (mappings[i].startsWith(Defaults.CLOVER_FIELD_INDICATOR)) {
 					result.put(Integer.parseInt(mappings[i].substring(assignIndex + assignSignLength).trim()), 
 							isFieldInicator ? 
-									mappings[i].substring(CLOVER_FIELD_INDICATOR.length(), assignIndex).trim() :
+									mappings[i].substring(Defaults.CLOVER_FIELD_INDICATOR.length(), assignIndex).trim() :
 									mappings[i].substring(0, assignIndex).trim());
 				} else {
 					result.put(Integer.parseInt(mappings[i].substring(0, assignIndex).trim()), 
 							isFieldInicator ?
-									mappings[i].substring(assignIndex + assignSignLength).trim().substring(CLOVER_FIELD_INDICATOR.length()):
+									mappings[i].substring(assignIndex + assignSignLength).trim().substring(Defaults.CLOVER_FIELD_INDICATOR.length()):
 									mappings[i].substring(assignIndex + assignSignLength).trim());
 				}
 			}else{
 				result.put(i+1, isFieldInicator ?
-						mappings[i].trim().substring(CLOVER_FIELD_INDICATOR.length()) :
+						mappings[i].trim().substring(Defaults.CLOVER_FIELD_INDICATOR.length()) :
 						mappings[i].trim());
 			}
 		}
