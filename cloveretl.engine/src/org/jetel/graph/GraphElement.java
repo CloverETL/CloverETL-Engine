@@ -177,7 +177,7 @@ public abstract class GraphElement implements IGraphElement {
 	 * Only purpose of this implementation is obfuscation. 
 	 * Method fromXML() should not be obfuscated in all descendants.
 	 */
-	public static IGraphElement fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
+	public static GraphElement fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
         throw new UnsupportedOperationException("not implemented in org.jetel.graph.GraphElement"); 
 	}
 
