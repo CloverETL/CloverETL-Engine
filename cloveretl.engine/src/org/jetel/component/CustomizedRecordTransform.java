@@ -35,7 +35,6 @@ import org.apache.commons.logging.Log;
 import org.jetel.data.DataField;
 import org.jetel.data.DataFieldFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.BadDataFormatException;
@@ -1398,15 +1397,15 @@ public class CustomizedRecordTransform implements RecordTransform {
 						}
 					} else if (!useAlternativeRules
 							|| !setAlternativeValue(sources, target, order[i][REC_NO], order[i][FIELD_NO], 0, e)) {// value
-																													// is
-																													// null
-																													// or
-																													// value
-																													// can't
-																													// be
-																													// set
-																													// to
-																													// field
+						// is
+						// null
+						// or
+						// value
+						// can't
+						// be
+						// set
+						// to
+						// field
 						throwException(transformMapArray, order[i][REC_NO], order[i][FIELD_NO], e);
 					}
 				}
@@ -1486,13 +1485,13 @@ public class CustomizedRecordTransform implements RecordTransform {
 		String[] parts = pattern.split("\\.");
 		switch (parts.length) {
 		case 2:
-			if (parts[0].startsWith(Defaults.CLOVER_FIELD_INDICATOR)) {// ${recNo.field}
+			if (parts[0].startsWith("$")) {// ${recNo.field}
 				return parts[0].substring(2) + DOT + parts[1].substring(0, parts[1].length() - 1);
 			} else {// recNo.field
 				return pattern;
 			}
 		case 3:
-			if (parts[0].startsWith(Defaults.CLOVER_FIELD_INDICATOR)) {// ${in/out.recNo.field}
+			if (parts[0].startsWith("$")) {// ${in/out.recNo.field}
 				return parts[1] + DOT + parts[2].substring(0, parts[2].length() - 1);
 			} else {// in/out.recNo.field
 				return parts[1] + DOT + parts[2];
