@@ -192,7 +192,8 @@ public class AggregateProcessor {
 		for (int i = 0; i < keyFields.length; i++) {
 			String keyField = inMetadata.getField(keyFields[i]).getName();
 			String outField = outMetadata.getField(i).getName();
-			result[i] = "$" + outField + AggregateMappingParser.ASSIGN_SIGN + "$" + keyField;
+			result[i] = Defaults.CLOVER_FIELD_INDICATOR + outField + Defaults.ASSIGN_SIGN + Defaults.CLOVER_FIELD_INDICATOR
+					+ keyField;
 		}
 
 		// process function mappings
@@ -214,11 +215,11 @@ public class AggregateProcessor {
 			}
 			String newMappingItem = functionName + "(";
 			if (inputField != null) {
-				newMappingItem += "$" + inputField;
+				newMappingItem += Defaults.CLOVER_FIELD_INDICATOR + inputField;
 			}
 			newMappingItem += ")";
 			
-			result[i] = "$" + outField + AggregateMappingParser.ASSIGN_SIGN + newMappingItem;  
+			result[i] = Defaults.CLOVER_FIELD_INDICATOR + outField + Defaults.ASSIGN_SIGN + newMappingItem;  
 		}
 
 		String resultString = new String();

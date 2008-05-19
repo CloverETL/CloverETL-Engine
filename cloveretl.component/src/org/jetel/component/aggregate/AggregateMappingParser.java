@@ -45,17 +45,11 @@ import org.jetel.util.string.StringUtils;
  * @created Apr 23, 2007
  */
 public class AggregateMappingParser {
-	/** Assignation sign in the aggregation mapping. */
-	public final static String ASSIGN_SIGN = ":=";
-	// regexp matching the delimiter of the aggregation mapping items
-	private static final String MAPPING_DELIMITER_REGEX = "\\s*[;|]\\s*";
 	// regexp matching the left half of an aggregation mapping item (including the assign sign)
-	private static final String MAPPING_LEFT_SIDE_REGEX = "^\\$[\\w]*\\s*" + ASSIGN_SIGN + "\\s*";
+	private static final String MAPPING_LEFT_SIDE_REGEX = "^\\$[\\w]*\\s*" + Defaults.ASSIGN_SIGN + "\\s*";
 	// regexp  matching a correct aggregate function mapping
 	private static final String MAPPING_FUNCTION_REGEX = "[\\w ]*\\([\\$\\w ]*\\)";
 	// regexp  matching a correct field mapping
-	private static final String MAPPING_FIELD_REGEX = "\\$[\\w ]*";
-	// regexp  matching a correct string constant mapping
 	private static final String MAPPING_STRING_REGEX = "\\\".*\\\"";
 	// regexp  matching a correct integer constant mapping
 	private static final String MAPPING_INT_REGEX = "[\\d]*";
@@ -69,23 +63,25 @@ public class AggregateMappingParser {
 	private static final String MAPPING_DATETIME_REGEX = "[\\d]{4}-[\\d]{2}-[\\d]{2} [\\d]{2}:[\\d]{2}:[\\d]{2}";
 	// regexp  matching a mapping with a graph parameter
 	private static final String MAPPING_PARAM_REGEX = "[\\w ]*\\$\\{[\\w ]*\\}[\\w ]*";
+	//matcher for end of line in Pattern.class
+	private static final String END_LINE_REGEX = "$";
 
 	private static final Pattern functionPattern = 
-		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_FUNCTION_REGEX + "$");
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_FUNCTION_REGEX + END_LINE_REGEX);
 	private static final Pattern fieldPattern = 
-		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_FIELD_REGEX + "$");
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + Defaults.CLOVER_FIELD_REGEX + END_LINE_REGEX);
 	private static final Pattern stringPattern = 
-		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_STRING_REGEX + "$");
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_STRING_REGEX + END_LINE_REGEX);
 	private static final Pattern intPattern = 
-		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_INT_REGEX + "$");
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_INT_REGEX + END_LINE_REGEX);
 	private static final Pattern doublePattern = 
-		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_DOUBLE_REGEX + "$");
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_DOUBLE_REGEX + END_LINE_REGEX);
 	private static final Pattern datePattern = 
-		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_DATE_REGEX + "$");
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_DATE_REGEX + END_LINE_REGEX);
 	private static final Pattern datetimePattern = 
-		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_DATETIME_REGEX + "$");
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_DATETIME_REGEX + END_LINE_REGEX);
 	private static final Pattern paramPattern = 
-		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_PARAM_REGEX + "$");
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_PARAM_REGEX + END_LINE_REGEX);
 	
 	// set of already used output fields, used to detect multiple uses of the same output field
 	private Set<String> usedOutputFields = new HashSet<String>(); 
@@ -134,7 +130,7 @@ public class AggregateMappingParser {
 			keyFields.add(inMetadata.getField(i).getName());
 		}
 
-		parseMapping(splitMapping(mapping));
+		parseMapping(StringUtils.split(mapping));
 	}
 
 	/**
@@ -153,7 +149,7 @@ public class AggregateMappingParser {
 		if (Pattern.compile("^" + MAPPING_FUNCTION_REGEX + "$").matcher(value).matches()) {
 			return false;
 		}
-		if (Pattern.compile("^" + MAPPING_FIELD_REGEX + "$").matcher(value).matches()) {
+		if (Pattern.compile("^" + Defaults.CLOVER_FIELD_REGEX + "$").matcher(value).matches()) {
 			return false;
 		}
 		
@@ -267,7 +263,7 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseFunction(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(ASSIGN_SIGN);
+		String[] parsedExpression = expression.split(Defaults.ASSIGN_SIGN);
 		String function = parsedExpression[1].trim().replaceAll(" ", "");	// removes additional spaces
 		String outputField = parseOutputField(parsedExpression[0]);
 		// parse the aggregate function name
@@ -349,8 +345,8 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseFieldMapping(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(ASSIGN_SIGN);
-		String inputField = parsedExpression[1].trim().substring(1); // skip the leading "$"
+		String[] parsedExpression = expression.split(Defaults.ASSIGN_SIGN);
+		String inputField = parsedExpression[1].trim().substring(Defaults.CLOVER_FIELD_INDICATOR.length()); // skip the leading "$"
 		String outputField = parseOutputField(parsedExpression[0]);
 
 		// check existence of fields in metadata
@@ -370,7 +366,7 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseIntConstantMapping(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(ASSIGN_SIGN);
+		String[] parsedExpression = expression.split(Defaults.ASSIGN_SIGN);
 		String constant = parsedExpression[1].trim();
 		String outputField = parseOutputField(parsedExpression[0]);
 		
@@ -396,7 +392,7 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseDoubleConstantMapping(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(ASSIGN_SIGN);
+		String[] parsedExpression = expression.split(Defaults.ASSIGN_SIGN);
 		String constant = parsedExpression[1].trim();
 		String outputField = parseOutputField(parsedExpression[0]);
 		
@@ -422,7 +418,7 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseStringConstantMapping(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(ASSIGN_SIGN);
+		String[] parsedExpression = expression.split(Defaults.ASSIGN_SIGN);
 		// remove the leading and trailing quotation marks
 		String constant = parsedExpression[1].trim().substring(1, parsedExpression[1].trim().length() - 1);
 		constant = createString(constant); 
@@ -450,7 +446,7 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseDateConstantMapping(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(ASSIGN_SIGN);
+		String[] parsedExpression = expression.split(Defaults.ASSIGN_SIGN);
 		String constant = parsedExpression[1].trim();
 		String outputField = parseOutputField(parsedExpression[0]);
 		
@@ -482,7 +478,7 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseDateTimeConstantMapping(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(ASSIGN_SIGN);
+		String[] parsedExpression = expression.split(Defaults.ASSIGN_SIGN);
 		String constant = parsedExpression[1].trim();
 		String outputField = parseOutputField(parsedExpression[0]);
 		
@@ -514,7 +510,7 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseParamMapping(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(ASSIGN_SIGN);
+		String[] parsedExpression = expression.split(Defaults.ASSIGN_SIGN);
 		// remove the leading and trailing quotation marks
 		String constant = parsedExpression[1].trim();
 		constant = createString(constant); 
@@ -690,52 +686,9 @@ public class AggregateMappingParser {
 	 * @return name of the output field.
 	 */
 	private String parseOutputField(String expr) {
-		return expr.trim().substring(1);	// skip the leading "$"
+		return expr.trim().substring(Defaults.CLOVER_FIELD_INDICATOR.length());	// skip the leading "$"
 	}
 	
-	/**
-	 * Splits the mapping string into mapping items. It's compatible with double quoted
-	 * strings, so a delimiter in a double quoted string doesn't cause a split.
-	 *  
-	 * @param mapping
-	 * @return mapping items.
-	 */
-	private String[] splitMapping(String mapping) {
-		Pattern delimiterPattern = Pattern.compile(MAPPING_DELIMITER_REGEX);
-		ArrayList<String> result = new ArrayList<String>();
-		
-		StringBuilder item = new StringBuilder();
-		boolean insideQuotes = false;
-		char prevChar = '\0';
-		for (int i = 0; i < mapping.length(); i++) {
-			char c = mapping.charAt(i);
-			if (insideQuotes) {
-				if ((c == '"') && (prevChar != '\\')) {
-					insideQuotes = false;
-				} 
-				item.append(c);
-			} else {
-				if (c == '"') {
-					insideQuotes = true;
-					item.append(c);
-				} else if (delimiterPattern.matcher(Character.toString(c)).matches()) {
-					result.add(item.toString());
-					item = new StringBuilder();
-				} else {
-					item.append(c);
-				}
-			}
-
-			prevChar = c;
-		}
-		String lastString = item.toString();
-		if (!lastString.equals("")) {	// if the ";" is the last char of the mapping, 
-										// then an empty last item is created
-			result.add(item.toString());
-		}
-		
-		return (String[]) result.toArray(new String[result.size()]);
-	}
 	/**
 	 * Mapping of a constant.
 	 * 
