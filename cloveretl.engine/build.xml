@@ -383,13 +383,14 @@
 		<junit haltonerror="false" haltonfailure="false" printsummary="true">
 			<classpath>
 			    <pathelement path="${dir.bin}"/>
+			    <pathelement path="${dir.classestest}"/>
 				<fileset dir="${dir.lib}">
 					<include name="*.jar"/>
 				</fileset>
 			    <pathelement path="${dir.tools}/junit-4.4.jar"/>
 			  </classpath>
 			<batchtest todir="${dir.testsresult}">
-				<fileset dir="${dir.classestest}"></fileset>
+				<fileset dir="${dir.src.test}"></fileset>
 			</batchtest>
 			<formatter type="plain"/>
 			<formatter type="xml"/>
