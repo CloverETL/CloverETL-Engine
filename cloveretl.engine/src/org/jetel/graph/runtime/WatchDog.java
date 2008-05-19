@@ -25,7 +25,6 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -395,6 +394,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					}
 					break;
 				case NODE_FINISHED:
+					leafNodes.remove(message.getSender());
+					break;
 				default:
 						// do nothing, just wake up
 				}
@@ -403,10 +404,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			// ------------------------------------
 			// Check that we still have some nodes running
 			// ------------------------------------
-
-			if(message != null && message.getType() == Message.Type.NODE_FINISHED) {
-				leafNodes.remove(message.getSender());
-			}
 
 			// is there any node running ?
 			if (leafNodes.isEmpty()) {
