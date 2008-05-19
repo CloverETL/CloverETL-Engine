@@ -405,16 +405,24 @@ public abstract class Node extends GraphElement implements Runnable {
             getCloverPost().sendMessage(msg);
             return;
         } finally {
-	        //sends notification - node has finished
-	        Message<Object> msg = Message.createNodeFinishedMessage(this);
-	        getCloverPost().sendMessage(msg);
-	        
-	        //setNodeThread(null);
+        	sendFinishMessage();
+
+        	//setNodeThread(null);
         }
     }
     
     public abstract Result execute() throws Exception;
 
+    
+    /**
+     * This method should be called every time when node finishes its work.
+     */
+    private void sendFinishMessage() {
+        //sends notification - node has finished
+        Message<Object> msg = Message.createNodeFinishedMessage(this);
+        getCloverPost().sendMessage(msg);
+    }
+    
 	/**
 	 *  Abort execution of Node - brutal force
 	 *
@@ -430,6 +438,7 @@ public abstract class Node extends GraphElement implements Runnable {
         
 		if (runResult==Result.RUNNING){
 			runResult = Result.ABORTED;
+			sendFinishMessage();
 			getNodeThread().interrupt();
 		}
 	}
