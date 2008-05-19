@@ -10,7 +10,9 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.util.string.StringUtils;
+import org.w3c.dom.Element;
 
 
 /**
@@ -170,4 +172,12 @@ public abstract class GraphElement implements IGraphElement {
     public String toString() {
         return (getName() == null ? "" : getName()) + "[" + getId() + "]";
     }
+    
+	/**
+	 * Only purpose of this implementation is obfuscation. Method fromXML() should not be obfuscated.
+	 */
+	public static Node fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
+        throw new UnsupportedOperationException("not implemented in org.jetel.graph.GraphElement"); 
+	}
+
 }
