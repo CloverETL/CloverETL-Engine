@@ -22,6 +22,7 @@ package org.jetel.util;
 
 import junit.framework.TestCase;
 
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -60,8 +61,10 @@ public class StringUtilsTest extends TestCase {
 
 	private String resultString5;
 
+	@Override
 	protected void setUp() {
 
+		EngineInitializer.initEngine((String) null, null, null);
 		controlString1 = "ala\n\rr\t\n";
 
 		resultString1 = "ala\\n\\rr\\t\\n";
@@ -114,20 +117,21 @@ public class StringUtilsTest extends TestCase {
 
 		sizes5[0] = 7; // "blah bl"
 
-		sizes5[1] = 7; // "       "
+		sizes5[1] = 7; // " "
 
-		sizes5[2] = -7; // "       "
+		sizes5[2] = -7; // " "
 
 		sizes5[3] = -5; // "blah "
 
 		sizes5[4] = 0; // ""
 
-		sizes5[5] = 15; // "      blah blah"
+		sizes5[5] = 15; // " blah blah"
 
 		resultString5 = "blah bl              blah       blah blah";
 
 	}
 
+	@Override
 	protected void tearDown() {
 
 		controlString1 = null;
@@ -147,8 +151,10 @@ public class StringUtilsTest extends TestCase {
 	}
 
 	/**
-	 *  Test for @link org.jetel.util.StringUtils.specCharToString(String controlString)
-	 *
+	 * Test for
+	 * 
+	 * @link org.jetel.util.StringUtils.specCharToString(String controlString)
+	 * 
 	 */
 
 	public void test_specCharToString() {
@@ -166,8 +172,10 @@ public class StringUtilsTest extends TestCase {
 	}
 
 	/**
-	 *  Test for @link org.jetel.util.StringUtils.stringToSpecChar(String controlString)
-	 *
+	 * Test for
+	 * 
+	 * @link org.jetel.util.StringUtils.stringToSpecChar(String controlString)
+	 * 
 	 */
 
 	public void test_stringToSpecChar() {
@@ -191,8 +199,10 @@ public class StringUtilsTest extends TestCase {
 	}
 
 	/**
-	 *  Test for @link org.jetel.util.StringUtils.formatString(Object[] messages, int[] sizes)
-	 *
+	 * Test for
+	 * 
+	 * @link org.jetel.util.StringUtils.formatString(Object[] messages, int[] sizes)
+	 * 
 	 */
 
 	public void test_1_formatString() {
@@ -206,8 +216,10 @@ public class StringUtilsTest extends TestCase {
 	}
 
 	/**
-	 *  Test for @link org.jetel.util.StringUtils.formatString(Object[] messages, int[] sizes)
-	 *
+	 * Test for
+	 * 
+	 * @link org.jetel.util.StringUtils.formatString(Object[] messages, int[] sizes)
+	 * 
 	 */
 
 	public void test_2_formatString() {
@@ -221,8 +233,10 @@ public class StringUtilsTest extends TestCase {
 	}
 
 	/**
-	 *  Test for @link org.jetel.util.StringUtils.formatString(Object[] messages, int[] sizes)
-	 *
+	 * Test for
+	 * 
+	 * @link org.jetel.util.StringUtils.formatString(Object[] messages, int[] sizes)
+	 * 
 	 */
 
 	public void test_3_formatString() {
@@ -235,18 +249,18 @@ public class StringUtilsTest extends TestCase {
 
 	}
 
-	public void test_isNumber(){
+	public void test_isNumber() {
 		String str = "123456789";
 		assertTrue(StringUtils.isNumber(str));
 		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
-		
+
 		str = "1234.56789";
 		assertTrue(StringUtils.isNumber(str));
 		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
 
 		assertFalse(StringUtils.isNumber("123,456789"));
 		assertFalse(StringUtils.isNumber("123.45678.9"));
-		
+
 		str = "1234e56789";
 		assertTrue(StringUtils.isNumber(str));
 		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
@@ -266,14 +280,82 @@ public class StringUtilsTest extends TestCase {
 		assertFalse(StringUtils.isNumber("123456789e"));
 		assertFalse(StringUtils.isNumber("123456789e-"));
 		assertFalse(StringUtils.isNumber("123456dj789e"));
-		assertFalse(StringUtils.isNumber("d123456789"));	
-		
+		assertFalse(StringUtils.isNumber("d123456789"));
+
 		str = "1234E+56";
 		assertTrue(StringUtils.isNumber(str));
 		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
 	}
+
+	public void testSplit() throws Exception {
+		String str = "f1;f2;f3";
+		String[] splitResult = StringUtils.split(str);
+		assertEquals(3, splitResult.length);
+		assertEquals("f1", splitResult[0]);
+		assertEquals("f2", splitResult[1]);
+		assertEquals("f3", splitResult[2]);
+
+		str = "f1;f2; f3;";
+		splitResult = StringUtils.split(str);
+		assertEquals(3, splitResult.length);
+		assertEquals("f1", splitResult[0]);
+		assertEquals("f2", splitResult[1]);
+		assertEquals("f3", splitResult[2]);
+
+		str = "f1|f2:	f3; f4:f5|f6:";
+		splitResult = StringUtils.split(str);
+		assertEquals(6, splitResult.length);
+		assertEquals("f1", splitResult[0]);
+		assertEquals("f2", splitResult[1]);
+		assertEquals("f3", splitResult[2]);
+		assertEquals("f4", splitResult[3]);
+		assertEquals("f5", splitResult[4]);
+		assertEquals("f6", splitResult[5]);
+
+		str = "f1;f2:=my_value;f3;";
+		splitResult = StringUtils.split(str);
+		assertEquals(3, splitResult.length);
+		assertEquals("f1", splitResult[0]);
+		assertEquals("f2:=my_value", splitResult[1]);
+		assertEquals("f3", splitResult[2]);
+
+		str = "f1:f2:=my_value;f3;f\":4\"";
+		splitResult = StringUtils.split(str);
+		assertEquals(4, splitResult.length);
+		assertEquals("f1", splitResult[0]);
+		assertEquals("f2:=my_value", splitResult[1]);
+		assertEquals("f3", splitResult[2]);
+		assertEquals("f\":4\"", splitResult[3]);
+
+		str = "f1;f2:=\"my_values:1;2\";f3;";
+		splitResult = StringUtils.split(str);
+		assertEquals(3, splitResult.length);
+		assertEquals("f1", splitResult[0]);
+		assertEquals("f2:=\"my_values:1;2\"", splitResult[1]);
+		assertEquals("f3", splitResult[2]);
+
+		str = "f1;f2=\"my_values1\"+my_values2;f3;";
+		splitResult = StringUtils.split(str);
+		assertEquals(3, splitResult.length);
+		assertEquals("f1", splitResult[0]);
+		assertEquals("f2=\"my_values1\"+my_values2", splitResult[1]);
+		assertEquals("f3", splitResult[2]);
+
+		str = "curentrecno=random(\"0\",\"10\");caudrecno=random(\"\",\"\");maudrecno=random(\"\",\"\")";
+		splitResult = StringUtils.split(str);
+		assertEquals(3, splitResult.length);
+		assertEquals("curentrecno=random(\"0\",\"10\")", splitResult[0]);
+		assertEquals("caudrecno=random(\"\",\"\")", splitResult[1]);
+		assertEquals("maudrecno=random(\"\",\"\")", splitResult[2]);
+
+		str = "string=random(\"3\",\"5\");date=random(\"01-02-2002 12:00:00\",\"29-02-2008 12:00:00\")";
+		splitResult = StringUtils.split(str);
+		assertEquals(2, splitResult.length);
+		assertEquals("string=random(\"3\",\"5\")", splitResult[0]);
+		assertEquals("date=random(\"01-02-2002 12:00:00\",\"29-02-2008 12:00:00\")", splitResult[1]);
+	}
 }
 
 /*
- *  End class testStringUtils
+ * End class testStringUtils
  */

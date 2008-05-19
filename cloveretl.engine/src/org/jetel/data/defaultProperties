@@ -89,7 +89,8 @@ DataFieldMetadata.DECIMAL_SCALE = 2
 
 DataFormatter.DELIMITER_DELIMITERS_REGEX = \\\\\\|
 			
-Component.KEY_FIELDS_DELIMITER_REGEX = \\s*[:;|]\\s*
+# ; or | or : , but not := - this is ASSIGN_SIGN
+Component.KEY_FIELDS_DELIMITER_REGEX = \\s*([|;]|:(?!=))\\s*
 Component.KEY_FIELDS_DELIMITER = ;
 					
 WatchDog.WATCHDOG_SLEEP_INTERVAL = 1000
@@ -126,3 +127,12 @@ Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS = 4
 # possible values are: "internal" | "jdk"
 # if "jdk" value is set, tools.jar has to be in classpath
 DEFAULT_JAVA_COMPILER=internal
+
+#string used for recognizing of clover field
+CLOVER_FIELD_INDICATOR = $
+
+#regex used for recognizing of clover field
+CLOVER_FIELD_REGEX = \\$[\\w]+
+
+# Assignation sign in the mappings
+ASSIGN_SIGN = :=
