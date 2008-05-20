@@ -56,6 +56,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CommandBuilder;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
@@ -1566,14 +1567,15 @@ public class DB2DataWriter extends Node {
                     xattribs.getString(XML_FILEURL_ATTRIBUTE, null),
                     xattribs.getString(XML_FILEMETADATA_ATTRIBUTE, null));
 			if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
-				String[] pairs = xattribs.getString(XML_FIELDMAP_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+				String[] pairs = StringUtils.split(xattribs.getString(XML_FIELDMAP_ATTRIBUTE));
+//				String[] pairs = xattribs.getString(XML_FIELDMAP_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 				String[] cloverFields = new String[pairs.length];
 				String[] dbFields = new String[pairs.length];
-				int equalIndex;
+				String[] pair;
 				for (int i=0;i<pairs.length;i++){
-					equalIndex = pairs[i].indexOf('=');
-					cloverFields[i] = pairs[i].substring(0,equalIndex);
-					dbFields[i] = StringUtils.quote(pairs[i].substring(equalIndex +1));
+					pair = MiscUtils.getMappingItemsFromMappingString(pairs[i]);
+					cloverFields[i] = pair[0];
+					dbFields[i] = StringUtils.quote(pair[1]);
 				}
 				writer.setCloverFields(cloverFields);
 				writer.setDBFields(dbFields);
