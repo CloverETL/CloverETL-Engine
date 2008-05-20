@@ -120,9 +120,12 @@ public final class MiscUtils {
 		if (target.startsWith(Defaults.CLOVER_FIELD_INDICATOR)) {
 			target = target.substring(Defaults.CLOVER_FIELD_INDICATOR.length());
 		}
-		String source = mapping[1].trim();
-		if (source.startsWith(Defaults.CLOVER_FIELD_INDICATOR)) {
-			source = source.substring(Defaults.CLOVER_FIELD_INDICATOR.length());
+		String source = null;
+		if (mapping.length > 1) {
+			mapping[1].trim();
+			if (source.startsWith(Defaults.CLOVER_FIELD_INDICATOR)) {
+				source = source.substring(Defaults.CLOVER_FIELD_INDICATOR.length());
+			}
 		}
 		return new String[] { target, source };
 	}
