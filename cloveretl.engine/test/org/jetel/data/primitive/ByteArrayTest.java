@@ -21,7 +21,7 @@ public class ByteArrayTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		EngineInitializer.initEngine((String) null, null, null);
-		sBytes = "Kašna na vodu";
+		sBytes = "Ka\u0161na na vodu";
 		bytes = sBytes.getBytes();
 		byteArrayEmpty = new ByteArray();
 		byteArrayBytes = new ByteArray(bytes);
@@ -302,7 +302,7 @@ public class ByteArrayTest extends TestCase {
 		int index = 5;
 		int ofs = 1;
 		int len = 10;
-		byteArrayBytes.insert(index, bytes, ofs, len);new String(byteArrayBytes.value);
+		byteArrayBytes.insert(index, bytes, ofs, len);
 		assertEquals(byteArrayBytes.count, bytes.length + len);
 		for (int i=0; i<index; i++) {
 			assertEquals(bytes[i], byteArrayBytes.value[i]);
@@ -319,7 +319,7 @@ public class ByteArrayTest extends TestCase {
 		int index = 5;
 		int ofs = 1;
 		int end = 11;
-		byteArrayBytes.insert(index, sBytes, ofs, end);new String(byteArrayBytes.value);
+		byteArrayBytes.insert(index, sBytes, ofs, end);
 		assertEquals(byteArrayBytes.count, bytes.length + end-ofs);
 		for (int i=0; i<index; i++) {
 			assertEquals(bytes[i], byteArrayBytes.value[i]);
@@ -337,7 +337,7 @@ public class ByteArrayTest extends TestCase {
 		int pos = 1;
 		int len = 10;
 		dataBuffer.position(pos);
-		byteArrayBytes.insert(index, dataBuffer, len);new String(byteArrayBytes.value);
+		byteArrayBytes.insert(index, dataBuffer, len);
 		assertEquals(byteArrayBytes.count, bytes.length + len);
 		for (int i=0; i<index; i++) {
 			assertEquals(bytes[i], byteArrayBytes.value[i]);
