@@ -214,7 +214,7 @@
 		<mkdir dir="${dir.bin}"/>
 		
 		<!-- Compile sources -->
-		<javac debug="true" destdir="${dir.bin}" target="1.5" source="1.5">
+		<javac debug="true" destdir="${dir.bin}" target="1.5" source="1.5" encoding="UTF-8">
 			<classpath>
 				<pathelement path="${tools}"/>
 				<!--pathelement path="${commons-logging}"/>
