@@ -28,7 +28,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * This class reprezents record will all fields with null value.
+ * This class represents record will all fields with null value.
  * 
  * @author avackova (agata.vackova@javlinconsulting.cz) ; 
  * (c) JavlinConsulting s.r.o.
