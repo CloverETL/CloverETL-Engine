@@ -154,11 +154,7 @@ public class MultiFileReader {
 			try {
 				URL url = FileUtils.getInnerAddress(filename);
 				if (FileUtils.isServerURL(url)) {
-					/*InetAddress address = InetAddress.getByName(url.getHost());
-					int timeout = 100;					
-					if (!address.isReachable(timeout)){ // this CODE doesn't work properly, the ping opens port 7.
-						logger.warn("The server '" + url.getHost() + "' is unreachable or doesn't listen on port 7 or timeout("+timeout+") is too short.");
-					}*/
+					FileUtils.checkServer(url);
 					continue;
 				}
 				
