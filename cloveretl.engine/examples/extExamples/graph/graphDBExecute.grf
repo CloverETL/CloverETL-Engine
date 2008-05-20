@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Tue Dec 04 10:38:50 CET 2007" description="This graph illustrates how-to run SQL/DDL/DML commands againts database. Commands&#10;in SQLCode are delimited by semicolon and are executed one by one. If needed, they&#10;may be grouped into single transaction.&#10;&#10;This graph creates two tables (EMPLOYEE and EMPLOYEE_TMP) and populates table EMPLOYEE with sample data.&#10;MySql:&#10;CREATE PROCEDURE p (OUT ver_param VARCHAR(25), INOUT incr_param INT)&#10;BEGIN&#10;  # Set value of OUT parameter&#10;  SELECT VERSION() INTO ver_param;&#10;  # Increment value of INOUT parameter&#10;  SET incr_param = incr_param + 1;&#10;END;" guiVersion="1.9" id="1196767470169" licenseType="Evaluation license." modified="Thu Apr 03 10:58:08 CEST 2008" name="TestingDB2" revision="1.153">
+<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" description="This graph illustrates how-to run SQL/DDL/DML commands againts database. Commands&#10;in SQLCode are delimited by semicolon and are executed one by one. If needed, they&#10;may be grouped into single transaction.&#10;&#10;This graph creates two tables (EMPLOYEE and EMPLOYEE_TMP) and populates table EMPLOYEE with sample data.&#10;MySql:&#10;CREATE PROCEDURE p (OUT ver_param VARCHAR(25), INOUT incr_param INT)&#10;BEGIN&#10;  # Set value of OUT parameter&#10;  SELECT VERSION() INTO ver_param;&#10;  # Increment value of INOUT parameter&#10;  SET incr_param = incr_param + 1;&#10;END;" guiVersion="1.10" id="1196767470169" licenseType="Evaluation license." modified="Tue May 20 13:26:03 CEST 2008" modifiedBy="avackova" name="TestingDB2" revision="1.157">
 <Global>
 <Metadata id="Metadata3">
 <Record fieldDelimiter=";" name="mssqltable" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -32,12 +32,12 @@ END;]]></attr>
 </Node>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="26" guiY="100" id="DATA_GENERATOR2" randomFields="string=random(&quot;3&quot;,&quot;5&quot;);date=random(&quot;01-02-2002 12:00:00&quot;,&quot;29-02-2008 12:00:00&quot;)" recordsNumber="10" sequenceFields="id=Sequence0" type="DATA_GENERATOR"/>
+<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="26" guiY="100" id="DATA_GENERATOR2" randomFields="$string:=random(&quot;3&quot;,&quot;5&quot;);$date:=random(&quot;01-02-2002 12:00:00&quot;,&quot;29-02-2008 12:00:00&quot;)" recordsNumber="10" sequenceFields="$id:=Sequence0;" type="DATA_GENERATOR"/>
 <Node dbConnection="Connection1" dbTable="proc_table" enabled="enabled" guiHeight="0" guiName="DB Output Table" guiWidth="0" guiX="215" guiY="102" id="DB_OUTPUT_TABLE1" type="DB_OUTPUT_TABLE"/>
 <Edge debugMode="true" fromNode="DATA_GENERATOR2:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DB_OUTPUT_TABLE1:0"/>
 </Phase>
 <Phase number="2">
-<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="26" guiY="187" id="DATA_GENERATOR3" pattern=";&#10;" randomFields="date=random(&quot;01-02-2006 12:00:00&quot;,&quot;29-02-2008 12:00:00&quot;)" recordsNumber="2" type="DATA_GENERATOR"/>
+<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="26" guiY="187" id="DATA_GENERATOR3" pattern=";&#10;" randomFields="$date:=random(&quot;01-02-2006 12:00:00&quot;,&quot;29-02-2008 12:00:00&quot;)" recordsNumber="2" type="DATA_GENERATOR"/>
 <Node callStatement="true" dbConnection="Connection1" enabled="enabled" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="215" guiY="187" id="DB_EXECUTE2" inParameters="1:=$date" outputFields="id;string;date" type="DB_EXECUTE">
 <attr name="sqlQuery"><![CDATA[{call SPDownload(?)}]]></attr>
 </Node>
