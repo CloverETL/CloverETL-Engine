@@ -367,7 +367,7 @@
 	
 	<target name="compile-tests" depends="init">
 		<mkdir dir="${dir.classestest}"/>
-		<javac debug="true" destdir="${dir.classestest}" target="1.5" source="1.5">
+		<javac debug="true" destdir="${dir.classestest}" target="1.5" source="1.5" encoding="UTF-8">
 			<classpath>
 				<pathelement path="${tools}"/>
 				<fileset refid="engine-libs"/>
