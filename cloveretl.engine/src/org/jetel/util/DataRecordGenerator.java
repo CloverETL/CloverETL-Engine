@@ -477,7 +477,7 @@ public class DataRecordGenerator implements Parser {
 			// new notation $f:=random(min,max), old notation f=random(min,max)
 			param = MiscUtils.getMappingItemsFromMappingString(fields[i]);
 			this.randomFields[i] = param[0];
-			if (param.length > 1) {
+			if (param[1] != null) {
 				leftParenthesisIndex = param[1].indexOf('(');
 				commaIndex = param[1].indexOf(',');
 				rightParantesisIndex = param[1].indexOf(')');
@@ -526,7 +526,7 @@ public class DataRecordGenerator implements Parser {
 		for (int i = 0; i < fields.length; i++) {
 			param = MiscUtils.getMappingItemsFromMappingString(fields[i]);
 			this.sequenceFields[i] = param[0];
-			if (param.length > 1) {
+			if (param[1] != null) {
 				sequenceIDs[i] = param[1];
 			}
 		}
