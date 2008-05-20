@@ -122,7 +122,7 @@ public final class MiscUtils {
 		}
 		String source = null;
 		if (mapping.length > 1) {
-			mapping[1].trim();
+			source = mapping[1].trim();
 			if (source.startsWith(Defaults.CLOVER_FIELD_INDICATOR)) {
 				source = source.substring(Defaults.CLOVER_FIELD_INDICATOR.length());
 			}
