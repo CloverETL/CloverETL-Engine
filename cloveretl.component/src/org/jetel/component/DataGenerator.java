@@ -65,20 +65,20 @@ import org.w3c.dom.Element;
  *  Field's values in this string have to have format coherent with metadata 
  *  (appropriate length or delimited by appropriate delimiter)</td></tr>
  *  <tr><td><b>recordsNumber</b></td><td>number of records to generate</td></tr>
- *  <tr><td><b>randomFields</b><br><i>optional</i></td><td>names of fields to be set 
- *  by random values (optionaly with ranges) separated by semicolon. When there are 
+ *  <tr><td><b>randomFields</b><br><i>optional</i></td><td>names of fields (can be preceded by Defaults.CLOVER_FIELD_INDICATOR - $)
+ *  to be set by random values (optionaly with ranges) separated by :;| {colon, semicolon, pipe}. When there are 
  *  not given random ranges (or one of them) there are used minimum possible values 
  *  for given data field (eg. for LongDataField minimum is Long.MIN_VALUE and maximum 
  *  Long.MAX_VALUE). Random strings are generated from chars 'a' till 'z'. For numeric 
  *  fields random ranges are: min value (inclusive) and max value (exclusive), 
  *  and for byte or string fields random ranges mean minimum and maximum length 
- *  of field (if it is not fixed), eg. field1=random(0,51) - for numeric field random 
+ *  of field (if it is not fixed), eg. $field1:=random(0,51) - for numeric field random 
  *  value from range (0,50], for string field - random string of length 0 till 51 
- *  chars, field2=random(10) - allowed only for string or byte field, means length of field  </td></tr>
+ *  chars, $field2:=random(10) - allowed only for string or byte field, means length of field  </td></tr>
  *  <tr><td><b>randomSeed</b><br><i>optional</i></td><td>Sets the seed of this random number generator using a single long seed. </td></tr>
- *  <tr><td><b>sequenceFields</b><br><i>optional</i></td><td>names of fields to be set 
- *  by values from sequence (optionaly with sequence name: fieldName=sequenceName) 
- *  separated by semicolon.</td></tr>
+ *  <tr><td><b>sequenceFields</b><br><i>optional</i></td><td>names of fields (can be preceded by Defaults.CLOVER_FIELD_INDICATOR - $) 
+ *  to be set by values from sequence (optionaly with sequence name: $fieldName:=sequenceName) 
+ *  separated by :;| {colon, semicolon, pipe}.</td></tr>
  *</table>
  *  <h4>Example:</h4>
  *  Metadata:
