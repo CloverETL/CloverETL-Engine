@@ -512,6 +512,23 @@ public class FileUtils {
 	}
 	
 	/**
+	 * Creates URL connection and connect the server.
+	 * 
+	 * @param url
+	 * @throws IOException
+	 */
+	public static void checkServer(URL url) throws IOException {
+		if (url == null) {
+			return;
+		}
+		URLConnection connection = url.openConnection();
+		connection.connect();
+		if (connection instanceof SFTPConnection) {
+			((SFTPConnection) connection).disconnect();
+		}
+	}
+
+	/**
 	 * Gets the most inner url address.
 	 * 
 	 * @param input
