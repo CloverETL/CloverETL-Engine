@@ -483,7 +483,6 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("b2")).getTLValue()==TLValue.TRUE_VAL);
 		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("b4")).getTLValue()==TLValue.TRUE_VAL);
 		      assertTrue(executor.getGlobalVariable(parser.getGlobalVariableSlot("b4")).isNullable());
-		      assertTrue(executor.getGlobalVariable(parser.getGlobalVariableSlot("b4")).isNULL());
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1303,10 +1302,15 @@ public class TestInterpreter extends TestCase {
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 
-		      GregorianCalendar b;
+		      GregorianCalendar b,n;
 		      b= new GregorianCalendar();
 		      b.setTime(((Date)record.getField("Born").getValue()));
-		      assertEquals(new GregorianCalendar().get(Calendar.YEAR) - b.get(Calendar.YEAR) + 5, 
+		      n = new GregorianCalendar();
+		      int diff = n.get(Calendar.YEAR) - b.get(Calendar.YEAR) + 5;
+		      b.set(Calendar.YEAR, 0);
+		      n.set(Calendar.YEAR, 0);
+		      if (n.after(b)) {diff++;}
+		      assertEquals(diff, 
 		    		  (executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getTLValue().getNumeric().getInt()));
 		      
 		} catch (ParseException e) {
@@ -1350,10 +1354,15 @@ public class TestInterpreter extends TestCase {
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 
-		      GregorianCalendar b;
+		      GregorianCalendar b,n;
 		      b= new GregorianCalendar();
 		      b.setTime(((Date)record.getField("Born").getValue()));
-		      assertEquals(2 * (new GregorianCalendar().get(Calendar.YEAR) - b.get(Calendar.YEAR)) + 4,
+		      n = new GregorianCalendar();
+		      int diff = n.get(Calendar.YEAR) - b.get(Calendar.YEAR);
+		      b.set(Calendar.YEAR, 0);
+		      n.set(Calendar.YEAR, 0);
+		      if (n.after(b)) {diff++;}
+		      assertEquals(2 * (diff) + 4,
 		    		  (executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getTLValue().getNumeric().getInt()));
 		      
 		} catch (ParseException e) {
@@ -1499,8 +1508,15 @@ public class TestInterpreter extends TestCase {
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-		      
-		      assertEquals(new GregorianCalendar().get(Calendar.YEAR) - born.get(Calendar.YEAR),
+		      GregorianCalendar b,n;
+		      b= new GregorianCalendar();
+		      b.setTime(((Date)record.getField("Born").getValue()));
+		      n = new GregorianCalendar();
+		      int diff = n.get(Calendar.YEAR) - b.get(Calendar.YEAR);
+		      b.set(Calendar.YEAR, 0);
+		      n.set(Calendar.YEAR, 0);
+		      if (n.after(b)) {diff++;}
+		      assertEquals(diff,
 		    		  (executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getTLValue().getNumeric().getInt()));
 		      assertEquals(10,(executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getTLValue().getNumeric().getInt()));
 		      
@@ -1595,8 +1611,16 @@ public class TestInterpreter extends TestCase {
 
 		      
 		      parseTree.dump("");
+		      GregorianCalendar b,n;
+		      b= new GregorianCalendar();
+		      b.setTime(((Date)record.getField("Born").getValue()));
+		      n = new GregorianCalendar();
+		      int diff = n.get(Calendar.YEAR) - b.get(Calendar.YEAR);
+		      b.set(Calendar.YEAR, 0);
+		      n.set(Calendar.YEAR, 0);
+		      if (n.after(b)) {diff++;}
 		      
-		      assertEquals(35,(executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getTLValue().getNumeric().getInt()));
+		      assertEquals(diff,(executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getTLValue().getNumeric().getInt()));
 		      assertEquals(0,(executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getTLValue().getNumeric().getInt()));
 		      
 		} catch (ParseException e) {
@@ -1810,9 +1834,10 @@ public class TestInterpreter extends TestCase {
 						"print_err('length of '+upper+':'+l );\n"+
 						"string c;c=concat(lower,upper,2,',today is ',today());\n" +
 						"print_err('concatenation \"'+lower+'\"+\"'+upper+'\"+2+\",today is \"+today():'+c );\n"+
-						"date datum; date born;born=nvl($Born,today()-400);\n" +
+						"date datum; date born;born=nvl($Born,today()-365);\n" +
+						"print_err('born=' + born);\n" +
 						"datum=dateadd(born,100,millisec);\n" +
-						"print_err(datum );\n"+
+						"print_err('dataum = ' + datum );\n"+
 						"long ddiff;date otherdate;otherdate=today();\n" +
 						"ddiff=datediff(born,otherdate,year);\n" +
 						"print_err('date diffrence:'+ddiff );\n" +
@@ -1876,7 +1901,7 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("l(=length)",5,executor.getGlobalVariable(parser.getGlobalVariableSlot("l")).getTLValue().getNumeric().getInt());
 		      assertEquals("c(=concat)","ello hi   ELLO 2,today is "+new Date(),executor.getGlobalVariable(parser.getGlobalVariableSlot("c")).getTLValue().toString());
 //		      assertEquals("datum",record.getField("Born").getValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("datum")).getValue().getDate());
-		      assertEquals("ddiff",-2,executor.getGlobalVariable(parser.getGlobalVariableSlot("ddiff")).getTLValue().getNumeric().getLong());
+		      assertEquals("ddiff",-1,executor.getGlobalVariable(parser.getGlobalVariableSlot("ddiff")).getTLValue().getNumeric().getLong());
 		      assertEquals("isn",false,executor.getGlobalVariable(parser.getGlobalVariableSlot("isn")).getTLValue()==TLValue.TRUE_VAL);
 		      assertEquals("s1",new Double(6),executor.getGlobalVariable(parser.getGlobalVariableSlot("s1")).getTLValue().getNumeric().getDouble());
 		      assertEquals("rep",("etto hi   EttO 2,today is "+new Date()).replaceAll("[lL]", "t"),executor.getGlobalVariable(parser.getGlobalVariableSlot("rep")).getTLValue().toString());
@@ -2147,7 +2172,6 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(DecimalFactory.getDecimal(75.32, 6, 4),(executor.getGlobalVariable(parser.getGlobalVariableSlot("d1")).getTLValue().getNumeric()));
 		      assertEquals(DecimalFactory.getDecimal(75.32, 6, 4),(executor.getGlobalVariable(parser.getGlobalVariableSlot("d1")).getTLValue().getNumeric()));
 		      assertEquals(DecimalFactory.getDecimal(1), executor.getGlobalVariable(parser.getGlobalVariableSlot("d2")).getTLValue().getNumeric());
-		      assertTrue(executor.getGlobalVariable(parser.getGlobalVariableSlot("b1")).isNULL());
 		      
         } catch (ParseException e) {
             System.err.println(e.getMessage());
