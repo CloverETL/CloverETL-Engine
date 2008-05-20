@@ -691,7 +691,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFInputFieldLiteral node, Object data) {
     	DataRecord record = inputRecords[node.recordNo];
-		if (record == null) {
+		if (record == NullRecord.NULL_RECORD || record == null) {
 			stack.push(Stack.NULL_VAL);
 			return null;
 		}
