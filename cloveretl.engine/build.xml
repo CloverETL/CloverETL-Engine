@@ -29,15 +29,19 @@
 	<property name="dir.docs" value="${basedir}/docs"/>
 	<property name="dir.build-scripts" value="${basedir}/build-scripts"/>
 	<property name="dir.src" value="src"/>
+	<property name="dir.build" value="${basedir}/build"/>
 	<property name="dir.src.test" value="${basedir}/test"/>
-	<property name="dir.src.tmp" value="src_tmp"/>
+	<property name="dir.src.improved" value="${dir.build}/src"/>
 	<property name="dir.examples" value="examples"/>
 	<property name="dir.tmp" value="__tmp"/>
-	<property name="dir.build" value="${basedir}/build"/>
 	<property name="dir.testsresult" value="${dir.build}/testsresult"/>
 	<property name="dir.testsreport" value="${dir.build}/testsreport"/>
 	<property name="dir.findbugsreport" value="${dir.build}/findbugsreport"/>
 	<property name="dir.classestest" value="${dir.build}/classes-test"/>
+	<property name="dir.cobertura" value="${dir.tools}/cobertura" />
+	<property name="dir.coverage.bin" value="${dir.build}/bin-coverage" />
+	<property name="dir.coverage.xml" value="${dir.build}/coveragereport/xml" />
+	<property name="dir.coverage.html" value="${dir.build}/coveragereport/html" />
 
 	<!--load external properties-->
 	<property file="build.properties"/>
@@ -56,6 +60,14 @@
 		<filter token="BUILD_TIME" value="${TODAY}" />
 	</filterset>
 		
+	<path id="cp.cobertura">
+	    <fileset dir="${dir.cobertura}">
+	        <include name="*.jar" />
+	    </fileset>
+	</path>
+
+	<taskdef classpathref="cp.cobertura" resource="tasks.properties" />	
+	
 		<!-- =========================== TARGETS ============================== -->
 	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file">
 		<foreach list="${plugin.list}" inheritall="true" target="plugin.build" param="plugin.dir"/>
@@ -209,7 +221,7 @@
 	</target>
 	
 	<!-- compile temp copy of source -->
-	<target name="compile" depends="checkproperties,copy_src" description="Compile sources">
+	<target name="compile" depends="checkproperties,improve-java-sources" description="Compile sources">
 		<!-- Create directory for binaries. -->
 		<mkdir dir="${dir.bin}"/>
 		
@@ -221,7 +233,7 @@
 				<pathelement path="${log4j}"/-->
 				<fileset refid="engine-libs"/>			
 			</classpath>
-			<src path="${dir.src.tmp}"/>
+			<src path="${dir.src.improved}"/>
 			<exclude name="test/**/*"/>
 		</javac>
 		
@@ -234,7 +246,7 @@
 		  </copy>
 		
 		<!-- delete source temp directory -->
-		<delete dir="${dir.src.tmp}"/>
+		<delete dir="${dir.src.improved}"/>
 	</target>
 
 	<!-- pack binary result of compile to jar file -->
@@ -284,9 +296,9 @@
 	</target>
 	
 	<!-- make a temp copy of source - necessary to substitute release number constants in the source code -->
-	<target name="copy_src">
+	<target name="improve-java-sources">
 		<echo message="Copying source code.." />
-		<copy todir="${dir.src.tmp}">
+		<copy todir="${dir.src.improved}">
 			<fileset dir="${dir.src}" />
 			<filterset refid="versionFilter"/>
 		</copy>
@@ -359,10 +371,10 @@
 		<mkdir dir="${dir.build}"/>
 	</target>
 	
-	<target name="reports" depends="reporttests,findbugs-html">
+	<target name="reports" depends="reporttests,findbugs-html,coverage-html">
 	</target>
 	
-	<target name="reports-hudson" depends="reporttests,findbugs-xml,findbugs-html">
+	<target name="reports-hudson" depends="reporttests,findbugs-xml,findbugs-html,coverage-html,coverage-xml">
 	</target>
 	
 	<target name="compile-tests" depends="init">
@@ -378,17 +390,28 @@
 		</javac>
 	</target>
 	
-	<target name="runtests" depends="init,compile,compile-tests" >
+	<target name="coverage-instrument" depends="compile">
+		<cobertura-instrument todir="${dir.coverage.bin}" datafile="${dir.build}/cobertura.ser">
+            <fileset dir="${dir.bin}">
+				<include name="**/*.class" />
+            </fileset>
+        </cobertura-instrument>
+	</target>
+	
+	<target name="runtests" depends="init,compile,compile-tests,coverage-instrument">
 		<mkdir dir="${dir.testsresult}"/>
-		<junit haltonerror="false" haltonfailure="false" printsummary="true">
+		<junit haltonerror="false" haltonfailure="false" printsummary="true" fork="true" forkmode="once">
+    		<sysproperty key="net.sourceforge.cobertura.datafile" file="${dir.build}/cobertura.ser" />
 			<classpath>
-			    <pathelement path="${dir.bin}"/>
 			    <pathelement path="${dir.classestest}"/>
+			    <pathelement path="${dir.coverage.bin}"/>
+			    <pathelement path="${dir.bin}"/>
 				<fileset dir="${dir.lib}">
 					<include name="*.jar"/>
 				</fileset>
 			    <pathelement path="${dir.tools}/junit-4.4.jar"/>
-			  </classpath>
+    			<path refid="cp.cobertura"/>
+			</classpath>
 			<batchtest todir="${dir.testsresult}">
 				<fileset dir="${dir.src.test}"></fileset>
 			</batchtest>
@@ -404,7 +427,7 @@
     			<include name="*.xml"/>
     		</fileset>
     		<report format="noframes" todir="${dir.testsreport}"/>
-    	</junitreport>            
+    	</junitreport>    	
     </target>
 	
 	<target name="findbugs-init">
@@ -442,4 +465,12 @@
 		</findbugs>
 	</target>
 	
+	<target name="coverage-html" depends="runtests">
+   		<cobertura-report datafile="${dir.build}/cobertura.ser" format="html" destdir="${dir.coverage.html}" srcdir="${dir.src}" />
+	</target>
+		
+	<target name="coverage-xml" depends="runtests">
+   		<cobertura-report datafile="${dir.build}/cobertura.ser" format="xml" destdir="${dir.coverage.xml}" srcdir="${dir.src}" />
+	</target>
+		
 </project>
