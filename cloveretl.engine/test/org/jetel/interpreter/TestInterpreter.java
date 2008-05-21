@@ -400,7 +400,7 @@ public class TestInterpreter extends TestCase {
 		      System.out.println("Finished interpreting.");
 		      
 		      assertEquals("0",executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getTLValue().toString());
-		      assertEquals("hello\nworld",executor.getGlobalVariable(parser.getGlobalVariableSlot("hello")).getTLValue().toString());
+		      assertEquals("hello\\nworld",executor.getGlobalVariable(parser.getGlobalVariableSlot("hello")).getTLValue().toString());
 		      assertEquals(record.getField("Name").getValue().toString(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldName")).getTLValue().toString());
 		      assertEquals(record.getField("City").getValue().toString(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldCity")).getTLValue().toString());
 		      assertEquals(tmp.toString(),executor.getGlobalVariable(parser.getGlobalVariableSlot("longString")).getTLValue().toString());
