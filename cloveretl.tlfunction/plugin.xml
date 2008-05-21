@@ -20,6 +20,7 @@
 			<value>pi</value>
 			<value>e</value>
 			<value>random</value>
+			<value>abs</value>
 		</parameter>
 	</extension>
 

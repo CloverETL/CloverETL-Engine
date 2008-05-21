@@ -31,7 +31,6 @@ import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
-import org.jetel.interpreter.extensions.ConvertLib.Function;
 
 public class MathLib extends TLFunctionLibrary {
     
@@ -46,7 +45,8 @@ public class MathLib extends TLFunctionLibrary {
         POW("pow"),
         PI("pi"),
         E("e"),
-        RANDOM("random");
+        RANDOM("random"),
+        ABS("abs");
         
         public String name;
         
@@ -90,6 +90,7 @@ public class MathLib extends TLFunctionLibrary {
         case PI: return new PiFunction();
         case E: return new EFunction();
         case RANDOM: return new RandomFunction();
+        case ABS: return new AbsFunction();
         default: return null;
         }
     }
@@ -307,6 +308,35 @@ public class MathLib extends TLFunctionLibrary {
         public TLContext createContext() {
             return TLContext.createDoubleContext();
         }
+    }
+    
+    // ABS
+    class AbsFunction extends TLFunctionPrototype { 
+        public AbsFunction() {
+            super("math", "abs", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE);
+        }
+
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            if (params[0].type.isNumeric()) {
+                TLNumericValue retVal=(TLNumericValue)context.getContext();
+                try {
+                   retVal.setValue(Math.abs(((TLNumericValue)params[0])
+                                    .getDouble()));
+                    return retVal;
+                } catch (Exception ex) {
+                    throw new TransformLangExecutorRuntimeException(
+                            "Error when executing ROUND function", ex);
+                }
+            }
+            throw new TransformLangExecutorRuntimeException(null,
+                    params, "round - wrong type of literal(s)");
+        }
+        @Override
+        public TLContext createContext() {
+            return TLContext.createDoubleContext();
+        }
     }                        
+
 
 }
