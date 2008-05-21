@@ -146,8 +146,9 @@ public class XLSReader extends Node {
 	private static final String XML_INCREMENTAL_FILE_ATTRIBUTE = "incrementalFile";
 	private static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
 
-
-	private final static String ASSIGMENT_STRING = "=";
+	private final static String DEFAULT_SHEET = "0";
+	private final static String XLS_CELL_CODE_INDICATOR = "#";
+	
 	private final static int OUTPUT_PORT = 0;
 	private final static int CLOVER_FIELDS = 0;
 	private final static int XLS_FIELDS = 1;
@@ -304,10 +305,11 @@ public class XLSReader extends Node {
 			String[] fMap =null;
 			String[][] fieldMap = null;
 			if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
-				fMap = xattribs.getString(XML_FIELDMAP_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+				fMap = StringUtils.split(xattribs.getString(XML_FIELDMAP_ATTRIBUTE));
+//				fMap = xattribs.getString(XML_FIELDMAP_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 				fieldMap = new String[fMap.length][2];
 				for (int i=0;i<fieldMap.length;i++){
-					fieldMap[i] = fMap[i].split(ASSIGMENT_STRING);
+					fieldMap[i] = fMap[i].split(Defaults.ASSIGN_SIGN + "|=");
 				}
 			}
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
@@ -364,9 +366,9 @@ public class XLSReader extends Node {
 		if (fieldMap != null){
 			String[] fm = new String[fieldMap.length];
 			for (int i=0;i<fm.length;i++){
-				fm[i] = StringUtils.stringArraytoString(fieldMap[i],ASSIGMENT_STRING.charAt(0));
+				fm[i] = StringUtils.stringArraytoString(fieldMap[i],Defaults.ASSIGN_SIGN);
 			}
-			xmlElement.setAttribute(XML_FIELDMAP_ATTRIBUTE,StringUtils.stringArraytoString(fm,';'));
+			xmlElement.setAttribute(XML_FIELDMAP_ATTRIBUTE,StringUtils.stringArraytoString(fm,Defaults.Component.KEY_FIELDS_DELIMITER));
 		}
 		xmlElement.setAttribute(XML_STARTROW_ATTRIBUTE,String.valueOf(parser.getFirstRow()));
 		if (finalRow > -1) {
@@ -456,7 +458,7 @@ public class XLSReader extends Node {
 		}else if (sheetName != null) {
 			parser.setSheetName(sheetName);
 		}else{
-			parser.setSheetNumber("0");
+			parser.setSheetNumber(DEFAULT_SHEET);
 		}
  		//set proper mapping type between clover and xls fields
 		if (fieldMap != null){
@@ -464,6 +466,9 @@ public class XLSReader extends Node {
 			String[] xlsFields = new String[fieldMap.length];
 			for (int i=0;i<fieldMap.length;i++){
 				cloverFields[i] = fieldMap[i][CLOVER_FIELDS];
+				if (cloverFields[i].startsWith(Defaults.CLOVER_FIELD_INDICATOR)) {
+					cloverFields[i] = cloverFields[i].substring(Defaults.CLOVER_FIELD_INDICATOR.length());
+				}
 				if (fieldMap[i].length > 1) {
 					xlsFields[i] = fieldMap[i][XLS_FIELDS];
 				}else {
@@ -472,7 +477,7 @@ public class XLSReader extends Node {
 			}
 			parser.setCloverFields(cloverFields);
 			if (xlsFields[0] != null){
-				if (xlsFields[0].startsWith("$")){
+				if (xlsFields[0].startsWith("$") || xlsFields[0].startsWith(XLS_CELL_CODE_INDICATOR)){
 					for (int i=0;i<xlsFields.length;i++){
 						xlsFields[i] = xlsFields[i].substring(1);
 					}
