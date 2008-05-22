@@ -550,13 +550,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 * @since    July 29, 2002
 	 */
 	public void abort() {
-        watchDogStatus=Result.ABORTED;
-
 		// iterate through all the nodes and stop them
         for(Node node : currentPhase.getNodes().values()) {
 			node.abort();
 			logger.warn("Interrupted node: " + node.getId());
 		}
+        watchDogStatus=Result.ABORTED;
 	}
 
 

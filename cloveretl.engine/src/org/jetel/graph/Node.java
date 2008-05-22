@@ -420,7 +420,8 @@ public abstract class Node extends GraphElement implements Runnable {
     private void sendFinishMessage() {
         //sends notification - node has finished
         Message<Object> msg = Message.createNodeFinishedMessage(this);
-        getCloverPost().sendMessage(msg);
+        if (getCloverPost() != null)
+        	getCloverPost().sendMessage(msg);
     }
     
 	/**
