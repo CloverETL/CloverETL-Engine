@@ -420,7 +420,7 @@ public abstract class Node extends GraphElement implements Runnable {
     private void sendFinishMessage() {
         //sends notification - node has finished
         Message<Object> msg = Message.createNodeFinishedMessage(this);
-        if (getCloverPost() != null)
+        if (getCloverPost() != null) //that condition should be removed - graph aborting is not well synchronized now
         	getCloverPost().sendMessage(msg);
     }
     
@@ -429,7 +429,10 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *
 	 *@since    April 4, 2002
 	 */
-	public void abort() {
+	synchronized public void abort() {
+		if(runResult != Result.RUNNING) {
+			return;
+		}
 		runIt = false;
         try {
             Thread.sleep(50);
