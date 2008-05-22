@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Recommended ascendant of all TL function libraries. This class is inteded
+ * Recommended ascendant of all TL function libraries. This class is intended
  * to be subclassed by function libraries defined in external engine plugins.
  *  
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
