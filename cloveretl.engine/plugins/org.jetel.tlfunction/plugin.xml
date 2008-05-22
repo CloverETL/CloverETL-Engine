@@ -20,6 +20,7 @@
 			<value>pi</value>
 			<value>e</value>
 			<value>random</value>
+			<value>abs</value>
 		</parameter>
 	</extension>
 
@@ -62,6 +63,7 @@
 			<value>translate</value>
 			<value>join</value>
 			<value>index_of</value>
+			<value>count_char</value>
 		</parameter>
 	</extension>
 	
@@ -75,6 +77,12 @@
         <value>date2num</value>
         <value>str2num</value>
         <value>try_convert</value>
+        <value>base64byte</value>
+        <value>byte2base64</value>
+        <value>bits2str</value>
+        <value>str2bits</value>
+        <value>hex2byte</value>
+        <value>byte2hex</value>
 		<value>num2num</value>
         <value>num2bool</value>
         <value>bool2num</value>
