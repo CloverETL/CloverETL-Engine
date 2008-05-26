@@ -339,9 +339,6 @@ public class TextTableFormatter implements Formatter {
         //mark=dataBuffer.position();
         dataBuffer.put(buffer);
         //sentBytes+=dataBuffer.position()-mark;
-        
-        System.out.println(charSet);
-        
 		return new String(buffer).getBytes(charSet).length; // encoding
 	}
 	
