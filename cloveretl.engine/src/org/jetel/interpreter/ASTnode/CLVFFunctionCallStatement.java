@@ -71,7 +71,8 @@ public class CLVFFunctionCallStatement extends SimpleNode {
           int numParams=jjtGetNumChildren();
           int maxParams=externalFunction.getMaxParams();
           int minParams=externalFunction.getMinParams();
-          int definedParams=externalFunction.getParameterTypes().length;
+//		TODO test lengts
+//          int definedParams=externalFunction.getParameterTypes().length;
           
           return (numParams>=minParams && numParams<=maxParams);
       }
