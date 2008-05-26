@@ -70,6 +70,8 @@ public abstract class XLSParser implements Parser {
 	protected final static String DEFAULT_LAST_FIELD_DELIMITER = "\n";
 	protected final static String DEFAULT_RECORD_DELIMITER = "\n";
 	
+	protected final static String DEFAULT_SHEET_NUMBER = "0";
+
 	static Log logger = LogFactory.getLog(XLSParser.class);
 
 	protected DataRecordMetadata metadata = null;
@@ -180,6 +182,9 @@ public abstract class XLSParser implements Parser {
 		isAutoFilling = new boolean[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			isAutoFilling[i] = metadata.getField(i).getAutoFilling() != null;
+		}
+		if (sheetName == null && sheetNumber == null) {
+			setSheetNumber(DEFAULT_SHEET_NUMBER);
 		}
 	}
 
