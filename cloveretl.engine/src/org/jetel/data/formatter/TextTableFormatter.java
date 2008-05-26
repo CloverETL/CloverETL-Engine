@@ -339,7 +339,7 @@ public class TextTableFormatter implements Formatter {
         //mark=dataBuffer.position();
         dataBuffer.put(buffer);
         //sentBytes+=dataBuffer.position()-mark;
-		return new String(buffer).getBytes(encoder.charset().displayName()).length; // encoding
+		return new String(buffer).getBytes(encoder.charset().name()).length; // encoding
 	}
 	
 	private int writeString(CharBuffer buffer, int lenght) throws IOException {
