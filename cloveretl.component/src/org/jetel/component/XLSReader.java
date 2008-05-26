@@ -146,8 +146,7 @@ public class XLSReader extends Node {
 	private static final String XML_INCREMENTAL_FILE_ATTRIBUTE = "incrementalFile";
 	private static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
 
-	private final static String DEFAULT_SHEET = "0";
-	private final static String XLS_CELL_CODE_INDICATOR = "#";
+	public final static String XLS_CELL_CODE_INDICATOR = "#";
 	
 	private final static int OUTPUT_PORT = 0;
 	private final static int CLOVER_FIELDS = 0;
@@ -457,8 +456,6 @@ public class XLSReader extends Node {
 			parser.setSheetNumber(sheetNumber);
 		}else if (sheetName != null) {
 			parser.setSheetName(sheetName);
-		}else{
-			parser.setSheetNumber(DEFAULT_SHEET);
 		}
  		//set proper mapping type between clover and xls fields
 		if (fieldMap != null){
