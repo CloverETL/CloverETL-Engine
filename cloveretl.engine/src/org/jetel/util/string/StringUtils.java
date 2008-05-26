@@ -597,7 +597,7 @@ public class StringUtils {
 		String candidate;
 		while (delimiterMatcher.find()) {
 			candidate = str.substring(index, delimiterMatcher.start());
-			isQuoted = count(candidate, '"') % 2 == 1;
+			isQuoted = count(candidate, '"') % 2 != 0;
 			if (!isQuoted) {
 				result.add(candidate);
 				index = delimiterMatcher.end();
