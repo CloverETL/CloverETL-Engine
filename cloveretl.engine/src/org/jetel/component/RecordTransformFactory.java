@@ -26,6 +26,7 @@ package org.jetel.component;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -33,6 +34,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
+import org.jetel.interpreter.ParseException;
+import org.jetel.interpreter.TransformLangParser;
+import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
 import org.jetel.util.compile.DynamicJavaCode;
@@ -243,6 +248,36 @@ public class RecordTransformFactory {
         }
         
         return -1;
+    }
+    
+    public static boolean isSimpleTransform(DataRecordMetadata[] inMeta,
+    		DataRecordMetadata[] outMeta, String transform) {
+    	
+    	TransformLangParser parser = new TransformLangParser(inMeta, outMeta, transform);
+    	parser.getFunctions();
+    	
+        try {
+            CLVFStart record = parser.Start();
+            record.init();
+        } catch (ParseException e) {
+            /*setErrorMessage("Error when parsing expression: " + e.getMessage().split(System.getProperty("line.separator"))[0]);
+            if(e.currentToken != null && e.currentToken.next != null) {
+                Token t = e.currentToken.next;
+                editor.setSelection(t.beginLine, t.beginColumn, t.endLine, t.endColumn);
+            }
+            return;*/
+        }
+    	
+//    	System.out.println(parser.getFunctions());
+    	Map functions = parser.getFunctions();
+    	if (functions.size() != 1 && !functions.containsKey("transform"))
+    		return false;
+    	
+    	CLVFFunctionDeclaration functionDecl = parser.getFunction("transform");
+    	
+//    	functionDecl.
+    	
+    	return true;
     }
     
 }
