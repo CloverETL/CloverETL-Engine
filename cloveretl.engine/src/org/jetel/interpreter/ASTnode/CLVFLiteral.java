@@ -19,6 +19,8 @@ import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValueType;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 public class CLVFLiteral extends SimpleNode implements TransformLangParserConstants {
 	
     public static final String DECIMAL_DISTINCTER_LOWERCASE="d";
@@ -46,6 +48,7 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 		return visitor.visit(this, data);
 	}
 	
+	@SuppressWarnings("STCAL")
 	public void init() throws org.jetel.interpreter.TransformLangExecutorRuntimeException {
 		super.init();
 		try{
