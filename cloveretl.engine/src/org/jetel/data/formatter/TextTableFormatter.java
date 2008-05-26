@@ -204,7 +204,7 @@ public class TextTableFormatter implements Formatter {
 			//change field value to bytes
 			fieldBuffer.clear();
 			fieldBuffer.put(prefix);
-			fieldBuffer.put(sCounter.getBytes(encoder.charset().displayName()));
+			fieldBuffer.put(sCounter.getBytes(charSet));
 			fieldBuffer.flip();
             
 			blank.clear();
@@ -238,7 +238,7 @@ public class TextTableFormatter implements Formatter {
 				if (o == null) {
 					blank.limit(maskAnalize[i].length);
 				} else {
-					lenght = maskAnalize[i].length - (new String(o.toString().getBytes(encoder.charset().displayName())).length()); // fieldBuffer.limit() is wrong - encoding
+					lenght = maskAnalize[i].length - (new String(o.toString().getBytes(charSet)).length()); // fieldBuffer.limit() is wrong - encoding
 					blank.limit(lenght > 0 ? lenght : 0); // analyzed just n record -> some rows can be longer  
 				}
 	            mark=dataBuffer.position();
@@ -284,7 +284,7 @@ public class TextTableFormatter implements Formatter {
         }
         for (int i=0; i<maskAnalize.length; i++) {
         	fName = fMetadata[maskAnalize[i].index].getName();
-        	sentBytes += writeString(fName.getBytes(encoder.charset().displayName()));
+        	sentBytes += writeString(fName.getBytes(charSet));
         	sentBytes += writeString(blank, maskAnalize[i].length-fName.length());
             sentBytes += writeString(TABLE_VERTICAL);
         }
@@ -339,7 +339,10 @@ public class TextTableFormatter implements Formatter {
         //mark=dataBuffer.position();
         dataBuffer.put(buffer);
         //sentBytes+=dataBuffer.position()-mark;
-		return new String(buffer).getBytes(encoder.charset().name()).length; // encoding
+        
+        System.out.println(charSet);
+        
+		return new String(buffer).getBytes(charSet).length; // encoding
 	}
 	
 	private int writeString(CharBuffer buffer, int lenght) throws IOException {
@@ -394,7 +397,7 @@ public class TextTableFormatter implements Formatter {
 				try {
 					o = dataRecord.getField(maskAnalize[i].index);
 					if (o != null) {
-						lenght = new String(o.toString().getBytes(encoder.charset().displayName())).length(); // encoding
+						lenght = new String(o.toString().getBytes(charSet)).length(); // encoding
 					}
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
