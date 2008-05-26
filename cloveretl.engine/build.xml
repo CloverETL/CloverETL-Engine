@@ -402,7 +402,7 @@
 		<mkdir dir="${dir.testsresult}"/>
 		<junit haltonerror="false" haltonfailure="false" printsummary="true" fork="true" forkmode="once">
     		<sysproperty key="net.sourceforge.cobertura.datafile" file="${dir.build}/cobertura.ser" />
-    		<sysproperty key="file.encoding" file="UTF-8" />
+    		<sysproperty key="file.encoding" value="UTF-8" />
 			<classpath>
 			    <pathelement path="${dir.classestest}"/>
 			    <pathelement path="${dir.coverage.bin}"/>
