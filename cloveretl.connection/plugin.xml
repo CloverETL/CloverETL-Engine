@@ -1,7 +1,8 @@
 <plugin
    id="org.jetel.connection"
    version="2.4.4"
-   provider-name="Javlin Consulting s.r.o.">
+   provider-name="Javlin Consulting s.r.o."
+   class="org.jetel.connection.Activator">
 
 	<runtime>
 		<library path="cloveretl.connection.jar"/>

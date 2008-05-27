@@ -37,9 +37,11 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.config.JdbcBaseConfig;
-import org.jetel.connection.jdbc.config.JdbcBaseConfig.OperationType;
+import org.jetel.connection.jdbc.specific.DBConnectionInstance;
+import org.jetel.connection.jdbc.specific.JDBCSpecific;
+import org.jetel.connection.jdbc.specific.JDBCSpecific.OperationType;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelException;
 import org.jetel.graph.runtime.EngineInitializer;
 
 /**
@@ -98,7 +100,6 @@ public class AnalyzeDB {
 	private static boolean showDriverInfo;
 
 	static Log logger = LogFactory.getLog(AnalyzeDB.class);
-	private static JdbcBaseConfig connectionConfig;
 
 	/**
 	 *  Main method
@@ -208,9 +209,10 @@ public class AnalyzeDB {
 	 *
 	 * @exception  IOException   Description of Exception
 	 * @exception  SQLException  Description of Exception
+	 * @throws JetelException 
 	 * @since                    September 25, 2002
 	 */
-	private static void doAnalyze(Properties config) throws IOException, SQLException {
+	private static void doAnalyze(Properties config) throws IOException, SQLException, JetelException {
 		PrintStream print;
 		DBConnection connection;
 		boolean utf8Encoding=false;
@@ -234,27 +236,25 @@ public class AnalyzeDB {
             throw new IOException(e.getMessage());
         }
         
-        connectionConfig = connection.getConfigBase();
-        
 		// do we want just to display driver properties ?
+        DBConnectionInstance conn = connection.getConnection(connection.getId(), OperationType.READ);
 		if (showDriverInfo){
 			printDriverProperty(config);
 			System.exit(0);
 		}
 		// Execute Query
-		ResultSet resultSet = connectionConfig.createStatement(connection.getConnection(connection.getId()),
-				OperationType.READ).executeQuery(query);
+		ResultSet resultSet = conn.getSqlConnection().createStatement().executeQuery(query);
 		ResultSetMetaData metadata = resultSet.getMetaData();
 
 		// here we print XML description of data 
 		print.print("<?xml version=\"1.0\"");
 		if (utf8Encoding) print.println(" encoding=\""+DEFAULT_XML_ENCODING+"\" ?>");
 		else print.println("?>");
-		print.println("<!-- Automatically generated from database " + connection.getConnection(connection.getId()).getMetaData().getURL() + " -->");
+		print.println("<!-- Automatically generated from database " + connection.getDbUrl() + " -->");
 		print.println("<Record name=\"" + metadata.getTableName(1) + "\" type=\"delimited\">");
 
 		for (int i = 1; i <= metadata.getColumnCount(); i++) {
-			print.println(dbMetadata2jetel(metadata, i));
+			print.println(dbMetadata2jetel(metadata, i, connection.getJdbcSpecific()));
 		}
 
 		print.println("</Record>");
@@ -276,9 +276,9 @@ public class AnalyzeDB {
 	 * @exception  SQLException  Description of Exception
 	 * @since                    September 25, 2002
 	 */
-	private static String dbMetadata2jetel(ResultSetMetaData metadata, int fieldNo) throws SQLException {
+	private static String dbMetadata2jetel(ResultSetMetaData metadata, int fieldNo, JDBCSpecific jdbcSpecific) throws SQLException {
 		StringBuffer strBuf = new StringBuffer();
-		char fieldType = connectionConfig.sqlType2jetel(metadata.getColumnType(fieldNo));
+		char fieldType = jdbcSpecific.sqlType2jetel(metadata.getColumnType(fieldNo));
 
 		// head
 		strBuf.append("\t<Field name=\"");

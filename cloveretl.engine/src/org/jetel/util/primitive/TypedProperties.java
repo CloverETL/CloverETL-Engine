@@ -24,6 +24,9 @@ import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.jetel.graph.TransformationGraph;
+import org.jetel.util.property.PropertyRefResolver;
+
 /**
  * This class provides typed access to attributes in java.util.Properties.
  * Extends java.util.Properties and implements variations of getProperty() method
@@ -36,6 +39,8 @@ import java.util.Properties;
  */
 public class TypedProperties extends Properties {
 
+	private PropertyRefResolver propertyRefResolver;
+	
     public TypedProperties() {
         super();
     }
@@ -46,12 +51,35 @@ public class TypedProperties extends Properties {
      * @param properties
      */
     public TypedProperties(Properties properties) {
+    	this(properties, (Properties) null);
+    }
+
+    /**
+     * @param properties
+     * @param graph graph is used to property reference resolving
+     */
+    public TypedProperties(Properties properties, TransformationGraph graph) {
+    	this(properties, graph != null ? graph.getGraphProperties() : null);
+    }
+
+    /**
+     * @param properties
+     * @param refProperties properties to reference resolving
+     */
+    public TypedProperties(Properties properties, Properties refProperties) {
         super();
+        
+        //preset given properties
         if(properties != null) {
             putAll(properties);
         }
+        
+        //initialize propertyRefResolver
+        if(refProperties != null) {
+        	propertyRefResolver = new PropertyRefResolver(properties);
+        }
     }
-    
+
     /**
      * Doesn't overwrite existing properties.
      * @see java.util.Properties#load(java.io.InputStream)
@@ -80,6 +108,7 @@ public class TypedProperties extends Properties {
     
     public Boolean getBooleanProperty(String key) {
         String prop = getProperty(key);
+        prop = resolvePropertyReferences(prop);
         return (prop != null) ? Boolean.valueOf(prop) : null;
     }
     
@@ -90,6 +119,7 @@ public class TypedProperties extends Properties {
 
     public Integer getIntProperty(String key) {
         String prop = getProperty(key);
+        prop = resolvePropertyReferences(prop);
         return (prop != null) ? Integer.valueOf(prop) : null;
     }
     
@@ -100,6 +130,7 @@ public class TypedProperties extends Properties {
     
     public Long getLongProperty(String key) {
         String prop = getProperty(key);
+        prop = resolvePropertyReferences(prop);
         return (prop != null) ? Long.valueOf(prop) : null;
     }
     
@@ -110,6 +141,7 @@ public class TypedProperties extends Properties {
 
     public Double getDoubleProperty(String key) {
         String prop = getProperty(key);
+        prop = resolvePropertyReferences(prop);
         return (prop != null) ? Double.valueOf(prop) : null;
     }
     
@@ -119,11 +151,40 @@ public class TypedProperties extends Properties {
     }
 
     public String getStringProperty(String key) {
-        return getProperty(key);
+        String prop = getProperty(key);
+        prop = resolvePropertyReferences(prop);
+        return prop;
     }
     
     public String getStringProperty(String key, String defaultValue) {
-        return getProperty(key, defaultValue);
+        String prop = getStringProperty(key);
+        return (prop != null) ? prop : defaultValue;
     }
 
+    /**
+     * Returns subset of properties, which names start with given prefix.
+     * @param prefix
+     * @return
+     */
+    public TypedProperties getPropertiesStartWith(String prefix) {
+    	Properties ret = new Properties();
+
+    	for(Enumeration e = propertyNames(); e.hasMoreElements();) {
+            String propertyName = (String) e.nextElement();
+            if(propertyName.startsWith(prefix)) {
+            	ret.setProperty(propertyName, getProperty(propertyName));
+            }
+        }
+        
+        return new TypedProperties(ret, propertyRefResolver != null ? propertyRefResolver.getProperties() : null);
+    }
+    
+    private String resolvePropertyReferences(String s) {
+    	if(propertyRefResolver != null && s != null) {
+    		return propertyRefResolver.resolveRef(s);
+    	} else {
+    		return s;
+    	}
+    }
+    
 }

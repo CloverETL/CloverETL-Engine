@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.specific.JDBCSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
@@ -34,6 +35,7 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -281,8 +283,14 @@ public class DBJoin extends Node {
             dbMetadata = getGraph().getDataRecordMetadata(metadataName);
     		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
     		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
-            lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),((DBConnection) conn).getConnection(getId()),
-            		((DBConnection) conn).getConfigBase(), dbMetadata,query,maxCached);
+            try {
+				lookupTable = new DBLookupTable(
+						"LOOKUP_TABLE_FROM_" + this.getId(),
+						((DBConnection) conn).getConnection(getId(), OperationType.READ),
+						dbMetadata, query, maxCached);
+			} catch (JetelException e1) {
+				throw new ComponentNotReadyException(e1);
+			}
             lookupTable.checkConfig(status);
 //    		lookupTable.init();
     		try {
@@ -328,8 +336,14 @@ public class DBJoin extends Node {
         dbMetadata = getGraph().getDataRecordMetadata(metadataName);
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
-        lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),((DBConnection) conn).getConnection(getId()),
-        		((DBConnection) conn).getConfigBase(), dbMetadata,query,maxCached);
+        try {
+			lookupTable = new DBLookupTable(
+					"LOOKUP_TABLE_FROM_" + this.getId(),
+					((DBConnection) conn).getConnection(getId(), OperationType.READ),
+					dbMetadata, query, maxCached);
+		} catch (JetelException e1) {
+			throw new ComponentNotReadyException(e1);
+		}
         lookupTable.checkConfig(null);
 		lookupTable.init();
 		try {

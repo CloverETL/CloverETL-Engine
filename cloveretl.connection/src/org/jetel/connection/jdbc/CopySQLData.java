@@ -34,7 +34,8 @@ import javax.sql.rowset.serial.SerialBlob;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.config.JdbcBaseConfig;
+import org.jetel.connection.jdbc.specific.DefaultJDBCSpecific;
+import org.jetel.connection.jdbc.specific.JDBCSpecific;
 import org.jetel.data.BooleanDataField;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
@@ -413,11 +414,12 @@ public abstract class CopySQLData {
 	 * @return
 	 * @throws JetelException
 	 */
-//	public static CopySQLData[] jetel2sqlTransMap(DataRecord record, int[] cloverFields) throws JetelException {
-//        return jetel2sqlTransMap(record, cloverFields, JdbcBaseConfig.getInstance());
-//    }
+	@Deprecated
+	public static CopySQLData[] jetel2sqlTransMap(DataRecord record, int[] cloverFields) throws JetelException {
+        return jetel2sqlTransMap(record, cloverFields, DefaultJDBCSpecific.INSTANCE);
+    }
 	
-	public static CopySQLData[] jetel2sqlTransMap(DataRecord record, int[] cloverFields, JdbcBaseConfig config) throws JetelException {
+	public static CopySQLData[] jetel2sqlTransMap(DataRecord record, int[] cloverFields, JDBCSpecific jdbcSpecific) throws JetelException {
         int fromIndex;
         int toIndex;
         int jdbcType;
@@ -427,7 +429,7 @@ public abstract class CopySQLData {
 
        for(int i=0;i<cloverFields.length;i++) {
             jetelField=record.getField(cloverFields[i]).getMetadata();
-            jdbcType = config.jetelType2sql(jetelField);
+            jdbcType = jdbcSpecific.jetelType2sql(jetelField);
             
             // from index is index of specified cloverField in the Clover record
             fromIndex = cloverFields[i];

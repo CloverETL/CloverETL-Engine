@@ -22,14 +22,13 @@
 package org.jetel.connection.jdbc;
 
 import java.sql.CallableStatement;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.jetel.connection.jdbc.config.JdbcBaseConfig;
-import org.jetel.connection.jdbc.config.JdbcBaseConfig.OperationType;
+import org.jetel.connection.jdbc.specific.DBConnectionInstance;
+import org.jetel.connection.jdbc.specific.JDBCSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -47,22 +46,19 @@ import org.jetel.util.string.StringUtils;
 public class SQLCloverCallableStatement {
 	
 	private String query;
-	private Connection connection;
+	private DBConnectionInstance connection;
 	private CallableStatement statement;
 	private CopySQLData[] inTransMap, outTransMap, resultOutMap;
 	private DataRecord inRecord, outRecord;
 	private Map<Integer, String> inParameters, outParameters;
 	private String[] outputFields;
 	private ResultSet resultSet;
-	private JdbcBaseConfig connectionConfig;
 
-	public SQLCloverCallableStatement(Connection connection, JdbcBaseConfig connectionConfig, String query, 
-			DataRecord inRecord, DataRecord outRecord) {
+	public SQLCloverCallableStatement(DBConnectionInstance connection, String query, DataRecord inRecord, DataRecord outRecord) {
 		this.query = query;
 		this.connection = connection;
 		this.inRecord = inRecord;
 		this.outRecord = outRecord;
-		this.connectionConfig = connectionConfig;
 	}
 
 	public Map<Integer, String> getInParameters() {
@@ -90,9 +86,7 @@ public class SQLCloverCallableStatement {
 	}
 
 	public boolean prepareCall() throws SQLException, ComponentNotReadyException{
-		connectionConfig.optimizeConnection(connection, OperationType.CALL);
-		statement = connectionConfig.createCallableStatement(connection, query, OperationType.CALL);
-		connectionConfig.optimizeStatement(statement, OperationType.CALL);
+		statement = connection.getSqlConnection().prepareCall(query);
 		int fieldNumber;
 		int parameterNumber;
 		if (inRecord != null && inParameters != null) {
@@ -106,7 +100,7 @@ public class SQLCloverCallableStatement {
 					throw new ComponentNotReadyException("Field " + StringUtils.quote(entry.getValue()) + " doesn't exist in metadata " +
 							StringUtils.quote(inMetadata.getName()));
 				}
-				inTransMap[i++] = CopySQLData.createCopyObject(connectionConfig.jetelType2sql(inMetadata.getField(fieldNumber)), 
+				inTransMap[i++] = CopySQLData.createCopyObject(connection.getJdbcSpecific().jetelType2sql(inMetadata.getField(fieldNumber)), 
 						inMetadata.getField(fieldNumber), inRecord, parameterNumber - 1, fieldNumber);
 			}
 		}
@@ -119,7 +113,7 @@ public class SQLCloverCallableStatement {
 				for (Entry<Integer, String> entry : outParameters.entrySet()) {
 					parameterNumber = entry.getKey();
 					fieldNumber = outMetadata.getFieldPosition(entry.getValue());
-					sqlType = connectionConfig.jetelType2sql(outMetadata.getField(fieldNumber));
+					sqlType = connection.getJdbcSpecific().jetelType2sql(outMetadata.getField(fieldNumber));
 					outTransMap[i++] = CopySQLData.createCopyObject(sqlType, 
 							outMetadata.getField(fieldNumber), outRecord, parameterNumber - 1, fieldNumber);
 					statement.registerOutParameter(parameterNumber, sqlType);
@@ -143,7 +137,7 @@ public class SQLCloverCallableStatement {
 			}
 		}
 		if (outRecord == null) {
-			connectionConfig.optimizeResultSet(resultSet, OperationType.READ);
+			connection.getJdbcSpecific().optimizeResultSet(resultSet, OperationType.READ);
 		}
 	}
 	

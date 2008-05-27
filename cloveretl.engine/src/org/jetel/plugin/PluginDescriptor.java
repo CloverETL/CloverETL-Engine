@@ -91,7 +91,7 @@ public class PluginDescriptor {
      * Instance of plugin described by this desriptor.
      * If the plugin is not active, is <b>null</b>.
      */
-    private Plugin plugin;
+    private PluginActivator plugin;
     
     /**
      * Link to manifest file (plugin.xml).
@@ -310,12 +310,12 @@ public class PluginDescriptor {
             try {
                 Class pluginClass = Class.forName(getPluginClassName(), true, getClassLoader());
                 Object plugin = pluginClass.newInstance();
-                if(!(plugin instanceof Plugin)) {
+                if(!(plugin instanceof PluginActivator)) {
                     logger.error("Plugin " + getId() + " activation message: Plugin class is not instance of Plugin ascendant - " + getPluginClassName());
                     return;
                 }
                 //i have got plugin instance
-                this.plugin = (Plugin) plugin;
+                this.plugin = (PluginActivator) plugin;
             } catch (ClassNotFoundException e) {
                 logger.error("Plugin " + getId() + " activation message: Plugin class does not found - " + getPluginClassName());
             } catch (Exception e) {
