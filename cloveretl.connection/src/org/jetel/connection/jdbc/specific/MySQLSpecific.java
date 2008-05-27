@@ -22,6 +22,7 @@ package org.jetel.connection.jdbc.specific;
 import java.sql.Connection;
 
 import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific;
 import org.jetel.exception.JetelException;
 
 public class MySQLSpecific extends AbstractJdbcSpecific {
