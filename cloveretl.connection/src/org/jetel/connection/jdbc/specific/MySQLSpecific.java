@@ -24,7 +24,7 @@ import java.sql.Connection;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.exception.JetelException;
 
-public class MySQLSpecific extends AbstractJDBCSpecific {
+public class MySQLSpecific extends AbstractJdbcSpecific {
 
 	public static MySQLSpecific INSTANCE = new MySQLSpecific();
 	
