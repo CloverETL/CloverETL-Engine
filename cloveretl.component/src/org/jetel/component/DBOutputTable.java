@@ -49,6 +49,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -1063,14 +1064,14 @@ public class DBOutputTable extends Node {
 				outputTable.setDBTableName(xattribs.getString(XML_DBTABLE_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
-				String[] pairs = xattribs.getString(XML_FIELDMAP_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+				String[] pairs = StringUtils.split(xattribs.getString(XML_FIELDMAP_ATTRIBUTE));
 				String[] cloverFields = new String[pairs.length];
 				String[] dbFields = new String[pairs.length];
-				int equalIndex;
+				String[] mapping;
 				for (int i=0;i<pairs.length;i++){
-					equalIndex = pairs[i].indexOf('=');
-					cloverFields[i] = pairs[i].substring(0,equalIndex);
-					dbFields[i] = (pairs[i].substring(equalIndex +1));
+					mapping = MiscUtils.getMappingItemsFromMappingString(pairs[i], Defaults.ASSIGN_SIGN + "|=");//:= or =
+					cloverFields[i] = mapping[0];
+					dbFields[i] = mapping[1];
 				}
 				outputTable.setCloverFields(cloverFields);
 				outputTable.setDBFields(dbFields);
