@@ -665,6 +665,15 @@ public class StringUtils {
 		return -1;
 	}
 
+	public static int findString(String str, String[] array, int fromIndex) {
+		for (int i = fromIndex; i < array.length; i++) {
+			if (str.equals(array[i])) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
 	/**
 	 * This method finds index of string from string array
 	 * 
