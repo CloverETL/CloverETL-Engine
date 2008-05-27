@@ -33,7 +33,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.specific.DefaultJDBCSpecific;
+import org.jetel.connection.jdbc.specific.DefaultJdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
@@ -193,7 +193,7 @@ public class SQLUtil {
 
 	@Deprecated 
 	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata) throws SQLException {
-		return dbMetadata2jetel(dbMetadata, DefaultJDBCSpecific.INSTANCE);
+		return dbMetadata2jetel(dbMetadata, DefaultJdbcSpecific.INSTANCE);
 	}
 
 	/**
@@ -354,7 +354,7 @@ public class SQLUtil {
 	 */
 	@Deprecated
 	public static List<Integer> getFieldTypes(DataRecordMetadata metadata, String[] cloverFields) {
-		return getFieldTypes(metadata, cloverFields, DefaultJDBCSpecific.INSTANCE);
+		return getFieldTypes(metadata, cloverFields, DefaultJdbcSpecific.INSTANCE);
 	}
 	
 	public static List<Integer> getFieldTypes(DataRecordMetadata metadata, String[] cloverFields, JdbcSpecific jdbcSpecific) {
@@ -387,7 +387,7 @@ public class SQLUtil {
 
 	@Deprecated
 	public static List<Integer> getFieldTypes(DataRecordMetadata metadata)  {
-		return getFieldTypes(metadata, DefaultJDBCSpecific.INSTANCE);
+		return getFieldTypes(metadata, DefaultJdbcSpecific.INSTANCE);
 	}
 
 	/**

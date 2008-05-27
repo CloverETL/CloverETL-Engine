@@ -42,7 +42,7 @@ import org.jetel.connection.jdbc.driver.JdbcDriver;
 import org.jetel.connection.jdbc.driver.JdbcDriverDescription;
 import org.jetel.connection.jdbc.driver.JdbcDriverFactory;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
-import org.jetel.connection.jdbc.specific.DefaultJDBCSpecific;
+import org.jetel.connection.jdbc.specific.DefaultJdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecificDescription;
 import org.jetel.connection.jdbc.specific.JdbcSpecificFactory;
@@ -874,7 +874,7 @@ public class DBConnection extends GraphElement implements IConnection {
 			if(ret != null) {
 				return ret;
 			} else {
-				return DefaultJDBCSpecific.INSTANCE;
+				return DefaultJdbcSpecific.INSTANCE;
 			}
 		}
 	}
