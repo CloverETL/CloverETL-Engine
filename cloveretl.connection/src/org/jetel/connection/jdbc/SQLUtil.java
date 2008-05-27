@@ -34,7 +34,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.specific.DefaultJDBCSpecific;
-import org.jetel.connection.jdbc.specific.JDBCSpecific;
+import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -130,7 +130,7 @@ public class SQLUtil {
 	 *      ResultSet
 	 * @exception  SQLException  Description of the Exception
 	 */
-	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata, JDBCSpecific jdbcSpecific) throws SQLException {
+	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata, JdbcSpecific jdbcSpecific) throws SQLException {
 		DataFieldMetadata fieldMetadata;
 		DataRecordMetadata jetelMetadata = new DataRecordMetadata(dbMetadata.getTableName(1),
 				DataRecordMetadata.DELIMITED_RECORD);
@@ -357,7 +357,7 @@ public class SQLUtil {
 		return getFieldTypes(metadata, cloverFields, DefaultJDBCSpecific.INSTANCE);
 	}
 	
-	public static List<Integer> getFieldTypes(DataRecordMetadata metadata, String[] cloverFields, JDBCSpecific jdbcSpecific) {
+	public static List<Integer> getFieldTypes(DataRecordMetadata metadata, String[] cloverFields, JdbcSpecific jdbcSpecific) {
 		List<Integer> fieldTypes = new LinkedList<Integer>();
 		DataFieldMetadata fieldMeta;
 		for (int i = 0; i < cloverFields.length; i++) {
@@ -377,7 +377,7 @@ public class SQLUtil {
 	 * @return                   The fieldTypes value
 	 * @exception  SQLException  Description of the Exception
 	 */
-	public static List<Integer> getFieldTypes(DataRecordMetadata metadata, JDBCSpecific jdbcSpecific)  {
+	public static List<Integer> getFieldTypes(DataRecordMetadata metadata, JdbcSpecific jdbcSpecific)  {
 		List<Integer> fieldTypes = new LinkedList<Integer>();
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 				fieldTypes.add(new Integer(jdbcSpecific.jetelType2sql(metadata.getField(i))));

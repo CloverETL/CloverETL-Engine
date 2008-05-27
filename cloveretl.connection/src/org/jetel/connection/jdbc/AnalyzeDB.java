@@ -38,8 +38,8 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
-import org.jetel.connection.jdbc.specific.JDBCSpecific;
-import org.jetel.connection.jdbc.specific.JDBCSpecific.OperationType;
+import org.jetel.connection.jdbc.specific.JdbcSpecific;
+import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.runtime.EngineInitializer;
@@ -276,7 +276,7 @@ public class AnalyzeDB {
 	 * @exception  SQLException  Description of Exception
 	 * @since                    September 25, 2002
 	 */
-	private static String dbMetadata2jetel(ResultSetMetaData metadata, int fieldNo, JDBCSpecific jdbcSpecific) throws SQLException {
+	private static String dbMetadata2jetel(ResultSetMetaData metadata, int fieldNo, JdbcSpecific jdbcSpecific) throws SQLException {
 		StringBuffer strBuf = new StringBuffer();
 		char fieldType = jdbcSpecific.sqlType2jetel(metadata.getColumnType(fieldNo));
 

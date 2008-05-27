@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
-import org.jetel.connection.jdbc.specific.JDBCSpecific.OperationType;
+import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;

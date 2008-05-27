@@ -35,7 +35,7 @@ import javax.sql.rowset.serial.SerialBlob;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.specific.DefaultJDBCSpecific;
-import org.jetel.connection.jdbc.specific.JDBCSpecific;
+import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.data.BooleanDataField;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
@@ -419,7 +419,7 @@ public abstract class CopySQLData {
         return jetel2sqlTransMap(record, cloverFields, DefaultJDBCSpecific.INSTANCE);
     }
 	
-	public static CopySQLData[] jetel2sqlTransMap(DataRecord record, int[] cloverFields, JDBCSpecific jdbcSpecific) throws JetelException {
+	public static CopySQLData[] jetel2sqlTransMap(DataRecord record, int[] cloverFields, JdbcSpecific jdbcSpecific) throws JetelException {
         int fromIndex;
         int toIndex;
         int jdbcType;

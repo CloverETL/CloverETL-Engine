@@ -31,7 +31,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.string.StringUtils;
 
-abstract public class AbstractJDBCSpecific implements JDBCSpecific {
+abstract public class AbstractJDBCSpecific implements JdbcSpecific {
 
 	private final static int DEFAULT_FETCH_SIZE = 50;
 
