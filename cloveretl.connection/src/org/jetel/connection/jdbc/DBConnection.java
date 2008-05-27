@@ -43,10 +43,10 @@ import org.jetel.connection.jdbc.driver.JdbcDriverDescription;
 import org.jetel.connection.jdbc.driver.JdbcDriverFactory;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.DefaultJDBCSpecific;
-import org.jetel.connection.jdbc.specific.JDBCSpecific;
+import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecificDescription;
 import org.jetel.connection.jdbc.specific.JdbcSpecificFactory;
-import org.jetel.connection.jdbc.specific.JDBCSpecific.OperationType;
+import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
@@ -182,7 +182,7 @@ public class DBConnection extends GraphElement implements IConnection {
     //private ClassLoader classLoader;//
 
     private JdbcDriver jdbcDriver;
-    private JDBCSpecific jdbcSpecific;
+    private JdbcSpecific jdbcSpecific;
     private URL[] driverLibraryURLs;
     
     /**
@@ -866,11 +866,11 @@ public class DBConnection extends GraphElement implements IConnection {
 		}
 	}
 	
-	public JDBCSpecific getJdbcSpecific() {
+	public JdbcSpecific getJdbcSpecific() {
 		if(jdbcSpecific != null) {
 			return jdbcSpecific;
 		} else {
-			JDBCSpecific ret = getJdbcDriver().getJdbcSpecific();
+			JdbcSpecific ret = getJdbcDriver().getJdbcSpecific();
 			if(ret != null) {
 				return ret;
 			} else {

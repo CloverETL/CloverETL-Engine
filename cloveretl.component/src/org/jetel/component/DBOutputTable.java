@@ -35,7 +35,7 @@ import org.jetel.connection.jdbc.QueryAnalyzer;
 import org.jetel.connection.jdbc.SQLCloverStatement;
 import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
-import org.jetel.connection.jdbc.specific.JDBCSpecific.OperationType;
+import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;

@@ -27,7 +27,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.specific.JDBCSpecific;
+import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecificDescription;
 import org.jetel.connection.jdbc.specific.JdbcSpecificFactory;
 import org.jetel.data.Defaults;
@@ -183,7 +183,7 @@ public class JdbcDriverDescription {
     	return new JdbcDriver(this);
     }
 
-    public JDBCSpecific getJdbcSpecific() {
+    public JdbcSpecific getJdbcSpecific() {
     	if(!StringUtils.isEmpty(jdbcSpecific)) {
     		JdbcSpecificDescription jdbcSpecificDescription = JdbcSpecificFactory.getJdbcSpecificDescription(jdbcSpecific);
     		if(jdbcSpecificDescription != null) {

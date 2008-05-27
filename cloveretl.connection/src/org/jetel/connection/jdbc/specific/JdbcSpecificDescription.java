@@ -119,12 +119,12 @@ public class JdbcSpecificDescription {
     	return extension;
     }
     
-    public JDBCSpecific getJdbcSpecific() {
+    public JdbcSpecific getJdbcSpecific() {
         try {
             PluginDescriptor pluginDescriptor = getExtension().getPlugin();
             
             //find class of jdbc specific
-            Class<JDBCSpecific> c = (Class<JDBCSpecific>) Class.forName(getClassName(), true, pluginDescriptor.getClassLoader());
+            Class<JdbcSpecific> c = (Class<JdbcSpecific>) Class.forName(getClassName(), true, pluginDescriptor.getClassLoader());
 
             //create instance
             return c.newInstance();

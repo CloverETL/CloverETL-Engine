@@ -23,7 +23,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.Driver;
 
-import org.jetel.connection.jdbc.specific.JDBCSpecific;
+import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.string.StringUtils;
 
@@ -57,7 +57,7 @@ public class JdbcDriver {
      */
     private URL[] driverLibraries;
 
-    private JDBCSpecific jdbcSpecific;
+    private JdbcSpecific jdbcSpecific;
 
     /**
      * Class loader used to get instance of java.sql.Driver class.
@@ -73,7 +73,7 @@ public class JdbcDriver {
     			jdbcDriverDescription.getJdbcSpecific());
     }
 
-    public JdbcDriver(String database, String name, String dbDriver, URL[] driverLibraries, JDBCSpecific jdbcSpecific) throws ComponentNotReadyException {
+    public JdbcDriver(String database, String name, String dbDriver, URL[] driverLibraries, JdbcSpecific jdbcSpecific) throws ComponentNotReadyException {
     	this.database = database;
     	this.name = name;
     	this.dbDriver = dbDriver;
@@ -92,7 +92,7 @@ public class JdbcDriver {
         return !StringUtils.isEmpty(name) ? name : database;
     }
 
-    public JDBCSpecific getJdbcSpecific() {
+    public JdbcSpecific getJdbcSpecific() {
     	return jdbcSpecific;
     }
     
