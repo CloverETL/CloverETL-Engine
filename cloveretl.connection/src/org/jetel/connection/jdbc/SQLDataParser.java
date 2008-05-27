@@ -25,8 +25,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
@@ -86,7 +88,7 @@ public class SQLDataParser implements Parser {
 	 */
 	public SQLDataParser(String sqlQuery) {
 		analyzer = new QueryAnalyzer(sqlQuery);
-		this.sqlQuery = analyzer.getNotInsertQuery();
+		this.sqlQuery = analyzer.getSelectQuery();
 	}
 	
 
@@ -212,10 +214,18 @@ public class SQLDataParser implements Parser {
 	
 	protected void initSQLMap(DataRecord record){
 		try{
-			HashMap<String, String> cloverDbMap = analyzer.getCloverDbFieldMap();
-			if (cloverDbMap.size() > 0 ) {
+			List<String[]> cloverDbMap = analyzer.getCloverDbFieldMap();
+			List<String> cFields = new ArrayList<String>(cloverDbMap.size());
+			for (Iterator iterator = cloverDbMap.iterator(); iterator.hasNext();) {
+				String[] mapping = (String[]) iterator.next();
+				if (mapping[0] != null && mapping[1] != null){
+					cFields.add(mapping[0]);
+				}
+				
+			}
+			if (cFields.size() > 0 ) {
 				transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultSet.getMetaData()), metadata, 
-						record, cloverDbMap.keySet().toArray(new String[0]));
+						record, cFields.toArray(new String[0]));
 			}else{
 				transMap = CopySQLData.sql2JetelTransMap( SQLUtil.getFieldTypes(resultSet.getMetaData()),metadata, 
 						record);

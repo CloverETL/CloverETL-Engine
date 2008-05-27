@@ -1,10 +1,9 @@
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.List;
 
 import junit.framework.TestCase;
 
 import org.jetel.connection.jdbc.QueryAnalyzer;
-import org.jetel.util.primitive.DuplicateKeyMap;
 
 /*
  *    jETeL/Clover - Java based ETL application framework.
@@ -35,48 +34,63 @@ import org.jetel.util.primitive.DuplicateKeyMap;
  */
 public class QueryAnalizerTest extends TestCase {
 	
-	DuplicateKeyMap dbCloverMap;
-	HashMap<String, String> cloverDbMap;
+	List<String[]> dbCloverMap;
+	List<String[]> cloverDbMap;
+//	DuplicateKeyMap dbCloverMap;
+//	HashMap<String, String> cloverDbMap;
 
 	/**
 	 * Test method for {@link org.jetel.connection.QueryAnalyzer#QueryAnalizer(java.lang.String)}.
 	 */
 	public void testQueryAnalizer() throws SQLException{
+		String[] mapping;
+		
 		String query = "select $field1:=f1,$field2:= f2,  $field3:=f3 \n from mytable where f1=$fname and f2 = $lname";
 		QueryAnalyzer analizer = new QueryAnalyzer(query);
 		System.out.println(query);
-		System.out.println(analizer.getNotInsertQuery());
+		System.out.println(analizer.getSelectQuery());
 		dbCloverMap = analizer.getDbCloverFieldMap();
 		cloverDbMap = analizer.getCloverDbFieldMap();
-		assertEquals(cloverDbMap.get("field1"), "f1");
-		assertEquals(dbCloverMap.get("f2"), "lname");
+		mapping = dbCloverMap.get(1);
+		assertEquals("f2", mapping[0]);
+		assertEquals("lname", mapping[1]);
+		mapping = cloverDbMap.get(0);
+		assertEquals("field1", mapping[0]);
+		assertEquals("f1", mapping[1]);
 		System.out.println();
 
 		query = "select $field1:=tab1.f1,$field2:= tab1.f2,  $field3:=tab.2f3 \n from mytable where f1=$fname and f2 = $lname";
 		analizer.setQuery(query);
 		System.out.println(query);
-		System.out.println(analizer.getNotInsertQuery());
+		System.out.println(analizer.getSelectQuery());
 		dbCloverMap = analizer.getDbCloverFieldMap();
 		cloverDbMap = analizer.getCloverDbFieldMap();
-		assertEquals(cloverDbMap.get("field1"), "tab1.f1");
-		assertEquals(dbCloverMap.get("f2"), "lname");
+		mapping = dbCloverMap.get(1);
+		assertEquals("f2", mapping[0]);
+		assertEquals("lname", mapping[1]);
+		mapping = cloverDbMap.get(0);
+		assertEquals("field1", mapping[0]);
+		assertEquals("tab1.f1", mapping[1]);
 		System.out.println();
 		
 		query = "select f1,f2,  f3 \n from mytable where f1=? and f2 = ?";
 		analizer.setQuery(query);
 		System.out.println(query);
-		System.out.println(analizer.getNotInsertQuery());
+		System.out.println(analizer.getSelectQuery());
 		dbCloverMap = analizer.getDbCloverFieldMap();
 		cloverDbMap = analizer.getCloverDbFieldMap();
-		assertEquals(cloverDbMap.size(), 0);
-		assertNull(dbCloverMap.get("f1"));
-		assertNull(dbCloverMap.get("f2"));
+		mapping = dbCloverMap.get(1);
+		assertEquals("f2", mapping[0]);
+		assertEquals(null, mapping[1]);
+		mapping = cloverDbMap.get(0);
+		assertEquals(null, mapping[0]);
+		assertEquals("f1", mapping[1]);
 		System.out.println();
 		
 		query = "select * \n from mytable";
 		analizer.setQuery(query);
 		System.out.println(query);
-		System.out.println(analizer.getNotInsertQuery());
+		System.out.println(analizer.getSelectQuery());
 		dbCloverMap = analizer.getDbCloverFieldMap();
 		cloverDbMap = analizer.getCloverDbFieldMap();
 		assertEquals(0, cloverDbMap.size());
@@ -86,19 +100,29 @@ public class QueryAnalizerTest extends TestCase {
 		query = "update abc set f1=$f1, f2=$f2 where xyz= select a from 123 where field=$xyz";
 		analizer.setQuery(query);
 		System.out.println(query);
-		System.out.println(analizer.getNotInsertQuery());
+		System.out.println(analizer.getUpdateDeleteQuery());
 		dbCloverMap = analizer.getDbCloverFieldMap();
-		assertEquals(dbCloverMap.get("f1"), "f1");
-		assertEquals(dbCloverMap.get("field"), "xyz");
+		cloverDbMap = analizer.getCloverDbFieldMap();
+		mapping = dbCloverMap.get(0);
+		assertEquals("f1", mapping[0]);
+		assertEquals("f1", mapping[1]);
+		mapping = dbCloverMap.get(2);
+		assertEquals("field", mapping[0]);
+		assertEquals("xyz", mapping[1]);
+		assertEquals(0, cloverDbMap.size());
 		System.out.println();
 		
 		query = "update abc set f1=?, f2=? where xyz= ?";
 		analizer.setQuery(query);
 		System.out.println(query);
-		System.out.println(analizer.getNotInsertQuery());
+		System.out.println(analizer.getUpdateDeleteQuery());
 		dbCloverMap = analizer.getDbCloverFieldMap();
-		assertEquals(dbCloverMap.get("f1"), null);
-		assertEquals(dbCloverMap.get("f2"), null);
+		mapping = dbCloverMap.get(0);
+		assertEquals("f1", mapping[0]);
+		assertEquals(null, mapping[1]);
+		mapping = dbCloverMap.get(1);
+		assertEquals("f2", mapping[0]);
+		assertEquals(null, mapping[1]);
 		System.out.println();
 
 		query = "Insert into abc (f1,f2,f3,f4) values(1,$f1 , $f2, $f3) ";
@@ -106,8 +130,12 @@ public class QueryAnalizerTest extends TestCase {
 		System.out.println(query);
 		System.out.println(analizer.getInsertQuery());
 		dbCloverMap = analizer.getDbCloverFieldMap();
-		assertEquals(dbCloverMap.get("f3"), "f2");
-		assertEquals(dbCloverMap.get("f1"), null);
+		mapping = dbCloverMap.get(0);
+		assertEquals("f1", mapping[0]);
+		assertEquals(null, mapping[1]);
+		mapping = dbCloverMap.get(2);
+		assertEquals("f3", mapping[0]);
+		assertEquals("f2", mapping[1]);
 		System.out.println();
 		
 		query = "Insert into abc (f1,f2,f3,f4) values(1,$f1 , $f2, $f3) returning $field1:=f1,$field2:=f5";
@@ -115,10 +143,16 @@ public class QueryAnalizerTest extends TestCase {
 		System.out.println(query);
 		System.out.println(analizer.getInsertQuery());
 		dbCloverMap = analizer.getDbCloverFieldMap();
-		assertEquals(dbCloverMap.get("f3"), "f2");
 		cloverDbMap = analizer.getCloverDbFieldMap();
-		assertEquals(cloverDbMap.get("field1"), "f1");
-		assertEquals(cloverDbMap.get("field2"), "f5");
+		mapping = dbCloverMap.get(2);
+		assertEquals("f3", mapping[0]);
+		assertEquals("f2", mapping[1]);
+		mapping = cloverDbMap.get(0);
+		assertEquals("field1", mapping[0]);
+		assertEquals("f1", mapping[1]);
+		mapping = cloverDbMap.get(1);
+		assertEquals("field2", mapping[0]);
+		assertEquals("f5", mapping[1]);
 		System.out.println();
 		
 		query = "Insert into abc (f1,f2,f3,f4) values(1,?, ?, \t ?) ";
@@ -128,8 +162,9 @@ public class QueryAnalizerTest extends TestCase {
 		dbCloverMap = analizer.getDbCloverFieldMap();
 		cloverDbMap = analizer.getCloverDbFieldMap();
 		assertEquals(0, cloverDbMap.size());
-		assertTrue(dbCloverMap.containsKey("f2"));
-		assertNull(dbCloverMap.get("f2"));
+		mapping = dbCloverMap.get(1);
+		assertEquals("f2", mapping[0]);
+		assertEquals(null, mapping[1]);
 		System.out.println();
 
 		query = "Insert into abc values(1,?, ?, \t ?) ";
@@ -146,20 +181,67 @@ public class QueryAnalizerTest extends TestCase {
 		System.out.println(query);
 		System.out.println(analizer.getInsertQuery());
 		dbCloverMap = analizer.getDbCloverFieldMap();
-		assertEquals(dbCloverMap.get(null), "f1");
-		assertEquals(dbCloverMap.getNext(), "f2");
-		assertEquals(dbCloverMap.getNext(), "f3");
-		assertNull(dbCloverMap.getNext());
+		mapping = dbCloverMap.get(0);
+		assertEquals(null, mapping[0]);
+		assertEquals("f1", mapping[1]);
+		mapping = dbCloverMap.get(1);
+		assertEquals(null, mapping[0]);
+		assertEquals("f2", mapping[1]);
+		mapping = dbCloverMap.get(2);
+		assertEquals(null, mapping[0]);
+		assertEquals("f3", mapping[1]);
 		System.out.println();
 		
 		query = "delete from mytable ";
 		analizer.setQuery(query);
 		System.out.println(query);
-		System.out.println(analizer.getNotInsertQuery());
+		System.out.println(analizer.getUpdateDeleteQuery());
 		dbCloverMap = analizer.getDbCloverFieldMap();
 		cloverDbMap = analizer.getCloverDbFieldMap();
 		assertEquals(0, cloverDbMap.size());
 		assertEquals(0, dbCloverMap.size());
+		
+		query = "delete from mytable where id = ?";
+		analizer.setQuery(query);
+		System.out.println(query);
+		System.out.println(analizer.getUpdateDeleteQuery());
+		dbCloverMap = analizer.getDbCloverFieldMap();
+		cloverDbMap = analizer.getCloverDbFieldMap();
+		assertEquals(0, cloverDbMap.size());
+		mapping = dbCloverMap.get(0);
+		assertEquals("id", mapping[0]);
+		assertEquals(null, mapping[1]);
+		
+		query = "delete from mytable where id = $field1 and lname=$last_name";
+		analizer.setQuery(query);
+		System.out.println(query);
+		System.out.println(analizer.getUpdateDeleteQuery());
+		dbCloverMap = analizer.getDbCloverFieldMap();
+		cloverDbMap = analizer.getCloverDbFieldMap();
+		assertEquals(0, cloverDbMap.size());
+		mapping = dbCloverMap.get(1);
+		assertEquals("lname", mapping[0]);
+		assertEquals("last_name", mapping[1]);
+		
+		query = "update k3 set c1 = $id, c2=$end_date where c1 = $id and c2 = $end_date";
+		analizer.setQuery(query);
+		System.out.println(query);
+		System.out.println(analizer.getUpdateDeleteQuery());
+		dbCloverMap = analizer.getDbCloverFieldMap();
+		cloverDbMap = analizer.getCloverDbFieldMap();
+		assertEquals(0, cloverDbMap.size());
+		mapping = dbCloverMap.get(0);
+		assertEquals("c1", mapping[0]);
+		assertEquals("id", mapping[1]);
+		mapping = dbCloverMap.get(1);
+		assertEquals("c2", mapping[0]);
+		assertEquals("end_date", mapping[1]);
+		mapping = dbCloverMap.get(2);
+		assertEquals("c1", mapping[0]);
+		assertEquals("id", mapping[1]);
+		mapping = dbCloverMap.get(3);
+		assertEquals("c2", mapping[0]);
+		assertEquals("end_date", mapping[1]);
 
 	}
 
