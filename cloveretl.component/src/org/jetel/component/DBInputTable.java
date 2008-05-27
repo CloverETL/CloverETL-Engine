@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLDataParser;
+import org.jetel.connection.jdbc.specific.JDBCSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.database.IConnection;
 import org.jetel.exception.BadDataFormatException;
@@ -177,7 +178,6 @@ public class DBInputTable extends Node {
         connection.init();
 		parser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
 		parser.setParentNode(this);
-		parser.setConnectionConfig(connection.getConfigBase());
 	}
 
 	@Override
@@ -192,7 +192,7 @@ public class DBInputTable extends Node {
 		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
 		record.init();
 		record.reset();
-		parser.setDataSource(connection.getConnection(getId()));
+		parser.setDataSource(connection.getConnection(getId(), OperationType.READ));
 		parser.initSQLDataMap(record);
 
 		// till it reaches end of data or it is stopped from outside

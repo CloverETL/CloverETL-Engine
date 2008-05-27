@@ -17,17 +17,21 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.database.jdbc;
+package org.jetel.connection.jdbc.driver;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
-import java.sql.Driver;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jetel.connection.jdbc.specific.JDBCSpecific;
+import org.jetel.connection.jdbc.specific.JdbcSpecificDescription;
+import org.jetel.connection.jdbc.specific.JdbcSpecificFactory;
 import org.jetel.data.Defaults;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.ExtensionParameter;
 import org.jetel.util.string.StringUtils;
@@ -40,8 +44,10 @@ import org.jetel.util.string.StringUtils;
  *
  * @created 14.9.2007
  */
-public class JdbcDriver {
+public class JdbcDriverDescription {
     
+    private static Log logger = LogFactory.getLog(JdbcDriverDescription.class);
+
     private final static String DATABASE_PARAMETER = "database";
 
     private final static String NAME_PARAMETER = "name";
@@ -52,8 +58,10 @@ public class JdbcDriver {
 
     private final static String URL_HINT_PARAMETER = "urlHint";
 
+    private final static String JDBC_SPECIFIC_PARAMETER = "jdbcSpecific";
+
     public final static String[] EXCLUDE_PARAMETERS = 
-        new String[] { DATABASE_PARAMETER, NAME_PARAMETER, DB_DRIVER_PARAMETER, DRIVER_LIBRARY_PARAMETER, URL_HINT_PARAMETER };
+        new String[] { DATABASE_PARAMETER, NAME_PARAMETER, DB_DRIVER_PARAMETER, DRIVER_LIBRARY_PARAMETER, URL_HINT_PARAMETER, JDBC_SPECIFIC_PARAMETER };
     
     /**
      * Identifier of the JDBC driver.
@@ -81,6 +89,11 @@ public class JdbcDriver {
     private String urlHint;
 
     /**
+     * JDBC specific behaviour for this driver.
+     */
+    private String jdbcSpecific;
+
+    /**
      * Custom user properties, all other parameters given via this JDBC extension point 
      * are stored in this properties object. 
      */
@@ -92,15 +105,10 @@ public class JdbcDriver {
     private Extension extension;
     
     /**
-     * Class loader used to get instance of java.sql.Driver class.
-     */
-    private ClassLoader classLoader;
-    
-    /**
      * The only constructor.
      * @param extension
      */
-    public JdbcDriver(Extension extension) {
+    public JdbcDriverDescription(Extension extension) {
         this.extension = extension;
 
         //reads 'database' parameter
@@ -129,7 +137,12 @@ public class JdbcDriver {
         if(extension.hasParameter(URL_HINT_PARAMETER)) {
             urlHint = extension.getParameter(URL_HINT_PARAMETER).getString();
         }
-        
+
+        //reads 'jdbcSpecific' parameter
+        if(extension.hasParameter(JDBC_SPECIFIC_PARAMETER)) {
+            jdbcSpecific = extension.getParameter(JDBC_SPECIFIC_PARAMETER).getString();
+        }
+
         //reads other parameters
         properties = new Properties();
         Map<String, ExtensionParameter> parameters = extension.getParameters(EXCLUDE_PARAMETERS);
@@ -138,13 +151,12 @@ public class JdbcDriver {
         }
     }
     
-    
     public String getDatabase() {
         return database;
     }
 
     public String getName() {
-        return !StringUtils.isEmpty(name) ? name : database;
+        return name;
     }
     
     public String getDbDriver() {
@@ -159,44 +171,44 @@ public class JdbcDriver {
         return urlHint;
     }
 
+    public String getJdbcSpecificStr() {
+    	return jdbcSpecific;
+    }
+    
     public Properties getProperties() {
         return properties;
     }
     
-    /**
-     * @return class loader, which is used to create java.sql.Driver instance, created in getDriver() method
-     */
-    public ClassLoader getClassLoader() {
-        if(classLoader == null) {
-            if(!StringUtils.isEmpty(driverLibrary)) {
-                String[] libraryPaths = driverLibrary.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-                
-                URL[] myURLs = new URL[libraryPaths.length];
-                for(int i = 0; i < libraryPaths.length; i++) {
-                    try {
-                        myURLs[i] = extension.getPlugin().getURL(libraryPaths[i]);
-                    } catch (MalformedURLException ex1) {
-                        throw new RuntimeException("Can not create JDBC driver '" + database + "'. Malformed URL: " + ex1.getMessage());
-                    }
-                }
-                    
-                classLoader = new URLClassLoader(myURLs, Thread.currentThread().getContextClassLoader());
-            } else {
-                classLoader = Thread.currentThread().getContextClassLoader();
+    public JdbcDriver createJdbcDriver() throws ComponentNotReadyException {
+    	return new JdbcDriver(this);
+    }
+
+    public JDBCSpecific getJdbcSpecific() {
+    	if(!StringUtils.isEmpty(jdbcSpecific)) {
+    		JdbcSpecificDescription jdbcSpecificDescription = JdbcSpecificFactory.getJdbcSpecificDescription(jdbcSpecific);
+    		if(jdbcSpecificDescription != null) {
+    			return jdbcSpecificDescription.getJdbcSpecific();
+    		} else {
+    			throw new RuntimeException("JDBC specific extension '" + jdbcSpecific + "' was not found.");
+    		}
+    	} else {
+    		return null;
+    	}
+    }
+    
+    public URL[] getDriverLibraryURLs() throws ComponentNotReadyException {
+        String[] libraryPaths = driverLibrary.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+
+    	URL[] urls = new URL[libraryPaths.length];
+        for(int i = 0; i < libraryPaths.length; i++) {
+            try {
+                urls[i] = extension.getPlugin().getURL(libraryPaths[i]);
+            } catch (MalformedURLException ex1) {
+                throw new ComponentNotReadyException("Can not create JDBC driver '" + database + "'. Malformed URL: " + ex1.getMessage(), ex1);
             }
         }
+        
+        return urls;
+    }
 
-        return classLoader;
-    }
-    
-    public Driver getDriver() {
-        try {
-            return (Driver) Class.forName(dbDriver, true, getClassLoader()).newInstance();
-        } catch (ClassNotFoundException ex1) {
-            throw new RuntimeException("Can not create JDBC driver '" + database + "'. Can not find class: " + ex1);
-        } catch (Exception ex1) {
-            throw new RuntimeException("Cannot create JDBC driver '" + database + "'. General exception: " + ex1.getMessage());
-        }
-    }
-    
 }

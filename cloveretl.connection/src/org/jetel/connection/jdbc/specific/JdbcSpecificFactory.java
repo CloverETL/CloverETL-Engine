@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.database.jdbc;
+package org.jetel.connection.jdbc.specific;
 
 import java.util.HashMap;
 import java.util.List;
@@ -29,61 +29,61 @@ import org.jetel.plugin.Extension;
 import org.jetel.plugin.Plugins;
 
 /**
- * This class provides access to all registered JDBC drivers via the 'jdbcDriver' extension point.
+ * This class provides access to all registered JDBC specifics via the 'jdbcSpecific' extension point.
  * 
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  *
- * @created 14.9.2007
+ * @created May 23, 2008
  */
-public class JdbcDriverFactory {
+public class JdbcSpecificFactory {
 
-    private static Log logger = LogFactory.getLog(JdbcDriverFactory.class);
+    private static Log logger = LogFactory.getLog(JdbcSpecificFactory.class);
 
-    public final static String EXTENSION_POINT_ID = "jdbcDriver";
+    public final static String EXTENSION_POINT_ID = "jdbcSpecific";
 
-    private final static Map<String, JdbcDriver> jdbcDrivers = new HashMap<String, JdbcDriver>();
+    private final static Map<String, JdbcSpecificDescription> jdbcSpecifics = new HashMap<String, JdbcSpecificDescription>();
     
     public static void init() {
-        //ask plugin framework for all jdbc driver extensions
-        List<Extension> jdbcExtensions = Plugins.getExtensions(JdbcDriverFactory.EXTENSION_POINT_ID);
+        //ask plugin framework for all jdbc specific extensions
+        List<Extension> jdbcExtensions = Plugins.getExtensions(JdbcSpecificFactory.EXTENSION_POINT_ID);
       
-        //register all jdbc drivers
+        //register all jdbc specifics
         for(Extension extension : jdbcExtensions) {
             try {
-                registerJdbcDriver(new JdbcDriver(extension));
+                registerJdbcSpecific(new JdbcSpecificDescription(extension));
             } catch(Exception e) {
-                logger.error("Cannot create JDBC driver descriptor, extension in plugin manifest is not valid.\n"
+                logger.error("Cannot create JDBC specific descriptor, extension in plugin manifest is not valid.\n"
                         + "pluginId = " + extension.getPlugin().getId() + "\n" + extension + "\nReason: " + e.getMessage());
             }
         }
 
     }
 
-    private static void registerJdbcDriver(JdbcDriver jdbcDriver) {
-        String database = jdbcDriver.getDatabase();
+    private static void registerJdbcSpecific(JdbcSpecificDescription jdbcSpecific) {
+        String database = jdbcSpecific.getDatabase();
         
-        if(jdbcDrivers.containsKey(database)) {
-            logger.warn("Some of the plugin tried to register already registered JDBC driver under same database name: '" + database + "'.");
+        if(jdbcSpecifics.containsKey(database)) {
+            logger.warn("Some of the plugin tried to register already registered JDBC specific under same database name: '" + database + "'.");
             return;
         }
         
-        jdbcDrivers.put(database, jdbcDriver);
+        jdbcSpecifics.put(database, jdbcSpecific);
     }
     
     /**
-     * @param driverId
-     * @return JDBC driver based on given driver identifier
+     * @param specificId
+     * @return JDBC specific based on given specific identifier
      */
-    public static JdbcDriver getJdbcDriver(String driverId) {
-        return jdbcDrivers.get(driverId);
+    public static JdbcSpecificDescription getJdbcSpecificDescription(String specificId) {
+        return jdbcSpecifics.get(specificId);
     }
     
     /**
-     * @return list of all registered JDBC drivers
+     * @return list of all registered JDBC specifics
      */
-    public static JdbcDriver[] getAllJdbcDrivers() {
-        return jdbcDrivers.values().toArray(new JdbcDriver[jdbcDrivers.size()]);
+    public static JdbcSpecificDescription[] getAllJdbcSpecificDescriptions() {
+        return jdbcSpecifics.values().toArray(new JdbcSpecificDescription[jdbcSpecifics.size()]);
     }
     
 }

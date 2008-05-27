@@ -33,7 +33,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.config.JdbcBaseConfig;
+import org.jetel.connection.jdbc.specific.DefaultJDBCSpecific;
+import org.jetel.connection.jdbc.specific.JDBCSpecific;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -129,7 +130,7 @@ public class SQLUtil {
 	 *      ResultSet
 	 * @exception  SQLException  Description of the Exception
 	 */
-	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata, JdbcBaseConfig config) throws SQLException {
+	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata, JDBCSpecific jdbcSpecific) throws SQLException {
 		DataFieldMetadata fieldMetadata;
 		DataRecordMetadata jetelMetadata = new DataRecordMetadata(dbMetadata.getTableName(1),
 				DataRecordMetadata.DELIMITED_RECORD);
@@ -146,7 +147,7 @@ public class SQLUtil {
 			}
 			// set proper data type
 			type = dbMetadata.getColumnType(i);
-			fieldMetadata.setType(config.sqlType2jetel(type));
+			fieldMetadata.setType(jdbcSpecific.sqlType2jetel(type));
 			//for Date Data Field set proper format
 			switch (type) {
 			case Types.DECIMAL:
@@ -192,7 +193,7 @@ public class SQLUtil {
 
 	@Deprecated 
 	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata) throws SQLException {
-		return dbMetadata2jetel(dbMetadata, JdbcBaseConfig.getInstance());
+		return dbMetadata2jetel(dbMetadata, DefaultJDBCSpecific.INSTANCE);
 	}
 
 	/**
@@ -353,15 +354,15 @@ public class SQLUtil {
 	 */
 	@Deprecated
 	public static List<Integer> getFieldTypes(DataRecordMetadata metadata, String[] cloverFields) {
-		return getFieldTypes(metadata, cloverFields, JdbcBaseConfig.getInstance());
+		return getFieldTypes(metadata, cloverFields, DefaultJDBCSpecific.INSTANCE);
 	}
 	
-	public static List<Integer> getFieldTypes(DataRecordMetadata metadata, String[] cloverFields, JdbcBaseConfig config) {
+	public static List<Integer> getFieldTypes(DataRecordMetadata metadata, String[] cloverFields, JDBCSpecific jdbcSpecific) {
 		List<Integer> fieldTypes = new LinkedList<Integer>();
 		DataFieldMetadata fieldMeta;
 		for (int i = 0; i < cloverFields.length; i++) {
 			if ((fieldMeta = metadata.getField(cloverFields[i])) != null) {
-				fieldTypes.add(new Integer(config.jetelType2sql(fieldMeta)));
+				fieldTypes.add(new Integer(jdbcSpecific.jetelType2sql(fieldMeta)));
 			} else {
 				throw new RuntimeException("Field name [" + cloverFields[i] + "] not found in " + metadata.getName());
 			}
@@ -376,17 +377,17 @@ public class SQLUtil {
 	 * @return                   The fieldTypes value
 	 * @exception  SQLException  Description of the Exception
 	 */
-	public static List<Integer> getFieldTypes(DataRecordMetadata metadata, JdbcBaseConfig config)  {
+	public static List<Integer> getFieldTypes(DataRecordMetadata metadata, JDBCSpecific jdbcSpecific)  {
 		List<Integer> fieldTypes = new LinkedList<Integer>();
 		for (int i = 0; i < metadata.getNumFields(); i++) {
-				fieldTypes.add(new Integer(config.jetelType2sql(metadata.getField(i))));
+				fieldTypes.add(new Integer(jdbcSpecific.jetelType2sql(metadata.getField(i))));
 		}
 		return fieldTypes;
 	}
 
 	@Deprecated
 	public static List<Integer> getFieldTypes(DataRecordMetadata metadata)  {
-		return getFieldTypes(metadata, JdbcBaseConfig.getInstance());
+		return getFieldTypes(metadata, DefaultJDBCSpecific.INSTANCE);
 	}
 
 	/**

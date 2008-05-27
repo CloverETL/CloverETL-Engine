@@ -20,7 +20,6 @@
 
 package org.jetel.connection.jdbc;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -33,9 +32,8 @@ import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.config.JdbcBaseConfig;
-import org.jetel.connection.jdbc.config.JdbcConfigFactory;
-import org.jetel.connection.jdbc.config.JdbcBaseConfig.OperationType;
+import org.jetel.connection.jdbc.specific.DBConnectionInstance;
+import org.jetel.connection.jdbc.specific.JDBCSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.BadDataFormatException;
@@ -57,8 +55,7 @@ public class SQLDataParser implements Parser {
 	protected int recordCounter;
 	protected int fieldCount = 0;
 
-	protected Connection dbConnection;
-	protected JdbcBaseConfig connectionConfig;
+	protected DBConnectionInstance dbConnection;
 	protected String sqlQuery;
 	protected Statement statement;
 	protected QueryAnalyzer analyzer;
@@ -258,29 +255,16 @@ public class SQLDataParser implements Parser {
 		
 		//outRecord.init();
         // get dbConnection from graph
-        if (! (inputDataSource instanceof Connection)){
-            throw new RuntimeException("Need java.sql.Connection object !");
+        if (! (inputDataSource instanceof DBConnectionInstance)){
+            throw new RuntimeException("Need org.jetel.data.connection.jdbc.specific.DBConnectionInstance object !");
         }
-        dbConnection= (Connection) inputDataSource;
+        dbConnection = (DBConnectionInstance) inputDataSource;
 
-        if (connectionConfig == null) {
-        	try {
-				//TODO
-				connectionConfig = JdbcConfigFactory.createConfig(dbConnection
-						.getMetaData().getDatabaseProductName());
-			} catch (Exception e) {
-				// TODO: handle exception
-			}
-        }
-        connectionConfig.optimizeConnection(dbConnection, OperationType.READ);
-        
         try {
-        	statement = connectionConfig.createStatement(dbConnection, OperationType.READ);
+        	statement = dbConnection.getSqlConnection().createStatement();
         } catch (SQLException e) {
             throw new ComponentNotReadyException(e);
         }
-        
-        connectionConfig.optimizeStatement(statement, OperationType.READ);
         
         logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Sending query " + 
         		StringUtils.quote(sqlQuery));
@@ -297,7 +281,7 @@ public class SQLDataParser implements Parser {
             throw new ComponentNotReadyException(e);
         }
 
-        connectionConfig.optimizeResultSet(resultSet, OperationType.READ);
+        dbConnection.getJdbcSpecific().optimizeResultSet(resultSet, OperationType.READ);
         if (fetchSize > -1) {
         	try {
 				resultSet.setFetchSize(fetchSize);
@@ -319,8 +303,8 @@ public class SQLDataParser implements Parser {
 				resultSet.close();
 			}
 			// try to commit (as some DBs apparently need commit even when data is read only
-			if (!dbConnection.getAutoCommit()) {
-				dbConnection.commit();
+			if (!dbConnection.getSqlConnection().getAutoCommit()) {
+				dbConnection.getSqlConnection().commit();
 			}            
 			// close statement
 			statement.close();
@@ -380,14 +364,6 @@ public class SQLDataParser implements Parser {
 		this.parentNode = parentNode;
 	}
 
-	public JdbcBaseConfig getConnectionConfig() {
-		return connectionConfig;
-	}
-
-	public void setConnectionConfig(JdbcBaseConfig connectionConfig) {
-		this.connectionConfig = connectionConfig;
-	}
-		
 	public Object getPosition() {
 		// TODO Auto-generated method stub
 		return null;

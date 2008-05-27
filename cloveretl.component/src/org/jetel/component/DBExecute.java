@@ -19,7 +19,6 @@
 */
 package org.jetel.component;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -27,11 +26,10 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.aggregate.AggregateMappingParser;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverCallableStatement;
-import org.jetel.connection.jdbc.config.JdbcBaseConfig;
-import org.jetel.connection.jdbc.config.JdbcBaseConfig.OperationType;
+import org.jetel.connection.jdbc.specific.DBConnectionInstance;
+import org.jetel.connection.jdbc.specific.JDBCSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
@@ -166,6 +164,7 @@ public class DBExecute extends Node {
     }
     
 	private DBConnection dbConnection;
+	private DBConnectionInstance connectionInstance;
 	private String dbConnectionName;
 	private String sqlQuery;
     private String[] dbSQL;
@@ -274,14 +273,12 @@ public class DBExecute extends Node {
 			outRecord = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
 			outRecord.init();
 		}
-		Connection connection = dbConnection.getConnection(getId());
-		JdbcBaseConfig config = dbConnection.getConfigBase();
 		try {
 			if (procedureCall) {
+				connectionInstance = dbConnection.getConnection(getId(), OperationType.CALL);
 				callableStatement = new SQLCloverCallableStatement[dbSQL.length];
 				for (int i = 0; i < callableStatement.length; i++){
-					callableStatement[i] = new SQLCloverCallableStatement(connection, config, 
-							dbSQL[i], inRecord, outRecord);
+					callableStatement[i] = new SQLCloverCallableStatement(connectionInstance, dbSQL[i], inRecord, outRecord);
 					if (inParams != null) {
 						callableStatement[i].setInParameters(inParams[i]);
 					}
@@ -292,15 +289,16 @@ public class DBExecute extends Node {
 					callableStatement[i].prepareCall();
 				}
 			}else{
-				config.optimizeConnection(connection, OperationType.WRITE);
+				connectionInstance = dbConnection.getConnection(getId(), OperationType.WRITE);
 				sqlStatement = new PreparedStatement[dbSQL.length];
 				for (int i = 0; i < sqlStatement.length; i++){
-					sqlStatement[i] = config.createPreparedStatement(connection, dbSQL[i], OperationType.WRITE);
-					config.optimizeStatement(sqlStatement[i], OperationType.WRITE);//as we call executeUpdate() then
+					sqlStatement[i] = connectionInstance.getSqlConnection().prepareStatement(dbSQL[i]);
 				}
 			}
 		} catch (SQLException e) {
 			throw new ComponentNotReadyException(this, XML_SQLCODE_ELEMENT, e.getMessage());
+		} catch (JetelException e) {
+			throw new ComponentNotReadyException(e);
 		}
 	}
 
@@ -342,10 +340,9 @@ public class DBExecute extends Node {
 	
 	@Override
 	public Result execute() throws Exception {
-		Connection connection = dbConnection.getConnection(getId());
 		// this does not work for some drivers
 		try {
-			connection.setAutoCommit(false);
+			connectionInstance.getSqlConnection().setAutoCommit(false);
 		} catch (SQLException ex) {
 			if (transaction == InTransaction.ONE) {
 				logger.error("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
@@ -378,26 +375,26 @@ public class DBExecute extends Node {
 						sqlStatement[i].executeUpdate();
 					}
 					if (transaction == InTransaction.ONE){
-						connection.commit();
+						connectionInstance.getSqlConnection().commit();
 					}
 				}
 				if (transaction == InTransaction.SET){
-					connection.commit();
+					connectionInstance.getSqlConnection().commit();
 				}
 				if (inPort != null) {
 					inRecord = inPort.readRecord(inRecord);
 				}
 			} while (runIt && inRecord != null);
 			if (transaction == InTransaction.ALL){
-				connection.commit();
+				connectionInstance.getSqlConnection().commit();
 			}
 			broadcastEOF();
 		} catch (Exception ex) {
-			connection.rollback();
+			connectionInstance.getSqlConnection().rollback();
 			throw ex;
 		}	
 		if (!runIt) {
-			connection.rollback();
+			connectionInstance.getSqlConnection().rollback();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}

@@ -111,6 +111,9 @@ public class PropertyRefResolver {
         
     }
 
+    public Properties getProperties() {
+    	return properties;
+    }
 
 	/**
 	 *  Looks for reference to global graph properties within string and

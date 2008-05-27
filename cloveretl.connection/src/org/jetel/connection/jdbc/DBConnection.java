@@ -23,15 +23,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.channels.Channels;
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -42,22 +38,28 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.config.JdbcBaseConfig;
-import org.jetel.connection.jdbc.config.JdbcConfigFactory;
+import org.jetel.connection.jdbc.driver.JdbcDriver;
+import org.jetel.connection.jdbc.driver.JdbcDriverDescription;
+import org.jetel.connection.jdbc.driver.JdbcDriverFactory;
+import org.jetel.connection.jdbc.specific.DBConnectionInstance;
+import org.jetel.connection.jdbc.specific.DefaultJDBCSpecific;
+import org.jetel.connection.jdbc.specific.JDBCSpecific;
+import org.jetel.connection.jdbc.specific.JdbcSpecificDescription;
+import org.jetel.connection.jdbc.specific.JdbcSpecificFactory;
+import org.jetel.connection.jdbc.specific.JDBCSpecific.OperationType;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
-import org.jetel.database.jdbc.JdbcDriver;
-import org.jetel.database.jdbc.JdbcDriverFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -132,23 +134,12 @@ public class DBConnection extends GraphElement implements IConnection {
 
     private static Log logger = LogFactory.getLog(DBConnection.class);
 
-    String configFileName;
-    Driver dbDriver;
-    Connection dbConnection;
-    // standard properties of a Clover DBConnection 
-    Properties config = new Properties();
-    // properties specific to the JDBC connection (not used by Clover)
-    Properties jdbcConfig = new Properties();
-    boolean threadSafeConnections;
-    boolean isPasswordEncrypted;
-    private Map<String, Connection> openedConnections = new HashMap<String, Connection>();
-    private JdbcBaseConfig configBase;
-
-    public final static String JDBC_DRIVER_LIBRARY_NAME = "driverLibrary";
     public final static String TRANSACTION_ISOLATION_PROPERTY_NAME="transactionIsolation";
     public final static String SQL_QUERY_PROPERTY = "sqlQuery";
 
-    public static final String XML_JNDI_ATTRIBUTE = "jndiName";
+    public final static String XML_JDBC_SPECIFIC_ATTRIBUTE = "jdbcSpecific";
+    public final static String XML_DRIVER_LIBRARY_ATTRIBUTE = "driverLibrary";
+    public static final String XML_JNDI_NAME_ATTRIBUTE = "jndiName";
     public static final String XML_DBURL_ATTRIBUTE = "dbURL";
     public static final String XML_DBDRIVER_ATTRIBUTE = "dbDriver";
     public static final String XML_DBCONFIG_ATTRIBUTE = "dbConfig";
@@ -161,12 +152,39 @@ public class DBConnection extends GraphElement implements IConnection {
     public static final String XML_JDBC_PROPERTIES_PREFIX = "jdbc.";
     
     public static final String EMBEDDED_UNLOCK_CLASS = "com.ddtek.jdbc.extensions.ExtEmbeddedConnection";
-    
-    private ClassLoader classLoader;
-    
+
     // not yet used by component
     public static final String XML_NAME_ATTRIBUTE = "name";
 
+    //Driver dbDriver;//
+    //Connection dbConnection;//
+    
+    private String configFileName;
+    
+    private String dbUrl;
+    private boolean threadSafeConnections;
+    private boolean isPasswordEncrypted;
+    private String jndiName;
+    private String database;
+    private String dbDriver;
+    private String user;
+    private String password;
+    private String driverLibrary;
+    private String jdbcSpecificId;
+    
+    // properties specific to the JDBC connection (not used by Clover)
+    private TypedProperties jdbcProperties;
+    
+    private Map<CacheKey, DBConnectionInstance> connectionsCache = new HashMap<CacheKey, DBConnectionInstance>();
+    private DBConnectionInstance connectionInstance; //this variable is used in case threadSafe = false
+    //private JdbcBaseConfig configBase;//
+
+    //private ClassLoader classLoader;//
+
+    private JdbcDriver jdbcDriver;
+    private JDBCSpecific jdbcSpecific;
+    private URL[] driverLibraryURLs;
+    
     /**
      *  Constructor for the DBConnection object (not used in engine yet)
      *
@@ -177,13 +195,11 @@ public class DBConnection extends GraphElement implements IConnection {
         this.configFileName = configFilename;
     }
 
-    public DBConnection(String id, Properties configProperties) {
+    public DBConnection(String id, Properties properties) {
         super(id);
         
-        loadProperties(configProperties);
+        fromProperties(properties);
         
-        this.threadSafeConnections=parseBoolean(configProperties.getProperty(XML_THREAD_SAFE_CONNECTIONS,"true"));
-        this.isPasswordEncrypted=parseBoolean(configProperties.getProperty(XML_IS_PASSWORD_ENCRYPTED,"false"));
     }
 
     /**
@@ -192,21 +208,40 @@ public class DBConnection extends GraphElement implements IConnection {
      * 
      * @param configProperties
      */
-	private void loadProperties(Properties configProperties) {
-		PropertyRefResolver resolver = new PropertyRefResolver(getGraph());
-        Set<Object> keys = configProperties.keySet();
-        for (Object key : keys) {
-			String name = (String) key;
-			String value = resolver.resolveRef(configProperties.getProperty(name));
-			if (!name.startsWith(XML_JDBC_PROPERTIES_PREFIX)) {
-				config.setProperty(name, value);
-			} else {
-				name = name.substring(XML_JDBC_PROPERTIES_PREFIX.length());
-				jdbcConfig.setProperty(name, value);
-			}
-		}
+	private void fromProperties(Properties properties) {
+		TypedProperties typedProperties = new TypedProperties(properties, getGraph());
+
+		setUser(typedProperties.getStringProperty(XML_USER_ATTRIBUTE, null));
+		setPassword(typedProperties.getStringProperty(XML_PASSWORD_ATTRIBUTE, null));
+		setDbUrl(typedProperties.getStringProperty(XML_DBURL_ATTRIBUTE, null));
+		setDbDriver(typedProperties.getStringProperty(XML_DBDRIVER_ATTRIBUTE, null));
+		setDatabase(typedProperties.getStringProperty(XML_DATABASE_ATTRIBUTE, null));
+		setDriverLibrary(typedProperties.getStringProperty(XML_DRIVER_LIBRARY_ATTRIBUTE, null));
+		setJdbcSpecificId(typedProperties.getStringProperty(XML_JDBC_SPECIFIC_ATTRIBUTE, null));
+		setJndiName(typedProperties.getStringProperty(XML_JNDI_NAME_ATTRIBUTE, null));
+		setThreadSafeConnections(typedProperties.getBooleanProperty(XML_THREAD_SAFE_CONNECTIONS, true));
+		setPasswordEncrypted(typedProperties.getBooleanProperty(XML_IS_PASSWORD_ENCRYPTED, false));
+
+		jdbcProperties = typedProperties.getPropertiesStartWith(XML_JDBC_PROPERTIES_PREFIX);
 	}
     
+	/**
+	 * Prepares properties needed to establish connection.
+	 * Resulted properties collection contains all extra properties 
+	 * (properties with prefix 'jdbc.') and user name and password.
+	 * @return
+	 */
+	public Properties createConnectionProperties() {
+		Properties ret = new Properties();
+		
+		ret.putAll(getExtraProperties());
+		
+		ret.setProperty(XML_USER_ATTRIBUTE, getUser());
+		ret.setProperty(XML_PASSWORD_ATTRIBUTE, getPassword());
+		
+		return ret;
+	}
+	
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#init()
      */
@@ -216,34 +251,105 @@ public class DBConnection extends GraphElement implements IConnection {
         
         if(!StringUtils.isEmpty(configFileName)) {
             try {
-                InputStream stream = Channels.newInputStream(FileUtils.getReadableChannel(getGraph() != null ? getGraph().getProjectURL() : null, configFileName));
+            	URL projectURL = getGraph() != null ? getGraph().getProjectURL() : null;
+                InputStream stream = FileUtils.getFileURL(projectURL, configFileName).openStream();
 
-//old code - last usage in 2.0                 
-//                if (!new File(configFileName).exists()) {
-//                    // config file not found on file system - try classpath
-//                    stream = getClass().getClassLoader().getResourceAsStream(configFileName);
-//                    if(stream == null) {
-//                        throw new FileNotFoundException("Config file for db connection " + getId() + " not found (" + configFileName + ")");
-//                    }
-//                    stream = new BufferedInputStream(stream);
-//                } else {
-//                    stream = new BufferedInputStream(new FileInputStream(configFileName));
-//                }
-                
-                Properties storedProperties = new Properties();
-                storedProperties.load(stream);
-                loadProperties(storedProperties);
+                Properties tempProperties = new Properties();
+                tempProperties.load(stream);
+                fromProperties(tempProperties);
                 stream.close();
-                this.threadSafeConnections=parseBoolean(config.getProperty(XML_THREAD_SAFE_CONNECTIONS,"true"));
-                this.isPasswordEncrypted=parseBoolean(config.getProperty(XML_IS_PASSWORD_ENCRYPTED,"false"));
-
             } catch (Exception ex) {
                 throw new ComponentNotReadyException(ex);
             }
         }
-        prepareDbDriver();
+
+        prepareDriverLibraryURLs();
+        prepareJdbcSpecific();
+        prepareJdbcDriver();
+        
+        //check validity of the given url
+        try {
+            if (!getJdbcDriver().getDriver().acceptsURL(getDbUrl())) {
+                throw new ComponentNotReadyException("Unacceptable connection url: '" + getDbUrl() + "'");
+            }
+        } catch (SQLException e) {
+            throw new ComponentNotReadyException(e);
+        } 
+
+        //decrypt password
+        decryptPassword();
     }
 
+    private void prepareJdbcDriver() throws ComponentNotReadyException {
+        if(!StringUtils.isEmpty(getJndiName())) {
+        	return;
+        }
+        
+        if(!StringUtils.isEmpty(getDatabase())) {
+            //database connection is parameterized by DB identifier to the list of build-in JDBC drivers
+            String database = getDatabase();
+            JdbcDriverDescription jdbcDriverDescription = JdbcDriverFactory.getJdbcDriverDescriptor(database);
+            
+            if(jdbcDriverDescription == null) {
+                throw new ComponentNotReadyException("Can not create JDBC driver '" + database + "'. This type of JDBC driver is not supported.");
+            }
+            
+            jdbcDriver = jdbcDriverDescription.createJdbcDriver();
+        } else {
+        	//database connection is full specified by dbDriver and driverLibrary attributes
+            jdbcDriver = new JdbcDriver(null, null, getDbDriver(), getDriverLibraryURLs(), getJdbcSpecific());
+        }
+    }
+
+    public synchronized DBConnectionInstance getConnection(String elementId) throws JetelException {
+    	return getConnection(elementId, OperationType.UNKNOWN);
+    }
+
+    /**
+     *  Gets the connection attribute of the DBConnection object. If threadSafe option
+     * is set, for each graph element there is created new connection object
+     *
+     * @return    The database connection (JDBC)
+     * @throws JetelException 
+     */
+    public synchronized DBConnectionInstance getConnection(String elementId, OperationType operationType) throws JetelException {
+        DBConnectionInstance connection = null;
+        
+        if (isThreadSafeConnections()) {
+        	CacheKey key = new CacheKey(elementId, operationType);
+            connection = (DBConnectionInstance) connectionsCache.get(key);
+            if (connection == null) {
+                connection = new DBConnectionInstance(this, connect(operationType), operationType);
+                connectionsCache.put(key, connection);
+            }
+        } else {
+            if (connectionInstance == null) {
+                connectionInstance = new DBConnectionInstance(this, connect(operationType), operationType);
+            }
+            connection = connectionInstance;
+        }
+        
+        return connection;
+    }
+
+    private Connection connect(OperationType operationType) throws JetelException {
+    	if (!StringUtils.isEmpty(getJndiName())) {
+        	try {
+            	Context initContext = new InitialContext();
+           		DataSource ds = (DataSource)initContext.lookup(getJndiName());
+               	return ds.getConnection();
+        	} catch (Exception e) {
+        		throw new JetelException("Cannot establish DB connection to JNDI:" + getJndiName() + " " + e.getMessage(), e);
+        	}
+    	} else {
+        	try {
+				return getJdbcSpecific().createSQLConnection(operationType, this);
+			} catch (JetelException e) {
+				throw new JetelException("Cannot establish DB connection (" + getId() + ").", e);
+			}
+    	}
+    }
+    
     /**
      * Method which connects to database and if successful, sets various
      * connection parameters. If as a property "transactionIsolation" is defined, then
@@ -257,166 +363,89 @@ public class DBConnection extends GraphElement implements IConnection {
      * 
      * @see java.sql.Connection#setTransactionIsolation(int)
      */
-    private void connect() {
-        logger.debug("DBConnection (" + getId() +"), component ["+Thread.currentThread().getName() +"] attempts to connect to the database");
-
-        if(!isInitialized()) {
-            throw new RuntimeException("DBConnection (" + getId() +") is not initialized.");
-        }
-        if (dbDriver == null){
-            try {
-                prepareDbDriver();
-            } catch (ComponentNotReadyException e) {
-                throw new RuntimeException(e); 
-            }
-        }
-        try {
-            // handle encrypted password
-            if (isPasswordEncrypted){
-                decryptPassword(this.config);
-                isPasswordEncrypted=false;
-            }
-            
-            Properties connectionProps = new Properties();
-            String user = config.getProperty(XML_USER_ATTRIBUTE);
-            if (user != null) {
-            	connectionProps.setProperty(XML_USER_ATTRIBUTE, user);
-            }
-            String password = config.getProperty(XML_PASSWORD_ATTRIBUTE);
-            if (password != null) {
-            	connectionProps.setProperty(XML_PASSWORD_ATTRIBUTE, password);
-            }
-            connectionProps.putAll(jdbcConfig);
-            dbConnection = dbDriver.connect(config.getProperty(XML_DBURL_ATTRIBUTE), connectionProps);
-
-            // unlock initiatesystems driver
-            try {
-                Class embeddedConClass;
-                if (classLoader == null) {
-                    embeddedConClass = Class.forName(EMBEDDED_UNLOCK_CLASS);
-                } else {
-                    embeddedConClass = Class.forName(EMBEDDED_UNLOCK_CLASS, true, classLoader);
-                }
-                if (embeddedConClass != null) {
-                    if(embeddedConClass.isInstance(dbConnection)) {
-                            java.lang.reflect.Method unlockMethod = 
-                                embeddedConClass.getMethod("unlock", new Class[] { String.class});
-                            unlockMethod.invoke(dbConnection, new Object[] { "INITIATESYSTEMSINCJDBCPW" });
-                    }
-                }
-            } catch (Exception ex) {
-            }
-        } catch (SQLException ex) {
-            throw new RuntimeException("Can't connect to DB :"
-                    + ex.getMessage());
-        }
-        if (dbConnection == null) {
-            throw new RuntimeException(
-                    "Not suitable driver for specified DB URL : " + dbDriver
-                            + " ; " + config.getProperty(XML_DBURL_ATTRIBUTE));
-        }
-        // try to set Transaction isolation level, it it was specified
-        if (config.containsKey(TRANSACTION_ISOLATION_PROPERTY_NAME)) {
-            int trLevel;
-            String isolationLevel = config
-                    .getProperty(TRANSACTION_ISOLATION_PROPERTY_NAME);
-            if (isolationLevel.equalsIgnoreCase("READ_UNCOMMITTED")) {
-                trLevel = Connection.TRANSACTION_READ_UNCOMMITTED;
-            } else if (isolationLevel.equalsIgnoreCase("READ_COMMITTED")) {
-                trLevel = Connection.TRANSACTION_READ_COMMITTED;
-            } else if (isolationLevel.equalsIgnoreCase("REPEATABLE_READ")) {
-                trLevel = Connection.TRANSACTION_REPEATABLE_READ;
-            } else if (isolationLevel.equalsIgnoreCase("SERIALIZABLE")) {
-                trLevel = Connection.TRANSACTION_SERIALIZABLE;
-            } else {
-                trLevel = Connection.TRANSACTION_NONE;
-            }
-            try {
-                dbConnection.setTransactionIsolation(trLevel);
-            } catch (SQLException ex) {
-                // we do nothing, if anything goes wrong, we just
-                // leave whatever was the default
-            }
-        }
-        // DEBUG logger.debug("DBConenction (" + getId() +") finishes connect function to the database at " + simpleDateFormat.format(new Date()));
-    }
-
-    /**
-     * Loads DB driver and verifies whether an url into databaze is valid.
-     * @throws ComponentNotReadyException 
-     */
-    private void prepareDbDriver() throws ComponentNotReadyException {
-        if(!StringUtils.isEmpty(config.getProperty(XML_JNDI_ATTRIBUTE)))
-        	return;
-
-        if (dbDriver==null){
-            //database connection is parametrized by DB identifier to the list of build-in JDBC drivers
-            if(!StringUtils.isEmpty(config.getProperty(XML_DATABASE_ATTRIBUTE))) {
-                String database = config.getProperty(XML_DATABASE_ATTRIBUTE);
-                JdbcDriver jdbcDriver = JdbcDriverFactory.getJdbcDriver(database);
-                
-                if(jdbcDriver == null) {
-                    throw new RuntimeException("Can not create JDBC driver '" + database + "'. This type of JDBC driver does not exist.");
-                }
-                classLoader = jdbcDriver.getClassLoader();
-                dbDriver = jdbcDriver.getDriver();
-                
-//                //default properties from an extension point are used only if key is not engaged
-//                Properties defaultProperties = jdbcDriver.getProperties();
-//                for(Entry<Object, Object> entry : defaultProperties.entrySet()) {
-//                    if(!config.contains(entry.getKey())) {
-//                        config.put(entry.getKey(), entry.getValue());
+//    private void connect() {
+//        logger.debug("DBConnection (" + getId() +"), component ["+Thread.currentThread().getName() +"] attempts to connect to the database");
+//
+//        if(!isInitialized()) {
+//            throw new RuntimeException("DBConnection (" + getId() +") is not initialized.");
+//        }
+//        if (dbDriver == null){
+//            try {
+//                prepareDbDriver();
+//            } catch (ComponentNotReadyException e) {
+//                throw new RuntimeException(e); 
+//            }
+//        }
+//        try {
+//            // handle encrypted password
+//            if (isPasswordEncrypted){
+//                decryptPassword(this.config);
+//                isPasswordEncrypted=false;
+//            }
+//            
+//            Properties connectionProps = new Properties();
+//            String user = config.getProperty(XML_USER_ATTRIBUTE);
+//            if (user != null) {
+//            	connectionProps.setProperty(XML_USER_ATTRIBUTE, user);
+//            }
+//            String password = config.getProperty(XML_PASSWORD_ATTRIBUTE);
+//            if (password != null) {
+//            	connectionProps.setProperty(XML_PASSWORD_ATTRIBUTE, password);
+//            }
+//            connectionProps.putAll(jdbcConfig);
+//            dbConnection = dbDriver.connect(config.getProperty(XML_DBURL_ATTRIBUTE), connectionProps);
+//
+//            // unlock initiatesystems driver
+//            try {
+//                Class embeddedConClass;
+//                if (classLoader == null) {
+//                    embeddedConClass = Class.forName(EMBEDDED_UNLOCK_CLASS);
+//                } else {
+//                    embeddedConClass = Class.forName(EMBEDDED_UNLOCK_CLASS, true, classLoader);
+//                }
+//                if (embeddedConClass != null) {
+//                    if(embeddedConClass.isInstance(dbConnection)) {
+//                            java.lang.reflect.Method unlockMethod = 
+//                                embeddedConClass.getMethod("unlock", new Class[] { String.class});
+//                            unlockMethod.invoke(dbConnection, new Object[] { "INITIATESYSTEMSINCJDBCPW" });
 //                    }
 //                }
-            } else {
-            //database connection is full specified by dbDriver and driverLibrary attributes
-                String dbDriverName = config.getProperty(XML_DBDRIVER_ATTRIBUTE);
-                try {
-                    dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
-                } catch (ClassNotFoundException ex) {
-                    // let's try to load in any additional .jar library (if specified) (one or more)
-                    // separator of individual libraries depends on platform - UNIX - ":" Win - ";"
-                    String jdbcDriverLibrary = config.getProperty(JDBC_DRIVER_LIBRARY_NAME);
-                    if (jdbcDriverLibrary != null) {
-                        String[] libraryPaths = jdbcDriverLibrary.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-                        URL[] myURLs= new URL[libraryPaths.length];
-                            // try to create URL directly, if failed probably the protocol is missing, so use File.toURL
-                            for(int i=0;i<libraryPaths.length;i++){
-                                try {
-                                    // valid url
-                                    myURLs[i] = FileUtils.getFileURL(getGraph() != null ? getGraph().getProjectURL() : null, libraryPaths[i]);
-                                } catch (MalformedURLException ex1) {
-                                    throw new RuntimeException("Malformed URL: " + ex1.getMessage());
-                                }
-                        }
-                        
-                        try {
-                            classLoader = new URLClassLoader(myURLs,Thread.currentThread().getContextClassLoader());
-                            dbDriver = (Driver) Class.forName(dbDriverName,true,classLoader).newInstance();
-                        } catch (ClassNotFoundException ex1) {
-                            throw new RuntimeException("Can not find class: " + ex1);
-                        } catch (Exception ex1) {
-                            throw new RuntimeException("General exception: " + ex1.getMessage());
-                        }
-                    } else {
-                            throw new RuntimeException("Can't load DB driver :" + ex.getMessage());
-                    }
-                } catch (Exception ex) {
-                    throw new RuntimeException("Can't load DB driver :"
-                            + ex.getMessage());
-                }
-            }
-            
-            //check validity of the given url
-            try {
-                if (!dbDriver.acceptsURL(config.getProperty(XML_DBURL_ATTRIBUTE))) {
-                    throw new ComponentNotReadyException("Unacceptable connection url: " + config.getProperty(XML_DBURL_ATTRIBUTE));
-                }
-            } catch (SQLException e) {
-                throw new ComponentNotReadyException(e);
-            } 
-        }
-    }
+//            } catch (Exception ex) {
+//            }
+//        } catch (SQLException ex) {
+//            throw new RuntimeException("Can't connect to DB :"
+//                    + ex.getMessage());
+//        }
+//        if (dbConnection == null) {
+//            throw new RuntimeException(
+//                    "Not suitable driver for specified DB URL : " + dbDriver
+//                            + " ; " + config.getProperty(XML_DBURL_ATTRIBUTE));
+//        }
+//        // try to set Transaction isolation level, it it was specified
+//        if (config.containsKey(TRANSACTION_ISOLATION_PROPERTY_NAME)) {
+//            int trLevel;
+//            String isolationLevel = config
+//                    .getProperty(TRANSACTION_ISOLATION_PROPERTY_NAME);
+//            if (isolationLevel.equalsIgnoreCase("READ_UNCOMMITTED")) {
+//                trLevel = Connection.TRANSACTION_READ_UNCOMMITTED;
+//            } else if (isolationLevel.equalsIgnoreCase("READ_COMMITTED")) {
+//                trLevel = Connection.TRANSACTION_READ_COMMITTED;
+//            } else if (isolationLevel.equalsIgnoreCase("REPEATABLE_READ")) {
+//                trLevel = Connection.TRANSACTION_REPEATABLE_READ;
+//            } else if (isolationLevel.equalsIgnoreCase("SERIALIZABLE")) {
+//                trLevel = Connection.TRANSACTION_SERIALIZABLE;
+//            } else {
+//                trLevel = Connection.TRANSACTION_NONE;
+//            }
+//            try {
+//                dbConnection.setTransactionIsolation(trLevel);
+//            } catch (SQLException ex) {
+//                // we do nothing, if anything goes wrong, we just
+//                // leave whatever was the default
+//            }
+//        }
+//        // DEBUG logger.debug("DBConenction (" + getId() +") finishes connect function to the database at " + simpleDateFormat.format(new Date()));
+//    }
 
     /**
      *  Description of the Method
@@ -424,87 +453,35 @@ public class DBConnection extends GraphElement implements IConnection {
      * @exception  SQLException  Description of the Exception
      */
     synchronized public void free() {
-        if(!isInitialized()) return;
+        if (!isInitialized()) return;
         super.free();
 
-        if(threadSafeConnections) {
-            for(Iterator i = openedConnections.values().iterator(); i.hasNext();) {
-                try {
-                    Connection c = ((Connection)i.next());
-                    if(!c.getAutoCommit()) {
-                        c.commit();
-                    }
-                    c.close();
-                } catch (SQLException e) {
-                    logger.warn(getId() + " - close operation failed.");
-                }
+        if (threadSafeConnections) {
+            for (DBConnectionInstance connectionInstance : connectionsCache.values()) {
+            	Connection connection = connectionInstance.getSqlConnection();
+            	closeConnection(connection);
             }
-            openedConnections.clear();
         } else {
-            try {
-                if (dbConnection!=null && !dbConnection.isClosed()) {
-                    if (!dbConnection.getAutoCommit()) {
-                        dbConnection.commit();
-                    }
-                    dbConnection.close();
-                }
-            } catch (SQLException e) {
-                logger.warn(getId() + " - close operation failed.");
-            }            
-        }
-    }
-
-    /**
-     *  Gets the connection attribute of the DBConnection object. If threadSafe option
-     * is set, for each graph element there is created new connection object
-     *
-     * @return    The database connection (JDBC)
-     */
-    public synchronized Connection getConnection(String elementId) {
-        Connection con=null;
-        
-        String jndi = config.getProperty(XML_JNDI_ATTRIBUTE);
-        if(!StringUtils.isEmpty(jndi)) {
-        	
-        	try {
-            	Context initContext = new InitialContext();
-            	/*
-               	Context envContext  = (Context)initContext.lookup("java:/comp/env");
-               	DataSource ds = (DataSource)envContext.lookup(jndi);
-               	con = ds.getConnection();
-               	*/
-           		DataSource ds = (DataSource)initContext.lookup(jndi);
-               	con = ds.getConnection();
-        	} catch (Exception e) {
-        		throw new RuntimeException("cannot establish DB connection to JNDI:" + jndi + " "+e.getMessage(), e);
+        	if (connectionInstance != null) {
+            	Connection connection = connectionInstance.getSqlConnection();
+            	closeConnection(connection);
         	}
-        	
-        } else {
-            if (threadSafeConnections){
-                con=(Connection)openedConnections.get(elementId);
-                if(con==null){
-                    connect();
-                    con=dbConnection;
-                    openedConnections.put(elementId,con);
-                }
-            }else{
-                try{
-                    if (dbConnection == null || dbConnection.isClosed()){
-                        connect();
-                    }
-                }catch(SQLException ex){
-                    throw new RuntimeException(
-                            "Can't establish or reuse existing connection : " + dbDriver
-                                    + " ; " + config.getProperty(XML_DBURL_ATTRIBUTE));
-                }
-                con=dbConnection;
-            }
         }
-        
-        return con;
     }
 
-
+    private void closeConnection(Connection connection) {
+        try {
+        	if (!connection.isClosed()) {
+                if (!connection.getAutoCommit()) {
+                    connection.commit();
+                }
+                connection.close();
+        	}
+        } catch (SQLException e) {
+            logger.warn("DBConnection '" + getId() + "' close operation failed.");
+        }
+    }
+    
     /**
      *  Creates new statement with default parameters and returns it
      *
@@ -572,11 +549,11 @@ public class DBConnection extends GraphElement implements IConnection {
      * @param  name   The new property value
      * @param  value  The new property value
      */
-    public void setProperty(String name, String value) {
-    	Properties p = new Properties();
-    	p.setProperty(name, value);
-    	loadProperties(p);
-    }
+//    public void setProperty(String name, String value) {
+//    	Properties p = new Properties();
+//    	p.setProperty(name, value);
+//    	loadProperties(p);
+//    }
 
 
     /**
@@ -584,10 +561,10 @@ public class DBConnection extends GraphElement implements IConnection {
      *
      * @param  properties  The new property value
      */
-    public void setProperty(Properties properties) {
-    	loadProperties(properties);
-        this.decryptPassword(this.config);
-    }
+//    public void setProperty(Properties properties) {
+//    	loadProperties(properties);
+//        this.decryptPassword(this.config);
+//    }
 
 
     /**
@@ -596,9 +573,9 @@ public class DBConnection extends GraphElement implements IConnection {
      * @param  name  Description of the Parameter
      * @return       The property value
      */
-    public String getProperty(String name) {
-        return config.getProperty(name);
-    }
+//    public String getProperty(String name) {
+//        return config.getProperty(name);
+//    }
 
 
     /**
@@ -606,48 +583,49 @@ public class DBConnection extends GraphElement implements IConnection {
      *
      * @param  nodeXML  Description of the Parameter
      * @return          Description of the Return Value
+     * @throws XMLConfigurationException 
      */
-    public static DBConnection fromXML(TransformationGraph graph, Element nodeXML) {
+    public static DBConnection fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+
         try {
             String id = xattribs.getString(XML_ID_ATTRIBUTE);
             // do we have dbConfig parameter specified ??
             if (xattribs.exists(XML_DBCONFIG_ATTRIBUTE)) {
                 return new DBConnection(id, xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
             } else {
-
-            	// don't use the values, the method calls check their existence
-                xattribs.getString(XML_DBDRIVER_ATTRIBUTE, null);
-                xattribs.getString(XML_DBURL_ATTRIBUTE, null);
-
                 Properties connectionProps  = xattribs.attributes2Properties(new String[] {XML_ID_ATTRIBUTE});
                 
-                DBConnection con = new DBConnection(id, connectionProps);
-
-                con.decryptPassword(con.config);
-
-                return con;
+                return new DBConnection(id, connectionProps);
             }
-
-        } catch (Exception ex) {
-            System.err.println(ex.getMessage());
-            return null;
-        }
-
+		} catch (Exception e) {
+            throw new XMLConfigurationException("DBConnection: " 
+            		+ xattribs.getString(XML_ID_ATTRIBUTE, "unknown ID") + ":" + e.getMessage(), e);
+		}
     }
     
     public void saveConfiguration(OutputStream outStream) throws IOException {
         Properties propsToStore = new Properties();
-        propsToStore.putAll(config);
-        
-        Set<Object> jdbcProps = jdbcConfig.keySet();
+
+        TypedProperties extraProperties = getExtraProperties();
+        Set<Object> jdbcProps = extraProperties.keySet();
         for (Object key : jdbcProps) {
         	String propName = (String) key; 
-			propsToStore.setProperty(XML_JDBC_PROPERTIES_PREFIX + propName, 
-					jdbcConfig.getProperty(propName));
+			propsToStore.setProperty(XML_JDBC_PROPERTIES_PREFIX + propName, extraProperties.getProperty(propName));
 		}
-        
-        propsToStore.store(outStream,null);
+
+        propsToStore.setProperty(XML_USER_ATTRIBUTE, getUser());
+        propsToStore.setProperty(XML_PASSWORD_ATTRIBUTE, getPassword());
+        propsToStore.setProperty(XML_DBURL_ATTRIBUTE, getDbUrl());
+        propsToStore.setProperty(XML_DBDRIVER_ATTRIBUTE, getDbDriver());
+        propsToStore.setProperty(XML_DATABASE_ATTRIBUTE, getDatabase());
+        propsToStore.setProperty(XML_DRIVER_LIBRARY_ATTRIBUTE, getDriverLibrary());
+        propsToStore.setProperty(XML_JDBC_SPECIFIC_ATTRIBUTE, getJdbcSpecificId());
+        propsToStore.setProperty(XML_JNDI_NAME_ATTRIBUTE, getJndiName());
+        propsToStore.setProperty(XML_THREAD_SAFE_CONNECTIONS, Boolean.toString(isThreadSafeConnections()));
+        propsToStore.setProperty(XML_IS_PASSWORD_ENCRYPTED, Boolean.toString(isPasswordEncrypted()));
+
+        propsToStore.store(outStream, null);
     }
     
 
@@ -657,34 +635,19 @@ public class DBConnection extends GraphElement implements IConnection {
      * @return    Description of the Return Value
      */
     public String toString() {
-        StringBuffer strBuf=new StringBuffer(255);
-        strBuf.append("DBConnection driver[").append(config.getProperty(XML_DBDRIVER_ATTRIBUTE));
-        strBuf.append("]:jndi[").append(config.getProperty(XML_JNDI_ATTRIBUTE));
-        strBuf.append("]:url[").append(config.getProperty(XML_DBURL_ATTRIBUTE));
-        strBuf.append("]:user[").append(config.getProperty(XML_USER_ATTRIBUTE)).append("]");
+    	if (!isInitialized()) {
+    		return "DBConnection id='" + getId() + "' - not initialized";
+    	}
+    	
+        StringBuffer strBuf = new StringBuffer(255);
+        strBuf.append("DBConnection driver[").append(getJdbcDriver());
+        strBuf.append("]:jndi[").append(getJndiName());
+        strBuf.append("]:url[").append(getDbUrl());
+        strBuf.append("]:user[").append(getUser()).append("]");
+        
         return strBuf.toString();
     }
     
-    /**
-     * @return Returns the threadSafeConnections.
-     */
-    public boolean isThreadSafeConnections() {
-        return threadSafeConnections;
-    }
-    /**
-     * @param threadSafeConnections The threadSafeConnections to set.
-     */
-    public void setThreadSafeConnections(boolean threadSafeConnections) {
-        this.threadSafeConnections = threadSafeConnections;
-        // store in the connection props, so it can be saved in the future if required
-        this.config.setProperty(XML_THREAD_SAFE_CONNECTIONS, String.valueOf(threadSafeConnections));
-    }
-    
-    private boolean parseBoolean(String s) {
-        return s != null && s.equalsIgnoreCase("true");
-    }
-    
- 
     /** Decrypt the password entry in the configuration properties if the
      * isPasswordEncrypted property is set to "y" or "yes". If any error occurs
      * and decryption fails, the original password entry will be used.
@@ -692,36 +655,22 @@ public class DBConnection extends GraphElement implements IConnection {
      * @param configProperties
      *            configuration properties
      */
-    private void decryptPassword(Properties configProperties) {
-        if (isPasswordEncrypted){
+    private void decryptPassword() {
+        if (isPasswordEncrypted()) {
             Enigma enigma = getGraph().getEnigma();
             String decryptedPassword = null;
             try {
-                decryptedPassword = enigma.decrypt(configProperties.getProperty(XML_PASSWORD_ATTRIBUTE));
+                decryptedPassword = enigma.decrypt(getPassword());
             } catch (JetelException e) {
                 logger.error("Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
             }
             // If password decryption returns failure, try with the password
             // as it is.
             if (decryptedPassword != null) {
-                configProperties.setProperty(XML_PASSWORD_ATTRIBUTE, decryptedPassword);
+            	setPassword(decryptedPassword);
             }
         }
     } 
-    /**
-     * @return Returns the isPasswordEncrypted.
-     */
-    public boolean isPasswordEncrypted() {
-        return isPasswordEncrypted;
-    }
-    /**
-     * @param isPasswordEncrypted The isPasswordEncrypted to set.
-     */
-    public void setPasswordEncrypted(boolean isPasswordEncrypted) {
-        this.isPasswordEncrypted = isPasswordEncrypted;
-        // store in the connection props, so it can be saved in the future if required
-        this.config.setProperty(XML_IS_PASSWORD_ENCRYPTED, String.valueOf(isPasswordEncrypted));
-    }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#checkConfig()
@@ -737,6 +686,10 @@ public class DBConnection extends GraphElement implements IConnection {
      * @see org.jetel.database.IConnection#createMetadata(java.util.Properties)
      */
     public DataRecordMetadata createMetadata(Properties parameters) throws SQLException {
+    	if (!isInitialized()) {
+    		throw new IllegalStateException("DBConnection has to be initialized to be able to create metadata.");
+    	}
+    	
         Statement statement;
         ResultSet resultSet;
 
@@ -745,36 +698,241 @@ public class DBConnection extends GraphElement implements IConnection {
             throw new IllegalArgumentException("JDBC stub for clover metadata can't find sqlQuery parameter.");
         }
         
-        statement = getConnection(getId()).createStatement();
+        Connection connection;
+		try {
+			connection = connect(OperationType.UNKNOWN);
+		} catch (JetelException e) {
+			throw new SQLException(e.getMessage());
+		}
+        statement = connection.createStatement();
         resultSet = statement.executeQuery(sqlQuery);
-        return SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), getConfigBase());
+        
+        return SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), getJdbcSpecific());
     }
 
 
-	public Properties getJdbcConfig() {
-		return jdbcConfig;
+//	public Properties getJdbcConfig() {
+//		return jdbcConfig;
+//	}
+
+//	public JdbcBaseConfig getConfigBase(){
+//		if (configBase != null) return configBase;
+//		String tmp = config.getProperty(XML_DATABASE_ATTRIBUTE);
+//        if(!StringUtils.isEmpty(tmp)) {
+//        	configBase = JdbcConfigFactory.createConfig(tmp);
+//        	return configBase;
+//        }
+//    	tmp = config.getProperty(XML_DBDRIVER_ATTRIBUTE);
+//        if(!StringUtils.isEmpty(tmp)) {
+//        	configBase = JdbcConfigFactory.createConfig(tmp);
+//        	return configBase;
+//        }
+//        try {
+//			configBase = JdbcConfigFactory.createConfig(getConnection(getId()).getMetaData().getDriverName());
+//		} catch (SQLException e) {
+//			logger.warn("Problem creating connection configuration", e);
+//			configBase = JdbcBaseConfig.getInstance();
+//			logger.info("Using connection configuration for " + configBase.getTargetDBName());
+//		}
+//		return configBase;
+//	}
+
+//	public Properties getConnectionProperties() {
+//  Properties connectionProps = new Properties();
+//  
+//  connectionProps.setProperty(XML_USER_ATTRIBUTE, getUser());
+//  connectionProps.setProperty(XML_PASSWORD_ATTRIBUTE, getPassword());
+//  
+//  connectionProps.putAll(jdbcConfig);
+//
+//  return null;
+//}
+
+    public boolean isThreadSafeConnections() {
+        return threadSafeConnections;
+    }
+    
+    protected void setThreadSafeConnections(boolean threadSafeConnections) {
+        this.threadSafeConnections = threadSafeConnections;
+    }
+ 
+    public boolean isPasswordEncrypted() {
+        return isPasswordEncrypted;
+    }
+    
+    protected void setPasswordEncrypted(boolean isPasswordEncrypted) {
+        this.isPasswordEncrypted = isPasswordEncrypted;
+    }
+
+	public String getJndiName() {
+		return jndiName;
 	}
 
-	public JdbcBaseConfig getConfigBase(){
-		if (configBase != null) return configBase;
-		String tmp = config.getProperty(XML_DATABASE_ATTRIBUTE);
-        if(!StringUtils.isEmpty(tmp)) {
-        	configBase = JdbcConfigFactory.createConfig(tmp);
-        	return configBase;
-        }
-    	tmp = config.getProperty(XML_DBDRIVER_ATTRIBUTE);
-        if(!StringUtils.isEmpty(tmp)) {
-        	configBase = JdbcConfigFactory.createConfig(tmp);
-        	return configBase;
-        }
-        try {
-			configBase = JdbcConfigFactory.createConfig(getConnection(getId()).getMetaData().getDriverName());
-		} catch (SQLException e) {
-			logger.warn("Problem creating connection configuration", e);
-			configBase = JdbcBaseConfig.getInstance();
-			logger.info("Using connection configuration for " + configBase.getTargetDBName());
-		}
-		return configBase;
+	protected void setJndiName(String jndiName) {
+		this.jndiName = jndiName;
 	}
+
+	public JdbcDriver getJdbcDriver() {
+		return jdbcDriver;
+	}
+
+	protected void setJdbcDriver(JdbcDriver jdbcDriver) {
+		this.jdbcDriver = jdbcDriver;
+	}
+
+	public String getDbUrl() {
+		return dbUrl;
+	}
+	
+	protected void setDbUrl(String dbUrl) {
+		this.dbUrl = dbUrl;
+	}
+
+	public String getUser() {
+		return user;
+	}
+	
+	protected void setUser(String user) {
+		this.user = user;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	protected void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getDatabase() {
+		return database;
+	}
+
+	protected void setDatabase(String database) {
+		this.database = database;
+	}
+
+	public String getDbDriver() {
+		return dbDriver;
+	}
+
+	protected void setDbDriver(String dbDriver) {
+		this.dbDriver = dbDriver;
+	}
+
+	public String getDriverLibrary() {
+		return driverLibrary;
+	}
+
+	private void prepareDriverLibraryURLs() throws ComponentNotReadyException {
+		if(!StringUtils.isEmpty(driverLibrary)) {
+	        String[] libraryPaths = driverLibrary.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+	    	driverLibraryURLs = new URL[libraryPaths.length];
+	
+	    	for(int i = 0; i < libraryPaths.length; i++) {
+	            try {
+	                driverLibraryURLs[i] = FileUtils.getFileURL(getGraph() != null ? getGraph().getProjectURL() : null, libraryPaths[i]);
+	            } catch (MalformedURLException ex1) {
+	                throw new ComponentNotReadyException("Can not create JDBC connection '" + getId() + "'. Malformed URL: " + ex1.getMessage(), ex1);
+	            }
+	        }
+		}
+	}
+	
+	private URL[] getDriverLibraryURLs() {
+		return driverLibraryURLs;
+	}
+	
+	protected void setDriverLibrary(String driverLibrary) {
+		this.driverLibrary = driverLibrary;
+	}
+
+	public String getJdbcSpecificId() {
+		return jdbcSpecificId;
+	}
+
+	protected void setJdbcSpecificId(String jdbcSpecificId) {
+		this.jdbcSpecificId = jdbcSpecificId;
+	}
+
+	private void prepareJdbcSpecific() throws ComponentNotReadyException {
+		if(!StringUtils.isEmpty(getJdbcSpecificId())) {
+			JdbcSpecificDescription jdbcSpecificDescription = JdbcSpecificFactory.getJdbcSpecificDescription(getJdbcSpecificId());
+			if(jdbcSpecificDescription != null) {
+				jdbcSpecific = jdbcSpecificDescription.getJdbcSpecific();
+			} else {
+				throw new ComponentNotReadyException("JDBC specific '" + getJdbcSpecificId() + "' does not exist.");
+			}
+		}
+	}
+	
+	public JDBCSpecific getJdbcSpecific() {
+		if(jdbcSpecific != null) {
+			return jdbcSpecific;
+		} else {
+			JDBCSpecific ret = getJdbcDriver().getJdbcSpecific();
+			if(ret != null) {
+				return ret;
+			} else {
+				return DefaultJDBCSpecific.INSTANCE;
+			}
+		}
+	}
+	
+	public TypedProperties getExtraProperties() {
+		return jdbcProperties;
+	}
+	
+	/**
+	 * This class is used as a key value to the connectionsCache map.
+	 * 
+	 * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
+	 *         (c) Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 * @created May 22, 2008
+	 */
+	private static class CacheKey {
+		private String elementId;
+		private OperationType operationType;
+		
+		private int hashCode;
+		
+		public CacheKey(String elementId, OperationType operationType) {
+			this.elementId = elementId;
+			this.operationType = operationType;
+		}
+
+		public String getElementId() {
+			return elementId;
+		}
+
+		public OperationType getOperationType() {
+			return operationType;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if(super.equals(obj)) {
+				return true;
+			}
+			
+			if(!(obj instanceof CacheKey)) {
+				return false;
+			}
+			
+			CacheKey key = (CacheKey) obj;
+			
+			return elementId.equals(key.elementId) && operationType == key.operationType;
+		}
+		
+		@Override
+		public int hashCode() {
+			if(hashCode == 0) {
+				hashCode = (23 + elementId.hashCode()) * 37 + operationType.hashCode();
+			}
+			return hashCode;
+		}
+	}
+
 }
 

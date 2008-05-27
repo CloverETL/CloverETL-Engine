@@ -1,6 +1,11 @@
 *******************************************************************************
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
+
+REL 2-5-0
+---------
+Changes/bug fixes:
++ JDBC connections has new DB customization
 + keyDuplicates attribute for DataIntersection component
 
 REL 2-4-4

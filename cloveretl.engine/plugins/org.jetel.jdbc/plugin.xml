@@ -3,12 +3,20 @@
 	version="2.4.4"
 	provider-name="Javlin Consulting s.r.o.">
 
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="MYSQL"/>
+		<parameter id="name" value="MYSQL 5.x"/>
+		<parameter id="majorVersion" value="5"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.MySQLSpecific"/>
+	</extension>
+
 	<extension point-id="jdbcDriver">
 		<parameter id="database" value="MYSQL"/>
 		<parameter id="name" value="MySQL"/>
 		<parameter id="dbDriver" value="org.gjt.mm.mysql.Driver"/>
-		<parameter id="urlHint" value="jdbc:mysql://hostname:3306/database"/>
 		<parameter id="driverLibrary" value="../../../cloveretl.jdbc/lib/mysql/mysql-connector-java-5.1.5-bin.jar"/>
+		<parameter id="urlHint" value="jdbc:mysql://hostname:3306/database"/>
+		<parameter id="jdbcSpecific" value="MYSQL"/>
 	</extension>
 	
 	<extension point-id="jdbcDriver">
@@ -18,4 +26,5 @@
 		<parameter id="driverLibrary" value="../../../cloveretl.jdbc/lib/postgre/postgresql-8.3-603.jdbc3.jar"/>
 		<parameter id="urlHint" value="jdbc:postgresql://hostname/database"/>
 	</extension>
+	
 </plugin>
