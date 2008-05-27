@@ -24,7 +24,7 @@ import java.sql.Connection;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.exception.JetelException;
 
-public class DefaultJDBCSpecific extends AbstractJDBCSpecific {
+public class DefaultJDBCSpecific extends AbstractJdbcSpecific {
 
 	//TODO access to this variable should be through a getter
 	public static DefaultJDBCSpecific INSTANCE = new DefaultJDBCSpecific();
