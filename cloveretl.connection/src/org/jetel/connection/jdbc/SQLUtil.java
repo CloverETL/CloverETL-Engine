@@ -33,8 +33,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.specific.DefaultJdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
+import org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;

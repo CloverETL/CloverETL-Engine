@@ -34,8 +34,8 @@ import javax.sql.rowset.serial.SerialBlob;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.specific.DefaultJdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
+import org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific;
 import org.jetel.data.BooleanDataField;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
