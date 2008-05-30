@@ -97,6 +97,9 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
     private static final String XML_END_INCLUDE = "endInclude";
 	private static final String XML_DATA_ATTRIBUTE = "data";
 
+	public static final boolean DEFAULT_START_INCLUDE = true;
+	public static final boolean DEFAULT_END_INCLUDE = false;
+	
     protected DataRecordMetadata metadata;//defines lookup table
     protected String metadataId;
 	protected Parser dataParser;
@@ -172,8 +175,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			String[] endFields, Parser parser, RuleBasedCollator collator){
 		this(id,metadata,startFields, endFields, parser,collator,new boolean[(metadata.getNumFields() - 1)/2],
 				new boolean[(metadata.getNumFields() - 1)/2]);
-		Arrays.fill(startInclude, true);
-		Arrays.fill(endInclude, false);
+		Arrays.fill(startInclude, DEFAULT_START_INCLUDE);
+		Arrays.fill(endInclude, DEFAULT_END_INCLUDE);
 	}
 
 	public RangeLookupTable(String id, DataRecordMetadata metadata, String[] startFields, 
@@ -215,12 +218,12 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		
 		if (startInclude == null) {
 			startInclude = new boolean[startFields.length];
-			Arrays.fill(startInclude, true);
+			Arrays.fill(startInclude, DEFAULT_START_INCLUDE);
 		}
 		
 		if (endInclude == null) {
 			endInclude = new boolean[endFields.length];
-			Arrays.fill(endInclude, false);
+			Arrays.fill(endInclude, DEFAULT_END_INCLUDE);
 		}
 		
 		for (int i = 0; i < startFields.length; i++) {
@@ -263,6 +266,16 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			endKey.init();
 		}		
 		endField = endKey.getKeyFields();
+		
+		if (startInclude == null) {
+			startInclude = new boolean[startFields.length];
+			Arrays.fill(startInclude, DEFAULT_START_INCLUDE);
+		}
+		
+		if (endInclude == null) {
+			endInclude = new boolean[endFields.length];
+			Arrays.fill(endInclude, DEFAULT_END_INCLUDE);
+		}
 		
 		if (collator == null && useI18N) {
 			if (locale != null) {
