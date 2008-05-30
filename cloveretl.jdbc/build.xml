@@ -31,9 +31,9 @@
 			</not>
 		</condition>
 
-		<!--copy todir="${dist.src}/${plugin.name}/src">
+		<copy todir="${dist.src}/${plugin.name}/src">
 			<fileset dir="${dir.src}" />
-		</copy-->
+		</copy>
 
 		<copy todir="${dist.src}/${plugin.name}/lib">
 			<fileset dir="${dir.lib}" />
@@ -80,14 +80,14 @@
 	</target>
 	
 	<!-- compile temp copy of source -->
-	<!--target name="compile" depends="checkproperties,copy_src" description="Compile sources">
-		<!- Create directory for binaries. ->
+	<target name="compile" depends="checkproperties,copy_src" description="Compile sources">
+		<!-- Create directory for binaries. -->
 		<mkdir dir="${dir.bin}"/>
 		
-		<!- Compile sources ->
+		<!-- Compile sources -->
 		<javac debug="true" destdir="${dir.bin}"
 			target="1.5" source="1.5" 
-			classpath="${dir.dist}${engine.dist}">
+			classpath="${dir.dist}${engine.dist};${dir.dist}${connection.dist}">
 			<classpath>
 				<fileset refid="engine-libs"/>			
 			</classpath>
@@ -95,7 +95,7 @@
 			<exclude name="test/**/*"/>
 		</javac>
 		
-		<!- copy resources ->
+		<!-- copy resources -->
 		<copy todir="${dir.bin}">
 		    <fileset dir="${dir.src}">
 			      <exclude name="**/*.java"/>
@@ -103,20 +103,19 @@
 		    </fileset>
 		  </copy>
 		
-		<!- delete source temp directory ->
+		<!-- delete source temp directory -->
 		<delete dir="${dir.src.tmp}"/>
-	</target-->
+	</target>
 
 	<!-- pack binary result of compile to jar file -->
-	<!--target name="package" depends="compile"-->
-	<target name="package">
+	<target name="package" depends="compile">
 		<!-- Create plugin directory. -->
 		<mkdir dir="${dir.dist}/plugins/${plugin.dir.name}"/>
 
-		<!--jar destfile="${dir.dist}/plugins/${plugin.dir.name}/${plugin.name}.jar" basedir="${dir.bin}">
+		<jar destfile="${dir.dist}/plugins/${plugin.dir.name}/${plugin.name}.jar" basedir="${dir.bin}">
 			<include name="**/*"/>
 			<exclude name="test/**/*"/>
-		</jar-->
+		</jar>
 		<!-- copy plugin manifest -->
 		<copy todir="${dir.dist}/plugins/${plugin.dir.name}" file="plugin.xml"/>
 		<!-- copy all libraries from lib directory -->
@@ -128,15 +127,15 @@
 	</target>
 	
 	<!-- ask user for MAJOR and MINOR release number -->
-	<!--target name="set_revision">
+	<target name="set_revision">
 		<buildnumber file="build.number" />
 		<input message="Components - Please enter MAJOR release number:"	addproperty="major_version" />
 		<input message="Components - Please enter MINOR release number:"	addproperty="minor_version" />
 		<input message="Engine - Please enter REVISION release number:"	addproperty="revision_version" />
-	</target-->
+	</target>
 	
 	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
-	<!--target name="copy_src" depends="set_revision">
+	<target name="copy_src" depends="set_revision">
 		<echo message="Copying source code.." />
 		<copy todir="${dir.src.tmp}">
 			<fileset dir="${dir.src}" />
@@ -147,6 +146,6 @@
 				<filter token="BUILD_TIME" value="${TODAY}" />
 			</filterset>
 		</copy>
-	</target-->
+	</target>
 	
 </project>

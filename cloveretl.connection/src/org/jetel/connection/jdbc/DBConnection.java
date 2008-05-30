@@ -343,7 +343,7 @@ public class DBConnection extends GraphElement implements IConnection {
         	}
     	} else {
         	try {
-				return getJdbcSpecific().createSQLConnection(operationType, this);
+				return getJdbcSpecific().createSQLConnection(this, operationType);
 			} catch (JetelException e) {
 				throw new JetelException("Cannot establish DB connection (" + getId() + ").", e);
 			}
