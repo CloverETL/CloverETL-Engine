@@ -235,6 +235,17 @@ public class Plugins {
         return pluginDescriptors.get(pluginId);
     }
     
+    /**
+     * Activate all not yet activated plugins. All already deactivated plugins are skipped. 
+     */
+    public static void activateAllPlugins() {
+    	for(String pluginId : pluginDescriptors.keySet()) {
+    		if(!activePlugins.containsKey(pluginId) && !deactivePlugins.containsKey(pluginId)) {
+    			activatePlugin(pluginId);
+    		}
+    	}
+    }
+    
     public static void activatePlugin(String pluginID) {
         //some validation tests
         if(!pluginDescriptors.containsKey(pluginID)) {
