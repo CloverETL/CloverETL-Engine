@@ -504,7 +504,12 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		structureChanged();
 	}
 
-
+	public void addField(int index, DataFieldMetadata field){
+		field.setDataRecordMetadata(this);
+		fields.add(index, field);
+		structureChanged();
+	}
+	
 	/**
 	 *  An operation that deletes data field identified by index
 	 *
