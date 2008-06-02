@@ -4,7 +4,7 @@
 	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
 	<property name="plugin.name" value="cloveretl.tlfunction"/>
 	<property name="plugin.dir.name" value="org.jetel.tlfunction"/>
-	<property name="dir.bin.default" value="${basedir}/bin"/>
+	<property name="dir.bin.default" value="${basedir}/bin_tmp"/>
 	<property name="dir.doc.default" value="${basedir}/doc"/>
 	<property name="dir.dist.default" value="${basedir}/dist"/>
 	<property name="dir.src" value="${basedir}/src"/>
@@ -112,6 +112,8 @@
 			<include name="**/*"/>
 			<exclude name="test/**/*"/>
 		</jar>
+		<!-- delete binary temp directory -->
+		<delete dir="${dir.bin}"/>
 		<!-- copy plugin manifest -->
 		<copy todir="${dir.dist}/plugins/${plugin.dir.name}" file="plugin.xml"/>
 	</target>
