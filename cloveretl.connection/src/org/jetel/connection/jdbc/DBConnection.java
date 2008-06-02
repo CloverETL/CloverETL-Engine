@@ -870,12 +870,14 @@ public class DBConnection extends GraphElement implements IConnection {
 		if(jdbcSpecific != null) {
 			return jdbcSpecific;
 		} else {
-			JdbcSpecific ret = getJdbcDriver().getJdbcSpecific();
-			if(ret != null) {
-				return ret;
-			} else {
-				return DefaultJdbcSpecific.INSTANCE;
+			JdbcDriver jdbcDriver = getJdbcDriver();
+			if(jdbcDriver != null) {
+				JdbcSpecific ret = getJdbcDriver().getJdbcSpecific();
+				if (ret != null) {
+					return ret;
+				}
 			}
+			return DefaultJdbcSpecific.INSTANCE;
 		}
 	}
 	
