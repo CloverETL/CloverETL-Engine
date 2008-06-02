@@ -38,7 +38,7 @@ public class RangeLookupTest extends TestCase {
      * @see junit.framework.TestCase#setUp()
      */
     protected void setUp() throws Exception {
-	    EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
+	    EngineInitializer.initEngine("../cloveretl.engine/plugins", null, null);
     }
 
     public void test_getDataRecord() throws IOException,ComponentNotReadyException{
