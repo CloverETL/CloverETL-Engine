@@ -5,7 +5,8 @@ import java.util.Properties;
 import junit.framework.TestCase;
 
 import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.SQLDataParser;
+import org.jetel.connection.jdbc.SQLDataParser;
+import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
@@ -21,11 +22,11 @@ public class DBLookupTest extends TestCase {
 	DBLookupTable lookupTable;
 	DataRecord customer, employee = null;
 	SQLDataParser parser;
-	java.sql.Connection aDBConnection;
+	DBConnectionInstance aDBConnection;
 	@Override
-	protected void setUp() throws ComponentNotReadyException, FileNotFoundException, SQLException{
+	protected void setUp() throws ComponentNotReadyException, FileNotFoundException, SQLException, JetelException{
 
-	    EngineInitializer.initEngine("../cloveretl.engine/plugins", null);
+	    EngineInitializer.initEngine("../cloveretl.engine/plugins", null, null);
 		DBConnection conn = new DBConnection("conn", "../cloveretl.engine/examples/koule_postgre.cfg");
 		conn.init();
 		aDBConnection = conn.getConnection(conn.getId());
