@@ -38,11 +38,13 @@ import org.jetel.interpreter.extensions.TLFunctionPrototype;
  */
 public class ParserHelper {
 
-    static class VarDeclaration {
-        int type;
-        int slot;
+    public static class VarDeclaration {
+        public int type;
+        public int slot;
+        public String name;
 
         VarDeclaration(String name, int type,int slot) {
+        	this.name = name;
             this.type = type;
             this.slot = slot;
         }
