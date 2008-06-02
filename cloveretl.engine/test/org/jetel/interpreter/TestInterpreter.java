@@ -41,6 +41,7 @@ import org.jetel.data.primitive.CloverLong;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.interpreter.ASTnode.CLVFStart;
@@ -126,6 +127,11 @@ public class TestInterpreter extends TestCase {
         Sequence seq = SequenceFactory.createSequence(graph, "PRIMITIVE_SEQUENCE", 
         		new Object[]{"test",graph,"test"}, new Class[]{String.class,TransformationGraph.class,String.class});
         graph.addSequence(seq);
+        try {
+			seq.init();
+		} catch (ComponentNotReadyException e) {
+            throw new RuntimeException(e);
+		}
         
 //        LookupTable lkp=new SimpleLookupTable("LKP", metadata, new String[] {"Name"}, null);
         lkp = LookupTableFactory.createLookupTable(graph, "simpleLookup", 
@@ -1725,13 +1731,13 @@ public class TestInterpreter extends TestCase {
         System.out.println("\nList/Map test:");
         String expStr = "list seznam; list seznam2; list fields;\n"+
         				 "map mapa; mapa['f1']=10; mapa['f2']='hello'; map mapa2; mapa2[]=mapa; map mapa3; \n"+
-        				 "int i; for(i=0;i<20;i++) { seznam[]=i; if (i==10) seznam2[]=seznam;  }\n"+
+        				 "int i; for(i=0;i<20;i++) { seznam[]=i; if (i>10) seznam2[]=seznam;  }\n"+
         				 "seznam[1]=999; seznam2[3]='hello'; \n"+
         				 "fields=split('a,b,c,d,e,f,g,h',','); fields[]=null;"+
         				 "int length=length(seznam); print_err('length: '+length);\n print_err(seznam);\n print_err(seznam2); print_err(fields);\n"+
         				 "list novy; novy[]=mapa; print_err('novy1:'+novy); mapa2['f2']='xxx'; novy[]=mapa2; mapa['f1']=99; novy[]=mapa; \n" +
         				 "print_err('novy='+novy); print_err(novy[1]); \n" +
-        				 "print_err('novy[3]:'+novy[3]); mapa3=novy[3]; print_err(mapa2['f2']); print_err(mapa3); \n" +
+        				 "print_err('novy[2]:'+novy[2]); mapa3=novy[2]; print_err(mapa2['f2']); print_err(mapa3); \n" +
         				 "fields=seznam2; print_err(fields);\n" +
         				 "print_err(join(':del:',seznam,mapa,novy[1]));\n";
         print_code(expStr);
@@ -1775,8 +1781,11 @@ public class TestInterpreter extends TestCase {
 	
 	public void test_list_map2(){
         System.out.println("\nList/Map test2:");
-        String expStr = "list novy=[1,2,3,4,5,6,7,8];\n"+
-        				 "int index=1; print_err('novy with index'+index);\n"+
+        String expStr = "list novy=[1,2,3,4,5,6,7,8];\n" +
+        				"print_err('novy: ' + novy);\n" +
+        				"novy[]=[9,8,7,6,5];\n"+
+        				"print_err('novy: ' + novy);\n" +
+        				 "int index=1; print_err('novy with index '+index);\n"+
         				 "print_err(' content: '+novy[index]);\n";
         print_code(expStr);
 
@@ -2018,21 +2027,21 @@ public class TestInterpreter extends TestCase {
         System.out.println("\nFunctions test:");
         String expStr = "string test=remove_diacritic('teścik');\n" +
         				"string test1=remove_diacritic('žabička');\n" +
-        				"string r1=remove_blank_space('" + 
+        				"string r1=remove_blank_space(\"" + 
         				StringUtils.specCharToString(" a	b\nc\rd   e \u000Cf\r\n") + 
-        				"');\n" +
-        				"string an1 = get_alphanumeric_chars('" +
+        				"\");\n" +
+        				"string an1 = get_alphanumeric_chars(\"" +
            				StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + 
-        				"');\n" +
-           				"string an2 = get_alphanumeric_chars('" +
+        				"\");\n" +
+           				"string an2 = get_alphanumeric_chars(\"" +
            				StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + 
-        				"',true,true);\n" +
-           				"string an3 = get_alphanumeric_chars('" +
+        				"\",true,true);\n" +
+           				"string an3 = get_alphanumeric_chars(\"" +
            				StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + 
-        				"',true,false);\n" +
-           				"string an4 = get_alphanumeric_chars('" +
+        				"\",true,false);\n" +
+           				"string an4 = get_alphanumeric_chars(\"" +
            				StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + 
-        				"',false,true);\n" +
+        				"\",false,true);\n" +
         				"string t=translate('hello','leo','pii');\n" +
         				"string t1=translate('hello','leo','pi');\n" +
         				"string t2=translate('hello','leo','piims');\n" +
