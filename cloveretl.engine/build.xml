@@ -20,7 +20,7 @@
 	</tstamp>
 	
 	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
-	<property name="dir.bin.default" value="${basedir}/bin"/>
+	<property name="dir.bin.default" value="${basedir}/bin_tmp"/>
 	<property name="dir.doc.default" value="${basedir}/javadoc"/>
 	<property name="dir.component.doc.default" value="${basedir}/src-doc"/>
 	<property name="dir.dist.default" value="${basedir}/build"/>
@@ -258,7 +258,10 @@
 			<include name="**/*"/>
 			<exclude name="test/**/*"/>
 		</jar>
-		
+
+		<!-- delete binary temp directory -->
+		<delete dir="${dir.bin}"/>
+
 		<!-- copy all libraries from lib directory -->
 		<copy todir="${dir.dist}/lib">
 			<fileset dir="${dir.lib}"/>
