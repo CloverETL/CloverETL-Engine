@@ -382,7 +382,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	
 		for (int i = 0; i < fields.size(); i++) {
 			field = (DataFieldMetadata) fields.get(i);
-			fieldTypes.put(new Integer(i), String.valueOf(field.getType()));
+			fieldTypes.put(Integer.valueOf(i), String.valueOf(field.getType()));
 		}
 	}
 
@@ -394,7 +394,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		// fieldNames.clear(); - not necessary as it is called only if Map is empty
 		for (int i = 0; i < fields.size(); i++) {
 			field = (DataFieldMetadata) fields.get(i);
-			fieldNames.put(field.getName(), new Integer(i));
+			fieldNames.put(field.getName(), Integer.valueOf(i));
 		}
 	}
 	

@@ -376,7 +376,7 @@ public final class TransformationGraph extends GraphElement {
      * @since 26.2.2007
      */
     public Phase getPhase(int phaseNum) {
-        return phases.get(new Integer(phaseNum));
+        return phases.get(Integer.valueOf(phaseNum));
     }
     
 //	/**

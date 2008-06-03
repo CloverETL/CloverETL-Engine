@@ -170,7 +170,7 @@ public class XsdMetadata {
 	private static Element createBaseType(Document doc, char type) {
 		Element typeElement = doc.createElement("xsd:simpleType");
 		doc.getDocumentElement().appendChild(typeElement);
-		typeElement.setAttribute("name", "" + typeNames.get(new Character(type)));
+		typeElement.setAttribute("name", "" + typeNames.get(Character.valueOf(type)));
 
 		Element restr = doc.createElement("xsd:restriction");
 		typeElement.appendChild(restr);
@@ -256,7 +256,7 @@ public class XsdMetadata {
 	 * @return XSD type
 	 */
 	private static String getXsdType(Document doc, DataFieldMetadata field) {
-		Element baseType = getXsdType(doc, typeNames.get(new Character(field.getType())));
+		Element baseType = getXsdType(doc, typeNames.get(Character.valueOf(field.getType())));
 		if (baseType == null) {
 			baseType = createBaseType(doc, field.getType());
 		}

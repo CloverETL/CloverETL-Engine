@@ -101,11 +101,11 @@ public final class Defaults {
 	}
 
 	private static int getIntProperties(String key, int def) {
-		return new Integer(properties.getProperty(key, Integer.toString(def))).intValue();
+		return Integer.parseInt(properties.getProperty(key, Integer.toString(def)));
 	}
 
 	private static short getShortProperties(String key, short def) {
-		return new Short(properties.getProperty(key, Short.toString(def))).shortValue();
+		return Short.parseShort(properties.getProperty(key, Short.toString(def)));
 	}
 
 	private static String getStringProperties(String key, String def) {
@@ -113,7 +113,7 @@ public final class Defaults {
 	}
 
 	private static boolean getBooleanProperties(String key, boolean def) {
-		return new Boolean(properties.getProperty(key, Boolean.toString(def))).booleanValue();
+		return Boolean.parseBoolean(properties.getProperty(key, Boolean.toString(def)));
 	}
 
 	// public static void init() {

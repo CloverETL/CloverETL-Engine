@@ -135,7 +135,7 @@ public class Queue {
 		Queue q = new Queue(10);
 		
 		for(int i = 0; i < 12; i++) {
-			System.out.println(q.add(new Integer(i)));
+			System.out.println(q.add(Integer.valueOf(i)));
 		}
 		
 		for(int i = 0; i < 12; i++) {
