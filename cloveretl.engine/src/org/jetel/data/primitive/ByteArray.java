@@ -1288,7 +1288,7 @@ public class ByteArray implements Comparable, Iterable {
 	 * 
 	 * @author ausperger
 	 */
-	private class ByteIterator implements Iterator<Byte> {
+	private static class ByteIterator implements Iterator<Byte> {
 		private ByteArray byteArray;
 		private int index = 0;
 		
