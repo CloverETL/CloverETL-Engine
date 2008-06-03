@@ -210,7 +210,7 @@ public class CodeParser {
         outputFieldsNames = new HashMap[outputRecordsMeta.length];
         // initialize map for input records & fields
         for (int i = 0; i < inputRecordsMeta.length; i++) {
-            inputRecordsNames.put(String.valueOf(i), new Integer(i));
+            inputRecordsNames.put(String.valueOf(i), Integer.valueOf(i));
             inputFieldsNames[i] = new HashMap(inputRecordsMeta[i]
                     .getNumFields());
             for (int j = 0; j < inputRecordsMeta[i].getNumFields(); j++) {

@@ -293,7 +293,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	public int getRecordCount(char portType, int portNum) {
 		int count;
         // Integer used as key to TreeMap containing ports
-		Integer port = new Integer(portNum);
+		Integer port = Integer.valueOf(portNum);
 		try {
 			switch (portType) {
 				case OUTPUT_PORT:
@@ -518,7 +518,7 @@ public abstract class Node extends GraphElement implements Runnable {
 		} catch (NoSuchElementException ex) {
 			keyVal = 0;
 		}
-		inPorts.put(new Integer(keyVal), port);
+		inPorts.put(Integer.valueOf(keyVal), port);
 		port.connectReader(this, keyVal);
 	}
 
@@ -567,7 +567,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since           April 4, 2002
 	 */
 	public void addOutputPort(int portNum, OutputPort port) {
-		outPorts.put(new Integer(portNum), port);
+		outPorts.put(Integer.valueOf(portNum), port);
 		port.connectWriter(this, portNum);
         resetBufferedValues();
 	}
@@ -816,7 +816,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since           April 11, 2002
 	 */
 	public void closeOutputPort(int portNum) throws InterruptedException {
-        OutputPort port = (OutputPort) outPorts.get(new Integer(portNum));
+        OutputPort port = (OutputPort) outPorts.get(Integer.valueOf(portNum));
         if (port == null) {
             throw new RuntimeException(this.getId()+" - can't close output port \"" + portNum
                     + "\" - does not exists!");

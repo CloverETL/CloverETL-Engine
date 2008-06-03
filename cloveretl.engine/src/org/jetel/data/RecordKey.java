@@ -180,7 +180,7 @@ public class RecordKey {
     public int[] getNonKeyFields(){
         Set<Integer> allFields=new LinkedHashSet<Integer>();
         for(int i=0;i<metadata.getNumFields();i++){
-            allFields.add(new Integer(i));
+            allFields.add(Integer.valueOf(i));
         }
         allFields.removeAll(Arrays.asList(keyFields));
         int[] nonKey=new int[allFields.size()];

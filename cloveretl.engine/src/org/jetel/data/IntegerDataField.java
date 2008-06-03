@@ -306,7 +306,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 		if (isNull) {
 			return null;
 		}
-		return new Integer(value);
+		return Integer.valueOf(value);
 	}
 
     /**

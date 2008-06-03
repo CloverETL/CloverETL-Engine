@@ -312,7 +312,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 		if (isNull) {
 			return null;
 		}
-		return new Long(value);
+		return Long.valueOf(value);
 	}
 
     /**
