@@ -825,14 +825,21 @@ public abstract class Node extends GraphElement implements Runnable {
     }
 
 	/**
-	 *  Compares this Node to specified Object
-	 *
-	 *@param  obj  Node to compare with
-	 *@return      True if obj represents node with the same ID
-	 *@since       April 18, 2002
+	 * Compares this Node to specified Object
+	 * 
+	 * @param obj
+	 *            Node to compare with
+	 * @return True if obj represents node with the same ID
+	 * @since April 18, 2002
 	 */
-	@Override public boolean equals(Object obj) {
-		if (getId().equals(((Node) obj).getId())) {
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Node)) {
+			return false;
+		}
+		final Node other = (Node) obj;
+
+		if (getId().equals(other.getId())) {
 			return true;
 		} else {
 			return false;
