@@ -839,11 +839,7 @@ public abstract class Node extends GraphElement implements Runnable {
 		}
 		final Node other = (Node) obj;
 
-		if (getId().equals(other.getId())) {
-			return true;
-		} else {
-			return false;
-		}
+		return getId().equals(other.getId());
 	}
 
     @Override public int hashCode(){
