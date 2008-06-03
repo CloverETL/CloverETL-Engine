@@ -416,7 +416,7 @@ public abstract class CopySQLData {
 	 */
 	@Deprecated
 	public static CopySQLData[] jetel2sqlTransMap(DataRecord record, int[] cloverFields) throws JetelException {
-        return jetel2sqlTransMap(record, cloverFields, DefaultJdbcSpecific.INSTANCE);
+        return jetel2sqlTransMap(record, cloverFields, DefaultJdbcSpecific.getInstance());
     }
 	
 	public static CopySQLData[] jetel2sqlTransMap(DataRecord record, int[] cloverFields, JdbcSpecific jdbcSpecific) throws JetelException {

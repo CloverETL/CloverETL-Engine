@@ -179,6 +179,10 @@ public class JdbcDriverDescription {
         return properties;
     }
     
+    /**
+     * @return instance of JdbcDriver based on this descriptor.
+     * @throws ComponentNotReadyException
+     */
     public JdbcDriver createJdbcDriver() throws ComponentNotReadyException {
     	return new JdbcDriver(this);
     }

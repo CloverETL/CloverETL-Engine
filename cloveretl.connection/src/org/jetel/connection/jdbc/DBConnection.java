@@ -66,15 +66,17 @@ import org.w3c.dom.Element;
 
 /**
  *  CloverETL class for connecting to databases.<br>
- *  It practically wraps around JDBC's Connection class and adds some useful
- *  methods.
+ *  It practically wraps around JDBC's Connection class and adds some useful methods.
  *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
  *  <tr><td><b>id</b></td><td>connection identification</td>
  *  <tr><td><b>dbConfig</b><br><i>optional</i></td><td>filename of the config file from which to take connection parameters<br>
  *  If used, then all other attributes are ignored.</td></tr>
- *  <tr><td><b>jndi</b></td><td>JNDI name of JDBC data source. Use it to access data source specified by application server. If used, attributes dbDriver, dbURL, user, password and driverLibrary are ignored.</td></tr>
+ *  <tr><td><b>jndi</b></td><td>JNDI name of JDBC data source. 
+ *  Use it to access data source specified by application server. 
+ *  If used, attributes dbDriver, dbURL, user, password and driverLibrary are ignored.</td></tr>
+ *  <tr><td><b>database</b></td><td>database identifier, which is used to lookup build-in drivers</td></tr>
  *  <tr><td><b>dbDriver</b></td><td>name of the JDBC driver</td></tr>
  *  <tr><td><b>dbURL</b></td><td>URL of the database (aka connection string)</td></tr>
  *  <tr><td><b>user</b><br><i>optional</i></td><td>username to use when connecting to DB</td></tr>
@@ -82,31 +84,24 @@ import org.w3c.dom.Element;
  *  <tr><td><b>driverLibrary</b><br><i>optional</i></td><td>name(s) (full path) of Java library file(s) (.jar,.zip,...) where
  *  to search for class containing JDBC driver specified in <tt>dbDriver</tt> parameter.<br>
  *  In case of more libraries, use system path separator to delimit them (e.g. ";").</td></tr>
- * <tr><td><b>transactionIsolation</b><br><i>optional</i></td><td>Allows specifying certain transaction isolation level. 
- * Following are the valid options:<br><ul>
- * <li>READ_UNCOMMITTED</li>
- * <li>READ_COMMITTED</li>
- * <li>REPEATABLE_READ</li>
- * <li>SERIALIZABLE</li>
- * </ul>
  * <tr><td><b>threadSafeConnection</b><br><i>optional</i></td><td>if set, each thread gets its own connection. <i>Can be used
  * to prevent problems when multiple components conversate with DB through the same connection object which is
  * not thread safe.</i></td></tr>
  * <i>Note: Default value of this property is true.</i></td></tr> 
  * </table>
  *  <h4>Example:</h4>
- *  <pre>&lt;DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/&gt;</pre>
+ *  <pre>&lt;Connection type="JDBC" dbConfig="connection.cfg" id="Connection2" /&gt;</pre>
  * <i>Note: any XML attribute name can also be used in the dbConfig file. If the option is set there, then
  * the value is applied to the connection object created.</i>
  * <h4>Example of dbConfig file:</h4>
  * <pre>**********
- * dbDriver=oracle.jdbc.driver.OracleDriver
- * dbURL=jdbc:oracle:thin:@@//localhost:1521/mytestdb
- * user=noname
- * password=free
- * defaultRowPrefetch=10
- * driverLibrary=c:/Orahome91/jdbc/lib/ojdbc14.jar
+ * driverLibrary=file\:/C\:/jdbcDrivers/ojdbc14.jar
+ * user=test
+ * dbDriver=oracle.jdbc.OracleDriver
+ * name=OracleDB
+ * password=test
  * threadSafeConnection=true
+ * dbURL=jdbc\:oracle\:thin\:@koule\:1521\:xe
  * ********</pre>
  * 
  * The XML DTD describing the internal structure is as follows:
@@ -114,6 +109,7 @@ import org.w3c.dom.Element;
  *  * &lt;!ATTLIST Connection
  *              id ID #REQUIRED
  *              type NMTOKEN (JDBC) #REQUIRED
+ *              database CDATA #IMPLIED
  *              dbDriver CDATA #IMPLIED
  *              dbURL CDATA #IMPLIED
  *              dbConfig CDATA #IMPLIED
@@ -125,16 +121,15 @@ import org.w3c.dom.Element;
  *              transactionIsolation (READ_UNCOMMITTED | READ_COMMITTED |
  *                                 REPEATABLE_READ | SERIALIZABLE ) #IMPLIED&gt;
  *                                 
- * @author      dpavlis
+ * @author      dpavlis, mzatopek
  * @since       21. b?ezen 2004
  * @revision    $Revision$
  * @created     January 15, 2003
  */
 public class DBConnection extends GraphElement implements IConnection {
 
-    private static Log logger = LogFactory.getLog(DBConnection.class);
+    private static final Log logger = LogFactory.getLog(DBConnection.class);
 
-    public final static String TRANSACTION_ISOLATION_PROPERTY_NAME="transactionIsolation";
     public final static String SQL_QUERY_PROPERTY = "sqlQuery";
 
     public final static String XML_JDBC_SPECIFIC_ATTRIBUTE = "jdbcSpecific";
@@ -156,9 +151,6 @@ public class DBConnection extends GraphElement implements IConnection {
     // not yet used by component
     public static final String XML_NAME_ATTRIBUTE = "name";
 
-    //Driver dbDriver;//
-    //Connection dbConnection;//
-    
     private String configFileName;
     
     private String dbUrl;
@@ -177,16 +169,13 @@ public class DBConnection extends GraphElement implements IConnection {
     
     private Map<CacheKey, DBConnectionInstance> connectionsCache = new HashMap<CacheKey, DBConnectionInstance>();
     private DBConnectionInstance connectionInstance; //this variable is used in case threadSafe = false
-    //private JdbcBaseConfig configBase;//
-
-    //private ClassLoader classLoader;//
 
     private JdbcDriver jdbcDriver;
     private JdbcSpecific jdbcSpecific;
     private URL[] driverLibraryURLs;
     
     /**
-     *  Constructor for the DBConnection object (not used in engine yet)
+     *  Constructor for the DBConnection object.
      *
      * @param  configFilename  properties filename containing definition of driver, dbURL, username, password
      */
@@ -195,15 +184,19 @@ public class DBConnection extends GraphElement implements IConnection {
         this.configFileName = configFilename;
     }
 
+    /**
+     * Constructor.
+     * @param id
+     * @param properties
+     */
     public DBConnection(String id, Properties properties) {
         super(id);
         
         fromProperties(properties);
-        
     }
 
     /**
-     * Iterates over the properties and finds which are the standard DBConnection properties
+     * Iterates over the given properties and finds which are the standard DBConnection properties
      * and which are the JDBC connection properties.
      * 
      * @param configProperties
@@ -301,16 +294,24 @@ public class DBConnection extends GraphElement implements IConnection {
         }
     }
 
+    /**
+     * @param elementId
+     * @return
+     * @throws JetelException
+     */
     public synchronized DBConnectionInstance getConnection(String elementId) throws JetelException {
     	return getConnection(elementId, OperationType.UNKNOWN);
     }
 
     /**
-     *  Gets the connection attribute of the DBConnection object. If threadSafe option
-     * is set, for each graph element there is created new connection object
-     *
-     * @return    The database connection (JDBC)
-     * @throws JetelException 
+     * Returns connection instance for the given elementId and operation type. If this db connection
+     * is threads safe, all connection are cached, and elementId and operation type 
+     * servers as key to hash map.
+     * This is main method for using DBConnection class. Each graph element can claim its respective db connection.  
+     * @param elementId
+     * @param operationType
+     * @return
+     * @throws JetelException
      */
     public synchronized DBConnectionInstance getConnection(String elementId, OperationType operationType) throws JetelException {
         DBConnectionInstance connection = null;
@@ -351,106 +352,9 @@ public class DBConnection extends GraphElement implements IConnection {
     }
     
     /**
-     * Method which connects to database and if successful, sets various
-     * connection parameters. If as a property "transactionIsolation" is defined, then
-     * following options are allowed:<br>
-     * <ul>
-     * <li>READ_UNCOMMITTED</li>
-     * <li>READ_COMMITTED</li>
-     * <li>REPEATABLE_READ</li>
-     * <li>SERIALIZABLE</li>
-     * </ul>
+     * Commits and closes all allocated connections.
      * 
-     * @see java.sql.Connection#setTransactionIsolation(int)
-     */
-//    private void connect() {
-//        logger.debug("DBConnection (" + getId() +"), component ["+Thread.currentThread().getName() +"] attempts to connect to the database");
-//
-//        if(!isInitialized()) {
-//            throw new RuntimeException("DBConnection (" + getId() +") is not initialized.");
-//        }
-//        if (dbDriver == null){
-//            try {
-//                prepareDbDriver();
-//            } catch (ComponentNotReadyException e) {
-//                throw new RuntimeException(e); 
-//            }
-//        }
-//        try {
-//            // handle encrypted password
-//            if (isPasswordEncrypted){
-//                decryptPassword(this.config);
-//                isPasswordEncrypted=false;
-//            }
-//            
-//            Properties connectionProps = new Properties();
-//            String user = config.getProperty(XML_USER_ATTRIBUTE);
-//            if (user != null) {
-//            	connectionProps.setProperty(XML_USER_ATTRIBUTE, user);
-//            }
-//            String password = config.getProperty(XML_PASSWORD_ATTRIBUTE);
-//            if (password != null) {
-//            	connectionProps.setProperty(XML_PASSWORD_ATTRIBUTE, password);
-//            }
-//            connectionProps.putAll(jdbcConfig);
-//            dbConnection = dbDriver.connect(config.getProperty(XML_DBURL_ATTRIBUTE), connectionProps);
-//
-//            // unlock initiatesystems driver
-//            try {
-//                Class embeddedConClass;
-//                if (classLoader == null) {
-//                    embeddedConClass = Class.forName(EMBEDDED_UNLOCK_CLASS);
-//                } else {
-//                    embeddedConClass = Class.forName(EMBEDDED_UNLOCK_CLASS, true, classLoader);
-//                }
-//                if (embeddedConClass != null) {
-//                    if(embeddedConClass.isInstance(dbConnection)) {
-//                            java.lang.reflect.Method unlockMethod = 
-//                                embeddedConClass.getMethod("unlock", new Class[] { String.class});
-//                            unlockMethod.invoke(dbConnection, new Object[] { "INITIATESYSTEMSINCJDBCPW" });
-//                    }
-//                }
-//            } catch (Exception ex) {
-//            }
-//        } catch (SQLException ex) {
-//            throw new RuntimeException("Can't connect to DB :"
-//                    + ex.getMessage());
-//        }
-//        if (dbConnection == null) {
-//            throw new RuntimeException(
-//                    "Not suitable driver for specified DB URL : " + dbDriver
-//                            + " ; " + config.getProperty(XML_DBURL_ATTRIBUTE));
-//        }
-//        // try to set Transaction isolation level, it it was specified
-//        if (config.containsKey(TRANSACTION_ISOLATION_PROPERTY_NAME)) {
-//            int trLevel;
-//            String isolationLevel = config
-//                    .getProperty(TRANSACTION_ISOLATION_PROPERTY_NAME);
-//            if (isolationLevel.equalsIgnoreCase("READ_UNCOMMITTED")) {
-//                trLevel = Connection.TRANSACTION_READ_UNCOMMITTED;
-//            } else if (isolationLevel.equalsIgnoreCase("READ_COMMITTED")) {
-//                trLevel = Connection.TRANSACTION_READ_COMMITTED;
-//            } else if (isolationLevel.equalsIgnoreCase("REPEATABLE_READ")) {
-//                trLevel = Connection.TRANSACTION_REPEATABLE_READ;
-//            } else if (isolationLevel.equalsIgnoreCase("SERIALIZABLE")) {
-//                trLevel = Connection.TRANSACTION_SERIALIZABLE;
-//            } else {
-//                trLevel = Connection.TRANSACTION_NONE;
-//            }
-//            try {
-//                dbConnection.setTransactionIsolation(trLevel);
-//            } catch (SQLException ex) {
-//                // we do nothing, if anything goes wrong, we just
-//                // leave whatever was the default
-//            }
-//        }
-//        // DEBUG logger.debug("DBConenction (" + getId() +") finishes connect function to the database at " + simpleDateFormat.format(new Date()));
-//    }
-
-    /**
-     *  Description of the Method
-     *
-     * @exception  SQLException  Description of the Exception
+     * @see org.jetel.graph.GraphElement#free()
      */
     synchronized public void free() {
         if (!isInitialized()) return;
@@ -483,107 +387,12 @@ public class DBConnection extends GraphElement implements IConnection {
     }
     
     /**
-     *  Creates new statement with default parameters and returns it
-     *
-     * @return                   The new statement 
-     * @exception  SQLException  Description of the Exception
-     */
-//    public Statement getStatement() throws SQLException {
-//        return getConnection().createStatement();
-//    }
-
-    /**
-     * Creates new statement with specified parameters
+     * Creates DBConnection based on xml node.
      * 
-     * @param type          one of the following ResultSet constants: ResultSet.TYPE_FORWARD_ONLY, 
-     *                      ResultSet.TYPE_SCROLL_INSENSITIVE, or ResultSet.TYPE_SCROLL_SENSITIVE
-     * @param concurrency   one of the following ResultSet constants: ResultSet.CONCUR_READ_ONLY or 
-     *                      ResultSet.CONCUR_UPDATABLE
-     * @param holdability   one of the following ResultSet constants: ResultSet.HOLD_CURSORS_OVER_COMMIT 
-     *                      or ResultSet.CLOSE_CURSORS_AT_COMMIT
-     * @return              The new statement
-     * @throws SQLException
-     */
-//    public Statement getStatement(int type,int concurrency,int holdability) throws SQLException {
-//        return getConnection().createStatement(type,concurrency,holdability);
-//    }
-
-    /**
-     *  Creates new prepared statement with default parameters
-     *
-     * @param  sql               SQL/DML query
-     * @return                   Description of the Return Value
-     * @exception  SQLException  Description of the Exception
-     */
-//    public PreparedStatement prepareStatement(String sql) throws SQLException {
-//        return getConnection().prepareStatement(sql);
-//    }
-//
-//    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys)  throws SQLException{
-//        return getConnection().prepareStatement(sql, autoGeneratedKeys);
-//    }
-//    
-//    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException{
-//        return getConnection().prepareStatement(sql, columnIndexes);
-//    }
-    
-    /**
-     * Creates new prepared statement with specified parameters
-     * 
-     * @param sql           SQL/DML query
-     * @param resultSetType
-     * @param resultSetConcurrency
-     * @param resultSetHoldability
+     * @param graph
+     * @param nodeXML
      * @return
-     * @throws SQLException
-     */
-//    public PreparedStatement prepareStatement(String sql, int resultSetType,
-//            int resultSetConcurrency,
-//            int resultSetHoldability) throws SQLException {
-//        return getConnection().prepareStatement(sql,resultSetType,resultSetConcurrency,resultSetHoldability);
-//    }
-//
-    /**
-     *  Sets the property attribute of the DBConnection object
-     *
-     * @param  name   The new property value
-     * @param  value  The new property value
-     */
-//    public void setProperty(String name, String value) {
-//    	Properties p = new Properties();
-//    	p.setProperty(name, value);
-//    	loadProperties(p);
-//    }
-
-
-    /**
-     *  Sets the property attribute of the DBConnection object
-     *
-     * @param  properties  The new property value
-     */
-//    public void setProperty(Properties properties) {
-//    	loadProperties(properties);
-//        this.decryptPassword(this.config);
-//    }
-
-
-    /**
-     *  Gets the property attribute of the DBConnection object
-     *
-     * @param  name  Description of the Parameter
-     * @return       The property value
-     */
-//    public String getProperty(String name) {
-//        return config.getProperty(name);
-//    }
-
-
-    /**
-     *  Description of the Method
-     *
-     * @param  nodeXML  Description of the Parameter
-     * @return          Description of the Return Value
-     * @throws XMLConfigurationException 
+     * @throws XMLConfigurationException
      */
     public static DBConnection fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
@@ -604,6 +413,11 @@ public class DBConnection extends GraphElement implements IConnection {
 		}
     }
     
+    /**
+     * Saves to the given output stream all DBConnection properties.
+     * @param outStream
+     * @throws IOException
+     */
     public void saveConfiguration(OutputStream outStream) throws IOException {
         Properties propsToStore = new Properties();
 
@@ -629,10 +443,8 @@ public class DBConnection extends GraphElement implements IConnection {
     }
     
 
-    /**
-     *  Description of the Method
-     *
-     * @return    Description of the Return Value
+    /* (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#toString()
      */
     public String toString() {
     	if (!isInitialized()) {
@@ -648,12 +460,12 @@ public class DBConnection extends GraphElement implements IConnection {
         return strBuf.toString();
     }
     
-    /** Decrypt the password entry in the configuration properties if the
+    /** 
+     * Decrypts the password entry in the configuration properties if the
      * isPasswordEncrypted property is set to "y" or "yes". If any error occurs
      * and decryption fails, the original password entry will be used.
      * 
-     * @param configProperties
-     *            configuration properties
+     * @param configProperties configuration properties
      */
     private void decryptPassword() {
         if (isPasswordEncrypted()) {
@@ -709,44 +521,6 @@ public class DBConnection extends GraphElement implements IConnection {
         
         return SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), getJdbcSpecific());
     }
-
-
-//	public Properties getJdbcConfig() {
-//		return jdbcConfig;
-//	}
-
-//	public JdbcBaseConfig getConfigBase(){
-//		if (configBase != null) return configBase;
-//		String tmp = config.getProperty(XML_DATABASE_ATTRIBUTE);
-//        if(!StringUtils.isEmpty(tmp)) {
-//        	configBase = JdbcConfigFactory.createConfig(tmp);
-//        	return configBase;
-//        }
-//    	tmp = config.getProperty(XML_DBDRIVER_ATTRIBUTE);
-//        if(!StringUtils.isEmpty(tmp)) {
-//        	configBase = JdbcConfigFactory.createConfig(tmp);
-//        	return configBase;
-//        }
-//        try {
-//			configBase = JdbcConfigFactory.createConfig(getConnection(getId()).getMetaData().getDriverName());
-//		} catch (SQLException e) {
-//			logger.warn("Problem creating connection configuration", e);
-//			configBase = JdbcBaseConfig.getInstance();
-//			logger.info("Using connection configuration for " + configBase.getTargetDBName());
-//		}
-//		return configBase;
-//	}
-
-//	public Properties getConnectionProperties() {
-//  Properties connectionProps = new Properties();
-//  
-//  connectionProps.setProperty(XML_USER_ATTRIBUTE, getUser());
-//  connectionProps.setProperty(XML_PASSWORD_ATTRIBUTE, getPassword());
-//  
-//  connectionProps.putAll(jdbcConfig);
-//
-//  return null;
-//}
 
     public boolean isThreadSafeConnections() {
         return threadSafeConnections;
@@ -877,7 +651,7 @@ public class DBConnection extends GraphElement implements IConnection {
 					return ret;
 				}
 			}
-			return DefaultJdbcSpecific.INSTANCE;
+			return DefaultJdbcSpecific.getInstance();
 		}
 	}
 	
@@ -887,11 +661,6 @@ public class DBConnection extends GraphElement implements IConnection {
 	
 	/**
 	 * This class is used as a key value to the connectionsCache map.
-	 * 
-	 * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
-	 *         (c) Javlin Consulting (www.javlinconsulting.cz)
-	 *
-	 * @created May 22, 2008
 	 */
 	private static class CacheKey {
 		private String elementId;

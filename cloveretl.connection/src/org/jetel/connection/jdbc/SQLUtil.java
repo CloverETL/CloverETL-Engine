@@ -193,7 +193,7 @@ public class SQLUtil {
 
 	@Deprecated 
 	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata) throws SQLException {
-		return dbMetadata2jetel(dbMetadata, DefaultJdbcSpecific.INSTANCE);
+		return dbMetadata2jetel(dbMetadata, DefaultJdbcSpecific.getInstance());
 	}
 
 	/**
@@ -354,7 +354,7 @@ public class SQLUtil {
 	 */
 	@Deprecated
 	public static List<Integer> getFieldTypes(DataRecordMetadata metadata, String[] cloverFields) {
-		return getFieldTypes(metadata, cloverFields, DefaultJdbcSpecific.INSTANCE);
+		return getFieldTypes(metadata, cloverFields, DefaultJdbcSpecific.getInstance());
 	}
 	
 	public static List<Integer> getFieldTypes(DataRecordMetadata metadata, String[] cloverFields, JdbcSpecific jdbcSpecific) {
@@ -387,7 +387,7 @@ public class SQLUtil {
 
 	@Deprecated
 	public static List<Integer> getFieldTypes(DataRecordMetadata metadata)  {
-		return getFieldTypes(metadata, DefaultJdbcSpecific.INSTANCE);
+		return getFieldTypes(metadata, DefaultJdbcSpecific.getInstance());
 	}
 
 	/**
