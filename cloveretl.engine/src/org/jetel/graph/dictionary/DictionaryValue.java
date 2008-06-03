@@ -23,7 +23,7 @@ import org.jetel.exception.ComponentNotReadyException;
 
 public class DictionaryValue<T> implements IDictionaryValue<T> {
 
-	protected T value;
+	private T value;
 	
 	public DictionaryValue(T value) {
 		this.value = value;
@@ -35,6 +35,15 @@ public class DictionaryValue<T> implements IDictionaryValue<T> {
 
 	public T getValue() {
 		return value;
+	}
+	
+	protected void setValue(T value) {
+		this.value = value;
+	}
+	
+	@Override
+	public String toString() {
+		return getValue().toString();
 	}
 	
 }
