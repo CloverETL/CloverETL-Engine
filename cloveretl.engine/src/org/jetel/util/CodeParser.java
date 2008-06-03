@@ -224,12 +224,12 @@ public class CodeParser {
         }
         // initialize map for output records & fields
         for (int i = 0; i < outputRecordsMeta.length; i++) {
-            outputRecordsNames.put(String.valueOf(i), new Integer(i));
+            outputRecordsNames.put(String.valueOf(i), Integer.valueOf(i));
             outputFieldsNames[i] = new HashMap(outputRecordsMeta[i]
                     .getNumFields());
             for (int j = 0; j < outputRecordsMeta[i].getNumFields(); j++) {
                 outputFieldsNames[i].put(outputRecordsMeta[i].getField(j)
-                        .getName(), new Integer(j)
+                        .getName(), Integer.valueOf(j)
                 /*
                  * outputRecords.getField(j)
                  */
