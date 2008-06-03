@@ -239,7 +239,12 @@ public class AhoCorasick {
 
 		@Override
 		public boolean equals(Object obj) {
-			return (((MyInt) obj).value == value);
+			if (!(obj instanceof MyInt)) {
+				return false;
+			}
+			final MyInt other = (MyInt) obj;
+
+			return (other.value == value);
 		}
 	}
 	
