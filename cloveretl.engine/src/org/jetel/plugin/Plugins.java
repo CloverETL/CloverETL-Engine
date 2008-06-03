@@ -80,7 +80,7 @@ public class Plugins {
         String[] dirs = directory.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
         for(String dir : dirs) {
         	try {
-				pluginDirectories.add(new File(dir).toURL());
+				pluginDirectories.add(new File(dir).toURI().toURL());
 			} catch (MalformedURLException e) {
                 logger.error("Plugin directory does not exists or is not directory. (" + directory + ")");
 			}
@@ -154,7 +154,7 @@ public class Plugins {
         				if(manifest.length == 1) {
         					PluginDescriptor pluginDescriptor;
 							try {
-								pluginDescriptor = new PluginDescriptor(manifest[0].toURL());
+								pluginDescriptor = new PluginDescriptor(manifest[0].toURI().toURL());
 							} catch (MalformedURLException e1) {
 								logger.error("Plugin manifest is not available for '" + pd[i] + "' plugin.");
 								continue;
