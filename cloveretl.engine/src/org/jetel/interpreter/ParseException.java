@@ -122,71 +122,74 @@ public class ParseException extends Exception {
    * gets displayed.
    */
   public String getMessage() {
-        if (!specialConstructor) {
-            if (currentToken != null) {
-                if (currentToken.next != null) {
-                    return super.getMessage() + " at line "
-                            + currentToken.next.beginLine + ", column "
-                            + currentToken.next.beginColumn + "." +
-                            (filename!=null ? " in file \""+filename+"\"": "")+
-                            eol;
-                } else {
-                    return super.getMessage() + " at line "
-                            + currentToken.beginLine + ", column "
-                            + currentToken.beginColumn + "." +
-                            (filename!=null ? " in file \""+filename+"\"": "")+
-                            eol;
-                }
-            } else {
-                return super.getMessage();
-            }
-        }
-    String expected = "";
-    int maxSize = 0;
-    for (int i = 0; i < expectedTokenSequences.length; i++) {
-      if (maxSize < expectedTokenSequences[i].length) {
-        maxSize = expectedTokenSequences[i].length;
-      }
-      for (int j = 0; j < expectedTokenSequences[i].length; j++) {
-        expected += tokenImage[expectedTokenSequences[i][j]] + " ";
-      }
-      if (expectedTokenSequences[i][expectedTokenSequences[i].length - 1] != 0) {
-        expected += "...";
-      }
-      expected += eol + "    ";
-    }
-    String retval = "Encountered \"";
-    Token tok = currentToken.next;
-    for (int i = 0; i < maxSize; i++) {
-      if (i != 0) retval += " ";
-      if (tok.kind == 0) {
-        retval += tokenImage[0];
-        break;
-      }
-      retval += add_escapes(tok.image);
-      tok = tok.next; 
-    }
-    retval += "\" at line " + currentToken.next.beginLine + ", column " + currentToken.next.beginColumn;
-    retval += "." + eol;
-    if (expectedTokenSequences.length == 1) {
-      retval += "Was expecting:" + eol + "    ";
-    } else {
-      retval += "Was expecting one of:" + eol + "    ";
-    }
-    retval += expected;
-    return retval;
-  }
+		if (!specialConstructor) {
+			if (currentToken != null) {
+				if (currentToken.next != null) {
+					return super.getMessage() + " at line " + currentToken.next.beginLine + ", column " + currentToken.next.beginColumn + "." + (filename != null ? " in file \"" + filename + "\"" : "") + eol;
+				} else {
+					return super.getMessage() + " at line " + currentToken.beginLine + ", column " + currentToken.beginColumn + "." + (filename != null ? " in file \"" + filename + "\"" : "") + eol;
+				}
+			} else {
+				return super.getMessage();
+			}
+		}
+		final StringBuilder expected = new StringBuilder();
+		int maxSize = 0;
+		for (int i = 0; i < expectedTokenSequences.length; i++) {
+			if (maxSize < expectedTokenSequences[i].length) {
+				maxSize = expectedTokenSequences[i].length;
+			}
+			for (int j = 0; j < expectedTokenSequences[i].length; j++) {
+				expected.append(tokenImage[expectedTokenSequences[i][j]]);
+				expected.append(" ");
+			}
+			if (expectedTokenSequences[i][expectedTokenSequences[i].length - 1] != 0) {
+				expected.append("...");
+			}
+			expected.append(eol);
+			expected.append("    ");
+		}
+		final StringBuilder retval = new StringBuilder();
+		retval.append("Encountered \"");
+		Token tok = currentToken.next;
+		for (int i = 0; i < maxSize; i++) {
+			if (i != 0)
+				retval.append(" ");
+			if (tok.kind == 0) {
+				retval.append(tokenImage[0]);
+				break;
+			}
+			retval.append(add_escapes(tok.image));
+			tok = tok.next;
+		}
+		retval.append("\" at line ");
+		retval.append(currentToken.next.beginLine);
+		retval.append(", column ");
+		retval.append(currentToken.next.beginColumn);
+		retval.append(".");
+		retval.append(eol);
+		if (expectedTokenSequences.length == 1) {
+			retval.append("Was expecting:");
+			retval.append(eol);
+			retval.append("    ");
+		} else {
+			retval.append("Was expecting one of:");
+			retval.append(eol);
+			retval.append("    ");
+		}
+		retval.append(expected);
+		return retval.toString();
+	}
 
   /**
-   * The end of line string for this machine.
-   */
+	 * The end of line string for this machine.
+	 */
   protected String eol = System.getProperty("line.separator", "\n");
  
   /**
-   * Used to convert raw characters to their escaped version
-   * when these raw version cannot be used as part of an ASCII
-   * string literal.
-   */
+	 * Used to convert raw characters to their escaped version when these raw version cannot be used as part of an ASCII
+	 * string literal.
+	 */
   protected String add_escapes(String str) {
       StringBuffer retval = new StringBuffer();
       char ch;
