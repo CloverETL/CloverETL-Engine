@@ -19,6 +19,8 @@
 */
 package org.jetel.connection.jdbc.specific;
 
+import java.lang.reflect.Method;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.plugin.Extension;
@@ -126,8 +128,10 @@ public class JdbcSpecificDescription {
             //find class of jdbc specific
             Class<JdbcSpecific> c = (Class<JdbcSpecific>) Class.forName(getClassName(), true, pluginDescriptor.getClassLoader());
 
-            //create instance
-            return c.newInstance();
+            //getting instance
+            Method getInstanceMethod = c.getMethod("getInstance", (Class<?>[]) null);
+            
+            return (JdbcSpecific) getInstanceMethod.invoke(null, (Object[]) null);
         } catch(ClassNotFoundException ex) {
             logger.error("Unknown jdbc specific: " + getDatabase() + " class: " + getClassName());
             throw new RuntimeException("Unknown jdbc specific: " + getDatabase() + " class: " + getClassName());

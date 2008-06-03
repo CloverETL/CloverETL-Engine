@@ -27,15 +27,33 @@ import org.jetel.connection.jdbc.specific.conn.PostgreConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 
+/**
+ * Postgre specific behaviour.
+ * 
+ * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
+ *         (c) Javlin Consulting (www.javlinconsulting.cz)
+ *
+ * @created Jun 3, 2008
+ */
 public class PostgreSpecific extends AbstractJdbcSpecific {
 
-	public static PostgreSpecific INSTANCE = new PostgreSpecific();
+	private static final PostgreSpecific INSTANCE = new PostgreSpecific();
 	
+	public static PostgreSpecific getInstance() {
+		return INSTANCE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#createSQLConnection(org.jetel.connection.jdbc.DBConnection, org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType)
+	 */
 	@Override
 	public Connection createSQLConnection(DBConnection connection, OperationType operationType) throws JetelException {
 		return new PostgreConnection(connection, operationType);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#sqlType2jetel(int)
+	 */
 	public char sqlType2jetel(int sqlType) {
 		switch (sqlType) {
 			case Types.INTEGER:

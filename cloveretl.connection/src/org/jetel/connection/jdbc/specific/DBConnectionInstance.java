@@ -24,6 +24,17 @@ import java.sql.Connection;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 
+/**
+ * This class is a result value of DBConnection.getConnection(...).
+ * Simple java.sql.Connection is not already returned. This class comprises
+ * from instance of java.sql.Connection and backward link to DBConnection
+ * as a source of this DBConnectionInstance.
+ * 
+ * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
+ *         (c) Javlin Consulting (www.javlinconsulting.cz)
+ *
+ * @created Jun 3, 2008
+ */
 public class DBConnectionInstance {
 
 	private Connection sqlConnection;
@@ -32,24 +43,42 @@ public class DBConnectionInstance {
 	
 	private OperationType operationType;
 	
+	/**
+	 * Constructor.
+	 * @param dbConnection
+	 * @param sqlConnection
+	 * @param operationType
+	 */
 	public DBConnectionInstance(DBConnection dbConnection, Connection sqlConnection, OperationType operationType) {
 		this.sqlConnection = sqlConnection;
 		this.dbConnection = dbConnection;
 		this.operationType = operationType;
 	}
 
+	/**
+	 * @return a comprised java.sql.Connection instance
+	 */
 	public Connection getSqlConnection() {
 		return sqlConnection;
 	}
 
+	/**
+	 * @return a source DBConnection of this connection
+	 */
 	public DBConnection getDbConnection() {
 		return dbConnection;
 	}
 
+	/**
+	 * @return operation type which was used to create this connection instance
+	 */
 	public OperationType getOperationType() {
 		return operationType;
 	}
 
+	/**
+	 * @return appropriate jdbc specific object associated with this connection instance
+	 */
 	public JdbcSpecific getJdbcSpecific() {
 		return getDbConnection().getJdbcSpecific();
 	}

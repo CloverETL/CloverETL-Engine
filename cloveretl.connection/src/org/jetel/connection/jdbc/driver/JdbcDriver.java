@@ -28,7 +28,8 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.string.StringUtils;
 
 /**
- * JDBC driver descriptor. This class is a container for all information loaded from 'jdbcDriver' extension point.
+ * JDBC driver represents a JDBC driver. Can be create based on JDBC driver description or by all
+ * necessary attributes. Method getDriver() is root knowlage of this class.
  * 
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
@@ -57,6 +58,9 @@ public class JdbcDriver {
      */
     private URL[] driverLibraries;
 
+    /**
+     * Jdbc specific associated by default with this jdbc driver.
+     */
     private JdbcSpecific jdbcSpecific;
 
     /**
@@ -65,6 +69,11 @@ public class JdbcDriver {
     private ClassLoader classLoader;
     private Driver driver;
     
+    /**
+     * Constructor.
+     * @param jdbcDriverDescription
+     * @throws ComponentNotReadyException
+     */
     public JdbcDriver(JdbcDriverDescription jdbcDriverDescription) throws ComponentNotReadyException {
     	this(jdbcDriverDescription.getDatabase(),
     			jdbcDriverDescription.getName(),
@@ -73,6 +82,15 @@ public class JdbcDriver {
     			jdbcDriverDescription.getJdbcSpecific());
     }
 
+    /**
+     * Constructor.
+     * @param database
+     * @param name
+     * @param dbDriver
+     * @param driverLibraries
+     * @param jdbcSpecific
+     * @throws ComponentNotReadyException
+     */
     public JdbcDriver(String database, String name, String dbDriver, URL[] driverLibraries, JdbcSpecific jdbcSpecific) throws ComponentNotReadyException {
     	this.database = database;
     	this.name = name;
@@ -84,18 +102,41 @@ public class JdbcDriver {
     	prepareDriver();
     }
 
+    /**
+     * @return identifier of this jdbc driver. It is usually name of targeted database.
+     */
     public String getDatabase() {
         return database;
     }
 
+    /**
+     * @return human readable name of jdbc driver.
+     */
     public String getName() {
         return !StringUtils.isEmpty(name) ? name : database;
     }
 
+    /**
+     * @return jdbc specific associated by default with this jdbc driver
+     */
     public JdbcSpecific getJdbcSpecific() {
     	return jdbcSpecific;
     }
     
+    /**
+     * @return class loader, which is used to create java.sql.Driver instance, created in getDriver() method
+     */
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+    
+    /**
+     * That is major method of this class. Returns a java.sql.Driver represented by this entity.
+     */
+    public Driver getDriver() {
+    	return driver;
+    }
+
     private void prepareClassLoader() throws ComponentNotReadyException {
         if(driverLibraries != null && driverLibraries.length > 0) {
             classLoader = new URLClassLoader(driverLibraries, Thread.currentThread().getContextClassLoader());
@@ -113,16 +154,5 @@ public class JdbcDriver {
             throw new ComponentNotReadyException("Cannot create JDBC driver '" + database + "'. General exception: " + ex1.getMessage(), ex1);
         }
     }
-    
-    /**
-     * @return class loader, which is used to create java.sql.Driver instance, created in getDriver() method
-     */
-    public ClassLoader getClassLoader() {
-        return classLoader;
-    }
-    
-    public Driver getDriver() {
-    	return driver;
-    }
-    
+
 }
