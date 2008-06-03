@@ -164,10 +164,8 @@ public class OracleDataWriter extends Node {
         DataRecord record = new DataRecord(inPort.getMetadata());
         record.init();
 
-        Process process = null;
-
         //creating sqlldr process 
-        process = Runtime.getRuntime().exec(createCommandlineForSqlldr());
+        Process process = Runtime.getRuntime().exec(createCommandlineForSqlldr());
         
         //inits of all process streams
         OutputStream processIn = new BufferedOutputStream(process.getOutputStream());
@@ -177,7 +175,7 @@ public class OracleDataWriter extends Node {
         //set target for data formatter
         formatter.setDataTarget(Channels.newChannel(processIn));
 
-        //all stdout and stderr data I send into black hole
+        //all stdout and stderr data I'll send into a black hole
         StreamReader outStreamReader = new StreamReader(processOut);
         outStreamReader.start();
         StreamReader errStreamReader = new StreamReader(processErr);
@@ -425,7 +423,7 @@ public class OracleDataWriter extends Node {
      *
      */
     class StreamReader extends Thread {
-        InputStream stream;
+        private InputStream stream;
         
         public StreamReader(InputStream stream) {
             this.stream = stream;
