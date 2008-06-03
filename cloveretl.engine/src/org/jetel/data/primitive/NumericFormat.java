@@ -42,7 +42,7 @@ public class NumericFormat extends NumberFormat {
 
 	
 	private DecimalFormat dFormat;
-	public static char[] EXPONENT_SYMBOL = {'E','e'};
+	private static char[] EXPONENT_SYMBOL = {'E','e'};
 	
 	/**
 	 * 
