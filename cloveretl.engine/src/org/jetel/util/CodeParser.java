@@ -738,9 +738,10 @@ public class CodeParser {
 			case DataFieldMetadata.BYTE_FIELD:
 			case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
 			    code.insert(0,"((ByteDataField)");
+			    break;
 			case DataFieldMetadata.BOOLEAN_FIELD:
 			    code.insert(0,"((BooleanDataField)");
-			break;
+			    break;
 			default:
 				throw new RuntimeException("Can't translate field type !");
 		}
