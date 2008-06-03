@@ -204,16 +204,16 @@ public class FixLenDataFormatter implements Formatter {
 		for (Integer fieldIdx : smap.values()) {
 			int fieldPos = fieldStart[fieldIdx.intValue()];
 			if (fieldPos > gapPos) {
-				gapStartList.add(new Integer(gapPos));
-				gapEndList.add(new Integer(fieldPos));
+				gapStartList.add(Integer.valueOf(gapPos));
+				gapEndList.add(Integer.valueOf(fieldPos));
 			}
 			if (fieldEnd[fieldIdx.intValue()] > gapPos) {
 				gapPos = fieldEnd[fieldIdx.intValue()]; 
 			}
 		}
 		if (recordLength > gapPos) {
-			gapStartList.add(new Integer(gapPos));
-			gapEndList.add(new Integer(recordLength));
+			gapStartList.add(Integer.valueOf(gapPos));
+			gapEndList.add(Integer.valueOf(recordLength));
 		}
 		gapCnt = gapStartList.size();
 		gapStart = new int[gapCnt];
