@@ -196,7 +196,7 @@ public class FixLenDataFormatter implements Formatter {
 		// find gaps
 		SortedMap<Integer, Integer> smap = new TreeMap<Integer, Integer>();
 		for (int fieldIdx = 0; fieldIdx < fieldCnt; fieldIdx++) {
-			smap.put(new Integer(fieldStart[fieldIdx]), Integer.valueOf(fieldIdx));
+			smap.put(Integer.valueOf(fieldStart[fieldIdx]), Integer.valueOf(fieldIdx));
 		}
 		ArrayList<Integer> gapStartList = new ArrayList<Integer>();
 		ArrayList<Integer> gapEndList = new ArrayList<Integer>();

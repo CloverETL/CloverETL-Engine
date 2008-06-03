@@ -144,7 +144,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 */
 	public void setEOF(int portNum) throws InterruptedException {
 		try {
-			((OutputPort) outPorts.get(new Integer(portNum))).eof();
+			((OutputPort) outPorts.get(Integer.valueOf(portNum))).eof();
 		} catch (IndexOutOfBoundsException ex) {
 			ex.printStackTrace();
 		}
@@ -531,7 +531,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since           April 2, 2002
 	 */
 	public void addInputPort(int portNum, InputPort port) {
-		inPorts.put(new Integer(portNum), port);
+		inPorts.put(Integer.valueOf(portNum), port);
 		port.connectReader(this, portNum);
 	}
 
@@ -553,7 +553,7 @@ public abstract class Node extends GraphElement implements Runnable {
 		} catch (NoSuchElementException ex) {
 			keyVal = 0;
 		}
-		outPorts.put(new Integer(keyVal), port);
+		outPorts.put(Integer.valueOf(keyVal), port);
 		port.connectWriter(this, keyVal);
         resetBufferedValues();
 	}
@@ -580,7 +580,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@return          The outputPort
 	 */
 	public OutputPort getOutputPort(int portNum) {
-        Object outPort=outPorts.get(new Integer(portNum));
+        Object outPort=outPorts.get(Integer.valueOf(portNum));
         if (outPort instanceof OutputPort) { 
             return (OutputPort)outPort ;
         }else if (outPort==null) {
@@ -596,7 +596,7 @@ public abstract class Node extends GraphElement implements Runnable {
      *@return          The outputPort
      */
     public OutputPortDirect getOutputPortDirect(int portNum) {
-        Object outPort=outPorts.get(new Integer(portNum));
+        Object outPort=outPorts.get(Integer.valueOf(portNum));
         if (outPort instanceof OutputPortDirect) {
             return (OutputPortDirect)outPort ;
         }else if (outPort==null) {
@@ -612,7 +612,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@return          The inputPort
 	 */
 	public InputPort getInputPort(int portNum) {
-        Object inPort=inPorts.get(new Integer(portNum));
+        Object inPort=inPorts.get(Integer.valueOf(portNum));
         
         if (inPort instanceof InputPort) {
             return (InputPort)inPort ;
@@ -629,7 +629,7 @@ public abstract class Node extends GraphElement implements Runnable {
      *@return          The inputPort
      */
     public InputPortDirect getInputPortDirect(int portNum) {
-        Object inPort=inPorts.get(new Integer(portNum));
+        Object inPort=inPorts.get(Integer.valueOf(portNum));
         if (inPort instanceof InputPortDirect) {
             return (InputPortDirect)inPort ;
         }else if (inPort==null){
@@ -643,7 +643,7 @@ public abstract class Node extends GraphElement implements Runnable {
      * @param inputPort
      */
     public void removeInputPort(InputPort inputPort) {
-        inPorts.remove(new Integer(inputPort.getInputPortNumber()));
+        inPorts.remove(Integer.valueOf(inputPort.getInputPortNumber()));
         
     }
 
@@ -652,7 +652,7 @@ public abstract class Node extends GraphElement implements Runnable {
      * @param outputPort
      */
     public void removeOutputPort(OutputPort outputPort) {
-        outPorts.remove(new Integer(outputPort.getOutputPortNumber()));
+        outPorts.remove(Integer.valueOf(outputPort.getOutputPortNumber()));
         resetBufferedValues();
     }
 
@@ -694,7 +694,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since                            April 2, 2002
 	 */
 	public void writeRecord(int _portNum, DataRecord _record) throws IOException, InterruptedException {
-			((OutputPort) outPorts.get(new Integer(_portNum))).writeRecord(_record);
+			((OutputPort) outPorts.get(Integer.valueOf(_portNum))).writeRecord(_record);
 	}
 
 
@@ -712,7 +712,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since                            April 2, 2002
 	 */
 	public DataRecord readRecord(int _portNum, DataRecord record) throws IOException, InterruptedException {
-		return	((InputPort) inPorts.get(new Integer(_portNum))).readRecord(record);
+		return	((InputPort) inPorts.get(Integer.valueOf(_portNum))).readRecord(record);
 	}
 
 
