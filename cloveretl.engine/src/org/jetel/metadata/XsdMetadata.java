@@ -61,27 +61,27 @@ public class XsdMetadata {
 	private static final HashMap<Character, String> primitiveNames = new HashMap<Character, String>();
 	// initialize mappings
 	static {
-		typeNames.put(new Character(DataFieldMetadata.BYTE_FIELD), "CloverByte");
-		typeNames.put(new Character(DataFieldMetadata.BYTE_FIELD_COMPRESSED), "CloverByteCompressed");
-		typeNames.put(new Character(DataFieldMetadata.DATE_FIELD), "CloverDate");
-		typeNames.put(new Character(DataFieldMetadata.DATETIME_FIELD), "CloverDatetime");
-		typeNames.put(new Character(DataFieldMetadata.DECIMAL_FIELD), "CloverDecimal");
-		typeNames.put(new Character(DataFieldMetadata.INTEGER_FIELD), "CloverInteger");
-		typeNames.put(new Character(DataFieldMetadata.LONG_FIELD), "CloverLong");
-		typeNames.put(new Character(DataFieldMetadata.NUMERIC_FIELD), "CloverNumeric");
-		typeNames.put(new Character(DataFieldMetadata.STRING_FIELD), "CloverString");
-		typeNames.put(new Character(DataFieldMetadata.BOOLEAN_FIELD), "CloverBoolean");
+		typeNames.put(Character.valueOf(DataFieldMetadata.BYTE_FIELD), "CloverByte");
+		typeNames.put(Character.valueOf(DataFieldMetadata.BYTE_FIELD_COMPRESSED), "CloverByteCompressed");
+		typeNames.put(Character.valueOf(DataFieldMetadata.DATE_FIELD), "CloverDate");
+		typeNames.put(Character.valueOf(DataFieldMetadata.DATETIME_FIELD), "CloverDatetime");
+		typeNames.put(Character.valueOf(DataFieldMetadata.DECIMAL_FIELD), "CloverDecimal");
+		typeNames.put(Character.valueOf(DataFieldMetadata.INTEGER_FIELD), "CloverInteger");
+		typeNames.put(Character.valueOf(DataFieldMetadata.LONG_FIELD), "CloverLong");
+		typeNames.put(Character.valueOf(DataFieldMetadata.NUMERIC_FIELD), "CloverNumeric");
+		typeNames.put(Character.valueOf(DataFieldMetadata.STRING_FIELD), "CloverString");
+		typeNames.put(Character.valueOf(DataFieldMetadata.BOOLEAN_FIELD), "CloverBoolean");
 
-		primitiveNames.put(new Character(DataFieldMetadata.BYTE_FIELD), "xsd:base64Binary");
-		primitiveNames.put(new Character(DataFieldMetadata.BYTE_FIELD_COMPRESSED), "xsd:base64Binary");
-		primitiveNames.put(new Character(DataFieldMetadata.DATE_FIELD), "xsd:date");
-		primitiveNames.put(new Character(DataFieldMetadata.DATETIME_FIELD), "xsd:dateTime");
-		primitiveNames.put(new Character(DataFieldMetadata.DECIMAL_FIELD), "xsd:decimal");
-		primitiveNames.put(new Character(DataFieldMetadata.INTEGER_FIELD), "xsd:int");
-		primitiveNames.put(new Character(DataFieldMetadata.LONG_FIELD), "xsd:long");
-		primitiveNames.put(new Character(DataFieldMetadata.NUMERIC_FIELD), "xsd:decimal");
-		primitiveNames.put(new Character(DataFieldMetadata.STRING_FIELD), "xsd:string");
-		primitiveNames.put(new Character(DataFieldMetadata.BOOLEAN_FIELD), "xsd:boolean");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.BYTE_FIELD), "xsd:base64Binary");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.BYTE_FIELD_COMPRESSED), "xsd:base64Binary");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.DATE_FIELD), "xsd:date");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.DATETIME_FIELD), "xsd:dateTime");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.DECIMAL_FIELD), "xsd:decimal");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.INTEGER_FIELD), "xsd:int");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.LONG_FIELD), "xsd:long");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.NUMERIC_FIELD), "xsd:decimal");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.STRING_FIELD), "xsd:string");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.BOOLEAN_FIELD), "xsd:boolean");
 	}
 
 	// XSD document
@@ -174,7 +174,7 @@ public class XsdMetadata {
 
 		Element restr = doc.createElement("xsd:restriction");
 		typeElement.appendChild(restr);
-		restr.setAttribute("base", primitiveNames.get(new Character(type)));
+		restr.setAttribute("base", primitiveNames.get(Character.valueOf(type)));
 		
 		switch (type) {
 		case DataFieldMetadata.NUMERIC_FIELD:

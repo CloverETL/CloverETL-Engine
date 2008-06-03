@@ -535,8 +535,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		logger.info("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
 		for (Phase phase : graph.getPhases()) {
 			Object nodeInfo[] = {Integer.valueOf(phase.getPhaseNum()), phase.getResult().message(),
-                    phase.getPhaseTracking() != null ? new Integer(phase.getPhaseTracking().getExecTimeSec()) : "",
-                    phase.getPhaseTracking() != null ? new Integer(phase.getPhaseTracking().getMemUtilizationKB()) : ""};
+                    phase.getPhaseTracking() != null ? Integer.valueOf(phase.getPhaseTracking().getExecTimeSec()) : "",
+                    phase.getPhaseTracking() != null ? Integer.valueOf(phase.getPhaseTracking().getMemUtilizationKB()) : ""};
 			int nodeSizes[] = {-18, -24, 12, 18};
 			logger.info(StringUtils.formatString(nodeInfo, nodeSizes));
 		}

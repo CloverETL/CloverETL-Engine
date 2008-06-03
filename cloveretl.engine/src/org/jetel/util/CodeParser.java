@@ -215,7 +215,7 @@ public class CodeParser {
                     .getNumFields());
             for (int j = 0; j < inputRecordsMeta[i].getNumFields(); j++) {
                 inputFieldsNames[i].put(inputRecordsMeta[i].getField(j)
-                        .getName(), new Integer(j)
+                        .getName(), Integer.valueOf(j)
                 /*
                  * inputRecords.getField(j)
                  */
