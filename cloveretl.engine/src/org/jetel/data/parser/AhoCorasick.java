@@ -244,7 +244,7 @@ public class AhoCorasick {
 			}
 			final MyInt other = (MyInt) obj;
 
-			return (other.value == value);
+			return other.value == value;
 		}
 	}
 	
