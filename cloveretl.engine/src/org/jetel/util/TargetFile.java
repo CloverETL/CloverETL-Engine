@@ -2,17 +2,30 @@ package org.jetel.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.URL;
+import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.ByteDataField;
+import org.jetel.data.DataField;
+import org.jetel.data.DataRecord;
+import org.jetel.data.StringDataField;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.provider.FormatterProvider;
+import org.jetel.data.primitive.ByteArray;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.OutputPort;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MultiFileWriter.DataPreparedListener;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -27,6 +40,11 @@ public class TargetFile {
     
 	private static final char NUM_CHAR='#';			// file markter that is replacet file tag.
 	private static final String EMPTY_STRING="";
+	private static final String PARAM_DELIMITER = ":";
+	private static final String PORT_DELIMITER = "\\.";
+	private static final String PORT_PROTOCOL = "port:";
+	private static final String DEFAULT_CHARSET = "UTF-8";
+	
 	private DecimalFormat format;					// it is used if the file tag is a number
 
 	private String fileURL;							// output file url
@@ -48,6 +66,16 @@ public class TargetFile {
     private String after;							// string of fileURL after last string of marks '#'
 
     private WritableByteChannel byteChannel;
+
+	private OutputPort outputPort;
+	private DataRecord record;
+	private DataField field; 
+    private PipedInputStream writeIn;
+	private List<DataPreparedListener> listListener;
+	private boolean isFinished;
+	private boolean isStringDataField;
+
+	private String charset;
 
     /**
      * Constructors.
@@ -85,14 +113,19 @@ public class TargetFile {
      * @throws ComponentNotReadyException
      */
     public void init() throws IOException, ComponentNotReadyException {
-    	initUrl();
-    	if (fileTag == null) {
-    		initFileNames(null);
-    	} 
-    	else if (fileTag instanceof Number) {
-    		initFileNames(format.format((Number)fileTag));
+    	if (charset == null) charset = DEFAULT_CHARSET; 
+    	if (fileURL != null && fileURL.startsWith(PORT_PROTOCOL)) {
+        	initPortFields();
     	} else {
-    		initFileNames(fileTag.toString());
+        	initUrl();
+        	if (fileTag == null) {
+        		initFileNames(null);
+        	} 
+        	else if (fileTag instanceof Number) {
+        		initFileNames(format.format((Number)fileTag));
+        	} else {
+        		initFileNames(fileTag.toString());
+        	}
     	}
     	initOutput();
     }
@@ -104,6 +137,15 @@ public class TargetFile {
 		formatter.reset();
 	}
     
+    /**
+     * Output port if data should be write to an output field.
+     * 
+     * @param outputPort
+     */
+    public void setOutputPort(OutputPort outputPort) {
+    	this.outputPort = outputPort;
+    }    
+
     /**
      * FileURL can contains '#' mark, the string of marks is replaced the fileTag. If a file tag is Number,
      * there is used NumberFormat for definition of minimal lenght of the fileTag. Ie: ## and 5 is "05". 
@@ -126,7 +168,7 @@ public class TargetFile {
     }
     
     /**
-     * Devides fileURL to two string. The first one is a string before '#' mark, the second one is
+     * Divides fileURL to two string. The first one is a string before '#' mark, the second one is
      * after mark. If no mark found, before string is fileURL.
      * Creates decimal format.
      */
@@ -149,16 +191,37 @@ public class TargetFile {
     	format = new DecimalFormat(sb.toString());
     }
 
+	private void initPortFields() throws ComponentNotReadyException {
+		if (outputPort == null) return;
+		record = new DataRecord(outputPort.getMetadata());
+		record.init();
+		String fName = getFieldName(fileURL);
+		if (record.hasField(fName)) field = record.getField(fName);
+		if (field == null) throw new ComponentNotReadyException("The field not found for the statement: '" + fileURL + "'");
+		if (field instanceof StringDataField) isStringDataField = true;
+		else if (!(field instanceof ByteDataField))	throw new ComponentNotReadyException("The field '" + field.getMetadata().getName() + "' must be String or (Compressed) Byte data field.");
+	}
+    
+	private String getFieldName(String source) throws ComponentNotReadyException {
+		String[] param = source.split(PARAM_DELIMITER); // port:$port.field[:processingType]
+		if (param.length < 2) throw new ComponentNotReadyException("The source string '" + source + "' is not valid.");
+		param = param[1].split(PORT_DELIMITER);
+		if (param.length < 2) throw new ComponentNotReadyException("The source string '" + source + "' is not valid.");
+		return param[1];
+	}
+
     /**
      * The method writes footer and header and sets next output to the formatter.
      * 
      * @throws IOException
      */
     public void setNextOutput() throws IOException {
-    	checkOutput();
-
+    	if (field == null) {
+        	checkOutput();
+    	}
+    	
         //write footer to the previous destination if it is not first call of this method
-        if(byteChannel != null) {
+        if(byteChannel != null || writeIn != null) {
         	formatter.writeFooter();
         	formatter.finish();
         }
@@ -171,6 +234,20 @@ public class TargetFile {
 
     public void finish() throws IOException{
     	formatter.finish();
+    	isFinished = true;
+    }
+    
+	public boolean isFinished() {
+		return isFinished;
+	}
+    
+    private void write2CloverField(ByteArray aBytes) {
+        if (field != null && writeIn != null) {
+   			field.setValue(isStringDataField ? aBytes.toString(charset) : aBytes.getValueDuplicate()); 
+        	if (listListener != null) for (DataPreparedListener recordPreparedListener: listListener) {
+        		recordPreparedListener.dataPrepared();
+        	}
+        }
     }
     
     /**
@@ -210,7 +287,22 @@ public class TargetFile {
      * @throws IOException
      */
     private void setOutput() throws IOException {
-        if (fileNames != null) {
+    	if (field != null) {
+        	//write2CloverField();
+            writeIn = new PipedInputStream();
+            PipedOutputStream readOut = new PipedOutputStream(writeIn);
+            //readThread.setInputStream(writeIn);
+            final ReadThread readThread = new ReadThread(writeIn);
+        	readThread.addDataPreparedListener(new DataPreparedListener() {
+				@Override
+				public void dataPrepared() {
+					write2CloverField(readThread.getBytes());
+					readThread.interrupt();
+				}
+			});
+        	readThread.start();
+    		setDataTarget(Channels.newChannel(readOut));
+    	} else if (fileNames != null) {
             String fName = fileNames.next();
         	byteChannel = FileUtils.getWritableChannel(contextURL, fName, appendData);
         	if (useChannel) {
@@ -272,6 +364,61 @@ public class TargetFile {
     
 	public void setUseChannel(boolean useChannel) {
 		this.useChannel = useChannel;
+	}
+
+	public DataRecord getOutputRecord() {
+		return record;
+	}
+
+	public void setRecordPreparedListener(List<DataPreparedListener> list) {
+		listListener = list;
+	}
+	
+	private class ReadThread extends Thread {
+		  private InputStream pi = null;
+		  private ByteArray bytes;
+		  private byte[] buffer;
+		  private int len;
+		  private List<DataPreparedListener> listListener;
+		  
+		  public ReadThread(PipedInputStream pi) {
+			  buffer = new byte[1024];
+			  setName("ReadThread");
+			  listListener = new ArrayList<DataPreparedListener>();
+			  bytes = new ByteArray();
+			  this.pi = pi;
+		  }
+		  
+		  /*public void setInputStream(PipedInputStream pi) {
+			  bytes = new ByteArray();
+			  bytes.reset();
+			  this.pi = pi;
+		  }*/
+
+		  public ByteArray getBytes() {
+			  return bytes;
+		  }
+		  
+		  public synchronized void run() {
+			  try {
+				  while ((len = pi.read(buffer)) != -1) {
+					  bytes.append(buffer, 0, len);
+				  }
+				  for (DataPreparedListener listener: listListener) {
+					  listener.dataPrepared();
+				  }
+			  } catch (Exception e) {
+				  logger.error(e);
+			  }
+		  }
+
+		  public void addDataPreparedListener(DataPreparedListener recordPreparedListener) {
+			  listListener.add(recordPreparedListener);
+		  }
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 
 }

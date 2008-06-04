@@ -109,7 +109,7 @@ public interface Parser {
     /**
 	 * Reset parser for next graph execution. 
      */
-	public void reset();
+	public void reset() throws ComponentNotReadyException;
     
 	/**
 	 * Gets current position of source file.

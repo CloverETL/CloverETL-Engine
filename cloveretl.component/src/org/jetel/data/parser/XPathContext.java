@@ -16,6 +16,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -496,5 +497,12 @@ public class XPathContext {
 	
 	public String toString(){
 		return "XPathContext#"+this.xpath + " "+ this.xpathContextList;
+	}
+
+	public void reset() throws ComponentNotReadyException {
+		if (sequence != null) sequence.reset();
+		for (XPathContext subContext : xpathContextList) {
+			subContext.reset();
+		}
 	}
 }

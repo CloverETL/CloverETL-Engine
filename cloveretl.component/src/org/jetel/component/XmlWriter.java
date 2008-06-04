@@ -62,6 +62,8 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
+import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.MultiFileWriter.DataPreparedListener;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -97,6 +99,7 @@ import org.xml.sax.helpers.AttributesImpl;
 public class XmlWriter extends Node {
 	static Log logger = LogFactory.getLog(XmlWriter.class);
 	public final static String COMPONENT_TYPE = "XML_WRITER";
+	private final static int OUTPUT_PORT = 0;
 
 	private static final String XML_RELATION_KEYS_TO_PARENT_ATTRIBUTE = "keyToParent";
 	private static final String XML_RELATION_KEYS_FROM_PARENT_ATTRIBUTE = "keyFromParent";
@@ -166,9 +169,21 @@ public class XmlWriter extends Node {
 		TransformerHandler th = null;
 			
 		public void close() {
+			if (os == null) {
+				return;
+			}
+
+			try{
+				flush();
+				os.close();
+			}catch(IOException ex){
+				ex.printStackTrace();
+			}
+			os = null;
 		}
 
 		public void flush() throws IOException {
+			if (os != null) os.flush();
 		}
 		
 		public void finish() throws IOException {
@@ -186,6 +201,7 @@ public class XmlWriter extends Node {
 		 * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
 		 */
 		public void setDataTarget(Object outputDataTarget) {
+			close();
 			WritableByteChannel channel = null;
 			if (outputDataTarget instanceof WritableByteChannel){
 				channel = (WritableByteChannel)outputDataTarget;
@@ -458,6 +474,8 @@ public class XmlWriter extends Node {
         writer.setNumRecords(this.recordsCount);
 		writer.setUseChannel(true);
         writer.setLookupTable(null);
+        writer.setOutputPort(getOutputPort(OUTPUT_PORT));
+        writer.setCharset(charset);
         //writer.setPartitionKeyNames(partitionKey);
         //writer.setPartitionFileTag(partitionFileTagType);
         writer.init( this.rootPortDefinition.metadata );
@@ -493,6 +511,12 @@ public class XmlWriter extends Node {
 			}// while
 		}// for
 		try {
+			writer.addDataPreparedListener(new DataPreparedListener() {
+				@Override
+				public void dataPrepared() {
+					writeToOutputPort();
+				}
+			});
 			
 			// and now ... data structure is read ... writing can be processed 
 			for (TreeRecord treeRecord : rootPortDefinition.dataMap.values()){
@@ -509,6 +533,25 @@ public class XmlWriter extends Node {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
+	/**
+	 * Writes a file to output port.
+	 */
+	private void writeToOutputPort() {
+        //broadcast the record to all connected Edges
+        try {
+			writeRecordBroadcast(writer.getOuputRecord().duplicate());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} 
+        SynchronizeUtils.cloverYield();
+        if (writer.isFinished()) {
+			try {
+				broadcastEOF();
+			} catch (InterruptedException e) {
+				logger.error(e);
+			}
+        }
+	}	
 
 	/**
 	 * Creates output XML from all read records using SAX.
@@ -856,7 +899,7 @@ public class XmlWriter extends Node {
 		super.checkConfig(status);
 		
 		if(!checkInputPorts(status, 1, Integer.MAX_VALUE)
-				|| !checkOutputPorts(status, 0, 0)) {
+				|| !checkOutputPorts(status, 0, 1)) {
 			return status;
 		}
 		

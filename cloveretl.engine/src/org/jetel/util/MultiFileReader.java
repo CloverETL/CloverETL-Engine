@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -38,13 +37,12 @@ import java.util.Map.Entry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.InputPort;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.file.WcardPattern;
 
 /**
  * A class for transparent reading of clover data records from multiple input files.
@@ -70,7 +68,7 @@ public class MultiFileReader {
 	private Parser parser;
     private URL contextURL;
     private String fileURL;
-	private Iterator<String> filenameItor;
+	private ReadableChannelIterator channelIterator;
     private int skip;
 	private int fileSkip;
 	private int globalCounter; //number of returned records
@@ -89,6 +87,9 @@ public class MultiFileReader {
     private long fileSize;
     private Map<DataRecordMetadata, AutoFillingData> autoFillingMap;
     private AutoFillingData autoFillingData;
+    
+    private InputPort inputPort;
+	private String charset;
     
     private static final String GLOBAL_ROW_COUNT = "global_row_count";
     private static final String SOURCE_ROW_COUNT = "source_row_count";
@@ -126,10 +127,12 @@ public class MultiFileReader {
     	if (metadata != null) autoFillingData = addAutoFillingFields(metadata);
 		iSource = -1;
         
-        initFileIterator();
-
+    	channelIterator = new ReadableChannelIterator(inputPort, contextURL, fileURL);
+    	channelIterator.setCharset(charset);
+    	channelIterator.init();
+    	
         try {
-            if(!nextSource()) {
+            if(!channelIterator.isFirstFieldSource() && !nextSource()) {
                 noInputFile = true;
                 //throw new ComponentNotReadyException("FileURL attribute (" + fileURL + ") doesn't contain valid file url.");
             }
@@ -140,25 +143,33 @@ public class MultiFileReader {
     }
 
     /**
+     * Sets an input port for data reading from input record.
+     * 
+     * @param metadata
+     */
+    public void setInputPort(InputPort inputPort) {
+    	this.inputPort = inputPort;
+    }
+
+    /**
      * @param metadata
      * @throws ComponentNotReadyException
      */
 	public void checkConfig(DataRecordMetadata metadata) throws ComponentNotReadyException {
         parser.init(metadata);
-        initFileIterator();
         
 		ReadableByteChannel stream = null; 
-		while (filenameItor.hasNext()) {
-			filename = filenameItor.next();
+		while (channelIterator.hasNext()) {
 			try {
+				stream = channelIterator.next();
+				if (stream == null) continue; // if record no record found
+				filename = channelIterator.getCurrentFileName();
+				logger.debug("Opening input file " + filename);	
 				URL url = FileUtils.getInnerAddress(filename);
 				if (FileUtils.isServerURL(url)) {
 					FileUtils.checkServer(url);
 					continue;
 				}
-				
-				logger.debug("Opening input file " + filename);
-				stream = FileUtils.getReadableChannel(contextURL, filename);
 				logger.debug("Reading input file " + filename);
 				parser.setReleaseDataSource(!filename.equals(STD_IN));
 				parser.setDataSource(stream);
@@ -166,7 +177,9 @@ public class MultiFileReader {
 				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
 			} catch (ComponentNotReadyException e) {
 				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
-            }
+            } catch (JetelException e) {
+            	throw new ComponentNotReadyException("File is unreachable: " + filename, e);
+			}
 		}
 	}
 	
@@ -268,15 +281,15 @@ public class MultiFileReader {
 		}
 		// next source
 		ReadableByteChannel stream = null;
-		while (filenameItor.hasNext()) {
-			filename = filenameItor.next();
+		while (channelIterator.hasNext()) {
 			for (Object autoFillingData : autoFillingMap.entrySet()) {
 				((AutoFillingData)((Entry)autoFillingData).getValue()).sourceCounter = 0;
 			}
 			sourceCounter = 0;
-			logger.debug("Opening input file " + filename);
 			try {
-				stream = FileUtils.getReadableChannel(contextURL, filename);
+				stream = channelIterator.next();
+				if (stream == null) continue; // if record no record found
+				filename = channelIterator.getCurrentFileName();
 				File tmpFile = new File(filename);
 				long timestamp = tmpFile.lastModified();
 				fileSize = tmpFile.length();
@@ -290,8 +303,6 @@ public class MultiFileReader {
 				}
 				if(fileSkip > 0) parser.skip(fileSkip);
 				return true;
-			} catch (IOException e) {
-				throw new JetelException("File is unreachable: " + filename, e);
 			} catch (JetelException e) {
 				logger.error("An error occured while skipping records in file " + filename + ", the file will be ignored", e);
 				continue;
@@ -354,6 +365,8 @@ public class MultiFileReader {
         }
         setAutoFillingFields(rec);
         
+        if (rec == null) channelIterator.blankRead();
+        
         return rec;
 	}		
 
@@ -389,6 +402,8 @@ public class MultiFileReader {
             throw e;
         }
         setAutoFillingFields(rec);
+        
+        if (rec == null) channelIterator.blankRead();
         
         return rec;
 	}		
@@ -532,8 +547,9 @@ public class MultiFileReader {
 
     /**
 	 * Reset reader for next graph execution. 
+     * @throws ComponentNotReadyException 
      */
-	public void reset() {
+	public void reset() throws ComponentNotReadyException {
 		parser.reset();
 		globalCounter=0;
 		sourceCounter=0;
@@ -542,10 +558,10 @@ public class MultiFileReader {
 		autoFillingData = null;
 		iSource = -1;
 
-		initFileIterator();
+		channelIterator.reset();
         try {
     		resetIncrementalReading();
-			if(!nextSource()) 
+			if(!channelIterator.isFirstFieldSource() && !nextSource()) 
 			    noInputFile = true;
 		} catch (JetelException e) {
 			logger.error("reset", e);
@@ -554,10 +570,8 @@ public class MultiFileReader {
 		}
 	}
 
-	private void initFileIterator() {
-		WcardPattern pat = new WcardPattern();
-        pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-        this.filenameItor = pat.filenames().iterator();
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 
     public void setIncrementalFile(String incrementalFile) {

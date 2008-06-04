@@ -158,6 +158,7 @@ public class XmlXPathReader extends Node {
 	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
     private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
+    private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	
 	private final static int OUTPUT_PORT = 0;
 	private String fileURL;
@@ -168,6 +169,8 @@ public class XmlXPathReader extends Node {
     private int skipRows=0; // do not skip rows by default
     private int numRecords = -1;
     private Object[] ports;
+
+	private String charset;
 
 	/**
 	 *Constructor for the DelimitedDataReaderNIO object
@@ -238,6 +241,7 @@ public class XmlXPathReader extends Node {
         reader.setSkip(skipRows);
         reader.setNumRecords(numRecords);
         parser.setGraph(getGraph());
+        reader.setCharset(charset);
         reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
         ports = parser.getPorts().toArray();
 	}
@@ -261,6 +265,7 @@ public class XmlXPathReader extends Node {
 		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
 		xmlElement.setAttribute(XML_SKIP_ROWS_ATTRIBUTE, String.valueOf(skipRows));
 		xmlElement.setAttribute(XML_NUMRECORDS_ATTRIBUTE, String.valueOf(numRecords));
+		xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
 	}
 
 
@@ -286,6 +291,9 @@ public class XmlXPathReader extends Node {
             }
             if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
                 aXmlXPathReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
+                aXmlXPathReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
             }
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -386,5 +394,10 @@ public class XmlXPathReader extends Node {
     public void setNumRecords(int numRecords) {
         this.numRecords = Math.max(numRecords, 0);
     }
+    
+    private void setCharset(String charset) {
+    	this.charset = charset;
+	}
+
 }
 

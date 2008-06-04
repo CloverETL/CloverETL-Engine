@@ -23,8 +23,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.CharacterCodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -36,6 +38,7 @@ import org.jetel.data.formatter.provider.FormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.OutputPort;
 import org.jetel.metadata.DataRecordMetadata;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -89,6 +92,11 @@ public class MultiFileWriter {
 	
 	private boolean useNumberFileTag = true;
 	private int numberFileTag;
+	
+	private OutputPort outputPort;
+	private List<DataPreparedListener> listListener;
+
+	private String charset;
 	
     /**
      * Constructor.
@@ -170,6 +178,9 @@ public class MultiFileWriter {
     		if (currentTarget != null)
     			currentTarget.close();
     		currentTarget = createNewTarget(currentFormatter);
+    		currentTarget.setOutputPort(outputPort);
+    		currentTarget.setRecordPreparedListener(listListener = new ArrayList<DataPreparedListener>());
+    		currentTarget.setCharset(charset);
     		try {
 				currentTarget.init();
 			} catch (IOException e) {
@@ -190,6 +201,7 @@ public class MultiFileWriter {
 		else targetFile = new TargetFile(channels, formatterGetter, metadata);
 		targetFile.setAppendData(appendData);
 		targetFile.setUseChannel(useChannel);
+		targetFile.setCharset(charset);
 		return targetFile;
     }
     
@@ -207,6 +219,7 @@ public class MultiFileWriter {
 			targetFile = new TargetFile(channels, formatter, metadata);
 		targetFile.setAppendData(appendData);
 		targetFile.setUseChannel(useChannel);
+		targetFile.setCharset(charset);
 		return targetFile;
     }
 
@@ -224,15 +237,6 @@ public class MultiFileWriter {
 	    if (partitionKeyNames != null) {
 			partitionKey = new RecordKey(partitionKeyNames, metadata);
 		}
-	    
-    	DataRecordMetadata metadata;
-    	if (lookupTable != null) {
-    		metadata = lookupTable.getMetadata();
-    	} else {
-    		metadata = this.metadata;
-    	}
-    	preparePartitionOutFields(metadata);
-    	
 	    if (partitionKey != null) {
 			try {
 				partitionKey.init();
@@ -291,13 +295,15 @@ public class MultiFileWriter {
     		currentTarget = createNewTarget();
     		currentTarget.setFileTag(useNumberFileTag ? numberFileTag++ : keyString);
     		currentTarget.init();
+    		currentTarget.setRecordPreparedListener(listListener);
     		multiTarget.put(keyString, currentTarget);
     	}
 		currentFormatter = currentTarget.getFormatter();
 		writeRecord2CurrentTarget(record);
     }
     
-    private String getKeyString(DataRecord record) {
+    private String getKeyString(DataRecord record) throws ComponentNotReadyException {
+    	if (iPartitionOutFields == null) preparePartitionOutFields();    	
     	StringBuffer sb = new StringBuffer();
     	for (int pos: iPartitionOutFields) {
     		sb.append(record.getField(pos).getValue());    		
@@ -305,7 +311,13 @@ public class MultiFileWriter {
     	return sb.toString();
     }
     
-    private void preparePartitionOutFields(DataRecordMetadata metadata) throws ComponentNotReadyException {
+    private void preparePartitionOutFields() throws ComponentNotReadyException {
+    	DataRecordMetadata metadata;
+    	if (lookupTable != null) {
+    		metadata = lookupTable.getMetadata();
+    	} else {
+    		metadata = this.metadata;
+    	}
     	if (partitionOutFields != null) {
         	iPartitionOutFields = new int[partitionOutFields.length];
         	int pos;
@@ -315,7 +327,8 @@ public class MultiFileWriter {
         		iPartitionOutFields[i] = pos;
         	}
     	} else if (partitionKey != null) {
-    		iPartitionOutFields = partitionKey.getKeyFields();
+    		if (lookupTable == null) iPartitionOutFields = partitionKey.getKeyFields();
+    		else throw new ComponentNotReadyException("Output field names are not defined for lookup table: " + lookupTable.getId());
     	}
     }
     
@@ -530,4 +543,43 @@ public class MultiFileWriter {
 		this.channels = channels;
 	}	
 	
+    /**
+     * Sets an output port for data writing to output record.
+     * 
+     * @param metadata
+     */
+    public void setOutputPort(OutputPort outputPort) {
+    	this.outputPort = outputPort;
+    }
+
+	public DataRecord getOuputRecord() {
+		return currentTarget.getOutputRecord();
+	}
+
+	public void addDataPreparedListener(DataPreparedListener dataPreparedListener) {
+		listListener.add(dataPreparedListener);
+	}
+	
+	public static abstract class DataPreparedListener {
+		public DataPreparedListener() {
+		}
+		public abstract void dataPrepared();
+	}
+
+	public boolean isFinished() {
+    	if (multiTarget != null) {
+        	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
+        		if (!(entry.getValue().isFinished())) {
+        			return false;
+        		}
+        	}
+    		return true;
+    	} else {
+    		return currentTarget.isFinished();
+    	}
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
 }
