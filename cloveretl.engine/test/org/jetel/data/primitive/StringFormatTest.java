@@ -24,7 +24,7 @@ public class StringFormatTest extends TestCase {
 		t("(\\w+)(\\s)\\s*(?:\\w+\\s+)?(\\w+)", "Martin Varecha", "Martin Varecha", null);
 		t("(\\w+)\\s*(?:\\w+\\s+)?(\\w+)", "Varecha Martin", "Martin Varecha", "$2 $1");
 		t("(\\w+)\\s*(?:\\w+\\s+)?(\\w+)", "lastName:Varecha firstName:Martin", "Martin Bubak Varecha", "lastName:$2 firstName:$1");
-		this.assertTrue(StringFormat.create("\\w*").matches("bubak"));
-		this.assertTrue(StringFormat.create("\\W*").matches("/'[];,"));
+		assertTrue(StringFormat.create("\\w*").matches("bubak"));
+		assertTrue(StringFormat.create("\\W*").matches("/'[];,"));
 	}
 }
