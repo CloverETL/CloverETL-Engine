@@ -29,6 +29,8 @@ import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * Base class used for generating any kind of data transformation. Subclass this one to create your own transformations.
  * It implements basic stubs for all of the RecordTransform interface methods.<br>
@@ -47,7 +49,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created November 1, 2003
  * @see org.jetel.component.RecordTransform
  */
-
+@SuppressWarnings("EI")
 public abstract class DataRecordTransform implements RecordTransform {
 
 	protected TransformationGraph graph;

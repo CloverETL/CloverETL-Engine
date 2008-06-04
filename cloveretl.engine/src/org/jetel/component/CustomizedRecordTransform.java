@@ -49,6 +49,8 @@ import org.jetel.util.file.WcardPattern;
 import org.jetel.util.primitive.DuplicateKeyMap;
 import org.jetel.util.string.StringUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * 
  * Class used for generating data transformation. It has methods for mapping input fields on output fields, assigning
@@ -226,6 +228,8 @@ import org.jetel.util.string.StringUtils;
  * @see org.jetel.component.RecordTransform
  * @see org.jetel.component.DataRecordTransform
  */
+
+@SuppressWarnings("EI2")
 public class CustomizedRecordTransform implements RecordTransform {
 
 	protected Properties parameters;
@@ -255,8 +259,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 	protected static final char DOT = '.';
 	protected static final char COLON = ':';
 	protected static final char PARAMETER_CHAR = '$';
-	protected static final String[] WILDCARDS = new String[WcardPattern.WCARD_CHAR.length];
+	@SuppressWarnings("MS")
+	protected static final String[] WILDCARDS;
 	static {
+		WILDCARDS = new String[WcardPattern.WCARD_CHAR.length];
 		for (int i = 0; i < WILDCARDS.length; i++) {
 			WILDCARDS[i] = String.valueOf(WcardPattern.WCARD_CHAR[i]);
 		}
