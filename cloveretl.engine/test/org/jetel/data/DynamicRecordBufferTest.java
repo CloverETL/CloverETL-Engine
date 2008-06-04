@@ -122,21 +122,18 @@ public class DynamicRecordBufferTest extends TestCase {
         }
         System.out.println("has file:"+buffer.isHasFile());
         System.out.println("buffered records:"+buffer.getBufferedRecords());
-        System.in.read();
         int count;
         for(count=0;count<800;count++){
             if (buffer.readRecord(record)==null) break;
             System.out.println("**** "+count+"****");
             System.out.print(record);
         }
-        System.in.read();
         for(int i=0;i<1200;i++){
             buffer.writeRecord(record);
         }
         buffer.setEOF();
         System.out.println("has file:"+buffer.isHasFile());
         System.out.println("buffered records:"+buffer.getBufferedRecords());
-        System.in.read();
         for(int i=0;;i++){
             if (buffer.readRecord(record)==null) break;
             System.out.println("**** "+i+"****");
