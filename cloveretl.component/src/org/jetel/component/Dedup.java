@@ -160,20 +160,16 @@ public class Dedup extends Node {
         current = 1;
         previous = 0;
 
-        if (dedupKeys == null) {
-        	writeAllRecordsToOutPort();
-        } else {
-        	switch(keep) {
-            case KEEP_FIRST:
-                executeFirst();
-                break;
-            case KEEP_LAST:
-                executeLast();
-                break;
-            case KEEP_UNIQUE:
-                executeUnique();
-                break;
-            }
+    	switch(keep) {
+        case KEEP_FIRST:
+            executeFirst();
+            break;
+        case KEEP_LAST:
+            executeLast();
+            break;
+        case KEEP_UNIQUE:
+            executeUnique();
+            break;
         }
 		
         broadcastEOF();
@@ -284,20 +280,6 @@ public class Dedup extends Node {
                 }
             }
         }
-    }
-    
-    /**
-     * Write all records to output port.
-     * Uses when all records belong to one group.
-     * 
-     * @throws IOException
-     * @throws InterruptedException
-     */
-    private void writeAllRecordsToOutPort() throws IOException, 
-    		InterruptedException {
-    	while (runIt && (records[0] = inPort.readRecord(records[0])) != null) {
-    		writeOutRecord(records[0]);
-      }
     }
     
     /**
