@@ -178,7 +178,9 @@ public class SimpleCache {
      */
     class StoreMap extends LinkedHashMap{
     	
-        private static final int DEFAULT_MAX_ENTRIES = 100;
+		private static final long serialVersionUID = 7137792243985321904L;
+		
+		private static final int DEFAULT_MAX_ENTRIES = 100;
         private static final boolean ACCESS_ORDER=true;
         
         int max_entries;

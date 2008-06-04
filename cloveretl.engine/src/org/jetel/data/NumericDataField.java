@@ -52,9 +52,10 @@ import org.jetel.util.string.StringUtils;
  */
 public class NumericDataField extends DataField implements Numeric, Comparable {
 
+	private static final long serialVersionUID = -3824088924871267023L;
+	
 	private double value;
 	private NumberFormat numberFormat;
-	private ParsePosition parsePosition;
 
 	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
 	// Attributes
@@ -115,9 +116,6 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
             } else if (locale != null) {
                 numberFormat = DecimalFormat.getInstance(locale);
             }
-            if (numberFormat != null) {
-                parsePosition = new ParsePosition(0);
-            }
         }
 	}
 
@@ -146,7 +144,6 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	    super(_metadata);
 	    this.value=value;
 	    this.numberFormat=numberFormat;
-	    this.parsePosition= (numberFormat !=null) ? new ParsePosition(0) : null; 
 	 }
 	
 	

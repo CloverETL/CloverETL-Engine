@@ -47,6 +47,8 @@ import org.jetel.util.string.StringUtils;
  */
 public class IntegerDataField extends DataField implements Numeric, Comparable {
 
+	private static final long serialVersionUID = 3959941332738498948L;
+	
 	private int value;
 	private final static int FIELD_SIZE_BYTES = 4;// standard size of field
 	//private DecimalFormat numberFormat;

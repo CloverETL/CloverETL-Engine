@@ -51,6 +51,8 @@ import org.jetel.util.string.StringUtils;
  */
 public class StringDataField extends DataField implements CharSequence{
 	
+	private static final long serialVersionUID = 6350085938993427855L;
+	
 	private StringBuilder value;
 	private StringFormat stringFormat = null;
 	

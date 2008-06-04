@@ -29,6 +29,8 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  *  A class that represents array of bytes field.<br>
  *  <br>
@@ -40,9 +42,12 @@ import org.jetel.util.bytes.ByteBufferUtils;
  *@since      October 29, 2002
  *@see        org.jetel.metadata.DataFieldMetadata
  */
+@SuppressWarnings("EI")
 public class ByteDataField extends DataField implements Comparable{
 
 	// Attributes
+
+	private static final long serialVersionUID = 3823545028385612760L;
 
 	/**
 	 *  Description of the Field

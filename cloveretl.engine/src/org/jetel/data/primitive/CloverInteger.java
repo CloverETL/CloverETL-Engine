@@ -33,6 +33,9 @@ import java.math.BigDecimal;
  *@see        org.jetel.data.primitive.CloverDouble
  */
 public final class CloverInteger extends Number implements Numeric {
+	
+	private static final long serialVersionUID = 5682247962617980439L;
+	
 	private int value;
 	
 	/**

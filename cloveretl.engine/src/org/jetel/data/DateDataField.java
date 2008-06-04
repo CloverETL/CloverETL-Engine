@@ -29,13 +29,14 @@ import java.nio.charset.CharsetEncoder;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  *  A class that represents ...
@@ -46,8 +47,11 @@ import org.jetel.metadata.DataFieldMetadata;
  * @created     January 26, 2003
  * @see         OtherClasses
  */
+@SuppressWarnings("EI")
 public class DateDataField extends DataField implements Comparable{
 
+	private static final long serialVersionUID = 1529319195864286249L;
+	
 	// Attributes
 	/**
 	 *  An attribute that represents ...
@@ -56,7 +60,6 @@ public class DateDataField extends DataField implements Comparable{
 	 */
 	private Date value;
 	private DateFormat dateFormat;
-	private ParsePosition parsePosition;
 		
 	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
 
@@ -107,9 +110,6 @@ public class DateDataField extends DataField implements Comparable{
                         locale);
                 dateFormat.setLenient(false);
             }
-            if (dateFormat != null) {
-                parsePosition = new ParsePosition(0);
-            }
         }
     }
 
@@ -149,7 +149,6 @@ public class DateDataField extends DataField implements Comparable{
 	    super(_metadata);
 	    setValue(_value);
 	    this.dateFormat=_dateFormat;
-	    this.parsePosition= (_dateFormat!=null) ? new ParsePosition(0) : null;
 	}
 	
 

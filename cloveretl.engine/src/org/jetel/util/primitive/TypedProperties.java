@@ -39,6 +39,8 @@ import org.jetel.util.property.PropertyRefResolver;
  */
 public class TypedProperties extends Properties {
 
+	private static final long serialVersionUID = -3251111555515215464L;
+	
 	private PropertyRefResolver propertyRefResolver;
 	
     public TypedProperties() {
