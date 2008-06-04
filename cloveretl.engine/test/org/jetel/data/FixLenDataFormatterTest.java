@@ -41,71 +41,61 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
 /**
  * @author maciorowski
- *
+ * 
  */
 public class FixLenDataFormatterTest extends TestCase {
-private FixLenCharDataParser aParser = null;
-private FixLenCharDataParser aParser2 = null;
-private FixLenCharDataParser aParser3 = null;
-private FixLenCharDataParser testParser = null;
-private FixLenDataFormatter aFixLenDataFormatter= null;
-private DataRecord record;
-private String testFile1 = null;	
-private DataRecordMetadata metadata = null;
-	
-protected void setUp() { 
-	
-	EngineInitializer.initEngine((String) null, null, null);
-	FileInputStream in = null;
-//	FileInputStream in2 = null;
-//	FileInputStream in3 = null;
-	metadata = null;
-	DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
-			
-	try {
-//		metadata = xmlReader.read(new FileInputStream("config\\test\\rec_def\\FL28_null_def_rec.xml"));
-//		in = new FileInputStream("data\\in\\good\\FL28_no_NL.txt");
-//		in2 = new FileInputStream("data\\in\\bad\\FL28_no_NL_nulls.txt");
-//		in3 = new FileInputStream("data\\in\\bad\\FL28_NL_nulls.txt");
-		metadata = xmlReader.read(new FileInputStream("config/test/rec_def/FL28_null_def_rec.xml"));
-		in = new FileInputStream("data/in/good/FL28_no_NL.txt");
-//		in2 = new FileInputStream("data/in/bad/FL28_no_NL_nulls.txt");
-//		in3 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
-	} catch(FileNotFoundException e){
-		e.printStackTrace();
-	}
+	private FixLenCharDataParser aParser = null;
+	private FixLenCharDataParser aParser2 = null;
+	private FixLenCharDataParser aParser3 = null;
+	private FixLenCharDataParser testParser = null;
+	private FixLenDataFormatter aFixLenDataFormatter = null;
+	private DataRecord record;
+	private String testFile1 = null;
+	private DataRecordMetadata metadata = null;
 
-    // we are going to write our test data here
-//	testFile1 = "data\\out\\test1.txt";	
-	testFile1 = "data/out/test1.txt";	
-	File aFile=new File(testFile1);
-	 if(!aFile.exists()) {
-		final boolean created = new File(aFile.getParent()).mkdir();
-		assertTrue(created);
+	protected void setUp() throws IOException, ComponentNotReadyException {
+
+		EngineInitializer.initEngine((String) null, null, null);
+		FileInputStream in = null;
+		// FileInputStream in2 = null;
+		// FileInputStream in3 = null;
+		metadata = null;
+		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
+
 		try {
-			aFile.createNewFile();
-		} catch (IOException e3) {
-			e3.printStackTrace();
+			// metadata = xmlReader.read(new FileInputStream("config\\test\\rec_def\\FL28_null_def_rec.xml"));
+			// in = new FileInputStream("data\\in\\good\\FL28_no_NL.txt");
+			// in2 = new FileInputStream("data\\in\\bad\\FL28_no_NL_nulls.txt");
+			// in3 = new FileInputStream("data\\in\\bad\\FL28_NL_nulls.txt");
+			metadata = xmlReader.read(new FileInputStream("config/test/rec_def/FL28_null_def_rec.xml"));
+			in = new FileInputStream("data/in/good/FL28_no_NL.txt");
+			// in2 = new FileInputStream("data/in/bad/FL28_no_NL_nulls.txt");
+			// in3 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
-	 }
-	aFixLenDataFormatter = new FixLenDataFormatter();
-	try {
+
+		// we are going to write our test data here
+		// testFile1 = "data\\out\\test1.txt";
+		testFile1 = "data/out/test1.txt";
+		File aFile = new File(testFile1);
+		if (!aFile.exists()) {
+			final File parentFile = aFile.getParentFile();
+			if (!parentFile.isDirectory()) {
+				final boolean created = parentFile.mkdir();
+				assertTrue("error create directory " + parentFile.getAbsolutePath(), created);
+			}
+			aFile.createNewFile();
+		}
+		aFixLenDataFormatter = new FixLenDataFormatter();
 		aFixLenDataFormatter.init(metadata);
-	} catch (ComponentNotReadyException e) {
-		e.printStackTrace();
-	}
-	try {
 		aFixLenDataFormatter.setDataTarget(new FileOutputStream(testFile1));
-	} catch (FileNotFoundException e2) {
-		e2.printStackTrace();
-	}
-	
-	aParser = new FixLenCharDataParser();
-	aParser2 = new FixLenCharDataParser();
-	aParser3 = new FixLenCharDataParser();
-	testParser = new FixLenCharDataParser();
-	
-	try {
+
+		aParser = new FixLenCharDataParser();
+		aParser2 = new FixLenCharDataParser();
+		aParser3 = new FixLenCharDataParser();
+		testParser = new FixLenCharDataParser();
+
 		record = new DataRecord(metadata);
 		record.init();
 
@@ -116,233 +106,204 @@ protected void setUp() {
 		aParser3.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
 		aParser3.init(metadata);
 		aParser3.setDataSource(in);
-	} catch (ComponentNotReadyException e) {
-		e.printStackTrace();
+
+		testParser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
 	}
 
-
-	testParser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
-}
-	
-   protected void tearDown() {
+	protected void tearDown() {
 		aParser3.close();
 		aParser3 = null;
 
 		aParser2.close();
 		aParser2 = null;
-	
-	   aParser.close();
-	   aParser = null;
-	   record  = null;
 
-	testParser.close();
-	testParser = null;
+		aParser.close();
+		aParser = null;
+		record = null;
+
+		testParser.close();
+		testParser = null;
 
 		aFixLenDataFormatter = null;
-	   //remove testFile if any
-	   File aFile=new File(testFile1);
-		if(aFile.exists()) {
+		// remove testFile if any
+		File aFile = new File(testFile1);
+		if (aFile.exists()) {
 			final boolean deleted = aFile.delete();
 			assertTrue(deleted);
 		}
-   }
+	}
 
-   /**
-	* Tests parsing a file that has all records on one line. Some data is incorrect or null.
-	*
-	*/
-public void test_parsing_bad() {
-// the content of the test file
-//	N/AStone    101   01/11/93-15.5          112   11/03/02 -0.7Bone Broo    99        //
-	int recCount = 0;
+	/**
+	 * Tests parsing a file that has all records on one line. Some data is incorrect or null.
+	 * 
+	 */
+	public void test_parsing_bad() throws ComponentNotReadyException {
+		// the content of the test file
+		// N/AStone 101 01/11/93-15.5 112 11/03/02 -0.7Bone Broo 99 //
+		int recCount = 0;
 
-	InputStream in2 = new ByteArrayInputStream("	N/AStone    101   01/11/93-15.5          112   11/03/02 -0.7Bone Broo    99".getBytes());	
-	aParser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
-	try {
+		InputStream in2 = new ByteArrayInputStream("	N/AStone    101   01/11/93-15.5          112   11/03/02 -0.7Bone Broo    99".getBytes());
+		aParser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
 		aParser.init(metadata);
-	} catch (ComponentNotReadyException e1) {
-		e1.printStackTrace();
-	}
-	aParser.setDataSource(in2);
-	
-	
-	try{
-	   record=aParser.getNext(record);
-	   aFixLenDataFormatter.write(record);
-	   fail("Should raise an BadDataFormatException");
-   } catch (BadDataFormatException e){	
-   } catch (Exception ee){
-	   fail("Should not throw Exception");
-	   ee.printStackTrace();
-   }
-   
-   try{
-	   while((record=aParser.getNext(record))!=null){
-		   aFixLenDataFormatter.write(record);
-	   }
-	   aFixLenDataFormatter.flush();
-	   aFixLenDataFormatter.close();
-   } catch (BadDataFormatException e){	
-	   fail("Should not raise an BadDataFormatException");
-	   e.printStackTrace();
-   } catch (Exception ee){
-	   fail("Should not throw Exception");
-	   ee.printStackTrace();
-   }
+		aParser.setDataSource(in2);
 
-   
-   
-	try{
-		FileInputStream fis = new FileInputStream(testFile1);
-		testParser.init(metadata);
-		testParser.setDataSource(fis);
-		record = new DataRecord(metadata);
-		record.init();
-
-		while((record=testParser.getNext(record))!=null){
-			if(recCount==0) {
-				assertEquals(record.getField(0).toString(),"15.5");
-				assertTrue(record.getField(1).isNull());
-				assertEquals(record.getField(2).toString(),"112");
-				assertEquals(record.getField(3).toString(),"11/03/02");
-			} else if(recCount==1) {
-				assertEquals(record.getField(0).toString(),"-0.7");
-				assertEquals(record.getField(1).toString(),"Bone Broo");
-				assertEquals(record.getField(2).toString(),"99");
-				assertFalse(record.getField(3).isNull());
-			}
-			recCount++;
-		}
-	} catch (BadDataFormatException e){	
-		fail("Should not raise an BadDataFormatException");
-		e.printStackTrace();
-	} catch (Exception ee){
-		fail("Should not throw Exception");
-		ee.printStackTrace();
-	}
-   assertEquals(2,recCount);
-}
-
-/**
- * Tests parsing a file that has all records on one line. Some data is correct and not null.
- *
- */
-public void test_parsing_good() {
-// the content of the test file
-//	1.0Stone    101   01/11/93-15.5  Brook   112  11/03/02 -0.7Bone Broo    9901/01/03 //
-	int recCount = 0;
-	try{
-		while((record=aParser2.getNext(record))!=null){
+		try {
+			record = aParser.getNext(record);
 			aFixLenDataFormatter.write(record);
+			fail("Should raise an BadDataFormatException");
+		} catch (BadDataFormatException e) {
+		} catch (Exception ee) {
+			fail("Should not throw Exception");
 		}
-		aFixLenDataFormatter.flush();
-		aFixLenDataFormatter.close();
-	} catch (BadDataFormatException e){	
-		fail("Should not raise an BadDataFormatException");
-		e.printStackTrace();
-	} catch (Exception ee){
-		fail("Should not throw Exception");
-		ee.printStackTrace();
-	}
 
-   
-   
-	 try{
-		 FileInputStream fis = new FileInputStream(testFile1);
+		try {
+			while ((record = aParser.getNext(record)) != null) {
+				aFixLenDataFormatter.write(record);
+			}
+			aFixLenDataFormatter.flush();
+			aFixLenDataFormatter.close();
+		} catch (BadDataFormatException e) {
+			fail("Should not raise an BadDataFormatException");
+		} catch (Exception ee) {
+			fail("Should not throw Exception");
+		}
+
+		try {
+			FileInputStream fis = new FileInputStream(testFile1);
 			testParser.init(metadata);
 			testParser.setDataSource(fis);
-		record = new DataRecord(metadata);
-		record.init();
+			record = new DataRecord(metadata);
+			record.init();
 
-		 while((record=testParser.getNext(record))!=null){
-			if(recCount==0) {
-				assertEquals(record.getField(0).toString(),"1.0");
-				assertEquals(record.getField(1).toString(),"Stone");
-				assertEquals(record.getField(2).toString(),"101");
-				assertEquals(record.getField(3).toString(),"01/11/93");
-			} else if(recCount==1) {
-				assertEquals(record.getField(0).toString(),"-15.5");
-				assertEquals(record.getField(1).toString(),"Brook");
-				assertEquals(record.getField(2).toString(),"112");
-				assertEquals(record.getField(3).toString(),"11/03/02");
-			} else if(recCount==2) {
-				assertEquals(record.getField(0).toString(),"-0.7");
-				assertEquals(record.getField(1).toString(),"Bone Broo");
-				assertEquals(record.getField(2).toString(),"99");
-				assertEquals(record.getField(3).toString(),"01/01/03");
+			while ((record = testParser.getNext(record)) != null) {
+				if (recCount == 0) {
+					assertEquals(record.getField(0).toString(), "15.5");
+					assertTrue(record.getField(1).isNull());
+					assertEquals(record.getField(2).toString(), "112");
+					assertEquals(record.getField(3).toString(), "11/03/02");
+				} else if (recCount == 1) {
+					assertEquals(record.getField(0).toString(), "-0.7");
+					assertEquals(record.getField(1).toString(), "Bone Broo");
+					assertEquals(record.getField(2).toString(), "99");
+					assertFalse(record.getField(3).isNull());
+				}
+				recCount++;
 			}
-			recCount++;
+		} catch (BadDataFormatException e) {
+			fail("Should not raise an BadDataFormatException");
+		} catch (Exception ee) {
+			fail("Should not throw Exception");
 		}
-	} catch (BadDataFormatException e){	
-		fail("Should not raise an BadDataFormatException");
-		e.printStackTrace();
-	} catch (Exception ee){
-		fail("Should not throw Exception");
-		ee.printStackTrace();
-	}
-   assertEquals(4,recCount);
-}
-	
-/**
- * Tests parsing a file that has one record per one line. Some data is correct and not null.
- *
- */
-public void test_parsing_NL_good() {
-// the content of the test file
-//	1.0Stone    101   01/11/93-15.5  Brook   112  11/03/02 -0.7Bone Broo    9901/01/03 //
-	int recCount = 0;
-   
-	try{
-		while((record=aParser3.getNext(record))!=null){
-			aFixLenDataFormatter.write(record);
-		}
-		aFixLenDataFormatter.flush();
-		aFixLenDataFormatter.close();
-	} catch (BadDataFormatException e){	
-		fail("Should not raise an BadDataFormatException");
-		e.printStackTrace();
-	} catch (Exception ee){
-		fail("Should not throw Exception");
-		ee.printStackTrace();
+		assertEquals(2, recCount);
 	}
 
-   
-   
-	 try{
-		 FileInputStream fis = new FileInputStream(testFile1);
+	/**
+	 * Tests parsing a file that has all records on one line. Some data is correct and not null.
+	 * 
+	 */
+	public void test_parsing_good() {
+		// the content of the test file
+		// 1.0Stone 101 01/11/93-15.5 Brook 112 11/03/02 -0.7Bone Broo 9901/01/03 //
+		int recCount = 0;
+		try {
+			while ((record = aParser2.getNext(record)) != null) {
+				aFixLenDataFormatter.write(record);
+			}
+			aFixLenDataFormatter.flush();
+			aFixLenDataFormatter.close();
+		} catch (BadDataFormatException e) {
+			fail("Should not raise an BadDataFormatException");
+		} catch (Exception ee) {
+			fail("Should not throw Exception");
+		}
+
+		try {
+			FileInputStream fis = new FileInputStream(testFile1);
 			testParser.init(metadata);
 			testParser.setDataSource(fis);
-		record = new DataRecord(metadata);
-		record.init();
+			record = new DataRecord(metadata);
+			record.init();
 
-		 while((record=testParser.getNext(record))!=null){
-			if(recCount==0) {
-				assertEquals(record.getField(0).toString(),"1.0");
-				assertEquals(record.getField(1).toString(),"Stone");
-				assertEquals(record.getField(2).toString(),"101");
-				assertEquals(record.getField(3).toString(),"01/11/93");
-			} else if(recCount==1) {
-				assertEquals(record.getField(0).toString(),"-15.5");
-				assertEquals(record.getField(1).toString(),"Brook");
-				assertEquals(record.getField(2).toString(),"112");
-				assertEquals(record.getField(3).toString(),"11/03/02");
-			} else if(recCount==2) {
-				assertEquals(record.getField(0).toString(),"-0.7");
-				assertEquals(record.getField(1).toString(),"Bone Broo");
-				assertEquals(record.getField(2).toString(),"99");
-				assertEquals(record.getField(3).toString(),"01/01/03");
+			while ((record = testParser.getNext(record)) != null) {
+				if (recCount == 0) {
+					assertEquals(record.getField(0).toString(), "1.0");
+					assertEquals(record.getField(1).toString(), "Stone");
+					assertEquals(record.getField(2).toString(), "101");
+					assertEquals(record.getField(3).toString(), "01/11/93");
+				} else if (recCount == 1) {
+					assertEquals(record.getField(0).toString(), "-15.5");
+					assertEquals(record.getField(1).toString(), "Brook");
+					assertEquals(record.getField(2).toString(), "112");
+					assertEquals(record.getField(3).toString(), "11/03/02");
+				} else if (recCount == 2) {
+					assertEquals(record.getField(0).toString(), "-0.7");
+					assertEquals(record.getField(1).toString(), "Bone Broo");
+					assertEquals(record.getField(2).toString(), "99");
+					assertEquals(record.getField(3).toString(), "01/01/03");
+				}
+				recCount++;
 			}
-			recCount++;
+		} catch (BadDataFormatException e) {
+			fail("Should not raise an BadDataFormatException");
+		} catch (Exception ee) {
+			fail("Should not throw Exception");
 		}
-	} catch (BadDataFormatException e){	
-		fail("Should not raise an BadDataFormatException");
-		e.printStackTrace();
-	} catch (Exception ee){
-		fail("Should not throw Exception");
-		ee.printStackTrace();
+		assertEquals(4, recCount);
 	}
-   assertEquals(4,recCount);
-}
 
+	/**
+	 * Tests parsing a file that has one record per one line. Some data is correct and not null.
+	 * 
+	 */
+	public void test_parsing_NL_good() {
+		// the content of the test file
+		// 1.0Stone 101 01/11/93-15.5 Brook 112 11/03/02 -0.7Bone Broo 9901/01/03 //
+		int recCount = 0;
+
+		try {
+			while ((record = aParser3.getNext(record)) != null) {
+				aFixLenDataFormatter.write(record);
+			}
+			aFixLenDataFormatter.flush();
+			aFixLenDataFormatter.close();
+		} catch (BadDataFormatException e) {
+			fail("Should not raise an BadDataFormatException");
+		} catch (Exception ee) {
+			fail("Should not throw Exception");
+		}
+
+		try {
+			FileInputStream fis = new FileInputStream(testFile1);
+			testParser.init(metadata);
+			testParser.setDataSource(fis);
+			record = new DataRecord(metadata);
+			record.init();
+
+			while ((record = testParser.getNext(record)) != null) {
+				if (recCount == 0) {
+					assertEquals(record.getField(0).toString(), "1.0");
+					assertEquals(record.getField(1).toString(), "Stone");
+					assertEquals(record.getField(2).toString(), "101");
+					assertEquals(record.getField(3).toString(), "01/11/93");
+				} else if (recCount == 1) {
+					assertEquals(record.getField(0).toString(), "-15.5");
+					assertEquals(record.getField(1).toString(), "Brook");
+					assertEquals(record.getField(2).toString(), "112");
+					assertEquals(record.getField(3).toString(), "11/03/02");
+				} else if (recCount == 2) {
+					assertEquals(record.getField(0).toString(), "-0.7");
+					assertEquals(record.getField(1).toString(), "Bone Broo");
+					assertEquals(record.getField(2).toString(), "99");
+					assertEquals(record.getField(3).toString(), "01/01/03");
+				}
+				recCount++;
+			}
+		} catch (BadDataFormatException e) {
+			fail("Should not raise an BadDataFormatException");
+		} catch (Exception ee) {
+			fail("Should not throw Exception");
+		}
+		assertEquals(4, recCount);
+	}
 
 }
