@@ -65,6 +65,8 @@ public class XPathParser implements Parser {
 
 	private List<Integer> ports;
 
+	private boolean isReseted;
+	
 	public XPathParser(Document document) {
 		this.xpathDocument = document;
 	}
@@ -347,6 +349,7 @@ public class XPathParser implements Parser {
 	}
 
 	public void assignRecord(DataRecord record, int i) {
+		if (isReseted) return;
 		xpathContext.assignRecord(record, i);
 	}
 	
@@ -366,7 +369,9 @@ public class XPathParser implements Parser {
 	 * (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
-	public void reset() {
+	public void reset() throws ComponentNotReadyException {
+		xpathContext.reset();
+		isReseted = true;
 	}
 
 	public Object getPosition() {
