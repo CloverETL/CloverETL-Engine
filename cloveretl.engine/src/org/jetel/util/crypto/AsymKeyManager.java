@@ -128,7 +128,7 @@ public class AsymKeyManager {
             //print results
             System.out.println(Arrays.toString(outdata));
             System.out.println(enc.getHiddenSecret().length);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
 	}

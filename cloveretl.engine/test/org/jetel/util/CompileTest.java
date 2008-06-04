@@ -44,7 +44,7 @@ public class CompileTest   extends TestCase  {
 
 	protected void setUp() {
 		StringBuffer tmp = new StringBuffer();
-		tmp.append("package org.jetel.userclasses;\n");	
+		tmp.append("package org.jetel.userclasses;\n");
 		tmp.append("public class test1 {\n");
 		tmp.append("\tpublic static Integer addTwo(Integer i, Integer ii) {\n");
 		tmp.append("\t\treturn new Integer(i.intValue()+ii.intValue());\n");
@@ -52,50 +52,54 @@ public class CompileTest   extends TestCase  {
 		tmp.append("}\n");
 		src1 = tmp.toString();
 
-		File aFile=new File(testJavaFile1);
-		 if(!aFile.exists()) {
+		File aFile = new File(testJavaFile1);
+		if (!aFile.exists()) {
 			final File parentFile = new File(aFile.getParent());
-			final boolean mkdirs = parentFile.mkdirs();
-			assertTrue("can't create directory " + parentFile.getAbsolutePath(), mkdirs);
+			if (!parentFile.isDirectory()) {
+				final boolean mkdirs = parentFile.mkdirs();
+				assertTrue("can't create directory " + parentFile.getAbsolutePath(), mkdirs);
+			}
 			try {
 				DataOutputStream fos = new DataOutputStream(new FileOutputStream(testJavaFile1));
-				try{
+				try {
 					fos.writeBytes(tmp.toString());
-				} finally{
+				} finally {
 					fos.close();
 				}
 			} catch (IOException e3) {
 				e3.printStackTrace();
 			}
-		 }
+		}
 
-			tmp = new StringBuffer();
-			tmp.append("public class Main {\n");
-			tmp.append("public void method(Object s) {} \n");
-			tmp.append("public void method(Long l) {} \n");
-			tmp.append("public static void main(String[] args) {\n");
-			tmp.append("	Main m = new Main();\n");
-			tmp.append("	m.method(1==1 ? \"a\" : new Long(1)); \n");
-			tmp.append("}\n");
-			tmp.append("}\n");		
-			src2 = tmp.toString();
+		tmp = new StringBuffer();
+		tmp.append("public class Main {\n");
+		tmp.append("public void method(Object s) {} \n");
+		tmp.append("public void method(Long l) {} \n");
+		tmp.append("public static void main(String[] args) {\n");
+		tmp.append("	Main m = new Main();\n");
+		tmp.append("	m.method(1==1 ? \"a\" : new Long(1)); \n");
+		tmp.append("}\n");
+		tmp.append("}\n");
+		src2 = tmp.toString();
 
-			aFile=new File(testJavaFile2);
-			 if(!aFile.exists()) {
-				final File parentFile = new File(aFile.getParent());
+		aFile = new File(testJavaFile2);
+		if (!aFile.exists()) {
+			final File parentFile = new File(aFile.getParent());
+			if (!parentFile.isDirectory()) {
 				final boolean mkdirs = parentFile.mkdirs();
 				assertTrue("can't create directory " + parentFile.getAbsolutePath(), mkdirs);
+			}
+			try {
+				DataOutputStream fos = new DataOutputStream(new FileOutputStream(testJavaFile2));
 				try {
-					DataOutputStream fos = new DataOutputStream(new FileOutputStream(testJavaFile2));
-					try{
-						fos.writeBytes(tmp.toString());
-					} finally{
-						fos.close();
-					}
-				} catch (IOException e3) {
-					e3.printStackTrace();
+					fos.writeBytes(tmp.toString());
+				} finally {
+					fos.close();
 				}
-			 }
+			} catch (IOException e3) {
+				e3.printStackTrace();
+			}
+		}
 	}
 
 	protected void tearDown() {

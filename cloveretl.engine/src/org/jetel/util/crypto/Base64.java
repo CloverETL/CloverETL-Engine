@@ -716,7 +716,6 @@ public class Base64
         // Example: DkLE
         else
         {
-            try{
             // Two ways to do the same thing. Don't know which way I like best.
             //int outBuff =   ( ( DECODABET[ source[ srcOffset     ] ] << 24 ) >>>  6 )
             //              | ( ( DECODABET[ source[ srcOffset + 1 ] ] << 24 ) >>> 12 )
@@ -733,13 +732,6 @@ public class Base64
             destination[ destOffset + 2 ] = (byte)( outBuff       );
 
             return 3;
-            }catch( Exception e){
-                System.out.println(""+source[srcOffset]+ ": " + ( DECODABET[ source[ srcOffset     ] ]  ) );
-                System.out.println(""+source[srcOffset+1]+  ": " + ( DECODABET[ source[ srcOffset + 1 ] ]  ) );
-                System.out.println(""+source[srcOffset+2]+  ": " + ( DECODABET[ source[ srcOffset + 2 ] ]  ) );
-                System.out.println(""+source[srcOffset+3]+  ": " + ( DECODABET[ source[ srcOffset + 3 ] ]  ) );
-                return -1;
-            }   //e nd catch
         }
     }   // end decodeToBytes
     
@@ -1011,7 +1003,6 @@ public class Base64
         {
             // Set up some useful variables
             java.io.File file = new java.io.File( filename );
-            byte[] buffer = null;
             int length   = 0;
             int numBytes = 0;
             
@@ -1021,7 +1012,7 @@ public class Base64
                 System.err.println( "File is too big for this convenience method (" + file.length() + " bytes)." );
                 return null;
             }   // end if: file too big for int index
-            buffer = new byte[ (int)file.length() ];
+            byte[] buffer = new byte[ (int)file.length() ];
             
             // Open a stream
             bis = new Base64.InputStream( 

@@ -28,12 +28,15 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * Data encryption class using symmetric cipher to crypt the data and asymmetric cipher to crypt symmetric key.
  * 
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
  * @since 06/11/10
  */
+@SuppressWarnings("EI")
 public class CombinedEncryptor {
 	// TODO add methods equivalent to Cipher's update&doFinal to support encryption of large data
 	private static final String symAlg = "AES";
