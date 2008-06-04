@@ -22,7 +22,6 @@ package org.jetel.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -463,7 +462,7 @@ public class MultiFileReader {
 		parser.close();
 	}
 	
-	private class AutoFillingData {
+	private static class AutoFillingData {
 	    private int[] globalRowCount;	// number of returned records for every getNext method
 	    private int[] sourceRowCount;
 	    private int[] sourceName;
@@ -573,7 +572,7 @@ public class MultiFileReader {
     /**
      * The class for incremental reading.
      */
-    private class Incremental {
+    private static class Incremental {
     	// properties for a file
     	private Properties properties;
     	// used keys

@@ -124,9 +124,12 @@ public class DynamicJavaCode {
 		// do we need to save src ? 
 		if (checkSumFile!=checkSumSrc.getValue()){
 			try{
-				FileWriter writer=new FileWriter(fileName,false);
-				writer.write(srcCode);
-				writer.close();
+				FileWriter writer = new FileWriter(fileName, false);
+				try {
+					writer.write(srcCode);
+				} finally {
+					writer.close();
+				}
 			}catch(IOException ex){
 			    logger.error("Error when trying to save source code: "+ex.getMessage());
 				throw new RuntimeException("Error when trying to save source code: "+ex.getMessage());
@@ -254,7 +257,6 @@ public class DynamicJavaCode {
 			logger.error("Error when creating object of class " + className + " : " + ex.getMessage());
             throw new RuntimeException(ex);
 		}
-
 		return myObject;
 	}
 

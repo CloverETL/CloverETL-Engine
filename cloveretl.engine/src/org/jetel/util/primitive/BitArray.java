@@ -34,6 +34,8 @@ import java.util.Arrays;
 
 public class BitArray implements Serializable{
 
+	private static final long serialVersionUID = 5285503841640300317L;
+	
 	private  byte bits[];
 	private  int length;
     private  int lengthBytes;

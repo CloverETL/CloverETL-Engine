@@ -38,6 +38,8 @@ import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * Class for transparent writing into multifile or multistream. Underlying formatter is used for formatting
  * incoming data records and destination is a list of files defined in fileURL attribute
@@ -55,6 +57,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @created 2.11.2006
  */
+@SuppressWarnings({"EI2","EI"})
 public class MultiFileWriter {
 	// Default capacity of HashMap
 	private final static int tableInitialSize = 512;

@@ -54,10 +54,16 @@ public class CompileTest   extends TestCase  {
 
 		File aFile=new File(testJavaFile1);
 		 if(!aFile.exists()) {
-			new File(aFile.getParent()).mkdirs();
+			final File parentFile = new File(aFile.getParent());
+			final boolean mkdirs = parentFile.mkdirs();
+			assertTrue("can't create directory " + parentFile.getAbsolutePath(), mkdirs);
 			try {
 				DataOutputStream fos = new DataOutputStream(new FileOutputStream(testJavaFile1));
-				fos.writeBytes(tmp.toString());
+				try{
+					fos.writeBytes(tmp.toString());
+				} finally{
+					fos.close();
+				}
 			} catch (IOException e3) {
 				e3.printStackTrace();
 			}
@@ -76,10 +82,16 @@ public class CompileTest   extends TestCase  {
 
 			aFile=new File(testJavaFile2);
 			 if(!aFile.exists()) {
-				new File(aFile.getParent()).mkdirs();
+				final File parentFile = new File(aFile.getParent());
+				final boolean mkdirs = parentFile.mkdirs();
+				assertTrue("can't create directory " + parentFile.getAbsolutePath(), mkdirs);
 				try {
 					DataOutputStream fos = new DataOutputStream(new FileOutputStream(testJavaFile2));
-					fos.writeBytes(tmp.toString());
+					try{
+						fos.writeBytes(tmp.toString());
+					} finally{
+						fos.close();
+					}
 				} catch (IOException e3) {
 					e3.printStackTrace();
 				}
@@ -90,20 +102,24 @@ public class CompileTest   extends TestCase  {
 		//remove test Files if any
 		File aFile=new File(testJavaFile1);
 		 if(aFile.exists()) {
-			 aFile.delete();
+			 final boolean delete = aFile.delete();
+			 assertTrue(delete);
 		 }
 		aFile=new File(testJavaClassFile1);
 		 if(aFile.exists()) {
-			 aFile.delete();
+			 final boolean delete = aFile.delete();
+			 assertTrue(delete);
 		 }
 
 		aFile=new File(testJavaFile2);
 		 if(aFile.exists()) {
-			 aFile.delete();
+			 final boolean delete = aFile.delete();
+			 assertTrue(delete);
 		 }
 		aFile=new File(testJavaClassFile2);
 		 if(aFile.exists()) {
-			 aFile.delete();
+			 final boolean delete = aFile.delete();
+			 assertTrue(delete);
 		 }
 	}
 
@@ -112,7 +128,7 @@ public class CompileTest   extends TestCase  {
 		long start = System.currentTimeMillis();
 		for (int i=0; i<COMPILE_LOOPS; i++){
 			DynamicJavaCode djc = new DynamicJavaCode(src1);
-			Object o = djc.instantiateByJanino();
+			djc.instantiateByJanino();
 		}
 		long duration = System.currentTimeMillis() - start;
 		System.out.println("janino compilation duration:"+duration);
@@ -121,12 +137,12 @@ public class CompileTest   extends TestCase  {
 	public void testCompilerJanino2() {
 		try {
 			DynamicJavaCode djc = new DynamicJavaCode(src2);
-			Object o = djc.instantiateByJanino();
-			this.fail("shouldn't compile java 1.5 compatible code");
+			djc.instantiateByJanino();
+			fail("shouldn't compile java 1.5 compatible code");
 		} catch (Exception e){
 			// OK
 			if (!(e.getCause() instanceof CompileException)){
-				this.fail("we expect CompileException;");
+				fail("we expect CompileException;");
 				e.printStackTrace();
 			}
 		}
@@ -145,7 +161,7 @@ public class CompileTest   extends TestCase  {
 		long start = System.currentTimeMillis();
 		for (int i=0; i<COMPILE_LOOPS; i++){
 			DynamicJavaCode djc = new DynamicJavaCode(src2);
-			Object o = djc.instantiateByJdkTools();
+			djc.instantiateByJdkTools();
 		}
 		long duration = System.currentTimeMillis() - start;
 		System.out.println("jdkTools compilation duration:"+duration);

@@ -37,11 +37,11 @@ import org.jetel.util.string.StringUtils;
  */
 public class CommandBuilder {
 	
-	private final char EQUAL_CHAR = '=';
-	private final char DEFAULT_PARAMETER_DELIMITER = ' ';
-	private final char DEFAULT_END_CHARACTER = '\n';
+	private final static char EQUAL_CHAR = '=';
+	private final static char DEFAULT_PARAMETER_DELIMITER = ' ';
+	private final static char DEFAULT_END_CHARACTER = '\n';
 	private final static String DEFAULT_SWITCH_MARK = "-";
-	private final String TRUE = "true";
+	private final static String TRUE = "true";
 	
 	StringBuilder command;
 	char parameterDelimiter;

@@ -42,7 +42,7 @@ public final class FifoTest extends TestCase {
     	Queue fifo = new Queue(10);
     	assertEquals(true, fifo.isEmpty());
 
-    	fifo.add(new Integer(0));
+    	fifo.add(Integer.valueOf(0));
     	assertEquals(false, fifo.isEmpty());
 
 		fifo.removeAll();
@@ -56,18 +56,18 @@ public final class FifoTest extends TestCase {
 		Queue fifo = new Queue(4);
 		Integer result = null;
 
-		fifo.add(new Integer(1));
-		fifo.add(new Integer(2));
-		fifo.add(new Integer(3));
+		fifo.add(Integer.valueOf(1));
+		fifo.add(Integer.valueOf(2));
+		fifo.add(Integer.valueOf(3));
 
         result = (Integer)fifo.get();
-        assertEquals(new Integer(1), result);
+        assertEquals(Integer.valueOf(1), result);
 
 		result = (Integer)fifo.get();
-		assertEquals(new Integer(2), result);
+		assertEquals(Integer.valueOf(2), result);
 
 		result = (Integer)fifo.get();
-		assertEquals(new Integer(3), result);
+		assertEquals(Integer.valueOf(3), result);
 
 		assertEquals(true, fifo.isEmpty());
 
@@ -82,15 +82,15 @@ public final class FifoTest extends TestCase {
 		Queue fifo = new Queue(2);
 		Integer result = null;
 
-		fifo.add(new Integer(1));
-		fifo.add(new Integer(2));
-		assertFalse(fifo.add(new Integer(3)));
+		fifo.add(Integer.valueOf(1));
+		fifo.add(Integer.valueOf(2));
+		assertFalse(fifo.add(Integer.valueOf(3)));
 
 		result = (Integer)fifo.get();
-		assertEquals(new Integer(1), result);
+		assertEquals(Integer.valueOf(1), result);
 
 		result = (Integer)fifo.get();
-		assertEquals(new Integer(2), result);
+		assertEquals(Integer.valueOf(2), result);
 
 		// Element 3 was never added, hence will not be retrieved.
 		result = (Integer)fifo.get();
@@ -110,56 +110,56 @@ public final class FifoTest extends TestCase {
 		Queue fifo = new Queue(4);
 		Integer result = null;
 
-		fifo.add(new Integer(1));
-		fifo.add(new Integer(2));
-		fifo.add(new Integer(3));
+		fifo.add(Integer.valueOf(1));
+		fifo.add(Integer.valueOf(2));
+		fifo.add(Integer.valueOf(3));
 
 		result = (Integer)fifo.get();
-		assertEquals(new Integer(1), result);
+		assertEquals(Integer.valueOf(1), result);
 
 		result = (Integer)fifo.get();
-		assertEquals(new Integer(2), result);
+		assertEquals(Integer.valueOf(2), result);
 
-		fifo.add(new Integer(4));
-		fifo.add(new Integer(5));
-		fifo.add(new Integer(6));
+		fifo.add(Integer.valueOf(4));
+		fifo.add(Integer.valueOf(5));
+		fifo.add(Integer.valueOf(6));
 
 		// queue is now full
-		assertFalse(fifo.add(new Integer(7)));
+		assertFalse(fifo.add(Integer.valueOf(7)));
 
 
 		result = (Integer)fifo.get();
-		assertEquals(new Integer(3), result);
+		assertEquals(Integer.valueOf(3), result);
 
-		fifo.add(new Integer(7));
-
-		result = (Integer)fifo.get();
-		assertEquals(new Integer(4), result);
+		fifo.add(Integer.valueOf(7));
 
 		result = (Integer)fifo.get();
-		assertEquals(new Integer(5), result);
+		assertEquals(Integer.valueOf(4), result);
 
 		result = (Integer)fifo.get();
-		assertEquals(new Integer(6), result);
+		assertEquals(Integer.valueOf(5), result);
 
 		result = (Integer)fifo.get();
-		assertEquals(new Integer(7), result);
+		assertEquals(Integer.valueOf(6), result);
+
+		result = (Integer)fifo.get();
+		assertEquals(Integer.valueOf(7), result);
 
 		// again empty
 		assertEquals(true, fifo.isEmpty());
 
-		fifo.add(new Integer(8));
-		fifo.add(new Integer(9));
-		fifo.add(new Integer(10));
+		fifo.add(Integer.valueOf(8));
+		fifo.add(Integer.valueOf(9));
+		fifo.add(Integer.valueOf(10));
 
 		result = (Integer)fifo.get();
-		assertEquals(new Integer(8), result);
+		assertEquals(Integer.valueOf(8), result);
 
 		result = (Integer)fifo.get();
-		assertEquals(new Integer(9), result);
+		assertEquals(Integer.valueOf(9), result);
 
 		result = (Integer)fifo.get();
-		assertEquals(new Integer(10), result);
+		assertEquals(Integer.valueOf(10), result);
 
 		assertEquals(true, fifo.isEmpty());
 	}
@@ -170,31 +170,31 @@ public final class FifoTest extends TestCase {
 
 		// add 40000
 		for ( int idx = 0; idx < 40000; idx++ )  {
-		    fifo.add(new Integer(idx));
+		    fifo.add(Integer.valueOf(idx));
 		}
 
 		// remove 20000
 		for ( int idx = 0; idx < 20000; idx++ )  {
 			result = (Integer)fifo.get();
-			assertEquals(new Integer(idx), result);
+			assertEquals(Integer.valueOf(idx), result);
 		}
 
 		// add 20000
 		for ( int idx = 40000; idx < 40000 + 20000; idx++ )  {
-			fifo.add(new Integer(idx));
+			fifo.add(Integer.valueOf(idx));
 		}
 
 		// remove 40000
 		for ( int idx = 20000; idx < 20000 + 40000; idx++ )  {
 			result = (Integer)fifo.get();
-			assertEquals(new Integer(idx), result);
+			assertEquals(Integer.valueOf(idx), result);
 		}
 
 		assertEquals(true, fifo.isEmpty());
 
 		// add 40000
 		for ( int idx = 0; idx < 40000; idx++ )  {
-			fifo.add(new Integer(idx));
+			fifo.add(Integer.valueOf(idx));
 		}
 
 		assertEquals(false, fifo.isEmpty());
@@ -202,7 +202,7 @@ public final class FifoTest extends TestCase {
 		// remove 40000
 		for ( int idx = 0; idx < 40000; idx++ )  {
 			result = (Integer)fifo.get();
-			assertEquals(new Integer(idx), result);
+			assertEquals(Integer.valueOf(idx), result);
 		}
 
 		assertEquals(true, fifo.isEmpty());
@@ -214,9 +214,8 @@ public final class FifoTest extends TestCase {
 	 */
 	public void testSmallFifo1() {
 		Queue fifo = new Queue(0);
-		Integer result = null;
 
-		assertFalse(fifo.add(new Integer(1)));
+		assertFalse(fifo.add(Integer.valueOf(1)));
 	}
 
 	/**
@@ -224,10 +223,9 @@ public final class FifoTest extends TestCase {
 	 */
 	public void testSmallFifo2() {
 		Queue fifo = new Queue(1);
-		Integer result = null;
 
-		fifo.add(new Integer(1));
-		assertFalse(fifo.add(new Integer(2)));
+		fifo.add(Integer.valueOf(1));
+		assertFalse(fifo.add(Integer.valueOf(2)));
 	}
 
 }

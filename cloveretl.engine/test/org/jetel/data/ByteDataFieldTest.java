@@ -41,7 +41,7 @@ protected void setUp() {
 
     int i=0;
     for(byte b: byteArray){
-        ByteArray[i++]=new Byte(b);
+        ByteArray[i++] = Byte.valueOf(b);
     }
     ByteArray[byteArray.length]=0x41;
     
