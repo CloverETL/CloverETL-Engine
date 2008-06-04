@@ -27,6 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 09/05/06  
@@ -83,7 +85,8 @@ public class WcardPattern {
 	/**
 	 * Wildcard characters.
 	 */
-	private final static char[] WCARD_CHAR = {'*', '?'};
+	@SuppressWarnings("MS")
+	public final static char[] WCARD_CHAR = {'*', '?'};
 	/**
 	 * Regex substitutions for wildcards. 
 	 */
