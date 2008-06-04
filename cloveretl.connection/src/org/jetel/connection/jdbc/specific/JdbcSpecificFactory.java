@@ -19,7 +19,7 @@
 */
 package org.jetel.connection.jdbc.specific;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,7 +42,7 @@ public class JdbcSpecificFactory {
 
     public final static String EXTENSION_POINT_ID = "jdbcSpecific";
 
-    private final static Map<String, JdbcSpecificDescription> jdbcSpecifics = new HashMap<String, JdbcSpecificDescription>();
+    private final static Map<String, JdbcSpecificDescription> jdbcSpecifics = new LinkedHashMap<String, JdbcSpecificDescription>();
     
     public static void init() {
         //ask plugin framework for all jdbc specific extensions
