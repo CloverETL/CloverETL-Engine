@@ -428,14 +428,30 @@ public class DBConnection extends GraphElement implements IConnection {
 			propsToStore.setProperty(XML_JDBC_PROPERTIES_PREFIX + propName, extraProperties.getProperty(propName));
 		}
 
-        propsToStore.setProperty(XML_USER_ATTRIBUTE, getUser());
-        propsToStore.setProperty(XML_PASSWORD_ATTRIBUTE, getPassword());
-        propsToStore.setProperty(XML_DBURL_ATTRIBUTE, getDbUrl());
-        propsToStore.setProperty(XML_DBDRIVER_ATTRIBUTE, getDbDriver());
-        propsToStore.setProperty(XML_DATABASE_ATTRIBUTE, getDatabase());
-        propsToStore.setProperty(XML_DRIVER_LIBRARY_ATTRIBUTE, getDriverLibrary());
-        propsToStore.setProperty(XML_JDBC_SPECIFIC_ATTRIBUTE, getJdbcSpecificId());
-        propsToStore.setProperty(XML_JNDI_NAME_ATTRIBUTE, getJndiName());
+        if(getUser() != null) {
+        	propsToStore.setProperty(XML_USER_ATTRIBUTE, getUser());
+        }
+        if(getPassword() != null) {
+        	propsToStore.setProperty(XML_PASSWORD_ATTRIBUTE, getPassword());
+        }
+        if(getDbUrl() != null) {
+        	propsToStore.setProperty(XML_DBURL_ATTRIBUTE, getDbUrl());
+        }
+        if(getDbDriver() != null) {
+        	propsToStore.setProperty(XML_DBDRIVER_ATTRIBUTE, getDbDriver());
+        }
+        if(getDatabase() != null) {
+        	propsToStore.setProperty(XML_DATABASE_ATTRIBUTE, getDatabase());
+        }
+        if(getDriverLibrary() != null) {
+        	propsToStore.setProperty(XML_DRIVER_LIBRARY_ATTRIBUTE, getDriverLibrary());
+        }
+        if(getJdbcSpecificId() != null) {
+        	propsToStore.setProperty(XML_JDBC_SPECIFIC_ATTRIBUTE, getJdbcSpecificId());
+        }
+        if(getJndiName() != null) {
+        	propsToStore.setProperty(XML_JNDI_NAME_ATTRIBUTE, getJndiName());
+        }
         propsToStore.setProperty(XML_THREAD_SAFE_CONNECTIONS, Boolean.toString(isThreadSafeConnections()));
         propsToStore.setProperty(XML_IS_PASSWORD_ENCRYPTED, Boolean.toString(isPasswordEncrypted()));
 
