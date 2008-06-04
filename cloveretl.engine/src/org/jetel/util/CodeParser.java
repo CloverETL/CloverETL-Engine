@@ -37,6 +37,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 /**
  * The purpose for this class is to handle parsing java code enhanced with
  * cloverETL syntax.  Initially cloverETL syntax will support references
@@ -190,7 +192,7 @@ public class CodeParser {
 
 	private final static char GET_OPCODE = 'G';
 	private final static char SET_OPCODE = 'S';
-	private final static char UNKNOWN_OPCODE = (char) -1;
+//unused	private final static char UNKNOWN_OPCODE = (char) -1;
 
 	static Log logger = LogFactory.getLog(CodeParser.class);
 
@@ -198,6 +200,7 @@ public class CodeParser {
 	 * @param  inputRecords   Description of the Parameter
 	 * @param  outputRecords  Description of the Parameter
 	 */
+	@SuppressWarnings("EI2")
 	public CodeParser(DataRecordMetadata[] inputMetadatas, DataRecordMetadata[] outputMetadatas) {
 	    
 	    //initialization metadata arrays based on given ports
@@ -973,6 +976,7 @@ public class CodeParser {
 	}
 
 	
+	@SuppressWarnings("EI2")
 	public void setClassImports(String classNames[]){
 		this.classImports=classNames;
 	}
@@ -1104,11 +1108,9 @@ public class CodeParser {
 	    String direction;
 	    int		fieldNum;
 	    int		recNum;
-	    String recordName;
 	    
 	    FieldReference(String recName,int recNum,String name,String direction,int num){
 	        this.fieldName=name;
-	        this.recordName=recName;
 	        this.fieldNum=num;
 	        this.recNum=recNum;
 	        this.direction=direction;

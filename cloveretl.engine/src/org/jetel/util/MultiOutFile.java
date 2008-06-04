@@ -94,7 +94,7 @@ public class MultiOutFile implements Iterator<String> {
 		}
 		if (digitCnt == 0) {
 			counter++;
-			return beforeNum.toString();
+			return beforeNum;
 		}
 		String retval = String.format("%s%0" + digitCnt + "d%s", beforeNum, counter, afterNum);
 		counter++;

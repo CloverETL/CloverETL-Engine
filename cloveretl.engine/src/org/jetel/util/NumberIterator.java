@@ -137,7 +137,7 @@ public class NumberIterator implements Iterator<Integer>{
 	 * @since Feb 23, 2007
 	 *
 	 */
-	private class IntervalIterator implements Iterator<Integer>{
+	private static class IntervalIterator implements Iterator<Integer>{
 		
 		public final static int FIRST_ELEMENT = Integer.MIN_VALUE;
 		public final static int LAST_ELEMENT = Integer.MAX_VALUE;

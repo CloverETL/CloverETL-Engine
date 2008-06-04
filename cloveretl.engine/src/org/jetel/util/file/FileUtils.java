@@ -45,6 +45,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.MultiOutFile;
@@ -81,6 +83,8 @@ public class FileUtils {
 
 	// file protocol name
 	private static final String FILE_PROTOCOL = "file";
+	
+	private static final Log log = LogFactory.getLog(FileUtils.class);
 	
     public static URL getFileURL(String fileURL) throws MalformedURLException {
     	return getFileURL((URL) null, fileURL);
@@ -155,33 +159,42 @@ public class FileUtils {
 		}
 
 		StringBuffer sb = new StringBuffer(2048);
+        char[] charBuf=new char[256];
 		try {
-            char[] charBuf=new char[256];
-            BufferedReader in=new BufferedReader(new InputStreamReader(url.openStream(), chSet));
-            int readNum;
-            
-            while ((readNum=in.read(charBuf,0,charBuf.length)) != -1) {
-                sb.append(charBuf,0,readNum);
-            }
-        } catch(IOException ex) {
-            throw new RuntimeException("Can't get string from file " + fileURL + " : " + ex.getMessage());
-        }
+			BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream(), chSet));
+			try {
+				int readNum;
+
+				while ((readNum = in.read(charBuf, 0, charBuf.length)) != -1) {
+					sb.append(charBuf, 0, readNum);
+				}
+			} finally {
+				in.close();
+			}
+		} catch (IOException ex) {
+			throw new RuntimeException("Can't get string from file " + fileURL + " : " + ex.getMessage());
+		}
         return sb.toString();
 	}
 	
     /**
-     * Creates ReadableByteChannel from the url definition.
-     * <p>All standard url format are acceptable plus extended form of url by zip & gzip construction:</p>
-     * Examples:
-     * <dl>
-     *  <dd>zip:&lt;url_to_zip_file&gt;#&lt;inzip_path_to_file&gt;</dd>
-     *  <dd>gzip:&lt;url_to_gzip_file&gt;</dd>
-     * </dl>
-     * @param contextURL context URL for converting relative to absolute path (see TransformationGraph.getProjectURL()) 
-     * @param input URL of file to read
-     * @return
-     * @throws IOException
-     */
+	 * Creates ReadableByteChannel from the url definition.
+	 * <p>
+	 * All standard url format are acceptable plus extended form of url by zip & gzip construction:
+	 * </p>
+	 * Examples:
+	 * <dl>
+	 * <dd>zip:&lt;url_to_zip_file&gt;#&lt;inzip_path_to_file&gt;</dd>
+	 * <dd>gzip:&lt;url_to_gzip_file&gt;</dd>
+	 * </dl>
+	 * 
+	 * @param contextURL
+	 *            context URL for converting relative to absolute path (see TransformationGraph.getProjectURL())
+	 * @param input
+	 *            URL of file to read
+	 * @return
+	 * @throws IOException
+	 */
     public static ReadableByteChannel getReadableChannel(URL contextURL, String input) throws IOException {
         String zipAnchor = null;
         URL url = null;
@@ -390,7 +403,10 @@ public class FileUtils {
 				throw new ComponentNotReadyException(e + ": " + fileURL);
 			}
 			if (tmp) {
-				file.delete();
+				boolean deleted = file.delete();
+				if (!deleted) {
+					log.error("error delete " + file.getAbsolutePath());
+				}
 			}
 		}
 		if (!tmp) {
@@ -414,7 +430,12 @@ public class FileUtils {
 				
 		//clean up
 		for (File dir : dirs) {
-			if (dir.exists()) dir.delete();
+			if (dir.exists()) {
+				boolean deleted = dir.delete();
+				if( !deleted ){
+					log.error("error delete " + dir.getAbsolutePath());
+				}
+			}
 		}
 		
 		return result;

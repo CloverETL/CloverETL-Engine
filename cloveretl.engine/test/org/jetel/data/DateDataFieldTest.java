@@ -54,7 +54,7 @@ protected void setUp() {
 	fixedFieldMeta2.setNullable(false);
 	aDateDataField2 = new DateDataField(fixedFieldMeta2);
 
-	calendar = new GregorianCalendar(2002,6,10);
+//	calendar = new GregorianCalendar(2002,6,10);
 	trialTime1 = null;
 //	trialTime1 = calendar.getTime(); 
 	DataFieldMetadata delimFieldMeta1 = new DataFieldMetadata("Field1",'D',";");

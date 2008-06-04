@@ -28,16 +28,16 @@ import junit.framework.TestCase;
  *
  */
 public class DataRecordMetadataTest extends TestCase {
-	private DataRecordMetadata aFixedDataRecordMetadata;
+//	private DataRecordMetadata aFixedDataRecordMetadata;
 	private DataRecordMetadata aDelimitedDataRecordMetadata;
 	
 	protected void setUp() { 
-		aFixedDataRecordMetadata = new DataRecordMetadata("record1",DataRecordMetadata.FIXEDLEN_RECORD);
+//		aFixedDataRecordMetadata = new DataRecordMetadata("record1",DataRecordMetadata.FIXEDLEN_RECORD);
 		aDelimitedDataRecordMetadata = new DataRecordMetadata("record2",DataRecordMetadata.DELIMITED_RECORD);
 	}
 
 	protected void tearDown() {
-		aFixedDataRecordMetadata = null;
+//		aFixedDataRecordMetadata = null;
 		aDelimitedDataRecordMetadata = null;
 	}
 
@@ -56,7 +56,7 @@ public class DataRecordMetadataTest extends TestCase {
 		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field4",DataFieldMetadata.INTEGER_FIELD,";"));
 		assertEquals(5, aDelimitedDataRecordMetadata.getNumFields());
 		aDataFieldMetadata  = aDelimitedDataRecordMetadata.getField(1);
-		if (aDataFieldMetadata==null) System.out.println("NULL returned!");
+		assertNotNull(aDataFieldMetadata);
 		assertEquals(DataFieldMetadata.BYTE_FIELD, aDataFieldMetadata.getType() );
 		assertEquals(":", aDataFieldMetadata.getDelimiters()[0] );
 		assertEquals("Field1", aDataFieldMetadata.getName());

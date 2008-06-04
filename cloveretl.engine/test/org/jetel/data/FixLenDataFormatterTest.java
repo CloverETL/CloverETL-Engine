@@ -58,7 +58,7 @@ protected void setUp() {
 	EngineInitializer.initEngine((String) null, null, null);
 	FileInputStream in = null;
 //	FileInputStream in2 = null;
-	FileInputStream in3 = null;
+//	FileInputStream in3 = null;
 	metadata = null;
 	DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 			
@@ -70,7 +70,7 @@ protected void setUp() {
 		metadata = xmlReader.read(new FileInputStream("config/test/rec_def/FL28_null_def_rec.xml"));
 		in = new FileInputStream("data/in/good/FL28_no_NL.txt");
 //		in2 = new FileInputStream("data/in/bad/FL28_no_NL_nulls.txt");
-		in3 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
+//		in3 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
 	} catch(FileNotFoundException e){
 		e.printStackTrace();
 	}
@@ -80,7 +80,8 @@ protected void setUp() {
 	testFile1 = "data/out/test1.txt";	
 	File aFile=new File(testFile1);
 	 if(!aFile.exists()) {
-		new File(aFile.getParent()).mkdir();
+		final boolean created = new File(aFile.getParent()).mkdir();
+		assertTrue(created);
 		try {
 			aFile.createNewFile();
 		} catch (IOException e3) {
@@ -141,7 +142,8 @@ protected void setUp() {
 	   //remove testFile if any
 	   File aFile=new File(testFile1);
 		if(aFile.exists()) {
-			aFile.delete();
+			final boolean deleted = aFile.delete();
+			assertTrue(deleted);
 		}
    }
 
@@ -154,7 +156,7 @@ public void test_parsing_bad() {
 //	N/AStone    101   01/11/93-15.5          112   11/03/02 -0.7Bone Broo    99        //
 	int recCount = 0;
 
-	InputStream in2 = new ByteArrayInputStream(new String("	N/AStone    101   01/11/93-15.5          112   11/03/02 -0.7Bone Broo    99").getBytes());	
+	InputStream in2 = new ByteArrayInputStream("	N/AStone    101   01/11/93-15.5          112   11/03/02 -0.7Bone Broo    99".getBytes());	
 	aParser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
 	try {
 		aParser.init(metadata);

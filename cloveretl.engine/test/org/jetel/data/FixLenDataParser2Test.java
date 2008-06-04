@@ -49,7 +49,7 @@ private DataRecord record;
 protected void setUp() { 
 	
 	EngineInitializer.initEngine((String) null, null, null);
-	FileInputStream in = null;
+//	FileInputStream in = null;
 	FileInputStream in2 = null;
 //	FileInputStream in3 = null;
 	DataRecordMetadata metadata = null;
@@ -57,7 +57,7 @@ protected void setUp() {
 			
 	try {
 		metadata = xmlReader.read(new FileInputStream("config/test/rec_def/FL28_null_def_rec.xml"));
-		in = new FileInputStream("data/in/good/FL28_no_NL.txt");
+//		in = new FileInputStream("data/in/good/FL28_no_NL.txt");
 		in2 = new FileInputStream("data/in/bad/FL28_no_NL_nulls.txt");
 //		in3 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
 	} catch(FileNotFoundException e){
@@ -108,7 +108,7 @@ public void test_parsing_bad() {
 //  N/AStone    101   01/11/93-15.5          112  11/03/02 -0.7Bone Broo    99        //
 	int recCount = 0;
 
-	InputStream in3 = new ByteArrayInputStream(new String("  N/AStone    101   01/11/93-15.5          112  11/03/02 -0.7Bone Broo    99").getBytes());
+	InputStream in3 = new ByteArrayInputStream("  N/AStone    101   01/11/93-15.5          112  11/03/02 -0.7Bone Broo    99".getBytes());
 	
 	aParser.setDataSource(in3);
 	

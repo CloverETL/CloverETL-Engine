@@ -188,7 +188,10 @@ public class Compiler {
             return false; //is already compiled
         } //else we need to recompile the source file
         
-        destFile.delete(); 
+        final boolean deleted = destFile.delete();
+		if (!deleted) {
+			logger.error("error delete file " + destFile.getAbsolutePath());
+		}
         return true;
     }
     
