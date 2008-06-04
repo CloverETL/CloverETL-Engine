@@ -40,6 +40,7 @@ import java.util.Locale;
  */
 public class NumericFormat extends NumberFormat {
 
+	private static final long serialVersionUID = -8679114296443485956L;
 	
 	private DecimalFormat dFormat;
 	private static char[] EXPONENT_SYMBOL = {'E','e'};

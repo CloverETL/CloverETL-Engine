@@ -46,6 +46,8 @@ import org.jetel.util.string.StringUtils;
  */
 public class BooleanDataField extends DataField implements Comparable{
 
+	private static final long serialVersionUID = 7318127447273839212L;
+	
 	private boolean value;
 	private StringFormat trueStringFormat = null;
 	private StringFormat falseStringFormat = null;

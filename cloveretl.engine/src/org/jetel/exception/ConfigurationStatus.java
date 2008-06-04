@@ -35,7 +35,9 @@ import org.jetel.graph.GraphElement;
  */
 public class ConfigurationStatus extends LinkedList<ConfigurationProblem> {
 
-    private static Log logger = LogFactory.getLog(ConfigurationStatus.class);
+	private static final long serialVersionUID = -8680194056314131978L;
+	
+	private static Log logger = LogFactory.getLog(ConfigurationStatus.class);
 
     public enum Severity {
         ERROR, INFO, WARNING

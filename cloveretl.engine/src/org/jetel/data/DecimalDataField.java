@@ -45,6 +45,8 @@ import org.jetel.util.string.StringUtils;
  */
 public class DecimalDataField extends DataField implements Numeric, Comparable {
 
+	private static final long serialVersionUID = -9212721402316376203L;
+	
 	private Decimal value;
 	private int precision;
 	private int scale;
