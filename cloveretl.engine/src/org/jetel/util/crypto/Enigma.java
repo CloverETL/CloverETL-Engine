@@ -68,8 +68,8 @@ public class Enigma {
         try {
             byte[] out = cipher.doFinal(input.getBytes());
             return Base64.encodeBytes(out);
-        } catch (Exception e) {
-            throw new JetelException("Enigma is not valid initialized.");
+        } catch (Throwable e) {
+            throw new JetelException("Enigma is not valid initialized.", e);
         }
     }
 
@@ -80,12 +80,11 @@ public class Enigma {
         
         initCipher(Cipher.DECRYPT_MODE);
         try {
-            
             byte[] out = Base64.decode(input);
             out = cipher.doFinal(out);
             return new String(out);
-        } catch (Exception e) {
-            throw new JetelException("Enigma is not valid initialized.");
+        } catch (Throwable e) {
+            throw new JetelException("Enigma is not valid initialized.", e);
         }
     }
 
@@ -102,8 +101,8 @@ public class Enigma {
                     throw new JetelException("Algorithm parameters are not valid class.");
                 }
             }
-        } catch (Exception e) {
-            throw new JetelException("Enigma is not valid initialized.");
+        } catch (Throwable e) {
+            throw new JetelException("Enigma is not valid initialized.", e);
         }
     }
     
