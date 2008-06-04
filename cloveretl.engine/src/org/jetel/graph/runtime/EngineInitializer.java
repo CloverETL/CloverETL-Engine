@@ -76,13 +76,13 @@ public class EngineInitializer {
 
     /**
      * Clover.ETL engine initialization. Should be called only once.
-     * @param pluginsRootUrls URL, where plugins specification is located 
+     * @param pluginsUrls locations of all engine plugin 
      * @param defaultPropertiesFile file with external definition of default values usually stored in defaultProperties
      * @param password password for encrypting some hidden part of graphs
      *        <br>i.e. connections password can be encrypted
      *        <br>can be null
      */
-    public static void initEngine(URL[] pluginsRootUrls, String defaultPropertiesFile, String logHost) {
+    public static void initEngine(URL[] pluginsUrls, String defaultPropertiesFile, String logHost) {
     	if(alreadyInitialized) {
     		//clover engine is already initialized
     		return;
@@ -95,7 +95,7 @@ public class EngineInitializer {
         Defaults.init(defaultPropertiesFile);
 
         //init clover plugins system
-        Plugins.init(pluginsRootUrls);
+        Plugins.init(pluginsUrls);
         
         //make a note, engine is already initialized
         alreadyInitialized = true;
