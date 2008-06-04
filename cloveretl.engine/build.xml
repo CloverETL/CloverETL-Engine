@@ -442,7 +442,7 @@
 		</taskdef>
 	</target>
 	
-	<target name="findbugs-html" depends="init,findbugs-init,compile">
+	<target name="findbugs-html" depends="init,findbugs-init,compile,compile-tests">
 		<mkdir dir="${dir.findbugsreport}"/>
 		<findbugs 
 				home="${dir.findbugs}" 
@@ -450,9 +450,12 @@
 				outputfile="${dir.findbugsreport}/bugreport.html" 
 				stylesheet="fancy-hist.xsl"
 				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
-				effort="max">
+				effort="max"
+				reportlevel="low">
 			<class location="${dir.bin}"/>
+			<class location="${dir.classestest}"/>
 			<sourcePath path="${dir.src}" />
+			<sourcePath path="${dir.src.test}" />
 		</findbugs>
 	</target>
 	
@@ -463,9 +466,12 @@
 				output="xml"
 				outputfile="${dir.findbugsreport}/bugreport.xml" 
 				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
-				effort="max">
+				effort="max"
+				reportlevel="low">
 			<class location="${dir.bin}"/>
-			<sourcePath path="${dir.src}"/>
+			<class location="${dir.classestest}"/>
+			<sourcePath path="${dir.src}" />
+			<sourcePath path="${dir.src.test}" />
 		</findbugs>
 	</target>
 	
