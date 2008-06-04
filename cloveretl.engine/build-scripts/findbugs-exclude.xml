@@ -25,4 +25,11 @@
        <Class name="~org\.jetel\.interpreter\.TransformLangParser[^.]*" />
      </Match>
 
+     <Match>
+		<Bug code="PZLA"/>
+	</Match>
+     <Match>
+		<Bug code="UwF"/>
+	</Match>
+
 </FindBugsFilter>
