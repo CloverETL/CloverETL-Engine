@@ -19,11 +19,7 @@
 */
 package org.jetel.plugin;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -145,76 +141,28 @@ public class Plugins {
 
     private static void loadPluginDescription() {
     	//iterates over all plugin repositories
-        for(URL pluginsRepositoryUrl : pluginDirectories) {
-        	//url uses file protocol - take advantage of ability to list a directory in a harddrive
-        	if(pluginsRepositoryUrl.getProtocol().equals("file")) {
-        		File pluginRepositoryPath = new File(pluginsRepositoryUrl.getPath());
-        		File[] pd = pluginRepositoryPath.listFiles();
-        		if(pd == null) {
-        			logger.error("Plugins repository '" + pluginRepositoryPath + "' is not available (skipped).");
-        			continue;
-        		}
-        		for(int i = 0; i < pd.length; i++) {
-        			if(pd[i].isDirectory()) {
-        				File[] manifest = pd[i].listFiles(new FilenameFilter() {
-        					public boolean accept(File dir, String name) {
-        						return name.equals("plugin.xml");
-        					}
-        				});
-        				if(manifest.length == 1) {
-        					PluginDescriptor pluginDescriptor;
-							try {
-								pluginDescriptor = new PluginDescriptor(manifest[0].toURI().toURL());
-							} catch (MalformedURLException e1) {
-								logger.error("Plugin manifest is not available for '" + pd[i] + "' plugin.");
-								continue;
-							}
-        					try {
-        						pluginDescriptor.init();
-        					} catch (ComponentNotReadyException e) {
-        						//manifest is not parsable
-        						continue;
-        					}
-        					pluginDescriptors.put(pluginDescriptor.getId(), pluginDescriptor);
-        					logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.\n" + pluginDescriptor.toString());
-        				}
-        			}
-        		}
-        	} else {
-            	//url uses another protocol 
-	        	URL pluginListUrl;
-				try {
-					//try to find "pluginlist" file with a list of all contained plugins
-					pluginListUrl = FileUtils.getFileURL(pluginsRepositoryUrl, "pluginlist");
-		        	BufferedReader br = new BufferedReader(new InputStreamReader(pluginListUrl.openStream()));
-		        	String pluginId;
-		        	//process each plugin
-		        	while((pluginId = br.readLine()) != null) {
-		        		URL pluginManifestUrl;
-		        		try {
-		        			//find a plugin manifest "plugin.xml"
-		        			pluginManifestUrl = FileUtils.getFileURL(pluginListUrl, pluginId + "/plugin.xml");
-		    			} catch (MalformedURLException e) {
-		    				logger.error("Plugin '" + pluginId + "' is not available (skipped).", e);
-		    				continue;
-		    			}
-		        		PluginDescriptor pluginDescriptor = new PluginDescriptor(pluginManifestUrl);
-		        		try {
-		        			pluginDescriptor.init();
-		        		} catch (ComponentNotReadyException e) {
-		        			//manifest is not parsable
-		        			continue;
-		        		}
-		        		//stores prepared plugin descriptor
-		        		pluginDescriptors.put(pluginDescriptor.getId(), pluginDescriptor);
-		        		logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.\n" + pluginDescriptor.toString());
-		        	}
-				} catch (MalformedURLException e) {
-					logger.error("Plugins repository '" + pluginsRepositoryUrl + "' is not valid URL (skipped).", e);
-				} catch (IOException e) {
-					logger.error("Plugins repository '" + pluginsRepositoryUrl + "' does not contain pluginlist file (skipped).", e);
-				}
-        	}
+        for(URL pluginUrl : pluginDirectories) {
+        	
+        	
+    		URL pluginManifestUrl;
+    		try {
+    			//find a plugin manifest "plugin.xml"
+    			pluginManifestUrl = FileUtils.getFileURL(pluginUrl, "plugin.xml");
+			} catch (MalformedURLException e) {
+				logger.error("Plugin '" + pluginUrl + "' is not available (skipped).", e);
+				continue;
+			}
+    		PluginDescriptor pluginDescriptor = new PluginDescriptor(pluginManifestUrl);
+    		try {
+    			pluginDescriptor.init();
+    		} catch (ComponentNotReadyException e) {
+    			//manifest is not parsable
+				//logger.error("Plugin manifest '" + pluginManifestUrl + "' is not parsable (skipped).", e);
+    			continue;
+    		}
+    		//stores prepared plugin descriptor
+    		pluginDescriptors.put(pluginDescriptor.getId(), pluginDescriptor);
+    		logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.\n" + pluginDescriptor.toString());
         }
     }
 
