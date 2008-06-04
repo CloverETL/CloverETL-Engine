@@ -85,7 +85,8 @@ public class FixLenDataFormatterTest extends TestCase {
 				final boolean created = parentFile.mkdir();
 				assertTrue("error create directory " + parentFile.getAbsolutePath(), created);
 			}
-			aFile.createNewFile();
+			final boolean created = aFile.createNewFile();
+			assertTrue("error creating file "+ aFile.getAbsolutePath(), created);
 		}
 		aFixLenDataFormatter = new FixLenDataFormatter();
 		aFixLenDataFormatter.init(metadata);
@@ -152,7 +153,7 @@ public class FixLenDataFormatterTest extends TestCase {
 			aFixLenDataFormatter.write(record);
 			fail("Should raise an BadDataFormatException");
 		} catch (BadDataFormatException e) {
-		} catch (Exception ee) {
+		} catch (Throwable ee) {
 			fail("Should not throw Exception");
 		}
 
@@ -164,7 +165,7 @@ public class FixLenDataFormatterTest extends TestCase {
 			aFixLenDataFormatter.close();
 		} catch (BadDataFormatException e) {
 			fail("Should not raise an BadDataFormatException");
-		} catch (Exception ee) {
+		} catch (Throwable ee) {
 			fail("Should not throw Exception");
 		}
 
@@ -191,7 +192,7 @@ public class FixLenDataFormatterTest extends TestCase {
 			}
 		} catch (BadDataFormatException e) {
 			fail("Should not raise an BadDataFormatException");
-		} catch (Exception ee) {
+		} catch (Throwable ee) {
 			fail("Should not throw Exception");
 		}
 		assertEquals(2, recCount);
@@ -213,7 +214,7 @@ public class FixLenDataFormatterTest extends TestCase {
 			aFixLenDataFormatter.close();
 		} catch (BadDataFormatException e) {
 			fail("Should not raise an BadDataFormatException");
-		} catch (Exception ee) {
+		} catch (Throwable ee) {
 			fail("Should not throw Exception");
 		}
 
@@ -245,7 +246,7 @@ public class FixLenDataFormatterTest extends TestCase {
 			}
 		} catch (BadDataFormatException e) {
 			fail("Should not raise an BadDataFormatException");
-		} catch (Exception ee) {
+		} catch (Throwable ee) {
 			fail("Should not throw Exception");
 		}
 		assertEquals(4, recCount);
@@ -268,7 +269,7 @@ public class FixLenDataFormatterTest extends TestCase {
 			aFixLenDataFormatter.close();
 		} catch (BadDataFormatException e) {
 			fail("Should not raise an BadDataFormatException");
-		} catch (Exception ee) {
+		} catch (Throwable ee) {
 			fail("Should not throw Exception");
 		}
 
@@ -300,7 +301,7 @@ public class FixLenDataFormatterTest extends TestCase {
 			}
 		} catch (BadDataFormatException e) {
 			fail("Should not raise an BadDataFormatException");
-		} catch (Exception ee) {
+		} catch (Throwable ee) {
 			fail("Should not throw Exception");
 		}
 		assertEquals(4, recCount);
