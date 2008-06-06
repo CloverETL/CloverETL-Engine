@@ -388,7 +388,7 @@ public class runGraph {
 			EngineInitializer.initGraph(graph, runtimeContext);
 
         IThreadManager threadManager = new SimpleThreadManager();
-        WatchDog watchDog = new WatchDog(threadManager, graph, runtimeContext);
+        WatchDog watchDog = new WatchDog(graph, runtimeContext);
 		return threadManager.executeWatchDog(watchDog);
 	}
     

@@ -29,8 +29,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
-import org.jetel.graph.runtime.PhaseTrackingDetail;
-import org.jetel.graph.runtime.TrackingDetail;
+import org.jetel.graph.runtime.jmx.PhaseTrackingDetail;
+import org.jetel.graph.runtime.jmx.TrackingDetail;
 
 /**
  * A class that represents processing Phase of Transformation Graph
@@ -252,6 +252,7 @@ public class Phase extends GraphElement implements Comparable {
         }
     }
 
+    //TODO this method should be removed; edges in a phase are determined by a set of nodes
 	public void addEdge(Edge edge) throws GraphConfigurationException{
 		Node writer = edge.getWriter();
 		if(writer == null) {
@@ -271,6 +272,7 @@ public class Phase extends GraphElement implements Comparable {
      * @param edges
      * @throws GraphConfigurationException
      */
+    //TODO this method should be removed; edges in a phase are determined by a set of nodes
     public void addEdge(Edge ... edges) throws GraphConfigurationException{
     	for(int i=0;i<edges.length;i++){
     		addEdge(edges[i]);

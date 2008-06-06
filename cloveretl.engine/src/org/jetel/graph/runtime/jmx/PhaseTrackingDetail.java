@@ -21,9 +21,11 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package org.jetel.graph.runtime;
+package org.jetel.graph.runtime.jmx;
 
 import java.io.Serializable;
+
+import org.jetel.graph.Result;
 
 public class PhaseTrackingDetail implements Serializable {
     
@@ -86,4 +88,9 @@ public class PhaseTrackingDetail implements Serializable {
         this.memUtilization = phaseMemUtilization;
     }
 
+    public Result getResult() {
+    	//TODO
+    	return Result.N_A;
+    }
+    
 }

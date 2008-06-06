@@ -21,7 +21,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package org.jetel.graph.runtime;
+package org.jetel.graph.runtime.jmx;
 
 
 public interface CloverJMXMBean {
@@ -34,7 +34,7 @@ public interface CloverJMXMBean {
     public String getCloverVersion();
     
     /**
-     * Client (JMX listener) has to give notification about itsself
+     * Client (JMX listener) has to give notification about itself
      * to the server. This information can be used for some kind
      * of optimalization in case no clients are connected.
      */
