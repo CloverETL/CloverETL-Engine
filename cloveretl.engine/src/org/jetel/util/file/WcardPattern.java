@@ -43,7 +43,7 @@ public class WcardPattern {
 	/**
 	 * Filename filter for wildcard matching.
 	 */
-	private static class wcardFilter implements FilenameFilter {
+	private static class WcardFilter implements FilenameFilter {
 		/**
 		 * Regex pattern equivalent to specified wildcard pattern.
 		 */
@@ -53,7 +53,7 @@ public class WcardPattern {
 		 * ctor. Creates regex pattern so that it is equivalent to given wildcard pattern. 
 		 * @param str Wildcard pattern. 
 		 */
-		public wcardFilter(String str) {
+		public WcardFilter(String str) {
 
 			StringBuffer regex = new StringBuffer(str);
 			regex.insert(0, REGEX_START_ANCHOR + REGEX_START_QUOTE);
@@ -198,7 +198,7 @@ public class WcardPattern {
 			} else {
 				File dir = new File(dirName.toString());
 				if (dir.exists()) {
-					FilenameFilter filter = new wcardFilter(filePat.toString());
+					FilenameFilter filter = new WcardFilter(filePat.toString());
 					String[] curMatch = dir.list(filter);
 					Arrays.sort(curMatch);
 					for (int fnIdx = 0; fnIdx < curMatch.length; fnIdx++) {
@@ -212,7 +212,7 @@ public class WcardPattern {
 	}
 
 	public static boolean checkName(String pattern, String name){
-		return new wcardFilter(pattern).accept(name);
+		return new WcardFilter(pattern).accept(name);
 	}
 	
 }

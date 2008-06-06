@@ -27,6 +27,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 
 /**
  * Simple cache based on LinkedHashMap.<br>
@@ -176,6 +178,7 @@ public class SimpleCache {
      * @author avackova
      *
      */
+    @SuppressWarnings("Se")
     class StoreMap extends LinkedHashMap{
     	
 		private static final long serialVersionUID = 7137792243985321904L;
