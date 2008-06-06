@@ -79,7 +79,7 @@ public class Message<T> implements Comparable<Message>{
      * @since 13.12.2006
      */
     public T getBody() {
-        return (T)body;
+        return body;
     }
 
     /**
