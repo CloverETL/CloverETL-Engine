@@ -112,6 +112,7 @@ public class MultiLevelReader extends Node {
 	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "MULTI_LEVEL_READER";
+	private final static int INPUT_PORT = 0;
 
 	private String fileURL;
 
@@ -275,11 +276,15 @@ public class MultiLevelReader extends Node {
         parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 
         // initialize multifile reader based on prepared parser
-        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+		TransformationGraph graph = getGraph();
+        reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
         reader.setLogger(logger);
         reader.setFileSkip(skipFirstLine ? 1 : 0);
         reader.setSkip(skipRows);
         reader.setNumRecords(numRecords);
+        reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
+        reader.setCharset(charset);
+        reader.setDictionary(graph.getDictionary());
         reader.init(null);
         output = (OutputPort[])getOutPorts().toArray(new OutputPort[0]);
 	}

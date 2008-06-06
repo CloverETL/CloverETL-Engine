@@ -23,10 +23,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.CharacterCodingException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -39,6 +37,7 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.OutputPort;
+import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -94,9 +93,10 @@ public class MultiFileWriter {
 	private int numberFileTag;
 	
 	private OutputPort outputPort;
-	private List<DataPreparedListener> listListener;
 
 	private String charset;
+
+	private Dictionary dictionary;
 	
     /**
      * Constructor.
@@ -179,8 +179,8 @@ public class MultiFileWriter {
     			currentTarget.close();
     		currentTarget = createNewTarget(currentFormatter);
     		currentTarget.setOutputPort(outputPort);
-    		currentTarget.setRecordPreparedListener(listListener = new ArrayList<DataPreparedListener>());
     		currentTarget.setCharset(charset);
+    		currentTarget.setDictionary(dictionary);
     		try {
 				currentTarget.init();
 			} catch (IOException e) {
@@ -294,8 +294,8 @@ public class MultiFileWriter {
     	if ((currentTarget = multiTarget.get(keyString)) == null) {
     		currentTarget = createNewTarget();
     		currentTarget.setFileTag(useNumberFileTag ? numberFileTag++ : keyString);
+    		currentTarget.setDictionary(dictionary);
     		currentTarget.init();
-    		currentTarget.setRecordPreparedListener(listListener);
     		multiTarget.put(keyString, currentTarget);
     	}
 		currentFormatter = currentTarget.getFormatter();
@@ -552,20 +552,6 @@ public class MultiFileWriter {
     	this.outputPort = outputPort;
     }
 
-	public DataRecord getOuputRecord() {
-		return currentTarget.getOutputRecord();
-	}
-
-	public void addDataPreparedListener(DataPreparedListener dataPreparedListener) {
-		listListener.add(dataPreparedListener);
-	}
-	
-	public static abstract class DataPreparedListener {
-		public DataPreparedListener() {
-		}
-		public abstract void dataPrepared();
-	}
-
 	public boolean isFinished() {
     	if (multiTarget != null) {
         	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
@@ -581,5 +567,9 @@ public class MultiFileWriter {
 
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	public void setDictionary(Dictionary dictionary) {
+		this.dictionary = dictionary;
 	}
 }

@@ -173,6 +173,7 @@ public class StructureWriter extends Node {
 	private final static int BODY_PORT = 0;
 	private final static int HEADER_PORT = 1;
 	private final static int FOOTER_PORT = 2;
+	private final static int OUTPUT_PORT = 0;
 	
 	private String charset;
 
@@ -294,12 +295,13 @@ public class StructureWriter extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		TransformationGraph graph = getGraph();
 		
 		initLookupTable();
 
 		// based on file mask, create/open output file
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, graph != null ? graph.getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel =  new SystemOutByteChannel();
@@ -312,6 +314,8 @@ public class StructureWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
+        writer.setDictionary(graph.getDictionary());
+        writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         if (attrPartitionKey != null) {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));

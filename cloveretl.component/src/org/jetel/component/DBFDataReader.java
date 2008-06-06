@@ -117,6 +117,7 @@ public class DBFDataReader extends Node {
 
 	private static Log logger = LogFactory.getLog(DBFDataReader.class);
 
+	private final static int INPUT_PORT = 0;
 	private final static int OUTPUT_PORT = 0;
     private MultiFileReader reader;
     private PolicyType policyType;
@@ -127,6 +128,7 @@ public class DBFDataReader extends Node {
     private String incrementalKey;
 
 	private DBFDataParser parser;
+	private String charset;
 
 
 	/**
@@ -152,7 +154,7 @@ public class DBFDataReader extends Node {
 	public DBFDataReader(String id, String fileURL, String charset) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new DBFDataParser(charset);
+		parser = new DBFDataParser(this.charset = charset);
 	}
 
 	@Override
@@ -230,14 +232,18 @@ public class DBFDataReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		TransformationGraph graph = getGraph();
 
         // initialize multifile reader based on prepared parser
-        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+        reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
         reader.setLogger(logger);
         reader.setSkip(skipRows);
         reader.setNumRecords(numRecords);
         reader.setIncrementalFile(incrementalFile);
         reader.setIncrementalKey(incrementalKey);
+        reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
+        reader.setCharset(charset);
+        reader.setDictionary(graph.getDictionary());
 		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 

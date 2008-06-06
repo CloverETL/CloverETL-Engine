@@ -131,6 +131,7 @@ public class FixLenDataWriter extends Node {
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "FIXLEN_DATA_WRITER";
 	private final static int READ_FROM_PORT = 0;
+	private final static int OUTPUT_PORT = 0;
 
 
 	/**
@@ -185,12 +186,13 @@ public class FixLenDataWriter extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		TransformationGraph graph = getGraph();
 		
 		initLookupTable();
 		
         // initialize multifile writer based on prepared formatter
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, graph != null ? graph.getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = new SystemOutByteChannel();
@@ -214,6 +216,8 @@ public class FixLenDataWriter extends Node {
         if(outputFieldNames) {
         	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
+        writer.setDictionary(graph.getDictionary());
+        writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 	

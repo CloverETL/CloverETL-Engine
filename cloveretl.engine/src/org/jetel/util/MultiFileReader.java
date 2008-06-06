@@ -41,6 +41,7 @@ import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
+import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
 
@@ -90,6 +91,7 @@ public class MultiFileReader {
     
     private InputPort inputPort;
 	private String charset;
+	private Dictionary dictionary;
     
     private static final String GLOBAL_ROW_COUNT = "global_row_count";
     private static final String SOURCE_ROW_COUNT = "source_row_count";
@@ -129,10 +131,11 @@ public class MultiFileReader {
         
     	channelIterator = new ReadableChannelIterator(inputPort, contextURL, fileURL);
     	channelIterator.setCharset(charset);
+    	channelIterator.setDictionary(dictionary);
     	channelIterator.init();
     	
         try {
-            if(!channelIterator.isFirstFieldSource() && !nextSource()) {
+            if(!channelIterator.isGraphDependentSource() && !nextSource()) {
                 noInputFile = true;
                 //throw new ComponentNotReadyException("FileURL attribute (" + fileURL + ") doesn't contain valid file url.");
             }
@@ -283,7 +286,7 @@ public class MultiFileReader {
 		ReadableByteChannel stream = null;
 		while (channelIterator.hasNext()) {
 			for (Object autoFillingData : autoFillingMap.entrySet()) {
-				((AutoFillingData)((Entry)autoFillingData).getValue()).sourceCounter = 0;
+				((AutoFillingData)((Entry<?, ?>)autoFillingData).getValue()).sourceCounter = 0;
 			}
 			sourceCounter = 0;
 			try {
@@ -294,7 +297,6 @@ public class MultiFileReader {
 				long timestamp = tmpFile.lastModified();
 				fileSize = tmpFile.length();
 				fileTimestamp = timestamp == 0 ? null : new Date(timestamp);				
-				logger.debug("Reading input file " + filename);
 				iSource++;
 				parser.setReleaseDataSource(!filename.equals(STD_IN));
 				parser.setDataSource(stream);
@@ -477,7 +479,7 @@ public class MultiFileReader {
 		parser.close();
 	}
 	
-	private static class AutoFillingData {
+	private class AutoFillingData {
 	    private int[] globalRowCount;	// number of returned records for every getNext method
 	    private int[] sourceRowCount;
 	    private int[] sourceName;
@@ -561,7 +563,7 @@ public class MultiFileReader {
 		channelIterator.reset();
         try {
     		resetIncrementalReading();
-			if(!channelIterator.isFirstFieldSource() && !nextSource()) 
+			if(!channelIterator.isGraphDependentSource() && !nextSource()) 
 			    noInputFile = true;
 		} catch (JetelException e) {
 			logger.error("reset", e);
@@ -572,6 +574,10 @@ public class MultiFileReader {
 
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	public void setDictionary(Dictionary dictionary) {
+		this.dictionary = dictionary;
 	}
 
     public void setIncrementalFile(String incrementalFile) {
