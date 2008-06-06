@@ -28,53 +28,52 @@ import org.jetel.metadata.DataFieldMetadata;
  * @author maciorowski
  *
  */
-public class ByteDataFieldTest  extends TestCase {
-    byte[] byteArray=new byte[]{0x01,0x02,0x03,0x04,0x05,0x40};
-    Byte[] ByteArray=new Byte[byteArray.length+1];
-    
-    ByteDataField byteField;
-    
-    static final String TEST_STRING="THIS is test !@#$%^&*()ěščřžýíé";
-    
-protected void setUp() {
-	EngineInitializer.initEngine((String) null, null, null);
+public class ByteDataFieldTest extends TestCase {
+	byte[] byteArray = new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x40 };
+	Byte[] byteObjectArray = new Byte[byteArray.length + 1];
 
-    int i=0;
-    for(byte b: byteArray){
-        ByteArray[i++] = Byte.valueOf(b);
-    }
-    ByteArray[byteArray.length]=0x41;
-    
-    byteField=new ByteDataField(new DataFieldMetadata("byte",DataFieldMetadata.BYTE_FIELD,(short)10));
-}
+	ByteDataField byteField;
 
-protected void tearDown() {
+	static final String TEST_STRING = "THIS is test !@#$%^&*()ěščřžýíé";
 
-}
+	protected void setUp() {
+		EngineInitializer.initEngine((String) null, null, null);
+
+		int i = 0;
+		for (byte b : byteArray) {
+			byteObjectArray[i++] = Byte.valueOf(b);
+		}
+		byteObjectArray[byteArray.length] = 0x41;
+
+		byteField = new ByteDataField(new DataFieldMetadata("byte", DataFieldMetadata.BYTE_FIELD, (short) 10));
+	}
+
+	protected void tearDown() {
+
+	}
 
 	/**
 	 *  Test for @link org.jetel.data.ByteDataField.ByteDataField(DataFieldMetadata _metadata)
 	 *
 	 */
 	public void test_1_setValue() {
-        byteField.setValue(byteArray);
-        byte[] data = byteField.getByteArray();
-        for (int i = 0; i < data.length; i++) {
-			assertEquals(byteArray[i], data[i] );
+		byteField.setValue(byteArray);
+		byte[] data = byteField.getByteArray();
+		for (int i = 0; i < data.length; i++) {
+			assertEquals(byteArray[i], data[i]);
 		}
-        byteField.fromString(TEST_STRING,"UTF-8");
-        assertEquals(TEST_STRING, byteField.toString("UTF-8"));
+		byteField.fromString(TEST_STRING, "UTF-8");
+		assertEquals(TEST_STRING, byteField.toString("UTF-8"));
 	}
-
 
 	/**
 	 *  Test for @link org.jetel.data.ByteDataField.ByteDataField(DataFieldMetadata _metadata, byte[] value)
 	 *
 	 */
 	public void test_2_setValue() {
-        byteField.setValue(ByteArray);
-        System.out.println(byteField.toString());
-        
+		byteField.setValue(byteObjectArray);
+		System.out.println(byteField.toString());
+
 	}
 
 	/**
@@ -82,10 +81,10 @@ protected void tearDown() {
 	 *
 	 */
 	public void test_3_setValue() {
-        byteField.setValue((Object)byteArray);
-        byte[] data = (byte[])byteField.getValue();
-        for (int i = 0; i < data.length; i++) {
-			assertEquals(byteArray[i], data[i] );
+		byteField.setValue((Object) byteArray);
+		byte[] data = (byte[]) byteField.getValue();
+		for (int i = 0; i < data.length; i++) {
+			assertEquals(byteArray[i], data[i]);
 		}
 	}
 
@@ -174,20 +173,21 @@ protected void tearDown() {
 	 */
 	public void test_compareTo() {
 	}
+
 	/**
 	 *  Test for @link org.jetel.data.ByteDataField.setToDefaultValue()
 	 *
 	 */
 	public void test_setToDefaultValue() {
-//		anIntegerDataField3.setToDefaultValue();
-//		assertEquals("333333",anIntegerDataField3.toString());
-//				
-//		try {
-//			anIntegerDataField4.setToDefaultValue();
-//			fail("Field4 is not nullable and is being set to null!");
-//		} catch (java.lang.RuntimeException re) {}
-//		
-//		anIntegerDataField1.setToDefaultValue();
-//		assertEquals("",anIntegerDataField1.toString());
+		//		anIntegerDataField3.setToDefaultValue();
+		//		assertEquals("333333",anIntegerDataField3.toString());
+		//				
+		//		try {
+		//			anIntegerDataField4.setToDefaultValue();
+		//			fail("Field4 is not nullable and is being set to null!");
+		//		} catch (java.lang.RuntimeException re) {}
+		//		
+		//		anIntegerDataField1.setToDefaultValue();
+		//		assertEquals("",anIntegerDataField1.toString());
 	}
 }

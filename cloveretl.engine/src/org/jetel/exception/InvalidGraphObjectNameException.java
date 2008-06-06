@@ -28,14 +28,17 @@ package org.jetel.exception;
  * @author D.Pavlis
  */
 public class InvalidGraphObjectNameException extends RuntimeException {
-  
-  // Attributes
 
-  // Associations
+	private static final long serialVersionUID = -3542689167346956113L;
 
-  // Operations
-  public InvalidGraphObjectNameException(String objectName,String objectType){
-	   super("Graph object "+objectType+" named \""+objectName+"\" violates naming pattern [A-Za-z0-9_] !");
-  }
+	// Attributes
+
+	// Associations
+
+	// Operations
+	
+	public InvalidGraphObjectNameException(String objectName, String objectType) {
+		super("Graph object " + objectType + " named \"" + objectName + "\" violates naming pattern [A-Za-z0-9_] !");
+	}
 
 } /* end class InvalidGraphObjectNameException */

@@ -37,6 +37,8 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * @author DPavlis
  * @since  29.6.2004
@@ -46,6 +48,7 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
  */
 
 
+@SuppressWarnings("EI")
 public class DBFAnalyzer {
 	
 	private static final int DBF_HEADER_SIZE_BASIC=32;
@@ -64,7 +67,6 @@ public class DBFAnalyzer {
 	private DBFFieldMetadata[] dbfFields;
 	private int dbfType;
 	private int dbfDataOffset;
-	private int dbfRowNum;
 	private byte dbfCodePage;
 	private Charset charset;
 	private String dbfTableName;
@@ -299,8 +301,8 @@ public class DBFAnalyzer {
 	 * @param dBase field type
 	 * @return CloverETL field type
 	 */
+	@SuppressWarnings("DB")
 	public static char dbfFieldType2Clover(char type){
-		char cloverType;	
 		switch(Character.toUpperCase(type)){
 			case 'C': return DataFieldMetadata.STRING_FIELD;
 			case 'N': return DataFieldMetadata.NUMERIC_FIELD;

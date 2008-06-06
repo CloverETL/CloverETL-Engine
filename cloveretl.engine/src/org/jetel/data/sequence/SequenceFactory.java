@@ -119,7 +119,7 @@ public class SequenceFactory {
             //create instance of sequence
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
             return (Sequence) method.invoke(null, new Object[] {graph, nodeXML});
-        } catch(Exception ex) {
+        } catch(Throwable ex) {
             logger.error("Can't create object of : " + sequenceType + " exception: " + ex);
             throw new RuntimeException("Can't create object of : " + sequenceType + " exception: " + ex);
         }

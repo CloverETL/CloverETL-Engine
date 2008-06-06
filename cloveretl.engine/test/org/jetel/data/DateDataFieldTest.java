@@ -43,8 +43,7 @@ public class DateDataFieldTest extends TestCase {
 
 protected void setUp() { 
 	Calendar calendar = new GregorianCalendar(2003,4,10);
-	Date trialTime1 = null;
-	trialTime1 = calendar.getTime(); 
+	Date trialTime1 = calendar.getTime(); 
 	DataFieldMetadata fixedFieldMeta1 = new DataFieldMetadata("Field1",'D',(short)3);
 	fixedFieldMeta1.setFormatStr("MM/dd/yyyy");
 	aDateDataField1 = new DateDataField(fixedFieldMeta1, trialTime1);
@@ -55,12 +54,11 @@ protected void setUp() {
 	aDateDataField2 = new DateDataField(fixedFieldMeta2);
 
 //	calendar = new GregorianCalendar(2002,6,10);
-	trialTime1 = null;
 //	trialTime1 = calendar.getTime(); 
 	DataFieldMetadata delimFieldMeta1 = new DataFieldMetadata("Field1",'D',";");
 	delimFieldMeta1.setFormatStr("MM/dd/yyyy");
 	delimFieldMeta1.setDefaultValueStr("03/31/2100");
-	aDateDataField3 = new DateDataField(delimFieldMeta1,trialTime1);
+	aDateDataField3 = new DateDataField(delimFieldMeta1, null);
 	
 	DataFieldMetadata delimFieldMeta2 = new DataFieldMetadata("Field1",'D',",");
 	delimFieldMeta2.setFormatStr("hhhh");
@@ -215,8 +213,6 @@ public void test_1_DateDataField() {
 		buffer.rewind();
 		aDateDataField3.deserialize(buffer);
 		assertEquals(aDateDataField3.getValue(),aDateDataField1.getValue());
-	
-		buffer = null;
 	}
 
 	/**

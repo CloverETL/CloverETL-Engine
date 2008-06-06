@@ -27,7 +27,6 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CoderResult;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -359,9 +358,8 @@ public class DBFDataParser implements Parser {
      */
     private boolean populateCharBuffer() throws IOException {
         int size;
-        CoderResult decodingResult;
         charBuffer.clear();
-        decodingResult = decoder.decode(buffer, charBuffer, false);
+        decoder.decode(buffer, charBuffer, false);
         // the whole record should be read at once
         if (charBuffer.position() < charBuffer.limit()) {
             // we need to read more - buffer is not completely
@@ -371,7 +369,7 @@ public class DBFDataParser implements Parser {
             buffer.flip();
             // if no more data, return -1
             if (size == -1) return false;
-            decodingResult = decoder.decode(buffer, charBuffer, false);
+            decoder.decode(buffer, charBuffer, false);
             if (charBuffer.position() < charBuffer.limit()) { return false; // still
                                                                             // not
                                                                             // enough
@@ -392,6 +390,7 @@ public class DBFDataParser implements Parser {
      * 
      * @param buffer
      */
+    /* never used
     private void removeBinaryZeros(CharBuffer buffer) {
         for (int i = buffer.limit() - 1; i >= buffer.position(); i--) {
             if (buffer.charAt(i) == (char) 0) {
@@ -401,6 +400,7 @@ public class DBFDataParser implements Parser {
             }
         }
     }
+    */
 
     /**
      * Assembles error message when exception occures during parsing
@@ -414,6 +414,7 @@ public class DBFDataParser implements Parser {
      * @return error message
      * @since September 19, 2002
      */
+    /* never used
     private String getErrorMessage(String exceptionMessage, int recNo,
             int fieldNo) {
         StringBuffer message = new StringBuffer();
@@ -424,6 +425,7 @@ public class DBFDataParser implements Parser {
         message.append(metadata.getField(fieldNo).getName());
         return message.toString();
     }
+    */
 
     /**
      * Assembles error message when exception occures during parsing

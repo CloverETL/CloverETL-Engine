@@ -24,6 +24,9 @@ package org.jetel.exception;
  *
  */
 public class ClassCompilationException extends Exception {
+
+	private static final long serialVersionUID = 296149047113413534L;
+
 	public ClassCompilationException(String className) {
 			super(className);
 	}

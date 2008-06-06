@@ -30,11 +30,14 @@ package org.jetel.exception;
  */
 public class GraphConfigurationException extends Exception {
   
+	private static final long serialVersionUID = -6907821049378514420L;
+	
   // Attributes
 
   // Associations
 
-  // Operations
+
+// Operations
   public GraphConfigurationException(String message){
 	  super(message);
   }

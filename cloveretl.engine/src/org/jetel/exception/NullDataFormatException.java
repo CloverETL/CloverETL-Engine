@@ -25,7 +25,9 @@ package org.jetel.exception;
  */
 public class NullDataFormatException extends BadDataFormatException {
 
-    public NullDataFormatException(String message) {
+	private static final long serialVersionUID = -4459172609240961162L;
+
+	public NullDataFormatException(String message) {
         super(message);
     }
 

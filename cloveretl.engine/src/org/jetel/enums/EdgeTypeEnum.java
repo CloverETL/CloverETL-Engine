@@ -30,7 +30,7 @@ public enum EdgeTypeEnum {
 	public EdgeBase createEdgeBase(Edge edge) {
 		try {
 			return edgeBaseClass.getConstructor(Edge.class).newInstance(edge);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			throw new RuntimeException("Can not create edge-base for this type of edge '" + this.name + "'.", e);
 		}
 	}

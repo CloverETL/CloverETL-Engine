@@ -28,25 +28,28 @@ package org.jetel.exception;
  * @author D.Pavlis
  */
 public class JetelException extends Exception {
-  
-  // Attributes
-    
-  // Associations
 
-  // Operations
-  public JetelException(String message){
-	  super(message);
-  }
-  
-  public JetelException(String message,Throwable cause){
-      super(message,cause);
-  }
-  
-  @Override public String getMessage(){
-      if (super.getCause()!=null){
-          return super.getMessage() + " caused by: " + super.getCause();
-      }
-      return super.getMessage();
-  }
+	private static final long serialVersionUID = -8049941630255692694L;
+
+	// Attributes
+
+	// Associations
+
+	// Operations
+	public JetelException(String message) {
+		super(message);
+	}
+
+	public JetelException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	@Override
+	public String getMessage() {
+		if (super.getCause() != null) {
+			return super.getMessage() + " caused by: " + super.getCause();
+		}
+		return super.getMessage();
+	}
 
 } /* end class NoMoreDataException */
