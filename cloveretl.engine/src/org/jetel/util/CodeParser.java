@@ -291,10 +291,11 @@ public class CodeParser {
     public void saveSourceCode(File file) throws IOException {
         Writer out = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(file), DEFAULT_OUTPUT_FILE_CHARSET));
-
-        out.append(sourceCode);
-
-        out.close();
+        try{
+        	out.append(sourceCode);
+        } finally {
+        	out.close();
+        }
 
     }
 

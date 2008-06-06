@@ -26,10 +26,13 @@
      </Match>
 
      <Match>
-		<Bug code="PZLA"/>
-	</Match>
+     	<Bug code="PZLA" />
+     </Match>
      <Match>
-		<Bug code="UwF"/>
-	</Match>
+     	<Bug code="UwF" />
+     </Match>
+     <Match>
+     	<Bug code="Dm" />
+     </Match>
 
 </FindBugsFilter>
