@@ -29,7 +29,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.parser.XPathParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
@@ -41,7 +40,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -161,6 +159,7 @@ public class XmlXPathReader extends Node {
     private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	
 	private final static int OUTPUT_PORT = 0;
+	private final static int INPUT_PORT = 0;
 	private String fileURL;
 
 	private XPathParser parser;
@@ -234,14 +233,17 @@ public class XmlXPathReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		TransformationGraph graph = getGraph();
 		
         // initialize multifile reader based on prepared parser
-        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+        reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
         reader.setLogger(logger);
         reader.setSkip(skipRows);
         reader.setNumRecords(numRecords);
         parser.setGraph(getGraph());
+        reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
         reader.setCharset(charset);
+        reader.setDictionary(graph.getDictionary());
         reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
         ports = parser.getPorts().toArray();
 	}
@@ -354,22 +356,22 @@ public class XmlXPathReader extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        if(!checkInputPorts(status, 0, 0)
+        if(!checkInputPorts(status, 0, 1)
         		|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
         	return status;
         }
 
-        try {
-            init();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        } finally {
-        	free();
-        }
+//        try {
+//            init();
+//        } catch (ComponentNotReadyException e) {
+//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+//            if(!StringUtils.isEmpty(e.getAttributeName())) {
+//                problem.setAttributeName(e.getAttributeName());
+//            }
+//            status.add(problem);
+//        } finally {
+//        	free();
+//        }
         
         return status;
     }

@@ -148,6 +148,7 @@ public class XLSReader extends Node {
 
 	public final static String XLS_CELL_CODE_INDICATOR = "#";
 	
+	private final static int INPUT_PORT = 0;
 	private final static int OUTPUT_PORT = 0;
 	private final static int CLOVER_FIELDS = 0;
 	private final static int XLS_FIELDS = 1;
@@ -168,6 +169,7 @@ public class XLSReader extends Node {
 	private String sheetNumber = null;
 	private int metadataRow = 0;
 	private String[][] fieldMap;
+	private String charset;
 	
 	/**
 	 * @param id
@@ -183,7 +185,7 @@ public class XLSReader extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.fieldMap = fieldMap;
-		this.parser = new JExcelXLSDataParser(charset);
+		this.parser = new JExcelXLSDataParser(this.charset = charset);
 	}
 
 	/* (non-Javadoc)
@@ -456,6 +458,8 @@ public class XLSReader extends Node {
 			parser.setSheetNumber(sheetNumber);
 		}else if (sheetName != null) {
 			parser.setSheetName(sheetName);
+		}else{
+			parser.setSheetNumber("0");
 		}
  		//set proper mapping type between clover and xls fields
 		if (fieldMap != null){
@@ -492,11 +496,15 @@ public class XLSReader extends Node {
 		}else{
 			parser.setMappingType(XLSParser.NO_METADATA_INFO);
 		}
-        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+		TransformationGraph graph = getGraph();
+        reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
         reader.setLogger(logger);
         reader.setNumRecords(numRecords);
         reader.setIncrementalFile(incrementalFile);
         reader.setIncrementalKey(incrementalKey);
+        reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
+        reader.setCharset(charset);
+        reader.setDictionary(graph.getDictionary());
         reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 	

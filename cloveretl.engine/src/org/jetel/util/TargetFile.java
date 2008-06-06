@@ -1,5 +1,6 @@
 package org.jetel.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,10 +23,13 @@ import org.jetel.data.StringDataField;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.provider.FormatterProvider;
 import org.jetel.data.primitive.ByteArray;
+import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.OutputPort;
+import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.dictionary.DictionaryValue;
+import org.jetel.graph.dictionary.IDictionaryValue;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.MultiFileWriter.DataPreparedListener;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -43,6 +47,7 @@ public class TargetFile {
 	private static final String PARAM_DELIMITER = ":";
 	private static final String PORT_DELIMITER = "\\.";
 	private static final String PORT_PROTOCOL = "port:";
+	private static final String DICT_PROTOCOL = "dict:";
 	private static final String DEFAULT_CHARSET = "UTF-8";
 	
 	private DecimalFormat format;					// it is used if the file tag is a number
@@ -71,11 +76,18 @@ public class TargetFile {
 	private DataRecord record;
 	private DataField field; 
     private PipedInputStream writeIn;
-	private List<DataPreparedListener> listListener;
+	private boolean isFinishing;
 	private boolean isFinished;
 	private boolean isStringDataField;
 
 	private String charset;
+
+	private Dictionary dictionary;
+	private ProcessingType dictProcesstingType;
+	private ByteArrayOutputStream dictOutStream;
+	private ArrayList<byte[]> dictOutArray;
+	private boolean wait4Finishing;
+	private Object monitor;
 
     /**
      * Constructors.
@@ -113,9 +125,14 @@ public class TargetFile {
      * @throws ComponentNotReadyException
      */
     public void init() throws IOException, ComponentNotReadyException {
-    	if (charset == null) charset = DEFAULT_CHARSET; 
+    	if (charset == null) charset = DEFAULT_CHARSET;
+    	monitor = new Object();
     	if (fileURL != null && fileURL.startsWith(PORT_PROTOCOL)) {
         	initPortFields();
+    	} else if (outputPort != null) {
+    		throw new ComponentNotReadyException("File url must contains port or dict protocol.");
+    	} else if (fileURL != null && fileURL.startsWith(DICT_PROTOCOL)) {
+           	initDictTarget();
     	} else {
         	initUrl();
         	if (fileTag == null) {
@@ -191,8 +208,28 @@ public class TargetFile {
     	format = new DecimalFormat(sb.toString());
     }
 
+	private void initDictTarget() throws ComponentNotReadyException {
+		// parse target url
+		String[] aDict = fileURL.substring(DICT_PROTOCOL.length()).split(PARAM_DELIMITER);
+		if (dictionary == null) throw new RuntimeException("The component doesn't support dictionary writing.");
+		IDictionaryValue<?> dictValue = dictionary.get(aDict[0]);
+		dictProcesstingType = ProcessingType.fromString(aDict.length > 1 ? aDict[1] : null, ProcessingType.STREAM);
+		if (dictValue != null) logger.warn("Dictionary contains value for the key '" + aDict[0] + "'. The value will be replaced.");
+		
+		// create target
+		if (dictProcesstingType == ProcessingType.STREAM) {
+			dictOutStream = new ByteArrayOutputStream();
+			dictionary.put(aDict[0], new DictionaryValue<ByteArrayOutputStream>(dictOutStream));
+		}
+		// create target
+		else if (dictProcesstingType == ProcessingType.DISCRETE) {
+			dictOutArray = new ArrayList<byte[]>();
+			dictionary.put(aDict[0], new DictionaryValue<ArrayList<byte[]>>(dictOutArray));
+		}
+	}
+    
 	private void initPortFields() throws ComponentNotReadyException {
-		if (outputPort == null) return;
+		if (outputPort == null) throw new ComponentNotReadyException("Output port is not connected.");
 		record = new DataRecord(outputPort.getMetadata());
 		record.init();
 		String fName = getFieldName(fileURL);
@@ -233,21 +270,65 @@ public class TargetFile {
     }
 
     public void finish() throws IOException{
+    	isFinishing = true;
     	formatter.finish();
-    	isFinished = true;
+    	formatter.close();
+    	wait4Finishing();
+    }
+    
+    private void wait4Finishing() throws IOException {
+    	if (wait4Finishing) {
+    		synchronized (monitor) {
+       			try {
+       				if (!isFinished) monitor.wait();
+       			} catch (InterruptedException e) {
+       				throw new RuntimeException(e);
+      			}
+			}
+    		try {
+    			// there is only one target for port and dictionary protocol
+				if (outputPort != null) outputPort.eof();
+			} catch (InterruptedException e) {
+				throw new IOException(e.getMessage());
+			}
+    	}
     }
     
 	public boolean isFinished() {
 		return isFinished;
 	}
     
-    private void write2CloverField(ByteArray aBytes) {
-        if (field != null && writeIn != null) {
-   			field.setValue(isStringDataField ? aBytes.toString(charset) : aBytes.getValueDuplicate()); 
-        	if (listListener != null) for (DataPreparedListener recordPreparedListener: listListener) {
-        		recordPreparedListener.dataPrepared();
-        	}
-        }
+    private void write2OutportOrDictionary(ByteArray aBytes) {
+    	if (writeIn != null) {
+            if (dictProcesstingType != null) {
+           		write2Dictionary(aBytes);
+            }
+   	    	if (isFinishing) isFinished = true;
+            if (field != null) {
+       			field.setValue(isStringDataField ? aBytes.toString(charset) : aBytes.getValueDuplicate());
+       	        //broadcast the record to all connected Edges
+       	        try {
+       	        	outputPort.writeRecord(record.duplicate());
+       			} catch (Exception e) {
+       				throw new RuntimeException(e);
+       			}
+       	        SynchronizeUtils.cloverYield();
+            }
+    	}
+    }
+    
+    private void write2Dictionary(ByteArray aBytes) {
+    	if (dictOutStream != null) {
+    		try {
+    			dictOutStream.write(aBytes.getValueDuplicate());
+    			dictOutStream.flush();
+    			dictOutStream.close();
+    		} catch (IOException e) {
+    			throw new RuntimeException(e);
+    		}
+    	} else if (dictOutArray != null) {
+    		dictOutArray.add(aBytes.getValueDuplicate());
+    	}
     }
     
     /**
@@ -287,17 +368,18 @@ public class TargetFile {
      * @throws IOException
      */
     private void setOutput() throws IOException {
-    	if (field != null) {
-        	//write2CloverField();
+    	if (wait4Finishing = (field != null || dictProcesstingType != null)) {
             writeIn = new PipedInputStream();
             PipedOutputStream readOut = new PipedOutputStream(writeIn);
-            //readThread.setInputStream(writeIn);
             final ReadThread readThread = new ReadThread(writeIn);
         	readThread.addDataPreparedListener(new DataPreparedListener() {
 				@Override
 				public void dataPrepared() {
-					write2CloverField(readThread.getBytes());
-					readThread.interrupt();
+		    		synchronized (monitor) {
+						write2OutportOrDictionary(readThread.getBytes());
+						readThread.interrupt();
+	    				monitor.notifyAll();
+					}
 				}
 			});
         	readThread.start();
@@ -366,14 +448,6 @@ public class TargetFile {
 		this.useChannel = useChannel;
 	}
 
-	public DataRecord getOutputRecord() {
-		return record;
-	}
-
-	public void setRecordPreparedListener(List<DataPreparedListener> list) {
-		listListener = list;
-	}
-	
 	private class ReadThread extends Thread {
 		  private InputStream pi = null;
 		  private ByteArray bytes;
@@ -389,12 +463,6 @@ public class TargetFile {
 			  this.pi = pi;
 		  }
 		  
-		  /*public void setInputStream(PipedInputStream pi) {
-			  bytes = new ByteArray();
-			  bytes.reset();
-			  this.pi = pi;
-		  }*/
-
 		  public ByteArray getBytes() {
 			  return bytes;
 		  }
@@ -417,8 +485,18 @@ public class TargetFile {
 		  }
 	}
 
+	public static abstract class DataPreparedListener {
+		public DataPreparedListener() {
+		}
+		public abstract void dataPrepared();
+	}
+
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	public void setDictionary(Dictionary dictionary) {
+		this.dictionary = dictionary;
 	}
 
 }

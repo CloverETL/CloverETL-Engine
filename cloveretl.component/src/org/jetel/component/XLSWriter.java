@@ -132,6 +132,7 @@ public class XLSWriter extends Node {
 
 	public final static String COMPONENT_TYPE = "XLS_WRITER";
 	private final static int READ_FROM_PORT = 0;
+	private final static int OUTPUT_PORT = 0;
 
 	private String partition;
 	private String attrPartitionKey;
@@ -226,11 +227,12 @@ public class XLSWriter extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		TransformationGraph graph = getGraph();
 		
 		initLookupTable();
 		
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, graph != null ? graph.getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = new SystemOutByteChannel();
@@ -251,6 +253,8 @@ public class XLSWriter extends Node {
         		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
         	}
         }
+        writer.setDictionary(graph.getDictionary());
+        writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 

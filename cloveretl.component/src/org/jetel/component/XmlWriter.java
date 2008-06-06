@@ -62,8 +62,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
-import org.jetel.util.SynchronizeUtils;
-import org.jetel.util.MultiFileWriter.DataPreparedListener;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -446,6 +444,7 @@ public class XmlWriter extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		TransformationGraph graph = getGraph();
 
 		portsCnt = inPorts.size();
 
@@ -466,7 +465,7 @@ public class XmlWriter extends Node {
         }*/
 
         XmlFormatter formatter = new XmlFormatter(); 
-        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getProjectURL() : null, this.fileUrl);
+        writer = new MultiFileWriter(formatter, graph != null ? graph.getProjectURL() : null, this.fileUrl);
         writer.setLogger(logger);
         writer.setRecordsPerFile(this.recordsPerFile);
         writer.setAppendData(false);
@@ -474,10 +473,11 @@ public class XmlWriter extends Node {
         writer.setNumRecords(this.recordsCount);
 		writer.setUseChannel(true);
         writer.setLookupTable(null);
-        writer.setOutputPort(getOutputPort(OUTPUT_PORT));
+        writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         writer.setCharset(charset);
         //writer.setPartitionKeyNames(partitionKey);
         //writer.setPartitionFileTag(partitionFileTagType);
+        writer.setDictionary(graph.getDictionary());
         writer.init( this.rootPortDefinition.metadata );
 	}
 
@@ -511,13 +511,6 @@ public class XmlWriter extends Node {
 			}// while
 		}// for
 		try {
-			writer.addDataPreparedListener(new DataPreparedListener() {
-				@Override
-				public void dataPrepared() {
-					writeToOutputPort();
-				}
-			});
-			
 			// and now ... data structure is read ... writing can be processed 
 			for (TreeRecord treeRecord : rootPortDefinition.dataMap.values()){
 				// multiWriter will call formatter.write
@@ -527,31 +520,12 @@ public class XmlWriter extends Node {
 			//flushXmlSax();
 		} catch (Exception e) {
 			logger.error("Error during creating XML file", e);
+			throw e;
 		} finally {
 			writer.finish();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
-
-	/**
-	 * Writes a file to output port.
-	 */
-	private void writeToOutputPort() {
-        //broadcast the record to all connected Edges
-        try {
-			writeRecordBroadcast(writer.getOuputRecord().duplicate());
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		} 
-        SynchronizeUtils.cloverYield();
-        if (writer.isFinished()) {
-			try {
-				broadcastEOF();
-			} catch (InterruptedException e) {
-				logger.error(e);
-			}
-        }
-	}	
 
 	/**
 	 * Creates output XML from all read records using SAX.

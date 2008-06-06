@@ -131,6 +131,7 @@ public class FixLenDataReader extends Node {
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "FIXLEN_DATA_READER";
 
+	private final static int INPUT_PORT = 0;
 	private final static int OUTPUT_PORT = 0;
 	private String fileURL;
 
@@ -144,6 +145,7 @@ public class FixLenDataReader extends Node {
     private String incrementalKey;
 
 	private boolean byteMode;
+	private String charset;
 
 	/**
 	 *Constructor for the FixLenDataReaderNIO object
@@ -174,6 +176,7 @@ public class FixLenDataReader extends Node {
 		super(id);
 		this.byteMode = byteMode; 
 		this.fileURL = fileURL;
+		this.charset = charset;
 		parser = byteMode ?
 				new FixLenByteDataParser(charset) :
 				new FixLenCharDataParser(charset);
@@ -227,13 +230,19 @@ public class FixLenDataReader extends Node {
 
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
         // initialize multifile reader based on prepared parser
-        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+		TransformationGraph graph = getGraph();
+        reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
         reader.setLogger(logger);
         reader.setFileSkip(skipFirstLine ? 1 : 0);
         reader.setSkip(skipRows);
         reader.setNumRecords(numRecords);
         reader.setIncrementalFile(incrementalFile);
         reader.setIncrementalKey(incrementalKey);
+        reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
+        reader.setCharset(charset);
+        reader.setDictionary(graph.getDictionary());
+        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+
 	}
 
 	@Override

@@ -129,6 +129,7 @@ public class TextTableWriter extends Node {
 
 	public final static String COMPONENT_TYPE = "TEXT_TABLE_WRITER";
 	private final static int READ_FROM_PORT = 0;
+	private final static int OUTPUT_PORT = 0;
 
 	private static Log logger = LogFactory.getLog(TextTableWriter.class);
 
@@ -234,12 +235,13 @@ public class TextTableWriter extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		TransformationGraph graph = getGraph();
 		
 		initLookupTable();
 
 		// based on file mask, create/open output file
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, graph != null ? graph.getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel =  new SystemOutByteChannel();
@@ -252,6 +254,7 @@ public class TextTableWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
+        writer.setDictionary(graph.getDictionary());
         if (attrPartitionKey != null) {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -261,6 +264,7 @@ public class TextTableWriter extends Node {
         	}
         }
        	formatterProvider.setOutputFieldNames(outputFieldNames);
+        writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 

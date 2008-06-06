@@ -134,6 +134,8 @@ public class DataReader extends Node {
     private MultiFileReader reader;
     private PolicyType policyType = PolicyType.STRICT;
 
+	private String charset;
+
 	/**
 	 *Constructor for the DelimitedDataReaderNIO object
 	 *
@@ -157,7 +159,7 @@ public class DataReader extends Node {
 	public DataReader(String id, String fileURL, String charset) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new DataParser(charset);
+		parser = new DataParser(this.charset = charset);
 	}
 
 	@Override
@@ -262,13 +264,17 @@ public class DataReader extends Node {
 
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
 		// initialize multifile reader based on prepared parser
-        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+		TransformationGraph graph = getGraph();
+        reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
         reader.setLogger(logger);
         reader.setFileSkip(skipFirstLine ? 1 : 0);
         reader.setSkip(skipRows);
         reader.setNumRecords(numRecords);
         reader.setIncrementalFile(incrementalFile);
         reader.setIncrementalKey(incrementalKey);
+        reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
+        reader.setCharset(charset);
+        reader.setDictionary(graph.getDictionary());
 	}
 
 	@Override

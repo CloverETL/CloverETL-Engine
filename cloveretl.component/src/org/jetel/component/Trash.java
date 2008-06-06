@@ -88,11 +88,13 @@ public class Trash extends Node {
 	private static final Log log = LogFactory.getLog(Trash.class);
 
 	private static final String XML_DEBUGFILENAME_ATTRIBUTE = "debugFilename";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_DEBUGPRINT_ATTRIBUTE = "debugPrint";
 	private static final String XML_DEBUGAPPEND_ATTRIBUTE = "debugAppend";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "TRASH";
 	private final static int READ_FROM_PORT = 0;
+	private final static int OUTPUT_PORT = 0;
 	private boolean debugPrint;
 	private String debugFilename;
 
@@ -100,6 +102,7 @@ public class Trash extends Node {
 	private MultiFileWriter writer;
 	private WritableByteChannel writableByteChannel;
     private boolean debugAppend = false;
+    private String charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 
 	/**
 	 *Constructor for the Trash object
@@ -183,26 +186,29 @@ public class Trash extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		TransformationGraph graph = getGraph();
 		
 		if (debugPrint) {
             if(debugFilename != null) {
-        		formatter = new TextTableFormatter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+        		formatter = new TextTableFormatter(charSet);
        	        try {
 					writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(
-							FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, debugFilename, debugAppend)
+							FileUtils.getWritableChannel(graph != null ? graph.getProjectURL() : null, debugFilename, debugAppend)
 					));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
             } else {
     			if (writableByteChannel == null) {
-    				formatter = new TextTableFormatter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+    				formatter = new TextTableFormatter(charSet);
     		        writableByteChannel = new SystemOutByteChannel();
         	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
     			}
             }
             if (writer != null) {
     	        writer.setAppendData(debugAppend);
+    	        writer.setDictionary(graph.getDictionary());
+    	        writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
                 writer.init(getInputPort(READ_FROM_PORT).getMetadata());
             	formatter.showCounter("Record", "# ");
             }
@@ -246,6 +252,9 @@ public class Trash extends Node {
 		if (debugFilename != null) {
 			xmlElement.setAttribute(XML_DEBUGFILENAME_ATTRIBUTE,this.debugFilename);
 		}
+		if (charSet != null) {
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
+		}
 	}
 
 
@@ -271,6 +280,10 @@ public class Trash extends Node {
 			if (xattribs.exists(XML_DEBUGAPPEND_ATTRIBUTE)) {
 				trash.setDebugAppend( xattribs.getBoolean(XML_DEBUGAPPEND_ATTRIBUTE) );
 			}
+			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+				trash.setCharset( xattribs.getString(XML_CHARSET_ATTRIBUTE) );
+			}
+			
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -318,5 +331,10 @@ public class Trash extends Node {
 	public void setDebugAppend(boolean debugAppend) {
 		this.debugAppend = debugAppend;
 	}
+	
+	public void setCharset(String charSet) {
+		this.charSet = charSet;
+	}
+	
 }
 
