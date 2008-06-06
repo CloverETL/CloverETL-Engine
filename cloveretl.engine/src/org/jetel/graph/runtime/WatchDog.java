@@ -25,22 +25,23 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
+import javax.management.Notification;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.apache.commons.logging.Log;
@@ -57,7 +58,11 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.TrackingDetail.PortType;
+import org.jetel.graph.runtime.jmx.CloverJMX;
+import org.jetel.graph.runtime.jmx.NodeTrackingDetail;
+import org.jetel.graph.runtime.jmx.PhaseTrackingDetail;
+import org.jetel.graph.runtime.jmx.TrackingDetail;
+import org.jetel.graph.runtime.jmx.TrackingDetail.PortType;
 import org.jetel.util.primitive.DuplicateKeyMap;
 import org.jetel.util.string.StringUtils;
 
@@ -70,20 +75,21 @@ import org.jetel.util.string.StringUtils;
  * @revision    $Revision$
  */
 public class WatchDog implements Callable<Result>, CloverPost {
+    /**
+     * Thread manager is used to run nodes as threads.
+     */
     private IThreadManager threadManager;
     private int trackingInterval;
 	private Result watchDogStatus;
 	private TransformationGraph graph;
 	private Phase currentPhase;
-	private int currentPhaseNum;
-	private Runtime javaRuntime;
     private MemoryMXBean memMXB;
     private ThreadMXBean threadMXB;
-    private BlockingQueue <Message> inMsgQueue;
+    private BlockingQueue <Message<?>> inMsgQueue;
     private DuplicateKeyMap outMsgMap;
     private Throwable causeException;
     private IGraphElement causeGraphElement;
-    private CloverJMX mbean;
+    private CloverJMX cloverJMX;
     private volatile boolean runIt;
     private boolean threadCpuTimeIsSupported;
     private boolean provideJMX=true;
@@ -92,7 +98,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
     
     private PrintTracking printTracking;
 
-    public final static String TRACKING_LOGGER_NAME = "Tracking";
     public final static String MBEAN_NAME_PREFIX = "CLOVERJMX_";
     public final static int WAITTIME_FOR_STOP_SIGNAL = 5000; //milliseconds
     private int[] _MSG_LOCK=new int[0];
@@ -110,19 +115,17 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 * @param  phases  Description of the Parameter
 	 * @since          September 02, 2003
 	 */
-	public WatchDog(IThreadManager threadManager, TransformationGraph graph, GraphRuntimeContext runtimeContext) {
-		this.threadManager = threadManager;
+	public WatchDog(TransformationGraph graph, GraphRuntimeContext runtimeContext) {
 		graph.setWatchDog(this);
 		this.graph = graph;
 		this.runtimeContext = runtimeContext;
 		currentPhase = null;
-		watchDogStatus = Result.READY;
-		javaRuntime = Runtime.getRuntime();
+		watchDogStatus = Result.N_A;
         memMXB=ManagementFactory.getMemoryMXBean();
         threadMXB= ManagementFactory.getThreadMXBean();
         threadCpuTimeIsSupported = threadMXB.isThreadCpuTimeSupported();
         
-        inMsgQueue=new PriorityBlockingQueue<Message>();
+        inMsgQueue=new PriorityBlockingQueue<Message<?>>();
         outMsgMap=new DuplicateKeyMap(Collections.synchronizedMap(new HashMap()));
         trackingInterval=runtimeContext.getTrackingInterval();
         
@@ -133,13 +136,28 @@ public class WatchDog implements Callable<Result>, CloverPost {
         graph.setPassword(runtimeContext.getPassword());
 	}
 
-	public void startUpJMX() {
-       	mbean=registerTrackingMBean(provideJMX);
+	/**
+	 * WatchDog initialization.
+	 */
+	public void init() {
+		//at least simple thread manager will be used
+		if(threadManager == null) {
+			threadManager = new SimpleThreadManager();
+		}
+		
+		//start up JMX
+		cloverJMX = new CloverJMX(this, provideJMX);
+		if(provideJMX) {
+			registerTrackingMBean(cloverJMX);
+		}
+
+       	//watchdog is now ready to use
+		watchDogStatus = Result.READY;
 	}
 	
-	public void finishJMX() {
+	private void finishJMX() {
         // wait to get JMX chance to propagate the message
-		if (mbean.hasClients()) {
+		if (cloverJMX.hasClients()) {
 			long timestamp = System.currentTimeMillis();
 			try {
 				while (runIt
@@ -150,8 +168,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			}
 		}
         
-		printPhasesSummary();
-		
 		if(provideJMX) {
 			try {
 				mbs.unregisterMBean(jmxObjectName);
@@ -174,25 +190,18 @@ public class WatchDog implements Callable<Result>, CloverPost {
             }
 
     		watchDogStatus = Result.RUNNING;
-            runIt=true;
-    		logger.info("Thread started.");
-    		logger.info("Running on " + javaRuntime.availableProcessors() + " CPU(s)"
-    			+ " max available memory for JVM " + javaRuntime.maxMemory() / 1024 + " KB");
-    		// renice - lower the priority
-    		
-            printTracking=new PrintTracking(true);
-           
-           	mbean.graphStarted();
 
-            //disabled by Kokon
-//            Thread trackingThread=new Thread(printTracking, TRACKING_LOGGER_NAME);
-//            trackingThread.setPriority(Thread.MIN_PRIORITY);
-//            trackingThread.start();
-            
+    		runIt = true;
+    		
+            printTracking = new PrintTracking(cloverJMX, trackingInterval);
+          	printTracking.start();
+          	
+           	cloverJMX.graphStarted();
+
            	Phase[] phases = graph.getPhases();
            	
            	Result phaseResult = Result.N_A;
-           	for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
+           	for (int currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
                 phaseResult = executePhase(phases[currentPhaseNum]);
                 if(phaseResult == Result.ABORTED)      { 
                     logger.error("!!! Phase execution aborted !!!");
@@ -201,15 +210,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
                     logger.error("!!! Phase finished with error - stopping graph run !!!");
                     break;
                 }
-                
-                // force running of garbage collector
-//                logger.info("Forcing garbage collection ...");
-//                javaRuntime.runFinalization();
-//                javaRuntime.gc();
             }
            	watchDogStatus = phaseResult;
            	
-           	mbean.graphFinished(watchDogStatus);
+           	cloverJMX.graphFinished(watchDogStatus);
             
             if(finishJMX) {
             	finishJMX();
@@ -224,6 +228,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
        		watchDogStatus = Result.ERROR;
        		logger.error("Fatal error watchdog execution", e);
        		throw e;
+       	} finally {
+            printTracking.free();
        	}
 
 		return watchDogStatus;
@@ -231,15 +237,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 
     /**
-     * 
-     * @since 17.1.2007
+     * Register given jmx mbean.
      */
-    private CloverJMX registerTrackingMBean(boolean register) {
-       mbean = new CloverJMX(this,register);
-        // register MBean
-        // shall we really register our MBEAN ?
-        if (!register) return mbean;
-        
+    private void registerTrackingMBean(CloverJMX cloverJMX) {
         String mbeanId = graph.getId();
         
         // Construct the ObjectName for the MBean we will register
@@ -248,10 +248,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
                     createMBeanName(mbeanId != null ? mbeanId : graph.getName(), this.getGraphRuntimeContext().getRunId())
             );
             // Register the  MBean
-            mbs.registerMBean(mbean, jmxObjectName);
+            mbs.registerMBean(cloverJMX, jmxObjectName);
 
-        } catch (MalformedObjectNameException ex) {
-            logger.error(ex);
+        } catch (MalformedObjectNameException e) {
+            logger.error(e);
         } catch (InstanceAlreadyExistsException e) {
         	logger.error(e);
         } catch (MBeanRegistrationException e) {
@@ -259,7 +259,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
         } catch (NotCompliantMBeanException e) {
         	logger.error(e);
         }
-        return mbean;
     }
 
     /**
@@ -281,52 +280,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
         return "org.jetel.graph.runtime:type=" + MBEAN_NAME_PREFIX + (mbeanIdentifier != null ? mbeanIdentifier : "") + "_" + runId;
     }
     
-//    public void runPhase(int phaseNo){
-//        watchDogStatus = Result.RUNNING;
-//        logger.info("Thread started.");
-//        logger.info("Running on " + javaRuntime.availableProcessors() + " CPU(s)"
-//            + " max available memory for JVM " + javaRuntime.freeMemory() / 1024 + " KB");
-//        // renice - lower the priority
-//        currentPhaseNum=-1;
-//        
-//        printTracking=new PrintTracking(true);
-//        Thread trackingThread=new Thread(printTracking, TRACKING_LOGGER_NAME);
-//        trackingThread.setPriority(Thread.MIN_PRIORITY);
-//        trackingThread.start();
-//        
-//        for (int i = 0; i < phases.length; i++) {
-//            if (phases[i].getPhaseNum()==phaseNo){
-//                currentPhaseNum=i;
-//                break;
-//            }
-//        }
-//        if (currentPhaseNum>=0){
-//            switch( executePhase(phases[currentPhaseNum]) ) {
-//            case ABORTED:
-//                watchDogStatus = Result.ABORTED;
-//                logger.error("!!! Phase execution aborted !!!");
-//                return;
-//            case ERROR:
-//                watchDogStatus = Result.ERROR;
-//                logger.error("!!! Phase finished with error - stopping graph run !!!");
-//                return;
-//            }
-//        }else{
-//            watchDogStatus = Result.ERROR;
-//            logger.error("!!! No such phase: "+phaseNo);
-//            return;
-//        }
-//        
-//        logger.info("Forcing garbage collection ...");
-//        javaRuntime.runFinalization();
-//        javaRuntime.gc();
-//        
-//        trackingThread.interrupt();
-//        
-//        watchDogStatus = Result.FINISHED_OK;
-//        printPhasesSummary();
-//    }
-
 	/**
 	 * Execute transformation - start-up all Nodes & watch them running
 	 *
@@ -337,7 +290,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	public Result watch(Phase phase) throws InterruptedException {
 		long phaseMemUtilizationMax;
-		Message message;
+		Message<?> message;
 		int ticker = Defaults.WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
 		long lastTimestamp;
 		long currentTimestamp;
@@ -345,10 +298,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		long startTimeNano;
 		Map<String, TrackingDetail> tracking = new LinkedHashMap<String, TrackingDetail>(
 				phase.getNodes().size());
-		List<Node> leafNodes;
+		Set<Node> phaseNodes;
 
 		// let's create a copy of leaf nodes - we will watch them
-		leafNodes = new LinkedList<Node>(phase.getNodes().values());
+		phaseNodes = new HashSet<Node>(phase.getNodes().values());
 		// assign tracking info
 		phase.setTracking(tracking);
 
@@ -359,22 +312,18 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		// also let's take nanotime to measure how much CPU we spend processing
 		startTimeNano = System.nanoTime();
 
-		printTracking.setTrackingInfo(tracking, phase.getPhaseNum());
-		mbean.setRuningPhase(phase.getPhaseNum());
-		mbean.setTrackingMap(tracking);
-		mbean.updated();
+		cloverJMX.setRuningPhase(phase.getPhaseNum());
+		cloverJMX.setTrackingMap(tracking);
+		cloverJMX.updated();
 
 		// entering the loop awaiting completion of work by all leaf nodes
 		while (true) {
 			// wait on error message queue
-			message = inMsgQueue.poll(
-					Defaults.WatchDog.WATCHDOG_SLEEP_INTERVAL,
-					TimeUnit.MILLISECONDS);
+			message = inMsgQueue.poll(Defaults.WatchDog.WATCHDOG_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
 			if (message != null) {
 				switch(message.getType()){
 				case ERROR:
-					causeException = ((ErrorMsgBody) message.getBody())
-							.getSourceException();
+					causeException = ((ErrorMsgBody) message.getBody()).getSourceException();
 					causeGraphElement = message.getSender();
 					logger.error("!!! Fatal Error !!! - graph execution is aborting");
 					logger.error("Node "
@@ -384,9 +333,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 									.getErrorMessage() + (causeException != null ? " caused by: " + causeException.getMessage() : ""));
 					logger.debug("Node " + message.getSender().getId() + " error details:", causeException);
 					abort();
-					// printProcessingStatus(phase.getNodes().iterator(),
-					// phase.getPhaseNum());
-					printTracking.execute(true); // print tracking
 					return Result.ERROR;
 				case MESSAGE:
 					synchronized (_MSG_LOCK) {
@@ -394,10 +340,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					}
 					break;
 				case NODE_FINISHED:
-					leafNodes.remove(message.getSender());
+					phaseNodes.remove(message.getSender());
 					break;
 				default:
-						// do nothing, just wake up
+					// do nothing, just wake up
 				}
 			}
 
@@ -406,7 +352,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			// ------------------------------------
 
 			// is there any node running ?
-			if (leafNodes.isEmpty()) {
+			if (phaseNodes.isEmpty()) {
 				// gather tracking at nodes level
 				phaseMemUtilizationMax = gatherNodeLevelTracking(phase,
 						phaseMemUtilizationMax, startTimeNano, tracking);
@@ -421,7 +367,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 						+ phaseTracking.getExecTime() / 1000);
 				// printProcessingStatus(phase.getNodes().iterator(),
 				// phase.getPhaseNum());
-				printTracking.execute(true);// print tracking
+				//printTracking.execute(true);// print tracking
 				return Result.FINISHED_OK;
 				// nothing else to do in this phase
 			}
@@ -442,13 +388,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
 						&& (currentTimestamp - lastTimestamp) >= trackingInterval) {
 					// printProcessingStatus(phase.getNodes().iterator(),
 					// phase.getPhaseNum());
-					printTracking.execute(false); // print tracking
+					//printTracking.execute(false); // print tracking
 					lastTimestamp = currentTimestamp;
 
 					// update mbean & signal that it was updated
-					mbean.setRunningNodes(leafNodes.size());
-					mbean.setRunTime(currentTimestamp - startTimestamp);
-					mbean.updated();
+					cloverJMX.setRunningNodes(phaseNodes.size());
+					cloverJMX.setRunTime(currentTimestamp - startTimestamp);
+					cloverJMX.updated();
 				}
 			}
 
@@ -527,23 +473,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	public Result getStatus() {
 		return watchDogStatus;
 	}
-
 	
-	/**  Outputs summary info about executed phases */
-	void printPhasesSummary() {
-		logger.info("-----------------------** Summary of Phases execution **---------------------");
-		logger.info("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
-		for (Phase phase : graph.getPhases()) {
-			Object nodeInfo[] = {Integer.valueOf(phase.getPhaseNum()), phase.getResult().message(),
-                    phase.getPhaseTracking() != null ? Integer.valueOf(phase.getPhaseTracking().getExecTimeSec()) : "",
-                    phase.getPhaseTracking() != null ? Integer.valueOf(phase.getPhaseTracking().getMemUtilizationKB()) : ""};
-			int nodeSizes[] = {-18, -24, 12, 18};
-			logger.info(StringUtils.formatString(nodeInfo, nodeSizes));
-		}
-		logger.info("------------------------------** End of Summary **---------------------------");
-	}
-
-
 	/**
 	 * aborts execution of current phase
 	 *
@@ -568,7 +498,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	private void startUpNodes(Phase phase) {
 		synchronized(threadManager) {
-			while(threadManager.getFreeThreadsCount() < phase.getNodes().size()) { //it is sufficient, not necessary - so we have to time to time wake up and check it again
+			while(threadManager.getFreeThreadsCount() < phase.getNodes().size()) { //it is sufficient, not necessary condition - so we have to time to time wake up and check it again
 				try {
 					threadManager.wait(); //from time to time thread is woken up to check the condition again
 				} catch (InterruptedException e) {
@@ -603,10 +533,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		startUpNodes(phase);
 		logger.info("Sucessfully started all nodes in phase!");
 		// watch running nodes in phase
+		Result phaseStatus;
         try{
-            watchDogStatus = watch(phase);
+            phaseStatus = watch(phase);
         }catch(InterruptedException ex){
-            watchDogStatus = Result.ABORTED;
+            phaseStatus = Result.ABORTED;
         }
         
         //now we can notify all waiting phases for free threads
@@ -615,8 +546,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
             threadManager.notifyAll();
         }
         
-        phase.setResult(watchDogStatus);
-		return watchDogStatus;
+        phase.setResult(phaseStatus);
+		return phaseStatus;
 	}
 
 	/*
@@ -628,7 +559,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 * beeing executed
 	 */
 	public int getCurrentPhaseNum() {
-		return currentPhaseNum;
+		return currentPhase.getPhaseNum();
 	}
 	
 	/**
@@ -645,52 +576,50 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		this.trackingInterval = trackingInterval;
 	}
     
-	static class PrintTracking implements Runnable{
-	    private static int[] ARG_SIZES_WITH_CPU = {-6,-4,28, -5, 9,12,7,8};
-        private static int[] ARG_SIZES_WITHOUT_CPU = {38, -5, 9,12,7,8};
-        Map<String,TrackingDetail> tracking;
-        int phaseNo;
-        Log trackingLogger;
-        volatile boolean run;
-        Thread thisThread;
-        boolean displayTracking;
+	private static class PrintTracking extends Thread implements NotificationListener {
+	    private final static String TRACKING_LOGGER_NAME = "Tracking";
+        private static final Log logger = LogFactory.getLog(TRACKING_LOGGER_NAME);
+		private static final Runtime javaRuntime = Runtime.getRuntime();
+
+	    private static final int[] ARG_SIZES_WITH_CPU = { -6, -4, 28, -5, 9, 12, 7, 8 };
+        private static final int[] ARG_SIZES_WITHOUT_CPU = { 38, -5, 9, 12, 7, 8 };
+        volatile boolean runIt = true;
+        private final CloverJMX cloverJMX;
+        private final int trackingInterval;
         
-        PrintTracking(boolean displayTracking){
-            trackingLogger= LogFactory.getLog(TRACKING_LOGGER_NAME);
-            run=true;
-            this.displayTracking=displayTracking;
-        }
-        
-        void setTrackingInfo(Map<String,TrackingDetail> tracking, int phaseNo){
-            this.tracking=tracking;
-            this.phaseNo=phaseNo;
+        public PrintTracking(CloverJMX cloverJMX, int trackingInterval) {
+        	this.cloverJMX = cloverJMX;
+        	this.trackingInterval = trackingInterval;
+
+        	cloverJMX.addNotificationListener(this, null, null);
         }
         
         public void run() {
-            thisThread=Thread.currentThread();
-            while (run) {
-                LockSupport.park();
-                if (displayTracking) printProcessingStatus(false);
+    		logger.info("Thread started.");
+    		logger.info("Running on " + javaRuntime.availableProcessors() + " CPU(s)"
+    			+ " max available memory for JVM " + javaRuntime.maxMemory() / 1024 + " KB");
+
+    		while (runIt) {
+            	try {
+					Thread.sleep(trackingInterval);
+				} catch (InterruptedException e) {
+					System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! tracking was interrupted");
+					if(!runIt) {
+						//tracking printer was interrupted and should not continue - end of logging
+						return;
+					}
+				}
+				System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! tracking wants to print status");
+                printProcessingStatus(false);
             }
         }
-        
-        public void execute(boolean finalTracking){
-            LockSupport.unpark(thisThread);
-            //added by Kokon
-            if (displayTracking) printProcessingStatus(finalTracking);
-            ////////////////
-        }
-        
-        public void stop(){
-            run=false;
-            try{
-                thisThread.join(100);
-            }catch(InterruptedException ex){
-                
-            }
-            if (thisThread.isAlive()){
-                thisThread.interrupt();
-            }
+
+        public void free() {
+			System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! tracking wants to print status");
+        	printPhasesSummary();
+        	
+        	runIt = false;
+        	interrupt();
         }
         
         /**
@@ -701,22 +630,22 @@ public class WatchDog implements Callable<Result>, CloverPost {
          * @since            July 30, 2002
          */
         private void printProcessingStatus(boolean finalTracking) {
-            if (tracking==null) return;
             //StringBuilder strBuf=new StringBuilder(120);
             if (finalTracking)
-                trackingLogger.info("----------------------** Final tracking Log for phase [" + phaseNo + "] **---------------------");
+                logger.info("----------------------** Final tracking Log for phase [" + cloverJMX.getRunningPhase() + "] **---------------------");
             else 
-                trackingLogger.info("---------------------** Start of tracking Log for phase [" + phaseNo + "] **-------------------");
+                logger.info("---------------------** Start of tracking Log for phase [" + cloverJMX.getRunningPhase() + "] **-------------------");
             // France is here just to get 24hour time format
-            trackingLogger.info("Time: "
+            logger.info("Time: "
                 + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).
                     format(Calendar.getInstance().getTime()));
-            trackingLogger.info("Node                   Status     Port      #Records         #KB  Rec/s    KB/s");
-            trackingLogger.info("----------------------------------------------------------------------------------");
-            for (TrackingDetail nodeDetail : tracking.values()){
+            logger.info("Node                   Status     Port      #Records         #KB  Rec/s    KB/s");
+            logger.info("----------------------------------------------------------------------------------");
+            for (String nodeId: cloverJMX.getNodesList()){
+            	final TrackingDetail nodeDetail = cloverJMX.getTrackingDetail(nodeId); 
                 Object nodeInfo[] = {nodeDetail.getNodeId(), nodeDetail.getResult().message()};
                 int nodeSizes[] = {-23, -15};
-                trackingLogger.info(StringUtils.formatString(nodeInfo, nodeSizes));
+                logger.info(StringUtils.formatString(nodeInfo, nodeSizes));
                 //in ports
                 Object portInfo[];
                 boolean cpuPrinted=false;
@@ -730,14 +659,14 @@ public class WatchDog implements Callable<Result>, CloverPost {
                                 Long.toString(nodeDetail.getTotalBytes(PortType.IN_PORT, i)>>10),
                                 Integer.toString((nodeDetail.getAvgRows(PortType.IN_PORT, i))),
                                 Integer.toString(nodeDetail.getAvgBytes(PortType.IN_PORT, i)>>10)};
-                        trackingLogger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU)); 
+                        logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU)); 
                     }else{
                             portInfo = new Object[] {"In:", Integer.toString(i), 
                             Integer.toString(nodeDetail.getTotalRows(PortType.IN_PORT, i)),
                             Long.toString(nodeDetail.getTotalBytes(PortType.IN_PORT, i)>>10),
                             Integer.toString(( nodeDetail.getAvgRows(PortType.IN_PORT, i))),
                             Integer.toString(nodeDetail.getAvgBytes(PortType.IN_PORT, i)>>10)};
-                        trackingLogger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
+                        logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
                     }
                     
                 }
@@ -751,19 +680,46 @@ public class WatchDog implements Callable<Result>, CloverPost {
                                 Long.toString(nodeDetail.getTotalBytes(PortType.OUT_PORT, i)>>10),
                                 Integer.toString((nodeDetail.getAvgRows(PortType.OUT_PORT, i))),
                                 Integer.toString(nodeDetail.getAvgBytes(PortType.OUT_PORT, i)>>10)};
-                        trackingLogger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU));
+                        logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU));
                     }else{
                         portInfo = new Object[] {"Out:", Integer.toString(i), 
                             Integer.toString(nodeDetail.getTotalRows(PortType.OUT_PORT, i)),
                             Long.toString(nodeDetail.getTotalBytes(PortType.OUT_PORT, i)>>10),
                             Integer.toString((nodeDetail.getAvgRows(PortType.OUT_PORT, i))),
                             Integer.toString(nodeDetail.getAvgBytes(PortType.OUT_PORT, i)>>10)};
-                        trackingLogger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
+                        logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
                     }
                 }               
             }
-            trackingLogger.info("---------------------------------** End of Log **--------------------------------");
+            logger.info("---------------------------------** End of Log **--------------------------------");
         }
+
+    	/**  Outputs summary info about executed phases */
+    	private void printPhasesSummary() {
+    		logger.info("-----------------------** Summary of Phases execution **---------------------");
+    		logger.info("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
+    		for (int phaseNum : cloverJMX.getPhaseList()) {
+    			PhaseTrackingDetail phaseTrackingDetail = cloverJMX.getPhaseTracking(phaseNum);
+    			if(phaseTrackingDetail != null) {
+	    			Object nodeInfo[] = {Integer.valueOf(phaseTrackingDetail.getPhaseNumber()), phaseTrackingDetail.getResult().message(),
+	                        phaseTrackingDetail.getExecTimeSec(),
+	                        phaseTrackingDetail.getMemUtilizationKB()};
+	    			int nodeSizes[] = {-18, -24, 12, 18};
+	    			logger.info(StringUtils.formatString(nodeInfo, nodeSizes));
+    			}
+    		}
+    		logger.info("------------------------------** End of Summary **---------------------------");
+    	}
+
+		public void handleNotification(Notification notification, Object handback) {
+			if(notification.getType().equals(CloverJMX.GRAPH_STARTED_NOTIFICATION_ID)) {
+				System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! graph started");
+				printProcessingStatus(false);
+			} else if(notification.getType().equals(CloverJMX.GRAPH_FINISHED_NOTIFICATION_ID)) {
+				System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! graph finished");
+				printProcessingStatus(true);
+			}
+		}
 
     }
  
@@ -851,7 +807,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	}
 
 	public CloverJMX getCloverJmx() {
-		return mbean;
+		return cloverJMX;
 	}
 
 	public boolean isFinishJMX() {
@@ -860,6 +816,14 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	public void setFinishJMX(boolean finishJMX) {
 		this.finishJMX = finishJMX;
+	}
+
+	public IThreadManager getThreadManager() {
+		return threadManager;
+	}
+
+	public void setThreadManager(IThreadManager threadManager) {
+		this.threadManager = threadManager;
 	}
 
 }

@@ -21,7 +21,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package org.jetel.graph.runtime;
+package org.jetel.graph.runtime.jmx;
 
 import java.util.Map;
 
@@ -33,7 +33,8 @@ import javax.management.NotificationBroadcasterSupport;
 import org.jetel.data.Defaults;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
-import org.jetel.graph.runtime.TrackingDetail.PortType;
+import org.jetel.graph.runtime.WatchDog;
+import org.jetel.graph.runtime.jmx.TrackingDetail.PortType;
 
 public class CloverJMX extends NotificationBroadcasterSupport  implements CloverJMXMBean {
 
@@ -189,6 +190,7 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     } 
     
     public synchronized void graphFinished(Result result) {
+    	System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@ graph finished");
     	if (!run) return;
         Notification n = new Notification(GRAPH_FINISHED_NOTIFICATION_ID, 
                                 this, 
@@ -198,6 +200,7 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
  
         //n.setUserData(result);
         sendNotification(n); 
+    	System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@ graph finished");
     } 
 
     public synchronized void graphStarted() { 

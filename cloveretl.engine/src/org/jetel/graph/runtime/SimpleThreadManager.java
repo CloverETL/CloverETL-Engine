@@ -36,7 +36,8 @@ public class SimpleThreadManager implements IThreadManager {
 	 * @see org.jetel.graph.runtime.IThreadManager#executeWatchDog(org.jetel.graph.runtime.WatchDog)
 	 */
 	public Future<Result> executeWatchDog(WatchDog watchDog) {
-		watchDog.startUpJMX();
+		watchDog.setThreadManager(this);
+		watchDog.init();
 		
 		FutureTask<Result> futureTask = new FutureTask<Result>(watchDog); 
 		new Thread(futureTask, "WatchDog").start();
