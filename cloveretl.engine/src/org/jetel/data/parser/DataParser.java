@@ -81,6 +81,8 @@ public class DataParser implements Parser {
 
 	private int recordCounter;
 	
+	private int numFields;
+	
 	private AhoCorasick delimiterSearcher;
 
 	private boolean skipLeadingBlanks = true;
@@ -96,6 +98,8 @@ public class DataParser implements Parser {
 	private boolean[] isAutoFilling;
 	
 	private boolean[] isSkipBlanks;
+
+	private boolean[] eofAsDelimiters;
 
 	private boolean releaseInputSource = true;
 	
@@ -161,8 +165,10 @@ public class DataParser implements Parser {
 		fieldBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		recordBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		isAutoFilling = new boolean[metadata.getNumFields()];
-		isSkipBlanks = new boolean[metadata.getNumFields()];
+		numFields = metadata.getNumFields();
+		isAutoFilling = new boolean[numFields];
+		isSkipBlanks = new boolean[numFields];
+		eofAsDelimiters = new boolean[numFields];
 
 		//save metadata
 		this.metadata = metadata;
@@ -172,17 +178,20 @@ public class DataParser implements Parser {
 
 		// create array of delimiters & initialize them
 		String[] delimiters;
-		for (int i = 0; i < metadata.getNumFields(); i++) {
+		for (int i = 0; i < numFields; i++) {
 			if(metadata.getField(i).isDelimited()) {
 				delimiters = metadata.getField(i).getDelimiters();
-				for(int j = 0; j < delimiters.length; j++) {
-					delimiterSearcher.addPattern(delimiters[j], i);
+				if(delimiters != null) { //it is possible in case eofAsDelimiter tag is set
+					for(int j = 0; j < delimiters.length; j++) {
+						delimiterSearcher.addPattern(delimiters[j], i);
+					}
 				}
 			}
 			isAutoFilling[i] = metadata.getField(i).getAutoFilling() != null;
 			isSkipBlanks[i] = skipLeadingBlanks
 					|| trim == Boolean.TRUE
 					|| (trim == null && metadata.getField(i).isTrim());
+			eofAsDelimiters[i] = metadata.getField(i).isEofAsDelimiter();
 		}
 
 		//aho-corasick initialize
@@ -203,8 +212,8 @@ public class DataParser implements Parser {
 		delimiterSearcher.compile();
 	
 		// create array of field sizes & initialize them
-		fieldLengths = new int[metadata.getNumFields()];
-		for (int i = 0; i < metadata.getNumFields(); i++) {
+		fieldLengths = new int[numFields];
+		for (int i = 0; i < numFields; i++) {
 			if(metadata.getField(i).isFixed()) {
 				fieldLengths[i] = metadata.getField(i).getSize();
 			}
@@ -309,7 +318,7 @@ public class DataParser implements Parser {
 		
 		recordCounter++;
 		recordBuffer.clear();
-		for (fieldCounter = 0; fieldCounter < metadata.getNumFields(); fieldCounter++) {
+		for (fieldCounter = 0; fieldCounter < numFields; fieldCounter++) {
 			// skip all fields that are internally filled 
 			if (isAutoFilling[fieldCounter]) {
 				continue;
@@ -424,7 +433,7 @@ public class DataParser implements Parser {
 								(fieldLengths[fieldCounter] - mark - 1));
 					}
 					//check record delimiter presence for last field
-					if(hasRecordDelimiter && fieldCounter + 1 == metadata.getNumFields()) {
+					if(hasRecordDelimiter && fieldCounter + 1 == numFields) {
 						if(!followRecordDelimiter()) { //record delimiter is not found
 							return parsingErrorFound("Too many characters found", record, fieldCounter);
 						}
@@ -438,18 +447,15 @@ public class DataParser implements Parser {
 			// did we have EOF situation ?
 			if (character == -1) {
 				try {
-                    //hack for data files without last row delimiter (for example last record without new-line character)
-                    if(fieldCounter + 1 == metadata.getNumFields()) {
-                        populateField(record, fieldCounter, fieldBuffer);
-                        if((fieldCounter != 0 || recordBuffer.position() > 0)) { //hack for hack for one column table
-                            //reader.close();
-                            return record;
-                        }
-                    }
     				if(recordBuffer.position() == 0) {
                         reader.close();
     				    return null;
                     } else {
+                        //maybe the field has EOF delimiter
+                        if(eofAsDelimiters[fieldCounter]) {
+                            populateField(record, fieldCounter, fieldBuffer);
+                            return record;
+                        }
                         return parsingErrorFound("Unexpected end of file", record, fieldCounter);
                     }
                 } catch (IOException e) {
@@ -608,7 +614,7 @@ public class DataParser implements Parser {
 	private boolean findEndOfRecord(int fieldNum) throws JetelException {
 		int character = 0;
 		try {
-			for(int i = fieldNum + 1; i < metadata.getNumFields(); i++) {
+			for(int i = fieldNum + 1; i < numFields; i++) {
 				if (isAutoFilling[i]) continue;
 				while((character = readChar()) != -1) {
 					delimiterSearcher.update((char) character);
