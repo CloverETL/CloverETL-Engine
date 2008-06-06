@@ -29,8 +29,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
-import org.jetel.graph.runtime.jmx.PhaseTrackingDetail;
-import org.jetel.graph.runtime.jmx.TrackingDetail;
+import org.jetel.graph.runtime.oldjmx.PhaseTrackingDetail;
+import org.jetel.graph.runtime.oldjmx.TrackingDetail;
 
 /**
  * A class that represents processing Phase of Transformation Graph
