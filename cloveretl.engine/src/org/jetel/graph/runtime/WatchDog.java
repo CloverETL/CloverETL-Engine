@@ -58,11 +58,11 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.jmx.CloverJMX;
-import org.jetel.graph.runtime.jmx.NodeTrackingDetail;
-import org.jetel.graph.runtime.jmx.PhaseTrackingDetail;
-import org.jetel.graph.runtime.jmx.TrackingDetail;
-import org.jetel.graph.runtime.jmx.TrackingDetail.PortType;
+import org.jetel.graph.runtime.oldjmx.CloverJMX;
+import org.jetel.graph.runtime.oldjmx.NodeTrackingDetail;
+import org.jetel.graph.runtime.oldjmx.PhaseTrackingDetail;
+import org.jetel.graph.runtime.oldjmx.TrackingDetail;
+import org.jetel.graph.runtime.oldjmx.TrackingDetail.PortType;
 import org.jetel.util.primitive.DuplicateKeyMap;
 import org.jetel.util.string.StringUtils;
 

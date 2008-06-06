@@ -21,7 +21,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package org.jetel.graph.runtime.jmx;
+package org.jetel.graph.runtime.oldjmx;
 
 import java.util.Map;
 
@@ -34,7 +34,7 @@ import org.jetel.data.Defaults;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.runtime.WatchDog;
-import org.jetel.graph.runtime.jmx.TrackingDetail.PortType;
+import org.jetel.graph.runtime.oldjmx.TrackingDetail.PortType;
 
 public class CloverJMX extends NotificationBroadcasterSupport  implements CloverJMXMBean {
 
