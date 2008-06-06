@@ -92,7 +92,7 @@ public void test_1_IntegerDataField() {
 		anIntegerDataField1.setValue(15);
 		assertEquals("setValue(int value) failed",anIntegerDataField1.getDouble(), 15.0, 0.0);
 
-		anIntegerDataField1.setValue(new Integer(15));
+		anIntegerDataField1.setValue(Integer.valueOf(15));
 		assertEquals("setValue(Object value) failed",anIntegerDataField1.getDouble(), 15.0, 0.0);
 		assertFalse(anIntegerDataField1.isNull());
 
@@ -117,7 +117,7 @@ public void test_1_IntegerDataField() {
 	 */
 	public void test_getValue() {
 		anIntegerDataField1.setValue(17.45);
-		assertEquals("getValue() failed",anIntegerDataField1.getValue(), new Integer(17));
+		assertEquals("getValue() failed",anIntegerDataField1.getValue(), Integer.valueOf(17));
 
 		anIntegerDataField1.setNull();
 		assertEquals(null, anIntegerDataField1.getValue());
@@ -212,7 +212,6 @@ public void test_1_IntegerDataField() {
 		buffer.rewind();
 		anIntegerDataField4.deserialize(buffer);
 		assertEquals(anIntegerDataField4.getValue(),anIntegerDataField1.getValue());
-		buffer = null;
 	}
 	
 	/**

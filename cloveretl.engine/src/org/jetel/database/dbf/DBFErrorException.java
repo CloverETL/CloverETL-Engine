@@ -28,6 +28,8 @@ package org.jetel.database.dbf;
  */
 public class DBFErrorException extends RuntimeException {
 	
+	private static final long serialVersionUID = -3701011918190608670L;
+
 	public DBFErrorException(String msg){
 		super(msg);
 	}

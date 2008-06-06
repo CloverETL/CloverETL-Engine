@@ -119,9 +119,9 @@ public class ConnectionFactory {
             //create instance of connection
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
             return (IConnection) method.invoke(null, new Object[] {graph, nodeXML});
-        } catch(Exception ex) {
-            logger.error("Can't create object of : " + connectionType + " exception: " + ex, ex);
-            throw new RuntimeException("Can't create object of : " + connectionType + " exception: " + ex);
+        } catch(Throwable e) {
+            logger.error("Can't create object of : " + connectionType + " exception: " + e, e);
+            throw new RuntimeException("Can't create object of : " + connectionType + " exception: " + e);
         }
     }
     

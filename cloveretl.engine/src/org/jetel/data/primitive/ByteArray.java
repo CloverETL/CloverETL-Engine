@@ -30,6 +30,8 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.file.ZipUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * A class that represents dynamic array of bytes.<br>
  * 
@@ -37,6 +39,7 @@ import org.jetel.util.file.ZipUtils;
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  * @created May 30, 2007
  */
+@SuppressWarnings("EI")
 public class ByteArray implements Comparable, Iterable {
 
     /**
@@ -669,7 +672,7 @@ public class ByteArray implements Comparable, Iterable {
     	if (start > end)
     	    throw new ArrayIndexOutOfBoundsException("start > end");
 
-    	byte[] bData = null;
+    	final byte[] bData;
     	if (charset == null) {
         	bData = data.toString().getBytes();
     	} else {
@@ -785,7 +788,7 @@ public class ByteArray implements Comparable, Iterable {
         if (s == null) throw new IllegalArgumentException("CharSequence is null");
     	if ((dstOffset < 0) || (dstOffset > count))
     	    throw new IndexOutOfBoundsException("dstOffset "+dstOffset);
-    	byte[] sByte = null;
+    	final byte[] sByte;
     	if (charset == null) {
     		sByte = s.toString().getBytes();
     	} else {

@@ -29,10 +29,10 @@ package org.jetel.database.dbf;
  */
 public class DBFTypes  {
 	
-	public static final int[] KNOWN_TYPES={0x02,0x03,0x30,0x43,0x63,
+	/*package*/ static final int[] KNOWN_TYPES={0x02,0x03,0x30,0x43,0x63,
 										0x83,0x8b,0x0cb,0x0f5,0x0fb};
 	
-	public static final String[] KNOWN_TYPES_NAMES={
+	/*package*/ static final String[] KNOWN_TYPES_NAMES={
 							"FoxBase","FoxBase+","VisualFoxPro","dBaseIV",
 							"dBaseIV_systemfile","FoxBase_memo","dBaseIV_memo",
 							"dBaseIV_sqltables","FoxPro2.x","FoxBASE"};

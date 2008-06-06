@@ -99,7 +99,7 @@ public void test_1_NumericDataField() {
 		aNumericDataField1.setValue(15);
 		assertEquals("setValue(int value) failed",aNumericDataField1.getDouble(), 15.0, 0.0);
 
-		aNumericDataField1.setValue(new Double(15.1234));
+		aNumericDataField1.setValue(Double.valueOf(15.1234));
 		assertEquals("setValue(Object value) failed",aNumericDataField1.getDouble(), 15.1234, 0.0);
 		assertFalse(aNumericDataField1.isNull());
 
@@ -124,7 +124,7 @@ public void test_1_NumericDataField() {
 	 */
 	public void test_getValue() {
 		aNumericDataField1.setValue(17.45);
-		assertEquals("getValue() failed",aNumericDataField1.getValue(), new Double(17.45));
+		assertEquals("getValue() failed",aNumericDataField1.getValue(), Double.valueOf(17.45));
 
 		aNumericDataField1.setValue((Numeric)null);
 		assertEquals(null, aNumericDataField1.getValue());
@@ -217,7 +217,6 @@ public void test_1_NumericDataField() {
 //			assertEquals(aNumericDataField4.getValue(),aNumericDataField1.getValue());
 		} catch (BadDataFormatException e) {
 		}
-		buffer = null;
 	}
 	
 	/**

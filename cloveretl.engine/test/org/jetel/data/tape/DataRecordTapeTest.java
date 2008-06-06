@@ -52,7 +52,7 @@ protected void setUp() {
     testRecordB.init();
     testRecordA.getField(0).setValue("First");
     testRecordA.getField(1).setValue("Second field");
-    testRecordA.getField(2).setValue(new Integer(-1234567));
+    testRecordA.getField(2).setValue(Integer.valueOf(-1234567));
     testRecordB.copyFieldsByPosition(testRecordA);
     
 	EngineInitializer.initEngine((String) null, null, null);

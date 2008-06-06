@@ -30,7 +30,9 @@ package org.jetel.exception;
  */
 public class AttributeNotFoundException extends Exception {
 
-    // Attributes
+	private static final long serialVersionUID = 5458258223226987477L;
+
+	// Attributes
     String attributeName;
 
     String causedByClass;
