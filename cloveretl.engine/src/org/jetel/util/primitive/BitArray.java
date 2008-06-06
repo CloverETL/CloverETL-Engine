@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 /**
  * Class for representing strings of bits.<br>
  * Uses arrays of bytes to group bits by 8 together.
@@ -32,6 +34,7 @@ import java.util.Arrays;
  *@created    8. April 2003
  */
 
+@SuppressWarnings("EI")
 public class BitArray implements Serializable{
 
 	private static final long serialVersionUID = 5285503841640300317L;

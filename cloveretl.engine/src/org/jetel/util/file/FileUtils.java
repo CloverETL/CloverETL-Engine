@@ -129,13 +129,16 @@ public class FileUtils {
 		int length = 0;
 		try {
 			FileInputStream dataFile = new FileInputStream(filename);
-			while (length != -1) {
-				length = dataFile.read(buffer);
-				if (length > 0) {
-					checksum.update(buffer, 0, length);
+			try {
+				while (length != -1) {
+					length = dataFile.read(buffer);
+					if (length > 0) {
+						checksum.update(buffer, 0, length);
+					}
 				}
+			} finally {
+				dataFile.close();
 			}
-			dataFile.close();
 
 		} catch (IOException ex) {
 			return -1;
