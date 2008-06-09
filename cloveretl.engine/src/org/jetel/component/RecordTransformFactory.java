@@ -36,8 +36,10 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangParser;
+import org.jetel.interpreter.ASTnode.CLVFDirectMapping;
 import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFStart;
+import org.jetel.interpreter.ParserHelper.VarDeclaration;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
 import org.jetel.util.compile.DynamicJavaCode;
@@ -250,34 +252,57 @@ public class RecordTransformFactory {
         return -1;
     }
     
+    private static boolean isSimpleTransformNode(CLVFStart record) {
+    	
+        int numTopChildren = record.jjtGetNumChildren();
+        
+        /* Detection of simple mapping format */
+        if (record.jjtHasChildren()) {
+    		for (int i = 0; i < numTopChildren; i++) {
+    			org.jetel.interpreter.ASTnode.Node node = record.jjtGetChild(i);
+    			if (i < numTopChildren - 1) {
+    				if (!(node instanceof org.jetel.interpreter.ASTnode.CLVFVarDeclaration)) {
+//    					System.out.println("Non var-declaration encountered.");
+    					return false;
+    				}
+    			} else {
+    				if (!(node instanceof org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration)) {
+//    					System.out.println("Non function-declaration encountered.");
+    					return false;
+    				}
+    				if (!((CLVFFunctionDeclaration)node).name.equals("transform")) {
+//    					System.out.println("The single function must be named 'trasnform'");
+    					return false;
+    				}
+    				CLVFFunctionDeclaration transFunction = (CLVFFunctionDeclaration)node;
+    				int numTransChildren = transFunction.jjtGetNumChildren();
+    				for (int j = 0; j < numTransChildren; j++) {
+    					org.jetel.interpreter.ASTnode.Node fNode = transFunction.jjtGetChild(i);
+    					if (!(fNode instanceof CLVFDirectMapping)) {
+//    						System.out.println("Function transform() must contain direct mappings only");
+    						return false;
+    					}
+    				}
+    			}
+    		}
+    	}
+        return true;
+    }
+    
     public static boolean isSimpleTransform(DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String transform) {
     	
     	TransformLangParser parser = new TransformLangParser(inMeta, outMeta, transform);
-    	parser.getFunctions();
+    	CLVFStart record = null;
     	
         try {
-            CLVFStart record = parser.Start();
+            record = parser.Start();
             record.init();
         } catch (ParseException e) {
-            /*setErrorMessage("Error when parsing expression: " + e.getMessage().split(System.getProperty("line.separator"))[0]);
-            if(e.currentToken != null && e.currentToken.next != null) {
-                Token t = e.currentToken.next;
-                editor.setSelection(t.beginLine, t.beginColumn, t.endLine, t.endColumn);
-            }
-            return;*/
+            System.out.println("Error when parsing expression: " + e.getMessage().split(System.getProperty("line.separator"))[0]);
+            return false;
         }
-    	
-//    	System.out.println(parser.getFunctions());
-    	Map functions = parser.getFunctions();
-    	if (functions.size() != 1 && !functions.containsKey("transform"))
-    		return false;
-    	
-    	CLVFFunctionDeclaration functionDecl = parser.getFunction("transform");
-    	
-//    	functionDecl.
-    	
-    	return true;
+    	return isSimpleTransformNode(record);
     }
     
 }
