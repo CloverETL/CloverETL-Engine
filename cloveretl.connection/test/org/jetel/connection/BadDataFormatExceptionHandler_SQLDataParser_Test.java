@@ -32,13 +32,14 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test extends TestCase {
 	protected void setUp() throws ComponentNotReadyException, JetelException, FileNotFoundException {
 
 		EngineInitializer.initEngine("../cloveretl.engine/plugins", null, null);
+		EngineInitializer.forceActivateAllPlugins();
 		DBConnection aDBConnection = null;
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 
 		// metadata = xmlReader.read(new FileInputStream("config\\test\\rec_def\\db_def_rec.xml"));
 		// aDBConnection = new DBConnection("", "config\\test\\msaccess.clover_test.txt");
 		metadata = xmlReader.read(new FileInputStream("../cloveretl.engine/config/test/rec_def/db_def_rec.xml"));
-		aDBConnection = new DBConnection("conn", "../cloveretl.engine/examples/koule_postgre.cfg");
+		aDBConnection = new DBConnection("conn", "../cloveretl.connection/test/org/jetel/connection/koule_postgre.cfg");
 
 		aDBConnection.init();
 
