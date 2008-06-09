@@ -244,9 +244,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
         
         // Construct the ObjectName for the MBean we will register
         try {
-            jmxObjectName = new ObjectName(
-                    createMBeanName(mbeanId != null ? mbeanId : graph.getName(), this.getGraphRuntimeContext().getRunId())
-            );
+        	String name = createMBeanName(mbeanId != null ? mbeanId : graph.getName(), this.getGraphRuntimeContext().getRunId());
+            jmxObjectName = new ObjectName( name );
+            logger.info("register MBean with name:"+name);
             // Register the  MBean
             mbs.registerMBean(cloverJMX, jmxObjectName);
 
