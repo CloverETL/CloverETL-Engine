@@ -30,7 +30,7 @@ public class DBLookupTest extends TestCase {
 
 		EngineInitializer.initEngine("../cloveretl.engine/plugins", null, null);
 		EngineInitializer.forceActivateAllPlugins();
-		DBConnection conn = new DBConnection("conn", "../cloveretl.lookup/test/org/jetel/lookup/koule_postgre.cfg");
+		DBConnection conn = new DBConnection("conn", "../cloveretl.connection/test/org/jetel/connection/koule_postgre.cfg");
 		conn.init();
 		aDBConnection = conn.getConnection(conn.getId());
 
