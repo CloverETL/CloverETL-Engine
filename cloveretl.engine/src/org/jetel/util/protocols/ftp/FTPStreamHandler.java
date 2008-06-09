@@ -5,8 +5,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
-import org.jetel.util.protocols.sftp.SFTPConnection;
-
 /**
  * URLStreamHandler for sftp connection.
  * 

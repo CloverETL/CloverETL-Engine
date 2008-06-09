@@ -606,7 +606,7 @@ public class StringUtils {
 		if (index < str.length()) {// if string doesn't end with delimiter, add all after last delimiter found
 			result.add(str.substring(index));
 		}
-		return result.toArray(new String[0]);
+		return result.toArray(new String[result.size()]);
 	}
 
 	public static boolean isEmpty(CharSequence s) {
