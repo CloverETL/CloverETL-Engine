@@ -34,6 +34,8 @@ import org.jetel.util.primitive.BitArray;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  *  A class that represents metadata describing DataRecord
  *
@@ -49,14 +51,15 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private static final long serialVersionUID = 7032218607804024730L;
 
     // Associations
-	/**
-	 * @since
-	 */
+	@SuppressWarnings("Se")
 	private List<DataFieldMetadata> fields;
 	private BitArray fieldNullSwitch;
     
+	@SuppressWarnings("Se")
 	private Map<String, Integer> fieldNames;
+	@SuppressWarnings("Se")
 	private Map<Integer, String> fieldTypes;
+	@SuppressWarnings("Se")
 	private Map<String, Integer> fieldOffset;
 
 	private String name;
@@ -352,7 +355,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @return
 	 */
 	public DataFieldMetadata[] getFields() {
-		return (DataFieldMetadata[]) fields.toArray(new DataFieldMetadata[0]);
+		return (DataFieldMetadata[]) fields.toArray(new DataFieldMetadata[fields.size()]);
 	}
 
 	/**

@@ -21,6 +21,7 @@ package org.jetel.util.string;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * In this class are stored rules for StringAproxComparator for different locale
@@ -99,6 +100,7 @@ public class StringAproxComparatorLocaleRules {
 	 * This method gets out avaible locale
 	 */
 	public static String[] getAvaibleLocales(){
-		return (String[]) rules.keySet().toArray(new String[0]);
+		final Set rulesSet = rules.keySet();
+		return (String[]) rulesSet.toArray(new String[rulesSet.size()]);
 	}
 }
