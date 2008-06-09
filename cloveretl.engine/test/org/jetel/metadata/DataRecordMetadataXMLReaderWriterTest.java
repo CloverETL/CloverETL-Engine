@@ -36,7 +36,7 @@ import junit.framework.TestCase;
 public class DataRecordMetadataXMLReaderWriterTest extends TestCase {
 	private DataRecordMetadata aDelimitedDataRecordMetadata;
 	private DataRecordMetadataXMLReaderWriter aDataRecordMetadataXMLReaderWriter;
-	private String testFile1 = null;	
+	private String testFile1 = null;
 
 	protected void setUp() { 
 		DataFieldMetadata aDataFieldMetadata = null;
@@ -49,27 +49,31 @@ public class DataRecordMetadataXMLReaderWriterTest extends TestCase {
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 
 		aDataFieldMetadata = new DataFieldMetadata("Field_0",DataFieldMetadata.INTEGER_FIELD,";");
-//		aDataFieldMetadata.setCodeStr("return Math.abs(-5);");
+// aDataFieldMetadata.setCodeStr("return Math.abs(-5);");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 		aDataFieldMetadata = new DataFieldMetadata("Field_1",DataFieldMetadata.STRING_FIELD,":");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 		aDataFieldMetadata = new DataFieldMetadata("Field_2",DataFieldMetadata.INTEGER_FIELD,",");
-//		aDataFieldMetadata.setCodeStr("return 7;");
+// aDataFieldMetadata.setCodeStr("return 7;");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 		aDataFieldMetadata = new DataFieldMetadata("Field_3",DataFieldMetadata.NUMERIC_FIELD,"\n");
-//		aDataFieldMetadata.setCodeStr("return [record1].[field1]/[record2].[field2];");
+// aDataFieldMetadata.setCodeStr("return [record1].[field1]/[record2].[field2];");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 
 		testFile1 = "data/out/test1.txt";	
 		File aFile=new File(testFile1);
-		 if(!aFile.exists()) {
-			new File(aFile.getParent()).mkdirs();
+		if (!aFile.exists()) {
+			if (!aFile.getParentFile().isDirectory()) {
+				final boolean created = aFile.getParentFile().mkdirs();
+				assertTrue("can't create directory " + aFile.getParentFile().getAbsolutePath(), created);
+			}
+
 			try {
 				aFile.createNewFile();
 			} catch (IOException e3) {
 				e3.printStackTrace();
 			}
-		 }
+		}
 	}
 
 	protected void tearDown() {
@@ -78,7 +82,8 @@ public class DataRecordMetadataXMLReaderWriterTest extends TestCase {
 		//remove testFile if any
 		File aFile=new File(testFile1);
 		 if(aFile.exists()) {
-			 aFile.delete();
+			 final boolean deleted = aFile.delete();
+			 assertTrue("can't delete "+ aFile.getAbsolutePath(), deleted );
 		 }
 	}
 
@@ -93,7 +98,7 @@ public class DataRecordMetadataXMLReaderWriterTest extends TestCase {
 
 	public void test_DataRecordMetadataXMLReaderWriter() {
 		try {
-			aDataRecordMetadataXMLReaderWriter.write(aDelimitedDataRecordMetadata,new FileOutputStream(testFile1));
+			DataRecordMetadataXMLReaderWriter.write(aDelimitedDataRecordMetadata,new FileOutputStream(testFile1));
 			aDelimitedDataRecordMetadata = null;
 			
 			aDelimitedDataRecordMetadata = aDataRecordMetadataXMLReaderWriter.read(new FileInputStream(testFile1));

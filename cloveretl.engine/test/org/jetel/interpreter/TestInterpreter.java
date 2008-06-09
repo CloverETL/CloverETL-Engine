@@ -311,7 +311,7 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(DecimalFactory.getDecimal(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("maxLong")).getTLValue().getNumeric());
 		      assertEquals(((Integer)record.getField("Value").getValue()).intValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldValue")).getTLValue().getNumeric().getInt());
 		      assertEquals((Double)record.getField("Age").getValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldAge")).getTLValue().getNumeric().getDouble());
-		      assertEquals(new Double(Double.MIN_VALUE),executor.getGlobalVariable(parser.getGlobalVariableSlot("minDouble")).getTLValue().getNumeric().getDouble());
+		      assertEquals(Double.valueOf(Double.MIN_VALUE),executor.getGlobalVariable(parser.getGlobalVariableSlot("minDouble")).getTLValue().getNumeric().getDouble());
 		      assertTrue(executor.getGlobalVariable(parser.getGlobalVariableSlot("def")).getTLValue().getNumeric().isNull());
 
 		      if (parser.getParseExceptions().size()>0){
@@ -356,13 +356,13 @@ public class TestInterpreter extends TestCase {
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 		      
-		      assertEquals(new Double(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getTLValue().getNumeric().getDouble());
-		      assertEquals(new Double(-1),executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getTLValue().getNumeric().getDouble());
-		      assertEquals(new Double(999999.99911),executor.getGlobalVariable(parser.getGlobalVariableSlot("minLong")).getTLValue().getNumeric().getDouble());
-		      assertEquals(new Double(((Integer)record.getField("Value").getValue())),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldValue")).getTLValue().getNumeric().getDouble());
-		      assertEquals(new Double((Double)record.getField("Age").getValue()),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldAge")).getTLValue().getNumeric().getDouble());
-		      assertEquals(new Double(Double.MIN_VALUE),executor.getGlobalVariable(parser.getGlobalVariableSlot("minDouble")).getTLValue().getNumeric().getDouble());
-		      assertEquals(new Double(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("def")).getTLValue().getNumeric().getDouble());
+		      assertEquals(Double.valueOf(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getTLValue().getNumeric().getDouble());
+		      assertEquals(Double.valueOf(-1),executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getTLValue().getNumeric().getDouble());
+		      assertEquals(Double.valueOf(999999.99911),executor.getGlobalVariable(parser.getGlobalVariableSlot("minLong")).getTLValue().getNumeric().getDouble());
+		      assertEquals(Double.valueOf(((Integer)record.getField("Value").getValue())),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldValue")).getTLValue().getNumeric().getDouble());
+		      assertEquals(Double.valueOf((Double)record.getField("Age").getValue()),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldAge")).getTLValue().getNumeric().getDouble());
+		      assertEquals(Double.valueOf(Double.MIN_VALUE),executor.getGlobalVariable(parser.getGlobalVariableSlot("minDouble")).getTLValue().getNumeric().getDouble());
+		      assertEquals(Double.valueOf(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("def")).getTLValue().getNumeric().getDouble());
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -587,11 +587,11 @@ public class TestInterpreter extends TestCase {
 		      
 		      assertEquals("iplusj",110,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getTLValue().getNumeric().getInt()));
 		      assertEquals("lplusm",(long)Integer.MAX_VALUE+(long)Integer.MAX_VALUE/10,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getTLValue().getNumeric().getLong());
-		      assertEquals("nplusm1",new Double(0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getTLValue().getNumeric().getDouble());
-		      assertEquals("nplusj",new Double(100),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusj")).getTLValue().getNumeric().getDouble());
-		      assertEquals("dplusd1",new Double(0.1000),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getTLValue().getNumeric().getDouble());
-		      assertEquals("dplusj",new Double(100.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getTLValue().getNumeric().getDouble());
-		      assertEquals("dplusn",new Double(10.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getTLValue().getNumeric().getDouble());
+		      assertEquals("nplusm1",Double.valueOf(0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getTLValue().getNumeric().getDouble());
+		      assertEquals("nplusj",Double.valueOf(100),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusj")).getTLValue().getNumeric().getDouble());
+		      assertEquals("dplusd1",Double.valueOf(0.1000),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getTLValue().getNumeric().getDouble());
+		      assertEquals("dplusj",Double.valueOf(100.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getTLValue().getNumeric().getDouble());
+		      assertEquals("dplusn",Double.valueOf(10.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getTLValue().getNumeric().getDouble());
 		      assertEquals("spluss1","hello world",executor.getGlobalVariable(parser.getGlobalVariableSlot("spluss1")).getTLValue().toString());
 		      assertEquals("splusm1","hello0.0010",executor.getGlobalVariable(parser.getGlobalVariableSlot("splusm1")).getTLValue().toString());
 		      assertEquals("dateplus",new GregorianCalendar(2004,01,9,15,00,30).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("dateplus")).getTLValue().getDate());
@@ -642,15 +642,15 @@ public class TestInterpreter extends TestCase {
 
 		      assertEquals("iplusj",-90,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getTLValue().getNumeric().getInt()));
 		      assertEquals("lplusm",(long)Integer.MAX_VALUE+9,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getTLValue().getNumeric().getLong());
-		      assertEquals("nplusm1",new Double(-0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getTLValue().getNumeric().getDouble());
-		      assertEquals("nplusj",new Double(-100),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusj")).getTLValue().getNumeric().getDouble());
+		      assertEquals("nplusm1",Double.valueOf(-0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getTLValue().getNumeric().getDouble());
+		      assertEquals("nplusj",Double.valueOf(-100),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusj")).getTLValue().getNumeric().getDouble());
 //		      Decimal tmp = DecimalFactory.getDecimal(0.1);
 //		      tmp.sub(DecimalFactory.getDecimal(0.0001,10,4));
 //		      assertEquals("dplusd1",tmp, executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getNumeric());
 		      assertEquals("dplusd1",DecimalFactory.getDecimal(0.09), executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getTLValue().getNumeric());
-		      assertEquals("dplusj",new Double(-99.9),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getTLValue().getNumeric().getDouble());
-		      assertEquals("dplusn",new Double(0.0900),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getTLValue().getNumeric().getDouble());
-		      assertEquals("d1minusm1",new Double(-0.0009),executor.getGlobalVariable(parser.getGlobalVariableSlot("d1minusm1")).getTLValue().getNumeric().getDouble());
+		      assertEquals("dplusj",Double.valueOf(-99.9),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getTLValue().getNumeric().getDouble());
+		      assertEquals("dplusn",Double.valueOf(0.0900),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getTLValue().getNumeric().getDouble());
+		      assertEquals("d1minusm1",Double.valueOf(-0.0009),executor.getGlobalVariable(parser.getGlobalVariableSlot("d1minusm1")).getTLValue().getNumeric().getDouble());
 		      assertEquals("dateplus",new GregorianCalendar(2004,0,20,15,00,30).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("dateplus")).getTLValue().getDate());
 
 		} catch (ParseException e) {
@@ -696,8 +696,8 @@ public class TestInterpreter extends TestCase {
 		      
 		      assertEquals("i*j",1000,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getTLValue().getNumeric().getInt()));
 		      assertEquals("l*m",(long)Integer.MAX_VALUE+10,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getTLValue().getNumeric().getLong());
-		      assertEquals("n*m1",new Double(-0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getTLValue().getNumeric().getDouble());
-		      assertEquals("m1*j",new Double(-1),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getTLValue().getNumeric().getDouble());
+		      assertEquals("n*m1",Double.valueOf(-0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getTLValue().getNumeric().getDouble());
+		      assertEquals("m1*j",Double.valueOf(-1),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getTLValue().getNumeric().getDouble());
 		      assertEquals("d*d1",DecimalFactory.getDecimal(1.001,10,4),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getTLValue().getNumeric());
 		      assertEquals("d*j",DecimalFactory.getDecimal(10,10,4),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getTLValue().getNumeric());
 		      assertEquals("d*n",DecimalFactory.getDecimal(0.01, 10, 4),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getTLValue().getNumeric());
@@ -750,10 +750,10 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("i/j",0,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getTLValue().getNumeric().getInt()));
 		      assertEquals("j/i",10,(executor.getGlobalVariable(parser.getGlobalVariableSlot("jdivi")).getTLValue().getNumeric().getInt()));
 		      assertEquals("l/m",(long)Integer.MAX_VALUE+10,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getTLValue().getNumeric().getLong());
-		      assertEquals("n/m1",new Double(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getTLValue().getNumeric().getDouble());
-		      assertEquals("m1/n",new Double(Double.POSITIVE_INFINITY),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1divn")).getTLValue().getNumeric().getDouble());
-		      assertEquals("m1/n1",new Double(0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1divn1")).getTLValue().getNumeric().getDouble());
-		      assertEquals("j/n1",new Double(10),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getTLValue().getNumeric().getDouble());
+		      assertEquals("n/m1",Double.valueOf(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getTLValue().getNumeric().getDouble());
+		      assertEquals("m1/n",Double.valueOf(Double.POSITIVE_INFINITY),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1divn")).getTLValue().getNumeric().getDouble());
+		      assertEquals("m1/n1",Double.valueOf(0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1divn1")).getTLValue().getNumeric().getDouble());
+		      assertEquals("j/n1",Double.valueOf(10),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getTLValue().getNumeric().getDouble());
 		      assertEquals("d/d1",DecimalFactory.getDecimal(0.1/0.01),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getTLValue().getNumeric());
 		      assertEquals("d/j",DecimalFactory.getDecimal(0.0000),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getTLValue().getNumeric());
 		      assertEquals("n1/d",DecimalFactory.getDecimal(100.0000),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getTLValue().getNumeric());
@@ -801,8 +801,8 @@ public class TestInterpreter extends TestCase {
 		      
 		      assertEquals(3,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getTLValue().getNumeric().getInt()));
 		      assertEquals(((long)Integer.MAX_VALUE+10)%2,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getTLValue().getNumeric().getLong());
-		      assertEquals(new Double(10.2%2),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getTLValue().getNumeric().getDouble());
-		      assertEquals(new Double(10.2%10),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getTLValue().getNumeric().getDouble());
+		      assertEquals(Double.valueOf(10.2%2),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getTLValue().getNumeric().getDouble());
+		      assertEquals(Double.valueOf(10.2%10),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getTLValue().getNumeric().getDouble());
 		      assertEquals(DecimalFactory.getDecimal(0.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getTLValue().getNumeric());
 		      assertEquals(DecimalFactory.getDecimal(10),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getTLValue().getNumeric());
 		      assertEquals(DecimalFactory.getDecimal(0.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getTLValue().getNumeric());
@@ -856,7 +856,7 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(new CloverLong(Long.MAX_VALUE-10).
 		    		  getLong(),executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getTLValue().getNumeric().getLong());
 		      assertEquals(DecimalFactory.getDecimal(2),executor.getGlobalVariable(parser.getGlobalVariableSlot("d")).getTLValue().getNumeric());
-		      assertEquals(new Double(5.5),executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getTLValue().getNumeric().getDouble());
+		      assertEquals(Double.valueOf(5.5),executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getTLValue().getNumeric().getDouble());
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1205,7 +1205,7 @@ public class TestInterpreter extends TestCase {
 		     
 		      assertEquals(1,executor.getGlobalVariable(parser.getGlobalVariableSlot("l")).getTLValue().getNumeric().getLong());
 		      assertEquals(DecimalFactory.getDecimal(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("d")).getTLValue().getNumeric());
-		      assertEquals(new Double(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getTLValue().getNumeric().getDouble());
+		      assertEquals(Double.valueOf(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getTLValue().getNumeric().getDouble());
 		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("result")).getTLValue()==TLValue.TRUE_VAL);
 
 		} catch (ParseException e) {
@@ -1912,7 +1912,7 @@ public class TestInterpreter extends TestCase {
 //		      assertEquals("datum",record.getField("Born").getValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("datum")).getValue().getDate());
 		      assertEquals("ddiff",-1,executor.getGlobalVariable(parser.getGlobalVariableSlot("ddiff")).getTLValue().getNumeric().getLong());
 		      assertEquals("isn",false,executor.getGlobalVariable(parser.getGlobalVariableSlot("isn")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals("s1",new Double(6),executor.getGlobalVariable(parser.getGlobalVariableSlot("s1")).getTLValue().getNumeric().getDouble());
+		      assertEquals("s1",Double.valueOf(6),executor.getGlobalVariable(parser.getGlobalVariableSlot("s1")).getTLValue().getNumeric().getDouble());
 		      assertEquals("rep",("etto hi   EttO 2,today is "+new Date()).replaceAll("[lL]", "t"),executor.getGlobalVariable(parser.getGlobalVariableSlot("rep")).getTLValue().toString());
 		      assertEquals("stn",0.25125,executor.getGlobalVariable(parser.getGlobalVariableSlot("stn")).getTLValue().getNumeric().getDouble());
 		      assertEquals("i",1234,executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getTLValue().getNumeric().getInt());
@@ -2243,15 +2243,15 @@ public class TestInterpreter extends TestCase {
 		      }
 
 		      
-		      assertEquals("pi",new Double(Math.PI),executor.getGlobalVariable(parser.getGlobalVariableSlot("original")).getTLValue().getNumeric().getDouble());
-		      assertEquals("e",new Double(Math.E),executor.getGlobalVariable(parser.getGlobalVariableSlot("ee")).getTLValue().getNumeric().getDouble());
-		      assertEquals("sqrt",new Double(Math.sqrt(Math.PI)),executor.getGlobalVariable(parser.getGlobalVariableSlot("result")).getTLValue().getNumeric().getDouble());
-		      assertEquals("sqrt(9)",new Double(3),executor.getGlobalVariable(parser.getGlobalVariableSlot("p9")).getTLValue().getNumeric().getDouble());
-		      assertEquals("ln",new Double(Math.log(3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("ln")).getTLValue().getNumeric().getDouble());
-		      assertEquals("log10",new Double(Math.log10(3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("l10")).getTLValue().getNumeric().getDouble());
-		      assertEquals("exp",new Double(Math.exp(Math.log10(3))),executor.getGlobalVariable(parser.getGlobalVariableSlot("ex")).getTLValue().getNumeric().getDouble());
-		      assertEquals("power",new Double(Math.pow(3,1.2)),executor.getGlobalVariable(parser.getGlobalVariableSlot("po")).getTLValue().getNumeric().getDouble());
-		      assertEquals("power--",new Double(Math.pow(-10,-0.3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("p")).getTLValue().getNumeric().getDouble());
+		      assertEquals("pi",Double.valueOf(Math.PI),executor.getGlobalVariable(parser.getGlobalVariableSlot("original")).getTLValue().getNumeric().getDouble());
+		      assertEquals("e",Double.valueOf(Math.E),executor.getGlobalVariable(parser.getGlobalVariableSlot("ee")).getTLValue().getNumeric().getDouble());
+		      assertEquals("sqrt",Double.valueOf(Math.sqrt(Math.PI)),executor.getGlobalVariable(parser.getGlobalVariableSlot("result")).getTLValue().getNumeric().getDouble());
+		      assertEquals("sqrt(9)",Double.valueOf(3),executor.getGlobalVariable(parser.getGlobalVariableSlot("p9")).getTLValue().getNumeric().getDouble());
+		      assertEquals("ln",Double.valueOf(Math.log(3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("ln")).getTLValue().getNumeric().getDouble());
+		      assertEquals("log10",Double.valueOf(Math.log10(3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("l10")).getTLValue().getNumeric().getDouble());
+		      assertEquals("exp",Double.valueOf(Math.exp(Math.log10(3))),executor.getGlobalVariable(parser.getGlobalVariableSlot("ex")).getTLValue().getNumeric().getDouble());
+		      assertEquals("power",Double.valueOf(Math.pow(3,1.2)),executor.getGlobalVariable(parser.getGlobalVariableSlot("po")).getTLValue().getNumeric().getDouble());
+		      assertEquals("power--",Double.valueOf(Math.pow(-10,-0.3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("p")).getTLValue().getNumeric().getDouble());
 		      assertEquals("round",Integer.parseInt("-4"),executor.getGlobalVariable(parser.getGlobalVariableSlot("r")).getTLValue().getNumeric().getInt());
 		      assertEquals("truncation",Integer.parseInt("-3"),executor.getGlobalVariable(parser.getGlobalVariableSlot("t")).getTLValue().getNumeric().getInt());
 		      assertEquals("date truncation",new GregorianCalendar(2004,00,02).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("tdate1")).getTLValue().getDate());

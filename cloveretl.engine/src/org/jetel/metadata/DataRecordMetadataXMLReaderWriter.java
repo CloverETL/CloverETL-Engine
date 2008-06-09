@@ -142,7 +142,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String ID = "id";
 	private static final String RECORD_ELEMENT = "Record";
 	private static final String FIELD_ELEMENT = "Field";
-	private static final String CODE_ELEMENT = "Code";
+	//private static final String CODE_ELEMENT = "Code";
 	private static final String NAME_ATTR = "name"; 
     private static final String TYPE_ATTR = "type";
     private static final String RECORD_SIZE_ATTR = "recordSize";
@@ -268,7 +268,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	 * @since May 6, 2002
 	 */
 	public static void write(DataRecordMetadata record, OutputStream outStream) {
-        DocumentBuilder db = null;
+        DocumentBuilder db;
 	    try {
 	        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 	        db = dbf.newDocumentBuilder();
@@ -544,7 +544,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					shift = itemValue;
 				} else if (itemName.equalsIgnoreCase("delimiter")) {
 					delimiter = itemValue;
-				} else if (itemName.equalsIgnoreCase(this.EOF_AS_DELIMITER_ATTR)) {
+				} else if (itemName.equalsIgnoreCase(EOF_AS_DELIMITER_ATTR)) {
 					eofAsDelimiter = itemValue;
 				} else if (itemName.equalsIgnoreCase("format")) {
 					format = itemValue;
@@ -563,9 +563,6 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				} else if (itemName.equalsIgnoreCase(SKIP_FIRST_LINE_ATTR)) {
 					skipFirstLine = itemValue;
 				} else {
-					if (fieldProperties == null) {
-						fieldProperties = new Properties();
-					}
 					fieldProperties.setProperty(itemName, itemValue);
 				}
 			}
