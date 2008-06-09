@@ -16,6 +16,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.plugin.PluginActivator;
 
 public class DBLookupTest extends TestCase {
 
@@ -28,7 +29,8 @@ public class DBLookupTest extends TestCase {
 	protected void setUp() throws ComponentNotReadyException, FileNotFoundException, SQLException, JetelException {
 
 		EngineInitializer.initEngine("../cloveretl.engine/plugins", null, null);
-		DBConnection conn = new DBConnection("conn", "../cloveretl.engine/examples/koule_postgre.cfg");
+		EngineInitializer.forceActivateAllPlugins();
+		DBConnection conn = new DBConnection("conn", "../cloveretl.lookup/test/org/jetel/lookup/koule_postgre.cfg");
 		conn.init();
 		aDBConnection = conn.getConnection(conn.getId());
 
