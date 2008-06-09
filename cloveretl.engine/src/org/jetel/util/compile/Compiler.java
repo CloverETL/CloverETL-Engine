@@ -71,7 +71,6 @@ public class Compiler {
             this.destFile = new File(destFileName);
             
             //create errFileName
-            index = destFileName.lastIndexOf('.');
             errFileName = destDirName + className + ".err";
         } catch(NullPointerException e) {
             throw new RuntimeException(e);
@@ -122,7 +121,7 @@ public class Compiler {
         Runtime runtime = Runtime.getRuntime();
         try {
             status = runtime.exec(args.toArray(new String[args.size()])).waitFor();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             status = -1;
         }
         
