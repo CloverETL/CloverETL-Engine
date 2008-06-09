@@ -209,6 +209,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	 */
 	public void test_strict_badFile() throws ComponentNotReadyException, JetelException {
 		IParserExceptionHandler aHandler = null;
+		boolean failed = false;
 
 		// test strict handler ------------------------------------
 		aParser2.init(metadata);
@@ -216,10 +217,15 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT);
 		aParser2.setExceptionHandler(aHandler);
 		int recCount = 0;
-		while((record=aParser2.getNext(record))!=null){
-			recCount++;
+		try{
+			while((record=aParser2.getNext(record))!=null){
+				recCount++;
+			}
+		}catch (BadDataFormatException e) {
+			failed = true;
 		}
-		fail("Should raise an BadDataFormatException");
+		if(!failed)
+			fail("Should raise an BadDataFormatException");
 		assertEquals(0,recCount);
 		aParser2.close();
 	}
