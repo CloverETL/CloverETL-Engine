@@ -80,9 +80,9 @@ public class RecordTransformFactory {
             switch (guessTransformType(transform)) {
             case TRANSFORM_JAVA_SOURCE:
                 // try compile transform parameter as java code
-                DynamicJavaCode dynaTransCode = new DynamicJavaCode(transform, classLoader);
+				// try preprocessing if applicable
                 transformation = RecordTransformFactory.loadClassDynamic(
-                        logger, dynaTransCode);
+                        logger, null, transform, inMetadata, outMetadata, classLoader, false);
                 break;
             case TRANSFORM_CLOVER_TL:
                 transformation = new RecordTransformTL(transform, logger);
@@ -90,7 +90,7 @@ public class RecordTransformFactory {
             case TRANSFORM_JAVA_PREPROCESS:
                 transformation = RecordTransformFactory.loadClassDynamic(
                         logger, "Transform" + node.getId(), transform,
-                        inMetadata, outMetadata, classLoader);
+                        inMetadata, outMetadata, classLoader, true);
                 break;
             default:
                 // logger.error("Can't determine transformation code type at
@@ -167,7 +167,6 @@ public class RecordTransformFactory {
         return transformation;
     }
 
-
     /**
      * @param logger
      * @param className
@@ -179,14 +178,16 @@ public class RecordTransformFactory {
      */
     public static RecordTransform loadClassDynamic(Log logger,
             String className, String transformCode,
-            DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, ClassLoader classLoader)
+            DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, ClassLoader classLoader,
+            boolean addTransformCodeStub)
             throws ComponentNotReadyException {
         DynamicJavaCode dynamicTransformCode;
         // creating dynamicTransformCode from internal transformation format
         CodeParser codeParser = new CodeParser(inMetadata, outMetadata);
         codeParser.setSourceCode(transformCode);
         codeParser.parse();
-        codeParser.addTransformCodeStub("Transform" + className);
+        if (addTransformCodeStub)
+        	codeParser.addTransformCodeStub("Transform" + className);
 
         dynamicTransformCode = new DynamicJavaCode(codeParser.getSourceCode(), classLoader);
         return loadClassDynamic(logger,dynamicTransformCode);
