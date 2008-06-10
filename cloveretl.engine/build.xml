@@ -14,30 +14,31 @@
 	<property name="major_version" value="2"/>
 	<property name="minor_version" value="4"/>
 	<property name="revision_version" value="4"/>
-	<buildnumber file="build.number" />
 	<tstamp>
 		<format property="TODAY" pattern="dd/MM/yyyy HH:mm:ss" locale="en" />
 	</tstamp>
+	<property name="build.number" value="devel"/>
 	
 	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
-	<property name="dir.bin.default" value="${basedir}/bin_tmp"/>
-	<property name="dir.doc.default" value="${basedir}/javadoc"/>
-	<property name="dir.component.doc.default" value="${basedir}/src-doc"/>
-	<property name="dir.dist.default" value="${basedir}/build"/>
-	<property name="dir.distribution" value="${basedir}/dist"/>
+	<property name="dir.build-scripts" value="${basedir}/build-scripts"/>
+	<property name="dir.src" value="${basedir}/src"/>
+	<property name="dir.src.test" value="${basedir}/test"/>
 	<property name="dir.lib" value="${basedir}/lib"/>
 	<property name="dir.docs" value="${basedir}/docs"/>
-	<property name="dir.build-scripts" value="${basedir}/build-scripts"/>
-	<property name="dir.src" value="src"/>
+	<property name="dir.component.doc.default" value="${basedir}/src-doc"/>
+	<property name="dir.examples" value="${basedir}examples"/>
+	<property name="dir.doc" value="${basedir}/javadoc"/>
+		
 	<property name="dir.build" value="${basedir}/build"/>
-	<property name="dir.src.test" value="${basedir}/test"/>
+	<property name="dir.tmp" value="${dir.build}/__tmp"/>
+	<property name="dir.bin" value="${dir.build}/classes"/>
+	<property name="dir.classestest" value="${dir.build}/classes-test"/>
+	<property name="dir.dist" value="${dir.build}/package"/>
+	<property name="dir.distribution" value="${basedir}/dist"/>
 	<property name="dir.src.improved" value="${dir.build}/src"/>
-	<property name="dir.examples" value="examples"/>
-	<property name="dir.tmp" value="__tmp"/>
 	<property name="dir.testsresult" value="${dir.build}/testsresult"/>
 	<property name="dir.testsreport" value="${dir.build}/testsreport"/>
 	<property name="dir.findbugsreport" value="${dir.build}/findbugsreport"/>
-	<property name="dir.classestest" value="${dir.build}/classes-test"/>
 	<property name="dir.cobertura" value="${dir.tools}/cobertura" />
 	<property name="dir.coverage.bin" value="${dir.build}/bin-coverage" />
 	<property name="dir.coverage.xml" value="${dir.build}/coveragereport/xml" />
@@ -68,14 +69,27 @@
 
 	<taskdef classpathref="cp.cobertura" resource="tasks.properties" />	
 	
-		<!-- =========================== TARGETS ============================== -->
-	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file">
-		<foreach list="${plugin.list}" inheritall="true" target="plugin.build" param="plugin.dir"/>
+		<!-- =========================== PUBLIC TARGETS ============================== -->
+	<target name="build" depends="build-engine,build-plugins" description="Compiles sources and creates a JAR file">
+	</target>
+	
+	<target name="clean" depends="clean-engine,clean-plugins" description="Delete old compiled files">
 	</target>
 
-	<target name="plugin.build" description="Private target for building usage. Don't call direct.">
+	
+	
+	<!-- =========================== PRIVATE TARGETS ============================== -->
+	
+	<target name="build-engine" depends="compile,package">
+	</target>
+	
+	<target name="build-plugins" depends="build-engine">
+		<foreach list="${plugin.list}" inheritall="true" target="plugin.build" param="plugin.dir"/>
+	</target>
+	
+	<target name="plugin.build">
 		<echo message="Building plugin - ${plugin.dir}"/>
-		<ant dir="../${plugin.dir}" inheritAll="false">
+		<ant dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
 			<property name="dir.dist" value="${dir.dist}"/>
 			<property name="major_version" value="${major_version}"/>
 			<property name="minor_version" value="${minor_version}"/>
@@ -83,6 +97,20 @@
 		</ant>
 	</target>
 
+	<target name="clean-plugins">
+		<foreach list="${plugin.list}" inheritall="true" target="plugin.clean" param="plugin.dir"/>
+	</target>
+	
+	<target name="plugin.clean">
+		<echo message="Building plugin - ${plugin.dir}"/>
+		<ant target="clean" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
+			<property name="dir.dist" value="${dir.dist}"/>
+			<property name="major_version" value="${major_version}"/>
+			<property name="minor_version" value="${minor_version}"/>
+			<property name="revision_version" value="${revision_version}"/>
+		</ant>
+	</target>
+				
 	<target name="dist.src" description="Creates source distribution">
 		<delete dir="${dir.tmp}"/>
 		<mkdir dir="${dir.tmp}/cloverETL"/>
@@ -186,7 +214,7 @@
 
 
 	<!-- The "clean" target deletes previously compiled files. -->
-	<target name="clean" depends="checkproperties" description="Delete old compiled files">
+	<target name="clean-engine">
 		<delete dir="${dir.bin}"/>
 		<delete dir="${dir.build}"/>
 		<delete dir="${dir.dist}"/>
@@ -195,33 +223,9 @@
 		<delete dir="${dir.tmp}"/>
 	</target>
 
-	<!-- Target sets directory-properties unless they have been defined (in parent ant build) -->
-	<target name="checkproperties" description="Sets properties unless they have been defined in parent ant build">
-		<condition property="dir.bin" value="${dir.bin.default}">
-			<not>
-				<isset property="dir.bin"/>
-			</not>
-		</condition>
-		
-		<condition property="dir.doc" value="${dir.doc.default}">
-			<not>
-				<isset property="dir.doc"/>
-			</not>
-		</condition>
-		
-		<condition property="dir.dist" value="${dir.dist.default}">
-			<not>
-				<isset property="dir.dist"/>
-			</not>
-		</condition>
-
-		<echo message="Using directory for classes: ${dir.bin}"/> 
-		<echo message="Using directory for javadoc: ${dir.doc}"/>
-		<echo message="Using directory for dist: ${dir.dist}"/>
-	</target>
 	
 	<!-- compile temp copy of source -->
-	<target name="compile" depends="checkproperties,improve-java-sources" description="Compile sources">
+	<target name="compile" depends="init,improve-java-sources" description="Compile sources">
 		<!-- Create directory for binaries. -->
 		<mkdir dir="${dir.bin}"/>
 		
@@ -245,8 +249,6 @@
 		    </fileset>
 		  </copy>
 		
-		<!-- delete source temp directory -->
-		<delete dir="${dir.src.improved}"/>
 	</target>
 
 	<!-- pack binary result of compile to jar file -->
@@ -258,9 +260,6 @@
 			<include name="**/*"/>
 			<exclude name="test/**/*"/>
 		</jar>
-
-		<!-- delete binary temp directory -->
-		<delete dir="${dir.bin}"/>
 
 		<!-- copy all libraries from lib directory -->
 		<copy todir="${dir.dist}/lib">
@@ -322,7 +321,7 @@
 		</javadoc>
 	</target-->
 
-	<target name="javadoc" depends="checkproperties" description="Create Javadoc API documentation">
+	<target name="javadoc" depends="init" description="Create Javadoc API documentation">
 		<echo message="Building code documentation..." />
 		<property name="dist.subdir" value="cloverETL/javadoc"/>
 		<mkdir dir="${dir.doc}/${dist.subdir}" />
@@ -372,6 +371,28 @@
 
 	<target name="init">
 		<mkdir dir="${dir.build}"/>
+
+		<condition property="dir.bin" value="${dir.bin.default}">
+			<not>
+				<isset property="dir.bin"/>
+			</not>
+		</condition>
+		
+		<condition property="dir.doc" value="${dir.doc.default}">
+			<not>
+				<isset property="dir.doc"/>
+			</not>
+		</condition>
+		
+		<condition property="dir.dist" value="${dir.dist.default}">
+			<not>
+				<isset property="dir.dist"/>
+			</not>
+		</condition>
+		
+		<echo message="Using directory for classes: ${dir.bin}"/> 
+		<echo message="Using directory for javadoc: ${dir.doc}"/>
+		<echo message="Using directory for dist: ${dir.dist}"/>
 	</target>
 	
 	<target name="reports" depends="reporttests,findbugs-html,coverage-html">
