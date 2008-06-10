@@ -1,143 +1,20 @@
 <?xml version="1.0" encoding="us-ascii"?>
-<project name="cloveretl.tlfunction" default="build" basedir=".">
+<project name="cloveretl.component" default="build" basedir=".">
 
-	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
-	<property name="plugin.name" value="cloveretl.tlfunction"/>
-	<property name="plugin.dir.name" value="org.jetel.tlfunction"/>
-	<property name="dir.bin.default" value="${basedir}/bin_tmp"/>
-	<property name="dir.doc.default" value="${basedir}/doc"/>
-	<property name="dir.dist.default" value="${basedir}/dist"/>
-	<property name="dir.src" value="${basedir}/src"/>
-	<property name="dir.src.tmp" value="${basedir}/src_tmp"/>
-	<property name="dir.lib" value="${basedir}/lib"/>
-	<property name="engine.dir.lib" value="${basedir}/../cloveretl.engine/lib"/>
+	<property name="dir.engine" value="../cloveretl.engine"/>
+	<property name="dir.engine.tools" value="${dir.engine}/tools"/>		
 	
-	<!--load external properties-->
-	<property file="../cloveretl.engine/build.properties"/>
-
-	<!-- =========================== LIBRARIES ============================= -->
-	<fileset id="engine-libs" dir="${engine.dir.lib}">
-		<include name="**/*.jar"/>
-		<include name="**/*.zip"/>
-	</fileset>
-
-	<!-- =========================== TARGETS ============================== -->
-	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file"/>
-
-	<target name="dist.src"  description="Creates source distribution">
-		<condition property="dist.src" value="dist.src">
-			<not>
-				<isset property="dist.src"/>
-			</not>
-		</condition>
-
-		<copy todir="${dist.src}/${plugin.name}/src">
-			<fileset dir="${dir.src}" />
-		</copy>
-		
-		<copy todir="${dist.src}/${plugin.name}">
-			<fileset file="build.xml" />
-			<fileset file="plugin.xml" />
-		</copy>
-	</target>
-
-	<!-- The "clean" target deletes previously compiled files. -->
-	<target name="clean" depends="checkproperties" description="Delete old compiled files">
-		<delete dir="${dir.bin}"/>
-	</target>
-
-	<!-- Target sets directory-properties unless they have been defined (in parent ant build) -->
-	<target name="checkproperties" description="Sets properties unless they have been defined in parent ant build">
-		<tstamp>
-			<format property="TODAY" pattern="dd/MM/yyyy HH:mm:ss" locale="en" />
-		</tstamp>
-		
-		<condition property="dir.bin" value="${dir.bin.default}">
-			<not>
-				<isset property="dir.bin"/>
-			</not>
-		</condition>
-		
-		<condition property="dir.doc" value="${dir.doc.default}">
-			<not>
-				<isset property="dir.doc"/>
-			</not>
-		</condition>
-		
-		<condition property="dir.dist" value="${dir.dist.default}">
-			<not>
-				<isset property="dir.dist"/>
-			</not>
-		</condition>
-
-		<echo message="Using directory for classes: ${dir.bin}"/> 
-		<echo message="Using directory for javadoc: ${dir.doc}"/>
-		<echo message="Using directory for dist: ${dir.dist}"/>
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+	  <classpath>
+	    <pathelement location="${dir.engine.tools}/ant-contrib.jar"/>
+	  </classpath>
+	</taskdef>
+	
+	<target name="build">
+		<ant target="build" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
 	</target>
 	
-	<!-- compile temp copy of source -->
-	<target name="compile" depends="checkproperties,copy_src" description="Compile sources">
-		<!-- Create directory for binaries. -->
-		<mkdir dir="${dir.bin}"/>
-		
-		<!-- Compile sources -->
-		<javac debug="true" destdir="${dir.bin}"
-			target="1.5" source="1.5" 
-			classpath="${dir.dist}${engine.dist}">
-			<classpath>
-				<fileset refid="engine-libs"/>			
-			</classpath>
-			<src path="${dir.src.tmp}"/>
-			<exclude name="test/**/*"/>
-		</javac>
-		
-		<!-- copy resources -->
-		<copy todir="${dir.bin}">
-		    <fileset dir="${dir.src}">
-			      <exclude name="**/*.java"/>
-			      <exclude name="**/svn/**"/>
-		    </fileset>
-		  </copy>
-		
-		<!-- delete source temp directory -->
-		<delete dir="${dir.src.tmp}"/>
+	<target name="clean">
+		<ant target="clean" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
 	</target>
-
-	<!-- pack binary result of compile to jar file -->
-	<target name="package" depends="compile">
-		<!-- Create plugin directory. -->
-		<mkdir dir="${dir.dist}/plugins/${plugin.dir.name}"/>
-
-		<jar destfile="${dir.dist}/plugins/${plugin.dir.name}/${plugin.name}.jar" basedir="${dir.bin}">
-			<include name="**/*"/>
-			<exclude name="test/**/*"/>
-		</jar>
-		<!-- delete binary temp directory -->
-		<delete dir="${dir.bin}"/>
-		<!-- copy plugin manifest -->
-		<copy todir="${dir.dist}/plugins/${plugin.dir.name}" file="plugin.xml"/>
-	</target>
-	
-	<!-- ask user for MAJOR and MINOR release number -->
-	<target name="set_revision">
-		<buildnumber file="build.number" />
-		<input message="Components - Please enter MAJOR release number:"	addproperty="major_version" />
-		<input message="Components - Please enter MINOR release number:"	addproperty="minor_version" />
-		<input message="Engine - Please enter REVISION release number:"	addproperty="revision_version" />
-	</target>
-	
-	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
-	<target name="copy_src" depends="set_revision">
-		<echo message="Copying source code.." />
-		<copy todir="${dir.src.tmp}">
-			<fileset dir="${dir.src}" />
-			<filterset>
-				<filter token="MAJOR_VERSION" value="${major_version}" />
-				<filter token="MINOR_VERSION" value="${minor_version}" />
-				<filter token="BUILD_NUMBER" value="build.number" />
-				<filter token="BUILD_TIME" value="${TODAY}" />
-			</filterset>
-		</copy>
-	</target>
-	
 </project>
