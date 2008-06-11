@@ -613,9 +613,9 @@ public class DBOutputTable extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		if (dbConnection != null) {
-			dbConnection.free();
-		}
+//		if (dbConnection != null) {
+//			dbConnection.free();
+//		}
 	}
 
 	private void runInNormalMode() throws SQLException,InterruptedException,IOException, JetelException{
