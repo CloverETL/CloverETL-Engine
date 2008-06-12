@@ -365,10 +365,12 @@ public class DBConnection extends GraphElement implements IConnection {
             	Connection connection = connectionInstance.getSqlConnection();
             	closeConnection(connection);
             }
+            connectionsCache.clear();
         } else {
         	if (connectionInstance != null) {
             	Connection connection = connectionInstance.getSqlConnection();
             	closeConnection(connection);
+            	connectionInstance = null;
         	}
         }
     }
