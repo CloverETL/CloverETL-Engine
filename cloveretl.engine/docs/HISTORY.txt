@@ -8,6 +8,21 @@ Changes/bug fixes:
 + JDBC connections has new DB customization
 + keyDuplicates attribute for DataIntersection component
 
+REL 2-4-6
+---------
+Changes/bug fixes:
++ XSL Transformation component
++ support for namespaces in XmlXpathReader
++ normalizer transformation count() is called only once for each input record
++ minor bugfixes
+
+REL 2-4-5
+---------
+Changes/bug fixes:
++ reading from a port/field for XmlXpathReader
++ writing to a port/field for XmlWriter
++ minor bugfixes
+
 REL 2-4-4
 ---------
 Changes/bug fixes:

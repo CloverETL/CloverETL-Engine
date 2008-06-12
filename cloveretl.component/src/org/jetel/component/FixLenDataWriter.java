@@ -96,8 +96,8 @@ public class FixLenDataWriter extends Node {
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_OUTPUT_FIELD_NAMES = "outputFieldNames";
-	private static final String XML_FIELD_FILLER = "filler";
-	private static final String XML_RECORD_FILLER = "filler";
+	private static final String XML_FIELD_FILLER = "fieldFiller";
+	private static final String XML_RECORD_FILLER = "recordFiller";
 	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
 	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
 	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";

@@ -8,7 +8,6 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
 import net.sf.saxon.om.NodeInfo;
-import net.sf.saxon.sxpath.XPathEvaluator;
 import net.sf.saxon.sxpath.XPathExpression;
 import net.sf.saxon.trans.XPathException;
 
@@ -101,22 +100,13 @@ public class XPathContext {
 	 * @throws JetelException
 	 * @throws XPathException 
 	 */
-	public XPathContext(String xpath) throws TransformerException, XPathException {
-		if (xpath == null) 
-			throw new TransformerException("XPath cannot be null value.");
-		exp = new XPathEvaluator().createExpression(xpath);
+	public XPathContext(XPathExpression exp, String xpath) throws TransformerException, XPathException {
 		this.xpath = xpath;
+		this.exp = exp;
 		xpathsList = new LinkedList<XPathElement>();
 		xpathContextList = new LinkedList<XPathContext>();
 	}
 	
-	/**
-	 * @return context xpath expression
-	 */
-	public String getXpath() {
-		return xpath;
-	}
-
 	/**
 	 * @param xpathElement is single xpath for evaluation in context
 	 */

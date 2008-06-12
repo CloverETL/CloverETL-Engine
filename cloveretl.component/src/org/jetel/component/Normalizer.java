@@ -233,7 +233,8 @@ public class Normalizer extends Node {
 			if (inPort.readRecord(inRecord) == null) { // no more input data
 				return;
 			}
-			for (int idx = 0; idx < norm.count(inRecord); idx++) {
+			int count = norm.count(inRecord);
+			for (int idx = 0; idx < count; idx++) {
 				if (norm.transform(inRecord, outRecord, idx)) {
 					outPort.writeRecord(outRecord);
 					outRecord.reset();

@@ -41,6 +41,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
@@ -156,6 +157,11 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	 * @return            Associated DataRecord or NULL if not found
 	 */
 	public DataRecord get(String keyString) {
+		
+		if (!isInitialized()) {
+			throw new NotInitializedException(this);
+		}
+		
 		if (lookupData==null) throw new RuntimeException("Lookup key was not set/defined for lookup \""+this.getId()+"\"");
 	    lookupData.getField(0).fromString(keyString);
 	    return get();
@@ -165,6 +171,11 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	 * @see org.jetel.data.lookup.LookupTable#get(org.jetel.data.DataRecord)
 	 */
 	public DataRecord get(DataRecord keyRecord){
+		
+		if (!isInitialized()) {
+			throw new NotInitializedException(this);
+		}
+		
 		if (lookupKey==null) throw new RuntimeException("Lookup key was not set/defined for lookup \""+this.getId()+"\"");
 	    lookupKey.setDataRecord(keyRecord);
 	    return get();
@@ -175,6 +186,11 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	 * @see org.jetel.data.lookup.LookupTable#get(java.lang.Object[])
 	 */
 	public DataRecord get(Object[] keys) {
+		
+		if (!isInitialized()) {
+			throw new NotInitializedException(this);
+		}
+		
 		if (lookupData==null) throw new RuntimeException("Lookup key was not set/defined for lookup \""+this.getId()+"\"");
 		for(int i=0;i<keys.length;i++){
 	        lookupData.getField(i).setValue(keys[i]);
@@ -251,7 +267,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 							getGraph() != null ? getGraph().getProjectURL() : null,
 							fileURL));
 				} else if (data != null) {
-					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
+					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes(charset)));
 				}
 				while (dataParser.getNext(record) != null) {
 	                    DataRecord storeRecord = record.duplicate();
@@ -321,6 +337,9 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
             
             lookupTable = new SimpleLookupTable(id, metadata, keys, initialSize);
             
+            if (xattribs.exists(XML_NAME_ATTRIBUTE)){
+            	lookupTable.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
+            }
             if (xattribs.exists(XML_FILE_URL)) {
             	lookupTable.setFileURL(xattribs.getString(XML_FILE_URL));
             }

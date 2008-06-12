@@ -260,8 +260,10 @@ public class NumericFormat extends NumberFormat {
 			if (minimumFractionDigits>0 || isDecimalSeparatorAlwaysShown()){
 				toAppendTo.append(dFormat.getDecimalFormatSymbols().getDecimalSeparator());
 			}
-		}else{
+		}else if (maximumFractionDigits>0){
 			toAppendTo.replace(decimalPoint,decimalPoint+1,String.valueOf(dFormat.getDecimalFormatSymbols().getDecimalSeparator()));
+		}else{
+			toAppendTo.setLength(decimalPoint);
 		}
 		//formating integer digits from decimal point to left
 		int index=decimalPoint-1;
@@ -278,22 +280,25 @@ public class NumericFormat extends NumberFormat {
 			}
 			if (!end && integerDigits<maximumIntegerDigits) {//locus for grouping separator
 				toAppendTo.insert(index+1,groupingSeparator);
+				decimalPoint++;
 			}else if (end){
 				while (integerDigits<minimumIntegerDigits){
 					if (groupSize<groupingSize || groupingSize==0){
 						toAppendTo.insert(start,'0');
 						groupSize++;
 						integerDigits++;
+						decimalPoint++;
 					}else {
 						toAppendTo.insert(start,groupingSeparator);
 						groupSize = 0;
+						decimalPoint++;
 					}
 				}
 			}else break;//integerDigits>=maximumIntegerDigits
 		}
 		//formating fraction digits
 		index = decimalPoint+1;
-		end = index>toAppendTo.length();
+		end = index>=toAppendTo.length();
 		int fractionDigits = 0;
 		while (!end && fractionDigits<maximumFractionDigits){
 			fractionDigits++;

@@ -13,7 +13,7 @@
 	<!-- =========================== VERSIONs =========================== -->
 	<property name="major_version" value="2"/>
 	<property name="minor_version" value="4"/>
-	<property name="revision_version" value="4"/>
+	<property name="revision_version" value="7"/>
 	<tstamp>
 		<format property="TODAY" pattern="dd/MM/yyyy HH:mm:ss" locale="en" />
 	</tstamp>

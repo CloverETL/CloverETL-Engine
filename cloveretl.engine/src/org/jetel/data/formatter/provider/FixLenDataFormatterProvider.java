@@ -13,8 +13,8 @@ public class FixLenDataFormatterProvider implements FormatterProvider {
 
 	private String charEncoder;
 	private String header;
-	private char chRecordFiller;
-	private char chFieldFiller;
+	private Character chRecordFiller;
+	private Character chFieldFiller;
 	private Character recordFiller;
 	private Character fieldFiller;
 	private String charSet;
@@ -41,7 +41,7 @@ public class FixLenDataFormatterProvider implements FormatterProvider {
 			formatter =	new FixLenDataFormatter(charEncoder);
 		}
 		formatter.setHeader(header);
-		formatter.setFieldFiller(chRecordFiller);
+		formatter.setRecordFiller(chRecordFiller);
 		formatter.setFieldFiller(chFieldFiller);
 		recordFiller = formatter.getRecordFiller();
 		fieldFiller = formatter.getFieldFiller();
@@ -67,7 +67,7 @@ public class FixLenDataFormatterProvider implements FormatterProvider {
     	this.header = header;
     }
 	
-	public void setRecordFiller(char filler) {
+	public void setRecordFiller(Character filler) {
 		this.chRecordFiller = filler;
 	}
 
@@ -75,7 +75,7 @@ public class FixLenDataFormatterProvider implements FormatterProvider {
         return recordFiller;
     }
 
-	public void setFieldFiller(char filler) {
+	public void setFieldFiller(Character filler) {
         this.chFieldFiller = filler;
 	}
 

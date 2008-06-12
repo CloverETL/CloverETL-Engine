@@ -31,6 +31,8 @@ public interface IGraphElement {
 
     public final static String XML_TYPE_ATTRIBUTE = "type";
 
+    public final static String XML_NAME_ATTRIBUTE = "name";
+
     /**
      * Check the element configuration.<br>
      * This method is called for each graph element before the graph is executed. This method should

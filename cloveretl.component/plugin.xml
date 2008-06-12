@@ -1,6 +1,6 @@
 <plugin
    id="org.jetel.component"
-   version="2.4.4"
+   version="2.4.7"
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>
@@ -8,7 +8,7 @@
 		<library path="lib/saxon8.jar"/>
    	</runtime> 
 
-	<requires engine-version="2.4.4">
+	<requires engine-version="2.4.7">
 		<import plugin-id="org.jetel.connection"/>
 		<import plugin-id="org.jetel.lookup"/>
 	</requires>
@@ -281,6 +281,11 @@
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.XmlWriter"/>
 	    <parameter id="type" value="XML_WRITER"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.XSLDataTransformer"/>
+	    <parameter id="type" value="XSL_TRANSFORMER"/>
 	</extension>
 
 </plugin>

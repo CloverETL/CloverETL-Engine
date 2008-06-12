@@ -1,13 +1,13 @@
 <plugin
    id="org.jetel.thirdparty"
-   version="2.4.4"
+   version="2.4.7"
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>
 		<library path="cloveretl.thirdparty.jar"/>
    	</runtime> 
 
-	<requires engine-version="2.4.4">
+	<requires engine-version="2.4.7">
 		<import plugin-id="org.jetel.sequence"/>
 	</requires>
 

@@ -53,6 +53,7 @@ public class DataFormatter implements Formatter {
 	private WritableByteChannel writer;
 	private CharsetEncoder encoder;
     private byte[][] delimiters;
+    private byte[] recordDelimiter;
 	private int delimiterLength[];
 	private int fieldLengths[];
 	private ByteBuffer dataBuffer;
@@ -97,11 +98,22 @@ public class DataFormatter implements Formatter {
 		fieldLengths = new int[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			if(metadata.getField(i).isDelimited()) {
-                delimiters[i] = (metadata.getField(i).getDelimiters()[0]).getBytes();
+                try {
+					delimiters[i] = (metadata.getField(i).getDelimiters()[0]).getBytes(charSet);
+				} catch (UnsupportedEncodingException e) {
+					// can't happen if we have encoder
+				}
 				delimiterLength[i] = delimiters[i].length;
 			} else {
 				fieldLengths[i] = metadata.getField(i).getSize();
 			}
+		}
+		try {
+			if(metadata.isSpecifiedRecordDelimiter()) {
+				recordDelimiter = metadata.getRecordDelimiters()[0].getBytes(charSet);
+			}
+		} catch (UnsupportedEncodingException e) {
+			// can't happen if we have encoder
 		}
 	}
 
@@ -208,6 +220,9 @@ public class DataFormatter implements Formatter {
 					fieldBuffer.flip();
 					fieldBuffer.limit(fieldLengths[i]);
 					dataBuffer.put(fieldBuffer);
+					if (i == metadata.getNumFields() -1 && recordDelimiter != null){
+						dataBuffer.put(recordDelimiter);
+					}
 				}
 			}
 		} catch (CharacterCodingException e) {
