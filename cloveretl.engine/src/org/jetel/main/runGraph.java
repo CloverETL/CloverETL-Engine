@@ -324,7 +324,7 @@ public class runGraph {
         Future<Result> futureResult = null;
 		try {
 			if (!graph.isInitialized()) {
-				graph.init();
+				EngineInitializer.initGraph(graph, runtimeContext);
 				printDictionary("Initial dictionary content:", graph);
 			}
 			futureResult = executeGraph(graph, runtimeContext);			
@@ -384,8 +384,9 @@ public class runGraph {
 
 
 	public static Future<Result> executeGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
-		if (!graph.isInitialized())
+		if (!graph.isInitialized()) {
 			EngineInitializer.initGraph(graph, runtimeContext);
+		}
 
         IThreadManager threadManager = new SimpleThreadManager();
         WatchDog watchDog = new WatchDog(graph, runtimeContext);
