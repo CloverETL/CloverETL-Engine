@@ -463,13 +463,13 @@ public class XMLExtract extends Node {
                         }
                         
                     	if (skipRows > 0) {
-                        	skipRows--;
+                    		if (m_activeMapping.getParent() == null) skipRows--;
                     	} else {
                             //check for index of last returned record
                             if(!(numRecords >= 0 && numRecords == globalCounter)) {
                                 //send off record
                                 outPort.writeRecord(outRecord);
-                                globalCounter++;
+                                if (m_activeMapping.getParent() == null) globalCounter++;
                             }
                     	}
                     	

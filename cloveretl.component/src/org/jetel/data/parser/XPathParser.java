@@ -66,7 +66,9 @@ public class XPathParser implements Parser {
 	private List<Integer> ports;
 
 	private boolean isReseted;
-	
+	private int skipRows;
+	private int numRecords = -1;
+
 	public XPathParser(Document document) {
 		this.xpathDocument = document;
 	}
@@ -120,6 +122,10 @@ public class XPathParser implements Parser {
 		    ports.add(port);
     		xpathContext.setPort(port);
 	    }
+	    xpathContext.setSkip(skipRows);
+	    xpathContext.setNumRecords(numRecords);
+	    skipRows = 0;
+	    numRecords = -1;
 
 	    //sequence field
         if (aSeqId != null) {
@@ -382,6 +388,14 @@ public class XPathParser implements Parser {
 	public void movePosition(Object position) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public void setSkip(int skipRows) {
+		this.skipRows = skipRows;
+	}
+
+	public void setNumRecords(int numRecords) {
+		this.numRecords = numRecords;
 	}
 	
 }

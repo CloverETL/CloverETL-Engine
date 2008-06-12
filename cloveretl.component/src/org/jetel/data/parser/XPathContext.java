@@ -51,7 +51,7 @@ public class XPathContext {
 	private XPathContext nextXPathContext;
 	
 	// iterator on this context
-	private Iterator contextIterator = null;
+	private Iterator<?> contextIterator = null;
 	
 	// actual node of this context (from contextIterator)
 	private NodeInfo actualNode = null;
@@ -83,10 +83,15 @@ public class XPathContext {
 	private BadDataFormatException bdfe = null;
 	
 	private StringBuilder stringBuilder = new StringBuilder();
+
+	private int skipRows = 0;
+	private int numRecords = -1;
+	private int currentCount;
 	
 	/**
 	 * Constructor
 	 */
+	@SuppressWarnings("unused")
 	private XPathContext() {}
 	
 	/**
@@ -160,6 +165,14 @@ public class XPathContext {
 	 * @throws TransformerException
 	 */
 	public DataRecord getNext() throws TransformerException {
+        //check for index of last returned record
+        if(numRecords >= 0 && numRecords == currentCount) {
+            return null;
+        }
+        return getNext0();
+	}
+	
+	private DataRecord getNext0() throws TransformerException {
 		if (lastNode) return null;
 		if (init) {
 			reset(node);
@@ -203,6 +216,7 @@ public class XPathContext {
 				bdfe = null;
 			}
 		}
+        if (port == actualPort) currentCount++;
 		return tmpRecord;
 	}
 	
@@ -408,6 +422,15 @@ public class XPathContext {
 		lastPortNode = false; //TODO: je potreba otestovat
 		contextIterator = exp.evaluate(contextNode).iterator();
 		// TODO udelat test, kolikrat a jak se zavola evaluate
+		
+        //shall i skip some records?
+        if(skipRows > 0) {
+    		while (contextIterator.hasNext() && currentCount < skipRows) {
+    			skipRows--;
+    			contextIterator.next();
+    		}
+        }
+		
 		if (!contextIterator.hasNext()) {
 			actualNode = null;
 			return;
@@ -504,5 +527,14 @@ public class XPathContext {
 		for (XPathContext subContext : xpathContextList) {
 			subContext.reset();
 		}
+		currentCount = 0;
+	}
+
+	public void setSkip(int skipRows) {
+		this.skipRows = skipRows;
+	}
+
+	public void setNumRecords(int numRecords) {
+		this.numRecords = numRecords;
 	}
 }
