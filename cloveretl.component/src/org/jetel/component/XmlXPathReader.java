@@ -238,8 +238,8 @@ public class XmlXPathReader extends Node {
         // initialize multifile reader based on prepared parser
         reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
         reader.setLogger(logger);
-        reader.setSkip(skipRows);
-        reader.setNumRecords(numRecords);
+        parser.setSkip(skipRows);
+        parser.setNumRecords(numRecords);
         parser.setGraph(getGraph());
         reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
         reader.setCharset(charset);
