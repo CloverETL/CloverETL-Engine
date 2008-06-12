@@ -129,11 +129,7 @@ public class MultiFileReader {
     	if (metadata != null) autoFillingData = addAutoFillingFields(metadata);
 		iSource = -1;
         
-    	channelIterator = new ReadableChannelIterator(inputPort, contextURL, fileURL);
-    	channelIterator.setCharset(charset);
-    	channelIterator.setDictionary(dictionary);
-    	channelIterator.init();
-    	
+		initChannelIterator();
         try {
             if(!channelIterator.isGraphDependentSource() && !nextSource()) {
                 noInputFile = true;
@@ -145,6 +141,13 @@ public class MultiFileReader {
         }
     }
 
+    private void initChannelIterator() throws ComponentNotReadyException {
+    	channelIterator = new ReadableChannelIterator(inputPort, contextURL, fileURL);
+    	channelIterator.setCharset(charset);
+    	channelIterator.setDictionary(dictionary);
+    	channelIterator.init();
+    }
+    
     /**
      * Sets an input port for data reading from input record.
      * 
@@ -160,6 +163,7 @@ public class MultiFileReader {
      */
 	public void checkConfig(DataRecordMetadata metadata) throws ComponentNotReadyException {
         parser.init(metadata);
+        initChannelIterator();
         
 		ReadableByteChannel stream = null; 
 		while (channelIterator.hasNext()) {
@@ -167,13 +171,11 @@ public class MultiFileReader {
 				stream = channelIterator.next();
 				if (stream == null) continue; // if record no record found
 				filename = channelIterator.getCurrentFileName();
-				logger.debug("Opening input file " + filename);	
 				URL url = FileUtils.getInnerAddress(filename);
 				if (FileUtils.isServerURL(url)) {
 					FileUtils.checkServer(url);
 					continue;
 				}
-				logger.debug("Reading input file " + filename);
 				parser.setReleaseDataSource(!filename.equals(STD_IN));
 				parser.setDataSource(stream);
 			} catch (IOException e) {
