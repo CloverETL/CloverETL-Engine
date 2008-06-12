@@ -116,7 +116,7 @@ public class XmlWriter extends Node {
 	private static final String XML_RECORDS_SKIP_ATTRIBUTE = "recordSkip";
 	private static final String XML_RECORDS_COUNT_ATTRIBUTE = "recordCount";
 	
-	private static final String ELEMENT_RECORDS = "records";
+	private static final String ELEMENT_RECORDS = "root";
 	private static final String ELEMENT_RECORD = "record";
 	private static final String ATTRIBUTE_COMPONENT_ID = "component";
 	private static final String ATTRIBUTE_GRAPH_NAME = "graph";
@@ -152,7 +152,7 @@ public class XmlWriter extends Node {
 
 	private int recordsSkip = 0;
 	private int recordsCount = 0;
-	private int recordsPerFile = 1;
+	private int recordsPerFile = 0;
 
 	/**
 	 * XmlFormatter which methods are called from MultiFileWriter. 
@@ -562,13 +562,13 @@ public class XmlWriter extends Node {
 		serializer.setOutputProperty(OutputKeys.INDENT,"yes");
 		hd.setResult(streamResult);
 		hd.startDocument();
-		// if there may be more then 1 record in document, there has to be wrapping root element 
-		if (recordsPerFile>1){
+		// if there is not exactly 1 record in document, there has to be wrapping root element 
+		if (recordsPerFile!=1){
 			 AttributesImpl atts = new AttributesImpl();
 			 atts.addAttribute( "", "", ATTRIBUTE_COMPONENT_ID,"CDATA", getId());
 			 atts.addAttribute( "","",ATTRIBUTE_GRAPH_NAME,"CDATA",this.getGraph().getName());
 			 atts.addAttribute( "", "", ATTRIBUTE_CREATED,"CDATA", (new Date()).toString());
-			 String root = rootElement!=null ? rootElement : ELEMENT_RECORDS; 
+			 String root = (rootElement!=null && rootElement.length()>0) ? rootElement : ELEMENT_RECORDS; 
 			 hd.startElement("","",root,atts);
 		}
 		return hd;
@@ -576,8 +576,8 @@ public class XmlWriter extends Node {
 
 	private void createFooter(OutputStream os, TransformerHandler hd) throws TransformerConfigurationException, SAXException, IOException {
 		try {
-			if (recordsPerFile>1){
-				 String root = rootElement!=null ? rootElement : ELEMENT_RECORDS; 
+			if (recordsPerFile!=1){
+				 String root = (rootElement!=null && rootElement.length()>0) ? rootElement : ELEMENT_RECORDS; 
 				 hd.endElement("","",root);
 			}
 			hd.endDocument();
@@ -758,7 +758,7 @@ public class XmlWriter extends Node {
 			int recordsSkip = xattribs.getInteger(XML_RECORDS_SKIP_ATTRIBUTE, 0);
 			int recordsCount = xattribs.getInteger(XML_RECORDS_COUNT_ATTRIBUTE, 0);
 			int recordsPerFile = xattribs.getInteger(XML_RECORDS_PER_FILE_ATTRIBUTE, 1);
-			writer = new XmlWriter(xattribs.getString(XML_ID_ATTRIBUTE), fileUrl, xattribs.getString(XML_ROOT_ELEMENT_ATTRIBUTE), allPortDefinitionMap, rootPortDefinition, 
+			writer = new XmlWriter(xattribs.getString(XML_ID_ATTRIBUTE), fileUrl, xattribs.getString(XML_ROOT_ELEMENT_ATTRIBUTE, ELEMENT_RECORDS), allPortDefinitionMap, rootPortDefinition, 
 					recordsSkip, recordsCount, recordsPerFile);
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE))
 				writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));

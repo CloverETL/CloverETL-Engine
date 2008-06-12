@@ -63,11 +63,11 @@
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/not_found_clientst.xt" guiHeight="0" guiName="Not found clients" guiWidth="0" guiX="774" guiY="28" id="DELIMITED_DATA_WRITER2" type="DELIMITED_DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="164" guiY="28" id="EXT_SORT0" sortKey="Client_id" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="164" guiY="111" id="EXT_SORT1" sortKey="Client_id" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="Filter" guiWidth="0" guiX="476" guiY="111" id="FILTER0" type="FILTER">
-<attr name="filterExpression"><![CDATA[Client_id_n>0]]></attr>
+<Node enabled="enabled" guiHeight="0" guiName="Filter" guiWidth="0" guiX="476" guiY="111" id="FILTER0" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[$Client_id_n>0]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Filter" guiWidth="0" guiX="476" guiY="28" id="FILTER1" type="FILTER">
-<attr name="filterExpression"><![CDATA[Client_id_n<0]]></attr>
+<Node enabled="enabled" guiHeight="0" guiName="Filter" guiWidth="0" guiX="476" guiY="28" id="FILTER1" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[$Client_id_n<0]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Merge Join" guiWidth="0" guiX="314" guiY="28" id="MERGE_JOIN0" joinKey="Client_id" leftOuterJoin="true" type="MERGE_JOIN">
 <attr name="transform"><![CDATA[${out.0.Client_id_n} = @{in.1} != null ? ${in.1.Client_id} : -1;
@@ -108,7 +108,7 @@ ${out.0.Contract_nr} = ${in.0.Contract_nr};
 ]]></attr>
 </Node>
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Charges" guiWidth="0" guiX="10" guiY="270" id="DB_INPUT_TABLE2" sqlQuery="select*from pololeti_poplatky" type="DB_INPUT_TABLE"/>
-<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="315" guiY="221" id="SORT0" sortKey="client_id" sortOrder="Ascending" type="SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="315" guiY="221" id="SORT0" sortKey="client_id" sortOrder="Ascending" type="EXT_SORT"/>
 <Edge fromNode="AGGREGATE0:0" guiBendpoints="" id="Edge9" inPort="Port 1 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="CONCATENATE1:1"/>
 <Edge fromNode="CONCATENATE0:0" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="SORT0:0"/>
 <Edge fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="CONCATENATE0:0"/>
@@ -121,8 +121,8 @@ ${out.0.Contract_nr} = ${in.0.Contract_nr};
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="26" guiName="Clients" guiWidth="84" guiX="10" guiY="468" id="DB_INPUT_TABLE3" sqlQuery="select klient_id from p_zakaznik" type="DB_INPUT_TABLE"/>
 <Node dbConnection="Connection0" dbTable="pololeti_agr_vynosy" enabled="enabled" guiHeight="74" guiName="Aggregated revenues" guiWidth="127" guiX="774" guiY="306" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE"/>
 <Node dbConnection="Connection0" dbTable="Pololeti_zakaznici_bez_vynosu" enabled="enabled" guiHeight="46" guiName="Clients without revenues" guiWidth="81" guiX="774" guiY="468" id="DB_OUTPUT_TABLE1" type="DB_OUTPUT_TABLE"/>
-<Node enabled="enabled" guiHeight="0" guiName="Filter" guiWidth="0" guiX="480" guiY="468" id="FILTER2" type="FILTER">
-<attr name="filterExpression"><![CDATA[Client_id_n<0]]></attr>
+<Node enabled="enabled" guiHeight="0" guiName="Filter" guiWidth="0" guiX="480" guiY="468" id="FILTER2" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[$Client_id_n<0]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Merge Join" guiWidth="0" guiX="314" guiY="468" id="MERGE_JOIN1" joinKey="Client_id" leftOuterJoin="true" type="MERGE_JOIN">
 <attr name="transform"><![CDATA[${out.0.Client_id_n} = @{in.1} != null ? ${in.1.Client_id} : -1;
@@ -135,9 +135,9 @@ ${out.0.Aggr_revenue} = @{in.1} != null ? ${in.1.Aggr_revenue} : -1;
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="626" guiY="306" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="316" guiY="306" id="SORT1" sortKey="Client_id" sortOrder="Ascending" type="SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="164" guiY="468" id="SORT2" sortKey="Client_id" type="SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="164" guiY="389" id="SORT3" sortKey="Client_id" type="SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="316" guiY="306" id="SORT1" sortKey="Client_id" sortOrder="Ascending" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="164" guiY="468" id="SORT2" sortKey="Client_id" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="164" guiY="389" id="SORT3" sortKey="Client_id" type="EXT_SORT"/>
 <Edge fromNode="AGGREGATE1:0" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
 <Edge fromNode="CONCATENATE1:0" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="SORT1:0"/>
 <Edge fromNode="DB_INPUT_TABLE3:0" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SORT2:0"/>

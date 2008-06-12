@@ -47,6 +47,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
@@ -362,6 +363,11 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 * @see org.jetel.data.lookup.LookupTable#get(java.lang.String)
 	 */
 	public DataRecord get(String keyString) {
+		
+		if (!isInitialized()) {
+			throw new NotInitializedException(this);
+		}
+		
 		tmpRecord.getField(startFields[0]).fromString(keyString);
 		tmpRecord.getField(endFields[0]).fromString(keyString);
 		return get();
@@ -371,6 +377,11 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 * @see org.jetel.data.lookup.LookupTable#get(java.lang.Object[])
 	 */
 	public DataRecord get(Object[] keys) {
+		
+		if (!isInitialized()) {
+			throw new NotInitializedException(this);
+		}
+		
 		//prepare "interval" from keyRecord:set start end end for the value
 		for (int i=0;i<keys.length;i++){
 			tmpRecord.getField(startField[i]).setValue(keys[i]);
@@ -383,6 +394,11 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 * @see org.jetel.data.lookup.LookupTable#get(org.jetel.data.DataRecord)
 	 */
 	public DataRecord get(DataRecord keyRecord) {
+		
+		if (!isInitialized()) {
+			throw new NotInitializedException(this);
+		}
+		
 		if (keyFields == null){
 			throw new RuntimeException("Set lookup key first!!!!");
 		}
@@ -556,7 +572,10 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
         lookupTable = new RangeLookupTable(id, metadata, startFields, endFields);
         
         try {
-			lookupTable.setUseI18N(xattribs.getBoolean(XML_USE_I18N, false));
+            if (xattribs.exists(XML_NAME_ATTRIBUTE)){
+            	lookupTable.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
+            }
+            lookupTable.setUseI18N(xattribs.getBoolean(XML_USE_I18N, false));
 			if (xattribs.exists(XML_LOCALE)){
 				lookupTable.setLocale(XML_LOCALE);
 			}

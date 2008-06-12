@@ -363,23 +363,23 @@ public class XLSWriter extends Node {
 		xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
 	}
 
-	private void setSheetName(String sheetName) {
+	public void setSheetName(String sheetName) {
 		formatterProvider.setSheetName(sheetName);
 	}
 
-	private void setSheetNumber(int sheetNumber) {
+	public void setSheetNumber(int sheetNumber) {
 		formatterProvider.setSheetNumber(sheetNumber);
 	}
 	
-	private void setFirstColumn(String firstColumn){
+	public void setFirstColumn(String firstColumn){
 		formatterProvider.setFirstColumn(firstColumn);
 	}
 	
-	private void setFirstRow(int firstRow){
+	public void setFirstRow(int firstRow){
 		formatterProvider.setFirstRow(firstRow-1);
 	}
 	
-	private void setNamesRow(int namesRow){
+	public void setNamesRow(int namesRow){
 		formatterProvider.setNamesRow(namesRow-1);
 	}
 	

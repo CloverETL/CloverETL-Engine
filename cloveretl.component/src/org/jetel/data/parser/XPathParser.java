@@ -4,14 +4,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
 
+import net.sf.saxon.sxpath.IndependentContext;
 import net.sf.saxon.sxpath.XPathEvaluator;
 import net.sf.saxon.trans.XPathException;
 
@@ -42,6 +48,8 @@ import org.xml.sax.SAXException;
  */
 public class XPathParser implements Parser {
 
+	private final static Pattern NAMESPACE = Pattern.compile("(.+)[=]([\"]|['])(.+)([\"]|['])$");
+
 	private static final String ELEMENT_CONTEXT = "Context";
 	private static final String ELEMENT_XPATH = "Mapping";
 	
@@ -54,6 +62,7 @@ public class XPathParser implements Parser {
     private static final String ATTRIBUTE_NODE_NAME = "nodeName";
     private static final String XML_SEQUENCEFIELD = "sequenceField";
     private static final String XML_SEQUENCEID = "sequenceId";
+    private static final String ATTRIBUTE_NAMESPACE_PATHS = "namespacePaths";
 
     private static final String PRIMITIVE_SEQUENCE = "PRIMITIVE_SEQUENCE";
     
@@ -68,6 +77,8 @@ public class XPathParser implements Parser {
 	private boolean isReseted;
 	private int skipRows;
 	private int numRecords = -1;
+
+	private static XPathEvaluator xPathEvaluator = new XPathEvaluator();
 
 	public XPathParser(Document document) {
 		this.xpathDocument = document;
@@ -104,10 +115,10 @@ public class XPathParser implements Parser {
 	    if (!found) 
 	    	throw new TransformerException("Every xpath must contain just one " + ELEMENT_CONTEXT + " element!");
 	    
-		return parseXpathContext(node);
+		return parseXpathContext(node, new HashMap<String, String>());
 	}
 	
-	private XPathContext parseXpathContext(Node context) throws DOMException, TransformerException, ComponentNotReadyException {
+	private XPathContext parseXpathContext(Node context, Map<String, String> mNamespaces) throws DOMException, TransformerException, ComponentNotReadyException {
 	    // create xpathContext class
 	    Node aNodeSet = context.getAttributes().getNamedItem(ATTRIBUTE_XPATH);
 	    Node aOutPort = context.getAttributes().getNamedItem(ATTRIBUTE_OUTPORT);
@@ -115,8 +126,15 @@ public class XPathParser implements Parser {
 	    Node aOutGenKey = context.getAttributes().getNamedItem(ATTRIBUTE_GENERATED_KEY);
 	    Node aSeqField = context.getAttributes().getNamedItem(XML_SEQUENCEFIELD);
 	    Node aSeqId = context.getAttributes().getNamedItem(XML_SEQUENCEID);
+	    Node aNamespacePaths = context.getAttributes().getNamedItem(ATTRIBUTE_NAMESPACE_PATHS);
 
-	    XPathContext xpathContext = new XPathContext(aNodeSet.getNodeValue());
+	    mNamespaces.putAll(getNamespaces(aNamespacePaths));
+       	setNamespacesToEvaluator(mNamespaces);
+	    
+       	String sXpath = aNodeSet.getNodeValue();
+		if (sXpath == null)	throw new ComponentNotReadyException("The 'xpath' attribute is null.");
+		
+	    XPathContext xpathContext = new XPathContext(xPathEvaluator.createExpression(sXpath), sXpath);
 	    if (aOutPort != null) {
 		    int port = Integer.parseInt(aOutPort.getNodeValue());
 		    ports.add(port);
@@ -137,18 +155,6 @@ public class XPathParser implements Parser {
         	sequence.init();
         	xpathContext.setSequence(sequence); // String id, TransformationGraph graph, String name
         } else if (aSeqField != null) {
-        	/*<Context xpath="/bookstore/bookstore" outPort="0" sequenceField="a4" sequenceId="Sequence0">
-    		<Context xpath="book" outPort="1" parentKey="a4;a2" generatedKey="a1;a2">
-    			<Context xpath="author" outPort="3">
-    				<Mapping xpath="text()" cloverField="a2"/> 
-    			</Context>
-    			<Context xpath="title" outPort="2" parentKey="a1" generatedKey="a1">
-    				<Mapping xpath="@lang" cloverField="a3"/> 
-    			</Context>
-    			<Mapping xpath="substring(book/author[1]/text(), 1)" cloverField="a4"/> 
-    		</Context>
-    		<Mapping nodeName="author" cloverField="a1"/> 
-    	</Context>*/
         	xpathContext.setSequence(
         			SequenceFactory.createSequence(
                 			graph, 
@@ -193,25 +199,30 @@ public class XPathParser implements Parser {
 	    for (int i=0; i<xpaths.getLength(); i++) {
 	    	node = xpaths.item(i);
 	    	if (node.getNodeName().equalsIgnoreCase(ELEMENT_XPATH)) {
-		    	xpathElement = parseXpathElement((Element)node);
+	    		Map<String, String> mNamespacesCopy = new HashMap<String, String>();
+	    		mNamespacesCopy.putAll(mNamespaces);
+		    	xpathElement = parseXpathElement((Element)node, mNamespacesCopy);
 		    	if (xpathElement != null) {
 			    	xpathContext.assignXPath(xpathElement);
 		    	}
 		    	continue;
 	    	}
 	    	if (node.getNodeName().equalsIgnoreCase(ELEMENT_CONTEXT)) {
-	    		xpathContext.assignXPathContext(parseXpathContext(node));
+	    		Map<String, String> mNamespacesCopy = new HashMap<String, String>();
+	    		mNamespacesCopy.putAll(mNamespaces);
+	    		xpathContext.assignXPathContext(parseXpathContext(node, mNamespacesCopy));
 	    		continue;
 	    	}
 	    }
 	    return xpathContext;
 	}
 	
-	private XPathElement parseXpathElement(Element element) throws DOMException, TransformerException {
+	private XPathElement parseXpathElement(Element element, Map<String, String> mNamespaces) throws DOMException, TransformerException, ComponentNotReadyException {
 	    Node xpathAttribute = element.getAttributes().getNamedItem(ATTRIBUTE_XPATH);
 	    Node nodeNameAttribute = element.getAttributes().getNamedItem(ATTRIBUTE_NODE_NAME);
 	    Node cloverFieldAttribute = element.getAttributes().getNamedItem(ATTRIBUTE_CLOVERFIELD);
 	    Node trimAttribute = element.getAttributes().getNamedItem(ATTRIBUTE_TRIM);
+	    Node aNamespacePaths = element.getAttributes().getNamedItem(ATTRIBUTE_NAMESPACE_PATHS);
 	    
 	    if (xpathAttribute == null && nodeNameAttribute == null)
 	    	throw new TransformerException("Attribute '" + ATTRIBUTE_XPATH + "' or '" + ATTRIBUTE_NODE_NAME + "' not found.");
@@ -222,6 +233,9 @@ public class XPathParser implements Parser {
 	    if (cloverFieldAttribute == null)
 	    	throw new TransformerException("Attribute " + ATTRIBUTE_CLOVERFIELD + " not found.");
 
+	    mNamespaces.putAll(getNamespaces(aNamespacePaths));
+       	setNamespacesToEvaluator(mNamespaces);
+	    
 	    XPathElement xpathElement;
 	    if (xpathAttribute == null) {
 	    	xpathElement = new XPathElement(
@@ -229,7 +243,7 @@ public class XPathParser implements Parser {
 		    		cloverFieldAttribute.getNodeValue());
 	    } else {
 	    	xpathElement = new XPathElement(
-		    		new XPathEvaluator().createExpression(xpathAttribute.getNodeValue()), 
+		    		xPathEvaluator.createExpression(xpathAttribute.getNodeValue()), 
 		    		cloverFieldAttribute.getNodeValue());
 	    }
 	    
@@ -239,6 +253,36 @@ public class XPathParser implements Parser {
 	    return xpathElement; 
 	}
 
+	private Map<String, String> getNamespaces(Node namespacePaths) throws ComponentNotReadyException {
+		Map<String, String> namespaces = new HashMap<String, String>();
+		if (namespacePaths == null) return namespaces;
+		String ns;
+		String path;
+		for (String namespacePath: namespacePaths.getNodeValue().split(";")) {
+			Matcher matcher = NAMESPACE.matcher(namespacePath);
+			if (!matcher.find()) throw new ComponentNotReadyException("The namespace expression '"+ namespacePath +"' is not valid.");
+			if ((ns = matcher.group(1)) != null && (path = matcher.group(3)) != null) {
+				namespaces.put(ns, path);
+			}
+		}
+		return namespaces;
+	}
+	
+	private void setNamespacesToEvaluator(Map<String, String> namespacePaths) {
+		IndependentContext context = new IndependentContext();
+		if (namespacePaths == null || namespacePaths.size() == 0) {
+			xPathEvaluator.setNamespaceResolver(context.getNamespaceResolver());
+			return;
+		}
+		Iterator<?> it = namespacePaths.keySet().iterator();
+		Object ns;
+		while (it.hasNext()) {
+			ns = it.next();
+			context.declareNamespace(ns.toString(), namespacePaths.get(ns).toString());
+		}
+		xPathEvaluator.setNamespaceResolver(context.getNamespaceResolver());
+	}
+	
 	/**
 	 *  Returs next data record parsed from input stream or NULL if no more data
 	 *  available The specified DataRecord's fields are altered to contain new
@@ -376,8 +420,9 @@ public class XPathParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
 	public void reset() throws ComponentNotReadyException {
-		xpathContext.reset();
-		isReseted = true;
+		init(null);
+		//xpathContext.reset();
+		//isReseted = true;
 	}
 
 	public Object getPosition() {

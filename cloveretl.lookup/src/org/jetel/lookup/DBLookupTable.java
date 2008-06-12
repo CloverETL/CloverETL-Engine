@@ -44,6 +44,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
@@ -162,6 +163,11 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@since                      May 2, 2002
 	 */
 	public DataRecord get(DataRecord keyRecord) {
+		
+		if (!isInitialized()) {
+			throw new NotInitializedException(this);
+		}
+		
 		totalNumber++;
 	    // if cached, then try to query cache first
 	    if (resultCache!=null){
@@ -239,6 +245,11 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@return                     found DataRecord or NULL
 	 */
 	public DataRecord get(Object keys[]) {
+		
+		if (!isInitialized()) {
+			throw new NotInitializedException(this);
+		}
+		
     	objectCacheKey = new KeyStore(keys);
 		totalNumber++;
 	    // if cached, then try to query cache first
@@ -291,6 +302,11 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@return                     found DataRecord or NULL
 	 */
 	public DataRecord get(String keyStr) {
+		
+		if (!isInitialized()) {
+			throw new NotInitializedException(this);
+		}
+		
 		totalNumber++;
 	    // if cached, then try to query cache first
 	    if (resultCache!=null){
@@ -457,6 +473,10 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 			}
 		}
 		
+		if (metadataId != null) {
+			dbMetadata = getGraph().getDataRecordMetadata(metadataId);
+		}
+		
         // if caching is required, crate map to store records
     	if (maxCached>0){
             this.resultCache= new SimpleCache(maxCached);
@@ -542,6 +562,10 @@ public class DBLookupTable extends GraphElement implements LookupTable {
             lookupTable = new DBLookupTable(id, xattribs.getString(XML_DBCONNECTION),
                     xattribs.getString(XML_METADATA_ID), xattribs.getString(XML_SQL_QUERY));
             
+            if (xattribs.exists(XML_NAME_ATTRIBUTE)){
+            	lookupTable.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
+            }
+            
             if(xattribs.exists(XML_LOOKUP_MAX_CACHE_SIZE)) {
                 lookupTable.setNumCached(xattribs.getInteger(XML_LOOKUP_MAX_CACHE_SIZE), 
                 		xattribs.getBoolean(XML_STORE_NULL_RESPOND, true));
@@ -615,6 +639,14 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 			}
 		}
 
+		if (metadataId != null) {
+			dbMetadata = getGraph().getDataRecordMetadata(metadataId);
+			if (dbMetadata == null) {
+				status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadataId) + 
+						" does not exist. DB metadata will be created from sql query.", Severity.WARNING, this, 
+						Priority.LOW, XML_METADATA_ID));
+			}
+		}
         return status;
     }
 

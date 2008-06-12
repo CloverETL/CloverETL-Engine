@@ -22,7 +22,7 @@ public class XPathElement {
 	private String childNodeName = null;
 	private boolean trim = true;
 
-	private List nodeList;
+	private List<?> nodeList;
 	private int cloverFieldNumber = NO_FIELD;
 	
 	private NodeInfo previousContextNode = null;
@@ -34,8 +34,6 @@ public class XPathElement {
 	
 	private AxisIterator childIterator; 
 	private TinyNodeImpl item;
-
-	private XPathElement() {}
 
 	/**
 	 * Constructor for xpath expression.

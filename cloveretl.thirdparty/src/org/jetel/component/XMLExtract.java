@@ -245,6 +245,13 @@ public class XMLExtract extends Node {
         // flag set if we saw characters, otherwise don't save the column (used
         // to set null values)
         private boolean m_hasCharacters = false;
+        //flag to skip text value immediately after end xml tag, for instance
+        //<root>
+        //	<subtag>text</subtag>
+        //	another text
+        //</root>
+        //"another text" will be ignored
+        private boolean m_grabCharacters = true;
         
         // buffer for node value
         private StringBuffer m_characters = new StringBuffer();
@@ -259,6 +266,7 @@ public class XMLExtract extends Node {
          */
         public void startElement(String prefix, String namespace, String localName, Attributes attributes) throws SAXException {
             m_level++;
+            m_grabCharacters = true;
             
             Mapping mapping = null;
             if (m_activeMapping == null) {
@@ -327,6 +335,10 @@ public class XMLExtract extends Node {
                     }
                 }
             }
+            
+            // Regardless of starting element type, reset the length of the buffer and flag
+            m_characters.setLength(0);
+            m_hasCharacters = false;
         }
         
         /**
@@ -335,7 +347,7 @@ public class XMLExtract extends Node {
         public void characters(char[] data, int offset, int length) throws SAXException {
             // Save the characters into the buffer, endElement will store it
             // into the field
-            if (m_activeMapping != null) {
+            if (m_activeMapping != null && m_grabCharacters) {
                 m_characters.append(data, offset, length);
                 m_hasCharacters = true;
             }
@@ -358,42 +370,40 @@ public class XMLExtract extends Node {
                     DataField field = m_activeMapping.getOutRecord().getField(localName);
                     // If field is nullable and there's no character data set it
                     // to null
-                    if (!m_hasCharacters) {
-                        field.setNull(true);
-                    } else {
-                        try {
-                            field.fromString(m_characters.toString().trim());
-                        } catch (BadDataFormatException ex) {
-                            // This is a bit hacky here SOOO let me explain...
-                            if (field.getType() == DataFieldMetadata.DATE_FIELD) {
-                                // XML dateTime format is not supported by the
-                                // DateFormat oject that clover uses...
-                                // so timezones are unparsable
-                                // i.e. XML wants -5:00 but DateFormat wants
-                                // -500
-                                // Attempt to munge and retry... (there has to
-                                // be a better way)
-                                try {
-                                    // Chop off the ":" in the timezone (it HAS
-                                    // to be at the end)
-                                    String dateTime = m_characters.substring(0,
-                                            m_characters.lastIndexOf(":"))
-                                            + m_characters
-                                            .substring(m_characters
-                                            .lastIndexOf(":") + 1);
-                                    DateFormat format = new SimpleDateFormat(
-                                            field.getMetadata().getFormatStr());
-                                    field.setValue(format
-                                            .parse(dateTime.trim()));
-                                } catch (Exception ex2) {
-                                    // Oh well we tried, throw the originating
-                                    // exception
-                                    throw ex;
-                                }
-                            } else {
-                                throw ex;
-                            }
-                        }
+                    if (m_hasCharacters) {
+	                    try {
+	                        field.fromString(m_characters.toString().trim());
+	                    } catch (BadDataFormatException ex) {
+	                        // This is a bit hacky here SOOO let me explain...
+	                        if (field.getType() == DataFieldMetadata.DATE_FIELD) {
+	                            // XML dateTime format is not supported by the
+	                            // DateFormat oject that clover uses...
+	                            // so timezones are unparsable
+	                            // i.e. XML wants -5:00 but DateFormat wants
+	                            // -500
+	                            // Attempt to munge and retry... (there has to
+	                            // be a better way)
+	                            try {
+	                                // Chop off the ":" in the timezone (it HAS
+	                                // to be at the end)
+	                                String dateTime = m_characters.substring(0,
+	                                        m_characters.lastIndexOf(":"))
+	                                        + m_characters
+	                                        .substring(m_characters
+	                                        .lastIndexOf(":") + 1);
+	                                DateFormat format = new SimpleDateFormat(
+	                                        field.getMetadata().getFormatStr());
+	                                field.setValue(format
+	                                        .parse(dateTime.trim()));
+	                            } catch (Exception ex2) {
+	                                // Oh well we tried, throw the originating
+	                                // exception
+	                                throw ex;
+	                            }
+	                        } else {
+	                            throw ex;
+	                        }
+	                    }
                     }
                 }
                 
@@ -415,7 +425,7 @@ public class XMLExtract extends Node {
                         String[] generatedKey = m_activeMapping.getGeneratedKey();
                         String[] parentKey = m_activeMapping.getParentKey();
                         if (parentKey != null) {
-                            //if generatedKey is a single array, all parent keys are concatened into generatedKey field
+                            //if generatedKey is a single array, all parent keys are concatenated into generatedKey field
                             //I know it is ugly code...
                             if(generatedKey.length != parentKey.length && generatedKey.length != 1) {
                                 LOG
@@ -484,6 +494,9 @@ public class XMLExtract extends Node {
                     throw new SAXException("Stop Signaled");
                 }
             }
+            
+            //text value immediately after end tag element should not be stored
+            m_grabCharacters = false;
             
             //ended an element so decrease our depth
             m_level--; 

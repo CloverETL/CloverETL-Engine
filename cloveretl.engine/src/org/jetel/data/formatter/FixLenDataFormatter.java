@@ -150,7 +150,7 @@ public class FixLenDataFormatter implements Formatter {
 
     Character recordFiller;
 	public void setRecordFiller(char filler) {
-        this.recordFiller = Character.valueOf(recordFiller);
+        this.recordFiller = Character.valueOf(filler);
 	}
 
     public Character getRecordFiller() {
