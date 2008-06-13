@@ -29,8 +29,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
-import org.jetel.graph.runtime.oldjmx.PhaseTrackingDetail;
-import org.jetel.graph.runtime.oldjmx.TrackingDetail;
 
 /**
  * A class that represents processing Phase of Transformation Graph
@@ -56,11 +54,8 @@ public class Phase extends GraphElement implements Comparable {
 	// specifies the order of this phase within graph
 	private int phaseNum;
 
-	private PhaseTrackingDetail phaseTracking;
-    
 	private Result result;
     private boolean isCheckPoint;
-    private Map<String,TrackingDetail> tracking;
 
 	protected TransformationGraph graph;
 
@@ -177,7 +172,6 @@ public class Phase extends GraphElement implements Comparable {
 		
 		//phase reset
         result=Result.N_A;
-        setPhaseTracking(null);
         
 		//reset all components
 		for(Node node : nodes.values()) {
@@ -383,27 +377,6 @@ public class Phase extends GraphElement implements Comparable {
             return false;
         }
     }
-    
-
-	/**
-	 *  Gets the phase execution time in milliseconds
-	 *
-	 * @return    The phaseExecTime value
-	 */
-	@Deprecated public int getPhaseExecTime() {
-		return phaseTracking.getExecTime();
-	}
-
-
-	/**
-	 *  Gets the phase memory utilization in KB (kilobytes)
-	 *
-	 * @return    The phaseMemUtilization value
-	 */
-	@Deprecated public int getPhaseMemUtilization() {
-		return phaseTracking.getMemUtilizationKB();
-	}
-
 
     public Result getResult() {
         return result;
@@ -432,41 +405,6 @@ public class Phase extends GraphElement implements Comparable {
         return leafNodes;
     }
 
-
-    /**
-     * @return the tracking
-     * @since 10.1.2007
-     */
-    public Map<String, TrackingDetail> getTracking() {
-        return tracking;
-    }
-
-
-    /**
-     * @param tracking the tracking to set
-     * @since 10.1.2007
-     */
-    public void setTracking(Map<String, TrackingDetail> tracking) {
-        this.tracking = tracking;
-    }
-
-
-    /**
-     * @return the phaseTracking
-     * @since 26.2.2007
-     */
-    public PhaseTrackingDetail getPhaseTracking() {
-        return phaseTracking;
-    }
-
-
-    /**
-     * @param phaseTracking the phaseTracking to set
-     * @since 26.2.2007
-     */
-    public void setPhaseTracking(PhaseTrackingDetail phaseTracking) {
-        this.phaseTracking = phaseTracking;
-    }
 }
 /*
  *  end class Phase
