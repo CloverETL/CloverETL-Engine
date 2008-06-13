@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Fri Feb 16 10:01:53 CET 2007" description="This graph demonstrates how to use HASH_JOIN component for 3way join. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted" guiVersion="1.9" id="1204547167052" licenseType="Evaluation license." modified="Tue Mar 04 14:06:01 CET 2008" name="Testing Hash Joiner" revision="1.12">
+<Graph author="avackova" created="Fri Feb 16 10:01:53 CET 2007" description="This graph demonstrates how to use HASH_JOIN component for 3way join. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted" guiVersion="1.10" id="1204547167052" licenseType="Evaluation license." modified="Fri Jun 13 13:07:02 CEST 2008" modifiedBy="avackova" name="Testing Hash Joiner" revision="1.17">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata3"/>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
@@ -19,25 +19,27 @@ import org.jetel.data.*;
 
 public class reformatJoinTest3Way extends DataRecordTransform{
 
+	private final static String MISSING = "*MISSING*";
+
+	Object CustomerID;
+	Object Company;
+
 	public boolean transform(DataRecord[] source, DataRecord[] target){
-		if (source[0] != null) {
+
+			CustomerID = source[0].getField(1).getValue();
+
 			target[0].getField(0).setValue(source[0].getField(0).getValue());	// OrderID
-  			target[0].getField(1).setValue(source[0].getField(1).getValue());	// CustomerID
+  			target[0].getField(1).setValue(CustomerID != null ? CustomerID : MISSING);	// CustomerID
 			target[0].getField(2).setValue(source[0].getField(2).getValue().toString());	// EmployeeID
-		} else {
-		    target[0].getField(1).setValue("*MISSING*");
-		}
-		if (source[1]!=null){
-			target[0].getField(4).setValue(source[1].getField(1).toString() + ", " + source[1].getField(2).toString());	// Name
-		} else {
-			target[0].getField(4).setValue("*MISSING*");
-		}
-		if (source[2]!=null){
-			target[0].getField(3).setValue(source[2].getField(1).getValue());	// Company
-		} else {
-			target[0].getField(3).setValue("*MISSING*");
-		}
-		target[0].getField(5).setValue("*MISSING*");
+			if (source[1]!=NullRecord.NULL_RECORD){
+				target[0].getField(4).setValue(source[1].getField(1).toString() + ", " + source[1].getField(2).toString());	// Name
+			} else {
+				target[0].getField(4).setValue(MISSING);
+			}
+
+			Company = source[2].getField(1).getValue();
+			target[0].getField(3).setValue(Company != null ? Company : MISSING);	// Company
+			target[0].getField(5).setValue(MISSING);
 		return true;
 	}
 }
