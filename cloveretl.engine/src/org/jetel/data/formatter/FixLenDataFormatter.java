@@ -140,8 +140,8 @@ public class FixLenDataFormatter implements Formatter {
 	 * @param filler	character used for padding
 	 */
     Character fieldFiller;
-	public void setFieldFiller(char filler) {
-        this.fieldFiller = Character.valueOf(filler);
+	public void setFieldFiller(Character filler) {
+        this.fieldFiller = filler;
 	}
 
     public Character getFieldFiller() {
@@ -149,8 +149,8 @@ public class FixLenDataFormatter implements Formatter {
     }
 
     Character recordFiller;
-	public void setRecordFiller(char filler) {
-        this.recordFiller = Character.valueOf(filler);
+	public void setRecordFiller(Character filler) {
+        this.recordFiller = filler;
 	}
 
     public Character getRecordFiller() {
