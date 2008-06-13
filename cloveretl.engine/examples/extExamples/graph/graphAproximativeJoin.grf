@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Tue Oct 24 13:04:40 CEST 2006" description="This graph illustrates usage of Approximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator creates it) &#10;and be sorted by this key." guiVersion="1.9" id="1200561503662" licenseType="Evaluation license." modified="Thu Apr 03 10:47:56 CEST 2008" name="graphFixedLengthData" revision="1.31">
+<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph illustrates usage of Approximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator creates it) &#10;and be sorted by this key." guiVersion="1.10" id="1200561503662" licenseType="Evaluation license." modified="Fri Jun 13 08:48:01 CEST 2008" modifiedBy="avackova" name="graphFixedLengthData" revision="1.43">
 <Global>
 <Metadata id="Metadata4">
 <Record name="conforming_out" recordDelimiter="\n" recordSize="71" type="fixed">
@@ -133,7 +133,7 @@
 <Sequence cached="10" fileURL="${SEQ_DIR}/id.seq" id="Sequence0" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
 <Phase number="0">
-<Node conformity="0.8" enabled="enabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="444" guiY="176" id="APROX_MERGE_JOIN1" joinKey="lname 4 0.5 true false false false;fname 3 0.5 true false false false" matchingKey="key" slaveOverrideKey="last_name;first_name" transformClass="customizedTransformExample" type="APROX_MERGE_JOIN">
+<Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="444" guiY="176" id="APROX_MERGE_JOIN1" joinKey="fname=first_name(3 0.8 true false false false);lname=last_name(4 0.2 true false false false);" matchingKey="key" transformClass="customizedTransformExample" type="APROX_MERGE_JOIN">
 <attr name="transformForSuspicious"><![CDATA[${out.0.lname} = ${in.0.lname};
 ${out.0.fname} = ${in.0.fname};
 ${out.0.birthdate} = ${in.0.birthdate};
@@ -159,7 +159,7 @@ ${out.0.gender1} = ${in.1.gender};]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="70" guiName="Key generator" guiWidth="138" guiX="152" guiY="92" id="KEY_GEN0" keyExpression="lname 4;fname 3" type="KEY_GEN"/>
 <Node enabled="enabled" guiHeight="88" guiName="Key generator" guiWidth="145" guiX="152" guiY="259" id="KEY_GEN1" keyExpression="last_name 4;first_name 3" type="KEY_GEN"/>
-<Edge fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
 <Edge fromNode="APROX_MERGE_JOIN1:1" guiBendpoints="" id="Edge18" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" toNode="DELIMITED_DATA_WRITER_NIO0:0"/>
 <Edge fromNode="APROX_MERGE_JOIN1:2" guiBendpoints="" id="Edge19" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" toNode="FIXLEN_DATA_WRITER_NIO1:0"/>
 <Edge fromNode="APROX_MERGE_JOIN1:3" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" toNode="DELIMITED_DATA_WRITER_NIO1:0"/>
