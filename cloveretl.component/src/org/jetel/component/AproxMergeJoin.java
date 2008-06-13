@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -105,12 +107,13 @@ import org.w3c.dom.Element;
  *  secondary - diacritic letters and theirs latin equivalents are equals<br>
  *  primary - letters with additional features (e.g.:penduncle, pick, circle) and
  *   theirs latin equivalents are equals
- *  <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>can be used 
+ *  <tr><td><b>slaveOverrideKey</b><br><i>deprecated</i></td><td>can be used 
  *  	to specify different key field names for records on slave input; 
  *  	field names separated by :;| {colon, semicolon, pipe}</td>
- *  <tr><td><b>matchingKey</b></td><td>field name for comparing driver and 
- *  	slave records</td>
- *  <tr><td><b>slaveMatchingOverride</b><br><i>optional</i></td><td>can be
+ *  <tr><td><b>matchingKey</b></td><td>defines fields for comparing driver and 
+ *  	slave records. Should be in form: <i>masterField=slaveField</i>. Can be used old notation also: only 
+ *  master field name. Then if slave field name is different has to be set in <i>slaveMatchingOverride</i></td>
+ *  <tr><td><b>slaveMatchingOverride</b><br><i>deprecated</i></td><td>can be
  *  	 used to specify different key field name for records on slave input</td></tr>
  *  <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class
  *  	 to be used for transforming joined data which has conformity greater
@@ -761,10 +764,19 @@ public class AproxMergeJoin extends Node {
 		AproxMergeJoin join;
 
 		try {
+			String matchingKey =  xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE);
+			String slaveMatchingKey = null;
+			if (matchingKey.indexOf('=') != -1) {
+				Matcher tmp = Pattern.compile("\\w+").matcher(matchingKey);
+				tmp.find();
+				matchingKey = tmp.group();
+				tmp.find();
+				slaveMatchingKey = tmp.group();
+			}
             join = new AproxMergeJoin(
                     xattribs.getString(XML_ID_ATTRIBUTE),
                     xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-                    xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE),
+                    matchingKey,
                     xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
                     xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
                     xattribs.getString(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,null),
@@ -779,7 +791,7 @@ public class AproxMergeJoin extends Node {
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
 			}
-			if (xattribs.exists(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE)) {
+			if (slaveMatchingKey == null && xattribs.exists(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE)) {
 				join.setSlaveMatchingKey(xattribs.getString(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE));
 			}
 			join.setConformityLimit(xattribs.getDouble(XML_CONFORMITY_ATTRIBUTE,DEFAULT_CONFORMITY_LIMIT));
@@ -892,19 +904,29 @@ public class AproxMergeJoin extends Node {
     		inMetadata[0]=getInputPort(DRIVER_ON_PORT).getMetadata();
     		inMetadata[1]=getInputPort(SLAVE_ON_PORT).getMetadata();
     		// initializing join parameters
+    		AproximativeJoinKey[] keys;
+    		if (joinParameters[0].indexOf('=') != -1) {
+    			keys = initNewJoinKey(joinParameters);
+    		}else{
+    			keys = initOldJoinKey(joinParameters);
+    		}
     		joinKeys = new String[joinParameters.length];
     		maxDifferenceLetters = new int[joinParameters.length];
     		boolean[][] strength=new boolean[joinParameters.length][StringAproxComparator.IDENTICAL];
     		weights = new double[joinParameters.length];
-    		String[] tmp;
-    		for (int i=0;i<joinParameters.length;i++){
-    			tmp=joinParameters[i].split(" ");
-    			joinKeys[i]=tmp[0];
-    			maxDifferenceLetters[i]=Integer.parseInt(tmp[1]);
-    			weights[i]=Double.parseDouble(tmp[2]);
-    			for (int j=0;j<StringAproxComparator.IDENTICAL;j++){
-    				strength[i][j] = tmp[3+j].equals("true") ? true : false;
+    		if (slaveOverrideKeys == null) {
+    			slaveOverrideKeys = new String[joinKeys.length];
+    		}
+    		for (int i = 0; i < keys.length; i++) {
+    			joinKeys[i] = keys[i].getMaster();
+    			if (keys[i].getSlave() != null){
+    				slaveOverrideKeys[i] = keys[i].getSlave();
+    			}else if (slaveOverrideKeys[i] == null) {
+    				slaveOverrideKeys[i] = joinKeys[i];
     			}
+    			maxDifferenceLetters[i] = keys[i].getMaxDiffrence();
+    			weights[i] = keys[i].getWeight();
+    			strength[i] = keys[i].getStrength();
     		}
     		double sumOfWeights=0;
     		for (int i=0;i<weights.length;i++){
@@ -912,9 +934,6 @@ public class AproxMergeJoin extends Node {
     		}
     		for (int i=0;i<weights.length;i++){
     			weights[i]=weights[i]/sumOfWeights;
-    		}
-    		if (slaveOverrideKeys == null) {
-    			slaveOverrideKeys = joinKeys;
     		}
     		RecordKey[] recKey = new RecordKey[2];
     		recKey[DRIVER_ON_PORT] = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
