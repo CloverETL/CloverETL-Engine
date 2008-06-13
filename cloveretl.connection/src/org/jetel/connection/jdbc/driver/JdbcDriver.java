@@ -149,9 +149,9 @@ public class JdbcDriver {
         try {
             driver = (Driver) Class.forName(dbDriver, true, getClassLoader()).newInstance();
         } catch (ClassNotFoundException ex1) {
-            throw new ComponentNotReadyException("Can not create JDBC driver '" + database + "'. Can not find class: " + ex1.getMessage(), ex1);
+            throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. Can not find class: " + ex1.getMessage(), ex1);
         } catch (Exception ex1) {
-            throw new ComponentNotReadyException("Cannot create JDBC driver '" + database + "'. General exception: " + ex1.getMessage(), ex1);
+            throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. General exception: " + ex1.getMessage(), ex1);
         }
     }
 
