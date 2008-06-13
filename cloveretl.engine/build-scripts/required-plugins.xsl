@@ -35,7 +35,7 @@
 
 	<xsl:template match="import" mode="cp">
 		<xsl:text>;</xsl:text>
-		<xsl:value-of select="$dist"/>
+		<xsl:value-of select="fn:replace($dist, '\', '\\')"/><!-- escape \ for build on windows -->
 		<xsl:text>/plugins/</xsl:text>
 		<xsl:value-of select="@plugin-id"/>
 		<xsl:text>/cloveretl.</xsl:text>
