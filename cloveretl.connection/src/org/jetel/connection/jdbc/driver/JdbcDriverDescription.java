@@ -208,7 +208,7 @@ public class JdbcDriverDescription {
             try {
                 urls[i] = extension.getPlugin().getURL(libraryPaths[i]);
             } catch (MalformedURLException ex1) {
-                throw new ComponentNotReadyException("Can not create JDBC driver '" + database + "'. Malformed URL: " + ex1.getMessage(), ex1);
+                throw new ComponentNotReadyException("Cannot create JDBC driver '" + database + "'. Malformed URL: " + ex1.getMessage(), ex1);
             }
         }
         
