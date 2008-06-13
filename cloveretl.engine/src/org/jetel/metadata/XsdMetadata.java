@@ -28,7 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
+import java.util.Enumeration;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -39,6 +39,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.util.primitive.TypedProperties;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -51,38 +52,7 @@ import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 12/14/06  
  */
-public class XsdMetadata {
-	private static final String NAMESPACE = "";
-	private static final String XMLSCHEMA = "http://www.w3.org/2001/XMLSchema";
-
-	// mapping from field type to XSD type representing the field type
-	private static final HashMap<Character, String> typeNames = new HashMap<Character, String>();
-	// mapping from field type to XSD type used as base for XSD type representing the field type
-	private static final HashMap<Character, String> primitiveNames = new HashMap<Character, String>();
-	// initialize mappings
-	static {
-		typeNames.put(Character.valueOf(DataFieldMetadata.BYTE_FIELD), "CloverByte");
-		typeNames.put(Character.valueOf(DataFieldMetadata.BYTE_FIELD_COMPRESSED), "CloverByteCompressed");
-		typeNames.put(Character.valueOf(DataFieldMetadata.DATE_FIELD), "CloverDate");
-		typeNames.put(Character.valueOf(DataFieldMetadata.DATETIME_FIELD), "CloverDatetime");
-		typeNames.put(Character.valueOf(DataFieldMetadata.DECIMAL_FIELD), "CloverDecimal");
-		typeNames.put(Character.valueOf(DataFieldMetadata.INTEGER_FIELD), "CloverInteger");
-		typeNames.put(Character.valueOf(DataFieldMetadata.LONG_FIELD), "CloverLong");
-		typeNames.put(Character.valueOf(DataFieldMetadata.NUMERIC_FIELD), "CloverNumeric");
-		typeNames.put(Character.valueOf(DataFieldMetadata.STRING_FIELD), "CloverString");
-		typeNames.put(Character.valueOf(DataFieldMetadata.BOOLEAN_FIELD), "CloverBoolean");
-
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.BYTE_FIELD), "xsd:base64Binary");
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.BYTE_FIELD_COMPRESSED), "xsd:base64Binary");
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.DATE_FIELD), "xsd:date");
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.DATETIME_FIELD), "xsd:dateTime");
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.DECIMAL_FIELD), "xsd:decimal");
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.INTEGER_FIELD), "xsd:int");
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.LONG_FIELD), "xsd:long");
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.NUMERIC_FIELD), "xsd:decimal");
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.STRING_FIELD), "xsd:string");
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.BOOLEAN_FIELD), "xsd:boolean");
-	}
+public class XsdMetadata extends MXAbstract {
 
 	// XSD document
 	private Document doc;
@@ -99,26 +69,68 @@ public class XsdMetadata {
 		}
 		DataFieldMetadata[] fields = metadata.getFields();
 		Element rootElement = doc.getDocumentElement();
-		Element recordElement = doc.createElement("xsd:element");
-		recordElement.setAttribute("name", metadata.getName());
-		recordElement.setAttribute("type", metadata.getName() + "Type");
+		Element recordElement = doc.createElement(XSD_ELEMENT);
+		String properties;
+		recordElement.setAttribute(NAME, metadata.getName());
+		recordElement.setAttribute(TYPE, metadata.getName() + "Type");
+		if (metadata.getFieldDelimiterStr() != null) 
+			recordElement.setAttribute(FIELD_DELIMITER, metadata.getFieldDelimiterStr());
+		if (metadata.getFieldNamesHeader() != null) 
+			recordElement.setAttribute(FIELD_NAMES_HEADER, metadata.getFieldNamesHeader());
+		if (metadata.getLocaleStr() != null) 
+			recordElement.setAttribute(LOCALE_STR, metadata.getLocaleStr());
+		if (metadata.getRecordDelimiterStr() != null) 
+			recordElement.setAttribute(RECORD_DELIMITER, metadata.getRecordDelimiterStr());
+		recordElement.setAttribute(RECORD_SIZE, Integer.toString(metadata.getRecordSize()));
+		recordElement.setAttribute(RECORD_SIZE_STRIP_AUTO_FILLING, Integer.toString(metadata.getRecordSizeStripAutoFilling()));
+		recordElement.setAttribute(REC_TYPE, String.valueOf(metadata.getRecType()));
+		if ((properties = getProperties(metadata.getRecordProperties())) != null) 
+			recordElement.setAttribute(RECORD_PROPERTIES, properties);
+		recordElement.setAttribute(SKIP_FIRST_LINE, Boolean.toString(metadata.isSkipFirstLine()));
+		recordElement.setAttribute(NULLABLE, Boolean.toString(metadata.isNullable()));
+		recordElement.setAttribute(SPECIFIED_FIELD_DELIMITER, Boolean.toString(metadata.isSpecifiedFieldDelimiter()));
+		recordElement.setAttribute(SPECIFIED_RECORD_DELIMITER, Boolean.toString(metadata.isSpecifiedRecordDelimiter()));
+		
 		rootElement.appendChild(recordElement);
 
-		Element typeElement = doc.createElement("xsd:complexType");
-		typeElement.setAttribute("name", metadata.getName() + "Type");
+		Element typeElement = doc.createElement(XSD_COMPLEX_TYPE);
+		typeElement.setAttribute(NAME, metadata.getName() + "Type");
 		rootElement.appendChild(typeElement);
 		
-		Element seqElement = doc.createElement("xsd:sequence");
+		Element seqElement = doc.createElement(XSD_SEQUENCE);
 		typeElement.appendChild(seqElement);
 		for (int idx = 0; idx < fields.length; idx++) {
 			String typeName = getXsdType(doc, fields[idx]);
-			Element fieldElement = doc.createElement("xsd:element");
-			fieldElement.setAttribute("name", fields[idx].getName());
-			fieldElement.setAttribute("type", typeName);
+			Element fieldElement = doc.createElement(XSD_ELEMENT);
+			fieldElement.setAttribute(NAME, fields[idx].getName());
+			fieldElement.setAttribute(TYPE, typeName);
+			if (fields[idx].getAutoFilling() != null) 
+				fieldElement.setAttribute(AUTO_FILLING, fields[idx].getAutoFilling());
+			if (fields[idx].getDefaultValueStr() != null) 
+				fieldElement.setAttribute(DEFAULT_VALUE_STR, fields[idx].getDefaultValueStr());
+			if (fields[idx].getDelimiterStr() != null) 
+				fieldElement.setAttribute(DELIMITER_STR, fields[idx].getDelimiterStr());
+			if (fields[idx].getFormatStr() != null) 
+				fieldElement.setAttribute(FORMAT_STR, fields[idx].getFormatStr());
+			if (fields[idx].getLocaleStr() != null) 
+				fieldElement.setAttribute(LOCALE_STR, fields[idx].getLocaleStr());
+			if ((properties = getProperties(fields[idx].getFieldProperties())) != null) 
+				fieldElement.setAttribute(FIELD_PROPERTIES, properties);
+			fieldElement.setAttribute(SHIFT, Short.toString(fields[idx].getShift()));
+			fieldElement.setAttribute(SIZE, Short.toString(fields[idx].getSize()));
 			seqElement.appendChild(fieldElement);
 		}
 	}
 
+	private String getProperties(TypedProperties typedProperties) {
+		StringBuilder sb = new StringBuilder();
+        for(Enumeration<?> e = typedProperties.propertyNames(); e.hasMoreElements();) {
+            String propertyName = (String) e.nextElement();
+            sb.append(propertyName).append(PROPERTIES_ASSIGN).append(typedProperties.getProperty(propertyName)).append(PROPERTIES_DELIM);
+        }
+		return sb.toString().equals("") ? null : sb.toString();
+	}
+	
 	/**
 	 * 
 	 * @return XSD representation of metadata
@@ -260,7 +272,7 @@ public class XsdMetadata {
 		if (baseType == null) {
 			baseType = createBaseType(doc, field.getType());
 		}
-		return createRestrictedType(doc, field, baseType).getAttribute("name");
+		return createRestrictedType(doc, field, baseType).getAttribute(NAME);
 	}
 
 	/**
