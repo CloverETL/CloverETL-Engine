@@ -40,7 +40,8 @@ public class SimpleThreadManager implements IThreadManager {
 		watchDog.init();
 		
 		FutureTask<Result> futureTask = new FutureTask<Result>(watchDog); 
-		new Thread(futureTask, "WatchDog").start();
+		Thread watchdogThread = new Thread(futureTask, "WatchDog");
+		watchdogThread.start();
 		
 		return futureTask;
 	}
@@ -50,6 +51,7 @@ public class SimpleThreadManager implements IThreadManager {
 	 */
 	public void executeNode(Runnable node) {
 		Thread nodeThread = new Thread(node);
+		nodeThread.setPriority(Thread.MIN_PRIORITY);
 		nodeThread.setDaemon(true);
 		nodeThread.start();
 	}

@@ -43,6 +43,7 @@ public class GraphRuntimeContext {
 	private int trackingInterval;
 	private int trackingFlushInterval;
 	private boolean useJMX;
+	private boolean waitForJMXClient;
 	private boolean verboseMode;
 	private Properties additionalProperties;
 	private boolean checkConfig;
@@ -51,6 +52,7 @@ public class GraphRuntimeContext {
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 		useJMX = true;
+		waitForJMXClient = false;
 		verboseMode = false;
 		additionalProperties = new Properties();
 		checkConfig = true;
@@ -68,6 +70,7 @@ public class GraphRuntimeContext {
 		ret.checkConfig = isCheckConfig();
 		ret.verboseMode = isVerboseMode();
 		ret.useJMX = useJMX();
+		ret.waitForJMXClient = isWaitForJMXClient();
 		ret.password = getPassword();
 		return ret;
 	}
@@ -112,6 +115,21 @@ public class GraphRuntimeContext {
         this.useJMX = useJMX;
     }
 
+    /**
+     * @return whether watchdog should wait for a JMX client; it is necessary for short running graphs
+     */
+    public boolean isWaitForJMXClient() {
+    	return waitForJMXClient;
+    }
+    
+    /**
+     * Sets whether watchdog should wait for a JMX client. It is necessary for short running graphs.
+     * @param waitForJMXClient
+     */
+    public void setWaitForJMXClient(boolean waitForJMXClient) {
+    	this.waitForJMXClient = waitForJMXClient;
+    }
+    
     /**
      * Sets whether should be done only checkConfiguration().
      * @param checkConfig

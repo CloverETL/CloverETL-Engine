@@ -128,6 +128,8 @@ public class runGraph {
     public final static String CHECK_CONFIG_SWITCH = "-checkconfig";
     public final static String NO_JMX = "-noJMX";
     public final static String CONFIG_SWITCH = "-config";
+    //private command line options
+    public final static String WAIT_FOR_JMX_CLIENT_SWITCH = "-waitForJMXClient";
     public final static String MBEAN_NAME = "-mbean";
     public final static String DICTIONARY_VALUE_DEFINITION_SWITCH = "-V:";
 	
@@ -218,6 +220,8 @@ public class runGraph {
                 logHost = args[i];
             } else if (args[i].startsWith(CHECK_CONFIG_SWITCH)) {
                 onlyCheckConfig = true;
+            } else if (args[i].startsWith(WAIT_FOR_JMX_CLIENT_SWITCH)) {
+                runtimeContext.setWaitForJMXClient(true);
             } else if (args[i].startsWith(MBEAN_NAME)){
                 i++;
                 //TODO

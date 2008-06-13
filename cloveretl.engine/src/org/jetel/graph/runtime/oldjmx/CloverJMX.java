@@ -114,15 +114,18 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     }
     
     public TrackingDetail getTrackingDetail(int phase,String nodeID) {
-        return watchDog.getTransformationGraph().getPhase(phase).getTracking().get(nodeID);
+    	return null;
+        //return watchDog.getTransformationGraph().getPhase(phase).getTracking().get(nodeID);
     }
     
     public PhaseTrackingDetail getPhaseTracking() {
-        return watchDog.getTransformationGraph().getPhase(getRunningPhase()).getPhaseTracking();
+    	return null;
+        //return watchDog.getTransformationGraph().getPhase(getRunningPhase()).getPhaseTracking();
     }
     
     public PhaseTrackingDetail getPhaseTracking(int phase) {
-        return watchDog.getTransformationGraph().getPhase(phase).getPhaseTracking();
+    	return null;
+        //return watchDog.getTransformationGraph().getPhase(phase).getPhaseTracking();
     }
     
     public String getTrackingDetailString(String nodeID){
@@ -148,8 +151,9 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     }
     
     public String[] getNodesList(int phase){
-        Map tracking=watchDog.getTransformationGraph().getPhase(phase).getTracking();
-        return (String[])tracking.keySet().toArray(new String[tracking.size()]);
+    	return null;
+//        Map tracking=watchDog.getTransformationGraph().getPhase(phase).getTracking();
+//        return (String[])tracking.keySet().toArray(new String[tracking.size()]);
    }
     
     public int getUpdateInterval() {
@@ -190,7 +194,6 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     } 
     
     public synchronized void graphFinished(Result result) {
-    	System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@ graph finished");
     	if (!run) return;
         Notification n = new Notification(GRAPH_FINISHED_NOTIFICATION_ID, 
                                 this, 
@@ -200,7 +203,6 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
  
         //n.setUserData(result);
         sendNotification(n); 
-    	System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@ graph finished");
     } 
 
     public synchronized void graphStarted() { 
