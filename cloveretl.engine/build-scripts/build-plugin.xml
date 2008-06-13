@@ -85,15 +85,6 @@
 	</target>
 
 	<target name="find-required-plugins" depends="init">
-		<!--<propertyregex property="dir.dist.escaped"
-		              input="${dir.dist}"
-		              regexp="(.*)a(.*)"
-		              select="\1vv\2"
-					  global="true"
-		              casesensitive="false" />
-		<echo> dddmessage=${dir.dist.escaped}</echo>
-
-		<fail message="${dir.dist.escaped}"/-->
 		<xslt 
 			style="${dir.engine}/build-scripts/required-plugins.xsl"
 			in="${basedir}/plugin.xml"
