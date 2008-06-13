@@ -7,6 +7,8 @@ REL 2-5-0
 Changes/bug fixes:
 + JDBC connections has new DB customization
 + keyDuplicates attribute for DataIntersection component
++ standardization of mapping syntax:DBOutputTable, DataGenerator, DB2DataWriter, XLSReader
++ standardization of join key: AproxMergeJoin
 
 REL 2-4-6
 ---------
