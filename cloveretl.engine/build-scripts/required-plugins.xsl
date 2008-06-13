@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <xsl:stylesheet 
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	version="1.0">
+	xmlns:fn="http://www.w3.org/2005/02/xpath-functions"
+	version="2.0">
  	
  	<xsl:param name="separator"/>
  	<xsl:param name="dist"/>
@@ -35,11 +36,23 @@
 
 	<xsl:template match="import" mode="cp">
 		<xsl:text>;</xsl:text>
-		<xsl:value-of select="fn:replace($dist, '\', '\\')"/><!-- escape \ for build on windows -->
+		<!-- escape \ for build on windows -->
+		<xsl:call-template name="escapeBackslash"><xsl:with-param name="string"><xsl:value-of select="$dist" /></xsl:with-param></xsl:call-template>
 		<xsl:text>/plugins/</xsl:text>
 		<xsl:value-of select="@plugin-id"/>
 		<xsl:text>/cloveretl.</xsl:text>
 		<xsl:value-of select="substring-after(@plugin-id,'org.jetel.')"/>
 		<xsl:text>.jar</xsl:text>
 	</xsl:template>	
+	
+		
+
+	<xsl:template name="escapeBackslash">
+		<xsl:param name="string" />
+		<xsl:if test="contains($string, '\')"><xsl:value-of select="substring-before($string, '\')" />\\<xsl:call-template name="escapeBackslash"><xsl:with-param name="string"><xsl:value-of select="substring-after($string, '\')" /></xsl:with-param></xsl:call-template>
+		</xsl:if>
+		<xsl:if test="not(contains($string, '\'))"><xsl:value-of select="$string" />
+		</xsl:if>
+	</xsl:template>
+	
 </xsl:stylesheet>
