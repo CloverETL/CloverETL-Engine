@@ -46,6 +46,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.AproximativeJoinKey;
 import org.jetel.util.string.StringAproxComparator;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -85,7 +86,12 @@ import org.w3c.dom.Element;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>APROX_MERGE_JOIN</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
- *  <tr><td><b>joinKey</b></td><td>field names with number of letters, weight 
+ *  <tr><td><b>joinKey</b></td><td>defines comparing of slave and master record in form: 
+ *  	<i>masterField1=slaveField1(maxNumberOfLetterstoChange fieldWeight identicalComparison tertiaryComparison 
+ *  secondaryComparison primaryComparison);masterField2=slaveField2(maxNumberOfLetterstoChange fieldWeight identicalComparison tertiaryComparison 
+ *  secondaryComparison primaryComparison)</i>, eg. <i>lname=last_name(4 0.5 true false false false);
+ *  fname=first_name(3 0.5 true false false false)</i>. Can be also written in old notation:
+ *  	field names with number of letters, weight 
  *  	and strength of comparison as four boolean values for each comparison 
  *  	level separated by :;|  {colon, semicolon, pipe}. General form:
  *  fieldName maxNumberOfLetterstoChange fieldWeight identicalComparison tertiaryComparison 
@@ -162,7 +168,7 @@ import org.w3c.dom.Element;
  */
 public class AproxMergeJoin extends Node {
 
-	private static final String XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE = "slaveOverrideKey";
+	public static final String XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE = "slaveOverrideKey";
 	private static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey";
 	private static final String XML_MATCHING_KEY_ATTRIBUTE="matchingKey";
 	private static final String XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE = "slaveMatchingOverride";
@@ -607,19 +613,29 @@ public class AproxMergeJoin extends Node {
 					inMetadata, outMetadata, transformationParametersForSuspicious, this.getClass().getClassLoader());
 		}
 		// initializing join parameters
+		AproximativeJoinKey[] keys;
+		if (joinParameters[0].indexOf('=') != -1) {
+			keys = initNewJoinKey(joinParameters);
+		}else{
+			keys = initOldJoinKey(joinParameters);
+		}
 		joinKeys = new String[joinParameters.length];
 		maxDifferenceLetters = new int[joinParameters.length];
 		boolean[][] strength=new boolean[joinParameters.length][StringAproxComparator.IDENTICAL];
 		weights = new double[joinParameters.length];
-		String[] tmp;
-		for (int i=0;i<joinParameters.length;i++){
-			tmp=joinParameters[i].split(" ");
-			joinKeys[i]=tmp[0];
-			maxDifferenceLetters[i]=Integer.parseInt(tmp[1]);
-			weights[i]=Double.parseDouble(tmp[2]);
-			for (int j=0;j<StringAproxComparator.IDENTICAL;j++){
-				strength[i][j] = tmp[3+j].equals("true") ? true : false;
+		if (slaveOverrideKeys == null) {
+			slaveOverrideKeys = new String[joinKeys.length];
+		}
+		for (int i = 0; i < keys.length; i++) {
+			joinKeys[i] = keys[i].getMaster();
+			if (keys[i].getSlave() != null){
+				slaveOverrideKeys[i] = keys[i].getSlave();
+			}else if (slaveOverrideKeys[i] == null) {
+				slaveOverrideKeys[i] = joinKeys[i];
 			}
+			maxDifferenceLetters[i] = keys[i].getMaxDiffrence();
+			weights[i] = keys[i].getWeight();
+			strength[i] = keys[i].getStrength();
 		}
 		double sumOfWeights=0;
 		for (int i=0;i<weights.length;i++){
@@ -627,9 +643,6 @@ public class AproxMergeJoin extends Node {
 		}
 		for (int i=0;i<weights.length;i++){
 			weights[i]=weights[i]/sumOfWeights;
-		}
-		if (slaveOverrideKeys == null) {
-			slaveOverrideKeys = joinKeys;
 		}
 		RecordKey[] recKey = new RecordKey[2];
 		recKey[DRIVER_ON_PORT] = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
@@ -658,6 +671,41 @@ public class AproxMergeJoin extends Node {
 		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
 		conformityFieldsForSuspicious = findOutFields(slaveOverrideKeys,getOutputPort(SUSPICIOUS_OUT).getMetadata());
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+	}
+	
+	public static AproximativeJoinKey[] initOldJoinKey(String[] joinParameters){
+		AproximativeJoinKey[] result = new AproximativeJoinKey[joinParameters.length];
+		String[] tmp;
+		for (int i=0;i<joinParameters.length;i++){
+			tmp=joinParameters[i].split("\\s+");
+			result[i]=new AproximativeJoinKey(tmp[0], null);
+			result[i].setMaxDiffrence(Integer.parseInt(tmp[1]));
+			result[i].setWeight(Double.parseDouble(tmp[2]));
+			for (int j=0;j<StringAproxComparator.IDENTICAL;j++){
+				result[i].setStrenght(j, tmp[3+j].equalsIgnoreCase("true") ? true : false) ;
+			}
+		}
+		return result;
+	}
+	
+	public static AproximativeJoinKey[] initNewJoinKey(String[] joinParameters){
+		AproximativeJoinKey[] result = new AproximativeJoinKey[joinParameters.length];
+		int equalIndex;
+		int bracketIndex;
+		String[] tmp;
+		for (int i = 0; i < joinParameters.length; i++) {
+			equalIndex = joinParameters[i].indexOf('=');
+			bracketIndex = joinParameters[i].indexOf('(');
+			result[i]=new AproximativeJoinKey(joinParameters[i].substring(0, equalIndex).trim(), 
+					joinParameters[i].substring(equalIndex + 1, bracketIndex).trim());
+			tmp = joinParameters[i].substring(bracketIndex + 1, joinParameters[i].length() - 1).split("\\s+");
+			result[i].setMaxDiffrence(Integer.parseInt(tmp[0]));
+			result[i].setWeight(Double.parseDouble(tmp[1]));
+			for (int j=0;j<StringAproxComparator.IDENTICAL;j++){
+				result[i].setStrenght(j, tmp[2+j].equalsIgnoreCase("true") ? true : false) ;
+			}
+		}
+		return result;
 	}
 	
 	@Override
