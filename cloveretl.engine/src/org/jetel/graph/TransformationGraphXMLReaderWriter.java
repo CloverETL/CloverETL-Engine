@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -153,7 +154,7 @@ import org.xml.sax.SAXParseException;
  */
 public class TransformationGraphXMLReaderWriter {
 	private final static String GRAPH_ELEMENT = "Graph";
-	private final static String GLOBAL_ELEMENT = "Global";
+	//unused private final static String GLOBAL_ELEMENT = "Global";
 	private final static String NODE_ELEMENT = "Node";
 	private final static String EDGE_ELEMENT = "Edge";
 	private final static String METADATA_ELEMENT = "Metadata";
@@ -278,7 +279,6 @@ public class TransformationGraphXMLReaderWriter {
 	 * @since         May 21, 2002
 	 */
 	public TransformationGraph read(Document document) throws XMLConfigurationException,GraphConfigurationException {
-		Iterator colIterator;
 		Map metadata = new HashMap(ALLOCATE_MAP_SIZE);
 	//	List<Phase> phases = new LinkedList<Phase>();
 	//	Map<String,Node> allNodes = new LinkedHashMap<String,Node>(ALLOCATE_MAP_SIZE);
@@ -380,10 +380,6 @@ public class TransformationGraphXMLReaderWriter {
                     logger.error("Error when reading/parsing record metadata definition file: "+fileURL);
                     throw new XMLConfigurationException("Can't parse metadata: "+metadataID,ex);
                 }
-					if (recordMetadata==null){
-						logger.error("Error when reading/parsing record metadata definition file: "+fileURL);
-						throw new XMLConfigurationException("Can't parse metadata: "+metadataID);
-					}
 			}// metadata from analyzing DB table (JDBC) - will be resolved
 			// later during Edge init - just put stub now.
 			else if (attributes.exists("connection")){
@@ -620,7 +616,6 @@ public class TransformationGraphXMLReaderWriter {
 	 */
 	private void instantiateDBConnections(NodeList connectionElements) throws XMLConfigurationException{
         IConnection connection;
-        String connectionId = null;
         String connectionType;
         
         for (int i = 0; i < connectionElements.getLength(); i++) {
@@ -630,15 +625,15 @@ public class TransformationGraphXMLReaderWriter {
             // process IConnection element attributes "id" & "type"
             try {
                 connectionType = attributes.getString("type");
-
-                //create connection
-                connection = ConnectionFactory.createConnection(graph, connectionType, connectionElement);
-                if (connection != null) {
-                    //register connection in transformation graph
-                    graph.addConnection(connection);
-                }
             } catch (AttributeNotFoundException ex) {
-                throw new XMLConfigurationException("Attribute at Connection " + connectionId + " is missing - " + ex.getMessage());
+                throw new XMLConfigurationException("Attribute type at Connection is missing - " + ex.getMessage());
+            }
+
+            //create connection
+            connection = ConnectionFactory.createConnection(graph, connectionType, connectionElement);
+            if (connection != null) {
+                //register connection in transformation graph
+                graph.addConnection(connection);
             }
         }
 	}
@@ -652,7 +647,6 @@ public class TransformationGraphXMLReaderWriter {
 	 */
 	private void instantiateSequences(NodeList sequenceElements) throws XMLConfigurationException {
 		Sequence seq;
-        String sequenceId = null;
         String sequenceType;
         
 		for (int i = 0; i < sequenceElements.getLength(); i++) {
@@ -662,16 +656,16 @@ public class TransformationGraphXMLReaderWriter {
             // process Sequence element attributes "id" & "type"
             try {
                 sequenceType = attributes.getString("type");
-
-                //create sequence
-                seq = SequenceFactory.createSequence(graph, sequenceType, sequenceElement);
-    			if (seq != null) {
-                    //register sequence in transformation graph
-    				graph.addSequence(seq);
-    			}
             } catch (AttributeNotFoundException ex) {
-                throw new XMLConfigurationException("Attribute at Sequence " + sequenceId + " is missing - " + ex.getMessage());
+                throw new XMLConfigurationException("Attribute type at Sequence is missing - " + ex.getMessage());
             }
+            
+            //create sequence
+            seq = SequenceFactory.createSequence(graph, sequenceType, sequenceElement);
+			if (seq != null) {
+                //register sequence in transformation graph
+				graph.addSequence(seq);
+			}
 		}
 	}
 
@@ -684,7 +678,6 @@ public class TransformationGraphXMLReaderWriter {
 	 */
 	private void instantiateLookupTables(NodeList lookupElements) throws XMLConfigurationException {
         LookupTable lookup;
-        String lookupTableId = null;
         String lookupTableType;
         
         for (int i = 0; i < lookupElements.getLength(); i++) {
@@ -694,15 +687,15 @@ public class TransformationGraphXMLReaderWriter {
             // process Lookup table element attributes "id" & "type"
             try {
                 lookupTableType = attributes.getString("type");
-
-                //create lookup table
-                lookup = LookupTableFactory.createLookupTable(graph, lookupTableType, lookupElement);
-                if(lookup != null) {
-                    //register lookup table in transformation graph
-                    graph.addLookupTable(lookup);
-                }
             } catch (AttributeNotFoundException ex) {
-                throw new XMLConfigurationException("Attribute at Lookup table " + lookupTableId + " is missing - " + ex.getMessage());
+                throw new XMLConfigurationException("Attribute type at Lookup table is missing - " + ex.getMessage());
+            }
+
+            //create lookup table
+            lookup = LookupTableFactory.createLookupTable(graph, lookupTableType, lookupElement);
+            if(lookup != null) {
+                //register lookup table in transformation graph
+                graph.addLookupTable(lookup);
             }
         }
 	}
@@ -796,19 +789,17 @@ public class TransformationGraphXMLReaderWriter {
 			
 			if (requiredAttributes.isEmpty() == false) {
 				// check required name-value pairs
-				Iterator nameIterator = requiredAttributes.keySet().iterator();
-				while (nameIterator.hasNext()) {
-					String requiredName = (String)nameIterator.next();
-					String requiredValue = (String)requiredAttributes.get(requiredName);
+				for( Object entryObject:requiredAttributes.entrySet()){
+					final Map.Entry entry = (Entry) entryObject;
+					final String requiredName = (String)entry.getKey();
+					final String requiredValue = (String)entry.getValue();
 					if (!candidate.hasAttribute(requiredName) ||
 						!candidate.getAttribute(requiredName).equals(requiredValue)) {
 						// candidate is missing attribute/value
 						break;
 					} 
-	 						
 				}
 			}
-			
 		}
 		
 		return(null);
