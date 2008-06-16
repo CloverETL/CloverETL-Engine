@@ -55,7 +55,7 @@ public class InputPortTrackingDetail extends PortTrackingDetail implements Seria
 	
 	//******************* EVENTS ********************/
 	@Override
-	public void gatherTrackingDetails() {
+	void gatherTrackingDetails() {
 		gatherTrackingDetails0(
 				inputPort.getInputRecordCounter(), 
 				inputPort.getInputByteCounter(),

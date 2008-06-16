@@ -55,7 +55,7 @@ public class OutputPortTrackingDetail extends PortTrackingDetail implements Seri
 
 	//******************* EVENTS ********************/
 	@Override
-	public void gatherTrackingDetails() {
+	void gatherTrackingDetails() {
 		gatherTrackingDetails0(
 				outputPort.getOutputRecordCounter(), 
 				outputPort.getOutputByteCounter(),
