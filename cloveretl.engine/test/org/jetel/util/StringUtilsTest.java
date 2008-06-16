@@ -354,6 +354,44 @@ public class StringUtilsTest extends TestCase {
 		assertEquals("string=random(\"3\",\"5\")", splitResult[0]);
 		assertEquals("date=random(\"01-02-2002 12:00:00\",\"29-02-2008 12:00:00\")", splitResult[1]);
 	}
+	
+	public void testTranslateBinarySearch(){
+		assertEquals("autogus", StringUtils.translateBinarySearch("autobus", "b", "g"));
+		assertEquals("agtobgs", StringUtils.translateBinarySearch("autobus", "u", "g"));
+		assertEquals("atobs", StringUtils.translateBinarySearch("autobus", "u", ""));
+		assertEquals("", StringUtils.translateBinarySearch("autobus", "autobus", ""));
+		assertEquals("autobus", StringUtils.translateBinarySearch("autobus", "autobus", "autobus"));
+		assertEquals("aaaaaaa", StringUtils.translateBinarySearch("autobus", "autobus", "aaaaaaa"));
+		assertEquals("", StringUtils.translateBinarySearch("", "autobus", "sdfas"));
+		assertEquals("", StringUtils.translateBinarySearch("", "", ""));
+		assertEquals("butocus", StringUtils.translateBinarySearch("autobus", "ab", "bc"));
+	}
+
+	public void testTranslateSequentialSearch(){
+		assertEquals("autogus", StringUtils.translateSequentialSearch("autobus", "b", "g"));
+		assertEquals("agtobgs", StringUtils.translateSequentialSearch("autobus", "u", "g"));
+		assertEquals("atobs", StringUtils.translateSequentialSearch("autobus", "u", ""));
+		assertEquals("", StringUtils.translateSequentialSearch("autobus", "autobus", ""));
+		assertEquals("autobus", StringUtils.translateSequentialSearch("autobus", "autobus", "autobus"));
+		assertEquals("aaaaaaa", StringUtils.translateSequentialSearch("autobus", "autobus", "aaaaaaa"));
+		assertEquals("", StringUtils.translateSequentialSearch("", "autobus", "sdfas"));
+		assertEquals("", StringUtils.translateSequentialSearch("", "", ""));
+		assertEquals("butocus", StringUtils.translateSequentialSearch("autobus", "ab", "bc"));
+	}
+
+	public void testTranslateMapSearch(){
+		assertEquals("autogus", StringUtils.translateMapSearch("autobus", "b", "g"));
+		assertEquals("agtobgs", StringUtils.translateMapSearch("autobus", "u", "g"));
+		assertEquals("atobs", StringUtils.translateMapSearch("autobus", "u", ""));
+		assertEquals("", StringUtils.translateMapSearch("autobus", "autobus", ""));
+		assertEquals("autobus", StringUtils.translateMapSearch("autobus", "autobus", "autobus"));
+		assertEquals("aaaaaaa", StringUtils.translateMapSearch("autobus", "autobus", "aaaaaaa"));
+		assertEquals("", StringUtils.translateMapSearch("", "autobus", "sdfas"));
+		assertEquals("", StringUtils.translateMapSearch("", "", ""));
+		assertEquals("butocus", StringUtils.translateMapSearch("autobus", "ab", "bc"));
+	}
+
+
 }
 
 /*
