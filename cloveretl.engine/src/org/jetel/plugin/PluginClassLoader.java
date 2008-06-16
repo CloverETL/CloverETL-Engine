@@ -96,8 +96,6 @@ public class PluginClassLoader extends URLClassLoader {
     }
 
    private Class<?> findClassInPrerequisities(String name, Set<String> seen) throws ClassNotFoundException {
-       Class<?> ret = null;
-       
        if(seen == null) {
            seen = new HashSet<String>();
        }
