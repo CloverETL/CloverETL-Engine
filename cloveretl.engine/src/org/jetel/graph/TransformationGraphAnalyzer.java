@@ -123,7 +123,7 @@ public class TransformationGraphAnalyzer {
 		// returning nodes ordered by their appearance in the graph -> not really guratanteed that it
 		// works for all configurations, but should be sufficient
 
-		return Arrays.asList(enumerationOfNodes.toArray(new Node[0]));
+		return Arrays.asList(enumerationOfNodes.toArray(new Node[enumerationOfNodes.size()]));
 	}
 
 	
