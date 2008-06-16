@@ -28,6 +28,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -359,9 +360,9 @@ public final class TransformationGraph extends GraphElement {
 	 * @return Returns the Phases array.
 	 */
 	public Phase[] getPhases() {
-		Phase[] ret;
 		
-		ret = phases.values().toArray(new Phase[0]);
+		final Collection<Phase> retList = phases.values();
+		final Phase[] ret = retList.toArray(new Phase[retList.size()]);
 		Arrays.sort(ret);
 		
 		return ret; 
