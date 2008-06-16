@@ -127,11 +127,11 @@ public class PhaseTrackingDetail implements Serializable {
 	}
 	
 	//******************* EVENTS ********************/
-	public void phaseStarted() {
+	void phaseStarted() {
 		startTime = System.nanoTime();
 	}
 
-	public void gatherTrackingDetails() {
+	void gatherTrackingDetails() {
 		//gather maximum memory utilization
 		memoryUtilization = Math.max(memoryUtilization, CloverJMX.MEMORY_MXBEAN.getHeapMemoryUsage().getUsed());
 		
@@ -141,9 +141,14 @@ public class PhaseTrackingDetail implements Serializable {
 		}
 	}
 
-	public void phaseFinished() {
-		endTime = System.nanoTime();
+	void phaseFinished() {
+		//notice all node - phase finished
+		for(NodeTrackingDetail nodeDetail : nodesDetails) {
+			nodeDetail.phaseFinished();
+		}
+		
 		result = phase.getResult();
+		endTime = System.nanoTime();
 	}
 
 }

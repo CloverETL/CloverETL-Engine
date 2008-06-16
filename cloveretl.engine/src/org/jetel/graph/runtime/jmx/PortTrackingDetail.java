@@ -135,4 +135,12 @@ abstract public class PortTrackingDetail implements Serializable {
         averageWaitingRows = Math.abs(waitingRows - averageWaitingRows) / 2;
 	}
 
+	void phaseFinished() {
+	    //averageRows
+        averageRows = 0;
+
+	    //averageBytes
+        averageBytes = 0;
+	}
+	
 }

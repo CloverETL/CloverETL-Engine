@@ -142,12 +142,18 @@ public class NodeTrackingDetail implements Serializable {
 		long phaseExecutionTime = getParentPhaseDetail().getExecutionTime();
 		
 		//totalCPUTime
-		totalCPUTime = CloverJMX.isThreadCpuTimeSupported() ? 
+		final long tempTotalCPUTime = CloverJMX.isThreadCpuTimeSupported() ? 
 				CloverJMX.THREAD_MXBEAN.getThreadCpuTime(node.getNodeThread().getId()) : 0;
+		if(tempTotalCPUTime > totalCPUTime) {
+			totalCPUTime = tempTotalCPUTime;
+		}
 		
 		//totalUserTime
-		totalUserTime = CloverJMX.isThreadCpuTimeSupported() ? 
+		final long tempTotalUserTime = CloverJMX.isThreadCpuTimeSupported() ? 
 				CloverJMX.THREAD_MXBEAN.getThreadUserTime(node.getNodeThread().getId()) : 0;
+		if(tempTotalUserTime > totalUserTime) {
+			totalUserTime = tempTotalUserTime;
+		}
 				
         //usageCPU
         usageCPU = (float) totalCPUTime / phaseExecutionTime;
@@ -175,4 +181,16 @@ public class NodeTrackingDetail implements Serializable {
 		}
 	}
 
+	void phaseFinished() {
+		//gather input ports related data
+		for(InputPortTrackingDetail inputPortDetail: inputPortsDetails) {
+			inputPortDetail.phaseFinished();
+		}
+
+		//gather output ports related data
+		for(OutputPortTrackingDetail outputPortDetail: outputPortsDetails) {
+			outputPortDetail.phaseFinished();
+		}
+	}
+	
 }
