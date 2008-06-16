@@ -94,9 +94,14 @@ public final class Defaults {
 
 		try {
 			properties.load(in);
-			in.close();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				in.close();
+			} catch (IOException e) {
+				logger.warn("Unable to close properies stream: " + configurationFile);
+			}
 		}
 	}
 
