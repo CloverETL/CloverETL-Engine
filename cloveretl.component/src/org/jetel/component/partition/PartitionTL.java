@@ -32,6 +32,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
+import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -85,8 +86,10 @@ public class PartitionTL implements PartitionFunction {
 			wrapper.setGraph(graph);
 		}
 		wrapper.init();
+		TLValue params[] = new TLValue[] { TLValue.create(TLValueType.INTEGER)};
+		params[0].getNumeric().setValue(numPartitions);
 		try {
-			wrapper.execute(INIT_FUNCTION_NAME, null);
+			wrapper.execute(INIT_FUNCTION_NAME, params);
 		} catch (JetelException e) {
 			//do nothing: function init is not necessary
 		}
