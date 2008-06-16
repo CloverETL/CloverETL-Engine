@@ -22,6 +22,7 @@ package org.jetel.util.string;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -967,7 +968,7 @@ public class StringUtils {
 	 *            replacing characters
 	 * @return original string with replaced requested characters
 	 */
-	private static CharSequence translate(CharSequence in, CharSequence searchSet, CharSequence replaceSet) {
+	public static CharSequence translate(CharSequence in, CharSequence searchSet, CharSequence replaceSet) {
 		if (searchSet.length() < SEQUENTIAL_TRANLATE_LENGTH) {
 			return translateSequentialSearch(in, searchSet, replaceSet);
 		} else {
@@ -975,39 +976,8 @@ public class StringUtils {
 		}
 	}
 
-	private static CharSequence translateOneByOne(CharSequence in, CharSequence searchSet, CharSequence replaceSet) {
-		Character[] result = new Character[in.length()];
-		for (int i = 0; i < result.length; i++) {
-			result[i] = in.charAt(i);
-		}
-		char search, replace;
-		for (int i = 0; i < replaceSet.length(); i++) {
-			search = searchSet.charAt(i);
-			replace = replaceSet.charAt(i);
-			for (int j = 0; j < in.length(); j++) {
-				if (in.charAt(j) == search) {
-					result[j] = replace;
-				}
-			}
-		}
-		for (int i = replaceSet.length(); i < searchSet.length(); i++) {
-			search = searchSet.charAt(i);
-			for (int j = 0; j < in.length(); j++) {
-				if (in.charAt(j) == search) {
-					result[i] = null;
-				}
-			}
-		}
-		StringBuilder out = new StringBuilder(result.length);
-		for (Character character : result) {
-			if (character != null) {
-				out.append(character);
-			}
-		}
-		return out;
-	}
 
-	private static CharSequence translateMapSearch(CharSequence in, CharSequence searchSet, CharSequence replaceSet) {
+	public static CharSequence translateMapSearch(CharSequence in, CharSequence searchSet, CharSequence replaceSet) {
 		HashMap<Character, Character> replacement = new HashMap<Character, Character>(searchSet.length());
 		int replaceSetLength = replaceSet.length();
 		for (int i = 0; i < searchSet.length(); i++) {
@@ -1026,22 +996,58 @@ public class StringUtils {
 				result.append(ch);
 			}
 		}
-		return result;
+		return result.toString();
 	}
 
-	private static CharSequence translateBinarySearch(CharSequence in, CharSequence searchSet, CharSequence replaceSet) {
+	public static CharSequence translateBinarySearch(CharSequence in, CharSequence searchSet, CharSequence replaceSet) {
 		CharPair[] replacement = new CharPair[searchSet.length()];
 		int replaceSetLength = replaceSet.length();
 		for (int i = 0; i < searchSet.length(); i++) {
 			replacement[i] = new CharPair(searchSet.charAt(i), i < replaceSetLength ? replaceSet.charAt(i) : null);
 		}
-		StringBuilder result = new StringBuilder();
-		Arrays.sort(replacement);
-		int index;
-		char ch;
+		
+		
+		final Comparator comparator =new  Comparator(){
+
+			public int compare(Object o1, Object o2) {
+					if (o1 == null && o2 ==null) {
+						return 0;
+					}
+					if( o1 == null && o2 != null){
+						return -1;
+					}
+					if( o1 != null && o2 == null){
+						return 1;
+					}
+			
+					final char ch1 = getChar(o1);
+					final char ch2 = getChar(o2);
+					
+					return ch1-ch2;
+					
+					
+			}
+
+			private char getChar(Object o) {
+				if (o instanceof Character) {
+					return ((Character) o).charValue();
+				}
+				if (o instanceof CharPair) {
+					return ((CharPair) o).key;
+				}
+				throw new ClassCastException();
+			}
+			
+		};
+		
+		Arrays.sort(replacement, comparator);
+		
+		final StringBuilder result = new StringBuilder();
+		
 		for (int i = 0; i < in.length(); i++) {
-			ch = in.charAt(i);
-			if ((index = Arrays.binarySearch(replacement, ch)) > -1) {
+			final char ch = in.charAt(i);
+			final int index = Arrays.binarySearch(replacement, ch, comparator);
+			if (index > -1) {
 				if (replacement[index].value != null) {
 					result.append(replacement[index].value);
 				}
@@ -1049,8 +1055,19 @@ public class StringUtils {
 				result.append(ch);
 			}
 		}
-		return result;
+		return result.toString();
 	}
+	
+	private static class CharPair {
+
+		public Character key, value;
+
+		CharPair(Character key, Character value) {
+			this.key = key;
+			this.value = value;
+		}
+	}		
+
 
 	public static CharSequence translateSequentialSearch(CharSequence in, CharSequence searchSet,
 			CharSequence replaceSet) {
@@ -1070,7 +1087,7 @@ public class StringUtils {
 				result.append(ch);
 			}
 		}
-		return result;
+		return result.toString();
 	}
 
 	public static char[] charSequence2char(final CharSequence in) {
@@ -1200,39 +1217,3 @@ public class StringUtils {
 
 }
 
-class CharPair implements Comparable {
-
-	Character key, value;
-
-	CharPair(Character key, Character value) {
-		this.key = key;
-		this.value = value;
-	}
-
-	public int compareTo(Object o) {
-		if (o == null) {
-			return 1;
-		}
-		if (key == null) {
-			return -1;
-		}
-		if (o instanceof Character) {
-			return key.compareTo((Character) o);
-		}
-		if (o instanceof CharPair) {
-			return key.compareTo(((CharPair) o).key);
-		}
-		throw new ClassCastException();
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		return 0 == compareTo(obj);
-	}
-
-	@Override
-	public int hashCode() {
-		return key.hashCode() + 31 * value.hashCode();
-	}
-
-}
