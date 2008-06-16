@@ -68,7 +68,13 @@ import org.w3c.dom.Element;
 * * run in the same JVM:
 * Graph is run by existing executor in current JVM instance. Log output is flushed together with current graph.
 * * run in separated JVM:
-* Graph is run as external process. Log output is written into specified file. Executed JVM will have the same classpath as current JVM.  
+* Graph is run as external process. Log output is written into specified file. Executed JVM will have the same classpath as current JVM.
+* <br/>In this case, supplying the command line for clover is necessary (at least the -plugins argument).
+* Command line arguments can be supplied by cloverCmdLineArgs attribute or by second field in input port 
+* (Supplying by field can be made only in in/out mode).
+* If cloverCmdLineArgs attribute is defined and input port is connected then field from input port has 
+* higher priority. Thus when some graph defined in input port and hasn't assigned command line arguments
+* cloverCmdLineArgs attribute is used.
 * 
 * Attributes:
 * <ul>
@@ -93,17 +99,17 @@ import org.w3c.dom.Element;
 * <li>in/out mode- one edge is connected - one record is generated for each input record; it may describe fail or success
 * <li>pipeline mode - two edges are connected - just one record is generated; it is put to port 0 if success, to port 1 otherwise
 * </ul> 
+* Metadata of input record:
+* 1st field - graph name; type=string
+* 2nd field - clover command line arguments; type=string
+* 
 * Metadata of output record:
-&lt;Metadata id="Metadata0">
-&lt;Record name="outdata" recordSize="-1" type="delimited">
-&lt;Field delimiter=";" name="graph" nullable="true" type="string"/>
-&lt;Field delimiter=";" name="result" nullable="true" type="string"/>
-&lt;Field delimiter=";" name="description" nullable="true" type="string"/>
-&lt;Field delimiter=";" name="message" nullable="true" type="string"/>
-&lt;Field delimiter="\\n" name="duration" nullable="true" type="decimal"/>
-&lt;/Record>
-&lt;/Metadata>
-
+* 1st field - graph name; type=string
+* 2nd field - result; type=string
+* 3rd field - description; type=string
+* 4th field - message; type=string
+* 5th field - duration; type=decimal
+*
 * Output metadata fields:
 * <ul>
 * <li>graph - path to file with executed graph
@@ -646,7 +652,7 @@ public class RunGraph extends Node{
         			"executed in separate instance of clover, supplying the command " +
         			"line for clover is necessary (at least the -plugins argument)." +
         			"Command line arguments can be supplied by cloverCmdLineArgs attribute" +
-        			"or by second field in input port (By field it can be supplied only in in/out mode)." , 
+        			"or by second field in input port (Supplying by field can be made only in in/out mode)." , 
         			Severity.ERROR, this, Priority.NORMAL);
         	status.add(problem);
         	return false;
