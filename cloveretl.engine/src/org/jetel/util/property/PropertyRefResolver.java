@@ -49,10 +49,10 @@ import org.jetel.util.string.StringUtils;
  */
 public class PropertyRefResolver {
 	private Matcher regexMatcher;
-    private Matcher regexEscapeMatcher;
+    //unused private Matcher regexEscapeMatcher;
 	private Properties properties;
 
-	private static final int MAX_RECURSION_DEPTH=10;
+	// unused private static final int MAX_RECURSION_DEPTH=10;
     public static final boolean DEFAULT_RESOLVE_SPEC_CHAR = true;  // default behaviour is to resolve special characters
 
 	Log logger = LogFactory.getLog(PropertyRefResolver.class);

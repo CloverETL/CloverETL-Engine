@@ -71,8 +71,8 @@ import org.w3c.dom.Node;
 
 public class ComponentXMLAttributes {
 
-    private static final String STR_MAX_SHORT="MAX_SHORT";
-    private static final String STR_MIN_SHORT="MIN_SHORT";
+//    unused private static final String STR_MAX_SHORT="MAX_SHORT";
+//    unused private static final String STR_MIN_SHORT="MIN_SHORT";
     private static final String STR_MAX_INT="MAX_INT";
     private static final String STR_MIN_INT="MIN_INT";
     private static final String STR_MAX_LONG="MAX_LONG";
@@ -602,7 +602,7 @@ public class ComponentXMLAttributes {
 				}
 			}
 		}
-		return (org.w3c.dom.Node[]) childNodesList.toArray(new org.w3c.dom.Node[0]);
+		return (org.w3c.dom.Node[]) childNodesList.toArray(new org.w3c.dom.Node[childNodesList.size()]);
 	}
 
 	
@@ -643,7 +643,7 @@ public class ComponentXMLAttributes {
 	    return properties;
 	}
 
-    public void Properties2Attributes(Properties properties){
+    public void properties2Attributes(Properties properties){
         org.w3c.dom.Node node;
         for (Iterator iter=properties.entrySet().iterator();iter.hasNext();){
             Map.Entry entry=(Map.Entry)iter.next();

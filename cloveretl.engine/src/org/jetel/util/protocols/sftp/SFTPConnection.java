@@ -334,7 +334,7 @@ public class SFTPConnection extends URLConnection {
 			}
 			con.disconnect();*/
 
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			System.err.println(e.getMessage());
 		}
 		System.exit(0);

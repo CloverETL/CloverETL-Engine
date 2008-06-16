@@ -7,6 +7,8 @@ import java.net.SocketException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -18,6 +20,8 @@ import org.apache.commons.net.ftp.FTPReply;
  *         Consulting (www.javlinconsulting.cz)
  */
 public class FTPConnection extends URLConnection {
+	
+	private static final Log log = LogFactory.getLog(FTPConnection.class);
 
 	private FTPClient ftp;
 	
@@ -47,7 +51,9 @@ public class FTPConnection extends URLConnection {
 		if (ftp.isConnected()) return;
 		try {
 			ftp.disconnect();
-		} catch(Exception e) {}
+		} catch(Exception e) {
+			log.warn("error closing ftp connection", e);
+		}
 
 		String[] user = getUserInfo();
 		ftp.connect(url.getHost(), 21);
@@ -150,7 +156,7 @@ public class FTPConnection extends URLConnection {
 			//con.ls(con.pwd());
 			System.out.println(con.pwd());
 			
-			FTPFile[] files = con.ls("path");
+			con.ls("path");
 
 			//files[10].getName()
 			con.ftp.listFiles("orders.dat")[0].isDirectory();
@@ -158,8 +164,8 @@ public class FTPConnection extends URLConnection {
 			
 			con.disconnect();
 
-		} catch (Exception e) {
-			System.err.println(e.getMessage());
+		} catch (Throwable e) {
+			log.error("error",e);
 		}
 		System.exit(0);
 	}
