@@ -1062,7 +1062,7 @@ public class StringLib extends TLFunctionLibrary {
      class IndexOfFunction extends TLFunctionPrototype {
 
          public IndexOfFunction() {
-             super("string", "indexOf", new TLValueType[] { TLValueType.STRING, 
+             super("string", "index_of", new TLValueType[] { TLValueType.STRING, 
             		 TLValueType.STRING, TLValueType.INTEGER}, TLValueType.INTEGER, 3, 2);
          }
 
