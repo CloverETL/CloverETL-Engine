@@ -66,6 +66,12 @@ public interface RecordDenormalize {
 	 */
 	public boolean getOutputRecord(DataRecord outRecord) throws TransformException;
 
+	
+	/**
+	 * Finalize current round/clean after current round - called after the getOutputRecord method was called for the input record
+	 */
+	public void clean();
+	
 	/**
 	 * Releases used resources.
 	 */

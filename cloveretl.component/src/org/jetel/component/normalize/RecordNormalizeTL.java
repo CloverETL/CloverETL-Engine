@@ -51,16 +51,25 @@ public class RecordNormalizeTL implements RecordNormalize {
 	private static final String TRANSFORM_FUNCTION_NAME="transform";
     private static final String FINISHED_FUNCTION_NAME="finished";
     private static final String INIT_FUNCTION_NAME="init";
+    private static final String CLEAN_FUNCTION_NAME="clean";
     
     private int lenghtFunctionIdentifier;
     private int transformFunctionIdentifier;
+    private int cleanFunctionIdentifier;
 
     private String errorMessage;
     private WrapperTL wrapper;
-
+    private TLValue[] counterTL;
+    private DataRecord[] sourceRec;
+    private DataRecord[] targetRec;
+    
     /**Constructor for the DataRecordTransform object */
     public RecordNormalizeTL(Log logger,String srcCode) {
          wrapper = new WrapperTL(srcCode,logger);
+         counterTL = new TLValue[]{new TLNumericValue<CloverInteger>(TLValueType.INTEGER,new CloverInteger(0))};
+         sourceRec=new DataRecord[1];
+         targetRec=new DataRecord[1];
+
     }
 
 	/* (non-Javadoc)
@@ -82,6 +91,12 @@ public class RecordNormalizeTL implements RecordNormalize {
 		
 		lenghtFunctionIdentifier = wrapper.prepareFunctionExecution(LENGTH_FUNCTION_NAME);
 		transformFunctionIdentifier = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
+		try{
+			cleanFunctionIdentifier = wrapper.prepareFunctionExecution(CLEAN_FUNCTION_NAME);
+		}catch(Exception ex){
+			//do nothing
+			cleanFunctionIdentifier=-1;
+		}
 		
 		return result == null ? true : result==TLValue.TRUE_VAL;
 	}
@@ -104,12 +119,20 @@ public class RecordNormalizeTL implements RecordNormalize {
 	 */
 	public boolean transform(DataRecord source, DataRecord target, int idx)
 			throws TransformException {
+		counterTL[0].getNumeric().setValue(idx);
+		sourceRec[0]=source;
+		targetRec[0]=target;
 		TLValue result = wrapper.executePreparedFunction(transformFunctionIdentifier, 
-				new DataRecord[]{source}, new DataRecord[]{target}, 
-				new TLValue[]{new TLNumericValue(TLValueType.INTEGER,new CloverInteger(idx))});
+				sourceRec, targetRec, counterTL);
 		return result == null ? true : result==TLValue.TRUE_VAL;
 	}
 
+	public void clean(){
+		if (cleanFunctionIdentifier!=-1){
+			wrapper.executePreparedFunction(cleanFunctionIdentifier);
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordNormalize#finished()
 	 */

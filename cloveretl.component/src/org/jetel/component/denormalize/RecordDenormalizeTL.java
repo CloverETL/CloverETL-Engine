@@ -47,16 +47,21 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	private static final String GETOUTPUT_FUNCTION_NAME="getOutputRecord";
     private static final String FINISHED_FUNCTION_NAME="finished";
     private static final String INIT_FUNCTION_NAME="init";
+    private static final String CLEAN_FUNCTION_NAME="clean";
     
     private int addInpuRecordIdentifier;
     private int getOutputRecordIdentifier;
+    private int cleanFunctionIdentifier;
+    
 
     private String errorMessage;
     private WrapperTL wrapper;
+    private DataRecord[] outRec;
 
     /**Constructor for the DataRecordTransform object */
     public RecordDenormalizeTL(Log logger,String srcCode) {
     	wrapper = new WrapperTL(srcCode, logger);
+    	outRec=new DataRecord[1];
     }
 
 	/* (non-Javadoc)
@@ -78,6 +83,13 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 		
 		addInpuRecordIdentifier = wrapper.prepareFunctionExecution(ADDINPUT_FUNCTION_NAME);
 		getOutputRecordIdentifier = wrapper.prepareFunctionExecution(GETOUTPUT_FUNCTION_NAME);
+	
+		try{
+			cleanFunctionIdentifier = wrapper.prepareFunctionExecution(CLEAN_FUNCTION_NAME);
+		}catch(Exception ex){
+			//do nothing
+			cleanFunctionIdentifier=-1;
+		}
 		
 		return result == null ? true : result==TLValue.TRUE_VAL;
 	}
@@ -95,11 +107,18 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	 * @see org.jetel.component.RecordDenormalize#getOutputRecord(org.jetel.data.DataRecord)
 	 */
 	public boolean getOutputRecord(DataRecord outRecord) {
+		this.outRec[0]=outRecord;
 		TLValue result = wrapper.executePreparedFunction(getOutputRecordIdentifier, 
-				null, new DataRecord[]{outRecord},null);
+				null,this.outRec,null);
 		return result == null ? true : result==TLValue.TRUE_VAL;
 	}
 
+	public void clean(){
+		if (cleanFunctionIdentifier!=-1){
+			wrapper.executePreparedFunction(cleanFunctionIdentifier);
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordDenormalize#finished()
 	 */

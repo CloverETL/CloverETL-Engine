@@ -66,6 +66,12 @@ public interface RecordNormalize {
 	 */
 	public boolean transform(DataRecord source, DataRecord target, int idx) throws TransformException;
 
+	
+	/**
+	 * Finalize current round/clean after current round - called after the last transform method was called for the input record
+	 */
+	public void clean();
+	
 	/**
 	 * Releases used resources.
 	 */
