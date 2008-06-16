@@ -277,14 +277,14 @@ public class runGraph {
         // prepare input stream with XML graph definition
         InputStream in = null;
         if (loadFromSTDIN) {
-            System.out.println("Graph definition loaded from STDIN");
+            logger.info("Graph definition loaded from STDIN");
             in = System.in;
         } else {
-            System.out.println("Graph definition file: " + graphFileName);
+            logger.info("Graph definition file: " + graphFileName);
             try {
                 in = Channels.newInputStream(FileUtils.getReadableChannel(null, graphFileName));
             } catch (IOException e) {
-                System.err.println("Error - graph definition file can't be read: " + e.getMessage());
+                logger.error("Error - graph definition file can't be read: " + e.getMessage());
                 System.exit(-1);
             }
         }
@@ -364,23 +364,23 @@ public class runGraph {
             System.exit(-1);
 		}
         
-        System.out.println("Freeing graph resources.");
+        logger.info("Freeing graph resources.");
 		graph.free();
 		
         switch (result) {
 
         case FINISHED_OK:
             // everything O.K.
-            System.out.println("Execution of graph successful !");
+            logger.info("Execution of graph successful !");
             System.exit(0);
             break;
         case ABORTED:
             // execution was ABORTED !!
-            System.err.println("Execution of graph aborted !");
+            logger.warn("Execution of graph aborted !");
             System.exit(result.code());
             break;
         default:
-            System.err.println("Execution of graph failed !");
+            logger.error("Execution of graph failed !");
             System.exit(result.code());
         }
 

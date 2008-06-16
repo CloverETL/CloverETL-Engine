@@ -55,6 +55,8 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 
     private int notificationSequence;
     
+    private boolean graphFinished = false;
+    
     /**
 	 * Constructor.
 	 * @param graph
@@ -147,8 +149,10 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#graphFinished()
 	 */
 	synchronized public void graphFinished() {
-		System.out.println("GRAPH FINISHED SENT");
-		getGraphDetail().graphFinished();
+		if(!graphFinished) { // if graph was already finished, we'll send only a notification
+			getGraphDetail().graphFinished();
+			graphFinished = true;
+		}
 
 		sendNotification(new Notification(GRAPH_FINISHED, this/*getGraphDetail()*/, notificationSequence++)); 
 	}
