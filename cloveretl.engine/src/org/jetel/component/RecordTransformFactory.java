@@ -26,7 +26,6 @@ package org.jetel.component;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -39,7 +38,6 @@ import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.ASTnode.CLVFDirectMapping;
 import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFStart;
-import org.jetel.interpreter.ParserHelper.VarDeclaration;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
 import org.jetel.util.compile.DynamicJavaCode;

@@ -36,6 +36,8 @@ import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.metadata.DataRecordMetadata;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * This class is used for executing code written in CloverETL transform language.
  * Before executing it is necessary to call init() method (usually when calling 
@@ -48,6 +50,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @since Dec 4, 2006
  *
  */
+@SuppressWarnings("EI2")
 public class WrapperTL {
 
     public static final String TL_TRANSFORM_CODE_ID="//#TL";  // magic header determining that the source code is Clover's TransformLanguage

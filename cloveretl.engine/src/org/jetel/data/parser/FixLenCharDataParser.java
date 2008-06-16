@@ -198,7 +198,7 @@ public class FixLenCharDataParser extends FixLenDataParser {
                 
 				record.getField(fieldIdx).fromString(rawRec);
 			} catch (BadDataFormatException e) {
-					fillXHandler(record, rawRec != null ? rawRec : null, e);
+					fillXHandler(record,  rawRec, e);
 //					return record;
 			}
 		}

@@ -145,7 +145,7 @@ public class JExcelXLSDataParser extends XLSParser {
 								cell.getContents().length(), MAX_NAME_LENGTH)));
 			}
 		}
-		return names.toArray(new String[0]);
+		return names.toArray(new String[names.size()]);
 	}
 	
 	public String[][] getPreview(int length){
@@ -470,7 +470,7 @@ public class JExcelXLSDataParser extends XLSParser {
 	/**
 	 * For incremental reading.
 	 */
-	private class Incremental {
+	private static class Incremental {
 		private Map<String, Integer> sheetRow;
 
 		public Incremental() {
