@@ -1000,7 +1000,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 		Entry<String, ArrayList<Rule>> rulesEntry;
 		String field;
 		String ruleString = null;
-		String[] outFields = new String[0];
+		String[] outFields;
 		String[] inFields;
 		// iteration over each user given rule
 		for (Iterator<Entry<String, ArrayList<Rule>>> iterator = rules.entrySet().iterator(); iterator.hasNext();) {
@@ -1017,7 +1017,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 					throw new ComponentNotReadyException(errorMessage);
 				}
 				// find output fields from pattern
-				outFields = findFields(field, targetMetadata).toArray(new String[0]);
+				final ArrayList<String> outFieldsList = findFields(field, targetMetadata);
+				outFields = outFieldsList.toArray(new String[outFieldsList.size()]);
 				if (outFields.length == 0) {
 					errorMessage = "There is no output field matching \"" + field + "\" pattern";
 					logger.error(errorMessage);
@@ -1035,11 +1036,12 @@ public class CustomizedRecordTransform implements RecordTransform {
 					// find input fields from pattern
 					ruleString = resolveField(rule.getSource());
 					if (ruleString == null) {
-						errorMessage = "Wrong pattern for output fields: " + ruleString;
+						errorMessage = "Wrong pattern for output fields: " + rule.getSource();
 						logger.error(errorMessage);
 						throw new ComponentNotReadyException(errorMessage);
 					}
-					inFields = findFields(ruleString, sourceMetadata).toArray(new String[0]);
+					final ArrayList<String> inFieldsList = findFields(ruleString, sourceMetadata);
+					inFields = inFieldsList.toArray(new String[inFieldsList.size()]);
 					if (inFields.length == 0) {
 						errorMessage = "There is no input field matching \"" + ruleString + "\" pattern";
 						logger.error(errorMessage);
@@ -1315,13 +1317,12 @@ public class CustomizedRecordTransform implements RecordTransform {
 		ArrayList<String> list = new ArrayList<String>();
 		String recordNoString = pattern.substring(0, pattern.indexOf(DOT));
 		String fieldNoString = pattern.substring(pattern.indexOf(DOT) + 1);
-		int fieldNo;
 		int recNo;
 		try {// check if first part of pattern is "real" pattern or number of record
 			recNo = Integer.parseInt(recordNoString);
 			try {// we have one record Number
 				// check if second part of pattern is "real" pattern or number of field
-				fieldNo = Integer.parseInt(fieldNoString);
+				Integer.parseInt(fieldNoString);
 				// we have one record field number
 				list.add(pattern);
 			} catch (NumberFormatException e) {// second part of pattern is not a number
@@ -1337,7 +1338,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 			for (int i = 0; i < metadata.length; i++) {
 				if (WcardPattern.checkName(recordNoString, metadata[i].getName())) {
 					try {// check if second part of pattern is "real" pattern or number of field
-						fieldNo = Integer.parseInt(fieldNoString);
+						Integer.parseInt(fieldNoString);
 						// we have matching metadata name and field number
 						list.add(String.valueOf(i) + DOT + fieldNoString);
 					} catch (NumberFormatException e1) {// second part of pattern is not a number
@@ -1572,7 +1573,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @return indexes (output record number, output field number) of not used input fields
 	 */
 	public ArrayList<Integer[]> getNotUsedFields() {
-		String[] inFields = findFields("*.*", sourceMetadata).toArray(new String[0]);
+		ArrayList<String> inFieldsList = findFields("*.*", sourceMetadata);
+		String[] inFields = inFieldsList.toArray(new String[inFieldsList.size()]);
 		Rule rule;
 		int index;
 		String field;
@@ -2084,7 +2086,7 @@ class SequenceRule extends Rule {
 			}
 			DataFieldMetadata tmp;
 			if (methodType == DataFieldMetadata.UNKNOWN_FIELD) {
-				errorMessage = "Unknown sequence method: " + method;
+				errorMessage = "Unknown sequence method" ;
 				logger.error(errorMessage);
 				throw new ComponentNotReadyException(errorMessage);
 			} else {

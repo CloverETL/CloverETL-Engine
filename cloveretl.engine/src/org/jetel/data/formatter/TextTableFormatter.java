@@ -496,11 +496,10 @@ public class TextTableFormatter implements Formatter {
 	}
 	
 	/**
-	 * Private class for storing data field name, its andex and lenght in mask
+	 * Private class for storing data field name, its index and lenght in mask
 	 */
-	class DataFieldParams {
+	private static class DataFieldParams {
 		
-		String name;
 		int index;
 		int length;
 		

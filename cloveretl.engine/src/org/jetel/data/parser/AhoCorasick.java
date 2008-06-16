@@ -173,7 +173,7 @@ public class AhoCorasick {
 	/**
 	 * Search trie node.
 	 */
-	private class NodeTrie {
+	private static class NodeTrie {
 		int depth;
 		NodeTrie parent;
 		char transition;
@@ -215,7 +215,7 @@ public class AhoCorasick {
 	/**
 	 * My implementation of integer class.
 	 */
-	private class MyInt {
+	private static class MyInt {
 		int value;
 		
 		/**

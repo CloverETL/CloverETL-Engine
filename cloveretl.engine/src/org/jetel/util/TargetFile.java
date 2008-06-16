@@ -448,7 +448,7 @@ public class TargetFile {
 		this.useChannel = useChannel;
 	}
 
-	private class ReadThread extends Thread {
+	private static class ReadThread extends Thread {
 		  private InputStream pi = null;
 		  private ByteArray bytes;
 		  private byte[] buffer;

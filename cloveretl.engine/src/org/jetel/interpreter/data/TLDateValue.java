@@ -63,7 +63,7 @@ public class TLDateValue extends TLValue {
 		if (_value!=null)
 			this.value.setTime(_value.getTime());
 		else
-			throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
+			throw new IllegalArgumentException("Can't assign value null to value type: " + type);
 	}
 	
 	public void setValue(TLValue _value){

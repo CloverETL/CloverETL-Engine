@@ -481,7 +481,7 @@ public class MultiFileReader {
 		parser.close();
 	}
 	
-	private class AutoFillingData {
+	private static class AutoFillingData {
 	    private int[] globalRowCount;	// number of returned records for every getNext method
 	    private int[] sourceRowCount;
 	    private int[] sourceName;
