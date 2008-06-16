@@ -63,6 +63,13 @@ public abstract class DataRecordNormalize implements RecordNormalize {
 	public String getMessage() {
 		return errorMessage;
 	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#finalize()
+	 */
+	public void clean(){
+		//do nothing
+	}
 
 	/*
 	 * (non-Javadoc)

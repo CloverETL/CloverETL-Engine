@@ -289,12 +289,14 @@ public class Denormalizer extends Node {
 	private void processInput() throws IOException, InterruptedException, TransformException {
 		DataRecord outRecord = new DataRecord(outMetadata);
 		outRecord.init();
-		DataRecord record = new DataRecord(inMetadata);
-		record.init();
+		DataRecord srcRecord[] = new DataRecord[] {new DataRecord(inMetadata),new DataRecord(inMetadata)} ;
+		srcRecord[0].init();
+		srcRecord[1].init();
+		int src=0;
 		DataRecord prevRecord = null;
 		DataRecord currentRecord = null;
 		while (runIt) {
-			currentRecord = inPort.readRecord(record);
+			currentRecord = inPort.readRecord(srcRecord[src]);
 			if (endRun(prevRecord, currentRecord)) {
 				outRecord.reset();
 				if (denorm.getOutputRecord(outRecord)) {
@@ -302,11 +304,13 @@ public class Denormalizer extends Node {
 				}else{
 					logger.warn(denorm.getMessage());
 				}
+				denorm.clean();
 			}
 			if (currentRecord == null) { // no more input data
 				return;
 			}
-			prevRecord = currentRecord.duplicate();
+			prevRecord = currentRecord;
+			src^=1;
 			if (!denorm.addInputRecord(prevRecord)) {
 				logger.warn(denorm.getMessage());
 			}

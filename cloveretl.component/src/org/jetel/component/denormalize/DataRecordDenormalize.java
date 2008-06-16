@@ -64,6 +64,14 @@ public abstract class DataRecordDenormalize implements RecordDenormalize {
 		return errorMessage;
 	}
 
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.denormalize.RecordDenormalize#clean()
+	 */
+	public void clean(){
+		//do nothing - by default
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.jetel.component.denormalize.RecordDenormalize#reset()

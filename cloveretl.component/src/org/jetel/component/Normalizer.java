@@ -242,6 +242,7 @@ public class Normalizer extends Node {
 					logger.warn(norm.getMessage());
 				}
 			}
+			norm.clean();
 			SynchronizeUtils.cloverYield();
 		} // while
 	}
