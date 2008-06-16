@@ -239,7 +239,7 @@ public class RunGraph extends Node{
 		DataRecord outRec = initOutRecord();
 		
 		if (pipelineMode) {
-			if (runSingleGraph(graphName, outRec)) {				
+			if (runSingleGraph(graphName, outRec, cloverCmdLineArgs)) {				
 				writeOutRecord(outRec);
 			} else {								
 				writeErrRecord(outRec);
@@ -261,9 +261,17 @@ public class RunGraph extends Node{
 			if (graphNameFromPort == null) {
 				continue;
 			}
+			String cloverCommandLineArgs = null;
+			if (!sameInstance && 
+					(cloverCommandLineArgs = getCloverCommandLineArgs(inRecord)) == null) {
+				broadcastEOF();
+				logger.error("Clover command line argument was supply " +
+						"neither by attribute nor by input port.");
+				return Result.ERROR;
+			}
 						
 			try {
-				success &= runSingleGraph(graphNameFromPort, outRec);
+				success &= runSingleGraph(graphNameFromPort, outRec, cloverCommandLineArgs);
 			} catch (IOException e) {					
 				success = false;
 				logger.error("Exception while processing " + graphNameFromPort + ": "+ e.getMessage());
@@ -287,7 +295,7 @@ public class RunGraph extends Node{
 			return Result.ERROR;
 		}
 	}
-	
+
 	private void writeOutRecord(DataRecord record) throws IOException, 
 			InterruptedException {
 		if (outPort != null) {
@@ -308,7 +316,45 @@ public class RunGraph extends Node{
 	 * @return
 	 */
 	private static String readGraphName(DataRecord inRecord) {
-		DataField field = inRecord.getField(0);
+		return getStrValueFromField(inRecord, 0);
+	}
+	
+	/**
+	 * Return clover command line arguments or null. Read from input port, 
+	 * if reading from port isn't success then cloverCmdLineArgs is used.
+	 * Empty string is never returned.  
+	 * @param inRecord
+	 * @return clover command line arguments or null, empty string is never returned
+	 */
+	private String getCloverCommandLineArgs(DataRecord inRecord) {
+		String result = readCloverCommandLineArgs(inRecord);
+		if (StringUtils.isEmpty(result)) {
+			result = cloverCmdLineArgs;
+		}
+		
+		// ensure that empty string is never returned
+		if (result.length() == 0) {
+			result = null;
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Read clover command arguments - the second field on input port.
+	 * @param inRecord
+	 * @return
+	 */
+	private static String readCloverCommandLineArgs(DataRecord inRecord) {
+		return getStrValueFromField(inRecord, 1);
+	}
+	
+	private static String getStrValueFromField(DataRecord inRecord, int fieldNum) {
+		if (inRecord.getNumFields() < fieldNum + 1) {
+			return null;
+		}
+		
+		DataField field = inRecord.getField(fieldNum);
 		Object val = field.getValue();
 		if (val == null) {
 			return null;
@@ -316,19 +362,19 @@ public class RunGraph extends Node{
 		return val.toString().trim();
 	}
 	
-	private boolean runSingleGraph(String graphName, DataRecord output) throws IOException {
+	private boolean runSingleGraph(String graphName, DataRecord output, String cloverCommandLineArgs) throws IOException {
 		OutputRecordData outputRecordData = new OutputRecordData(output, graphName);
 		if (sameInstance) {			
 			logger.info("Running graph " + graphName + " in the same instance.");
 			return runGraphThisInstance(graphName, outputRecordData);
 		} else {
 			logger.info("Running graph " + graphName + " in separate instance of clover.");
-			return runGraphSeparateInstance(graphName, outputRecordData);
+			return runGraphSeparateInstance(graphName, outputRecordData, cloverCommandLineArgs);
 		}
 	}
 	
-	private boolean runGraphSeparateInstance(String graphName, OutputRecordData outputRecordData) throws IOException {
-		String commandLine = javaCmdLine + " " + quotePartOfClassPath(classPath) + " " + cloverRunClass + " " + cloverCmdLineArgs + " " + graphName;
+	private boolean runGraphSeparateInstance(String graphName, OutputRecordData outputRecordData, String cloverCommandLineArgs) throws IOException {
+		String commandLine = javaCmdLine + " " + quotePartOfClassPath(classPath) + " " + cloverRunClass + " " + cloverCommandLineArgs + " " + graphName;
 		logger.info("Executing command: " + StringUtils.quote(commandLine));
 
 		DataConsumer consumer = new OutDataConsumer(fileWriter, outputRecordData);
@@ -479,9 +525,7 @@ public class RunGraph extends Node{
 			throw new ComponentNotReadyException(this, status.getLast().getMessage());
 		}
 		
-		if (graphName != null) {
-			pipelineMode = true;
-		}
+		pipelineMode = isPipelineMode();
 		
 		initGraphOutputFile();
 		
@@ -495,6 +539,13 @@ public class RunGraph extends Node{
 	 */
 	@Override public String getType(){
 		return COMPONENT_TYPE;
+	}
+	
+	private boolean isPipelineMode() {
+		if (graphName != null) {
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -536,6 +587,12 @@ public class RunGraph extends Node{
 			return false;
 		}
 		
+		// field 2 = Command line arguments (optional)
+		if (meta.getFields().length >= 2 && 
+				meta.getFieldType(1) != DataFieldMetadata.STRING_FIELD) {
+			return false;
+		}
+		
 		return true;
 	}
 
@@ -552,9 +609,8 @@ public class RunGraph extends Node{
         	return false;
         }
         
-        if (graphName != null) {
-        	pipelineMode = true;
-        }
+       	pipelineMode = isPipelineMode();
+       	
         
         if (inPort != null) { 
         	DataRecordMetadata inMetadata = inPort.getMetadata();
@@ -565,7 +621,7 @@ public class RunGraph extends Node{
                 	status.add(problem);
                 	return false;
         		}	        	
-        	} else {
+        	} else { // in/out mode
         		if (!checkInMetadata(inMetadata)) {
 	            	ConfigurationProblem problem = new ConfigurationProblem("Wrong input metadata" +
 	            			" - first field should be string", Severity.ERROR, this, Priority.NORMAL);
@@ -584,10 +640,13 @@ public class RunGraph extends Node{
 	}
 	
 	private boolean checkParams(ConfigurationStatus status) {
-		if (!sameInstance && (cloverCmdLineArgs == null || cloverCmdLineArgs.equals(""))) {
+		if (!sameInstance && StringUtils.isEmpty(cloverCmdLineArgs) &&
+				(isPipelineMode() || getInputPort(INPUT_PORT) == null)) {
         	ConfigurationProblem problem = new ConfigurationProblem("If the graph is " +
         			"executed in separate instance of clover, supplying the command " +
-        			"line for clover is necessary (at least the -plugins argument)" , 
+        			"line for clover is necessary (at least the -plugins argument)." +
+        			"Command line arguments can be supplied by cloverCmdLineArgs attribute" +
+        			"or by second field in input port (By field it can be supplied only in in/out mode)." , 
         			Severity.ERROR, this, Priority.NORMAL);
         	status.add(problem);
         	return false;
