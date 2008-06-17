@@ -46,7 +46,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
-import org.jetel.interpreter.data.TLValue;
+import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLVariable;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -485,9 +485,9 @@ public class TestInterpreter extends TestCase {
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 		      
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("b1")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("b2")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("b4")).getTLValue()==TLValue.TRUE_VAL);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("b1")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("b2")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("b4")).getTLValue()==TLBooleanValue.TRUE);
 		      assertTrue(executor.getGlobalVariable(parser.getGlobalVariableSlot("b4")).isNullable());
 		      
 		    } catch (ParseException e) {
@@ -532,8 +532,8 @@ public class TestInterpreter extends TestCase {
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 		      
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("b1")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("b2")).getTLValue()==TLValue.TRUE_VAL);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("b1")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("b2")).getTLValue()==TLBooleanValue.TRUE);
 		      assertEquals("hi",executor.getGlobalVariable(parser.getGlobalVariableSlot("b4")).getTLValue().toString());
 //		      assertEquals(2,executor.getGlobalVariable(parser.getGlobalVariableSlot("in")).getValue().getNumeric().getInt());
 		      
@@ -906,16 +906,16 @@ public class TestInterpreter extends TestCase {
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 		      
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq1")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq3")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq4")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq5")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq6")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq7")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq8")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq9")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq10")).getTLValue()==TLValue.TRUE_VAL);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq1")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq3")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq4")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq5")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq6")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq7")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq8")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq9")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq10")).getTLValue()==TLBooleanValue.TRUE);
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -950,9 +950,9 @@ public class TestInterpreter extends TestCase {
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 		      
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq1")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq3")).getTLValue()==TLValue.TRUE_VAL);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq1")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq3")).getTLValue()==TLBooleanValue.TRUE);
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -998,14 +998,14 @@ public class TestInterpreter extends TestCase {
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 		      
-		      assertEquals("eq1",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq1")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals("eq2",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals("eq3",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq3")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals("eq4",false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq4")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals("eq5",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq5")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals("eq6",false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq6")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals("eq7",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq7")).getTLValue()==TLValue.TRUE_VAL);
-		      assertEquals("eq8",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq8")).getTLValue()==TLValue.TRUE_VAL);
+		      assertEquals("eq1",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq1")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals("eq2",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals("eq3",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq3")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals("eq4",false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq4")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals("eq5",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq5")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals("eq6",false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq6")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals("eq7",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq7")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals("eq8",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq8")).getTLValue()==TLBooleanValue.TRUE);
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1046,7 +1046,7 @@ public class TestInterpreter extends TestCase {
 		     
 
 		      
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getTLValue()==TLValue.TRUE_VAL);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getTLValue()==TLBooleanValue.TRUE);
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1074,7 +1074,7 @@ public class TestInterpreter extends TestCase {
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 
-		      assertEquals(true, executor.getResult()==TLValue.TRUE_VAL);
+		      assertEquals(true, executor.getResult()==TLBooleanValue.TRUE);
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1142,7 +1142,7 @@ public class TestInterpreter extends TestCase {
               executor.visit(parseTree,null);
               System.out.println("Finished interpreting.");
 		      
-//              assertEquals(false, executor.getResult()==TLValue.TRUE_VAL);
+//              assertEquals(false, executor.getResult()==TLBooleanValue.TRUE);
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1206,7 +1206,7 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(1,executor.getGlobalVariable(parser.getGlobalVariableSlot("l")).getTLValue().getNumeric().getLong());
 		      assertEquals(DecimalFactory.getDecimal(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("d")).getTLValue().getNumeric());
 		      assertEquals(Double.valueOf(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getTLValue().getNumeric().getDouble());
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("result")).getTLValue()==TLValue.TRUE_VAL);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("result")).getTLValue()==TLBooleanValue.TRUE);
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1270,7 +1270,7 @@ public class TestInterpreter extends TestCase {
 		      
 		      assertEquals(3,executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getTLValue().getNumeric().getInt());
 		      assertEquals("April",executor.getGlobalVariable(parser.getGlobalVariableSlot("mont")).getTLValue().toString());
-		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("ok")).getTLValue()==TLValue.TRUE_VAL);
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("ok")).getTLValue()==TLBooleanValue.TRUE);
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1911,7 +1911,7 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("c(=concat)","ello hi   ELLO 2,today is "+new Date(),executor.getGlobalVariable(parser.getGlobalVariableSlot("c")).getTLValue().toString());
 //		      assertEquals("datum",record.getField("Born").getValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("datum")).getValue().getDate());
 		      assertEquals("ddiff",-1,executor.getGlobalVariable(parser.getGlobalVariableSlot("ddiff")).getTLValue().getNumeric().getLong());
-		      assertEquals("isn",false,executor.getGlobalVariable(parser.getGlobalVariableSlot("isn")).getTLValue()==TLValue.TRUE_VAL);
+		      assertEquals("isn",false,executor.getGlobalVariable(parser.getGlobalVariableSlot("isn")).getTLValue()==TLBooleanValue.TRUE);
 		      assertEquals("s1",Double.valueOf(6),executor.getGlobalVariable(parser.getGlobalVariableSlot("s1")).getTLValue().getNumeric().getDouble());
 		      assertEquals("rep",("etto hi   EttO 2,today is "+new Date()).replaceAll("[lL]", "t"),executor.getGlobalVariable(parser.getGlobalVariableSlot("rep")).getTLValue().toString());
 		      assertEquals("stn",0.25125,executor.getGlobalVariable(parser.getGlobalVariableSlot("stn")).getTLValue().getNumeric().getDouble());
@@ -1985,35 +1985,35 @@ public class TestInterpreter extends TestCase {
               executor.visit(parseTree,null);
               System.out.println("Finished interpreting.");
               
-		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isBlank")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isBlank1")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isBlank2")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isAscii1")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isAscii2")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber1")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber2")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber3")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber4")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber5")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber6")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger1")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger2")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger3")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isLong")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate1")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate2")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate3")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate4")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate5")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate6")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate7")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate8")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate9")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate10")).getTLValue()==TLValue.TRUE_VAL));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate11")).getTLValue()==TLValue.TRUE_VAL));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isBlank")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isBlank1")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isBlank2")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isAscii1")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isAscii2")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber1")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber2")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber3")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber4")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber5")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber6")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger1")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger2")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger3")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isLong")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate1")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate2")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate3")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate4")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate5")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate6")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate7")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate8")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate9")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate10")).getTLValue()==TLBooleanValue.TRUE));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate11")).getTLValue()==TLBooleanValue.TRUE));
 
         } catch (ParseException e) {
             System.err.println(e.getMessage());

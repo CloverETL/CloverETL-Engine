@@ -31,6 +31,8 @@ import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.metadata.DataFieldMetadata;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 public class TLBooleanValue extends TLValue {
 
 	public static final TLBooleanValue TRUE=new TLBooleanValue(true);
@@ -64,6 +66,7 @@ public class TLBooleanValue extends TLValue {
 	}
 
 	@Override
+	@SuppressWarnings("BC")
 	public void copyToDataField(DataField field) {
 		switch(field.getType()){
 		case DataFieldMetadata.INTEGER_FIELD:
@@ -124,6 +127,7 @@ public class TLBooleanValue extends TLValue {
 	}
 	
 	@Override
+	@SuppressWarnings("BC")
 	public void setValue(DataField field) {
 		switch(field.getType()){
 		case DataFieldMetadata.INTEGER_FIELD:

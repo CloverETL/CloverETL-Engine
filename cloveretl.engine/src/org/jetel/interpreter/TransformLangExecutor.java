@@ -33,13 +33,69 @@ import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.interpreter.ASTnode.*;
+import org.jetel.interpreter.ASTnode.CLVFAddNode;
+import org.jetel.interpreter.ASTnode.CLVFAnd;
+import org.jetel.interpreter.ASTnode.CLVFAssignment;
+import org.jetel.interpreter.ASTnode.CLVFBlock;
+import org.jetel.interpreter.ASTnode.CLVFBreakStatement;
+import org.jetel.interpreter.ASTnode.CLVFBreakpointNode;
+import org.jetel.interpreter.ASTnode.CLVFCaseExpression;
+import org.jetel.interpreter.ASTnode.CLVFComparison;
+import org.jetel.interpreter.ASTnode.CLVFContinueStatement;
+import org.jetel.interpreter.ASTnode.CLVFDirectMapping;
+import org.jetel.interpreter.ASTnode.CLVFDivNode;
+import org.jetel.interpreter.ASTnode.CLVFDoStatement;
+import org.jetel.interpreter.ASTnode.CLVFEvalNode;
+import org.jetel.interpreter.ASTnode.CLVFForStatement;
+import org.jetel.interpreter.ASTnode.CLVFForeachStatement;
+import org.jetel.interpreter.ASTnode.CLVFFunctionCallStatement;
+import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.interpreter.ASTnode.CLVFIfStatement;
+import org.jetel.interpreter.ASTnode.CLVFIffNode;
+import org.jetel.interpreter.ASTnode.CLVFImportSource;
+import org.jetel.interpreter.ASTnode.CLVFIncrDecrStatement;
+import org.jetel.interpreter.ASTnode.CLVFInputFieldLiteral;
+import org.jetel.interpreter.ASTnode.CLVFIsNullNode;
+import org.jetel.interpreter.ASTnode.CLVFListOfLiterals;
+import org.jetel.interpreter.ASTnode.CLVFLiteral;
+import org.jetel.interpreter.ASTnode.CLVFLookupNode;
+import org.jetel.interpreter.ASTnode.CLVFMinusNode;
+import org.jetel.interpreter.ASTnode.CLVFModNode;
+import org.jetel.interpreter.ASTnode.CLVFMulNode;
+import org.jetel.interpreter.ASTnode.CLVFNVL2Node;
+import org.jetel.interpreter.ASTnode.CLVFNVLNode;
+import org.jetel.interpreter.ASTnode.CLVFOperator;
+import org.jetel.interpreter.ASTnode.CLVFOr;
+import org.jetel.interpreter.ASTnode.CLVFOutputFieldLiteral;
+import org.jetel.interpreter.ASTnode.CLVFPostfixExpression;
+import org.jetel.interpreter.ASTnode.CLVFPrintErrNode;
+import org.jetel.interpreter.ASTnode.CLVFPrintLogNode;
+import org.jetel.interpreter.ASTnode.CLVFPrintStackNode;
+import org.jetel.interpreter.ASTnode.CLVFRaiseErrorNode;
+import org.jetel.interpreter.ASTnode.CLVFRegexLiteral;
+import org.jetel.interpreter.ASTnode.CLVFReturnStatement;
+import org.jetel.interpreter.ASTnode.CLVFSequenceNode;
+import org.jetel.interpreter.ASTnode.CLVFStart;
+import org.jetel.interpreter.ASTnode.CLVFStartExpression;
+import org.jetel.interpreter.ASTnode.CLVFStatementExpression;
+import org.jetel.interpreter.ASTnode.CLVFSubNode;
+import org.jetel.interpreter.ASTnode.CLVFSwitchStatement;
+import org.jetel.interpreter.ASTnode.CLVFSymbolNameExp;
+import org.jetel.interpreter.ASTnode.CLVFTryCatchStatement;
+import org.jetel.interpreter.ASTnode.CLVFUnaryExpression;
+import org.jetel.interpreter.ASTnode.CLVFVarDeclaration;
+import org.jetel.interpreter.ASTnode.CLVFVariableLiteral;
+import org.jetel.interpreter.ASTnode.CLVFWhileStatement;
+import org.jetel.interpreter.ASTnode.CLVFWildCardMapping;
+import org.jetel.interpreter.ASTnode.Node;
+import org.jetel.interpreter.ASTnode.SimpleNode;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLByteArrayValue;
 import org.jetel.interpreter.data.TLContainerValue;
 import org.jetel.interpreter.data.TLDateValue;
 import org.jetel.interpreter.data.TLListValue;
 import org.jetel.interpreter.data.TLMapValue;
+import org.jetel.interpreter.data.TLNullValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLObjectValue;
 import org.jetel.interpreter.data.TLRecordValue;
@@ -255,7 +311,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         	Object params[]=new Object[]{a};
             throw new TransformLangExecutorRuntimeException(node,params,"logical condition does not evaluate to BOOLEAN value");
         }else if (a==TLBooleanValue.TRUE){
-        		stack.push(Stack.TRUE_VAL);
+        		stack.push(TLBooleanValue.TRUE);
         		return data;
         }
         
@@ -267,7 +323,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             throw new TransformLangExecutorRuntimeException(node,params,"logical condition does not evaluate to BOOLEAN value");
         }
         
-        stack.push( a==TLBooleanValue.TRUE ? Stack.TRUE_VAL : Stack.FALSE_VAL);
+        stack.push( a==TLBooleanValue.TRUE ? TLBooleanValue.TRUE : TLBooleanValue.FALSE);
         
         return data;
     }
@@ -280,7 +336,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             Object params[]=new Object[]{a};
             throw new TransformLangExecutorRuntimeException(node,params,"logical condition does not evaluate to BOOLEAN value");
         }else if (a==TLBooleanValue.FALSE){
-            stack.push(Stack.FALSE_VAL);
+            stack.push(TLBooleanValue.FALSE);
             return data;
         }
 
@@ -292,7 +348,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             throw new TransformLangExecutorRuntimeException(node,params,"logical condition does not evaluate to BOOLEAN value");
         }
 
-        stack.push(a==TLBooleanValue.TRUE ? Stack.TRUE_VAL : Stack.FALSE_VAL);
+        stack.push(a==TLBooleanValue.TRUE ? TLBooleanValue.TRUE : TLBooleanValue.FALSE);
         return data;
     }
 
@@ -341,8 +397,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             	
             }     
         	// SPECIAL hanadling of IN in case a is NULL
-        	if (a==Stack.NULL_VAL){
-        		stack.push(Stack.FALSE_VAL);
+        	if (a==TLNullValue.getInstance()){
+        		stack.push(TLBooleanValue.FALSE);
                 return data;
         	}
         	try{
@@ -362,8 +418,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             
             if (!a.type.isCompatible(b.type)) {
             	// SPECIAL hanadling of EQUAL in case a is NULL
-            	if (a==Stack.NULL_VAL && node.cmpType==EQUAL){
-            		stack.push(Stack.FALSE_VAL);
+            	if (a==TLNullValue.getInstance() && node.cmpType==EQUAL){
+            		stack.push(TLBooleanValue.FALSE);
                     return data;
             	}
             	
@@ -449,7 +505,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                         "Internal error - Unsupported comparison operator !");
             }
         }
-        stack.push(lValue ? Stack.TRUE_VAL : Stack.FALSE_VAL);
+        stack.push(lValue ? TLBooleanValue.TRUE : TLBooleanValue.FALSE);
         return data;
     }
 
@@ -460,9 +516,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         TLValue b = stack.pop();
         
         if (node.nodeVal==null) {
-        	if (a!=TLValue.NULL_VAL){
+        	if (a!=TLNullValue.getInstance()){
         		node.nodeVal=a.duplicate();
-        	}else if (b!=TLValue.NULL_VAL){
+        	}else if (b!=TLNullValue.getInstance()){
         		node.nodeVal=b.duplicate();
         	}else{
         		throw new TransformLangExecutorRuntimeException(node, new Object[] { a, b },
@@ -513,7 +569,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         TLValue b = stack.pop();
        
 
-        if (a==TLValue.NULL_VAL || b==TLValue.NULL_VAL) {
+        if (a==TLNullValue.getInstance() || b==TLNullValue.getInstance()) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { a, b },
                     "sub - NULL value not allowed");
         }
@@ -552,7 +608,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         node.jjtGetChild(1).jjtAccept(this, data);
         TLValue b = stack.pop();
         
-        if (a==TLValue.NULL_VAL|| b==TLValue.NULL_VAL) {
+        if (a==TLNullValue.getInstance()|| b==TLNullValue.getInstance()) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { a, b },
                     "mul - NULL value not allowed");
         }
@@ -580,7 +636,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         TLValue b = stack.pop();
         
 
-        if (a==TLValue.NULL_VAL|| b==TLValue.NULL_VAL) {
+        if (a==TLNullValue.getInstance()|| b==TLNullValue.getInstance()) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { a, b },
                     "div - NULL value not allowed");
         }
@@ -616,7 +672,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         TLValue b = stack.pop();
         
 
-        if (a==TLValue.NULL_VAL|| b==TLValue.NULL_VAL) {
+        if (a==TLNullValue.getInstance()|| b==TLNullValue.getInstance()) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { a, b },
                     "mod - NULL value not allowed");
         }
@@ -641,13 +697,13 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue value = stack.pop();
 
-        if (value==TLValue.NULL_VAL) {
-            stack.push(Stack.TRUE_VAL);
+        if (value==TLNullValue.getInstance()) {
+            stack.push(TLBooleanValue.TRUE);
         } else {
             if (value.type==TLValueType.STRING) {
-                stack.push( ((TLStringValue)value).getCharSequence().length()==0 ? Stack.TRUE_VAL : Stack.FALSE_VAL);
+                stack.push( ((TLStringValue)value).getCharSequence().length()==0 ? TLBooleanValue.TRUE : TLBooleanValue.FALSE);
             }else {
-                stack.push(Stack.FALSE_VAL);
+                stack.push(TLBooleanValue.FALSE);
             }
         }
 
@@ -658,7 +714,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue value = stack.pop();
 
-        if (value==TLValue.NULL_VAL) {
+        if (value==TLNullValue.getInstance()) {
             node.jjtGetChild(1).jjtAccept(this, data);
         } else {
             if (value.type==TLValueType.STRING && ((TLStringValue)value).length()==0) {
@@ -675,7 +731,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue value = stack.pop();
 
-        if (value==TLValue.NULL_VAL || (value.type==TLValueType.STRING && ((TLStringValue)value).length()==0)) {
+        if (value==TLNullValue.getInstance() || (value.type==TLValueType.STRING && ((TLStringValue)value).length()==0)) {
             node.jjtGetChild(2).jjtAccept(this, data);
         } else {
             node.jjtGetChild(1).jjtAccept(this, data);
@@ -692,7 +748,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object visit(CLVFInputFieldLiteral node, Object data) {
     	DataRecord record = inputRecords[node.recordNo];
 		if (record == NullRecord.NULL_RECORD || record == null) {
-			stack.push(Stack.NULL_VAL);
+			stack.push(TLNullValue.getInstance());
 			return null;
 		}
 
@@ -712,7 +768,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 		} else {
 			node.field = record.getField(node.fieldNo);
 			if (node.field.isNull()) {
-				stack.push(Stack.NULL_VAL);
+				stack.push(TLNullValue.getInstance());
 				return null;
 			}
 
@@ -1009,7 +1065,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         // loop over remaining case statements
         for (int i = 1; i < numCases; i++) {
             stack.push(switchVal);
-            if (node.jjtGetChild(i).jjtAccept(this, data)==Stack.TRUE_VAL){
+            if (node.jjtGetChild(i).jjtAccept(this, data)==TLBooleanValue.TRUE){
                 match=true;
             }
             if (breakFlag) {
@@ -1047,9 +1103,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         }
         if (match){
             node.jjtGetChild(1).jjtAccept(this, data);
-            return Stack.TRUE_VAL;
+            return TLBooleanValue.TRUE;
         }
-        return Stack.FALSE_VAL;
+        return TLBooleanValue.FALSE;
     }
 
     public Object visit(CLVFTryCatchStatement node, Object data) {
@@ -1181,7 +1237,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             value = new TLDateValue();
             break;
         case BOOLEAN_VAR:
-            value = Stack.FALSE_VAL;
+            value = TLBooleanValue.FALSE;
             break;
         case BYTE_VAR:
         {
@@ -1196,7 +1252,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         {
             if (node.length>0) {
                 value = new TLListValue(node.length);
-                ((TLListValue)value).fill(Stack.NULL_VAL, node.length);
+                ((TLListValue)value).fill(TLNullValue.getInstance(), node.length);
             }else {
                 value = new TLListValue();
             }
@@ -1465,7 +1521,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 				}
 			} else {
 				// list context
-				if (valueToAssign.type.isArray() || valueToAssign==Stack.NULL_VAL) {
+				if (valueToAssign.type.isArray() || valueToAssign==TLNullValue.getInstance()) {
 					variableToAssign.setTLValue(valueToAssign);
 				} else {
 					throw new TransformLangExecutorRuntimeException(node,
@@ -1748,7 +1804,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         	}catch(ComponentNotReadyException ex){
         		throw new TransformLangExecutorRuntimeException(node,"Error when resetting sequence \""+node.sequenceName+"\"",ex);
         	}
-            retVal=Stack.NUM_ZERO;
+            retVal=TLNumericValue.ZERO;
             break;
         case CLVFSequenceNode.OP_CURRENT:
             switch(node.retType){
@@ -1835,7 +1891,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 		if (record != null) {
 			stack.push(TLValue.convertValue(record.getField(node.fieldNum)));
 		} else {
-			stack.push(Stack.NULL_VAL);
+			stack.push(TLNullValue.getInstance());
 		}
 
 		return data;
@@ -1952,7 +2008,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 			child.jjtAccept(this, data);
 			val = stack.pop();
 			if (val.type == TLValueType.BOOLEAN) {
-				stack.push(val==TLValue.TRUE_VAL ? Stack.FALSE_VAL : Stack.TRUE_VAL);
+				stack.push(val==TLBooleanValue.TRUE ? TLBooleanValue.FALSE : TLBooleanValue.TRUE);
 			} else {
 				throw new TransformLangExecutorRuntimeException(node,
 						new Object[] { val },

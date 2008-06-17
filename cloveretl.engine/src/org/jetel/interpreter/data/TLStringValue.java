@@ -28,6 +28,8 @@ import org.jetel.util.string.Compare;
 
 public class TLStringValue extends TLValue implements CharSequence {
 
+    public static final TLValue EMPTY = new TLStringValue("");
+    
 	StringBuilder value;
 	
 	public TLStringValue(){

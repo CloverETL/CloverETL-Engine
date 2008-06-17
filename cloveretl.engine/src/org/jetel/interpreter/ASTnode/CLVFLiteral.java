@@ -10,11 +10,12 @@ import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.interpreter.ExpParser;
-import org.jetel.interpreter.Stack;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.TransformLangParserConstants;
 import org.jetel.interpreter.TransformLangParserVisitor;
+import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLDateValue;
+import org.jetel.interpreter.data.TLNullValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValueType;
@@ -103,10 +104,10 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
                  value=new TLDateValue(dateTimeFormat.parse(valueImage));
 				break;
 			case BOOLEAN_LITERAL:
-                 value=Boolean.parseBoolean(valueImage) ? Stack.TRUE_VAL : Stack.FALSE_VAL;
+                 value=Boolean.parseBoolean(valueImage) ? TLBooleanValue.TRUE : TLBooleanValue.FALSE;
 				break;
             case NULL_LITERAL:
-                value=Stack.NULL_VAL;
+                value=TLNullValue.getInstance();
                 break;
 			default:
 				throw new TransformLangExecutorRuntimeException(this,new Object[0],"Can't handle datatype "

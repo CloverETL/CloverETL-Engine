@@ -65,7 +65,7 @@ public class TLMapValue extends TLContainerValue {
     
     public TLValue getValue(TLValue key) {
         TLValue val=valueMap.get(key);
-        return val!=null ? val : TLValue.NULL_VAL;
+        return val!=null ? val : TLNullValue.getInstance();
     }
     
     public void setValue(TLValue value) {
@@ -74,7 +74,7 @@ public class TLMapValue extends TLContainerValue {
     
     
     public void setStoredValue(TLValue value){
-    	if (value==TLValue.NULL_VAL){
+    	if (value==TLNullValue.getInstance()){
         	valueMap.clear();
     	}else if (value instanceof TLMapValue){
     		putAll(((TLMapValue)value).valueMap);
@@ -90,7 +90,7 @@ public class TLMapValue extends TLContainerValue {
     }
     
     public void setStoredValue(TLValue key,TLValue value) {
-    	if(value==TLValue.NULL_VAL){
+    	if(value==TLNullValue.getInstance()){
     		valueMap.remove(key);
     	}else if (value instanceof TLMapValue){
     			putAll(((TLMapValue)value).valueMap);

@@ -269,7 +269,7 @@ public class MathLib extends TLFunctionLibrary {
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
-            return TLValue.NUM_PI_VAL;
+            return TLNumericValue.PI;
         }
     }         
     
@@ -281,7 +281,7 @@ public class MathLib extends TLFunctionLibrary {
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
-            return TLValue.NUM_E_VAL;
+            return TLNumericValue.E;
         }
     }     
 

@@ -41,15 +41,6 @@ public abstract class TLValue implements Comparable<TLValue>{
 
 	public final TLValueType type;
 	
-    public static final TLValue NULL_VAL=TLNullValue.getInstance();
-    public static final TLValue TRUE_VAL=TLBooleanValue.TRUE;
-    public static final TLValue FALSE_VAL=TLBooleanValue.FALSE;
-    public static final TLValue NUM_ZERO_VAL = new TLNumericValue(TLValueType.INTEGER,new CloverInteger(0));
-    public static final TLValue NUM_ONE_VAL = new TLNumericValue(TLValueType.INTEGER,new CloverInteger(1)); 
-    public static final TLValue NUM_MINUS_ONE_VAL = new TLNumericValue(TLValueType.INTEGER,new CloverInteger(-1)); 
-    public static final TLValue NUM_PI_VAL = new TLNumericValue(TLValueType.DOUBLE,new CloverDouble(Math.PI));
-    public static final TLValue NUM_E_VAL = new TLNumericValue(TLValueType.DOUBLE,new CloverDouble(Math.E));
-    
     public TLValue(TLValueType type){
     	this.type=type;
     }
@@ -80,10 +71,11 @@ public abstract class TLValue implements Comparable<TLValue>{
     	return type;
     }
 
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings("BC")
     public static  TLValue convertValue(DataField field) {
     	TLValue newval=null;;
     	if (field.isNull())
-    		return NULL_VAL;
+    		return TLNullValue.getInstance();
         switch(field.getMetadata().getType()) {
         case DataFieldMetadata.INTEGER_FIELD:
         	newval= new TLNumericValue<CloverInteger>(TLValueType.INTEGER,new CloverInteger((Numeric)field));
@@ -135,7 +127,7 @@ public abstract class TLValue implements Comparable<TLValue>{
         case BYTE:
         	return new TLByteArrayValue();
         case BOOLEAN:
-            return TLValue.FALSE_VAL;
+            return TLBooleanValue.FALSE;
         case LIST:
             return new TLListValue();
         case MAP:

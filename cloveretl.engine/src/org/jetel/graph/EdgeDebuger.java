@@ -16,7 +16,7 @@ import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
-import org.jetel.interpreter.data.TLValue;
+import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -222,7 +222,7 @@ public class EdgeDebuger {
 		public boolean check(DataRecord record) {
 			executor.setInputRecords(new DataRecord[] {record});
 			executor.visit(recordFilter, null);
-			if (executor.getResult() == TLValue.TRUE_VAL) {
+			if (executor.getResult() == TLBooleanValue.TRUE) {
 				return true;
 			}
 			

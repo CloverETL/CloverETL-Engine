@@ -33,146 +33,145 @@ import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 
 @SuppressWarnings("unchecked")
-public class TLNumericValue<T extends Numeric> extends TLValue implements Numeric{
+public class TLNumericValue<T extends Numeric> extends TLValue implements Numeric {
 
-	  public static final TLValue NUM_ZERO_VAL = new TLNumericValue(TLValueType.INTEGER,new CloverInteger(0));
-	  public static final TLValue NUM_ONE_VAL = new TLNumericValue(TLValueType.INTEGER,new CloverInteger(1)); 
-	  public static final TLValue NUM_MINUS_ONE_VAL = new TLNumericValue(TLValueType.INTEGER,new CloverInteger(-1)); 
-	  public static final TLValue NUM_PI_VAL = new TLNumericValue(TLValueType.DOUBLE,new CloverDouble(Math.PI));
-	  public static final TLValue NUM_E_VAL = new TLNumericValue(TLValueType.DOUBLE,new CloverDouble(Math.E));
-	
-	
-		private Numeric value;
-	
-		public TLNumericValue(TLValueType type){
-			super(type);
-			switch(type){
-			case INTEGER:
-	            value= (T) new CloverInteger(0);
-	            break;
-	        case DOUBLE:
-	            value= (T)new CloverDouble(0);
-	            break;
-	        case LONG:
-	            value= (T)new CloverLong(0);
-	            break;
-	        case DECIMAL:
-	            value= (T)DecimalFactory.getDecimal();
-	            break;
-	            default:
-	            	throw new RuntimeException("Can't handle value type: "+type);
-			}
-		}
-	
-		public TLNumericValue(TLValueType type,T value){
-			super(type);
-			if (!type.isNumeric())
-				throw new RuntimeException("Can't handle value type: "+type);
-			this.value=value;
-		}
-		
-		
-		public Numeric getValue(){
-			return value;
-		}
-		
-		public int getInt(){
-			return value.getInt();
-		}
-		
-		public long getLong(){
-			return value.getLong();
-		}
-		
-		public double getDouble(){
-			return value.getDouble();
-		}
-		
-		public Numeric getNumeric(){
-			return value;
-		}
-		
-		public void setValue(Object _value){
-			if (_value instanceof Numeric){
-				setValue((Numeric)_value);
-			}else if (_value instanceof Number){
-				setValue((Number)_value);
-			}else{
-				throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
-			}
-		}
+	public static final TLValue ZERO = new TLNumericValue(TLValueType.INTEGER, new CloverInteger(0));
+	public static final TLValue ONE = new TLNumericValue(TLValueType.INTEGER, new CloverInteger(1));
+	public static final TLValue MINUS_ONE = new TLNumericValue(TLValueType.INTEGER, new CloverInteger(-1));
+	public static final TLValue PI = new TLNumericValue(TLValueType.DOUBLE, new CloverDouble(Math.PI));
+	public static final TLValue E = new TLNumericValue(TLValueType.DOUBLE, new CloverDouble(Math.E));
 
-		
-		@Override
-		public void setValue(TLValue _value) {
-			if (_value.type.isNumeric()){
-				setValue((Numeric)_value);
-			}else{
-				throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
-			}
-		}
-		
-		public final void setValue(Numeric value){
-			this.value.setValue(value);
-			
-		}
-		
-		public final void setValue(Number value){
-			this.value.setValue(value);
-		}
-		
-		public void setInt(int value){
-			this.value.setValue(value);
-		}
-		
-		public void setLong(long value){
-			this.value.setValue(value);
-			
-		}
-		
-		public void setDouble(double value){
-			this.value.setValue(value);
-			
-		}
-		
-		@Override public int compareTo(TLValue o){
-			   if (this.value==null) return -1;
-		        else if (o.getValue()==null) return 1;
-			   if (! o.type.isNumeric()) throw new IllegalArgumentException("Can't compare value type: " + type + " with type: "+o.type);
-			   return this.value.compareTo((Numeric)o);
-		}
-		
-	  @Override
- 	  public int hashCode() {
-		      return value.hashCode();
-	 }
+	private Numeric value;
 
-	  
-	  	  
-	public void copyToDataField(DataField field) {
-		if (field instanceof Numeric){
-			field.setValue(value);
-		}else{
-			field.fromString(field.toString());
+	public TLNumericValue(TLValueType type) {
+		super(type);
+		switch (type) {
+		case INTEGER:
+			value = (T) new CloverInteger(0);
+			break;
+		case DOUBLE:
+			value = (T) new CloverDouble(0);
+			break;
+		case LONG:
+			value = (T) new CloverLong(0);
+			break;
+		case DECIMAL:
+			value = (T) DecimalFactory.getDecimal();
+			break;
+		default:
+			throw new RuntimeException("Can't handle value type: " + type);
 		}
-		
 	}
 
+	public TLNumericValue(TLValueType type, T value) {
+		super(type);
+		if (!type.isNumeric())
+			throw new RuntimeException("Can't handle value type: " + type);
+		this.value = value;
+	}
+
+	public Numeric getValue() {
+		return value;
+	}
+
+	public int getInt() {
+		return value.getInt();
+	}
+
+	public long getLong() {
+		return value.getLong();
+	}
+
+	public double getDouble() {
+		return value.getDouble();
+	}
+
+	public Numeric getNumeric() {
+		return value;
+	}
+
+	public void setValue(Object _value) {
+		if (_value instanceof Numeric) {
+			setValue((Numeric) _value);
+		} else if (_value instanceof Number) {
+			setValue((Number) _value);
+		} else {
+			throw new IllegalArgumentException("Can't assign value " + _value + " to value type: " + type);
+		}
+	}
+
+	@Override
+	public void setValue(TLValue _value) {
+		if (_value.type.isNumeric()) {
+			setValue((Numeric) _value);
+		} else {
+			throw new IllegalArgumentException("Can't assign value " + _value + " to value type: " + type);
+		}
+	}
+
+	public final void setValue(Numeric value) {
+		this.value.setValue(value);
+
+	}
+
+	public final void setValue(Number value) {
+		this.value.setValue(value);
+	}
+
+	public void setInt(int value) {
+		this.value.setValue(value);
+	}
+
+	public void setLong(long value) {
+		this.value.setValue(value);
+
+	}
+
+	public void setDouble(double value) {
+		this.value.setValue(value);
+
+	}
+
+	@Override
+	public int compareTo(TLValue o) {
+		if (this.value == null)
+			return -1;
+		else if (o.getValue() == null)
+			return 1;
+		if (!o.type.isNumeric())
+			throw new IllegalArgumentException("Can't compare value type: " + type + " with type: " + o.type);
+		return this.value.compareTo((Numeric) o);
+	}
+
+	@Override
+	public int hashCode() {
+		return value.hashCode();
+	}
+
+	public void copyToDataField(DataField field) {
+		if (field instanceof Numeric) {
+			field.setValue(value);
+		} else {
+			field.fromString(field.toString());
+		}
+
+	}
 
 	public TLValue duplicate() {
-		TLNumericValue<Numeric> newVal=new TLNumericValue<Numeric>(type);
-		newVal.value=value.duplicateNumeric();
+		TLNumericValue<Numeric> newVal = new TLNumericValue<Numeric>(type);
+		newVal.value = value.duplicateNumeric();
 		return newVal;
 	}
 
 	public void setValue(DataField field) {
 		if (field instanceof Numeric)
-			this.value.setValue((Numeric)field);
+			this.value.setValue((Numeric) field);
 		else
-			throw new IllegalArgumentException("Can't assign value to: "+type+" from DataField: "+field.getMetadata().getTypeAsString());
+			throw new IllegalArgumentException("Can't assign value to: " + type + " from DataField: " + field.getMetadata().getTypeAsString());
 	}
-	
-	@Override public String toString(){
+
+	@Override
+	public String toString() {
 		return value.toString();
 	}
 
@@ -190,7 +189,7 @@ public class TLNumericValue<T extends Numeric> extends TLValue implements Numeri
 
 	public void div(Numeric a) {
 		value.div(a);
-		
+
 	}
 
 	public Numeric duplicateNumeric() {
@@ -231,7 +230,7 @@ public class TLNumericValue<T extends Numeric> extends TLValue implements Numeri
 
 	public void setValue(int value) {
 		this.value.setValue(value);
-		
+
 	}
 
 	public void setValue(long value) {
