@@ -22,6 +22,7 @@ package org.jetel.graph.runtime;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.ListenerNotFoundException;
 import javax.management.Notification;
@@ -151,7 +152,7 @@ public class TrackingLogger implements NotificationListener {
 			if(phaseDetail != null) {
     			Object nodeInfo[] = { Integer.valueOf(phaseDetail.getPhaseNum()), 
     					phaseDetail.getResult().message(),
-                        phaseDetail.getExecutionTimeSec(),
+                        phaseDetail.getExecutionTime(TimeUnit.SECONDS),
                         phaseDetail.getMemoryUtilization() >> 10};
     			int nodeSizes[] = {-18, -24, 12, 18};
     			logger.info(StringUtils.formatString(nodeInfo, nodeSizes));

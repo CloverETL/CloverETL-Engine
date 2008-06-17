@@ -20,6 +20,7 @@
 package org.jetel.graph.runtime.jmx;
 
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
@@ -86,14 +87,23 @@ public class PhaseTrackingDetail implements Serializable {
 		return phaseNum;
 	}
 	
+	/**
+	 * @return phase start time in nanoseconds
+	 */
 	public long getStartTime() {
 		return startTime;
 	}
 
+	/**
+	 * @return phase end time in nanoseconds
+	 */
 	public long getEndTime() {
 		return endTime;
 	}
 
+	/**
+	 * @return phase memory utilization in bytes
+	 */
 	public long getMemoryUtilization() {
 		return memoryUtilization;
 	}
@@ -102,6 +112,9 @@ public class PhaseTrackingDetail implements Serializable {
 		return result;
 	}
 
+	/**
+	 * @return phase execution time in nanoseconds
+	 */
 	public long getExecutionTime() {
 		if (startTime == -1) {
 			return -1;
@@ -112,8 +125,8 @@ public class PhaseTrackingDetail implements Serializable {
 		}
 	}
 
-	public int getExecutionTimeSec() {
-		return (int) (getExecutionTime() / 1000000000L);
+	public long getExecutionTime(TimeUnit timeUnit) {
+		return timeUnit.convert(getExecutionTime(), TimeUnit.NANOSECONDS);
 	}
 
 	public NodeTrackingDetail getNodeTrackingDetail(String nodeId) {
