@@ -20,6 +20,7 @@
 package org.jetel.graph.runtime.jmx;
 
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -100,12 +101,26 @@ public class NodeTrackingDetail implements Serializable {
 		return outputPortsDetails;
 	}
 
+	/**
+	 * @return total CPU time in nanoseconds
+	 */
 	public long getTotalCPUTime() {
 		return totalCPUTime;
 	}
 
+	public long getTotalCPUTime(TimeUnit timeUnit) {
+		return timeUnit.convert(getTotalCPUTime(), TimeUnit.NANOSECONDS);
+	}
+
+	/**
+	 * @return total user time in nanoseconds
+	 */
 	public long getTotalUserTime() {
 		return totalUserTime;
+	}
+
+	public long getTotalUserTime(TimeUnit timeUnit) {
+		return timeUnit.convert(getTotalUserTime(), TimeUnit.NANOSECONDS);
 	}
 
 	public float getUsageCPU() {

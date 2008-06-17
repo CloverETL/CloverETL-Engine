@@ -167,7 +167,7 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     }
 
     public void stopGraphExecution() {
-        watchDog.stopRun();
+//        watchDog.stopRun();
 
     }
     

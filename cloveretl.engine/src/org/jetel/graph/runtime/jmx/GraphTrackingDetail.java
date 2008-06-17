@@ -20,6 +20,7 @@
 package org.jetel.graph.runtime.jmx;
 
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
@@ -96,14 +97,23 @@ public class GraphTrackingDetail implements Serializable {
 		return graphName;
 	}
 
+	/**
+	 * @return graph start time in nanoseconds
+	 */
 	public long getStartTime() {
 		return startTime;
 	}
 
+	/**
+	 * @return graph end time in nanoseconds
+	 */
 	public long getEndTime() {
 		return endTime;
 	}
 
+	/**
+	 * @return graph execution time in nanoseconds
+	 */
 	public long getExecutionTime() {
 		if (startTime == -1) {
 			return -1;
@@ -114,8 +124,8 @@ public class GraphTrackingDetail implements Serializable {
 		}
 	}
 
-	public int getExecutionTimeSec() {
-		return (int) (getExecutionTime() / 1000000000L);
+	public long getExecutionTime(TimeUnit timeUnit) {
+		return timeUnit.convert(getExecutionTime(), TimeUnit.NANOSECONDS);
 	}
 
 	public Result getResult() {

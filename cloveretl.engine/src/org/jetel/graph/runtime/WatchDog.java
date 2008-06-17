@@ -71,7 +71,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     private Throwable causeException;
     private IGraphElement causeGraphElement;
     private CloverJMX cloverJMX;
-    private volatile boolean runIt;
+//    private volatile boolean runIt;
     private boolean provideJMX = true;
     private boolean finishJMX = true; //whether the JMX mbean should be unregistered on the graph finish 
     private GraphRuntimeContext runtimeContext;
@@ -154,7 +154,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
     		watchDogStatus = Result.RUNNING;
 
-    		runIt = true;
+//    		runIt = true;
     		
     		//creates tracking logger for cloverJMX mbean
             TrackingLogger.track(cloverJMX);
@@ -311,7 +311,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			if (phaseNodes.isEmpty()) {
 				logger.info("Execution of phase [" + phase.getPhaseNum()
 						+ "] successfully finished - elapsed time(sec): "
-						+ cloverJMX.getGraphDetail().getExecutionTimeSec());
+						+ cloverJMX.getGraphDetail().getExecutionTime(TimeUnit.SECONDS));
 				return Result.FINISHED_OK;
 			}
 
@@ -323,14 +323,14 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				cloverJMX.gatherTrackingDetails();
 			}
 
-			if (!runIt) {
-				// we were forced to stop execution, stop all Nodes
-				logger.error("User has interrupted graph execution !!!");
-				abort();
-				causeGraphElement = null;
-				causeException = null;
-				return Result.ABORTED;
-			}
+//			if (!runIt) {
+//				// we were forced to stop execution, stop all Nodes
+//				logger.error("User has interrupted graph execution !!!");
+//				abort();
+//				causeGraphElement = null;
+//				causeException = null;
+//				return Result.ABORTED;
+//			}
 		}
 
 	}
@@ -508,9 +508,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
      * 
      * @since 29.1.2007
      */
-    public void stopRun() {
-        this.runIt = false;
-    }
+//    public void stopRun() {
+//        this.runIt = false;
+//    }
 
 
     /**
