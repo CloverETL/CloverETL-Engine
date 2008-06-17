@@ -28,7 +28,6 @@ import java.util.Date;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DecimalDataField;
-import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;

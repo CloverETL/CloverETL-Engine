@@ -199,9 +199,12 @@ public class CloverDataFormatter implements Formatter {
 					if (append && idxInFile.length() > 0) {
 						DataInputStream idxIn = new DataInputStream(
 								new FileInputStream(idxInFile));
-						idxIn.skip(idxInFile.length() - LONG_SIZE_BYTES);
-						startValue = idxIn.readLong();
-						idxIn.close();
+						try{
+							idxIn.skip(idxInFile.length() - LONG_SIZE_BYTES);
+							startValue = idxIn.readLong();
+						} finally {
+							idxIn.close();
+						}
 					}
 					//append indexes from tmp file 
 					idxWriter = new FileOutputStream(idxInFile,append).getChannel();
