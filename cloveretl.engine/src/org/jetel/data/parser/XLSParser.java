@@ -249,11 +249,11 @@ public abstract class XLSParser implements Parser {
         }
         Map fieldNames = metadata.getFieldNames();
         switch (mappingType) {
-        case NO_METADATA_INFO:noMetadataInfo();break;
         case ONLY_CLOVER_FIELDS:onlyCloverFields(fieldNames);break;
         case CLOVER_FIELDS_AND_XLS_NUMBERS:cloverFieldsAndXlsNumbers(fieldNames);break;
         case MAP_NAMES:mapNames(fieldNames);break;
         case CLOVER_FIELDS_AND_XLS_NAMES:cloverfieldsAndXlsNames(fieldNames);break;
+        case NO_METADATA_INFO:
         default:noMetadataInfo();break;
         }
     	

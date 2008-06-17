@@ -75,9 +75,6 @@ public class FixLenCharDataParser extends FixLenDataParser {
 	 */
 	private boolean skipEmpty = true;
 
-	int dataPos;
-	int dataLim;
-
 	/**
 	 * Create instance for specified charset.
 	 * @param charset
@@ -151,7 +148,7 @@ public class FixLenCharDataParser extends FixLenDataParser {
 		try {
 			rawRec = getNextRecord();
 		} catch (BadDataFormatException e) {
-			fillXHandler(record, rawRec != null ? rawRec.toString() : null, e);
+			fillXHandler(record, null, e);
 //			return record;
 		}
 	
