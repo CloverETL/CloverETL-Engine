@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import junit.framework.TestCase;
 
+import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
@@ -59,48 +60,32 @@ public class EdgeTest extends TestCase {
 	 *  Test for @link org.jetel.graph.DirectEdge
 	 *
 	 */
-	public void test_1_sendData() {
+	public void test_1_sendData() throws IOException, InterruptedException {
 	    final int NUM_REC=1;
 	    DataRecord record=new DataRecord(aDelimitedDataRecordMetadata);
 	    record.init();
 	    
 		edge=new DirectEdgeFastPropagate(new Edge("testEdge",aDelimitedDataRecordMetadata));
 		
-		try{
-		    edge.init();
-		}catch(IOException ex){
-		    throw new RuntimeException(ex);
-		}
+	    edge.init();
 
 		assertTrue(!edge.isEOF());
 		assertFalse(edge.hasData());
 	
-		try{
 		for (int i=0;i<NUM_REC;i++){
 		    edge.writeRecord(record);
 		}
-		}catch(Exception ex){
-		    throw new RuntimeException(ex);
-		}
 		assertTrue(edge.hasData());
-		try{
-		    assertNotNull(edge.readRecord(record));
-		}catch(Exception ex){
-		    throw new RuntimeException(ex);
-		}
+	    assertNotNull(edge.readRecord(record));
 	}
 	
-	public void test_2_sendData() {
+	public void test_2_sendData() throws InterruptedException, IOException {
 	    ProducerThread thread1;
 	    ConsumerThread thread2;
 	    
 		edge=new DirectEdge(new Edge("testEdge",aDelimitedDataRecordMetadata));
 		
-		try{
-		    edge.init();
-		}catch(IOException ex){
-		    throw new RuntimeException(ex);
-		}
+	    edge.init();
 
 		final DataRecord record1=new DataRecord(aDelimitedDataRecordMetadata);
 	    final DataRecord record2=new DataRecord(aDelimitedDataRecordMetadata);
@@ -117,13 +102,8 @@ public class EdgeTest extends TestCase {
 		thread2.setPriority(Thread.MIN_PRIORITY);
 		thread1.start();
 		thread2.start();
-		try{
 		thread1.join();
 		thread2.join();
-		}
-		catch(Exception ex){
-		    
-		}
 		
 		assertEquals(ProducerThread.NUM_REC,thread2.getCounter());
 		
@@ -132,11 +112,7 @@ public class EdgeTest extends TestCase {
 	    
 		edge=new DirectEdge(new Edge("testEdge",aDelimitedDataRecordMetadata));
 		
-		try{
-		    edge.init();
-		}catch(IOException ex){
-		    throw new RuntimeException(ex);
-		}
+	    edge.init();
 	    
 		assertFalse(edge.isEOF());
 		assertFalse(edge.hasData());
@@ -147,13 +123,8 @@ public class EdgeTest extends TestCase {
 		
 		thread1.start();
 		thread2.start();
-		try{
 		thread1.join();
 		thread2.join();
-		}
-		catch(Exception ex){
-		    
-		}
 		
 		assertEquals(ProducerThread.NUM_REC,thread2.getCounter());
 		
@@ -165,6 +136,8 @@ public class EdgeTest extends TestCase {
 	    DataRecord record;
 	    DirectEdge edge;
 	    
+	    static final Logger log = Logger.getLogger(ProducerThread.class);
+	    
 	    ProducerThread(DataRecord record, DirectEdge edge){
 	        this.record=record;
 	        this.edge=edge;
@@ -175,13 +148,14 @@ public class EdgeTest extends TestCase {
 	            try{
 	                edge.writeRecord(record);
 	                //System.out.println(">> SENT RECORD ***");
-	            }catch(Exception ex){
+	            }catch(Exception e){
+	            	log.warn("error write record", e);
 	            }
 	        }
 	        try {
 				edge.eof();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+            	log.warn("error eof", e);
 			}
 	    }
 	} 
@@ -190,6 +164,8 @@ public class EdgeTest extends TestCase {
 	    DataRecord record;
 	    DirectEdge edge;
 	    int counter;
+
+	    static final Logger log = Logger.getLogger(ConsumerThread.class);
 	    
 	    ConsumerThread(DataRecord record, DirectEdge edge){
 	        this.record=record;
@@ -203,7 +179,8 @@ public class EdgeTest extends TestCase {
 	                counter++;
 	                //System.out.println("<< GOT RECORD ***");
 	            }
-	        }catch(Exception ex){
+	        }catch(Exception e){
+            	log.warn("error read record", e);
 	        }
 	    }
 	    
