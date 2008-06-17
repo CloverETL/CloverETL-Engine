@@ -94,6 +94,10 @@ public class AggregateMappingParser {
 	private DataRecordMetadata outMetadata;
 	
 	private boolean paramsAllowed = false;
+	private boolean lenient = false;
+	
+	// error messages generated in the lenient mode
+	private List<String> errors = new ArrayList<String>();
 	
 	private List<FunctionMapping> functionMapping = new ArrayList<FunctionMapping>();
 	private List<FieldMapping> fieldMapping = new ArrayList<FieldMapping>();
@@ -108,13 +112,15 @@ public class AggregateMappingParser {
 	 *
 	 * @param mapping aggregation mapping.
 	 * @param paramsAllowed specifies whether graph parameters can be used in the mapping.
+	 * @param lenient specifies whether some errors should be treated leniently, i.e. they are
+	 * logged (so the error message is available later) and the invalid mapping is skipped.
 	 * @param recordKey aggregation key.
 	 * @param registry aggregation function registry.
 	 * @param inMetadata input metadata.
 	 * @param outMetadata output metadata.
 	 * @throws AggregationException
 	 */
-	public AggregateMappingParser(String mapping, boolean paramsAllowed,
+	public AggregateMappingParser(String mapping, boolean paramsAllowed, boolean lenient,
 			RecordKey recordKey, FunctionRegistry registry, 
 			DataRecordMetadata inMetadata, DataRecordMetadata outMetadata) 
 	throws AggregationException {
@@ -122,6 +128,7 @@ public class AggregateMappingParser {
 		this.outMetadata = outMetadata;
 		this.registry = registry;
 		this.paramsAllowed = paramsAllowed;
+		this.lenient = lenient;
 		
 		keyFields = new HashSet<String>();
 		recordKey.init();
@@ -131,6 +138,13 @@ public class AggregateMappingParser {
 		}
 
 		parseMapping(StringUtils.split(mapping));
+	}
+	
+	/**
+	 * @return error messages generated in the <b>lenient</b> mode.
+	 */
+	public List<String> getErrors() {
+		return errors;
 	}
 
 	/**
@@ -250,8 +264,12 @@ public class AggregateMappingParser {
 					throw new AggregationException("Invalid mapping format");
 				}
 			} catch (AggregationException e) {
-				throw new AggregationException("Invalid mapping '" + expr2 
-						+ "' :\n" + e.getMessage(), e);
+				String message = "Invalid mapping '" + expr2 + "' :\n" + e.getMessage();
+				if (lenient) {
+					errors.add(message);
+				} else {
+					throw new AggregationException(message, e);
+				}
 			}
 		}
 	}
@@ -550,7 +568,7 @@ public class AggregateMappingParser {
 	}
 
 	/**
-	 * Checkss whether an output field exists (in the metadata).
+	 * Checks whether an output field exists (in the metadata).
 	 * 
 	 * @param outputField name of an output field.
 	 * @throws AggregationException if the output field doesn't exist.
@@ -560,7 +578,7 @@ public class AggregateMappingParser {
 			throw new AggregationException("Output field not found: " + outputField);
 		}
 	}
-
+	
 	/**
 	 * 
 	 * @return the field mapping.

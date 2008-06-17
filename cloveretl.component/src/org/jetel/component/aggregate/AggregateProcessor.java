@@ -235,7 +235,7 @@ public class AggregateProcessor {
 	 * @throws ProcessorInitializationException
 	 */
 	private void processMapping(String mapping) throws AggregationException {
-		AggregateMappingParser parser = new AggregateMappingParser(mapping, false,
+		AggregateMappingParser parser = new AggregateMappingParser(mapping, false, false,
 				recordKey, functionRegistry,
 				inMetadata, outMetadata);
 		List<AggregateMappingParser.FunctionMapping> functionMappings = parser.getFunctionMapping();
