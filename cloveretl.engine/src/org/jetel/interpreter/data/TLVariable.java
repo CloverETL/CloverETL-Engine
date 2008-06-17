@@ -45,7 +45,7 @@ public class TLVariable {
         this.value=value;
         this.type=value.getType();
         this.name=name;
-        this.isNull= (value==TLValue.NULL_VAL) ? true : false;
+        this.isNull= (value==TLNullValue.getInstance()) ? true : false;
         this.nullable=true;
     }
     
@@ -87,11 +87,11 @@ public class TLVariable {
     
     
     public TLValue getTLValue() {
-        return isNull ? TLValue.NULL_VAL:value;
+        return isNull ? TLNullValue.getInstance():value;
     }
     
     public boolean setTLValue(TLValue value) {
-    	if (value==TLValue.NULL_VAL){
+    	if (value==TLNullValue.getInstance()){
     		if (!nullable) return false; // optionally throw exception
     		isNull=true;
     		return true;
@@ -124,7 +124,7 @@ public class TLVariable {
     
         
     public boolean setTLValueStrict(TLValue value) {
-    	if (value==TLValue.NULL_VAL){
+    	if (value==TLNullValue.getInstance()){
     		if (!nullable) return false; // optionally throw exception
     		isNull=true;
     		return true;
@@ -143,13 +143,13 @@ public class TLVariable {
     }
     
     public boolean setTLValue(int index,TLValue value) {
-    	if (value==TLValue.NULL_VAL && !nullable) return false; // optionally throw exception
+    	if (value==TLNullValue.getInstance() && !nullable) return false; // optionally throw exception
     	((TLContainerValue)this.value).setStoredValue(index,value);
     	return true;
     }
     
     public boolean setTLValue(TLValue key,TLValue value) {
-    	if (value==TLValue.NULL_VAL && !nullable) return false; // optionally throw exception
+    	if (value==TLNullValue.getInstance() && !nullable) return false; // optionally throw exception
     	((TLContainerValue)this.value).setStoredValue(key,value);
    		return true;
     }

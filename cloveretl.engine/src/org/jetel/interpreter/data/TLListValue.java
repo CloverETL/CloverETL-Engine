@@ -25,13 +25,10 @@ package org.jetel.interpreter.data;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
-import org.jetel.data.primitive.CloverInteger;
 
 public class TLListValue extends TLContainerValue {
 
@@ -74,7 +71,7 @@ public class TLListValue extends TLContainerValue {
     		for(TLValue val : ((TLContainerValue)value).getCollection()){
     			valueList.add(val.duplicate());
     		}
-        }else if (value==TLValue.NULL_VAL){
+        }else if (value==TLNullValue.getInstance()){
         	valueList.clear();
         }else{
             throw new RuntimeException("incompatible value assigned - type: "+value.type);
@@ -101,7 +98,7 @@ public class TLListValue extends TLContainerValue {
      * 
      */
     public void setStoredValue(int index, TLValue value) {
-        if (value==TLValue.NULL_VAL) {
+        if (value==TLNullValue.getInstance()) {
         		if (index<0)
         			valueList.remove(valueList.size()-1);
         		else

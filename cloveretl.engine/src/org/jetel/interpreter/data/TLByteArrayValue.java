@@ -24,7 +24,6 @@ package org.jetel.interpreter.data;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -71,7 +70,7 @@ public class TLByteArrayValue extends TLContainerValue {
 	}
 	
 	public void setValue(TLValue value){
-		if (value == TLValue.NULL_VAL){
+		if (value == TLNullValue.getInstance()){
 			this.value.reset();
 		}else if (value instanceof TLByteArrayValue){
 			this.value.reset();

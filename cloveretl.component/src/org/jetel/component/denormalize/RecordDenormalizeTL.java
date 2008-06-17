@@ -26,6 +26,7 @@ import org.jetel.component.WrapperTL;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -91,7 +92,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 			cleanFunctionIdentifier=-1;
 		}
 		
-		return result == null ? true : result==TLValue.TRUE_VAL;
+		return result == null ? true : result==TLBooleanValue.TRUE;
 	}
 
 	/* (non-Javadoc)
@@ -100,7 +101,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	public boolean addInputRecord(DataRecord inRecord) {
 		TLValue result = wrapper.executePreparedFunction(addInpuRecordIdentifier , 
 				inRecord, null);
-		return result == null ? true : result==TLValue.TRUE_VAL;
+		return result == null ? true : result==TLBooleanValue.TRUE;
 	}
 
 	/* (non-Javadoc)
@@ -110,7 +111,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 		this.outRec[0]=outRecord;
 		TLValue result = wrapper.executePreparedFunction(getOutputRecordIdentifier, 
 				null,this.outRec,null);
-		return result == null ? true : result==TLValue.TRUE_VAL;
+		return result == null ? true : result==TLBooleanValue.TRUE;
 	}
 
 	public void clean(){

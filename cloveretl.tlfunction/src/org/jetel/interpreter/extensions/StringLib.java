@@ -33,12 +33,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jetel.data.primitive.Numeric;
-import org.jetel.interpreter.Stack;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLContainerValue;
 import org.jetel.interpreter.data.TLListValue;
 import org.jetel.interpreter.data.TLMapValue;
+import org.jetel.interpreter.data.TLNullValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
@@ -165,7 +165,7 @@ public class StringLib extends TLFunctionLibrary {
             StringBuilder strBuf = (StringBuilder)val.getValue();
             strBuf.setLength(0);
             for (int i = 0; i < params.length; i++) {
-                if (params[i]!=TLValue.NULL_VAL) {
+                if (params[i]!=TLNullValue.getInstance()) {
                     if (params[i].type == TLValueType.STRING) {
                         StringUtils.strBuffAppend(strBuf, ((TLStringValue)params[i])
                                 .getCharSequence());
@@ -198,7 +198,7 @@ public class StringLib extends TLFunctionLibrary {
             StringBuilder strBuf = (StringBuilder)val.getValue();
             strBuf.setLength(0);
 
-            if (params[0]!=TLValue.NULL_VAL && params[0].type == TLValueType.STRING) {
+            if (params[0]!=TLNullValue.getInstance() && params[0].type == TLValueType.STRING) {
                 CharSequence seq = ((TLStringValue)params[0]).getCharSequence();
                 strBuf.ensureCapacity(seq.length());
                 for (int i = 0; i < seq.length(); i++) {
@@ -234,7 +234,7 @@ public class StringLib extends TLFunctionLibrary {
             StringBuilder strBuf = (StringBuilder)val.getValue();
             strBuf.setLength(0);
             
-            if (params[0]!=TLValue.NULL_VAL && params[0].type == TLValueType.STRING) {
+            if (params[0]!=TLNullValue.getInstance() && params[0].type == TLValueType.STRING) {
                 CharSequence seq = ((TLStringValue)params[0]).getCharSequence();
                 strBuf.ensureCapacity(seq.length());
                 for (int i = 0; i < seq.length(); i++) {
@@ -271,7 +271,7 @@ public class StringLib extends TLFunctionLibrary {
             strBuf.setLength(0);
             
             int length, from;
-            if (params[0]==TLValue.NULL_VAL || params[1]==TLValue.NULL_VAL || params[2]==TLValue.NULL_VAL) {
+            if (params[0]==TLNullValue.getInstance() || params[1]==TLNullValue.getInstance() || params[2]==TLNullValue.getInstance()) {
                 throw new TransformLangExecutorRuntimeException(params,
                         "substring - NULL value not allowed");
             }
@@ -314,7 +314,7 @@ public class StringLib extends TLFunctionLibrary {
             strBuf.setLength(0);
             
             int length;
-            if (params[0]==TLValue.NULL_VAL || params[1]==TLValue.NULL_VAL) {
+            if (params[0]==TLNullValue.getInstance() || params[1]==TLNullValue.getInstance()) {
                 throw new TransformLangExecutorRuntimeException(params,
                         "left - NULL value not allowed");
             }
@@ -357,7 +357,7 @@ public class StringLib extends TLFunctionLibrary {
             strBuf.setLength(0);
             
             int length;
-            if (params[0]==TLValue.NULL_VAL || params[1]==TLValue.NULL_VAL) {
+            if (params[0]==TLNullValue.getInstance() || params[1]==TLNullValue.getInstance()) {
                 throw new TransformLangExecutorRuntimeException(params,
                         "right - NULL value not allowed");
             }
@@ -409,7 +409,7 @@ public class StringLib extends TLFunctionLibrary {
             StringUtils.trim(strBuf);
 
             if (strBuf.length() == 0)
-                return Stack.EMPTY_STRING;
+                return TLStringValue.EMPTY;
 
             return val;
 
@@ -670,12 +670,12 @@ public class StringLib extends TLFunctionLibrary {
             StringBuilder strBuf = (StringBuilder)val.getValue();
             strBuf.setLength(0);
             
-            if (params[1]==TLValue.NULL_VAL) {
+            if (params[1]==TLNullValue.getInstance()) {
                 throw new TransformLangExecutorRuntimeException(params,
                         Function.CHAR_AT.name()+" - NULL value not allowed");
             }
             
-            if (params[0]!=TLValue.NULL_VAL) {
+            if (params[0]!=TLNullValue.getInstance()) {
                 try {
                 strBuf.append(((TLStringValue)params[0]).getCharSequence().charAt(((TLNumericValue)params[1]).getInt()));
                 }catch(IndexOutOfBoundsException ex) {
@@ -706,16 +706,16 @@ public class StringLib extends TLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             
-            if (params[0]==TLValue.NULL_VAL) {
-            	return TLValue.TRUE_VAL;
+            if (params[0]==TLNullValue.getInstance()) {
+            	return TLBooleanValue.TRUE;
             }else if (!(params[0].type == TLValueType.STRING)){
                 throw new TransformLangExecutorRuntimeException(params,
                 "is_blank - wrong type of literal");
             }else{
             	if (StringUtils.isBlank(((TLStringValue)params[0]).getCharSequence())) 
-            		return TLValue.TRUE_VAL;
+            		return TLBooleanValue.TRUE;
             	else 
-            		return TLValue.FALSE_VAL;
+            		return TLBooleanValue.FALSE;
             }
          
         }
@@ -733,14 +733,14 @@ public class StringLib extends TLFunctionLibrary {
             @Override
             public TLValue execute(TLValue[] params, TLContext context) {
      
-                if (params[0]==TLValue.NULL_VAL || !(params[0].type == TLValueType.STRING)){
+                if (params[0]==TLNullValue.getInstance() || !(params[0].type == TLValueType.STRING)){
                     throw new TransformLangExecutorRuntimeException(params,
                     "is_ascii - wrong type of literal");
                 }else{
                     if (StringUtils.isAscii(((TLStringValue)params[0]).getCharSequence())) 
-                    	return TLValue.TRUE_VAL;
+                    	return TLBooleanValue.TRUE;
                     else 
-                    	return TLValue.FALSE_VAL;
+                    	return TLBooleanValue.FALSE;
                 }
             }
 
@@ -757,14 +757,14 @@ public class StringLib extends TLFunctionLibrary {
             @Override
             public TLValue execute(TLValue[] params, TLContext context) {
      
-                if (params[0]==TLValue.NULL_VAL || !(params[0].type == TLValueType.STRING)){
+                if (params[0]==TLNullValue.getInstance() || !(params[0].type == TLValueType.STRING)){
                     throw new TransformLangExecutorRuntimeException(params,
                     "is_number - wrong type of literal");
                 }else{
                     if (StringUtils.isNumber(((TLStringValue)params[0]).getCharSequence())) 
-                    	return TLValue.TRUE_VAL;
+                    	return TLBooleanValue.TRUE;
                     else 
-                    	return TLValue.FALSE_VAL;
+                    	return TLBooleanValue.FALSE;
                 }
             }
 
@@ -780,15 +780,15 @@ public class StringLib extends TLFunctionLibrary {
 
             @Override
             public TLValue execute(TLValue[] params, TLContext context) {
-                if (params[0]==TLValue.NULL_VAL || !(params[0].type == TLValueType.STRING)){
+                if (params[0]==TLNullValue.getInstance() || !(params[0].type == TLValueType.STRING)){
                     throw new TransformLangExecutorRuntimeException(params,
                     "is_integer - wrong type of literal");
                 }else{
                     int numberType = StringUtils.isInteger(((TLStringValue)params[0]).getCharSequence());
                     if (numberType == 0 || numberType == 1) 
-                    	return TLValue.TRUE_VAL;
+                    	return TLBooleanValue.TRUE;
                     else 
-                    	return TLValue.FALSE_VAL;
+                    	return TLBooleanValue.FALSE;
                 }
                 
            }
@@ -805,15 +805,15 @@ public class StringLib extends TLFunctionLibrary {
 
             @Override
             public TLValue execute(TLValue[] params, TLContext context) {
-                if (params[0]==TLValue.NULL_VAL || !(params[0].type == TLValueType.STRING)){
+                if (params[0]==TLNullValue.getInstance() || !(params[0].type == TLValueType.STRING)){
                     throw new TransformLangExecutorRuntimeException(params,
                     "is_integer - wrong type of literal");
                 }else{
                     int numberType = StringUtils.isInteger(((TLStringValue)params[0]).getCharSequence());
                      if (numberType > 0 && numberType < 3) 
-                    	return TLValue.TRUE_VAL;
+                    	return TLBooleanValue.TRUE;
                     else 
-                    	return TLValue.FALSE_VAL;
+                    	return TLBooleanValue.FALSE;
                 }
                 
            }
@@ -831,7 +831,7 @@ public class StringLib extends TLFunctionLibrary {
             @Override
             public TLValue execute(TLValue[] params, TLContext context) {
       
-                if (params[0]==TLValue.NULL_VAL || params[1]==TLValue.NULL_VAL) {
+                if (params[0]==TLNullValue.getInstance() || params[1]==TLNullValue.getInstance()) {
                     throw new TransformLangExecutorRuntimeException(params,
                             Function.IS_DATE.name()+" - NULL value not allowed");
                 }
@@ -848,7 +848,7 @@ public class StringLib extends TLFunctionLibrary {
                     "is_date - wrong type of literal");
                 }
                 if (params[0].toString().length() == 0){
-                	return TLValue.TRUE_VAL;
+                	return TLBooleanValue.TRUE;
                 }else{
                     DateFormatStore formatter = (DateFormatStore) context.getContext();
                     String pattern = params[1].toString();
@@ -873,7 +873,7 @@ public class StringLib extends TLFunctionLibrary {
                     	formatter.setLenient(true);
                     }
                     formatter.formatter.parse(params[0].toString(), formatter.position);
-                    return formatter.position.getIndex() != 0 ? TLValue.TRUE_VAL : TLValue.FALSE_VAL;
+                    return formatter.position.getIndex() != 0 ? TLBooleanValue.TRUE : TLBooleanValue.FALSE;
                 }
             }
 
@@ -898,7 +898,7 @@ public class StringLib extends TLFunctionLibrary {
          public TLValue execute(TLValue[] params, TLContext context) {
              TLValue val = (TLValue)context.getContext();
 
-             if (params[0]!=TLValue.NULL_VAL) {
+             if (params[0]!=TLNullValue.getInstance()) {
                  if (!(params[0].type == TLValueType.STRING)){
                      throw new TransformLangExecutorRuntimeException(params,
                      "remove_diacritic - wrong type of literal");
@@ -927,7 +927,7 @@ public class StringLib extends TLFunctionLibrary {
          public TLValue execute(TLValue[] params, TLContext context) {
              TLValue val = (TLValue)context.getContext();
 
-             if (params[0]!=TLValue.NULL_VAL) {
+             if (params[0]!=TLNullValue.getInstance()) {
                  if (!(params[0].type == TLValueType.STRING)){
                      throw new TransformLangExecutorRuntimeException(params,
                      "remove_blank_space - wrong type of literal");
@@ -956,7 +956,7 @@ public class StringLib extends TLFunctionLibrary {
          public TLValue execute(TLValue[] params, TLContext context) {
              TLValue val = (TLValue)context.getContext();
 
-             if (params[0]!=TLValue.NULL_VAL) {
+             if (params[0]!=TLNullValue.getInstance()) {
                  if (!(params[0].type == TLValueType.STRING)){
                      throw new TransformLangExecutorRuntimeException(params,
                      "get_alphanumeric_chars - wrong type of literal(s)");
@@ -966,8 +966,8 @@ public class StringLib extends TLFunctionLibrary {
                 				 params[2].type == TLValueType.BOOLEAN)) 
                 			 throw new TransformLangExecutorRuntimeException(params,
                                      "get_alphanumeric_chars - wrong type of literal(s)");
-                	 boolean alpha = params.length > 1 ? params[1]==TLValue.TRUE_VAL : true;
-                	 boolean numeric = params.length > 1 ? params[2]==TLValue.TRUE_VAL : true;
+                	 boolean alpha = params.length > 1 ? params[1]==TLBooleanValue.TRUE : true;
+                	 boolean numeric = params.length > 1 ? params[2]==TLBooleanValue.TRUE : true;
                      val.setValue(StringUtils.getOnlyAlphaNumericChars(params[0].toString(), alpha, numeric));
                  }
              }
@@ -992,13 +992,13 @@ public class StringLib extends TLFunctionLibrary {
          public TLValue execute(TLValue[] params, TLContext context) {
              TLValue val = (TLValue)context.getContext();
 
-             if (params[0]==TLValue.NULL_VAL || params[1]==TLValue.NULL_VAL || 
-            		 params[0].type != TLValueType.STRING || params[1].type != TLValueType.STRING || ( params[2].type != TLValueType.STRING && params[2]!=TLValue.NULL_VAL)) {
+             if (params[0]==TLNullValue.getInstance() || params[1]==TLNullValue.getInstance() || 
+            		 params[0].type != TLValueType.STRING || params[1].type != TLValueType.STRING || ( params[2].type != TLValueType.STRING && params[2]!=TLNullValue.getInstance())) {
                  throw new TransformLangExecutorRuntimeException(params,
                          "translate - wrong type of literal(s)");
              }else{
                  val.setValue(StringUtils.translateSequentialSearch(((TLStringValue)params[0]).getCharSequence(), 
-                		 ((TLStringValue)params[1]).getCharSequence(), params[2]!=TLValue.NULL_VAL ?  ((TLStringValue)params[2]).getCharSequence() : "" ));
+                		 ((TLStringValue)params[1]).getCharSequence(), params[2]!=TLNullValue.getInstance() ?  ((TLStringValue)params[2]).getCharSequence() : "" ));
              }
              return val;
          }
@@ -1026,9 +1026,9 @@ public class StringLib extends TLFunctionLibrary {
              StringBuilder strBuf = (StringBuilder)val.getValue();
              strBuf.setLength(0);
              
-             delimiter = params[0]==TLValue.NULL_VAL ? "" : ((TLStringValue)params[0]).getCharSequence();
+             delimiter = params[0]==TLNullValue.getInstance() ? "" : ((TLStringValue)params[0]).getCharSequence();
              for (int i = 1; i < params.length; i++) {
-                 if (params[i]!=TLValue.NULL_VAL) {
+                 if (params[i]!=TLNullValue.getInstance()) {
                      if (params[i].type == TLValueType.STRING) {
                          StringUtils.strBuffAppend(strBuf, ((TLStringValue)params[i])
                                  .getCharSequence());
@@ -1071,8 +1071,8 @@ public class StringLib extends TLFunctionLibrary {
              TLValue val = (TLValue)context.getContext();
              Numeric result = (TLNumericValue)val;
 
-             if (params[0]==TLValue.NULL_VAL || params[0].type != TLValueType.STRING || 
-            	 params[1]==TLValue.NULL_VAL || params[1].type != TLValueType.STRING ||
+             if (params[0]==TLNullValue.getInstance() || params[0].type != TLValueType.STRING || 
+            	 params[1]==TLNullValue.getInstance() || params[1].type != TLValueType.STRING ||
             	 (params.length == 3 && params[2].type != TLValueType.INTEGER)) {
                  throw new TransformLangExecutorRuntimeException(params,
                  "index_of - wrong type of literal(s)");

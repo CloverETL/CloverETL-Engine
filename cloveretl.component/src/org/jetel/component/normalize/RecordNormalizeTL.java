@@ -28,6 +28,7 @@ import org.jetel.data.primitive.CloverInteger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
+import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
@@ -98,7 +99,7 @@ public class RecordNormalizeTL implements RecordNormalize {
 			cleanFunctionIdentifier=-1;
 		}
 		
-		return result == null ? true : result==TLValue.TRUE_VAL;
+		return result == null ? true : result==TLBooleanValue.TRUE;
 	}
 
 	/* (non-Javadoc)
@@ -124,7 +125,7 @@ public class RecordNormalizeTL implements RecordNormalize {
 		targetRec[0]=target;
 		TLValue result = wrapper.executePreparedFunction(transformFunctionIdentifier, 
 				sourceRec, targetRec, counterTL);
-		return result == null ? true : result==TLValue.TRUE_VAL;
+		return result == null ? true : result==TLBooleanValue.TRUE;
 	}
 
 	public void clean(){

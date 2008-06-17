@@ -24,7 +24,6 @@ import java.util.Calendar;
 
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.Numeric;
-import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLVariable;
 
@@ -40,18 +39,6 @@ public class Stack {
     public static final int DEFAULT_VAR_SLOT_LENGTH = 64;
     public static final float GROW_FACTOR = 1.6f;
 	public static final int MAX_ALLOWED_DEPTH = 1024;
-    
-	// these constants are used by interpreter when true or false
-	// result has to be indicated
-	public static final TLValue TRUE_VAL= TLValue.TRUE_VAL;
-	public static final TLValue FALSE_VAL= TLValue.FALSE_VAL;
-
-    public static final TLValue NULL_VAL = TLValue.NULL_VAL;
-	public static final TLValue NUM_ZERO = TLValue.NUM_ZERO_VAL;
-    public static final TLValue NUM_ONE = TLValue.NUM_ONE_VAL;
-    public static final TLValue NUM_MINUS_ONE = TLValue.NUM_MINUS_ONE_VAL; 
-	
-    public static final TLValue EMPTY_STRING=new TLStringValue("");
     
     public static final Numeric NUM_ONE_P = new CloverInteger(1);
     public static final Numeric NUM_MINUS_ONE_P = new CloverInteger(-1);

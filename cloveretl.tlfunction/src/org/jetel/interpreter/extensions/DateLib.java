@@ -31,10 +31,10 @@ import java.util.List;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLContainerValue;
 import org.jetel.interpreter.data.TLDateValue;
+import org.jetel.interpreter.data.TLNullValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
-import org.jetel.interpreter.extensions.ConvertLib.Function;
 
 public class DateLib extends TLFunctionLibrary {
 
@@ -233,7 +233,7 @@ public class DateLib extends TLFunctionLibrary {
 				}else if (type.isNumeric()) {
 					store.value=TLValue.create(TLValueType.LONG);
 				}else if (type.isArray()){
-					store.value=TLValue.NULL_VAL;
+					store.value=TLNullValue.getInstance();
 				}
 			}
 

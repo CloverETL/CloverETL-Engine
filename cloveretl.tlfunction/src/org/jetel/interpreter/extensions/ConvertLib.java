@@ -46,6 +46,7 @@ import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLByteArrayValue;
 import org.jetel.interpreter.data.TLDateValue;
+import org.jetel.interpreter.data.TLNullValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
@@ -155,14 +156,14 @@ public class ConvertLib extends TLFunctionLibrary {
             StringBuilder strBuf = (StringBuilder)val.getValue();
             strBuf.setLength(0);
             
-            if (params[0]==TLValue.NULL_VAL) {
+            if (params[0]==TLNullValue.getInstance()) {
                 throw new TransformLangExecutorRuntimeException(params,
                         Function.NUM2STR.name()+" - NULL value not allowed");
             }
             int radix=10;
             
             if (params.length>1) {
-                if (params[1]==TLValue.NULL_VAL || !params[1].type.isNumeric() ){
+                if (params[1]==TLNullValue.getInstance() || !params[1].type.isNumeric() ){
                     throw new TransformLangExecutorRuntimeException(params,
                         Function.NUM2STR.name()+" - wrong type of literals");
                 }
@@ -215,7 +216,7 @@ public class ConvertLib extends TLFunctionLibrary {
             StringBuilder strBuf = (StringBuilder)val.getValue();
             strBuf.setLength(0);
             
-            if (params[0]==TLValue.NULL_VAL || params[1]==TLValue.NULL_VAL) {
+            if (params[0]==TLNullValue.getInstance() || params[1]==TLNullValue.getInstance()) {
                 throw new TransformLangExecutorRuntimeException(params,
                         Function.DATE2STR.name()+" - NULL value not allowed");
             }
@@ -249,7 +250,7 @@ public class ConvertLib extends TLFunctionLibrary {
         	Str2DateContext c = (Str2DateContext)context.getContext();
             TLValue val = c.value;
 
-            if (params[0]==TLValue.NULL_VAL || params[1]==TLValue.NULL_VAL) {
+            if (params[0]==TLNullValue.getInstance() || params[1]==TLNullValue.getInstance()) {
                 throw new TransformLangExecutorRuntimeException(params,
                         Function.STR2DATE.name()+" - NULL value not allowed");
             }
@@ -266,7 +267,7 @@ public class ConvertLib extends TLFunctionLibrary {
                 		Function.STR2DATE.name()+" - wrong type of literal");
             }
             if (params[0].toString().length() == 0){
-            	return TLValue.NULL_VAL;
+            	return TLNullValue.getInstance();
             }else{
                 String pattern = params[1].toString();
                 String locale = params.length > 2 && params[2].type == TLValueType.STRING ? 
@@ -480,10 +481,10 @@ public class ConvertLib extends TLFunctionLibrary {
                 throw new TransformLangExecutorRuntimeException(params,
                         "num2bool - wrong type of literals");
         	}
-        	if (params[0].compareTo(TLNumericValue.NUM_ONE_VAL) == 0) {
+        	if (params[0].compareTo(TLNumericValue.ONE) == 0) {
         		return TLBooleanValue.TRUE;
         	}
-        	if (params[0].compareTo(TLNumericValue.NUM_ZERO_VAL) == 0){
+        	if (params[0].compareTo(TLNumericValue.ZERO) == 0){
         		return TLBooleanValue.FALSE;
         	}
             throw new TransformLangExecutorRuntimeException(params,
@@ -513,7 +514,7 @@ public class ConvertLib extends TLFunctionLibrary {
         		value=TLValue.create(valType);
         		context.setContext(value);
         	}
-        	value.setValue(((TLBooleanValue)params[0]).getBoolean() ? TLValue.NUM_ONE_VAL : TLValue.NUM_ZERO_VAL);
+        	value.setValue(((TLBooleanValue)params[0]).getBoolean() ? TLNumericValue.ONE : TLNumericValue.ZERO);
         	
         	return value;
 		}
@@ -811,26 +812,26 @@ public class ConvertLib extends TLFunctionLibrary {
 					candidate.setValue(params[0].getNumeric());
 					canConvert = candidate.compareTo(params[0]) == 0;
 					if (!canConvert) {
-						return TLValue.FALSE_VAL;
+						return TLBooleanValue.FALSE;
 					}
         		}
         		params[1].setValue(params[0].getValue());
-        		return TLValue.TRUE_VAL;
+        		return TLBooleanValue.TRUE;
         	}
         	
         	TLFunctionPrototype convertFunction = getConvertToFunction(fromType, toType);
         	if (convertFunction == null) {
-        		return TLValue.FALSE_VAL;
+        		return TLBooleanValue.FALSE;
         	}
         	
         	try{
         		params[1].setValue(convertFunction.execute(getConvertParams(convertFunction, params), 
         				getConvertContext(convertFunction, context)));
         	}catch (TransformLangExecutorRuntimeException e) {
-				return TLValue.FALSE_VAL;
+				return TLBooleanValue.FALSE;
 			}
         	
-    		return TLValue.TRUE_VAL;
+    		return TLBooleanValue.TRUE;
         }
         
         @Override
