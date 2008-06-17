@@ -69,11 +69,11 @@ import org.w3c.dom.Element;
 * Graph is run by existing executor in current JVM instance. Log output is flushed together with current graph.
 * * run in separated JVM:
 * Graph is run as external process. Log output is written into specified file. Executed JVM will have the same classpath as current JVM.
-* <br/>In this case, supplying the command line for clover is necessary (at least the -plugins argument).
+* <br/>In this mode, supplying the command line for clover is necessary (at least the -plugins argument).
 * Command line arguments can be supplied by cloverCmdLineArgs attribute or by second field in input port 
 * (Supplying by field can be made only in in/out mode).
 * If cloverCmdLineArgs attribute is defined and input port is connected then field from input port has 
-* higher priority. Thus when some graph defined in input port and hasn't assigned command line arguments
+* higher priority. Thus when some graph defined in input port hasn't assigned command line arguments
 * cloverCmdLineArgs attribute is used.
 * 
 * Attributes:
@@ -203,7 +203,7 @@ public class RunGraph extends Node{
 				
 		this.append = append;
 		this.sameInstance = sameInst;
-		if(!this.sameInstance) {
+		if (!this.sameInstance) {
 			this.classPath = System.getProperty("java.class.path");
 		}
 	}	
@@ -380,7 +380,7 @@ public class RunGraph extends Node{
 	}
 	
 	private boolean runGraphSeparateInstance(String graphName, OutputRecordData outputRecordData, String cloverCommandLineArgs) throws IOException {
-		String commandLine = javaCmdLine + " " + quotePartOfClassPath(classPath) + " " + cloverRunClass + " " + cloverCommandLineArgs + " " + graphName;
+		String commandLine = javaCmdLine + " " + quotePartsOfClassPath(classPath) + " " + cloverRunClass + " " + cloverCommandLineArgs + " " + graphName;
 		logger.info("Executing command: " + StringUtils.quote(commandLine));
 
 		DataConsumer consumer = new OutDataConsumer(fileWriter, outputRecordData);
@@ -417,7 +417,7 @@ public class RunGraph extends Node{
 		return true;
 	}
 	
-	private static String quotePartOfClassPath(String classPath) {
+	private static String quotePartsOfClassPath(String classPath) {
 		StringBuilder builder = new StringBuilder();
 		String[] parts = classPath.split(";");
 		for (String part : parts) {
