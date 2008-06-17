@@ -308,7 +308,6 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	 */
 	private static class DataRecordCol{
 		DataRecord recordArray[];
-		DataRecordMetadata metadata;
 		int pointer;
 		int noItems;
 		
@@ -317,7 +316,6 @@ public class InternalSortDataRecord implements ISortDataRecord {
 			recordArray=new DataRecord[capacity];
 			noItems=0;
 			pointer=0;
-			this.metadata=metadata;
 		}
 		
 		DataRecord[] getRecordArray(){
