@@ -102,7 +102,7 @@
 	</target>
 	
 	<target name="plugin.clean">
-		<echo message="Building plugin - ${plugin.dir}"/>
+		<echo message="Cleaning plugin - ${plugin.dir}"/>
 		<ant target="clean" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
 			<property name="dir.dist" value="${dir.dist}"/>
 			<property name="major_version" value="${major_version}"/>
