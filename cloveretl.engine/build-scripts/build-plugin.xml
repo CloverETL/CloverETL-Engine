@@ -237,7 +237,13 @@
 	
 	<target name="runtests" depends="init,compile-tests" if="tests-available">
 		<mkdir dir="${dir.testsresult}"/>
-		<junit haltonerror="false" haltonfailure="false" printsummary="true" fork="true" forkmode="once">
+		<junit 
+				dir="${dir.coverage.plugins}"
+				haltonerror="false" 
+				haltonfailure="false" 
+				printsummary="true" 
+				fork="true" 
+				forkmode="once" >
     		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
     		<sysproperty key="file.encoding" value="UTF-8" />
 			<classpath path="${cp.compile}">
