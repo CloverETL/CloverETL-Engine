@@ -308,9 +308,24 @@
 	
 	
 	<target name="generate-java-sources" description="Generate java sources by javaCC">
-		<jjtree javacchome="${dir.tools}" target="${dir.src}/org/jetel/interpreter/TransformLangParser.jjt"/>
-		<javacc javacchome="${dir.tools}" target="${dir.src}/org/jetel/interpreter/TransformLangParser.jj"/>
-		<javacc javacchome="${dir.tools}" target="${dir.src}/org/jetel/util/ddl2clover/DDL2Clover.jj"/>
+		<jjtree javacchome="${dir.tools}" 
+			target="${dir.src}/org/jetel/interpreter/TransformLangParser.jjt" 
+			outputdirectory="${dir.src}/org/jetel/interpreter/"/>
+		
+		<javacc javacchome="${dir.tools}" 
+			target="${dir.src}/org/jetel/interpreter/TransformLangParser.jj"/>
+		
+		<delete file="${dir.src}/org/jetel/interpreter/Node.java"/>
+		
+		<replace file="${dir.src}/org/jetel/interpreter/TransformLangParserVisitor.java">
+			  <replacetoken><![CDATA[package org.jetel.interpreter;]]></replacetoken>
+			  <replacevalue><![CDATA[package org.jetel.interpreter;
+
+import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
+		</replace>
+		
+		<javacc javacchome="${dir.tools}" 
+			target="${dir.src}/org/jetel/util/ddl2clover/DDL2Clover.jj"/>
 	</target>
 	
 	<!-- The "javadoc" target generates JavaDoc documentation. -->
