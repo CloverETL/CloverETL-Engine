@@ -40,9 +40,11 @@
 	<property name="dir.testsreport" value="${dir.build}/testsreport"/>
 	<property name="dir.findbugsreport" value="${dir.build}/findbugsreport"/>
 	<property name="dir.cobertura" value="${dir.tools}/cobertura" />
-	<property name="dir.coverage.bin" value="${dir.build}/bin-coverage" />
+	<property name="dir.coverage.bin" value="${dir.build}/classes-coverage" />
+	<property name="dir.coverage.plugins" value="${dir.build}/plugins-coverage" />
 	<property name="dir.coverage.xml" value="${dir.build}/coveragereport/xml" />
 	<property name="dir.coverage.html" value="${dir.build}/coveragereport/html" />
+	<property name="cobertura.ser" value="${dir.build}/cobertura.ser"/>
 
 	<!--load external properties-->
 	<property file="build.properties"/>
@@ -84,10 +86,10 @@
 	</target>
 	
 	<target name="build-plugins" depends="build-engine">
-		<foreach list="${plugin.list}" inheritall="true" target="plugin.build" param="plugin.dir"/>
+		<foreach list="${plugin.list}" inheritall="true" target="plugin-build" param="plugin.dir"/>
 	</target>
 	
-	<target name="plugin.build">
+	<target name="plugin-build">
 		<echo message="Building plugin - ${plugin.dir}"/>
 		<ant dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
 			<property name="dir.dist" value="${dir.dist}"/>
@@ -98,10 +100,10 @@
 	</target>
 
 	<target name="clean-plugins">
-		<foreach list="${plugin.list}" inheritall="true" target="plugin.clean" param="plugin.dir"/>
+		<foreach list="${plugin.list}" inheritall="true" target="plugin-clean" param="plugin.dir"/>
 	</target>
 	
-	<target name="plugin.clean">
+	<target name="plugin-clean">
 		<echo message="Cleaning plugin - ${plugin.dir}"/>
 		<ant target="clean" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
 			<property name="dir.dist" value="${dir.dist}"/>
@@ -436,18 +438,47 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		</javac>
 	</target>
 	
-	<target name="coverage-instrument" depends="compile">
-		<cobertura-instrument todir="${dir.coverage.bin}" datafile="${dir.build}/cobertura.ser">
+	<target name="coverage-instrument" depends="coverage-instrument-engine,coverage-instrument-plugins">
+	</target>
+		
+	<target name="coverage-instrument-engine" depends="compile">
+		<cobertura-instrument todir="${dir.coverage.bin}" datafile="${cobertura.ser}">
             <fileset dir="${dir.bin}">
 				<include name="**/*.class" />
             </fileset>
         </cobertura-instrument>
 	</target>
 	
-	<target name="runtests" depends="init,compile,compile-tests,coverage-instrument">
+	<target name="coverage-instrument-plugins" depends="init">
+		<mkdir dir="${dir.coverage.plugins}"/>
+		<foreach list="${plugin.list}" inheritall="true" target="plugin-coverage-instrument" param="plugin.dir"/>
+	</target>
+	
+	<target name="plugin-coverage-instrument">
+		<echo message="Coverage instrument plugin - ${plugin.dir}"/>
+		<ant target="coverage-instrument" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
+			<property name="dir.dist" value="${dir.dist}"/>
+			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
+			<property name="cobertura.ser" value="${cobertura.ser}"/>
+			<property name="major_version" value="${major_version}"/>
+			<property name="minor_version" value="${minor_version}"/>
+			<property name="revision_version" value="${revision_version}"/>
+		</ant>
+	</target>
+
+	<target name="runtests" depends="runtests-engine,runtests-plugins">
+	</target>
+	
+	<target name="runtests-engine" depends="init,compile,compile-tests,coverage-instrument">
 		<mkdir dir="${dir.testsresult}"/>
-		<junit haltonerror="false" haltonfailure="false" printsummary="true" fork="true" forkmode="once">
-    		<sysproperty key="net.sourceforge.cobertura.datafile" file="${dir.build}/cobertura.ser" />
+		<junit 
+				dir="${dir.coverage.plugins}"
+				haltonerror="false" 
+				haltonfailure="false" 
+				printsummary="true"
+				fork="true"
+				forkmode="once" >
+    		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
     		<sysproperty key="file.encoding" value="UTF-8" />
 			<classpath>
 			    <pathelement path="${dir.classestest}"/>
@@ -465,6 +496,23 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<formatter type="plain"/>
 			<formatter type="xml"/>
 		</junit>
+	</target>
+	
+	<target name="runtests-plugins">
+		<mkdir dir="${dir.coverage.plugins}"/>
+		<foreach list="${plugin.list}" inheritall="true" target="runtests-plugin" param="plugin.dir"/>
+	</target>
+	
+	<target name="runtests-plugin">
+		<echo message="Runtests plugin - ${plugin.dir}"/>
+		<ant target="runtests" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
+			<property name="dir.dist" value="${dir.dist}"/>
+			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
+			<property name="cobertura.ser" value="${cobertura.ser}"/>
+			<property name="major_version" value="${major_version}"/>
+			<property name="minor_version" value="${minor_version}"/>
+			<property name="revision_version" value="${revision_version}"/>
+		</ant>
 	</target>
 	
     <target name="reporttests" depends="runtests">
@@ -519,11 +567,11 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 	</target>
 	
 	<target name="coverage-html" depends="runtests">
-   		<cobertura-report datafile="${dir.build}/cobertura.ser" format="html" destdir="${dir.coverage.html}" srcdir="${dir.src}" />
+   		<cobertura-report datafile="${cobertura.ser}" format="html" destdir="${dir.coverage.html}" srcdir="${dir.src}" />
 	</target>
 		
 	<target name="coverage-xml" depends="runtests">
-   		<cobertura-report datafile="${dir.build}/cobertura.ser" format="xml" destdir="${dir.coverage.xml}" srcdir="${dir.src}" />
+   		<cobertura-report datafile="${cobertura.ser}" format="xml" destdir="${dir.coverage.xml}" srcdir="${dir.src}" />
 	</target>
 		
 </project>

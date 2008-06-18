@@ -9,6 +9,7 @@
 		select="org.jetel.\1" />
 
 	<property name="dir.src" value="${basedir}/src"/>
+	<property name="dir.src.test" value="${basedir}/test"/>
 	<property name="dir.lib" value="${basedir}/lib"/>
 	<property name="dir.doc" value="${basedir}/doc"/>
 	<property name="dir.dist" value="${basedir}/dist"/>
@@ -16,11 +17,17 @@
 	<property name="dir.engine" value="${basedir}/../cloveretl.engine"/>
 	<property file="${dir.engine}/build.properties"/>		
 	<property name="dir.engine.lib" value="${dir.engine}/lib"/>
+	<property name="dir.engine.tools" value="${dir.engine}/tools"/>
+	<property name="dir.cobertura" value="${dir.engine.tools}/cobertura" />
 
 	<property name="dir.build" value="${basedir}/build"/>
+	<property name="dir.testsresult" value="${dir.build}/testsresult"/>
 	<property name="dir.classes" value="${dir.build}/classes"/>
+	<property name="dir.classestest" value="${dir.build}/classes-test"/>
+	<property name="dir.coverage.classes" value="${dir.build}/classes-coverage"/>
 	<property name="dir.src.improved" value="${dir.build}/src-improved"/>
 	<property name="required.plugins.file" value="${dir.build}/required-plugins.txt"/>
+	<property name="cobertura.ser" value="${dir.build}/plugin-cobertura.ser"/>
 
 	<!--load external properties-->
 
@@ -29,8 +36,16 @@
 		<include name="**/*.jar"/>
 	</fileset>
 
+	<fileset id="engine-tools" dir="${dir.engine.tools}">
+		<include name="**/*.jar"/>
+	</fileset>
 
-	
+	<path id="cp.cobertura">
+	    <fileset dir="${dir.cobertura}">
+	        <include name="*.jar" />
+	    </fileset>
+	</path>
+
 	<!-- =========================== TARGETS ============================== -->
 	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file"/>
 
@@ -61,6 +76,15 @@
 			</else>
 		</if>
 		
+		<if><available file="${dir.src.test}"/>
+			<then>
+				<echo message="Plugin has tests in ${dir.src.test}"/>
+				<property name="tests-available" value="true"/>
+			</then>
+			<else>
+				<echo message="Plugin has no test"/>
+			</else>
+		</if>
 	</target>
 
 	<!-- ask user for MAJOR and MINOR release number -->
@@ -170,6 +194,76 @@
 
 	<target name="clean" depends="init" description="Delete previously build files">
 		<delete dir="${dir.build}"/>
+	</target>
+	
+	<target name="coverage-instrument" depends="package">
+		<mkdir dir="${dir.coverage.classes}"/>
+
+		<cobertura-instrument todir="${dir.coverage.classes}" datafile="${cobertura.ser}">
+            <fileset dir="${dir.classes}">
+				<include name="**/*.class" />
+            </fileset>
+        </cobertura-instrument>
+		
+		<copy todir="${dir.coverage.dist}/plugins/${plugin.dir.name}/">
+			<fileset dir="${dir.dist}/plugins/${plugin.dir.name}/"/>
+		</copy>
+		
+		<jar destfile="${dir.coverage.dist}/plugins/${plugin.dir.name}/${plugin.name}.jar" basedir="${dir.coverage.classes}" update="true">
+			<include name="**/*"/>
+		</jar>
+
+	</target>
+
+	
+	<target name="compile-tests" depends="find-required-plugins" if="tests-available">
+		<mkdir dir="${dir.classestest}"/>
+		<javac 
+				debug="true" 
+				destdir="${dir.classestest}" 
+				target="1.5" 
+				source="1.5" 
+				encoding="UTF-8"
+				classpath="${cp.compile}">
+			<classpath>
+				<fileset refid="plugin-libs"/>
+				<fileset refid="engine-libs"/>
+				<fileset refid="engine-tools"/>
+				<pathelement path="${dir.classes}"/>
+			</classpath>
+			<src path="${dir.src.test}"/>
+		</javac>
+	</target>
+	
+	<target name="runtests" depends="init,compile-tests" if="tests-available">
+		<mkdir dir="${dir.testsresult}"/>
+		<junit haltonerror="false" haltonfailure="false" printsummary="true" fork="true" forkmode="once">
+    		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
+    		<sysproperty key="file.encoding" value="UTF-8" />
+			<classpath path="${cp.compile}">
+				<pathelement path="${dir.classestest}"/>
+				<fileset dir="${dir.coverage.dist}/plugins/${plugin.dir.name}/">
+					<include name="**/*.jar"/>
+				</fileset>
+				<fileset refid="plugin-libs"/>
+				<fileset refid="engine-libs"/>
+				<fileset refid="engine-tools"/>
+    			<path refid="cp.cobertura"/>
+			</classpath>
+			<batchtest todir="${dir.testsresult}">
+				<fileset dir="${dir.src.test}"/>
+			</batchtest>
+			<formatter type="plain"/>
+			<formatter type="xml"/>
+		</junit>
+
+		<!--
+		<cobertura-merge datafile="${all.cobertura.ser}">
+		    <fileset dir="${dir.build}">
+		        <include name="*cobertura.ser" />
+		    </fileset>
+		</cobertura-merge>
+		-->
 	</target>
 	
 </project>
