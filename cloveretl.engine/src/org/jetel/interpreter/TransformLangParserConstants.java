@@ -98,8 +98,8 @@ public interface TransformLangParserConstants {
   int SECOND = 100;
   int MILLISEC = 101;
   int IDENTIFIER = 102;
-  int DATE_FIELD_LITERAL = 130;
-  int ERROR = 131;
+  int DATE_FIELD_LITERAL = 128;
+  int ERROR = 129;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -233,8 +233,6 @@ public interface TransformLangParserConstants {
     "\"lookup_next(\"",
     "\"lookup_found(\"",
     "\"lookup_admin(\"",
-    "\"init\"",
-    "\"free\"",
     "<DATE_FIELD_LITERAL>",
     "<ERROR>",
   };
