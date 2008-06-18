@@ -140,6 +140,13 @@ public class TransformLangParser extends ExpParser {
               this.outDataRecordsMap=parent.outDataRecordsMap;
               this.parseExceptions=parent.parseExceptions;    	
       }
+      
+      public void ReInit(CharSequence source, boolean reset){
+      	if (reset){
+      		this.parserHelper.reset();
+      	}
+      	this.ReInit(new CharSequenceReader(source));
+      }
 
       public final DataRecordMetadata getInRecordMeta(){
              return inRecordsMetadata[0];

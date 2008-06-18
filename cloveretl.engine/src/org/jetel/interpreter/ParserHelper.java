@@ -30,11 +30,9 @@ import org.jetel.interpreter.extensions.TLFunctionFactory;
 import org.jetel.interpreter.extensions.TLFunctionPrototype;
 
 /**
- * @author david
+ * @author David Pavlis <david.pavlis@javlinconsulting.cz>
  * @since  28.5.2006
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 public class ParserHelper {
 
@@ -71,6 +69,15 @@ public class ParserHelper {
         globalVariableSlotCounter=0;
         localVariableSlotCounter=0;
         inFunctionDeclaration=false;
+    }
+    
+    public void reset(){
+    	globalVariableSymbol.clear();
+    	localVariableSymbol.clear();
+    	functionSymbol.clear();
+    	globalVariableSlotCounter=0;
+    	localVariableSlotCounter=0;
+    	inFunctionDeclaration=false;
     }
 
     public int getNewGlobalSlot(){
