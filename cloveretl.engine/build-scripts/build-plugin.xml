@@ -238,7 +238,7 @@
 	<target name="runtests" depends="init,compile-tests" if="tests-available">
 		<mkdir dir="${dir.testsresult}"/>
 		<junit 
-				dir="${dir.coverage.plugins}"
+				dir="${dir.coverage.dist}"
 				haltonerror="false" 
 				haltonfailure="false" 
 				printsummary="true" 
