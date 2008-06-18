@@ -5,9 +5,6 @@ package org.jetel.interpreter;
 import org.jetel.interpreter.ASTnode.*;
 				  
 
-import org.jetel.interpreter.ASTnode.*;
-				  
-
 public interface TransformLangParserVisitor
 {
   public Object visit(SimpleNode node, Object data);

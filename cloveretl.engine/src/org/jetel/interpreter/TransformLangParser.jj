@@ -47,7 +47,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
 /*@egen*/
 
-		public static final String SRC_ENCODING = "UTF-8";
+	   public static final String SRC_ENCODING = "UTF-8";
 		
 	   boolean wildcardMappingActive=false;
 
@@ -118,6 +118,17 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       TransformLangParser(TransformLangParser parent,String filename,java.io.InputStream stream){
 			  this(stream);
 			  this.sourceFilename=filename;
+			  this.parserHelper=parent.parserHelper;
+              this.inRecordsMetadata=parent.inRecordsMetadata;
+              this.outRecordsMetadata=parent.outRecordsMetadata;
+              this.inDataRecordsMap=parent.inDataRecordsMap;
+              this.outDataRecordsMap=parent.outDataRecordsMap;
+              this.parseExceptions=parent.parseExceptions;    	
+      }
+
+	 TransformLangParser(TransformLangParser parent,String sourcename,CharSequence source){
+			  this(new CharSequenceReader(source));
+			  this.sourceFilename=sourcename;
 			  this.parserHelper=parent.parserHelper;
               this.inRecordsMetadata=parent.inRecordsMetadata;
               this.outRecordsMetadata=parent.outRecordsMetadata;
@@ -331,7 +342,7 @@ TOKEN: {
         				if (prevChar=='\\')
         					image.setLength(image.length()-1);
         				else
-        					throw new TokenMgrError("unterminated string on line "+startLine+" column "+startCol,0);
+        					throw new TokenMgrError("unterminated string starting on line "+startLine+" column "+startCol,0);
         				break;
         			}
         			image.append(inChar);
@@ -1992,8 +2003,9 @@ void VarExp()                  :
   	 // it may be element of LIST , MAP or RECORD
 	 [  "[" 
 	 		[ 
-	 			LOOKAHEAD( 2 ) u=<IDENTIFIER> { jjtn000.setFieldID(u.image); jjtn000.indexSet=true; } 
-	 			|  AdditiveExpression() {jjtn000.indexSet=true;} 
+	 			/* this won't work - conflict with variable inds: LOOKAHEAD( 2 ) u=<IDENTIFIER> { jjtThis.setFieldID(u.image); jjtThis.indexSet=true; } 
+	 			|*/
+	 			  AdditiveExpression() {jjtn000.indexSet=true;} 
 	 		]  
 	 	"]" {jjtn000.scalarContext=true;} 
 	 ]
@@ -3028,10 +3040,8 @@ void LookupNode() :
 	|(// do something with lookup
 		"lookup_admin("
 		t=<IDENTIFIER> { jjtn000.setLookupName(t.image); } ","
-		(
-			( "init" 	{jjtn000.setOperation(3);} )
-			|( "free" 	{jjtn000.setOperation(4);} )
-		)
+		k=<IDENTIFIER> { if (k.image.equalsIgnoreCase("init"))  jjtn000.setOperation(3); else jjtn000.setOperation(4); } 
+		
 		")"
 		)
 	)/*@bgen(jjtree)*/
