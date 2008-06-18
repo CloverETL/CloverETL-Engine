@@ -112,6 +112,13 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
               this.parseExceptions=parent.parseExceptions;
       }
 
+      public void ReInit(CharSequence source, boolean reset){
+        if (reset){
+                this.parserHelper.reset();
+        }
+        this.ReInit(new CharSequenceReader(source));
+      }
+
       public final DataRecordMetadata getInRecordMeta(){
              return inRecordsMetadata[0];
       }
@@ -3783,16 +3790,6 @@ void OutputFieldExp() #void :// IDExp -> ID
     finally { jj_save(7, xla); }
   }
 
-  final private boolean jj_3R_86() {
-    if (jj_3R_100()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_101()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
   final private boolean jj_3R_87() {
     if (jj_scan_token(AND)) return true;
     if (jj_3R_86()) return true;
@@ -4177,14 +4174,6 @@ void OutputFieldExp() #void :// IDExp -> ID
     return false;
   }
 
-  final private boolean jj_3R_20() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_25()) jj_scanpos = xsp;
-    return false;
-  }
-
   final private boolean jj_3R_93() {
     if (jj_scan_token(123)) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
@@ -4198,6 +4187,14 @@ void OutputFieldExp() #void :// IDExp -> ID
     if (jj_scan_token(CLOSE_PAR)) return true;
     xsp = jj_scanpos;
     if (jj_3R_159()) jj_scanpos = xsp;
+    return false;
+  }
+
+  final private boolean jj_3R_20() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_25()) jj_scanpos = xsp;
     return false;
   }
 
@@ -5025,6 +5022,16 @@ void OutputFieldExp() #void :// IDExp -> ID
   final private boolean jj_3R_109() {
     if (jj_scan_token(EQUAL)) return true;
     if (jj_3R_100()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_86() {
+    if (jj_3R_100()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_101()) { jj_scanpos = xsp; break; }
+    }
     return false;
   }
 
