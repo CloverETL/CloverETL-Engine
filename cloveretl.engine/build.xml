@@ -27,13 +27,13 @@
 	<property name="dir.docs" value="${basedir}/docs"/>
 	<property name="dir.component.doc.default" value="${basedir}/src-doc"/>
 	<property name="dir.examples" value="${basedir}examples"/>
-	<property name="dir.doc" value="${basedir}/javadoc"/>
 		
 	<property name="dir.build" value="${basedir}/build"/>
 	<property name="dir.tmp" value="${dir.build}/__tmp"/>
 	<property name="dir.bin" value="${dir.build}/classes"/>
 	<property name="dir.classestest" value="${dir.build}/classes-test"/>
 	<property name="dir.dist" value="${dir.build}/package"/>
+	<property name="dir.doc" value="${dir.build}/javadoc"/>
 	<property name="dir.distribution" value="${basedir}/dist"/>
 	<property name="dir.src.improved" value="${dir.build}/src"/>
 	<property name="dir.testsresult" value="${dir.build}/testsresult"/>
@@ -49,10 +49,20 @@
 	<!--load external properties-->
 	<property file="build.properties"/>
 		
+	<path id="all.sources">
+		<pathelement path="${dir.src}" />
+		<pathelement path="../cloveretl.component/src" />
+		<pathelement path="../cloveretl.connection/src" />
+		<pathelement path="../cloveretl.sequence/src" />
+		<pathelement path="../cloveretl.lookup/src" />
+		<pathelement path="../cloveretl.thirdparty/src" />
+		<pathelement path="../cloveretl.bulkloader/src" />
+		<pathelement path="../cloveretl.tlfunction/src" />
+	</path>
+	
 	<!-- =========================== LIBRARIES ============================= -->
 	<fileset id="engine-libs" dir="${dir.lib}">
 		<include name="**/*.jar"/>
-		<include name="**/*.zip"/>
 	</fileset>
 
 	<filterset id="versionFilter">
@@ -330,35 +340,18 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			target="${dir.src}/org/jetel/util/ddl2clover/DDL2Clover.jj"/>
 	</target>
 	
-	<!-- The "javadoc" target generates JavaDoc documentation. -->
-	<!--target name="javadoc" depends="checkproperties" description="Create Javadoc API documentation">
-        <javadoc destdir="${dir.doc}" access="public" use="true"
-        	notree="false" nonavbar="false" noindex="false" splitindex="true"
-        	author="true" version="true" nodeprecatedlist="false"
-        	nodeprecated="false" packagenames="org.jetel.*"
-        	sourcepath="${dir.src}">
-        	<sourcepath path="../cloveretl.connection/src"/>
-			<doctitle><![CDATA[<h1>CloverETL: Java ETL framework </h1>]]></doctitle>
-			<bottom>
-				<![CDATA[Copyright &#169; 2002-2005 Opentech s.r.o]]>
-			</bottom>
-		</javadoc>
-	</target-->
-
 	<target name="javadoc" depends="init" description="Create Javadoc API documentation">
 		<echo message="Building code documentation..." />
 		<property name="dist.subdir" value="cloverETL/javadoc"/>
 		<mkdir dir="${dir.doc}/${dist.subdir}" />
-		<javadoc destdir="${dir.doc}/${dist.subdir}" packagenames="*"
-			author="true">
-			<sourcepath path="${dir.src}"/>
-			<sourcepath path="../cloveretl.component/src"/>
-			<sourcepath path="../cloveretl.connection/src"/>
-			<sourcepath path="../cloveretl.sequence/src"/>
-			<sourcepath path="../cloveretl.lookup/src"/>
-			<sourcepath path="../cloveretl.thirdparty/src"/>
-			<sourcepath path="../cloveretl.bulkloader/src"/>
-			<sourcepath path="../cloveretl.tlfunction/src"/>
+		<javadoc 
+				destdir="${dir.doc}/${dist.subdir}" 
+				packagenames="*"
+				author="true" >
+			<sourcepath refid="all.sources"/>
+			<classpath>
+				<fileset refid="engine-libs"/>
+			</classpath>
 			<doclet name="com.sun.tools.doclets.standard.Standard">
 				<param name="-breakiterator" value="on" />
 				<!-- Following tag definition is here to get rid of complains produced by standard doclet-->
@@ -422,7 +415,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 	<target name="reports" depends="reporttests,findbugs-html,coverage-html">
 	</target>
 	
-	<target name="reports-hudson" depends="reporttests,findbugs-xml,findbugs-html,coverage-html,coverage-xml">
+	<target name="reports-hudson" depends="reporttests,findbugs-xml,findbugs-html,coverage-html,coverage-xml,javadoc">
 	</target>
 	
 	<target name="compile-tests" depends="init">
