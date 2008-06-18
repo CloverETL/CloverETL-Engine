@@ -4,66 +4,66 @@ package org.jetel.util.ddl2clover;
 public interface DDL2CloverConstants {
 
   int EOF = 0;
-  int BIGINT = 12;
-  int BINARY = 13;
-  int BOOLEAN = 14;
-  int BLOB = 15;
-  int CHAR = 16;
-  int CHARACTER = 17;
-  int CLOB = 18;
-  int COMMIT = 19;
-  int CONSTRAINT = 20;
-  int CREATE = 21;
-  int DATE = 22;
-  int DATETIME = 23;
-  int DEC = 24;
-  int DECIMAL = 25;
-  int DEFAULT_ = 26;
-  int DELETE = 27;
-  int DOUBLE = 28;
-  int FLOAT = 29;
-  int FOREIGN = 30;
-  int GLOBAL = 31;
-  int INT = 32;
-  int INTEGER = 33;
-  int KEY = 34;
-  int LOCAL = 35;
-  int NOT = 36;
-  int NULL = 37;
-  int NUMBER = 38;
-  int NUMERIC = 39;
-  int ON = 40;
-  int PRESERVE = 41;
-  int PRIMARY = 42;
-  int REFERENCES = 43;
-  int REAL = 44;
-  int ROWS = 45;
-  int SMALLINT = 46;
-  int STRING = 47;
-  int TABLE = 48;
-  int TEXT = 49;
-  int TIME = 50;
-  int TIMESTAMP = 51;
-  int TEMPORARY = 52;
-  int TINYINT = 53;
-  int UNIQUE = 54;
-  int VARBINARY = 55;
-  int VARCHAR = 56;
-  int VARCHAR2 = 57;
-  int STRING_LITERAL = 58;
-  int INTEGER_LITERAL = 59;
-  int FLOAT_LITERAL = 60;
-  int EXP = 61;
-  int IDENTIFIER = 62;
-  int LETTER = 63;
-  int DIGIT = 64;
-  int CLOSEPAREN = 65;
-  int COMA = 66;
-  int DOT = 67;
-  int OPENPAREN = 68;
-  int SEMICOLON = 69;
-  int STRSTR = 70;
-  int ALL = 71;
+  int BIGINT = 13;
+  int BINARY = 14;
+  int BOOLEAN = 15;
+  int BLOB = 16;
+  int CHAR = 17;
+  int CHARACTER = 18;
+  int CLOB = 19;
+  int COMMIT = 20;
+  int CONSTRAINT = 21;
+  int CREATE = 22;
+  int DATE = 23;
+  int DATETIME = 24;
+  int DEC = 25;
+  int DECIMAL = 26;
+  int DEFAULT_ = 27;
+  int DELETE = 28;
+  int DOUBLE = 29;
+  int FLOAT = 30;
+  int FOREIGN = 31;
+  int GLOBAL = 32;
+  int INT = 33;
+  int INTEGER = 34;
+  int KEY = 35;
+  int LOCAL = 36;
+  int NOT = 37;
+  int NULL = 38;
+  int NUMBER = 39;
+  int NUMERIC = 40;
+  int ON = 41;
+  int PRESERVE = 42;
+  int PRIMARY = 43;
+  int REFERENCES = 44;
+  int REAL = 45;
+  int ROWS = 46;
+  int SMALLINT = 47;
+  int STRING = 48;
+  int TABLE = 49;
+  int TEXT = 50;
+  int TIME = 51;
+  int TIMESTAMP = 52;
+  int TEMPORARY = 53;
+  int TINYINT = 54;
+  int UNIQUE = 55;
+  int VARBINARY = 56;
+  int VARCHAR = 57;
+  int VARCHAR2 = 58;
+  int STRING_LITERAL = 59;
+  int INTEGER_LITERAL = 60;
+  int FLOAT_LITERAL = 61;
+  int EXP = 62;
+  int IDENTIFIER = 63;
+  int LETTER = 64;
+  int DIGIT = 65;
+  int CLOSEPAREN = 66;
+  int COMA = 67;
+  int DOT = 68;
+  int OPENPAREN = 69;
+  int SEMICOLON = 70;
+  int STRSTR = 71;
+  int ALL = 72;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -80,8 +80,9 @@ public interface DDL2CloverConstants {
     "\"*/\"",
     "<token of kind 8>",
     "\"//\"",
+    "\"--\"",
     "\"\\n\"",
-    "<token of kind 11>",
+    "<token of kind 12>",
     "\"bigint\"",
     "\"binary\"",
     "\"boolean\"",
