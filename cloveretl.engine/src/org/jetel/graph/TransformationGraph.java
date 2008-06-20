@@ -94,7 +94,7 @@ public final class TransformationGraph extends GraphElement {
     
     private String debugModeStr;
     
-    private String debugDirectory;
+//    private String debugDirectory;
     
     private int debugMaxRecords = 0;
     
@@ -171,7 +171,7 @@ public final class TransformationGraph extends GraphElement {
      * Sets debug mode on the edges.
 	 * @param debug
 	 */
-    private boolean isDebugModeResolved;
+    private boolean isDebugModeResolved = true;
     
 	public void setDebugMode(boolean debugMode) {
 	    this.debugMode = debugMode;
@@ -194,43 +194,52 @@ public final class TransformationGraph extends GraphElement {
     public boolean isDebugMode() {
         if(!isDebugModeResolved) {
             PropertyRefResolver prr = new PropertyRefResolver(getGraphProperties());
-                debugMode = Boolean.valueOf(prr.resolveRef(debugModeStr)).booleanValue();
+            debugMode = Boolean.valueOf(prr.resolveRef(debugModeStr)).booleanValue();
             isDebugModeResolved = true;
         }
-        return debugMode;
-    }
-    
-    /**
-     * Sets debug directory. Default is System.getProperty("java.io.tmpdir").
-     * @param debugDirectory
-     */
-    private boolean isDebugDirectoryResolved;
-
-    public void setDebugDirectory(String debugDirectory) {
-        if(debugDirectory == null || debugDirectory.length() == 0) {
-            this.debugDirectory = null;
-            isDebugDirectoryResolved = true;
+        
+        if (debugMode) {
+	        if (watchDog != null) {
+	        	return watchDog.getGraphRuntimeContext().isDebugMode();
+	        } else {
+	            return true;
+	        }
         } else {
-            this.debugDirectory = debugDirectory;
-            isDebugDirectoryResolved = false;
+        	return false;
         }
     }
     
-    /**
-     * @return debug directory. Default is System.getProperty("java.io.tmpdir").
-     */
-    public String getDebugDirectory() {
-        if(!isDebugDirectoryResolved) {
-            PropertyRefResolver prr = new PropertyRefResolver(getGraphProperties());
-                debugDirectory = prr.resolveRef(debugDirectory);
-            isDebugDirectoryResolved = true;
-        }
-        if(debugDirectory == null) {
-            return System.getProperty("java.io.tmpdir");
-        } else {
-            return debugDirectory;
-        }
-    }
+//    /**
+//     * Sets debug directory. Default is System.getProperty("java.io.tmpdir").
+//     * @param debugDirectory
+//     */
+//    private boolean isDebugDirectoryResolved;
+//
+//    public void setDebugDirectory(String debugDirectory) {
+//        if(debugDirectory == null || debugDirectory.length() == 0) {
+//            this.debugDirectory = null;
+//            isDebugDirectoryResolved = true;
+//        } else {
+//            this.debugDirectory = debugDirectory;
+//            isDebugDirectoryResolved = false;
+//        }
+//    }
+//    
+//    /**
+//     * @return debug directory. Default is System.getProperty("java.io.tmpdir").
+//     */
+//    public String getDebugDirectory() {
+//        if(!isDebugDirectoryResolved) {
+//            PropertyRefResolver prr = new PropertyRefResolver(getGraphProperties());
+//                debugDirectory = prr.resolveRef(debugDirectory);
+//            isDebugDirectoryResolved = true;
+//        }
+//        if(debugDirectory == null) {
+//            return System.getProperty("java.io.tmpdir");
+//        } else {
+//            return debugDirectory;
+//        }
+//    }
     
     /**
      * Sets maximum debugged records on the edges.

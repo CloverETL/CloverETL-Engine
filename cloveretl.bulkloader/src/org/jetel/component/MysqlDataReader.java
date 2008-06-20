@@ -314,7 +314,7 @@ public class MysqlDataReader extends Node {
 		if (outPort != null) {
 			try {
 				outPort.close();
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 				logger.warn("Unable to close output port " + outPort, e);
 			}
 		} else {

@@ -56,7 +56,17 @@ public interface CloverJMXMBean {
      */
     public static final String GRAPH_FINISHED = "clover.graph.finished";
 
+    /**
+     * Notification identifier - graph was aborted.
+     */
+    public static final String GRAPH_ABORTED = "clover.graph.aborted";
 
+    /**
+     * Notification identifier - graph ends with an error.
+     */
+    public static final String GRAPH_ERROR = "clover.graph.error";
+
+    
     /**
      * (Not implemented)
      * @return clover engine version in text form

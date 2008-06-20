@@ -102,6 +102,8 @@ import org.jetel.util.file.FileUtils;
  *  <tr><td nowrap>-checkconfig</td><td>only check graph configuration</td></tr>
  *  <tr><td nowrap>-noJMX</td><td>this switch turns off sending graph tracking information; this switch is recommended if the tracking information are not necessary</td></tr>
  *  <tr><td nowrap>-config <i>filename</i></td><td>load default engine properties from specified file</td></tr>
+ *  <tr><td nowrap>-nodebug</td><td>turns off all runtime debugging e.g edge debugging</td></tr>
+ *  <tr><td nowrap>-debugdirectory <i>foldername</i></td><td>directory dedicated to store temporary debug data; default is java's temporary folder</td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>filename or URL of the file (even remote) containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  </table>
  *  </pre></tt>
@@ -128,6 +130,8 @@ public class runGraph {
     public final static String CHECK_CONFIG_SWITCH = "-checkconfig";
     public final static String NO_JMX = "-noJMX";
     public final static String CONFIG_SWITCH = "-config";
+    public final static String NO_DEBUG_SWITCH = "-nodebug";
+    public final static String DEBUG_DIRECTORY_SWITCH = "-debugdirectory";
     //private command line options
     public final static String WAIT_FOR_JMX_CLIENT_SWITCH = "-waitForJMXClient";
     public final static String MBEAN_NAME = "-mbean";
@@ -231,6 +235,11 @@ public class runGraph {
             } else if (args[i].startsWith(CONFIG_SWITCH)) {
                 i++;
                 configFileName = args[i];
+            } else if (args[i].startsWith(NO_DEBUG_SWITCH)) {
+                runtimeContext.setDebugMode(true);
+            } else if (args[i].startsWith(DEBUG_DIRECTORY_SWITCH)) {
+                i++;
+                runtimeContext.setDebugDirectory(args[i]);
             } else if (args[i].startsWith(DICTIONARY_VALUE_DEFINITION_SWITCH)) {
             	String value = args[i].replaceFirst(DICTIONARY_VALUE_DEFINITION_SWITCH, "");
             	try {
@@ -427,6 +436,8 @@ public class runGraph {
        // System.out.println("-mbean <name>\t\tname under which register Clover's JMXBean");
         System.out.println("-noJMX\t\t\tturns off sending graph tracking information");
         System.out.println("-config <filename>\t\tload default engine properties from specified file");
+        System.out.println("-nodebug\t\tturns off all runtime debugging e.g edge debugging");
+        System.out.println("-debugdirectory <foldername>\t\tdirectory dedicated to store temporary debug data; default is java's temporary folder");
         
         System.out.println();
         System.out.println("Note: <graph definition file> can be either local filename or URL of local/remote file");

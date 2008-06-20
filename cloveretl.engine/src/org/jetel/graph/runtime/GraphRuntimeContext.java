@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Level;
 import org.jetel.data.Defaults;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Common used implementation of IGraphRuntimeContext interface.
@@ -48,6 +49,8 @@ public class GraphRuntimeContext {
 	private Properties additionalProperties;
 	private boolean checkConfig;
 	private String password;
+	private boolean debugMode;
+	private String debugDirectory;
 	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
@@ -56,6 +59,7 @@ public class GraphRuntimeContext {
 		verboseMode = false;
 		additionalProperties = new Properties();
 		checkConfig = true;
+		debugMode = true;
 	}
 	
 	/* (non-Javadoc)
@@ -72,6 +76,9 @@ public class GraphRuntimeContext {
 		ret.useJMX = useJMX();
 		ret.waitForJMXClient = isWaitForJMXClient();
 		ret.password = getPassword();
+		ret.debugMode = isDebugMode();
+		ret.debugDirectory = getDebugDirectory();
+		
 		return ret;
 	}
 
@@ -113,6 +120,41 @@ public class GraphRuntimeContext {
      */
     public void setUseJMX(boolean useJMX) {
         this.useJMX = useJMX;
+    }
+
+    /**
+     * @return graph run debug mode
+     */
+    public boolean isDebugMode() {
+        return debugMode;
+    }
+
+    /**
+     * Sets whether graph should run in debug mode.
+     * Debug mode for example can turn off debugging on all edges. 
+     * @param debugMode
+     */
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
+    }
+
+    /**
+     * @return temporary directory for graph debugging (e.g edge debugging)
+     */
+    public String getDebugDirectory() {
+    	if (!StringUtils.isEmpty(debugDirectory)) {
+            return debugDirectory;
+    	} else {
+    		return System.getProperty("java.io.tmpdir");
+    	}
+    }
+
+    /**
+     * Sets temporary directory for graph debugging (e.g edge debugging)
+     * @param debugDirectory
+     */
+    public void setDebugDirectory(String debugDirectory) {
+        this.debugDirectory = debugDirectory;
     }
 
     /**

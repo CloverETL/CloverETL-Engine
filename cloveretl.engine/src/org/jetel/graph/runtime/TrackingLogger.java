@@ -168,7 +168,12 @@ public class TrackingLogger implements NotificationListener {
 			printProcessingStatus(false);
 		} else if(notification.getType().equals(CloverJMX.PHASE_FINISHED)) {
 			printProcessingStatus(true);
-		} else if(notification.getType().equals(CloverJMX.GRAPH_FINISHED)) {
+			logger.info("Execution of phase [" + cloverJMX.getGraphDetail().getRunningPhaseDetail().getPhaseNum()
+					+ "] successfully finished - elapsed time(sec): "
+					+ cloverJMX.getGraphDetail().getExecutionTime(TimeUnit.SECONDS));
+		} else if(notification.getType().equals(CloverJMX.GRAPH_FINISHED)
+				|| notification.getType().equals(CloverJMX.GRAPH_ABORTED)
+				|| notification.getType().equals(CloverJMX.GRAPH_ERROR)) {
 			printPhasesSummary();
 			try {
 				cloverJMX.removeNotificationListener(this);

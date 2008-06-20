@@ -728,6 +728,8 @@ public class SystemExecute extends Node{
                     outPort.close();
                 } catch (InterruptedException e) {
                     resultCode = Result.ABORTED;
+                } catch (Exception e) {
+                    resultCode = Result.ERROR;
                 }
 			}
 			if (resultCode == Result.RUNNING)

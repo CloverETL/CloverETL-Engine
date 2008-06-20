@@ -1433,7 +1433,7 @@ public class MsSqlDataWriter extends Node {
 				if (errPort != null) {
 					errPort.eof();
 				}
-			} catch (InterruptedException ie) {
+			} catch (Exception ie) {
 				logger.warn("Out port wasn't closed.", ie);
 			}
 		}

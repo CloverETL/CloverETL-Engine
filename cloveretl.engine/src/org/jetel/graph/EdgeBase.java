@@ -56,7 +56,7 @@ public abstract class EdgeBase {
 	 *@exception  IOException  Description of Exception
 	 *@since                   April 2, 2002
 	 */
-	public abstract void init() throws IOException;
+	public abstract void init() throws IOException, InterruptedException;
 
 
 	/**
@@ -149,7 +149,7 @@ public abstract class EdgeBase {
 	 */
 	public abstract void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException;
 
-    public abstract void eof() throws InterruptedException;
+    public abstract void eof() throws IOException, InterruptedException;
     
     public abstract boolean isEOF();
     

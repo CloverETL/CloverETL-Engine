@@ -97,7 +97,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.ISortDataRecordInternal#put(org.jetel.data.DataRecord)
 	 */
-	public boolean put(DataRecord record) throws IOException {
+	public boolean put(DataRecord record) throws IOException, InterruptedException {
 		if (!sorter.put(record)) {
 			// we need to sort & flush buffer on to tape and merge it
 			// later
@@ -131,7 +131,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.ISortDataRecordInternal#get()
 	 */
-	public DataRecord get() throws IOException {		
+	public DataRecord get() throws IOException, InterruptedException {		
 		
 		int index;
 		
@@ -164,7 +164,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.ISortDataRecordInternal#get(java.nio.ByteBuffer)
 	 */
-	public boolean get(ByteBuffer recordDataBuffer) throws IOException {		
+	public boolean get(ByteBuffer recordDataBuffer) throws IOException, InterruptedException {		
 		DataRecord record=get();
 		if (record!=null){
 		    record.serialize(recordDataBuffer);
@@ -177,8 +177,13 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 
 	public void reset() {
 		sorter.reset();
-		if (tapeCarousel != null) {
-			tapeCarousel.rewind();
+		if (carouselInitialized && tapeCarousel != null) {
+			try {
+				tapeCarousel.rewind();
+			} catch (Exception e) {
+				carouselInitialized = false;
+				tapeCarousel = null;
+			}
 		}
 		recordBuffer.clear();
 		this.prevIndex = -1;
@@ -188,7 +193,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.ISortDataRecordInternal#free()
 	 */
-	public void free() {
+	public void free() throws InterruptedException {
 		if (carouselInitialized && (tapeCarousel!=null)) {
 			tapeCarousel.free(); // this shouldn't happen if component exited in clean way
 		}
@@ -196,7 +201,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	}	
 	
 	
-	private void flushToTapeSynchronously() throws IOException {
+	private void flushToTapeSynchronously() throws IOException, InterruptedException {
         DataRecordTape tape;
         if (!carouselInitialized) {
             tapeCarousel = new TapeCarousel(numberOfTapes, tmpDirs);
@@ -356,10 +361,11 @@ public class ExternalSortDataRecord implements ISortDataRecord {
      * @param sourceRecords
      * @param sourceRecordsFlags
      * @throws IOException
+     * @throws InterruptedException 
      */
     private final void loadUpRecords(TapeCarousel tapeCarousel,
             DataRecord[] sourceRecords, boolean[] sourceRecordsFlags)
-            throws IOException {
+            throws IOException, InterruptedException {
         for (int i = 0; i < tapeCarousel.numTapes(); i++) {
             DataRecordTape tape = tapeCarousel.getTape(i);
             if (tape.get(sourceRecords[i])) {
@@ -375,8 +381,10 @@ public class ExternalSortDataRecord implements ISortDataRecord {
      * to be processed.
      * @param tapeCarousel
      * @return true if more chunks are available
+     * @throws InterruptedException 
+     * @throws IOException 
      */
-    private final static boolean hasMoreChunks(TapeCarousel tapeCarousel) {
+    private final static boolean hasMoreChunks(TapeCarousel tapeCarousel) throws InterruptedException, IOException {
         boolean hasMore = false;
         for (int i = 0; i < tapeCarousel.numTapes(); i++) {
             if (tapeCarousel.getTape(i).nextDataChunk()) {

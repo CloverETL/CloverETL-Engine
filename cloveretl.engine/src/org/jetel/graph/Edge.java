@@ -253,21 +253,21 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		if (edge == null) {
 			edge = edgeType.createEdgeBase(this);
 		}
-        if(debugMode) {
+        if (debugMode && getGraph().isDebugMode()) {
             String debugFileName = getDebugFileName();
             logger.debug("Edge '" + getId() + "' is running in debug mode. (" + debugFileName + ")");
             edgeDebuger = new EdgeDebuger(debugFileName, false, debugMaxRecords, 
             				debugFilterExpression, metadata, debugSampleData);
-            try{
+            try {
                 edgeDebuger.init();
-            }catch(IOException ex){
-                throw new ComponentNotReadyException(ex.getMessage());
+            } catch (Exception ex){
+                throw new ComponentNotReadyException(this, ex);
             }
         }
-        try{
+        try {
             edge.init();
-        }catch(IOException ex){
-            throw new ComponentNotReadyException(ex.getMessage());
+        } catch (Exception ex){
+            throw new ComponentNotReadyException(this, ex);
         }
 	}
 
@@ -286,7 +286,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      * @return absolute path to debug file
      */
     private String getDebugFileName() {
-        String tmpFile = getGraph().getDebugDirectory();
+        String tmpFile = getGraph().getWatchDog().getGraphRuntimeContext().getDebugDirectory();
         
         if(!tmpFile.endsWith(System.getProperty("file.separator"))) {
             tmpFile += System.getProperty("file.separator");
@@ -395,21 +395,18 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
 
 	/**
-     * @deprecated use direct eof() method
+     * @throws IOException 
+	 * @deprecated use direct eof() method
 	 */
-	public void close() throws InterruptedException {
+	public void close() throws InterruptedException, IOException {
         eof();
 	}
 	
     /* (non-Javadoc)
      * @see org.jetel.graph.OutputPort#eof()
      */
-    public void eof() throws InterruptedException {
+    public void eof() throws InterruptedException, IOException {
         edge.eof();
-        if(edgeDebuger != null) {
-            edgeDebuger.close();
-            edgeDebuger = null;
-        }
     }
     
 	public boolean hasData(){
@@ -442,6 +439,11 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         super.free();
 
         edge.free();
+        
+        if(edgeDebuger != null) {
+            edgeDebuger.close();
+            edgeDebuger = null;
+        }
     }
 
     @Override public int hashCode(){

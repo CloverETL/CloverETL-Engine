@@ -206,6 +206,8 @@ public class ExtSort extends Node {
         
         try {
 			sorter.sort();
+		} catch (InterruptedException ex) {
+			throw ex;
 		} catch (Exception ex) {
 			throw new JetelException( "Error when sorting: " + ex.getMessage(),ex);
 		}
@@ -253,7 +255,11 @@ public class ExtSort extends Node {
         if(!isInitialized()) return;
         super.free();
         if (sorter != null) {
-        	sorter.free();
+        	try {
+				sorter.free();
+			} catch (InterruptedException e) {
+				//DO NOTHING
+			}
         }
     }
     

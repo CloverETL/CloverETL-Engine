@@ -140,9 +140,11 @@ public abstract class Node extends GraphElement implements Runnable {
 	 * will be sent throught the output port.
 	 *
 	 *@param  portNum  The new EOF value
+	 * @throws IOException 
+	 * @throws IOException 
 	 *@since           April 18, 2002
 	 */
-	public void setEOF(int portNum) throws InterruptedException {
+	public void setEOF(int portNum) throws InterruptedException, IOException {
 		try {
 			((OutputPort) outPorts.get(Integer.valueOf(portNum))).eof();
 		} catch (IndexOutOfBoundsException ex) {
@@ -373,15 +375,15 @@ public abstract class Node extends GraphElement implements Runnable {
                                 resultMessage != null ? resultMessage : runResult.message(), null));
                 getCloverPost().sendMessage(msg);
             }
+        } catch (InterruptedException ex) {
+            runResult=Result.ABORTED;
+            return;
         } catch (IOException ex) {  // may be handled differently later
             runResult=Result.ERROR;
             resultException = ex;
             Message msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(runResult.code(), runResult.message(), ex));
             getCloverPost().sendMessage(msg);
-            return;
-        } catch (InterruptedException ex) {
-            runResult=Result.ABORTED;
             return;
         } catch (TransformException ex){
             runResult=Result.ERROR;
@@ -425,25 +427,15 @@ public abstract class Node extends GraphElement implements Runnable {
     }
     
 	/**
-	 *  Abort execution of Node - brutal force
+	 *  Abort execution of Node - only inform node, that should finish processing.
 	 *
 	 *@since    April 4, 2002
 	 */
 	synchronized public void abort() {
-		if(runResult != Result.RUNNING) {
-			return;
-		}
-		runIt = false;
-        try {
-            Thread.sleep(50);
-        } catch (InterruptedException e) {
-            //EMPTY INTENTIONALLY
-        }
-        
-		if (runResult==Result.RUNNING){
-			runResult = Result.ABORTED;
-			sendFinishMessage();
+		if (runResult == Result.RUNNING){
+			//runIt = false;
 			getNodeThread().interrupt();
+			//sendFinishMessage();
 		}
 	}
 
@@ -785,10 +777,11 @@ public abstract class Node extends GraphElement implements Runnable {
 
 	/**
 	 *  Closes all output ports - sends EOF signal to them.
+	 * @throws IOException 
 	 *
 	 *@since    April 11, 2002
 	 */
-	public void closeAllOutputPorts() throws InterruptedException {
+	public void closeAllOutputPorts() throws InterruptedException, IOException {
 		Iterator iterator = getOutPorts().iterator();
 		OutputPort port;
 
@@ -801,10 +794,11 @@ public abstract class Node extends GraphElement implements Runnable {
 
 	/**
 	 *  Send EOF (no more data) to all connected output ports
+	 * @throws IOException 
 	 *
 	 *@since    April 18, 2002
 	 */
-	public void broadcastEOF() throws InterruptedException{
+	public void broadcastEOF() throws InterruptedException, IOException{
 		closeAllOutputPorts();
 	}
 
@@ -813,9 +807,10 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *  Closes specified output port - sends EOF signal. 
 	 *
 	 *@param  portNum  Which port to close
+	 * @throws IOException 
 	 *@since           April 11, 2002
 	 */
-	public void closeOutputPort(int portNum) throws InterruptedException {
+	public void closeOutputPort(int portNum) throws InterruptedException, IOException {
         OutputPort port = (OutputPort) outPorts.get(Integer.valueOf(portNum));
         if (port == null) {
             throw new RuntimeException(this.getId()+" - can't close output port \"" + portNum

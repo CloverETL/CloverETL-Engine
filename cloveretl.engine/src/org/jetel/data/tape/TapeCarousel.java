@@ -26,6 +26,9 @@ package org.jetel.data.tape;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * @author david
  * @since  3.2.2005
@@ -34,6 +37,8 @@ import java.io.IOException;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class TapeCarousel {
+
+	private static Log logger = LogFactory.getLog(TapeCarousel.class);
 
     private DataRecordTape[] tapeArray;
     private File[] tmpDirs;
@@ -83,7 +88,7 @@ public class TapeCarousel {
         }
     }
 
-    public void flush(){
+    public void flush() throws InterruptedException{
         for (int i=0;i<tapeArray.length;i++){
             try{
                 tapeArray[i].flush(true);
@@ -93,12 +98,12 @@ public class TapeCarousel {
         }
     }
     
-    public void free(){
+    public void free() throws InterruptedException{
         for (int i=0;i<tapeArray.length;i++){
            try{
                tapeArray[i].close();
            }catch(IOException ex){
-               throw new RuntimeException("IOException when closing tape in carousel: "+ex);
+               logger.warn("IOException when closing tape in carousel.", ex);
            }
         }
     }
@@ -125,13 +130,13 @@ public class TapeCarousel {
         return tapeArray.length;
     }
     
-    public void rewind(){
+    public void rewind() throws InterruptedException, IOException {
         for(int i=0;i<tapeArray.length;i++){
             tapeArray[i].rewind();
         }
     }
     
-    public void clear(){
+    public void clear() throws InterruptedException {
         for(int i=0;i<tapeArray.length;i++){
             try{
                 tapeArray[i].clear();
