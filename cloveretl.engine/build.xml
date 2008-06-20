@@ -364,6 +364,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		</javadoc>
 
 		<!-- create zip package for javadoc -->
+		<mkdir dir="${dir.distribution}"/>
 		<zip destfile="${dir.distribution}/cloverETL.javadoc.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${dir.doc}"/>
 	</target>
 		
