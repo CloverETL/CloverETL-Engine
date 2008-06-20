@@ -27,23 +27,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import junit.framework.TestCase;
-
 import org.jetel.data.formatter.FixLenDataFormatter;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
-import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.test.CloverTestCase;
 
 /**
  * @author maciorowski
  * 
  */
-public class FixLenDataFormatterTest extends TestCase {
+public class FixLenDataFormatterTest extends CloverTestCase {
 	private FixLenCharDataParser aParser = null;
 	private FixLenCharDataParser aParser2 = null;
 	private FixLenCharDataParser aParser3 = null;
@@ -54,8 +52,8 @@ public class FixLenDataFormatterTest extends TestCase {
 	private DataRecordMetadata metadata = null;
 
 	protected void setUp() throws IOException, ComponentNotReadyException {
-
-		EngineInitializer.initEngine((String) null, null, null);
+		initEngine();
+	    
 		FileInputStream in = null;
 		// FileInputStream in2 = null;
 		// FileInputStream in3 = null;

@@ -19,8 +19,7 @@
 */
 package org.jetel.util;
 
-import junit.framework.TestCase;
-
+import org.jetel.test.CloverTestCase;
 import org.jetel.util.primitive.Queue;
 
 /**
@@ -29,7 +28,7 @@ import org.jetel.util.primitive.Queue;
  *  @author	Sven Boden
  *  @since  11 Nov 2004
  */
-public final class FifoTest extends TestCase {
+public final class FifoTest extends CloverTestCase {
 
     public FifoTest(String name) {
    		super(name);

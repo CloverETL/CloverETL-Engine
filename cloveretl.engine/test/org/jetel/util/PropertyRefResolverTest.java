@@ -25,17 +25,14 @@ package org.jetel.util;
 
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.jetel.exception.AttributeNotFoundException;
-import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.test.CloverTestCase;
 import org.jetel.util.property.PropertyRefResolver;
 
-public class PropertyRefResolverTest extends TestCase {
+public class PropertyRefResolverTest extends CloverTestCase {
 
     protected void setUp() throws Exception {
-        super.setUp();
-    	EngineInitializer.initEngine((String) null, null, null);
+		initEngine();
     }
 
     protected void tearDown() throws Exception {

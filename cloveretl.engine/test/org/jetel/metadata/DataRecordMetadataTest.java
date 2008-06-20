@@ -19,7 +19,7 @@
 
 package org.jetel.metadata;
 
-import junit.framework.TestCase;
+import org.jetel.test.CloverTestCase;
 
 /**
  * @author Wes Maciorowski
@@ -27,7 +27,7 @@ import junit.framework.TestCase;
  * @version 1.0
  *
  */
-public class DataRecordMetadataTest extends TestCase {
+public class DataRecordMetadataTest extends CloverTestCase {
 //	private DataRecordMetadata aFixedDataRecordMetadata;
 	private DataRecordMetadata aDelimitedDataRecordMetadata;
 	

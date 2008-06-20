@@ -22,19 +22,17 @@ package org.jetel.exception;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-import junit.framework.TestCase;
-
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.DelimitedDataParser;
-import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.test.CloverTestCase;
 
 /**
  * @author maciorowski
  *
  */
-public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends TestCase {
+public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends CloverTestCase {
 	private DelimitedDataParser aParser = null;
 	private DelimitedDataParser aParser2 = null;
 	private DataRecord record;
@@ -42,8 +40,9 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	private FileInputStream in2 = null;
 	private DataRecordMetadata metadata = null;
 	
-	protected void setUp() throws FileNotFoundException { 
-		EngineInitializer.initEngine((String) null, null, null);
+	protected void setUp() throws FileNotFoundException {
+		initEngine();
+		
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 
 		metadata = xmlReader.read(new FileInputStream("config/test/rec_def/DL_null_def_rec.xml"));

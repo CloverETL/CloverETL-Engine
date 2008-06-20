@@ -24,16 +24,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import junit.framework.TestCase;
-
 import org.codehaus.janino.CompileException;
+import org.jetel.test.CloverTestCase;
 import org.jetel.util.compile.DynamicJavaCode;
 
 /**
  * @author Wes Maciorowski; refactor Martin Varecha
  * @version 1.0
  */
-public class CompileTest   extends TestCase  {
+public class CompileTest   extends CloverTestCase  {
 	String testJavaFile1 = "src/org/jetel/userclasses/test1.java";	
 	String testJavaClassFile1 = "org/jetel/userclasses/test1.class";	
 	String testJavaFile2 = "src/org/jetel/userclasses/Main.java";	

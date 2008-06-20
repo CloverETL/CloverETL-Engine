@@ -19,16 +19,14 @@
 
 package org.jetel.data;
 
-import junit.framework.TestCase;
-
-import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.test.CloverTestCase;
 
 /**
  * @author maciorowski
  *
  */
-public class ByteDataFieldTest extends TestCase {
+public class ByteDataFieldTest extends CloverTestCase {
 	byte[] byteArray = new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x40 };
 	Byte[] byteObjectArray = new Byte[byteArray.length + 1];
 
@@ -37,7 +35,7 @@ public class ByteDataFieldTest extends TestCase {
 	static final String TEST_STRING = "THIS is test !@#$%^&*()ěščřžýíé";
 
 	protected void setUp() {
-		EngineInitializer.initEngine((String) null, null, null);
+		initEngine();
 
 		int i = 0;
 		for (byte b : byteArray) {

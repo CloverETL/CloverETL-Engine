@@ -2,21 +2,18 @@ package org.jetel.data.primitive;
 
 import java.nio.ByteBuffer;
 
-import junit.framework.TestCase;
-
-import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.test.CloverTestCase;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 @SuppressWarnings("FE")
-public class DecimalNumericTest extends TestCase {
+public class DecimalNumericTest extends CloverTestCase {
 	
 	Decimal anInt,aLong,aFloat,aDouble,aDefault,aDoubleIntInt,aDecimalIntInt,anIntInt;
 
 	protected void setUp() throws Exception {
-		super.setUp();
-		EngineInitializer.initEngine((String) null, null, null);
-		
+		initEngine();
+	
 		 anInt=DecimalFactory.getDecimal(0);
 		 aLong=DecimalFactory.getDecimal((long)0);
 		 aFloat=DecimalFactory.getDecimal(0f);

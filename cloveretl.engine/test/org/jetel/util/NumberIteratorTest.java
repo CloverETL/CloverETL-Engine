@@ -2,9 +2,9 @@ package org.jetel.util;
 
 import java.util.NoSuchElementException;
 
-import junit.framework.TestCase;
+import org.jetel.test.CloverTestCase;
 
-public class NumberIteratorTest extends TestCase {
+public class NumberIteratorTest extends CloverTestCase {
 	
 	NumberIterator numbers;
 	

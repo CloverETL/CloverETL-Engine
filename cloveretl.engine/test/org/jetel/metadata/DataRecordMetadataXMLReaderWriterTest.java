@@ -6,7 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import junit.framework.TestCase;
+import org.jetel.test.CloverTestCase;
 
 /*  
  *  jETeL/Clover - Java based ETL application framework.
@@ -33,7 +33,7 @@ import junit.framework.TestCase;
  * @author Wes Maciorowski
  *
  */
-public class DataRecordMetadataXMLReaderWriterTest extends TestCase {
+public class DataRecordMetadataXMLReaderWriterTest extends CloverTestCase {
 	private DataRecordMetadata aDelimitedDataRecordMetadata;
 	private DataRecordMetadataXMLReaderWriter aDataRecordMetadataXMLReaderWriter;
 	private String testFile1 = null;

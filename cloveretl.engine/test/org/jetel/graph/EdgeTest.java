@@ -21,15 +21,13 @@ package org.jetel.graph;
 
 import java.io.IOException;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
-import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.test.CloverTestCase;
 
-public class EdgeTest extends TestCase {
+public class EdgeTest extends CloverTestCase {
 	private DataRecordMetadata aDelimitedDataRecordMetadata;
 	private EdgeBase edge;
 	
@@ -38,9 +36,8 @@ public class EdgeTest extends TestCase {
 	}
 	
 	protected void setUp() { 
-		
-		EngineInitializer.initEngine((String) null, null, null);
-		
+		initEngine();
+	    
 		aDelimitedDataRecordMetadata = new DataRecordMetadata("record2",DataRecordMetadata.DELIMITED_RECORD);
 		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,";"));
 		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field1",DataFieldMetadata.STRING_FIELD,":"));

@@ -218,6 +218,7 @@
 	
 	<target name="compile-tests" depends="find-required-plugins" if="tests-available">
 		<mkdir dir="${dir.classestest}"/>
+		<echo>fileset dir="${dir.engine.classestest}"</echo>
 		<javac 
 				debug="true" 
 				destdir="${dir.classestest}" 
@@ -229,6 +230,7 @@
 				<fileset refid="plugin-libs"/>
 				<fileset refid="engine-libs"/>
 				<fileset refid="engine-tools"/>
+				<pathelement path="${dir.engine.classestest}"/>
 				<pathelement path="${dir.classes}"/>
 			</classpath>
 			<src path="${dir.src.test}"/>
@@ -238,7 +240,6 @@
 	<target name="runtests" depends="init,compile-tests" if="tests-available">
 		<mkdir dir="${dir.testsresult}"/>
 		<junit 
-				dir="${dir.coverage.dist}"
 				haltonerror="false" 
 				haltonfailure="false" 
 				printsummary="true" 
@@ -246,10 +247,14 @@
 				forkmode="once" >
     		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
     		<sysproperty key="file.encoding" value="UTF-8" />
+			<env key="cloveretl.plugins" value="${dir.coverage.dist}/plugins"/>
 			<classpath path="${cp.compile}">
 				<pathelement path="${dir.classestest}"/>
+				<pathelement path="${dir.engine.classestest}"/>
 				<fileset dir="${dir.coverage.dist}/plugins/${plugin.dir.name}/">
 					<include name="**/*.jar"/>
+				</fileset>
+				<fileset dir="${dir.engine.classestest}">
 				</fileset>
 				<fileset refid="plugin-libs"/>
 				<fileset refid="engine-libs"/>
@@ -257,7 +262,9 @@
     			<path refid="cp.cobertura"/>
 			</classpath>
 			<batchtest todir="${dir.testsresult}">
-				<fileset dir="${dir.src.test}"/>
+				<fileset dir="${dir.src.test}">
+					<include name="**/*Test.java"/>
+				</fileset>
 			</batchtest>
 			<formatter type="plain"/>
 			<formatter type="xml"/>

@@ -20,9 +20,7 @@
  */
 package org.jetel.util;
 
-import junit.framework.TestCase;
-
-import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.test.CloverTestCase;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -33,7 +31,7 @@ import org.jetel.util.string.StringUtils;
  * 
  */
 
-public class StringUtilsTest extends TestCase {
+public class StringUtilsTest extends CloverTestCase {
 
 	private String controlString1;
 
@@ -63,8 +61,8 @@ public class StringUtilsTest extends TestCase {
 
 	@Override
 	protected void setUp() {
-
-		EngineInitializer.initEngine((String) null, null, null);
+		initEngine();
+	    
 		controlString1 = "ala\n\rr\t\n";
 
 		resultString1 = "ala\\n\\rr\\t\\n";

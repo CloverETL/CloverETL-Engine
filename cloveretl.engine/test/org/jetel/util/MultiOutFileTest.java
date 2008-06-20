@@ -21,7 +21,7 @@
 
 package org.jetel.util;
 
-import junit.framework.TestCase;
+import org.jetel.test.CloverTestCase;
 
 /**
  * @author Agata Vackova (agata.vackova@javlinconsulting.cz) ; 
@@ -32,7 +32,7 @@ import junit.framework.TestCase;
  *
  */
 
-public class MultiOutFileTest extends TestCase {
+public class MultiOutFileTest extends CloverTestCase {
 
 
 	/* (non-Javadoc)

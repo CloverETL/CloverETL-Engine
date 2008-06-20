@@ -3,21 +3,20 @@ package org.jetel.data;
 
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.jetel.data.primitive.Decimal;
-import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.test.CloverTestCase;
 
-public class DecimalDataFieldTest extends TestCase {
+public class DecimalDataFieldTest extends CloverTestCase {
 	
 	private DataField field1;
 	private DataFieldMetadata fieldMetadata;
 	
 	@Override
 	protected void setUp() throws Exception {
-		EngineInitializer.initEngine((String) null, null, null);
+		initEngine();
+	    
 		fieldMetadata = new DataFieldMetadata("field1",	DataFieldMetadata.DECIMAL_FIELD,";");  
 	}
 	

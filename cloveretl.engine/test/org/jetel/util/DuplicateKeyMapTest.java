@@ -25,11 +25,10 @@ package org.jetel.util;
 
 import java.util.HashMap;
 
-import junit.framework.TestCase;
-
+import org.jetel.test.CloverTestCase;
 import org.jetel.util.primitive.DuplicateKeyMap;
 
-public class DuplicateKeyMapTest extends TestCase {
+public class DuplicateKeyMapTest extends CloverTestCase {
 
     DuplicateKeyMap map;
     protected void setUp() throws Exception {

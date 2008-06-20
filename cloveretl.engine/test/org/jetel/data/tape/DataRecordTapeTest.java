@@ -21,25 +21,24 @@ package org.jetel.data.tape;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import junit.framework.TestCase;
-
 import org.jetel.data.DataRecord;
-import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.test.CloverTestCase;
 
 /**
  * @author dpavlis
  *
  */
-public class DataRecordTapeTest  extends TestCase {
+public class DataRecordTapeTest  extends CloverTestCase {
 
     private DataRecord testRecordA,testRecordB;
 
 	
 
 protected void setUp() { 
-	
+	initEngine();
+    
     DataRecordMetadata metadata=new DataRecordMetadata("test_record");
     
     metadata.addField(new DataFieldMetadata("Field1",DataFieldMetadata.STRING_FIELD,(short)10));
@@ -55,7 +54,6 @@ protected void setUp() {
     testRecordA.getField(2).setValue(Integer.valueOf(-1234567));
     testRecordB.copyFieldsByPosition(testRecordA);
     
-	EngineInitializer.initEngine((String) null, null, null);
 }
 
 

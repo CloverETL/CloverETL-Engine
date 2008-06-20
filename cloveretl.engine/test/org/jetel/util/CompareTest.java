@@ -25,11 +25,10 @@ package org.jetel.util;
 
 import java.text.RuleBasedCollator;
 
-import junit.framework.TestCase;
-
+import org.jetel.test.CloverTestCase;
 import org.jetel.util.string.Compare;
 
-public class CompareTest extends TestCase {
+public class CompareTest extends CloverTestCase {
 
     
     private RuleBasedCollator col=(RuleBasedCollator)RuleBasedCollator.getInstance();

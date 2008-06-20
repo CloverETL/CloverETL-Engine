@@ -1,0 +1,36 @@
+package org.jetel.test;
+
+import org.jetel.graph.runtime.EngineInitializer;
+
+import junit.framework.TestCase;
+
+public abstract class CloverTestCase extends TestCase {
+
+	public CloverTestCase() {
+		super();
+	}
+
+	public CloverTestCase(String name) {
+		super(name);
+	}
+
+	private static final String PLUGINS_KEY = "cloveretl.plugins";
+
+	private static final String PLUGINS_DEFAULT_DIR = "../cloveretl.engine/plugins";
+
+	protected void initEngine() {
+		final String pluginsDir;
+
+		final String pluginsProperty = System.getenv(PLUGINS_KEY);
+		if (pluginsProperty != null) {
+			pluginsDir = pluginsProperty;
+		} else {
+			pluginsDir = PLUGINS_DEFAULT_DIR;
+		}
+
+		System.out.println("Cloveretl plugins: " + pluginsDir);
+		EngineInitializer.initEngine(pluginsDir, null, null);
+		EngineInitializer.forceActivateAllPlugins();
+	}
+
+}

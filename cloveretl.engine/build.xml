@@ -465,7 +465,6 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 	<target name="runtests-engine" depends="init,compile,compile-tests,coverage-instrument">
 		<mkdir dir="${dir.testsresult}"/>
 		<junit 
-				dir="${dir.coverage.plugins}"
 				haltonerror="false" 
 				haltonfailure="false" 
 				printsummary="true"
@@ -473,6 +472,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 				forkmode="once" >
     		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
     		<sysproperty key="file.encoding" value="UTF-8" />
+			<env key="cloveretl.plugins" value="${dir.coverage.plugins}/plugins"/>
 			<classpath>
 			    <pathelement path="${dir.classestest}"/>
 			    <pathelement path="${dir.coverage.bin}"/>
@@ -484,14 +484,16 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
     			<path refid="cp.cobertura"/>
 			</classpath>
 			<batchtest todir="${dir.testsresult}">
-				<fileset dir="${dir.src.test}"></fileset>
+				<fileset dir="${dir.src.test}">
+					<include name="**/*Test.java"/>
+				</fileset>
 			</batchtest>
 			<formatter type="plain"/>
 			<formatter type="xml"/>
 		</junit>
 	</target>
 	
-	<target name="runtests-plugins">
+	<target name="runtests-plugins" depends="compile-tests,coverage-instrument">
 		<mkdir dir="${dir.coverage.plugins}"/>
 		<foreach list="${plugin.list}" inheritall="true" target="runtests-plugin" param="plugin.dir"/>
 	</target>
@@ -501,6 +503,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		<ant target="runtests" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
 			<property name="dir.dist" value="${dir.dist}"/>
 			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
+			<property name="dir.engine.classestest" value="${dir.classestest}"/>
 			<property name="cobertura.ser" value="${cobertura.ser}"/>
 			<property name="major_version" value="${major_version}"/>
 			<property name="minor_version" value="${minor_version}"/>

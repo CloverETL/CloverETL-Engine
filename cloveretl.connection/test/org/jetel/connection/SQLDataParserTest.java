@@ -3,31 +3,29 @@ package org.jetel.connection;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-import junit.framework.TestCase;
-
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLDataParser;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
-import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.test.CloverTestCase;
 
 /**
  * @author maciorowski
  * 
  */
-public class SQLDataParserTest extends TestCase {
+public class SQLDataParserTest extends CloverTestCase {
 	private SQLDataParser aParser2 = null;
 
 	private DataRecord record;
 
 	@SuppressWarnings("deprecation")
 	protected void setUp() throws ComponentNotReadyException, JetelException, FileNotFoundException {
-		EngineInitializer.initEngine("../cloveretl.engine/plugins", null, null);
-		EngineInitializer.forceActivateAllPlugins();
+		initEngine();
+		
 		DataRecordMetadata metadata = null;
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 		DBConnection aDBConnection = null;

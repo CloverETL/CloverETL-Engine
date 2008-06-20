@@ -8,8 +8,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
-import junit.framework.TestCase;
-
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.StringDataField;
@@ -23,12 +21,11 @@ import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
-import org.jetel.graph.runtime.EngineInitializer;
-import org.jetel.lookup.RangeLookupTable;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.test.CloverTestCase;
 
-public class RangeLookupTest extends TestCase {
+public class RangeLookupTest extends CloverTestCase {
 
 	LookupTable lookup, lookupNotOverlap;
 	DataRecordMetadata lookupMetadata, metadata;
@@ -41,7 +38,7 @@ public class RangeLookupTest extends TestCase {
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	protected void setUp() throws Exception {
-		EngineInitializer.initEngine("../cloveretl.engine/plugins", null, null);
+		initEngine();	    
 	}
 
 	public void test_getDataRecord() throws IOException, ComponentNotReadyException {
@@ -701,7 +698,6 @@ public class RangeLookupTest extends TestCase {
 		record.getField("end1").setValue(100);
 		lookup.put(record, record.duplicate());
 
-		DataRecord tmp;
 		for (Iterator iter = lookup.iterator(); iter.hasNext();) {
 			System.out.print(iter.next());
 
@@ -712,23 +708,23 @@ public class RangeLookupTest extends TestCase {
 		keys[0] = 20;
 		keys[1] = 120;
 
-		tmp = lookup.get(keys);
+		lookup.get(keys);
 		assertEquals(3, lookup.getNumFound());
 
 		((RangeLookupTable) lookup).setStartInclude(new boolean[] { false, true });
 
-		tmp = lookup.get(keys);
+		lookup.get(keys);
 		assertEquals(2, lookup.getNumFound());
 
 		((RangeLookupTable) lookup).setEndInclude(new boolean[] { false, false });
 
-		tmp = lookup.get(keys);
+		lookup.get(keys);
 		assertEquals(0, lookup.getNumFound());
 
 		keys[0] = 17;
 		keys[1] = 100;
 
-		tmp = lookup.get(keys);
+		lookup.get(keys);
 		assertEquals(2, lookup.getNumFound());
 	}
 
