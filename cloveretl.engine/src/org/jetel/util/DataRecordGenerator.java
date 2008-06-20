@@ -44,6 +44,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -475,7 +476,7 @@ public class DataRecordGenerator implements Parser {
 		int rightParantesisIndex;
 		for (int i = 0; i < fields.length; i++) {
 			// new notation $f:=random(min,max), old notation f=random(min,max)
-			param = MiscUtils.getMappingItemsFromMappingString(fields[i]);
+			param = JoinKeyUtils.getMappingItemsFromMappingString(fields[i]);
 			this.randomFields[i] = param[0];
 			if (param[1] != null) {
 				leftParenthesisIndex = param[1].indexOf('(');
@@ -524,7 +525,7 @@ public class DataRecordGenerator implements Parser {
 		this.sequenceIDs = new String[fields.length];
 		String[] param;
 		for (int i = 0; i < fields.length; i++) {
-			param = MiscUtils.getMappingItemsFromMappingString(fields[i]);
+			param = JoinKeyUtils.getMappingItemsFromMappingString(fields[i]);
 			this.sequenceFields[i] = param[0];
 			if (param[1] != null) {
 				sequenceIDs[i] = param[1];
