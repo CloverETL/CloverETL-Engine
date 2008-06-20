@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
@@ -47,6 +48,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -225,6 +227,8 @@ public class HashJoin extends Node {
 	private OutputPort outPort;
 	DataRecord[] inRecords;
 	DataRecord[] outRecords;
+	private String joinKey;
+	private String slaveOverrideKey;
 
 	/**
 	 *Constructor for the HashJoin object
@@ -255,7 +259,23 @@ public class HashJoin extends Node {
         this(id, driverJoiners, slaveJoiners, null, null, null, join, slaveOverriden);
 		this.transformation = transform;
 	}
+	
+	public HashJoin(String id, String joinKey, String transform, String transformClass, String transformURL,
+			Join join){
+		super(id);
+		this.transformSource =transform;
+		this.transformClassName = transformClass;
+		this.transformURL = transformURL;
+		this.join = join;
+		this.hashTableInitialCapacity = DEFAULT_HASH_TABLE_INITIAL_CAPACITY;
+		this.joinKey = joinKey;
+	}
 
+	public HashJoin(String id, String joinKey, RecordTransform transform, Join join){
+		this(id, joinKey, null, null, null, join);
+		this.transformation = transform;
+	}
+	
 	//	/**
 //	*  Sets the leftOuterJoin attribute of the HashJoin object
 //	*
@@ -283,13 +303,28 @@ public class HashJoin extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
-
+		
 		driverPort = getInputPort(DRIVER_ON_PORT);
 		outPort = getOutputPort(WRITE_TO_PORT);
 
 		slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
+		if (driverJoiners == null) {//need to parse join key
+			List<DataRecordMetadata> inMetadata = getInMetadata();
+			String[][][] joiners = JoinKeyUtils.parseHashJoinKey(joinKey, inMetadata);
+			driverJoiners = joiners[0];
+			if (slaveOverrideKey != null) {
+				String[] slaveKeys = slaveOverrideKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+				if (slaveKeys.length != joiners[0][0].length) {
+					throw new ComponentNotReadyException(this, XML_SLAVEOVERRIDEKEY_ATTRIBUTE, "Driver key and slave key doesn't match");
+				}
+				for (int i = 0; i < joiners[1].length; i++) {
+					joiners[1][i] = slaveKeys; 
+				}
+			}
+			slaveJoiners = joiners[1];
+		}
 		if (driverJoiners.length < 1) {
-			throw new ComponentNotReadyException("driver key list not specified");
+			throw new ComponentNotReadyException(this, XML_JOINKEY_ATTRIBUTE, "Driver key list not specified");
 		}
 		if (driverJoiners.length < slaveCnt) {
 			logger.warn("Driver keys aren't specified for all slave inputs - deducing missing keys");
@@ -596,48 +631,6 @@ public class HashJoin extends Node {
 	}
 
 	/**
-	 * Parses join string.
-	 * @param joinBy Join string
-	 * @return Each element of outer array contains array of arrays of strings. Each subarray represents one driver/slave key list.
-	 * First element of outer array is for driver key lists, the second one is for slave key lists.
-	 * @throws XMLConfigurationException
-	 */
-	private static String[][][] parseJoiners(String joinBy) throws XMLConfigurationException {	
-		String[][][] res = new String[2][][];
-		String[] mappings = joinBy.split("#");
-		res[0] = new String[mappings.length][];
-		res[1] = new String[mappings.length][];
-
-		for (int i = 0; i < mappings.length; i++) {
-			if (i > 0 && mappings[i].length() == 0) {
-				// use first mapping instead of the empty one
-				res[0][i] = res[0][0];
-				res[1][i] = res[1][0];
-				continue;
-			}
-			String[] pairs = mappings[i].split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-			res[0][i] = new String[pairs.length];	// master key
-			res[1][i] = new String[pairs.length];	// slave key
-			for (int j = 0; j < pairs.length; j++) {
-				String[] fields = pairs[j].split("=", 2);
-				if (fields.length == 0) {
-					throw new XMLConfigurationException("Invalid key mapping: " + mappings[i]);
-				}
-				if (fields.length == 1 || fields[1].length() == 0) {	// only master field is specified
-					res[0][i][j] = res[1][i][j] = fields[0];	// use it for both master and slave
-				} else if (fields[0].length() == 0 && i > 0) {			// only slave key is specified
-					res[0][i][j] = res[0][0][j];	// inherit master from first mapping 
-					res[1][i][j] = fields[1];
-				} else {
-					res[0][i][j] = fields[0];
-					res[1][i][j] = fields[1];
-				}
-			}
-		}
-		return res;
-	}
-
-	/**
 	 *  Description of the Method
 	 *
 	 * @param  nodeXML  Description of Parameter
@@ -651,7 +644,6 @@ public class HashJoin extends Node {
 		try {
 			String joinStr = xattribs.getString(XML_JOINTYPE_ATTRIBUTE, "inner");
 			Join joinType;
-			boolean slaveOverriden = false;
 			
 			if (joinStr == null || joinStr.equalsIgnoreCase("inner")) {
 				joinType = Join.INNER;
@@ -664,32 +656,22 @@ public class HashJoin extends Node {
 						+ "Invalid joinType specification: " + joinStr);				
 			}
 
-			String[][][] joiners = parseJoiners(xattribs.getString(XML_JOINKEY_ATTRIBUTE, ""));
-
 			// legacy attributes handling {
 			if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE, false)) {
 				joinType = Join.LEFT_OUTER;
 			}
-			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
-				slaveOverriden = true;
-				String[] slaveKeys = xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-				if (slaveKeys.length != joiners[0][0].length) {
-					throw new XMLConfigurationException("Driver key and slave key doesn't match");
-				}
-				for (int i = 0; i < joiners[1].length; i++) {
-					joiners[1][i] = slaveKeys; 
-				}
-			}
-			// }
 
 			join = new HashJoin(
 					xattribs.getString(XML_ID_ATTRIBUTE),
-					joiners[0], joiners[1],
+					xattribs.getString(XML_JOINKEY_ATTRIBUTE),
 					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
                     xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null),
-					joinType, slaveOverriden);
+					joinType);
 			
+			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
+				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE));
+			}
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
@@ -730,8 +712,23 @@ public class HashJoin extends Node {
     		outPort = getOutputPort(WRITE_TO_PORT);
 
     		slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
+    		if (driverJoiners == null) {
+    			List<DataRecordMetadata> inMetadata = getInMetadata();
+    			String[][][] joiners = JoinKeyUtils.parseHashJoinKey(joinKey, inMetadata);
+    			driverJoiners = joiners[0];
+    			if (slaveOverrideKey != null) {
+    				String[] slaveKeys = slaveOverrideKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+    				if (slaveKeys.length != joiners[0][0].length) {
+    					throw new ComponentNotReadyException(this, XML_SLAVEOVERRIDEKEY_ATTRIBUTE, "Driver key and slave key doesn't match");
+    				}
+    				for (int i = 0; i < joiners[1].length; i++) {
+    					joiners[1][i] = slaveKeys; 
+    				}
+    			}
+    			slaveJoiners = joiners[1];
+    		}
     		if (driverJoiners.length < 1) {
-    			throw new ComponentNotReadyException("driver key list not specified");
+    			throw new ComponentNotReadyException(this, XML_JOINKEY_ATTRIBUTE, "Driver key list not specified");
     		}
     		if (driverJoiners.length < slaveCnt) {
     			logger.warn("Driver keys aren't specified for all slave inputs - deducing missing keys");
@@ -885,6 +882,10 @@ public class HashJoin extends Node {
 
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	public void setSlaveOverrideKey(String slaveOverrideKey) {
+		this.slaveOverrideKey = slaveOverrideKey;
 	}
 
 }

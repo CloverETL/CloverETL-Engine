@@ -36,12 +36,15 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
@@ -150,6 +153,9 @@ public class DataIntersection extends Node {
 	private final static int WRITE_TO_PORT_B = 2;
 	private final static int DRIVER_ON_PORT = 0;
 	private final static int SLAVE_ON_PORT = 1;
+	
+	private final static int A_INDEX = 0;
+	private final static int B_INDEX = 1;
 
 	private String transformClassName;
     private String transformSource = null;
@@ -176,6 +182,8 @@ public class DataIntersection extends Node {
 	private InputReader slaveReader;
 
 	private DataRecord tmp;
+
+	private String joinKey;
 	
 	static Log logger = LogFactory.getLog(DataIntersection.class);
 	
@@ -200,6 +208,20 @@ public class DataIntersection extends Node {
 		this.transformation = transform;
 	}
 
+	public DataIntersection(String id, String joinKey, String transform, String transformClass,
+			String transformURL){
+		super(id);
+		this.joinKey = joinKey;
+		this.transformClassName = transformClass;
+		this.transformSource = transform;
+		this.transformURL = transformURL;
+	}
+	
+	public DataIntersection(String id, String joinKey, DataRecordTransform transform){
+		this(id, joinKey, null, null, null);
+		this.transformation = transform;
+	}
+	
 	/**
 	 *  Sets specific key (string) for slave records<br>
 	 *  Can be used if slave record has different names
@@ -406,8 +428,12 @@ public class DataIntersection extends Node {
 		InputPort driverPort = getInputPort(DRIVER_ON_PORT);
 		InputPort slavePort = getInputPort(SLAVE_ON_PORT);
 
-		if (slaveOverrideKeys == null) {
-			slaveOverrideKeys = joinKeys;
+		if (joinKeys == null) {
+			String[][][] tmp = JoinKeyUtils.parseHashJoinKey(joinKey, getInMetadata());
+			joinKeys = tmp[A_INDEX][0];
+			if (slaveOverrideKeys == null) {
+				slaveOverrideKeys = tmp[B_INDEX][0];
+			}
 		}
 		recordKeys = new RecordKey[2];
 		recordKeys[0] = new RecordKey(joinKeys, driverPort.getMetadata());
@@ -513,7 +539,7 @@ public class DataIntersection extends Node {
 		try{
 			intersection = new DataIntersection(
                     xattribs.getString(XML_ID_ATTRIBUTE),
-                    xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+                    xattribs.getString(XML_JOINKEY_ATTRIBUTE),
                     xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null, false), 
                     xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
                     xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null));
@@ -560,8 +586,16 @@ public class DataIntersection extends Node {
 		checkMetadata(status, slaveMetadata, getOutputPort(WRITE_TO_PORT_B).getMetadata());
 
 		//join key checking
-		if (slaveOverrideKeys == null) {
-			slaveOverrideKeys = joinKeys;
+		if (joinKeys == null) {
+			try {
+				String[][][] tmp = JoinKeyUtils.parseHashJoinKey(joinKey, getInMetadata());
+				joinKeys = tmp[A_INDEX][0];
+				if (slaveOverrideKeys == null) {
+					slaveOverrideKeys = tmp[B_INDEX][0];
+				}
+			} catch (ComponentNotReadyException e) {
+				status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_JOINKEY_ATTRIBUTE);
+			}
 		}
 		recordKeys = new RecordKey[2];
 		recordKeys[0] = new RecordKey(joinKeys, driverMetadata);

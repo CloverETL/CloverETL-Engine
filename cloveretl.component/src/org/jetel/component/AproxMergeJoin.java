@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,8 +45,9 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.joinKey.AproximativeJoinKey;
+import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.string.AproximativeJoinKey;
 import org.jetel.util.string.StringAproxComparator;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -237,6 +236,7 @@ public class AproxMergeJoin extends Node {
 
 	private Properties transformationParameters;
 	private Properties transformationParametersForSuspicious;
+	private String matchingKeyString;
 	
 	static Log logger = LogFactory.getLog(MergeJoin.class);
 
@@ -249,7 +249,7 @@ public class AproxMergeJoin extends Node {
 			String transformClassForSus, String transformURL, String transformURLforSus) throws JetelException{
 		super(id);
 		this.joinParameters=joinParameters;
-		this.matchingKey[0]=matchingKey;
+		this.matchingKeyString=matchingKey;
 		this.transformSource = transform;
 		this.transformClassName = transformClass;
 		this.transformSourceForSuspicious = transformForSusp;
@@ -630,9 +630,9 @@ public class AproxMergeJoin extends Node {
 			slaveOverrideKeys = new String[joinKeys.length];
 		}
 		for (int i = 0; i < keys.length; i++) {
-			joinKeys[i] = keys[i].getMaster();
+			joinKeys[i] = JoinKeyUtils.splitFieldName(keys[i].getMaster())[1];
 			if (keys[i].getSlave() != null){
-				slaveOverrideKeys[i] = keys[i].getSlave();
+				slaveOverrideKeys[i] = JoinKeyUtils.splitFieldName(keys[i].getSlave())[1];
 			}else if (slaveOverrideKeys[i] == null) {
 				slaveOverrideKeys[i] = joinKeys[i];
 			}
@@ -663,6 +663,8 @@ public class AproxMergeJoin extends Node {
 				throw new ComponentNotReadyException(ex.getLocalizedMessage());
 			}
 		}
+		String[][] tmp = JoinKeyUtils.parseMergeJoinKey(matchingKeyString, getInMetadata());
+		matchingKey = tmp[0];
 		if (slaveMatchingKey == null){
 			slaveMatchingKey=matchingKey;
 		}
@@ -764,19 +766,10 @@ public class AproxMergeJoin extends Node {
 		AproxMergeJoin join;
 
 		try {
-			String matchingKey =  xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE);
-			String slaveMatchingKey = null;
-			if (matchingKey.indexOf('=') != -1) {
-				Matcher tmp = Pattern.compile("\\w+").matcher(matchingKey);
-				tmp.find();
-				matchingKey = tmp.group();
-				tmp.find();
-				slaveMatchingKey = tmp.group();
-			}
-            join = new AproxMergeJoin(
+           join = new AproxMergeJoin(
                     xattribs.getString(XML_ID_ATTRIBUTE),
                     xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-                    matchingKey,
+                    xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE),
                     xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
                     xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
                     xattribs.getString(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,null),
@@ -791,7 +784,7 @@ public class AproxMergeJoin extends Node {
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
 			}
-			if (slaveMatchingKey == null && xattribs.exists(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE)) {
+			if (xattribs.exists(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE)) {
 				join.setSlaveMatchingKey(xattribs.getString(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE));
 			}
 			join.setConformityLimit(xattribs.getDouble(XML_CONFORMITY_ATTRIBUTE,DEFAULT_CONFORMITY_LIMIT));
@@ -918,9 +911,9 @@ public class AproxMergeJoin extends Node {
     			slaveOverrideKeys = new String[joinKeys.length];
     		}
     		for (int i = 0; i < keys.length; i++) {
-    			joinKeys[i] = keys[i].getMaster();
+    			joinKeys[i] = JoinKeyUtils.splitFieldName(keys[i].getMaster())[1];
     			if (keys[i].getSlave() != null){
-    				slaveOverrideKeys[i] = keys[i].getSlave();
+    				slaveOverrideKeys[i] = JoinKeyUtils.splitFieldName(keys[i].getSlave())[1];
     			}else if (slaveOverrideKeys[i] == null) {
     				slaveOverrideKeys[i] = joinKeys[i];
     			}
@@ -952,6 +945,8 @@ public class AproxMergeJoin extends Node {
     				throw new ComponentNotReadyException(ex.getLocalizedMessage());
     			}
     		}
+    		String[][] tmp = JoinKeyUtils.parseMergeJoinKey(matchingKeyString, getInMetadata());
+    		matchingKey = tmp[0];
     		if (slaveMatchingKey == null){
     			slaveMatchingKey=matchingKey;
     		}

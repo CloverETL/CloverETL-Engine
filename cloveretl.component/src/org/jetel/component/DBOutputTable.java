@@ -51,9 +51,9 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.MiscUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -1075,7 +1075,7 @@ public class DBOutputTable extends Node {
 				String[] dbFields = new String[pairs.length];
 				String[] mapping;
 				for (int i=0;i<pairs.length;i++){
-					mapping = MiscUtils.getMappingItemsFromMappingString(pairs[i], Defaults.ASSIGN_SIGN + "|=");//:= or =
+					mapping = JoinKeyUtils.getMappingItemsFromMappingString(pairs[i]);//:= or =
 					cloverFields[i] = mapping[0];
 					dbFields[i] = mapping[1];
 				}
