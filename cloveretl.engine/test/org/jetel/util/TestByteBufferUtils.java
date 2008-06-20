@@ -25,11 +25,10 @@ package org.jetel.util;
 
 import java.nio.ByteBuffer;
 
-import junit.framework.TestCase;
-
+import org.jetel.test.CloverTestCase;
 import org.jetel.util.bytes.ByteBufferUtils;
 
-public class TestByteBufferUtils extends TestCase {
+public class TestByteBufferUtils extends CloverTestCase {
 
     ByteBuffer buffer;
     

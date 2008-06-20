@@ -25,11 +25,9 @@ import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import junit.framework.TestCase;
+import org.jetel.test.CloverTestCase;
 
-import org.jetel.graph.runtime.EngineInitializer;
-
-public class XsdMetadataTest extends TestCase  { 
+public class XsdMetadataTest extends CloverTestCase  { 
 	private String xmlMetadata =
 		"<Record name=\"rec\" type=\"fixed\" recordDelimiter=\"\n\" recordSize=\"40\">"
 		+ "<Field name=\"00\" size=\"1\" shift=\"0\" type=\"decimal\"/>"
@@ -47,8 +45,8 @@ public class XsdMetadataTest extends TestCase  {
 	private DataRecordMetadata metadata;
 	
     protected void setUp() throws Exception {
-        super.setUp();
-    	EngineInitializer.initEngine((String) null, null, null);
+		initEngine();
+	    
         DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
         metadata = xmlReader.read(new ByteArrayInputStream(xmlMetadata.getBytes()));
     }

@@ -1,6 +1,6 @@
 package org.jetel.data.primitive;
 
-import junit.framework.TestCase;
+import org.jetel.test.CloverTestCase;
 
 /**
  * 
@@ -9,7 +9,7 @@ import junit.framework.TestCase;
  * www.javlinconsulting.cz
  * @created Nov 7, 2007
  */
-public class StringFormatTest extends TestCase {
+public class StringFormatTest extends CloverTestCase {
 
 	private static void t(String regexp, String expected, String input, String outputFormat) {
 		String result = StringFormat.create(regexp).format(input, outputFormat);

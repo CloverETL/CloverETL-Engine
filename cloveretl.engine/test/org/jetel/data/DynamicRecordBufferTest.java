@@ -26,11 +26,9 @@ package org.jetel.data;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import junit.framework.TestCase;
-
-import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.test.CloverTestCase;
 
 /**
  * @author david
@@ -39,7 +37,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class DynamicRecordBufferTest extends TestCase {
+public class DynamicRecordBufferTest extends CloverTestCase {
 
     DataRecordMetadata metadata;
     DataRecord record;
@@ -51,8 +49,8 @@ public class DynamicRecordBufferTest extends TestCase {
      * @see junit.framework.TestCase#setUp()
      */
     protected void setUp() throws Exception {
-        super.setUp();
-    	EngineInitializer.initEngine((String) null, null, null);
+		initEngine();
+	    
         buffer=new DynamicRecordBuffer(Defaults.Record.MAX_RECORD_SIZE);
         buffer.init();
         byteBuffer1=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);

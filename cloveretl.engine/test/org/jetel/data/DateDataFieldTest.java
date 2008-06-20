@@ -24,16 +24,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import junit.framework.TestCase;
-
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.test.CloverTestCase;
 
 /**
  * @author maciorowski
  *
  */
-public class DateDataFieldTest extends TestCase {
+public class DateDataFieldTest extends CloverTestCase {
 	private DateDataField aDateDataField1 = null;
 	private DateDataField aDateDataField2 = null;
 	private DateDataField aDateDataField3 = null;

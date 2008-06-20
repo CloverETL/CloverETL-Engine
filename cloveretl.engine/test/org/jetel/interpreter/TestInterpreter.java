@@ -28,8 +28,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -43,13 +41,13 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLVariable;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.test.CloverTestCase;
 import org.jetel.util.string.StringUtils;
 /**
  * @author dpavlis
@@ -58,7 +56,7 @@ import org.jetel.util.string.StringUtils;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-public class TestInterpreter extends TestCase {
+public class TestInterpreter extends CloverTestCase {
 	
 	DataRecordMetadata metadata,metadata1,metaOut,metaOut1;
 	DataRecord record,record1,out,out1;
@@ -67,7 +65,7 @@ public class TestInterpreter extends TestCase {
 	private GregorianCalendar today;
 	
 	protected void setUp() {
-		EngineInitializer.initEngine((String) null, null, null);
+		initEngine();
 	    
         graph=new TransformationGraph();
         

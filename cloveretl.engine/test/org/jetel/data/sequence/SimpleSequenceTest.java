@@ -24,10 +24,8 @@
 package org.jetel.data.sequence;
 
 
-import junit.framework.TestCase;
-
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.test.CloverTestCase;
 
 /**
  * @author david
@@ -36,7 +34,7 @@ import org.jetel.graph.runtime.EngineInitializer;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class SimpleSequenceTest extends TestCase {
+public class SimpleSequenceTest extends CloverTestCase {
     
     Sequence sequence;
     
@@ -44,7 +42,8 @@ public class SimpleSequenceTest extends TestCase {
      * @see junit.framework.TestCase#setUp()
      */
     protected void setUp() throws Exception {
-    	EngineInitializer.initEngine((String) null, null, null);
+		initEngine();
+	    
         sequence = SequenceFactory.createSequence(null, "SIMPLE_SEQUENCE", 
         		new Object[]{"",null,"Test","sequence4.dat",0,1,17}, 
         		new Class[]{String.class,TransformationGraph.class,String.class,String.class,int.class,int.class,int.class});

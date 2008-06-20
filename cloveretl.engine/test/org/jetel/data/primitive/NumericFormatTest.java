@@ -5,9 +5,9 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 
-import junit.framework.TestCase;
+import org.jetel.test.CloverTestCase;
 
-public class NumericFormatTest extends TestCase {
+public class NumericFormatTest extends CloverTestCase {
 	
 	NumericFormat format = new NumericFormat();
 	DecimalFormat dFormat = new DecimalFormat();

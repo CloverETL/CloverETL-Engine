@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Properties;
 
 import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
 
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -21,11 +20,11 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.test.CloverTestCase;
 
-public class CustomizedRecordTransformTest extends TestCase {
+public class CustomizedRecordTransformTest extends CloverTestCase {
 	
 	CustomizedRecordTransform transform;
 	TransformationGraph graph;
@@ -36,10 +35,10 @@ public class CustomizedRecordTransformTest extends TestCase {
 	
 	@Override
 	protected void setUp() throws Exception {
+		initEngine();
+	    
 		transform = new CustomizedRecordTransform(LogFactory.getLog(this.getClass()));
 		
-	    EngineInitializer.initEngine((String) null, null, null);
-	    
         graph=new TransformationGraph();
         
         transform.setGraph(graph);

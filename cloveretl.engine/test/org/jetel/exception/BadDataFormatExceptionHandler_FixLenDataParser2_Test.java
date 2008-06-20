@@ -23,20 +23,18 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-import junit.framework.TestCase;
-
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.FixLenDataParser;
-import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.test.CloverTestCase;
 
 /**
  * @author maciorowski
  *
  */
-public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCase {
+public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends CloverTestCase {
 	private FixLenDataParser aFixLenDataParser = null;
 	private FixLenDataParser aParser2 = null;
 	private DataRecord record;
@@ -45,6 +43,8 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 	private DataRecordMetadata metadata = null;
 	
 	protected void setUp() throws FileNotFoundException { 
+		initEngine();
+		
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 			
 		//metadata = xmlReader.read(new FileInputStream("config/test/rec_def/FL28_rec.xml"));
@@ -52,7 +52,6 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 		in = new FileInputStream("data/in/good/FL28_NL.txt");
 		in2 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
 		
-		EngineInitializer.initEngine((String) null, null, null);
 	
 		aParser2 = new FixLenCharDataParser();
 

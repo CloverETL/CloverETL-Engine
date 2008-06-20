@@ -3,15 +3,14 @@ package org.jetel.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.test.CloverTestCase;
 import org.jetel.util.joinKey.JoinKeyUtils;
 
-public class JoinKeyUtilsTest extends TestCase {
+public class JoinKeyUtilsTest extends CloverTestCase {
 
 	private final static int MASTER = 0;
 	private final static int SLAVE = 1;
@@ -23,6 +22,8 @@ public class JoinKeyUtilsTest extends TestCase {
 	DataRecordMetadata meta4 = new DataRecordMetadata("slave3");
 	
 	protected void setUp() throws Exception {
+		initEngine();
+	    
     	EngineInitializer.initEngine((String) null, null, null);
     	DataFieldMetadata f1 = new DataFieldMetadata("field1",";");
     	DataFieldMetadata f2 = new DataFieldMetadata("field2",";");

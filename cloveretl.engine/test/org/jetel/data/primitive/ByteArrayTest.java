@@ -4,11 +4,9 @@ import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
+import org.jetel.test.CloverTestCase;
 
-import org.jetel.graph.runtime.EngineInitializer;
-
-public class ByteArrayTest extends TestCase {
+public class ByteArrayTest extends CloverTestCase {
 	
 	private ByteArray byteArrayZero;
 	private ByteArray byteArrayEmpty;
@@ -19,8 +17,8 @@ public class ByteArrayTest extends TestCase {
 	private ByteBuffer dataBuffer;
 
 	protected void setUp() throws Exception {
-		super.setUp();
-		EngineInitializer.initEngine((String) null, null, null);
+		initEngine();
+		
 		sBytes = "Ka\u0161na na vodu";
 		bytes = sBytes.getBytes();
 		byteArrayEmpty = new ByteArray();

@@ -21,17 +21,16 @@ package org.jetel.data;
 
 import java.nio.ByteBuffer;
 
-import junit.framework.TestCase;
-
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.test.CloverTestCase;
 
 /**
  * @author maciorowski
  *
  */
-public class NumericDataFieldTest  extends TestCase {
+public class NumericDataFieldTest  extends CloverTestCase {
 	private NumericDataField aNumericDataField1 = null;
 	private NumericDataField aNumericDataField2 = null;
 	private NumericDataField aNumericDataField3 = null;

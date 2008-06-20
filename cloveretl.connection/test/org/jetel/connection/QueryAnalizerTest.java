@@ -3,9 +3,8 @@ package org.jetel.connection;
 import java.sql.SQLException;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.jetel.connection.jdbc.QueryAnalyzer;
+import org.jetel.test.CloverTestCase;
 
 /*
  *    jETeL/Clover - Java based ETL application framework.
@@ -32,7 +31,7 @@ import org.jetel.connection.jdbc.QueryAnalyzer;
  * 
  * @since Nov 02, 2007
  */
-public class QueryAnalizerTest extends TestCase {
+public class QueryAnalizerTest extends CloverTestCase {
 
 	List<String[]> dbCloverMap;
 	List<String[]> cloverDbMap;

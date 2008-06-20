@@ -24,31 +24,29 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import junit.framework.TestCase;
-
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
-import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.test.CloverTestCase;
 
 /**
  * @author maciorowski
  *
  */
-public class FixLenDataParser2Test   extends TestCase {
+public class FixLenDataParser2Test   extends CloverTestCase {
 private FixLenDataParser aParser = null;
 private FixLenDataParser aParser2 = null;
 private FixLenDataParser aParser3 = null;
 private DataRecord record;
 	
 protected void setUp() { 
-	
-	EngineInitializer.initEngine((String) null, null, null);
+	initEngine();
+    
 //	FileInputStream in = null;
 	FileInputStream in2 = null;
 //	FileInputStream in3 = null;

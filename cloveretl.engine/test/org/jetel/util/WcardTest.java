@@ -19,8 +19,7 @@
 */
 package org.jetel.util;
 
-import junit.framework.TestCase;
-
+import org.jetel.test.CloverTestCase;
 import org.jetel.util.file.WcardPattern;
 
 /**
@@ -28,7 +27,7 @@ import org.jetel.util.file.WcardPattern;
  * 
  * Unit test for wildcard filename matching. 
  */
-public class WcardTest extends TestCase {
+public class WcardTest extends CloverTestCase {
 
 	private WcardPattern fgen;
 	

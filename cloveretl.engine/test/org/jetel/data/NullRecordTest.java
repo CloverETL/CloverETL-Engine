@@ -2,10 +2,9 @@ package org.jetel.data;
 
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.test.CloverTestCase;
 
-import junit.framework.TestCase;
-
-public class NullRecordTest extends TestCase {
+public class NullRecordTest extends CloverTestCase {
 	
 	DataRecord nullRecord, record;
 	DataRecordMetadata metadata = new DataRecordMetadata("meta");
