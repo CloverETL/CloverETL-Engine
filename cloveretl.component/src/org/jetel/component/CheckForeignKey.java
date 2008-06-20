@@ -32,6 +32,8 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -39,6 +41,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
@@ -116,7 +119,6 @@ import org.w3c.dom.Element;
     public class CheckForeignKey extends Node {
     
     	private static final String XML_HASHTABLESIZE_ATTRIBUTE = "hashTableSize";
-        
         public static final String XML_FOREIGNKEY_ATTRIBUTE = "foreignKey";
         private static final String XML_PRIMARYKEY_ATTRIBUTE = "primaryKey";
         private static final String XML_DEFAULTFOREIGNKEY_ATTRIBUTE = "defaultForeignKey";
@@ -126,6 +128,9 @@ import org.w3c.dom.Element;
     
     	private final static int DEFAULT_HASH_TABLE_INITIAL_CAPACITY = Defaults.Lookup.LOOKUP_INITIAL_CAPACITY;
     
+    	private final static int FOREIGN_KEY_INDEX = 0;
+    	private final static int PRIMERY_KEY_INDEX = 1;
+
     	private final static int WRITE_TO_PORT = 0; 
     	private final static int REJECTED_PORT = 1;
         private final static int PRIMARY_ON_PORT = 1;
@@ -142,18 +147,10 @@ import org.w3c.dom.Element;
     
     	private Map<HashKey, DataRecord> hashMap;
     	private int hashTableInitialCapacity;
-    	
-    
+		private String keyDefinition;
+    	    
     	static Log logger = LogFactory.getLog(CheckForeignKey.class);
     
-    	/**
-    	 *Constructor for the HashJoin object
-    	 *
-    	 * @param  id              Description of the Parameter
-    	 * @param  joinKeys        Description of the Parameter
-    	 * @param  transformClass  Description of the Parameter
-    	 * @param  leftOuterJoin   Description of the Parameter
-    	 */
     	public CheckForeignKey(String id, String[] primaryKeys, String[] foreignKeys, 
                 String[] defaultForeignKeys) {
     		super(id);
@@ -163,7 +160,12 @@ import org.w3c.dom.Element;
     		this.hashTableInitialCapacity = DEFAULT_HASH_TABLE_INITIAL_CAPACITY;
     	}
     
-    
+    	public CheckForeignKey(String id, String keyDefinition, String[] defaultForeignKeys){
+    		super(id);
+    		this.keyDefinition = keyDefinition;
+    		this.defaultForeignKeys = defaultForeignKeys;
+    		this.hashTableInitialCapacity = DEFAULT_HASH_TABLE_INITIAL_CAPACITY;
+    	}
     
     	/**
     	 *  Sets the hashTableInitialCapacity attribute of the HashJoin object
@@ -187,6 +189,13 @@ import org.w3c.dom.Element;
             if(isInitialized()) return;
     		super.init();
 
+    		if (foreignKeys == null) {
+    			String[][][] tmp = JoinKeyUtils.parseHashJoinKey(keyDefinition, getInMetadata());
+    			foreignKeys = tmp[FOREIGN_KEY_INDEX][0];
+    			if (primaryKeys == null) {
+    				primaryKeys = tmp[PRIMERY_KEY_INDEX][0];
+    			}
+    		}
     		(primaryKey = new RecordKey(primaryKeys, getInputPort(PRIMARY_ON_PORT)
                     .getMetadata())).init();
             (foreignKey = new RecordKey(foreignKeys,
@@ -329,10 +338,12 @@ import org.w3c.dom.Element;
     		try {
                 checkKey = new CheckForeignKey(
                         xattribs.getString(XML_ID_ATTRIBUTE),
-                        xattribs.getString(XML_PRIMARYKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-                        xattribs.getString(XML_FOREIGNKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+                        xattribs.getString(XML_FOREIGNKEY_ATTRIBUTE),
                         xattribs.getString(XML_DEFAULTFOREIGNKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
     
+                if (xattribs.exists(XML_PRIMARYKEY_ATTRIBUTE)) {
+                	checkKey.setPrimeryKey(xattribs.getString(XML_PRIMARYKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+                }
     			if (xattribs.exists(XML_HASHTABLESIZE_ATTRIBUTE)) {
                     checkKey.setHashTableInitialCapacity(xattribs.getInteger(XML_HASHTABLESIZE_ATTRIBUTE));
     			}
@@ -359,7 +370,18 @@ import org.w3c.dom.Element;
     		DataRecordMetadata foreignMetadata = getInputPort(FOREIGN_ON_PORT).getMetadata();
 
         	checkMetadata(status, foreignMetadata, getOutMetadata());
-
+ 
+        	if (foreignKeys == null) {
+    			try {
+					String[][][] tmp = JoinKeyUtils.parseHashJoinKey(keyDefinition, getInMetadata());
+					foreignKeys = tmp[FOREIGN_KEY_INDEX][0];
+					if (primaryKeys == null) {
+						primaryKeys = tmp[PRIMERY_KEY_INDEX][0];
+					}
+				} catch (ComponentNotReadyException e) {
+					status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_FOREIGNKEY_ATTRIBUTE);
+				}
+    		}
         	primaryKey = new RecordKey(primaryKeys, primaryMetadata);
         	foreignKey = new RecordKey(foreignKeys,foreignMetadata);
         	RecordKey.checkKeys(primaryKey, XML_PRIMARYKEY_ATTRIBUTE, foreignKey, 
@@ -372,6 +394,9 @@ import org.w3c.dom.Element;
     		return COMPONENT_TYPE;
     	}
     
+    	public void setPrimeryKey(String[] key){
+    		this.primaryKeys = key;
+    	}
        
 }
 
