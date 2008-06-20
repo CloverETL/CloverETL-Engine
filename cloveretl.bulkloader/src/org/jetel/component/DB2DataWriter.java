@@ -56,10 +56,10 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CommandBuilder;
-import org.jetel.util.MiscUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
+import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -1573,7 +1573,7 @@ public class DB2DataWriter extends Node {
 				String[] dbFields = new String[pairs.length];
 				String[] pair;
 				for (int i=0;i<pairs.length;i++){
-					pair = MiscUtils.getMappingItemsFromMappingString(pairs[i]);
+					pair = JoinKeyUtils.getMappingItemsFromMappingString(pairs[i]);
 					cloverFields[i] = pair[0];
 					dbFields[i] = StringUtils.quote(pair[1]);
 				}
