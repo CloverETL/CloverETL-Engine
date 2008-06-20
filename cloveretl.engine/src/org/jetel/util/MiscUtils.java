@@ -103,42 +103,4 @@ public final class MiscUtils {
 		}
 		return null;
 	}
-
-	/**
-	 * Splits mapping in form "target assignSign source" to array {target, source}. If target or source starts with
-	 * CLOVER_FIELD_INDICATOR ($), removes it. <br>
-	 * Default second parameter is: Defaults.ASSIGN_SIGN + "|=". It is ":=" or "=". Eg. for string <i>$field1:=$field2</i>
-	 * returns {field1, field2}
-	 * 
-	 * @param mappingStr
-	 * @param assignSignRegex
-	 * @return
-	 */
-	public static String[] getMappingItemsFromMappingString(String mappingStr, String assignSignRegex) {
-		String[] mapping = mappingStr.split(assignSignRegex);
-		String target = mapping[0].trim();
-		if (target.startsWith(Defaults.CLOVER_FIELD_INDICATOR)) {
-			target = target.substring(Defaults.CLOVER_FIELD_INDICATOR.length());
-		}
-		String source = null;
-		if (mapping.length > 1) {
-			source = mapping[1].trim();
-			if (source.startsWith(Defaults.CLOVER_FIELD_INDICATOR)) {
-				source = source.substring(Defaults.CLOVER_FIELD_INDICATOR.length());
-			}
-		}
-		return new String[] { target, source };
-	}
-
-	/**
-	 * Splits mapping in form "target := source" or "target = source" to array {target, source}. If target or source
-	 * starts with CLOVER_FIELD_INDICATOR ($), removes it. <br>
-	 * Eg. for string <i>$field1:=$field2</i> returns {field1, field2}
-	 * 
-	 * @param mappingStr
-	 * @return
-	 */
-	public static String[] getMappingItemsFromMappingString(String mappingStr) {
-		return getMappingItemsFromMappingString(mappingStr, Defaults.ASSIGN_SIGN + "|=");
-	}
 }
