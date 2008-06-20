@@ -305,8 +305,8 @@ public class TransformationGraphXMLReaderWriter {
         grfAttributes.setResolveReferences(false);
         //get debug mode
         graph.setDebugMode(grfAttributes.getString("debugMode", "true"));
-        //get debug directory
-        graph.setDebugDirectory(grfAttributes.getString("debugDirectory", null));
+//        //get debug directory
+//        graph.setDebugDirectory(grfAttributes.getString("debugDirectory", null));
         //get debugMaxRecords
         graph.setDebugMaxRecords(grfAttributes.getInteger("debugMaxRecords", 0));
         
@@ -525,9 +525,7 @@ public class TransformationGraphXMLReaderWriter {
 			}catch(AttributeNotFoundException ex){
 				throw new XMLConfigurationException("Missing attribute at edge "+edgeID+" - "+ex.getMessage());
 			}
-            if (graphDebugMode) {
-            	debugMode = attributes.getBoolean("debugMode", false);
-            }
+			debugMode = attributes.getBoolean("debugMode", false);
             
             if (graphDebugMaxRecords == 0) { // if this value isn't defined for whole graph 
             	debugMaxRecords = attributes.getInteger("debugMaxRecords", 0);

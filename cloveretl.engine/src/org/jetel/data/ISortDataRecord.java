@@ -29,7 +29,7 @@ public interface ISortDataRecord {
 	 *
 	 *@param  record  DataRecord to be stored
 	 */
-	public abstract boolean put(DataRecord record) throws IOException;
+	public abstract boolean put(DataRecord record) throws IOException, InterruptedException;
 
 	/**
 	 *  Sorts internal array and flush it to disk, thus reading can start
@@ -44,7 +44,7 @@ public interface ISortDataRecord {
 	 *@param  recordData  ByteBuffer into which copy next record's data
 	 *@return             True if there was next record or False
 	 */
-	public abstract DataRecord get() throws IOException;
+	public abstract DataRecord get() throws IOException, InterruptedException;
 
 	/**
 	 *  Gets the next data record in sorted order
@@ -52,7 +52,7 @@ public interface ISortDataRecord {
 	 *@param  recordData  ByteBuffer into which copy next record's data
 	 *@return             True if there was next record or False
 	 */
-	public abstract boolean get(ByteBuffer recordDataBuffer) throws IOException;
+	public abstract boolean get(ByteBuffer recordDataBuffer) throws IOException, InterruptedException;
 
 	/**
 	 * Resets all resources (buffers, collections of internal sorter, etc), so component can
@@ -63,6 +63,6 @@ public interface ISortDataRecord {
 	/**
 	 * Frees all resources (buffers, collections of internal sorter, etc) 
 	 */
-	public abstract void free();
+	public abstract void free() throws InterruptedException;
 
 }

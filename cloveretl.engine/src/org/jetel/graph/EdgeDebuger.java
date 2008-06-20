@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Random;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.exception.ComponentNotReadyException;
@@ -27,6 +29,8 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  */
 public class EdgeDebuger {
+
+	private static Log logger = LogFactory.getLog(EdgeDebuger.class);
 
     private final boolean isReadMode;
     private DataRecordTape dataTape;
@@ -60,7 +64,7 @@ public class EdgeDebuger {
         this.sampleData = sampleData;
     }
     
-    public void init() throws IOException {
+    public void init() throws IOException, InterruptedException {
         dataTape.open();
         dataTape.addDataChunk();
         if(isReadMode) dataTape.rewind();
@@ -84,12 +88,11 @@ public class EdgeDebuger {
         dataTape = new DataRecordTape(debugFile, !isReadMode, false);
         try {
 			dataTape.open();
-		} catch (IOException e) {
+	        dataTape.addDataChunk();
+	        if(isReadMode) dataTape.rewind();
+		} catch (Exception e) {
 			throw new ComponentNotReadyException("Edge debugging cannot be reseted, IO exception occured.", e);
 		}
-        dataTape.addDataChunk();
-        if(isReadMode) dataTape.rewind();
-
 		
         if (filter != null) {
         	filter.reset();
@@ -100,7 +103,7 @@ public class EdgeDebuger {
         }
 	}
 	
-    public void writeRecord(DataRecord record) throws IOException {
+    public void writeRecord(DataRecord record) throws IOException, InterruptedException {
         if (isReadMode){
             throw new RuntimeException("Error: Mixed read/write operation on DataRecordTape !");
         }
@@ -111,7 +114,7 @@ public class EdgeDebuger {
         }
     }
 
-    public void writeRecord(ByteBuffer record) throws IOException {
+    public void writeRecord(ByteBuffer record) throws IOException, InterruptedException {
         if (isReadMode){
             throw new RuntimeException("Error: Mixed read/write operation on DataRecordTape !");
         }
@@ -156,7 +159,7 @@ public class EdgeDebuger {
     	return false;
     }
     
-    public DataRecord readRecord(DataRecord record) throws IOException {
+    public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
         if (!isReadMode) {
             return null;
         }
@@ -173,8 +176,8 @@ public class EdgeDebuger {
                 dataTape.flush(true);
             }
             dataTape.close();
-        }catch(IOException ex){
-            throw new RuntimeException("Can't flush/rewind DataRecordTape: " + ex.getMessage());
+        }catch(Exception ex){
+            logger.warn("Can't flush/rewind DataRecordTape.");
         }
     }
     

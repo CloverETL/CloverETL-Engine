@@ -67,9 +67,11 @@ protected void tearDown() {
 
 /**
  *  Test for @link org.jetel.data.StringDataField.StringDataField(DataFieldMetadata _metadata)
+ * @throws InterruptedException 
+ * @throws IOException 
  *
  */
-public void test_1_DataTape() {
+public void test_1_DataTape() throws InterruptedException, IOException {
 	ByteBuffer buffer= ByteBuffer.allocateDirect(2048);
     
     DataRecordTape tape=new DataRecordTape("tapeTest.tmp", true, false);

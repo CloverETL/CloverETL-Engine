@@ -48,8 +48,8 @@ public class TypedProperties extends Properties {
     }
     
     /**
-     * Behaviour of this contructor doesn't follow its parant java.util.Properties.
-     * Properties given as parameter are copied not seted as default values.
+     * Behaviour of this constructor doesn't follow its parent java.util.Properties.
+     * Properties given as parameter are copied not set as default values.
      * @param properties
      */
     public TypedProperties(Properties properties) {
@@ -78,7 +78,7 @@ public class TypedProperties extends Properties {
         
         //initialize propertyRefResolver
         if(refProperties != null) {
-        	propertyRefResolver = new PropertyRefResolver(properties);
+        	propertyRefResolver = new PropertyRefResolver(refProperties);
         }
     }
 

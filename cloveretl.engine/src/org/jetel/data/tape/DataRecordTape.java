@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -163,9 +164,10 @@ public class DataRecordTape {
 	 *  Closes buffer, removes temporary file (is exists)
 	 *
 	 *@exception  IOException  Description of Exception
+	 * @throws InterruptedException 
 	 *@since                   September 17, 2002
 	 */
-	public void close() throws IOException {
+	public void close() throws IOException, InterruptedException {
         if(deleteOnExit) {
             clear();
             tmpFileChannel.close();
@@ -182,39 +184,44 @@ public class DataRecordTape {
 	 * Flushes tape content to disk.
 	 * 
 	 * @throws IOException
+	 * @throws InterruptedException 
 	 */
-	public void flush(boolean force) throws IOException {
-	    dataBuffer.flip();
-	    tmpFileChannel.write(dataBuffer);
-	    dataBuffer.clear();
-	    //currentDataChunk.flushBuffer();
-	    if (force){
-	        tmpFileChannel.force(true);
-	    }
+	public void flush(boolean force) throws IOException, InterruptedException {
+		try {
+		    dataBuffer.flip();
+		    tmpFileChannel.write(dataBuffer);
+		    dataBuffer.clear();
+		    //currentDataChunk.flushBuffer();
+		    if (force){
+		        tmpFileChannel.force(true);
+		    }
+		} catch (ClosedChannelException e) {
+			throw new InterruptedException();
+		}
 	}
 
 	/**
 	 *  Rewinds the buffer and makes first chunk active. Next get operation returns first record stored in
 	 * first chunk.
+	 * @throws InterruptedException 
+	 * @throws IOException 
 	 *
 	 *@since    September 19, 2002
 	 */
-	public void rewind() {
+	public void rewind() throws InterruptedException, IOException {
 	    if (dataChunks.size()==0){
 	        return;
 	    }
-	    try{
-	    	flush(true);
+
+	    try {
+		    flush(true);
 	    	tmpFileChannel.position(0);
-	    }catch(IOException ex){
-	        ex.printStackTrace();
-	    }
-	    currentDataChunkIndex=0;
-	    currentDataChunk=(DataChunk)dataChunks.get(0);
-	    try{
-	        currentDataChunk.rewind();
-	    }catch(IOException ex){
-	        throw new RuntimeException("Can't rewind DataChunk !");
+	    	
+		    currentDataChunkIndex=0;
+		    currentDataChunk=(DataChunk)dataChunks.get(0);
+		    currentDataChunk.rewind();
+	    } catch (ClosedChannelException e) {
+	    	throw new InterruptedException();
 	    }
 	}
 
@@ -222,28 +229,35 @@ public class DataRecordTape {
 	/**
 	 *  Clears the tape. All DataChunks are destroyed. Underlying 
 	 * tmp file is truncated.
+	 * @throws InterruptedException 
 	 */
-	public void clear() throws IOException{
-		dataChunks.clear();
-		tmpFileChannel.truncate(0);
-		tmpFileChannel.position(0);
-		currentDataChunkIndex=-1;
-		currentDataChunk=null;
+	public void clear() throws IOException, InterruptedException {
+		try {
+			dataChunks.clear();
+			tmpFileChannel.truncate(0);
+			tmpFileChannel.position(0);
+			currentDataChunkIndex=-1;
+			currentDataChunk=null;
+		} catch (ClosedChannelException e) {
+			throw new InterruptedException();
+		}
 	}
 
 	/**
 	 * Adds new data chunk to the tape and opens it.
 	 * @return true if successful, otherwise false
+	 * @throws InterruptedException 
+	 * @throws IOException 
 	 */
-	public boolean addDataChunk() {
+	public void addDataChunk() throws InterruptedException, IOException {
 	    if (currentDataChunk==null){
-	            // add new data chunk
-	            DataChunk chunk=new DataChunk(tmpFileChannel,dataBuffer);
-	            dataChunks.add(chunk);
-	            currentDataChunkIndex=0;
-	            currentDataChunk=chunk;
-	    }else{
-	        try{
+            // add new data chunk
+            DataChunk chunk=new DataChunk(tmpFileChannel,dataBuffer);
+            dataChunks.add(chunk);
+            currentDataChunkIndex=0;
+            currentDataChunk=chunk;
+	    } else {
+	    	try {
 	            // set file position to the end of file
 	        	flush(true);
 	            tmpFileChannel.position(tmpFileChannel.size());
@@ -252,12 +266,11 @@ public class DataRecordTape {
 	            dataChunks.add(chunk);
 	            currentDataChunkIndex++;
 	            currentDataChunk=chunk;
-	        }catch(IOException ex){
-	            return false;
-	        }
+	    	} catch (ClosedChannelException e) {
+	    		throw new InterruptedException();
+	    	}
 	    }
 	    dataBuffer.clear();
-	    return true;
 	}
 
 	/**
@@ -266,16 +279,16 @@ public class DataRecordTape {
 	 * method, otherwise the result is not guaranteed.
 	 * 
 	 * @return true if next data chunk has been activated, otherwise false
+	 * @throws InterruptedException 
+	 * @throws IOException 
+	 * @throws IOException 
 	 */
-	public boolean nextDataChunk(){
+	public boolean nextDataChunk() throws InterruptedException, IOException {
 	    if (currentDataChunkIndex!=-1 && currentDataChunkIndex+1 < dataChunks.size()){
 	        currentDataChunkIndex++;
 	        currentDataChunk=(DataChunk)dataChunks.get(currentDataChunkIndex);
-	        try{
-		        currentDataChunk.rewind();
-		    }catch(IOException ex){
-		        throw new RuntimeException("Can't rewind DataChunk !");
-		    }
+	        currentDataChunk.rewind();
+		        
 	        return true;
 	    }else{
 	        currentDataChunkIndex=-1;
@@ -285,16 +298,12 @@ public class DataRecordTape {
 	}
 	
 	
-	public boolean setDataChunk(int order){
+	public boolean setDataChunk(int order) throws InterruptedException, IOException {
 	    if (order<dataChunks.size()){
 	        currentDataChunk=(DataChunk)dataChunks.get(order);
 	        currentDataChunkIndex=order;
+	        currentDataChunk.rewind();
 	        
-	        try{
-	            currentDataChunk.rewind();
-	        }catch(IOException ex){
-	            throw new RuntimeException("Can't rewind DataChunk !");
-	        }
 	        return true;
 	    }else{
 	        currentDataChunkIndex=-1;
@@ -345,11 +354,12 @@ public class DataRecordTape {
 	 * 
 	 * @param data buffer containig record's data
 	 * @return
+	 * @throws InterruptedException 
 	 */
-	public long put(ByteBuffer data) throws IOException{
-	    try{
+	public long put(ByteBuffer data) throws IOException, InterruptedException {
+		if (currentDataChunk != null) {
 	        return currentDataChunk.put(data);
-	    }catch(NullPointerException ex){
+		} else {
 	        throw new RuntimeException("No DataChunk has been created !");
 	    }
 	}
@@ -360,27 +370,28 @@ public class DataRecordTape {
      * 
      * @param source DataRecordTape from which to copy data 
      * @return new size of chunk or -1 in case of problem
+     * @throws InterruptedException 
      */
-    public long put(DataRecordTape sourceTape) throws IOException{
-        try{
+    public long put(DataRecordTape sourceTape) throws IOException, InterruptedException{
+        if (currentDataChunk != null) {
             if (sourceTape.currentDataChunk!=null){
                 return currentDataChunk.put(sourceTape.currentDataChunk);
             }else{
                 return -1;
             }
-        }catch(NullPointerException ex){
+        } else {
             throw new RuntimeException("No DataChunk has been created !");
         }
     }
     
-    public long putDirect(DataRecordTape sourceTape) throws IOException{
-        try{
+    public long putDirect(DataRecordTape sourceTape) throws IOException, InterruptedException {
+    	if (currentDataChunk != null) {
             if (sourceTape.currentDataChunk!=null){
                 return currentDataChunk.putDirect(sourceTape.currentDataChunk);
             }else{
                 return -1;
             }
-        }catch(NullPointerException ex){
+    	} else {
             throw new RuntimeException("No DataChunk has been created !");
         }
     }
@@ -391,11 +402,12 @@ public class DataRecordTape {
 	 * @param data
 	 * @return
 	 * @throws IOException
+	 * @throws InterruptedException 
 	 */
-	public long put(DataRecord data) throws IOException{
-	    try{
+	public long put(DataRecord data) throws IOException, InterruptedException {
+		if (currentDataChunk != null) {
 	        return currentDataChunk.put(data);
-	    }catch(NullPointerException ex){
+		} else {
 	        throw new RuntimeException("No DataChunk has been created !");
 	    }
 	}
@@ -409,8 +421,9 @@ public class DataRecordTape {
 	 * }
 	 * @param data	buffer into which store data
 	 * @return	true if success, otherwise false (chunk contains no more data).
+	 * @throws InterruptedException 
 	 */
-	public boolean get(ByteBuffer data) throws IOException{
+	public boolean get(ByteBuffer data) throws IOException, InterruptedException {
 	    if (currentDataChunk!=null){
 	        return currentDataChunk.get(data);
 	    }else{
@@ -426,7 +439,7 @@ public class DataRecordTape {
      * @throws IOException
      * @since 27.2.2007
      */
-    public boolean reget(ByteBuffer data) throws IOException{
+    public boolean reget(ByteBuffer data) {
         if (currentDataChunk!=null){
             return currentDataChunk.reget(data);
         }else{
@@ -440,8 +453,9 @@ public class DataRecordTape {
 	 * @param data
 	 * @return
 	 * @throws IOException
+	 * @throws InterruptedException  
 	 */
-	public boolean get(DataRecord data) throws IOException{
+	public boolean get(DataRecord data) throws IOException, InterruptedException {
 	    if (currentDataChunk!=null){
 	        return currentDataChunk.get(data);
 	    }else{
@@ -457,7 +471,7 @@ public class DataRecordTape {
      * @throws IOException
      * @since 27.2.2007
      */
-    public boolean reget(DataRecord data) throws IOException{
+    public boolean reget(DataRecord data) {
         if (currentDataChunk!=null){
             return currentDataChunk.reget(data);
         }else{
@@ -481,10 +495,12 @@ public class DataRecordTape {
 	    return buffer.toString();
 	}
 	
-	public void testConsistency(){
+	public void testConsistency() throws InterruptedException, IOException {
 	    ByteBuffer buffer=ByteBuffer.allocateDirect(2048);
 	    logger.info("Testing consistency...");
-	    rewind();
+
+		rewind();
+		
 	    for(int i=0;i<getNumChunks();i++){
 	        int counter=0;
 	        try{
@@ -492,11 +508,11 @@ public class DataRecordTape {
 	                counter++;
 	                buffer.clear();
 	            }
+		        if(!nextDataChunk()) break;
 	        }catch(Exception ex){
 	            logger.error("Problem with chunk: "+i+" record "+counter);
 	            ex.printStackTrace();
 	        }
-	        if(!nextDataChunk()) break;
 	    }
 	    logger.info("OK");
 	}
@@ -520,15 +536,15 @@ public class DataRecordTape {
 	    boolean canRead;
         int recordSize;
 	    
-	    private DataChunk(FileChannel channel,ByteBuffer buffer){
+	    private DataChunk(FileChannel channel,ByteBuffer buffer) throws InterruptedException, IOException{
 	        tmpFileChannel=channel;
 	        canRead=false;
 	        dataBuffer=buffer;
 	        try{
 	            offsetStart=channel.position();
-	        }catch(IOException ex){
-	            throw new RuntimeException(ex);
-	        }
+	    	} catch (ClosedChannelException e) {
+	    		throw new InterruptedException();
+	    	}
 	        length=0;
 	        nRecords=recordsRead=0;
 	        dataBuffer.clear();
@@ -542,13 +558,17 @@ public class DataRecordTape {
 	        return nRecords;
 	    }
 	    
-	    void rewind() throws IOException{
-	        tmpFileChannel.position(offsetStart);
-	        canRead=true;
-	        recordsRead=0;
-	        dataBuffer.clear();
-	        tmpFileChannel.read(dataBuffer);
-	        dataBuffer.flip();
+	    void rewind() throws IOException, InterruptedException {
+	    	try {
+		        tmpFileChannel.position(offsetStart);
+		        canRead=true;
+		        recordsRead=0;
+		        dataBuffer.clear();
+		        tmpFileChannel.read(dataBuffer);
+		        dataBuffer.flip();
+	    	} catch (ClosedChannelException e) {
+	    		throw new InterruptedException();
+	    	}
 	    }
 	    
 	    /**
@@ -558,8 +578,9 @@ public class DataRecordTape {
 		 *@exception  IOException  In case of IO failure
 		 *@since                   September 17, 2002
 		 *@return number of bytes in the chunk after saveing data
+	     * @throws InterruptedException 
 		 */
-		long put(ByteBuffer recordBuffer) throws IOException {
+		long put(ByteBuffer recordBuffer) throws IOException, InterruptedException {
 			recordSize = recordBuffer.remaining();
 			final int lengthSize=ByteBufferUtils.lengthEncoded(recordSize);
 			// check that internal buffer has enough space
@@ -580,7 +601,7 @@ public class DataRecordTape {
 		}
 
        
-        long put(DataChunk sourceChunk) throws IOException {
+        long put(DataChunk sourceChunk) throws IOException, InterruptedException {
             final ByteBuffer sourceDataBuffer=sourceChunk.dataBuffer;
             if(!sourceChunk.canRead){
                 throw new IOException("Buffer has not been rewind !");
@@ -635,9 +656,10 @@ public class DataRecordTape {
          * @param sourceChunk
          * @return
          * @throws IOException
+         * @throws InterruptedException 
          * @since 28.2.2007
          */
-        long putDirect(DataChunk sourceChunk) throws IOException {
+        long putDirect(DataChunk sourceChunk) throws IOException, InterruptedException {
             final ByteBuffer sourceDataBuffer=sourceChunk.dataBuffer;
             final int sourceRecSize=sourceChunk.recordSize;
             sourceDataBuffer.reset(); //we are re-getting data
@@ -674,8 +696,9 @@ public class DataRecordTape {
 		 * @param data	DataRecord to be stored
 		 *@return number of bytes in the chunk after saving data
 		 * @throws IOException
+		 * @throws InterruptedException 
 		 */
-		long put(DataRecord data) throws IOException {
+		long put(DataRecord data) throws IOException, InterruptedException {
 				recordSize = data.getSizeSerialized();
                 final int lengthSize=ByteBufferUtils.lengthEncoded(recordSize);
 				// check that internal buffer has enough space
@@ -702,9 +725,10 @@ public class DataRecordTape {
 		 *@return                  ByteBuffer populated with record's data or NULL if
 		 *      no more record can be retrieved
 		 *@exception  IOException  Description of Exception
+		 * @throws InterruptedException 
 		 *@since                   September 17, 2002
 		 */
-		 boolean get(ByteBuffer recordBuffer) throws IOException {
+		 boolean get(ByteBuffer recordBuffer) throws IOException, InterruptedException {
 			if(!canRead){
 				throw new IOException("Buffer has not been rewind !");
 			}
@@ -746,7 +770,7 @@ public class DataRecordTape {
          * @throws IOException
          * @since 27.2.2007
          */
-        boolean reget(ByteBuffer recordBuffer) throws IOException {
+        boolean reget(ByteBuffer recordBuffer) {
                 dataBuffer.reset();
                 int oldLimit = dataBuffer.limit();
                 dataBuffer.limit(dataBuffer.position() + recordSize);
@@ -796,8 +820,9 @@ public class DataRecordTape {
 		 * @param data	DataRecord into which load the data
 		 * @return
 		 * @throws IOException
+		 * @throws InterruptedException 
 		 */
-		boolean get(DataRecord data) throws IOException {
+		boolean get(DataRecord data) throws IOException, InterruptedException {
 				if(!canRead){
 					throw new IOException("Buffer has not been rewind !");
 				}
@@ -825,7 +850,7 @@ public class DataRecordTape {
 			}
 		
 
-        boolean reget(DataRecord data) throws IOException {
+        boolean reget(DataRecord data) {
             dataBuffer.reset();
             data.deserialize(dataBuffer);
             return true;
@@ -836,18 +861,27 @@ public class DataRecordTape {
 		 *  Flushes in memory buffer into TMP file
 		 *
 		 *@exception  IOException  Description of Exception
+		 * @throws InterruptedException 
 		 *@since                   September 17, 2002
 		 */
-		private void flushBuffer() throws IOException {
-			dataBuffer.flip();
-			tmpFileChannel.write(dataBuffer);
-			dataBuffer.clear();
+		private void flushBuffer() throws IOException, InterruptedException {
+			try {
+				dataBuffer.flip();
+				tmpFileChannel.write(dataBuffer);
+				dataBuffer.clear();
+			} catch (ClosedChannelException e) {
+				throw new InterruptedException();
+			}
 		}
 		
-		private void reloadBuffer() throws IOException {
-			dataBuffer.compact();
-			tmpFileChannel.read(dataBuffer);
-			dataBuffer.flip();
+		private void reloadBuffer() throws IOException, InterruptedException {
+			try {
+				dataBuffer.compact();
+				tmpFileChannel.read(dataBuffer);
+				dataBuffer.flip();
+			} catch (ClosedChannelException e) {
+				throw new InterruptedException();
+			}
 		}
 
 

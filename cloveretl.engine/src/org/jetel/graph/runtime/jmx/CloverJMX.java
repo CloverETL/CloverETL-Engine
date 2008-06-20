@@ -157,4 +157,30 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		sendNotification(new Notification(GRAPH_FINISHED, this/*getGraphDetail()*/, notificationSequence++)); 
 	}
 
+	/**
+	 * Graph was aborted. Only send a notification.
+	 */
+	synchronized public void graphAborted() {
+		if(!graphFinished) { // if graph was already finished, we'll send only a notification
+			getGraphDetail().gatherTrackingDetails();
+			getGraphDetail().graphFinished();
+			graphFinished = true;
+		}
+
+		sendNotification(new Notification(GRAPH_ABORTED , this/*getGraphDetail()*/, notificationSequence++)); 
+	}
+
+	/**
+	 * Graph ends with an error. Only send a notification.
+	 */
+	synchronized public void graphError(String message) {
+		if(!graphFinished) { // if graph was already finished, we'll send only a notification
+			getGraphDetail().gatherTrackingDetails();
+			getGraphDetail().graphFinished();
+			graphFinished = true;
+		}
+
+		sendNotification(new Notification(GRAPH_ERROR, this/*getGraphDetail()*/, notificationSequence++, message)); 
+	}
+
 }

@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -196,9 +197,10 @@ public class DynamicRecordBuffer {
 	 *
 	 *@param  record             ByteBuffer containing record's data
 	 *@exception  IOException  In case of IO failure
+	 * @throws InterruptedException 
 	 *@since                   September 17, 2002
 	 */
-	public int writeRecord(ByteBuffer record) throws IOException {
+	public int writeRecord(ByteBuffer record) throws IOException, InterruptedException {
 		if(isClosed){
 			throw new IOException("Buffer has been closed !");
 		}
@@ -225,9 +227,10 @@ public class DynamicRecordBuffer {
      * 
      * @param record    data record to be written
      * @throws IOException
+     * @throws InterruptedException 
      * @since 27.11.2006
      */
-    public int writeRecord(DataRecord record) throws IOException {
+    public int writeRecord(DataRecord record) throws IOException, InterruptedException {
         if (isClosed) {
             throw new IOException("Buffer has been closed !");
         }
@@ -262,9 +265,10 @@ public class DynamicRecordBuffer {
      * Indicates that there will be no more records written.
      * 
      * @throws IOException
+     * @throws InterruptedException 
      * @since 27.11.2006
      */
-    public void setEOF() throws IOException {
+    public void setEOF() throws IOException, InterruptedException {
         if(isClosed){
             throw new IOException("Buffer has been closed !");
         }
@@ -285,8 +289,9 @@ public class DynamicRecordBuffer {
 	 *@param  position         Description of the Parameter
 	 *@param  requestedSize    Description of the Parameter
 	 *@exception  IOException  Description of the Exception
+	 * @throws InterruptedException 
 	 */
-	private final synchronized void flushWriteBuffer() throws IOException {
+	private final synchronized void flushWriteBuffer() throws IOException, InterruptedException {
             // we need to swap data - first try directly read buffer
             if (awaitingData) {
                 // swap write & read buffer
@@ -314,7 +319,11 @@ public class DynamicRecordBuffer {
                 // save full buffer (even if it is not fully populated - for performance 
                 // reasons
                 writeDataBuffer.limit(dataBufferSize);
-                tmpFileChannel.write(writeDataBuffer, diskSlot.getPosition(dataBufferSize));
+                try {
+                	tmpFileChannel.write(writeDataBuffer, diskSlot.getPosition(dataBufferSize));
+                } catch (ClosedChannelException e) {
+                	throw new InterruptedException();
+                }
                 writeDataBuffer.clear();
                 fullFileBuffers.add(diskSlot);
             }
@@ -329,8 +338,9 @@ public class DynamicRecordBuffer {
 	 *@return                  true if successful, otherwise false - meaning no more
      *records in buffer (EOF)
 	 *@exception  IOException  Description of the Exception
+	 * @throws InterruptedException 
 	 */
-	public boolean readRecord(ByteBuffer record) throws IOException {
+	public boolean readRecord(ByteBuffer record) throws IOException, InterruptedException {
 		if(isClosed){
 			return false;
 			//throw new IOException("Buffer has been closed !");
@@ -365,9 +375,10 @@ public class DynamicRecordBuffer {
      * @param record record into which store data
      * @return  record populated with data or NULL if no more records in buffer (EOF)
      * @throws IOException
+     * @throws InterruptedException 
      * @since 27.11.2006
      */
-    public DataRecord readRecord(DataRecord record) throws IOException{
+    public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException{
         if(isClosed) {
         	return null;
             //throw new IOException("Buffer has been closed !");
@@ -392,7 +403,7 @@ public class DynamicRecordBuffer {
         
     }
 
-    private final synchronized void secureReadBuffer() throws IOException{
+    private final synchronized void secureReadBuffer() throws IOException, InterruptedException{
         // is there a save data buffer already ?
         if (fullFileBuffers.size()>0){
             DiskSlot slot=fullFileBuffers.removeFirst();
@@ -406,12 +417,7 @@ public class DynamicRecordBuffer {
             awaitingData=true;
             while(awaitingData){
                 notify();
-                try{
-                    wait();
-                }catch(InterruptedException ex){
-                    throw new IOException("Interrupted when waiting for full buffer: "+
-                            ex.getMessage());
-                }
+                wait();
             }
         }
     }

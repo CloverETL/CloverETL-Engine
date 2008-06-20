@@ -176,10 +176,13 @@ public class BufferedEdge extends EdgeBase {
 
 	/**
 	 *  Description of the Method
+	 * @throws InterruptedException 
+	 * @throws IOException 
+	 * @throws IOException 
 	 *
 	 * @since    April 2, 2002
 	 */
-	public void eof() {
+	public void eof() throws InterruptedException {
         try{
             recordBuffer.setEOF();
             isEOF = true;

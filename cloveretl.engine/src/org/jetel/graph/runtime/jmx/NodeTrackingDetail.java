@@ -154,6 +154,12 @@ public class NodeTrackingDetail implements Serializable {
 	
 	//******************* EVENTS ********************/
 	public void gatherTrackingDetails() {
+		//result
+		result = node.getResultCode();
+		if (result != Result.RUNNING && result != Result.FINISHED_OK) {
+			return;
+		}
+
 		long phaseExecutionTime = getParentPhaseDetail().getExecutionTime();
 		
 		//totalCPUTime
@@ -182,9 +188,6 @@ public class NodeTrackingDetail implements Serializable {
         //peakUsageUser
         peakUsageUser = Math.max(peakUsageUser, usageUser);
 
-		//result
-		result = node.getResultCode();
-		
 		//gather input ports related data
 		for(InputPortTrackingDetail inputPortDetail: inputPortsDetails) {
 			inputPortDetail.gatherTrackingDetails();

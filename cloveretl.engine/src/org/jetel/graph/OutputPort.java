@@ -68,12 +68,12 @@ public interface OutputPort {
      * @deprecated use eof() method instead
 	 */
     @Deprecated
-	public void close() throws InterruptedException;
+	public void close() throws InterruptedException, IOException;
 
     /**
      * An operation that sends message indicating that no more data is available.
      */
-    public void eof() throws InterruptedException;
+    public void eof() throws InterruptedException, IOException;
     
 	/**
 	 * An operation that opens the port indicating that data will be available

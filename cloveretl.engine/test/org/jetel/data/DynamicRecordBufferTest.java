@@ -115,8 +115,9 @@ public class DynamicRecordBufferTest extends TestCase {
 */
     /**
      * Test method for {@link org.jetel.data.DynamicRecordBuffer#readRecod(java.nio.ByteBuffer)}.
+     * @throws InterruptedException 
      */
-    public void testReadRecod() throws IOException{
+    public void testReadRecod() throws IOException, InterruptedException{
         for(int i=0;i<900;i++){
             buffer.writeRecord(record);
         }
