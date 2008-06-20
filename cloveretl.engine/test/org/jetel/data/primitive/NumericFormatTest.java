@@ -52,7 +52,7 @@ public class NumericFormatTest extends TestCase {
 
 	public void testFormatBigDecimal() {
 		assertEquals(dFormat.format(123), format.format(new BigDecimal(123)));
-		assertEquals(dFormat.format(123.45), format.format(new BigDecimal(123.45)));
+		assertEquals(dFormat.format(123.45), format.format(new BigDecimal("123.45")));
 		
 		String pattern = "00000";
 		format.applyPattern(pattern);
