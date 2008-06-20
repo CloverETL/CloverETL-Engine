@@ -1,37 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Mon Mar 05 11:32:38 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="1.9" id="1204545320021" licenseType="Evaluation license." modified="Tue Apr 01 10:30:15 CEST 2008" name="Testing NORMALIZER" revision="1.7">
+<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="1.10" id="1204545320021" licenseType="Evaluation license." modified="Fri Jun 20 13:49:01 CEST 2008" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.20">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="25" guiName="Denormalize" guiWidth="50" guiX="195" guiY="20" id="DENORMALIZE" key="EmployeeID" order="ignore" type="DENORMALIZER">
+<Node enabled="enabled" guiHeight="25" guiName="Denormalize" guiWidth="50" guiX="366" guiY="17" id="DENORMALIZE" key="EmployeeID" order="Asc" type="DENORMALIZER">
 <attr name="denormalize"><![CDATA[
 import org.jetel.component.denormalize.DataRecordDenormalize;
 import org.jetel.data.*;
 
 public class DenormalizeTest extends DataRecordDenormalize {
-	private DataRecord lastRecord;
+	private int recNum = 0;
+	private String customerID = "";
+	private int employeeID;
+
 	public DenormalizeTest() {
-		lastRecord = null;
 	}
 
 	public boolean addInputRecord(DataRecord inRecord) {
-		lastRecord = inRecord;
+		recNum++;
+		customerID = customerID + (customerID.length() > 0 ? " - " : "") + inRecord.getField("CustomerID");
+		employeeID = (Integer)inRecord.getField("EmployeeID").getValue();
 		return true;
 	}
 	public boolean getOutputRecord(DataRecord outRecord) {
-		outRecord.copyFrom(lastRecord);
+		outRecord.getField("EmployeeID").setValue(employeeID);
+		outRecord.getField("CustomerID").setValue(customerID);
+		outRecord.getField("OrderID").setValue(recNum);
 		return true;
+	}
+
+	public void clean(){
+		recNum = 0;
+		customerID = "";
 	}
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
+<Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="194" guiY="17" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="17" id="INPUT1" type="DELIMITED_DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/denormalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DELIMITED_DATA_WRITER"/>
-<Edge fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DENORMALIZE:0"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/denormalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="542" guiY="16" id="WRITER" type="DELIMITED_DATA_WRITER"/>
+<Edge debugMode="false" fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DENORMALIZE:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
 </Phase>
 </Graph>
