@@ -260,7 +260,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *
 	 *@return    Collection of output ports metadata
 	 */
-	public Collection<DataRecordMetadata> getOutMetadata() {
+	public List<DataRecordMetadata> getOutMetadata() {
 		List<DataRecordMetadata> ret = new ArrayList<DataRecordMetadata>(outPorts.size());
 		for(Iterator it = getOutPorts().iterator(); it.hasNext();) {
 		    ret.add(((OutputPort) (it.next())).getMetadata());
@@ -273,7 +273,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *
 	 *@return    Collection of input ports metadata
 	 */
-	public Collection<DataRecordMetadata> getInMetadata() {
+	public List<DataRecordMetadata> getInMetadata() {
 		List<DataRecordMetadata> ret = new ArrayList<DataRecordMetadata>(inPorts.size());
 		for(Iterator it = getInPorts().iterator(); it.hasNext();) {
 		    ret.add(((InputPort) (it.next())).getMetadata());
