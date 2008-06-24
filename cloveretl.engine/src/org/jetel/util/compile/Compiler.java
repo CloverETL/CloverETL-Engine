@@ -67,7 +67,7 @@ public class Compiler {
             //create destFileName from srcFileName - "/src_dir/trans.java" --> "/dest_dir/trans.class"
             int index = srcFile.getName().lastIndexOf('.');
             String className = srcFile.getName().substring(0, index);
-            destFileName = destDirName + className + ".class";
+            destFileName = this.destDirName + className + ".class";
             this.destFile = new File(destFileName);
             
             //create errFileName
