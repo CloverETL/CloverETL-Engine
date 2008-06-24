@@ -449,14 +449,13 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 	
 	<target name="runtests-engine" depends="init,compile,compile-tests,coverage-instrument">
 		<mkdir dir="${dir.testsresult}"/>
-		<echo>TTT= ${env.JAVA_HOME}/lib/tools.jar</echo>
 		<junit 
 				haltonerror="false" 
 				haltonfailure="false" 
 				printsummary="true"
 				fork="true"
 				forkmode="once" 
-				clonevm="true">
+				>
     		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
     		<sysproperty key="file.encoding" value="UTF-8" />
 			<env key="cloveretl.plugins" value="${dir.coverage.plugins}/plugins"/>
