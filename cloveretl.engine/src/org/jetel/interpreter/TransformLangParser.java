@@ -90,7 +90,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
               }
       }
 
-      TransformLangParser(TransformLangParser parent,String filename,java.io.InputStream stream){
+      public TransformLangParser(TransformLangParser parent,String filename,java.io.InputStream stream){
                           this(stream);
                           this.sourceFilename=filename;
                           this.parserHelper=parent.parserHelper;
@@ -101,7 +101,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
               this.parseExceptions=parent.parseExceptions;
       }
 
-         TransformLangParser(TransformLangParser parent,String sourcename,CharSequence source){
+      public TransformLangParser(TransformLangParser parent,String sourcename,CharSequence source){
                           this(new CharSequenceReader(source));
                           this.sourceFilename=sourcename;
                           this.parserHelper=parent.parserHelper;
@@ -116,7 +116,12 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         if (reset){
                 this.parserHelper.reset();
         }
+       	this.parseExceptions.clear();
         this.ReInit(new CharSequenceReader(source));
+      }
+      
+      public void setTabSize(int size){
+      		this.token_source.input_stream.setTabSize(size);
       }
 
       public final DataRecordMetadata getInRecordMeta(){
