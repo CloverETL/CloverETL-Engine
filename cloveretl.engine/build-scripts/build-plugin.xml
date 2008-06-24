@@ -245,7 +245,7 @@
 				printsummary="true" 
 				fork="true" 
 				forkmode="once" 
-				clonevm="true">
+				>
     		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
     		<sysproperty key="file.encoding" value="UTF-8" />
 			<env key="cloveretl.plugins" value="${dir.coverage.dist}/plugins"/>
