@@ -83,6 +83,8 @@ public class XsdMetadata extends MXAbstract {
 			Element fieldElement = doc.createElement(XSD_ELEMENT);
 			fieldElement.setAttribute(NAME, fields[idx].getName());
 			fieldElement.setAttribute(TYPE, typeName);
+			fieldElement.setAttribute(MIN_OCCURS, fields[idx].isNullable() ? "0" : "1");
+			fieldElement.setAttribute(MAX_OCCURS, "1");
 			seqElement.appendChild(fieldElement);
 		}
 	}

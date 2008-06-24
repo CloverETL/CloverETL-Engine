@@ -33,6 +33,8 @@ abstract public class MXAbstract {
 	protected static final String TYPE = "type";
 	protected static final String BASE = "base";
 	protected static final String VALUE = "value";
+	protected static final String MIN_OCCURS = "minOccurs";
+	protected static final String MAX_OCCURS = "maxOccurs";
 
 	// record attributes
 	protected static final String LENGTH = "length";

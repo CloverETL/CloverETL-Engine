@@ -82,6 +82,7 @@ public class MetadataXsd extends MXAbstract {
 		Node field;
 		String name;
 		String type;
+		String minOccurs;
 		for (int i=0; i<list.getLength(); i++) {
 			field = list.item(i);
 			if (!field.getNodeName().equals(XSD_ELEMENT)) continue;
@@ -89,7 +90,8 @@ public class MetadataXsd extends MXAbstract {
 			if (name == null) continue;
 			type = getAttributeValue(field, TYPE);
 			if (type == null) continue;
-			
+			minOccurs = getAttributeValue(field, MIN_OCCURS);
+
 			// creates field metadata
 			DataFieldMetadata dataFieldMetadata;
 			switch (metadata.getRecType()) {
@@ -101,6 +103,7 @@ public class MetadataXsd extends MXAbstract {
 				break;
 			}
 			
+			dataFieldMetadata.setNullable(minOccurs != null && minOccurs.equals("0") ? true : false);
 			setField(dataFieldMetadata, findFieldTypeNode(node, type));
 			metadata.addField(dataFieldMetadata);
 		}
