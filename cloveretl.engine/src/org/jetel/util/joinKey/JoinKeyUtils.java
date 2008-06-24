@@ -61,6 +61,8 @@ public class JoinKeyUtils {
 	 */
 	public static String[][][] parseHashJoinKey(String joinBy, List<DataRecordMetadata> inMetadata) 
 			throws ComponentNotReadyException {	
+		if (StringUtils.isEmpty(joinBy)) return new String[2][0][0];
+		
 		Iterator<DataRecordMetadata> itor = inMetadata != null ? inMetadata.iterator() : null;
 		DataRecordMetadata masterMetadata = itor != null ? itor.next() : null;
 		Map<String, Object[]> slaveMetadata = new LinkedHashMap<String, Object[]>(itor != null && inMetadata.size() > 1 ? 
@@ -194,6 +196,7 @@ public class JoinKeyUtils {
 	 */
 	public static String[][] parseMergeJoinKey(String joinBy, List<DataRecordMetadata> inMetadata)
 			throws ComponentNotReadyException{
+		if (StringUtils.isEmpty(joinBy)) return new String[0][0];
 		Iterator<DataRecordMetadata> itor = inMetadata != null ? inMetadata.iterator() : null;
 		DataRecordMetadata masterMetadata = itor != null ? itor.next() : null;
 		Map<String, Object[]> slaveMetadata = new LinkedHashMap<String, Object[]>(itor != null && inMetadata.size() > 1 ? 
