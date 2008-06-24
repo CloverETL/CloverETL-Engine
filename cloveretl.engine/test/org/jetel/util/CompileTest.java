@@ -37,11 +37,13 @@ public class CompileTest   extends CloverTestCase  {
 	String testJavaClassFile1 = "org/jetel/userclasses/test1.class";	
 	String testJavaFile2 = "src/org/jetel/userclasses/Main.java";	
 	String testJavaClassFile2 = "org/jetel/userclasses/Main.class";	
-	String classDirectory = "bin";
+	File classDirectory = new File("build/testspace");
 	String src1 = null;
 	String src2 = null;
 
 	protected void setUp() {
+		classDirectory.mkdirs();
+		
 		StringBuffer tmp = new StringBuffer();
 		tmp.append("package org.jetel.userclasses;\n");
 		tmp.append("public class test1 {\n");
@@ -177,15 +179,16 @@ public class CompileTest   extends CloverTestCase  {
 	public void testCompilerClass() {
 		org.jetel.util.compile.Compiler compiler;
 
-		compiler = new org.jetel.util.compile.Compiler(testJavaFile1,true,classDirectory);
+		compiler = new org.jetel.util.compile.Compiler(testJavaFile1,true,classDirectory.getAbsolutePath());
 		compiler.compile();
 		System.out.print(compiler.getCapturedOutput());
-		assertTrue(new File(classDirectory+File.separator+testJavaClassFile1).exists());
+		final File class1File = new File(classDirectory,testJavaClassFile1);
+		assertTrue(class1File.exists());
 
-		compiler = new org.jetel.util.compile.Compiler(testJavaFile2,true,classDirectory);
+		compiler = new org.jetel.util.compile.Compiler(testJavaFile2,true,classDirectory.getAbsolutePath());
 		compiler.compile();
 		System.out.print(compiler.getCapturedOutput());
-		assertFalse(new File(classDirectory+File.separator+testJavaClassFile2).exists());
+		assertFalse(new File(classDirectory,testJavaClassFile2).exists());
 	}
 
 }

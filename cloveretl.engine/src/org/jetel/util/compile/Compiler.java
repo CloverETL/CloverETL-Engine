@@ -38,7 +38,6 @@ import org.jetel.util.string.StringUtils;
  * Class allowing to compile Java source code into bytecode representation (.class file)
  */
 public class Compiler {
-    private final static String FILE_SEPARATOR = System.getProperty("file.separator", "/");
     private final static String COMPILER_CLASSNAME = "com.sun.tools.javac.Main";
     private final static int DEFAULT_BYTE_ARRAY_BUFFER_SIZE = 512;
     
@@ -58,23 +57,19 @@ public class Compiler {
     
     public Compiler(String srcFileName, boolean captureOutput, String destDirName) {
         this.srcFileName = srcFileName;
-        this.destDirName = destDirName + (destDirName.endsWith(FILE_SEPARATOR) ? "" : FILE_SEPARATOR);
+        this.destDirName = destDirName;
         this.captureOutput = captureOutput;
         
-        try {
-            this.srcFile = new File(srcFileName);
-            
-            //create destFileName from srcFileName - "/src_dir/trans.java" --> "/dest_dir/trans.class"
-            int index = srcFile.getName().lastIndexOf('.');
-            String className = srcFile.getName().substring(0, index);
-            destFileName = this.destDirName + className + ".class";
-            this.destFile = new File(destFileName);
-            
-            //create errFileName
-            errFileName = destDirName + className + ".err";
-        } catch(NullPointerException e) {
-            throw new RuntimeException(e);
-        }
+        this.srcFile = new File(srcFileName);
+        
+        //create destFileName from srcFileName - "/src_dir/trans.java" --> "/dest_dir/trans.class"
+        int index = srcFile.getName().lastIndexOf('.');
+        String className = srcFile.getName().substring(0, index);
+        this.destFileName = className + ".class";
+        this.destFile = new File(destDirName, destFileName);
+        
+        //create errFileName
+        errFileName = destDirName + className + ".err";
     }
     
     public Compiler(String srcFile, boolean captureOutput) {
@@ -179,20 +174,24 @@ public class Compiler {
     }
     
     private boolean needRecompile() {
-        if(forceRecompile) {
-            return true;
-        }
-
-        if(destFile.exists() && (destFile.lastModified() >= srcFile.lastModified())) {
-            return false; //is already compiled
-        } //else we need to recompile the source file
-        
-        final boolean deleted = destFile.delete();
-		if (!deleted) {
-			logger.error("error delete file " + destFile.getAbsolutePath());
+		if (forceRecompile) {
+			return true;
 		}
-        return true;
-    }
+
+		if (destFile.exists()) {
+			if (destFile.lastModified() >= srcFile.lastModified()) {
+				return false; // is already compiled
+			} else {
+				final boolean deleted = destFile.delete();
+				if (!deleted) {
+					logger.error("error delete file " + destFile.getAbsolutePath());
+				}
+			}
+		}
+
+		// we need to recompile the source file
+		return true;
+	}
     
     public String getCapturedOutput() {
         if(captureOutput) {
