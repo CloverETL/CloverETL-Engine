@@ -291,6 +291,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 * @return            Description of the Return Value
 	 * @since             July 29, 2002
 	 */
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings("UL")
 	private Result watch(Phase phase) throws InterruptedException {
 		Message<?> message;
 		Set<Node> phaseNodes;
