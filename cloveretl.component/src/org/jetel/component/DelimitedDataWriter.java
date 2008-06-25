@@ -248,7 +248,7 @@ public class DelimitedDataWriter extends Node {
 		super.checkConfig(status);
  
 		if(!checkInputPorts(status, 1, 1)
-				|| !checkOutputPorts(status, 0, 0)) {
+				|| !checkOutputPorts(status, 0, 1)) {
 			return status;
 		}
 
