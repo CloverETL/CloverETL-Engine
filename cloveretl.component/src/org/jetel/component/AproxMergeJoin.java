@@ -810,10 +810,10 @@ public class AproxMergeJoin extends Node {
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		
-		if (joinKeys != null) {
-			StringBuffer buf = new StringBuffer(joinKeys[0]);
-			for (int i=1; i< joinKeys.length; i++) {
-				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + joinKeys[i]); 
+		if (joinParameters != null) {
+			StringBuffer buf = new StringBuffer(joinParameters[0]);
+			for (int i=1; i< joinParameters.length; i++) {
+				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + joinParameters[i]); 
 			}
 			xmlElement.setAttribute(XML_JOIN_KEY_ATTRIBUTE,buf.toString());
 		}
@@ -826,8 +826,8 @@ public class AproxMergeJoin extends Node {
 			xmlElement.setAttribute(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE,buf.toString());
 		}
 		
-		if (matchingKey!=null){
-			xmlElement.setAttribute(XML_MATCHING_KEY_ATTRIBUTE,matchingKey[0]);
+		if (matchingKeyString!=null){
+			xmlElement.setAttribute(XML_MATCHING_KEY_ATTRIBUTE,matchingKeyString);
 		}
 		
 		if (slaveMatchingKey!=null){
