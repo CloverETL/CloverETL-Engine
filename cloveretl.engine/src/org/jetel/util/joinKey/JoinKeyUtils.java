@@ -152,7 +152,6 @@ public class JoinKeyUtils {
 			String[][][] reorder = new String[2][mappings.length][];
 			int slaveNum;
 			DataRecordMetadata metadata;
-			Iterator<Object[]> iterator = slaveMetadata.values().iterator();
 			for(int i = 0; i < recName.length; i++){
 				if (recName[i] != null) {
 					slaveNum = isNumber ? Integer.parseInt(recName[i]) - 1: (Integer)slaveMetadata.get(recName[i])[1];
@@ -161,7 +160,7 @@ public class JoinKeyUtils {
 					reorder[SLAVE][slaveNum] = res[SLAVE][i];
 				}else{
 					slaveNum = i;
-					metadata = (DataRecordMetadata)iterator.next()[0];
+					metadata = inMetadata.get(i+1);
 					reorder[MASTER][i] = res[MASTER][i];
 					reorder[SLAVE][i] = res[SLAVE][i];
 				}
@@ -244,7 +243,7 @@ public class JoinKeyUtils {
 				}
 				//find port number for setting key
 				if (slaveTmp[RECORD_INDEX] == null) {//record name not given - we take order 
-					tmpPortNo = i;
+					tmpPortNo = masterTmp == null ? i : i + 1;//setting master or master and slave (masterfield = slaveField)
 				}else if ((isNumber && Integer.valueOf(slaveTmp[RECORD_INDEX]) == 0) 
 						|| (!isNumber && slaveTmp[RECORD_INDEX].equals(masterMetadata.getName()))) {//set key for master
 					if (masterTmp != null) {//trying to set master on the right side of key pair (masterfield = slaveField)
@@ -289,11 +288,10 @@ public class JoinKeyUtils {
 		//set proper order in result
 		String[][] res = new String[result.size()][];
 		DataRecordMetadata metadata = null;
-		Iterator<Object[]> iterator = slaveMetadata.size() > 0 ? slaveMetadata.values().iterator() : null;
 		for (int i = 0; i < res.length; i++) {
 			res[i] = result.get(i);
-			if (iterator != null) {
-				metadata = i == 0 ? masterMetadata : (DataRecordMetadata)iterator.next()[0];
+			if (itor != null) {
+				metadata = inMetadata.get(i);
 				for (int k = 0; k < res[i].length; k++) {
 					if (metadata.getFieldPosition(res[i][k]) == -1) {
 						throw new ComponentNotReadyException("Field " + StringUtils.quote(res[i][k]) +
