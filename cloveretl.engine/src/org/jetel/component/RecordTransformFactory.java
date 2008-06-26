@@ -281,7 +281,7 @@ public class RecordTransformFactory {
     				CLVFFunctionDeclaration transFunction = (CLVFFunctionDeclaration)node;
     				int numTransChildren = transFunction.jjtGetNumChildren();
     				for (int j = 0; j < numTransChildren; j++) {
-    					org.jetel.interpreter.ASTnode.Node fNode = transFunction.jjtGetChild(i);
+    					org.jetel.interpreter.ASTnode.Node fNode = transFunction.jjtGetChild(j);
     					if (!(fNode instanceof CLVFDirectMapping)) {
 //    						System.out.println("Function transform() must contain direct mappings only");
     						return false;
