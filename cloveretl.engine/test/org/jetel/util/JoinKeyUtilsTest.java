@@ -147,6 +147,15 @@ public class JoinKeyUtilsTest extends CloverTestCase {
 		assertEquals("field3", masterKey[1]);
 		assertEquals("field3", slave2Key[1]);
 
+		joinKey = "field1=field1#field1=field2";
+		parsedKey = JoinKeyUtils.parseMergeJoinKey(joinKey, metadata);
+		masterKey = parsedKey[0];
+		slave1Key = parsedKey[1];
+		slave2Key = parsedKey[2];
+		assertEquals("field1", masterKey[0]);
+		assertEquals("field1", slave1Key[0]);
+		assertEquals("field2", slave2Key[0]);
+
 		joinKey = "master.field1;master.field2#slave2.field1;slave2.field3#slave1.field1;slave1.field2";
 		parsedKey = JoinKeyUtils.parseMergeJoinKey(joinKey, metadata);
 		masterKey = parsedKey[0];

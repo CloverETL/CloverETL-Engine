@@ -70,4 +70,10 @@ public class AproximativeJoinKey{
 		return slave;
 	}
 	
+	@Override
+	public String toString() {
+		return Defaults.CLOVER_FIELD_INDICATOR + master + " = " + Defaults.CLOVER_FIELD_INDICATOR + slave + 
+			'(' + maxDiffrence + ' ' + weight + ' ' + strength[0] + ' ' + strength[1] + ' ' + strength[2] +
+			' ' + strength[3] + ')';
+	}
 }
