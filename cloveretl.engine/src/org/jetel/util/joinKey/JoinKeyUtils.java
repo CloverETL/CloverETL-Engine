@@ -43,7 +43,7 @@ import org.jetel.util.string.StringUtils;
 
 public class JoinKeyUtils {
 
-	private final static Pattern TAIL_PATTERN = Pattern.compile("\\s*[;|:#]+\\s*");
+	private final static Pattern TAIL_PATTERN = Pattern.compile("\\s*[;|:#]+\\s*$");
 	
 	private final static int MASTER = 0;
 	private final static int SLAVE = 1;
