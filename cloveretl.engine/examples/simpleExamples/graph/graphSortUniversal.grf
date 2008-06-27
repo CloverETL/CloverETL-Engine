@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed Nov 22 11:30:48 CET 2006" description="This graph illustrates usage of Sort component. It sorts data based on specified key. &#10;It also shows how to use parameters/global properties within graph.&#10; &#10;Execute it using org.jetel.main.runGraph -P:sortKey=&lt;..your.fieldName..&gt; -P:metadata=&lt;..metadata filename..&gt; -P:data=&lt;..datafile..&gt; &#10;" guiVersion="1.9" id="1204551026339" licenseType="Commercial License javlinconsulting" modified="Mon Mar 03 15:22:07 CET 2008" name="TestingSort" revision="1.9">
+<Graph author="avackova" created="Wed Nov 22 11:30:48 CET 2006" description="This graph illustrates usage of Sort component. It sorts data based on specified key. &#10;It also shows how to use parameters/global properties within graph.&#10; &#10;Execute it using org.jetel.main.runGraph -P:sortKey=&lt;..your.fieldName..&gt; -P:metadata=&lt;..metadata filename..&gt; -P:data=&lt;..datafile..&gt; &#10;" guiVersion="1.10" id="1204551026339" licenseType="Evaluation license." modified="Fri Jun 27 13:27:25 CEST 2008" modifiedBy="avackova" name="TestingSort" revision="1.14">
 <Global>
 <Metadata fileURL="${metadata}" id="InMetadata"/>
-<Property id="GraphParameter13" name="data" value="data-in/delimited/customers_delimited.txt"/>
-<Property id="GraphParameter12" name="metadata" value="${META_DIR}/delimited/customers.fmt"/>
-<Property id="GraphParameter10" name="outputData" value="data-out/customers.sorted"/>
-<Property id="GraphParameter11" name="sortKey" value="CUSTOMERID"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Property id="GraphParameter0" name="data" value="data-in/delimited/customers_delimited.txt"/>
+<Property id="GraphParameter1" name="metadata" value="${META_DIR}/delimited/customers.fmt"/>
+<Property id="GraphParameter2" name="outputData" value="data-out/customers.sorted"/>
+<Property id="GraphParameter3" name="sortKey" value="CUSTOMERID"/>
+<Property fileURL="workspace.prm" id="GraphParameter4"/>
 </Global>
 <Phase number="0">
+<Node enabled="enabled" guiHeight="25" guiName="EXT_SORT" guiWidth="50" guiX="195" guiY="20" id="EXT_SORT" sortKey="${sortKey}" type="EXT_SORT"/>
 <Node enabled="enabled" fileURL="${PROJECT}/${data}" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
 <Node append="false" enabled="enabled" fileURL="${PROJECT}/${outputData}" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="25" guiName="SORT" guiWidth="50" guiX="195" guiY="20" id="SORT" sortKey="${sortKey}" type="SORT"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (out)" toNode="SORT:0"/>
-<Edge fromNode="SORT:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+<Edge fromNode="EXT_SORT:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (out)" toNode="EXT_SORT:0"/>
 </Phase>
 </Graph>
