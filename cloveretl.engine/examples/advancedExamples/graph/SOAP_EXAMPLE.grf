@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Fri Feb 29 16:16:12 CET 2008" guiVersion="1.9" id="1204298432250" licenseType="Evaluation license." modified="Tue Apr 01 09:41:19 CEST 2008" name="SOAP_EXAMPLE" revision="1.279">
+<Graph author="avackova" created="Fri Feb 29 16:16:12 CET 2008" guiVersion="1.10" id="1204298432250" licenseType="Evaluation license." modified="Fri Jun 27 09:49:53 CEST 2008" modifiedBy="avackova" name="SOAP_EXAMPLE" revision="1.281">
 <Global>
 <Metadata fileURL="${META_DIR}/extract.fmt" id="Metadata10"/>
 <Metadata fileURL="${META_DIR}/extractAgg.fmt" id="Metadata11"/>
@@ -13,20 +13,22 @@
 <Metadata fileURL="${META_DIR}/time_dim.fmt" id="Metadata7"/>
 <Metadata fileURL="${META_DIR}/time_layout.fmt" id="Metadata3"/>
 <Metadata fileURL="${META_DIR}/time_pairs.fmt" id="Metadata4"/>
-<Property fileURL="parameters.prm" id="GraphParameter10"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Sequence cached="0" fileURL="${SEQ_DIR}/time_seq.seq" id="Sequence1" name="time_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
+<Property fileURL="parameters.prm" id="GraphParameter0"/>
+<Property fileURL="workspace.prm" id="GraphParameter4"/>
 <Sequence cached="0" fileURL="${SEQ_DIR}/temp_seq.seq" id="Sequence0" name="temp_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="0" fileURL="${SEQ_DIR}/time_seq.seq" id="Sequence1" name="time_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
 <Phase number="0">
 <Node aggregateKey="city;state" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="958" guiY="169" id="AGGREGATE0" mapping="$city:=$city;$state:=$state;$name:=first($name);$units:=first($units);$avg:=avg($value);$min:=min($value);$max:=max($value);$startDate:=min($startDateUTC);$endDate:=max($endDateUTC);$moreWeatherInformation:=first($moreWeatherInformation);" type="AGGREGATE"/>
 <Node dedupKey="applicable_location;time_layout" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="442" guiY="307" id="DEDUP0" keep="first" type="DEDUP"/>
 <Node dedupKey="layout_key" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="535" guiY="117" id="DEDUP1" keep="first" type="DEDUP"/>
-<Node enabled="enabled" guiHeight="0" guiName="Join Location with additional info" guiWidth="0" guiX="203" guiY="14" id="EXT_HASH_JOIN0" joinKey="location_key=applicable_location;#" type="EXT_HASH_JOIN">
-<attr name="transform"><![CDATA[${out.0.location_key} = ${in.0.location_key};
-${out.0.city} = ${in.0.city};
-${out.0.state} = ${in.0.state};
-${out.0.moreWeatherInformation} = ${in.1.moreWeatherInformation};
+<Node enabled="enabled" guiHeight="0" guiName="Join Location with additional info" guiWidth="0" guiX="203" guiY="14" id="EXT_HASH_JOIN0" joinKey="$location_key=$applicable_location;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[function transform() {
+$0.location_key := $0.location_key;
+$0.city := $0.city;
+$0.state := $0.state;
+$0.moreWeatherInformation := $1.moreWeatherInformation;
+}
 ]]></attr>
 <attr name="guiDescription"><![CDATA[gdhgdh
 
@@ -37,48 +39,58 @@ hb
 adg
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Join temp value with time layout" guiWidth="0" guiX="150" guiY="299" id="EXT_HASH_JOIN1" joinKey="param_id=param_id;#" type="EXT_HASH_JOIN">
-<attr name="transform"><![CDATA[${out.0.value} = ${in.0.value};
-${out.0.applicable_location} = ${in.1.applicable_location};
-${out.0.time_layout} = ${in.1.time_layout};
-${out.0.type} = ${in.1.type};
-${out.0.units} = ${in.1.units};
-${out.0.name} = ${in.1.name};
-${out.0.temp_dim_id} = ${seq.Sequence0};
+<Node enabled="enabled" guiHeight="0" guiName="Join temp value with time layout" guiWidth="0" guiX="150" guiY="299" id="EXT_HASH_JOIN1" joinKey="$param_id=$param_id;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[function transform() {
+$0.value := $0.value;
+$0.applicable_location := $1.applicable_location;
+$0.time_layout := $1.time_layout;
+$0.type := $1.type;
+$0.units := $1.units;
+$0.name := $1.name;
+$0.temp_dim_id := sequence(Sequence0).next;
+}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Join time with layout key" guiWidth="0" guiX="201" guiY="107" id="EXT_HASH_JOIN2" joinKey="parent_id=id;#" type="EXT_HASH_JOIN">
-<attr name="transform"><![CDATA[${out.0.start_valid_time} = ${in.0.start_valid_time};
-${out.0.end_valid_time} = ${in.0.end_valid_time};
-${out.0.layout_key} = ${in.1.layout_key};
-${out.0.time_dim_id} = ${seq.Sequence1};
+<Node enabled="enabled" guiHeight="0" guiName="Join time with layout key" guiWidth="0" guiX="201" guiY="107" id="EXT_HASH_JOIN2" joinKey="$parent_id=$id;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[function transform() {
+$0.start_valid_time := $0.start_valid_time;
+$0.end_valid_time := $0.end_valid_time;
+$0.layout_key := $1.layout_key;
+$0.time_dim_id := sequence(Sequence1).next;
+}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Create synthetic key for temp value " guiWidth="0" guiX="440" guiY="403" id="EXT_HASH_JOIN3" joinKey="applicable_location=applicable_location;time_layout=time_layout;#" type="EXT_HASH_JOIN">
-<attr name="transform"><![CDATA[${out.0.applicable_location} = ${in.0.applicable_location};
-${out.0.time_layout} = ${in.0.time_layout};
-${out.0.type} = ${in.0.type};
-${out.0.units} = ${in.0.units};
-${out.0.name} = ${in.0.name};
-${out.0.value} = ${in.0.value};
-${out.0.temp_dim_id} = ${in.0.temp_dim_id} - ${in.1.temp_dim_id};
+<Node enabled="enabled" guiHeight="0" guiName="Create synthetic key for temp value " guiWidth="0" guiX="440" guiY="403" id="EXT_HASH_JOIN3" joinKey="$applicable_location=$applicable_location;$time_layout=$time_layout;$type=$type;$units=$units;$name=$name;$value=$value;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[function transform() {
+$0.applicable_location := $0.applicable_location;
+$0.time_layout := $0.time_layout;
+$0.type := $0.type;
+$0.units := $0.units;
+$0.name := $0.name;
+$0.value := $0.value;
+$0.temp_dim_id := $0.temp_dim_id - $1.temp_dim_id;
+}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Create synthetic key for time value" guiWidth="0" guiX="546" guiY="208" id="EXT_HASH_JOIN4" joinKey="layout_key=layout_key;#" type="EXT_HASH_JOIN">
-<attr name="transform"><![CDATA[${out.0.layout_key} = ${in.0.layout_key};
-${out.0.start_valid_time} = ${in.0.start_valid_time};
-${out.0.end_valid_time} = ${in.0.end_valid_time};
-${out.0.time_dim_id} = ${in.0.time_dim_id} - ${in.1.time_dim_id};
+<Node enabled="enabled" guiHeight="0" guiName="Create synthetic key for time value" guiWidth="0" guiX="546" guiY="208" id="EXT_HASH_JOIN4" joinKey="$layout_key=$layout_key;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[function transform() {
+$0.layout_key := $0.layout_key;
+$0.start_valid_time := $0.start_valid_time;
+$0.end_valid_time := $0.end_valid_time;
+$0.time_dim_id := $0.time_dim_id - $1.time_dim_id;
+}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Join time with temp" guiWidth="0" guiX="727" guiY="309" id="EXT_HASH_JOIN6" joinKey="time_layout=layout_key;temp_dim_id=time_dim_id;#" type="EXT_HASH_JOIN">
-<attr name="transform"><![CDATA[${out.0.applicable_location} = ${in.0.applicable_location};
-${out.0.type} = ${in.0.type};
-${out.0.units} = ${in.0.units};
-${out.0.name} = ${in.0.name};
-${out.0.value} = ${in.0.value};
-${out.0.start_valid_time} = ${in.1.start_valid_time};
-${out.0.end_valid_time} = ${in.1.end_valid_time};
+<Node enabled="enabled" guiHeight="0" guiName="Join time with temp" guiWidth="0" guiX="727" guiY="309" id="EXT_HASH_JOIN6" joinKey="$time_layout=$layout_key;$temp_dim_id=$time_dim_id;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[function transform() {
+$0.applicable_location := $0.applicable_location;
+$0.type := $0.type;
+$0.units := $0.units;
+$0.name := $0.name;
+$0.value := $0.value;
+$0.start_valid_time := $1.start_valid_time;
+$0.end_valid_time := $1.end_valid_time;
+}
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Join Location" guiWidth="0" guiX="789" guiY="30" id="EXT_HASH_JOIN7" joinKey="applicable_location=location_key;#" type="EXT_HASH_JOIN">
