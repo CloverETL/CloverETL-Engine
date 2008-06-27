@@ -82,6 +82,7 @@ public class testDBLookup{
 		
 	//initialization; must be present
 	EngineInitializer.initEngine(arg[0], arg[1], null);
+	EngineInitializer.forceActivateAllPlugins();
 
 	System.out.println("**************** Input parameters: ****************");
 	System.out.println("Plugins directory: "+ arg[PLUGINS_PROPERTY_INDEX]);
