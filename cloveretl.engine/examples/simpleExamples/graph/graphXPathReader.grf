@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed Mar 07 09:01:26 CET 2007" description="In this example data are read from employees.xml file. “Mapping” attribute describes dependencies between xml nodes and metadata fields. " guiVersion="1.9" id="1204551969115" licenseType="Evaluation license." modified="Thu Apr 03 11:54:44 CEST 2008" name="XXX" revision="1.12">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="In this example data are read from employees.xml file. “Mapping” attribute describes dependencies between xml nodes and metadata fields. " guiVersion="1.10" id="1204551969115" licenseType="Evaluation license." modified="Fri Jun 27 13:32:07 CEST 2008" modifiedBy="avackova" name="XXX" revision="1.16">
 <Global>
 <Metadata id="Metadata2">
 <Record fieldDelimiter=";" name="BenefitsOthers" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -77,13 +77,15 @@
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputCUSTOM.txt" guiHeight="0" guiName="Customers" guiWidth="0" guiX="391" guiY="282" id="DELIMITED_DATA_WRITER4" type="DELIMITED_DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Merge Join" guiWidth="0" guiX="208" guiY="369" id="MERGE_JOIN0" joinKey="seqKey" slaveOverrideKey="seqKey" type="MERGE_JOIN">
-<attr name="transform"><![CDATA[${out.0.car} = ${in.0.car};
-${out.0.seqKey} = ${in.0.seqKey};
-${out.0.mobilephone} = ${in.0.mobilephone};
-${out.0.financial_bonus} = ((${in.1.monthly_bonus})*12)+(${in.1.yearly_bonus});
-
+<Node enabled="enabled" guiHeight="0" guiName="Merge Join" guiWidth="0" guiX="208" guiY="369" id="EXT_MERGE_JOIN0" joinKey="$seqKey;#$seqKey;#" type="EXT_MERGE_JOIN">
+<attr name="transform"><![CDATA[function transform() {
+$0.car := $0.car;
+$0.seqKey := $0.seqKey;
+$0.mobilephone := $0.mobilephone;
+$0.financial_bonus := (($1.monthly_bonus)*12)+($1.yearly_bonus);
+}
 ]]></attr>
+<attr name="slaveOverrideKey"><![CDATA[seqKey]]></attr>
 </Node>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/other/employees.xml" guiHeight="0" guiName="XML XPath Reader" guiWidth="0" guiX="20" guiY="20" id="XML_XPATH_READER0" type="XML_XPATH_READER">
 <attr name="mapping"><![CDATA[
@@ -102,11 +104,11 @@ ${out.0.financial_bonus} = ((${in.1.monthly_bonus})*12)+(${in.1.yearly_bonus});
 
 ]]></attr>
 </Node>
-<Edge fromNode="MERGE_JOIN0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER1:0"/>
+<Edge fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER1:0"/>
 <Edge debugMode="false" fromNode="XML_XPATH_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER0:0"/>
 <Edge fromNode="XML_XPATH_READER0:1" guiBendpoints="" id="Edge16" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="DELIMITED_DATA_WRITER2:0"/>
-<Edge fromNode="XML_XPATH_READER0:2" guiBendpoints="" id="Edge21" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 2 (out)" toNode="MERGE_JOIN0:0"/>
-<Edge fromNode="XML_XPATH_READER0:3" guiBendpoints="" id="Edge22" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 3 (out)" toNode="MERGE_JOIN0:1"/>
+<Edge fromNode="XML_XPATH_READER0:2" guiBendpoints="" id="Edge21" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 2 (out)" toNode="EXT_MERGE_JOIN0:0"/>
+<Edge fromNode="XML_XPATH_READER0:3" guiBendpoints="" id="Edge22" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 3 (out)" toNode="EXT_MERGE_JOIN0:1"/>
 <Edge debugMode="false" fromNode="XML_XPATH_READER0:4" guiBendpoints="" id="Edge23" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 4 (out)" toNode="DELIMITED_DATA_WRITER3:0"/>
 <Edge fromNode="XML_XPATH_READER0:5" guiBendpoints="" id="Edge24" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 5 (out)" toNode="DELIMITED_DATA_WRITER4:0"/>
 </Phase>
