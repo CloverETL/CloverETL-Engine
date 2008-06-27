@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Thu Dec 21 08:55:10 CET 2006" description="This graph illustrates how to read not all records from database. This example is similar to graphDBJoin.grf, but found records from database are not sent to transformation function, but directly to output port." guiVersion="1.9" id="1204559496098" licenseType="Evaluation license." modified="Fri Apr 04 12:15:33 CEST 2008" name="graphDBUnloadParametrized" revision="1.20">
+<Graph author="avackova" created="Thu Dec 21 08:55:10 CET 2006" description="This graph illustrates how to read not all records from database. This example is similar to graphDBJoin.grf, but found records from database are not sent to transformation function, but directly to output port." guiVersion="1.10" id="1204559496098" licenseType="Evaluation license." modified="Fri Jun 27 11:24:07 CEST 2008" modifiedBy="avackova" name="graphDBUnloadParametrized" revision="1.25">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employee.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
@@ -12,18 +12,18 @@
 <attr name="maxCashed"><![CDATA[1000]]></attr>
 </Node>
 <Node dedupKey="employee_id" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="497" guiY="82" id="DEDUP0" keep="first" type="DEDUP"/>
-<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="344" guiY="82" id="SORT0" sortKey="employee_id" type="SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="344" guiY="82" id="EXT_SORT0" sortKey="employee_id(a)" type="EXT_SORT"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="645" guiY="82" id="XLS_WRITER0" namesRow="1" sheetName="Employees with orders" type="XLS_WRITER"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DBJOIN0:0"/>
-<Edge debugMode="true" fromNode="DBJOIN0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (joined records)" toNode="SORT0:0"/>
+<Edge debugMode="true" fromNode="DBJOIN0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (joined records)" toNode="EXT_SORT0:0"/>
 <Edge fromNode="DEDUP0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (unique)" toNode="XLS_WRITER0:0"/>
-<Edge fromNode="SORT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
 </Phase>
 <Phase number="1">
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DB Input Table" guiWidth="0" guiX="21" guiY="211" id="DB_INPUT_TABLE0" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
-<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="344" guiY="211" id="SORT1" sortKey="employee_id" type="SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="344" guiY="211" id="EXT_SORT1" sortKey="employee_id(a)" type="EXT_SORT"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="645" guiY="211" id="XLS_WRITER1" namesRow="1" sheetName="Employees" type="XLS_WRITER"/>
-<Edge debugMode="false" fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SORT1:0"/>
-<Edge fromNode="SORT1:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
+<Edge debugMode="false" fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
 </Phase>
 </Graph>
