@@ -24,7 +24,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
   protected JJTTransformLangParserState jjtree = new JJTTransformLangParserState();
            public static final String SRC_ENCODING = "UTF-8";
 
-           boolean wildcardMappingActive=false;
+           boolean wildcardMappingActive=true;
 
        DataRecordMetadata[] inRecordsMetadata;
        DataRecordMetadata[] outRecordsMetadata;
@@ -101,7 +101,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
               this.parseExceptions=parent.parseExceptions;
       }
 
-      public TransformLangParser(TransformLangParser parent,String sourcename,CharSequence source){
+         public TransformLangParser(TransformLangParser parent,String sourcename,CharSequence source){
                           this(new CharSequenceReader(source));
                           this.sourceFilename=sourcename;
                           this.parserHelper=parent.parserHelper;
@@ -116,12 +116,12 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         if (reset){
                 this.parserHelper.reset();
         }
-       	this.parseExceptions.clear();
+        this.parseExceptions.clear();
         this.ReInit(new CharSequenceReader(source));
       }
-      
+
       public void setTabSize(int size){
-      		this.token_source.input_stream.setTabSize(size);
+                this.token_source.input_stream.setTabSize(size);
       }
 
       public final DataRecordMetadata getInRecordMeta(){
@@ -219,6 +219,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
            ((SimpleNode) n).setLineNumber(t.beginLine);
            ((SimpleNode) n).setColumnNumber(t.beginColumn);
        }
+       ((SimpleNode) n).setSourceFilename(sourceFilename);
     }
 
    /**
@@ -3795,27 +3796,6 @@ void OutputFieldExp() #void :// IDExp -> ID
     finally { jj_save(7, xla); }
   }
 
-  final private boolean jj_3R_87() {
-    if (jj_scan_token(AND)) return true;
-    if (jj_3R_86()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_47() {
-    if (jj_scan_token(SWITCH)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_76() {
-    if (jj_3R_86()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_87()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
   final private boolean jj_3R_77() {
     if (jj_scan_token(OR)) return true;
     if (jj_3R_76()) return true;
@@ -4179,6 +4159,14 @@ void OutputFieldExp() #void :// IDExp -> ID
     return false;
   }
 
+  final private boolean jj_3R_20() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_25()) jj_scanpos = xsp;
+    return false;
+  }
+
   final private boolean jj_3R_93() {
     if (jj_scan_token(123)) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
@@ -4192,14 +4180,6 @@ void OutputFieldExp() #void :// IDExp -> ID
     if (jj_scan_token(CLOSE_PAR)) return true;
     xsp = jj_scanpos;
     if (jj_3R_159()) jj_scanpos = xsp;
-    return false;
-  }
-
-  final private boolean jj_3R_20() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_25()) jj_scanpos = xsp;
     return false;
   }
 
@@ -5036,6 +5016,27 @@ void OutputFieldExp() #void :// IDExp -> ID
     while (true) {
       xsp = jj_scanpos;
       if (jj_3R_101()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_87() {
+    if (jj_scan_token(AND)) return true;
+    if (jj_3R_86()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_47() {
+    if (jj_scan_token(SWITCH)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_76() {
+    if (jj_3R_86()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_87()) { jj_scanpos = xsp; break; }
     }
     return false;
   }

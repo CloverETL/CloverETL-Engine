@@ -15,6 +15,7 @@ public class SimpleNode implements Node {
   protected int lineNumber;
   protected int columnNumber;
   public TLValue value;
+  public String sourceFilename;
 
   public SimpleNode(int i) {
     id = i;
@@ -135,6 +136,20 @@ public int getColumnNumber() {
  */
 public void setColumnNumber(int columnNumber) {
     this.columnNumber = columnNumber;
+}
+
+/**
+ * @param filename name of file from which this node was created/imported
+ */
+public void setSourceFilename(String filename){
+	this.sourceFilename=filename;
+}
+
+/**
+ * @return name of file from which this node was created/imported
+ */
+public String getSourceFilename(){
+	return this.sourceFilename;
 }
 }
 
