@@ -357,7 +357,7 @@ public class WrapperTL {
 	 * @return
 	 */
 	public TLValue executePreparedFunction(int functionNumber){
-		return executePreparedFunction(null, null);
+		return executePreparedFunction(functionNumber, null, null);
 	}
 	
 	/**
