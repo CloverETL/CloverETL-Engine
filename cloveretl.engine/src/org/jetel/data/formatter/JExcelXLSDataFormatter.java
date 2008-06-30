@@ -75,7 +75,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	private String currentSheetName;
 	private int currentRow;
 	private SheetData currentSheet;
-	
+
 	/**
 	 * Constructor
 	 * 
@@ -92,7 +92,6 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	public void close() {
 		if (open) {
 			try {
-				wb.write();
 				wb.close();
 				sheet = null;
 				open = false;
@@ -106,7 +105,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	 * @see org.jetel.data.formatter.Formatter#flush()
 	 */
 	public void flush() throws IOException {
-		if (sheet != null) {//at least one record was written 
+		if (wb.getNumberOfSheets() > 0) {
 			wb.write();
 		}
 	}
