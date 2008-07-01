@@ -233,12 +233,16 @@ public class XsdMetadata extends MXAbstract {
 			restr.appendChild(typeRestr);
 			break;
 		case DataFieldMetadata.STRING_FIELD:
-			typeRestr = doc.createElement(XSD_LENGHT);
-			typeRestr.setAttribute(VALUE, Short.toString(field.getSize()));
-			restr.appendChild(typeRestr);
-			typeRestr = doc.createElement(XSD_PATTERN);
-			typeRestr.setAttribute(VALUE, field.getFormatStr());
-			restr.appendChild(typeRestr);
+			if (field.getSize() > 0) {
+				typeRestr = doc.createElement(XSD_LENGHT);
+				typeRestr.setAttribute(VALUE, Short.toString(field.getSize()));
+				restr.appendChild(typeRestr);
+			}
+			if (field.getFormatStr() != null) {
+				typeRestr = doc.createElement(XSD_PATTERN);
+				typeRestr.setAttribute(VALUE, field.getFormatStr());
+				restr.appendChild(typeRestr);
+			}
 			break;
 		default:
 			break;

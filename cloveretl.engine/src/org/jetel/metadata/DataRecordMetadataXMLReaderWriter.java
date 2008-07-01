@@ -402,6 +402,16 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		return parseRecordMetadata(document, null);
 	}
 
+	public DataRecordMetadata[] parseRecordMetadataAll(Document document) throws DOMException {
+		org.w3c.dom.NodeList nodes = document.getElementsByTagName(RECORD_ELEMENT);
+		int len = nodes.getLength();
+		DataRecordMetadata[] allMetadata = new DataRecordMetadata[len];
+		for (int i=0; i<len; i++) {
+			allMetadata[i] = parseRecordMetadata(nodes.item(i));
+		}
+		return allMetadata;
+	}
+
 	public DataRecordMetadata parseRecordMetadata(Document document, String metadataId) throws DOMException {
 		org.w3c.dom.NodeList nodes;
 		if (metadataId != null) {
