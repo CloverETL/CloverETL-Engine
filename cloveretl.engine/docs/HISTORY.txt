@@ -10,6 +10,8 @@ Changes/bug fixes:
 + clover engine JMX messaging was reworked
 + standardization of mapping syntax:DBOutputTable, DataGenerator, DB2DataWriter, XLSReader
 + standardization of join key: AproxMergeJoin
++ debugDirectory graph attribute was replaced by command line parameter identically called
++ new command line parameter "-nodebug" turns of all runtime graph debugging (e.g edge debugging)
 
 REL 2-4-6
 ---------
