@@ -241,8 +241,6 @@ public class FixLenDataReader extends Node {
         reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
         reader.setCharset(charset);
         reader.setDictionary(graph.getDictionary());
-        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
-
 	}
 
 	@Override
