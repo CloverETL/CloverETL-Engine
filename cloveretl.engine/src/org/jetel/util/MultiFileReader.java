@@ -307,13 +307,10 @@ public class MultiFileReader {
 				}
 				if(fileSkip > 0) parser.skip(fileSkip);
 				return true;
-			} catch (JetelException e) {
+			} catch (Exception e) {
 				logger.error("An error occured while skipping records in file " + filename + ", the file will be ignored", e);
 				continue;
-			} catch (ComponentNotReadyException e) {
-			    logger.error("An error occured while switching input file " + filename + ", the file will be ignored", e);
-                continue;
-            }
+			}
 		}
 		return false;
 	}

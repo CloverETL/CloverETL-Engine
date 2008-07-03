@@ -136,7 +136,7 @@ public abstract class FixLenDataParser implements Parser {
 		return bytesProcessed;
 	}
 
-	public void movePosition(Object position) {
+	public void movePosition(Object position) throws IOException {
 		int pos = 0;
 		if (position instanceof Integer) {
 			pos = ((Integer) position).intValue();
@@ -183,7 +183,7 @@ public abstract class FixLenDataParser implements Parser {
 	 * 
 	 * @param bytes
 	 */
-	protected abstract void discardBytes(int bytes);
+	protected abstract void discardBytes(int bytes) throws IOException;
 	
 	/**
 	 * Release data source.  
