@@ -318,5 +318,13 @@ public class DataGenerator extends Node {
 	public void setSequenceFields(String sequenceFields) {
 		this.sequenceFieldsString = sequenceFields; 
 	}
+
+	public int getRecordsNumber() {
+		return recordsNumber;
+	}
+
+	public void setRecordsNumber(int recordsNumber) {
+		this.recordsNumber = recordsNumber;
+	}
 	
 }
