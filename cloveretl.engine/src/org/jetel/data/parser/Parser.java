@@ -123,7 +123,7 @@ public interface Parser {
 	 * 
 	 * @param position
 	 */
-	public void movePosition(Object position);
+	public void movePosition(Object position) throws IOException;
 
 }
 /*

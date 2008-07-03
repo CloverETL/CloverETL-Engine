@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -204,6 +205,7 @@ public class FileUtils {
         InputStream innerStream = null;
 		boolean isZip = false;
 		boolean isGzip = false;
+		boolean isFile = false;
         
 		// get inner source
 		Matcher matcher = getInnerInput(input);
@@ -237,6 +239,7 @@ public class FileUtils {
         //open channel
         if (innerStream == null) {
         	url = FileUtils.getFileURL(contextURL, input);
+        	isFile = url.getProtocol().equals("file");
         	innerStream = getAuthorizedStream(url);
         }
 
@@ -270,6 +273,10 @@ public class FileUtils {
             return Channels.newChannel(gzin);
         }
         
+        if (isFile) {
+            RandomAccessFile raf = new RandomAccessFile(input, "r");
+        	return raf.getChannel();
+        }
         return Channels.newChannel(innerStream);
     }
 

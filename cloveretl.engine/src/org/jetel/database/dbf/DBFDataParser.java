@@ -332,9 +332,14 @@ public class DBFDataParser implements Parser {
 	 * Discard bytes for incremental reading.
 	 * 
 	 * @param bytes
+	 * @throws IOException 
 	 */
-	private void discardBytes(int bytes) {
+	private void discardBytes(int bytes) throws IOException {
 		while (bytes > 0) {
+			if (dbfFile instanceof FileChannel) {
+				((FileChannel)dbfFile).position(bytes);
+				return;
+			}
 			totalRecords -= bytes/dbfAnalyzer.getRecSize();
 			buffer.clear();
 			if (bytes < Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) buffer.limit(bytes);
@@ -477,7 +482,7 @@ public class DBFDataParser implements Parser {
 		return bytesProcessed;
 	}
 
-	public void movePosition(Object position) {
+	public void movePosition(Object position) throws IOException {
 		int pos = 0;
 		if (position instanceof Integer) {
 			pos = ((Integer) position).intValue();

@@ -26,6 +26,7 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -246,9 +247,14 @@ public class DelimitedDataParser implements Parser {
 	 * Discard bytes for incremental reading.
 	 * 
 	 * @param bytes
+	 * @throws IOException 
 	 */
-	private void discardBytes(int bytes) {
+	private void discardBytes(int bytes) throws IOException {
 		while (bytes > 0) {
+			if (reader instanceof FileChannel) {
+				((FileChannel)reader).position(bytes);
+				return;
+			}
 			dataBuffer.clear();
 			if (bytes < Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) dataBuffer.limit(bytes);
 			try {
@@ -654,7 +660,7 @@ public class DelimitedDataParser implements Parser {
 		return bytesProcessed;
 	}
 
-	public void movePosition(Object position) {
+	public void movePosition(Object position) throws IOException {
 		int pos = 0;
 		if (position instanceof Integer) {
 			pos = ((Integer) position).intValue();

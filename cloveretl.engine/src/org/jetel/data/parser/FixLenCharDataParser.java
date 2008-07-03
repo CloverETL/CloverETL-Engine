@@ -21,6 +21,7 @@ package org.jetel.data.parser;
 
 import java.io.IOException;
 import java.nio.CharBuffer;
+import java.nio.channels.FileChannel;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -120,9 +121,14 @@ public class FixLenCharDataParser extends FixLenDataParser {
 	 * Discard bytes for incremental reading.
 	 * 
 	 * @param bytes
+	 * @throws IOException 
 	 */
-	protected void discardBytes(int bytes) {
+	protected void discardBytes(int bytes) throws IOException {
 		while (bytes > 0) {
+			if (inChannel instanceof FileChannel) {
+				((FileChannel)inChannel).position(bytes);
+				return;
+			}
 			byteBuffer.clear();
 			if (bytes < Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) byteBuffer.limit(bytes);
 			try {
