@@ -40,7 +40,6 @@ import javax.management.ObjectName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.MDC;
-import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
@@ -304,7 +303,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			// wait on error message queue
 			CURRENT_PHASE_LOCK.unlock();
 			try {
-				message = inMsgQueue.poll(Defaults.WatchDog.WATCHDOG_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
+				message = inMsgQueue.poll(runtimeContext.getTrackingInterval(), TimeUnit.MILLISECONDS);
 			} finally {
 				CURRENT_PHASE_LOCK.lock();
 			}

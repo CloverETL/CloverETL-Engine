@@ -37,8 +37,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.data.Defaults;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
@@ -281,7 +281,9 @@ public class runGraph {
         EngineInitializer.initEngine(pluginsRootDirectory, configFileName, logHost);
 
         //tohle je nutne odstranit - runtimeContext je potreba vytvorit az po initiazlizaci enginu!!! Kokon
-        runtimeContext.setTrackingInterval(Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL);
+        if (runtimeContext.getTrackingInterval() == 0) {
+        	runtimeContext.setTrackingInterval(Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL);
+        }
         
         // prepare input stream with XML graph definition
         InputStream in = null;
