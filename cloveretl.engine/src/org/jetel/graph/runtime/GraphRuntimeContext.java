@@ -42,7 +42,7 @@ public class GraphRuntimeContext {
 	private String logLocation;
 	private Level logLevel;
 	private int trackingInterval;
-	private int trackingFlushInterval;
+//	private int trackingFlushInterval;
 	private boolean useJMX;
 	private boolean waitForJMXClient;
 	private boolean verboseMode;
@@ -284,19 +284,19 @@ public class GraphRuntimeContext {
 		this.logLevel = logLevel;
 	}
 
-	/**
-	 * @return trackingFlushInterval
-	 */
-	public int getTrackingFlushInterval() {
-		return trackingFlushInterval;
-	}
-
-	/**
-	 * Sets interval which is used for flushing of tracking info to logging output.
-	 * @param trackingFlushInterval to set
-	 */
-	public void setTrackingFlushInterval(int trackingFlushInterval) {
-		this.trackingFlushInterval = trackingFlushInterval;
-	}
+//	/**
+//	 * @return trackingFlushInterval
+//	 */
+//	public int getTrackingFlushInterval() {
+//		return trackingFlushInterval;
+//	}
+//
+//	/**
+//	 * Sets interval which is used for flushing of tracking info to logging output.
+//	 * @param trackingFlushInterval to set
+//	 */
+//	public void setTrackingFlushInterval(int trackingFlushInterval) {
+//		this.trackingFlushInterval = trackingFlushInterval;
+//	}
 	
 }
