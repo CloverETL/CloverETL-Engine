@@ -142,7 +142,7 @@ public class EngineInitializer {
 		logger.info("Checking graph configuration...");
 		graph.setPassword(runtimeContext.getPassword());
 		ConfigurationStatus status = graph.checkConfig(null);
-		if(!status.isEmpty()) {
+		if(status.isError()) {
 			logger.error("Graph configuration is invalid.");
 			status.log();
 			throw new ComponentNotReadyException(graph, "Graph configuration is invalid.");
