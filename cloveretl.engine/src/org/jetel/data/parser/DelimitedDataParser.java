@@ -202,7 +202,10 @@ public class DelimitedDataParser implements Parser {
 		isAutoFilling = new boolean[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			fieldMetadata = metadata.getField(i);
-			delimiters[i] = fieldMetadata.getDelimiters()[0].toCharArray();
+			String[] tempDelimiters = fieldMetadata.getDelimiters();
+			if (tempDelimiters != null && tempDelimiters.length > 0) { //that could happen in case 'EOF as delimiter' setting
+				delimiters[i] = tempDelimiters[0].toCharArray();
+			}
 			eofAsDelimiters[i] = fieldMetadata.isEofAsDelimiter();
 			fieldTypes[i] = fieldMetadata.getType();
 			isAutoFilling[i] = fieldMetadata.getAutoFilling() != null;
@@ -449,8 +452,12 @@ public class DelimitedDataParser implements Parser {
                             }catch(BufferOverflowException ex){
                                 throw new IOException(
 										"Field too long or can not find delimiter ["
-												+ StringUtils.specCharToString(String
-																.valueOf(delimiters[fieldCounter]))						+ "]\n");
+                                		+ (delimiters[fieldCounter] != null 
+                                				? 
+                                				StringUtils.specCharToString(String.valueOf(delimiters[fieldCounter]))
+                                				:
+                                				"EOF as delimiter")
+                                		+ "]");
                             }
 						}
 						delimiterPosition = 0;
@@ -572,7 +579,8 @@ public class DelimitedDataParser implements Parser {
 		if (isWithinQuotes){
 		    return 0;
 		}
-	    if (character == delimiters[fieldCounter][delimiterPosition]) {
+	    if (delimiters[fieldCounter] != null //'EOF as delimiter' 
+	    		&& character == delimiters[fieldCounter][delimiterPosition]) {
 			if (delimiterPosition == delimiters[fieldCounter].length - 1) {
 				return 1;
 				// whole delimiter matched
