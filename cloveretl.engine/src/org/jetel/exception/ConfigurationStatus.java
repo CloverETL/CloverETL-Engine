@@ -65,5 +65,17 @@ public class ConfigurationStatus extends LinkedList<ConfigurationProblem> {
     	this.add(message, severity, graphElement, priority, null);
     }
 
+    /**
+     * @return true if status contains a problem with the ERROR severity
+     */
+    public boolean isError() {
+    	for(ConfigurationProblem problem : this) {
+    		if(problem.getSeverity() == Severity.ERROR) {
+    			return true;
+    		}
+    	}
+    	
+    	return false;
+    }
     
 }
