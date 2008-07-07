@@ -540,7 +540,8 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 				outputfile="${dir.findbugsreport}/bugreport.xml" 
 				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
 				effort="max"
-				reportlevel="low">
+				reportlevel="low"
+				jvmargs="-Xmx500m">
 			<class location="${dir.bin}"/>
 			<class location="${dir.classestest}"/>
 			<sourcePath path="${dir.src}" />
