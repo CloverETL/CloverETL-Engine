@@ -344,7 +344,7 @@ public class runGraph {
 			}
 			futureResult = executeGraph(graph, runtimeContext);			
 		} catch (ComponentNotReadyException e) {
-            logger.error("Error during graph initialization !", e);
+            logger.error("Error during graph initialization !");
             if (runtimeContext.isVerboseMode()) {
                 e.printStackTrace(System.err);
             }

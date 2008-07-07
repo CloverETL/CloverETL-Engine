@@ -183,7 +183,7 @@ public class MultiFileReader {
 			} catch (ComponentNotReadyException e) {
 				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
             } catch (JetelException e) {
-            	throw new ComponentNotReadyException("File is unreachable: " + filename, e);
+            	throw new ComponentNotReadyException("File is unreachable: " + channelIterator.getCurrentFileName(), e);
 			}
 		}
 	}
