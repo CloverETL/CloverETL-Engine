@@ -413,9 +413,9 @@ public class DBOutputTable extends Node {
 				useBatch=false;
 			}
 		} catch (SQLException e) {
-			ComponentNotReadyException ex = new ComponentNotReadyException(this, e);
-			ex.setAttributeName(XML_DBCONNECTION_ATTRIBUTE);
-			throw ex;
+//			ComponentNotReadyException ex = new ComponentNotReadyException(this, e);
+//			ex.setAttributeName(XML_DBCONNECTION_ATTRIBUTE);
+//			throw ex;
 		}
 		try {
 			if (keysPort != null && !connection.getSqlConnection().getMetaData().supportsGetGeneratedKeys()){
@@ -423,9 +423,9 @@ public class DBOutputTable extends Node {
 				returnKey = false;
 			}
 		} catch (SQLException e) {
-			ComponentNotReadyException ex = new ComponentNotReadyException(this, e);
-			ex.setAttributeName(XML_DBCONNECTION_ATTRIBUTE);
-			throw ex;
+//			ComponentNotReadyException ex = new ComponentNotReadyException(this, e);
+//			ex.setAttributeName(XML_DBCONNECTION_ATTRIBUTE);
+//			throw ex;
 		}
 		if (useBatch && returnKey){
 			logger.warn("Getting generated keys in batch mode is not supported -> switching it off !");
@@ -1134,8 +1134,43 @@ public class DBOutputTable extends Node {
 
     	 boolean isQueryNull = sqlQuery == null;
          try {
-             init();
-         } catch (ComponentNotReadyException e) {
+//             init();
+        	 
+             IConnection conn = getGraph().getConnection(dbConnectionName);
+             if(conn == null) {
+                 throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
+             }
+             if(!(conn instanceof DBConnection)) {
+                 throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
+             }
+             dbConnection = (DBConnection) conn;
+       		 dbConnection.init();
+     		// create connection instance, which represents connection to a database
+     		try {
+     			connection = dbConnection.getConnection(getId(), OperationType.WRITE);
+     		} catch (JetelException e1) {
+     			throw new ComponentNotReadyException(e1);
+     		}
+    		if (!isQueryNull) {
+				if (queryInCloverFormat) {
+					for (String query : sqlQuery) {
+						if (query.contains("?"))
+							throw new ComponentNotReadyException(this,
+									XML_SQLQUERY_ATRIBUTE,
+									"Can't be both mapping and question mark in query");
+					}
+				} else {
+					if (returnKey) {
+						if (sqlQuery.length != 1) {
+							throw new ComponentNotReadyException(
+									this,
+									XML_SQLQUERY_ATRIBUTE,
+									"For more than one statement and getting auto generated keys write query with direct mapping");
+						}
+					}
+				}
+			}
+        } catch (ComponentNotReadyException e) {
              ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
              if(!StringUtils.isEmpty(e.getAttributeName())) {
                  problem.setAttributeName(e.getAttributeName());
