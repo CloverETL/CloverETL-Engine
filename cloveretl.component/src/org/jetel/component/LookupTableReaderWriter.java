@@ -103,6 +103,7 @@ public class LookupTableReaderWriter extends Node {
 	private final static int READ_FROM_PORT = 0;
 	
 	private boolean readFromTable = false;
+	private boolean writeToTable = false;
 	private LookupTable lookupTable;
 	private boolean freeLookupTable;
 
@@ -126,10 +127,10 @@ public class LookupTableReaderWriter extends Node {
         if(isInitialized()) return;
         super.init();
         
-		//set reading or writing mode
-		if (outPorts.size() > 0) {
-			readFromTable = true;
-		}		
+		//set reading/writing mode
+		readFromTable = outPorts.size() > 0;
+		writeToTable = inPorts.size() > 0;
+		
 		//init lookup table
 		lookupTable = getGraph().getLookupTable(lookupTableName);
 		if (lookupTable == null) {
@@ -148,6 +149,15 @@ public class LookupTableReaderWriter extends Node {
 	
 	@Override
 	public Result execute() throws Exception {
+		if (writeToTable) {//putting records to lookup table
+			InputPort inPort = getInputPort(READ_FROM_PORT);
+			DataRecord inRecord = new DataRecord(inPort.getMetadata());
+			inRecord.init();
+			while ((inRecord = inPort.readRecord(inRecord)) != null && runIt) {
+				lookupTable.put(inRecord, inRecord);
+				SynchronizeUtils.cloverYield();
+			}			
+		}
 		if (readFromTable) {
 			//for each record from lookup table send to to the edge
 			for (DataRecord record : lookupTable) {
@@ -155,15 +165,7 @@ public class LookupTableReaderWriter extends Node {
 				writeRecordBroadcast(record);
 				SynchronizeUtils.cloverYield();
 			}
-		} else {//putting records to lookup table
-			InputPort inPort = getInputPort(READ_FROM_PORT);
-			DataRecord inRecord = new DataRecord(inPort.getMetadata());
-			inRecord.init();
-			while ((inRecord = inPort.readRecord(inRecord)) != null && runIt) {
-				lookupTable.put(inRecord, inRecord);
-				SynchronizeUtils.cloverYield();
-			}
-		}
+		}		
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
