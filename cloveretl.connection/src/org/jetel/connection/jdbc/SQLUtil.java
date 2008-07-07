@@ -137,6 +137,7 @@ public class SQLUtil {
 		jetelMetadata.setFieldDelimiter(DEFAULT_DELIMITER);
 		jetelMetadata.setRecordDelimiters(END_RECORD_DELIMITER);
 		int type;
+		char cloverType;
 	
 		for (int i = 1; i <= dbMetadata.getColumnCount(); i++) {
 			try {
@@ -147,25 +148,34 @@ public class SQLUtil {
 			}
 			// set proper data type
 			type = dbMetadata.getColumnType(i);
-			fieldMetadata.setType(jdbcSpecific.sqlType2jetel(type));
+			cloverType = jdbcSpecific.sqlType2jetel(type);
+			if (cloverType == DataFieldMetadata.DECIMAL_FIELD) {
+				int scale = 0;
+				int length = 0;
+				try {
+					scale = dbMetadata.getScale(i);
+					if (scale < 0) {
+						cloverType = DataFieldMetadata.NUMERIC_FIELD;
+					}else{
+						fieldMetadata.setFieldProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(scale));
+					}
+				} catch (SQLException e) {
+					cloverType = DataFieldMetadata.NUMERIC_FIELD;
+				}
+				try {
+					length = scale + dbMetadata.getPrecision(i);
+					if (length <= scale) {
+						cloverType = DataFieldMetadata.NUMERIC_FIELD;
+					}else{
+						fieldMetadata.setFieldProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(length));				
+					}
+				} catch (SQLException e) {
+					cloverType = DataFieldMetadata.NUMERIC_FIELD;
+				}
+			}
+			fieldMetadata.setType(cloverType);
 			//for Date Data Field set proper format
 			switch (type) {
-			case Types.DECIMAL:
-				int scale;
-				int length;
-					try {
-						scale = dbMetadata.getScale(i);
-					} catch (SQLException e) {
-						scale = Defaults.DataFieldMetadata.DECIMAL_SCALE;
-					}
-					fieldMetadata.setFieldProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(scale));
-					try {
-						length = scale + dbMetadata.getPrecision(i);
-					} catch (SQLException e) {
-						length = scale + Defaults.DataFieldMetadata.DECIMAL_LENGTH;
-					}
-					fieldMetadata.setFieldProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(length));
-					break;
 			case Types.DATE:
 				fieldMetadata.setFormatStr(Defaults.DEFAULT_DATE_FORMAT);
 				break;
