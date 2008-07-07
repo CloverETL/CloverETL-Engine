@@ -87,7 +87,7 @@ public abstract class TLValue implements Comparable<TLValue>{
         	newval = new TLNumericValue<CloverDouble>(TLValueType.DOUBLE,new CloverDouble((Numeric)field));
         	break;
         case DataFieldMetadata.DECIMAL_FIELD:
-        	newval= new TLNumericValue<Decimal>(TLValueType.DECIMAL,(Decimal)((DecimalDataField)field).getValueDuplicate());
+        	newval= new TLNumericValue<Decimal>(TLValueType.DECIMAL,((DecimalDataField)field).getDecimal().createCopy());
         	break;
         case DataFieldMetadata.DATE_FIELD:
         	newval= new TLDateValue((Date)field.getValueDuplicate());

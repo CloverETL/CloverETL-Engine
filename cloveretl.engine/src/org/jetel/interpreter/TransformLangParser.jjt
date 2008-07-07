@@ -561,6 +561,7 @@ void ImportSource() :{	Token t;
 	String filenameURL;}{	// must parse whole tree and insert it at this place	<IMPORT> ( t=<STRING_LITERAL> { filenameURL=unquote(t.image); }
 				| t=<STRING_PLAIN_LITERAL> { filenameURL=t.image; } )	{		
 		InputStream stream;
+		jjtThis.setSourceToImport(filenameURL);
 		try{
 			stream=Channels.newInputStream(FileUtils. getReadableChannel(null, filenameURL)); 
 			// stream=new BufferedInputStream(new FileInputStream(filenameURL));
@@ -592,6 +593,8 @@ void FunctionDeclaration() :
 			 throw new ParseException(t,"function "+t.image+" already declared");	
 			}
 		parserHelper.enteredFunctionDeclaration(t.image);
+		// save line number - as openNodeScope hook does not work reliably
+		jjtThis.setLineNumber(t.beginLine);
 		}
 		
 	"("  
@@ -601,7 +604,7 @@ void FunctionDeclaration() :
 							  throw new ParseException(t,"parameter ["+t.image+"] already declared in function"
 							  +parserHelper.functionName);
 							}
-						} ]
+						} 
 		
 		( ","  
 			  t = <IDENTIFIER> { jjtThis.addVarName(order++,t.image); 
@@ -609,7 +612,8 @@ void FunctionDeclaration() :
 							  throw new ParseException(t,"parameter ["+t.image+"] already declared in function"
 							  +parserHelper.functionName);
 							}
-						} )* 
+						} )*
+		] 
 	
 	")"
 	"{"
@@ -636,6 +640,8 @@ void VarDeclaration():
     
     {
     	jjtThis.setType(getToken(0).kind);
+    	// set line number as the openNodeScope hook does not work reliably for this
+    	jjtThis.setLineNumber(getToken(0).beginLine);
     }
 
     [	"("  VarSpec(jjtThis)
@@ -884,12 +890,12 @@ void ListOfLiterals() :
 }
 
 void InputFieldExp() #void :
-{  Token t;}{  t = <FIELD_ID> { jjtThis.setFieldName(t.image); } #InputFieldLiteral  | t = <REC_NAME_FIELD_ID> { jjtThis.setRecordFieldName(t.image); } #InputFieldLiteral
-  | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t.image); } #InputFieldLiteral
-  | t = <REC_NUM_FIELD_NUM> { jjtThis.setRecordNumFieldNum(t.image); } #InputFieldLiteral
-  | t= <REC_NAME_FIELD_NUM>  { jjtThis.setRecordNameFieldNum(t.image); } #InputFieldLiteral
-  | t= <REC_NAME_ID> { jjtThis.setRecordName(t.image); }  #InputFieldLiteral
-  | t= <REC_NUM_ID> { jjtThis.setRecordNum(t.image); }  #InputFieldLiteral}/*
+{  Token t;}{  t = <FIELD_ID> { jjtThis.setFieldName(t,t.image); } #InputFieldLiteral  | t = <REC_NAME_FIELD_ID> { jjtThis.setRecordFieldName(t,t.image); } #InputFieldLiteral
+  | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t,t.image); } #InputFieldLiteral
+  | t = <REC_NUM_FIELD_NUM> { jjtThis.setRecordNumFieldNum(t,t.image); } #InputFieldLiteral
+  | t= <REC_NAME_FIELD_NUM>  { jjtThis.setRecordNameFieldNum(t,t.image); } #InputFieldLiteral
+  | t= <REC_NAME_ID> { jjtThis.setRecordName(t,t.image); }  #InputFieldLiteral
+  | t= <REC_NUM_ID> { jjtThis.setRecordNum(t,t.image); }  #InputFieldLiteral}/*
 void OutputFieldExp() #void :// IDExp -> ID
 {
   Token t;
@@ -1183,7 +1189,7 @@ void FunctionCallStatement() :
 	 		throw new ParseException(t,"function \""+t.image+"\" not declared");
 	 	}
 	 	}
-	"(" [ FunctionCallParameter() ] ( "," FunctionCallParameter() )* ")"
+	"(" [ FunctionCallParameter()  ( "," FunctionCallParameter() )* ] ")"
 
 	{
 	 // verify number of call parameters
