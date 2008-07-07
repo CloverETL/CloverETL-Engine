@@ -65,11 +65,11 @@ public class PostgreSpecific extends AbstractJdbcSpecific {
 			    return DataFieldMetadata.LONG_FIELD;
 			//-------------------
 			case Types.DECIMAL:
+			case Types.NUMERIC:
 				return DataFieldMetadata.DECIMAL_FIELD;
 			case Types.DOUBLE:
 			case Types.FLOAT:
 			case Types.REAL:
-			case Types.NUMERIC:
 				return DataFieldMetadata.NUMERIC_FIELD;
 			//------------------
 			case Types.CHAR:
