@@ -613,7 +613,7 @@ public class DataRecordTape {
             //  check that internal buffer has enough data to read data size
             if (LEN_SIZE_SPECIFIER > sourceDataBuffer.remaining()){
                 sourceChunk.reloadBuffer();
-                if(LEN_SIZE_SPECIFIER > sourceDataBuffer.remaining()) return -1;
+                if(sourceDataBuffer.remaining() == 0) return -1;
             }
             recordSize = ByteBufferUtils.decodeLength(sourceDataBuffer);
             
@@ -739,7 +739,7 @@ public class DataRecordTape {
 			//	check that internal buffer has enough data to read data size
 			if (LEN_SIZE_SPECIFIER > dataBuffer.remaining()){
 			    reloadBuffer();
-			    if(LEN_SIZE_SPECIFIER > dataBuffer.remaining()) return false;
+			    if(dataBuffer.remaining() == 0) return false;
 			}
 			recordSize = ByteBufferUtils.decodeLength(dataBuffer);
 			
@@ -833,7 +833,7 @@ public class DataRecordTape {
 				//	check that internal buffer has enough data to read data size
 				if (LEN_SIZE_SPECIFIER > dataBuffer.remaining()) {
 				    reloadBuffer();
-                    if(LEN_SIZE_SPECIFIER > dataBuffer.remaining()) return false;
+                    if(dataBuffer.remaining() == 0) return false;
 				}
                 recordSize = ByteBufferUtils.decodeLength(dataBuffer);
 				
