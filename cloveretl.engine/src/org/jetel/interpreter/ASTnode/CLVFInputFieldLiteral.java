@@ -3,6 +3,7 @@
 package org.jetel.interpreter.ASTnode;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.interpreter.Token;
 import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
@@ -40,94 +41,94 @@ public class CLVFInputFieldLiteral extends SimpleNode {
 	 * @param fName
 	 * @throws ParseException
 	 */
-	public void setFieldName(String fName) throws ParseException{
+	public void setFieldName(Token t,String fName) throws ParseException{
 		// get rid of leading '$' character (the 1st character)
         recordNo=0;
         DataRecordMetadata record= parser.getInRecordMeta();
         if (record==null){
-            throw new ParseException("Unknown data field ["+fName+"]");
+            throw new ParseException(t,"Unknown data field ["+fName+"]");
         }
 		fieldNo=record.getFieldPosition(fName.substring(1));
 		if (fieldNo==-1){
-			throw new ParseException("Unknown data field ["+fName+"]");
+			throw new ParseException(t,"Unknown input field ["+fName+"]");
 		}
 	}
-     public void setRecordFieldName(String fRecName) throws ParseException{
+     public void setRecordFieldName(Token t,String fRecName) throws ParseException{
             // get rid of leading '$' character (the 1st character)
             String recFieldName[]=fRecName.substring(1).split("\\.");
             recordNo=parser.getInRecordNum(recFieldName[0]);
             DataRecordMetadata record=parser.getInRecordMeta(recordNo);
             if (record==null){
-                throw new ParseException("Unknown data field ["+fRecName+"]"); 
+                throw new ParseException(t,"Unknown input field ["+fRecName+"]"); 
             }
             fieldNo=record.getFieldPosition(recFieldName[1]);
             if (fieldNo==-1){
-                throw new ParseException("Unknown data field ["+fRecName+"]");
+                throw new ParseException(t,"Unknown input field ["+fRecName+"]");
             }
         }
      
-     public void setRecordNameFieldNum(String fRecName) throws ParseException{
+     public void setRecordNameFieldNum(Token t,String fRecName) throws ParseException{
          // get rid of leading '$' character (the 1st character)
          String recFieldName[]=fRecName.substring(1).split("\\.");
          recordNo=parser.getInRecordNum(recFieldName[0]);
          DataRecordMetadata record=parser.getInRecordMeta(recordNo);
          if (record==null){
-             throw new ParseException("Unknown data field ["+fRecName+"]"); 
+             throw new ParseException(t,"Unknown input field ["+fRecName+"]"); 
          }
          try {
         	 fieldNo=Integer.parseInt(recFieldName[1]);
          } catch(NumberFormatException ex){
-        	 throw new ParseException("Unknown data field ["+fRecName+"]");
+        	 throw new ParseException(t,"Unknown input field ["+fRecName+"]");
          }
     	 DataFieldMetadata field = record.getField(fieldNo);
     	 if (field==null)
-    		 throw new ParseException("Non exising data field ["+fRecName+"]");
+    		 throw new ParseException(t,"Unknown input field ["+fRecName+"]");
      }
      
-     public void setRecordNumFieldName(String fRecName) throws ParseException{
+     public void setRecordNumFieldName(Token t,String fRecName) throws ParseException{
          // get rid of leading '$' character (the 1st character)
          String recFieldName[]=fRecName.substring(1).split("\\.");
          recordNo=Integer.parseInt(recFieldName[0]);
          DataRecordMetadata record=parser.getInRecordMeta(recordNo);
          if (record==null){
-             throw new ParseException("Unknown data field ["+fRecName+"]"); 
+             throw new ParseException(t,"Unknown input field ["+fRecName+"]"); 
          }
          fieldNo=record.getFieldPosition(recFieldName[1]);
          if (fieldNo==-1){
-             throw new ParseException("Unknown data field ["+fRecName+"]");
+             throw new ParseException(t,"Unknown input field ["+fRecName+"]");
          }
      }   
      
      
-     public void setRecordNumFieldNum(String fRecFieldNum) throws ParseException { 
+     public void setRecordNumFieldNum(Token t,String fRecFieldNum) throws ParseException { 
     	 String items[]=fRecFieldNum.substring(1).split("\\.");
     	 recordNo=Integer.parseInt(items[0]);
          DataRecordMetadata record=parser.getInRecordMeta(recordNo);
          if (record==null){
-             throw new ParseException("Unknown record number ["+fRecFieldNum+"]"); 
+             throw new ParseException(t,"Unknown record number ["+fRecFieldNum+"]"); 
          }
          try{
         	 fieldNo=Integer.parseInt(items[1]);
         	 DataFieldMetadata field = record.getField(fieldNo);
         	 if (field==null)
-        		 throw new ParseException("Non exising data field ["+fRecFieldNum+"]");
+        		 throw new ParseException(t,"Unknown input field ["+fRecFieldNum+"]");
          }catch(Throwable ex){
-             throw new ParseException("Unknown data field ["+fRecFieldNum+"]");
+             throw new ParseException(t,"Unknown input field ["+fRecFieldNum+"]");
          }
      }
      
-     public void setRecordNum(String fRecNum) throws ParseException { 
+     public void setRecordNum(Token t,String fRecNum) throws ParseException { 
     	 recordNo=Integer.parseInt(fRecNum.substring(1));
          DataRecordMetadata record=parser.getInRecordMeta(recordNo);
          if (record==null){
-             throw new ParseException("Input record number ["+recordNo+"] does not exist"); 
+             throw new ParseException(t,"Input record number ["+recordNo+"] does not exist"); 
          }
      }
      
-     public void setRecordName(String recName) throws ParseException { 
+     public void setRecordName(Token t,String recName) throws ParseException { 
     	 recordNo=parser.getInRecordNum(recName.substring(1));
          if (recordNo<0){
-             throw new ParseException("Input record name ["+recName+"] does not exist"); 
+             throw new ParseException(t,"Input record name ["+recName+"] does not exist"); 
          }
      }
      

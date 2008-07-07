@@ -6,6 +6,9 @@ import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
 
 public class CLVFImportSource extends SimpleNode {
+	
+  String sourceToImport;
+	
   public CLVFImportSource(int id) {
     super(id);
   }
@@ -19,4 +22,13 @@ public class CLVFImportSource extends SimpleNode {
   public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
     return visitor.visit(this, data);
   }
+  
+  public void setSourceToImport(String src){
+	  this.sourceToImport=src;
+  }
+  
+  public String getSourceToImport(){
+	  return this.sourceToImport;
+  }
+  
 }
