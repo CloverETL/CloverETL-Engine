@@ -20,6 +20,7 @@
 */
 package org.jetel.component;
 
+import java.io.File;
 import java.security.InvalidParameterException;
 
 import org.jetel.data.DataRecord;
@@ -29,6 +30,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
@@ -199,18 +201,22 @@ public class CloverDataReader extends Node {
         }
         
         checkMetadata(status, getOutMetadata());
+        
+    	if (!(new File(fileURL)).exists()) {
+    		status.add(new ConfigurationProblem("File " + fileURL + " does not exist.", Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+    	}
 
-        try {
-            init();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        } finally {
-        	free();
-        }
+//        try {
+//            init();
+//        } catch (ComponentNotReadyException e) {
+//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+//            if(!StringUtils.isEmpty(e.getAttributeName())) {
+//                problem.setAttributeName(e.getAttributeName());
+//            }
+//            status.add(problem);
+//        } finally {
+//        	free();
+//        }
         
         return status;
     }
