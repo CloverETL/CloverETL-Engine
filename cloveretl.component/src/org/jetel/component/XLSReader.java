@@ -41,7 +41,6 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.WatchDog;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.NumberIterator;
 import org.jetel.util.SynchronizeUtils;
@@ -236,8 +235,7 @@ public class XLSReader extends Node {
      * Stores all values as incremental reading.
      */
     private void storeValues() {
-    	WatchDog watchDog = getGraph().getWatchDog();
-    	if (watchDog != null && watchDog.getStatus() == Result.FINISHED_OK) {
+    	if (getPhase() != null && getPhase().getResult() == Result.FINISHED_OK) {
     		try {
 				reader.storeIncrementalReading();
 			} catch (IOException e) {
