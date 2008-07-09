@@ -25,6 +25,10 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import javolution.text.TypeFormat;
 
@@ -50,13 +54,9 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	private static final long serialVersionUID = 7919485553866177802L;
 	
 	private long value;
+	private NumberFormat numberFormat = null;
+	
 	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
-	//private DecimalFormat numberFormat;
-	//private ParsePosition parsePosition;
-
-	// Attributes
-
-	//private static Locale DEFAULT_LOCALE = Locale.US;
 
 	/**
 	 *  Constructor for the NumericDataField object
@@ -65,17 +65,55 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 * @since             March 28, 2002
 	 */
 	public LongDataField(DataFieldMetadata _metadata) {
-		super(_metadata);
+		this(_metadata, false);
 	}
 
     /**
      * Constructor for the NumericDataField object
      * 
      * @param _metadata Metadata describing field
-     * @param plain <i>not used (only for compatibility reason)</i>
+     * @param plain create plain data field - no formatters,etc. will be assigned/created
      */
-    public LongDataField(DataFieldMetadata _metadata,boolean plain) {
+    public LongDataField(DataFieldMetadata _metadata, boolean plain) {
         super(_metadata);
+        
+        if (!plain) {
+            Locale locale;
+            // handle locale
+            if (_metadata.getLocaleStr() != null) {
+                String[] localeLC = _metadata.getLocaleStr().split(
+                        Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
+                if (localeLC.length > 1) {
+                    locale = new Locale(localeLC[0], localeLC[1]);
+                } else {
+                    locale = new Locale(localeLC[0]);
+                }
+                // probably wrong locale string defined
+                if (locale == null) {
+                    throw new RuntimeException("Can't create Locale based on "
+                            + _metadata.getLocaleStr());
+                }
+            } else {
+                locale = null;
+            }
+            // handle formatString
+            String formatString;
+            formatString = _metadata.getFormatStr();
+            if ((formatString != null) && (formatString.length() != 0)) {
+                if (locale != null) {
+                    numberFormat = new DecimalFormat(formatString,
+                            new DecimalFormatSymbols(locale));
+                } else {
+                    numberFormat = new DecimalFormat(formatString);
+                }
+            } else if (locale != null) {
+                numberFormat = DecimalFormat.getInstance(locale);
+            }
+            
+            if (numberFormat != null) {
+            	numberFormat.setParseIntegerOnly(true);
+            }
+        }
     }
     
 
@@ -87,17 +125,28 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 * @since             March 28, 2002
 	 */
 	public LongDataField(DataFieldMetadata _metadata, long value) {
-		super(_metadata);
+		this(_metadata);
 		setValue(value);
 	}
 	
-	
+	/**
+	 * Private constructor to be used internally when clonning object.
+	 * Optimized for performance. Many checks waved.
+	 * @param _metadata
+	 * @param value
+	 * @param numberFormat
+	 */
+	private LongDataField(DataFieldMetadata _metadata, long value, NumberFormat numberFormat){
+	    super(_metadata);
+	    this.value = value;
+	    this.numberFormat = numberFormat;
+	 }
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataField#copy()
 	 */
 	public DataField duplicate(){
-	    LongDataField newField= new LongDataField(metadata,value);
+	    LongDataField newField = new LongDataField(metadata, value, numberFormat);
 	    newField.setNull(isNull());
 	    return newField;
 	}
@@ -373,7 +422,11 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 		if (isNull) {
 			return "";
 		}
-		return Long.toString(value);
+		if (numberFormat != null) {
+			return numberFormat.format(value);
+		} else {
+			return Long.toString(value);
+		}
 	}
 
 
@@ -386,7 +439,12 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 			return;
 		}
 		try {
-			value = TypeFormat.parseLong(seq);
+			if (numberFormat != null) {
+				value = numberFormat.parse(seq.toString()).longValue();
+			} else {
+				value = TypeFormat.parseLong(seq);
+			}
+
             setNull(this.value == Long.MIN_VALUE);
 		} catch (Exception ex) {
 			throw new BadDataFormatException(getMetadata().getName() + " (" + DataFieldMetadata.type2Str(getType()) 
