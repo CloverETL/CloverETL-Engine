@@ -162,6 +162,15 @@ public class Denormalizer extends Node {
 	}
 
 	/**
+	 * Returns the name of the attribute which contains transformation
+	 * 
+	 * @return the name
+	 */
+	public static String getTransformAttributeName() {
+		return XML_TRANSFORM_ATTRIBUTE;
+	}
+
+	/**
 	 * Creates denormalization instance using specified class.
 	 * @param denormClass
 	 * @return
