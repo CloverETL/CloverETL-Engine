@@ -56,12 +56,6 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 	private int value;
 	private NumberFormat numberFormat = null;
 	private final static int FIELD_SIZE_BYTES = 4;// standard size of field
-	//private DecimalFormat numberFormat;
-	//private ParsePosition parsePosition;
-
-	// Attributes
-
-	//private static Locale DEFAULT_LOCALE = Locale.US;
 
 	/**
 	 *  Constructor for the NumericDataField object
