@@ -59,6 +59,7 @@ public class NumericFormatTest extends CloverTestCase {
 		dFormat.applyPattern(pattern);
 		assertEquals(dFormat.format(123), format.format(new BigDecimal("123")));
 		assertEquals(dFormat.format(123.45), format.format(new BigDecimal(123.45)));
+		assertEquals(dFormat.format(3.45), format.format(new BigDecimal(3.45)));
 		
 		pattern = "00000.000";
 		format.applyPattern(pattern);
