@@ -133,6 +133,15 @@ public class Normalizer extends Node {
 		this(id, null, null, null);
 		this.norm = xform;
 	}
+	
+	/**
+	 * Returns the name of the attribute which contains transformation
+	 * 
+	 * @return the name
+	 */
+	public static String getTransformAttributeName() {
+		return XML_TRANSFORM_ATTRIBUTE;
+	}
 
 	/**
 	 * Creates normalization instance using specified class.

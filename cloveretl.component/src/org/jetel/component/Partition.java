@@ -220,6 +220,14 @@ public class Partition extends Node {
         this.partitionRanges = partitionRanges;
 	}
 
+	/**
+	 * Returns the name of the attribute which contains transformation
+	 * 
+	 * @return the name
+	 */
+	public static String getTransformAttributeName() {
+		return XML_PARTIONSOURCE_ATTRIBUTE;
+	}
 
  	
 	@Override
