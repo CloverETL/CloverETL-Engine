@@ -75,6 +75,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>outputFieldNames</b><br><i>optional</i></td><td>print names of individual fields into output file - as a first row (values: true/false, default:false)</td>
  *  <tr><td><b>filler</b><br><i>optional</i></td><td>allows specifying what character will be used for padding output fields. Default is " " (space)></td>
  *  <tr><td><b>recordFiller</b><br><i>optional</i></td><td>allows specifying what character will be used for padding gaps between fields in output records. Default is "."></td>
+ *  <tr><td><b>leftAlign</b><br><i>optional</i></td><td>specify if values should be align left or right. It is used when filler is defined. Default is "true"></td>
  *  <tr><td><b>recordsPerFile</b></td><td>max number of records in one output file</td>
  *  <tr><td><b>bytesPerFile</b></td><td>Max size of output files. To avoid splitting a record to two files, max size could be slightly overreached.</td>
  *  <tr><td><b>recordSkip</b></td><td>number of skipped records</td>
