@@ -77,6 +77,7 @@ public class FixLenDataFormatter implements Formatter {
 	// use space (' ') to fill/pad field
 	private final static char DEFAULT_FIELDFILLER_CHAR = ' ';
 	private final static char DEFAULT_RECORDFILLER_CHAR = '=';
+	private final boolean DEFAULT_LEFT_ALIGN = true;
 	
 	/**
 	 *  Constructor for the FixLenDataFormatter object
@@ -133,6 +134,22 @@ public class FixLenDataFormatter implements Formatter {
 		}
 	}
 
+	/**
+	 * Specify if values should be align left or right
+	 * 
+	 * @param leftAlign	
+	 */
+	boolean leftAlign = DEFAULT_LEFT_ALIGN;
+	public boolean isLeftAlign() {
+		return leftAlign;
+	}
+
+
+	public void setLeftAlign(boolean leftAlign) {
+		this.leftAlign = leftAlign;
+	}
+	
+	
 	/**
 	 * Specify which character should be used as filler for
 	 * padding fields when outputting
@@ -275,20 +292,39 @@ public class FixLenDataFormatter implements Formatter {
 		// write fields
 		dataBuffer.limit(dataBuffer.capacity());
 		int i = 0;
-		try {
-			for (i = 0; i < fieldCnt; i++) {
-				dataBuffer.position(recPos + fieldStart[i]);
-				record.getField(i).toByteBuffer(dataBuffer, encoder);
-				int remn = recPos + fieldEnd[i] - dataBuffer.position();	// remaining bytes to be written
-				if (remn > 0) {
-					fieldFillerBuf.rewind();
-					fieldFillerBuf.limit(remn);
-					dataBuffer.put(fieldFillerBuf);				
+		if (leftAlign) {
+			try {
+				for (i = 0; i < fieldCnt; i++) {
+					dataBuffer.position(recPos + fieldStart[i]);
+					record.getField(i).toByteBuffer(dataBuffer, encoder);
+					int remn = recPos + fieldEnd[i] - dataBuffer.position();	// remaining bytes to be written
+					if (remn > 0) {
+						fieldFillerBuf.rewind();
+						fieldFillerBuf.limit(remn);
+						dataBuffer.put(fieldFillerBuf);				
+					}
 				}
+			} catch (CharacterCodingException e) {
+	            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ". (original cause: " + e.getMessage() + ") \n\nRecord: " +record.toString(), e);
 			}
-		} catch (CharacterCodingException e) {
-            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ". (original cause: " + e.getMessage() + ") \n\nRecord: " +record.toString(), e);
+		} else {
+			try {
+				for (i = 0; i < fieldCnt; i++) {
+					int fieldSize = fieldEnd[i] - fieldStart[i];
+					int gapSize = fieldSize - record.getField(i).toString().length();
+					dataBuffer.position(recPos + fieldStart[i]);
+					if (gapSize > 0) {
+						fieldFillerBuf.rewind();
+						fieldFillerBuf.limit(gapSize);
+						dataBuffer.put(fieldFillerBuf);				
+					}
+					record.getField(i).toByteBuffer(dataBuffer, encoder);
+				}
+			} catch (CharacterCodingException e) {
+	            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ". (original cause: " + e.getMessage() + ") \n\nRecord: " +record.toString(), e);
+			}
 		}
+			
 		// fill gaps
 		for (i = 0; i < gapCnt; i++) {
 			dataBuffer.position(0);	// to avoid exceptions being thrown while setting buffer limit
