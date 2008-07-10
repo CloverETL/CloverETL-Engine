@@ -18,6 +18,8 @@ public class FixLenDataFormatterProvider implements FormatterProvider {
 	private Character recordFiller;
 	private Character fieldFiller;
 	private String charSet;
+	private Boolean chLeftAlign;
+	private Boolean leftAlign;
 	
 	/**
 	 * Contructors.
@@ -43,9 +45,13 @@ public class FixLenDataFormatterProvider implements FormatterProvider {
 		formatter.setHeader(header);
 		formatter.setRecordFiller(chRecordFiller);
 		formatter.setFieldFiller(chFieldFiller);
+		if (chLeftAlign != null) {
+			formatter.setLeftAlign(chLeftAlign.booleanValue());
+		}
 		recordFiller = formatter.getRecordFiller();
 		fieldFiller = formatter.getFieldFiller();
 		charSet = formatter.getCharSetName();
+		leftAlign = formatter.isLeftAlign();
 		return formatter;
 	}
 
@@ -83,4 +89,11 @@ public class FixLenDataFormatterProvider implements FormatterProvider {
         return fieldFiller;
     }
 
+    public void setLeftAlign(Boolean leftAlign) {
+		this.chLeftAlign = leftAlign;
+	}
+    
+	public Boolean isLeftAlign() {
+		return leftAlign;
+	}
 }
