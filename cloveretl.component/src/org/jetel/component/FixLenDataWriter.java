@@ -106,6 +106,7 @@ public class FixLenDataWriter extends Node {
 	private static final String XML_PARTITION_ATTRIBUTE = "partition";
 	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
+	private static final String XML_LEFT_ALIGN_ATTRIBUTE = "leftAlign";
 	
 	private static final boolean DEFAULT_APPEND=false;
 	
@@ -261,6 +262,9 @@ public class FixLenDataWriter extends Node {
 		if (formatterProvider.getRecordFiller() != null){
 		    xmlElement.setAttribute(XML_RECORD_FILLER, formatterProvider.getRecordFiller().toString());
 		}
+		if (formatterProvider.isLeftAlign() != null){
+		    xmlElement.setAttribute(XML_LEFT_ALIGN_ATTRIBUTE, formatterProvider.isLeftAlign().toString());
+		}
 		if (recordsPerFile > 0) {
 			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
 		}
@@ -317,6 +321,10 @@ public class FixLenDataWriter extends Node {
 			if (xattribs.exists(XML_RECORD_FILLER)){
 			    aFixLenDataWriterNIO.setRecordFiller(xattribs.getString(XML_RECORD_FILLER));
 			}
+			if(xattribs.exists(XML_LEFT_ALIGN_ATTRIBUTE)) {
+				aFixLenDataWriterNIO.setLeftAlign(
+						Boolean.valueOf(xattribs.getBoolean(XML_LEFT_ALIGN_ATTRIBUTE)));
+            }
             if(xattribs.exists(XML_RECORDS_PER_FILE)) {
                 aFixLenDataWriterNIO.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
             }
@@ -405,6 +413,10 @@ public class FixLenDataWriter extends Node {
         this.formatterProvider.setRecordFiller(filler.charAt(0));
     }
 
+    public void setLeftAlign(Boolean leftAlign) {
+    	this.formatterProvider.setLeftAlign(leftAlign);
+    }
+    
     public void setBytesPerFile(int bytesPerFile) {
         this.bytesPerFile = bytesPerFile;
     }
