@@ -26,7 +26,8 @@ import org.xml.sax.InputSource;
 public class MetadataXsd extends MXAbstract {
 
 	private Document doc;
-	private String defaultDelimiter;
+	private String recordDelimiter;
+	private String fieldDelimiter;
 	private short defaultFieldSize = -1;
 	
 	/**
@@ -34,9 +35,10 @@ public class MetadataXsd extends MXAbstract {
 	 * 
 	 * @param doc xsd document
 	 */
-	public MetadataXsd(Document doc, String defaultDelimiter) {
+	public MetadataXsd(Document doc, String recordDelimiter, String fieldDelimiter) {
 		this.doc = doc;
-		this.defaultDelimiter = defaultDelimiter;
+		this.recordDelimiter = recordDelimiter;
+		this.fieldDelimiter = fieldDelimiter;
 	}
 	public MetadataXsd(Document doc, short defaultFieldSize) {
 		this.doc = doc;
@@ -57,7 +59,10 @@ public class MetadataXsd extends MXAbstract {
 		if (recordName == null) throw new Exception("Record name attribute not found.");
 		
 		DataRecordMetadata metadata;
-		if (defaultDelimiter != null) metadata = new DataRecordMetadata(recordName, DataRecordMetadata.DELIMITED_RECORD);
+		if (fieldDelimiter != null) {
+			metadata = new DataRecordMetadata(recordName, DataRecordMetadata.DELIMITED_RECORD);
+			metadata.setRecordDelimiters(recordDelimiter);
+		}
 		else if (defaultFieldSize > -1) metadata = new DataRecordMetadata(recordName, DataRecordMetadata.FIXEDLEN_RECORD);
 		else metadata = new DataRecordMetadata(recordName);
 		
@@ -99,7 +104,7 @@ public class MetadataXsd extends MXAbstract {
 				dataFieldMetadata = new DataFieldMetadata(name, defaultFieldSize);
 				break;
 			default:
-				dataFieldMetadata = new DataFieldMetadata(name, defaultDelimiter);
+				dataFieldMetadata = new DataFieldMetadata(name, fieldDelimiter);
 				break;
 			}
 			
