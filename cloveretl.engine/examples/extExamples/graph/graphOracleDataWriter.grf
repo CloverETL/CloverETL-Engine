@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Mira Haupt" created="Fri Mar 21 12:32:53 CET 2008" guiVersion="1.10" id="1206099302913" licenseType="Evaluation license." modified="Thu Jul 10 13:42:54 CEST 2008" modifiedBy="Mira Haupt" name="OracleDataWriter" revision="1.48">
+<Global>
+<Metadata id="Metadata0">
+<Record name="recordName1" recordDelimiter="\n" type="delimited">
+<Field delimiter=";" name="name" type="string"/>
+<Field name="value" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/oracle.dat" guiHeight="0" guiName="Delimited Data Reader" guiWidth="0" guiX="58" guiY="105" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+<Node append="append" enabled="enabled" guiHeight="0" guiName="Oracle Data Writer" guiWidth="0" guiX="293" guiY="105" id="ORACLE_DATA_WRITER0" log="${DATAOUT_DIR}/log0.txt" password="test" sqlldr="sqlldr" table="test" tnsname="koule" type="ORACLE_DATA_WRITER" username="test"/>
+<Edge debugMode="true" fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="ORACLE_DATA_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node append="append" control="LOAD DATA&#13;&#10;INFILE *&#13;&#10;INTO TABLE test&#13;&#10;append&#13;&#10;(&#13;&#10;&#9;name TERMINATED BY ';',&#13;&#10;&#9;value TERMINATED BY '\n'&#13;&#10;)" enabled="enabled" guiHeight="0" guiName="Oracle Data Writer" guiWidth="0" guiX="293" guiY="250" id="ORACLE_DATA_WRITER1" log="${DATAOUT_DIR}/log1.txt" password="test" sqlldr="sqlldr" table="test" tnsname="koule" type="ORACLE_DATA_WRITER" username="test">
+<attr name="fileURL"><![CDATA[${DATAIN_DIR}/delimited/oracle.dat]]></attr>
+</Node>
+</Phase>
+</Graph>
