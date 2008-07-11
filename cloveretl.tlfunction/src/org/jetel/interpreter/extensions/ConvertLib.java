@@ -145,7 +145,8 @@ public class ConvertLib extends TLFunctionLibrary {
     class Num2StrFunction extends TLFunctionPrototype {
 
         public Num2StrFunction() {
-            super("convert", "num2str", new TLValueType[] { TLValueType.DECIMAL, TLValueType.INTEGER }, 
+            super("convert", "num2str", "Returns string representation of a number in a given numeral system", 
+            		new TLValueType[] { TLValueType.DECIMAL, TLValueType.INTEGER }, 
                     TLValueType.STRING, 2,1);
         }
 
@@ -205,7 +206,8 @@ public class ConvertLib extends TLFunctionLibrary {
     class Date2StrFunction extends TLFunctionPrototype {
         
         public Date2StrFunction() {
-            super("convert", "date2str", new TLValueType[] { TLValueType.DATE, TLValueType.STRING }, 
+            super("convert", "date2str", "Converts date to string based on a pattern",
+            		new TLValueType[] { TLValueType.DATE, TLValueType.STRING }, 
                     TLValueType.STRING);
         }
 
@@ -241,7 +243,8 @@ public class ConvertLib extends TLFunctionLibrary {
         
 
         public Str2DateFunction() {
-            super("convert", "str2date", new TLValueType[] { TLValueType.STRING, TLValueType.STRING, TLValueType.OBJECT, TLValueType.STRING }, 
+            super("convert", "str2date", "Converts string to date based on a pattern", 
+            		new TLValueType[] { TLValueType.STRING, TLValueType.STRING, TLValueType.OBJECT, TLValueType.STRING }, 
                     TLValueType.DATE, 4, 2);
         }
 
@@ -313,7 +316,8 @@ public class ConvertLib extends TLFunctionLibrary {
     class Date2NumFunction extends TLFunctionPrototype {
 
         public Date2NumFunction() {
-            super("convert", "date2num", new TLValueType[] { TLValueType.DATE, TLValueType.SYM_CONST }, 
+            super("convert", "date2num", "Returns a number value of a date component (i.e. month)",
+            		new TLValueType[] { TLValueType.DATE, TLValueType.SYM_CONST }, 
                     TLValueType.INTEGER);
         }
 
@@ -346,7 +350,8 @@ public class ConvertLib extends TLFunctionLibrary {
     class Str2NumFunction extends TLFunctionPrototype {
 
         public Str2NumFunction() {
-            super("convert", "str2num", new TLValueType[] { TLValueType.STRING, TLValueType.SYM_CONST, TLValueType.INTEGER }, 
+            super("convert", "str2num", "Converts string to number (from any numeral system)", 
+            		new TLValueType[] { TLValueType.STRING, TLValueType.SYM_CONST, TLValueType.INTEGER }, 
                     TLValueType.INTEGER,3,1);
         }
 
@@ -426,7 +431,8 @@ public class ConvertLib extends TLFunctionLibrary {
     class Num2NumFunction extends TLFunctionPrototype {
 
         public Num2NumFunction() {
-            super("convert", "num2num", new TLValueType[] { TLValueType.DECIMAL, TLValueType.SYM_CONST }, 
+            super("convert", "num2num", "Converts numbers of different types",
+            		new TLValueType[] { TLValueType.DECIMAL, TLValueType.SYM_CONST }, 
                     TLValueType.INTEGER, 2, 1);
         }
 
@@ -471,7 +477,7 @@ public class ConvertLib extends TLFunctionLibrary {
     class Num2BoolFunction extends TLFunctionPrototype {
 
         public Num2BoolFunction() {
-            super("convert", "num2bool", new TLValueType[] { TLValueType.DECIMAL}, 
+            super("convert", "num2bool", "Converts 1 to true and 0 to false",  new TLValueType[] { TLValueType.DECIMAL}, 
                     TLValueType.BOOLEAN);
         }
 
@@ -496,7 +502,8 @@ public class ConvertLib extends TLFunctionLibrary {
     class Bool2NumFunction extends TLFunctionPrototype {
 
 		public Bool2NumFunction() {
-			super("convert", "bool2num", new TLValueType[] { TLValueType.BOOLEAN, TLValueType.SYM_CONST}, 
+			super("convert", "bool2num", "Converts true to 1 and false to 0",
+					new TLValueType[] { TLValueType.BOOLEAN, TLValueType.SYM_CONST}, 
 					TLValueType.INTEGER, 2, 1);
 		}
 
@@ -531,7 +538,8 @@ public class ConvertLib extends TLFunctionLibrary {
 	public class Str2BoolFunction extends TLFunctionPrototype {
 
 		public Str2BoolFunction() {
-			super("convert", "str2bool",  new TLValueType[] { TLValueType.STRING}, TLValueType.BOOLEAN);
+			super("convert", "str2bool",  "Converts string to a boolean based on a pattern (i.e. \"true\")", 
+					new TLValueType[] { TLValueType.STRING}, TLValueType.BOOLEAN);
 		}
 
 		@Override
@@ -551,7 +559,8 @@ public class ConvertLib extends TLFunctionLibrary {
 	public class ToStringFunction extends TLFunctionPrototype {
 
 		public ToStringFunction() {
-			super("convert", "to_string",  new TLValueType[] { TLValueType.OBJECT}, TLValueType.STRING);
+			super("convert", "to_string",  "Returns string representation of its argument",
+					new TLValueType[] { TLValueType.OBJECT}, TLValueType.STRING);
 		}
 
 		@Override
@@ -571,7 +580,8 @@ public class ConvertLib extends TLFunctionLibrary {
 	public class Long2DateFunction extends TLFunctionPrototype {
 
 		public Long2DateFunction() {
-			super("convert", "long2date", new TLValueType[] { TLValueType.LONG} , TLValueType.DATE);
+			super("convert", "long2date", "Returns date from long that represents milliseconds from epoch", 
+					new TLValueType[] { TLValueType.LONG} , TLValueType.DATE);
 		}
 
 		@Override
@@ -599,7 +609,8 @@ public class ConvertLib extends TLFunctionLibrary {
 	public class Date2LongFunction extends TLFunctionPrototype {
 
 		public Date2LongFunction() {
-			super("convert", "date2long", new TLValueType[] { TLValueType.DATE} , TLValueType.LONG);
+			super("convert", "date2long", "Returns long that represents milliseconds from epoch to a date",
+					new TLValueType[] { TLValueType.DATE} , TLValueType.LONG);
 		}
 
 		@Override
@@ -628,7 +639,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	public class Base64ByteFunction extends TLFunctionPrototype {
 
 		public Base64ByteFunction() {
-			super("convert", "base64byte", "converts binary data encoded in base64 to array of bytes",
+			super("convert", "base64byte", "Converts binary data encoded in base64 to array of bytes",
 					new TLValueType[] { TLValueType.STRING} , TLValueType.BYTE);
 		}
 
@@ -653,7 +664,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	public class Byte2Base64Function extends TLFunctionPrototype {
 
 		public Byte2Base64Function() {
-			super("convert", "byte2base64", "converts binary data into their base64 representation",
+			super("convert", "byte2base64", "Converts binary data into their base64 representation",
 					new TLValueType[] { TLValueType.BYTE} , TLValueType.STRING);
 		}
 
@@ -680,7 +691,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	public class Bits2StrFunction extends TLFunctionPrototype {
 
 		public Bits2StrFunction() {
-			super("convert", "bits2str", "converts bits into their string representation",
+			super("convert", "bits2str", "Converts bits into their string representation",
 					new TLValueType[] { TLValueType.BYTE} , TLValueType.STRING);
 		}
 
@@ -706,7 +717,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	public class Str2BitsFunction extends TLFunctionPrototype {
 
 		public Str2BitsFunction() {
-			super("convert", "str2bits", "converts string representation of bits into binary value",
+			super("convert", "str2bits", "Converts string representation of bits into binary value",
 					new TLValueType[] { TLValueType.STRING} , TLValueType.BYTE);
 		}
 
@@ -731,7 +742,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	public class Byte2HexFunction extends TLFunctionPrototype {
 
 		public Byte2HexFunction() {
-			super("convert", "byte2hex", "converts binary data into hex string",
+			super("convert", "byte2hex", "Converts binary data into hex string",
 					new TLValueType[] { TLValueType.BYTE} , TLValueType.STRING);
 		}
 
@@ -763,7 +774,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	public class Hex2ByteFunction extends TLFunctionPrototype {
 
 		public Hex2ByteFunction() {
-			super("convert", "hex2byte", "converts hex string into binary",
+			super("convert", "hex2byte", "Converts hex string into binary",
 					new TLValueType[] { TLValueType.STRING} , TLValueType.BYTE);
 		}
 
@@ -796,7 +807,7 @@ public class ConvertLib extends TLFunctionLibrary {
     class TryConvertFunction extends TLFunctionPrototype {
 
         public TryConvertFunction() {
-            super("convert", "try_convert", new TLValueType[] { TLValueType.OBJECT, TLValueType.OBJECT, TLValueType.STRING }, 
+            super("convert", "try_convert", "Tries to convert variable of one type to another",  new TLValueType[] { TLValueType.OBJECT, TLValueType.OBJECT, TLValueType.STRING }, 
                     TLValueType.OBJECT,3,2);
         }
 
