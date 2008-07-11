@@ -87,7 +87,8 @@ public class DateLib extends TLFunctionLibrary {
     class TodayFunction extends TLFunctionPrototype {
     	
     	public TodayFunction(){
-    		super("date", "today", new TLValueType[] { }, TLValueType.DATE);
+    		super("date", "today", "Returns current date and time",
+    				new TLValueType[] { }, TLValueType.DATE);
     	}
     
         @Override
@@ -108,7 +109,8 @@ public class DateLib extends TLFunctionLibrary {
 	class DateaddFunction extends TLFunctionPrototype {
 
 		public DateaddFunction() {
-			super("date", "dateadd", new TLValueType[] { TLValueType.DATE,
+			super("date", "dateadd", "Adds to a component of a date (i.e. month)",
+					new TLValueType[] { TLValueType.DATE,
 					TLValueType.LONG, TLValueType.SYM_CONST }, TLValueType.DATE);
 		}
 
@@ -142,7 +144,7 @@ public class DateLib extends TLFunctionLibrary {
 	class DatediffFunction extends TLFunctionPrototype {
 
 		public DatediffFunction() {
-			super("date", "datediff", new TLValueType[] { TLValueType.DATE,
+			super("date", "datediff", "Returns the difference between dates", new TLValueType[] { TLValueType.DATE,
 					TLValueType.DATE, TLValueType.SYM_CONST }, TLValueType.INTEGER);
 		}
 
@@ -219,7 +221,7 @@ public class DateLib extends TLFunctionLibrary {
 	class TruncFunction extends TLFunctionPrototype {
 
 		public TruncFunction() {
-			super("date", "trunc", new TLValueType[] { TLValueType.OBJECT }, TLValueType.OBJECT);
+			super("date", "trunc", "Truncates", new TLValueType[] { TLValueType.OBJECT }, TLValueType.OBJECT);
 		}
 
 		@Override

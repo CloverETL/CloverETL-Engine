@@ -155,7 +155,7 @@ public class StringLib extends TLFunctionLibrary {
     class ConcatFunction extends TLFunctionPrototype {
 
         public ConcatFunction() {
-            super("string", "concat", new TLValueType[] { TLValueType.STRING },
+            super("string", "concat", "Concatenates two strings", new TLValueType[] { TLValueType.STRING },
                     TLValueType.STRING,999,2);
         }
 
@@ -187,7 +187,7 @@ public class StringLib extends TLFunctionLibrary {
     class UppercaseFunction extends TLFunctionPrototype {
 
         public UppercaseFunction() {
-            super("string", "uppercase",
+            super("string", "uppercase", "Returns uppercase representation", 
                     new TLValueType[] { TLValueType.STRING },
                     TLValueType.STRING);
         }
@@ -223,7 +223,7 @@ public class StringLib extends TLFunctionLibrary {
     class LowerCaseFunction extends TLFunctionPrototype {
 
         public LowerCaseFunction() {
-            super("string", "lowercase",
+            super("string", "lowercase", "Returns lowercase representation",
                     new TLValueType[] { TLValueType.STRING },
                     TLValueType.STRING);
         }
@@ -259,7 +259,8 @@ public class StringLib extends TLFunctionLibrary {
     class SubstringFunction extends TLFunctionPrototype {
 
         public SubstringFunction() {
-            super("string", "substring", new TLValueType[] {
+            super("string", "substring", "Returns a substring of a given string",
+            		new TLValueType[] {
                     TLValueType.STRING, TLValueType.INTEGER,
                     TLValueType.INTEGER }, TLValueType.STRING);
         }
@@ -303,7 +304,8 @@ public class StringLib extends TLFunctionLibrary {
     class LeftFunction extends TLFunctionPrototype {
 
         public LeftFunction() {
-            super("string", "left", new TLValueType[] { TLValueType.STRING,
+            super("string", "left", "Returns prefix of the specified length", 
+            		new TLValueType[] { TLValueType.STRING,
                     TLValueType.INTEGER }, TLValueType.STRING);
         }
 
@@ -346,7 +348,8 @@ public class StringLib extends TLFunctionLibrary {
     class RightFunction extends TLFunctionPrototype {
 
         public RightFunction() {
-            super("string", "right", new TLValueType[] { TLValueType.STRING,
+            super("string", "right", "Returns suffix of the specified length", 
+            		new TLValueType[] { TLValueType.STRING,
                     TLValueType.INTEGER }, TLValueType.STRING);
         }
 
@@ -391,7 +394,8 @@ public class StringLib extends TLFunctionLibrary {
     class TrimFunction extends TLFunctionPrototype {
 
         public TrimFunction() {
-            super("string", "trim", new TLValueType[] { TLValueType.STRING },
+            super("string", "trim", "Trims leading and trailing spaces", 
+            		new TLValueType[] { TLValueType.STRING },
                     TLValueType.STRING);
         }
 
@@ -425,7 +429,8 @@ public class StringLib extends TLFunctionLibrary {
     class LengthFunction extends TLFunctionPrototype {
 
         public LengthFunction() {
-            super("string", "length", new TLValueType[] { TLValueType.OBJECT },
+            super("string", "length", "Returns legth of string or number of elements for complex types", 
+            		new TLValueType[] { TLValueType.OBJECT },
                     TLValueType.INTEGER);
         }
 
@@ -465,7 +470,7 @@ public class StringLib extends TLFunctionLibrary {
         private static final int SIZE = 4;
 
         public SoundexFunction() {
-            super("string", "soundex",
+            super("string", "soundex", "Calculates string index based on its sound",
                     new TLValueType[] { TLValueType.STRING },
                     TLValueType.STRING);
         }
@@ -571,7 +576,8 @@ public class StringLib extends TLFunctionLibrary {
     class ReplaceFunction extends TLFunctionPrototype {
 
         public ReplaceFunction() {
-            super("string", "replace", new TLValueType[] {
+            super("string", "replace", "Replaces matches of a regular expression", 
+            		new TLValueType[] {
                     TLValueType.STRING, TLValueType.STRING,
                     TLValueType.STRING }, TLValueType.STRING);
         }
@@ -618,7 +624,7 @@ public class StringLib extends TLFunctionLibrary {
     class SplitFunction extends TLFunctionPrototype {
 
         public SplitFunction() {
-            super("string", "split", new TLValueType[] {
+            super("string", "split", "Splits the string around regular expression matches",new TLValueType[] {
                     TLValueType.STRING, TLValueType.STRING}, TLValueType.STRING);
         }
 
@@ -660,7 +666,8 @@ public class StringLib extends TLFunctionLibrary {
     class CharAtFunction extends TLFunctionPrototype {
 
         public CharAtFunction() {
-            super("string", "char_at", new TLValueType[] { TLValueType.STRING ,
+            super("string", "char_at", "Returns character at the specified index of a string",
+            		new TLValueType[] { TLValueType.STRING ,
                     TLValueType.INTEGER}, TLValueType.STRING);
         }
 
@@ -699,7 +706,7 @@ public class StringLib extends TLFunctionLibrary {
     class IsBlankFunction extends TLFunctionPrototype {
 
         public IsBlankFunction() {
-            super("string", "is_blank", new TLValueType[] { TLValueType.STRING }, 
+            super("string", "is_blank", "Checks if the string contains only whitespace characters",new TLValueType[] { TLValueType.STRING }, 
             		TLValueType.BOOLEAN);
         }
 
@@ -726,7 +733,8 @@ public class StringLib extends TLFunctionLibrary {
      class IsAsciiFunction extends TLFunctionPrototype {
 
             public IsAsciiFunction() {
-                super("string", "is_ascii", new TLValueType[] { TLValueType.STRING }, 
+                super("string", "is_ascii", "Checks if the string contains only characters from the US-ASCII encoding",
+                		new TLValueType[] { TLValueType.STRING }, 
                 		TLValueType.BOOLEAN);
             }
 
@@ -750,7 +758,8 @@ public class StringLib extends TLFunctionLibrary {
      class IsNumberFunction extends TLFunctionPrototype {
 
             public IsNumberFunction() {
-                super("string", "is_number", new TLValueType[] { TLValueType.STRING }, 
+                super("string", "is_number", "Checks if the string can be parsed into a double number", 
+                		new TLValueType[] { TLValueType.STRING }, 
                 		TLValueType.BOOLEAN);
             }
 
@@ -774,7 +783,8 @@ public class StringLib extends TLFunctionLibrary {
      class IsIntegerFunction extends TLFunctionPrototype {
 
             public IsIntegerFunction() {
-                super("string", "is_integer", new TLValueType[] { TLValueType.STRING }, 
+                super("string", "is_integer", "Checks if the string can be parsed into an integer number", 
+                		new TLValueType[] { TLValueType.STRING }, 
                 		TLValueType.BOOLEAN);
             }
 
@@ -799,7 +809,8 @@ public class StringLib extends TLFunctionLibrary {
      class IsLongFunction extends TLFunctionPrototype {
 
             public IsLongFunction() {
-                super("string", "is_long", new TLValueType[] { TLValueType.STRING }, 
+                super("string", "is_long", "Checks if the string can be parsed into a long number", 
+                		new TLValueType[] { TLValueType.STRING }, 
                 		TLValueType.BOOLEAN);
             }
 
@@ -824,7 +835,8 @@ public class StringLib extends TLFunctionLibrary {
      class IsDateFunction extends TLFunctionPrototype {
 
             public IsDateFunction() {
-                super("string", "is_date", new TLValueType[] { TLValueType.STRING, TLValueType.STRING, TLValueType.OBJECT, TLValueType.BOOLEAN }, 
+                super("string", "is_date", "Checks if the string can be parsed into a date", 
+                		new TLValueType[] { TLValueType.STRING, TLValueType.STRING, TLValueType.OBJECT, TLValueType.BOOLEAN }, 
                 		TLValueType.BOOLEAN, 4, 2);
             }
 
@@ -890,7 +902,8 @@ public class StringLib extends TLFunctionLibrary {
      class RemoveDiacriticFunction extends TLFunctionPrototype {
 
          public RemoveDiacriticFunction() {
-             super("string", "remove_diacritic", new TLValueType[] { TLValueType.STRING }, 
+             super("string", "remove_diacritic", "Removes diacritic characters",
+            		 new TLValueType[] { TLValueType.STRING }, 
             		 TLValueType.STRING);
          }
 
@@ -919,7 +932,7 @@ public class StringLib extends TLFunctionLibrary {
      class RemoveBlankSpaceFunction extends TLFunctionPrototype {
 
          public RemoveBlankSpaceFunction() {
-             super("string", "remove_blank_space", new TLValueType[] { TLValueType.STRING }, 
+             super("string", "remove_blank_space", "Removes whitespace characters", new TLValueType[] { TLValueType.STRING }, 
             		 TLValueType.STRING);
          }
 
@@ -948,7 +961,8 @@ public class StringLib extends TLFunctionLibrary {
      class GetAlphanumericCharsFunction extends TLFunctionPrototype {
 
          public GetAlphanumericCharsFunction() {
-             super("string", "get_alphanumeric_chars", new TLValueType[] { TLValueType.STRING,
+             super("string", "get_alphanumeric_chars", "Removes characters which are not alphanumeric", 
+            		 new TLValueType[] { TLValueType.STRING,
             		 TLValueType.BOOLEAN, TLValueType.BOOLEAN}, TLValueType.STRING, 3, 1);
          }
 
@@ -984,7 +998,8 @@ public class StringLib extends TLFunctionLibrary {
      class TranslateFunction extends TLFunctionPrototype {
 
          public TranslateFunction() {
-             super("string", "translate", new TLValueType[] { TLValueType.STRING, 
+             super("string", "translate", "Replaces single characters according to a pattern",
+            		 new TLValueType[] { TLValueType.STRING, 
             		 TLValueType.STRING, TLValueType.STRING}, TLValueType.STRING);
          }
 
@@ -1016,7 +1031,8 @@ public class StringLib extends TLFunctionLibrary {
     	 CharSequence delimiter;
 
          public JoinFunction() {
-             super("string", "join", new TLValueType[] { TLValueType.STRING },
+             super("string", "join", "Joins the parameters and separates them by a delimiter",
+            		 new TLValueType[] { TLValueType.STRING },
                      TLValueType.STRING,999,3);
          }
 
@@ -1062,7 +1078,8 @@ public class StringLib extends TLFunctionLibrary {
      class IndexOfFunction extends TLFunctionPrototype {
 
          public IndexOfFunction() {
-             super("string", "index_of", new TLValueType[] { TLValueType.STRING, 
+             super("string", "index_of", "Finds the first occurence of a specified string", 
+            		 new TLValueType[] { TLValueType.STRING, 
             		 TLValueType.STRING, TLValueType.INTEGER}, TLValueType.INTEGER, 3, 2);
          }
 
@@ -1103,7 +1120,8 @@ public class StringLib extends TLFunctionLibrary {
      class CountCharFunction extends TLFunctionPrototype {
 
 		public CountCharFunction() {
-			super("string", "count_char", new TLValueType[] { TLValueType.STRING,
+			super("string", "count_char", "Calculates the number of occurences of the specified character",
+					new TLValueType[] { TLValueType.STRING,
 					TLValueType.STRING },
 					TLValueType.INTEGER);
 		}
