@@ -187,17 +187,27 @@ public class JdbcDriverDescription {
     	return new JdbcDriver(this);
     }
 
-    public JdbcSpecific getJdbcSpecific() {
+    public JdbcSpecificDescription getJdbcSpecificDescription() {
     	if(!StringUtils.isEmpty(jdbcSpecific)) {
     		JdbcSpecificDescription jdbcSpecificDescription = JdbcSpecificFactory.getJdbcSpecificDescription(jdbcSpecific);
     		if(jdbcSpecificDescription != null) {
-    			return jdbcSpecificDescription.getJdbcSpecific();
+    			return jdbcSpecificDescription;
     		} else {
     			throw new RuntimeException("JDBC specific extension '" + jdbcSpecific + "' was not found.");
     		}
     	} else {
     		return null;
     	}
+    }
+    
+    public JdbcSpecific getJdbcSpecific() {
+    	JdbcSpecificDescription jdbcSpecificDescription = getJdbcSpecificDescription();
+
+    	if (jdbcSpecificDescription != null) {
+    		return jdbcSpecificDescription.getJdbcSpecific();
+    	}
+    	
+    	return null;
     }
     
     public URL[] getDriverLibraryURLs() throws ComponentNotReadyException {
