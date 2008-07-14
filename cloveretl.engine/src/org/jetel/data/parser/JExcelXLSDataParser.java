@@ -148,24 +148,42 @@ public class JExcelXLSDataParser extends XLSParser {
 		return names.toArray(new String[names.size()]);
 	}
 	
-	public String[][] getPreview(int length){
+	/**
+	 * Returns preview of current sheet
+	 * 
+	 * @param startRow starting row
+	 * @param length number of rows
+	 * @return preview of current sheet
+	 */
+	public String[][] getPreview(int startRow, int length){
 		if (sheet == null) return null;
 		
 		String[][] result = new String[length][];
 		Cell[] row;
 		String cellContents;
-		for (int i=0; i<length; i++){
+		for (int i=startRow; i<startRow + length; i++){
+			if (i > sheet.getRows() - 1) {
+				String[][] newResult = new String[i - startRow][];
+				for (int j = 0; j < newResult.length; j++) {
+					newResult[j] = result[j];
+				}
+				return newResult;
+			}
 			row = sheet.getRow(i);
-			result[i] = new String[row.length];
+			result[i - startRow] = new String[row.length];
 			for (int j = 0; j < row.length; j++) {
 				cellContents = row[j].getContents();
-				result[i][j] = cellContents.substring(0, Math.min(cellContents.length(), MAX_NAME_LENGTH));
+				result[i - startRow][j] = cellContents.substring(0, Math.min(cellContents.length(), MAX_NAME_LENGTH));
 				if (cellContents.length() > MAX_NAME_LENGTH) {
-					result[i][j] += "...";
+					result[i - startRow][j] += "...";
 				}
 			}
 		}
 		return result;
+	}
+	
+	public String[][] getPreview(int length){
+		return getPreview(0, length);
 	}
 
 	/* (non-Javadoc)
@@ -193,11 +211,19 @@ public class JExcelXLSDataParser extends XLSParser {
 		CellType type;
 		DataFieldMetadata field;
 		Cell nameCell, dataCell;
-		for (int i=0;i<namesRow.length;i++){
-			nameCell = namesRow[i];
-			dataCell = dataRow[i];
-			type = dataCell.getType();
-			name = (metadataRow>-1) ? nameCell.getContents() : XLSFormatter.getCellCode(i);
+		for (int i=0;i<Math.max(namesRow.length, dataRow.length);i++){
+			if (i < namesRow.length) {
+				nameCell = namesRow[i];
+			}else{
+				nameCell = null;
+			}
+			if (i < dataRow.length) {
+				dataCell = dataRow[i];
+			}else{
+				dataCell = null;
+			}
+			type = dataCell != null ? dataCell.getType() : CellType.LABEL;
+			name = (metadataRow>-1) && nameCell != null ? nameCell.getContents() : XLSFormatter.getCellCode(i);
 			if (!StringUtils.isValidObjectName(name)) {
 				name = StringUtils.normalizeName(name);
 			}
