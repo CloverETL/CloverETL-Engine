@@ -19,13 +19,10 @@
 */
 package org.jetel.component;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.util.Arrays;
 
@@ -44,6 +41,11 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.exec.DataConsumer;
+import org.jetel.util.exec.DataProducer;
+import org.jetel.util.exec.LoggerDataConsumer;
+import org.jetel.util.exec.PortDataProducer;
+import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -100,7 +102,6 @@ public class OracleDataWriter extends Node {
 
     /**  Description of the Field */
     private static final String XML_SQLLDR_ATTRIBUTE = "sqlldr";
-    //private static final String XML_CONNECTION_ATTRIBUTE = "dbConnection";
     private static final String XML_USERNAME_ATTRIBUTE = "username";
     private static final String XML_PASSWORD_ATTRIBUTE = "password";
     private static final String XML_TNSNAME_ATTRIBUTE = "tnsname";
@@ -111,19 +112,22 @@ public class OracleDataWriter extends Node {
     private static final String XML_DISCARD_ATTRIBUTE = "discard";
     private static final String XML_CONTROL_ATTRIBUTE = "control";
     private static final String XML_DBFIELDS_ATTRIBUTE = "dbFields";
+    private static final String XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE = "useFileForExchange"; // default value: Unix = false; win = true
+    private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
     
     private final static String lineSeparator = System.getProperty("line.separator");
     
     public final static String COMPONENT_TYPE = "ORACLE_DATA_WRITER";
     private final static int READ_FROM_PORT = 0;
     
+    private final static String EXCHANGE_FILE_PREFIX = "oracleExchange";
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
     private final static String CONTROL_FILE_NAME_SUFFIX = ".ctl";
-    private final static String LOG_FILE_NAME_SUFFIX = ".log";
-    private final static String BAD_FILE_NAME_SUFFIX = ".bad";
-    private final static String DISCARD_FILE_NAME_SUFFIX = ".dis";
     private final static File TMP_DIR = new File(".");
-    private DataFormatter formatter;
+    private final static String UNIX_STDIN = "/dev/stdin";
+    private DataFormatter formatter = null;
+    private DataConsumer consumer = null; // consume data from out stream of sqlldr
+	private DataConsumer errConsumer; // consume data from err stream of sqlldr
     
     private String sqlldrPath;
     private String username;
@@ -138,6 +142,19 @@ public class OracleDataWriter extends Node {
     private String discardFileName;
     private String control; //contains user-defined control script fot sqlldr utility
     private String[] dbFields; // contains name of all database columns 
+    private boolean useFileForExchange = false;
+    private boolean isDefinedUseFileForExchange = false;
+    private String dataURL; // fileUrl from XML - data file that is used when no input port is connected or for log
+    
+    private File dataFile = null; // file that is used for exchange data between clover and sqlldr - file from dataURL
+
+    /**
+	 * true - data is read from in port; 
+	 * false - data is read from file directly by psql utility
+	 */
+	private boolean isDataReadFromPort;
+	
+	private boolean isDataReadDirectlyFromFile;
     
     /**
      * Constructor for the OracleDataWriter object
@@ -160,54 +177,115 @@ public class OracleDataWriter extends Node {
      * @since    April 4, 2002
      */
     public Result execute() throws Exception {
-        InputPort inPort = getInputPort(READ_FROM_PORT);
-        DataRecord record = new DataRecord(inPort.getMetadata());
-        record.init();
+    	ProcBox box;
+		int processExitValue = 0;
 
-        //creating sqlldr process 
-        Process process = Runtime.getRuntime().exec(createCommandlineForSqlldr());
-        
-        //inits of all process streams
-        OutputStream processIn = new BufferedOutputStream(process.getOutputStream());
-        InputStream processOut = new BufferedInputStream(process.getInputStream());
-        InputStream processErr = new BufferedInputStream(process.getErrorStream());
+		if (isDataReadFromPort) {
+			if (useFileForExchange) { // dataFile is used for exchange data
+				formatter.setDataTarget(Channels.newChannel(new FileOutputStream(dataFile)));
+				readFromPortAndWriteByFormatter();
+				box = createProcBox();
+			} else { // data is send to process through /dev/stdio
+				DataProducer producer = new PortDataProducer(getInputPort(READ_FROM_PORT));
+				Process process = Runtime.getRuntime().exec(createCommandlineForSqlldr());
+				box = new ProcBox(process, producer, consumer, errConsumer);
+			}
 
-        //set target for data formatter
-        formatter.setDataTarget(Channels.newChannel(processIn));
+			processExitValue = box.join();
+		} else {
+			processExitValue = readDataDirectlyFromFile();
+		}
 
-        //all stdout and stderr data I'll send into a black hole
-        StreamReader outStreamReader = new StreamReader(processOut);
-        outStreamReader.start();
-        StreamReader errStreamReader = new StreamReader(processErr);
-        errStreamReader.start();
-        
-        //reading incoming data and sending them into sqlldr process
-        while (record != null && runIt) {
-            record = inPort.readRecord(record);
-            if (record != null) {
-                formatter.write(record);
-            }
-        }
+		if (processExitValue != 0) {
+			throw new JetelException("Sqlldr utility has failed. See log file for details.");
+		}
 
-        formatter.finish();
-        
-        //waiting for sqlldr process termination
-        if(process.waitFor() != 0) {
-            deleteControlFile();
-            throw new JetelException("Sqlldr utility has failed. See log file for details.");
-        }
-
-        //move to free() method
-        deleteControlFile();
-        
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
 
+	private void readFromPortAndWriteByFormatter() throws Exception {
+		InputPort inPort = getInputPort(READ_FROM_PORT);
+		DataRecord record = new DataRecord(inPort.getMetadata());
+		record.init();
+
+		try {
+			while (runIt && ((record = inPort.readRecord(record)) != null)) {
+				formatter.write(record);
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			formatter.flush();
+		}
+	}
+    
+	/**
+	 * Call sqlldr process with parameters - sqlldr process reads data directly from file.
+	 * 
+	 * @return value of finished process
+	 * @throws Exception
+	 */
+	private int readDataDirectlyFromFile() throws Exception {
+		ProcBox box = createProcBox();
+		return box.join();
+	}
+
+	/**
+	 * Create instance of ProcBox.
+	 * 
+	 * @param process running process; when process is null, default process is created
+	 * @return instance of ProcBox
+	 * @throws IOException
+	 */
+	private ProcBox createProcBox() throws IOException {
+		Process process = Runtime.getRuntime().exec(createCommandlineForSqlldr());
+		return new ProcBox(process, null, consumer, errConsumer);
+	}
+	
     @Override
     public synchronized void free() {
     	super.free();
     	
-    	formatter.close();
+    	if (formatter != null) {
+			formatter.close();
+		}
+    	
+    	deleteControlFile();
+    	deleteDataFile();
+    }
+    
+    /**
+     * Deletes temp file with loader script (CONTROL_FILE_NAME). 
+     */
+    private void deleteControlFile() {
+    	if (controlFileName == null) {
+        	return;
+        }
+    	
+        File controlFile = new File(controlFileName);
+        
+        if (controlFile == null) {
+        	return;
+        }
+        
+        if (!controlFile.delete()) {
+        	logger.warn("Control file was not deleted.");        	
+        }
+    }
+    
+    /**
+	 * Deletes data file which was used for exchange data.
+	 */
+	private void deleteDataFile() {
+		if (dataFile == null) {
+			return;
+		}
+		
+		if (isDataReadFromPort && !UNIX_STDIN.equals(dataFile.getAbsolutePath()) && dataURL == null ) {
+			if (!dataFile.delete()) {
+				logger.warn("Temp data file was not deleted.");
+			}
+    	}
     }
     
     /**
@@ -220,15 +298,25 @@ public class OracleDataWriter extends Node {
                 sqlldrPath, 
                 "control='" + controlFileName + "'", 
                 "userid=" + userId,
-                (System.getProperty("os.name").contains("Windows") ? "data=\\\"-\\\"" : "data='-'"), 
+                "data=" + getData(),
                 logFileName != null ? "log='" + logFileName + "'" : "",
                 badFileName != null ? "bad='" + badFileName + "'" : "",
-                discardFileName != null ? "discard='" + discardFileName + "'" : "",
+                discardFileName != null ? "discard='" + discardFileName + "'" : ""
 //                "silent=all"
         };
         
         logger.debug("System command: " + Arrays.toString(ret));
         return ret;
+    }
+    
+    private String getData() {
+    	if (dataFile != null) {
+    		return "'" + dataFile.getAbsolutePath() + "'";
+    	}
+    	
+    	// it is used only at windows;
+    	// temp file or /dev/stdio is used at unix 
+    	return "\\\"-\\\"";
     }
 
     /**
@@ -241,35 +329,126 @@ public class OracleDataWriter extends Node {
         if(isInitialized()) return;
         super.init();
   
-        try {
-            controlFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, CONTROL_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
-            
-//            if(logFileName == null)
-//                logFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, LOG_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
-//            if(badFileName == null) 
-//                badFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, BAD_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
-//            if(discardFileName == null)
-//                discardFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, DISCARD_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
-        } catch(IOException e) {
-            throw new ComponentNotReadyException(this, "Some of the log files cannot be created.");
+        isDataReadFromPort = !getInPorts().isEmpty();
+        isDataReadDirectlyFromFile = !isDataReadFromPort && 
+        		!StringUtils.isEmpty(dataURL);
+        
+        // set undefined useFileForExchange when input port is connected
+        if (!isDefinedUseFileForExchange && isDataReadFromPort) {
+        	useFileForExchange = getDefaultUsingFileForExchange();
         }
-
-        //create control file
+        
+        checkParams();
+        
+        // data is read directly from file -> file isn't used for exchange
+    	if (isDataReadDirectlyFromFile) {
+    		dataFile = openFile(dataURL);
+    		useFileForExchange = false;
+    	}
+        
+        createFileForExchange();
         createControlFile();
         
         //compute userId as sqlldr parameter
         userId = getUserId();
         
         //init of data formatter
-        formatter = new DataFormatter();
-        formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
+        if (isDataReadFromPort) {
+        	formatter = new DataFormatter();
+            formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
+        }
+        
+		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
+		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
     }
-
+    
+    /**
+	 * Checks if mandatory parameters are defined.
+	 * And check combination of some parameters.
+	 * 
+	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
+	 */
+	private void checkParams() throws ComponentNotReadyException {
+		if (!isDataReadFromPort && StringUtils.isEmpty(dataURL)) {
+			throw new ComponentNotReadyException(this, "Input port or " + 
+					StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + 
+					" attribute	have to be defined.");
+		}
+		
+		if (isDataReadDirectlyFromFile && StringUtils.isEmpty(control)) {
+			throw new ComponentNotReadyException(this, "When no input port " +
+					"is connected then " + 
+					StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + 
+					" attribute and " +
+					StringUtils.quote(XML_CONTROL_ATTRIBUTE) +
+					" attribute have to be defined.");
+		}
+        
+        if ((useFileForExchange && isDefinedUseFileForExchange) 
+        		&& !isDataReadFromPort) {
+        	logger.warn("When no port is connected" +
+        			" (data is read directly from file) then " +
+        			StringUtils.quote(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE) + 
+        			" attribute is omitted.");
+        }
+        
+        if (!useFileForExchange && isDataReadFromPort && !StringUtils.isEmpty(dataURL)) {
+        	logger.warn("When port is connected and " +
+        			StringUtils.quote(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE) + " attribute" +
+        			" is set to false then " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + 
+        			" attribute is omitted.");
+        }
+	}
+    
+    private void createFileForExchange() throws ComponentNotReadyException {
+    	if (!useFileForExchange) {
+    		if (!ProcBox.isWindowsPlatform() && isDataReadFromPort) {
+    			dataFile = new File(UNIX_STDIN);
+    		}
+   			return;
+    	}
+    	
+		if (isDataReadFromPort) {
+			if (ProcBox.isWindowsPlatform() || dataURL != null) {
+				if (dataURL != null) {
+					dataFile = new File(dataURL);
+					dataFile.delete();
+				} else {
+					dataFile = createTempFile();
+				}
+			} else {
+				dataFile = new File(UNIX_STDIN);
+				useFileForExchange = false;
+			}
+		}
+    }
+    
+    private File createTempFile() throws ComponentNotReadyException {
+    	try {
+			return File.createTempFile(EXCHANGE_FILE_PREFIX, null, TMP_DIR);
+		} catch (IOException e) {
+			free();
+			throw new ComponentNotReadyException(this, 
+					"Temporary data file wasn't created.");
+		}
+    }
+    
+    private File openFile(String fileURL) throws ComponentNotReadyException {
+    	if (!new File(fileURL).exists()) {
+			free();
+			throw new ComponentNotReadyException(this, 
+					"Data file " + StringUtils.quote(fileURL) + " not exists.");
+		}
+		return new File(fileURL);
+    }
+    
     @Override
     public synchronized void reset() throws ComponentNotReadyException {
     	super.reset();
     	
-    	formatter.reset();
+    	if (formatter != null) {
+			formatter.reset();
+		}
     }
     
     /**
@@ -286,6 +465,12 @@ public class OracleDataWriter extends Node {
      * @throws ComponentNotReadyException
      */
     private void createControlFile() throws ComponentNotReadyException {
+    	try {
+            controlFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, CONTROL_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
+        } catch(IOException e) {
+            throw new ComponentNotReadyException(this, "Control file cannot be created.");
+        }
+        
         File controlFile = new File(controlFileName);
         FileWriter controlWriter;
         try {
@@ -295,17 +480,9 @@ public class OracleDataWriter extends Node {
             logger.debug("Control file content: " + content);
             controlWriter.write(content);
             controlWriter.close();
-        }catch(IOException ex){
-            throw new ComponentNotReadyException(this, "Can't create temp control file for sqlldr utility.", ex);
+        } catch (IOException ex){
+            throw new ComponentNotReadyException(this, "Control file for sqlldr utility can't be created.", ex);
         }
-    }
-
-    /**
-     * Deletes temp file with loader script (CONTROL_FILE_NAME). 
-     */
-    private void deleteControlFile() {
-        File controlFile = new File(controlFileName);
-        controlFile.delete();
     }
 
     /**
@@ -355,6 +532,13 @@ public class OracleDataWriter extends Node {
             if(xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
                 oracleDataWriter.setDbFields(xattribs.getString(XML_DBFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             }
+            if(xattribs.exists(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE)) {
+                oracleDataWriter.setUseFileForExchange(xattribs.getBoolean(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE));
+                oracleDataWriter.isDefinedUseFileForExchange = true;
+            }
+            if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
+            	oracleDataWriter.setInDataFileName(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
+			}
             return oracleDataWriter;
         } catch (Exception ex) {
                throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -381,12 +565,28 @@ public class OracleDataWriter extends Node {
         this.dbFields = dbFields;
     }
     
+    private void setUseFileForExchange(boolean useFileForExchange) {
+    	this.useFileForExchange = useFileForExchange;
+    }
+    
+    private boolean getDefaultUsingFileForExchange() {
+    	if (ProcBox.isWindowsPlatform()) {
+    		return true;
+    	} else {
+    		return false;
+    	}
+    }
+    
+    private void setInDataFileName(String inDataFileName) {
+		this.dataURL = inDataFileName;
+	}
+    
     /**  Description of the Method */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
          
-        if(!checkInputPorts(status, 1, 1)
+        if (!checkInputPorts(status, 0, 1)
         		|| !checkOutputPorts(status, 0, 0)) {
         	return status;
         }
@@ -415,29 +615,6 @@ public class OracleDataWriter extends Node {
 
     public void setAppend(Append append) {
         this.append = append;
-    }
-    
-    /**
-     * Easy stream reader, substitutes /dev/null (black hole).
-     * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
-     *
-     */
-    class StreamReader extends Thread {
-        private InputStream stream;
-        
-        public StreamReader(InputStream stream) {
-            this.stream = stream;
-        }
-        
-        @Override
-        public void run() {
-            try {
-                while(stream.read() != -1);
-            } catch (IOException e) {
-                //doesn't matter
-            }
-        }
-        
     }
     
     /**
@@ -472,7 +649,8 @@ public class OracleDataWriter extends Node {
         if(append == null) append = Append.append;
         return 
             "LOAD DATA" + lineSeparator +
-            "INFILE *" + lineSeparator +
+            "INFILE *" + // is omitted 
+            lineSeparator +
             "INTO TABLE " + tableName + lineSeparator +
             append + lineSeparator +
             "(" + lineSeparator + ((metadata != null) ? convertMetadataToControlForm(metadata, dbFields) : "") + lineSeparator + ")";
@@ -534,6 +712,5 @@ public class OracleDataWriter extends Node {
         
         return ret.toString();
     }
-
 }
 
