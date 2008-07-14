@@ -13,6 +13,17 @@ Changes/bug fixes:
 + debugDirectory graph attribute was replaced by command line parameter identically called
 + new command line parameter "-nodebug" turns of all runtime graph debugging (e.g edge debugging)
 
+
+REL 2-4-8
+---------
++ oracle bulkloader updated
++ CTL decimal problem fixed
++ xls minor bugfixes
+
+REL 2-4-7
+---------
++ minor bugfixes
+
 REL 2-4-6
 ---------
 Changes/bug fixes:

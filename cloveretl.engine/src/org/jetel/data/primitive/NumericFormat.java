@@ -270,7 +270,7 @@ public class NumericFormat extends NumberFormat {
 		boolean end = index<start ;
 		int groupSize;
 		int integerDigits = 0;
-		while (index>0){
+		while (index>=0){
 			groupSize = 0;
 			//take all digits from one group
 			while ((groupSize<groupingSize || groupingSize==0) && !end && integerDigits<maximumIntegerDigits){
@@ -311,6 +311,14 @@ public class NumericFormat extends NumberFormat {
 			toAppendTo.append('0');
 			fractionDigits++;
 		}
+		//remove trailing 0 if we can
+		index = toAppendTo.length() - 1;
+		int shortBy = 0;
+		while (fractionDigits > minimumFractionDigits && toAppendTo.charAt(index) == '0'){
+			shortBy++;
+			fractionDigits--;
+		}
+		toAppendTo.setLength(toAppendTo.length() - shortBy);
 		//appending suffixes
 		if (number.signum()==-1){
 			toAppendTo.append(dFormat.getNegativeSuffix());
