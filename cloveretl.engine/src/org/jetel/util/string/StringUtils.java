@@ -260,6 +260,14 @@ public class StringUtils {
 		return seq.toString().matches(OBJECT_NAME_PATTERN);
 	}
 
+	public static boolean isValidObjectId(CharSequence seq) {
+		if (seq == null) {
+			return false;
+		}
+
+		return seq.toString().matches(OBJECT_NAME_PATTERN);
+	}
+
 	/**
 	 * This method changes all characters, which can be part of identifier, in given string to "_"
 	 * 

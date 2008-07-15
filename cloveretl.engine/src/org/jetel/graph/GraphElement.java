@@ -75,7 +75,7 @@ public abstract class GraphElement implements IGraphElement {
      */
     public GraphElement(String id, TransformationGraph graph, String name) {
         if(id != null || graph != null) {
-            if (!StringUtils.isValidObjectName(id)){
+            if (!StringUtils.isValidObjectId(id)){
                 throw new InvalidGraphObjectNameException(id, "GRAPH_ELEMENT");
             }
         }
