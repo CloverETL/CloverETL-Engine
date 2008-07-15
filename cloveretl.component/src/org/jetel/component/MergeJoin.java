@@ -432,7 +432,7 @@ public class MergeJoin extends Node {
 			}
 		} else {
 			for (int i = 0; i < slaveCnt; i++) {
-				reader[i + 1] = new SlaveReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
+				reader[i + 1] = new SlaveReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i], true);
 			}			
 		}
 		minReader = reader[0];
@@ -663,7 +663,7 @@ public class MergeJoin extends Node {
         			}
         		} else {
         			for (int i = 0; i < slaveCnt; i++) {
-        				reader[i + 1] = new SlaveReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
+        				reader[i + 1] = new SlaveReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i], true);
         			}			
         		}
         		minReader = reader[0];

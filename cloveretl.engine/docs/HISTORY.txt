@@ -12,6 +12,7 @@ Changes/bug fixes:
 + standardization of join key: AproxMergeJoin
 + debugDirectory graph attribute was replaced by command line parameter identically called
 + new command line parameter "-nodebug" turns of all runtime graph debugging (e.g edge debugging)
++ all names have to satisfy pattern "[_A-Za-z_]+[_A-Za-z0-9]*"
 
 
 REL 2-4-8

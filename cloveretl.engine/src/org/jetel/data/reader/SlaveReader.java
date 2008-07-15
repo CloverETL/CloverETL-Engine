@@ -11,6 +11,7 @@ import org.jetel.graph.InputPort;
  * Slave reader without duplicates support. Pretends that all runs contain only one record.
  * Doesn't use buffer, supports rewind operation.
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+ * @author Agata Vackova, Javlin Consulting (www.javlinconsulting.cz)
  *
  */
 public class SlaveReader implements InputReader {
@@ -22,10 +23,19 @@ public class SlaveReader implements InputReader {
 	private DataRecord[] rec = new DataRecord[2];
 	private boolean firstRun;
 	private boolean needsRewind;
+	private boolean keepLast;
 
-	public SlaveReader(InputPort inPort, RecordKey key) {
+	/**
+	 * Constructor of slave reader object
+	 * 
+	 * @param inPort input port for reading data
+	 * @param key key for comparing records
+	 * @param keepLast whether use last (true) or first (false) record from all with the same key  
+	 */
+	public SlaveReader(InputPort inPort, RecordKey key, boolean keepLast) {
 		this.inPort = inPort;
 		this.key = key;
+		this.keepLast = keepLast;
 		this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
 		this.rec[NEXT] = new DataRecord(inPort.getMetadata());
 		this.rec[CURRENT].init();
@@ -54,7 +64,26 @@ public class SlaveReader implements InputReader {
 		rec[NEXT] = tmp;
 	}
 
-	public boolean loadNextRun() throws InterruptedException, IOException {
+	private boolean loadNextRunKeepFirst()  throws InterruptedException, IOException{
+		if (inPort == null) {
+			rec[CURRENT] = rec[NEXT] = null;
+			return false;
+		} 
+		while(inPort.readRecord(rec[NEXT]) != null) {
+			needsRewind = false;
+			if (firstRun) {
+				firstRun = false;
+			}
+			if (key.compare(rec[NEXT], rec[CURRENT]) != 0) {
+				swap();
+				return true;
+			}
+		}
+		rec[CURRENT] = rec[NEXT] = null;
+		return false;
+	}
+
+	private boolean loadNextRunKeepLast() throws InterruptedException, IOException {
 		if (inPort == null) {
 			rec[CURRENT] = rec[NEXT] = null;
 			return false;
@@ -131,6 +160,10 @@ public class SlaveReader implements InputReader {
 	@Override
 	public String toString() {
 		return getSample().toString();
+	}
+
+	public boolean loadNextRun() throws InterruptedException, IOException {
+		return keepLast ? loadNextRunKeepLast() : loadNextRunKeepFirst();
 	}
 
 }
