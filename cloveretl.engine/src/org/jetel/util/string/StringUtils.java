@@ -59,6 +59,9 @@ public class StringUtils {
 	private final static int SEQUENTIAL_TRANLATE_LENGTH = 16;
 
 	private static Pattern delimiterPattern;
+	
+	private final static String OBJECT_NAME_PATTERN = "[_A-Za-z_]+[_A-Za-z0-9]*";
+	private final static Pattern INVALID_CHAR = Pattern.compile("[^_A-Za-z0-9]{1}");
 
 	private static void initPattern() {
 		delimiterPattern = Pattern.compile(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
@@ -254,12 +257,7 @@ public class StringUtils {
 			return false;
 		}
 
-		for (int i = 0; i < seq.length(); i++) {
-			if (!Character.isUnicodeIdentifierPart(seq.charAt(i))) {
-				return false;
-			}
-		}
-		return true;
+		return seq.toString().matches(OBJECT_NAME_PATTERN);
 	}
 
 	/**
@@ -273,13 +271,12 @@ public class StringUtils {
 			return null;
 		}
 
-		StringBuilder result = new StringBuilder(seq);
-		for (int i = 0; i < seq.length(); i++) {
-			if (!Character.isUnicodeIdentifierPart(seq.charAt(i))) {
-				result.replace(i, i + 1, ILLICIT_CHAR_REPLACEMENT);
-			}
+		StringBuilder result = new StringBuilder(removeDiacritic(seq.toString()));
+		if (result.length() == 0 || Character.isDigit(result.charAt(0))) {
+			result.insert(0, ILLICIT_CHAR_REPLACEMENT);
 		}
-		return result.toString();
+		Matcher invalidNameMatcher = INVALID_CHAR.matcher(result);
+		return invalidNameMatcher.replaceAll(ILLICIT_CHAR_REPLACEMENT);
 	}
 
 	/**

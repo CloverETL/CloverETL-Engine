@@ -876,38 +876,45 @@ void DirectMapping() : // assignment of value to Clover field
   jjtreeOpenNodeScope(jjtn000);
 /*@egen*/ Token t ;}
 {/*@bgen(jjtree) DirectMapping */
-  try {
+        try {
 /*@egen*/	
   	/*OutputFieldExp() */
+  	try{
+  	
   (	t = <FIELD_ID> { jjtn000.setFieldName(t.image); jjtn000.updateMappingMatrix(getCustRecordTransform()); } 
   | t = <REC_NAME_FIELD_ID> { jjtn000.setRecordFieldName(t.image); jjtn000.updateMappingMatrix(getCustRecordTransform()); }
   | t= <REC_NAME_FIELD_NUM>  { jjtn000.setRecordNameFieldNum(t.image); jjtn000.updateMappingMatrix(getCustRecordTransform()); }
   | t = <REC_NUM_FIELD_ID> { jjtn000.setRecordNumFieldName(t.image); jjtn000.updateMappingMatrix(getCustRecordTransform()); }
   | t = <REC_NUM_FIELD_NUM> { jjtn000.setRecordNumFieldNum(t.image); jjtn000.updateMappingMatrix(getCustRecordTransform()); } 
   	)
+  	}catch(ParseException ex){
+  		ex.setCurrentToken(getToken(0));
+  		throw ex;
+  	}
+  	
   	<MAPPING> 
   	
   	ConditionalOrExpression() (":" ConditionalOrExpression())*/*@bgen(jjtree)*/
-  } catch (Throwable jjte000) {
-    if (jjtc000) {
-      jjtree.clearNodeScope(jjtn000);
-      jjtc000 = false;
-    } else {
-      jjtree.popNode();
-    }
-    if (jjte000 instanceof RuntimeException) {
-      throw (RuntimeException)jjte000;
-    }
-    if (jjte000 instanceof ParseException) {
-      throw (ParseException)jjte000;
-    }
-    throw (Error)jjte000;
-  } finally {
-    if (jjtc000) {
-      jjtree.closeNodeScope(jjtn000, true);
-      jjtreeCloseNodeScope(jjtn000);
-    }
-  }
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+            jjtreeCloseNodeScope(jjtn000);
+          }
+        }
 /*@egen*/
 }
 

@@ -38,6 +38,7 @@ import org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  *  Various utilities for working with Databases
@@ -132,16 +133,24 @@ public class SQLUtil {
 	 */
 	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata, JdbcSpecific jdbcSpecific) throws SQLException {
 		DataFieldMetadata fieldMetadata;
-		DataRecordMetadata jetelMetadata = new DataRecordMetadata(dbMetadata.getTableName(1),
-				DataRecordMetadata.DELIMITED_RECORD);
+		String tableName = dbMetadata.getTableName(1);
+		if (!StringUtils.isValidObjectName(tableName)) {
+			tableName = StringUtils.normalizeName(tableName);
+		}
+		DataRecordMetadata jetelMetadata = new DataRecordMetadata(tableName, DataRecordMetadata.DELIMITED_RECORD);
 		jetelMetadata.setFieldDelimiter(DEFAULT_DELIMITER);
 		jetelMetadata.setRecordDelimiters(END_RECORD_DELIMITER);
 		int type;
 		char cloverType;
-	
+		String colName;
+			
 		for (int i = 1; i <= dbMetadata.getColumnCount(); i++) {
+			colName = dbMetadata.getColumnName(i);
+			if (!StringUtils.isValidObjectName(colName)) {
+				colName = StringUtils.normalizeName(colName);
+			}
 			try {
-				fieldMetadata = new DataFieldMetadata(dbMetadata.getColumnName(i), null);
+				fieldMetadata = new DataFieldMetadata(colName, null);
 
 			} catch (Exception ex) {
 				throw new RuntimeException(ex.getMessage() + " field name " + dbMetadata.getColumnName(i));

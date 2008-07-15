@@ -283,7 +283,7 @@ public class DataIntersection extends Node {
 				slaveReader.rewindRun();
 			}
 		}else{
-			inRecords[0] = driver.last();
+			inRecords[0] = driver.next();
 			inRecords[1] = slave.next();
 			if (!transformation.transform(inRecords, outRecords)) {
 				logger.warn(transformation.getMessage());
@@ -460,7 +460,7 @@ public class DataIntersection extends Node {
         }
 		driverReader = new DriverReader(driverPort, recordKeys[DRIVER_ON_PORT]);
 		slaveReader = keyDuplicates ? new SlaveReaderDup(slavePort, recordKeys[SLAVE_ON_PORT]) :
-			new SlaveReader(slavePort, recordKeys[SLAVE_ON_PORT]);
+			new SlaveReader(slavePort, recordKeys[SLAVE_ON_PORT], false);
 	}
 
 

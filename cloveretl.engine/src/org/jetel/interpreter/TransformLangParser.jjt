@@ -698,12 +698,19 @@ void DirectMapping() : // assignment of value to Clover field
 { Token t ;}
 {	
   	/*OutputFieldExp() */
+  	try{
+  	
   (	t = <FIELD_ID> { jjtThis.setFieldName(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); } 
   | t = <REC_NAME_FIELD_ID> { jjtThis.setRecordFieldName(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); }
   | t= <REC_NAME_FIELD_NUM>  { jjtThis.setRecordNameFieldNum(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); }
   | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); }
   | t = <REC_NUM_FIELD_NUM> { jjtThis.setRecordNumFieldNum(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); } 
   	)
+  	}catch(ParseException ex){
+  		ex.setCurrentToken(getToken(0));
+  		throw ex;
+  	}
+  	
   	<MAPPING> 
   	
   	ConditionalOrExpression() (":" ConditionalOrExpression())*
