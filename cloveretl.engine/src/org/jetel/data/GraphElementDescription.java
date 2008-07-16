@@ -24,7 +24,7 @@ import org.jetel.plugin.PluginDescriptor;
 
 /**
  * Ascendant of all plugin elements description like ComponentDescription, SequenceDescription,
- * ConnectionDescription etc. This class describes relation between engine and plugin, repesents
+ * ConnectionDescription etc. This class describes relation between engine and plugin, represents
  * extension point of plugin.
  *  
  * @author Martin Zatopek
