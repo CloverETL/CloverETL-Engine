@@ -21,29 +21,41 @@ package org.jetel.graph.dictionary;
 
 import org.jetel.exception.ComponentNotReadyException;
 
-public class DictionaryValue<T> implements IDictionaryValue<T> {
+/**
+ * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
+ *         (c) Javlin Consulting (www.javlinconsulting.cz)
+ *
+ * @created Jul 17, 2008
+ */
+public abstract class DictionaryType implements IDictionaryType {
 
-	private T value;
+	private String typeId;
 	
-	public DictionaryValue(T value) {
-		this.value = value;
+	private Class<?> valueClass;
+	
+	public DictionaryType(String typeId, Class<?> valueClass) {
+		this.typeId = typeId;
+		this.valueClass = valueClass;
 	}
-
-	public void init(Dictionary dictionary) throws ComponentNotReadyException {
-		//EMPTY
+	
+	public String getTypeId() {
+		return typeId;
 	}
-
-	public T getValue() {
+	
+	public Class<?> getValueClass() {
+		return valueClass;
+	}
+	
+	public Object init(Object value, Dictionary dictionary) throws ComponentNotReadyException {
+		if (value != null && !valueClass.isInstance(value)) {
+			throw new ComponentNotReadyException(dictionary, "Unknown source type for '" + getTypeId() + "' dictionary element (" + value + ").");
+		}
 		return value;
 	}
-	
-	protected void setValue(T value) {
-		this.value = value;
-	}
-	
+
 	@Override
 	public String toString() {
-		return getValue().toString();
+		return valueClass.getName();
 	}
 	
 }

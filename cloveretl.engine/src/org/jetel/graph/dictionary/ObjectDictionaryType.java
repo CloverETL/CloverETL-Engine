@@ -19,12 +19,39 @@
 */
 package org.jetel.graph.dictionary;
 
-import org.jetel.exception.ComponentNotReadyException;
+import java.util.Properties;
 
-public interface IDictionaryValue<T> {
+import org.jetel.exception.AttributeNotFoundException;
 
-	public void init(Dictionary dictionary) throws ComponentNotReadyException;
+/**
+ * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
+ *         (c) Javlin Consulting (www.javlinconsulting.cz)
+ *
+ * @created Jul 21, 2008
+ */
+public class ObjectDictionaryType extends DictionaryType {
+
+	public static final String TYPE_ID = "object";
+
+	/**
+	 * Constructor.
+	 */
+	public ObjectDictionaryType() {
+		super(TYPE_ID, Object.class);
+	}
 	
-	public T getValue();
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.dictionary.DictionaryType#getValue(java.util.Properties)
+	 */
+	public Object parseProperties(Properties properties) throws AttributeNotFoundException {
+		throw new UnsupportedOperationException("Common object dictionary type cannot be parsed from properties.");
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.dictionary.IDictionaryType#isValidValue(java.lang.Object)
+	 */
+	public boolean isValidValue(Object value) {
+		return true;
+	}
 
 }

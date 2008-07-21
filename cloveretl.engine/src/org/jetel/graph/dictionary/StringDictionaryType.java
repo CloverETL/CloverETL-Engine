@@ -22,25 +22,51 @@ package org.jetel.graph.dictionary;
 import java.util.Properties;
 
 import org.jetel.exception.AttributeNotFoundException;
+import org.jetel.exception.ComponentNotReadyException;
 
 /**
- * This interface serves to provide ability to build up dictionary value from the given properties.
- * It is intended to be implemented in various external plugins for their internal dictionary value types.
- *  
+ * String dictionary type represents string-like element in the dictionary.
+ * 
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  *
  * @created 10.3.2008
  */
-public interface DictionaryEntryProvider {
+public class StringDictionaryType extends DictionaryType {
 
-	public static final String DEFAULT_TYPE = "string";
+	public static final String TYPE_ID = "string";
 
-	/**
-	 * Returns a dictionary value based on the given properties.
-	 * @param properties
-	 * @return
-	 */
-	public IDictionaryValue<?> getValue(Properties properties) throws AttributeNotFoundException;
+	private static final String VALUE_ATTRIBUTE = "value";
 	
+	/**
+	 * Constructor.
+	 */
+	public StringDictionaryType() {
+		super(TYPE_ID, String.class);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.dictionary.DictionaryType#init(java.lang.Object, org.jetel.graph.dictionary.Dictionary)
+	 */
+	@Override
+	public Object init(Object value, Dictionary dictionary) throws ComponentNotReadyException {
+		return value.toString();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.dictionary.DictionaryType#getValue(java.util.Properties)
+	 */
+	public Object parseProperties(Properties properties) throws AttributeNotFoundException {
+		return properties.getProperty(VALUE_ATTRIBUTE);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.dictionary.IDictionaryType#isValidValue(java.lang.Object)
+	 */
+	public boolean isValidValue(Object value) {
+		return value instanceof String
+				|| value instanceof StringBuilder
+				|| value instanceof StringBuffer;
+	}
+
 }

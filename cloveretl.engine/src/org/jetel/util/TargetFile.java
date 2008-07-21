@@ -27,8 +27,8 @@ import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.dictionary.Dictionary;
-import org.jetel.graph.dictionary.DictionaryValue;
-import org.jetel.graph.dictionary.IDictionaryValue;
+import org.jetel.graph.dictionary.ObjectDictionaryType;
+import org.jetel.graph.dictionary.WritableChannelDictionaryType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
 
@@ -212,19 +212,19 @@ public class TargetFile {
 		// parse target url
 		String[] aDict = fileURL.substring(DICT_PROTOCOL.length()).split(PARAM_DELIMITER);
 		if (dictionary == null) throw new RuntimeException("The component doesn't support dictionary writing.");
-		IDictionaryValue<?> dictValue = dictionary.get(aDict[0]);
+		Object dictValue = dictionary.getValue(aDict[0]);
 		dictProcesstingType = ProcessingType.fromString(aDict.length > 1 ? aDict[1] : null, ProcessingType.STREAM);
 		if (dictValue != null) logger.warn("Dictionary contains value for the key '" + aDict[0] + "'. The value will be replaced.");
 		
 		// create target
 		if (dictProcesstingType == ProcessingType.STREAM) {
 			dictOutStream = new ByteArrayOutputStream();
-			dictionary.put(aDict[0], new DictionaryValue<ByteArrayOutputStream>(dictOutStream));
+			dictionary.setValue(aDict[0], new WritableChannelDictionaryType(), dictOutStream);
 		}
 		// create target
 		else if (dictProcesstingType == ProcessingType.DISCRETE) {
 			dictOutArray = new ArrayList<byte[]>();
-			dictionary.put(aDict[0], new DictionaryValue<ArrayList<byte[]>>(dictOutArray));
+			dictionary.setValue(aDict[0], new ObjectDictionaryType(), dictOutArray);
 		}
 	}
     

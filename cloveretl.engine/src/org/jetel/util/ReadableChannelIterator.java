@@ -27,7 +27,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.dictionary.Dictionary;
-import org.jetel.graph.dictionary.IDictionaryValue;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.WcardPattern;
 
@@ -275,9 +274,7 @@ public class ReadableChannelIterator {
 		String dictKey = aSource[0];
 		ProcessingType dictProcesstingType = ProcessingType.fromString(aSource.length > 1 ? aSource[1] : null, ProcessingType.DISCRETE);
 		if (dictionary == null) throw new RuntimeException("The component doesn't support dictionary reading.");
-		IDictionaryValue<?> dictValue = dictionary.get(dictKey);
-		if (dictValue == null) throw new JetelException("Dictionary doesn't contain value for the key '" + dictKey + "'");
-		Object value = dictValue.getValue();
+		Object value = dictionary.getValue(dictKey);
 		if (value == null) throw new JetelException("Dictionary doesn't contain value for the key '" + dictKey + "'");
 		
 		ReadableByteChannel rch;
