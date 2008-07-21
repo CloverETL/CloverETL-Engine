@@ -46,7 +46,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.dictionary.Dictionary;
-import org.jetel.graph.dictionary.IDictionaryValue;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.metadata.DataRecordMetadata;
@@ -428,6 +427,13 @@ public final class TransformationGraph extends GraphElement {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+
+        //remove disabled components and their edges
+        try {
+			TransformationGraphAnalyzer.disableNodesInPhases(this);
+		} catch (GraphConfigurationException e) {
+			throw new ComponentNotReadyException(this, e);
+		}
 
 		//initialize dictionary
 		dictionary.init();
@@ -916,25 +922,14 @@ public final class TransformationGraph extends GraphElement {
 		return TransformationGraph.logger;
 	}
     
-	public IDictionaryValue<?> getDictionaryValue(String key) {
-		return dictionary.get(key);
-	}
-	
-	public void setDictionaryEntry(String key, IDictionaryValue<?> value) {
-		dictionary.put(key, value);
-	}
-
 	public long getCreated() {
 		return created;
 	}
 	
-	public void setDefaultDictionaryEntry(String key, IDictionaryValue<?> value) {
-		dictionary.putDefault(key, value);
-	}
-
 	public Dictionary getDictionary() {
 		return dictionary;
 	}
+
 }
 /*
  *  end class TransformationGraph

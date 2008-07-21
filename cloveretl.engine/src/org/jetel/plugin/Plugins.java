@@ -35,7 +35,7 @@ import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.dictionary.DictionaryEntryFactory;
+import org.jetel.graph.dictionary.DictionaryTypeFactory;
 import org.jetel.interpreter.extensions.TLFunctionPluginRepository;
 import org.jetel.util.file.FileUtils;
 
@@ -122,7 +122,7 @@ public class Plugins {
         LookupTableFactory.init();
         ConnectionFactory.init();
         TLFunctionPluginRepository.init();
-        DictionaryEntryFactory.init();
+        DictionaryTypeFactory.init();
     }
     
     public static Map<String, PluginDescriptor> getPluginDescriptors(){

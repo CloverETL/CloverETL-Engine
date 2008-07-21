@@ -45,9 +45,8 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
-import org.jetel.graph.dictionary.DictionaryEntryFactory;
-import org.jetel.graph.dictionary.DictionaryEntryProvider;
-import org.jetel.graph.dictionary.IDictionaryValue;
+import org.jetel.graph.dictionary.DictionaryTypeFactory;
+import org.jetel.graph.dictionary.IDictionaryType;
 import org.jetel.graph.dictionary.SerializedDictionaryValue;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -325,13 +324,16 @@ public class runGraph {
 	throws XMLConfigurationException {
 		for (SerializedDictionaryValue serializedDictionaryValue : dictionaryValues) {
 	        try {
-	        	String type = serializedDictionaryValue.getType() != null ? serializedDictionaryValue.getType() : DictionaryEntryProvider.DEFAULT_TYPE;
-	        	DictionaryEntryProvider dictionaryEntryProvider = DictionaryEntryFactory.getDictionaryEntryProvider(type);
-	        	IDictionaryValue<?> dictionaryValue = dictionaryEntryProvider.getValue(serializedDictionaryValue.getProperties());
-	        	graph.setDefaultDictionaryEntry(serializedDictionaryValue.getKey(), dictionaryValue);
+	        	String key = serializedDictionaryValue.getKey();
+	        	String type = serializedDictionaryValue.getType();
+	        	IDictionaryType dictionaryType = DictionaryTypeFactory.getDictionaryType(type);
+	        	Object dictionaryValue = dictionaryType.parseProperties(serializedDictionaryValue.getProperties());
+	        	graph.getDictionary().setValue(key, dictionaryType, dictionaryValue);
 	        } catch(AttributeNotFoundException ex){
 	            throw new XMLConfigurationException("Dictionary - Attributes missing " + ex.getMessage());
-	        }
+	        } catch (ComponentNotReadyException e) {
+	            throw new XMLConfigurationException("Dictionary initialization problem.", e);
+			}
 		}
 	}
 	
@@ -340,8 +342,8 @@ public class runGraph {
 		try {
 			if (!graph.isInitialized()) {
 				EngineInitializer.initGraph(graph, runtimeContext);
-				printDictionary("Initial dictionary content:", graph);
 			}
+			printDictionary("Initial dictionary content:", graph);
 			futureResult = executeGraph(graph, runtimeContext);			
 		} catch (ComponentNotReadyException e) {
             logger.error("Error during graph initialization !");
@@ -414,7 +416,7 @@ public class runGraph {
 			
 			Set<String> keys = graph.getDictionary().getKeys();
 			for (String key : keys) {
-				logger.info(key + ":" + graph.getDictionaryValue(key));
+				logger.info(key + ":" + graph.getDictionary().getValue(key));
 			}
 		}
 	}

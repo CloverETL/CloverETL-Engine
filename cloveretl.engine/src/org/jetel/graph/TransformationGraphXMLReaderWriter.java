@@ -49,9 +49,9 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.graph.dictionary.DictionaryEntryFactory;
-import org.jetel.graph.dictionary.DictionaryEntryProvider;
-import org.jetel.graph.dictionary.IDictionaryValue;
+import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.dictionary.DictionaryTypeFactory;
+import org.jetel.graph.dictionary.IDictionaryType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
@@ -164,9 +164,18 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String LOOKUP_TABLE_ELEMENT = "LookupTable";
 	private final static String METADATA_RECORD_ELEMENT = "Record";
 	private final static String PROPERTY_ELEMENT = "Property";
+	
 	private final static String DICTIONARY_ELEMENT = "Dictionary";
 	private final static String DICTIONARY_ENTRY_ELEMENT = "Entry";
-
+	private final static String DICTIONARY_ENTRY_NAME = "name";
+	private final static String DICTIONARY_ENTRY_TYPE = "type";
+	private final static String DICTIONARY_ENTRY_INPUT = "input";
+	private final static String DICTIONARY_ENTRY_OUTPUT = "output";
+	private final static String DICTIONARY_ENTRY_REQUIRED = "required";
+	private final static String DICTIONARY_ENTRY_CONTENT_TYPE = "contentType";
+	
+	
+	
 	private final static int ALLOCATE_MAP_SIZE=64;
 	/**
 	 * Default parser name.
@@ -343,9 +352,6 @@ public class TransformationGraphXMLReaderWriter {
 		NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
 		instantiateEdges(edgeElements, metadata, graph.isDebugMode(), graph.getDebugMaxRecords());
 
-        //remove disabled components and their edges
-        TransformationGraphAnalyzer.disableNodesInPhases(graph);
-        
         return graph;
 	}
 
@@ -727,20 +733,37 @@ public class TransformationGraphXMLReaderWriter {
 	}
 
 	private void instantiateDictionary(NodeList dictionaryElements) throws  XMLConfigurationException {
+		final Dictionary dictionary = graph.getDictionary();
+		
 	    for (int i = 0; i < dictionaryElements.getLength(); i++) {
 	    	NodeList dicEntryElements = dictionaryElements.item(i).getChildNodes();
 		    for (int j = 0; j < dicEntryElements.getLength(); j++) {
 		    	if(dicEntryElements.item(j).getNodeName().equals(DICTIONARY_ENTRY_ELEMENT)) {
 			        ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element) dicEntryElements.item(j), graph);
 			        try {
-			        	String type = attributes.getString("type", DictionaryEntryProvider.DEFAULT_TYPE);
-			        	String name = attributes.getString("name");
-			        	DictionaryEntryProvider dictionaryEntryProvider = DictionaryEntryFactory.getDictionaryEntryProvider(type);
-			        	IDictionaryValue<?> dictionaryValue = dictionaryEntryProvider.getValue(attributes.attributes2Properties(null));
-			        	graph.setDictionaryEntry(name, dictionaryValue);
+			        	String type = attributes.getString(DICTIONARY_ENTRY_TYPE);
+			        	String name = attributes.getString(DICTIONARY_ENTRY_NAME);
+			        	IDictionaryType dictionaryType = DictionaryTypeFactory.getDictionaryType(type);
+			        	Object value = dictionaryType.parseProperties(attributes.attributes2Properties(null));
+			        	dictionary.setValue(name, dictionaryType, value);
+			        	
+			        	if (attributes.exists(DICTIONARY_ENTRY_INPUT) && attributes.getBoolean(DICTIONARY_ENTRY_INPUT)) {
+			        		dictionary.setAsInput(name);
+			        	}
+			        	if (attributes.exists(DICTIONARY_ENTRY_OUTPUT) && attributes.getBoolean(DICTIONARY_ENTRY_OUTPUT)) {
+			        		dictionary.setAsOuput(name);
+			        	}
+			        	if (attributes.exists(DICTIONARY_ENTRY_REQUIRED) && attributes.getBoolean(DICTIONARY_ENTRY_REQUIRED)) {
+			        		dictionary.setAsRequired(name);
+			        	}
+			        	if (attributes.exists(DICTIONARY_ENTRY_CONTENT_TYPE) && !StringUtils.isEmpty(attributes.getString(DICTIONARY_ENTRY_CONTENT_TYPE))) {
+			        		dictionary.setContentType(name, attributes.getString(DICTIONARY_ENTRY_CONTENT_TYPE));
+			        	}
 			        } catch(AttributeNotFoundException ex){
 			            throw new XMLConfigurationException("Dictionary - Attributes missing " + ex.getMessage());
-			        }
+			        } catch (ComponentNotReadyException e) {
+			            throw new XMLConfigurationException("Dictionary initialization problem.", e);
+					}
 		    	}
 		    }
 	    }

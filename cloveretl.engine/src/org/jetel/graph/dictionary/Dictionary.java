@@ -20,27 +20,30 @@
 package org.jetel.graph.dictionary;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 
+/**
+ * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
+ *         (c) Javlin Consulting (www.javlinconsulting.cz)
+ *
+ * @created Jul 15, 2008
+ */
 public class Dictionary extends GraphElement {
 
 	private static final String DEFAULT_ID = "_DICTIONARY";
 
-	private Map<String, IDictionaryValue<?>> dictionary;
-	private Map<String, IDictionaryValue<?>> defaultDictionary;
+	private Map<String, DictionaryEntry> dictionary;
 
 	public Dictionary(TransformationGraph graph) {
 		super(DEFAULT_ID, graph);
 		
-		dictionary = new HashMap<String, IDictionaryValue<?>>();
-		defaultDictionary = new HashMap<String, IDictionaryValue<?>>();
-
+		dictionary = new HashMap<String, DictionaryEntry>();
 	}
 
 	@Override
@@ -49,8 +52,8 @@ public class Dictionary extends GraphElement {
 		super.init();
 
 		//initialization of all default dictionary values
-		for(IDictionaryValue<?> dictionaryValue : defaultDictionary.values()) {
-			dictionaryValue.init(this);
+		for (DictionaryEntry dictionaryEntry : dictionary.values()) {
+			dictionaryEntry.init(this);
 		}
 	}
 	
@@ -58,34 +61,161 @@ public class Dictionary extends GraphElement {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		
-//TODO !!!		//dictionary.clear();
-	}
-	
-	public IDictionaryValue<?> get(String key) {
-		if(dictionary.containsKey(key)) {
-			return dictionary.get(key);
-		} else {
-			return defaultDictionary.get(key);
+		//resets default dictionary entries and removes all the others
+		for (String key : dictionary.keySet()) {
+			final DictionaryEntry entry = dictionary.get(key);
+			if (entry.isDefault()) {
+				entry.reset();
+			} else {
+				dictionary.remove(key);
+			}
 		}
 	}
 	
-	public void put(String key, IDictionaryValue<?> value) {
-		//value.init(this);
-		dictionary.put(key, value);
+	public DictionaryEntry getEntry(String key) {
+		if (!isInitialized()) {
+			throw new IllegalStateException("Dictionary is not initialized.");
+		}
+		
+		return dictionary.get(key);
 	}
 	
-	public void putDefault(String key, IDictionaryValue<?> value) {
-		defaultDictionary.put(key, value);
+	public IDictionaryType getType(String key) {
+		DictionaryEntry entry = getEntry(key);
+		if (entry == null) {
+			return null;
+		}
+		return getEntry(key).getType();
 	}
 
+	public Object getValue(String key) {
+		DictionaryEntry entry = getEntry(key);
+		if (entry == null) {
+			return null;
+		}
+		return getEntry(key).getValue();
+	}
+
+	public void setValue(String key, Object value) throws ComponentNotReadyException, JetelException {
+		setValue(key, new ObjectDictionaryType(), value);
+	}
+	
+	public void setValue(String key, IDictionaryType type, Object value) throws ComponentNotReadyException {
+		DictionaryEntry entry = dictionary.get(key);
+
+		try {
+			if (entry != null) { //is this key already present in the dictionary?
+				if (entry.getType().getTypeId().equals(type.getTypeId())) {
+					entry.setValue(value);
+				} else { //entry type cannot be changed
+					throw new ComponentNotReadyException(this, "The dictionary key '" + key + "' has asociated incompatible type (" + entry.getType().getTypeId() + " != " + type.getTypeId() + ").");
+				}
+			} else { // we will create new dictionary entry record
+				entry = new DictionaryEntry(type);
+				entry.setValue(value);
+				dictionary.put(key, entry);
+			}
+		} catch (JetelException e) {
+			throw new ComponentNotReadyException(this, "The dictionary entry in '" + key + "' cannot store the given value.", e);
+		}
+		
+		if (!isInitialized()) { // is the dictionary already initialized?
+			entry.setDefault(true); // if not, dictionary entry will be initialized later
+		} else {
+			entry.init(this); //in other case, initialize entry immediately
+		}
+	}
+	
+	public boolean isInput(String key) {
+		DictionaryEntry entry = dictionary.get(key);
+		
+		return entry != null && entry.isInput();
+	}
+
+	public void setAsInput(String key) {
+		DictionaryEntry entry = dictionary.get(key);
+		
+		if (entry == null) { //is this key already present in the dictionary?
+			throw new IllegalArgumentException();
+		}
+		
+		if (!isInitialized() || !entry.isDefault()) { // only non-initialized or non-default entries can be updated
+			entry.setInput(true);
+		} else {
+			throw new IllegalStateException();
+		}
+	}
+
+	public boolean isOutput(String key) {
+		DictionaryEntry entry = dictionary.get(key);
+		
+		return entry != null && entry.isOutput();
+	}
+
+	public void setAsOuput(String key) {
+		DictionaryEntry entry = dictionary.get(key);
+		
+		if (entry == null) { //is this key already present in the dictionary?
+			throw new IllegalArgumentException();
+		}
+		
+		if (!isInitialized() || !entry.isDefault()) { // only non-initialized or non-default entries can be updated
+			entry.setOutput(true);
+		} else {
+			throw new IllegalStateException();
+		}
+	}
+
+	public boolean isRequired(String key) {
+		DictionaryEntry entry = dictionary.get(key);
+		
+		return entry != null && entry.isRequired();
+	}
+
+	public void setAsRequired(String key) {
+		DictionaryEntry entry = dictionary.get(key);
+		
+		if (entry == null) { //is this key already present in the dictionary?
+			throw new IllegalArgumentException();
+		}
+		
+		if (!isInitialized() || !entry.isDefault()) { // only non-initialized or non-default entries can be updated
+			entry.setRequired(true);
+		} else {
+			throw new IllegalStateException();
+		}
+	}
+
+	public String getContentType(String key) {
+		DictionaryEntry entry = dictionary.get(key);
+		
+		if (entry != null) {
+			return entry.getContentType();
+		} else {
+			return null;
+		}
+	}
+
+	public void setContentType(String key, String contentType) {
+		DictionaryEntry entry = dictionary.get(key);
+		
+		if (entry == null) { //is this key already present in the dictionary?
+			throw new IllegalArgumentException();
+		}
+		
+		if (!isInitialized() || !entry.isDefault()) { // only non-initialized or non-default entries can be updated
+			entry.setContentType(contentType);
+		} else {
+			throw new IllegalStateException();
+		}
+	}
+	
 	public Set<String> getKeys() {
-		Set<String> result = new HashSet<String>();
-		result.addAll(dictionary.keySet());
-		result.addAll(defaultDictionary.keySet());
-		return result;
+		return dictionary.keySet();
 	}
 	
 	public boolean isEmpty() {
-		return dictionary.isEmpty() && defaultDictionary.isEmpty();
+		return dictionary.isEmpty();
 	}
+	
 }
