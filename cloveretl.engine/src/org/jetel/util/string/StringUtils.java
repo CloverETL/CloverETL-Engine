@@ -256,13 +256,9 @@ public class StringUtils {
 		if (seq == null) {
 			return false;
 		}
-		
-		for (int i = 0; i < seq.length(); i++) {
-			if (!Character.isUnicodeIdentifierPart(seq.charAt(i))) {
-				return false;
-			}
-		}
-		return true;
+
+		return seq.toString().matches(OBJECT_NAME_PATTERN);
+
 	}
 
 	public static boolean isValidObjectId(CharSequence seq) {
@@ -270,7 +266,12 @@ public class StringUtils {
 			return false;
 		}
 
-		return seq.toString().matches(OBJECT_NAME_PATTERN);
+		for (int i = 0; i < seq.length(); i++) {
+			if (!Character.isUnicodeIdentifierPart(seq.charAt(i))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
