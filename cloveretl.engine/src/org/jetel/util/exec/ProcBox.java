@@ -247,6 +247,8 @@ public class ProcBox {
 		}
 	}
 	
+	private static Boolean isWindowsPlatform = null;
+	
 	/**
      * This method determine platform type.
      * 
@@ -254,8 +256,11 @@ public class ProcBox {
      * @since 23.8.2007
      */
 	public static boolean isWindowsPlatform() {
-		File file = new File("/dev/stdin");
-		return !file.exists();
+		if (isWindowsPlatform == null) {
+			File file = new File("/dev/stdin");
+			isWindowsPlatform = !file.exists();
+		}
+		return isWindowsPlatform;
 	}
 
 }
