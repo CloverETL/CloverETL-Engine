@@ -55,7 +55,7 @@ public abstract class DictionaryType implements IDictionaryType {
 
 	@Override
 	public String toString() {
-		return valueClass.getName();
+		return "[" + getClass().getName() + "] " + typeId + ", " + valueClass.getName();
 	}
 	
 }
