@@ -274,7 +274,7 @@ public class FileUtils {
         }
         
         if (isFile) {
-            RandomAccessFile raf = new RandomAccessFile(input, "r");
+            RandomAccessFile raf = new RandomAccessFile(url.getFile(), "r");
         	return raf.getChannel();
         }
         return Channels.newChannel(innerStream);
