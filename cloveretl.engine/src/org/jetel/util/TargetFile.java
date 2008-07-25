@@ -217,14 +217,16 @@ public class TargetFile {
 		if (dictValue != null) logger.warn("Dictionary contains value for the key '" + aDict[0] + "'. The value will be replaced.");
 		
 		// create target
-		if (dictProcesstingType == ProcessingType.STREAM) {
-			dictOutStream = new ByteArrayOutputStream();
-			dictionary.setValue(aDict[0], new WritableChannelDictionaryType(), dictOutStream);
-		}
-		// create target
-		else if (dictProcesstingType == ProcessingType.DISCRETE) {
-			dictOutArray = new ArrayList<byte[]>();
-			dictionary.setValue(aDict[0], new ObjectDictionaryType(), dictOutArray);
+		switch(dictProcesstingType){
+			case STREAM:
+				dictOutStream = new ByteArrayOutputStream();
+				dictionary.setValue(aDict[0], new WritableChannelDictionaryType(), dictOutStream);
+				break;
+			case DISCRETE:
+				dictOutArray = new ArrayList<byte[]>();
+				dictionary.setValue(aDict[0], new ObjectDictionaryType(), dictOutArray);
+			default:
+				new ComponentNotReadyException("invalid dictionary processting type " + dictProcesstingType);
 		}
 	}
     
