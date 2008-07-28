@@ -67,7 +67,9 @@ public class WritableChannelDictionaryType extends DictionaryType {
 	
 	@Override
 	public Object init(Object value, Dictionary dictionary) throws ComponentNotReadyException {
-		if (value instanceof ByteArrayOutputStream) {
+		if( value == null){
+			return null;
+		} else if (value instanceof ByteArrayOutputStream) {
 			return new LazyByteArrayInputStream((ByteArrayOutputStream) value);
 		} else {
 			throw new ComponentNotReadyException(dictionary, "Unknown source type for a Writable channel dictionary type (" + value + ").");
@@ -84,7 +86,7 @@ public class WritableChannelDictionaryType extends DictionaryType {
 	}
 	
 	public boolean isValidValue(Object value) {
-		return value instanceof ByteArrayOutputStream;
+		return value == null || value instanceof ByteArrayOutputStream;
 	}
 
 	public Object parseProperties(Properties properties) throws AttributeNotFoundException {
