@@ -744,8 +744,19 @@ public class TransformationGraphXMLReaderWriter {
 			        	String type = attributes.getString(DICTIONARY_ENTRY_TYPE);
 			        	String name = attributes.getString(DICTIONARY_ENTRY_NAME);
 			        	IDictionaryType dictionaryType = DictionaryTypeFactory.getDictionaryType(type);
-			        	Object value = dictionaryType.parseProperties(attributes.attributes2Properties(null));
-			        	dictionary.setValue(name, dictionaryType, value);
+			        	final Properties entryProperties = attributes.attributes2Properties(null);
+			        	entryProperties.remove(DICTIONARY_ENTRY_TYPE);
+			        	entryProperties.remove(DICTIONARY_ENTRY_NAME);
+			        	entryProperties.remove(DICTIONARY_ENTRY_INPUT);
+			        	entryProperties.remove(DICTIONARY_ENTRY_OUTPUT);
+			        	entryProperties.remove(DICTIONARY_ENTRY_REQUIRED);
+			        	entryProperties.remove(DICTIONARY_ENTRY_CONTENT_TYPE);
+			        	if (!entryProperties.isEmpty()) {
+							Object value = dictionaryType.parseProperties(entryProperties);
+				        	dictionary.setValue(name, dictionaryType, value);
+						} else {
+							dictionary.setValue(name, dictionaryType, null);
+						}
 			        	
 			        	if (attributes.exists(DICTIONARY_ENTRY_INPUT) && attributes.getBoolean(DICTIONARY_ENTRY_INPUT)) {
 			        		dictionary.setAsInput(name);
