@@ -50,7 +50,11 @@ public class StringDictionaryType extends DictionaryType {
 	 */
 	@Override
 	public Object init(Object value, Dictionary dictionary) throws ComponentNotReadyException {
-		return value.toString();
+		if( value == null ){
+			return null;
+		} else {
+			return value.toString();
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -64,7 +68,8 @@ public class StringDictionaryType extends DictionaryType {
 	 * @see org.jetel.graph.dictionary.IDictionaryType#isValidValue(java.lang.Object)
 	 */
 	public boolean isValidValue(Object value) {
-		return value instanceof String
+		return value == null 
+				|| value instanceof String
 				|| value instanceof StringBuilder
 				|| value instanceof StringBuffer;
 	}
