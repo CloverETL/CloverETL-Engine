@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Mon Mar 12 09:03:19 CET 2007" description="In this example, the DBInputTable component connects to database and unloads all records from employee table. It then stores the records in employees.list.out file. " guiVersion="1.9" id="1204559079189" licenseType="Evaluation license." modified="Thu Apr 03 11:05:46 CEST 2008" name="Testing DB Unload" revision="1.3">
+<Graph author="avackova" created="Mon Mar 12 09:03:19 CET 2007" description="In this example, the DBInputTable component connects to database and unloads all records from employee table. It then stores the records in employees.list.out file. " guiVersion="1.10" id="1204559079189" licenseType="Evaluation license." modified="Tue Jul 29 10:30:56 CEST 2008" modifiedBy="avackova" name="Testing DB Unload" revision="1.133">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter=";" name="employee" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -26,8 +26,8 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" incrementalFile="dbInc.txt" incrementalKey="key1=first(hire_date);key2=max(employee_id);key4=last(last_name)" sqlQuery="select *&#10;from employee where hire_date &gt; #key1 or employee_id&gt;#key2" type="DB_INPUT_TABLE"/>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.list.out" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
-<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+<Edge debugMode="true" fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>
