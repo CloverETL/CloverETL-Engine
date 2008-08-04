@@ -358,6 +358,18 @@ public class ByteArray implements Comparable, Iterable {
 	}
 
 	/**
+	 * Duplicates and returns internal byte array value as ByteBufer. 
+	 * 
+	 * @return   internal byte array
+	 */
+	public ByteBuffer getValueAsBuffer() {
+        ByteBuffer ret = ByteBuffer.allocate(count);
+        ret.put(value, 0, count);
+        ret.flip();
+        return ret;
+	}
+
+	/**
 	 * Duplicates instance of this class.
 	 * 
 	 * @return   duplicated ByteArray 

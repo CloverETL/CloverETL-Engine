@@ -19,11 +19,9 @@
 */
 package org.jetel.graph.dictionary;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.Properties;
 
@@ -38,27 +36,6 @@ import org.jetel.exception.ComponentNotReadyException;
  */
 public class WritableChannelDictionaryType extends DictionaryType {
 
-	public class LazyByteArrayInputStream extends InputStream{
-
-		private ByteArrayOutputStream srcStream;
-		private ByteArrayInputStream tmpStream;
-
-		public LazyByteArrayInputStream(ByteArrayOutputStream byteStream) {
-			this.srcStream = byteStream;
-		}
-
-		@Override
-		public int read() throws IOException {
-			if( tmpStream == null){
-				final byte[] bytes = srcStream.toByteArray();
-				tmpStream = new ByteArrayInputStream(bytes);
-			}
-			
-			return tmpStream.read(); 
-		}
-
-	}
-
 	public static final String TYPE_ID = "writable.channel";
 
 	public WritableChannelDictionaryType() {
@@ -67,26 +44,19 @@ public class WritableChannelDictionaryType extends DictionaryType {
 	
 	@Override
 	public Object init(Object value, Dictionary dictionary) throws ComponentNotReadyException {
-		if( value == null){
+		if (value == null) {
 			return null;
-		} else if (value instanceof ByteArrayOutputStream) {
-			return new LazyByteArrayInputStream((ByteArrayOutputStream) value);
-		} else {
-			throw new ComponentNotReadyException(dictionary, "Unknown source type for a Writable channel dictionary type (" + value + ").");
-		}
-		/* kokonova verze, Cyril nechape jak by se z toho daly dostat kyzena data
-		if (value instanceof WritableByteChannel) {
+		} else if (value instanceof WritableByteChannel) {
 			return value;
 		} else if (value instanceof OutputStream) {
 			return Channels.newChannel((OutputStream) value);
 		} else {
 			throw new ComponentNotReadyException(dictionary, "Unknown source type for a Writable channel dictionary type (" + value + ").");
 		}
-		*/
 	}
 	
 	public boolean isValidValue(Object value) {
-		return value == null || value instanceof ByteArrayOutputStream;
+		return value == null || value instanceof WritableByteChannel || value instanceof ByteArrayOutputStream;
 	}
 
 	public Object parseProperties(Properties properties) throws AttributeNotFoundException {
