@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.text.DecimalFormat;
@@ -27,6 +28,7 @@ import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.dictionary.IDictionaryType;
 import org.jetel.graph.dictionary.ObjectDictionaryType;
 import org.jetel.graph.dictionary.WritableChannelDictionaryType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -84,7 +86,7 @@ public class TargetFile {
 
 	private Dictionary dictionary;
 	private ProcessingType dictProcesstingType;
-	private ByteArrayOutputStream dictOutStream;
+	private WritableByteChannel dictOutChannel;
 	private ArrayList<byte[]> dictOutArray;
 	private boolean wait4Finishing;
 	private Object monitor;
@@ -213,14 +215,25 @@ public class TargetFile {
 		String[] aDict = fileURL.substring(DICT_PROTOCOL.length()).split(PARAM_DELIMITER);
 		if (dictionary == null) throw new RuntimeException("The component doesn't support dictionary writing.");
 		Object dictValue = dictionary.getValue(aDict[0]);
+		IDictionaryType dictType = dictionary.getType(aDict[0]);
 		dictProcesstingType = ProcessingType.fromString(aDict.length > 1 ? aDict[1] : null, ProcessingType.STREAM);
-		if (dictValue != null) logger.warn("Dictionary contains value for the key '" + aDict[0] + "'. The value will be replaced.");
 		
 		// create target
 		switch(dictProcesstingType){
 			case STREAM:
-				dictOutStream = new ByteArrayOutputStream();
-				dictionary.setValue(aDict[0], new WritableChannelDictionaryType(), dictOutStream);
+				if( dictValue == null){
+					// predpoklada se, ze pred spustenim grafu je do dictionary dan OutputStream, kam se vystup nasype
+					// zatim neni moznost spustit graf a az pote se zajimat o vystup, aby to bylo mozne, je potreba upravit
+					// interface dictionary a pridat tam moznost ziskani dat
+					throw new IllegalStateException("Dictionary don't contains value for the key '" + aDict[0] + "'.");
+				}
+				if( !(dictType instanceof WritableChannelDictionaryType)){
+					throw new IllegalStateException("Dictionary contains invalid type '"+dictType+"' for the key '" + aDict[0] + "'."); 
+				}
+				if (dictValue instanceof WritableByteChannel) {
+					WritableByteChannel channel = (WritableByteChannel) dictValue;
+					dictOutChannel = channel;
+				}
 				break;
 			case DISCRETE:
 				dictOutArray = new ArrayList<byte[]>();
@@ -320,11 +333,11 @@ public class TargetFile {
     }
     
     private void write2Dictionary(ByteArray aBytes) {
-    	if (dictOutStream != null) {
+    	if (dictOutChannel != null) {
     		try {
-    			dictOutStream.write(aBytes.getValueDuplicate());
-    			dictOutStream.flush();
-    			dictOutStream.close();
+    			final ByteBuffer buffer = aBytes.getValueAsBuffer();
+				dictOutChannel.write(buffer);
+    			dictOutChannel.close();
     		} catch (IOException e) {
     			throw new RuntimeException(e);
     		}
