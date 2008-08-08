@@ -51,7 +51,9 @@ public class ReadableChannelDictionaryType extends DictionaryType {
 
 	@Override
 	public Object init(Object value, Dictionary dictionary) throws ComponentNotReadyException {
-		if (value instanceof ReadableByteChannel) {
+		if ( value == null ) {
+			return null;
+		} else if (value instanceof ReadableByteChannel) {
 			return value;
 		} else if (value instanceof InputStream) {
 			return Channels.newChannel((InputStream) value);
@@ -76,7 +78,8 @@ public class ReadableChannelDictionaryType extends DictionaryType {
 	}
 
 	public boolean isValidValue(Object value) {
-		return value instanceof ReadableByteChannel
+		return value == null 
+			|| value instanceof ReadableByteChannel
 			|| value instanceof InputStream
 			|| value instanceof StringAsReadableChannel;
 	}
