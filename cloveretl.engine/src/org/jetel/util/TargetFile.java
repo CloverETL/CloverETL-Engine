@@ -239,7 +239,7 @@ public class TargetFile {
 				dictOutArray = new ArrayList<byte[]>();
 				dictionary.setValue(aDict[0], new ObjectDictionaryType(), dictOutArray);
 			default:
-				new ComponentNotReadyException("invalid dictionary processting type " + dictProcesstingType);
+				throw new ComponentNotReadyException("invalid dictionary processting type " + dictProcesstingType);
 		}
 	}
     
