@@ -484,15 +484,22 @@ public class DBConnection extends GraphElement implements IConnection {
      * and decryption fails, the original password entry will be used.
      * 
      * @param configProperties configuration properties
+     * @throws ComponentNotReadyException 
      */
-    private void decryptPassword() {
+    private void decryptPassword() throws ComponentNotReadyException {
         if (isPasswordEncrypted()) {
             Enigma enigma = getGraph().getEnigma();
+            if (enigma == null) {
+            	logger.error("Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
+                //throw new ComponentNotReadyException(this, "Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
+                return;
+            }
             String decryptedPassword = null;
             try {
                 decryptedPassword = enigma.decrypt(getPassword());
             } catch (JetelException e) {
                 logger.error("Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
+                //throw new ComponentNotReadyException(this, "Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.", e);
             }
             // If password decryption returns failure, try with the password
             // as it is.
