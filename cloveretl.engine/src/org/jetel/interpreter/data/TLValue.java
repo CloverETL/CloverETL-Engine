@@ -25,6 +25,7 @@ package org.jetel.interpreter.data;
 
 import java.util.Date;
 
+import org.jetel.data.BooleanDataField;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DecimalDataField;
@@ -93,7 +94,7 @@ public abstract class TLValue implements Comparable<TLValue>{
         	newval= new TLDateValue((Date)field.getValueDuplicate());
         	break;
         case DataFieldMetadata.BOOLEAN_FIELD:
-        	newval = TLBooleanValue.FALSE;
+        	newval = TLBooleanValue.getInstance(((BooleanDataField)field).getBoolean());
         	break;
        case DataFieldMetadata.BYTE_FIELD:
     	   	newval = new TLByteArrayValue(((ByteDataField)field).getByteArray());

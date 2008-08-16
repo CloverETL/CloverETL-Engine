@@ -155,5 +155,13 @@ public class TLBooleanValue extends TLValue {
 	public String toString() {
 		return Boolean.toString(value);
 	}
+	
+	@Override public boolean equals(Object val){
+		// taking advantage of private constructor of TLBooleanValue
+		if (val instanceof TLBooleanValue){
+			return this==val;
+		}
+		return false;
+	}
 
 }
