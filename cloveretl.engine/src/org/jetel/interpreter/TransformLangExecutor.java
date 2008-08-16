@@ -449,7 +449,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 break;
             case BOOLEAN:
                 if (node.cmpType == EQUAL || node.cmpType == NON_EQUAL) {
-                    cmpResult = (a == b) ? 0 : -1;
+                    cmpResult = a.equals(b) ? 0 : -1;
                 } else {
                     Object arguments[] = { a, b };
                     throw new TransformLangExecutorRuntimeException(node,
