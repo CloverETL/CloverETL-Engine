@@ -241,7 +241,7 @@
 
 		<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
-		<zip destfile="${dir.distribution}/cloverETL-examples.rel-${major_version}-${minor_version}-${revision_version}.zip">
+		<zip destfile="${dir.distribution}/cloverETL.examples.rel-${major_version}-${minor_version}-${revision_version}.zip">
 			<fileset dir="${dir.distprepare.exa}">
 				<include name="cloverETL/**/*"/>
 			</fileset>
