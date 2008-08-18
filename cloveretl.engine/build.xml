@@ -28,13 +28,16 @@
 	<property name="dir.lib" value="${basedir}/lib"/>
 	<property name="dir.docs" value="${basedir}/docs"/>
 	<property name="dir.component.doc.default" value="${basedir}/src-doc"/>
-	<property name="dir.examples" value="${basedir}examples"/>
+	<property name="dir.examples" value="${basedir}/examples"/>
 		
 	<property name="dir.build" value="${basedir}/build"/>
-	<property name="dir.tmp" value="${dir.build}/__tmp"/>
 	<property name="dir.bin" value="${dir.build}/classes"/>
 	<property name="dir.classestest" value="${dir.build}/classes-test"/>
-	<property name="dir.dist" value="${dir.build}/package"/>
+	<property name="dir.package" value="${dir.build}/package"/>
+	<property name="dir.distprepare" value="${dir.build}/distprepare"/>
+	<property name="dir.distprepare.src" value="${dir.distprepare}/src"/>
+	<property name="dir.distprepare.bin" value="${dir.distprepare}/bin"/>
+	<property name="dir.distprepare.exa" value="${dir.distprepare}/exa"/>
 	<property name="dir.doc" value="${dir.build}/javadoc"/>
 	<property name="dir.distribution" value="${basedir}/dist"/>
 	<property name="dir.src.improved" value="${dir.build}/src"/>
@@ -104,7 +107,7 @@
 	<target name="plugin-build">
 		<echo message="Building plugin - ${plugin.dir}"/>
 		<ant dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
-			<property name="dir.dist" value="${dir.dist}"/>
+			<property name="dir.dist" value="${dir.package}"/>
 			<property name="major_version" value="${major_version}"/>
 			<property name="minor_version" value="${minor_version}"/>
 			<property name="revision_version" value="${revision_version}"/>
@@ -118,22 +121,24 @@
 	<target name="plugin-clean">
 		<echo message="Cleaning plugin - ${plugin.dir}"/>
 		<ant target="clean" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
-			<property name="dir.dist" value="${dir.dist}"/>
+			<property name="dir.dist" value="${dir.package}"/>
 			<property name="major_version" value="${major_version}"/>
 			<property name="minor_version" value="${minor_version}"/>
 			<property name="revision_version" value="${revision_version}"/>
 		</ant>
 	</target>
+	
+	<target name="dist" depends="dist.bin, dist.src, dist.javadoc, dist.examples" description="Creates all distribution files"/>
 				
-	<target name="dist.src" description="Creates source distribution">
-		<delete dir="${dir.tmp}"/>
-		<mkdir dir="${dir.tmp}/cloverETL"/>
+	<target name="dist.src" depends="init" description="Creates source distribution">
+	
+		<mkdir dir="${dir.distprepare.src}/cloverETL"/>
 		
 		<!-- call source target for all plugins -->
 		<foreach list="${plugin.list}" inheritall="true" target="plugin.src" param="plugin.dir"/>
 
 		<!-- copy source for engine itself -->
-		<property name="src.distribution.dir.engine" value="${dir.tmp}/cloverETL/cloveretl.engine"/>
+		<property name="src.distribution.dir.engine" value="${dir.distprepare.src}/cloverETL/cloveretl.engine"/>
 
 		<copy todir="${src.distribution.dir.engine}/src">
 			<fileset dir="${dir.src}" />
@@ -180,63 +185,78 @@
 		
 		<!-- create zip package for source distribution -->
 		<mkdir dir="${dir.distribution}"/>
-		<zip destfile="${dir.distribution}/cloverETL.src.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${dir.tmp}"/>
+		<zip destfile="${dir.distribution}/cloverETL.src.rel-${major_version}-${minor_version}-${revision_version}.zip" >
+			<fileset dir="${dir.distprepare.src}">
+				<include name="cloverETL/**/*"/>
+			</fileset>
+		</zip>
 
-		<delete dir="${dir.tmp}"/>
 	</target>
 
-	<target name="plugin.src" description="Private target for copy source of plugin. Don't call direct.">
+	<target name="plugin.src" ><!--Private target for copy source of plugin. Don't call direct.-->
 		<echo message="Copy source from plugin - ${plugin.dir}"/>
-		<ant dir="${plugin.dir}" target="dist.src" inheritAll="false">
-			<property name="dist.src" value="${basedir}/${dir.tmp}/cloverETL"/>
+		<ant dir="../${plugin.dir}" target="dist.src" inheritAll="false">
+			<property name="dist.src" value="${dir.distprepare.src}/cloverETL"/>
 		</ant>
 	</target>
 
 	<target name="dist.bin" depends="build" description="Creates binary distribution">
-		<delete dir="${dir.tmp}"/>
 		
 		<!-- binary distribution -->
-		<mkdir dir="${dir.tmp}/cloverETL"/>
+		<mkdir dir="${dir.distprepare.bin}/cloverETL"/>
 
-		<copy todir="${dir.tmp}/cloverETL">
-			<fileset dir="${dir.dist}" />
+		<copy todir="${dir.distprepare.bin}/cloverETL">
+			<fileset dir="${dir.package}" />
 		</copy>
 
 		<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
-		<zip destfile="${dir.distribution}/cloverETL.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${dir.tmp}"/>
+		<zip destfile="${dir.distribution}/cloverETL.rel-${major_version}-${minor_version}-${revision_version}.zip" >
+			<fileset dir="${dir.distprepare.bin}">
+				<include name="cloverETL/**/*"/>
+			</fileset>
+		</zip>
 
-		<delete dir="${dir.tmp}"/>
 	</target>
 
-	<target name="dist.examples" description="Creates examples distribution">
-		<delete dir="${dir.tmp}"/>
+	<target name="dist.javadoc" depends="javadoc" description="Creates javadoc distribution">
+		<!-- create zip package for javadoc -->
+		<mkdir dir="${dir.distribution}"/>
+		<zip destfile="${dir.distribution}/cloverETL.javadoc.rel-${major_version}-${minor_version}-${revision_version}.zip" >
+			<fileset dir="${dir.doc}">
+				<include name="cloverETL/**/*"/>
+			</fileset>
+		</zip>
+		
+	</target>
+		
+	<target name="dist.examples" depends="init" description="Creates examples distribution">
 		
 		<!-- binary distribution -->
-		<mkdir dir="${dir.tmp}/examples"/>
+		<mkdir dir="${dir.distprepare.exa}/cloverETL"/>
 
-		<copy todir="${dir.tmp}/examples">
+		<copy todir="${dir.distprepare.exa}/cloverETL/examples">
 			<fileset dir="${dir.examples}" />
 		</copy>
 
 		<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
-		<zip destfile="${dir.distribution}/cloverExamples.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${dir.tmp}"/>
+		<zip destfile="${dir.distribution}/cloverETL-examples.rel-${major_version}-${minor_version}-${revision_version}.zip">
+			<fileset dir="${dir.distprepare.exa}">
+				<include name="cloverETL/**/*"/>
+			</fileset>
+		</zip>			
 
-		<delete dir="${dir.tmp}"/>
 	</target>
-
 
 	<!-- The "clean" target deletes previously compiled files. -->
 	<target name="clean-engine">
 		<delete dir="${dir.bin}"/>
 		<delete dir="${dir.build}"/>
-		<delete dir="${dir.dist}"/>
+		<delete dir="${dir.package}"/>
 		<delete dir="${dir.distribution}"/>
 		<delete dir="${dir.doc}"/>
-		<delete dir="${dir.tmp}"/>
 	</target>
-
 	
 	<!-- compile temp copy of source -->
 	<target name="compile" depends="init,improve-java-sources" description="Compile sources">
@@ -268,46 +288,46 @@
 	<!-- pack binary result of compile to jar file -->
 	<target name="package" depends="compile">
 		<!-- Create directory for dist. -->
-		<mkdir dir="${dir.dist}/lib"/>
+		<mkdir dir="${dir.package}/lib"/>
 		
-		<jar destfile="${dir.dist}/lib/cloveretl.engine.jar" basedir="${dir.bin}">
+		<jar destfile="${dir.package}/lib/cloveretl.engine.jar" basedir="${dir.bin}">
 			<include name="**/*"/>
 			<exclude name="test/**/*"/>
 		</jar>
 
 		<!-- copy all libraries from lib directory -->
-		<copy todir="${dir.dist}/lib">
+		<copy todir="${dir.package}/lib">
 			<fileset dir="${dir.lib}"/>
 		</copy>
 
 		<!-- copy engine's plugin.xml to the plugins directory -->
-		<copy todir="${dir.dist}/plugins/org.jetel.engine">
+		<copy todir="${dir.package}/plugins/org.jetel.engine">
 			<fileset file="plugin.xml"/>
 		</copy>
 
 		<!-- copy all documents from docs directory -->
-		<copy todir="${dir.dist}/docs">
+		<copy todir="${dir.package}/docs">
 			<fileset dir="${dir.docs}"/>
 		</copy>
 
 		<!-- copy the generated documentation of components from other plugins -->
 		<!-- Commented out until the component documentation has correct content
-		<copy todir="${dir.dist}/docs/components" overwrite="true">
+		<copy todir="${dir.package}/docs/components" overwrite="true">
 			<fileset dir="${cloveretl.engine}/src-doc/components/html" includes="**"/>
 		</copy>
 		-->
 
 		<!-- copy all run scripts -->
-		<copy todir="${dir.dist}/bin">
+		<copy todir="${dir.package}/bin">
 			<fileset file="${basedir}/scripts/*"/>
 		</copy>
 
 		<!-- copy readme.txt -->
-		<copy todir="${dir.dist}">
+		<copy todir="${dir.package}">
 			<fileset file="${basedir}/readme.bin.txt"/>
 			<filterset refid="versionFilter"/>
 		</copy>
-		<move file="${dir.dist}/readme.bin.txt" tofile="${dir.dist}/readme.txt"/>
+		<move file="${dir.package}/readme.bin.txt" tofile="${dir.package}/readme.txt"/>
 		
 	</target>
 	
@@ -365,9 +385,6 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			</bottom>
 		</javadoc>
 
-		<!-- create zip package for javadoc -->
-		<mkdir dir="${dir.distribution}"/>
-		<zip destfile="${dir.distribution}/cloverETL.javadoc.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${dir.doc}"/>
 	</target>
 		
 	<target name="generateDocContainer" description="Generates container XML, which contains docs from all components from all plugins">
@@ -394,7 +411,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 
 		<echo message="Using directory for classes: ${dir.bin}"/> 
 		<echo message="Using directory for javadoc: ${dir.doc}"/>
-		<echo message="Using directory for dist: ${dir.dist}"/>
+		<echo message="Using directory for package: ${dir.package}"/>
 	</target>
 	
 	<target name="reports" depends="reporttests,findbugs-html,coverage-html">
@@ -435,7 +452,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 	<target name="plugin-coverage-instrument">
 		<echo message="Coverage instrument plugin - ${plugin.dir}"/>
 		<ant target="coverage-instrument" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
-			<property name="dir.dist" value="${dir.dist}"/>
+			<property name="dir.dist" value="${dir.package}"/>
 			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
 			<property name="cobertura.ser" value="${cobertura.ser}"/>
 			<property name="major_version" value="${major_version}"/>
@@ -487,7 +504,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 	<target name="runtests-plugin">
 		<echo message="Runtests plugin - ${plugin.dir}"/>
 		<ant target="runtests" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
-			<property name="dir.dist" value="${dir.dist}"/>
+			<property name="dir.dist" value="${dir.package}"/>
 			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
 			<property name="dir.engine.classestest" value="${dir.classestest}"/>
 			<property name="cobertura.ser" value="${cobertura.ser}"/>

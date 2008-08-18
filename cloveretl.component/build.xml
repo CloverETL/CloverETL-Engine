@@ -26,4 +26,8 @@
 		<ant target="runtests" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
 	</target>
 		
+	<target name="dist.src">
+		<ant target="dist.src" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
+	</target>
+	
 </project>

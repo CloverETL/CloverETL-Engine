@@ -176,14 +176,14 @@
 		</if>
 	</target>
 
-	<target name="dist.src"  description="Creates source distribution">
+	<target name="dist.src" depends="init" description="Creates source distribution">
 
 		<copy todir="${dist.src}/${plugin.name}/src">
 			<fileset dir="${dir.src}" />
 		</copy>
 
 		<copy todir="${dist.src}/${plugin.name}/lib">
-			<fileset dir="${dir.lib}" />
+			<fileset refid="plugin-libs"/>
 		</copy>
 
 		<copy todir="${dist.src}/${plugin.name}">
