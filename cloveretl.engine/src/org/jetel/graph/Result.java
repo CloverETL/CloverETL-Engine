@@ -43,22 +43,27 @@ package org.jetel.graph;
  */
 public enum Result{
     
-    N_A(3,"N/A"),
-    READY(2,"READY"),
-    RUNNING(1,"RUNNING"),
-    FINISHED_OK(0,"FINISHED_OK"),
-    ERROR(-1,"ERROR"),
-    ABORTED(-2,"ABORTED");
+    N_A(3,"N/A", false),
+    READY(2,"READY", false),
+    RUNNING(1,"RUNNING", false),
+    FINISHED_OK(0,"FINISHED_OK", true),
+    ERROR(-1,"ERROR", true),
+    ABORTED(-2,"ABORTED", true);
     
     private final int code;
     private final String message;
+    private boolean stop;
     
-    Result(int _code,String msg){
-        code=_code;
-        message=msg;
-    }
+    Result(int code, String message, boolean stop) {
+		this.code = code;
+		this.message = message;
+		this.stop = stop;
+	}
     
     public int code(){return code;}
+    
     public String message(){return message;}
+    
+    public boolean isStop(){return stop;}
     
 }
