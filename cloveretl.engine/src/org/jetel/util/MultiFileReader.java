@@ -123,31 +123,6 @@ public class MultiFileReader {
      * @throws ComponentNotReadyException
      */
     public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
-        parser.init(metadata);
-        initChannelIterator();
-        
-		ReadableByteChannel stream = null; 
-		while (channelIterator.hasNext()) {
-			try {
-				stream = channelIterator.next();
-				if (stream == null) continue; // if record no record found
-				filename = channelIterator.getCurrentFileName();
-				URL url = FileUtils.getInnerAddress(filename);
-				if (FileUtils.isServerURL(url)) {
-					FileUtils.checkServer(url);
-					continue;
-				}
-				parser.setReleaseDataSource(!filename.equals(STD_IN));
-				parser.setDataSource(stream);
-			} catch (IOException e) {
-				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
-			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
-            } catch (JetelException e) {
-            	throw new ComponentNotReadyException("File is unreachable: " + channelIterator.getCurrentFileName(), e);
-			}
-		}
-		
 		initIncrementalReading();
         parser.init(metadata);
         autoFillingMap = new HashMap<DataRecordMetadata, AutoFillingData>();
@@ -156,7 +131,7 @@ public class MultiFileReader {
         
 		initChannelIterator();
         try {
-            if(!channelIterator.isGraphDependentSource() && !nextSource()) {
+            if(!nextSource() && !channelIterator.isGraphDependentSource()) {
                 noInputFile = true;
                 //throw new ComponentNotReadyException("FileURL attribute (" + fileURL + ") doesn't contain valid file url.");
             }
@@ -187,6 +162,31 @@ public class MultiFileReader {
      * @throws ComponentNotReadyException
      */
 	public void checkConfig(DataRecordMetadata metadata) throws ComponentNotReadyException {
+// viz issue #730
+//        parser.init(metadata);
+//        initChannelIterator();
+//        
+//		ReadableByteChannel stream = null; 
+//		while (channelIterator.hasNext()) {
+//			try {
+//				stream = channelIterator.next();
+//				if (stream == null) continue; // if record no record found
+//				filename = channelIterator.getCurrentFileName();
+//				URL url = FileUtils.getInnerAddress(filename);
+//				if (FileUtils.isServerURL(url)) {
+//					FileUtils.checkServer(url);
+//					continue;
+//				}
+//				parser.setReleaseDataSource(!filename.equals(STD_IN));
+//				parser.setDataSource(stream);
+//			} catch (IOException e) {
+//				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
+//			} catch (ComponentNotReadyException e) {
+//				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
+//            } catch (JetelException e) {
+//            	throw new ComponentNotReadyException("File is unreachable: " + channelIterator.getCurrentFileName(), e);
+//			}
+//		}
 	}
 	
     /**
