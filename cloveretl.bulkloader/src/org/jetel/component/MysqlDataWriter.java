@@ -980,8 +980,10 @@ public class MysqlDataWriter extends Node {
 		}
 		if (properties.containsKey(LOAD_RECORD_DELIMITER_PARAM)) {
 			metadata.getField(metadata.getNumFields() - 1).setDelimiter((String) properties.get(LOAD_RECORD_DELIMITER_PARAM));
+			metadata.setRecordDelimiters("");
 		} else {
 			metadata.getField(metadata.getNumFields() - 1).setDelimiter(DEFAULT_RECORD_DELIMITER);
+			metadata.setRecordDelimiters("");
 		}
 		setMysqlDateFormat(metadata.getField(metadata.getNumFields() - 1));
 
