@@ -238,6 +238,7 @@ public class TargetFile {
 			case DISCRETE:
 				dictOutArray = new ArrayList<byte[]>();
 				dictionary.setValue(aDict[0], new ObjectDictionaryType(), dictOutArray);
+				break;
 			default:
 				throw new ComponentNotReadyException("invalid dictionary processting type " + dictProcesstingType);
 		}
