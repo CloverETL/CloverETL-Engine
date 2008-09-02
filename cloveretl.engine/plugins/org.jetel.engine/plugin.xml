@@ -3,9 +3,24 @@
    version="2.4.7"
    provider-name="Javlin Consulting s.r.o.">
 
-	<extension point-id="dictionaryEntry">
+	<extension point-id="dictionaryType">
 		<parameter id="type" value="string"/>
-		<parameter id="className" value="org.jetel.graph.dictionary.StringDictionaryEntryProvider"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.StringDictionaryType"/>
+	</extension>
+	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="object"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.ObjectDictionaryType"/>
+	</extension>
+
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="readable.channel"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.ReadableChannelDictionaryType"/>
+	</extension>
+	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="writable.channel"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.WritableChannelDictionaryType"/>
 	</extension>
 	
 </plugin>
