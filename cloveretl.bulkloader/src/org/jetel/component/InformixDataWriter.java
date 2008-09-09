@@ -565,6 +565,7 @@ public class InformixDataWriter extends Node {
 			setInformixDateFormat(metadata.getField(idx));
 		}
 		metadata.getField(metadata.getNumFields() - 1).setDelimiter("\n");
+		metadata.setRecordDelimiters("");
 		setInformixDateFormat(metadata.getField(metadata.getNumFields() - 1));
 		
 		return metadata;
