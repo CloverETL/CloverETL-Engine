@@ -80,6 +80,7 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 	protected RecordKey indexKey;
 	private int uncommitedRecords = 0;
 	private int numFound;
+	private DataRecord keyRecord;
 
 	public PersistentLookupTable(String id, DataRecordMetadata metadata, String[] keys, String fileURL) {
 		super(id);
@@ -98,8 +99,7 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 	public DataRecord get(String keyString) {
 		prepareGet();
 		
-		DataRecord keyRecord = new DataRecord(metadata);
-		keyRecord.init();
+		keyRecord.reset();
         keyRecord.getField(0).fromString(keyString);
 		
 		return find(keyRecord);
@@ -113,8 +113,7 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 			return null;
 		}
 		
-		DataRecord keyRecord = new DataRecord(metadata);
-		keyRecord.init();
+		keyRecord.reset();
 		
 		for (int i = 0; i < keys.length; i++) {
 	        keyRecord.getField(i).setValue(keys[i]);
@@ -244,6 +243,9 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 		openBTree();
 		
 		numFound = 0;
+		
+		keyRecord = new DataRecord(metadata);
+		keyRecord.init();
 	}
 	
 	private Properties getRecordManagerOptions() {
