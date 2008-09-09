@@ -687,6 +687,7 @@ public class PostgreSqlDataWriter extends Node {
 			setPsqlDateFormat(metadata.getField(idx));
 		}
 		metadata.getField(metadata.getNumFields() - 1).setDelimiter(DEFAULT_RECORD_DELIMITER);
+		metadata.setRecordDelimiters("");
 		setPsqlDateFormat(metadata.getField(metadata.getNumFields() - 1));
 
 		return metadata;
