@@ -971,6 +971,7 @@ public class MsSqlDataWriter extends Node {
 		}
 		int lastIndex = metadata.getNumFields() - 1;
 		metadata.getField(lastIndex).setDelimiter(getRecordDelimiter());
+		metadata.setRecordDelimiters("");
 		setMsSqlDateFormat(metadata.getField(lastIndex), lastIndex);
 
 		return metadata;
