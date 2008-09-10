@@ -39,10 +39,10 @@ public class DenormalizeTest extends DataRecordDenormalize {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="194" guiY="17" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="17" id="INPUT1" type="DELIMITED_DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="17" id="INPUT1" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/denormalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="542" guiY="16" id="WRITER" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/denormalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="542" guiY="16" id="WRITER" type="DATA_WRITER"/>
 <Edge debugMode="false" fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
 <Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DENORMALIZE:0"/>
 <Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>

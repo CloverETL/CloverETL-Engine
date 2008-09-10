@@ -11,7 +11,7 @@
 <Node enabled="enabled" guiHeight="25" guiName="EXT_SORT_DETAILS" guiWidth="50" guiX="196" guiY="194" id="EXT_SORT_DETAILS" sortKey="ORDERID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="25" guiName="EXT_SORT_ORDERS" guiWidth="50" guiX="196" guiY="281" id="EXT_SORT_ORDERS" sortKey="ORDERID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" filterExpression="$CUSTOMER!=&quot;N/A&quot;" guiHeight="25" guiName="FILTER" guiWidth="50" guiX="716" guiY="235" id="FILTER" type="EXT_FILTER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="25" guiName="IN_CUSTOMERS" guiWidth="50" guiX="389" guiY="102" id="IN_CUSTOMERS" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="25" guiName="IN_CUSTOMERS" guiWidth="50" guiX="389" guiY="102" id="IN_CUSTOMERS" type="DATA_READER"/>
 <Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/other/ODETAILS.DBF" guiHeight="25" guiName="IN_DETAILS" guiWidth="50" guiX="20" guiY="194" id="IN_DETAILS" type="DBF_DATA_READER"/>
 <Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/other/ORDERS.DBF" guiHeight="25" guiName="IN_ORDERS" guiWidth="50" guiX="20" guiY="281" id="IN_ORDERS" type="DBF_DATA_READER"/>
 <Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="389" guiY="235" id="JOIN" joinKey="$ORDERID;#$ORDERID;#" type="EXT_MERGE_JOIN">
@@ -51,8 +51,8 @@ public class joinCustomers extends  DataRecordTransform{
 }]]></attr>
 <attr name="leftOuterJoin"><![CDATA[true]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBForders.out" guiHeight="25" guiName="WRITER1" guiWidth="50" guiX="882" guiY="189" id="WRITER1" type="DELIMITED_DATA_WRITER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBFordersNA.out" guiHeight="25" guiName="WRITER2" guiWidth="50" guiX="882" guiY="285" id="WRITER2" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBForders.out" guiHeight="25" guiName="WRITER1" guiWidth="50" guiX="882" guiY="189" id="WRITER1" type="DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBFordersNA.out" guiHeight="25" guiName="WRITER2" guiWidth="50" guiX="882" guiY="285" id="WRITER2" type="DATA_WRITER"/>
 <Edge fromNode="EXT_SORT_DETAILS:0" guiBendpoints="" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" toNode="JOIN:1"/>
 <Edge fromNode="EXT_SORT_ORDERS:0" guiBendpoints="" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="JOIN:0"/>
 <Edge fromNode="FILTER:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="WRITER1:0"/>

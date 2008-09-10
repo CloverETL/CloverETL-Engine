@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Fri Jan 05 10:18:14 CET 2007" description="This graph illustrates usage of Sort component. It sorts data based on specified key. " guiVersion="1.9" id="1204550406983" licenseType="Commercial License javlinconsulting" modified="Mon Mar 03 15:17:24 CET 2008" name="TestingSort" revision="1.13">
+<Graph author="yanas" created="Fri Jan 05 10:18:14 CET 2007" description="This graph illustrates usage of Sort component. It sorts data based on specified key. " guiVersion="1.10" id="1204550406983" licenseType="Commercial - Multilicense CLGXDINITI279458BY" modified="Wed Sep 10 19:30:51 CEST 2008" modifiedBy="yanas" name="TestingSort" revision="1.14">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.sorted" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="536" guiY="20" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.sorted" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="536" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="25" guiName="Sequence Checker" guiWidth="50" guiX="363" guiY="20" id="SEQUENCE_CHECKER0" type="SEQUENCE_CHECKER">
 <attr name="locale"><![CDATA[EN]]></attr>
 <attr name="useI18N"><![CDATA[true]]></attr>
-<attr name="sortKey"><![CDATA[ShipName;ShipVia]]></attr>
 <attr name="uniqueKeys"><![CDATA[false]]></attr>
+<attr name="sortKey"><![CDATA[ShipName;ShipVia]]></attr>
 <attr name="sortOrder"><![CDATA[A]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="194" guiY="20" id="SORT0" locale="EN" sortKey="ShipName;ShipVia" sortOrder="Ascending" type="SORT" useI18N="true"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SORT0:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SORT0:0"/>
 <Edge fromNode="SEQUENCE_CHECKER0:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" toNode="OUTPUT:0"/>
 <Edge fromNode="SORT0:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (out)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SEQUENCE_CHECKER0:0"/>
 </Phase>

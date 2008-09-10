@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu Jan 25 12:46:12 CET 2007" description="This graph demonstrates functionality of DATA_INTERSECT component - performs &#10;joining of two sorted (based on specified key) data flows (A and B) and outputs:&#10;- to port 0 records found only in flow A&#10;- to port 1 records found in A &amp;amp; B&#10;- to port 2 records found only in flow B  &#10;&#10;Records both in flow A &amp;amp; B should be unique" guiVersion="1.10" id="1204546108983" licenseType="Evaluation license." modified="Fri Jun 27 12:34:57 CEST 2008" modifiedBy="avackova" name="Intersect Data" revision="1.15">
+<Graph author="avackova" created="Thu Jan 25 12:46:12 CET 2007" description="This graph demonstrates functionality of DATA_INTERSECT component - performs &#10;joining of two sorted (based on specified key) data flows (A and B) and outputs:&#10;- to port 0 records found only in flow A&#10;- to port 1 records found in A &amp;amp; B&#10;- to port 2 records found only in flow B  &#10;&#10;Records both in flow A &amp;amp; B should be unique" guiVersion="1.10" id="1204546108983" licenseType="Commercial - Multilicense CLGXDINITI279458BY" modified="Wed Sep 10 16:09:48 CEST 2008" modifiedBy="yanas" name="Intersect Data" revision="1.17">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employeeDB.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="158" guiY="24" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="158" guiY="110" id="EXT_SORT1" sortKey="EMP_NO(a)" type="EXT_SORT"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="24" id="INPUT1" type="DELIMITED_DATA_READER"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.list.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="20" guiY="110" id="INPUT2" type="DELIMITED_DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="INTERSECT" guiWidth="50" guiX="322" guiY="24" id="INTERSECT" joinKey="$EmployeeID=$EMP_NO;#" type="DATA_INTERSECTION">
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="167" guiY="24" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="167" guiY="110" id="EXT_SORT1" sortKey="EMP_NO(a)" type="EXT_SORT"/>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="24" id="INPUT1" type="DATA_READER"/>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.list.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="20" guiY="110" id="INPUT2" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="25" guiName="INTERSECT" guiWidth="50" guiX="331" guiY="24" id="INTERSECT" joinKey="$EmployeeID=$EMP_NO;#" type="DATA_INTERSECTION">
 <attr name="transform"><![CDATA[${out.0.EMP_NO} = ${in.0.EmployeeID};
 ${out.0.FIRST_NAME} = ${in.0.FirstName};
 ${out.0.LAST_NAME} = ${in.0.LastName};
@@ -19,19 +19,19 @@ ${out.0.HIRE_DATE} = ${in.1.HIRE_DATE};
 ${out.0.HIRE_DATE} = ${in.0.HireDate};
 ]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/intersect_1_data.out" guiHeight="25" guiName="WRITER1" guiWidth="50" guiX="474" guiY="24" id="WRITER1" type="DELIMITED_DATA_WRITER">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/intersect_1_data.out" guiHeight="25" guiName="WRITER1" guiWidth="50" guiX="483" guiY="24" id="WRITER1" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/intersect_1_2_data.out" guiHeight="25" guiName="WRITER2" guiWidth="50" guiX="474" guiY="110" id="WRITER2" type="DELIMITED_DATA_WRITER">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/intersect_1_2_data.out" guiHeight="25" guiName="WRITER2" guiWidth="50" guiX="483" guiY="110" id="WRITER2" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/intersect_2_data.out" guiHeight="25" guiName="WRITER3" guiWidth="50" guiX="474" guiY="194" id="WRITER3" type="DELIMITED_DATA_WRITER">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/intersect_2_data.out" guiHeight="25" guiName="WRITER3" guiWidth="50" guiX="483" guiY="194" id="WRITER3" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (set A)" metadata="Metadata1" outPort="Port 0 (out)" toNode="INTERSECT:0"/>
 <Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge1" inPort="Port 1 (set B)" metadata="Metadata0" outPort="Port 0 (out)" toNode="INTERSECT:1"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
-<Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
+<Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT1:0"/>
 <Edge fromNode="INTERSECT:0" guiBendpoints="" id="OUTEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (only in A)" toNode="WRITER1:0"/>
 <Edge fromNode="INTERSECT:1" guiBendpoints="" id="OUTEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (in A &amp; B)" toNode="WRITER2:0"/>
 <Edge fromNode="INTERSECT:2" guiBendpoints="" id="OUTEDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (only in B)" toNode="WRITER3:0"/>

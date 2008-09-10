@@ -13,13 +13,13 @@
 </LookupTable>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="0" guiName="Delimited Data Reader" guiWidth="0" guiX="52" guiY="227" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="0" guiName="Delimited Data Reader" guiWidth="0" guiX="52" guiY="227" id="DATA_READER0" type="DATA_READER"/>
 <Node enabled="enabled" guiHeight="25" guiName="READ" guiWidth="50" guiX="311" guiY="227" id="EmptyLookup" lookupTable="LookupTable1" type="LOOKUP_TABLE_READER_WRITER"/>
-<Edge fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EmptyLookup:0"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EmptyLookup:0"/>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" guiHeight="25" guiName="READ" guiWidth="50" guiX="52" guiY="52" id="JOIN" lookupTable="LookupTable1" type="LOOKUP_TABLE_READER_WRITER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="311" guiY="52" id="WRITER" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="311" guiY="52" id="WRITER" type="DATA_WRITER"/>
 <Edge debugMode="true" fromNode="JOIN:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
 </Phase>
 </Graph>
