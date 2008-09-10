@@ -11,9 +11,9 @@
 <Node enabled="enabled" guiHeight="25" guiName="FILTEREMPL2" guiWidth="50" guiX="195" guiY="107" id="FILTEREMPL2" type="FILTER">
 <attr name="filterExpression"><![CDATA[Memo~.*fluent.*]]></attr>
 </Node>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.filtered_1.dat" guiHeight="25" guiName="OUTPUT1" guiWidth="50" guiX="370" guiY="20" id="OUTPUT1" type="DELIMITED_DATA_WRITER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.filtered_2.dat" guiHeight="25" guiName="OUTPUT2" guiWidth="50" guiX="370" guiY="107" id="OUTPUT2" type="DELIMITED_DATA_WRITER"/>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.filtered_1.dat" guiHeight="25" guiName="OUTPUT1" guiWidth="50" guiX="370" guiY="20" id="OUTPUT1" type="DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.filtered_2.dat" guiHeight="25" guiName="OUTPUT2" guiWidth="50" guiX="370" guiY="107" id="OUTPUT2" type="DATA_WRITER"/>
 <Edge fromNode="FILTEREMPL1:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" toNode="OUTPUT1:0"/>
 <Edge fromNode="FILTEREMPL2:0" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" toNode="OUTPUT2:0"/>
 <Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="FILTEREMPL1:0"/>

@@ -5,7 +5,7 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="7" guiY="169" id="INPUT1" type="DELIMITED_DATA_READER"/>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="7" guiY="169" id="INPUT1" type="DATA_READER"/>
 <Node enabled="enabled" guiHeight="25" guiName="PARTITION" guiWidth="50" guiX="156" guiY="159" id="PARTITION" partitionKey="EmployeeID;BirthDate" ranges="&lt;1,9)(,31/12/1959&gt;;&lt;9,)(,31/12/1959&gt;;&lt;1,9)(31/12/1959,);&lt;9,)(31/12/1959,)" type="PARTITION"/>
 <Node debugPrint="false" enabled="enabled" guiHeight="0" guiName="big ID, younger" guiWidth="0" guiX="316" guiY="253" id="TRASH0" type="TRASH"/>
 <Node enabled="enabled" guiHeight="25" guiName="small ID, older" guiWidth="50" guiX="316" guiY="12" id="TRASH1" type="TRASH"/>

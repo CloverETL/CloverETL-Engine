@@ -8,10 +8,10 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="23" guiY="21" id="INPUT1" type="DELIMITED_DATA_READER"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="23" guiY="103" id="INPUT2" type="DELIMITED_DATA_READER"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="25" guiName="INPUT3" guiWidth="50" guiX="24" guiY="182" id="INPUT3" type="DELIMITED_DATA_READER"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/addresses.dat" guiHeight="25" guiName="INPUT4" guiWidth="50" guiX="25" guiY="263" id="INPUT4" type="DELIMITED_DATA_READER"/>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="23" guiY="21" id="INPUT1" type="DATA_READER"/>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="23" guiY="103" id="INPUT2" type="DATA_READER"/>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="25" guiName="INPUT3" guiWidth="50" guiX="24" guiY="182" id="INPUT3" type="DATA_READER"/>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/addresses.dat" guiHeight="25" guiName="INPUT4" guiWidth="50" guiX="25" guiY="263" id="INPUT4" type="DATA_READER"/>
 <Node charset="UTF-8" enabled="enabled" fileUrl="zip:${DATAOUT_DIR}/xmlOut_$$.zip" guiHeight="25" guiName="XML_OUT" guiWidth="50" guiX="266" guiY="117" id="XML_OUT" rootElement="root" type="XML_WRITER">
 <attr name="recordSkip"><![CDATA[5]]></attr>
 <attr name="mapping"><![CDATA[
