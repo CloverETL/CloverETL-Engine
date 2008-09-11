@@ -59,8 +59,8 @@
 </Global>
 <Phase number="0">
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Clients" guiWidth="0" guiX="8" guiY="111" id="DB_INPUT_TABLE1" sqlQuery="select $Client_id:=klient_id from p_zakaznik" type="DB_INPUT_TABLE"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/bonus.csv" guiHeight="0" guiName="Bonus" guiWidth="0" guiX="8" guiY="28" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/not_found_clientst.xt" guiHeight="0" guiName="Not found clients" guiWidth="0" guiX="774" guiY="28" id="DELIMITED_DATA_WRITER2" type="DELIMITED_DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/bonus.csv" guiHeight="0" guiName="Bonus" guiWidth="0" guiX="8" guiY="28" id="DELIMITED_DATA_READER0" type="DATA_READER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/not_found_clientst.xt" guiHeight="0" guiName="Not found clients" guiWidth="0" guiX="774" guiY="28" id="DELIMITED_DATA_WRITER2" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Merge Join" guiWidth="0" guiX="314" guiY="28" id="EXT_MERGE_JOIN0" joinKey="$Client_id;#$Client_id;#" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[function transform() {
 $0.Client_id_n := nvl($1.Client_id, -1);
