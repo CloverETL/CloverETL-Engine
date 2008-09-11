@@ -70,12 +70,12 @@ ${out.0.full_name} = ${in.1.full_name};
 </Node>
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="74" guiName="customer from DB" guiWidth="145" guiX="57" guiY="87" id="DB_INPUT_TABLE0" sqlQuery="select customer.customer_id,customer.account_num,customer.lname,customer.fname,customer.mi,customer.address1,customer.city,customer.state_province,customer.postal_code,customer.country,customer.customer_region_id,customer.phone1,customer.phone2,customer.birthdate,customer.marital_status,customer.yearly_income,customer.gender,customer.total_children,customer.num_children_at_home,customer.education,customer.date_accnt_opened,customer.member_card,customer.occupation,customer.houseowner,customer.num_cars_owned&#10;from customer" type="DB_INPUT_TABLE"/>
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="82" guiName="DB Input Table" guiWidth="131" guiX="57" guiY="370" id="DB_INPUT_TABLE1" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/intersection_customer_employee.txt" guiHeight="61" guiName="Delimited Data Writer (New I/O)" guiWidth="83" guiX="758" guiY="273" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/intersection_customer_employee.txt" guiHeight="61" guiName="Delimited Data Writer (New I/O)" guiWidth="83" guiX="758" guiY="273" id="DELIMITED_DATA_WRITER0" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="128" guiX="400" guiY="153" id="EXT_SORT0" sortKey="lname(a);fname(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="88" guiName="Ext Sort" guiWidth="125" guiX="400" guiY="370" id="EXT_SORT1" sortKey="last_name(a);first_name(a)" type="EXT_SORT"/>
-<Node byteMode="false" dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="66" guiName="customer from file" guiWidth="130" guiX="57" guiY="234" id="FIXLEN_DATA_READER0" type="FIXLEN_DATA_READER">
+<Node byteMode="false" dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="66" guiName="customer from file" guiWidth="130" guiX="57" guiY="234" id="FIXLEN_DATA_READER0" type="DATA_READER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="90" guiName="Simple Gather" guiWidth="177" guiX="233" guiY="153" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>

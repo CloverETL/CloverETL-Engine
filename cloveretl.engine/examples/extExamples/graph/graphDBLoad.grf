@@ -44,8 +44,8 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employee_key.txt" guiHeight="0" guiName="Delimited Data Writer" guiWidth="0" guiX="370" guiY="121" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.list.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DELIMITED_DATA_READER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employee_key.txt" guiHeight="0" guiName="Delimited Data Writer" guiWidth="0" guiX="370" guiY="121" id="DELIMITED_DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.list.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DATA_READER"/>
 <Node batchMode="false" commit="10" dbConnection="Connection0" dbTable="MYEMPLOYEE" enabled="enabled" errorAction="ROLLBACK" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" maxErrors="10" sqlQuery="insert into MYEMPLOYEE values (id_seq.nextval, $EMP_NO, $FIRST_NAME, $LAST_NAME, $PHONE_EXT, $HIRE_DATE, $DEPT_NO, $JOB_CODE, $JOB_GRADE, $JOB_COUNTRY, $SALARY, $FULL_NAME) &#10;returning $id:=ID,$Field2:=$FULL_NAME;&#10;insert into MYUSER values($EMP_NO, $LAST_NAME, $FIRST_NAME);&#10;update CUSTOMERS set prijmeni = $LAST_NAME where klient_id=$EMP_NO returning $updated:=update_count, $field4:=$FIRST_NAME;" type="DB_OUTPUT_TABLE"/>
 <Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="370" guiY="20" id="TRASH0" type="TRASH"/>
 <Edge debugMode="false" fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="OUTPUT:0"/>

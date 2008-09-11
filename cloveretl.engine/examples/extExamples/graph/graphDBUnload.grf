@@ -27,7 +27,7 @@
 </Global>
 <Phase number="0">
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" incrementalFile="dbInc.txt" incrementalKey="key1=first(hire_date);key2=max(employee_id);key4=last(last_name)" sqlQuery="select *&#10;from employee where hire_date &gt; #key1 or employee_id&gt;#key2" type="DB_INPUT_TABLE"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.list.out" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.list.out" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
 <Edge debugMode="true" fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>
