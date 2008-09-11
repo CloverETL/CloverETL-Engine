@@ -6,7 +6,7 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Input" guiWidth="50" guiX="20" guiY="20" id="Input" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Input" guiWidth="50" guiX="20" guiY="20" id="Input" type="DATA_READER"/>
 <Node connection="dest" enabled="enabled" guiHeight="25" guiName="JmsReader" guiWidth="50" guiX="20" guiY="107" id="JmsReader" maxMsgCount="0" timeout="4000" type="JMS_READER">
 <attr name="bodyField"><![CDATA[LastName]]></attr>
 <attr name="_processorClass"><![CDATA[org.jetel.component.JmsMsg2DataRecordProperties]]></attr>
@@ -15,7 +15,7 @@
 <attr name="bodyField"><![CDATA[LastName]]></attr>
 <attr name="_processorClass"><![CDATA[org.jetel.component.DataRecord2JmsMsgProperties]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/jms.out" guiHeight="25" guiName="Output" guiWidth="50" guiX="245" guiY="107" id="Output" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/jms.out" guiHeight="25" guiName="Output" guiWidth="50" guiX="245" guiY="107" id="Output" type="DATA_WRITER"/>
 <Edge fromNode="Input:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="JmsWriter:0"/>
 <Edge fromNode="JmsReader:0" guiBendpoints="" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="Output:0"/>
 </Phase>

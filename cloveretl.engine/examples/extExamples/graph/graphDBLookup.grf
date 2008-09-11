@@ -31,7 +31,7 @@
 </LookupTable>
 </Global>
 <Phase number="0">
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
 <Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="228" guiY="20" id="JOIN" type="REFORMAT">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;
@@ -85,7 +85,7 @@ public class reformatTest extends DataRecordTransform{
 }
 ]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="421" guiY="20" id="WRITER" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="421" guiY="20" id="WRITER" type="DATA_WRITER"/>
 <Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="JOIN:0"/>
 <Edge fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
 </Phase>

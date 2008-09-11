@@ -13,7 +13,7 @@
 </Global>
 <Phase number="0">
 <Node dbConnection="Connection0" dbTable="EMP_BLOB" enabled="enabled" guiHeight="0" guiName="DB2 OUTPUT" guiWidth="0" guiX="470" guiY="20" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE"/>
-<Node dataPolicy="strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="0" guiName="FILE INPUT" guiWidth="0" guiX="20" guiY="20" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+<Node dataPolicy="strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="0" guiName="FILE INPUT" guiWidth="0" guiX="20" guiY="20" id="DELIMITED_DATA_READER0" type="DATA_READER"/>
 <Node enabled="enabled" guiHeight="0" guiName="REFORMAT" guiWidth="0" guiX="245" guiY="20" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[${out.0.EMPID} = ${in.0.EmployeeID};
 ${out.0.LASTNAME} = ${in.0.LastName}.getBytes();

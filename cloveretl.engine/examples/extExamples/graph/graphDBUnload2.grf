@@ -7,7 +7,7 @@
 </Global>
 <Phase number="0">
 <Node dbConnection="Connection1" enabled="enabled" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="30" guiY="30" id="INPUT" sqlQuery="select $EmployeeID:=employee_id, $LastName:=last_name, $FirstName:=first_name, $Title:=position_title, $BirthDate:=birth_date, $HireDate:=hire_date from employee" type="DB_INPUT_TABLE"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.txt" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="205" guiY="30" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.txt" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="205" guiY="30" id="OUTPUT" type="DATA_WRITER"/>
 <Edge debugMode="true" fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

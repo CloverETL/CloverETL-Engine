@@ -10,7 +10,7 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/oracle.dat" guiHeight="0" guiName="Delimited Data Reader" guiWidth="0" guiX="58" guiY="105" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/oracle.dat" guiHeight="0" guiName="Delimited Data Reader" guiWidth="0" guiX="58" guiY="105" id="DELIMITED_DATA_READER0" type="DATA_READER"/>
 <Node append="append" enabled="enabled" guiHeight="0" guiName="Oracle Data Writer" guiWidth="0" guiX="293" guiY="105" id="ORACLE_DATA_WRITER0" log="${DATAOUT_DIR}/log0.txt" password="test" sqlldr="sqlldr" table="test" tnsname="koule" type="ORACLE_DATA_WRITER" username="test"/>
 <Edge debugMode="true" fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="ORACLE_DATA_WRITER0:0"/>
 </Phase>

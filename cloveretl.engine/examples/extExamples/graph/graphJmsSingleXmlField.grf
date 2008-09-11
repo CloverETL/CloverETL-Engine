@@ -12,7 +12,7 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/customers.xml" guiHeight="25" guiName="Input" guiWidth="50" guiX="13" guiY="28" id="Input" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/customers.xml" guiHeight="25" guiName="Input" guiWidth="50" guiX="13" guiY="28" id="Input" type="DATA_READER"/>
 <Node connection="dest" enabled="enabled" guiHeight="25" guiName="JmsReader" guiWidth="50" guiX="223" guiY="111" id="JmsReader" maxMsgCount="0" timeout="4000" type="JMS_READER">
 <attr name="bodyField"><![CDATA[xml]]></attr>
 <attr name="_processorClass"><![CDATA[org.jetel.component.JmsMsg2DataRecordProperties]]></attr>
@@ -25,8 +25,8 @@
 <Edge fromNode="JmsReader:0" guiBendpoints="" id="INEDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="XPathTransform:0"/>
 </Phase>
 <Phase number="1">
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/customers.out" guiHeight="25" guiName="OutCustomer" guiWidth="50" guiX="647" guiY="226" id="OutCustomer" type="DELIMITED_DATA_WRITER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.out" guiHeight="25" guiName="OutOrder" guiWidth="50" guiX="648" guiY="307" id="OutOrder" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/customers.out" guiHeight="25" guiName="OutCustomer" guiWidth="50" guiX="647" guiY="226" id="OutCustomer" type="DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.out" guiHeight="25" guiName="OutOrder" guiWidth="50" guiX="648" guiY="307" id="OutOrder" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="25" guiName="REF" guiWidth="50" guiX="431" guiY="228" id="XPathTransform" type="REFORMAT">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;

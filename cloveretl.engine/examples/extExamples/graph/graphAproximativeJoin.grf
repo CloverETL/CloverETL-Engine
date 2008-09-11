@@ -144,17 +144,17 @@ ${out.0.birth_date} = ${in.1.birth_date};
 ${out.0.gender1} = ${in.1.gender};]]></attr>
 </Node>
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="7" guiY="259" id="DB_INPUT_TABLE1" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/suspicoius.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="596" guiY="135" id="DELIMITED_DATA_WRITER_NIO0" type="DELIMITED_DATA_WRITER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employee.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="596" guiY="303" id="DELIMITED_DATA_WRITER_NIO1" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/suspicoius.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="596" guiY="135" id="DELIMITED_DATA_WRITER_NIO0" type="DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employee.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="596" guiY="303" id="DELIMITED_DATA_WRITER_NIO1" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="95" guiX="296" guiY="92" id="EXT_SORT0" sortKey="key(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="111" guiX="296" guiY="259" id="EXT_SORT1" sortKey="key(a)" type="EXT_SORT"/>
-<Node byteMode="false" dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="7" guiY="92" id="FIXLEN_DATA_READER_NIO0" type="FIXLEN_DATA_READER">
+<Node byteMode="false" dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="7" guiY="92" id="FIXLEN_DATA_READER_NIO0" type="DATA_READER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/conforming.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="596" guiY="54" id="FIXLEN_DATA_WRITER_NIO0" type="FIXLEN_DATA_WRITER">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/conforming.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="596" guiY="54" id="FIXLEN_DATA_WRITER_NIO0" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/customers.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="596" guiY="215" id="FIXLEN_DATA_WRITER_NIO1" type="FIXLEN_DATA_WRITER">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/customers.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="596" guiY="215" id="FIXLEN_DATA_WRITER_NIO1" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="70" guiName="Key generator" guiWidth="138" guiX="152" guiY="92" id="KEY_GEN0" keyExpression="lname 4;fname 3" type="KEY_GEN"/>
