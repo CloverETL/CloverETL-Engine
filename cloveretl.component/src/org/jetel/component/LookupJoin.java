@@ -286,7 +286,7 @@ public class LookupJoin extends Node {
 						if (inRecords[1] == null) {
 							inRecords[1] = NullRecord.NULL_RECORD;
 						}
-						if (transformation.transform(inRecords, outRecord)) {
+						if (transformation.transform(inRecords, outRecord) >= 0) {
 							writeRecord(WRITE_TO_PORT, outRecord[0]);
 						}else{
 							logger.warn(transformation.getMessage());

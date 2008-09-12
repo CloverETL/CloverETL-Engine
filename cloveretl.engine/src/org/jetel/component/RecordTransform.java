@@ -64,8 +64,8 @@ public interface RecordTransform {
 
 
 	/**
-	 *  Performs reformat of source records to target records.
-	 *  This method is called as one step in transforming flow of
+	 * Performs reformat of source records to target records.
+	 * This method is called as one step in transforming flow of
 	 * records.<br>
 	 * For example in simple reformat situation, for one input record, one
 	 * output record has to be generated. Thus for each incoming record, this
@@ -73,11 +73,15 @@ public interface RecordTransform {
 	 * The number of source records (sources[]) and target records (target[])
 	 * depends on particular component configuration. Can be 1:1 , N:1 or N:M.
 	 *
-	 *@param  sources  Source DataRecords
-	 *@param  target   Target DataRecord
-	 *@return          True if OK, otherwise False
+	 * @param  sources  Source DataRecords
+	 * @param  target   Target DataRecord
+	 *
+	 * @return < -1 -- fatal error / user defined
+	 *           -1 -- error / skip record
+	 *            0 -- send to all output ports
+	 *         >= 1 -- send to a specified output port
 	 */
-	public boolean transform(DataRecord[] sources, DataRecord[] target) throws TransformException;
+	public int transform(DataRecord[] sources, DataRecord[] target) throws TransformException;
 
 
 	/**
@@ -121,7 +125,7 @@ public interface RecordTransform {
      * which transformation will be executed.<br>
      * Since TransformationGraph singleton pattern was removed it is
      * NO longer POSSIBLE to access graph's parameters and other elements
-     * (e.g. metadata definitions) through TransformationGraph.getIntance().
+     * (e.g. metadata definitions) through TransformationGraph.getInstance().
      * 
      * @param graph
      */

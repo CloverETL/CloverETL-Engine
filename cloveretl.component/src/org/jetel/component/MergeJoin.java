@@ -311,7 +311,7 @@ public class MergeJoin extends Node {
 		}
 		while (true) {
 //			outRecords[0].reset();
-			if (!transformation.transform(inRecords, outRecords)) {
+			if (transformation.transform(inRecords, outRecords) < 0) {
 				return false;
 			}
 			outPort.writeRecord(outRecords[0]);
