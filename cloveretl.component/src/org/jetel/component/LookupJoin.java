@@ -33,6 +33,7 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableIterator;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -286,10 +287,15 @@ public class LookupJoin extends Node {
 						if (inRecords[1] == null) {
 							inRecords[1] = NullRecord.NULL_RECORD;
 						}
-						if (transformation.transform(inRecords, outRecord) >= 0) {
+						
+						int transformResult = transformation.transform(inRecords, outRecord);
+
+						if (transformResult >= 0) {
 							writeRecord(WRITE_TO_PORT, outRecord[0]);
-						}else{
+						} else if (transformResult == -1) {
 							logger.warn(transformation.getMessage());
+						} else {
+		                	throw new TransformException(transformation.getMessage());
 						}
 					}else{
 						if (rejectedPort != null) {

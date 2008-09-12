@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -182,33 +183,43 @@ public class Reformat extends Node {
 		
 		inRecord[0].init();
 		// initialize output ports
-		for (int i=0;i<numOutputPorts;i++){
-		    outRecord[i]=new DataRecord(getOutputPort(i).getMetadata());
-		    outRecord[i].init();
-		    outRecord[i].reset();
+		for (int i = 0; i < numOutputPorts; i++) {
+			outRecord[i] = new DataRecord(getOutputPort(i).getMetadata());
+			outRecord[i].init();
+			outRecord[i].reset();
 		}
-		
+
 		// MAIN PROCESSING LOOP
-		int outPort;
 		while (inRecord[0] != null && runIt) {
 			inRecord[0] = readRecord(READ_FROM_PORT, inRecord[0]);
+
 			if (inRecord[0] != null) {
-				if (transformation.transform(inRecord, outRecord) >= 0) {
-					for (outPort = 0; outPort < numOutputPorts; outPort++) {
+				int transformResult = transformation.transform(inRecord, outRecord);
+
+				if (transformResult == 0) {
+					for (int outPort = 0; outPort < numOutputPorts; outPort++) {
 						writeRecord(outPort, outRecord[outPort]);
 					}
-				} else { // skip record and log message if transformation returned value < 0
+				} else if (transformResult > 0) {
+					int outPort = transformResult - 1;
+					writeRecord(outPort, outRecord[outPort]);
+				} else if (transformResult == -1) {
                     logger.warn(transformation.getMessage());
+                } else {
+                	throw new TransformException(transformation.getMessage());
                 }
 			}
+
 			SynchronizeUtils.cloverYield();
 		}
 
-		if (transformation != null)
+		if (transformation != null) {
 			transformation.finished();
+		}
 
 		broadcastEOF();
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+
+		return (runIt ? Result.FINISHED_OK : Result.ABORTED);
 	}
 
 

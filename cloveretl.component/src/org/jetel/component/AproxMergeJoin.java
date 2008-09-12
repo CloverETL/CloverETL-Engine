@@ -422,11 +422,16 @@ public class AproxMergeJoin extends Node {
 			double[] conformity=conformity(driver,slave,fieldsToCompare);
 			if (conformity[0]>=conformityLimit) {
 				// **** call transform function here ****
-				if (transformation.transform(inRecords, outConformingRecords) < 0) {
+				int transformResult = transformation.transform(inRecords, outConformingRecords);
+
+				if (transformResult == -1) {
 					logger.warn(transformation.getMessage());
 					return false;
+				} else if (transformResult < -1) {
+                	throw new TransformException(transformation.getMessage());
 				}
-				//fill aditional fields
+
+				//fill additional fields
 				if (conformityFieldsForConforming.length>0){
 					for (int i=0;i<conformityFieldsForConforming.length;i++){
 						if (conformityFieldsForConforming[i]>-1){
@@ -437,11 +442,16 @@ public class AproxMergeJoin extends Node {
 				conformingPort.writeRecord(outConforming);
 			}else{
 				// **** call transform function here ****
-				if (transformationForSuspicious.transform(inRecords,outSuspiciousRecords) < 0){
+				int transformResult = transformationForSuspicious.transform(inRecords,outSuspiciousRecords);
+
+				if (transformResult == -1) {
 					logger.warn(transformation.getMessage());
 					return false;
+				} else if (transformResult < -1) {
+                	throw new TransformException(transformation.getMessage());
 				}
-				//fill aditional fields
+
+				//fill additional fields
 				if (conformityFieldsForSuspicious.length>0){
 					for (int i=0;i<conformityFieldsForSuspicious.length;i++){
 						if (conformityFieldsForSuspicious[i]>-1){

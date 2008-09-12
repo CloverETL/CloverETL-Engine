@@ -36,6 +36,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -217,10 +218,14 @@ public class DBJoin extends Node {
 					do{
 						if (transformation != null) {//transform driver and slave
 							if ((inRecords[1] != null || leftOuterJoin)){
-								if (transformation.transform(inRecords, outRecord) >= 0) {
+								int transformResult = transformation.transform(inRecords, outRecord);
+
+								if (transformResult >= 0) {
 									writeRecord(WRITE_TO_PORT, outRecord[0]);
-								}else{
+								} else if (transformResult == -1) {
 									logger.warn(transformation.getMessage());
+								} else {
+				                	throw new TransformException(transformation.getMessage());
 								}
 							}else if (rejectedPort != null){
 								writeRecord(REJECTED_PORT, inRecord);
