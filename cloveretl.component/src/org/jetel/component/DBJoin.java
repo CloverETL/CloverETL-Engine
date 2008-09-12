@@ -217,7 +217,7 @@ public class DBJoin extends Node {
 					do{
 						if (transformation != null) {//transform driver and slave
 							if ((inRecords[1] != null || leftOuterJoin)){
-								if (transformation.transform(inRecords,outRecord)) {
+								if (transformation.transform(inRecords, outRecord) >= 0) {
 									writeRecord(WRITE_TO_PORT, outRecord[0]);
 								}else{
 									logger.warn(transformation.getMessage());

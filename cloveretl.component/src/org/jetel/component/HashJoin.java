@@ -470,7 +470,7 @@ public class HashJoin extends Node {
 					}
 					DataRecord record = itor.next();
 					inRecords[FIRST_SLAVE_PORT + slaveIdx] = record;
-					if (!transformation.transform(inRecords, outRecords)) {
+					if (transformation.transform(inRecords, outRecords) < 0) {
 						logger.error(transformation.getMessage());
 						transformation.finished();
 						setEOF(WRITE_TO_PORT);
@@ -535,7 +535,7 @@ public class HashJoin extends Node {
 				}
 				inRecords[1 + slaveCnt - 1] = slaveRecords[slaveIdx].records.get(q);
 
-				if (!transformation.transform(inRecords, outRecords)) {
+				if (transformation.transform(inRecords, outRecords) < 0) {
 					logger.error(transformation.getMessage());
 					transformation.finished();
 					setEOF(WRITE_TO_PORT);

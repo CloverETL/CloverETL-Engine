@@ -1384,7 +1384,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * 
 	 * @see org.jetel.component.RecordTransform#transform(org.jetel.data.DataRecord[], org.jetel.data.DataRecord[])
 	 */
-	public boolean transform(DataRecord[] sources, DataRecord[] target) throws TransformException {
+	public int transform(DataRecord[] sources, DataRecord[] target) throws TransformException {
 		// array "order" stores coordinates of output fields in order they will be assigned
 		for (int i = 0; i < order.length; i++) {
 			value = transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue(sources);
@@ -1421,7 +1421,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 				setAlternativeValue(sources, target, order[i][REC_NO], order[i][FIELD_NO], 0, null);
 			}
 		}
-		return true;
+		return 0;
 	}
 
 	/**

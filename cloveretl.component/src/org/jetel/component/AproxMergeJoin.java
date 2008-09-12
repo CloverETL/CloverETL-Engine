@@ -422,7 +422,7 @@ public class AproxMergeJoin extends Node {
 			double[] conformity=conformity(driver,slave,fieldsToCompare);
 			if (conformity[0]>=conformityLimit) {
 				// **** call transform function here ****
-				if (!transformation.transform(inRecords, outConformingRecords)) {
+				if (transformation.transform(inRecords, outConformingRecords) < 0) {
 					logger.warn(transformation.getMessage());
 					return false;
 				}
@@ -437,7 +437,7 @@ public class AproxMergeJoin extends Node {
 				conformingPort.writeRecord(outConforming);
 			}else{
 				// **** call transform function here ****
-				if (!transformationForSuspicious.transform(inRecords,outSuspiciousRecords)){
+				if (transformationForSuspicious.transform(inRecords,outSuspiciousRecords) < 0){
 					logger.warn(transformation.getMessage());
 					return false;
 				}

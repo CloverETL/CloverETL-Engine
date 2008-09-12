@@ -89,13 +89,11 @@ public class RecordTransformTL implements RecordTransform {
  	}
 
 	
-	public  boolean transform(DataRecord[] inputRecords, DataRecord[] outputRecords)
-			throws TransformException{
-		TLValue result = wrapper.executePreparedFunction(inputRecords,
-				outputRecords,null);
-		return result == null ? true : (result==TLBooleanValue.TRUE);
-    }
-	
+	public int transform(DataRecord[] inputRecords, DataRecord[] outputRecords) throws TransformException {
+		TLValue result = wrapper.executePreparedFunction(inputRecords, outputRecords, null);
+
+		return (result == null || result == TLBooleanValue.TRUE) ? 0 : -1;
+	}
 
 
 	/**

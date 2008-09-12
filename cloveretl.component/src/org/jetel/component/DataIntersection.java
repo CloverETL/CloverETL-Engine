@@ -274,7 +274,7 @@ public class DataIntersection extends Node {
 		if (keyDuplicates) {
 			while ((inRecords[0] = driver.next()) != null) {
 				while ((inRecords[1] = slave.next()) != null) {
-					if (!transformation.transform(inRecords, outRecords)) {
+					if (transformation.transform(inRecords, outRecords) < 0) {
 						logger.warn(transformation.getMessage());
 						return false;
 					}
@@ -285,7 +285,7 @@ public class DataIntersection extends Node {
 		}else{
 			inRecords[0] = driver.next();
 			inRecords[1] = slave.next();
-			if (!transformation.transform(inRecords, outRecords)) {
+			if (transformation.transform(inRecords, outRecords) < 0) {
 				logger.warn(transformation.getMessage());
 				return false;
 			}

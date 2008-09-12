@@ -193,11 +193,11 @@ public class Reformat extends Node {
 		while (inRecord[0] != null && runIt) {
 			inRecord[0] = readRecord(READ_FROM_PORT, inRecord[0]);
 			if (inRecord[0] != null) {
-				if (transformation.transform(inRecord, outRecord)) {
+				if (transformation.transform(inRecord, outRecord) >= 0) {
 					for (outPort = 0; outPort < numOutputPorts; outPort++) {
 						writeRecord(outPort, outRecord[outPort]);
 					}
-				} else { // skip record and log message if transformation returned false
+				} else { // skip record and log message if transformation returned value < 0
                     logger.warn(transformation.getMessage());
                 }
 			}

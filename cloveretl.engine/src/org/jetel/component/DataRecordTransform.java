@@ -126,7 +126,7 @@ public abstract class DataRecordTransform implements RecordTransform {
 	 * @return True if transformation was successfull, otherwise False
 	 * @see org.jetel.data.DataRecord#copyFieldsByPosition()
 	 */
-	public abstract boolean transform(DataRecord[] inputRecords, DataRecord[] outputRecords) throws TransformException;
+	public abstract int transform(DataRecord[] inputRecords, DataRecord[] outputRecords) throws TransformException;
 
 	/**
 	 * This default transformation only copies content of inputRecords into outputRecords field by field. See
