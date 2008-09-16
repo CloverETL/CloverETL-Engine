@@ -28,7 +28,7 @@ public class reformatOrders extends DataRecordTransform{
         return true;
 	}
 
-	public boolean transform(DataRecord source[], DataRecord[] target){
+	public int transform(DataRecord source[], DataRecord[] target){
 		StringBuffer strBuf=new StringBuffer(80);
 		try{
 			// let's concatenate shipping address into one long string
@@ -49,9 +49,9 @@ public class reformatOrders extends DataRecordTransform{
 					source[0], "ShippedDate").getTime())
 					/ 1000 / 60 / 60 / 24));
 		}catch(Exception ex){
-			return false;
+			return -1;
 		}
-			return true;
+			return 0;
 	}
 }
 ]]></attr>

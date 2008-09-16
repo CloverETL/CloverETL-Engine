@@ -24,7 +24,7 @@ public class reformatJoinTest3Way extends DataRecordTransform{
 	Object CustomerID;
 	Object Company;
 
-	public boolean transform(DataRecord[] source, DataRecord[] target){
+	public int transform(DataRecord[] source, DataRecord[] target){
 
 			CustomerID = source[0].getField(1).getValue();
 
@@ -40,7 +40,7 @@ public class reformatJoinTest3Way extends DataRecordTransform{
 			Company = source[2].getField(1).getValue();
 			target[0].getField(3).setValue(Company != null ? Company : MISSING);	// Company
 			target[0].getField(5).setValue(MISSING);
-		return true;
+		return 0;
 	}
 }
 
