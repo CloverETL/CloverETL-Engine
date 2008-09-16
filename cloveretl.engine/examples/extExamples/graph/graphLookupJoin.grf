@@ -23,10 +23,10 @@ import org.jetel.graph.TransformationGraph;
 
 public class reformatTest extends DataRecordTransform{
 
-	public boolean transform(DataRecord[] source, DataRecord[] target){
+	public int transform(DataRecord[] source, DataRecord[] target){
 	        
 
-		if (source[1]==null) return false; // skip this one
+		if (source[1]==null) return -1; // skip this one
 		
 		target[0].getField(0).setValue(source[0].getField(0).getValue());
   		target[0].getField(1).setValue(source[0].getField(1).getValue());
@@ -34,7 +34,7 @@ public class reformatTest extends DataRecordTransform{
 		target[0].getField(3).setValue(source[1].getField(0).getValue().toString());
 		target[0].getField(4).setValue(source[1].getField(1).getValue());
 
-		return true;
+		return 0;
 	}
 }
 ]]></attr>

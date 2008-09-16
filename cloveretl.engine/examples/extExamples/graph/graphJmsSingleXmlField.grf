@@ -65,7 +65,7 @@ public class reformatOrders extends DataRecordTransform{
 	    return true;
 	}
 
-	public boolean transform(DataRecord[] source, DataRecord[] target){
+	public int transform(DataRecord[] source, DataRecord[] target){
    		System.out.println("============== XPath transform ==============");
 		try{
 			
@@ -94,10 +94,10 @@ public class reformatOrders extends DataRecordTransform{
 		}catch(Exception ex){
 			ex.printStackTrace();
 			errorMessage=ex.getMessage()+" -&gt;occured with record :"+counter;
-			return false;
+			return -1;
 		}
 		counter++;
-		return true;
+		return 0;
 	}
 }
 
