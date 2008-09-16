@@ -514,6 +514,19 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		</ant>
 	</target>
 	
+	<target name="runtests-scenerio">
+		<echo message="Runtests environment"/>
+		<ant target="runscenerios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
+			<property name="dir.dist" value="${dir.package}"/>
+			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
+			<property name="dir.engine.classestest" value="${dir.classestest}"/>
+			<property name="cobertura.ser" value="${cobertura.ser}"/>
+			<property name="major_version" value="${major_version}"/>
+			<property name="minor_version" value="${minor_version}"/>
+			<property name="revision_version" value="${revision_version}"/>
+		</ant>
+	</target>
+	
     <target name="reporttests" depends="runtests">
     	<mkdir dir="${dir.testsreport}"/>
     	<junitreport>
