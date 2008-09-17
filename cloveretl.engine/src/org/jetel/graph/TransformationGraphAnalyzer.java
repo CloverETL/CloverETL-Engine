@@ -388,7 +388,7 @@ public class TransformationGraphAnalyzer {
 	}
 
     /**
-     * Apply disabled property of node to graph. Called in graph inital phase. 
+     * Apply disabled property of node to graph. Called in graph initial phase. 
      * @throws GraphConfigurationException 
      */
     public static void disableNodesInPhases(TransformationGraph graph) throws GraphConfigurationException {
@@ -428,6 +428,10 @@ public class TransformationGraphAnalyzer {
             }
             for(Node node : nodesToRemove) {
             	phases[i].deleteNode(node);
+            }
+            
+            if (phases[i].getNodes().isEmpty()) {
+            	graph.removePhase(phases[i]);
             }
         }
     }

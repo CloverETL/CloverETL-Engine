@@ -591,6 +591,9 @@ public class DataRecordGenerator implements Parser {
 	}
 
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
+		if (_metadata == null) {
+			throw new ComponentNotReadyException("Metadata are null");
+		}
 		this.metadata = _metadata;
 		init();
 	}

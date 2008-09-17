@@ -60,7 +60,7 @@ public class StringUtils {
 
 	private static Pattern delimiterPattern;
 	
-	private final static String OBJECT_NAME_PATTERN = "[_A-Za-z_]+[_A-Za-z0-9]*";
+	private final static String OBJECT_NAME_PATTERN = "[_A-Za-z]+[_A-Za-z0-9]*";
 	private final static Pattern INVALID_CHAR = Pattern.compile("[^_A-Za-z0-9]{1}");
 
 	private static void initPattern() {
@@ -840,12 +840,13 @@ public class StringUtils {
 	}
 
 	public static boolean isAscii(CharSequence str) {
-		for (int i = 0; i < str.length(); i++) {
-			if (str.charAt(i) > ASCII_LAST_CHAR) {
-				return false;
-			}
-		}
-		return true;
+		return Pattern.matches("\\p{ASCII}*", str);
+//		for (int i = 0; i < str.length(); i++) {
+//			if (str.charAt(i) > ASCII_LAST_CHAR) {
+//				return false;
+//			}
+//		}
+//		return true;
 	}
 
 	/**

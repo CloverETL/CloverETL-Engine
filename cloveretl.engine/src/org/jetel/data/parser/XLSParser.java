@@ -178,6 +178,9 @@ public abstract class XLSParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
 	public void init(DataRecordMetadata _metadata)throws ComponentNotReadyException{
+		if (_metadata == null) {
+			throw new ComponentNotReadyException("Metadata are null");
+		}
 		this.metadata = _metadata;
 		isAutoFilling = new boolean[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {

@@ -19,12 +19,19 @@
 */
 package org.jetel.component;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Map.Entry;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLDataParser;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -36,7 +43,9 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.dictionary.IDictionaryValue;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
@@ -74,10 +83,19 @@ import org.w3c.dom.Text;
  *  database fields eg. query: <code>select $field1:=dbField1, $field2:=dbField2 from mytable</code> is interpreted as: 
  *  <code>select dbField1, dbField2 from mytable</code> and output field <i>field1</i> will be filled by value from
  *  <i>dbField1</i> and <i>field2</i> will be filled by value from <i>dbField2</i>. The query can be written without
- *  mapping also; then output fields will be fulfilled from the first in order data flows from database<br>
- *  <i>sqlQuery</i> or <i>url</i> must be defined</td>
+ *  mapping also; then output fields will be fulfilled from the first in order data flows from database. For incremental 
+ *  reading clause <code>where</code> defining new records must be present (see <i>incrementalKey, incrementalFile</i> 
+ *  attributes), eg. query for incremental reading should look like: <code>select $f1:=db1, $f2:=db2, ... from myTable where dbX > #myKey1 and dbY <=#myKey2</code>,
+ *   where <i>myKey1</i> and <i>myKey2</i> must be difined in <i>incrementalKey</i> attribute. 
+ *  <br> <i>sqlQuery</i> or <i>url</i> must be defined</td>
  *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file 
  *  referenced by url. Syntax of the query must be as described above.</td>
+ *  <tr><td><b>incrementalKey </b></td><td>defines on which db fields incremental values are defined and which record from result set
+ *  will be stored (<b>last</b>, <b>first</b>, <b>min</b> or <b>max</b>). Key parts have to be separated by by :;| {colon, semicolon, pipe},
+ *  eg.:<i>myKey1=first(dbX);myKey2=min(dbY)</i> (see <i>sqlQuery</i> attribute)</td></tr>
+ *  <tr><td><b>incrementalFile </b></td><td>url to file where key values are stored. Values have to be set by user for 1st reading, then are set to 
+ *   requested value (see <i>sqlQuery, incrementalKey</i> attributes) automatically, eg.<br> <i>myKey1=0<br>myKey2=1990-01-01</i><br>Dates, times and timestamps have be written
+ *   in format defined in @see Defaults.DEFAULT_DATE_FORMAT, Defaults.DEFAULT_TIME_FORMAT, Defaults.DEFAULT_DATETIME_FORMAT</td></tr>
  *  <tr><td><b>charset </b><i>optional</i></td><td>encoding of extern query</td></tr>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  <tr><td><b>fetchSize</b><br><i>optional</i></td><td>how many records should be fetched from db at once. <i>See JDBC's java.sql.Statement.setFetchSize()</i><br><b><code>MIN_INT</code></b> constant
@@ -105,6 +123,16 @@ import org.w3c.dom.Text;
  *  <h4>Example:</h4>
  *  <pre>&lt;Node dbConnection="DBConnection0" id="INPUT" 
  *  sqlQuery="select $last_name:=last_name,$full_name:=full_name from employee" type="DB_INPUT_TABLE"/&gt;</pre>
+ *
+ *  <h4>Incremental reading example:</h4>
+ *  <pre>&lt;Node dbConnection="DBConnection0" id="INPUT" 
+ *  incrementalFile="dbInc.txt" 
+ *  incrementalKey="key1=last(id);key2=max(last_update)" 
+ *  sqlQuery="select * from employee where id &gt; #key1 or last_update&gt;#key2" type="DB_INPUT_TABLE"/&gt;
+ *  
+ *  Starting content of dbInc.txt:
+ *  	key1=0
+ *  	key2=1999-12-31 </pre>
  *	
  * @author      dpavlis
  * @since       September 27, 2002
@@ -122,6 +150,8 @@ public class DBInputTable extends Node {
 	private static final String XML_FETCHSIZE_ATTRIBUTE = "fetchSize";
 	private static final String XML_SQLCODE_ELEMENT = "SQLCode";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset"; 
+	public static final String XML_INCREMENTAL_FILE_ATTRIBUTE = "incrementalFile";
+	public static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
 	
 	private SQLDataParser parser;
 	private PolicyType policyType;
@@ -135,7 +165,9 @@ public class DBInputTable extends Node {
 	public final static String COMPONENT_TYPE = "DB_INPUT_TABLE";
 	private final static int WRITE_TO_PORT = 0;
 	private String url = null;
-	private DBConnection connection; 
+	private DBConnection connection;
+
+	private String incrementalFile; 
 
 	/**
 	 *Constructor for the DBInputTable object
@@ -178,12 +210,21 @@ public class DBInputTable extends Node {
         connection.init();
 		parser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
 		parser.setParentNode(this);
+		if (incrementalFile != null) {
+			try {
+				parser.setIncrementalFile(FileUtils.getFile(getGraph().getProjectURL(), incrementalFile));
+			} catch (MalformedURLException e) {
+				throw new ComponentNotReadyException(this,
+						XML_INCREMENTAL_FILE_ATTRIBUTE, e.getMessage());
+			}
+		}
 	}
 
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		parser.reset();
+		//TODO storeValues() ? or should it be in parser.reset() ?
 	}
 
 	@Override
@@ -245,6 +286,20 @@ public class DBInputTable extends Node {
 		if (policyType != null){
 			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
 		}
+		if (incrementalFile != null) {
+			xmlElement.setAttribute(XML_INCREMENTAL_FILE_ATTRIBUTE, incrementalFile);
+		}
+		if (parser.getIncrementalKey() != null){
+			StringBuilder incKey = new StringBuilder();
+			for (Iterator iterator = parser.getIncrementalKey().entrySet().iterator(); iterator.hasNext();) {
+				Entry<String, String> key = (Entry<String, String>) iterator.next();
+				incKey.append(key.getKey());
+				incKey.append('=');
+				incKey.append(key.getValue());
+				incKey.append(Defaults.Component.KEY_FIELDS_DELIMITER);
+			}
+			xmlElement.setAttribute(XML_INCREMENTAL_KEY_ATTRIBUTE, incKey.toString());
+		}
 	}
 
 	/**
@@ -295,6 +350,12 @@ public class DBInputTable extends Node {
                 if (xattribs.exists(XML_URL_ATTRIBUTE)) {
                 	aDBInputTable.setURL(XML_URL_ATTRIBUTE);
                 }
+                if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
+                	aDBInputTable.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
+                }
+                if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
+                	aDBInputTable.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+                }
                 
             }catch (Exception ex) {
                 throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -303,11 +364,36 @@ public class DBInputTable extends Node {
             return aDBInputTable;
 	}
 
+    @Override
+    public synchronized void free() {
+    	super.free();
+    	parser.close();
+    	if (parser.getIncrementalFile() != null){
+    		storeValues();
+    	}
+    }
+
+    /**
+     * Stores all values as incremental reading.
+     */
+    private void storeValues() {
+    	if (getPhase() != null && getPhase().getResult() == Result.FINISHED_OK) {
+    		try {
+    			IDictionaryValue<?> dickValue = getGraph().getDictionaryValue(Defaults.INCREMENTAL_STORE_KEY);
+    			if (dickValue != null && dickValue.getValue() == Boolean.FALSE) {
+    				return;
+    			}
+    			parser.storeIncrementalReading();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+    	}
+    }
 
 	/**
 	 * @param xml_url_attribute2
 	 */
-	private void setURL(String url){
+	public void setURL(String url){
 		this.url = url;
 	}
 
@@ -324,18 +410,33 @@ public class DBInputTable extends Node {
         }
         
         checkMetadata(status, getOutMetadata());
-
+        
         try {
-            init();
+            IConnection conn = getGraph().getConnection(dbConnectionName);
+            if (conn==null){
+                throw new ComponentNotReadyException("Can't obtain DBConnection object: \""+dbConnectionName+"\"");
+            }
+            if(!(conn instanceof DBConnection)) {
+                throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
+            }
+            connection = (DBConnection)conn;
+            connection.init();
+            parser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
+    		if (incrementalFile != null) {
+				try {
+					parser.setIncrementalFile(FileUtils.getFile(getGraph().getProjectURL(), incrementalFile));
+				} catch (MalformedURLException e) {
+					throw new ComponentNotReadyException(this, XML_INCREMENTAL_FILE_ATTRIBUTE, e.getMessage());
+				}
+				parser.checkIncremental();
+			}
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }
             status.add(problem);
-        } finally {
-        	free();
-        }
+        } 
         
         return status;
     }
@@ -360,6 +461,23 @@ public class DBInputTable extends Node {
 	public void setPolicyType(PolicyType policyType) {
         this.policyType = policyType;
         parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
+	}
+
+
+	public void setIncrementalFile(String incrementalFile) throws MalformedURLException {
+		this.incrementalFile = incrementalFile;
+	}
+
+
+	public void setIncrementalKey(String incrementalKey) {
+		String[] key = StringUtils.split(incrementalKey);
+		Properties keyDef = new Properties();
+		String[] def;
+		for (int i = 0; i < key.length; i++) {
+			def = JoinKeyUtils.getMappingItemsFromMappingString(key[i], "=");
+			keyDef.setProperty(def[0].trim(), def[1].trim());
+		}
+		parser.setIncrementalKey(keyDef);
 	}
 	
  }

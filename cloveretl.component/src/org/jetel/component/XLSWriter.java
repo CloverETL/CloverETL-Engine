@@ -34,6 +34,8 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -129,6 +131,7 @@ public class XLSWriter extends Node {
 	private static final String XML_PARTITION_ATTRIBUTE = "partition";
 	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 
 	public final static String COMPONENT_TYPE = "XLS_WRITER";
 	private final static int READ_FROM_PORT = 0;
@@ -164,6 +167,12 @@ public class XLSWriter extends Node {
 		formatterProvider = new XLSFormatterProvider(append);
 	}
 	
+	public XLSWriter(String id,String fileURL, String charset, boolean append){
+		super(id);
+		this.fileURL = fileURL;
+		formatterProvider = new XLSFormatterProvider(charset, append);
+	}
+
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#getType()
 	 */
@@ -206,7 +215,10 @@ public class XLSWriter extends Node {
 			return status;
 		}
 
-        try {
+        if (getInputPort(READ_FROM_PORT).getMetadata() == null) {
+        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+        }
+       try {
         	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 
         			: null, fileURL);
         } catch (ComponentNotReadyException e) {
@@ -287,6 +299,7 @@ public class XLSWriter extends Node {
 		try{
 			xlsWriter = new XLSWriter(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_FILEURL_ATTRIBUTE),
+					xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 					xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
 			if (xattribs.exists(XML_SHEETNAME_ATTRIBUTE)){
 				xlsWriter.setSheetName(xattribs.getString(XML_SHEETNAME_ATTRIBUTE));
@@ -337,6 +350,7 @@ public class XLSWriter extends Node {
 		xmlElement.setAttribute(XML_FIRSTCOLUMN_ATTRIBUTE,String.valueOf(formatterProvider.getFirstColumn()));
 		xmlElement.setAttribute(XML_FIRSTDATAROW_ATTRIBUTE, String.valueOf(formatterProvider.getFirstRow()+1));
 		xmlElement.setAttribute(XML_NAMESROW_ATTRIBUTE, String.valueOf(formatterProvider.getNamesRow()+1));
+		xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, formatterProvider.getCharset());
 		if (formatterProvider.getSheetName() != null) {
 			xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE,formatterProvider.getSheetName());
 		}

@@ -1,6 +1,6 @@
 <plugin
    id="org.jetel.connection"
-   version="2.4.7"
+   version="2.5.2"
    provider-name="Javlin Consulting s.r.o."
    class="org.jetel.connection.Activator">
 

@@ -47,6 +47,8 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.runtime.CloverPost;
+import org.jetel.graph.runtime.IAuthorityProxy;
+import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.crypto.Enigma;
@@ -108,6 +110,8 @@ public final class TransformationGraph extends GraphElement {
 
 	private URL projectURL = null;
 
+	private IAuthorityProxy authorityProxy;
+	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
 	}
@@ -130,6 +134,7 @@ public final class TransformationGraph extends GraphElement {
 		//BasicConfigurator.configure();
 		graphProperties = new TypedProperties();
 		dictionary = new Dictionary(this);
+		authorityProxy = new PrimitiveAuthorityProxy();
 	}
 
 	private boolean firstCallProjectURL = true; //have to be reset
@@ -460,11 +465,16 @@ public final class TransformationGraph extends GraphElement {
 		}
 		// initialize sequences
 		// iterate through all sequences and initialize them
-		iterator = sequences.values().iterator();
-		while (iterator.hasNext()) {
+		Iterator<String> seqNamesIterator = sequences.keySet().iterator();
+		while (seqNamesIterator.hasNext()) {
 			logger.info("Initializing sequence: ");
 			try {
-				seq = (Sequence) iterator.next();
+				String seqName = seqNamesIterator.next();
+				seq = sequences.get(seqName);
+				if (seq.isShared()) {
+					seq = getAuthorityProxy().getSharedSequence(seq);
+					sequences.put(seqName, seq);
+				}
 				seq.init();
 				logger.info(seq + " ... OK");
 			} catch (Exception ex) {
@@ -557,7 +567,12 @@ public final class TransformationGraph extends GraphElement {
 		iterator = sequences.values().iterator();
 		while (iterator.hasNext()) {
 			try {
-				((Sequence)iterator.next()).free();
+				final Sequence seq = (Sequence) iterator.next();
+				if (seq.isShared()) {
+					getAuthorityProxy().freeSharedSequence(seq);
+				} else {
+					seq.free();
+				}
 			} catch (Exception ex) {
 			    logger.warn("Can't free Sequence", ex);
 			}
@@ -584,6 +599,19 @@ public final class TransformationGraph extends GraphElement {
 		phase.setGraph(this);
 	}
 
+	/**
+	 * Removes given phase from the transformation graph.
+	 * @param phase
+	 * @throws GraphConfigurationException 
+	 */
+	public void removePhase(Phase phase) throws GraphConfigurationException {
+		if (phase.equals(phases.get(phase.getPhaseNum()))) {
+			phases.remove(phase.getPhaseNum());
+		} else {
+			throw new GraphConfigurationException("Phase is not a part of the graph (" + phase + ").");
+		}
+	}
+	
 	/**
 	 *  Adds a feature to the IConnection attribute of the TransformationGraph object
 	 *
@@ -700,12 +728,20 @@ public final class TransformationGraph extends GraphElement {
 		if (graphProperties == null) {
 			graphProperties = new TypedProperties();
 		}
-		InputStream inStream;
+		InputStream inStream = null;
         try {
         	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getProjectURL(), fileURL));
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
             throw e;
+        } finally {
+        	if (inStream != null) {
+        		try {
+        			inStream.close();
+        		} catch (IOException e) {
+        			//DO NOTHING
+        		}
+        	}
         }
 		graphProperties.load(inStream);
 	}
@@ -720,14 +756,22 @@ public final class TransformationGraph extends GraphElement {
         if (graphProperties == null) {
             graphProperties = new TypedProperties();
         }
-        InputStream inStream;
+        InputStream inStream = null;
         try {
         	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getProjectURL(), fileURL));
+            graphProperties.loadSafe(inStream);
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
             throw e;
+        } finally {
+        	if (inStream != null) {
+        		try {
+        			inStream.close();
+        		} catch (IOException e) {
+        			//DO NOTHING
+        		}
+        	}
         }
-        graphProperties.loadSafe(inStream);
     }
 
 	/**
@@ -845,6 +889,18 @@ public final class TransformationGraph extends GraphElement {
     }
     
     /**
+     * Bulk adding edges into appropriate phases
+     * 
+     * @param edges
+     * @throws GraphConfigurationException
+     */
+    public void addAllEdges(Collection<Edge> edges) throws GraphConfigurationException{
+    	for (Edge edge : edges) {
+    		addEdge(edge);
+    	}
+    }
+
+    /**
      * Deletes given edge from the appropriate phase.
      * @param edge
      * @throws GraphConfigurationException 
@@ -928,6 +984,18 @@ public final class TransformationGraph extends GraphElement {
 	
 	public Dictionary getDictionary() {
 		return dictionary;
+	}
+	
+    public IAuthorityProxy getAuthorityProxy() {
+    	return authorityProxy;
+    }
+
+    public void setAuthorityProxy(IAuthorityProxy authorityProxy) {
+    	if (authorityProxy == null) {
+    		this.authorityProxy = new PrimitiveAuthorityProxy();
+    	} else {
+    		this.authorityProxy = authorityProxy;
+    	}
 	}
 
 }

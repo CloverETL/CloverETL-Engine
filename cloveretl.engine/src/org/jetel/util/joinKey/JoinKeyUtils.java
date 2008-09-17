@@ -71,6 +71,9 @@ public class JoinKeyUtils {
 			DataRecordMetadata metadata;
 			for (int i = 0; i < inMetadata.size() - 1; i++) {
 				metadata = itor.next();
+    			if (metadata == null) {
+    				throw new ComponentNotReadyException("Input metadata on port number " + i + " are null!!!");
+    			}
 				slaveMetadata.put(metadata.getName(), new Object[]{metadata, i});
 			}
 		}
@@ -149,6 +152,9 @@ public class JoinKeyUtils {
 		
 		//eventually reorder result
 		if (slaveMetadata != null && slaveMetadata.size() > 0) {
+			if (masterMetadata == null) {
+				throw new ComponentNotReadyException("Master metadata are null!!!");
+			}
 			String[][][] reorder = new String[2][mappings.length][];
 			int slaveNum;
 			DataRecordMetadata metadata;
@@ -165,16 +171,17 @@ public class JoinKeyUtils {
 					reorder[SLAVE][i] = res[SLAVE][i];
 				}
 				//check fields in metadata
-				for (int j = 0; j < reorder[MASTER][slaveNum].length; j++) {
-					if (masterMetadata.getFieldPosition(reorder[MASTER][slaveNum][j]) == -1){
-						throw new ComponentNotReadyException("Field " + StringUtils.quote(reorder[MASTER][slaveNum][j]) +
-							" specified as key field, doesn't exist in master metadata.");
-					}
-					if (metadata.getFieldPosition(reorder[SLAVE][slaveNum][j]) == -1){
-						throw new ComponentNotReadyException("Field " + StringUtils.quote(reorder[SLAVE][slaveNum][j]) +
-							" specified as key field, doesn't exist in " + StringUtils.quote(metadata.getName()) + " metadata.");
-					}
-				}
+//we can't do that, because if only master is given we can set slave directly later
+//				for (int j = 0; j < reorder[MASTER][slaveNum].length; j++) {
+//					if (masterMetadata.getFieldPosition(reorder[MASTER][slaveNum][j]) == -1){
+//						throw new ComponentNotReadyException("Field " + StringUtils.quote(reorder[MASTER][slaveNum][j]) +
+//							" specified as key field, doesn't exist in master metadata.");
+//					}
+//					if (metadata.getFieldPosition(reorder[SLAVE][slaveNum][j]) == -1){
+//						throw new ComponentNotReadyException("Field " + StringUtils.quote(reorder[SLAVE][slaveNum][j]) +
+//							" specified as key field, doesn't exist in " + StringUtils.quote(metadata.getName()) + " metadata.");
+//					}
+//				}
 			}
 			res = reorder;
 			
@@ -201,9 +208,15 @@ public class JoinKeyUtils {
 		Map<String, Object[]> slaveMetadata = new LinkedHashMap<String, Object[]>(itor != null && inMetadata.size() > 1 ? 
 				inMetadata.size()  - 1 : 0);
 		if (itor != null) {
+			if (masterMetadata == null) {
+				throw new ComponentNotReadyException("Master metadata are null!!!");
+			}
 			DataRecordMetadata metadata;
 			for (int i = 0; i < inMetadata.size() - 1; i++) {
 				metadata = itor.next();
+    			if (metadata == null) {
+    				throw new ComponentNotReadyException("Input metadata on port number " + (i + 1) + " are null!!!");
+    			}
 				slaveMetadata.put(metadata.getName(), new Object[]{metadata, i});
 			}
 		}
@@ -291,6 +304,10 @@ public class JoinKeyUtils {
 		for (int i = 0; i < res.length; i++) {
 			res[i] = result.get(i);
 			if (itor != null) {
+				if (i >= inMetadata.size()) {
+					throw new ComponentNotReadyException("Key size (" + res.length + ") is greater then number of input metadata ("
+							+ inMetadata.size() + ").");
+				}
 				metadata = inMetadata.get(i);
 				for (int k = 0; k < res[i].length; k++) {
 					if (metadata.getFieldPosition(res[i][k]) == -1) {

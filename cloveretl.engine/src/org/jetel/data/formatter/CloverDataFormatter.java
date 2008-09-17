@@ -25,16 +25,16 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.jetel.data.DataRecord;
@@ -42,6 +42,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.file.FileUtils;
 
 
 /**
@@ -82,6 +83,7 @@ public class CloverDataFormatter implements Formatter {
 	private ReadableByteChannel idxReader;
 	private boolean append;
 	private boolean isOpen = false;
+	private URL projectURL;
 	
 	private final static short LEN_SIZE_SPECIFIER = 4;
 	private final static int SHORT_SIZE_BYTES = 2;
@@ -112,26 +114,21 @@ public class CloverDataFormatter implements Formatter {
      */
     public void setDataTarget(Object outputDataTarget) {
         //create output stream
-        if (outputDataTarget instanceof ZipOutputStream) {
-            this.out = (ZipOutputStream)outputDataTarget;
-            //prepare data file name
-            this.fileName = new File(fileURL).getName();
-			if (fileURL.endsWith(".zip")) {
-				fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
-			}
-        }else{
-            this.out = (FileOutputStream)outputDataTarget;
-			this.fileName = new File(fileURL).getName();
-        }
-        writer = Channels.newChannel(this.out);
+    	this.out = (OutputStream) outputDataTarget;
+        try {
+			this.fileName = new File(FileUtils.getFile(projectURL, fileURL)).getName();
+		} catch (MalformedURLException e) {
+			// can't happen - used for obtaining output stream
+		}
+		if (fileURL.endsWith(".zip")) {
+			fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
+		}
+		writer = Channels.newChannel(this.out);
         if (saveIndex) {//create temporary index file
-            String dataDir = new File(fileURL).getParent() != null ?  
-            		new File(fileURL).getParent() + FILE_SEPARATOR : ""; 
-            idxTmpFile = new File(dataDir + fileName  + INDEX_EXTENSION + TMP_EXTENSION);
             try{
-                idxWriter = Channels.newChannel(new DataOutputStream(
-                        new FileOutputStream(idxTmpFile)));
-            }catch(FileNotFoundException ex){
+                idxTmpFile = File.createTempFile(fileName, null);
+                idxWriter = Channels.newChannel(new DataOutputStream(new FileOutputStream(idxTmpFile)));
+            }catch(IOException ex){
                 throw new RuntimeException(ex);
             }
             idxBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
@@ -147,6 +144,9 @@ public class CloverDataFormatter implements Formatter {
 	
     public void finish() throws IOException{
 			flush();
+			if (out instanceof ZipOutputStream) {
+				((ZipOutputStream)out).closeEntry();
+			}
 			if (saveIndex) {
 				idxReader = new FileInputStream(idxTmpFile).getChannel();
 				if (idxTmpFile.length() > 0){//if some indexes were saved to tmp file, save the rest of indexes
@@ -158,29 +158,8 @@ public class CloverDataFormatter implements Formatter {
 				long startValue = 0;//first index
 				int position;
 				if (out instanceof ZipOutputStream) {
-					((ZipOutputStream)out).closeEntry();
 					//put entry INEX/fileName.idx
-					((ZipOutputStream)out).putNextEntry(new ZipEntry(
-							INDEX_DIRECTORY + fileName + INDEX_EXTENSION));
-					File index = new File(fileURL + TMP_EXTENSION);//if append=true exist old indexes
-					if (append && index.exists()){
-						//rewrite old indexes
-						ZipInputStream zipIndex = new ZipInputStream(
-								new FileInputStream(index));
-						while (!(zipIndex.getNextEntry()).getName().equalsIgnoreCase(
-								INDEX_DIRECTORY + fileName + INDEX_EXTENSION)) {}
-						DataInputStream inIndex = new DataInputStream(zipIndex);
-						ReadableByteChannel idxChannel = Channels.newChannel(inIndex);
-				    	while (ByteBufferUtils.reload(buffer,idxChannel) == buffer.capacity()){
-				    		ByteBufferUtils.flush(buffer, writer);
-				    	}
-				    	//get last old index
-				    	startValue = buffer.getLong(buffer.limit() - LONG_SIZE_BYTES);
-				    	ByteBufferUtils.flush(buffer, writer);
-				    	inIndex.close();
-						zipIndex.close();
-						index.delete();
-					}
+					((ZipOutputStream)out).putNextEntry(new ZipEntry(INDEX_DIRECTORY + fileName + INDEX_EXTENSION));
 					//append indexes from tmp file 
 					do {
 						startValue = changSizeToIndex(startValue);
@@ -188,26 +167,24 @@ public class CloverDataFormatter implements Formatter {
 						flush();
 					}while (position == buffer.limit());
 					//clear up
+					((ZipOutputStream)out).closeEntry();
 					idxReader.close();
 					idxTmpFile.delete();
-					if (idxTmpFile.getParentFile() != null) {
-						idxTmpFile.getParentFile().delete();
-					}					
 				}else{//out instanceof FileOutputStream
-					File idxInFile = new File(idxTmpFile.getCanonicalPath().substring(0,idxTmpFile.getCanonicalPath().lastIndexOf('.')));
 			    	//get last old index
-					if (append && idxInFile.length() > 0) {
-						DataInputStream idxIn = new DataInputStream(
-								new FileInputStream(idxInFile));
+					if (append) {
 						try{
-							idxIn.skip(idxInFile.length() - LONG_SIZE_BYTES);
+							DataInputStream idxIn = new DataInputStream(FileUtils.getInputStream(projectURL, 
+								fileURL + CloverDataFormatter.INDEX_EXTENSION));
+							idxIn.skip(idxIn.available() - LONG_SIZE_BYTES);
 							startValue = idxIn.readLong();
-						} finally {
-							idxIn.close();
-						}
+						} catch (IOException e) {
+							// do nothing: index file apparently doesn't exist
+						} 
 					}
 					//append indexes from tmp file 
-					idxWriter = new FileOutputStream(idxInFile,append).getChannel();
+					idxWriter = FileUtils.getWritableChannel(projectURL, fileURL + CloverDataFormatter.INDEX_EXTENSION, 
+							append, -1);
 					do {
 						startValue = changSizeToIndex(startValue);
 						position = buffer.position();
@@ -227,15 +204,13 @@ public class CloverDataFormatter implements Formatter {
 	 */
 	public void close() {
 		if (!isOpen) return;
-		try{
-			if (out instanceof ZipOutputStream) {
-				((ZipOutputStream)out).closeEntry();
-			}else{
-				out.close();
+		try {
+			if (writer.isOpen()) {
+				writer.close();
 			}
 			isOpen = false;
-		}catch(IOException ex){
-			ex.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -298,6 +273,7 @@ public class CloverDataFormatter implements Formatter {
 	 */
 	public void flush() throws IOException {
 		ByteBufferUtils.flush(buffer,writer);
+		out.flush();
 	}
 	
 	public boolean isSaveIndex() {
@@ -318,6 +294,10 @@ public class CloverDataFormatter implements Formatter {
 
 	public int writeHeader() throws IOException {
 		return 0;
+	}
+
+	public void setProjectURL(URL projectURL) {
+		this.projectURL = projectURL;
 	}
 
 }

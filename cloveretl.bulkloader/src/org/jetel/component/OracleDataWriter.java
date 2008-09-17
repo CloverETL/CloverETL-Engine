@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.channels.Channels;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
@@ -42,9 +41,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.DataConsumer;
-import org.jetel.util.exec.DataProducer;
 import org.jetel.util.exec.LoggerDataConsumer;
-import org.jetel.util.exec.PortDataProducer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -124,7 +121,6 @@ public class OracleDataWriter extends Node {
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
     private final static String CONTROL_FILE_NAME_SUFFIX = ".ctl";
     private final static File TMP_DIR = new File(".");
-    private final static String UNIX_STDIN = "/dev/stdin";
     private DataFormatter formatter = null;
     private DataConsumer consumer = null; // consume data from out stream of sqlldr
 	private DataConsumer errConsumer; // consume data from err stream of sqlldr
@@ -177,21 +173,16 @@ public class OracleDataWriter extends Node {
      * @since    April 4, 2002
      */
     public Result execute() throws Exception {
-    	ProcBox box;
 		int processExitValue = 0;
 
 		if (isDataReadFromPort) {
 			if (useFileForExchange) { // dataFile is used for exchange data
-				formatter.setDataTarget(Channels.newChannel(new FileOutputStream(dataFile)));
 				readFromPortAndWriteByFormatter();
-				box = createProcBox();
-			} else { // data is send to process through /dev/stdio
-				DataProducer producer = new PortDataProducer(getInputPort(READ_FROM_PORT));
-				Process process = Runtime.getRuntime().exec(createCommandlineForSqlldr());
-				box = new ProcBox(process, producer, consumer, errConsumer);
+				ProcBox box = createProcBox();
+				processExitValue = box.join();
+			} else { // data is send to process through named pipe
+				processExitValue = runWithPipe();
 			}
-
-			processExitValue = box.join();
 		} else {
 			processExitValue = readDataDirectlyFromFile();
 		}
@@ -202,8 +193,36 @@ public class OracleDataWriter extends Node {
 
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
+    
+    private int runWithPipe() throws Exception {
+    	createNamedPipe();
+    	ProcBox box = createProcBox();
+		
+		new Thread() {
+			public void run() {
+				try {
+					readFromPortAndWriteByFormatter();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}.start();
+		return box.join();
+    }
+    
+    private void createNamedPipe() throws Exception {
+    	try {
+			Process proc = Runtime.getRuntime().exec("mkfifo " + dataFile.getCanonicalPath());
+			ProcBox box = new ProcBox(proc, null, consumer, errConsumer);
+			box.join();
+		} catch (Exception e) {
+			throw e;
+		}
+    }
 
 	private void readFromPortAndWriteByFormatter() throws Exception {
+		formatter.setDataTarget(new FileOutputStream(dataFile));
+		
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
@@ -215,7 +234,8 @@ public class OracleDataWriter extends Node {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			formatter.flush();
+			formatter.finish();
+			formatter.close();
 		}
 	}
     
@@ -281,7 +301,7 @@ public class OracleDataWriter extends Node {
 			return;
 		}
 		
-		if (isDataReadFromPort && !UNIX_STDIN.equals(dataFile.getAbsolutePath()) && dataURL == null ) {
+		if (isDataReadFromPort && dataURL == null ) {
 			if (!dataFile.delete()) {
 				logger.warn("Temp data file was not deleted.");
 			}
@@ -311,11 +331,15 @@ public class OracleDataWriter extends Node {
     
     private String getData() {
     	if (dataFile != null) {
-    		return "'" + dataFile.getAbsolutePath() + "'";
+    		try { // canonical - /xx/xx -- absolute - /xx/./xx
+				return "'" + dataFile.getCanonicalPath() + "'";
+			} catch (IOException e) {
+				return "'" + dataFile.getAbsolutePath() + "'";
+			}
     	}
     	
     	// it is used only at windows;
-    	// temp file or /dev/stdio is used at unix 
+    	// temp file or named pipe is used at unix 
     	return "\\\"-\\\"";
     }
 
@@ -326,7 +350,7 @@ public class OracleDataWriter extends Node {
      * @since                                  April 4, 2002
      */
     public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
+        if (isInitialized()) return;
         super.init();
   
         isDataReadFromPort = !getInPorts().isEmpty();
@@ -356,7 +380,7 @@ public class OracleDataWriter extends Node {
         if (isDataReadFromPort) {
         	formatter = new DataFormatter();
             formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
-        }
+		}
         
 		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
 		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
@@ -403,7 +427,7 @@ public class OracleDataWriter extends Node {
     private void createFileForExchange() throws ComponentNotReadyException {
     	if (!useFileForExchange) {
     		if (!ProcBox.isWindowsPlatform() && isDataReadFromPort) {
-    			dataFile = new File(UNIX_STDIN);
+    			dataFile = createTempFile();
     		}
    			return;
     	}
@@ -417,7 +441,7 @@ public class OracleDataWriter extends Node {
 					dataFile = createTempFile();
 				}
 			} else {
-				dataFile = new File(UNIX_STDIN);
+				dataFile = createTempFile();
 				useFileForExchange = false;
 			}
 		}
@@ -425,7 +449,9 @@ public class OracleDataWriter extends Node {
     
     private File createTempFile() throws ComponentNotReadyException {
     	try {
-			return File.createTempFile(EXCHANGE_FILE_PREFIX, null, TMP_DIR);
+			File file = File.createTempFile(EXCHANGE_FILE_PREFIX, null, TMP_DIR);
+			file.delete();
+			return file;
 		} catch (IOException e) {
 			free();
 			throw new ComponentNotReadyException(this, 
@@ -713,4 +739,3 @@ public class OracleDataWriter extends Node {
         return ret.toString();
     }
 }
-

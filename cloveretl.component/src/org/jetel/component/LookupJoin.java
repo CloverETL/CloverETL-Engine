@@ -32,9 +32,12 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableIterator;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -282,11 +285,11 @@ public class LookupJoin extends Node {
 			if (inRecord != null) {
 				// find slave record in database
 				inRecords[1] = iterator.get(inRecord);
+				if (inRecords[1] == null) {
+					inRecords[1] = NullRecord.NULL_RECORD;
+				}
 				do {
-					if ((inRecords[1] != null || leftOuterJoin)) {
-						if (inRecords[1] == null) {
-							inRecords[1] = NullRecord.NULL_RECORD;
-						}
+					if ((inRecords[1] != NullRecord.NULL_RECORD || leftOuterJoin)) {
 						
 						int transformResult = transformation.transform(inRecords, outRecord);
 
@@ -304,7 +307,10 @@ public class LookupJoin extends Node {
 					}
 					// get next record from lookup table with the same key
 					inRecords[1] = iterator.getNext();
-				} while (inRecords[1] != null);
+					if (inRecords[1] == null) {
+						inRecords[1] = NullRecord.NULL_RECORD;
+					}
+				} while (inRecords[1] != NullRecord.NULL_RECORD);
 			}
 		}
 		broadcastEOF();
@@ -339,7 +345,14 @@ public class LookupJoin extends Node {
         			getOutputPort(REJECTED_PORT).getMetadata());
         }
 
- 
+        if (getInputPort(READ_FROM_PORT).getMetadata() == null) {
+        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+        }
+
+        if (getOutputPort(WRITE_TO_PORT).getMetadata() == null) {
+        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+        }
+
 //        try {
 ////            init();
 ////            free();

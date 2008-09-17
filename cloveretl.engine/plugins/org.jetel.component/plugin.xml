@@ -1,6 +1,6 @@
 <plugin
    id="org.jetel.component"
-   version="2.4.7"
+   version="2.5.2"
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>
@@ -8,7 +8,7 @@
 		<library path="../../../cloveretl.component/lib/saxon8.jar"/>
    	</runtime> 
 
-	<requires engine-version="2.4.7">
+	<requires engine-version="2.5.2">
 		<import plugin-id="org.jetel.connection"/>
 		<import plugin-id="org.jetel.lookup"/>
 	</requires>

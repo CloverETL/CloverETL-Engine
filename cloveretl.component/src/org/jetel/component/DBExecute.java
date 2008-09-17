@@ -38,6 +38,8 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -402,7 +404,9 @@ public class DBExecute extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		dbConnection.free();
+		if (dbConnection != null) {
+			dbConnection.free();
+		}
 	}
 
 	/**
@@ -600,8 +604,30 @@ public class DBExecute extends Node {
         	return status;
         }
 
-        try {
-            init();
+		if (getInPorts().size() > 0) {
+	        if (getInputPort(READ_FROM_PORT).getMetadata() == null) {
+	        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+	        }
+	        return status;
+		}
+		if (getOutPorts().size() > 0) {
+	        if (getOutputPort(WRITE_TO_PORT).getMetadata() == null) {
+	        	status.add(new ConfigurationProblem("Output metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+	        }
+	        return status;
+		}
+
+		try {
+		    if (dbConnection == null){
+		        IConnection conn = getGraph().getConnection(dbConnectionName);
+	            if(conn == null) {
+	                throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
+	            }
+	            if(!(conn instanceof DBConnection)) {
+	                throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
+	            }
+		    }
+//            init();
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {

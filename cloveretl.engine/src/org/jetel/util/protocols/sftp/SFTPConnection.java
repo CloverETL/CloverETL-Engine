@@ -176,6 +176,8 @@ public class SFTPConnection extends URLConnection {
 			return channel.pwd();
 		} catch (JSchException e) {
 			throw new IOException(e.getMessage());
+		} catch (SftpException e) {
+			throw new IOException(e.getMessage());
 		} finally {
 		}
 	}

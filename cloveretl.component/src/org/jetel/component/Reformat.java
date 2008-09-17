@@ -20,15 +20,19 @@
 package org.jetel.component;
 
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -335,24 +339,22 @@ public class Reformat extends Node {
         public ConfigurationStatus checkConfig(ConfigurationStatus status) {
     		super.checkConfig(status);
    		 
-    		if(!checkInputPorts(status, 1, 1)
-    				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+    		if(!checkInputPorts(status, 1, 1) || !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
     			return status;
     		}
-//
-//            try {
-//                init();
-//                free();
-//            } catch (ComponentNotReadyException e) {
-//                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-//                if(!StringUtils.isEmpty(e.getAttributeName())) {
-//                    problem.setAttributeName(e.getAttributeName());
-//                }
-//                status.add(problem);
-//            }
+    		
+            if (getInputPort(READ_FROM_PORT).getMetadata() == null) {
+            	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+            }
+
+            for (Iterator iterator = getOutPorts().iterator(); iterator.hasNext();) {
+				if (iterator.next() == null) {
+					status.add(new ConfigurationProblem("Output metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+				}
+			}
             
             return status;
-        }
+       }
 
 	public String getType(){
 		return COMPONENT_TYPE;

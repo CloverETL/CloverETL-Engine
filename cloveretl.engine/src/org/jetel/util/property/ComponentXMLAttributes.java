@@ -142,8 +142,8 @@ public class ComponentXMLAttributes {
 					for (int j = 0; j < childList.getLength(); j++) {
 					    org.w3c.dom.Node child2Node = childList.item(j);
 						if (child2Node.getNodeType() == org.w3c.dom.Node.TEXT_NODE || child2Node.getNodeType() == org.w3c.dom.Node.CDATA_SECTION_NODE) {
-						    newAttributeValue=child2Node.getNodeValue();
-						    break;
+						    newAttributeValue = newAttributeValue == null ? child2Node.getNodeValue() : newAttributeValue + child2Node.getNodeValue();
+						    //break;
 						}
 					}
 					// add value of child node as attribute, also create new attribute node

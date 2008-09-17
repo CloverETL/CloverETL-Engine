@@ -200,6 +200,31 @@ public class FileUtils {
 	 * @throws IOException
 	 */
     public static ReadableByteChannel getReadableChannel(URL contextURL, String input) throws IOException {
+    	InputStream in = getInputStream(contextURL, input);
+    	//incremental reader needs FileChannel:
+    	return in instanceof FileInputStream ? ((FileInputStream)in).getChannel() : Channels.newChannel(in);
+    }	
+
+    /**
+	 * Creates InputStream from the url definition.
+	 * <p>
+	 * All standard url format are acceptable plus extended form of url by zip & gzip construction:
+	 * </p>
+	 * Examples:
+	 * <dl>
+	 * <dd>zip:&lt;url_to_zip_file&gt;#&lt;inzip_path_to_file&gt;</dd>
+	 * <dd>gzip:&lt;url_to_gzip_file&gt;</dd>
+	 * </dl>
+	 * For zip file, if anchor is not set there is return first zip entry.
+	 * 
+	 * @param contextURL
+	 *            context URL for converting relative to absolute path (see TransformationGraph.getProjectURL())
+	 * @param input
+	 *            URL of file to read
+	 * @return
+	 * @throws IOException
+	 */
+    public static InputStream getInputStream(URL contextURL, String input) throws IOException {
         String zipAnchor = null;
         URL url = null;
         InputStream innerStream = null;
@@ -211,13 +236,14 @@ public class FileUtils {
 		Matcher matcher = getInnerInput(input);
 		String innerSource;
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
-			innerStream = Channels.newInputStream(getReadableChannel(null, innerSource));
+			innerStream = getInputStream(null, innerSource);
+//			innerStream = Channels.newInputStream(getReadableChannel(null, innerSource));
 			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
 		}
 		
 		// std input (console)
 		if (input.equals(STD_SOURCE)) {
-			return Channels.newChannel(System.in);
+			return System.in;
 		}
 		
         //resolve url format for zip files
@@ -249,10 +275,10 @@ public class FileUtils {
             ZipEntry entry;
             while((entry = zin.getNextEntry()) != null) {
                 if(zipAnchor == null) { //url is given without anchor; first entry in zip file is used
-                    return Channels.newChannel(zin);
+                    return zin;
                 }
                 if(entry.getName().equals(zipAnchor)) {
-                    return Channels.newChannel(zin);
+                    return zin;
                 }
                 //finish up with entry
                 zin.closeEntry();
@@ -270,14 +296,15 @@ public class FileUtils {
         // gzip
         else if (isGzip) {
             GZIPInputStream gzin = new GZIPInputStream(innerStream, Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
-            return Channels.newChannel(gzin);
+            return gzin;
         }
         
         if (isFile) {
-            RandomAccessFile raf = new RandomAccessFile(url.getFile(), "r");
-        	return raf.getChannel();
+        	return new FileInputStream(url.getFile());
+//            RandomAccessFile raf = new RandomAccessFile(url.getFile()/*pridani kontextu*//*input*/, "r");
+//        	return raf.getChannel();
         }
-        return Channels.newChannel(innerStream);
+        return innerStream;
     }
 
     private static InputStream getAuthorizedStream(URL url) throws IOException {
@@ -304,19 +331,53 @@ public class FileUtils {
      * </dl>
      * @param contextURL context URL for converting relative to absolute path (see TransformationGraph.getProjectURL()) 
 	 * @param input
-	 * @param appendData
+	 * @param appendData - for file and ftp
+	 * @param compressLevel - for zip 
 	 * @return
 	 * @throws IOException
 	 */
+	public static WritableByteChannel getWritableChannel(URL contextURL, String input, boolean appendData, int compressLevel) throws IOException {
+		return Channels.newChannel(getOutputStream(contextURL, input, appendData, compressLevel));
+	}
+
 	public static WritableByteChannel getWritableChannel(URL contextURL, String input, boolean appendData) throws IOException {
+		return getWritableChannel(contextURL, input, appendData, -1);
+	}
+
+	/**
+     * Creates OutputStream from the url definition.
+     * <p>All standard url format are acceptable (including ftp://) plus extended form of url by zip & gzip construction:</p>
+     * Examples:
+     * <dl>
+     *  <dd>zip:&lt;url_to_zip_file&gt;#&lt;inzip_path_to_file&gt;</dd>
+     *  <dd>gzip:&lt;url_to_gzip_file&gt;</dd>
+     * </dl>
+	 * @param contextURL
+	 * @param input
+	 * @param appendData
+	 * @param compressLevel
+	 * @return
+	 * @throws IOException
+	 */
+	public static OutputStream getOutputStream(URL contextURL, String input, boolean appendData, int compressLevel) 
+			throws IOException {
         String zipAnchor = null;
 		boolean isZip = false;
 		boolean isGzip = false;
 		boolean isFtp = false;
+        OutputStream os = null;
+		
+		// get inner source
+		Matcher matcher = getInnerInput(input);
+		String innerSource;
+		if (matcher != null && (innerSource = matcher.group(5)) != null) {
+			os = getOutputStream(null, innerSource, appendData, compressLevel);
+			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
+		}
 		
 		// std input (console)
 		if (input.equals(STD_SOURCE)) {
-			return new SystemOutByteChannel();
+			return System.out;
 		}
 		
 		// prepare string/path to output file
@@ -334,42 +395,50 @@ public class FileUtils {
             //resolve url format for gzip files
     		isGzip = true;
     		input = input.substring(5);
-        } else if (input.startsWith("ftp") || input.startsWith("sftp") || input.startsWith("scp")) {
+        } 
+		if (input.startsWith("ftp") || input.startsWith("sftp") || input.startsWith("scp")) {
         	isFtp = true;
         }
 
-		// create output stream
-        OutputStream os = null;
-		if(isFtp) {
-			// ftp output stream
-			URL url = FileUtils.getFileURL(contextURL, input);
-			URLConnection urlConnection = url.openConnection();
-			if (urlConnection instanceof SFTPConnection) ((SFTPConnection)urlConnection).setMode(appendData ? ChannelSftp.APPEND : ChannelSftp.OVERWRITE);
-			os = urlConnection.getOutputStream();
-		} else {
-			// file input stream 
-			String filePath = FileUtils.getFile(contextURL, input);
-			os = new FileOutputStream(filePath, appendData);
-		}
-
+        //open channel
+        if (os == null) {
+    		// create output stream
+    		if(isFtp) {
+    			// ftp output stream
+    			URL url = FileUtils.getFileURL(contextURL, input);
+    			URLConnection urlConnection = url.openConnection();
+    			if (urlConnection instanceof SFTPConnection) {
+    				((SFTPConnection)urlConnection).setMode(appendData? ChannelSftp.APPEND : ChannelSftp.OVERWRITE);
+    			}
+    			os = urlConnection.getOutputStream();
+    		} else {
+    			// file input stream 
+    			String filePath = FileUtils.getFile(contextURL, input);
+    			os = new FileOutputStream(filePath, appendData);
+    		}
+        }
+		
 		// create writable channel
 		// zip channel
 		if(isZip) {
 			// resolve url format for zip files
 			ZipOutputStream zout = new ZipOutputStream(os);
+			if (compressLevel != -1) {
+				zout.setLevel(compressLevel);
+			}
 			ZipEntry entry = new ZipEntry(zipAnchor);
 			zout.putNextEntry(entry);
-			return Channels.newChannel(zout);
+			return zout;
         } 
 		
 		// gzip channel
 		else if (isGzip) {
             GZIPOutputStream gzos = new GZIPOutputStream(os, Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
-            return Channels.newChannel(gzos);
+            return gzos;
         } 
 		
 		// other channel
-       	return Channels.newChannel(os);
+       	return os;
 	}
     
 	/**
@@ -382,10 +451,19 @@ public class FileUtils {
 	 */
 	public static boolean canWrite(URL contextURL, String fileURL)
 			throws ComponentNotReadyException {
+		
+		// get inner source
+		Matcher matcher = getInnerInput(fileURL);
+		String innerSource;
+		if (matcher != null && (innerSource = matcher.group(5)) != null) {
+			return canWrite(contextURL, innerSource);
+		}
+		
 		String fileName;
 		if (fileURL.startsWith("zip:")){
+			int pos;
 			fileName = fileURL.substring(fileURL.indexOf(':') + 1, 
-					fileURL.indexOf('#'));
+					(pos = fileURL.indexOf('#')) == -1 ? fileURL.length() : pos);
 		}else if (fileURL.startsWith("gzip:")){
 			fileName = fileURL.substring(fileURL.indexOf(':') + 1);
 		}else{
@@ -397,7 +475,9 @@ public class FileUtils {
 		boolean tmp;
 		//create file on given URL
 		try {
-			url = getFileURL(contextURL, multiOut.next());
+			String filename = multiOut.next();
+			if(filename.startsWith("port:")) return true;
+			url = getFileURL(contextURL, filename);
             if(!url.getProtocol().equalsIgnoreCase("file")) return true;
 			file = new File(url.getPath());
 		} catch (Exception e) {
@@ -572,9 +652,9 @@ public class FileUtils {
 		// get inner source
 		Matcher matcher = getInnerInput(input);
 		String innerSource;
-		if (matcher != null && (innerSource = matcher.group(2)) != null) {
+		if (matcher != null && (innerSource = matcher.group(5)) != null) {
 			url = getInnerAddress(innerSource);
-			input = matcher.group(1) + matcher.group(3);
+			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
 		}
 		
 		// std input (console)

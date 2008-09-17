@@ -139,6 +139,9 @@ public class LdapParser implements Parser {
 	public void init(DataRecordMetadata metadata) 
 		throws ComponentNotReadyException {
 
+		if (metadata == null) {
+			throw new ComponentNotReadyException("Metadata are null");
+		}
 		this.metadata = metadata;
 
 

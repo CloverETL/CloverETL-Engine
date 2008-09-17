@@ -145,6 +145,7 @@ public class DBFAnalyzer {
 	            dbfFields[i].length=buffer.get();
 	            dbfFields[i].decPlaces=buffer.get();
 	            offset+=DBF_FIELD_DEF_SIZE;
+	            buffer.position(offset);
 	        }
 		} else {
 			if (subFieldEofMark <=DBF_FIELD_DEF_SIZE+DBF_ENHANCE_RESERVED) {
@@ -173,6 +174,7 @@ public class DBFAnalyzer {
 	            dbfFields[i].decPlaces=buffer.get();
 	            //dbfFields[i].offset=buffer.getInt();
 	            offset+=DBF_FIELD_DEF_SIZE_ENHANCE;
+	            buffer.position(offset);
 	        }
 		}
 		
@@ -188,8 +190,8 @@ public class DBFAnalyzer {
 	private int findSubRecordEofMark(ByteBuffer buffer) {
 		int fEof;
 		int fMax = buffer.limit();
-		for (fEof = 0; fEof < fMax ;fEof++) {
-			if (buffer.get() == DBF_FIELD_HEADER_TERMINATOR) return fEof;
+		for (fEof = 0; fEof < fMax ;fEof+=8) {
+			if (buffer.get(fEof) == DBF_FIELD_HEADER_TERMINATOR) return fEof;
 		}
 		return -1;
 	}

@@ -2,6 +2,17 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
++ DbConnection: explicit unregistering of JDBC drivers
++ WatchDog: explicit interruption of nodes for failed graph
+
+REL 2-5-1
+---------
+Changes/bug fixes:
++ MergeJoin: new optional attribute ascendingInputs
++ MergeJoin: checking of inputs ordering
++ bugfixes
+
+
 REL 2-5-0
 ---------
 Changes/bug fixes:
@@ -13,7 +24,27 @@ Changes/bug fixes:
 + debugDirectory graph attribute was replaced by command line parameter identically called
 + new command line parameter "-nodebug" turns of all runtime graph debugging (e.g edge debugging)
 + all names have to satisfy pattern "[_A-Za-z_]+[_A-Za-z0-9]*"
++ DBInputTable supports incremental reading 
++ DBOutputTable can return number of updated records
++ XMLWriter features: useRootElement, singleLine, DTD, XSD location, namespaces
++ XMLWriter: better mapping schema (old schema is still valid, but not recommended)
++ MergeJoin: new optional attribute ascendingInputs
++ removed byteMode attribute in Simple/RangeLookupTable
++ CloverDataWriter and CloverDataReader supports file name in format like other writers; compressData attribute is removed
++ MergeJoin: checking of inputs ordering
 
+REL 2-4-11
+----------
++ minor bugfixes
+
+REL 2-4-10
+----------
++ fix bug with index_of in CTL
++ small bugfixes
+
+REL 2-4-9
+---------
++ fixed bug in NumericFormat - some numbers ware not correctly formatted
 
 REL 2-4-8
 ---------

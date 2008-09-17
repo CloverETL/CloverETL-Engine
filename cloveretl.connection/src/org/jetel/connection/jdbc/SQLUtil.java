@@ -54,6 +54,10 @@ public class SQLUtil {
 	private final static String END_RECORD_DELIMITER = "\n";
 	public final static String BLOB_FORMAT_STRING = "blob";
 	public final static String BINARY_FORMAT_STRING = "binary";
+	
+	//combination of alphanumeric chars with . and _ - can be quoted
+	//sequence between quote is regarded as group by @see java.util.Pattern	
+	public final static String DB_FIELD_PATTERN = "([\\p{Alnum}\\._]+)|([\"\'][\\p{Alnum}\\._ ]+[\"\'])"; 
 
 	static Log logger = LogFactory.getLog(SQLUtil.class);
 
@@ -123,6 +127,66 @@ public class SQLUtil {
 
 
 	/**
+	 * Creates clover data field metadata compatible with database column metadata
+	 * 
+	 * @param name clover field name
+	 * @param dbMetadata result set metadata
+	 * @param sqlIndex index of result set column (1 based)
+	 * @param jdbcSpecific
+	 * @return clover data field metadata compatible with database column metadata
+	 * @throws SQLException
+	 */
+	public static DataFieldMetadata dbMetadata2jetel(String name, ResultSetMetaData dbMetadata, int sqlIndex, JdbcSpecific jdbcSpecific) throws SQLException{
+		DataFieldMetadata fieldMetadata = new DataFieldMetadata(name, null);
+		
+		int type = dbMetadata.getColumnType(sqlIndex);
+		char cloverType = jdbcSpecific.sqlType2jetel(type);
+		//set length and scale for decimal field
+		if (cloverType == DataFieldMetadata.DECIMAL_FIELD) {
+			int scale = 0;
+			int length = 0;
+			try {
+				scale = dbMetadata.getScale(sqlIndex);
+				if (scale < 0) {
+					cloverType = DataFieldMetadata.NUMERIC_FIELD;
+				}else{
+					fieldMetadata.setFieldProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(scale));
+				}
+			} catch (SQLException e) {
+				cloverType = DataFieldMetadata.NUMERIC_FIELD;
+			}
+			try {
+				length = scale + dbMetadata.getPrecision(sqlIndex);
+				if (length <= scale) {
+					cloverType = DataFieldMetadata.NUMERIC_FIELD;
+				}else{
+					fieldMetadata.setFieldProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(length));				
+				}
+			} catch (SQLException e) {
+				cloverType = DataFieldMetadata.NUMERIC_FIELD;
+			}
+		}
+		fieldMetadata.setType(cloverType);
+		//for Date Data Field set proper format
+		switch (type) {
+		case Types.DATE:
+			fieldMetadata.setFormatStr(Defaults.DEFAULT_DATE_FORMAT);
+			break;
+		case Types.TIME:
+			fieldMetadata.setFormatStr(Defaults.DEFAULT_TIME_FORMAT);
+			break;
+		case Types.TIMESTAMP:
+			fieldMetadata.setFormatStr(Defaults.DEFAULT_DATETIME_FORMAT);
+			break;
+		}
+		
+		if (dbMetadata.isNullable(sqlIndex) == ResultSetMetaData.columnNullable) {
+			fieldMetadata.setNullable(true);
+		}
+		return fieldMetadata;
+	}
+	
+	/**
 	 *  Converts SQL metadata into Clover's DataRecordMetadata
 	 *
 	 * @param  dbMetadata        SQL ResultSet metadata describing which columns are
@@ -140,71 +204,14 @@ public class SQLUtil {
 		DataRecordMetadata jetelMetadata = new DataRecordMetadata(tableName, DataRecordMetadata.DELIMITED_RECORD);
 		jetelMetadata.setFieldDelimiter(DEFAULT_DELIMITER);
 		jetelMetadata.setRecordDelimiters(END_RECORD_DELIMITER);
-		int type;
-		char cloverType;
 		String colName;
-			
+
 		for (int i = 1; i <= dbMetadata.getColumnCount(); i++) {
 			colName = dbMetadata.getColumnName(i);
 			if (!StringUtils.isValidObjectName(colName)) {
 				colName = StringUtils.normalizeName(colName);
 			}
-			try {
-				fieldMetadata = new DataFieldMetadata(colName, null);
-
-			} catch (Exception ex) {
-				throw new RuntimeException(ex.getMessage() + " field name " + dbMetadata.getColumnName(i));
-			}
-			// set proper data type
-			type = dbMetadata.getColumnType(i);
-			cloverType = jdbcSpecific.sqlType2jetel(type);
-			if (cloverType == DataFieldMetadata.DECIMAL_FIELD) {
-				int scale = 0;
-				int length = 0;
-				try {
-					scale = dbMetadata.getScale(i);
-					if (scale < 0) {
-						cloverType = DataFieldMetadata.NUMERIC_FIELD;
-					}else{
-						fieldMetadata.setFieldProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(scale));
-					}
-				} catch (SQLException e) {
-					cloverType = DataFieldMetadata.NUMERIC_FIELD;
-				}
-				try {
-					length = scale + dbMetadata.getPrecision(i);
-					if (length <= scale) {
-						cloverType = DataFieldMetadata.NUMERIC_FIELD;
-					}else{
-						fieldMetadata.setFieldProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(length));				
-					}
-				} catch (SQLException e) {
-					cloverType = DataFieldMetadata.NUMERIC_FIELD;
-				}
-			}
-			fieldMetadata.setType(cloverType);
-			//for Date Data Field set proper format
-			switch (type) {
-			case Types.DATE:
-				fieldMetadata.setFormatStr(Defaults.DEFAULT_DATE_FORMAT);
-				break;
-			case Types.TIME:
-				fieldMetadata.setFormatStr(Defaults.DEFAULT_TIME_FORMAT);
-				break;
-			case Types.TIMESTAMP:
-				fieldMetadata.setFormatStr(Defaults.DEFAULT_DATETIME_FORMAT);
-				break;
-			}
-
-			if (dbMetadata.isNullable(i) == ResultSetMetaData.columnNullable) {
-				fieldMetadata.setNullable(true);
-			}
-			/*
-			 *  this is not safe - at least Oracle JDBC driver reports NUMBER to be currency
-			 *  if (dbMetadata.isCurrency(i)) {
-			 *  fieldMetadata.setFormatStr("�#.#");
-			 *  }
-			 */
+			fieldMetadata = dbMetadata2jetel(colName, dbMetadata, i, jdbcSpecific);
 			jetelMetadata.addField(fieldMetadata);
 		}
 		return jetelMetadata;
@@ -238,6 +245,9 @@ public class SQLUtil {
 			tmp.toArray(out);
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		if (out.length == 0) {
+			logger.warn("Table " + tableName + " does not exist or has no columns");
 		}
 		return out;
 	}

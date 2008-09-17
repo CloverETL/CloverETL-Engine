@@ -203,7 +203,7 @@ public class DataFieldMetadata implements Serializable {
 		this.fieldType = _type;
 		setFieldProperties(new TypedProperties());
 		this.localeStr=null;
-		if (isNumeric() || fieldType == DATE_FIELD || fieldType == DATETIME_FIELD){
+		if (isNumeric() || fieldType == DATE_FIELD || fieldType == DATETIME_FIELD || fieldType == BOOLEAN_FIELD){
 			trim = true;
 		}
 	}

@@ -88,10 +88,12 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
               outDataRecordsMap=new HashMap(outRecordsMetadata.length);
               parseExceptions=new LinkedList<Throwable>();
               for(int i=0;i<inRecordsMetadata.length;i++){
-                inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
+            	  if (inRecordsMetadata[i] != null)
+            		  inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
               }
               for(int i=0;i<outRecordsMetadata.length;i++){
-                outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
+            	  if (outRecordsMetadata[i] != null)
+            		  outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
               }
        							
        }
@@ -108,10 +110,12 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
               outDataRecordsMap=new HashMap(outRecordsMetadata.length);
               parseExceptions=new LinkedList<Throwable>();
               for(int i=0;i<inRecordsMetadata.length;i++){
-                inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
+            	  if (inRecordsMetadata[i] != null)
+            		  inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
               }
               for(int i=0;i<outRecordsMetadata.length;i++){
-                outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
+            	  if (outRecordsMetadata[i] != null)
+            		  outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
               }
       }
       
@@ -636,7 +640,8 @@ void ImportSource() :{/*@bgen(jjtree) ImportSource */
           jjtc000 = false;
           jjtreeCloseNodeScope(jjtn000);
         }
-/*@egen*/	{		
+/*@egen*/	{		// save line number - as openNodeScope hook does not work reliably
+		jjtn000.setLineNumber(t.beginLine);
 		InputStream stream;
 		jjtn000.setSourceToImport(filenameURL);
 		try{

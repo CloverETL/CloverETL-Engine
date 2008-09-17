@@ -154,11 +154,13 @@ public class runGraph {
         logger.info("***  CloverETL framework/transformation graph runner ver "
                         + RUN_GRAPH_VERSION
                         + ", (c) 2002-06 D.Pavlis, released under GNU Lesser General Public License  ***");
-        logger.info(" Running with framework version: "
+        logger.info("Running with framework version: "
                 + JetelVersion.MAJOR_VERSION + "." + JetelVersion.MINOR_VERSION
                 + " build#" + JetelVersion.BUILD_NUMBER + " compiled "
                 + JetelVersion.LIBRARY_BUILD_DATETIME);
 
+		logger.info("Running on " + Runtime.getRuntime().availableProcessors() + " CPU(s)"
+				+ " max available memory for JVM " + Runtime.getRuntime().maxMemory() / 1024 + " KB");
 
         Logger.getLogger(runGraph.class); // make log4j to init itself
         String log4jPropertiesFile = null;

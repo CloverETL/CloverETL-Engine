@@ -71,6 +71,7 @@ public class TargetFile {
 	private Object fileTag;							// string of marks '#' are replaced by this fileTag 
     private String before;							// string of fileURL before last string of marks '#'
     private String after;							// string of fileURL after last string of marks '#'
+	private String fileBeforeTag;
 
     private WritableByteChannel byteChannel;
 
@@ -90,6 +91,8 @@ public class TargetFile {
 	private ArrayList<byte[]> dictOutArray;
 	private boolean wait4Finishing;
 	private Object monitor;
+
+	private int compressLevel = -1;
 
     /**
      * Constructors.
@@ -175,6 +178,10 @@ public class TargetFile {
     	this.fileTag = fileTag;
     }
     
+    public void setFileBeforeTag(String fileBeforeTag) {
+    	this.fileBeforeTag = fileBeforeTag;
+    }
+
     /**
      * Replaces '#' string of marks for value and creates MultiOutFile.
      * 
@@ -402,7 +409,8 @@ public class TargetFile {
     		setDataTarget(Channels.newChannel(readOut));
     	} else if (fileNames != null) {
             String fName = fileNames.next();
-        	byteChannel = FileUtils.getWritableChannel(contextURL, fName, appendData);
+            if (fileBeforeTag != null) fName = addUnassignedPrefix(fName);
+        	byteChannel = FileUtils.getWritableChannel(contextURL, fName, appendData, compressLevel );
         	if (useChannel) {
         		setDataTarget(byteChannel);
         	} else {
@@ -412,6 +420,19 @@ public class TargetFile {
         	byteChannel = channels.next();
         	setDataTarget(byteChannel);
         }
+    }
+    
+    private String addUnassignedPrefix(String fName) throws IOException {
+    	int k = fName.lastIndexOf('#');
+    	String name; 
+    	if (k < 0) {
+    		k = 0;
+    	}
+		name = fName.substring(k);
+    	int j = name.lastIndexOf('/');
+    	if (j < 0) j = name.lastIndexOf('\\');
+    	if (j > 0) k = j;
+    	return fName.substring(0, k+1) + fileBeforeTag + fName.substring(k+1);
     }
     
     /**
@@ -513,6 +534,14 @@ public class TargetFile {
 
 	public void setDictionary(Dictionary dictionary) {
 		this.dictionary = dictionary;
+	}
+
+	public int getCompressLevel() {
+		return compressLevel;
+	}
+
+	public void setCompressLevel(int compressLevel) {
+		this.compressLevel = compressLevel;
 	}
 
 }

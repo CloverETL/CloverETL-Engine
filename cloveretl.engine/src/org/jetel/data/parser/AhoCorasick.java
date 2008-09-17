@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.jetel.util.string.StringUtils;
+
 public class AhoCorasick {
 	boolean failureFunctionDone = false;
 	NodeTrie rootTrie;
@@ -98,20 +100,19 @@ public class AhoCorasick {
 		if(failureFunctionDone) {
 			throw new IllegalArgumentException("AhoCorasick: failureFunction is already done.");
 		}
-		if(s.length() < 1) {
-			throw new IllegalArgumentException("AhoCorasick: pattern can not be empty.");
+		if(!StringUtils.isEmpty(s)) {
+			NodeTrie iterator = rootTrie;
+			for(int i = 0; i < s.length(); i++) {
+				if(iterator.children[s.charAt(i)] == null) {
+					iterator.children[s.charAt(i)] = new NodeTrie(iterator, s.charAt(i));
+				}
+				iterator = iterator.children[s.charAt(i)]; 
+			}
+			iterator.patterns.add(new MyInt(idx));
 		}
 		
-		NodeTrie iterator = rootTrie;
-		for(int i = 0; i < s.length(); i++) {
-			if(iterator.children[s.charAt(i)] == null) {
-				iterator.children[s.charAt(i)] = new NodeTrie(iterator, s.charAt(i));
-			}
-			iterator = iterator.children[s.charAt(i)]; 
-		}
         if(idx < minPattern) minPattern = idx;
         if(idx > maxPattern) maxPattern = idx;
-		iterator.patterns.add(new MyInt(idx));
 	}
 
 	/**

@@ -124,6 +124,10 @@ public class RecordKey {
 		
 		if (isInitialized) return;
 
+        if (metadata == null) {
+        	throw new RuntimeException("Metadata are null.");
+        }
+
 	    if (keyFields == null) {
             Integer position;
             keyFields = new int[keyFieldNames.length];
@@ -256,7 +260,7 @@ public class RecordKey {
 		    for (int i = 0; i < keyFields.length; i++) {
 		        compResult = record1.getField(keyFields[i]).compareTo(record2.getField(record2KeyFields[i]));
 		        if (compResult != 0) {
-		            if (!(record1.getField(keyFields[i]).isNull&&record2.getField(keyFields[i]).isNull)){
+		            if (!(record1.getField(keyFields[i]).isNull&&record2.getField(record2KeyFields[i]).isNull)){
 		                return compResult;
 		            }
 		        }

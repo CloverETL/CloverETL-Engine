@@ -92,10 +92,12 @@ public class TransformLangParser extends ExpParser {
               outDataRecordsMap=new HashMap(outRecordsMetadata.length);
               parseExceptions=new LinkedList<Throwable>();
               for(int i=0;i<inRecordsMetadata.length;i++){
-                inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
+            	  if (inRecordsMetadata[i] != null)
+            		  inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
               }
               for(int i=0;i<outRecordsMetadata.length;i++){
-                outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
+            	  if (outRecordsMetadata[i] != null)
+            		  outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
               }
        							
        }
@@ -112,10 +114,12 @@ public class TransformLangParser extends ExpParser {
               outDataRecordsMap=new HashMap(outRecordsMetadata.length);
               parseExceptions=new LinkedList<Throwable>();
               for(int i=0;i<inRecordsMetadata.length;i++){
-                inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
+            	  if (inRecordsMetadata[i] != null)
+            		  inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
               }
               for(int i=0;i<outRecordsMetadata.length;i++){
-                outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
+            	  if (outRecordsMetadata[i] != null)
+            		  outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
               }
       }
       
@@ -559,7 +563,8 @@ void CompilationUnit() #void :
 
 void ImportSource() :{	Token t;
 	String filenameURL;}{	// must parse whole tree and insert it at this place	<IMPORT> ( t=<STRING_LITERAL> { filenameURL=unquote(t.image); }
-				| t=<STRING_PLAIN_LITERAL> { filenameURL=t.image; } )	{		
+				| t=<STRING_PLAIN_LITERAL> { filenameURL=t.image; } )	{		// save line number - as openNodeScope hook does not work reliably
+		jjtThis.setLineNumber(t.beginLine);
 		InputStream stream;
 		jjtThis.setSourceToImport(filenameURL);
 		try{

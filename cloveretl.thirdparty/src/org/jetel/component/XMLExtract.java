@@ -1,6 +1,5 @@
 package org.jetel.component;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.nio.channels.Channels;
@@ -8,7 +7,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,8 +32,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.sequence.PrimitiveSequence;
-import org.jetel.util.file.FileUtils;
-import org.jetel.util.file.WcardPattern;
+import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -215,6 +212,8 @@ public class XMLExtract extends Node {
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 
     public final static String COMPONENT_TYPE = "XML_EXTRACT";
+    
+	private final static int INPUT_PORT = 0;
 
     // Map of elementName => output port
     private Map<String, Mapping> m_elementPortMap = new HashMap<String, Mapping>();
@@ -223,16 +222,13 @@ public class XMLExtract extends Node {
     private InputSource m_inputSource;
     
     private String inputFile;
-	private Iterator<String> filenameItor;
-    private String filename;
+	private ReadableChannelIterator readableChannelIterator;
 
     private boolean useNestedNodes = true;
     
     private int skipRows=0; // do not skip rows by default
     private int numRecords = -1;
 
-    private WcardPattern pat;
-    
     /**
      * SAX Handler that will dispatch the elements to the different ports.
      */
@@ -313,6 +309,68 @@ public class XMLExtract extends Node {
                     } else {
                         sequenceField.fromString(sequence.nextValueString());
                     }
+                }
+                // This is the closing element of the matched element that
+                // triggered the processing
+                // That should be the end of this record so send it off to the
+                // next Node
+                if (runIt) {
+                    try {
+                        DataRecord outRecord = m_activeMapping.getOutRecord();
+                        String[] generatedKey = m_activeMapping.getGeneratedKey();
+                        String[] parentKey = m_activeMapping.getParentKey();
+                        if (parentKey != null) {
+                            //if generatedKey is a single array, all parent keys are concatenated into generatedKey field
+                            //I know it is ugly code...
+                            if(generatedKey.length != parentKey.length && generatedKey.length != 1) {
+                                LOG
+                                        .warn(getId()
+                                        + ": XML Extract Mapping's generatedKey and parentKey attribute has different number of field.");
+                                m_activeMapping.setGeneratedKey(null);
+                                m_activeMapping.setParentKey(null);
+                            } else {
+                                for(int i = 0; i < parentKey.length; i++) {
+                                    boolean existGeneratedKeyField = generatedKey.length == 1 ? outRecord.hasField(generatedKey[0]) : outRecord.hasField(generatedKey[i]);
+                                    boolean existParentKeyField = m_activeMapping.getParent().getOutRecord().hasField(parentKey[i]);
+                                    if (!existGeneratedKeyField) {
+                                        LOG
+                                                .warn(getId()
+                                                + ": XML Extract Mapping's generatedKey field was not found. "
+                                                + (generatedKey.length == 1 ? generatedKey[0] : generatedKey[i]));
+                                        m_activeMapping.setGeneratedKey(null);
+                                        m_activeMapping.setParentKey(null);
+                                    } else if (!existParentKeyField) {
+                                        LOG
+                                                .warn(getId()
+                                                + ": XML Extract Mapping's parentKey field was not found. "
+                                                + parentKey[i]);
+                                        m_activeMapping.setGeneratedKey(null);
+                                        m_activeMapping.setParentKey(null);
+                                    } else {
+                                        DataField generatedKeyField = generatedKey.length == 1 ? outRecord.getField(generatedKey[0]) : outRecord.getField(generatedKey[i]);
+                                        DataField parentKeyField = m_activeMapping.getParent().getOutRecord().getField(parentKey[i]);
+                                        if(generatedKey.length != parentKey.length) {
+                                            if(generatedKeyField.getType() != DataFieldMetadata.STRING_FIELD) {
+                                                LOG
+                                                        .warn(getId()
+                                                        + ": XML Extract Mapping's generatedKey field has to be String type (keys are concatened to this field).");
+                                                m_activeMapping.setGeneratedKey(null);
+                                                m_activeMapping.setParentKey(null);
+                                            } else {
+                                                ((StringDataField) generatedKeyField).append(parentKeyField.toString());
+                                            }
+                                        } else {
+                                            generatedKeyField.setValue(parentKeyField.getValue());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception ex) {
+                        throw new SAXException(ex);
+                    }
+                } else {
+                    throw new SAXException("Stop Signaled");
                 }
             }
             
@@ -422,56 +480,6 @@ public class XMLExtract extends Node {
                     try {
                         OutputPort outPort = getOutputPort(m_activeMapping.getOutPort());
                         DataRecord outRecord = m_activeMapping.getOutRecord();
-                        String[] generatedKey = m_activeMapping.getGeneratedKey();
-                        String[] parentKey = m_activeMapping.getParentKey();
-                        if (parentKey != null) {
-                            //if generatedKey is a single array, all parent keys are concatenated into generatedKey field
-                            //I know it is ugly code...
-                            if(generatedKey.length != parentKey.length && generatedKey.length != 1) {
-                                LOG
-                                        .warn(getId()
-                                        + ": XML Extract Mapping's generatedKey and parentKey attribute has different number of field.");
-                                m_activeMapping.setGeneratedKey(null);
-                                m_activeMapping.setParentKey(null);
-                            } else {
-                                for(int i = 0; i < parentKey.length; i++) {
-                                    boolean existGeneratedKeyField = generatedKey.length == 1 ? outRecord.hasField(generatedKey[0]) : outRecord.hasField(generatedKey[i]);
-                                    boolean existParentKeyField = m_activeMapping.getParent().getOutRecord().hasField(parentKey[i]);
-                                    if (!existGeneratedKeyField) {
-                                        LOG
-                                                .warn(getId()
-                                                + ": XML Extract Mapping's generatedKey field was not found. "
-                                                + (generatedKey.length == 1 ? generatedKey[0] : generatedKey[i]));
-                                        m_activeMapping.setGeneratedKey(null);
-                                        m_activeMapping.setParentKey(null);
-                                    } else if (!existParentKeyField) {
-                                        LOG
-                                                .warn(getId()
-                                                + ": XML Extract Mapping's parentKey field was not found. "
-                                                + parentKey[i]);
-                                        m_activeMapping.setGeneratedKey(null);
-                                        m_activeMapping.setParentKey(null);
-                                    } else {
-                                        DataField generatedKeyField = generatedKey.length == 1 ? outRecord.getField(generatedKey[0]) : outRecord.getField(generatedKey[i]);
-                                        DataField parentKeyField = m_activeMapping.getParent().getOutRecord().getField(parentKey[i]);
-                                        if(generatedKey.length != parentKey.length) {
-                                            if(generatedKeyField.getType() != DataFieldMetadata.STRING_FIELD) {
-                                                LOG
-                                                        .warn(getId()
-                                                        + ": XML Extract Mapping's generatedKey field has to be String type (keys are concatened to this field).");
-                                                m_activeMapping.setGeneratedKey(null);
-                                                m_activeMapping.setParentKey(null);
-                                            } else {
-                                                ((StringDataField) generatedKeyField).append(parentKeyField.toString());
-                                            }
-                                        } else {
-                                            generatedKeyField.setValue(parentKeyField.getValue());
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        
                     	if (skipRows > 0) {
                     		if (m_activeMapping.getParent() == null) skipRows--;
                     	} else {
@@ -909,6 +917,7 @@ public class XMLExtract extends Node {
         }
         
         try {
+            if (readableChannelIterator.isGraphDependentSource()) prepareNextSource();
     		do {
                 parser.parse(m_inputSource, new SAXHandler());
     		} while (nextSource());
@@ -949,21 +958,23 @@ public class XMLExtract extends Node {
         }
         
         if (inputFile != null) {
-            pat = new WcardPattern();
-            pat.addPattern(inputFile, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-            this.filenameItor = pat.filenames().iterator();
-            prepareNextSource();
+        	TransformationGraph graph = getGraph();
+            this.readableChannelIterator = new ReadableChannelIterator(
+            		getInputPort(INPUT_PORT), 
+            		graph != null ? graph.getProjectURL() : null,
+            		inputFile);
+            this.readableChannelIterator.setCharset(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
+            this.readableChannelIterator.setDictionary(graph.getDictionary());
+            this.readableChannelIterator.init();
+            if (!readableChannelIterator.isGraphDependentSource()) prepareNextSource();
         }
     }
     
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		
-        if (pat != null) {
-            this.filenameItor = pat.filenames().iterator();
-            prepareNextSource();
-        }
+        this.readableChannelIterator.reset();
+        prepareNextSource();
 	}
 	
 	private void prepareNextSource() throws ComponentNotReadyException {
@@ -983,16 +994,13 @@ public class XMLExtract extends Node {
 	 */
 	private boolean nextSource() throws JetelException {
 		ReadableByteChannel stream = null; 
-		while (filenameItor.hasNext()) {
-			filename = filenameItor.next();
-			try {
-				stream = FileUtils.getReadableChannel(null, filename);
-				m_inputSource = new InputSource(Channels.newInputStream(stream));
-				return true;
-			} catch (IOException e) {
-				throw new JetelException("File is unreachable: " + filename, e);
-			}
+		while (readableChannelIterator.hasNext()) {
+			stream = readableChannelIterator.next();
+			if (stream == null) continue; // if record no record found
+			m_inputSource = new InputSource(Channels.newInputStream(stream));
+			return true;
 		}
+        readableChannelIterator.blankRead();
 		return false;
 	}
 

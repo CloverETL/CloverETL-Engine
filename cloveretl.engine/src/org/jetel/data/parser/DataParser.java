@@ -160,6 +160,9 @@ public class DataParser implements Parser {
 	 */
 	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
 		//init private variables
+		if (metadata == null) {
+			throw new ComponentNotReadyException("Metadata are null");
+		}
 		byteBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer.flip(); // initially empty 
@@ -182,10 +185,12 @@ public class DataParser implements Parser {
 		for (int i = 0; i < numFields; i++) {
 			if(metadata.getField(i).isDelimited()) {
 				delimiters = metadata.getField(i).getDelimiters();
-				if(delimiters != null) { //it is possible in case eofAsDelimiter tag is set
+				if(delimiters != null && delimiters.length > 0) { //it is possible in case eofAsDelimiter tag is set
 					for(int j = 0; j < delimiters.length; j++) {
 						delimiterSearcher.addPattern(delimiters[j], i);
 					}
+				} else {
+					delimiterSearcher.addPattern(null, i);
 				}
 			}
 			isAutoFilling[i] = metadata.getField(i).getAutoFilling() != null;

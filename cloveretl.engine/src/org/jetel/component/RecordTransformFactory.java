@@ -185,6 +185,10 @@ public class RecordTransformFactory {
         DynamicJavaCode dynamicTransformCode;
         // creating dynamicTransformCode from internal transformation format
         CodeParser codeParser = new CodeParser(inMetadata, outMetadata);
+        if (!addTransformCodeStub) 
+        	// we must turn this off, because we don't have control about the rest of Java source
+        	// and thus we cannot create the declaration of symbolic constants
+        	codeParser.setUseSymbolicNames(false);
         codeParser.setSourceCode(transformCode);
         codeParser.parse();
         if (addTransformCodeStub)
@@ -255,91 +259,24 @@ public class RecordTransformFactory {
         
         return -1;
     }
-    
-    private static boolean isSimpleTransformNode(CLVFStart record) {
-    	
-        int numTopChildren = record.jjtGetNumChildren();
-        
-        /* Detection of simple mapping format */
-        if (record.jjtHasChildren()) {
-    		for (int i = 0; i < numTopChildren; i++) {
-    			org.jetel.interpreter.ASTnode.Node node = record.jjtGetChild(i);
-    			if (i < numTopChildren - 1) {
-    				if (!(node instanceof org.jetel.interpreter.ASTnode.CLVFVarDeclaration)) {
-//    					System.out.println("Non var-declaration encountered.");
-    					return false;
-    				}
-    			} else {
-    				if (!(node instanceof org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration)) {
-//    					System.out.println("Non function-declaration encountered.");
-    					return false;
-    				}
-    				if (!((CLVFFunctionDeclaration)node).name.equals("transform")) {
-//    					System.out.println("The single function must be named 'trasnform'");
-    					return false;
-    				}
-    				CLVFFunctionDeclaration transFunction = (CLVFFunctionDeclaration)node;
-    				int numTransChildren = transFunction.jjtGetNumChildren();
-    				for (int j = 0; j < numTransChildren; j++) {
-    					org.jetel.interpreter.ASTnode.Node fNode = transFunction.jjtGetChild(j);
-    					if (!(fNode instanceof CLVFDirectMapping)) {
-//    						System.out.println("Function transform() must contain direct mappings only");
-    						return false;
-    					}
-    				}
-    			}
-    		}
-    	}
-        return true;
-    }
-    
-	private static boolean isSimpleDenormalizerNode(CLVFStart record) {
 
+	private static boolean isSimpleTransformFunctionNode(CLVFStart record, String functionName, int functionParams) {
 		int numTopChildren = record.jjtGetNumChildren();
 		
-		/* Detection of simple mapping inside getOutputRecord() */
+		/* Detection of simple mapping inside transform(idx) function */
 		if (record.jjtHasChildren()) {
 			for (int i = 0; i < numTopChildren; i++) {
 				org.jetel.interpreter.ASTnode.Node node = record.jjtGetChild(i);
 				if (node instanceof org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration) {
-					if (((CLVFFunctionDeclaration)node).name.equals("getOutputRecord")) {
+					if (((CLVFFunctionDeclaration)node).name.equals(functionName)) {
 						CLVFFunctionDeclaration transFunction = (CLVFFunctionDeclaration)node;
-						if (transFunction.numParams > 0) 
+						if (transFunction.numParams != functionParams) 
 							return false;
 						int numTransChildren = transFunction.jjtGetNumChildren();
 	    				for (int j = 0; j < numTransChildren; j++) {
 	    					org.jetel.interpreter.ASTnode.Node fNode = transFunction.jjtGetChild(j);
 	    					if (!(fNode instanceof CLVFDirectMapping)) {
-//	    						System.out.println("Function getOutputRecord() must contain direct mappings only");
-	    						return false;
-	    					}
-	    				}
-						return true;
-					}
-				}
-			}		
-		}  
-		return false;
-	}
-	
-	private static boolean isSimpleNormalizerNode(CLVFStart record) {
-		int numTopChildren = record.jjtGetNumChildren();
-		
-		/* Detection of simple mapping inside getOutputRecord() */
-		if (record.jjtHasChildren()) {
-			for (int i = 0; i < numTopChildren; i++) {
-				org.jetel.interpreter.ASTnode.Node node = record.jjtGetChild(i);
-				if (node instanceof org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration) {
-					if (((CLVFFunctionDeclaration)node).name.equals("transform")) {
-						CLVFFunctionDeclaration transFunction = (CLVFFunctionDeclaration)node;
-						if (transFunction.numParams != 1) 
-							return false;
-//						if (transFunction.)
-						int numTransChildren = transFunction.jjtGetNumChildren();
-	    				for (int j = 0; j < numTransChildren; j++) {
-	    					org.jetel.interpreter.ASTnode.Node fNode = transFunction.jjtGetChild(j);
-	    					if (!(fNode instanceof CLVFDirectMapping)) {
-//	    						System.out.println("Function getOutputRecord() must contain direct mappings only");
+//	    						System.out.println("Function transform(idx) must contain direct mappings only");
 	    						return false;
 	    					}
 	    				}
@@ -364,7 +301,7 @@ public class RecordTransformFactory {
             System.out.println("Error when parsing expression: " + e.getMessage().split(System.getProperty("line.separator"))[0]);
             return false;
         }
-    	return isSimpleTransformNode(record);
+    	return isSimpleTransformFunctionNode(record, "transform", 0);
     }
     
     public static boolean isSimpleDenormalizer(DataRecordMetadata[] inMeta,
@@ -380,7 +317,7 @@ public class RecordTransformFactory {
             System.out.println("Error when parsing expression: " + e.getMessage().split(System.getProperty("line.separator"))[0]);
             return false;
         }
-    	return isSimpleDenormalizerNode(record);
+    	return isSimpleTransformFunctionNode(record, "getOutputRecord", 0);
     }
     
     public static boolean isSimpleNormalizer(DataRecordMetadata[] inMeta,
@@ -396,7 +333,7 @@ public class RecordTransformFactory {
             System.out.println("Error when parsing expression: " + e.getMessage().split(System.getProperty("line.separator"))[0]);
             return false;
         }
-    	return isSimpleNormalizerNode(record);
+    	return isSimpleTransformFunctionNode(record, "transform", 1);
     }
 }
     

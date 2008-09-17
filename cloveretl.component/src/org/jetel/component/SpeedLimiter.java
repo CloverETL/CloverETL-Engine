@@ -100,12 +100,10 @@ public class SpeedLimiter extends Node {
 
 	/**
 	 * Delays thread by preset amount of miliseconds. 
+	 * @throws InterruptedException 
 	 */
-	private void delay() {
-		try {
-			Thread.sleep(delay);
-		} catch (InterruptedException ignore) {
-		}		
+	private void delay() throws InterruptedException {
+		Thread.sleep(delay);
 	}
 
 	/**

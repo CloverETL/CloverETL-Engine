@@ -128,16 +128,16 @@ import org.w3c.dom.Element;
  */
 public class DBJoin extends Node {
 
-    private static final String XML_SQL_QUERY_ATTRIBUTE = "sqlQuery";
-    private static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
-	private static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey";
-	private static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass";
-	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
-	private static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
-	private static final String XML_CHARSET_ATTRIBUTE = "charset";
-	private static final String XML_DB_METADATA_ATTRIBUTE = "metadata";
-	private static final String XML_MAX_CACHED_ATTRIBUTE = "maxCached";
-	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
+    public static final String XML_SQL_QUERY_ATTRIBUTE = "sqlQuery";
+    public static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
+	public static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey";
+	public static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass";
+	public static final String XML_TRANSFORM_ATTRIBUTE = "transform";
+	public static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
+	public static final String XML_CHARSET_ATTRIBUTE = "charset";
+	public static final String XML_DB_METADATA_ATTRIBUTE = "metadata";
+	public static final String XML_MAX_CACHED_ATTRIBUTE = "maxCached";
+	public static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
 
 	public final static String COMPONENT_TYPE = "DBJOIN";
 	
@@ -283,25 +283,25 @@ public class DBJoin extends Node {
             if(!(conn instanceof DBConnection)) {
                 throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class.");
             }
-            conn.init();
+//            conn.init();
             
             dbMetadata = getGraph().getDataRecordMetadata(metadataName);
     		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
     		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
-            try {
-				lookupTable = new DBLookupTable(
-						"LOOKUP_TABLE_FROM_" + this.getId(),
-						((DBConnection) conn).getConnection(getId(), OperationType.READ),
-						dbMetadata, query, maxCached);
-			} catch (JetelException e1) {
-				throw new ComponentNotReadyException(e1);
-			}
-            lookupTable.checkConfig(status);
+//            try {
+//				lookupTable = new DBLookupTable(
+//						"LOOKUP_TABLE_FROM_" + this.getId(),
+//						((DBConnection) conn).getConnection(getId(), OperationType.READ),
+//						dbMetadata, query, maxCached);
+//			} catch (JetelException e1) {
+//				throw new ComponentNotReadyException(e1);
+//			}
+//            lookupTable.checkConfig(status);
 //    		lookupTable.init();
     		try {
     			recordKey = new RecordKey(joinKey, inMetadata[0]);
     			recordKey.init();
-    			lookupTable.setLookupKey(recordKey);
+//    			lookupTable.setLookupKey(recordKey);
     		} catch (Exception e) {
     			throw new ComponentNotReadyException(this, e);
     		}

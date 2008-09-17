@@ -22,8 +22,13 @@ public class SFTPOutputStream extends OutputStream {
 	}
 	
     public void close() throws IOException {
+    	flush();
     	os.close();
     	session.disconnect();
     }
     
+    public void flush() throws IOException {
+    	os.flush();
+    }
+
 }

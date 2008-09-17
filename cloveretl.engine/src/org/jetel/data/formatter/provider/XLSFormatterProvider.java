@@ -1,5 +1,6 @@
 package org.jetel.data.formatter.provider;
 
+import org.jetel.data.Defaults;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.JExcelXLSDataFormatter;
 import org.jetel.data.formatter.XLSFormatter;
@@ -18,12 +19,18 @@ public class XLSFormatterProvider implements FormatterProvider {
 	private int firstRow;
 	private int sheetNumber = -1;
 	private String firstColumnIndex = "A";
+	private String charset;
 	
 	/**
 	 * Contructors.
 	 */
 	public XLSFormatterProvider(boolean append) {
+		this(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER, append);
+	}
+
+	public XLSFormatterProvider(String charset, boolean append) {
 		this.append = append;
+		this.charset = charset;
 	}
 
 	/**
@@ -32,7 +39,7 @@ public class XLSFormatterProvider implements FormatterProvider {
 	 * @return data formatter
 	 */
 	public Formatter getNewFormatter() {
-		XLSFormatter formatter = new JExcelXLSDataFormatter(append);
+		XLSFormatter formatter = new JExcelXLSDataFormatter(charset, append);
 		formatter.setSheetName(sheetName);
 		formatter.setSheetNumber(sheetNumber);
 		formatter.setFirstColumn(firstColumnIndex);
@@ -121,5 +128,13 @@ public class XLSFormatterProvider implements FormatterProvider {
 	 */
 	public boolean isAppend() {
 		return append;
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 }

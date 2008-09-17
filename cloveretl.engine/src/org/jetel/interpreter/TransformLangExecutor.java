@@ -1237,7 +1237,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             value = new TLDateValue();
             break;
         case BOOLEAN_VAR:
-            value = TLBooleanValue.FALSE;
+            value = new TLBooleanValue();
             break;
         case BYTE_VAR:
         {
@@ -1799,11 +1799,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         
         switch(node.opType){
         case CLVFSequenceNode.OP_RESET:
-        	try{
-        		node.sequence.reset();
-        	}catch(ComponentNotReadyException ex){
-        		throw new TransformLangExecutorRuntimeException(node,"Error when resetting sequence \""+node.sequenceName+"\"",ex);
-        	}
+//        	try{
+        		node.sequence.resetValue();
+//        	}catch(ComponentNotReadyException ex){
+//        		throw new TransformLangExecutorRuntimeException(node,"Error when resetting sequence \""+node.sequenceName+"\"",ex);
+//        	}
             retVal=TLNumericValue.ZERO;
             break;
         case CLVFSequenceNode.OP_CURRENT:

@@ -310,19 +310,22 @@ public class DataIntersection extends Node {
 	 *  If there is no corresponding slave record and is defined left outer join, then
 	 *  output driver only.
 	 *
-	 * @param  driver                    Description of the Parameter
+	 * @param  reader                    Description of the Parameter
 	 * @param  port                      Description of the Parameter
 	 * @return                           Description of the Return Value
 	 * @exception  IOException           Description of the Exception
 	 * @exception  InterruptedException  Description of the Exception
 	 */
-	private final boolean flush(InputReader driver, OutputPort port) 
+	private final boolean flush(InputReader reader, OutputPort port) 
 			throws IOException,InterruptedException{
-		if ((tmp = driver.next()) != null) {
+		if (keyDuplicates) {
+			while ((tmp = reader.next()) != null) {
+				port.writeRecord(tmp);
+			}
+		}else if ((tmp = reader.next()) != null){
 			port.writeRecord(tmp);
-			return true;
 		}
-		return false;
+		return true;
 	}
 
 	/**
@@ -378,23 +381,16 @@ public class DataIntersection extends Node {
 				slaveReader.loadNextRun();
 				break;
 			}
-		}while (runIt && driverReader.hasData() && slaveReader.hasData());
+		}while (runIt && (driverReader.hasData() || slaveReader.hasData()));
 		 
 		if (!runIt) {
 			return Result.ABORTED;
 		}
 		// flush remaining driver records
-		while (flush(driverReader, outPortA)) ;
-		while (driverReader.hasData()) {
-			driverReader.loadNextRun();
-			while (flush(driverReader, outPortA)) ;
-		}
+		flush(driverReader, outPortA) ;
+
 		// flush remaining slave records
-		while (flush(slaveReader, outPortB)) ; 
-		while (slaveReader.hasData()) {
-			slaveReader.loadNextRun();
-			while (flush(slaveReader, outPortB)) ; 
-		}
+		flush(slaveReader, outPortB) ; 
 
 		transformation.finished();
 
@@ -605,7 +601,7 @@ public class DataIntersection extends Node {
 					slaveOverrideKeys = tmp[B_INDEX][0];
 				}
 			} catch (ComponentNotReadyException e) {
-				status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_JOINKEY_ATTRIBUTE);
+				status.add(e, Severity.WARNING, this, Priority.NORMAL, XML_JOINKEY_ATTRIBUTE);
 			}
 		}
 		recordKeys = new RecordKey[2];

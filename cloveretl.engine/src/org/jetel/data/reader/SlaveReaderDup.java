@@ -27,6 +27,8 @@ public class SlaveReaderDup implements InputReader {
 	private boolean firstRun;
 	private boolean getFirst;
 	DataRecord deserializedRec;
+	
+	private InputOrdering inputOrdering = InputOrdering.UNDEFINED;
 
 	public SlaveReaderDup(InputPort inPort, RecordKey key) {
 		this.inPort = inPort;
@@ -78,12 +80,14 @@ public class SlaveReaderDup implements InputReader {
 		recBuf.clear();
 		swap();
 		while (true) {
-			rec[NEXT].reset();
+//			rec[NEXT].reset();
 			if (inPort.readRecord(rec[NEXT]) == null) {
 				rec[NEXT] = null;
 				return true;
 			}
-			if (key.compare(rec[CURRENT], rec[NEXT]) != 0) {	// beginning of new run
+			int comparison = key.compare(rec[CURRENT], rec[NEXT]);
+			if (comparison != 0) {	// beginning of new run
+				inputOrdering = SlaveReader.updateOrdering(comparison, inputOrdering);
 				return true;
 			}
 			// move record to buffer
@@ -136,7 +140,8 @@ public class SlaveReaderDup implements InputReader {
 //			return 1;
 //		}
 		if (rec1 == null) {
-			return rec2 == null ? 0 : 1;	// null is greater than any other reader (as in DriverReader)
+			return 1;// null is greater than any other reader (as in DriverReader)
+//			return rec2 == null ? 0 : 1;	
 		} else if (rec2 == null) {
 			return -1;
 		}
@@ -150,6 +155,10 @@ public class SlaveReaderDup implements InputReader {
 	@Override
 	public String toString() {
 		return getSample().toString();
+	}
+
+	public InputOrdering getOrdering() {
+		return inputOrdering;
 	}
 
 }

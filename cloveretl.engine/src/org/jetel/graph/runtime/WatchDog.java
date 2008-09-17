@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -107,7 +107,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		currentPhase = null;
 		watchDogStatus = Result.N_A;
         
-        inMsgQueue=new PriorityBlockingQueue<Message<?>>();
+        inMsgQueue=new LinkedBlockingQueue<Message<?>>();
         outMsgMap=new DuplicateKeyMap(Collections.synchronizedMap(new HashMap()));
         
         //is JMX turned on?
@@ -434,6 +434,22 @@ public class WatchDog implements Callable<Result>, CloverPost {
         //now we can notify all waiting phases for free threads
         synchronized(threadManager) {
         	threadManager.releaseNodeThreads(phase.getNodes().size());
+        	for (Node node : phase.getNodes().values()){
+        		Thread t = node.getNodeThread();
+        		long runId = this.getGraphRuntimeContext().getRunId();
+        		t.setName("exNode_"+runId+"_"+getGraph().getId()+"_"+node.getId());
+        		// explicit interruption of threads of failed graph; (some nodes may be still running)
+        		if (node.getResultCode() == Result.RUNNING)
+        			node.setResultCode(Result.ABORTED);
+            	if (phaseStatus == Result.ERROR || phaseStatus == Result.ABORTED){  
+            		try {
+                		if (t.isAlive())
+                			t.interrupt();
+            		} catch (Exception e) {
+            			logger.warn(e.getMessage(), e);
+            		} // catch
+            	}
+        	}// for
             threadManager.notifyAll();
         }
         
@@ -443,7 +459,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	public void sendMessage(Message msg) {
         inMsgQueue.add(msg);
-
     }
 
     public Message[] receiveMessage(GraphElement recipient, @SuppressWarnings("unused") final long wait) {
@@ -544,5 +559,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		return graph;
 	}
 	
+    public IAuthorityProxy getAuthorityProxy() {
+    	return getGraph().getAuthorityProxy();
+    }
+
 }
 

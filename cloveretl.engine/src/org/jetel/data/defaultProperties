@@ -136,3 +136,8 @@ CLOVER_FIELD_REGEX = \\$[\\w]+
 
 # Assignation sign in the mappings
 ASSIGN_SIGN = :=
+
+#the key name used for incremental reading if the pointer shouldn't be stored
+#in example for view data with grid mode
+INCREMENTAL_STORE_KEY = incremental_store
+

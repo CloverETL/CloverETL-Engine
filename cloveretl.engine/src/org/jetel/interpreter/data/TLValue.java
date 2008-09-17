@@ -106,7 +106,6 @@ public abstract class TLValue implements Comparable<TLValue>{
             throw new IllegalArgumentException("Don't know how to convert "+field.getType());
         
         }
-        newval.setValue(field);
         return newval;
     }
     
@@ -128,7 +127,7 @@ public abstract class TLValue implements Comparable<TLValue>{
         case BYTE:
         	return new TLByteArrayValue();
         case BOOLEAN:
-            return TLBooleanValue.FALSE;
+            return new TLBooleanValue();
         case LIST:
             return new TLListValue();
         case MAP:

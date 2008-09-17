@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -71,6 +72,7 @@ public class MultiFileReader {
     private String fileURL;
 	private ReadableChannelIterator channelIterator;
     private int skip;
+    private int fSkip;
 	private int fileSkip;
 	private int globalCounter; //number of returned records
 	private int sourceCounter; //number of returned records in one source
@@ -92,6 +94,7 @@ public class MultiFileReader {
     private InputPort inputPort;
 	private String charset;
 	private Dictionary dictionary;
+	private boolean initializeDataDependentSource;
     
     private static final String GLOBAL_ROW_COUNT = "global_row_count";
     private static final String SOURCE_ROW_COUNT = "source_row_count";
@@ -131,7 +134,7 @@ public class MultiFileReader {
         
 		initChannelIterator();
         try {
-            if(!nextSource() && !channelIterator.isGraphDependentSource()) {
+            if(!(initializeDataDependentSource = channelIterator.isGraphDependentSource()) && !nextSource()) {
                 noInputFile = true;
                 //throw new ComponentNotReadyException("FileURL attribute (" + fileURL + ") doesn't contain valid file url.");
             }
@@ -163,6 +166,7 @@ public class MultiFileReader {
      */
 	public void checkConfig(DataRecordMetadata metadata) throws ComponentNotReadyException {
 // viz issue #730
+//////////// trunk version
 //        parser.init(metadata);
 //        initChannelIterator();
 //        
@@ -187,6 +191,28 @@ public class MultiFileReader {
 //            	throw new ComponentNotReadyException("File is unreachable: " + channelIterator.getCurrentFileName(), e);
 //			}
 //		}
+///////branch 2.5 version:
+//        parser.init(metadata);
+//        initChannelIterator();
+//        
+//		String fName; 
+//		Iterator<String> fit = channelIterator.getFileIterator();
+//		while (fit.hasNext()) {
+//			try {
+//				fName = fit.next();
+//				URL url = FileUtils.getInnerAddress(fName);
+//				if (FileUtils.isServerURL(url)) {
+//					//FileUtils.checkServer(url); //this is very long operation
+//					continue;
+//				}
+//				parser.setReleaseDataSource(!fName.equals(STD_IN));
+//				parser.setDataSource(FileUtils.getReadableChannel(contextURL, fName));
+//			} catch (IOException e) {
+//				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
+//			} catch (ComponentNotReadyException e) {
+//				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
+//			}
+//		}
 	}
 	
     /**
@@ -201,24 +227,16 @@ public class MultiFileReader {
     	if (incrementalProperties == null) {
     		incrementalProperties = new HashMap<String, Incremental>();
     	}
-    	Incremental incremental = incrementalProperties.get(incrementalFile);
-    	Properties prop;
-    	if (incremental == null) {
-        	prop = new Properties();
-        	try {
-        		prop.load(Channels.newInputStream(FileUtils.getReadableChannel(contextURL, incrementalFile)));
-    		} catch (IOException e) {
-    			logger.warn("The incremental file not found or it is corrupted! Cause: " + e.getMessage());
-    		}
-    		incremental = new Incremental(prop);
-    		incremental.add(incrementalKey);
-    		incrementalProperties.put(incrementalFile, incremental);
-    	} else {
-    		prop = incremental.getProperties();
-    		if (incremental.contains(incrementalKey)) {
-    			logger.warn("Incremental reading: The key '" + incrementalKey + "' is duplicated for file '" + incrementalFile + "'");
-    		}
-    	}
+    	Incremental incremental;
+    	Properties prop = new Properties();
+    	try {
+    		prop.load(Channels.newInputStream(FileUtils.getReadableChannel(contextURL, incrementalFile)));
+		} catch (IOException e) {
+			logger.warn("The incremental file not found or it is corrupted! Cause: " + e.getMessage());
+		}
+		incremental = new Incremental(prop);
+		incremental.add(incrementalKey);
+		incrementalProperties.put(incrementalFile, incremental);
     	
 		String incrementalValue = (String) prop.get(incrementalKey);
 		if (incrementalValue == null) {
@@ -253,7 +271,7 @@ public class MultiFileReader {
      * @param skip
      */
     public void setSkip(int skip) {
-        this.skip = skip;
+        this.skip = fSkip = skip;
     }
     
     /**
@@ -359,6 +377,7 @@ public class MultiFileReader {
         //use parser to get next record
         DataRecord rec;
         try {
+            initializeDataDependentSource();
             while((rec = parser.getNext(record)) == null && nextSource());
         } catch(JetelException e) {
             globalCounter++;
@@ -398,6 +417,7 @@ public class MultiFileReader {
         //use parser to get next record
         DataRecord rec;
         try {
+            initializeDataDependentSource();
             while((rec = parser.getNext()) == null && nextSource());
         } catch(JetelException e) {
             globalCounter++;
@@ -409,6 +429,13 @@ public class MultiFileReader {
         
         return rec;
 	}		
+
+	private final void initializeDataDependentSource() throws JetelException {
+        if (initializeDataDependentSource) {
+        	nextSource();
+        	initializeDataDependentSource = false;
+        }
+	}
 
 	/**
 	 * Sets autofilling fields in data record.
@@ -559,11 +586,12 @@ public class MultiFileReader {
 		autoFillingMap.clear();
 		autoFillingData = null;
 		iSource = -1;
+		skip = fSkip;
 
 		channelIterator.reset();
         try {
     		resetIncrementalReading();
-			if(!channelIterator.isGraphDependentSource() && !nextSource()) 
+			if(!(initializeDataDependentSource = channelIterator.isGraphDependentSource()) && !nextSource()) 
 			    noInputFile = true;
 		} catch (JetelException e) {
 			logger.error("reset", e);

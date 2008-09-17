@@ -36,17 +36,17 @@ import java.util.Set;
  */
 public class StringAproxComparatorLocaleRules {
 
-	private static Map rules=new HashMap();
+	private static Map<String, String[]> rules=new HashMap<String, String[]>();
 
 	private static final String[] CZ_RULES={
-		"a=á=A=�?",
+		"a=á=A=Á",
 		"c=č=C=Č",
 		"d=ď=D=Ď",
 		"e=é=ě=E=É=Ě",
 		"i=í=I=Í",
-		"n=�?=N=Ň",
+		"n=ň=N=Ň",
 		"o=ó=O=Ó",
-		"r=ř=R=�?",
+		"r=ř=R=Ř",
 		"s=š=S=Š",
 		"t=ť=T=Ť",
 		"u=ů=ú=U=Ů=Ú",
@@ -57,9 +57,9 @@ public class StringAproxComparatorLocaleRules {
 	private static final String[] PL_RULES={
 		"a=ą=A=Ą",
 		"c=ć=C=Ć",
-		"e=ę=E=�?",
-		"l=ł=L=�?",
-		"n=ń=N=�?",
+		"e=ę=E=Ę",
+		"l=ł=L=Ł",
+		"n=ń=N=Ń",
 		"o=ó=O=Ó",
 		"s=ś=S=Ś",
 		"z=ż=ź=Z=Ż=Ź"
@@ -100,7 +100,7 @@ public class StringAproxComparatorLocaleRules {
 	 * This method gets out avaible locale
 	 */
 	public static String[] getAvaibleLocales(){
-		final Set rulesSet = rules.keySet();
+		final Set<String> rulesSet = rules.keySet();
 		return (String[]) rulesSet.toArray(new String[rulesSet.size()]);
 	}
 }

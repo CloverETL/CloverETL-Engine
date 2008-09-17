@@ -1,6 +1,6 @@
 <plugin
 	id="org.jetel.jdbc"
-	version="2.4.7"
+	version="2.5.2"
 	provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>

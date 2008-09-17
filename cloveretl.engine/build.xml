@@ -14,8 +14,8 @@
 	    	
 	<!-- =========================== VERSIONs =========================== -->
 	<property name="major_version" value="2"/>
-	<property name="minor_version" value="4"/>
-	<property name="revision_version" value="7"/>
+	<property name="minor_version" value="5"/>
+	<property name="revision_version" value="2"/>
 	<tstamp>
 		<format property="TODAY" pattern="dd/MM/yyyy HH:mm:ss" locale="en" />
 	</tstamp>
@@ -30,10 +30,10 @@
 	<property name="dir.component.doc.default" value="${basedir}/src-doc"/>
 	<property name="dir.examples" value="${basedir}/examples"/>
 		
-	<property name="dir.build" value="${basedir}/build"/>
+	<property name="dir.build" value="${basedir}/build-tmp"/>
 	<property name="dir.bin" value="${dir.build}/classes"/>
 	<property name="dir.classestest" value="${dir.build}/classes-test"/>
-	<property name="dir.package" value="${dir.build}/package"/>
+	<property name="dir.package" value="${basedir}/build"/>
 	<property name="dir.distprepare" value="${dir.build}/distprepare"/>
 	<property name="dir.distprepare.src" value="${dir.distprepare}/src"/>
 	<property name="dir.distprepare.bin" value="${dir.distprepare}/bin"/>
@@ -166,6 +166,14 @@
 
 		<copy todir="${src.distribution.dir.engine}/scripts">
 			<fileset dir="scripts" />
+		</copy>
+
+		<copy todir="${src.distribution.dir.engine}/tools">
+			<fileset dir="tools" />
+		</copy>
+
+		<copy todir="${src.distribution.dir.engine}/build-scripts">
+			<fileset dir="build-scripts" />
 		</copy>
 
 		<copy todir="${src.distribution.dir.engine}">
@@ -504,19 +512,6 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 	<target name="runtests-plugin">
 		<echo message="Runtests plugin - ${plugin.dir}"/>
 		<ant target="runtests" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
-			<property name="dir.dist" value="${dir.package}"/>
-			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
-			<property name="dir.engine.classestest" value="${dir.classestest}"/>
-			<property name="cobertura.ser" value="${cobertura.ser}"/>
-			<property name="major_version" value="${major_version}"/>
-			<property name="minor_version" value="${minor_version}"/>
-			<property name="revision_version" value="${revision_version}"/>
-		</ant>
-	</target>
-	
-	<target name="runtests-scenerio">
-		<echo message="Runtests environment"/>
-		<ant target="runscenerios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
 			<property name="dir.dist" value="${dir.package}"/>
 			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
 			<property name="dir.engine.classestest" value="${dir.classestest}"/>

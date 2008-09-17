@@ -35,8 +35,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -66,9 +66,6 @@ import org.w3c.dom.Element;
  *  <tr><td><b>type</b></td><td>"CLOVER_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the data file. </td>
- *  <tr><td><b>compressedData</b><br><i>optional</i></td><td>whether data file is zip archive or
- *   not. If not set we try to guess it from fileURL: if it ends with ".zip" 
- *   true else false</td>
  *  <tr><td><b>indexFileURL</b><br><i>optional</i></td><td>if index file is not 
  *  in the same directory as data file or has not expected name (fileURL.idx)</td>
  *  <tr><td><b>startRecord</b><br><i>optional</i></td><td>index of first parsed record</td>
@@ -98,7 +95,6 @@ public class CloverDataReader extends Node {
 
 	/** XML attribute names */
 	private final static String XML_FILE_ATTRIBUTE = "fileURL";
-	private final static String XML_COMPRESSEDDATA_ATTRIBUTE = "compressedData";
 	private final static String XML_INDEXFILEURL_ATTRIBUTE = "indexFileURL";
 	private static final String XML_STARTRECORD_ATTRIBUTE = "startRecord";
 	private static final String XML_FINALRECORD_ATTRIBUTE = "finalRecord";
@@ -107,7 +103,6 @@ public class CloverDataReader extends Node {
 
 	private String fileURL;
 	private String indexFileURL;
-	private boolean compressedData;
 	private CloverDataParser parser;
 	private int startRecord = -1;
 	private int finalRecord = -1;
@@ -164,9 +159,6 @@ public class CloverDataReader extends Node {
 			if (xattribs.exists(XML_FINALRECORD_ATTRIBUTE)){
 				aDataReader.setFinalRecord(xattribs.getInteger(XML_FINALRECORD_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_COMPRESSEDDATA_ATTRIBUTE)){
-				aDataReader.setCompressedData(xattribs.getBoolean(XML_COMPRESSEDDATA_ATTRIBUTE));
-			}
 		} catch (Exception ex) {
 		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -180,7 +172,6 @@ public class CloverDataReader extends Node {
 		if (indexFileURL != null){
 			xmlElement.setAttribute(XML_INDEXFILEURL_ATTRIBUTE,indexFileURL);
 		}
-		xmlElement.setAttribute(XML_COMPRESSEDDATA_ATTRIBUTE,String.valueOf(compressedData));
 		if (finalRecord > -1) {
 			xmlElement.setAttribute(XML_FINALRECORD_ATTRIBUTE,String.valueOf(finalRecord));
 		}
@@ -202,9 +193,14 @@ public class CloverDataReader extends Node {
         
         checkMetadata(status, getOutMetadata());
         
-    	if (!(new File(fileURL)).exists()) {
-    		status.add(new ConfigurationProblem("File " + fileURL + " does not exist.", Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
-    	}
+    	try {
+			if (!FileUtils.isServerURL(FileUtils.getInnerAddress(fileURL)) && 
+					!(new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL))).exists()) {
+				status.add(new ConfigurationProblem("File " + fileURL + " does not exist.", Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+			}
+		} catch (Exception e) {
+			status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+		}
 
 //        try {
 //            init();
@@ -236,6 +232,7 @@ public class CloverDataReader extends Node {
 			}catch (JetelException ex) {}
 		}
 		parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
+		parser.setProjectURL(getGraph().getProjectURL());
 		if (indexFileURL != null) {
 			parser.setDataSource(new String[]{fileURL,indexFileURL});
 		}else{
@@ -264,15 +261,6 @@ public class CloverDataReader extends Node {
 			throw new InvalidParameterException("Invalid finalRecord parameter.");
 		}
 		this.finalRecord = finalRecord;
-	}
-
-	public void setCompressedData(boolean compressedData) {
-		this.compressedData = compressedData;
-		if (compressedData) {
-			parser.setCompressedData(1);
-		}else{
-			parser.setCompressedData(0);
-		}
 	}
 	
 }

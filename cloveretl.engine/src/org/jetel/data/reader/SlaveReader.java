@@ -25,6 +25,8 @@ public class SlaveReader implements InputReader {
 	private boolean needsRewind;
 	private boolean keepLast;
 
+	private InputOrdering inputOrdering = InputOrdering.UNDEFINED;
+	
 	/**
 	 * Constructor of slave reader object
 	 * 
@@ -74,13 +76,28 @@ public class SlaveReader implements InputReader {
 			if (firstRun) {
 				firstRun = false;
 			}
-			if (key.compare(rec[NEXT], rec[CURRENT]) != 0) {
+			//if (key.compare(rec[NEXT], rec[CURRENT]) != 0) {
+			int comparison = key.compare(rec[CURRENT], rec[NEXT]);
+			if (comparison != 0) {
+				inputOrdering = updateOrdering(comparison, inputOrdering);
 				swap();
 				return true;
 			}
 		}
 		rec[CURRENT] = rec[NEXT] = null;
 		return false;
+	}
+
+	protected static InputOrdering updateOrdering(int comparison, InputOrdering inputOrdering) {
+		if (comparison > 0){
+			if (inputOrdering!=InputOrdering.DESCENDING)
+				inputOrdering = (inputOrdering==InputOrdering.UNDEFINED ? InputOrdering.DESCENDING : InputOrdering.UNSORTED ) ;
+		} 
+		if (comparison < 0){
+			if (inputOrdering!=InputOrdering.ASCENDING)
+				inputOrdering = (inputOrdering==InputOrdering.UNDEFINED ? InputOrdering.ASCENDING : InputOrdering.UNSORTED ) ;
+		}
+		return inputOrdering;
 	}
 
 	private boolean loadNextRunKeepLast() throws InterruptedException, IOException {
@@ -107,7 +124,10 @@ public class SlaveReader implements InputReader {
 				rec[NEXT] = null;
 				return true;
 			}
-			if (key.compare(rec[CURRENT], rec[NEXT]) != 0) {	// beginning of new run
+
+			int comparison = key.compare(rec[CURRENT], rec[NEXT]);
+			if (comparison != 0) {	// beginning of new run
+				inputOrdering = updateOrdering(comparison, inputOrdering);
 				return true;
 			}
 			swap();
@@ -146,7 +166,8 @@ public class SlaveReader implements InputReader {
 //			return 1;
 //		}
 		if (rec1 == null) {
-			return rec2 == null ? 0 : 1;	// null is greater than any other reader (as in DriverReader)
+			return 1; // null is greater than any other reader (as in DriverReader)
+//			return rec2 == null ? 0 : 1;	
 		} else if (rec2 == null) {
 			return -1;
 		}
@@ -166,4 +187,7 @@ public class SlaveReader implements InputReader {
 		return keepLast ? loadNextRunKeepLast() : loadNextRunKeepFirst();
 	}
 
+	public InputOrdering getOrdering() {
+		return inputOrdering;
+	}
 }
