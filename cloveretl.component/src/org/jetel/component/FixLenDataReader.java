@@ -47,7 +47,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.dictionary.IDictionaryValue;
+//import org.jetel.graph.dictionary.IDictionaryValue;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -266,10 +266,10 @@ public class FixLenDataReader extends Node {
     private void storeValues() {
     	if (getPhase() != null && getPhase().getResult() == Result.FINISHED_OK) {
     		try {
-    			IDictionaryValue<?> dickValue = getGraph().getDictionaryValue(Defaults.INCREMENTAL_STORE_KEY);
-    			if (dickValue != null && dickValue.getValue() == Boolean.FALSE) {
-    				return;
-    			}
+//    			IDictionaryValue<?> dickValue = getGraph().getDictionaryValue(Defaults.INCREMENTAL_STORE_KEY);
+//    			if (dickValue != null && dickValue.getValue() == Boolean.FALSE) {
+//    				return;
+//    			}
 				reader.storeIncrementalReading();
 			} catch (IOException e) {
 				throw new RuntimeException(e);
