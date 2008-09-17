@@ -24,6 +24,7 @@ import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -32,9 +33,12 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.dictionary.IDictionaryValue;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -104,6 +108,8 @@ public class DelimitedDataReader extends Node {
 	private static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
 
 	private final static int OUTPUT_PORT = 0;
+	private final static int INPUT_PORT = 0;
+	
 	private String fileURL;
 
 	private DelimitedDataParser parser;
@@ -220,6 +226,10 @@ public class DelimitedDataReader extends Node {
     private void storeValues() {
     	if (getPhase() != null && getPhase().getResult() == Result.FINISHED_OK) {
     		try {
+    			IDictionaryValue<?> dickValue = getGraph().getDictionaryValue(Defaults.INCREMENTAL_STORE_KEY);
+    			if (dickValue != null && dickValue.getValue() == Boolean.FALSE) {
+    				return;
+    			}
 				reader.storeIncrementalReading();
 			} catch (IOException e) {
 				throw new RuntimeException(e);
@@ -329,6 +339,10 @@ public class DelimitedDataReader extends Node {
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
+        
+        status.add(new ConfigurationProblem(
+        		"Component is of type DELIMITED_DATA_READER, which is deprecated",
+        		Severity.WARNING, this, Priority.NORMAL));
         
         if(!checkInputPorts(status, 0, 1)
         		|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {

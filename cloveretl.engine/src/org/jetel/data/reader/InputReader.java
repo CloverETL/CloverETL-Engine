@@ -12,6 +12,23 @@ import org.jetel.exception.ComponentNotReadyException;
  *
  */
 public interface InputReader {
+	
+	public enum InputOrdering {
+		UNDEFINED,
+		ASCENDING, 
+		DESCENDING,
+		UNSORTED
+	}
+	
+	/**
+	 * Returns recognized ordering of input data. It may change during data processing.
+	 * i.e. at first it's UNDEFINED, 
+	 * when greater value is loaded it's ASCENDING and 
+	 * if some of next value is lower it may change to UNSORTED.
+	 * @return
+	 */
+	public InputOrdering getOrdering();
+	
 	/**
 	 * Loads next run (set of records with identical keys)  
 	 * @return

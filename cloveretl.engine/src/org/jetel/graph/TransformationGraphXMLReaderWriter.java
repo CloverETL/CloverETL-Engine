@@ -187,7 +187,7 @@ public class TransformationGraphXMLReaderWriter {
 	private static final boolean validation = false;
 	private static final boolean ignoreComments = true;
 	private static final boolean ignoreWhitespaces = true;
-	private static final boolean putCDATAIntoText = false;
+	private static final boolean putCDATAIntoText = true;
 	private static final boolean createEntityRefs = false;
 	
 	private static Log logger = LogFactory.getLog(TransformationGraphXMLReaderWriter.class);
@@ -227,7 +227,6 @@ public class TransformationGraphXMLReaderWriter {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
  
  			dbf.setNamespaceAware(true);
-            dbf.setCoalescing(true);
 
 			// Optional: set various configuration options
 			dbf.setValidating(validation);

@@ -28,6 +28,7 @@ import org.jetel.data.primitive.CloverInteger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
@@ -65,8 +66,9 @@ public class RecordNormalizeTL implements RecordNormalize {
     private DataRecord[] targetRec;
     
     /**Constructor for the DataRecordTransform object */
-    public RecordNormalizeTL(Log logger,String srcCode) {
+    public RecordNormalizeTL(Log logger,String srcCode,TransformationGraph graph) {
          wrapper = new WrapperTL(srcCode,logger);
+         wrapper.setGraph(graph);
          counterTL = new TLValue[]{new TLNumericValue<CloverInteger>(TLValueType.INTEGER,new CloverInteger(0))};
          sourceRec=new DataRecord[1];
          targetRec=new DataRecord[1];

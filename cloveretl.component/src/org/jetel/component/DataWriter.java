@@ -29,8 +29,11 @@ import org.jetel.data.formatter.provider.DataFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -363,6 +366,10 @@ public class DataWriter extends Node {
         if(!checkInputPorts(status, 1, 1)
         		|| !checkOutputPorts(status, 0, 1)) {
         	return status;
+        }
+
+        if (getInputPort(READ_FROM_PORT).getMetadata() == null) {
+        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
         }
 
         try {

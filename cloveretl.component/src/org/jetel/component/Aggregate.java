@@ -29,7 +29,10 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -105,6 +108,8 @@ public class Aggregate extends Node {
 	// used ports
 	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
+	
+	private static int UNDETECTED_DIRECTION = Integer.MAX_VALUE;
 
 	private String[] aggregateKeys;
 	private String mapping;
@@ -155,11 +160,27 @@ public class Aggregate extends Node {
 			outRecord.init();
 			outRecord.reset();
 
+			int sortDirection = UNDETECTED_DIRECTION;
+			int currentSortDirection = UNDETECTED_DIRECTION;
+			int recordCount = 0;
+
 			while (currentRecord != null && runIt) {
 				currentRecord = inPort.readRecord(currentRecord);
+				recordCount++;
 				if (!firstLoop) {
-					if (currentRecord == null
-							|| recordKey.compare(currentRecord, previousRecord) != 0) { // next group founded
+					if (currentRecord == null || 
+							(currentSortDirection = recordKey.compare(currentRecord, previousRecord)) != 0) { 
+						// next group founded
+						
+						// check sort direction whether it is still the same
+						if (sortDirection == UNDETECTED_DIRECTION) {
+							sortDirection = currentSortDirection;
+						} else if (currentRecord != null && sortDirection != currentSortDirection) {
+							throw new JetelException("Input record #" 
+									+ recordCount 
+									+ " out of order!");
+						}
+						
 						processor.getCurrentSortedAggregationOutput(outRecord);
 						writeRecordBroadcast(outRecord);
 					}
@@ -323,6 +344,10 @@ public class Aggregate extends Node {
         	return status;
         }
 
+        if (getInputPort(READ_FROM_PORT).getMetadata() == null) {
+        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+        }
+        
         try {
             init();
         } catch (ComponentNotReadyException e) {

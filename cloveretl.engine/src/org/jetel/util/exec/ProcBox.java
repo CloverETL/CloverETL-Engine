@@ -21,7 +21,6 @@ package org.jetel.util.exec;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -247,8 +246,6 @@ public class ProcBox {
 		}
 	}
 	
-	private static Boolean isWindowsPlatform = null;
-	
 	/**
      * This method determine platform type.
      * 
@@ -256,11 +253,6 @@ public class ProcBox {
      * @since 23.8.2007
      */
 	public static boolean isWindowsPlatform() {
-		if (isWindowsPlatform == null) {
-			File file = new File("/dev/stdin");
-			isWindowsPlatform = !file.exists();
-		}
-		return isWindowsPlatform;
-	}
-
+		return System.getProperty("os.name").contains("Windows");
+	} 
 }

@@ -19,55 +19,18 @@
 */
 package org.jetel.graph.runtime;
 
-import java.util.concurrent.Future;
-
-import org.jetel.graph.Result;
+import org.jetel.data.sequence.Sequence;
 
 /**
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  *
- * @created 27.2.2008
+ * @created Jul 11, 2008
  */
-public interface IThreadManager {
+public interface IAuthorityProxy {
 
-	/**
-	 * Executes given WatchDog.
-	 * @param watchDog
-	 * @return
-	 */
-	public Future<Result> executeWatchDog(WatchDog watchDog);
-	
-	/**
-	 * Runs given runnable class via inner instance of executor service.
-	 * It suspects that the given runnable instance is a node representation.
-	 * @param runnable
-	 */
-	public void executeNode(Runnable node);
-	
-	/**
-	 * Returns the approximate number of available free threads.
-	 * @return number of threads
-	 */
-	public int getFreeThreadsCount();
-	
-	/**
-	 * Decreases number of used threads.
-	 * @param nodeThreadsToRelease
-	 */
-	public void releaseNodeThreads(int nodeThreadsToRelease);
+	public Sequence getSharedSequence(Sequence sequence);
 
-	/**
-	 * Waits for all currently running graphs are already done
-	 * and finishes graph executor life cycle.
-	 * New graphs cannot be submitted after free invocation.
-	 */
-	public void free();
-
-	/**
-	 * Immediately finishes graph executor life cycle. All running
-	 * graphs are aborted.
-	 */
-	public void freeNow();
+	public void freeSharedSequence(Sequence sequence);
 
 }

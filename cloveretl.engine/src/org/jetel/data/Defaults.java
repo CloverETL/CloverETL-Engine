@@ -142,6 +142,8 @@ public final class Defaults {
 		CLOVER_FIELD_INDICATOR = getStringProperties("CLOVER_FIELD_INDICATOR", "$");
 		CLOVER_FIELD_REGEX = getStringProperties("CLOVER_FIELD_REGEX", "\\$[\\w]+");
 		ASSIGN_SIGN = getStringProperties("ASSIGN_SIGN", ":=");
+		INCREMENTAL_STORE_KEY = getStringProperties("INCREMENTAL_STORE_KEY", "incremental_store");
+		
 
 		String compiler = getStringProperties("DEFAULT_JAVA_COMPILER", DynamicJavaCode.CompilerType.internal.name());
 		try {
@@ -222,6 +224,12 @@ public final class Defaults {
 	 */
 	public static String ASSIGN_SIGN;// = ":="
 
+	/**
+	 * the key name used for incremental reading if the pointer shouldn't be stored
+	 */
+	public static String INCREMENTAL_STORE_KEY;// = "incremental_action"
+
+	
 	/**
 	 * Defaults regarding DataRecord structure/manipulation
 	 * 

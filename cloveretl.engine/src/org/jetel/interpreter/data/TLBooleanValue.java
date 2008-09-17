@@ -22,12 +22,10 @@
 
 package org.jetel.interpreter.data;
 
-import javolution.text.TypeFormat;
 
 import org.jetel.data.BooleanDataField;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
-import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -40,19 +38,18 @@ public class TLBooleanValue extends TLValue {
 	
 	private boolean value;
 	
-	private TLBooleanValue() {
+	public TLBooleanValue() {
 		this(false);
 	}
 
-	private TLBooleanValue(boolean value){
+	public TLBooleanValue(boolean value){
 		super(TLValueType.BOOLEAN);
 		this.value=value;
 	}
-
+	
 	public static TLBooleanValue getInstance(boolean val){
 		return val ? TRUE : FALSE;
 	}
-	
 
 	@Override
 	public int compareTo(TLValue arg0) {
@@ -60,8 +57,7 @@ public class TLBooleanValue extends TLValue {
 	    	throw new IllegalArgumentException("Can't compare value type: " + type + " with type: "+arg0.type);
 	    }
 
-        if (this==arg0) return 0;
-        else if (arg0==FALSE) return 1;
+        if (this.value==((TLBooleanValue)arg0).value) return 0;
         else return -1;
 	}
 
@@ -91,7 +87,7 @@ public class TLBooleanValue extends TLValue {
 
 	@Override
 	public TLValue duplicate() {
-		return this;
+		return new TLBooleanValue(value);
 	}
 
 	@Override
@@ -106,49 +102,56 @@ public class TLBooleanValue extends TLValue {
 	
 	@Override
 	public void setValue(Object _value) {
-		if (_value instanceof Boolean){
-			if (((Boolean)_value).booleanValue()!=value){
-				throw new IllegalArgumentException("Can't assign "+_value);
-			}
-		}else{
-			throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
-		}
+		if (this==TRUE || this == FALSE)
+			throw new UnsupportedOperationException("Can't set value of "+TLValueType.BOOLEAN+" - static class !");
 		
+		if (_value instanceof Boolean){
+			this.value = ((Boolean)_value).booleanValue();
+		}else if (_value instanceof Numeric){
+			this.value = ((Numeric)_value).getInt() == 0 ? false : true;
+		}else if (_value instanceof CharSequence){
+			this.value = ((CharSequence)_value).charAt(0) == 'T' || ((CharSequence)_value).charAt(0)=='t';
+		}else{
+			throw new IllegalArgumentException("Can't set TLBoolean value from "+_value.getClass());
+		}
 	}
 
 	@Override
 	public void setValue(TLValue _value) {
-		if (!(_value instanceof TLBooleanValue)){
-			throw new IllegalArgumentException("Can't assign value " + _value + " to value type: "+type);
-		}
-		if (_value != this) {
-			value = ((TLBooleanValue)_value).getBoolean();
+		if (this==TRUE || this == FALSE)
+			throw new UnsupportedOperationException("Can't set value of "+TLValueType.BOOLEAN+" - static class !");
+		if (_value.type==TLValueType.BOOLEAN){
+			this.value=((TLBooleanValue)_value).value;
+		}else if (_value.type.isNumeric()){
+			this.value= _value.compareTo(TLNumericValue.ZERO)==0 ? false : true; 
+		}else if (_value.type==TLValueType.STRING){
+			this.value = _value.toString().startsWith("T") || _value.toString().startsWith("t");
+		}else{
+			throw new IllegalArgumentException("Can't set TLBoolean value from "+_value.type);
 		}
 	}
 	
 	@Override
 	@SuppressWarnings("BC")
 	public void setValue(DataField field) {
+		if (this==TRUE || this == FALSE)
+			throw new UnsupportedOperationException("Can't set value of "+TLValueType.BOOLEAN+" - static class !");
 		switch(field.getType()){
+		case DataFieldMetadata.BOOLEAN_FIELD:
+			this.value=((BooleanDataField)field).getBoolean();
+			break;
 		case DataFieldMetadata.INTEGER_FIELD:
 		case DataFieldMetadata.NUMERIC_FIELD:
-		case DataFieldMetadata.DECIMAL_FIELD:
 		case DataFieldMetadata.LONG_FIELD:
-			value = ((Numeric)field).getInt() != 0;
+		case DataFieldMetadata.DECIMAL_FIELD:
+			this.value=((Numeric)field).getInt()==0 ? false : true;
 			break;
 		case DataFieldMetadata.STRING_FIELD:
-			value = TypeFormat.parseBoolean((StringDataField)field);
+			this.value=field.toString().startsWith("T") || field.toString().startsWith("t");
 			break;
-		case DataFieldMetadata.BYTE_FIELD:
-			value = ((ByteDataField)field).getByte(0)!= 0;
-			break;
-		case DataFieldMetadata.BOOLEAN_FIELD:
-			value = ((BooleanDataField)field).getBoolean();
-			break;
-		default:
-			throw new IllegalArgumentException("Can't populate "+type+" from  DateField type: " + field.getMetadata().getTypeAsString());
+			default:
+				throw new IllegalArgumentException("Can't set TLBoolean value from "+field.getMetadata().getTypeAsString());
 		}
-		
 	}
 
 	@Override
@@ -159,7 +162,7 @@ public class TLBooleanValue extends TLValue {
 	@Override public boolean equals(Object val){
 		// taking advantage of private constructor of TLBooleanValue
 		if (val instanceof TLBooleanValue){
-			return this==val;
+			return this.value==((TLBooleanValue)val).value;
 		}
 		return false;
 	}

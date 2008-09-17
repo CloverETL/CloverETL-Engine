@@ -591,7 +591,9 @@ public final class IntegerDecimal implements Decimal {
         if (obj==null) return 1;
         if (isNaN()) return -1;
         
-        if (obj instanceof Decimal) {
+        if (obj instanceof BigDecimal) {
+        	return getBigDecimal().compareTo((BigDecimal)obj);
+        }else if (obj instanceof Decimal) {
             if(obj instanceof IntegerDecimal && ((IntegerDecimal) obj).scale == scale) {
                 return compareTo(((IntegerDecimal) obj).value);
             }

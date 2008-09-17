@@ -63,10 +63,12 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
               outDataRecordsMap=new HashMap(outRecordsMetadata.length);
               parseExceptions=new LinkedList<Throwable>();
               for(int i=0;i<inRecordsMetadata.length;i++){
-                inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
+            	  if (inRecordsMetadata[i] != null)
+            		  inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
               }
               for(int i=0;i<outRecordsMetadata.length;i++){
-                outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
+            	  if (outRecordsMetadata[i] != null)
+            		  outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
               }
 
        }
@@ -83,10 +85,12 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
               outDataRecordsMap=new HashMap(outRecordsMetadata.length);
               parseExceptions=new LinkedList<Throwable>();
               for(int i=0;i<inRecordsMetadata.length;i++){
-                inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
+            	  if (inRecordsMetadata[i] != null)
+            		  inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
               }
               for(int i=0;i<outRecordsMetadata.length;i++){
-                outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
+            	  if (outRecordsMetadata[i] != null)
+            		  outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
               }
       }
 
@@ -500,6 +504,8 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
           jjtreeCloseNodeScope(jjtn000);
+                // save line number - as openNodeScope hook does not work reliably
+                jjtn000.setLineNumber(t.beginLine);
                 InputStream stream;
                 jjtn000.setSourceToImport(filenameURL);
                 try{
@@ -3801,36 +3807,6 @@ void OutputFieldExp() #void :// IDExp -> ID
     finally { jj_save(7, xla); }
   }
 
-  final private boolean jj_3_2() {
-    if (jj_scan_token(REC_NUM_WILDCARD)) return true;
-    if (jj_scan_token(MAPPING)) return true;
-    if (jj_scan_token(REC_NUM_WILDCARD)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_46() {
-    if (jj_scan_token(IF)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_3() {
-    if (jj_scan_token(REC_NAME_WILDCARD)) return true;
-    if (jj_scan_token(MAPPING)) return true;
-    if (jj_scan_token(REC_NUM_WILDCARD)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_22() {
-    if (jj_3R_20()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(51)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(52)) return true;
-    }
-    return false;
-  }
-
   final private boolean jj_3_5() {
     if (jj_3R_20()) return true;
     if (jj_scan_token(104)) return true;
@@ -5043,6 +5019,36 @@ void OutputFieldExp() #void :// IDExp -> ID
     while (true) {
       xsp = jj_scanpos;
       if (jj_3R_76()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  final private boolean jj_3_2() {
+    if (jj_scan_token(REC_NUM_WILDCARD)) return true;
+    if (jj_scan_token(MAPPING)) return true;
+    if (jj_scan_token(REC_NUM_WILDCARD)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_46() {
+    if (jj_scan_token(IF)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_3() {
+    if (jj_scan_token(REC_NAME_WILDCARD)) return true;
+    if (jj_scan_token(MAPPING)) return true;
+    if (jj_scan_token(REC_NUM_WILDCARD)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_22() {
+    if (jj_3R_20()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(51)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(52)) return true;
     }
     return false;
   }

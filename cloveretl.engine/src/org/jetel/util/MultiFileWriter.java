@@ -68,6 +68,7 @@ public class MultiFileWriter {
     private FormatterProvider formatterGetter;		// creates new formatter
     private Map<Object, TargetFile> multiTarget;	// <key, TargetFile> for file partition
     private TargetFile currentTarget;				// actual output target
+	private TargetFile unassignedTarget;			// for lookup table if an input record doesn't have lookup record
     private URL contextURL;
     private String fileURL;
     private int recordsPerFile;
@@ -97,6 +98,8 @@ public class MultiFileWriter {
 	private String charset;
 
 	private Dictionary dictionary;
+
+	private int compressLevel = -1;
 	
     /**
      * Constructor.
@@ -163,29 +166,33 @@ public class MultiFileWriter {
      */
     private void prepareTargets() throws ComponentNotReadyException {
     	// prepare type of targets: lookpup/keyValue
-		if (partitionKey != null) {
-			multiTarget = new HashMap<Object, TargetFile>(tableInitialSize);
-			if (lookupTable != null) {
-				lookupTable.setLookupKey(partitionKey);
-			}
-			
-		// prepare type of targets: single
-		} else {
-			if (currentFormatter == null) {
-				currentFormatter = formatterGetter.getNewFormatter();	
-			}
-    		currentFormatter.init(metadata);
-    		if (currentTarget != null)
-    			currentTarget.close();
-    		currentTarget = createNewTarget(currentFormatter);
-    		currentTarget.setOutputPort(outputPort);
-    		currentTarget.setCharset(charset);
-    		currentTarget.setDictionary(dictionary);
-    		try {
+		try {
+			if (partitionKey != null) {
+				multiTarget = new HashMap<Object, TargetFile>(tableInitialSize);
+				if (lookupTable != null) {
+					lookupTable.setLookupKey(partitionKey);
+					unassignedTarget = createNewTarget();
+					unassignedTarget.setFileBeforeTag("unassigned");
+					unassignedTarget.setDictionary(dictionary);
+					unassignedTarget.init();
+				}
+				
+			// prepare type of targets: single
+			} else {
+				if (currentFormatter == null) {
+					currentFormatter = formatterGetter.getNewFormatter();	
+				}
+				currentFormatter.init(metadata);
+				if (currentTarget != null)
+					currentTarget.close();
+				currentTarget = createNewTarget(currentFormatter);
+				currentTarget.setOutputPort(outputPort);
+				currentTarget.setCharset(charset);
+				currentTarget.setDictionary(dictionary);
 				currentTarget.init();
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(e);
 			}
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(e);
 		}
     }
     
@@ -220,6 +227,7 @@ public class MultiFileWriter {
 		targetFile.setAppendData(appendData);
 		targetFile.setUseChannel(useChannel);
 		targetFile.setCharset(charset);
+		targetFile.setCompressLevel(compressLevel);
 		return targetFile;
     }
 
@@ -341,6 +349,12 @@ public class MultiFileWriter {
      */
     private final void writeRecord4LookupTable(DataRecord record) throws IOException, ComponentNotReadyException {
     	DataRecord keyRecord = lookupTable.get(record);
+    	if (keyRecord == null) {
+    		currentTarget = unassignedTarget;
+    		currentFormatter = currentTarget.getFormatter();
+    		writeRecord2CurrentTarget(record);
+    		return;
+    	}
     	
 		// data filtering
     	while (keyRecord != null) {
@@ -396,6 +410,7 @@ public class MultiFileWriter {
     	} else {
     		currentTarget.close();
     	}
+    	if (unassignedTarget != null) unassignedTarget.close();
     }
     
     public void finish() throws IOException{
@@ -406,6 +421,7 @@ public class MultiFileWriter {
     	} else {
     		currentTarget.finish();
     	}
+    	if (unassignedTarget != null) unassignedTarget.finish();
     }
 
     /**
@@ -571,5 +587,13 @@ public class MultiFileWriter {
 
 	public void setDictionary(Dictionary dictionary) {
 		this.dictionary = dictionary;
+	}
+
+	public int getCompressLevel() {
+		return compressLevel;
+	}
+
+	public void setCompressLevel(int compressLevel) {
+		this.compressLevel = compressLevel;
 	}
 }

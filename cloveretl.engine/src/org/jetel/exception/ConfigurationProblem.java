@@ -69,13 +69,13 @@ public class ConfigurationProblem {
     public void log(Log logger) {
         switch(severity) {
         case INFO:
-            logger.info(message);
+            logger.info(this.toString());
             break;
         case WARNING:
-            logger.warn(message);
+            logger.warn(this.toString());
             break;
         case ERROR:
-            logger.error(message);
+            logger.error(this.toString());
             break;
         }
     }
@@ -102,5 +102,11 @@ public class ConfigurationProblem {
 
     public void setAttributeName(String attributeName) {
         this.attributeName = attributeName;
+    }
+    
+    @Override
+    public String toString() {
+    	return (getGraphElement() != null ? 
+    			(getGraphElement() + (getAttributeName() != null ? ("." + getAttributeName()) : "") + " - ") : "") + message;
     }
 }

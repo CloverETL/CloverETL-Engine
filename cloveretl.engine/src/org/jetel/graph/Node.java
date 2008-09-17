@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.MDC;
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EnabledEnum;
@@ -61,6 +63,8 @@ import org.w3c.dom.Element;
  */
 public abstract class Node extends GraphElement implements Runnable {
 
+    private static final Log logger = LogFactory.getLog(Node.class);
+
     protected Thread nodeThread;
     protected EnabledEnum enabled;
     protected int passThroughInputPort;
@@ -74,7 +78,7 @@ public abstract class Node extends GraphElement implements Runnable {
 
 	protected volatile boolean runIt = true;
 
-	protected Result runResult;
+	protected volatile Result runResult;
     protected Throwable resultException;
     protected String resultMessage;
 	
@@ -333,6 +337,9 @@ public abstract class Node extends GraphElement implements Runnable {
 		return runResult;
 	}
 
+	public void setResultCode(Result result) {
+		this.runResult = result;
+	}
 
 	/**
 	 *  Gets the ResultMsg of finished Node.<br>
@@ -432,10 +439,19 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since    April 4, 2002
 	 */
 	synchronized public void abort() {
-		if (runResult == Result.RUNNING){
-			//runIt = false;
+		int attempts = 30;
+		runIt = false;
+		while (runResult == Result.RUNNING && attempts-- > 0){
 			getNodeThread().interrupt();
-			//sendFinishMessage();
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+			}
+		}
+		if (runResult == Result.RUNNING) {
+			logger.warn("Node '" + getId() + "' was not interrupted in legal way.");
+			runResult = Result.ABORTED;
+			sendFinishMessage();
 		}
 	}
 
@@ -935,15 +951,22 @@ public abstract class Node extends GraphElement implements Runnable {
      * @return true if the number of input ports is in the given interval; else false
      */
     protected boolean checkInputPorts(ConfigurationStatus status, int min, int max) {
-        if(getInPorts().size() < min) {
+    	Collection<InputPort> inPorts = getInPorts();
+        if(inPorts.size() < min) {
             status.add(new ConfigurationProblem("At least " + min + " input port must be defined!", Severity.ERROR, this, Priority.NORMAL));
             return false;
         }
-        if(getInPorts().size() > max) {
+        if(inPorts.size() > max) {
             status.add(new ConfigurationProblem("At most " + max + " input ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
             return false;
         }
-
+        for (int i = 0; i< min; i++) {
+        	if (getInputPort(i) == null) {
+                status.add(new ConfigurationProblem("Input port " + i + " must be defined!", Severity.ERROR, this, Priority.NORMAL));
+                return false;
+        	}
+        }
+        
         return true;
     }
 
@@ -962,6 +985,12 @@ public abstract class Node extends GraphElement implements Runnable {
         if(getOutPorts().size() > max) {
             status.add(new ConfigurationProblem("At most " + max + " output ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
             return false;
+        }
+        for (int i = 0; i< min; i++) {
+        	if (getOutputPort(i) == null) {
+                status.add(new ConfigurationProblem("Output port " + i + " must be defined!", Severity.ERROR, this, Priority.NORMAL));
+                return false;
+        	}
         }
 
         return true;

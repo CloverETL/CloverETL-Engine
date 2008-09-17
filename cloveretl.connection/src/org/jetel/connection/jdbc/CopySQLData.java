@@ -171,6 +171,27 @@ public abstract class CopySQLData {
 		}
 	}
 
+	/**
+	 * @param resultSet
+	 * @return current value from result set from corresponding index
+	 * @throws SQLException
+	 */
+	public abstract Object getDbValue(ResultSet resultSet) throws SQLException;
+
+	/**
+	 * @param statement
+	 * @return current value from callable statement from corresponding index
+	 * @throws SQLException
+	 */
+	public abstract Object getDbValue(CallableStatement statement) throws SQLException;
+	
+	/**
+	 * @return current value from data record from corresponding field
+	 */
+	public Object getCloverValue() {
+		return field.getValue();
+	}
+
 
 	/**
 	 *  Sets the Jetel attribute of the CopySQLData object
@@ -595,6 +616,21 @@ public abstract class CopySQLData {
 			}
 
 		}
+
+
+		@Override
+		public Object getDbValue(ResultSet resultSet) throws SQLException {
+			double i = resultSet.getDouble(fieldSQL);
+			return resultSet.wasNull() ? null : i;
+		}
+
+
+		@Override
+		public Object getDbValue(CallableStatement statement)
+				throws SQLException {
+			double i = statement.getDouble(fieldSQL);
+			return statement.wasNull() ? null : i;
+		}
 	}
 
 
@@ -660,6 +696,21 @@ public abstract class CopySQLData {
 			}
 
 		}
+		
+		@Override
+		public Object getDbValue(ResultSet resultSet) throws SQLException {
+			BigDecimal i = resultSet.getBigDecimal(fieldSQL);
+			return resultSet.wasNull() ? null : i;
+		}
+
+
+		@Override
+		public Object getDbValue(CallableStatement statement)
+				throws SQLException {
+			BigDecimal i = statement.getBigDecimal(fieldSQL);
+			return statement.wasNull() ? null : i;
+		}
+
 	}
 
 	/**
@@ -724,6 +775,21 @@ public abstract class CopySQLData {
 			}
 
 		}
+		
+		@Override
+		public Object getDbValue(ResultSet resultSet) throws SQLException {
+			int i = resultSet.getInt(fieldSQL);
+			return resultSet.wasNull() ? null : i;
+		}
+
+
+		@Override
+		public Object getDbValue(CallableStatement statement)
+				throws SQLException {
+			int i = statement.getInt(fieldSQL);
+			return statement.wasNull() ? null : i;
+		}
+
 	}
 
 	static class CopyLong extends CopySQLData {
@@ -780,6 +846,21 @@ public abstract class CopySQLData {
 			}
 
 		}
+		
+		@Override
+		public Object getDbValue(ResultSet resultSet) throws SQLException {
+			long i = resultSet.getLong(fieldSQL);
+			return resultSet.wasNull() ? null : i;
+		}
+
+
+		@Override
+		public Object getDbValue(CallableStatement statement)
+				throws SQLException {
+			long i = statement.getLong(fieldSQL);
+			return statement.wasNull() ? null : i;
+		}
+
 	}
 
 	/**
@@ -843,6 +924,21 @@ public abstract class CopySQLData {
 			   	pStatement.setNull(fieldSQL, java.sql.Types.VARCHAR);
 		   	}
 		}
+		
+		@Override
+		public Object getDbValue(ResultSet resultSet) throws SQLException {
+			String fieldVal = resultSet.getString(fieldSQL);
+			return resultSet.wasNull() ? null : fieldVal;
+		}
+
+
+		@Override
+		public Object getDbValue(CallableStatement statement)
+				throws SQLException {
+			String fieldVal = statement.getString(fieldSQL);
+			return statement.wasNull() ? null : fieldVal;
+		}
+
 
 	}
 	/**
@@ -918,6 +1014,21 @@ public abstract class CopySQLData {
 				pStatement.setNull(fieldSQL, java.sql.Types.DATE);
 			}
 		}
+		
+		@Override
+		public Object getDbValue(ResultSet resultSet) throws SQLException {
+			Date date = resultSet.getDate(fieldSQL);
+			return resultSet.wasNull() ? null : date;
+		}
+
+
+		@Override
+		public Object getDbValue(CallableStatement statement)
+				throws SQLException {
+			Date date = statement.getDate(fieldSQL);
+			return statement.wasNull() ? null : date;
+		}
+
 	}
 
 
@@ -994,6 +1105,21 @@ public abstract class CopySQLData {
 				pStatement.setNull(fieldSQL, java.sql.Types.DATE);
 			}
 		}
+		
+		@Override
+		public Object getDbValue(ResultSet resultSet) throws SQLException {
+			Date time = resultSet.getTime(fieldSQL);
+			return resultSet.wasNull() ? null : time;
+		}
+
+
+		@Override
+		public Object getDbValue(CallableStatement statement)
+				throws SQLException {
+			Date time = statement.getTime(fieldSQL);
+			return statement.wasNull() ? null : time;
+		}
+
 	}
 
 
@@ -1073,6 +1199,21 @@ public abstract class CopySQLData {
 				pStatement.setNull(fieldSQL, java.sql.Types.TIMESTAMP);
 			}
 		}
+		
+		@Override
+		public Object getDbValue(ResultSet resultSet) throws SQLException {
+			Timestamp timestamp = resultSet.getTimestamp(fieldSQL);
+			return resultSet.wasNull() ? null : timestamp;
+		}
+
+
+		@Override
+		public Object getDbValue(CallableStatement statement)
+				throws SQLException {
+			Timestamp timestamp = statement.getTimestamp(fieldSQL);
+			return statement.wasNull() ? null : timestamp;
+		}
+
 	}
 
 
@@ -1143,6 +1284,20 @@ public abstract class CopySQLData {
 			}
 		}
 
+		@Override
+		public Object getDbValue(ResultSet resultSet) throws SQLException {
+			boolean b = resultSet.getBoolean(fieldSQL);
+			return resultSet.wasNull() ? null : b;
+		}
+
+
+		@Override
+		public Object getDbValue(CallableStatement statement)
+				throws SQLException {
+			boolean b = statement.getBoolean(fieldSQL);
+			return statement.wasNull() ? null : b;
+		}
+
 	}
     
     static class CopyByte extends CopySQLData {
@@ -1199,6 +1354,21 @@ public abstract class CopySQLData {
             }
 
         }
+        
+		@Override
+		public Object getDbValue(ResultSet resultSet) throws SQLException {
+            byte[] i = resultSet.getBytes(fieldSQL);
+			return resultSet.wasNull() ? null : i;
+		}
+
+
+		@Override
+		public Object getDbValue(CallableStatement statement)
+				throws SQLException {
+            byte[] i = statement.getBytes(fieldSQL);
+			return statement.wasNull() ? null : i;
+		}
+
     }
 
     static class CopyBlob extends CopySQLData {
@@ -1270,6 +1440,33 @@ public abstract class CopySQLData {
             }
 
         }
+        
+		@Override
+		public Object getDbValue(ResultSet resultSet) throws SQLException {
+        	blob = resultSet.getBlob(fieldSQL);
+			if (blob != null) {
+				blob = new SerialBlob(blob);
+				if (blob.length() > Integer.MAX_VALUE) {
+					throw new SQLException("Blob value is too long: " + blob.length());
+				}
+			}            
+			return resultSet.wasNull() ? null : blob;
+		}
+
+
+		@Override
+		public Object getDbValue(CallableStatement statement)
+				throws SQLException {
+        	blob = statement.getBlob(fieldSQL);
+			if (blob != null) {
+				blob = new SerialBlob(blob);
+				if (blob.length() > Integer.MAX_VALUE) {
+					throw new SQLException("Blob value is too long: " + blob.length());
+				}
+			}            
+			return statement.wasNull() ? null : blob;
+		}
+
     }
 }
 

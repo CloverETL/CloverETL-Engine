@@ -30,9 +30,12 @@ import org.jetel.component.normalize.RecordNormalize;
 import org.jetel.component.normalize.RecordNormalizeTL;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -212,7 +215,7 @@ public class Normalizer extends Node {
 					norm = createNormalizerDynamic(xform);
 					break;
 				case TRANSFORM_CLOVER_TL:
-					norm = new RecordNormalizeTL(logger, xform);
+					norm = new RecordNormalizeTL(logger, xform, getGraph());
 					break;
 				default:
 					throw new ComponentNotReadyException(
@@ -287,6 +290,14 @@ public class Normalizer extends Node {
 				|| !checkOutputPorts(status, 1, 1)) {
 			return status;
 		}
+
+        if (getInputPort(IN_PORT).getMetadata() == null) {
+        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+        }
+
+        if (getOutputPort(OUT_PORT).getMetadata() == null) {
+        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+        }
 
 //        try {
 //            init();

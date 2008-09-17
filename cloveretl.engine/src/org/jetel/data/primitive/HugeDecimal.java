@@ -649,7 +649,9 @@ public final class HugeDecimal implements Decimal {
 		if (obj==null) return 1;
 		if (isNaN()) return -1;
 	    
-		if (obj instanceof Decimal) {
+		if (obj instanceof BigDecimal){
+			return value.compareTo((BigDecimal)obj);
+		}else if (obj instanceof Decimal) {
 			return value.compareTo(((Decimal) obj).getBigDecimal());
 		} else if (obj instanceof Integer) {
             return value.compareTo(BigDecimal.valueOf(((Integer) obj).intValue()));

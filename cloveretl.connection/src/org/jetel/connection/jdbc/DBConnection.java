@@ -373,6 +373,7 @@ public class DBConnection extends GraphElement implements IConnection {
             	connectionInstance = null;
         	}
         }
+        jdbcDriver.free();
     }
 
     private void closeConnection(Connection connection) {
@@ -488,6 +489,8 @@ public class DBConnection extends GraphElement implements IConnection {
      */
     private void decryptPassword() throws ComponentNotReadyException {
         if (isPasswordEncrypted()) {
+        	if (getGraph() == null)
+        		return; 
             Enigma enigma = getGraph().getEnigma();
             if (enigma == null) {
             	logger.error("Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");

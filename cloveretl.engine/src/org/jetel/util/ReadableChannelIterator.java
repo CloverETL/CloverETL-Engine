@@ -15,6 +15,7 @@ import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -61,6 +62,7 @@ public class ReadableChannelIterator {
 	private int fieldIndex = Integer.MAX_VALUE;
 
 	private Iterator<String> filenameItor;
+	private List<String> files;
 
 	private int firstPortProtocolPosition;
 	private int firstDictProtocolPosition;
@@ -124,7 +126,7 @@ public class ReadableChannelIterator {
 	private void initFileIterator() throws ComponentNotReadyException {
 		WcardPattern pat = new WcardPattern();
         pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-        List<String> files = pat.filenames();
+        files = pat.filenames();
         firstPortProtocolPosition = getFirstProtocolPosition(files, PORT);
         firstDictProtocolPosition = getFirstProtocolPosition(files, DICT);
 		if (firstPortProtocolPosition >= 0 && inputPort == null) throw new ComponentNotReadyException("Input port is not defined for '" + files.get(firstPortProtocolPosition) + "'.");
@@ -212,6 +214,10 @@ public class ReadableChannelIterator {
 		return fields4Stream != null && streamFieldIndex < fields4Stream.length;
 	}
 	
+	public Iterator<String> getFileIterator() {
+		return files.iterator();
+	}
+	
 	/**
 	 * @throws JetelException 
 	 * @see java.util.Iterator
@@ -252,6 +258,7 @@ public class ReadableChannelIterator {
 			currentPortProtocolPosition++;
 			
 			if (currentFileName.indexOf(DICT) == 0) {
+			//if (getMostInnerString(currentFileName).indexOf(DICT) == 0) {
 				ReadableByteChannel rch = getChannelFromDictionary(currentFileName);
 				return rch == null ? next() : rch;
 			}
@@ -271,6 +278,7 @@ public class ReadableChannelIterator {
 	private ReadableByteChannel getChannelFromDictionary(String source) throws JetelException {
 		// parse source
 		String[] aSource = currentFileName.substring(DICT.length()).split(PARAM_DELIMITER);
+		//String[] aSource = getMostInnerString(source).substring(DICT.length()).split(PARAM_DELIMITER);
 		String dictKey = aSource[0];
 		ProcessingType dictProcesstingType = ProcessingType.fromString(aSource.length > 1 ? aSource[1] : null, ProcessingType.DISCRETE);
 		if (dictionary == null) throw new RuntimeException("The component doesn't support dictionary reading.");
@@ -411,12 +419,37 @@ public class ReadableChannelIterator {
 	private int getFirstProtocolPosition(List<String> files, String protocol) {
 		for (int i=0; i<files.size(); i++) {
 			if (files.get(i).indexOf(protocol) == 0) {
+			//if (getMostInnerString(files.get(i)).indexOf(protocol) == 0) {
 				return i;
 			}			
 		}
 		return -1;
 	}
 	
+	private String getMostInnerString(String sUrl) {
+		String innerString = null;
+		try {
+			Matcher matcher = FileUtils.getInnerInput(sUrl);
+			String tmpInner = getInnerSourceString(matcher);
+			while (tmpInner != null) {
+				innerString = tmpInner;
+				matcher = FileUtils.getInnerInput(tmpInner);
+				tmpInner = getInnerSourceString(matcher);
+			}
+		} catch (IOException e) {
+			return null;
+		}
+		return innerString == null ? sUrl : innerString;
+	}
+	
+	private String getInnerSourceString(Matcher matcher) throws IOException {
+		String innerSource;
+		if (matcher != null && (innerSource = matcher.group(5)) != null) {
+			return innerSource;
+		}
+		return null;
+	}
+
 	private List<String> getAndRemoveProtocol(List<String> files, String protocol, int start) {
 		ArrayList<String> result = new ArrayList<String>();
 		if (start < 0) return result;

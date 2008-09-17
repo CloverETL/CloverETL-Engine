@@ -24,6 +24,8 @@ package org.jetel.sequence;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.BufferOverflowException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -207,14 +209,15 @@ public class SimpleSequence extends GraphElement implements Sequence {
         } catch(IOException ex) {
             free();
             throw new ComponentNotReadyException(this, XML_FILE_URL_ATTRIBUTE, ex.getMessage());
-        }
+		}catch (BufferUnderflowException e) {
+			free();
+			throw new ComponentNotReadyException("Can't read value from sequence file. File is probably corrupted.");
+		}
     }
 
     @Override
     public synchronized void reset() throws ComponentNotReadyException {
     	super.reset();
-    	
-    	//DO NOTHING
     }
     
     private final void flushValue(long value) {
@@ -254,9 +257,9 @@ public class SimpleSequence extends GraphElement implements Sequence {
     }
     
     public synchronized void delete() {
-        if(!isInitialized()) {
-            throw new RuntimeException("Can't delete non-initialized sequence "+getId());
-        }
+//        if(!isInitialized()) {
+//            throw new RuntimeException("Can't delete non-initialized sequence "+getId());
+//        }
         File sequenceFile;
         free();
         sequenceFile = new File(filename);
@@ -318,5 +321,9 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		}
         return status;
     }
+
+	public boolean isShared() {
+		return true;
+	}
 
 }

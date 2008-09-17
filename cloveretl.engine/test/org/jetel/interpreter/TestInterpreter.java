@@ -73,9 +73,11 @@ public class TestInterpreter extends CloverTestCase {
 		
 		metadata.addField(new DataFieldMetadata("Name",DataFieldMetadata.STRING_FIELD, ";"));
 		metadata.addField(new DataFieldMetadata("Age",DataFieldMetadata.NUMERIC_FIELD, "|"));
-		metadata.addField(new DataFieldMetadata("City",DataFieldMetadata.STRING_FIELD, "\n"));
-		metadata.addField(new DataFieldMetadata("Born",DataFieldMetadata.DATE_FIELD, "\n"));
-		metadata.addField(new DataFieldMetadata("Value",DataFieldMetadata.INTEGER_FIELD, "\n"));
+		metadata.addField(new DataFieldMetadata("City",DataFieldMetadata.STRING_FIELD, ";"));
+		metadata.addField(new DataFieldMetadata("Born",DataFieldMetadata.DATE_FIELD, ";"));
+		metadata.addField(new DataFieldMetadata("Value",DataFieldMetadata.INTEGER_FIELD, ";"));
+		metadata.addField(new DataFieldMetadata("BooleanValueF",DataFieldMetadata.BOOLEAN_FIELD, ";"));
+		metadata.addField(new DataFieldMetadata("BooleanValueT",DataFieldMetadata.BOOLEAN_FIELD, "\n"));
 		
 		metadata1=new DataRecordMetadata("in1",DataRecordMetadata.DELIMITED_RECORD);
 		
@@ -121,6 +123,7 @@ public class TestInterpreter extends CloverTestCase {
 		record.getField("Born").setNull(true);
 		SetVal.setInt(record,4,-999);
 		record1.getField("Value").setNull(true);
+		record.getField("BooleanValueT").setValue(Boolean.TRUE);
         
         Sequence seq = SequenceFactory.createSequence(graph, "PRIMITIVE_SEQUENCE", 
         		new Object[]{"test",graph,"test"}, new Class[]{String.class,TransformationGraph.class,String.class});
@@ -463,7 +466,8 @@ public class TestInterpreter extends CloverTestCase {
 		System.out.println("\nboolean test:");
 		String expStr = "boolean b1; b1=true; print_err(b1);\n"+
 						"boolean b2; b2=false ; print_err(b2);\n"+
-						"boolean b4; print_err(b4);";
+						"boolean b4; print_err(b4);\n"+
+						"print_err( iif($BooleanValueF == true,'true','false')); print_err( iif($BooleanValueT == true,'true','false'));";
 		GregorianCalendar born = new GregorianCalendar(1973,03,23);
 		record.getField("Born").setValue(born.getTime());
 	      print_code(expStr);

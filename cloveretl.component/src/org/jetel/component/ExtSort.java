@@ -398,17 +398,17 @@ public class ExtSort extends Node {
         
         checkMetadata(status, getInMetadata(), getOutMetadata());
 
-        try {
-            init();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        } finally {
-        	free();
-        }
+//        try {
+//            init();
+//        } catch (ComponentNotReadyException e) {
+//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+//            if(!StringUtils.isEmpty(e.getAttributeName())) {
+//                problem.setAttributeName(e.getAttributeName());
+//            }
+//            status.add(problem);
+//        } finally {
+//        	free();
+//        }
         
         return status;
     }

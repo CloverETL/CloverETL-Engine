@@ -22,7 +22,12 @@ package org.jetel.connection.jdbc.driver;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Enumeration;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.string.StringUtils;
@@ -37,6 +42,7 @@ import org.jetel.util.string.StringUtils;
  * @created 14.9.2007
  */
 public class JdbcDriver {
+    private static Log logger = LogFactory.getLog(JdbcDriver.class);
     
     /**
      * Identifier of the JDBC driver.
@@ -153,6 +159,39 @@ public class JdbcDriver {
         } catch (Exception ex1) {
             throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. General exception: " + ex1.getMessage(), ex1);
         }
+        if (driver == null)
+            throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. No driver found. " + dbDriver );
     }
+
+    /**
+     * Explicitly removes drivers loaded by classLoader created by this instance.
+     * Prevents from "java.lang.OutOfMemoryError: PermGen space"
+     */
+	@SuppressWarnings("unchecked")
+	public void free() {
+		if (this.classLoader == Thread.currentThread().getContextClassLoader())
+			return;
+		// process only classLoaders created by this instance
+		// unload each driver loaded by my classLoader
+		if (driver.getClass().getClassLoader() == classLoader){
+			try {
+				DriverManager.deregisterDriver(driver);
+			} catch (SQLException e1) {
+				logger.error(e1.getMessage(), e1);
+			}
+		}
+		/*
+		for (Enumeration e = DriverManager.getDrivers(); e.hasMoreElements();) {
+			Driver driver = (Driver) e.nextElement();
+			if (driver.getClass().getClassLoader() == classLoader) {
+				try {
+					DriverManager.deregisterDriver(driver);
+				} catch (SQLException e1) {
+					logger.error(e1.getMessage(), e1);
+				}
+			}
+		}// for
+		*/
+	}
 
 }

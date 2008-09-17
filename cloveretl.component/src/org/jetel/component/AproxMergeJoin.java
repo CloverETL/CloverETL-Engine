@@ -673,10 +673,10 @@ public class AproxMergeJoin extends Node {
 				throw new ComponentNotReadyException(ex.getLocalizedMessage());
 			}
 		}
-		String[][] tmp = JoinKeyUtils.parseMergeJoinKey(matchingKeyString, getInMetadata());
-		matchingKey = tmp[0];
+		String[][][] tmp = JoinKeyUtils.parseHashJoinKey(matchingKeyString, getInMetadata());
+		matchingKey = tmp[0][0];
 		if (slaveMatchingKey == null){
-			slaveMatchingKey=matchingKey;
+			slaveMatchingKey= tmp[1][0];
 		}
 		recordKey = new RecordKey[2];
 		recordKey[DRIVER_ON_PORT] = new RecordKey(matchingKey, getInputPort(DRIVER_ON_PORT).getMetadata());
@@ -955,10 +955,11 @@ public class AproxMergeJoin extends Node {
     				throw new ComponentNotReadyException(ex.getLocalizedMessage());
     			}
     		}
-    		String[][] tmp = JoinKeyUtils.parseMergeJoinKey(matchingKeyString, getInMetadata());
-    		matchingKey = tmp[0];
+    		
+    		String[][][] tmp = JoinKeyUtils.parseHashJoinKey(matchingKeyString, getInMetadata());
+    		matchingKey = tmp[0][0];
     		if (slaveMatchingKey == null){
-    			slaveMatchingKey=matchingKey;
+    			slaveMatchingKey= tmp[1][0];
     		}
     		recordKey = new RecordKey[2];
     		recordKey[DRIVER_ON_PORT] = new RecordKey(matchingKey, getInputPort(DRIVER_ON_PORT).getMetadata());
@@ -973,7 +974,7 @@ public class AproxMergeJoin extends Node {
 //            init();
 //            free();
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

@@ -517,6 +517,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		 * parse metadata of FIELDs
 		 */
 
+		int autofillingFields = 0;
 		NodeList fieldElements = topNode.getChildNodes();
 		for (int i = 0; i < fieldElements.getLength(); i++) {
 			if (!fieldElements.item(i).getNodeName().equals(FIELD_ELEMENT)) {
@@ -649,6 +650,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 
 			if (autoFilling != null) {
 				field.setAutoFilling(autoFilling);
+				autofillingFields++;
 			}
 			if (skipFirstLine != null) {
 				recordMetadata.setSkipFirstLine(Boolean.valueOf(skipFirstLine));
@@ -666,9 +668,41 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					"No Field elements have been found ! ");
 		}
 
+		// check autofilling
+		if (recordMetadata.getNumFields() == autofillingFields) {
+			throw new DOMException(DOMException.NOT_FOUND_ERR,
+					"No Field elements without autofilling have been found ! ");
+		}
+		changeDefaultDelimiter(recordMetadata);
+		
 		return recordMetadata;
 	}
 
+	/**
+	 * Copy default record delimiter to last non-autofilling field
+	 * 
+	 * @param recordMetadata
+	 */
+	private void changeDefaultDelimiter(DataRecordMetadata recordMetadata) {
+		String strDelimiter = recordMetadata.getRecordDelimiterStr();
+		if (strDelimiter == null) return;
+		
+		DataFieldMetadata field = recordMetadata.getField(recordMetadata.getNumFields()-1);
+		if (!field.isAutoFilled()) {
+			return;
+		}
+		
+		for (int i=recordMetadata.getNumFields()-1; i>=0; i--) {
+			field = recordMetadata.getField(i);
+			if (!field.isAutoFilled()) {
+				if (field.getDelimiterStr() == null) {
+					field.setDelimiter(strDelimiter);
+				}
+				return;
+			}
+		}
+	}
+	
 	/**
 	 * Gets the FieldType attribute of the DataRecordMetadataXMLReaderWriter
 	 * object

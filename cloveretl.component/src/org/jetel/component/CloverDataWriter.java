@@ -22,12 +22,9 @@
 package org.jetel.component;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.logging.Log;
@@ -35,7 +32,10 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.CloverDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -43,7 +43,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.util.SynchronizeUtils;
-import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
@@ -78,9 +77,6 @@ import org.w3c.dom.Element;
  *  <tr><td><b>type</b></td><td>"CLOVER_WRITER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the output file </td>
- *  <tr><td><b>compressData</b><br><i>optional</i></td><td>whether to compress data (save them to zip 
- *  archive) or not (true/false). If this attribute is not set, data are zipped if fileURL ends
- *  with ".zip"</td>
  *  <tr><td><b>append</b><br><i>optional</i></td><td>whether to append data at
  *   the end if output file exists or replace it (true/false - default true)</td>
  *  <tr><td><b>saveIndex</b><br><i>optional</i></td><td>indicates if indexes to records 
@@ -117,7 +113,6 @@ public class CloverDataWriter extends Node {
 	private static final String XML_SAVEINDEX_ATRRIBUTE = "saveIndex";
 	private static final String XML_SAVEMETADATA_ATTRIBUTE = "saveMetadata";
 	private static final String XML_COMPRESSLEVEL_ATTRIBUTE = "compressLevel";
-	private static final String XML_COMPRESSDATA_ATTRIBUTE = "compressData";
 	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
 	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 
@@ -132,7 +127,6 @@ public class CloverDataWriter extends Node {
 	private OutputStream out;//ZipOutputstream or FileOutputStream
 	private InputPort inPort;
 	private int compressLevel;
-	private boolean compressData = true;
 	String fileName;
     private int skip;
 	private int numRecords = -1;
@@ -160,18 +154,17 @@ public class CloverDataWriter extends Node {
 	 * @throws IOException
 	 */
 	private void saveMetadata() throws IOException{
-		if (out instanceof FileOutputStream) {
-			String dir = new File(fileURL).getParent();
-			dir = dir != null ? dir + CloverDataFormatter.FILE_SEPARATOR : "";
-			FileOutputStream metaFile = new FileOutputStream(
-					dir + fileName + CloverDataFormatter.METADATA_EXTENSION);
-			DataRecordMetadataXMLReaderWriter.write(metadata,metaFile);			
-		}else{//out is ZipOutputStream
+		if (out instanceof ZipOutputStream) {
 			((ZipOutputStream)out).putNextEntry(new ZipEntry(
 					CloverDataFormatter.METADATA_DIRECTORY + fileName+ 
 					CloverDataFormatter.METADATA_EXTENSION));
 			DataRecordMetadataXMLReaderWriter.write(metadata, out);
 			((ZipOutputStream)out).closeEntry();
+		}else{
+			OutputStream metaFile = FileUtils.getOutputStream(getGraph().getProjectURL(), 
+					fileURL + CloverDataFormatter.METADATA_EXTENSION, false, -1);
+			DataRecordMetadataXMLReaderWriter.write(metadata,metaFile);	
+			metaFile.close();
 		}
 	}
 	
@@ -194,6 +187,7 @@ public class CloverDataWriter extends Node {
 		if (saveMetadata){
 			saveMetadata();
 		}
+		formatter.close();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
@@ -201,13 +195,6 @@ public class CloverDataWriter extends Node {
 	public synchronized void free() {
         if(!isInitialized()) return;
 		super.free();
-		
-		formatter.close();
-		try {
-			out.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
@@ -219,6 +206,10 @@ public class CloverDataWriter extends Node {
         if(!checkInputPorts(status, 1, 1)
         		|| !checkOutputPorts(status, 0, 0)) {
         	return status;
+        }
+
+        if (getInputPort(READ_FROM_PORT).getMetadata() == null) {
+        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
         }
 
         try {
@@ -243,40 +234,17 @@ public class CloverDataWriter extends Node {
 		inPort = getInputPort(READ_FROM_PORT);
 		metadata = inPort.getMetadata();
 		try{//create output stream and rewrite existing data
-			if (compressData) {
-				ZipInputStream zipData = null;
-//				if append=true existing file has to be renamed
-				File dataOriginal;
-				File data = new File(fileURL + ".tmp");
-				dataOriginal = new File(fileURL);
-				if (append && dataOriginal.exists()) {
-					dataOriginal.renameTo(data);
-					zipData = new ZipInputStream(new FileInputStream(data));
-					//find entry with data
-					while (!zipData.getNextEntry().getName().equalsIgnoreCase(
-							CloverDataFormatter.DATA_DIRECTORY + fileName)) {}
-				}
-				//create new zip file
-				out = new ZipOutputStream(new FileOutputStream(fileURL));
-				//set compress level if given
-				if (compressLevel != -1){
-					((ZipOutputStream)out).setLevel(compressLevel);
-				}
-				((ZipOutputStream)out).putNextEntry(new ZipEntry(
-						CloverDataFormatter.DATA_DIRECTORY + fileName));
-				//rewrite existing data to new zip file
-				if (append && data.exists()){
-					ByteBufferUtils.rewrite(zipData,out);
-					zipData.close();
-				}
-			}else{//compressData = false
-				String parentDir = new File(fileURL).getParent();
-				String dir = parentDir != null ? parentDir + CloverDataFormatter.FILE_SEPARATOR : "";
-				out = new FileOutputStream(dir + fileName, append);
-			}
+        	fileName = new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL)).getName();
+        	if (fileName.toLowerCase().endsWith(".zip")) {
+        		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
+        	}
+			out = FileUtils.getOutputStream(getGraph().getProjectURL(), 
+					fileURL.startsWith("zip:") ? fileURL + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName : fileURL, 
+					append, compressLevel);
 		}catch(IOException ex){
 			throw new ComponentNotReadyException(ex);
 		}
+		formatter.setProjectURL(getGraph().getProjectURL());
 		formatter.init(metadata);
         formatter.setDataTarget(out);
 	}
@@ -291,37 +259,13 @@ public class CloverDataWriter extends Node {
 			throw new ComponentNotReadyException(e);
 		}
 		try{//create output stream and rewrite existing data
-			if (compressData) {
-				ZipInputStream zipData = null;
-//				if append=true existing file has to be renamed
-				File dataOriginal;
-				File data = new File(fileURL + ".tmp");
-				dataOriginal = new File(fileURL);
-				if (append && dataOriginal.exists()) {
-					dataOriginal.renameTo(data);
-					zipData = new ZipInputStream(new FileInputStream(data));
-					//find entry with data
-					while (!zipData.getNextEntry().getName().equalsIgnoreCase(
-							CloverDataFormatter.DATA_DIRECTORY + fileName)) {}
-				}
-				//create new zip file
-				out = new ZipOutputStream(new FileOutputStream(fileURL));
-				//set compress level if given
-				if (compressLevel != -1){
-					((ZipOutputStream)out).setLevel(compressLevel);
-				}
-				((ZipOutputStream)out).putNextEntry(new ZipEntry(
-						CloverDataFormatter.DATA_DIRECTORY + fileName));
-				//rewrite existing data to new zip file
-				if (append && data.exists()){
-					ByteBufferUtils.rewrite(zipData,out);
-					zipData.close();
-				}
-			}else{//compressData = false
-				String parentDir = new File(fileURL).getParent();
-				String dir = parentDir != null ? parentDir + CloverDataFormatter.FILE_SEPARATOR : "";
-				out = new FileOutputStream(dir + fileName, append);
-			}
+        	String fileName = new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL)).getName();
+        	if (fileName.toLowerCase().endsWith(".zip")) {
+        		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
+        	}
+			out = FileUtils.getOutputStream(getGraph().getProjectURL(), 
+					fileURL.startsWith("zip:") ? fileURL + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName : fileURL, 
+					append, compressLevel);
 		}catch(IOException ex){
 			throw new ComponentNotReadyException(ex);
 		}
@@ -352,11 +296,6 @@ public class CloverDataWriter extends Node {
 			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
 				aDataWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
 			}
-			if (xattribs.exists(XML_COMPRESSDATA_ATTRIBUTE)) {
-				aDataWriter.setCompressData(xattribs.getBoolean(XML_COMPRESSDATA_ATTRIBUTE));
-			}else{
-				aDataWriter.setCompressData(null);
-			}
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
 			return null;
@@ -374,7 +313,6 @@ public class CloverDataWriter extends Node {
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE,String.valueOf(append));
 		xmlElement.setAttribute(XML_SAVEMETADATA_ATTRIBUTE,String.valueOf(saveMetadata));
 		xmlElement.setAttribute(XML_SAVEINDEX_ATRRIBUTE,String.valueOf(formatter.isSaveIndex()));
-		xmlElement.setAttribute(XML_COMPRESSDATA_ATTRIBUTE, String.valueOf(compressData));
 		if (compressLevel > -1){
 			xmlElement.setAttribute(XML_COMPRESSLEVEL_ATTRIBUTE,String.valueOf(compressLevel));
 		}
@@ -414,24 +352,5 @@ public class CloverDataWriter extends Node {
     public void setNumRecords(int numRecords) {
         this.numRecords = numRecords;
     }
-
-	/**
-	 * Sets proper value of compressData attribute and finds file name from fileURL
-	 * 
-	 * @param compressData true, fals or null. If null, compress data attribute is set to "true"
-	 * 	if fileURL ends with ".zip"
-	 */
-	public void setCompressData(Boolean compressData) {
-		if (compressData != null) {
-			this.compressData = compressData;
-		}		
-		fileName = new File(fileURL).getName();
-		if (compressData == null) {
-			this.compressData = fileURL.endsWith(".zip");
-		}
-		if (this.compressData && fileURL.endsWith(".zip")) {
-			fileName = fileName.substring(0,fileName.lastIndexOf('.'));
-		}
-	}
 
 }

@@ -71,4 +71,18 @@ public class SimpleThreadManager implements IThreadManager {
 		// DO NOTHING
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IThreadManager#free()
+	 */
+	public void free() {
+		// DO NOTHING
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IThreadManager#freeNow()
+	 */
+	public void freeNow() {
+		// DO NOTHING
+	}
+
 }

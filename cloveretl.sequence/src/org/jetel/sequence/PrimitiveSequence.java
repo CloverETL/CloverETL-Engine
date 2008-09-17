@@ -204,5 +204,8 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
         }
     }
 
+	public boolean isShared() {
+		return false;
+	}
 
 }

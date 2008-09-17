@@ -247,6 +247,9 @@ public class DBFDataParser implements Parser {
      */
     public void init(DataRecordMetadata _metadata)
             throws ComponentNotReadyException {
+		if (_metadata == null) {
+			throw new ComponentNotReadyException("Metadata are null");
+		}
         metadata = _metadata;
 		isAutoFilling = new boolean[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {

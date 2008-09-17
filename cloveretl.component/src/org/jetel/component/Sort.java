@@ -30,6 +30,8 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -272,6 +274,11 @@ public class Sort extends Node {
         public ConfigurationStatus checkConfig(ConfigurationStatus status) {
     		super.checkConfig(status);
    		 
+            status.add(new ConfigurationProblem(
+            		"Component is of type SORT, which is deprecated",
+            		Severity.WARNING, this, Priority.NORMAL));
+
+
     		if(!checkInputPorts(status, 1, 1)
     				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
     			return status;

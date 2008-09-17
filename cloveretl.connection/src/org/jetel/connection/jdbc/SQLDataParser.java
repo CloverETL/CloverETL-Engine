@@ -20,20 +20,34 @@
 
 package org.jetel.connection.jdbc;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.TimeZone;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
+import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.BadDataFormatException;
@@ -46,8 +60,23 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
 /**
+ * Gets records from database. Query can be set in clover format with mapping between clover and db fields, eg:
+ * <i>select $f1:=db1, $f2:=db2, ... from myTable</i>.<br>
+ * Supports incremental reading with given key:
+ * <ul><li>query, eg. <i>select $f1:=db1, $f2:=db2, ... from myTable where dbX > #myKey1 and dbY <=#myKey2</i></li>
+ * <li>keyDefinition - properties where <i>key</i> is <i>keyName</i> and <i>value</i> is <i>keyDefinition</i>; key definition defines
+ *   which value from result set is stored (<b>last</b>, <b>first</b>, <b>min</b> or <b>max</b>) and on which db field is defined, eg:
+ *   <i>myKey1=first(dbX);myKey2=min(dbY)</i> (see query above).</li>
+ * <li>incrementalFile - url to file where key values are stored. Values have to be set by user for 1st reading, then are set to 
+ *   requested value (see above) automatically, eg. <i>myKey1=0;myKey2=1990-01-01</i>. Dates, times and timestamps have be written
+ *   in format defined in @see Defaults.DEFAULT_DATE_FORMAT, Defaults.DEFAULT_TIME_FORMAT, Defaults.DEFAULT_DATETIME_FORMAT</li>
+ * </ul> 
+ * 
  * @author David Pavlis
+ * @author Agata Vackova (agata.vackova@javlinconsulting.cz)
+ *         (c) Javlin Consulting (www.javlinconsulting.cz)
  *
+ * @since Jul 21, 2008
  */
 public class SQLDataParser implements Parser {
 	protected IParserExceptionHandler exceptionHandler;
@@ -67,6 +96,10 @@ public class SQLDataParser implements Parser {
 	private GraphElement parentNode;
 
 	protected int fetchSize = -1;
+	
+	private String incrementalFile;
+	private Properties incrementalKey;
+	private SQLIncremental incremental;
 	
 	static Log logger = LogFactory.getLog(SQLDataParser.class);
 	
@@ -169,9 +202,18 @@ public class SQLDataParser implements Parser {
 		    outRecord=record;
 		}
 			
-			for (int i = 1; i <= fieldCount; i++) {
-				populateField(record, i);
+		for (int i = 1; i <= fieldCount; i++) {
+			populateField(record, i);
+		}
+		try {
+			if (incremental != null){
+				for(int i = 0; i < incrementalKey.size(); i++) {
+					incremental.updatePosition(resultSet, i);
+				}
 			}
+		} catch (SQLException e) {
+			throw new JetelException("Problem when updating incremental position", e);
+		}
 		
         recordCounter++;
 		return record;
@@ -212,20 +254,27 @@ public class SQLDataParser implements Parser {
 	protected void initSQLMap(DataRecord record){
 		try{
 			List<String[]> cloverDbMap = analyzer.getCloverDbFieldMap();
-			List<String> cFields = new ArrayList<String>(cloverDbMap.size());
-			for (Iterator iterator = cloverDbMap.iterator(); iterator.hasNext();) {
-				String[] mapping = (String[]) iterator.next();
-				if (mapping[0] != null && mapping[1] != null){
-					cFields.add(mapping[0]);
+			List<Integer> dbTypes = SQLUtil.getFieldTypes(resultSet.getMetaData());
+			if (analyzer.isQueryInCloverFormat() && cloverDbMap.size() > 0 ) {
+				List<CopySQLData> tMap = new ArrayList<CopySQLData>();
+				String[] mapping;
+				int sqlIndex;
+				for(int i = 0; i < cloverDbMap.size(); i++) {
+					mapping = cloverDbMap.get(i);
+					if (mapping[0] != null) {
+						try {
+							sqlIndex = resultSet.findColumn(mapping[1]) - 1;
+						} catch (Exception e) {
+							String fullName = mapping[1];
+							sqlIndex = resultSet.findColumn(fullName.substring(fullName.lastIndexOf('.') + 1)) - 1;
+						}
+						tMap.add(CopySQLData.createCopyObject(dbTypes.get(sqlIndex), record.getField(mapping[0]).getMetadata(), 
+								record, sqlIndex, record.getMetadata().getFieldPosition(mapping[0])));
+					}
 				}
-				
-			}
-			if (cFields.size() > 0 ) {
-				transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultSet.getMetaData()), metadata, 
-						record, cFields.toArray(new String[0]));
+				transMap = tMap.toArray(new CopySQLData[tMap.size()]);
 			}else{
-				transMap = CopySQLData.sql2JetelTransMap( SQLUtil.getFieldTypes(resultSet.getMetaData()),metadata, 
-						record);
+				transMap = CopySQLData.sql2JetelTransMap(dbTypes ,metadata, record);
 			}
 			fieldCount = transMap.length;
 		}catch (Exception ex) {
@@ -238,6 +287,9 @@ public class SQLDataParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
+		if (_metadata == null) {
+			throw new ComponentNotReadyException("Metadata are null");
+		}
 		metadata = _metadata;
 	}
 
@@ -259,28 +311,35 @@ public class SQLDataParser implements Parser {
             throw new RuntimeException("Need org.jetel.data.connection.jdbc.specific.DBConnectionInstance object !");
         }
         dbConnection = (DBConnectionInstance) inputDataSource;
-
-        try {
-        	statement = dbConnection.getSqlConnection().createStatement();
-        } catch (SQLException e) {
-            throw new ComponentNotReadyException(e);
-        }
         
-        logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Sending query " + 
-        		StringUtils.quote(sqlQuery));
-        long startTime = System.currentTimeMillis();
+        
+        long startTime;
         try{
-            resultSet = statement.executeQuery(sqlQuery);
+        	if (incrementalKey != null && sqlQuery.toString().contains("where")) {
+				if (incremental == null) {
+					incremental = new SQLIncremental(incrementalKey, sqlQuery,	incrementalFile);
+				}
+				statement = incremental.updateQuery(dbConnection);
+		        logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Sending query " + 
+		        		StringUtils.quote(incremental.getPreparedQuery()));
+				startTime = System.currentTimeMillis();
+				resultSet = ((PreparedStatement)statement).executeQuery();
+        	}else{
+            	statement = dbConnection.getSqlConnection().createStatement();
+                logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Sending query " + 
+                		StringUtils.quote(sqlQuery));
+            	startTime = System.currentTimeMillis();
+                resultSet = statement.executeQuery(sqlQuery);
+        	}
             long executionTime = System.currentTimeMillis() - startTime;
             SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
             formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
             logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Query execution time: " + 
             		formatter.format(new Date(executionTime)));
-        } catch (SQLException e) {
-            logger.debug(e);
+        } catch (Exception e) {
             throw new ComponentNotReadyException(e);
-        }
-
+        }        
+        
         dbConnection.getJdbcSpecific().optimizeResultSet(resultSet, OperationType.READ);
         if (fetchSize > -1) {
         	try {
@@ -293,6 +352,17 @@ public class SQLDataParser implements Parser {
         
 		this.recordCounter = 1;
 	}
+	
+	public boolean checkIncremental() throws ComponentNotReadyException{
+    	if (incrementalKey != null && sqlQuery.toString().contains("where")) {
+			try {
+				incremental = new SQLIncremental(incrementalKey, sqlQuery,	incrementalFile);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(e);
+			}
+		}
+		return true;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataParser#close()
@@ -303,8 +373,9 @@ public class SQLDataParser implements Parser {
 				resultSet.close();
 			}
 			// try to commit (as some DBs apparently need commit even when data is read only
-			if (!dbConnection.getSqlConnection().getAutoCommit()) {
-				dbConnection.getSqlConnection().commit();
+			Connection conn = dbConnection.getSqlConnection();
+			if (!conn.isClosed() && !conn.getAutoCommit()) {
+				conn.commit();
 			}            
 			// close statement
 			statement.close();
@@ -365,12 +436,34 @@ public class SQLDataParser implements Parser {
 	}
 
 	public Object getPosition() {
-		// TODO Auto-generated method stub
-		return null;
+		return incremental.getPosition();
 	}
 
 	public void movePosition(Object position) {
-		// TODO Auto-generated method stub
-		
+		if (incremental != null) {
+			incremental.setValues((Properties)position);
+		}
 	}
+	
+	public void setIncrementalFile(String incrementalFile){
+		this.incrementalFile = incrementalFile;
+	}
+	
+	public void setIncrementalKey(Properties incrementalKeys){
+		this.incrementalKey = incrementalKeys;
+	}
+	
+	public String getIncrementalFile() {
+		return incrementalFile;
+	}
+
+	public Properties getIncrementalKey() {
+		return incrementalKey;
+	}
+	
+	public void storeIncrementalReading() throws IOException {
+		Properties incVal = (Properties)incremental.getPosition();
+		incVal.store(new FileOutputStream(incrementalFile), null);
+	}
+
 }

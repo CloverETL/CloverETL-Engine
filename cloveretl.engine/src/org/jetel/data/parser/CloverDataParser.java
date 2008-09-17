@@ -24,14 +24,10 @@ package org.jetel.data.parser;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URL;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -42,6 +38,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.file.FileUtils;
 
 /**
  * Class for reading data saved in Clover internal format
@@ -60,15 +57,14 @@ import org.jetel.util.bytes.ByteBufferUtils;
 public class CloverDataParser implements Parser {
 	
 	private DataRecordMetadata metadata;
-	private InputStream in;
 	private ReadableByteChannel recordFile;
 	private ByteBuffer recordBuffer;
 	private long index = 0;//index for reading index
 	private long idx = 0;//index for reading record
 	private int recordSize;
 	private String indexFileURL;
-	private int compressedData = -1;
 	private String inData;
+	private URL projectURL;
 	
 	private final static int LONG_SIZE_BYTES = 8;
     private final static int LEN_SIZE_SPECIFIER = 4;
@@ -95,6 +91,9 @@ public class CloverDataParser implements Parser {
 	 */
 	public void init(DataRecordMetadata _metadata)
 			throws ComponentNotReadyException {
+		if (_metadata == null) {
+			throw new ComponentNotReadyException("Metadata are null");
+		}
 		this.metadata = _metadata;
         recordBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 	}
@@ -118,45 +117,19 @@ public class CloverDataParser implements Parser {
         	inData = (String)in;
         	indexFileURL = null;
         }
-    	String fileName = new File(inData).getName();
-        if ((inData).endsWith(".zip")) {
-            fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
-        }
-        //set input stream
-        try {
-            switch (compressedData) {
-            case 1:
-                this.in = new ZipInputStream(new FileInputStream(inData));
-                break;
-            case 0:
-                this.in = new FileInputStream(inData);
-                if (inData.endsWith(".zip")) {
-                	fileName+=".zip";
-                }
-                break;
-            default:
-                if ((inData).endsWith(".zip")){
-                    this.in = new ZipInputStream(new FileInputStream(inData));
-                    compressedData = 1;
-                }else{
-                    this.in = new FileInputStream(inData);
-                    compressedData = 0;
-                }
-                break;
-            }
-            if (this.in instanceof ZipInputStream){
-                ZipEntry entry;
-                //find entry DATA/fileName
-                while((entry = ((ZipInputStream)this.in).getNextEntry()) != null) {
-                    if(entry.getName().equals(
-                    		CloverDataFormatter.DATA_DIRECTORY + fileName)) {
-                        break;
-                    }
-                }
-            }
-            recordFile = Channels.newChannel(this.in);
+        try{
+        	String fileName = new File(FileUtils.getFile(projectURL, inData)).getName();
+        	if (fileName.toLowerCase().endsWith(".zip")) {
+        		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
+        	}
+            recordFile = FileUtils.getReadableChannel(projectURL, !inData.startsWith("zip:") ? inData : 
+            	inData + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName);
             if (index > 0) {//reading not all records --> find index in record file
-            	setStartIndex(fileName);
+            	try {
+					setStartIndex(fileName);
+				} catch (Exception e) {
+					throw new ComponentNotReadyException("Can't set starting index", e);
+				}
             }
             //skip idx bytes from record file
             int i=0;
@@ -173,41 +146,24 @@ public class CloverDataParser implements Parser {
 
     private void setStartIndex(String fileName) throws IOException, ComponentNotReadyException{
         DataInputStream indexFile;
-        if (this.in instanceof ZipInputStream){//read index from archive
-            ZipInputStream tmpIn = new ZipInputStream(new FileInputStream(inData));
-            indexFile = new DataInputStream(tmpIn);
-            ZipEntry entry;
-            //find entry INDEX/fileName.idx
-            while((entry = tmpIn.getNextEntry()) != null) {
-                if(entry.getName().equals(
-                        CloverDataFormatter.INDEX_DIRECTORY + fileName + 
-                        CloverDataFormatter.INDEX_EXTENSION)) {
-                    indexFile.skip(index);
-                    try {
-						idx = indexFile.readLong();//read index for reading records
-					} catch (EOFException e) {
-			            tmpIn.close();
-			            indexFile.close();
-						throw new ComponentNotReadyException("Start record is greater than last record!!!");
-					}
-                    break;
-                }
-            }
-            tmpIn.close();
-            indexFile.close();
+        if (inData.startsWith("zip:")){
+            indexFile = new DataInputStream(FileUtils.getInputStream(projectURL, inData + "#" + CloverDataFormatter.INDEX_DIRECTORY + 
+            		fileName + CloverDataFormatter.INDEX_EXTENSION));
         }else{//read index from binary file
             if (indexFileURL == null){
-                File dir = new File(inData).getParentFile();
-                indexFile = new DataInputStream(new FileInputStream(
-                		(dir != null ? dir.getAbsolutePath() + CloverDataFormatter.FILE_SEPARATOR : "") 
-                        	+ fileName + CloverDataFormatter.INDEX_EXTENSION));
+            	indexFile = new DataInputStream(FileUtils.getInputStream(projectURL, inData + CloverDataFormatter.INDEX_EXTENSION));
             }else{
-                indexFile = new DataInputStream(new FileInputStream(indexFileURL));
+            	indexFile = new DataInputStream((FileUtils.getInputStream(projectURL, indexFileURL)));
             }
-            indexFile.skip(index);
-            idx = indexFile.readLong();
-            indexFile.close();
         }
+        indexFile.skip(index);
+        try {
+			idx = indexFile.readLong();//read index for reading records
+		} catch (EOFException e) {
+			throw new ComponentNotReadyException("Start record is greater than last record!!!");
+		}finally{
+            indexFile.close();
+		}
     }
     
 	/* (non-Javadoc)
@@ -281,33 +237,17 @@ public class CloverDataParser implements Parser {
 		return null;
 	}
 
-	public void setCompressedData(int compressedData) {
-		this.compressedData = compressedData;
-	}
-
 	private void resetInternal() throws IOException, ComponentNotReadyException{
 		if (recordFile.isOpen()) {
 			recordFile.close();
 		}
 		recordBuffer.clear();
-    	String fileName = new File(inData).getName();
-        if (this.in instanceof ZipInputStream){
-            this.in = new ZipInputStream(new FileInputStream(inData));
-            if (inData.endsWith(".zip")) {
-            	fileName = fileName.substring(0, fileName.length() - ".zip".length());
-            }
-            ZipEntry entry;
-            //find entry DATA/fileName
-            while((entry = ((ZipInputStream)this.in).getNextEntry()) != null) {
-                if(entry.getName().equals(
-                		CloverDataFormatter.DATA_DIRECTORY + fileName)) {
-                    break;
-                }
-            }
-        }else{
-        	this.in = new FileInputStream(inData);
-        }
-        recordFile = Channels.newChannel(this.in);
+    	String fileName = new File(FileUtils.getFile(projectURL, inData)).getName();
+    	if (fileName.toLowerCase().endsWith(".zip")) {
+    		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
+    	}
+        recordFile = FileUtils.getReadableChannel(projectURL, !inData.startsWith("zip:") ? inData : 
+        	inData + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName);
         if (index > 0) {//reading not all records --> find index in record file
         	setStartIndex(fileName);
         }
@@ -337,5 +277,13 @@ public class CloverDataParser implements Parser {
 	public void movePosition(Object position) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public URL getProjectURL() {
+		return projectURL;
+	}
+
+	public void setProjectURL(URL projectURL) {
+		this.projectURL = projectURL;
 	}
 }

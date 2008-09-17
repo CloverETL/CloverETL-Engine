@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed May 02 10:25:31 CEST 2007" guiVersion="1.10" id="1204805969813" licenseType="Evaluation license." modified="Fri Jun 27 09:40:56 CEST 2008" modifiedBy="avackova" name="SCDDataIntersection" revision="1.237">
+<Graph author="avackova" created="Wed May 02 10:25:31 CEST 2007" description="Slowly Changing Dimension (SCD) - should be used when it is necessary &#10;for the data warehouse to track historical changes." guiVersion="2.0" id="1204805969813" licenseType="Evaluation license." modified="Tue Aug 19 13:32:59 CEST 2008" modifiedBy="avackova" name="SCDDataIntersection" revision="1.241">
 <Global>
 <Metadata fileURL="${META_DIR}/exchange_rate_DIM.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/exchange_rate.fmt" id="Metadata1"/>
@@ -8,7 +8,7 @@
 <Sequence cached="0" fileURL="${SEQ_DIR}/exchange_rates_ID.seq" id="Sequence0" name="exchange_rates_ID" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Data Intersection" guiWidth="0" guiX="448" guiY="222" id="DATA_INTERSECTION0" joinKey="Code;Country;Currency;Amount" type="DATA_INTERSECTION">
+<Node enabled="enabled" guiHeight="0" guiName="Data Intersection" guiWidth="0" guiX="448" guiY="222" id="DATA_INTERSECTION0" joinKey="$Code=$Code;$Country=$Country;$Currency=$Currency;$Amount=$Amount;#" type="DATA_INTERSECTION">
 <attr name="transform"><![CDATA[function transform() {
 $0.Country := $0.Country;
 $0.Currency := $0.Currency;
@@ -20,7 +20,7 @@ $0.Valid_from := $1.Valid_from;
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Data Intersection" guiWidth="0" guiX="656" guiY="282" id="DATA_INTERSECTION1" joinKey="Code" type="DATA_INTERSECTION">
+<Node enabled="enabled" guiHeight="0" guiName="Data Intersection" guiWidth="0" guiX="656" guiY="282" id="DATA_INTERSECTION1" joinKey="$Code=$Code;#" type="DATA_INTERSECTION">
 <attr name="transform"><![CDATA[function transform() {
 $0.exchange_right_id := $1.exchange_right_id;
 $0.Country := $0.Country;

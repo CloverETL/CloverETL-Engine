@@ -34,6 +34,7 @@ import org.jetel.data.reader.DriverReader;
 import org.jetel.data.reader.InputReader;
 import org.jetel.data.reader.SlaveReader;
 import org.jetel.data.reader.SlaveReaderDup;
+import org.jetel.data.reader.InputReader.InputOrdering;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -119,6 +120,7 @@ import org.w3c.dom.Element;
  *    <tr><td><b>joinType</b><br><i>optional</i></td><td>inner/leftOuter/fullOuter Specifies type of join operation. Default is inner.</td></tr>
  *    <tr><td><b>slaveDuplicates</b><br><i>optional</i></td><td>true/false - allow records on slave port with duplicate keys. If false - multiple
  *    duplicate records are discarded - only the last one is used for join. Default is true.</td></tr>
+ *    <tr><td><b>ascendingInputs</b><br><i>optional</i></td><td>true/false - Switch for inputs data ordering (true=ascending, false=descending) Value of this attribute suggests this component how to process data. All inputs must be ordered in the same way. Default is true.</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="MERGE_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
  *<pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="EmployeeID*EmployeeID" joinType="inner"&gt;
@@ -155,7 +157,7 @@ public class MergeJoin extends Node {
 		LEFT_OUTER,
 		FULL_OUTER,
 	}
-
+	
 	private static final String XML_JOINTYPE_ATTRIBUTE = "joinType";
 	public static final String XML_JOINKEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
@@ -167,6 +169,7 @@ public class MergeJoin extends Node {
 	private static final String XML_FULLOUTERJOIN_ATTRIBUTE = "fullOuterJoin";
 	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
 	public static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
+	private static final String XML_ASCENDING_INPUTS_ATTRIBUTE ="ascendingInputs";
 	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "MERGE_JOIN";
@@ -184,7 +187,7 @@ public class MergeJoin extends Node {
 
 	private DataRecord[] inRecords;
 	private DataRecord[] outRecords;
-
+	
 	private Properties transformationParameters;
 	
 //	private static Log logger = LogFactory.getLog(MergeJoin.class);
@@ -210,7 +213,8 @@ public class MergeJoin extends Node {
 	int minCnt;
 
 	OutputPort outPort;
-	private String joinKeys;	
+	private String joinKeys;
+	private boolean ascendingInputs = true;
 
 	/**
 	 *  Constructor for the SortedJoin object
@@ -221,10 +225,11 @@ public class MergeJoin extends Node {
 	 * @param transformClass  class (name) to be used for transforming data
 	 * @param join join type
 	 * @param slaveDuplicates enables/disables duplicate slaves
+	 * @param ascendingInputs switch for inputs ordering (true=ascending, false=descending) all inputs must be ordered in the same way
 	 */
 	public MergeJoin(String id, String[][] joiners, String transform,
 			String transformClass, String transformURL, Join join, boolean slaveDuplicates,
-			boolean slaveOverriden) {
+			boolean slaveOverriden, boolean ascendingInputs) {
 		super(id);
 		
 		this.joiners = joiners;
@@ -233,10 +238,11 @@ public class MergeJoin extends Node {
 		this.transformURL = transformURL;
 		this.join = join;
 		this.slaveDuplicates = slaveDuplicates;
+		this.ascendingInputs = ascendingInputs;
 	}
 	
 	public MergeJoin(String id, String joinKey, String transform,
-			String transformClass, String transformURL, Join join, boolean slaveDuplicates) {
+			String transformClass, String transformURL, Join join, boolean slaveDuplicates, boolean ascendingInputs) {
 		super(id);
 
 		this.transformSource = transform;
@@ -245,18 +251,20 @@ public class MergeJoin extends Node {
 		this.transformURL = transformURL;
 		this.join = join;
 		this.slaveDuplicates = slaveDuplicates;
+		this.ascendingInputs = ascendingInputs;
 	}
 
-	public MergeJoin(String id, String joinKey, RecordTransform transform, Join join, boolean slaveDuplicates){
-		this(id, joinKey, null, null, null, join, slaveDuplicates);
+	public MergeJoin(String id, String joinKey, RecordTransform transform, Join join, boolean slaveDuplicates, boolean ascendingInputs){
+		this(id, joinKey, null, null, null, join, slaveDuplicates, ascendingInputs);
 		this.transformation = transform;
 	}
 	
 	public MergeJoin(String id, String[][] joiners, RecordTransform transform,
-			Join join, boolean slaveDuplicates, boolean slaveOverriden) {
-		this(id, joiners, null, null, null, join, slaveDuplicates, slaveOverriden);
+			Join join, boolean slaveDuplicates, boolean slaveOverriden, boolean ascendingInputs) {
+		this(id, joiners, null, null, null, join, slaveDuplicates, slaveOverriden, ascendingInputs);
 		this.transformation = transform;
 	}
+
 
 	/**
 	 * Replace minimal record runs with the following ones. Change min indicator array
@@ -271,8 +279,29 @@ public class MergeJoin extends Node {
 		for (int i = 0; i < inputCnt; i++) {
 			if (minIndicator[i]) {
 				reader[i].loadNextRun();
+
+				// check inputs ordering 
+				if (reader[i].getOrdering() == InputOrdering.UNSORTED) 		
+					throw new IllegalStateException("input "+i+" is unsorted");
+				if (ascendingInputs && reader[i].getOrdering()==InputOrdering.DESCENDING)
+					throw new IllegalStateException("all inputs must be ascending, but input "+i+" is "+reader[i].getOrdering()+"; set attribute ascendingInputs=\"false\" or change ordering of input "+i);
+				if (!ascendingInputs && reader[i].getOrdering()==InputOrdering.ASCENDING)
+					throw new IllegalStateException("all inputs must be descending, but input "+i+" is "+reader[i].getOrdering()+"; set attribute ascendingInputs=\"true\" or change ordering of input "+i);
 			}
-			switch (reader[minIdx].compare(reader[i])) {
+		}// for
+
+		for (int i = 0; i < inputCnt; i++) {
+			
+			int comparison = 0;
+			if (minIdx != i){ // compare data from different input ports
+				// comparison depends on ordering direction of inputs
+				if (ascendingInputs)
+					comparison = reader[minIdx].compare(reader[i]);
+				else 
+					comparison = reader[i].compare(reader[minIdx]);
+			}
+			
+			switch (comparison) {
 			case -1: // current is greater than minimal
 				minIndicator[i] = false;
 				break;
@@ -474,9 +503,16 @@ public class MergeJoin extends Node {
 	
 	public void free() {
 		super.free();
-		reader[0].free();
-		for (int i =0; i < slaveCnt; i++)
-			reader[i+1].free(); 
+		if (reader != null) {
+			if (reader[0] != null) {
+				reader[0].free();
+			}
+			for (int i = 0; i < slaveCnt; i++) {
+				if (reader[i+1] != null) {
+					reader[i + 1].free();
+				}
+			}
+		} 
 	}
 
     /**
@@ -491,6 +527,7 @@ public class MergeJoin extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
+	@SuppressWarnings("unchecked")
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		
@@ -583,7 +620,8 @@ public class MergeJoin extends Node {
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
 					xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null),
 					joinType,
-					xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true));
+					xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true),
+					xattribs.getBoolean(XML_ASCENDING_INPUTS_ATTRIBUTE, true));
 			
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -622,7 +660,7 @@ public class MergeJoin extends Node {
             		|| !checkOutputPorts(status, 1, 1)) {
             	return status;
             }
-
+            
             try {
         		inputCnt = inPorts.size();
         		slaveCnt = inputCnt - 1;
@@ -676,7 +714,7 @@ public class MergeJoin extends Node {
 //                init();
 //                free();
             } catch (ComponentNotReadyException e) {
-                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
                 if(!StringUtils.isEmpty(e.getAttributeName())) {
                     problem.setAttributeName(e.getAttributeName());
                 }

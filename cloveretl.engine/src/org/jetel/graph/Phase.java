@@ -18,6 +18,7 @@
 *
 */
 package org.jetel.graph;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -153,8 +154,12 @@ public class Phase extends GraphElement implements Comparable {
 				node.init();
 				logger.debug("\t" + node.getId() + " ...OK");
 			} catch (ComponentNotReadyException ex) {
+				node.setResultCode(Result.ERROR);
+				result = Result.ERROR;
 				throw new ComponentNotReadyException(node.getId() + " ...FAILED ! \nReason: " +  ex.getMessage(), ex);
 			} catch (Exception ex) {
+				node.setResultCode(Result.ERROR);
+				result = Result.ERROR;
 				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !\nReason: " +  ex.getMessage(), ex);
 			}
 		}
@@ -224,7 +229,7 @@ public class Phase extends GraphElement implements Comparable {
 	/**
      * Bulk adding nodes into this phase
      * 
-     * @param edges
+     * @param nodes
      * @throws GraphConfigurationException
      */
     public void addNode(Node ... nodes) throws GraphConfigurationException{
@@ -233,7 +238,18 @@ public class Phase extends GraphElement implements Comparable {
     	}
     }
 	
-	
+	/**
+     * Bulk adding nodes into this phase
+     * 
+     * @param nodes
+     * @throws GraphConfigurationException
+     */
+    public void addAllNodes(Collection<Node> nodes) throws GraphConfigurationException{
+    	for(Node node : nodes) {
+    		addNode(node);
+    	}
+    }
+
     /**
      *  Deletes node from the phase.
      * @param node the node to be removed from the phase

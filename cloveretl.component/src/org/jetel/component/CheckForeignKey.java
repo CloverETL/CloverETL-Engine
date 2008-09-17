@@ -379,7 +379,7 @@ import org.w3c.dom.Element;
 						primaryKeys = tmp[PRIMERY_KEY_INDEX][0];
 					}
 				} catch (ComponentNotReadyException e) {
-					status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_FOREIGNKEY_ATTRIBUTE);
+					status.add(e, Severity.WARNING, this, Priority.NORMAL, XML_FOREIGNKEY_ATTRIBUTE);
 				}
     		}
         	primaryKey = new RecordKey(primaryKeys, primaryMetadata);

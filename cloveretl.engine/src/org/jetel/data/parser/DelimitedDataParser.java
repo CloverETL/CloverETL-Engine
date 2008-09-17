@@ -189,6 +189,9 @@ public class DelimitedDataParser implements Parser {
 	 */
 	public void init(DataRecordMetadata metadata)
 	throws ComponentNotReadyException {
+		if (metadata == null) {
+			throw new ComponentNotReadyException("Metadata are null");
+		}
 		if (metadata.getRecType() != DataRecordMetadata.DELIMITED_RECORD) {
 			throw new ComponentNotReadyException("Delimited data expected but not encountered");
 		}        

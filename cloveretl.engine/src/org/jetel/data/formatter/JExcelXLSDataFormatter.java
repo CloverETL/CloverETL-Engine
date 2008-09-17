@@ -31,6 +31,7 @@ import javax.naming.InvalidNameException;
 
 import jxl.CellView;
 import jxl.Workbook;
+import jxl.WorkbookSettings;
 import jxl.write.Boolean;
 import jxl.write.DateFormat;
 import jxl.write.DateTime;
@@ -76,6 +77,8 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	private int currentRow;
 	private SheetData currentSheet;
 
+	private String charset;
+
 	/**
 	 * Constructor
 	 * 
@@ -83,9 +86,13 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	 * them by new data 
 	 */
 	public JExcelXLSDataFormatter(boolean append){
-		super(append);
+		this(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER, append);
 	}
 
+	public JExcelXLSDataFormatter(String charset, boolean append){
+		super(append);
+		this.charset = charset;
+	}
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
@@ -215,14 +222,16 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		close();
 		Workbook oldWb = null;
         try{
+            WorkbookSettings settings = new WorkbookSettings();
+    		settings.setEncoding(charset);
             if (((File)outputDataTarget).length() > 0) {//if xls file exist add to it new data
-                oldWb = Workbook.getWorkbook(((File)outputDataTarget));
+                oldWb = Workbook.getWorkbook(((File)outputDataTarget), settings);
             }
             if (oldWb != null){
-            	wb = Workbook.createWorkbook((File)outputDataTarget, oldWb);
+            	wb = Workbook.createWorkbook((File)outputDataTarget, oldWb, settings);
         		open = true;
            }else{
-            	wb = Workbook.createWorkbook((File)outputDataTarget);
+            	wb = Workbook.createWorkbook((File)outputDataTarget, settings);
             }
         }catch(Exception ex){
             throw new RuntimeException(ex);

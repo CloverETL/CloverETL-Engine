@@ -21,7 +21,9 @@ public class DriverReader implements InputReader {
 	private DataRecord[] rec = new DataRecord[2];
 	private int recCounter;
 	private boolean blocked;
-
+	
+	private InputOrdering inputOrdering = InputOrdering.UNDEFINED;
+	
 	public DriverReader(InputPort inPort, RecordKey key) {
 		this.inPort = inPort;
 		this.key = key;
@@ -65,14 +67,19 @@ public class DriverReader implements InputReader {
 			blocked = false;
 			return true;
 		}
-		do {
+		while (true){
 			swap();
 			if (inPort.readRecord(rec[NEXT]) == null) {
 				rec[NEXT] = rec[CURRENT] = null;
 				return false;
 			}
 			recCounter++;
-		} while (key.compare(rec[CURRENT], rec[NEXT]) == 0);
+			int comparison = key.compare(rec[CURRENT], rec[NEXT]);
+			if (comparison != 0){
+				inputOrdering = SlaveReader.updateOrdering(comparison, inputOrdering);
+				break;
+			}
+		}
 		return true;
 	}
 
@@ -122,7 +129,8 @@ public class DriverReader implements InputReader {
 		DataRecord rec1 = getSample();
 		DataRecord rec2 = other.getSample();
 		if (rec1 == null) {
-			return rec2 == null ? 0 : 1;	// null is greater than any other reader
+			return 1;// null is greater than any other reader
+//			return rec2 == null ? 0 : 1;	
 		} else if (rec2 == null) {
 			return -1;
 		}
@@ -136,6 +144,10 @@ public class DriverReader implements InputReader {
 	@Override
 	public String toString() {
 		return getSample().toString();
+	}
+
+	public InputOrdering getOrdering() {
+		return inputOrdering;
 	}
 
 }

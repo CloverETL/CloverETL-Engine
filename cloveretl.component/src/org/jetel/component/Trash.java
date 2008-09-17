@@ -28,8 +28,11 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.TextTableFormatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -91,6 +94,8 @@ public class Trash extends Node {
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_DEBUGPRINT_ATTRIBUTE = "debugPrint";
 	private static final String XML_DEBUGAPPEND_ATTRIBUTE = "debugAppend";
+	private static final String XML_COMPRESSLEVEL_ATTRIBUTE = "compressLevel";
+	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "TRASH";
 	private final static int READ_FROM_PORT = 0;
@@ -103,6 +108,8 @@ public class Trash extends Node {
 	private WritableByteChannel writableByteChannel;
     private boolean debugAppend = false;
     private String charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
+
+	private int compressLevel = -1;
 
 	/**
 	 *Constructor for the Trash object
@@ -193,7 +200,8 @@ public class Trash extends Node {
         		formatter = new TextTableFormatter(charSet);
        	        try {
 					writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(
-							FileUtils.getWritableChannel(graph != null ? graph.getProjectURL() : null, debugFilename, debugAppend)
+							FileUtils.getWritableChannel(graph != null ? graph.getProjectURL() : null, debugFilename, 
+									debugAppend, compressLevel )
 					));
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -227,7 +235,8 @@ public class Trash extends Node {
 	            if(debugFilename != null) {
 	       	        try {
 						writer.setChannels( new WritableByteChannelIterator(
-								FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, debugFilename, debugAppend)
+								FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, 
+										debugFilename, debugAppend, compressLevel)
 						));
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -254,6 +263,9 @@ public class Trash extends Node {
 		}
 		if (charSet != null) {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
+		}
+		if (compressLevel > -1){
+			xmlElement.setAttribute(XML_COMPRESSLEVEL_ATTRIBUTE,String.valueOf(compressLevel));
 		}
 	}
 
@@ -283,6 +295,7 @@ public class Trash extends Node {
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				trash.setCharset( xattribs.getString(XML_CHARSET_ATTRIBUTE) );
 			}
+			trash.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
 			
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -305,7 +318,11 @@ public class Trash extends Node {
     			return status;
     		}
 
-    		if (debugPrint && debugFilename != null) {
+            if (getInputPort(READ_FROM_PORT).getMetadata() == null) {
+            	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+            }
+
+            if (debugPrint && debugFilename != null) {
                 try {
                 	FileUtils.canWrite(getGraph() != null ? 
                 			getGraph().getProjectURL() : null, debugFilename);
@@ -334,6 +351,16 @@ public class Trash extends Node {
 	
 	public void setCharset(String charSet) {
 		this.charSet = charSet;
+	}
+
+
+	public int getCompressLevel() {
+		return compressLevel;
+	}
+
+
+	public void setCompressLevel(int compressLevel) {
+		this.compressLevel = compressLevel;
 	}
 	
 }

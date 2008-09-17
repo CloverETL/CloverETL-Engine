@@ -148,6 +148,7 @@ public class EngineInitializer {
 			throw new ComponentNotReadyException(graph, "Graph configuration is invalid.");
 		} else {
 			logger.info("Graph configuration is valid.");
+			status.log();
 		}
 		logger.info("Graph initialization (" + graph.getName() + ")");
         graph.init();

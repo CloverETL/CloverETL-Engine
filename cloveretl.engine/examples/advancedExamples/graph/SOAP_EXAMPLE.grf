@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Feb 29 16:16:12 CET 2008" guiVersion="1.10" id="1204298432250" licenseType="Evaluation license." modified="Fri Jun 27 09:49:53 CEST 2008" modifiedBy="avackova" name="SOAP_EXAMPLE" revision="1.281">
+<Graph author="avackova" created="Fri Feb 29 16:16:12 CET 2008" guiVersion="2.0" id="1204298432250" licenseType="Evaluation license." modified="Tue Aug 19 14:42:28 CEST 2008" modifiedBy="avackova" name="SOAP_EXAMPLE" revision="1.284">
 <Global>
 <Metadata fileURL="${META_DIR}/extract.fmt" id="Metadata10"/>
 <Metadata fileURL="${META_DIR}/extractAgg.fmt" id="Metadata11"/>
@@ -15,11 +15,11 @@
 <Metadata fileURL="${META_DIR}/time_pairs.fmt" id="Metadata4"/>
 <Property fileURL="parameters.prm" id="GraphParameter0"/>
 <Property fileURL="workspace.prm" id="GraphParameter4"/>
-<Sequence cached="0" fileURL="${SEQ_DIR}/temp_seq.seq" id="Sequence0" name="temp_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 <Sequence cached="0" fileURL="${SEQ_DIR}/time_seq.seq" id="Sequence1" name="time_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="0" fileURL="${SEQ_DIR}/temp_seq.seq" id="Sequence0" name="temp_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
 <Phase number="0">
-<Node aggregateKey="city;state" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="958" guiY="169" id="AGGREGATE0" mapping="$city:=$city;$state:=$state;$name:=first($name);$units:=first($units);$avg:=avg($value);$min:=min($value);$max:=max($value);$startDate:=min($startDateUTC);$endDate:=max($endDateUTC);$moreWeatherInformation:=first($moreWeatherInformation);" type="AGGREGATE"/>
+<Node aggregateKey="city;state" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="958" guiY="169" id="AGGREGATE0" mapping="$city:=$city;$state:=$state;$name:=first($name);$units:=first($units);$avg:=avg($value);$min:=min($value);$max:=max($value);$startDate:=min($startDateUTC);$endDate:=max($endDateUTC);$moreWeatherInformation:=first($moreWeatherInformation);" sorted="false" type="AGGREGATE"/>
 <Node dedupKey="applicable_location;time_layout" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="442" guiY="307" id="DEDUP0" keep="first" type="DEDUP"/>
 <Node dedupKey="layout_key" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="535" guiY="117" id="DEDUP1" keep="first" type="DEDUP"/>
 <Node enabled="enabled" guiHeight="0" guiName="Join Location with additional info" guiWidth="0" guiX="203" guiY="14" id="EXT_HASH_JOIN0" joinKey="$location_key=$applicable_location;#" type="EXT_HASH_JOIN">
@@ -93,7 +93,7 @@ $0.end_valid_time := $1.end_valid_time;
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Join Location" guiWidth="0" guiX="789" guiY="30" id="EXT_HASH_JOIN7" joinKey="applicable_location=location_key;#" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="0" guiName="Join Location" guiWidth="0" guiX="789" guiY="30" id="EXT_HASH_JOIN7" joinKey="$applicable_location=$location_key;#" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#TL
 //Return index of sign of time offset
 //Return index of plus sign if any or index of the last minus sign in parameter

@@ -148,8 +148,8 @@ public class Message<T> implements Comparable<Message>{
     
     @Override public String toString(){
         StringBuilder str=new StringBuilder(40);
-        str.append("Sender:").append(sender.getId()).append("\n");
-        str.append("Recipient:").append(recipient.getId()).append("\n");
+        str.append("Sender:").append(sender != null ? sender.getId() : "null").append("\n");
+        str.append("Recipient:").append(recipient != null ? recipient.getId() : "null").append("\n");
         str.append("Type:").append(type).append("\n");
         return str.toString();
     }

@@ -28,8 +28,11 @@ import org.jetel.data.formatter.provider.FixLenDataFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -374,10 +377,18 @@ public class FixLenDataWriter extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 		 
+        status.add(new ConfigurationProblem(
+        		"Component is of type FIXLEN_DATA_WRITER, which is deprecated",
+        		Severity.WARNING, this, Priority.NORMAL));
+
 		if(!checkInputPorts(status, 1, 1)
 				|| !checkOutputPorts(status, 0, 1)) {
 			return status;
 		}
+
+        if (getInputPort(READ_FROM_PORT).getMetadata() == null) {
+        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+        }
 
         try {
         	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 

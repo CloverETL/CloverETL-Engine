@@ -26,6 +26,7 @@ import org.jetel.component.WrapperTL;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.metadata.DataRecordMetadata;
@@ -60,8 +61,9 @@ public class RecordDenormalizeTL implements RecordDenormalize {
     private DataRecord[] outRec;
 
     /**Constructor for the DataRecordTransform object */
-    public RecordDenormalizeTL(Log logger,String srcCode) {
+    public RecordDenormalizeTL(Log logger,String srcCode,TransformationGraph graph) {
     	wrapper = new WrapperTL(srcCode, logger);
+    	wrapper.setGraph(graph);
     	outRec=new DataRecord[1];
     }
 

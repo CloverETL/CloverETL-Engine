@@ -96,4 +96,9 @@ public interface Sequence extends IGraphElement {
      */
     public abstract void free();
 
+    /**
+     * Is this sequence shared via an authority (i.e. server).
+     */
+    public boolean isShared();
+
 }

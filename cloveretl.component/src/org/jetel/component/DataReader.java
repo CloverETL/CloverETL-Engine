@@ -25,6 +25,7 @@ import java.security.InvalidParameterException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.data.parser.DataParser;
@@ -38,6 +39,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.dictionary.IDictionaryValue;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileReader;
@@ -120,6 +122,7 @@ public class DataReader extends Node {
 	private static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
 
 	private final static int OUTPUT_PORT = 0;
+	private final static int INPUT_PORT = 0;
 	private final static int LOG_PORT = 1;
 	private String fileURL;
 	private boolean skipFirstLine = false;
@@ -468,6 +471,10 @@ public class DataReader extends Node {
     private void storeValues() {
     	if (getPhase() != null && getPhase().getResult() == Result.FINISHED_OK) {
     		try {
+    			IDictionaryValue<?> dickValue = getGraph().getDictionaryValue(Defaults.INCREMENTAL_STORE_KEY);
+    			if (dickValue != null && dickValue.getValue() == Boolean.FALSE) {
+    				return;
+    			}
 				reader.storeIncrementalReading();
 			} catch (IOException e) {
 				throw new RuntimeException(e);

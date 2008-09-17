@@ -27,6 +27,8 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -206,7 +208,15 @@ public class LookupTableReaderWriter extends Node {
 			return status;
 		}
 
-		lookupTable = getGraph().getLookupTable(lookupTableName);
+        if (getInPorts().size() >0 && getInputPort(READ_FROM_PORT).getMetadata() == null) {
+        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+        }
+
+        if (getOutPorts().size() > 0 && getOutputPort(0).getMetadata() == null) {
+        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+        }
+
+        lookupTable = getGraph().getLookupTable(lookupTableName);
 		if (lookupTable == null) {
             ConfigurationProblem problem = new ConfigurationProblem("Lookup table \"" + lookupTableName + 
         			"\" not found.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
