@@ -43,7 +43,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.dictionary.IDictionaryValue;
+//import org.jetel.graph.dictionary.IDictionaryValue;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -379,10 +379,10 @@ public class DBInputTable extends Node {
     private void storeValues() {
     	if (getPhase() != null && getPhase().getResult() == Result.FINISHED_OK) {
     		try {
-    			IDictionaryValue<?> dickValue = getGraph().getDictionaryValue(Defaults.INCREMENTAL_STORE_KEY);
-    			if (dickValue != null && dickValue.getValue() == Boolean.FALSE) {
-    				return;
-    			}
+//    			IDictionaryValue<?> dickValue = getGraph().getDictionaryValue(Defaults.INCREMENTAL_STORE_KEY);
+//    			if (dickValue != null && dickValue.getValue() == Boolean.FALSE) {
+//    				return;
+//    			}
     			parser.storeIncrementalReading();
 			} catch (IOException e) {
 				throw new RuntimeException(e);
