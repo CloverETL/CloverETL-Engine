@@ -102,7 +102,7 @@ public class Dedup extends Node {
 	
 	private final static int DEFAULT_NO_DUP_RECORD = 1;
 	
-	private int keep;
+	private int keep = KEEP_FIRST;
 	private String[] dedupKeys;
 	private RecordKey recordKey;
 	private boolean equalNULLs = true;
@@ -124,11 +124,9 @@ public class Dedup extends Node {
 	 *
 	 * @param  id         unique id of the component
 	 * @param  dedupKeys  definitio of key fields used to compare records
-	 * @param  keep  (1 - keep first; 0 - keep unique; -1 - keep last)
 	 */
-	public Dedup(String id, String[] dedupKeys, int keep) {
+	public Dedup(String id, String[] dedupKeys) {
 		super(id);
-		this.keep = keep;
 		this.dedupKeys = dedupKeys;
 	}
 
@@ -369,11 +367,11 @@ public class Dedup extends Node {
 			for (int i=1; i<this.dedupKeys.length; i++) {
 				keys += Defaults.Component.KEY_FIELDS_DELIMITER + this.dedupKeys[i];
 			}
-			xmlElement.setAttribute(XML_DEDUPKEY_ATTRIBUTE,keys);
+			xmlElement.setAttribute(XML_DEDUPKEY_ATTRIBUTE, keys);
 		}
 		
 		// keep attribute
-		switch(this.keep){
+		switch (this.keep){
 			case KEEP_FIRST: xmlElement.setAttribute(XML_KEEP_ATTRIBUTE, "First");
 				break;
 			case KEEP_LAST: xmlElement.setAttribute(XML_KEEP_ATTRIBUTE, "Last");
@@ -404,10 +402,12 @@ public class Dedup extends Node {
 		try {
             String dedupKey = xattribs.getString(XML_DEDUPKEY_ATTRIBUTE, null);
             
-			dedup=new Dedup(xattribs.getString(XML_ID_ATTRIBUTE),
-					dedupKey != null ? dedupKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX) : null,
-					xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ff].*") ? KEEP_FIRST :
-					    xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ll].*") ? KEEP_LAST : KEEP_UNIQUE);
+			dedup = new Dedup(xattribs.getString(XML_ID_ATTRIBUTE),
+					dedupKey != null ? dedupKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX) : null);
+			if (xattribs.exists(XML_KEEP_ATTRIBUTE)){
+			    dedup.setKeep(xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ff].*") ? KEEP_FIRST :
+				    xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ll].*") ? KEEP_LAST : KEEP_UNIQUE);
+			}
 			if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
 			    dedup.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
 			}
@@ -455,8 +455,12 @@ public class Dedup extends Node {
 		return COMPONENT_TYPE;
 	}
 	
+	public void setKeep(int keep) {
+		this.keep = keep;
+	}
+	
 	public void setEqualNULLs(boolean equal){
-	    this.equalNULLs=equal;
+	    this.equalNULLs = equal;
 	}
 
 	public void setNumberRecord(int numberRecord) {
