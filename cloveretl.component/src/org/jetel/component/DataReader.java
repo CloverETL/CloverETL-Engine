@@ -471,10 +471,10 @@ public class DataReader extends Node {
     private void storeValues() {
     	if (getPhase() != null && getPhase().getResult() == Result.FINISHED_OK) {
     		try {
-//    			IDictionaryValue<?> dickValue = getGraph().getDictionaryValue(Defaults.INCREMENTAL_STORE_KEY);
-//    			if (dickValue != null && dickValue.getValue() == Boolean.FALSE) {
-//    				return;
-//    			}
+    			Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
+    			if (dictValue != null && dictValue == Boolean.FALSE) {
+    				return;
+    			}
 				reader.storeIncrementalReading();
 			} catch (IOException e) {
 				throw new RuntimeException(e);

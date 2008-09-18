@@ -822,10 +822,10 @@ public final class TransformationGraph extends GraphElement {
      * Clears/removes all registered objects (Edges,Nodes,Phases,etc.)
      */
     public void free() {
-    	//free dictionary
-    	dictionary.free();
-    	
         freeResources();
+    	
+    	//free dictionary /some readers use dictionary in the free method for the incremental reading
+    	dictionary.free();
     	
     	setWatchDog(null);
     }
