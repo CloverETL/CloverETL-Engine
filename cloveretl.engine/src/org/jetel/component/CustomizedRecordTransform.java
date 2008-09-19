@@ -21,6 +21,7 @@
 package org.jetel.component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -243,6 +244,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 
 	protected Log logger;
 	protected String errorMessage;
+	protected boolean[] semiResult;
+	protected boolean[][] fieldResult;
 
 	/**
 	 * Map "rules" stores rules given by user in following form: key: patternOut value: proper descendant of Rule class
@@ -948,8 +951,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	}
 
 	public Object getSemiResult() {
-		// TODO Auto-generated method stub
-		return null;
+		return Arrays.toString(semiResult);
 	}
 
 	/*
@@ -966,6 +968,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 		this.parameters = parameters;
 		this.sourceMetadata = sourcesMetadata;
 		this.targetMetadata = targetMetadata;
+		semiResult = new boolean[targetMetadata.length];
+		fieldResult = new boolean[targetMetadata.length][];
+		for (int i = 0; i < fieldResult.length; i++) {
+			fieldResult[i] = new boolean[targetMetadata[i].getNumFields()];
+		}
 		return init();
 	}
 
@@ -1012,18 +1019,13 @@ public class CustomizedRecordTransform implements RecordTransform {
 				// find output fields pattern
 				field = resolveField(rulesEntry.getKey());
 				if (field == null) {
-					errorMessage = "Wrong pattern for output fields: " + rulesEntry.getKey();
-					logger.error(errorMessage);
-					throw new ComponentNotReadyException(errorMessage);
+					throwComponentNotReadyException("Wrong pattern for output fields: " + rulesEntry.getKey());
 				}
 				// find output fields from pattern
 				final ArrayList<String> outFieldsList = findFields(field, targetMetadata);
 				outFields = outFieldsList.toArray(new String[outFieldsList.size()]);
 				if (outFields.length == 0) {
-					errorMessage = "There is no output field matching \"" + field + "\" pattern";
-					logger.error(errorMessage);
-					throw new ComponentNotReadyException(errorMessage);
-
+					throwComponentNotReadyException("There is no output field matching \"" + field + "\" pattern");
 				}
 				inFields = new String[0];
 				if (rule instanceof DeleteRule) {
@@ -1036,26 +1038,20 @@ public class CustomizedRecordTransform implements RecordTransform {
 					// find input fields from pattern
 					ruleString = resolveField(rule.getSource());
 					if (ruleString == null) {
-						errorMessage = "Wrong pattern for output fields: " + rule.getSource();
-						logger.error(errorMessage);
-						throw new ComponentNotReadyException(errorMessage);
+						throwComponentNotReadyException(errorMessage = "Wrong pattern for output fields: " + rule.getSource());
 					}
 					final ArrayList<String> inFieldsList = findFields(ruleString, sourceMetadata);
 					inFields = inFieldsList.toArray(new String[inFieldsList.size()]);
 					if (inFields.length == 0) {
-						errorMessage = "There is no input field matching \"" + ruleString + "\" pattern";
-						logger.error(errorMessage);
-						throw new ComponentNotReadyException(errorMessage);
-
+						throwComponentNotReadyException("There is no input field matching \"" + ruleString + "\" pattern");
 					}
 				}
 				if (rule instanceof FieldRule && inFields.length > 1) {
 					// find mapping by names
 					if (putMappingByNames(transformMap, alternativeTransformMaps, outFields, inFields, rule.getSource()) == 0) {
 						if (!useAlternativeRules) {
-							errorMessage = "Not found any field for mapping by names due to rule:\n" + field
-									+ " - output fields pattern\n" + ruleString + " - input fields pattern";
-							logger.warn(errorMessage);
+							warn("Not found any field for mapping by names due to rule:\n" + field
+									+ " - output fields pattern\n" + ruleString + " - input fields pattern");
 						}
 					}
 				} else {// for each output field the same rule
@@ -1272,26 +1268,30 @@ public class CustomizedRecordTransform implements RecordTransform {
 		if (!Rule.checkTypes(targetMetadata[outRecNo].getField(outFieldNo),
 				sourceMetadata[inRecNo].getField(inFieldNo), fieldPolicy)) {
 			if (fieldPolicy == PolicyType.STRICT) {
-				logger.warn("Found fields with the same names but other types: ");
-				logger.warn(targetMetadata[outRecNo].getName() + DOT
-						+ targetMetadata[outRecNo].getField(outFieldNo).getName() + " type - "
-						+ targetMetadata[outRecNo].getFieldTypeAsString(outFieldNo)
-						+ getDecimalParams(targetMetadata[outRecNo].getField(outFieldNo)));
-				logger.warn(sourceMetadata[inRecNo].getName() + DOT
-						+ sourceMetadata[inRecNo].getField(inFieldNo).getName() + " type - "
-						+ sourceMetadata[inRecNo].getFieldTypeAsString(inFieldNo)
-						+ getDecimalParams(sourceMetadata[inRecNo].getField(inFieldNo)));
+				if (logger != null) {
+					logger.warn("Found fields with the same names but other types: ");
+					logger.warn(targetMetadata[outRecNo].getName() + DOT + 
+							targetMetadata[outRecNo].getField(outFieldNo).getName() + " type - " + 
+							targetMetadata[outRecNo].getFieldTypeAsString(outFieldNo) + 
+							getDecimalParams(targetMetadata[outRecNo].getField(outFieldNo)));
+					logger.warn(sourceMetadata[inRecNo].getName() + DOT + 
+							sourceMetadata[inRecNo].getField(inFieldNo).getName() + " type - " + 
+							sourceMetadata[inRecNo].getFieldTypeAsString(inFieldNo) + 
+							getDecimalParams(sourceMetadata[inRecNo].getField(inFieldNo)));
+				}
 			}
 			if (fieldPolicy == PolicyType.CONTROLLED) {
-				logger.warn("Found fields with the same names but incompatible types: ");
-				logger.warn(targetMetadata[outRecNo].getName() + DOT
-						+ targetMetadata[outRecNo].getField(outFieldNo).getName() + " type - "
-						+ targetMetadata[outRecNo].getFieldTypeAsString(outFieldNo)
-						+ getDecimalParams(targetMetadata[outRecNo].getField(outFieldNo)));
-				logger.warn(sourceMetadata[inRecNo].getName() + DOT
-						+ sourceMetadata[inRecNo].getField(inFieldNo).getName() + " type - "
-						+ sourceMetadata[inRecNo].getFieldTypeAsString(inFieldNo)
-						+ getDecimalParams(sourceMetadata[inRecNo].getField(inFieldNo)));
+				if (logger !=null ) {
+					logger.warn("Found fields with the same names but incompatible types: ");
+					logger.warn(targetMetadata[outRecNo].getName() + DOT
+							+ targetMetadata[outRecNo].getField(outFieldNo).getName() + " type - "
+							+ targetMetadata[outRecNo].getFieldTypeAsString(outFieldNo)
+							+ getDecimalParams(targetMetadata[outRecNo].getField(outFieldNo)));
+					logger.warn(sourceMetadata[inRecNo].getName() + DOT
+							+ sourceMetadata[inRecNo].getField(inFieldNo).getName() + " type - "
+							+ sourceMetadata[inRecNo].getFieldTypeAsString(inFieldNo)
+							+ getDecimalParams(sourceMetadata[inRecNo].getField(inFieldNo)));
+				}
 			}
 			return false;
 		} else {// map fields
@@ -1373,18 +1373,39 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param ex
 	 * @throws TransformException
 	 */
-	private void throwException(Rule[][] ruleArray, int recNo, int FieldNo, Exception ex) throws TransformException {
-		errorMessage = "TransformException caused by source: " + ruleArray[recNo][FieldNo].getSource();
-		logger.error(errorMessage, ex);
-		throw new TransformException(errorMessage, ex, recNo, FieldNo);
+	private void error(Rule[][] ruleArray, int recNo, int FieldNo, Exception ex) throws TransformException {
+		errorMessage = "TransformException caused by source: " + ruleArray[recNo][FieldNo].getSource() +
+			". Reason: " + ex.getMessage();
+		if (logger != null) {
+			logger.error(errorMessage, ex);
+		}
+//		throw new TransformException(errorMessage, ex, recNo, FieldNo);
 	}
 
+	private void throwComponentNotReadyException(String message) throws ComponentNotReadyException{
+		errorMessage = message;
+		if (logger != null) {
+			logger.error(errorMessage);
+		}
+		throw new ComponentNotReadyException(errorMessage);
+	}
+	
+	private void warn(String message){
+		errorMessage = message;
+		if (logger != null) {
+			logger.warn(errorMessage);
+		}
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see org.jetel.component.RecordTransform#transform(org.jetel.data.DataRecord[], org.jetel.data.DataRecord[])
 	 */
 	public int transform(DataRecord[] sources, DataRecord[] target) throws TransformException {
+		for (boolean[] index : fieldResult) {
+			Arrays.fill(index, true);
+		}
 		// array "order" stores coordinates of output fields in order they will be assigned
 		for (int i = 0; i < order.length; i++) {
 			value = transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue(sources);
@@ -1398,30 +1419,45 @@ public class CustomizedRecordTransform implements RecordTransform {
 							target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(value.toString());
 						} catch (BadDataFormatException e1) {
 							if (!useAlternativeRules
-									|| !setAlternativeValue(sources, target, order[i][REC_NO], order[i][FIELD_NO], 0,
-											e1)) {
-								throwException(transformMapArray, order[i][REC_NO], order[i][FIELD_NO], e1);
+									|| !setAlternativeValue(sources, target, order[i][REC_NO], order[i][FIELD_NO], 0, e1)) {
+								error(transformMapArray, order[i][REC_NO], order[i][FIELD_NO], e1);
+								fieldResult[order[i][REC_NO]][order[i][FIELD_NO]] = false;
 							}
 						}
 					} else if (!useAlternativeRules
-							|| !setAlternativeValue(sources, target, order[i][REC_NO], order[i][FIELD_NO], 0, e)) {// value
-																													// is
-																													// null
-																													// or
-																													// value
-																													// can't
-																													// be
-																													// set
-																													// to
-																													// field
-						throwException(transformMapArray, order[i][REC_NO], order[i][FIELD_NO], e);
+							|| !setAlternativeValue(sources, target, order[i][REC_NO], order[i][FIELD_NO], 0, e)) {// value is null or value can't be set to field
+						error(transformMapArray, order[i][REC_NO], order[i][FIELD_NO], e);
+						fieldResult[order[i][REC_NO]][order[i][FIELD_NO]] = false;
 					}
 				}
 			} else {// value is null and useuseAlternativeRules = true
-				setAlternativeValue(sources, target, order[i][REC_NO], order[i][FIELD_NO], 0, null);
+				fieldResult[order[i][REC_NO]][order[i][FIELD_NO]] = setAlternativeValue(sources, target, order[i][REC_NO], order[i][FIELD_NO], 0, null);
 			}
 		}
-		return 0;
+		//fill semiresult for each record  
+		Arrays.fill(semiResult, true);
+	semiResultLoop:
+		for (int i = 0; i < semiResult.length; i++){
+			for (int j = 0; j < fieldResult[i].length; j++){
+				if (!fieldResult[i][j]) {
+					semiResult[i] = false;
+					continue semiResultLoop;
+				}
+			}
+		}
+		//find first fully transformed record, if not all records were transformed succesfully
+		int result = -1;
+		boolean allOk = true;
+		for (int i = 0; i < semiResult.length; i++){
+			if (result == -1 && semiResult[i]) {//found first succesfully transformed record
+				result = i;
+			}
+			allOk = allOk && semiResult[i];
+			if (!allOk && result != -1) {//not all records transformed succesfully, but one for sure
+				return result + 1;
+			}
+		}
+		return allOk ? 0 : -1;
 	}
 
 	/**
@@ -1445,7 +1481,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 			int alternativeRuleNumber, Exception cause) throws TransformException {
 		Rule[][] ruleArray = alternativeTransformMapArrays.get(alternativeRuleNumber);
 		if (ruleArray[trgRec][trgField] == null) {
-			throwException(ruleArray, trgRec, trgField, cause);
+			error(ruleArray, trgRec, trgField, cause);
+			return false;
 		}
 		value = ruleArray[trgRec][trgField].getValue(sources);
 		if (value != null) {
@@ -1461,13 +1498,15 @@ public class CustomizedRecordTransform implements RecordTransform {
 						if (++alternativeRuleNumber < alternativeTransformMapArrays.size()) {
 							return setAlternativeValue(sources, target, trgRec, trgField, alternativeRuleNumber, e1);
 						} else {
-							throwException(ruleArray, trgRec, trgField, e1);
+							error(ruleArray, trgRec, trgField, e1);
+							return false;
 						}
 					}
 				} else if (++alternativeRuleNumber < alternativeTransformMapArrays.size()) {
 					return setAlternativeValue(sources, target, trgRec, trgField, alternativeRuleNumber, e);
 				} else {
-					throwException(ruleArray, trgRec, trgField, e);
+					error(ruleArray, trgRec, trgField, e);
+					return false;
 				}
 			}
 		} else if (++alternativeRuleNumber < alternativeTransformMapArrays.size()) {
@@ -1477,10 +1516,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 				target[trgRec].getField(trgField).setValue(value);
 				return true;
 			} catch (BadDataFormatException e) {
-				throwException(ruleArray, trgRec, trgField, e);
+				error(ruleArray, trgRec, trgField, e);
+				return false;
 			}
 		}
-		return true;
 	}
 
 	/**
@@ -1789,6 +1828,21 @@ abstract class Rule {
 		this.parameters = parameters;
 	}
 
+	protected void warn(String message){
+		errorMessage = message;
+		if (logger != null) {
+			logger.warn(message);
+		}
+	}
+	
+	protected void error(String message) throws ComponentNotReadyException{
+		errorMessage = message;
+		if (logger != null) {
+			logger.error(message);
+		}
+		throw new ComponentNotReadyException(message);
+	}
+	
 	abstract Rule duplicate();
 
 	abstract String getType();
@@ -1901,8 +1955,7 @@ class FieldRule extends Rule {
 								CustomizedRecordTransform.getFieldNo(fieldParams)).getTypeAsString()
 						+ CustomizedRecordTransform.getDecimalParams(sourceMetadata[CustomizedRecordTransform
 								.getRecNo(fieldParams)].getField(CustomizedRecordTransform.getFieldNo(fieldParams)));
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(errorMessage);
+				error(errorMessage);
 			}
 			if (policy == PolicyType.CONTROLLED) {
 				errorMessage = "Output field type is not compatible with input field "
@@ -1923,8 +1976,7 @@ class FieldRule extends Rule {
 								CustomizedRecordTransform.getFieldNo(fieldParams)).getTypeAsString()
 						+ CustomizedRecordTransform.getDecimalParams(sourceMetadata[CustomizedRecordTransform
 								.getRecNo(fieldParams)].getField(CustomizedRecordTransform.getFieldNo(fieldParams)));
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(errorMessage);
+				error(errorMessage);
 			}
 		}
 	}
@@ -2026,13 +2078,11 @@ class SequenceRule extends Rule {
 			value = graph.getSequence(sequenceID);
 		}
 		if (value == null) {
-			logger.warn("There is no sequence \"" + sequenceID + "\" in graph");
+			warn("There is no sequence \"" + sequenceID + "\" in graph");
 			if (!(targetMetadata[recNo].getField(fieldNo).isNullable() || targetMetadata[recNo].getField(fieldNo)
 					.isDefaultValue())) {
-				errorMessage = "Null value not allowed to record: " + targetMetadata[recNo].getName() + " , field: "
-						+ targetMetadata[recNo].getField(fieldNo).getName();
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(errorMessage);
+				error("Null value not allowed to record: " + targetMetadata[recNo].getName() + " , field: "
+						+ targetMetadata[recNo].getField(fieldNo).getName());
 			} else {
 				method = "null";
 				return;
@@ -2081,14 +2131,11 @@ class SequenceRule extends Rule {
 						+ targetMetadata[recNo].getField(fieldNo).getTypeAsString() + " ("
 						+ targetMetadata[recNo].getName() + CustomizedRecordTransform.DOT
 						+ targetMetadata[recNo].getField(fieldNo).getName() + ")";
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(errorMessage);
+				error(errorMessage);
 			}
-			DataFieldMetadata tmp;
+			DataFieldMetadata tmp = null;
 			if (methodType == DataFieldMetadata.UNKNOWN_FIELD) {
-				errorMessage = "Unknown sequence method" ;
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(errorMessage);
+				error("Unknown sequence method");
 			} else {
 				tmp = new DataFieldMetadata("tmp", methodType, ";");
 			}
@@ -2100,8 +2147,7 @@ class SequenceRule extends Rule {
 							+ targetMetadata[recNo].getField(fieldNo).getName() + " type - "
 							+ targetMetadata[recNo].getField(fieldNo).getTypeAsString()
 							+ CustomizedRecordTransform.getDecimalParams(targetMetadata[recNo].getField(fieldNo));
-					logger.error(errorMessage);
-					throw new ComponentNotReadyException(errorMessage);
+					error(errorMessage);
 				}
 				if (policy == PolicyType.CONTROLLED) {
 					errorMessage = "Sequence method:" + this.method + " does not " + "match field type:\n"
@@ -2109,8 +2155,7 @@ class SequenceRule extends Rule {
 							+ targetMetadata[recNo].getField(fieldNo).getName() + " type - "
 							+ targetMetadata[recNo].getField(fieldNo).getTypeAsString()
 							+ CustomizedRecordTransform.getDecimalParams(targetMetadata[recNo].getField(fieldNo));
-					logger.error(errorMessage);
-					throw new ComponentNotReadyException(errorMessage);
+					error(errorMessage);
 				}
 			}
 		}
@@ -2214,18 +2259,14 @@ class ConstantRule extends Rule {
 				tmp.fromString(source);
 				value = tmp.getValue();
 			} catch (BadDataFormatException e) {
-				errorMessage = e.getLocalizedMessage();
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(errorMessage);
+				error(e.getMessage());
 			}
 		} else {
 			try {
 				tmp.setValue(value);
 				source = tmp.toString();
 			} catch (BadDataFormatException e) {
-				errorMessage = e.getLocalizedMessage();
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(errorMessage);
+				error(e.getMessage());
 			}
 		}
 	}
@@ -2283,13 +2324,11 @@ class ParameterRule extends Rule {
 				paramValue = graph.getGraphProperties().getProperty(source);
 			}
 			if (paramValue == null) {
-				errorMessage = "Not found parameter: " + source;
 				if (!(targetMetadata[recNo].getField(fieldNo).isNullable() || targetMetadata[recNo].getField(fieldNo)
 						.isDefaultValue())) {
-					logger.error(errorMessage);
-					throw new ComponentNotReadyException(errorMessage);
+					error("Not found parameter: " + source);
 				} else {
-					logger.warn(errorMessage);
+					warn("Not found parameter: " + source);
 				}
 			}
 		}
@@ -2299,9 +2338,7 @@ class ParameterRule extends Rule {
 			tmp.fromString(paramValue);
 			value = tmp.getValue();
 		} catch (BadDataFormatException e) {
-			errorMessage = e.getLocalizedMessage();
-			logger.error(errorMessage);
-			throw new ComponentNotReadyException(errorMessage);
+			error(e.getMessage());
 		}
 	}
 
