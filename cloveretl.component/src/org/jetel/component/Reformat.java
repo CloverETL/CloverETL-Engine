@@ -19,13 +19,18 @@
 */
 package org.jetel.component;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -39,7 +44,10 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -140,21 +148,33 @@ import org.w3c.dom.Element;
  */
 public class Reformat extends Node {
 
+	public enum ErrorAction {
+		STOP,
+		CONTINUE;
+	}
+
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	private static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
+    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
 	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "REFORMAT";
 
 	private final static int READ_FROM_PORT = 0;
+	private static final ErrorAction DEFAULT_ERROR_ACTION = ErrorAction.STOP;
 
     private String transform = null;
 	private String transformClass = null;
 	private String transformURL = null;
 	private String charset = null;
 	private RecordTransform transformation = null;
+	private String errorActionsString;
+	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
+	private String errorLogURL;
+	private FileWriter errorLog;
 
 	private Properties transformationParameters = null;
 	
@@ -193,6 +213,7 @@ public class Reformat extends Node {
 			outRecord[i].reset();
 		}
 
+		int counter = 0;
 		// MAIN PROCESSING LOOP
 		while (inRecord[0] != null && runIt) {
 			inRecord[0] = readRecord(READ_FROM_PORT, inRecord[0]);
@@ -207,18 +228,51 @@ public class Reformat extends Node {
 				} else if (transformResult > 0) {
 					int outPort = transformResult - 1;
 					writeRecord(outPort, outRecord[outPort]);
-				} else if (transformResult == -1) {
-                    logger.warn(transformation.getMessage());
-                } else {
-                	throw new TransformException(transformation.getMessage());
+				} else if (transformResult < 0) {
+					ErrorAction action = errorActions.get(transformResult);
+					if (action == null) {
+						action = errorActions.get(Integer.MIN_VALUE);
+						if (action == null) {
+							action = DEFAULT_ERROR_ACTION;
+						}
+					}
+					String message = "Transformation finished with code: " + transformResult + ". Error message: " + 
+						transformation.getMessage();
+					if (action == ErrorAction.CONTINUE) {
+						if (errorLog != null){
+							errorLog.write(String.valueOf(counter));
+							errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+							errorLog.write(String.valueOf(transformResult));
+							errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+							message = transformation.getMessage();
+							if (message != null) {
+								errorLog.write(message);
+							}
+							errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+							Object semiResult = transformation.getSemiResult();
+							if (semiResult != null) {
+								errorLog.write(semiResult.toString());
+							}
+							errorLog.write("\n");
+						}else{
+							logger.warn(message);
+						}
+					}else{
+						throw new TransformException(message);
+						
+					}
                 }
 			}
-
+			counter++;
 			SynchronizeUtils.cloverYield();
 		}
 
 		if (transformation != null) {
 			transformation.finished();
+		}
+		if (errorLog != null){
+			errorLog.flush();
+			errorLog.close();
 		}
 
 		broadcastEOF();
@@ -256,6 +310,28 @@ public class Reformat extends Node {
 					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
 					this.getClass().getClassLoader());
 		}
+        if (errorActionsString != null){
+        	String[] actions = StringUtils.split(errorActionsString);
+        	if (actions.length == 1 && !actions[0].contains("=")){
+        		errorActions.put(Integer.MIN_VALUE, ErrorAction.valueOf(actions[0].trim()));
+        	}else{
+        	String[] action;
+	        	for (String string : actions) {
+					action = JoinKeyUtils.getMappingItemsFromMappingString(string);
+					errorActions.put(Integer.parseInt(action[0]), ErrorAction.valueOf(action[1]));
+				}
+        	}
+        }else{
+        	errorActions.put(-1, ErrorAction.CONTINUE);
+        	errorActions.put(Integer.MIN_VALUE, DEFAULT_ERROR_ACTION);
+        }
+        if (errorLogURL != null) {
+        	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+        }
 	}
 
 	
@@ -292,6 +368,14 @@ public class Reformat extends Node {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
 		}
 		
+		if (errorActionsString != null){
+			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
+		}
+		
+		if (errorLogURL != null){
+			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
+		}
+		
 		Enumeration propertyAtts = transformationParameters.propertyNames();
 		while (propertyAtts.hasMoreElements()) {
 			String attName = (String)propertyAtts.nextElement();
@@ -323,12 +407,26 @@ public class Reformat extends Node {
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				reformat.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+				reformat.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+				reformat.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+			}
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 		return reformat;
 	}
 
+
+	public void setErrorLog(String errorLog) {
+		this.errorLogURL = errorLog;
+	}
+
+	public void setErrorActions(String string) {
+		this.errorActionsString = string;		
+	}
 
 	/**
 	 *  Checks that component is configured properly
@@ -353,6 +451,38 @@ public class Reformat extends Node {
 				}
 			}
             
+            if (errorActionsString != null){
+            	String[] actions = StringUtils.split(errorActionsString);
+            	if (actions.length == 1 && !actions[0].contains("=")){
+    				if (ErrorAction.valueOf(actions[0].trim()) == null) {
+    					status.add(new ConfigurationProblem("Unknown error action: " + StringUtils.quote(actions[0].trim()), 
+    							Severity.WARNING, this, Priority.NORMAL, XML_ERROR_ACTIONS_ATTRIBUTE));
+    				}
+            	}else{
+	            	String[] action;
+	            	for (String string : actions) {
+	    				action = JoinKeyUtils.getMappingItemsFromMappingString(string);
+	    				try{
+	    					Integer.parseInt(action[0]);
+	    				}catch(NumberFormatException e) {
+	    					status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_ERROR_ACTIONS_ATTRIBUTE));
+	    				}
+	    				if (ErrorAction.valueOf(action[1]) == null) {
+	    					status.add(new ConfigurationProblem("Unknown error action: " + StringUtils.quote(action[1]), 
+	    							Severity.WARNING, this, Priority.NORMAL, XML_ERROR_ACTIONS_ATTRIBUTE));
+	    				}
+	     			}
+            	}
+            }
+            
+            if (errorLog != null){
+            	try {
+					FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+				} catch (ComponentNotReadyException e) {
+					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_ERROR_LOG_ATTRIBUTE));
+				}
+            }
+            
             return status;
        }
 
@@ -376,6 +506,13 @@ public class Reformat extends Node {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		transformation.reset();
+        if (errorLogURL != null) {
+        	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+        }
 	}
 
 	/*
