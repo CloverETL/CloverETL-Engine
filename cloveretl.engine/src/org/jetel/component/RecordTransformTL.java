@@ -28,7 +28,6 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLBooleanValue;
-import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -55,6 +54,7 @@ public class RecordTransformTL implements RecordTransform {
     protected String errorMessage;
 	 
 	protected WrapperTL wrapper;
+	protected TLValue semiResult;
 
     /**Constructor for the DataRecordTransform object */
     public RecordTransformTL(String srcCode, Log logger) {
@@ -77,30 +77,31 @@ public class RecordTransformTL implements RecordTransform {
 	        wrapper.setGraph(graph);
 		}
 		wrapper.init();
-		TLValue result = null;
 		try {
-			result = wrapper.execute(INIT_FUNCTION_NAME,null);
+			semiResult = wrapper.execute(INIT_FUNCTION_NAME,null);
 		} catch (JetelException e) {
 			//do nothing: function init is not necessary
 		}
 		
 		wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
 		
-		return result == null ? true : (result==TLBooleanValue.TRUE);
+		return semiResult == null ? true : (semiResult==TLBooleanValue.TRUE);
  	}
 
 	
 	public int transform(DataRecord[] inputRecords, DataRecord[] outputRecords) throws TransformException {
-		TLValue result = wrapper.executePreparedFunction(inputRecords, outputRecords, null);
+		semiResult = wrapper.executePreparedFunction(inputRecords, outputRecords, null);
 
-		if (result == null || result == TLBooleanValue.TRUE) {
+		if (semiResult == null || semiResult == TLBooleanValue.TRUE) {
 			return 0;
 		}
 
-		if (result.getType().isNumeric()) {
-			return result.getNumeric().getInt();
+		if (semiResult.getType().isNumeric()) {
+			return semiResult.getNumeric().getInt();
 		}
 
+		errorMessage = "Unexpected return result: " + semiResult.toString() + " (" + semiResult.getType().getName() + ")";
+		
 		return -1;
 	}
 
@@ -128,7 +129,7 @@ public class RecordTransformTL implements RecordTransform {
 	 * @see org.jetel.component.RecordTransform#getSemiResult()
 	 */
 	public Object getSemiResult(){
-		return null;
+		return semiResult;
 	}
 	
 	
@@ -137,8 +138,9 @@ public class RecordTransformTL implements RecordTransform {
 	 */
 	public void finished(){
         // execute finished transformFunction
+		semiResult = null;
 		try {
-			wrapper.execute(FINISHED_FUNCTION_NAME,null);
+			semiResult = wrapper.execute(FINISHED_FUNCTION_NAME,null);
 		} catch (JetelException e) {
 			//do nothing: function finished is not necessary
 		}
@@ -164,8 +166,9 @@ public class RecordTransformTL implements RecordTransform {
      */
 	public void reset() {
         // execute reset transformFunction
+		semiResult = null;
 		try {
-			wrapper.execute(RESET_FUNCTION_NAME,null);
+			semiResult = wrapper.execute(RESET_FUNCTION_NAME,null);
 		} catch (JetelException e) {
 			//do nothing: function reset is not necessary
 		}
