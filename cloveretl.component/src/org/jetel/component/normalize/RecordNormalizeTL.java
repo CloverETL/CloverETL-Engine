@@ -120,14 +120,25 @@ public class RecordNormalizeTL implements RecordNormalize {
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordNormalize#transform(org.jetel.data.DataRecord, org.jetel.data.DataRecord, int)
 	 */
-	public boolean transform(DataRecord source, DataRecord target, int idx)
-			throws TransformException {
+	public int transform(DataRecord source, DataRecord target, int idx) throws TransformException {
 		counterTL[0].getNumeric().setValue(idx);
 		sourceRec[0]=source;
 		targetRec[0]=target;
+
 		TLValue result = wrapper.executePreparedFunction(transformFunctionIdentifier, 
 				sourceRec, targetRec, counterTL);
-		return result == null ? true : result==TLBooleanValue.TRUE;
+
+		if (result == null || result == TLBooleanValue.TRUE) {
+			return 0;
+		}
+
+		if (result.getType().isNumeric()) {
+			return result.getNumeric().getInt();
+		}
+
+		errorMessage = "Unexpected return result: " + result.toString() + " (" + result.getType().getName() + ")";
+
+		return -1;
 	}
 
 	public void clean(){
