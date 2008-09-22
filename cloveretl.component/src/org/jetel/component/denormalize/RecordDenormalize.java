@@ -53,18 +53,22 @@ public interface RecordDenormalize {
 	/**
 	 * Passes one input record to the composing class.
 	 * @param inRecord
-	 * @return true on success, false otherwise
+	 * @return < -1 -- fatal error / user defined
+	 *           -1 -- error / skip record
+	 *         >= 0 -- OK
 	 * @throws TransformException
 	 */
-	public boolean addInputRecord(DataRecord inRecord) throws TransformException;
+	public int addInputRecord(DataRecord inRecord) throws TransformException;
 
 	/**
 	 * Retrieves composed output record.
 	 * @param outRecord
-	 * @return
+	 * @return < -1 -- fatal error / user defined
+	 *           -1 -- error / skip record
+	 *         >= 0 -- OK
 	 * @throws TransformException
 	 */
-	public boolean getOutputRecord(DataRecord outRecord) throws TransformException;
+	public int getOutputRecord(DataRecord outRecord) throws TransformException;
 
 	
 	/**
