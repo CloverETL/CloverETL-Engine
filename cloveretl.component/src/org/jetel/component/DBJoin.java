@@ -21,7 +21,11 @@
 
 package org.jetel.component;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -45,6 +49,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -138,6 +143,8 @@ public class DBJoin extends Node {
 	public static final String XML_DB_METADATA_ATTRIBUTE = "metadata";
 	public static final String XML_MAX_CACHED_ATTRIBUTE = "maxCached";
 	public static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
+	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
+    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
 
 	public final static String COMPONENT_TYPE = "DBJOIN";
 	
@@ -157,6 +164,11 @@ public class DBJoin extends Node {
 	private String metadataName;
 	private int maxCached;
 	private boolean leftOuterJoin = false;
+
+	private String errorActionsString;
+	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
+	private String errorLogURL;
+	private FileWriter errorLog;
 
 	private Properties transformationParameters=null;
 	
@@ -210,6 +222,7 @@ public class DBJoin extends Node {
 		DataRecord[] inRecords = new DataRecord[] {inRecord,null};
 		OutputPort rejectedPort = getOutputPort(REJECTED_PORT);
 
+		int counter = 0;
 		while (inRecord!=null && runIt) {
 				inRecord = inPort.readRecord(inRecord);
 				if (inRecord!=null) {
@@ -222,10 +235,38 @@ public class DBJoin extends Node {
 
 								if (transformResult >= 0) {
 									writeRecord(WRITE_TO_PORT, outRecord[0]);
-								} else if (transformResult == -1) {
-									logger.warn(transformation.getMessage());
-								} else {
-				                	throw new TransformException(transformation.getMessage());
+								} else{
+									ErrorAction action = errorActions.get(transformResult);
+									if (action == null) {
+										action = errorActions.get(Integer.MIN_VALUE);
+										if (action == null) {
+											action = ErrorAction.DEFAULT_ERROR_ACTION;
+										}
+									}
+									String message = "Transformation finished with code: " + transformResult + ". Error message: " + 
+										transformation.getMessage();
+									if (action == ErrorAction.CONTINUE) {
+										if (errorLog != null){
+											errorLog.write(String.valueOf(counter));
+											errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+											errorLog.write(String.valueOf(transformResult));
+											errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+											message = transformation.getMessage();
+											if (message != null) {
+												errorLog.write(message);
+											}
+											errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+											Object semiResult = transformation.getSemiResult();
+											if (semiResult != null) {
+												errorLog.write(semiResult.toString());
+											}
+											errorLog.write("\n");
+										}else{
+											logger.warn(message);
+										}
+									}else{
+										throw new TransformException(message);
+									}
 								}
 							}else if (rejectedPort != null){
 								writeRecord(REJECTED_PORT, inRecord);
@@ -241,10 +282,16 @@ public class DBJoin extends Node {
 						inRecords[1] = lookupTable.getNext();					
 					}while (inRecords[1] != null);
 				}
+				counter++;
 		}
 		if (transformation != null) {
 			transformation.finished();
 		}		
+		if (errorLog != null){
+			errorLog.flush();
+			errorLog.close();
+		}
+
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -305,6 +352,13 @@ public class DBJoin extends Node {
     		} catch (Exception e) {
     			throw new ComponentNotReadyException(this, e);
     		}
+			if (errorActionsString != null) {
+				ErrorAction.checkActions(errorActionsString);
+			}
+    		
+            if (errorLog != null){
+ 				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+           	}
         	
 //    		lookupTable.free();
         	
@@ -371,6 +425,14 @@ public class DBJoin extends Node {
 			logger.info(this.getId() + " info: There will be no skipped records " +
 					"while left outer join is switched on");
 		}
+        errorActions = ErrorAction.createMap(errorActionsString);
+        if (errorLogURL != null) {
+       	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+       }
 	}
 	
 	@Override
@@ -378,6 +440,13 @@ public class DBJoin extends Node {
 		super.reset();
 		lookupTable.reset();
 		transformation.reset();
+        if (errorLogURL != null) {
+        	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+        }
 	}
 	
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
@@ -409,11 +478,25 @@ public class DBJoin extends Node {
 				dbjoin.setLeftOuterJoin(xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE));
 			}
 			dbjoin.setMaxCached(xattribs.getInteger(XML_MAX_CACHED_ATTRIBUTE,100));
+			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+				dbjoin.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+				dbjoin.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+			}
 		} catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
         
 		return dbjoin;
+	}
+
+	public void setErrorLog(String errorLog) {
+		this.errorLogURL = errorLog;
+	}
+
+	public void setErrorActions(String string) {
+		this.errorActionsString = string;		
 	}
 
 	/* (non-Javadoc)
@@ -448,6 +531,13 @@ public class DBJoin extends Node {
 
 		xmlElement.setAttribute(XML_LEFTOUTERJOIN_ATTRIBUTE, String.valueOf(leftOuterJoin));
 
+		if (errorActionsString != null){
+			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
+		}
+		
+		if (errorLogURL != null){
+			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
+		}
 		Enumeration propertyAtts = transformationParameters.propertyNames();
 		while (propertyAtts.hasMoreElements()) {
 			String attName = (String)propertyAtts.nextElement();

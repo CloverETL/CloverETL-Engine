@@ -19,8 +19,11 @@
 */
 package org.jetel.component;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -33,6 +36,7 @@ import org.jetel.data.reader.InputReader;
 import org.jetel.data.reader.SlaveReader;
 import org.jetel.data.reader.SlaveReaderDup;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
@@ -44,6 +48,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
@@ -147,6 +152,8 @@ public class DataIntersection extends Node {
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
     private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
 	private static final String XML_KEY_DUPLICATES_ATTRIBUTE ="keyDuplicates";
+	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
+    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
 
 	private final static int WRITE_TO_PORT_A = 0;
 	private final static int WRITE_TO_PORT_A_B = 1;
@@ -161,6 +168,11 @@ public class DataIntersection extends Node {
     private String transformSource = null;
 	private String transformURL = null;
 	private String charset = null;
+
+	private String errorActionsString;
+	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
+	private String errorLogURL;
+	private FileWriter errorLog;
 
 	private RecordTransform transformation = null;
 
@@ -276,11 +288,9 @@ public class DataIntersection extends Node {
 				while ((inRecords[1] = slave.next()) != null) {
 					int transformResult = transformation.transform(inRecords, outRecords);
 
-					if (transformResult == -1) {
-						logger.warn(transformation.getMessage());
+					if (transformResult < 0) {
+						handleException(transformation, transformResult);
 						return false;
-					} else if (transformResult < -1) {
-	                	throw new TransformException(transformation.getMessage());
 					}
 
 					port.writeRecord(out);
@@ -293,11 +303,9 @@ public class DataIntersection extends Node {
 
 			int transformResult = transformation.transform(inRecords, outRecords);
 
-			if (transformResult == -1) {
-				logger.warn(transformation.getMessage());
+			if (transformResult < 0) {
+				handleException(transformation, transformResult);
 				return false;
-			} else if (transformResult < -1) {
-            	throw new TransformException(transformation.getMessage());
 			}
 
 			port.writeRecord(out);
@@ -305,6 +313,41 @@ public class DataIntersection extends Node {
 		return true;
 }
 
+	private void handleException(RecordTransform transform, int transformResult) throws TransformException, IOException{
+		ErrorAction action = errorActions.get(transformResult);
+		if (action == null) {
+			action = errorActions.get(Integer.MIN_VALUE);
+			if (action == null) {
+				action = ErrorAction.DEFAULT_ERROR_ACTION;
+			}
+		}
+		String message = "Transformation for records:\n " + inRecords[0] + "and:\n"
+			+ inRecords[1] + "finished with code: "	+ transformResult + ". Error message: " + transformation.getMessage();
+		if (action == ErrorAction.CONTINUE) {
+			if (errorLog != null){
+				for (int i = 0; i < recordKeys.length; i++) {
+					errorLog.write(recordKeys[i].getKeyString(inRecords[0]));
+					errorLog.write("|");
+				}
+				errorLog.write(String.valueOf(transformResult));
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				message = transformation.getMessage();
+				if (message != null) {
+					errorLog.write(message);
+				}
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				Object semiResult = transformation.getSemiResult();
+				if (semiResult != null) {
+					errorLog.write(semiResult.toString());
+				}
+				errorLog.write("\n");
+			}else{
+				logger.warn(message);
+			}
+		}else{
+			throw new TransformException(message);
+		}
+	}
 
 	/**
 	 *  If there is no corresponding slave record and is defined left outer join, then
@@ -393,6 +436,10 @@ public class DataIntersection extends Node {
 		flush(slaveReader, outPortB) ; 
 
 		transformation.finished();
+		if (errorLog != null){
+			errorLog.flush();
+			errorLog.close();
+		}
 
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -408,6 +455,13 @@ public class DataIntersection extends Node {
 		transformation.reset();
 		driverReader.reset();
 		slaveReader.reset();
+        if (errorLogURL != null) {
+        	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+        }
 	}
 
 	/*
@@ -465,6 +519,14 @@ public class DataIntersection extends Node {
 					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
 					this.getClass().getClassLoader());
         }
+        errorActions = ErrorAction.createMap(errorActionsString);
+        if (errorLogURL != null) {
+       	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+       }
 		driverReader = new DriverReader(driverPort, recordKeys[DRIVER_ON_PORT]);
 		slaveReader = keyDuplicates ? new SlaveReaderDup(slavePort, recordKeys[SLAVE_ON_PORT]) :
 			new SlaveReader(slavePort, recordKeys[SLAVE_ON_PORT], false);
@@ -518,6 +580,14 @@ public class DataIntersection extends Node {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
 		}
         
+		if (errorActionsString != null){
+			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
+		}
+		
+		if (errorLogURL != null){
+			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
+		}
+		
 		// equal NULL attribute
         xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULLs));
 		xmlElement.setAttribute(XML_KEY_DUPLICATES_ATTRIBUTE, String.valueOf(keyDuplicates));
@@ -568,11 +638,25 @@ public class DataIntersection extends Node {
 	                new String[]{XML_ID_ATTRIBUTE,XML_JOINKEY_ATTRIBUTE,
 	                		XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE,
 	                		XML_SLAVEOVERRIDEKEY_ATTRIBUTE,XML_EQUAL_NULL_ATTRIBUTE}));
+			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+				intersection.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+				intersection.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+			}
 			
 			return intersection;
 		} catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
+	}
+
+	public void setErrorLog(String errorLog) {
+		this.errorLogURL = errorLog;
+	}
+
+	public void setErrorActions(String string) {
+		this.errorActionsString = string;		
 	}
 
 	/**  Description of the Method */
@@ -610,6 +694,22 @@ public class DataIntersection extends Node {
 		RecordKey.checkKeys(recordKeys[0], XML_JOINKEY_ATTRIBUTE, recordKeys[1], 
 				XML_SLAVEOVERRIDEKEY_ATTRIBUTE, status, this);
         
+        if (errorActionsString != null){
+        	try {
+				ErrorAction.checkActions(errorActionsString);
+			} catch (ComponentNotReadyException e) {
+				status.add(new ConfigurationProblem(e, Severity.ERROR, this, Priority.NORMAL, XML_ERROR_ACTIONS_ATTRIBUTE));
+			}
+        }
+        
+        if (errorLog != null){
+        	try {
+				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+			} catch (ComponentNotReadyException e) {
+				status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_ERROR_LOG_ATTRIBUTE));
+			}
+        }
+
         return status;
     }
 	

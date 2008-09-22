@@ -19,9 +19,12 @@
 */
 package org.jetel.component;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -45,6 +48,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.AproximativeJoinKey;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -182,6 +186,8 @@ public class AproxMergeJoin extends Node {
 	private static final String XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE = "transformURLForSuspicious";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_CONFORMITY_ATTRIBUTE = "conformity";
+	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
+    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
 	
 	public final static String COMPONENT_TYPE = "APROX_MERGE_JOIN";
 
@@ -221,6 +227,11 @@ public class AproxMergeJoin extends Node {
 	private int[][] fieldsToCompare=new int[2][];
 	private double[] weights;
 	
+	private String errorActionsString;
+	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
+	private String errorLogURL;
+	private FileWriter errorLog;
+
 	private StringAproxComparator[] comparator;
 	private int[] maxDifferenceLetters;
 
@@ -388,6 +399,44 @@ public class AproxMergeJoin extends Node {
 		return result;
 	}
 	
+	private void handleException(RecordTransform transform, int transformResult) throws TransformException, IOException{
+		ErrorAction action = errorActions.get(transformResult);
+		if (action == null) {
+			action = errorActions.get(Integer.MIN_VALUE);
+			if (action == null) {
+				action = ErrorAction.DEFAULT_ERROR_ACTION;
+			}
+		}
+		String message = "Transformation " + transform.getClass().getName() + " for records:\n " + inRecords[0] + "and:\n"
+			+ inRecords[1] + "finished with code: "	+ transformResult + ". Error message: " + transformation.getMessage();
+		if (action == ErrorAction.CONTINUE) {
+			if (errorLog != null){
+				errorLog.write(transform.getClass().getName());
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				for (int i = 0; i < recordKey.length; i++) {
+					errorLog.write(recordKey[i].getKeyString(inRecords[0]));
+					errorLog.write("|");
+				}
+				errorLog.write(String.valueOf(transformResult));
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				message = transformation.getMessage();
+				if (message != null) {
+					errorLog.write(message);
+				}
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				Object semiResult = transformation.getSemiResult();
+				if (semiResult != null) {
+					errorLog.write(semiResult.toString());
+				}
+				errorLog.write("\n");
+			}else{
+				logger.warn(message);
+			}
+		}else{
+			throw new TransformException(message);
+		}
+	}
+	
 	/**
 	 *  Outputs all combinations of current driver record and all slaves 
 	 *  with the same key. When conformity between two records is greater 
@@ -424,11 +473,9 @@ public class AproxMergeJoin extends Node {
 				// **** call transform function here ****
 				int transformResult = transformation.transform(inRecords, outConformingRecords);
 
-				if (transformResult == -1) {
-					logger.warn(transformation.getMessage());
+				if (transformResult < 0) {
+					handleException(transformation, transformResult);	
 					return false;
-				} else if (transformResult < -1) {
-                	throw new TransformException(transformation.getMessage());
 				}
 
 				//fill additional fields
@@ -444,11 +491,9 @@ public class AproxMergeJoin extends Node {
 				// **** call transform function here ****
 				int transformResult = transformationForSuspicious.transform(inRecords,outSuspiciousRecords);
 
-				if (transformResult == -1) {
-					logger.warn(transformation.getMessage());
+				if (transformResult < 0) {
+					handleException(transformationForSuspicious, transformResult);		
 					return false;
-				} else if (transformResult < -1) {
-                	throw new TransformException(transformation.getMessage());
 				}
 
 				//fill additional fields
@@ -581,6 +626,11 @@ public class AproxMergeJoin extends Node {
 		}
 		// signal end of records stream to transformation function
 		transformation.finished();
+		transformationForSuspicious.finished();
+		if (errorLog != null){
+			errorLog.flush();
+			errorLog.close();
+		}
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -625,6 +675,14 @@ public class AproxMergeJoin extends Node {
 					transformClassNameForSuspicious, transformURLForsuspicious, charset, this, 
 					inMetadata, outMetadata, transformationParametersForSuspicious, this.getClass().getClassLoader());
 		}
+        errorActions = ErrorAction.createMap(errorActionsString);
+         if (errorLogURL != null) {
+        	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+        }
 		// initializing join parameters
 		AproximativeJoinKey[] keys;
 		if (joinParameters[0].indexOf('=') != -1) {
@@ -727,7 +785,15 @@ public class AproxMergeJoin extends Node {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		transformation.reset();
+		transformationForSuspicious.reset();
 		dataBuffer.clear();
+        if (errorLogURL != null) {
+        	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+        }
 	}
 	
 	/**
@@ -811,6 +877,12 @@ public class AproxMergeJoin extends Node {
 	                		XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE,
 	                		XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE,XML_CONFORMITY_ATTRIBUTE}));
 			
+			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+				join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+				join.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+			}
 			return join;
         }catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -874,6 +946,13 @@ public class AproxMergeJoin extends Node {
 		
 		xmlElement.setAttribute(XML_CONFORMITY_ATTRIBUTE,String.valueOf(conformityLimit));
         
+		if (errorActionsString != null){
+			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
+		}
+		
+		if (errorLogURL != null){
+			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
+		}
 		if (transformationParameters != null) {
 			Enumeration propertyAtts = transformationParameters.propertyNames();
 			while (propertyAtts.hasMoreElements()) {
@@ -971,6 +1050,13 @@ public class AproxMergeJoin extends Node {
     		conformityFieldsForSuspicious = findOutFields(slaveOverrideKeys,getOutputPort(SUSPICIOUS_OUT).getMetadata());
     		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
         	
+			if (errorActionsString != null) {
+				ErrorAction.checkActions(errorActionsString);
+			}
+    		
+            if (errorLog != null){
+ 				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+           	}
 //            init();
 //            free();
         } catch (ComponentNotReadyException e) {
@@ -998,6 +1084,13 @@ public class AproxMergeJoin extends Node {
 
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+	public void setErrorLog(String errorLog) {
+		this.errorLogURL = errorLog;
+	}
+
+	public void setErrorActions(String string) {
+		this.errorActionsString = string;		
 	}
 		
 }
