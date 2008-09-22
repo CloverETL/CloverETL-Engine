@@ -58,7 +58,7 @@ public interface RecordDenormalize {
 	 *         >= 0 -- OK
 	 * @throws TransformException
 	 */
-	public int addInputRecord(DataRecord inRecord) throws TransformException;
+	public int append(DataRecord inRecord) throws TransformException;
 
 	/**
 	 * Retrieves composed output record.
@@ -68,11 +68,11 @@ public interface RecordDenormalize {
 	 *         >= 0 -- OK
 	 * @throws TransformException
 	 */
-	public int getOutputRecord(DataRecord outRecord) throws TransformException;
+	public int transform(DataRecord outRecord) throws TransformException;
 
-	
+
 	/**
-	 * Finalize current round/clean after current round - called after the getOutputRecord method was called for the input record
+	 * Finalize current round/clean after current round - called after the transform method was called for the input record
 	 */
 	public void clean();
 	

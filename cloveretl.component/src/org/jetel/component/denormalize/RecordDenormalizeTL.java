@@ -34,8 +34,8 @@ import org.jetel.metadata.DataRecordMetadata;
 /**
  * Implements denormalization based on TransformLang source specified by user.
  * User defines following functions (asterisk denotes the mandatory ones):<ul>
- * <li>* function addInputRecord()</li>
- * <li>* function getOutputRecord()</li>
+ * <li>* function append()</li>
+ * <li>* function transform()</li>
  * <li>function init()</li> 
  * <li>function finished()</li>
  * </ul>
@@ -45,16 +45,15 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class RecordDenormalizeTL implements RecordDenormalize {
 
-	private static final String ADDINPUT_FUNCTION_NAME="addInputRecord";
-	private static final String GETOUTPUT_FUNCTION_NAME="getOutputRecord";
+	private static final String APPEND_FUNCTION_NAME="append";
+	private static final String TRANSFORM_FUNCTION_NAME="transform";
     private static final String FINISHED_FUNCTION_NAME="finished";
     private static final String INIT_FUNCTION_NAME="init";
     private static final String CLEAN_FUNCTION_NAME="clean";
-    
-    private int addInpuRecordIdentifier;
-    private int getOutputRecordIdentifier;
+
+    private int appendFunctionIdentifier;
+    private int transformFunctionIdentifier;
     private int cleanFunctionIdentifier;
-    
 
     private String errorMessage;
     private WrapperTL wrapper;
@@ -84,8 +83,8 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 			//do nothing: function init is not necessary
 		}
 		
-		addInpuRecordIdentifier = wrapper.prepareFunctionExecution(ADDINPUT_FUNCTION_NAME);
-		getOutputRecordIdentifier = wrapper.prepareFunctionExecution(GETOUTPUT_FUNCTION_NAME);
+		appendFunctionIdentifier = wrapper.prepareFunctionExecution(APPEND_FUNCTION_NAME);
+		transformFunctionIdentifier = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
 	
 		try{
 			cleanFunctionIdentifier = wrapper.prepareFunctionExecution(CLEAN_FUNCTION_NAME);
@@ -98,21 +97,21 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordDenormalize#addInputRecord(org.jetel.data.DataRecord)
+	 * @see org.jetel.component.RecordDenormalize#append(org.jetel.data.DataRecord)
 	 */
-	public int addInputRecord(DataRecord inRecord) {
+	public int append(DataRecord inRecord) {
 		return transformResult(wrapper.executePreparedFunction(
-				addInpuRecordIdentifier, inRecord, null));
+				appendFunctionIdentifier, inRecord, null));
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordDenormalize#getOutputRecord(org.jetel.data.DataRecord)
+	 * @see org.jetel.component.RecordDenormalize#transform(org.jetel.data.DataRecord)
 	 */
-	public int getOutputRecord(DataRecord outRecord) {
+	public int transform(DataRecord outRecord) {
 		this.outRec[0]=outRecord;
 
 		return transformResult(wrapper.executePreparedFunction(
-				getOutputRecordIdentifier, null, this.outRec, null));
+				transformFunctionIdentifier, null, this.outRec, null));
 	}
 
 	private int transformResult(TLValue result) {
