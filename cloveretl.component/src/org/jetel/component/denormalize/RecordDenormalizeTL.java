@@ -100,20 +100,33 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordDenormalize#addInputRecord(org.jetel.data.DataRecord)
 	 */
-	public boolean addInputRecord(DataRecord inRecord) {
-		TLValue result = wrapper.executePreparedFunction(addInpuRecordIdentifier , 
-				inRecord, null);
-		return result == null ? true : result==TLBooleanValue.TRUE;
+	public int addInputRecord(DataRecord inRecord) {
+		return transformResult(wrapper.executePreparedFunction(
+				addInpuRecordIdentifier, inRecord, null));
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordDenormalize#getOutputRecord(org.jetel.data.DataRecord)
 	 */
-	public boolean getOutputRecord(DataRecord outRecord) {
+	public int getOutputRecord(DataRecord outRecord) {
 		this.outRec[0]=outRecord;
-		TLValue result = wrapper.executePreparedFunction(getOutputRecordIdentifier, 
-				null,this.outRec,null);
-		return result == null ? true : result==TLBooleanValue.TRUE;
+
+		return transformResult(wrapper.executePreparedFunction(
+				getOutputRecordIdentifier, null, this.outRec, null));
+	}
+
+	private int transformResult(TLValue result) {
+		if (result == null || result == TLBooleanValue.TRUE) {
+			return 0;
+		}
+
+		if (result.getType().isNumeric()) {
+			return result.getNumeric().getInt();
+		}
+
+		errorMessage = "Unexpected return result: " + result.toString() + " (" + result.getType().getName() + ")";
+
+		return -1;
 	}
 
 	public void clean(){

@@ -311,7 +311,7 @@ public class Denormalizer extends Node {
 			currentRecord = inPort.readRecord(srcRecord[src]);
 			if (endRun(prevRecord, currentRecord)) {
 				outRecord.reset();
-				if (denorm.getOutputRecord(outRecord)) {
+				if (denorm.getOutputRecord(outRecord) >= 0) {
 					outPort.writeRecord(outRecord);
 				}else{
 					logger.warn(denorm.getMessage());
@@ -323,7 +323,7 @@ public class Denormalizer extends Node {
 			}
 			prevRecord = currentRecord;
 			src^=1;
-			if (!denorm.addInputRecord(prevRecord)) {
+			if (denorm.addInputRecord(prevRecord) < 0) {
 				logger.warn(denorm.getMessage());
 			}
 			SynchronizeUtils.cloverYield();
