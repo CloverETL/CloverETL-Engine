@@ -18,17 +18,17 @@ public class DenormalizeTest extends DataRecordDenormalize {
 	public DenormalizeTest() {
 	}
 
-	public boolean addInputRecord(DataRecord inRecord) {
+	public int addInputRecord(DataRecord inRecord) {
 		recNum++;
 		customerID = customerID + (customerID.length() > 0 ? " - " : "") + inRecord.getField("CustomerID");
 		employeeID = (Integer)inRecord.getField("EmployeeID").getValue();
-		return true;
+		return 0;
 	}
-	public boolean getOutputRecord(DataRecord outRecord) {
+	public int getOutputRecord(DataRecord outRecord) {
 		outRecord.getField("EmployeeID").setValue(employeeID);
 		outRecord.getField("CustomerID").setValue(customerID);
 		outRecord.getField("OrderID").setValue(recNum);
-		return true;
+		return 0;
 	}
 
 	public void clean(){
