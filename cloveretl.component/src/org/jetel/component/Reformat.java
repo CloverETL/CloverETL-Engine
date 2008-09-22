@@ -148,11 +148,6 @@ import org.w3c.dom.Element;
  */
 public class Reformat extends Node {
 
-	public enum ErrorAction {
-		STOP,
-		CONTINUE;
-	}
-
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	private static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
@@ -310,22 +305,8 @@ public class Reformat extends Node {
 					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
 					this.getClass().getClassLoader());
 		}
-        if (errorActionsString != null){
-        	String[] actions = StringUtils.split(errorActionsString);
-        	if (actions.length == 1 && !actions[0].contains("=")){
-        		errorActions.put(Integer.MIN_VALUE, ErrorAction.valueOf(actions[0].trim()));
-        	}else{
-        	String[] action;
-	        	for (String string : actions) {
-					action = JoinKeyUtils.getMappingItemsFromMappingString(string);
-					errorActions.put(Integer.parseInt(action[0]), ErrorAction.valueOf(action[1]));
-				}
-        	}
-        }else{
-        	errorActions.put(-1, ErrorAction.CONTINUE);
-        	errorActions.put(Integer.MIN_VALUE, DEFAULT_ERROR_ACTION);
-        }
-        if (errorLogURL != null) {
+        errorActions = ErrorAction.createMap(errorActionsString);
+         if (errorLogURL != null) {
         	try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
 			} catch (IOException e) {
@@ -452,27 +433,11 @@ public class Reformat extends Node {
 			}
             
             if (errorActionsString != null){
-            	String[] actions = StringUtils.split(errorActionsString);
-            	if (actions.length == 1 && !actions[0].contains("=")){
-    				if (ErrorAction.valueOf(actions[0].trim()) == null) {
-    					status.add(new ConfigurationProblem("Unknown error action: " + StringUtils.quote(actions[0].trim()), 
-    							Severity.WARNING, this, Priority.NORMAL, XML_ERROR_ACTIONS_ATTRIBUTE));
-    				}
-            	}else{
-	            	String[] action;
-	            	for (String string : actions) {
-	    				action = JoinKeyUtils.getMappingItemsFromMappingString(string);
-	    				try{
-	    					Integer.parseInt(action[0]);
-	    				}catch(NumberFormatException e) {
-	    					status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_ERROR_ACTIONS_ATTRIBUTE));
-	    				}
-	    				if (ErrorAction.valueOf(action[1]) == null) {
-	    					status.add(new ConfigurationProblem("Unknown error action: " + StringUtils.quote(action[1]), 
-	    							Severity.WARNING, this, Priority.NORMAL, XML_ERROR_ACTIONS_ATTRIBUTE));
-	    				}
-	     			}
-            	}
+            	try {
+					ErrorAction.checkActions(errorActionsString);
+				} catch (ComponentNotReadyException e) {
+					status.add(new ConfigurationProblem(e, Severity.ERROR, this, Priority.NORMAL, XML_ERROR_ACTIONS_ATTRIBUTE));
+				}
             }
             
             if (errorLog != null){
