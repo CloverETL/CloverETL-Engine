@@ -27,7 +27,7 @@ public class normalizeTest extends DataRecordNormalize {
 		return (Integer)source.getField(0).getValue();
 	}
 
-	public boolean transform(DataRecord source, DataRecord target, int idx) {
+	public int transform(DataRecord source, DataRecord target, int idx) {
 		customers = source.getField(1).toString().split("\\s*-\\s*");
 		if (customers.length != count(source)){
 			errorMessage = "Invalid input record";
@@ -35,7 +35,7 @@ public class normalizeTest extends DataRecordNormalize {
 			target.getField(1).setValue(customers[idx]);
 			target.getField(2).setValue(source.getField(2).getValue());
 		}
-		return true;
+		return 0;
 	}
 }
 ]]></attr>
