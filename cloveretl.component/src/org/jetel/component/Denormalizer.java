@@ -117,7 +117,7 @@ public class Denormalizer extends Node {
 	public final static String COMPONENT_TYPE = "DENORMALIZER";
 
 	private static final Pattern PATTERN_CLASS = Pattern.compile("class\\s+\\w+");
-	private static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+getOutputRecord");
+	private static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+transform");
 	
 	private static final int TRANSFORM_JAVA_SOURCE = 1;
 	private static final int TRANSFORM_CLOVER_TL = 2;
@@ -311,7 +311,7 @@ public class Denormalizer extends Node {
 			currentRecord = inPort.readRecord(srcRecord[src]);
 			if (endRun(prevRecord, currentRecord)) {
 				outRecord.reset();
-				if (denorm.getOutputRecord(outRecord) >= 0) {
+				if (denorm.transform(outRecord) >= 0) {
 					outPort.writeRecord(outRecord);
 				}else{
 					logger.warn(denorm.getMessage());
@@ -323,7 +323,7 @@ public class Denormalizer extends Node {
 			}
 			prevRecord = currentRecord;
 			src^=1;
-			if (denorm.addInputRecord(prevRecord) < 0) {
+			if (denorm.append(prevRecord) < 0) {
 				logger.warn(denorm.getMessage());
 			}
 			SynchronizeUtils.cloverYield();

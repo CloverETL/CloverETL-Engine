@@ -11,13 +11,13 @@ string customer = "";
 int employee = 0;
 int numRec = 0;
 
-function addInputRecord() {
+function append() {
 	numRec++;
 	customer = customer + iif(length(customer) > 0 ," - ","") + $CustomerID;
 	employee = $EmployeeID;
 }
 
-function getOutputRecord() {
+function transform() {
 	$OrderID := numRec;
 	$CustomerID := customer;
 	$EmployeeID := employee;
