@@ -61,10 +61,12 @@ public interface RecordNormalize {
 	 * @param source Input record
 	 * @param target Output records
 	 * @param idx Sequential number of output record (starting from 0)
-	 * @return true for success, false otherwise
+	 * @return < -1 -- fatal error / user defined
+	 *           -1 -- error / skip record
+	 *         >= 0 -- OK
 	 * @throws TransformException
 	 */
-	public boolean transform(DataRecord source, DataRecord target, int idx) throws TransformException;
+	public int transform(DataRecord source, DataRecord target, int idx) throws TransformException;
 
 	
 	/**
