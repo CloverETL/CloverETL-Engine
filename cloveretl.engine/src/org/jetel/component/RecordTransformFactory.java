@@ -52,7 +52,6 @@ public class RecordTransformFactory {
     
     public static final Pattern PATTERN_CLASS = Pattern.compile("class\\s+\\w+"); 
     public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+transform");
-    public static final Pattern PATTERN_DENORMALIZE_CODE = Pattern.compile("function\\s+transform");
     public static final Pattern PATTERN_PARTITION_CODE = Pattern.compile("function\\s+getOutputPort"); 
     
     public static final Pattern PATTERN_PREPROCESS_1 = Pattern.compile("\\$\\{out\\."); 
@@ -241,7 +240,6 @@ public class RecordTransformFactory {
             return TRANSFORM_CLOVER_TL;
         }
         if (PATTERN_TL_CODE.matcher(transform).find() 
-        		|| PATTERN_DENORMALIZE_CODE.matcher(transform).find()
         		|| PATTERN_PARTITION_CODE.matcher(transform).find()){
             // clover internal transformation language
             return TRANSFORM_CLOVER_TL;
