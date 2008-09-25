@@ -73,12 +73,12 @@ public class ComponentXMLAttributes {
 
 //    unused private static final String STR_MAX_SHORT="MAX_SHORT";
 //    unused private static final String STR_MIN_SHORT="MIN_SHORT";
-    private static final String STR_MAX_INT="MAX_INT";
-    private static final String STR_MIN_INT="MIN_INT";
-    private static final String STR_MAX_LONG="MAX_LONG";
-    private static final String STR_MIN_LONG="MIN_LONG";
-   private static final String STR_MAX_DOUBLE="MAX_DOUBLE";
-    private static final String STR_MIN_DOUBLE="MIN_DOUBLE";
+    public static final String STR_MAX_INT="MAX_INT";
+    public static final String STR_MIN_INT="MIN_INT";
+    public static final String STR_MAX_LONG="MAX_LONG";
+    public static final String STR_MIN_LONG="MIN_LONG";
+   public static final String STR_MAX_DOUBLE="MAX_DOUBLE";
+    public static final String STR_MIN_DOUBLE="MIN_DOUBLE";
     
 	protected NamedNodeMap attributes;
 	final protected Element nodeXML;

@@ -3,11 +3,13 @@
  */
 package org.jetel.component;
 
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.joinKey.JoinKeyUtils;
+import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 
 public enum ErrorAction {
@@ -26,7 +28,13 @@ public enum ErrorAction {
 	        	String[] action;
 		        	for (String string : actions) {
 						action = JoinKeyUtils.getMappingItemsFromMappingString(string);
-						errorActions.put(Integer.parseInt(action[0]), ErrorAction.valueOf(action[1].toUpperCase()));
+						try {
+							errorActions.put(Integer.parseInt(action[0]), ErrorAction.valueOf(action[1].toUpperCase()));
+						} catch (NumberFormatException e) {
+							if (action[0].equals(ComponentXMLAttributes.STR_MIN_INT)) {
+								errorActions.put(Integer.MIN_VALUE, ErrorAction.valueOf(action[1].toUpperCase()));
+							}
+						}
 					}
 	        	}
 	        }else{
@@ -49,7 +57,9 @@ public enum ErrorAction {
 				try{
 					Integer.parseInt(action[0]);
 				}catch(NumberFormatException e) {
-					throw new ComponentNotReadyException(e);
+					if (!action[0].equals(ComponentXMLAttributes.STR_MIN_INT)) {
+						throw new ComponentNotReadyException(e);
+					}
 				}
 				if (ErrorAction.valueOf(action[1].toUpperCase()) == null) {
 					throw new ComponentNotReadyException("Unknown error action: " + StringUtils.quote(actions[1]));

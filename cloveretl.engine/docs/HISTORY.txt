@@ -4,6 +4,19 @@
 
 + DbConnection: explicit unregistering of JDBC drivers
 + WatchDog: explicit interruption of nodes for failed graph
++ changed RecordTransform interface: method transform(DataRecor[],DataRecord[]) returns: 
+	- < -1 -- fatal error / user defined
+	-   -1 -- error / skip record
+	-    0 -- send to all output ports
+	- >= 1 -- send to a specified output port
++ added attributes "errorActions" and "errorLog" to following components:
+	- AproxMergeJoin
+	- DataInteresction
+	- DBJoin
+	- HashJoin
+	- LookupJoin
+	- MergeJoin
+	-Reformat
 
 REL 2-5-1
 ---------
@@ -11,7 +24,6 @@ Changes/bug fixes:
 + MergeJoin: new optional attribute ascendingInputs
 + MergeJoin: checking of inputs ordering
 + bugfixes
-
 
 REL 2-5-0
 ---------
