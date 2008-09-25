@@ -141,6 +141,14 @@ import org.w3c.dom.Element;
  *  	sets depending on their computed conformity is greater or smaller then
  *  	 this parameter</td></tr>
  *  </tr>
+ *  <tr><td><b>errorActions </b><i>optional</i></td><td>defines if graph is to stop, when transformation returns negative value.
+ *  Available actions are: STOP or CONTINUE. For CONTINUE action, error message is logged to console or file (if errorLog attribute
+ *  is specified) and for STOP there is thrown TransformExceptions and graph execution is stopped. <br>
+ *  Error action can be set for each negative value (value1=action1;value2=action2;...) or for all values the same action (STOP 
+ *  or CONTINUE). It is possible to define error actions for some negative values and for all other values (MAX_INT=myAction).
+ *  Default value is <i>-1=CONTINUE;MAX_INT=STOP</i></td></tr>
+ *  <tr><td><b>errorLog</b><br><i>optional</i></td><td>path to the error log file. Each error (after which graph continues) is logged in 
+ *  following way: transformationClass;driverKeyFieldsValue;errorCode;errorMessage;semiResult - fields are delimited by Defaults.Component.KEY_FIELDS_DELIMITER.</td></tr>
  *  </table>
  *
  *  <h4>Example:</h4>
@@ -413,10 +421,8 @@ public class AproxMergeJoin extends Node {
 			if (errorLog != null){
 				errorLog.write(transform.getClass().getName());
 				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
-				for (int i = 0; i < recordKey.length; i++) {
-					errorLog.write(recordKey[i].getKeyString(inRecords[0]));
-					errorLog.write("|");
-				}
+				errorLog.write(recordKey[DRIVER_ON_PORT].getKeyString(inRecords[DRIVER_ON_PORT]));
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
 				errorLog.write(String.valueOf(transformResult));
 				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
 				message = transformation.getMessage();
@@ -433,6 +439,10 @@ public class AproxMergeJoin extends Node {
 				logger.warn(message);
 			}
 		}else{
+			if (errorLog != null){
+				errorLog.flush();
+				errorLog.close();
+			}
 			throw new TransformException(message);
 		}
 	}

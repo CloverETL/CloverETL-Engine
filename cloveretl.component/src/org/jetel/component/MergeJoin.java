@@ -19,9 +19,12 @@
 */
 package org.jetel.component;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -46,6 +49,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -121,6 +125,14 @@ import org.w3c.dom.Element;
  *    <tr><td><b>slaveDuplicates</b><br><i>optional</i></td><td>true/false - allow records on slave port with duplicate keys. If false - multiple
  *    duplicate records are discarded - only the last one is used for join. Default is true.</td></tr>
  *    <tr><td><b>ascendingInputs</b><br><i>optional</i></td><td>true/false - Switch for inputs data ordering (true=ascending, false=descending) Value of this attribute suggests this component how to process data. All inputs must be ordered in the same way. Default is true.</td></tr>
+ *  <tr><td><b>errorActions </b><i>optional</i></td><td>defines if graph is to stop, when transformation returns negative value.
+ *  Available actions are: STOP or CONTINUE. For CONTINUE action, error message is logged to console or file (if errorLog attribute
+ *  is specified) and for STOP there is thrown TransformExceptions and graph execution is stopped. <br>
+ *  Error action can be set for each negative value (value1=action1;value2=action2;...) or for all values the same action (STOP 
+ *  or CONTINUE). It is possible to define error actions for some negative values and for all other values (MAX_INT=myAction).
+ *  Default value is <i>-1=CONTINUE;MAX_INT=STOP</i></td></tr>
+ *  <tr><td><b>errorLog</b><br><i>optional</i></td><td>path to the error log file. Each error (after which graph continues) is logged in 
+ *  following way: keyFieldsValue;errorCode;errorMessage;semiResult - fields are delimited by Defaults.Component.KEY_FIELDS_DELIMITER.</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="MERGE_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
  *<pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="EmployeeID*EmployeeID" joinType="inner"&gt;
@@ -170,6 +182,8 @@ public class MergeJoin extends Node {
 	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
 	public static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
 	private static final String XML_ASCENDING_INPUTS_ATTRIBUTE ="ascendingInputs";
+	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
+    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
 	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "MERGE_JOIN";
@@ -215,6 +229,11 @@ public class MergeJoin extends Node {
 	OutputPort outPort;
 	private String joinKeys;
 	private boolean ascendingInputs = true;
+
+	private String errorActionsString;
+	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
+	private String errorLogURL;
+	private FileWriter errorLog;
 
 	/**
 	 *  Constructor for the SortedJoin object
@@ -326,8 +345,46 @@ public class MergeJoin extends Node {
 		return minCnt;
 	}
 
+	private void handleException(RecordTransform transform, int transformResult) throws TransformException, IOException{
+		ErrorAction action = errorActions.get(transformResult);
+		if (action == null) {
+			action = errorActions.get(Integer.MIN_VALUE);
+			if (action == null) {
+				action = ErrorAction.DEFAULT_ERROR_ACTION;
+			}
+		}
+		String message = "Transformation for master record:\n " + inRecords[0] + "finished with code: "	+ transformResult + 
+			". Error message: " + transformation.getMessage();
+		if (action == ErrorAction.CONTINUE) {
+			if (errorLog != null){
+				errorLog.write(driverKey.getKeyString(inRecords[0]));
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				errorLog.write(String.valueOf(transformResult));
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				message = transformation.getMessage();
+				if (message != null) {
+					errorLog.write(message);
+				}
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				Object semiResult = transformation.getSemiResult();
+				if (semiResult != null) {
+					errorLog.write(semiResult.toString());
+				}
+				errorLog.write("\n");
+			}else{
+				logger.warn(message);
+			}
+		}else{
+			if (errorLog != null){
+				errorLog.flush();
+				errorLog.close();
+			}
+			throw new TransformException(message);
+		}
+	}
+
 	/**
-	 * Tranform all tuples created from minimal input runs.
+	 * Transform all tuples created from minimal input runs.
 	 * @return
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -340,10 +397,12 @@ public class MergeJoin extends Node {
 		}
 		while (true) {
 //			outRecords[0].reset();
-			if (transformation.transform(inRecords, outRecords) < 0) {
-				return false;
+			int transformResult = transformation.transform(inRecords, outRecords);
+			if (transformResult >= 0) {
+				outPort.writeRecord(outRecords[0]);
+			}else{
+				handleException(transformation, transformResult);
 			}
-			outPort.writeRecord(outRecords[0]);
 			// generate next combination
 			int chngCnt = 0;
 			for (int i = inputCnt - 1; i >= 0; i--) {
@@ -394,6 +453,10 @@ public class MergeJoin extends Node {
 			}
 		}
 		transformation.finished();
+		if (errorLog != null){
+			errorLog.flush();
+			errorLog.close();
+		}
 		broadcastEOF();		
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -488,6 +551,14 @@ public class MergeJoin extends Node {
 					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
 					this.getClass().getClassLoader());
         }
+        errorActions = ErrorAction.createMap(errorActionsString);
+        if (errorLogURL != null) {
+       	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+       }
 	}
 	
 	public void reset() throws ComponentNotReadyException {
@@ -499,6 +570,13 @@ public class MergeJoin extends Node {
 		for (int i = 0; i < inputCnt; i++) {
 			minIndicator[i] = true;
 		}
+        if (errorLogURL != null) {
+        	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+        }
 	}
 	
 	public void free() {
@@ -552,6 +630,13 @@ public class MergeJoin extends Node {
 				join == Join.FULL_OUTER ? "fullOuter" : join == Join.LEFT_OUTER ? "leftOuter" : "inner");
 
 		xmlElement.setAttribute(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, String.valueOf(slaveDuplicates));
+		if (errorActionsString != null){
+			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
+		}
+		
+		if (errorLogURL != null){
+			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
+		}
 
 		if (transformationParameters != null) {
 			Enumeration propertyAtts = transformationParameters.propertyNames();
@@ -629,6 +714,12 @@ public class MergeJoin extends Node {
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+				join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+				join.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+			}
 			join.setTransformationParameters(xattribs.attributes2Properties(
 	                new String[]{XML_ID_ATTRIBUTE,XML_JOINKEY_ATTRIBUTE,
 	                		XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE,
@@ -640,7 +731,15 @@ public class MergeJoin extends Node {
 		}
 	}
 
-	public void setSlaveOverrideKey(String[] slaveOverrideKey) {
+		public void setErrorLog(String errorLog) {
+			this.errorLogURL = errorLog;
+		}
+
+		public void setErrorActions(String string) {
+			this.errorActionsString = string;		
+		}
+
+		public void setSlaveOverrideKey(String[] slaveOverrideKey) {
 		if (joiners == null) {
 			joiners = new String[2][];
 		}else{
@@ -710,6 +809,13 @@ public class MergeJoin extends Node {
         			minIndicator[i] = true;
         		}
             	
+        		if (errorActionsString != null) {
+    				ErrorAction.checkActions(errorActionsString);
+    			}
+        		
+                if (errorLog != null){
+     				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+               	}        	
             	
 //                init();
 //                free();

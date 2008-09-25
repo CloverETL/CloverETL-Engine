@@ -20,7 +20,11 @@
 
 package org.jetel.component;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -44,6 +48,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -51,7 +56,7 @@ import org.w3c.dom.Element;
 /**
  * <h3>LookupJoin Component</h3>
  * <!-- Joins records from input port and lookup table based on specified key.
- * The flow on port 0 is the driver, record from lokup table is the slave. For
+ * The flow on port 0 is the driver, record from lookup table is the slave. For
  * every record from driver flow, corresponding record from slave flow is looked
  * up (if it exists). -->
  * 
@@ -142,6 +147,14 @@ import org.w3c.dom.Element;
  * <td>true/false<I> default: FALSE</I> idicates if close lookup table after
  * finishing execute() method. All records, which are stored only in memory will
  * be lost.</td>
+ *  <tr><td><b>errorActions </b><i>optional</i></td><td>defines if graph is to stop, when transformation returns negative value.
+ *  Available actions are: STOP or CONTINUE. For CONTINUE action, error message is logged to console or file (if errorLog attribute
+ *  is specified) and for STOP there is thrown TransformExceptions and graph execution is stopped. <br>
+ *  Error action can be set for each negative value (value1=action1;value2=action2;...) or for all values the same action (STOP 
+ *  or CONTINUE). It is possible to define error actions for some negative values and for all other values (MAX_INT=myAction).
+ *  Default value is <i>-1=CONTINUE;MAX_INT=STOP</i></td></tr>
+ *  <tr><td><b>errorLog</b><br><i>optional</i></td><td>path to the error log file. Each error (after which graph continues) is logged in 
+ *  following way: inRecordNumber;errorCode;errorMessage;semiResult - fields are delimited by Defaults.Component.KEY_FIELDS_DELIMITER.</td></tr>
  * </table>
  * <h4>Example:</h4>
  * 
@@ -198,6 +211,8 @@ public class LookupJoin extends Node {
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 
 	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
+	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
+    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
 
 	public final static String COMPONENT_TYPE = "LOOKUP_JOIN";
 
@@ -228,6 +243,11 @@ public class LookupJoin extends Node {
 	private RecordKey recordKey;
 
 	private DataRecordMetadata lookupMetadata;
+
+	private String errorActionsString;
+	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
+	private String errorLogURL;
+	private FileWriter errorLog;
 
 	static Log logger = LogFactory.getLog(Reformat.class);
 
@@ -280,6 +300,7 @@ public class LookupJoin extends Node {
 		inRecord.init();
 		DataRecord[] inRecords = new DataRecord[] { inRecord, null };
 		LookupTableIterator iterator = lookupTable.getLookupTableIterator(recordKey);
+		int counter = 0;
 		while (inRecord != null && runIt) {
 			inRecord = inPort.readRecord(inRecord);
 			if (inRecord != null) {
@@ -295,11 +316,44 @@ public class LookupJoin extends Node {
 
 						if (transformResult >= 0) {
 							writeRecord(WRITE_TO_PORT, outRecord[0]);
-						} else if (transformResult == -1) {
-							logger.warn(transformation.getMessage());
-						} else {
-		                	throw new TransformException(transformation.getMessage());
-						}
+						}else if (transformResult < 0) {
+							ErrorAction action = errorActions.get(transformResult);
+							if (action == null) {
+								action = errorActions.get(Integer.MIN_VALUE);
+								if (action == null) {
+									action = ErrorAction.DEFAULT_ERROR_ACTION;
+								}
+							}
+							String message = "Transformation finished with code: " + transformResult + ". Error message: " + 
+								transformation.getMessage();
+							if (action == ErrorAction.CONTINUE) {
+								if (errorLog != null){
+									errorLog.write(String.valueOf(counter));
+									errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+									errorLog.write(String.valueOf(transformResult));
+									errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+									message = transformation.getMessage();
+									if (message != null) {
+										errorLog.write(message);
+									}
+									errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+									Object semiResult = transformation.getSemiResult();
+									if (semiResult != null) {
+										errorLog.write(semiResult.toString());
+									}
+									errorLog.write("\n");
+								}else{
+									logger.warn(message);
+								}
+							}else{
+								if (errorLog != null){
+									errorLog.flush();
+									errorLog.close();
+								}
+								throw new TransformException(message);
+								
+							}
+		                }
 					}else{
 						if (rejectedPort != null) {
 							writeRecord(REJECTED_PORT, inRecord);
@@ -312,6 +366,15 @@ public class LookupJoin extends Node {
 					}
 				} while (inRecords[1] != NullRecord.NULL_RECORD);
 			}
+			counter++;
+		}
+		transformation.finished();
+		if (freeLookupTable) {
+			lookupTable.free();
+		}
+		if (errorLog != null){
+			errorLog.flush();
+			errorLog.close();
 		}
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -322,9 +385,6 @@ public class LookupJoin extends Node {
         if(!isInitialized()) return;
 		super.free();
 		
-		if (freeLookupTable) {
-			lookupTable.free();
-		}
 	}
 	/*
 	 * (non-Javadoc)
@@ -351,6 +411,21 @@ public class LookupJoin extends Node {
 
         if (getOutputPort(WRITE_TO_PORT).getMetadata() == null) {
         	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
+        }
+        if (errorActionsString != null){
+        	try {
+				ErrorAction.checkActions(errorActionsString);
+			} catch (ComponentNotReadyException e) {
+				status.add(new ConfigurationProblem(e, Severity.ERROR, this, Priority.NORMAL, XML_ERROR_ACTIONS_ATTRIBUTE));
+			}
+        }
+        
+        if (errorLog != null){
+        	try {
+				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+			} catch (ComponentNotReadyException e) {
+				status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_ERROR_LOG_ATTRIBUTE));
+			}
         }
 
 //        try {
@@ -408,12 +483,27 @@ public class LookupJoin extends Node {
 			logger.info(this.getId() + " info: There will be no skipped records " +
 					"while left outer join is switched on");
 		}
+        errorActions = ErrorAction.createMap(errorActionsString);
+        if (errorLogURL != null) {
+       	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+       }
 	}
 	
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		transformation.reset();
+        if (errorLogURL != null) {
+        	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+        }
 	}
 
 	public static Node fromXML(TransformationGraph graph, Element xmlElement)
@@ -443,6 +533,12 @@ public class LookupJoin extends Node {
 			}
 			join.setFreeLookupTable(xattribs.getBoolean(
 					XML_FREE_LOOKUP_TABLE_ATTRIBUTE, false));
+			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+				join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+				join.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+			}
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":"
 					+ xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ")
@@ -450,6 +546,14 @@ public class LookupJoin extends Node {
 		}
 
 		return join;
+	}
+
+	public void setErrorLog(String errorLog) {
+		this.errorLogURL = errorLog;
+	}
+
+	public void setErrorActions(String string) {
+		this.errorActionsString = string;		
 	}
 
 	/*
@@ -483,6 +587,13 @@ public class LookupJoin extends Node {
 
 		xmlElement.setAttribute(XML_LEFTOUTERJOIN_ATTRIBUTE, String
 				.valueOf(leftOuterJoin));
+		if (errorActionsString != null){
+			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
+		}
+		
+		if (errorLogURL != null){
+			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
+		}
 
 		Enumeration propertyAtts = transformationParameters.propertyNames();
 		while (propertyAtts.hasMoreElements()) {
