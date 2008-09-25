@@ -45,9 +45,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -87,6 +85,14 @@ import org.w3c.dom.Element;
  *  <tr><td><b>transform</b></td><td>contains definition of transformation as java source, in internal clover format or in Transformation Language</td></tr>
  *  <tr><td><b>transformURL</b></td><td>path to the file with transformation code</td></tr>
  *  <tr><td><b>charset </b><i>optional</i></td><td>encoding of extern source</td></tr>
+ *  <tr><td><b>errorActions </b><i>optional</i></td><td>defines if graph is to stop, when transformation returns negative value.
+ *  Available actions are: STOP or CONTINUE. For CONTINUE action, error message is logged to console or file (if errorLog attribute
+ *  is specified) and for STOP there is thrown TransformExceptions and graph execution is stopped. <br>
+ *  Error action can be set for each negative value (value1=action1;value2=action2;...) or for all values the same action (STOP 
+ *  or CONTINUE). It is possible to define error actions for some negative values and for all other values (MAX_INT=myAction).
+ *  Default value is <i>-1=CONTINUE;MAX_INT=STOP</i></td></tr>
+ *  <tr><td><b>errorLog</b><br><i>optional</i></td><td>path to the error log file. Each error (after which graph continues) is logged in 
+ *  following way: recordNumber;errorCode;errorMessage;semiResult - fields are delimited by Defaults.Component.KEY_FIELDS_DELIMITER.</td></tr>
  *  <tr><td><i>..optional attribute..</i></td><td>any additional attribute is passed to transformation
  * class in Properties object - as a key->value pair. There is no limit to how many optional
  * attributes can be used.</td>
@@ -133,6 +139,9 @@ import org.w3c.dom.Element;
  * &lt;/attr&gt;
  * &lt;/Node&gt;
  * </pre>
+ * 
+ * <pre>
+ * &lt;Node errorActions="MIN_INT=CONTINUE" errorLog="${DATATMP_DIR}/log.txt" id="REF" transformURL="${TRANS_DIR}/reformatOrders.java" type="REFORMAT"/&gt;
  * <hr>
  * <i><b>Note:</b> DataRecord and in turn its individual fields retain their last assigned value till
  * explicitly changed ba calling <code>setValue()</code>, <code>fromString()</code> or other method.<br>
@@ -159,7 +168,6 @@ public class Reformat extends Node {
 	public final static String COMPONENT_TYPE = "REFORMAT";
 
 	private final static int READ_FROM_PORT = 0;
-	private static final ErrorAction DEFAULT_ERROR_ACTION = ErrorAction.STOP;
 
     private String transform = null;
 	private String transformClass = null;
@@ -228,7 +236,7 @@ public class Reformat extends Node {
 					if (action == null) {
 						action = errorActions.get(Integer.MIN_VALUE);
 						if (action == null) {
-							action = DEFAULT_ERROR_ACTION;
+							action = ErrorAction.DEFAULT_ERROR_ACTION;
 						}
 					}
 					String message = "Transformation finished with code: " + transformResult + ". Error message: " + 
@@ -253,6 +261,10 @@ public class Reformat extends Node {
 							logger.warn(message);
 						}
 					}else{
+						if (errorLog != null){
+							errorLog.flush();
+							errorLog.close();
+						}
 						throw new TransformException(message);
 						
 					}

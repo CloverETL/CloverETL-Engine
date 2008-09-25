@@ -114,6 +114,14 @@ import org.w3c.dom.Element;
  *  <tr><td><b>metadata</b><i>optional</i><td>metadata for data from database</td>
  *  <tr><td><b>maxCached</b><i>optional</i><td>number of sets of records with different key which will be stored in memory</td>
  *  <tr><td><b>leftOuterJoin</b><i>optional</i><td>true/false<I> default: FALSE</I> See description.</td>
+ *  <tr><td><b>errorActions </b><i>optional</i></td><td>defines if graph is to stop, when transformation returns negative value.
+ *  Available actions are: STOP or CONTINUE. For CONTINUE action, error message is logged to console or file (if errorLog attribute
+ *  is specified) and for STOP there is thrown TransformExceptions and graph execution is stopped. <br>
+ *  Error action can be set for each negative value (value1=action1;value2=action2;...) or for all values the same action (STOP 
+ *  or CONTINUE). It is possible to define error actions for some negative values and for all other values (MAX_INT=myAction).
+ *  Default value is <i>-1=CONTINUE;MAX_INT=STOP</i></td></tr>
+ *  <tr><td><b>errorLog</b><br><i>optional</i></td><td>path to the error log file. Each error (after which graph continues) is logged in 
+ *  following way: recordNumber;errorCode;errorMessage;semiResult - fields are delimited by Defaults.Component.KEY_FIELDS_DELIMITER.</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>
  *    &lt;Node id="dbjoin0" type="DBJOIN"&gt;
@@ -265,7 +273,11 @@ public class DBJoin extends Node {
 											logger.warn(message);
 										}
 									}else{
-										throw new TransformException(message);
+										if (errorLog != null){
+											errorLog.flush();
+											errorLog.close();
+										}
+									throw new TransformException(message);
 									}
 								}
 							}else if (rejectedPort != null){

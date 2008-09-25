@@ -19,6 +19,7 @@
  */
 package org.jetel.component;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -48,6 +49,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -135,6 +137,17 @@ import org.w3c.dom.Element;
  *    <tr><td><b>hashTableSize</b><br><i>optional</i></td><td>how many records are expected (roughly) to be in hashtable.</td></tr>
  *    <tr><td><b>slaveDuplicates</b><br><i>optional</i></td><td>true/false - allow records on slave port with duplicate keys. Default is false - multiple
  *    duplicate records are discarded - only the first one is used for join.</td></tr>
+ *  <tr><td><b>errorActions </b><i>optional</i></td><td>defines if graph is to stop, when transformation returns negative value.
+ *  Available actions are: STOP or CONTINUE. For CONTINUE action, error message is logged to console or file (if errorLog attribute
+ *  is specified) and for STOP there is thrown TransformExceptions and graph execution is stopped. <br>
+ *  Error action can be set for each negative value (value1=action1;value2=action2;...) or for all values the same action (STOP 
+ *  or CONTINUE). It is possible to define error actions for some negative values and for all other values (MAX_INT=myAction).
+ *  Default value is <i>-1=CONTINUE;MAX_INT=STOP</i></td></tr>
+ *  <tr><td><b>errorLog</b><br><i>optional</i></td><td>path to the error log file. Each error (after which graph continues) is logged in 
+ *  following way: masterRecordNumber;errorCode;errorMessage;semiResult - fields are delimited by Defaults.Component.KEY_FIELDS_DELIMITER.</td></tr>
+ *  <tr><td><i>..optional attribute..</i></td><td>any additional attribute is passed to transformation
+ * class in Properties object - as a key->value pair. There is no limit to how many optional
+ * attributes can be used.</td>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
  *	  
@@ -186,6 +199,8 @@ public class HashJoin extends Node {
 	// legacy attributes
 	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
 	private static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
+	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
+    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "HASH_JOIN";
@@ -229,6 +244,12 @@ public class HashJoin extends Node {
 	DataRecord[] outRecords;
 	private String joinKey;
 	private String slaveOverrideKey;
+
+	private String errorActionsString;
+	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
+	private String errorLogURL;
+	private FileWriter errorLog;
+	private int masterCounter;
 
 	/**
 	 *Constructor for the HashJoin object
@@ -394,12 +415,28 @@ public class HashJoin extends Node {
 					transformURL, charset,this, inMetadata, outMetadata, transformationParameters, 
 					this.getClass().getClassLoader());
 		}
+        errorActions = ErrorAction.createMap(errorActionsString);
+        if (errorLogURL != null) {
+       	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+       }
 	}
 
-	public void reset() {
+	public void reset() throws ComponentNotReadyException{
 		for (HashMap<HashKey,MapItem> hashMapItem : hashMap) {
 			hashMapItem.clear();
 		}
+		transformation.reset();
+        if (errorLogURL != null) {
+        	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+        }
 	}
 
 	public void free() {
@@ -470,13 +507,12 @@ public class HashJoin extends Node {
 					}
 					DataRecord record = itor.next();
 					inRecords[FIRST_SLAVE_PORT + slaveIdx] = record;
-					if (transformation.transform(inRecords, outRecords) < 0) {
-						logger.error(transformation.getMessage());
-						transformation.finished();
-						setEOF(WRITE_TO_PORT);
-						throw new TransformException(transformation.getMessage());
+					int transformResult = transformation.transform(inRecords, outRecords);
+					if (transformResult < 0) {
+						handleException(transformation, transformResult, masterCounter);
+					}else{
+						outPort.writeRecord(outRecords[0]);
 					}
-					outPort.writeRecord(outRecords[0]);
 					outRecords[0].reset();
 				} // for 
 			} // for
@@ -499,6 +535,7 @@ public class HashJoin extends Node {
 			hashKey[idx] = new HashKey(driverKeys[idx], driverRecord);
 		}
 
+		masterCounter = 0;
 		while (runIt) {
 			int slaveIdx;
 			if (driverPort.readRecord(driverRecord) == null) { // no more input data
@@ -535,17 +572,55 @@ public class HashJoin extends Node {
 				}
 				inRecords[1 + slaveCnt - 1] = slaveRecords[slaveIdx].records.get(q);
 
-				if (transformation.transform(inRecords, outRecords) < 0) {
-					logger.error(transformation.getMessage());
-					transformation.finished();
-					setEOF(WRITE_TO_PORT);
-					throw new TransformException(transformation.getMessage());
+				int transfrormResult = transformation.transform(inRecords, outRecords);
+				if (transfrormResult < 0) {
+					handleException(transformation, transfrormResult, masterCounter);
+				}else{
+					outPort.writeRecord(outRecords[0]);
 				}
-				outPort.writeRecord(outRecords[0]);
 				outRecords[0].reset();
 	 		}
 			SynchronizeUtils.cloverYield();
+			masterCounter++;
 		} // while		
+	}
+
+	private void handleException(RecordTransform transform, int transformResult, int recNo) throws TransformException, IOException{
+		ErrorAction action = errorActions.get(transformResult);
+		if (action == null) {
+			action = errorActions.get(Integer.MIN_VALUE);
+			if (action == null) {
+				action = ErrorAction.DEFAULT_ERROR_ACTION;
+			}
+		}
+		String message = "Transformation for master record:\n " + inRecords[0] + "finished with code: "	+ transformResult + 
+			". Error message: " + transformation.getMessage();
+		if (action == ErrorAction.CONTINUE) {
+			if (errorLog != null){
+				errorLog.write(String.valueOf(recNo));
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				errorLog.write(String.valueOf(transformResult));
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				message = transformation.getMessage();
+				if (message != null) {
+					errorLog.write(message);
+				}
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				Object semiResult = transformation.getSemiResult();
+				if (semiResult != null) {
+					errorLog.write(semiResult.toString());
+				}
+				errorLog.write("\n");
+			}else{
+				logger.warn(message);
+			}
+		}else{
+			if (errorLog != null){
+				errorLog.flush();
+				errorLog.close();
+			}
+			throw new TransformException(message);
+		}
 	}
 
 	@Override
@@ -556,6 +631,11 @@ public class HashJoin extends Node {
 			flushOrphaned();
 		}
 		transformation.finished();
+		if (errorLog != null){
+			errorLog.flush();
+			errorLog.close();
+		}
+
 		setEOF(WRITE_TO_PORT);
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -597,7 +677,14 @@ public class HashJoin extends Node {
 		if (slaveDuplicates){
 			xmlElement.setAttribute(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, String.valueOf(slaveDuplicates));
 		}
-
+		if (errorActionsString != null){
+			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
+		}
+		
+		if (errorLogURL != null){
+			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
+		}
+		
 		Enumeration propertyAtts = transformationParameters.propertyNames();
 		while (propertyAtts.hasMoreElements()) {
 			String attName = (String)propertyAtts.nextElement();
@@ -682,15 +769,28 @@ public class HashJoin extends Node {
 			if (xattribs.exists(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE)) {
 				join.setSlaveDuplicates(xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+				join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+				join.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+			}
 			join.setTransformationParameters(xattribs.attributes2Properties(
 					new String[]{XML_ID_ATTRIBUTE,XML_JOINKEY_ATTRIBUTE,
 							XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE, XML_JOINTYPE_ATTRIBUTE,
 							XML_HASHTABLESIZE_ATTRIBUTE,XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE}));
-
 			return join;
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
+	}
+
+	public void setErrorLog(String errorLog) {
+		this.errorLogURL = errorLog;
+	}
+
+	public void setErrorActions(String string) {
+		this.errorActionsString = string;		
 	}
 	/**
 	 *  Description of the Method
@@ -787,7 +887,14 @@ public class HashJoin extends Node {
     			logger.fatal(ex);
     			throw new ComponentNotReadyException("Can't allocate HashMap of size: "	+ hashTableInitialCapacity);
     		}
-        	
+
+    		if (errorActionsString != null) {
+				ErrorAction.checkActions(errorActionsString);
+			}
+    		
+            if (errorLog != null){
+ 				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+           	}        	
         	
 //            init();
 //            free();
