@@ -517,7 +517,6 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		 * parse metadata of FIELDs
 		 */
 
-		int autofillingFields = 0;
 		NodeList fieldElements = topNode.getChildNodes();
 		for (int i = 0; i < fieldElements.getLength(); i++) {
 			if (!fieldElements.item(i).getNodeName().equals(FIELD_ELEMENT)) {
@@ -650,7 +649,6 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 
 			if (autoFilling != null) {
 				field.setAutoFilling(autoFilling);
-				autofillingFields++;
 			}
 			if (skipFirstLine != null) {
 				recordMetadata.setSkipFirstLine(Boolean.valueOf(skipFirstLine));
@@ -668,11 +666,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					"No Field elements have been found ! ");
 		}
 
-		// check autofilling
-		if (recordMetadata.getNumFields() == autofillingFields) {
-			throw new DOMException(DOMException.NOT_FOUND_ERR,
-					"No Field elements without autofilling have been found ! ");
-		}
+		// change delimiter for autofilling
 		changeDefaultDelimiter(recordMetadata);
 		
 		return recordMetadata;
