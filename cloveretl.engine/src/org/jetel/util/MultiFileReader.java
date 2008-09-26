@@ -165,54 +165,27 @@ public class MultiFileReader {
      * @throws ComponentNotReadyException
      */
 	public void checkConfig(DataRecordMetadata metadata) throws ComponentNotReadyException {
-// viz issue #730
-//////////// trunk version
-//        parser.init(metadata);
-//        initChannelIterator();
-//        
-//		ReadableByteChannel stream = null; 
-//		while (channelIterator.hasNext()) {
-//			try {
-//				stream = channelIterator.next();
-//				if (stream == null) continue; // if record no record found
-//				filename = channelIterator.getCurrentFileName();
-//				URL url = FileUtils.getInnerAddress(filename);
-//				if (FileUtils.isServerURL(url)) {
-//					FileUtils.checkServer(url);
-//					continue;
-//				}
-//				parser.setReleaseDataSource(!filename.equals(STD_IN));
-//				parser.setDataSource(stream);
-//			} catch (IOException e) {
-//				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
-//			} catch (ComponentNotReadyException e) {
-//				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
-//            } catch (JetelException e) {
-//            	throw new ComponentNotReadyException("File is unreachable: " + channelIterator.getCurrentFileName(), e);
-//			}
-//		}
-///////branch 2.5 version:
-//        parser.init(metadata);
-//        initChannelIterator();
-//        
-//		String fName; 
-//		Iterator<String> fit = channelIterator.getFileIterator();
-//		while (fit.hasNext()) {
-//			try {
-//				fName = fit.next();
-//				URL url = FileUtils.getInnerAddress(fName);
-//				if (FileUtils.isServerURL(url)) {
-//					//FileUtils.checkServer(url); //this is very long operation
-//					continue;
-//				}
-//				parser.setReleaseDataSource(!fName.equals(STD_IN));
-//				parser.setDataSource(FileUtils.getReadableChannel(contextURL, fName));
-//			} catch (IOException e) {
-//				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
-//			} catch (ComponentNotReadyException e) {
-//				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
-//			}
-//		}
+        parser.init(metadata);
+        initChannelIterator();
+        
+		String fName; 
+		Iterator<String> fit = channelIterator.getFileIterator();
+		while (fit.hasNext()) {
+			try {
+				fName = fit.next();
+				URL url = FileUtils.getInnerAddress(fName);
+				if (FileUtils.isServerURL(url)) {
+					//FileUtils.checkServer(url); //this is very long operation
+					continue;
+				}
+				parser.setReleaseDataSource(!fName.equals(STD_IN));
+				parser.setDataSource(FileUtils.getReadableChannel(contextURL, fName));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
+			} catch (ComponentNotReadyException e) {
+				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
+			}
+		}
 	}
 	
     /**
