@@ -117,7 +117,7 @@ public class Denormalizer extends Node {
 	public final static String COMPONENT_TYPE = "DENORMALIZER";
 
 	private static final Pattern PATTERN_CLASS = Pattern.compile("class\\s+\\w+");
-	private static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+transform");
+	private static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+(transform|getOutputRecord)");
 	
 	private static final int TRANSFORM_JAVA_SOURCE = 1;
 	private static final int TRANSFORM_CLOVER_TL = 2;
