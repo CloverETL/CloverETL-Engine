@@ -186,14 +186,19 @@ public class XLSWriter extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
-		while (record != null && runIt) {
-			record = inPort.readRecord(record);
-			if (record != null) {
-				writer.write(record);
+		try {
+			while (record != null && runIt) {
+				record = inPort.readRecord(record);
+				if (record != null) {
+					writer.write(record);
+				}
+				SynchronizeUtils.cloverYield();
 			}
-			SynchronizeUtils.cloverYield();
+		} catch (InterruptedException e) {
+			throw e;
+		}finally{
+			writer.finish();
 		}
-		writer.finish();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
