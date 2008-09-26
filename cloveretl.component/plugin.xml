@@ -143,6 +143,11 @@
 	    <parameter id="type" value="EXT_SORT"/>
 	</extension>
 
+    <extension point-id="component">
+        <parameter id="className" value="org.jetel.component.SortWithinGroups"/>
+        <parameter id="type" value="SORT_WITHIN_GROUPS"/>
+    </extension>
+
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.Partition"/>
 	    <parameter id="type" value="PARTITION"/>
