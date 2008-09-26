@@ -16,7 +16,7 @@ public enum ErrorAction {
 	STOP,
 	CONTINUE;
 	
-	final static ErrorAction DEFAULT_ERROR_ACTION = STOP;
+	public final static ErrorAction DEFAULT_ERROR_ACTION = STOP;
 	
 	public static Map<Integer, ErrorAction> createMap(String errorActionsString){
 	    Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
