@@ -50,6 +50,8 @@ public class RecordDenormalizeTL implements RecordDenormalize {
     private static final String FINISHED_FUNCTION_NAME="finished";
     private static final String INIT_FUNCTION_NAME="init";
     private static final String CLEAN_FUNCTION_NAME="clean";
+	private static final String ADDINPUT_FUNCTION_NAME="addInputRecord";
+	private static final String GETOUTPUT_FUNCTION_NAME="getOutputRecord";
 
     private int appendFunctionIdentifier;
     private int transformFunctionIdentifier;
@@ -83,8 +85,24 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 			//do nothing: function init is not necessary
 		}
 		
-		appendFunctionIdentifier = wrapper.prepareFunctionExecution(APPEND_FUNCTION_NAME);
-		transformFunctionIdentifier = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
+		try {
+			appendFunctionIdentifier = wrapper.prepareFunctionExecution(APPEND_FUNCTION_NAME);
+		} catch (ComponentNotReadyException e) {
+			try {
+				appendFunctionIdentifier = wrapper.prepareFunctionExecution(ADDINPUT_FUNCTION_NAME);
+			} catch (ComponentNotReadyException e1) {
+				throw new ComponentNotReadyException("Not found function " + APPEND_FUNCTION_NAME + " nor " + ADDINPUT_FUNCTION_NAME);
+			}
+		}
+		try {
+			transformFunctionIdentifier = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
+		} catch (ComponentNotReadyException e) {
+			try {
+				transformFunctionIdentifier = wrapper.prepareFunctionExecution(GETOUTPUT_FUNCTION_NAME);
+			} catch (ComponentNotReadyException e1) {
+				throw new ComponentNotReadyException("Not found function " + TRANSFORM_FUNCTION_NAME + " nor " + GETOUTPUT_FUNCTION_NAME);
+			}
+		}
 	
 		try{
 			cleanFunctionIdentifier = wrapper.prepareFunctionExecution(CLEAN_FUNCTION_NAME);
