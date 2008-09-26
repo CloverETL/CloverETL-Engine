@@ -407,6 +407,7 @@ public class DataReader extends Node {
 
         try {
     		prepareMultiFileReader();
+    		checkAutofilling(status, getOutputPort(OUTPUT_PORT).getMetadata());
     		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);

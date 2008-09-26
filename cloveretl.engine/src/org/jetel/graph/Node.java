@@ -45,6 +45,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.ErrorMsgBody;
 import org.jetel.graph.runtime.Message;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -1066,6 +1067,23 @@ public abstract class Node extends GraphElement implements Runnable {
     		metadata = nextMetadata;
     	}
     	return status;
+    }
+    
+    /**
+     * Checks if the metadata contains at least one filed without autofilling.
+     * @param status
+     * @param metadata
+     */
+    protected void checkAutofilling(ConfigurationStatus status, DataRecordMetadata metadata) {
+    	if (metadata == null) return;
+    	for (DataFieldMetadata dataFieldMetadata: metadata.getFields()) {
+    		if (!dataFieldMetadata.isAutoFilled()) return;
+    	}
+    	status.add(new ConfigurationProblem(
+    			"No Field elements without autofilling for '" + metadata.getName() + "' have been found ! ",
+    			Severity.ERROR, 
+				this,
+				Priority.NORMAL));
     }
     
     protected ConfigurationStatus checkMetadata(ConfigurationStatus status, DataRecordMetadata inMetadata, 
