@@ -190,15 +190,15 @@ public class DataGenerator extends Node {
         checkMetadata(status, getOutMetadata());
         
         //check if on all output ports are the same metadata
-        metadata = getOutputPort(0).getMetadata();
-        for (int i=1;i<getOutPorts().size();i++) {
-			if  (!getOutputPort(i).getMetadata().equals(metadata)){
-		           ConfigurationProblem problem = new ConfigurationProblem(
-		        		   "Metadata on output port nr " + i + " are not the same as on output port 0", 
-		        		   ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-		            status.add(problem);
-			}
-		}
+//        metadata = getOutputPort(0).getMetadata();
+//        for (int i=1;i<getOutPorts().size();i++) {
+//			if  (!getOutputPort(i).getMetadata().equals(metadata)){
+//		           ConfigurationProblem problem = new ConfigurationProblem(
+//		        		   "Metadata on output port nr " + i + " are not the same as on output port 0", 
+//		        		   ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+//		            status.add(problem);
+//			}
+//		}
         
         try {
             init();

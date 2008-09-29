@@ -344,10 +344,6 @@ public class Aggregate extends Node {
         	return status;
         }
 
-        if (getInputPort(READ_FROM_PORT).getMetadata() == null) {
-        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
-        }
-        
         try {
             init();
         } catch (ComponentNotReadyException e) {

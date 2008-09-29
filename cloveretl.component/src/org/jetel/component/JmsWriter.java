@@ -359,10 +359,6 @@ public class JmsWriter extends Node {
 			return status;
 		}
 
-        if (getInputPort(0).getMetadata() == null) {
-        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
-        }
-
 //        try {
         	
 //    		if (psor == null && psorClass == null && psorCode == null) {

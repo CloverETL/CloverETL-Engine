@@ -396,16 +396,6 @@ import org.w3c.dom.Element;
         	return status;
         }
 
-        if (getInputPort(READ_FROM_PORT).getMetadata() == null) {
-        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
-        	return status;
-        }
-
-        if (getOutputPort(WRITE_TO_PORT).getMetadata() == null) {
-        	status.add(new ConfigurationProblem("Output metadata are null.", Severity.WARNING, this, Priority.NORMAL));
-        	return status;
-        }
-
         try {
             init();
         } catch (ComponentNotReadyException e) {

@@ -364,10 +364,6 @@ public class XmlXPathReader extends Node {
         	return status;
         }
 
-        if (getOutputPort(OUTPUT_PORT).getMetadata() == null) {
-        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
-        }
-
 //        try {
 //            init();
 //        } catch (ComponentNotReadyException e) {

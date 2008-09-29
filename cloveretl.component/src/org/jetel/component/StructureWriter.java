@@ -280,9 +280,6 @@ public class StructureWriter extends Node {
 			return status;
 		}
 
-        if (getInputPort(BODY_PORT).getMetadata() == null) {
-        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
-        }
         try {
         	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 
         			: null, fileURL);
