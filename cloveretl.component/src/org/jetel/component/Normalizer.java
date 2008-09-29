@@ -19,8 +19,11 @@
 */
 package org.jetel.component;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -29,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.normalize.RecordNormalize;
 import org.jetel.component.normalize.RecordNormalizeTL;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -78,6 +82,15 @@ import org.w3c.dom.Element;
  *  <tr><td><b>normalizeURL</b></td><td>path to the file with normalizing code</td></tr>
  *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
  *  </tr>
+ *  <tr><td><b>errorActions </b><i>optional</i></td><td>defines if graph is to stop, when denormalize functions return negative value.
+ *  Available actions are: STOP or CONTINUE. For CONTINUE action, error message is logged to console or file (if errorLog attribute
+ *  is specified) and for STOP there is thrown TransformExceptions and graph execution is stopped. <br>
+ *  Error action can be set for each negative value (value1=action1;value2=action2;...) or for all values the same action (STOP 
+ *  or CONTINUE). It is possible to define error actions for some negative values and for all other values (MIN_INT=myAction).
+ *  Default value is <i>-1=CONTINUE;MIN_INT=STOP</i></td></tr>
+ *  <tr><td><b>errorLog</b><br><i>optional</i></td><td>path to the error log file. Each error (after which graph continues) is logged in 
+ *  following way: methodName;inputRecordNumber;errorCode;errorMessage - fields are delimited by Defaults.Component.KEY_FIELDS_DELIMITER,
+ *  methodName can be <i>transform</i> or <i>count</i>.</td></tr>
  *  </table>
  *
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
@@ -90,6 +103,8 @@ public class Normalizer extends Node {
 	private static final String XML_TRANSFORM_ATTRIBUTE = "normalize";
 	private static final String XML_TRANSFORMURL_ATTRIBUTE = "normalizeURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
+    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
 	
 	private static final int IN_PORT = 0;
 	private static final int OUT_PORT = 0;
@@ -119,6 +134,11 @@ public class Normalizer extends Node {
 	private String xformURL = null;
 	private String charset = null;
 		
+	private String errorActionsString;
+	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
+	private String errorLogURL;
+	private FileWriter errorLog;
+
 	/**
 	 * Sole ctor.
 	 * @param id Component ID
@@ -227,6 +247,14 @@ public class Normalizer extends Node {
 		if (!norm.init(transformationParameters, inMetadata, outMetadata)) {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + norm.getMessage());
 		}
+        errorActions = ErrorAction.createMap(errorActionsString);
+        if (errorLogURL != null) {
+       	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+       }
 	}
 
 	/**
@@ -241,22 +269,66 @@ public class Normalizer extends Node {
 		DataRecord outRecord = new DataRecord(outMetadata);
 		outRecord.init();
 		outRecord.reset();
+		int src = 0;
+		int transformResult;
 		while (runIt) {
 			if (inPort.readRecord(inRecord) == null) { // no more input data
 				return;
 			}
 			int count = norm.count(inRecord);
+			if (count < 0) {
+				handleException("count", count, src);
+			}
 			for (int idx = 0; idx < count; idx++) {
-				if (norm.transform(inRecord, outRecord, idx) >= 0) {
+				transformResult = norm.transform(inRecord, outRecord, idx);
+				if (transformResult >= 0) {
 					outPort.writeRecord(outRecord);
 					outRecord.reset();
 				}else{
-					logger.warn(norm.getMessage());
+					handleException("transform", transformResult, src);
 				}
 			}
 			norm.clean();
 			SynchronizeUtils.cloverYield();
+			src++;
 		} // while
+	}
+
+	private void handleException(String functionName, int transformResult, int recNo) throws TransformException, IOException{
+		ErrorAction action = errorActions.get(transformResult);
+		if (action == null) {
+			action = errorActions.get(Integer.MIN_VALUE);
+			if (action == null) {
+				action = ErrorAction.DEFAULT_ERROR_ACTION;
+			}
+		}
+		String message = "Method " + functionName + " finished with code: " + transformResult + ". Error message: " + 
+			norm.getMessage();
+		if (action == ErrorAction.CONTINUE) {
+			if (errorLog != null){
+				errorLog.write(functionName);
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				errorLog.write(String.valueOf(recNo));
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				errorLog.write(String.valueOf(transformResult));
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				message = norm.getMessage();
+				if (message != null) {
+					errorLog.write(message);
+				}
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				errorLog.write("\n");
+			}else{
+				logger.warn(message);
+			}
+		}else{
+			if (errorLog != null){
+				errorLog.flush();
+				errorLog.close();
+			}
+			throw new TransformException(message);
+			
+		}
 	}
 
 	@Override
@@ -266,8 +338,12 @@ public class Normalizer extends Node {
 		} catch (Exception e) {
 			throw e;
 		}finally{
-	        broadcastEOF();
 			norm.finished();
+			if (errorLog != null){
+				errorLog.flush();
+				errorLog.close();
+			}
+	        broadcastEOF();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -291,6 +367,22 @@ public class Normalizer extends Node {
 			return status;
 		}
 
+        if (errorActionsString != null){
+        	try {
+				ErrorAction.checkActions(errorActionsString);
+			} catch (ComponentNotReadyException e) {
+				status.add(new ConfigurationProblem(e, Severity.ERROR, this, Priority.NORMAL, XML_ERROR_ACTIONS_ATTRIBUTE));
+			}
+        }
+        
+        if (errorLog != null){
+        	try {
+				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+			} catch (ComponentNotReadyException e) {
+				status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_ERROR_LOG_ATTRIBUTE));
+			}
+        }
+		
 //        try {
 //            init();
 //            free();
@@ -338,12 +430,26 @@ public class Normalizer extends Node {
 					new String[] { XML_ID_ATTRIBUTE,
 							XML_TRANSFORM_ATTRIBUTE,
 							XML_TRANSFORMCLASS_ATTRIBUTE, }));
+			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+				norm.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+				norm.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+			}
 			return norm;
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 	}
 	
+	public void setErrorLog(String errorLog) {
+		this.errorLogURL = errorLog;
+	}
+
+	public void setErrorActions(String string) {
+		this.errorActionsString = string;		
+	}
+
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
 	 */
@@ -365,6 +471,13 @@ public class Normalizer extends Node {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
 		}
 
+		if (errorActionsString != null){
+			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
+		}
+		
+		if (errorLogURL != null){
+			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
+		}
 		Enumeration propertyAtts = transformationParameters.propertyNames();
 		while (propertyAtts.hasMoreElements()) {
 			String attName = (String)propertyAtts.nextElement();
@@ -414,6 +527,13 @@ public class Normalizer extends Node {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		norm.reset();
+        if (errorLogURL != null) {
+        	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+        }
 	}
 
 	/*
