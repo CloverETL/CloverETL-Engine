@@ -1200,14 +1200,6 @@ public class DBOutputTable extends Node {
         	 return status;
          }
 
-         if (getOutPorts().size() > 0) {
-        	 for (Iterator iterator = getOutPorts().iterator(); iterator.hasNext();) {
- 				if (iterator.next() == null) {
-					status.add(new ConfigurationProblem("Output metadata are null.", Severity.WARNING, this, Priority.NORMAL));
-				}
-			}
-         }
-
          boolean isQueryNull = sqlQuery == null;
          try {
 //             init();

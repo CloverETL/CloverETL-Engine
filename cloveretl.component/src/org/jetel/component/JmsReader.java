@@ -406,10 +406,6 @@ public class JmsReader extends Node {
         	return status;
         }
 
-        if (getOutputPort(0).getMetadata() == null) {
-        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
-        }
-
 //        try {
         	
 //    		if (psorClass == null && psorCode == null) {
