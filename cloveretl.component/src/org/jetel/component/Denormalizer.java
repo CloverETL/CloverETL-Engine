@@ -20,8 +20,11 @@
 */
 package org.jetel.component;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -88,6 +91,15 @@ import org.w3c.dom.Element;
  *  <tr><td><b>order</b></td><td>Describe expected order of input records. "asc" for ascending, "desc" for descending,
  *  "auto" for auto-detection, "ignore" for processing input records without order checking (this may produce unexpected
  *  results when input is not ordered).</td></tr>
+ *  <tr><td><b>errorActions </b><i>optional</i></td><td>defines if graph is to stop, when denormalize functions return negative value.
+ *  Available actions are: STOP or CONTINUE. For CONTINUE action, error message is logged to console or file (if errorLog attribute
+ *  is specified) and for STOP there is thrown TransformExceptions and graph execution is stopped. <br>
+ *  Error action can be set for each negative value (value1=action1;value2=action2;...) or for all values the same action (STOP 
+ *  or CONTINUE). It is possible to define error actions for some negative values and for all other values (MIN_INT=myAction).
+ *  Default value is <i>-1=CONTINUE;MIN_INT=STOP</i></td></tr>
+ *  <tr><td><b>errorLog</b><br><i>optional</i></td><td>path to the error log file. Each error (after which graph continues) is logged in 
+ *  following way: methodName;inputRecordNumber;errorCode;errorMessage - fields are delimited by Defaults.Component.KEY_FIELDS_DELIMITER,
+ *  methodName can be <i>transform</i> or <i>append</i>.</td></tr>
  *  </table>
  *
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
@@ -109,6 +121,8 @@ public class Denormalizer extends Node {
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_KEY_ATTRIBUTE = "key";
 	private static final String XML_ORDER_ATTRIBUTE = "order";
+	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
+    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
 	
 	private static final int IN_PORT = 0;
 	private static final int OUT_PORT = 0;
@@ -141,6 +155,11 @@ public class Denormalizer extends Node {
 	private String[] key;
 	RecordKey recordKey;
 		
+	private String errorActionsString;
+	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
+	private String errorLogURL;
+	private FileWriter errorLog;
+
 	/**
 	 * Sole ctor.
 	 * @param id Component ID.
@@ -256,6 +275,14 @@ public class Denormalizer extends Node {
 		if (!denorm.init(transformationParameters, inMetadata, outMetadata)) {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + denorm.getMessage());
 		}
+        errorActions = ErrorAction.createMap(errorActionsString);
+        if (errorLogURL != null) {
+       	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+       }
 	}
 
 	/**
@@ -307,14 +334,16 @@ public class Denormalizer extends Node {
 		int src=0;
 		DataRecord prevRecord = null;
 		DataRecord currentRecord = null;
+		int transformResult;
 		while (runIt) {
 			currentRecord = inPort.readRecord(srcRecord[src]);
 			if (endRun(prevRecord, currentRecord)) {
 				outRecord.reset();
-				if (denorm.transform(outRecord) >= 0) {
+				transformResult = denorm.transform(outRecord);
+				if (transformResult >= 0) {
 					outPort.writeRecord(outRecord);
 				}else{
-					logger.warn(denorm.getMessage());
+					handleException("transform", transformResult, src);
 				}
 				denorm.clean();
 			}
@@ -322,14 +351,54 @@ public class Denormalizer extends Node {
 				return;
 			}
 			prevRecord = currentRecord;
-			src^=1;
-			if (denorm.append(prevRecord) < 0) {
-				logger.warn(denorm.getMessage());
+			transformResult = denorm.append(prevRecord);
+			if (transformResult >= 0) {
+				outPort.writeRecord(outRecord);
+			}else{
+				handleException("append", transformResult, src);
 			}
 			SynchronizeUtils.cloverYield();
+			src++;
 		} // while
 	}
 
+	private void handleException(String functionName, int transformResult, int recNo) throws TransformException, IOException{
+		ErrorAction action = errorActions.get(transformResult);
+		if (action == null) {
+			action = errorActions.get(Integer.MIN_VALUE);
+			if (action == null) {
+				action = ErrorAction.DEFAULT_ERROR_ACTION;
+			}
+		}
+		String message = "Method " + functionName + " finished with code: " + transformResult + ". Error message: " + 
+			denorm.getMessage();
+		if (action == ErrorAction.CONTINUE) {
+			if (errorLog != null){
+				errorLog.write(functionName);
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				errorLog.write(String.valueOf(recNo));
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				errorLog.write(String.valueOf(transformResult));
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				message = denorm.getMessage();
+				if (message != null) {
+					errorLog.write(message);
+				}
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				errorLog.write("\n");
+			}else{
+				logger.warn(message);
+			}
+		}else{
+			if (errorLog != null){
+				errorLog.flush();
+				errorLog.close();
+			}
+			throw new TransformException(message);
+			
+		}
+	}
+	
 	@Override
 	public Result execute() throws Exception {
 		try {
@@ -338,6 +407,10 @@ public class Denormalizer extends Node {
 			throw e;
 		}finally{
 			denorm.finished();
+			if (errorLog != null){
+				errorLog.flush();
+				errorLog.close();
+			}
 			setEOF(OUT_PORT);
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -362,6 +435,21 @@ public class Denormalizer extends Node {
         	return status;
         }
 
+        if (errorActionsString != null){
+        	try {
+				ErrorAction.checkActions(errorActionsString);
+			} catch (ComponentNotReadyException e) {
+				status.add(new ConfigurationProblem(e, Severity.ERROR, this, Priority.NORMAL, XML_ERROR_ACTIONS_ATTRIBUTE));
+			}
+        }
+        
+        if (errorLog != null){
+        	try {
+				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+			} catch (ComponentNotReadyException e) {
+				status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_ERROR_LOG_ATTRIBUTE));
+			}
+        }
 
 //        try {
 //            init();
@@ -432,12 +520,26 @@ public class Denormalizer extends Node {
 					new String[] { XML_ID_ATTRIBUTE,
 							XML_TRANSFORM_ATTRIBUTE,
 							XML_TRANSFORMCLASS_ATTRIBUTE, }));
+			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+				denorm.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+				denorm.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+			}
 			return denorm;
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 	}
 	
+	public void setErrorLog(String errorLog) {
+		this.errorLogURL = errorLog;
+	}
+
+	public void setErrorActions(String string) {
+		this.errorActionsString = string;		
+	}
+
 	/**
 	 *  Description of the Method
 	 *
@@ -484,7 +586,14 @@ public class Denormalizer extends Node {
 		if (xform!=null){
 			xmlElement.setAttribute(XML_KEY_ATTRIBUTE,xform);
 		}
-
+		if (errorActionsString != null){
+			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
+		}
+		
+		if (errorLogURL != null){
+			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
+		}
+		
 		Enumeration propertyAtts = transformationParameters.propertyNames();
 		while (propertyAtts.hasMoreElements()) {
 			String attName = (String)propertyAtts.nextElement();
@@ -534,6 +643,13 @@ public class Denormalizer extends Node {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		denorm.reset();
+        if (errorLogURL != null) {
+        	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+        }
 	}
 
 	/*
