@@ -961,12 +961,19 @@ public abstract class Node extends GraphElement implements Runnable {
             status.add(new ConfigurationProblem("At most " + max + " input ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
             return false;
         }
-        for (int i = 0; i< min; i++) {
-        	if (getInputPort(i) == null) {
-                status.add(new ConfigurationProblem("Input port " + i + " must be defined!", Severity.ERROR, this, Priority.NORMAL));
+        int index = 0;
+        for (InputPort inputPort : inPorts) {
+			if (inputPort.getMetadata() == null){
+                status.add(new ConfigurationProblem("Metadata on input port " + inputPort.getInputPortNumber() + 
+                		" are not defined!", Severity.WARNING, this, Priority.NORMAL));
                 return false;
-        	}
-        }
+			}
+			if (inputPort.getInputPortNumber() != index){
+                status.add(new ConfigurationProblem("Input port " + index + " is not defined!", Severity.WARNING, this, Priority.NORMAL));
+                return false;
+			}
+			index++;
+		}
         
         return true;
     }
@@ -979,20 +986,28 @@ public abstract class Node extends GraphElement implements Runnable {
      * @return true if the number of output ports is in the given interval; else false
      */
     protected boolean checkOutputPorts(ConfigurationStatus status, int min, int max) {
-        if(getOutPorts().size() < min) {
+    	Collection<OutputPort> outPorts = getOutPorts();
+        if(outPorts.size() < min) {
             status.add(new ConfigurationProblem("At least " + min + " output port must be defined!", Severity.ERROR, this, Priority.NORMAL));
             return false;
         }
-        if(getOutPorts().size() > max) {
+        if(outPorts.size() > max) {
             status.add(new ConfigurationProblem("At most " + max + " output ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
             return false;
         }
-        for (int i = 0; i< min; i++) {
-        	if (getOutputPort(i) == null) {
-                status.add(new ConfigurationProblem("Output port " + i + " must be defined!", Severity.ERROR, this, Priority.NORMAL));
+        int index = 0;
+        for (OutputPort outputPort : outPorts) {
+			if (outputPort.getMetadata() == null){
+                status.add(new ConfigurationProblem("Metadata on output port " + outputPort.getOutputPortNumber() + 
+                		" are not defined!", Severity.WARNING, this, Priority.NORMAL));
                 return false;
-        	}
-        }
+			}
+			if (outputPort.getOutputPortNumber() != index){
+                status.add(new ConfigurationProblem("Output port " + index + " is not defined!", Severity.WARNING, this, Priority.NORMAL));
+                return false;
+			}
+			index++;
+		}
 
         return true;
     }
