@@ -151,8 +151,8 @@ import org.w3c.dom.Element;
  *  Available actions are: STOP or CONTINUE. For CONTINUE action, error message is logged to console or file (if errorLog attribute
  *  is specified) and for STOP there is thrown TransformExceptions and graph execution is stopped. <br>
  *  Error action can be set for each negative value (value1=action1;value2=action2;...) or for all values the same action (STOP 
- *  or CONTINUE). It is possible to define error actions for some negative values and for all other values (MAX_INT=myAction).
- *  Default value is <i>-1=CONTINUE;MAX_INT=STOP</i></td></tr>
+ *  or CONTINUE). It is possible to define error actions for some negative values and for all other values (MIN_INT=myAction).
+ *  Default value is <i>-1=CONTINUE;MIN_INT=STOP</i></td></tr>
  *  <tr><td><b>errorLog</b><br><i>optional</i></td><td>path to the error log file. Each error (after which graph continues) is logged in 
  *  following way: inRecordNumber;errorCode;errorMessage;semiResult - fields are delimited by Defaults.Component.KEY_FIELDS_DELIMITER.</td></tr>
  * </table>
@@ -400,18 +400,6 @@ public class LookupJoin extends Node {
         	return status;
         }
         
-        if (getOutputPort(REJECTED_PORT) != null) {
-        	checkMetadata(status, getInputPort(READ_FROM_PORT).getMetadata(), 
-        			getOutputPort(REJECTED_PORT).getMetadata());
-        }
-
-        if (getInputPort(READ_FROM_PORT).getMetadata() == null) {
-        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
-        }
-
-        if (getOutputPort(WRITE_TO_PORT).getMetadata() == null) {
-        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
-        }
         if (errorActionsString != null){
         	try {
 				ErrorAction.checkActions(errorActionsString);
