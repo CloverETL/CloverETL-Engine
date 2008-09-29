@@ -19,6 +19,8 @@
 */
 package org.jetel.component;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -38,14 +40,14 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.MultiFileReader;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
@@ -67,7 +69,9 @@ import org.w3c.dom.Text;
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- stored procedure input parameters</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
- * <td>[0]- stored procedure output parameters and/or query result set</td></tr>
+ * <td>[0] (<i>optional</i>) - stored procedure output parameters and/or query result set<br>
+ * [1] (<i>optional</i>) - errors: field with <i>ErrCode</i> autofilling is filled by error code,field with <i>ErrText</i>
+ *    autofilling is field by error message </td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
  * </table>
@@ -103,6 +107,14 @@ import org.w3c.dom.Text;
  *  <tr><td><b>printStatements</b><br><i>optional</i></td><td>Specifies whether SQL commands are outputted to stdout. Default - No</td></tr>
  *  <tr><td><b>callStatement</b><br><i>optional</i></td><td>boolean value (Y/N) - specifies whether SQL commands should be treated as stored procedure calls - using JDBC CallableStatement. Default - "N"</td></tr>
  *  <tr><td>&lt;SQLCode&gt;<br><i><small>!!XML tag!!</small></i></td><td>This tag allows for specifying more than one statement. See example below.</td></tr>
+ *  <tr><td><b>errorActions </b><i>optional</i></td><td>defines if graph is to stop, when sql statement throws Sql Exception.
+ *  Available actions are: STOP or CONTINUE. For CONTINUE action, error message is logged to console or file (if errorLog attribute
+ *  is specified) and for STOP exception is populated and graph execution is stopped. <br>
+ *  Error action can be set for each exception error code (value1=action1;value2=action2;...) or for all values the same action (STOP 
+ *  or CONTINUE). It is possible to define error actions for some values and for all other values (MIN_INT=myAction).
+ *  Default value is <i>STOP</i></td></tr>
+ *  <tr><td><b>errorLog</b><br><i>optional</i></td><td>path to the error log file. Each error (after which graph continues) is logged in 
+ *  following way: slqQuery;errorCode;errorMessage - fields are delimited by Defaults.Component.KEY_FIELDS_DELIMITER.</td></tr>
  *  </table>
  *
  *  <h4>Example:</h4>
@@ -158,6 +170,8 @@ public class DBExecute extends Node {
     public static final String XML_IN_PARAMETERS = "inParameters";
     public static final String XML_OUT_PARAMETERS = "outParameters";
     public static final String XML_OUTPUT_FIELDS = "outputFields";
+	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
+    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
 	
     private enum InTransaction {
     	ONE,
@@ -182,6 +196,7 @@ public class DBExecute extends Node {
 	
 	private final static int READ_FROM_PORT = 0;
 	private final static int WRITE_TO_PORT = 0;
+	private final static int ERROR_PORT = 1;
 	
 	static Log logger = LogFactory.getLog(DBExecute.class);
 	private PreparedStatement[] sqlStatement;
@@ -190,6 +205,15 @@ public class DBExecute extends Node {
 	private DataRecord inRecord, outRecord;
 	private Map<Integer, String>[] inParams, outParams;
 	private String[] outputFields;
+
+	private String errorActionsString;
+	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
+	private String errorLogURL;
+	private FileWriter errorLog;
+	private int errorCodeFieldNum;
+	private int errMessFieldNum;
+	private DataRecord errRecord;
+	private OutputPort errPort;
 
 	/**
 	 *  Constructor for the DBExecute object
@@ -271,9 +295,16 @@ public class DBExecute extends Node {
 			inRecord = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
 			inRecord.init();
 		}
-		if (getOutPorts().size() > 0) {
+		if (getOutputPort(WRITE_TO_PORT) != null) {
 			outRecord = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
 			outRecord.init();
+		}
+		errPort = getOutputPort(ERROR_PORT);
+		if (errPort != null){
+			errRecord = new DataRecord(errPort.getMetadata());
+			errRecord.init();
+			errorCodeFieldNum = errRecord.getMetadata().findAutoFilledField(MultiFileReader.ERROR_CODE);
+			errMessFieldNum = errRecord.getMetadata().findAutoFilledField(MultiFileReader.ERROR_MESSAGE);
 		}
 		try {
 			if (procedureCall) {
@@ -302,6 +333,34 @@ public class DBExecute extends Node {
 		} catch (JetelException e) {
 			throw new ComponentNotReadyException(e);
 		}
+		errorActions = new HashMap<Integer, ErrorAction>();
+		if (errorActionsString != null){
+        	String[] actions = StringUtils.split(errorActionsString);
+        	if (actions.length == 1 && !actions[0].contains("=")){
+        		errorActions.put(Integer.MIN_VALUE, ErrorAction.valueOf(actions[0].trim().toUpperCase()));
+        	}else{
+        	String[] action;
+	        	for (String string : actions) {
+					action = JoinKeyUtils.getMappingItemsFromMappingString(string);
+					try {
+						errorActions.put(Integer.parseInt(action[0]), ErrorAction.valueOf(action[1].toUpperCase()));
+					} catch (NumberFormatException e) {
+						if (action[0].equals(ComponentXMLAttributes.STR_MIN_INT)) {
+							errorActions.put(Integer.MIN_VALUE, ErrorAction.valueOf(action[1].toUpperCase()));
+						}
+					}
+				}
+        	}
+        }else{
+        	errorActions.put(Integer.MIN_VALUE, ErrorAction.DEFAULT_ERROR_ACTION);
+        }
+        if (errorLogURL != null) {
+       	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+       }
 	}
 
 	@Override
@@ -317,6 +376,16 @@ public class DBExecute extends Node {
 		if (outRecord != null){
 			outRecord.reset();
 		}
+		if (errRecord != null){
+			errRecord.reset();
+		}
+        if (errorLogURL != null) {
+        	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+        }
 	}
 
 
@@ -339,6 +408,52 @@ public class DBExecute extends Node {
 		this.printStatements=printStatements;
 	}
 
+	private void handleException(SQLException e, DataRecord inRecord, int queryIndex) 
+	throws IOException, InterruptedException, SQLException{
+		ErrorAction action = errorActions.get(e.getErrorCode());
+		if (action == null) {
+			action = errorActions.get(Integer.MIN_VALUE);
+			if (action == null) {
+				action = ErrorAction.DEFAULT_ERROR_ACTION;
+			}
+		}
+		if (action == ErrorAction.CONTINUE) {
+			if (errRecord != null) {
+				errRecord.copyFieldsByName(inRecord);
+				if (errorCodeFieldNum != -1) {
+					errRecord.getField(errorCodeFieldNum).setValue(e.getErrorCode());
+				}
+				if (errMessFieldNum != -1) {
+					errRecord.getField(errMessFieldNum).setValue(e.getMessage());
+				}
+				errPort.writeRecord(errRecord);
+			}else if (errorLog != null){
+				errorLog.write(queryIndex > -1 ? dbSQL[queryIndex] : "commit");
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				errorLog.write(String.valueOf(e.getErrorCode()));
+				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+				errorLog.write(e.getMessage());
+				errorLog.write("\n");
+			}else{
+				logger.warn(e.getMessage());
+			}
+		}else{
+			if (errorLog != null){
+				errorLog.flush();
+				errorLog.close();
+			}
+			connectionInstance.getSqlConnection().rollback();
+			throw e;
+		}
+	}
+	
+	private void commit() throws IOException, InterruptedException, SQLException{
+		try {
+			connectionInstance.getSqlConnection().commit();
+		} catch (SQLException e) {
+			handleException(e, inRecord, -1);
+		}
+	}
 	
 	@Override
 	public Result execute() throws Exception {
@@ -354,14 +469,14 @@ public class DBExecute extends Node {
 
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
-		try {
-			if (inPort != null) {
-				inRecord = inPort.readRecord(inRecord);
-			}
-			boolean sendOut;
-			do {
-				for (int i = 0; i < dbSQL.length; i++){
-					sendOut = outParams != null && outParams[i] != null;
+		if (inPort != null) {
+			inRecord = inPort.readRecord(inRecord);
+		}
+		boolean sendOut;
+		do {
+			for (int i = 0; i < dbSQL.length; i++){
+				sendOut = outParams != null && outParams[i] != null;
+				try {
 					if (procedureCall) {
 						callableStatement[i].executeCall();
 						if (outPort != null) {
@@ -376,28 +491,31 @@ public class DBExecute extends Node {
 					}else{
 						sqlStatement[i].executeUpdate();
 					}
-					if (transaction == InTransaction.ONE){
-						connectionInstance.getSqlConnection().commit();
-					}
+				} catch (SQLException e) {
+					handleException(e, inRecord, i);
 				}
-				if (transaction == InTransaction.SET){
-					connectionInstance.getSqlConnection().commit();
+				if (transaction == InTransaction.ONE){
+					commit();
 				}
-				if (inPort != null) {
-					inRecord = inPort.readRecord(inRecord);
-				}
-			} while (runIt && inRecord != null);
-			if (transaction == InTransaction.ALL){
-				connectionInstance.getSqlConnection().commit();
 			}
-			broadcastEOF();
-		} catch (Exception ex) {
-			connectionInstance.getSqlConnection().rollback();
-			throw ex;
-		}	
+			if (transaction == InTransaction.SET){
+				commit();
+			}
+			if (inPort != null) {
+				inRecord = inPort.readRecord(inRecord);
+			}
+		} while (runIt && inRecord != null);
+		if (transaction == InTransaction.ALL){
+			commit();
+		}
+		if (errorLog != null){
+			errorLog.flush();
+			errorLog.close();
+		}
 		if (!runIt) {
 			connectionInstance.getSqlConnection().rollback();
 		}
+		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
@@ -466,6 +584,13 @@ public class DBExecute extends Node {
 			Text textElement = doc.createTextNode(buf.toString());
 			childElement.appendChild(textElement);
 			xmlElement.appendChild(childElement);
+		}
+		if (errorActionsString != null){
+			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
+		}
+		
+		if (errorLogURL != null){
+			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
 		}
 	}
 
@@ -536,6 +661,12 @@ public class DBExecute extends Node {
             if (xattribs.exists(XML_STATEMENT_DELIMITER)){
                 executeSQL.setSqlStatementDelimiter(xattribs.getString(XML_STATEMENT_DELIMITER));
             }
+			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+				executeSQL.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+				executeSQL.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+			}
             
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -544,6 +675,13 @@ public class DBExecute extends Node {
         return executeSQL;
     }
 
+	public void setErrorLog(String errorLog) {
+		this.errorLogURL = errorLog;
+	}
+
+	public void setErrorActions(String string) {
+		this.errorActionsString = string;		
+	}
 
 	public void setInParameters(String string) {
 		String[] inParameters = string.split(PARAMETERS_SET_DELIMITER);
@@ -600,22 +738,9 @@ public class DBExecute extends Node {
         super.checkConfig(status);
         
         if(!checkInputPorts(status, 0, 1)
-        		|| !checkOutputPorts(status, 0, 1)) {
+        		|| !checkOutputPorts(status, 0, 2)) {
         	return status;
         }
-
-		if (getInPorts().size() > 0) {
-	        if (getInputPort(READ_FROM_PORT).getMetadata() == null) {
-	        	status.add(new ConfigurationProblem("Input metadata are null.", Severity.WARNING, this, Priority.NORMAL));
-	        }
-	        return status;
-		}
-		if (getOutPorts().size() > 0) {
-	        if (getOutputPort(WRITE_TO_PORT).getMetadata() == null) {
-	        	status.add(new ConfigurationProblem("Output metadata are null.", Severity.WARNING, this, Priority.NORMAL));
-	        }
-	        return status;
-		}
 
 		try {
 		    if (dbConnection == null){
@@ -627,6 +752,14 @@ public class DBExecute extends Node {
 	                throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
 	            }
 		    }
+            if (errorActionsString != null){
+				ErrorAction.checkActions(errorActionsString);
+            }
+            
+            if (errorLog != null){
+ 				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+            }
+		    
 //            init();
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);

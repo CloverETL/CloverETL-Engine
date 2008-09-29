@@ -104,9 +104,11 @@ public class MultiFileReader {
     private static final String SOURCE_TIMESTAMP = "source_timestamp";
     private static final String SOURCE_SIZE = "source_size";
     private static final String DEFAULT_VALUE = "default_value";
+    public static final String ERROR_CODE = "ErrCode";
+    public static final String ERROR_MESSAGE = "ErrText";
     
     public static final String[] AUTOFILLING = new String[] {DEFAULT_VALUE, GLOBAL_ROW_COUNT, SOURCE_ROW_COUNT, METADATA_ROW_COUNT, 
-    	METADATA_SOURCE_ROW_COUNT, SOURCE_NAME, SOURCE_TIMESTAMP, SOURCE_SIZE, "ErrCode", "ErrText"};
+    	METADATA_SOURCE_ROW_COUNT, SOURCE_NAME, SOURCE_TIMESTAMP, SOURCE_SIZE, ERROR_CODE, ERROR_MESSAGE};
     
     /**
 	 * Sole ctor.
