@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates how to prpagate data to database." guiVersion="1.10" id="1204541150550" licenseType="Evaluation license." modified="Tue Jul 29 09:09:56 CEST 2008" modifiedBy="avackova" name="Testing DB Load" revision="1.238">
+<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates how to prpagate data to database." guiVersion="2.0" id="1204541150550" licenseType="Evaluation license." modified="Tue Sep 30 10:20:43 CEST 2008" modifiedBy="avackova" name="Testing DB Load" revision="1.249">
 <Global>
-<Metadata id="rejected">
-<Record fieldDelimiter="," name="EMPLOYEE_REJECTED" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Metadata id="rejected" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="," name="EMPLOYEE_REJECTED" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field auto_filling="ErrCode" name="Error_code" type="integer"/>
+<Field auto_filling="ErrText" delimiter="\n" name="Error_message" nullable="true" shift="0" type="string"/>
 <Field format="#" name="EMP_NO" nullable="true" shift="0" type="integer"/>
 <Field name="FIRST_NAME" nullable="true" shift="0" type="string"/>
 <Field name="LAST_NAME" nullable="true" shift="0" type="string"/>
@@ -14,7 +16,6 @@
 <Field name="JOB_COUNTRY" nullable="true" shift="0" type="string"/>
 <Field name="SALARY" nullable="true" shift="0" type="numeric"/>
 <Field delimiter=";" name="FULL_NAME" nullable="true" shift="0" type="string"/>
-<Field delimiter="\n" name="Error_message" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
