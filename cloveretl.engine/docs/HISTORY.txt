@@ -9,6 +9,7 @@
 	-   -1 -- error / skip record
 	-    0 -- send to all output ports
 	- >= 1 -- send to a specified output port
++ changed RecordNormalize and RecordDenormalize interfaces
 + added attributes "errorActions" and "errorLog" to following components:
 	- AproxMergeJoin
 	- DataInteresction
@@ -16,7 +17,11 @@
 	- HashJoin
 	- LookupJoin
 	- MergeJoin
-	-Reformat
+	- Reformat
+	- Normalizer
+	- Denormalizer
+	- DBExecute
++ DBOutputTable and DBExecute use fields with autofilling for filling error code and error message
 
 REL 2-5-1
 ---------
