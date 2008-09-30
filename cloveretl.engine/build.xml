@@ -522,7 +522,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		</ant>
 	</target>
 	
-	<target name="runtests-scenerio" depends="build">
+	<target name="runtests-scenerio" depends="build,compile-tests,coverage-instrument">
 		<echo message="Runtests environment"/>
 		<ant target="runscenerios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
 			<property name="dir.dist" value="${dir.package}"/>
