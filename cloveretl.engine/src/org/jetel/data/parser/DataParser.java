@@ -85,8 +85,6 @@ public class DataParser implements Parser {
 	private int numFields;
 	
 	private AhoCorasick delimiterSearcher;
-
-	private boolean skipLeadingBlanks = true;
 	
 	private boolean quotedStrings = false;
 
@@ -95,10 +93,14 @@ public class DataParser implements Parser {
 	private boolean treatMultipleDelimitersAsOne = false;
 	
 	private Boolean trim = null; 
+	private Boolean skipLeadingBlanks = null;
+	private Boolean skipTrailingBlanks = null;
 	
 	private boolean[] isAutoFilling;
 	
-	private boolean[] isSkipBlanks;
+//	private boolean[] isSkipBlanks;
+	private boolean[] isSkipLeadingBlanks;
+	private boolean[] isSkipTrailingBlanks;
 
 	private boolean[] eofAsDelimiters;
 
@@ -171,7 +173,9 @@ public class DataParser implements Parser {
 		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		numFields = metadata.getNumFields();
 		isAutoFilling = new boolean[numFields];
-		isSkipBlanks = new boolean[numFields];
+//		isSkipBlanks = new boolean[numFields];
+		isSkipLeadingBlanks = new boolean[numFields];
+		isSkipTrailingBlanks = new boolean[numFields];
 		eofAsDelimiters = new boolean[numFields];
 
 		//save metadata
@@ -194,9 +198,11 @@ public class DataParser implements Parser {
 				}
 			}
 			isAutoFilling[i] = metadata.getField(i).getAutoFilling() != null;
-			isSkipBlanks[i] = skipLeadingBlanks
-					|| trim == Boolean.TRUE
-					|| (trim == null && metadata.getField(i).isTrim());
+			isSkipLeadingBlanks[i] = skipLeadingBlanks != null ? skipLeadingBlanks : trim != null ? trim : metadata.getField(i).isTrim();
+//			isSkipBlanks[i] = skipLeadingBlanks
+//					|| trim == Boolean.TRUE
+//					|| (trim == null && metadata.getField(i).isTrim());
+			isSkipTrailingBlanks[i] = skipTrailingBlanks != null ? skipTrailingBlanks : trim != null ? trim : metadata.getField(i).isTrim();
 			eofAsDelimiters[i] = metadata.getField(i).isEofAsDelimiter();
 		}
 
@@ -324,7 +330,7 @@ public class DataParser implements Parser {
 		int character = -1;
 		int mark;
 		boolean inQuote;
-		boolean skipBlanks;
+		boolean skipLBlanks, skipTBlanks;
 		char type;
 		
 		recordCounter++;
@@ -334,7 +340,8 @@ public class DataParser implements Parser {
 			if (isAutoFilling[fieldCounter]) {
 				continue;
 			}
-			skipBlanks = isSkipBlanks[fieldCounter];
+			skipLBlanks = isSkipLeadingBlanks[fieldCounter];
+			skipTBlanks = isSkipTrailingBlanks[fieldCounter];
 			if (metadata.getField(fieldCounter).isDelimited()) { //delimited data field
 				// field
 				// read data till we reach field delimiter, record delimiter,
@@ -352,8 +359,8 @@ public class DataParser implements Parser {
 						delimiterSearcher.update((char) character);
 						
 						//skip leading blanks
-						if (skipBlanks && !Character.isWhitespace(character)) {
-							skipBlanks = false;
+						if (skipLBlanks && !Character.isWhitespace(character)) {
+							skipLBlanks = false;
                         }
 
 						//quotedStrings
@@ -377,17 +384,18 @@ public class DataParser implements Parser {
 						}
 
 						//fieldDelimiter update
-						if(!skipBlanks) {
+						if(!skipLBlanks) {
 						    fieldBuffer.append((char) character);
                         }
 
 						//test field delimiter
 						if (!inQuote) {
 							if(delimiterSearcher.isPattern(fieldCounter)) {
-								if(!skipBlanks) {
-								    fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
-                                }
-								if ((trim == Boolean.TRUE || (trim == null && metadata.getField(fieldCounter).isTrim()))) {
+							    fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
+//								if(!skipBlanks) {
+//								    fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
+//                                }
+								if (skipTBlanks) {
 									StringUtils.trimTrailing(fieldBuffer);
 								}
 								if(treatMultipleDelimitersAsOne)
@@ -428,9 +436,9 @@ public class DataParser implements Parser {
 						}
 
 						//skip leading blanks
-						if (skipBlanks) 
+						if (skipLBlanks) 
 							if(Character.isWhitespace(character)) continue; 
-							else skipBlanks = false;
+							else skipLBlanks = false;
 
 						//keep track of trailing blanks
 						if(!Character.isWhitespace(character)) {
@@ -439,7 +447,7 @@ public class DataParser implements Parser {
 						fieldBuffer.append((char) character);
 					}
 					//removes tailing blanks
-					if(character != -1 && fieldBuffer.length() > 0) {
+					if(skipTBlanks && character != -1 && fieldBuffer.length() > 0) {
 						fieldBuffer.setLength(fieldBuffer.length() - 
 								(fieldLengths[fieldCounter] - mark - 1));
 					}
@@ -726,8 +734,12 @@ public class DataParser implements Parser {
 	 * Specifies whether leading blanks at each field should be skipped
 	 * @param skippingLeadingBlanks The skippingLeadingBlanks to set.
 	 */
-	public void setSkipLeadingBlanks(boolean skipLeadingBlanks) {
+	public void setSkipLeadingBlanks(Boolean skipLeadingBlanks) {
 		this.skipLeadingBlanks = skipLeadingBlanks;
+	}
+
+	public void setSkipTrailingBlanks(Boolean skipTrailingBlanks) {
+		this.skipTrailingBlanks = skipTrailingBlanks;
 	}
 
 	public String getCharsetName() {
@@ -849,6 +861,14 @@ public class DataParser implements Parser {
 			discardBytes(pos);
 			bytesProcessed = pos;
 		}
+	}
+
+	public Boolean getSkipLeadingBlanks() {
+		return skipLeadingBlanks;
+	}
+
+	public Boolean getSkipTrailingBlanks() {
+		return skipTrailingBlanks;
 	}
 
 }

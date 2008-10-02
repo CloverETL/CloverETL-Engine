@@ -104,6 +104,8 @@ public class DelimitedDataReader extends Node {
     private static final String XML_SKIPFIRSTLINE_ATTRIBUTE = "skipFirstLine";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 	private static final String XML_TRIM_ATTRIBUTE = "trim";
+	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "skipLeadingBlanks";
+	private static final String XML_SKIPTRAILINGBLANKS_ATTRIBUTE = "skipTrailingBlanks";
 	private static final String XML_INCREMENTAL_FILE_ATTRIBUTE = "incrementalFile";
 	private static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
 
@@ -297,6 +299,12 @@ public class DelimitedDataReader extends Node {
 			}
 			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
 				aDelimitedDataReaderNIO.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
+				aDelimitedDataReaderNIO.parser.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_SKIPTRAILINGBLANKS_ATTRIBUTE)){
+				aDelimitedDataReaderNIO.parser.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
 			}
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
