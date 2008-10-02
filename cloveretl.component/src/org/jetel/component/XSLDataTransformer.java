@@ -24,18 +24,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
-import org.jetel.component.transform.XSLTTransition;
+import org.jetel.component.transform.XSLTFormatter;
+import org.jetel.component.transform.XSLTMappingTransition;
+import org.jetel.component.transform.XSLTransformer;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.TargetFile;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -83,13 +91,19 @@ import com.sun.org.apache.xml.internal.serialize.OutputFormat.Defaults;
  */
 public class XSLDataTransformer extends Node {
 
+	private static final String XML_XML_INPUT_FILE_ATTRIBUTE = "xmlInputFile";
+	private static final String XML_XML_OUTPUT_FILE_ATTRIBUTE = "xmlOutputFile";
 	private static final String XML_XSLT_FILE_ATTRIBUTE = "xsltFile";
 	private static final String XML_XSLT_ATTRIBUTE = "xslt";
     private static final String XML_MAPPING_ATTRIBUTE = "mapping";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
     
-	private static final String ERR_MAPPING_NOT_FOUND = "Mapping attribute must be defined.";
+	private static final String ERR_MAPPING_FILE_NOT_FOUND = "Mapping attribute or xml file attributes must be defined.";
 	private static final String ERR_XSLT_NOT_FOUND = "XSL transformation attribute must be defined.";
+	private static final String ERR_INPUT_PORT_NOT_FOUND = "Input port must be connected.";
+	private static final String ERR_OUTPUT_PORT_NOT_FOUND = "Output port must be connected.";
+	private static final String ERR_INPUT_PORT_FOUND = "Input port doesn't have to be connected.";
+	private static final String ERR_OUTPUT_PORT_FOUND = "Output port doesn't have to be connected.";
 	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "XSL_TRANSFORMER";
@@ -98,13 +112,18 @@ public class XSLDataTransformer extends Node {
 	private final static int READ_FROM_PORT = 0;
 	private static final String DEFAULT_CHARSET = Defaults.Encoding;
 	
+	private String xmlInputFile;
+	private String xmlOutputFile;
 	private String xsltFile;
 	private String xslt;
 	private String mapping;
 	private String charset;
 	
-	private XSLTTransition xsltTransition;
-	
+	private XSLTMappingTransition xsltMappingTransition;
+	private ReadableChannelIterator channelIterator;
+	private TargetFile currentTarget;
+	private XSLTransformer transformer;
+
 	/**
 	 * Constructor for the XSLTransformer object. 
 	 *
@@ -121,8 +140,60 @@ public class XSLDataTransformer extends Node {
 		charset = DEFAULT_CHARSET;
 	}
 
+	/**
+	 * Constructor for the XSLTransformer object. 
+	 *
+	 * @param  id              Description of the Parameter
+	 * @param  xmlInputFile    XML input file
+	 * @param  xmlOutputFile    XML output file
+	 * @param  xsltFile        XSLT file needed for transformation
+	 * @param  xslt            XSLT needed for transformation
+	 */
+	public XSLDataTransformer(String id, String xmlInputFile, String xmlOutputFile, String xsltFile, String xslt) {
+		super(id);
+		this.xmlInputFile = xmlInputFile;
+		this.xmlOutputFile = xmlOutputFile;
+		this.xsltFile = xsltFile;
+		this.xslt = xslt;
+		charset = DEFAULT_CHARSET;
+	}
+
 	@Override
 	public Result execute() throws Exception {
+		// transformation for the mapping attribute
+		if (xsltMappingTransition != null) {
+			return executeMapping();
+		}
+		
+		// transformation for file attributes
+		return executeFiles();
+	}
+	
+	public Result executeFiles() throws Exception {
+		try {
+			ReadableByteChannel readableByteChannel;
+			XSLTFormatter formatter;
+			WritableByteChannel writableByteChannel;
+			boolean next = false;
+			
+			while (channelIterator.hasNext() && (readableByteChannel = channelIterator.next()) != null) {
+				if (next) currentTarget.setNextOutput(); else next = true;
+				formatter = (XSLTFormatter)currentTarget.getFormatter();
+				writableByteChannel = formatter.getWritableByteChannel();
+				
+				transformer.transform(Channels.newInputStream(readableByteChannel), Channels.newOutputStream(writableByteChannel));
+				readableByteChannel.close();
+			}
+			currentTarget.finish();
+		} catch (JetelException e) {
+			throw e;
+		} catch (Exception e) {
+			throw e;
+		}
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+
+	public Result executeMapping() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
@@ -130,7 +201,7 @@ public class XSLDataTransformer extends Node {
 		
 		while (inRecord != null && runIt) {
 			inRecord = inPort.readRecord(inRecord);
-	        if((outRecord = xsltTransition.getRecord(inRecord)) != null) {
+	        if((outRecord = xsltMappingTransition.getRecord(inRecord)) != null) {
 	            writeRecordBroadcast(outRecord);
 	        }
 		    SynchronizeUtils.cloverYield();
@@ -138,7 +209,7 @@ public class XSLDataTransformer extends Node {
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
-
+	
 	@Override
 	public void free() {
         if(!isInitialized()) return;
@@ -154,9 +225,15 @@ public class XSLDataTransformer extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
-		
-		DataRecord outRecord = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
-		outRecord.init();
+
+		InputPort inputPort = getInputPort(READ_FROM_PORT);
+		OutputPort outputPort = getOutputPort(WRITE_TO_PORT);
+
+		DataRecord outRecord = null;
+		if (outputPort != null) {
+			outRecord = new DataRecord(outputPort.getMetadata());
+			outRecord.init();
+		}
 
 		checkAttributes();
 		InputStream xsltIs = null;
@@ -176,26 +253,102 @@ public class XSLDataTransformer extends Node {
 			}
 		}
 
-		xsltTransition = new XSLTTransition(outRecord, mapping, xsltIs);
-		xsltTransition.setInMatadata(getInputPort(READ_FROM_PORT).getMetadata());
-		xsltTransition.setCharset(charset);
-		xsltTransition.init();
+		if (mapping != null) {
+			xsltMappingTransition = new XSLTMappingTransition(outRecord, mapping, xsltIs);
+			xsltMappingTransition.setInMatadata(inputPort.getMetadata());
+			xsltMappingTransition.setCharset(charset);
+			xsltMappingTransition.init();
+		} else {
+			initChannelIterator();
+			initTarget();
+			initTransformer(xsltIs);
+		}
 	}
 
-	private void checkConfig() throws ComponentNotReadyException {
-		checkAttributes();
-		DataRecord outRecord = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
-		outRecord.init();
+    private void initChannelIterator() throws ComponentNotReadyException {
+    	TransformationGraph graph = getGraph();
+    	channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT), graph != null ? graph.getProjectURL() : null, xmlInputFile);
+    	channelIterator.setCharset(charset);
+    	channelIterator.setDictionary(graph != null ? graph.getDictionary() : null);
+    	channelIterator.init();
+    }
 
-		XSLTTransition xsltTransition = new XSLTTransition(outRecord, mapping, null);
-		xsltTransition.setInMatadata(getInputPort(READ_FROM_PORT).getMetadata());
-		xsltTransition.setCharset(charset);
-		xsltTransition.checkConfig();
+    /**
+     * Creates target array or target map.
+     * 
+     * @throws ComponentNotReadyException
+     */
+    private void initTarget() throws ComponentNotReadyException {
+    	// prepare type of targets: lookpup/keyValue
+		try {
+			InputPort inputPort = getInputPort(READ_FROM_PORT);
+	    	currentTarget = new TargetFile(xmlOutputFile, getGraph() != null ? getGraph().getProjectURL() : null, 
+	    			new XSLTFormatter(), inputPort == null ? null : inputPort.getMetadata());
+			currentTarget.setAppendData(false);
+			currentTarget.setUseChannel(true);
+			currentTarget.setCharset(charset);
+			currentTarget.setOutputPort(getOutputPort(WRITE_TO_PORT));
+			currentTarget.setDictionary(getGraph().getDictionary());
+			currentTarget.init();
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(e);
+		}
+    }
+    
+	/**
+	 * Initializes xslt transition.
+	 * 
+	 * @throws ComponentNotReadyException
+	 */
+	public void initTransformer(InputStream xsltIs) throws ComponentNotReadyException {
+		transformer = new XSLTransformer();
+		transformer.setXSLT(xsltIs);
+		transformer.setCharset(charset);
+		try {
+			transformer.init();
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(e);
+		}
+	}
+
+    private void checkConfig() throws ComponentNotReadyException {
+		checkAttributes();
+		
+		InputPort inputPort = getInputPort(READ_FROM_PORT);
+		OutputPort outputPort = getOutputPort(WRITE_TO_PORT);
+		
+		// check for mapping attribute
+		if (mapping != null) {
+			if (inputPort == null) throw new ComponentNotReadyException(ERR_INPUT_PORT_NOT_FOUND);
+			if (outputPort == null) throw new ComponentNotReadyException(ERR_OUTPUT_PORT_NOT_FOUND);
+			
+			DataRecord outRecord = new DataRecord(outputPort.getMetadata());
+			outRecord.init();
+			
+			XSLTMappingTransition xsltTransition = new XSLTMappingTransition(outRecord, mapping, null);
+			xsltTransition.setInMatadata(inputPort.getMetadata());
+			xsltTransition.setCharset(charset);
+			xsltTransition.checkConfig();
+			return;
+		}
+		
+		// check for file attributes
+		if (xmlInputFile.startsWith("port:")) {
+			if (inputPort == null) throw new ComponentNotReadyException(ERR_INPUT_PORT_NOT_FOUND);
+		} else {
+			if (inputPort != null) throw new ComponentNotReadyException(ERR_INPUT_PORT_FOUND);
+		}
+		// check for file attributes
+		if (xmlOutputFile.startsWith("port:")) {
+			if (outputPort == null) throw new ComponentNotReadyException(ERR_OUTPUT_PORT_NOT_FOUND);
+		} else {
+			if (outputPort != null) throw new ComponentNotReadyException(ERR_OUTPUT_PORT_FOUND);
+		}
 	}
 
 	private void checkAttributes() throws ComponentNotReadyException {
 		if (xsltFile == null && (xslt == null || xslt.equals(""))) throw new ComponentNotReadyException(ERR_XSLT_NOT_FOUND);
-		if (mapping == null) throw new ComponentNotReadyException(ERR_MAPPING_NOT_FOUND);
+		if (mapping == null && (xmlInputFile == null || xmlOutputFile == null)) throw new ComponentNotReadyException(ERR_MAPPING_FILE_NOT_FOUND);
 	}
 	
     public void reset() throws ComponentNotReadyException {
@@ -213,9 +366,17 @@ public class XSLDataTransformer extends Node {
 		if (xsltFile != null) {
 			xmlElement.setAttribute(XML_XSLT_FILE_ATTRIBUTE, xsltFile);
 		}
-        
         if (xslt != null){
             xmlElement.setAttribute(XML_XSLT_ATTRIBUTE, xslt);
+        }
+        if (xmlInputFile != null){
+            xmlElement.setAttribute(XML_XML_INPUT_FILE_ATTRIBUTE, xmlInputFile);
+        }
+        if (xmlOutputFile != null){
+            xmlElement.setAttribute(XML_XML_OUTPUT_FILE_ATTRIBUTE, xmlOutputFile);
+        }
+        if (charset != null){
+            xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
         }
 	}
 
@@ -229,10 +390,18 @@ public class XSLDataTransformer extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		XSLDataTransformer xslTransformer;
 		try {
-			xslTransformer = new XSLDataTransformer(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_MAPPING_ATTRIBUTE),
-					xattribs.getString(XML_XSLT_FILE_ATTRIBUTE, null),
-					xattribs.getString(XML_XSLT_ATTRIBUTE, null));
+			if (xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
+				xslTransformer = new XSLDataTransformer(xattribs.getString(XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_MAPPING_ATTRIBUTE),
+						xattribs.getString(XML_XSLT_FILE_ATTRIBUTE, null),
+						xattribs.getString(XML_XSLT_ATTRIBUTE, null));
+			} else {
+				xslTransformer = new XSLDataTransformer(xattribs.getString(XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_XML_INPUT_FILE_ATTRIBUTE),
+						xattribs.getString(XML_XML_OUTPUT_FILE_ATTRIBUTE),
+						xattribs.getString(XML_XSLT_FILE_ATTRIBUTE, null),
+						xattribs.getString(XML_XSLT_ATTRIBUTE, null));
+			}
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				xslTransformer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
@@ -256,7 +425,7 @@ public class XSLDataTransformer extends Node {
         public ConfigurationStatus checkConfig(ConfigurationStatus status) {
     		super.checkConfig(status);
    		 
-    		if(!checkInputPorts(status, 1, 1) || !checkOutputPorts(status, 1, 1)) {
+    		if(!checkInputPorts(status, 0, 1) || !checkOutputPorts(status, 0, 1)) {
     			return status;
     		}
     		
