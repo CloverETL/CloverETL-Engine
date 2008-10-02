@@ -107,8 +107,9 @@ public class DataReader extends Node {
 	public final static String COMPONENT_TYPE = "DATA_READER";
 
 	/** XML attribute names */
-	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "skipLeadingBlanks";
 	private static final String XML_TRIM_ATTRIBUTE = "trim";
+	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "skipLeadingBlanks";
+	private static final String XML_SKIPTRAILINGBLANKS_ATTRIBUTE = "skipTrailingBlanks";
 	private static final String XML_SKIPFIRSTLINE_ATTRIBUTE = "skipFirstLine";
 	private static final String XML_SKIPROWS_ATTRIBUTE = "skipRows";
 	private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
@@ -318,6 +319,12 @@ public class DataReader extends Node {
 		if (parser.getTrim() != null) {
 			xmlElement.setAttribute(XML_TRIM_ATTRIBUTE, String.valueOf(parser.getTrim()));
 		}		
+		if (parser.getSkipLeadingBlanks() != null){
+			xmlElement.setAttribute(XML_SKIPLEADINGBLANKS_ATTRIBUTE, String.valueOf(parser.getSkipLeadingBlanks()));
+		}
+		if (parser.getSkipTrailingBlanks() != null){
+			xmlElement.setAttribute(XML_SKIPTRAILINGBLANKS_ATTRIBUTE, String.valueOf(parser.getSkipTrailingBlanks()));
+		}
 		
 	}
 
@@ -346,6 +353,9 @@ public class DataReader extends Node {
 			aDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
 			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
 				aDataReader.parser.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_SKIPTRAILINGBLANKS_ATTRIBUTE)){
+				aDataReader.parser.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_TRIM_ATTRIBUTE)){
 				aDataReader.parser.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));

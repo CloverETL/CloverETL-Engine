@@ -57,12 +57,12 @@ public class FixLenCharDataParser extends FixLenDataParser {
 	/**
 	 * Indicates whether leading blanks in string fields are to be skipped
 	 */
-	private boolean skipLeadingBlanks = true;
+	private Boolean skipLeadingBlanks = null;
 
 	/**
 	 * Indicates whether trailing blanks in string fields are to be skipped
 	 */
-	private boolean skipTrailingBlanks = true;
+	private Boolean skipTrailingBlanks = null;
 	
 	private Boolean trim = null;
 	
@@ -161,7 +161,7 @@ public class FixLenCharDataParser extends FixLenDataParser {
 		if (rawRec == null) {
 			return null;	// end of input
 		}
-		boolean skipLBlanks;
+		boolean skipLBlanks = false;
 		boolean skipTBlanks;
 		int recStart = rawRec.position();
 		int recEnd = rawRec.limit();
@@ -170,10 +170,8 @@ public class FixLenCharDataParser extends FixLenDataParser {
 			if (isAutoFilling[fieldIdx]) {
 				continue;
 			}
-			skipLBlanks = skipLeadingBlanks || (trim != null && trim)
-					|| (trim == null && metadata.getField(fieldIdx).isTrim());
-			skipTBlanks = skipTrailingBlanks || (trim != null && trim)
-					|| (trim == null && metadata.getField(fieldIdx).isTrim());
+			skipLBlanks = skipLeadingBlanks != null ? skipLeadingBlanks : trim != null ? trim : true;
+			skipTBlanks = skipTrailingBlanks != null ? skipTrailingBlanks : trim != null ? trim : true;
 			try {
 				if (recStart + fieldStart[fieldIdx] >= recEnd) {	// there are no data available for this field
 					record.getField(fieldIdx).setToDefaultValue();

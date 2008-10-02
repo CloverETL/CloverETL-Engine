@@ -80,9 +80,14 @@ public class DelimitedDataParser implements Parser {
 	private char[] fieldTypes;
 	private boolean[] isAutoFilling;
 	private boolean isEof;
-	private Boolean trim = null;
 	private int bytesProcessed;
 	
+	private Boolean trim = null; 
+	private Boolean skipLeadingBlanks = null;
+	private Boolean skipTrailingBlanks = null;
+	private boolean[] isSkipLeadingBlanks;
+	private boolean[] isSkipTrailingBlanks;
+
 	// Attributes
 	// maximum length of delimiter
 	private final static int DELIMITER_CANDIDATE_BUFFER_LENGTH = 32;
@@ -203,6 +208,8 @@ public class DelimitedDataParser implements Parser {
 		eofAsDelimiters = new boolean[metadata.getNumFields()];
 		fieldTypes = new char[metadata.getNumFields()];
 		isAutoFilling = new boolean[metadata.getNumFields()];
+		isSkipLeadingBlanks = new boolean[metadata.getNumFields()];
+		isSkipTrailingBlanks = new boolean[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			fieldMetadata = metadata.getField(i);
 			String[] tempDelimiters = fieldMetadata.getDelimiters();
@@ -213,6 +220,8 @@ public class DelimitedDataParser implements Parser {
 			fieldTypes[i] = fieldMetadata.getType();
 			isAutoFilling[i] = fieldMetadata.getAutoFilling() != null;
 			// we handle only one character delimiters
+			isSkipLeadingBlanks[i] = skipLeadingBlanks != null ? skipLeadingBlanks : trim != null ? trim : metadata.getField(i).isTrim();
+			isSkipTrailingBlanks[i] = skipTrailingBlanks != null ? skipTrailingBlanks : trim != null ? trim : metadata.getField(i).isTrim();
 		}
 	}
 
@@ -510,9 +519,11 @@ public class DelimitedDataParser implements Parser {
 			// are we skipping this row/field ?
 			if (record != null){
 			    fieldStringBuffer.flip();
-			    if (trim == Boolean.TRUE || 
-			    		(trim == null && metadata.getField(fieldCounter).isTrim())) {
-			    	StringUtils.trim(fieldStringBuffer);
+			    if (isSkipLeadingBlanks[fieldCounter]) {
+			    	StringUtils.trimLeading(fieldStringBuffer);
+			    }
+			    if (isSkipTrailingBlanks[fieldCounter]){
+			    	StringUtils.trimTrailing(fieldStringBuffer);
 			    }
 			    populateField(record, fieldCounter, fieldStringBuffer);
 			}
@@ -649,6 +660,14 @@ public class DelimitedDataParser implements Parser {
 
 	public void setTrim(Boolean trim) {
 		this.trim = trim;
+	}
+
+	public void setSkipLeadingBlanks(Boolean skipLeadingBlanks) {
+		this.skipLeadingBlanks = skipLeadingBlanks;
+	}
+
+	public void setSkipTrailingBlanks(Boolean skipTrailingBlanks) {
+		this.skipTrailingBlanks = skipTrailingBlanks;
 	}
 
     /**
