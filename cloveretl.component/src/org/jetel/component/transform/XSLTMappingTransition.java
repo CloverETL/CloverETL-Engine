@@ -19,7 +19,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.xml.sax.InputSource;
 
-public class XSLTTransition {
+public class XSLTMappingTransition {
 
 	public static final String TRANSFORM = "transform";
 
@@ -46,7 +46,7 @@ public class XSLTTransition {
 	 * @param mapping
 	 * @param xslt
 	 */
-	public XSLTTransition(DataRecord outRecord, String mapping, InputStream xslt) {
+	public XSLTMappingTransition(DataRecord outRecord, String mapping, InputStream xslt) {
 		this.outRecord = outRecord;
 		this.mapping = mapping;
 		this.xslt = xslt;
@@ -340,7 +340,7 @@ public class XSLTTransition {
 			}
 		}
 		
-		public Iterator<org.jetel.component.transform.XSLTTransition.Mapping> iterator() {
+		public Iterator<org.jetel.component.transform.XSLTMappingTransition.Mapping> iterator() {
 			return lMapping.iterator();
 		}
 		
