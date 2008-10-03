@@ -2192,6 +2192,54 @@ public class TestInterpreter extends CloverTestCase {
               
     }
 
+    public void test_string_functions(){
+		System.out.println("\nString functions test:");
+		String expStr = "string s1=chop(\"hello\\n\");\n" +
+						"string s6=chop(\"hello\\r\");\n" +
+						"string s5=chop(\"hello\\n\\n\");\n" +
+						"string s2=chop(\"hello\\r\\n\");\n" +
+						"string s7=chop(\"hello\\nworld\\r\\n\");\n" +
+						"string s3=chop(\"hello world\",'world');\n" +
+						"string s4=chop(\"hello world\",' world');\n"; 
+   	
+	      print_code(expStr);
+			try {
+				  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
+			      CLVFStart parseTree = parser.Start();
+
+	 		      System.out.println("Initializing parse tree..");
+			      parseTree.init();
+			      System.out.println("Parse tree:");
+			      parseTree.dump("");
+			      
+			      System.out.println("Interpreting parse tree..");
+			      TransformLangExecutor executor=new TransformLangExecutor();
+			      executor.setInputRecords(new DataRecord[] {record});
+			      executor.visit(parseTree,null);
+			      System.out.println("Finished interpreting.");
+
+			      if (parser.getParseExceptions().size()>0){
+			    	  //report error
+			    	  for(Iterator it=parser.getParseExceptions().iterator();it.hasNext();){
+				    	  System.out.println(it.next());
+				      }
+			    	  throw new RuntimeException("Parse exception");
+			      }
+
+			      
+			      assertEquals("s1","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s1")).getTLValue().getValue().toString());
+			      assertEquals("s6","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s6")).getTLValue().getValue().toString());
+			      assertEquals("s5","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s5")).getTLValue().getValue().toString());
+			      assertEquals("s2","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s2")).getTLValue().getValue().toString());
+			      assertEquals("s7","hello\nworld",executor.getGlobalVariable(parser.getGlobalVariableSlot("s7")).getTLValue().getValue().toString());
+			      assertEquals("s3","hello ",executor.getGlobalVariable(parser.getGlobalVariableSlot("s3")).getTLValue().getValue().toString());
+			      assertEquals("s4)","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s4")).getTLValue().getValue().toString());
+			} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception",e);
+	    }
+    }
     
     public void test_math_functions(){
 		System.out.println("\nMath functions test:");

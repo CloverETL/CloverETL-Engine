@@ -522,6 +522,10 @@ public class StringUtils {
 		return Normalizer.decompose(str, false, 0).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 	}
 
+	public static String removeNonPrintable(String str){
+		return str.replaceAll("[^\\p{Print}]+", "");
+	}
+	
 	/**
 	 * This method concates string array to one string. Parts are delimited by given char
 	 * 
@@ -847,6 +851,10 @@ public class StringUtils {
 //			}
 //		}
 //		return true;
+	}
+
+	public static String removeNonAscii(String str){
+		return str.replaceAll("[^\\p{ASCII}]+", "");
 	}
 
 	/**
