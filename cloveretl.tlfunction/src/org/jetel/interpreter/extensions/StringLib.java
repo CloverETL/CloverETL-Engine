@@ -51,7 +51,7 @@ import org.jetel.util.string.StringUtils;
 public class StringLib extends TLFunctionLibrary {
 
     private static final String LIBRARY_NAME = "String";
-
+    
     enum Function {
         CONCAT("concat"), UPPERCASE("uppercase"), LOWERCASE("lowercase"), LEFT(
                 "left"), SUBSTRING("substring"), RIGHT("right"), TRIM("trim"), LENGTH(
@@ -60,7 +60,8 @@ public class StringLib extends TLFunctionLibrary {
                 IS_INTEGER("is_integer"), IS_LONG("is_long"), IS_DATE("is_date"), 
                 REMOVE_DIACRITIC("remove_diacritic"), REMOVE_BLANK_SPACE("remove_blank_space"), 
                 GET_ALPHANUMERIC_CHARS("get_alphanumeric_chars"), TRANSLATE("translate"), 
-                JOIN("join"), INDEX_OF("index_of"), COUNT_CHAR("count_char");
+                JOIN("join"), INDEX_OF("index_of"), COUNT_CHAR("count_char"), CHOP("chop"), 
+                REMOVE_NONPRINTABLE("remove_nonprintable"), REMOVE_NONASCII("remove_nonascii");
 
         public String name;
 
@@ -136,6 +137,12 @@ public class StringLib extends TLFunctionLibrary {
         	return new IndexOfFunction();
         case COUNT_CHAR:
         	return new CountCharFunction();
+        case CHOP:
+        	return new ChopFunction();
+        case REMOVE_NONPRINTABLE:
+        	return new RemoveNonPrintableFunction();
+        case REMOVE_NONASCII:
+        	return new RemoveNonAsciiFunction();
         default:
             return null;
         }
@@ -957,6 +964,64 @@ public class StringLib extends TLFunctionLibrary {
          }
      }
 
+     //  REMOVE NONPRINTABLE CHARS
+     class RemoveNonPrintableFunction extends TLFunctionPrototype {
+
+         public RemoveNonPrintableFunction() {
+             super("string", "remove_nonprintable", "Removes nonprintable characters", new TLValueType[] { TLValueType.STRING }, 
+            		 TLValueType.STRING);
+         }
+
+         @Override
+         public TLValue execute(TLValue[] params, TLContext context) {
+             TLValue val = (TLValue)context.getContext();
+
+             if (params[0]!=TLNullValue.getInstance()) {
+                 if (!(params[0].type == TLValueType.STRING)){
+                     throw new TransformLangExecutorRuntimeException(params,
+                     "remove_nonprintable - wrong type of literal");
+                 }else{
+                     val.setValue(StringUtils.removeNonPrintable(params[0].toString()));
+                 }
+             }
+             return val;
+         }
+
+         @Override
+         public TLContext createContext() {
+             return TLContext.createStringContext();
+         }
+     }
+
+     //  REMOVE NONASCII CHARS
+     class RemoveNonAsciiFunction extends TLFunctionPrototype {
+
+         public RemoveNonAsciiFunction() {
+             super("string", "remove_nonascii", "Removes nonascii characters", new TLValueType[] { TLValueType.STRING }, 
+            		 TLValueType.STRING);
+         }
+
+         @Override
+         public TLValue execute(TLValue[] params, TLContext context) {
+             TLValue val = (TLValue)context.getContext();
+
+             if (params[0]!=TLNullValue.getInstance()) {
+                 if (!(params[0].type == TLValueType.STRING)){
+                     throw new TransformLangExecutorRuntimeException(params,
+                     "remove_nonascii - wrong type of literal");
+                 }else{
+                     val.setValue(StringUtils.removeNonAscii(params[0].toString()));
+                 }
+             }
+             return val;
+         }
+
+         @Override
+         public TLContext createContext() {
+             return TLContext.createStringContext();
+         }
+     }
+
      //  GET ALPHANUMERIC CHARS
      class GetAlphanumericCharsFunction extends TLFunctionPrototype {
 
@@ -1145,6 +1210,50 @@ public class StringLib extends TLFunctionLibrary {
 			return TLContext.createIntegerContext();
 		}
 	}
+
+     //CHOP
+     class ChopFunction extends TLFunctionPrototype {
+    	 
+ 		public ChopFunction() {
+ 			super("string", "chop", "Chops up the string from the new line separators or from given string",
+ 					new TLValueType[] { TLValueType.STRING,
+ 					TLValueType.STRING },
+ 					TLValueType.STRING, 2, 1);
+ 		}
+
+ 		@Override
+ 		public TLValue execute(TLValue[] params, TLContext context) {
+            RegexStore regex = (RegexStore) context.getContext();
+			String pattern = params.length > 1 ? params[1].getValue().toString() + "$" : "[\r\n]+$";
+            if (regex.pattern==null){
+            	regex.initRegex(pattern, ((TLStringValue)params[0]).getCharSequence(),true,new TLStringValue());
+            }else{
+            	// can we reuse pattern/matcher
+            	if(!regex.storedRegex.equals(pattern)){
+            		//we can't
+            		regex.resetPattern(pattern);
+            	}
+            	//            	 reset matcher
+                regex.resetMatcher(((TLStringValue)params[0]).getCharSequence());
+            }
+
+ 			if (params[0].type != TLValueType.STRING || 
+ 					(params.length == 2 && params[1].type !=TLValueType.STRING)) {
+ 				throw new TransformLangExecutorRuntimeException(params,
+ 						"chop - wrong type of literal(s)");
+ 			} else {
+ 	            regex.result.setValue(regex.matcher.replaceAll(""));
+ 			}
+ 			return regex.result;
+ 		}
+
+ 		@Override
+ 		public TLContext createContext() {
+            TLContext<RegexStore> context = new TLContext<RegexStore>();
+            context.setContext(new RegexStore());
+            return context;
+ 		}
+ 	}
 
      class RegexStore{
 	    public Pattern pattern;

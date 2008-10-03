@@ -64,6 +64,9 @@
 			<value>join</value>
 			<value>index_of</value>
 			<value>count_char</value>
+			<value>chop</value>
+			<value>remove_nonprintable</value>
+			<value>remove_nonascii</value>
 		</parameter>
 	</extension>
 	
