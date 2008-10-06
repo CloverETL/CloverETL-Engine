@@ -21,9 +21,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
-import org.jetel.data.lookup.BaseLookupTableIterator;
+import org.jetel.data.lookup.BasicLookupTableIterator;
 import org.jetel.data.lookup.LookupTable;
-import org.jetel.data.lookup.LookupTableIterator;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -153,9 +152,9 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 		}
 	}
 	
-	public LookupTableIterator getLookupTableIterator(Object lookupKey) {
-		return new BaseLookupTableIterator(lookupKey, this);
-	}
+    public Iterator<DataRecord> iterator(Object lookupKey) {
+        return new BasicLookupTableIterator(this, lookupKey);
+    }
 
 	public DataRecordMetadata getMetadata() {
 		return metadata;
