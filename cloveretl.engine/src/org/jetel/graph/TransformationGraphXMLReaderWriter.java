@@ -54,8 +54,11 @@ import org.jetel.graph.dictionary.DictionaryTypeFactory;
 import org.jetel.graph.dictionary.IDictionaryType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
+import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.MetadataFactory;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -237,8 +240,12 @@ public class TransformationGraphXMLReaderWriter {
 			
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			
-			document =  db.parse(new BufferedInputStream(in)); 
-			document.normalize();
+			if (in != null) {
+				document = db.parse(new BufferedInputStream(in));
+				document.normalize();
+			}else{
+				document = db.newDocument();
+			}
 
 		}catch(SAXParseException ex){
 			logger.error("Error when parsing graph's XML definition  --> on line "+ex.getLineNumber()+" row "+ex.getColumnNumber(),ex); 
@@ -687,6 +694,40 @@ public class TransformationGraphXMLReaderWriter {
             Element lookupElement = (Element) lookupElements.item(i);
             ComponentXMLAttributes attributes = new ComponentXMLAttributes(lookupElement, graph);
 
+            if (attributes.exists("lookupConfig")) {
+            	String fileURL = null;
+				try {
+					fileURL = attributes.getString("lookupConfig");
+				} catch (AttributeNotFoundException e) {
+					// can't happen: we've checked it
+				}
+            	Properties lookupProperties = new Properties();
+            	Element xmlLookup = prepareDocument(null).createElement(LOOKUP_TABLE_ELEMENT);
+            	try {
+					lookupProperties.load(FileUtils.getInputStream(graph.getProjectURL(), fileURL));
+					PropertyRefResolver resolver = new PropertyRefResolver(graph);
+					resolver.resolveAll(lookupProperties);
+					DataRecordMetadata lookupMetadata = MetadataFactory.fromFile(graph, lookupProperties.getProperty("metadata"));
+					lookupProperties.setProperty("metadata", graph.addDataRecordMetadata(TransformationGraph.DEFAULT_METADATA_ID, lookupMetadata));
+					if (lookupProperties.containsKey("dbConnection")) {
+						IConnection connection = ConnectionFactory.createConnection(graph, "JDBC", 
+								new Object[]{graph.getUniqueConnectionId() , lookupProperties.getProperty("dbConnection")},
+								new Class[]{String.class, String.class});
+						graph.addConnection(connection);
+						lookupProperties.setProperty("dbConnection", connection.getId());
+					}
+					for (Entry property : lookupProperties.entrySet()) {
+						xmlLookup.setAttribute((String)property.getKey(), (String)property.getValue());
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				xmlLookup.setAttribute("id", lookupElement.getAttribute("id"));
+				lookupElement = xmlLookup;
+				attributes = new ComponentXMLAttributes(xmlLookup, graph);
+            }
+            
             // process Lookup table element attributes "id" & "type"
             try {
                 lookupTableType = attributes.getString("type");
