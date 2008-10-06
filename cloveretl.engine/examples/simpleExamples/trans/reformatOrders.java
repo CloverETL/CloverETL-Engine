@@ -26,11 +26,13 @@ public class reformatOrders extends DataRecordTransform{
 	int counter=0;
 	int field=0;
 
-	public boolean transform(DataRecord[] source, DataRecord[] target){
+	public int transform(DataRecord[] source, DataRecord[] target){
 		StringBuffer strBuf=new StringBuffer(80);
+
 		if (source[0]==NullRecord.NULL_RECORD){
 		   System.err.println("NULL source[0]");
 		}
+
 		try{
 			// let's concatenate shipping address into one long string
 			strBuf.append(GetVal.getString(source[0],"ShipName")).append(';');
@@ -51,9 +53,12 @@ public class reformatOrders extends DataRecordTransform{
 		}catch(Exception ex){
 		  ex.printStackTrace();
 			errorMessage=ex.getMessage()+" ->occured with record :"+counter;
-			return false;
+			return -1;
 		}
+
 		counter++;
-			return true;
+
+		return 0;
 	}
+
 }

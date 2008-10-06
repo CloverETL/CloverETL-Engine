@@ -130,15 +130,16 @@ import org.w3c.dom.Element;
  *import org.jetel.component.DataRecordTransform;
  *import org.jetel.data.*;
  * 
- *public class intersectionTest extends DataRecordTransform{
+ *public class intersectionTest extends DataRecordTransform {
  *
- *	public boolean transform(DataRecord[] source, DataRecord[] target){
- *		
- *		target[0].getField(0).setValue(source[0].getField(0).getValue());
- *		target[0].getField(1).setValue(source[0].getField(1).getValue());
- *		target[0].getField(2).setValue(source[1].getField(2).getValue());
- *		return true;
- *	}
+ *    public int transform(DataRecord[] source, DataRecord[] target) {
+ *        target[0].getField(0).setValue(source[0].getField(0).getValue());
+ *        target[0].getField(1).setValue(source[0].getField(1).getValue());
+ *        target[0].getField(2).setValue(source[1].getField(2).getValue());
+ *
+ *        return 0;
+ *    }
+ *
  *}
  *&lt;/attr&gt;
  *&lt;/Node&gt;</pre>

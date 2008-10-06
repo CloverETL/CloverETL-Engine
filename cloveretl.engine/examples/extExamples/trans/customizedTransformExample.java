@@ -24,7 +24,7 @@ public class customizedTransformExample extends DataRecordTransform {
 		return transformation.init(arg0, arg1, arg2);
 	}
 
-	public boolean transform(DataRecord[] arg0, DataRecord[] arg1)
+	public int transform(DataRecord[] arg0, DataRecord[] arg1)
 			throws TransformException {
 		return transformation.transform(arg0, arg1);
 	}
