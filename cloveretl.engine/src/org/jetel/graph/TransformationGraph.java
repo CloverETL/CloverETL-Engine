@@ -56,6 +56,7 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
+
 /*
  *  import org.apache.log4j.Logger;
  *  import org.apache.log4j.BasicConfigurator;
@@ -75,7 +76,9 @@ public final class TransformationGraph extends GraphElement {
 	
 	public static final String PROJECT_DIR_PROPERTY = "PROJECT_DIR";
 
-	private Map <Integer,Phase> phases;
+    private static final int MAX_ALLOWED_OBJ_IDX = 1000000;
+
+    private Map <Integer,Phase> phases;
 
     private Map <String,IConnection> connections;
 
@@ -84,6 +87,11 @@ public final class TransformationGraph extends GraphElement {
 	private Map <String, LookupTable> lookupTables;
 	
 	private Map <String, DataRecordMetadata> dataRecordMetadata;
+	
+	final static String DEFAULT_CONNECTION_ID = "Connection0";
+	final static String DEFAULT_SEQUENCE_ID = "Sequence0";
+	final static String DEFAULT_LOOKUP_ID = "LookupTable0";
+	final static String DEFAULT_METADATA_ID = "Metadata0";
 
 	private Dictionary dictionary;
 	
@@ -544,15 +552,10 @@ public final class TransformationGraph extends GraphElement {
 		// this code
 		Iterator iterator;
 		IConnection dbCon;
-		iterator = connections.values().iterator();
-		while (iterator.hasNext()) {
-		    dbCon = (IConnection) iterator.next();
-
-			try {
-				dbCon.free();
-			} catch (Exception ex) {
-			    logger.warn("Can't free DBConnection", ex);
-			}
+		
+		// free all phases
+		for(Phase phase : phases.values()) {
+			phase.free();
 		}
 		// free all lookup tables
 		iterator = lookupTables.values().iterator();
@@ -563,6 +566,8 @@ public final class TransformationGraph extends GraphElement {
 			    logger.warn("Can't free LookupTable", ex);
 			}
 		}
+		//
+
 		// free all sequences
 		iterator = sequences.values().iterator();
 		while (iterator.hasNext()) {
@@ -577,10 +582,16 @@ public final class TransformationGraph extends GraphElement {
 			    logger.warn("Can't free Sequence", ex);
 			}
 		}
-		
-		// free all phases
-		for(Phase phase : phases.values()) {
-			phase.free();
+
+		iterator = connections.values().iterator();
+		while (iterator.hasNext()) {
+		    dbCon = (IConnection) iterator.next();
+
+			try {
+				dbCon.free();
+			} catch (Exception ex) {
+			    logger.warn("Can't free DBConnection", ex);
+			}
 		}
 		// any other deinitialization shoud go here
 		//
@@ -655,6 +666,12 @@ public final class TransformationGraph extends GraphElement {
 		this.dataRecordMetadata.put(metadata.getName(), metadata);
 	}
 	
+	public String addDataRecordMetadata(String id, DataRecordMetadata metadata) {
+		String newId = getUniqueId(id, dataRecordMetadata);
+		this.dataRecordMetadata.put(newId, metadata);
+		return newId;
+	}
+
 	/**
 	 * Bulk registration of metadata objects. Mainly used by TransformationGraphXMLReaderWriter
 	 * 
@@ -997,6 +1014,49 @@ public final class TransformationGraph extends GraphElement {
     		this.authorityProxy = authorityProxy;
     	}
 	}
+
+    public String getUniqueConnectionId(){
+    	return getUniqueId(null, connections);
+    }
+    
+    private String getUniqueId(String id, Map elements) {
+
+    	if (id == null) {
+			if (elements == dataRecordMetadata) {
+				id = DEFAULT_METADATA_ID;
+			} else if (elements == connections) {
+				id = DEFAULT_CONNECTION_ID;
+			} else if (elements == lookupTables) {
+				id = DEFAULT_LOOKUP_ID;
+			} else if (elements == sequences) {
+				id = DEFAULT_SEQUENCE_ID;
+			} else {
+				throw new IllegalArgumentException("Unknown graph element");
+			}
+		}
+    	
+		if (!elements.containsKey(id)) return id;
+        
+        int idx = id.length();
+        char c = 0;
+        int num = 0;
+        int exp = 1;
+        while (--idx >= 0 && Character.isDigit(c = id.charAt(idx))); {
+            num += exp * (c - '0');
+            exp *= 10;
+        }
+        final String prefix = (idx < id.length() - 1) ? id.substring(0, idx + 1) : id;
+        
+        num = 0; // try to fill free gaps between 0 and num
+        
+        int i = num;
+        do {
+            i = (i + 1) % MAX_ALLOWED_OBJ_IDX;
+            final String newid = prefix + i; 
+            if (!elements.containsKey(newid)) return newid;
+        } while (i != num);
+        return null;
+    }
 
 }
 /*
