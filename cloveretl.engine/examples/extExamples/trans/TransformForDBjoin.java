@@ -3,16 +3,11 @@ import org.jetel.data.DataRecord;
 
 public class TransformForDBjoin extends DataRecordTransform{
 
-
 	public boolean init(){
-
 		return true;
 	}
 
-	public boolean transform(DataRecord[] source, DataRecord[] target){
-	        
-
-	
+	public int transform(DataRecord[] source, DataRecord[] target){
 		target[0].getField("customer_id").setValue(source[0].getField("customer_id").getValue());
   		target[0].getField("lname").setValue(source[0].getField("lname").getValue());
 		target[0].getField("fname").setValue(source[0].getField("fname").getValue());
@@ -21,6 +16,7 @@ public class TransformForDBjoin extends DataRecordTransform{
 		target[0].getField("employee_id").setValue(source[1].getField("employee_id").getValue());
 		target[0].getField("full_name").setValue(source[1].getField("full_name").getValue());
 
-		return true;
+		return 0;
 	}
+
 }

@@ -24,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -34,7 +35,6 @@ import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
-import org.jetel.data.lookup.LookupTableIterator;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -172,10 +172,8 @@ import org.w3c.dom.Element;
  *   
  *   public class reformatTest extends DataRecordTransform{
  *   
- *   	public boolean transform(DataRecord[] source, DataRecord[] target){
- *   	        
- *   
- *   		if (source[1]==null) return false; // skip this one
+ *   	public int transform(DataRecord[] source, DataRecord[] target){
+ *   		if (source[1]==null) return -1; // skip this one
  *   
  *   		target[0].getField(0).setValue(source[0].getField(0).getValue());
  *     		target[0].getField(1).setValue(source[0].getField(1).getValue());
@@ -183,8 +181,9 @@ import org.w3c.dom.Element;
  *   		target[0].getField(3).setValue(source[1].getField(0).getValue().toString());
  *   		target[0].getField(4).setValue(source[1].getField(1).getValue());
  *   
- *   		return true;
+ *   		return 0;
  *   	}
+ *
  *   }
  *   &lt;/attr&gt;
  *   &lt;/Node&gt;
@@ -299,16 +298,14 @@ public class LookupJoin extends Node {
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
 		DataRecord[] inRecords = new DataRecord[] { inRecord, null };
-		LookupTableIterator iterator = lookupTable.getLookupTableIterator(recordKey);
+		lookupTable.setLookupKey(recordKey);
 		int counter = 0;
 		while (inRecord != null && runIt) {
 			inRecord = inPort.readRecord(inRecord);
 			if (inRecord != null) {
 				// find slave record in database
-				inRecords[1] = iterator.get(inRecord);
-				if (inRecords[1] == null) {
-					inRecords[1] = NullRecord.NULL_RECORD;
-				}
+			    Iterator<DataRecord> iterator = lookupTable.iterator(inRecord);
+                inRecords[1] = iterator.hasNext() ? iterator.next() : NullRecord.NULL_RECORD;
 				do {
 					if ((inRecords[1] != NullRecord.NULL_RECORD || leftOuterJoin)) {
 						
@@ -360,10 +357,7 @@ public class LookupJoin extends Node {
 						}							
 					}
 					// get next record from lookup table with the same key
-					inRecords[1] = iterator.getNext();
-					if (inRecords[1] == null) {
-						inRecords[1] = NullRecord.NULL_RECORD;
-					}
+	                inRecords[1] = iterator.hasNext() ? iterator.next() : NullRecord.NULL_RECORD;
 				} while (inRecords[1] != NullRecord.NULL_RECORD);
 			}
 			counter++;

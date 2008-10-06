@@ -948,7 +948,7 @@ public class CodeParser {
    	 			+ "\t * This method is called as one step in transforming flow of\n"
         		+ "\t * records.\n"
 				+ "\t */\n");
-		transCode.append("\tpublic boolean transform(DataRecord[] " + IN_RECORDS_ARRAY_NAME_STR + ", DataRecord[] " + OUT_RECORDS_ARRAY_NAME_STR + ") throws TransformException {\n");
+		transCode.append("\tpublic int transform(DataRecord[] " + IN_RECORDS_ARRAY_NAME_STR + ", DataRecord[] " + OUT_RECORDS_ARRAY_NAME_STR + ") throws TransformException {\n");
         transCode.append("\t\ttry {\n");
 
 		//add triple tab before all lines of code
@@ -959,7 +959,7 @@ public class CodeParser {
 		sourceCode.append("\t\t} catch(Exception e) {\n");
         sourceCode.append("\t\t\tthrow new TransformException(\"Error in extern transformation class \" + " + className + ".class.getName() + \": \" + e.getMessage());\n");
         sourceCode.append("\t\t}\n");
-		sourceCode.append("\t\treturn true;\n");
+		sourceCode.append("\t\treturn 0;\n");
 		sourceCode.append("\t}\n\n");
 		
 		sourceCode.append("\t/**\n"

@@ -113,9 +113,10 @@ import org.w3c.dom.Element;
  *   int counter;
  *   String message;
  *	
- *	public boolean transform(DataRecord[] _source, DataRecord[] _target){
- *	  source=_source[0]; target=_target[0];
+ *	public int transform(DataRecord[] _source, DataRecord[] _target){
+ *	    source=_source[0]; target=_target[0];
  *	 	StringBuffer strBuf=new StringBuffer(80);
+ *
  *		try{
  *			// mapping among source + target fields
  *			// some fields get assigned directly from source fields, some
@@ -131,9 +132,12 @@ import org.w3c.dom.Element;
  *			message=ex.getMessage()+&quot; -&gt;occured with record :&quot;+counter;
  *			throw new RuntimeException(message);
  *		}
+ *
  *		counter++;
- *			return true;
+ *
+ *		return 0;
  *	}
+ *
  * }
  * &lt;/attr&gt;
  * &lt;/Node&gt;

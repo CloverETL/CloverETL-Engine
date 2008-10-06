@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Fri Jan 12 08:41:50 CET 2007" description="This graph illustrates how to join data using reformat component." guiVersion="1.9" id="1204558846009" licenseType="Evaluation license." modified="Thu Apr 03 11:03:59 CEST 2008" name="Testing Hash Joiner" revision="1.8">
+<Graph author="yanas" created="Fri Jan 12 08:41:50 CET 2007" description="This graph illustrates how to join data using reformat component." guiVersion="2.0" id="1204558846009" licenseType="Evaluation license." modified="Mon Oct 06 20:20:32 CEST 2008" modifiedBy="yanas" name="Testing Hash Joiner" revision="1.11">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata2"/>
@@ -71,7 +71,7 @@ public class reformatTest extends DataRecordTransform{
 		
 		if (employee==null) {// skip this one
 			errorMessage = "Order: " + source[0].getField(0).getValue() + " - no corresponding record in lookup table";
-			return false; 
+			return -1; 
 		}
 		
 		target[0].getField(0).setValue(source[0].getField(0).getValue());
@@ -86,7 +86,7 @@ public class reformatTest extends DataRecordTransform{
 ]]></attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="421" guiY="20" id="WRITER" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="JOIN:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="JOIN:0"/>
 <Edge fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
 </Phase>
 </Graph>

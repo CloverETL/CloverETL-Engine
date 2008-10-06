@@ -27,17 +27,20 @@ public class reformatJoinTest extends DataRecordTransform{
 
 	int counter=0;
 		
-	public boolean transform(DataRecord[] source, DataRecord target[]){
+	public int transform(DataRecord[] source, DataRecord target[]){
 		System.out.println("reformat Join Test Called! #"+(counter++));
+
 		if (source[1] == NullRecord.NULL_RECORD) {
 			System.out.println("Slave record not found for key " + StringUtils.quote(source[0].getField("EmployeeID").toString()));
 		}
+
 		target[0].getField(0).setValue(source[0].getField(0));
 		target[0].getField(1).setValue(source[0].getField(1));
 		target[0].getField(2).setValue(source[0].getField(2));
 		target[0].getField(3).setValue(source[1].getField(0));
 		target[0].getField(4).setValue(source[1].getField(1));
 		
-		return true;
+		return 0;
 	}
+
 }
