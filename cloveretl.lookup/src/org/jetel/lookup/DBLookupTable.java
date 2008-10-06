@@ -36,9 +36,8 @@ import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
-import org.jetel.data.lookup.BaseLookupTableIterator;
+import org.jetel.data.lookup.BasicLookupTableIterator;
 import org.jetel.data.lookup.LookupTable;
-import org.jetel.data.lookup.LookupTableIterator;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -701,11 +700,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		}
    }
     
-    /* (non-Javadoc)
-     * @see org.jetel.data.lookup.LookupTable#getLookupTableIterator(java.lang.Object)
-     */
-    public LookupTableIterator getLookupTableIterator(Object lookupKey) {
-    	return new BaseLookupTableIterator(lookupKey, this);
+    public Iterator<DataRecord> iterator(Object lookupKey) {
+        return new BasicLookupTableIterator(this, lookupKey);
     }
 
 /**

@@ -17,7 +17,6 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-
 package org.jetel.lookup;
 
 import java.io.ByteArrayInputStream;
@@ -35,9 +34,8 @@ import org.jetel.data.Defaults;
 import org.jetel.data.RecordComparator;
 import org.jetel.data.RecordKey;
 import org.jetel.data.StringDataField;
-import org.jetel.data.lookup.BaseLookupTableIterator;
+import org.jetel.data.lookup.BasicLookupTableIterator;
 import org.jetel.data.lookup.LookupTable;
-import org.jetel.data.lookup.LookupTableIterator;
 import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenByteDataParser;
@@ -700,11 +698,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	}
 
 
-    /* (non-Javadoc)
-     * @see org.jetel.data.lookup.LookupTable#getLookupTableIterator(java.lang.Object)
-     */
-    public LookupTableIterator getLookupTableIterator(Object lookupKey) {
-    	return new BaseLookupTableIterator(lookupKey, this);
+    public Iterator<DataRecord> iterator(Object lookupKey) {
+        return new BasicLookupTableIterator(this, lookupKey);
     }
 
 	/**
@@ -800,7 +795,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		}
 
 	}
-
 
 }
 

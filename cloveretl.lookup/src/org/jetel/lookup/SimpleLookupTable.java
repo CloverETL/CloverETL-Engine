@@ -29,9 +29,8 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
-import org.jetel.data.lookup.BaseLookupTableIterator;
+import org.jetel.data.lookup.BasicLookupTableIterator;
 import org.jetel.data.lookup.LookupTable;
-import org.jetel.data.lookup.LookupTableIterator;
 import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenByteDataParser;
@@ -52,6 +51,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
+
 import org.w3c.dom.Element;
 
 /**
@@ -528,12 +528,10 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	public void setData(String data) {
 		this.data = data;
 	}
-	
-    /* (non-Javadoc)
-     * @see org.jetel.data.lookup.LookupTable#getLookupTableIterator(java.lang.Object)
-     */
-    public LookupTableIterator getLookupTableIterator(Object lookupKey) {
-    	return new BaseLookupTableIterator(lookupKey, this);
+
+    public Iterator<DataRecord> iterator(Object lookupKey) {
+    	return new BasicLookupTableIterator(this, lookupKey);
     }
+
 }
 

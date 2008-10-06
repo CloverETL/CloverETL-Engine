@@ -1,23 +1,24 @@
 /*
-*    jETeL/Clover.ETL - Java based ETL application framework.
-*    Copyright (C) 2002-2004  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
-
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2008  David Pavlis <david.pavlis@javlin.cz>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.data.lookup;
+
+import java.util.Iterator;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
@@ -35,7 +36,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * a lookup key (usually String, RecordKey, Object[])
  * <li>init() method called to populate table with values or otherwise prepare for use
  * <li>get() or getNext() methods called repeatedly
- * <li>close() method called to free resources occupied by lookup table
+ * <li>free() method called to free resources occupied by lookup table
  * </ol>
  * <br>
  * <i>Note:</i> not all variants of get() method may be supported by particular
@@ -45,8 +46,8 @@ import org.jetel.metadata.DataRecordMetadata;
  * @since  8.7.2004
  *
  */
-public interface LookupTable extends IGraphElement,Iterable<DataRecord> {
-	
+public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
+
 	/**
 	 * Called when the lookup table is first used/needed. Usually at
 	 * the beginnig of phases in which the lookup is used. Any memory & time intensive
@@ -59,9 +60,36 @@ public interface LookupTable extends IGraphElement,Iterable<DataRecord> {
      * NOTE: copy from GraphElement
 	 */
 	public void init() throws ComponentNotReadyException;
-	
-	
+
+
 	/**
+	 * Returns the metadata associated with the DataRecord stored in this lookup table.
+	 * @return the metadata object
+	 */
+	public DataRecordMetadata getMetadata();
+
+
+	/**
+     * Stores data into lookup-table under specified key
+     * 
+     * @param key
+     * @param data
+     * @return  true if success
+     * @since 19.11.2006
+     */
+    public boolean put(Object key, DataRecord data);
+
+    /**
+     * Removes data from lookup-table identified by provided key
+     * 
+     * @param key
+     * @return  true if success
+     * @since 19.11.2006
+     */
+    public boolean remove(Object key); 
+
+
+    /**
 	 * Specifies what object type will be used for looking up data.
 	 * According to Object type used for calling this method, proper get() method
 	 * should be called then.
@@ -69,7 +97,7 @@ public interface LookupTable extends IGraphElement,Iterable<DataRecord> {
 	 * @param key can be one of these Object types - String, Object[], RecordKey
 	 */
 	public void setLookupKey(Object key);
-	
+
 	/**
 	 * Return DataRecord stored in lookup table under the specified String
 	 * key.
@@ -79,7 +107,15 @@ public interface LookupTable extends IGraphElement,Iterable<DataRecord> {
 	 */
 	public DataRecord get(String keyString);
 
-	
+	/**
+	 * Returns DataRecord stored in lookup table. 
+	 * 
+	 * @param keyRecord DataRecord to be used for looking up data
+	 * @return DataRecord associated with specified key or NULL if not found
+	 * @throws JetelException
+	 */
+	public DataRecord get(DataRecord keyRecord);
+
 	/**
 	 * Return DataRecord stored in lookup table under the specified keys.<br>
 	 * As a lookup values, only following objects should be used - Integer, Double, Date, String)
@@ -89,16 +125,7 @@ public interface LookupTable extends IGraphElement,Iterable<DataRecord> {
 	 * @throws JetelException
 	 */
 	public DataRecord get(Object[] keys);
-	
-	/**
-	 * Returns DataRecord stored in lookup table. 
-	 * 
-	 * @param keyRecord DataRecord to be used for looking up data
-	 * @return DataRecord associated with specified key or NULL if not found
-	 * @throws JetelException
-	 */
-	public DataRecord get(DataRecord keyRecord);
-	
+
 	/**
 	 * Next DataRecord stored under the same key as the previous one sucessfully
 	 * retrieved while calling get() method.
@@ -106,29 +133,7 @@ public interface LookupTable extends IGraphElement,Iterable<DataRecord> {
 	 * @return DataRecord or NULL if no other DataRecord is stored under the same key
 	 */
 	public DataRecord getNext();
-	
-    
-    
-    /**
-     * Stores data into lookup-table under specified key
-     * 
-     * @param key
-     * @param data
-     * @return  true if success
-     * @since 19.11.2006
-     */
-    public boolean put(Object key, DataRecord data);
-    
-    
-    /**
-     * Removes data from lookup-table identified by provided key
-     * 
-     * @param key
-     * @return  true if success
-     * @since 19.11.2006
-     */
-    public boolean remove(Object key); 
-	
+
 	/**
 	 * Returns number of DataRecords found by last get() method call.<br>
 	 * 
@@ -137,13 +142,18 @@ public interface LookupTable extends IGraphElement,Iterable<DataRecord> {
 	 * @throws JetelException
 	 */
 	public int getNumFound();
-	
+
+
 	/**
-	 * Returns the metadata associated with the DataRecord stored in this lookup table.
-	 * @return the metadata object
+	 * Creates an iterator over the lookup table. The iterator finds values based on a key.
+	 * 
+	 * @param lookupKey lookup key. 
+	 * 
+	 * @return the iterator.
 	 */
-	public DataRecordMetadata getMetadata();
-	
+	public Iterator<DataRecord> iterator(Object lookupKey);
+
+
 	/**
 	 * Closes the lookup table - frees any allocated resource (memory, etc.)<br>
 	 * This method is called when this lookup table is no more needed during TransformationGraph
@@ -154,13 +164,5 @@ public interface LookupTable extends IGraphElement,Iterable<DataRecord> {
      * NOTE: copy from GraphElement
 	 */
 	public void free();
-	
-	/**
-	 * Creates an iterator over the lookup table. The iterator finds values based on a key.
-	 * 
-	 * @param lookupKey lookup key. 
-	 * 
-	 * @return the iterator.
-	 */
-	public LookupTableIterator getLookupTableIterator(Object lookupKey);
+
 }
