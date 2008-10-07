@@ -42,6 +42,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
@@ -51,6 +52,7 @@ import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.primitive.SimpleCache;
+import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -79,11 +81,13 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
     private static final String XML_LOOKUP_TYPE_DB_LOOKUP = "dbLookup"; 
     //private static final String XML_LOOKUP_KEY = "key";
-    private static final String XML_METADATA_ID ="metadata";
     private static final String XML_SQL_QUERY = "sqlQuery";
-    private static final String XML_DBCONNECTION = "dbConnection";
     private static final String XML_LOOKUP_MAX_CACHE_SIZE = "maxCached";
     private static final String XML_STORE_NULL_RESPOND = "storeNulls";
+    
+    private final static String[] REQUESTED_ATTRIBUTE = {XML_ID_ATTRIBUTE, XML_TYPE_ATTRIBUTE, XML_DBCONNECTION,
+    	XML_SQL_QUERY
+    };
     
     protected String metadataId;
     protected String connectionId;
@@ -535,6 +539,36 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
     }
 
+    public static DBLookupTable fromProperties(TypedProperties properties) 
+    throws AttributeNotFoundException, GraphConfigurationException{
+
+    	for (String property : REQUESTED_ATTRIBUTE) {
+			if (!properties.containsKey(property)) {
+				throw new AttributeNotFoundException(property);
+			}
+		}
+        
+    	String type = properties.getProperty(XML_TYPE_ATTRIBUTE);
+    	if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_DB_LOOKUP)){
+    		throw new GraphConfigurationException("Can't create db lookup table from type " + type);
+    	}
+    	
+        DBLookupTable lookupTable = new DBLookupTable(properties.getProperty(XML_ID_ATTRIBUTE), 
+        		properties.getProperty(XML_DBCONNECTION), properties.getProperty(XML_METADATA_ID), 
+        		properties.getProperty(XML_SQL_QUERY));
+        
+        if (properties.containsKey(XML_NAME_ATTRIBUTE)){
+        	lookupTable.setName(properties.getProperty(XML_NAME_ATTRIBUTE));
+        }
+        
+        if(properties.containsKey(XML_LOOKUP_MAX_CACHE_SIZE)) {
+            lookupTable.setNumCached(properties.getIntProperty(XML_LOOKUP_MAX_CACHE_SIZE), 
+            		properties.getBooleanProperty(XML_STORE_NULL_RESPOND, true));
+        }
+        
+        return lookupTable;
+    }
+    
     public static DBLookupTable fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         DBLookupTable lookupTable = null;
