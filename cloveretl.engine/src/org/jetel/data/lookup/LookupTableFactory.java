@@ -51,8 +51,7 @@ public class LookupTableFactory {
     private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
     private final static Class[] PARAMETERS_FOR_FROM_XML_METHOD = new Class[] { TransformationGraph.class, Element.class };
     private final static String NAME_OF_STATIC_LOAD_FROM_PROPERTIES = "fromProperties";
-    private final static Class[] PARAMETERS_FOR_FROM_PROPERTIES_METHOD = new Class[] { TransformationGraph.class, 
-    	TypedProperties.class };
+    private final static Class[] PARAMETERS_FOR_FROM_PROPERTIES_METHOD = new Class[] {TypedProperties.class };
     private final static Map<String, LookupTableDescription> lookupTableMap = new HashMap<String, LookupTableDescription>();
     
     public static void init() {
@@ -112,13 +111,13 @@ public class LookupTableFactory {
         }
     }
 
-	public final static LookupTable createLookupTable(TransformationGraph graph, TypedProperties lookupProperties) {
+	public final static LookupTable createLookupTable(TypedProperties lookupProperties) {
 		String lookupTableType = lookupProperties.getProperty("type");
         Class tClass = getLookupTableClass(lookupTableType);
         try {
             //create instance of lookup table
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_PROPERTIES, PARAMETERS_FOR_FROM_PROPERTIES_METHOD);
-            return (LookupTable) method.invoke(null, new Object[] {graph, lookupProperties});
+            return (LookupTable) method.invoke(null, new Object[] {lookupProperties});
         } catch(Exception ex) {
             logger.error("Can't create object of : " + lookupTableType + " exception: " + ex, ex);
             throw new RuntimeException("Can't create object of : " + lookupTableType + " exception: " + ex);
