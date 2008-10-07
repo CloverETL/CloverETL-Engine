@@ -34,6 +34,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.primitive.TypedProperties;
 import org.w3c.dom.Element;
 
 /**
@@ -48,7 +49,10 @@ public class LookupTableFactory {
     private static Log logger = LogFactory.getLog(ComponentFactory.class);
 
     private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
-    private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, Element.class };
+    private final static Class[] PARAMETERS_FOR_FROM_XML_METHOD = new Class[] { TransformationGraph.class, Element.class };
+    private final static String NAME_OF_STATIC_LOAD_FROM_PROPERTIES = "fromProperties";
+    private final static Class[] PARAMETERS_FOR_FROM_PROPERTIES_METHOD = new Class[] { TransformationGraph.class, 
+    	TypedProperties.class };
     private final static Map<String, LookupTableDescription> lookupTableMap = new HashMap<String, LookupTableDescription>();
     
     public static void init() {
@@ -108,7 +112,20 @@ public class LookupTableFactory {
         }
     }
 
-    /**
+	public final static LookupTable createLookupTable(TransformationGraph graph, TypedProperties lookupProperties) {
+		String lookupTableType = lookupProperties.getProperty("type");
+        Class tClass = getLookupTableClass(lookupTableType);
+        try {
+            //create instance of lookup table
+            Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_PROPERTIES, PARAMETERS_FOR_FROM_PROPERTIES_METHOD);
+            return (LookupTable) method.invoke(null, new Object[] {graph, lookupProperties});
+        } catch(Exception ex) {
+            logger.error("Can't create object of : " + lookupTableType + " exception: " + ex, ex);
+            throw new RuntimeException("Can't create object of : " + lookupTableType + " exception: " + ex);
+        }
+	}
+
+	/**
      *  Method for creating various types of LookupTable based on lookup type & XML parameter definition.
      */
     public final static LookupTable createLookupTable(TransformationGraph graph, String lookupTableType, org.w3c.dom.Node nodeXML) {
@@ -116,7 +133,7 @@ public class LookupTableFactory {
 
         try {
             //create instance of lookup table
-            Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
+            Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_FROM_XML_METHOD);
             return (LookupTable) method.invoke(null, new Object[] {graph, nodeXML});
         } catch(Exception ex) {
             logger.error("Can't create object of : " + lookupTableType + " exception: " + ex, ex);
