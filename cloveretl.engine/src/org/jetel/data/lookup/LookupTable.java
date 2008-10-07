@@ -48,7 +48,10 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
 
-	/**
+    public static final String XML_METADATA_ID ="metadata";
+    public static final String XML_DBCONNECTION = "dbConnection";
+
+    /**
 	 * Called when the lookup table is first used/needed. Usually at
 	 * the beginnig of phases in which the lookup is used. Any memory & time intensive
 	 * allocation should happen during call to this method.<br>
