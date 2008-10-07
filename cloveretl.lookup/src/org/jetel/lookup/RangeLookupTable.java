@@ -45,6 +45,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
@@ -55,6 +56,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -84,7 +86,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	
 	
     private static final String XML_LOOKUP_TYPE_RANGE_LOOKUP = "rangeLookup";
-    private static final String XML_METADATA_ID ="metadata";
     private static final String XML_FILE_URL = "fileURL";
  	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
     private static final String XML_START_FIELDS = "startFields";
@@ -96,7 +97,11 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
     private static final String XML_END_INCLUDE = "endInclude";
 	private static final String XML_DATA_ATTRIBUTE = "data";
 
-	public static final boolean DEFAULT_START_INCLUDE = true;
+    private final static String[] REQUESTED_ATTRIBUTE = {XML_ID_ATTRIBUTE, XML_TYPE_ATTRIBUTE, XML_METADATA_ID,
+    	XML_START_FIELDS, XML_END_FIELDS
+    };
+
+    public static final boolean DEFAULT_START_INCLUDE = true;
 	public static final boolean DEFAULT_END_INCLUDE = false;
 	
     protected DataRecordMetadata metadata;//defines lookup table
@@ -542,7 +547,74 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		return lookupTable.iterator();
 	}
 	
-	public static RangeLookupTable fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+    public static RangeLookupTable fromProperties(TypedProperties properties) throws AttributeNotFoundException,
+			GraphConfigurationException {
+
+    	for (String property : REQUESTED_ATTRIBUTE) {
+			if (!properties.containsKey(property)) {
+				throw new AttributeNotFoundException(property);
+			}
+		}
+    	String type = properties.getProperty(XML_TYPE_ATTRIBUTE);
+    	if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_RANGE_LOOKUP)){
+    		throw new GraphConfigurationException("Can't create range lookup table from type " + type);
+    	}
+        String id = properties.getProperty(XML_ID_ATTRIBUTE);
+        String metadataString = properties.getProperty(XML_METADATA_ID);
+        String[] startFields = properties.getProperty(XML_START_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+        String[] endFields = properties.getProperty(XML_END_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+        RangeLookupTable lookupTable = new RangeLookupTable(id, metadataString, startFields, endFields);
+        if (properties.containsKey(XML_NAME_ATTRIBUTE)){
+        	lookupTable.setName(properties.getProperty(XML_NAME_ATTRIBUTE));
+        }
+        lookupTable.setUseI18N(properties.getBooleanProperty(XML_USE_I18N, false));
+		if (properties.containsKey(XML_LOCALE)){
+			lookupTable.setLocale(XML_LOCALE);
+		}
+		if (properties.containsKey(XML_FILE_URL)){
+			lookupTable.setFileURL(properties.getProperty(XML_FILE_URL));
+		}
+		lookupTable.setCharset(properties.getProperty(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
+		boolean[] startInclude = null;
+		if (properties.containsKey(XML_START_INCLUDE)){
+			String[] sI = properties.getProperty(XML_START_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+			startInclude = new boolean[sI.length];
+			for (int i = 0; i < sI.length; i++) {
+				startInclude[i] = Boolean.parseBoolean(sI[i]);
+			}
+		}
+		boolean[] endInclude = null;
+		if (properties.containsKey(XML_END_INCLUDE)){
+			String[] eI = properties.getProperty(XML_END_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+			endInclude = new boolean[eI.length];
+			for (int i = 0; i < eI.length; i++) {
+				endInclude[i] = Boolean.parseBoolean(eI[i]);
+			}
+			if (startInclude == null) {
+		    	startInclude = new boolean[endInclude.length];
+		    	for (int i = 0; i < endInclude.length; i++) {
+					startInclude[i] = true;
+				}
+			}
+		}else if (properties.containsKey(XML_START_INCLUDE)){
+		   	endInclude = new boolean[startInclude.length];
+			for (int i = 0; i < endInclude.length; i++) {
+				endInclude[i] = false;
+			}
+		}
+		lookupTable.setStartInclude(startInclude);
+		lookupTable.setEndInclude(endInclude);
+		
+		lookupTable.setByteMode(properties.getBooleanProperty(XML_BYTEMODE_ATTRIBUTE, false));
+		
+        if (properties.containsKey(XML_DATA_ATTRIBUTE)) {
+        	lookupTable.setData(properties.getProperty(XML_DATA_ATTRIBUTE));
+        }
+
+        return lookupTable;
+    }
+    	
+    public static RangeLookupTable fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
         RangeLookupTable lookupTable = null;
         String id;

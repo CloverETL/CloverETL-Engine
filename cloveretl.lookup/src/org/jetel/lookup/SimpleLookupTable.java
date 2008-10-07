@@ -40,6 +40,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
@@ -49,9 +50,9 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
-
 import org.w3c.dom.Element;
 
 /**
@@ -77,12 +78,15 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     private static final String XML_LOOKUP_TYPE_SIMPLE_LOOKUP = "simpleLookup";
     private static final String XML_LOOKUP_INITIAL_SIZE = "initialSize";
     private static final String XML_LOOKUP_KEY = "key";
-    private static final String XML_METADATA_ID ="metadata";
     private static final String XML_FILE_URL = "fileURL";
     private static final String XML_CHARSET = "charset";
 	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
 	private static final String XML_DATA_ATTRIBUTE = "data";
 	
+    private final static String[] REQUESTED_ATTRIBUTE = {XML_ID_ATTRIBUTE, XML_TYPE_ATTRIBUTE, XML_METADATA_ID,
+    	XML_LOOKUP_KEY
+    };
+
     protected String metadataName;
 	protected DataRecordMetadata metadata;
 	protected String fileURL;
@@ -310,7 +314,45 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		numFound=0;
 	}
 
-	public static SimpleLookupTable fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+    public static SimpleLookupTable fromProperties(TypedProperties properties) throws AttributeNotFoundException,
+			GraphConfigurationException {
+
+    	for (String property : REQUESTED_ATTRIBUTE) {
+			if (!properties.containsKey(property)) {
+				throw new AttributeNotFoundException(property);
+			}
+		}
+    	String type = properties.getProperty(XML_TYPE_ATTRIBUTE);
+    	if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_SIMPLE_LOOKUP)){
+    		throw new GraphConfigurationException("Can't create simple lookup table from type " + type);
+    	}
+        int initialSize = properties.getIntProperty(XML_LOOKUP_INITIAL_SIZE, Defaults.Lookup.LOOKUP_INITIAL_CAPACITY);
+        String[] keys = properties.getStringProperty(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+        String metadata = properties.getStringProperty(XML_METADATA_ID);
+        
+        SimpleLookupTable lookupTable = new SimpleLookupTable(properties.getStringProperty(XML_ID_ATTRIBUTE), metadata, keys, 
+        		initialSize);
+        
+        if (properties.containsKey(XML_NAME_ATTRIBUTE)){
+        	lookupTable.setName(properties.getStringProperty(XML_NAME_ATTRIBUTE));
+        }
+        if (properties.containsKey(XML_FILE_URL)) {
+        	lookupTable.setFileURL(properties.getStringProperty(XML_FILE_URL));
+        }
+        if (properties.containsKey(XML_CHARSET)) {
+        	lookupTable.setCharset(properties.getStringProperty(XML_CHARSET));
+        }
+        if (properties.containsKey(XML_BYTEMODE_ATTRIBUTE)){
+        	lookupTable.setByteMode(properties.getBooleanProperty(XML_BYTEMODE_ATTRIBUTE));
+        }
+        if (properties.containsKey(XML_DATA_ATTRIBUTE)) {
+        	lookupTable.setData(properties.getStringProperty(XML_DATA_ATTRIBUTE));
+        }
+        
+        return lookupTable;
+    }
+    
+    public static SimpleLookupTable fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
         SimpleLookupTable lookupTable = null;
         String id;

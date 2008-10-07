@@ -27,6 +27,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
@@ -34,6 +35,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -41,7 +43,6 @@ import org.w3c.dom.Element;
 public class PersistentLookupTable extends GraphElement implements LookupTable {
 	private static final String XML_LOOKUP_TYPE_PERSISTENCE_LOOKUP = "persistentLookup";
 	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
-	private static final String XML_METADATA_ID_ATTRIBUTE ="metadata";
 	private static final String XML_LOOKUP_KEY_ATTRIBUTE = "key";
 	private static final String XML_REPLACE_ATTRIBUTE = "replace";
 	private static final String XML_COMMIT_INTERVAL_ATTRIBUTE = "commitInterval";
@@ -49,7 +50,11 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 	private static final String XML_PAGE_SIZE_ATTRIBUTE = "pageSize"; // Default page size (number of entries per node)
 	private static final String XML_CACHE_SIZE_ATTRIBUTE = "cacheSize"; // Cache size - given maximum number of objects
 	
-	private static final String BTREE_NAME = "btree";
+    private final static String[] REQUESTED_ATTRIBUTE = {XML_ID_ATTRIBUTE, XML_TYPE_ATTRIBUTE, XML_METADATA_ID,
+    	XML_LOOKUP_KEY_ATTRIBUTE, XML_FILE_URL_ATTRIBUTE
+    };
+
+    private static final String BTREE_NAME = "btree";
 	private static final boolean DEFAULT_REPLACE = true;
 	private static final int DEFAULT_COMMIT_INTERVAL = 1000;
 	private static final boolean DEFAULT_DISABLE_TRANSACTIONS = false;
@@ -297,7 +302,7 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 			loadMetadata();
 		} catch (ComponentNotReadyException cnre) {
 			status.add(new ConfigurationProblem(cnre.getMessage() + 
-					" does not exist!!!", Severity.ERROR, this, Priority.NORMAL, XML_METADATA_ID_ATTRIBUTE));
+					" does not exist!!!", Severity.ERROR, this, Priority.NORMAL, XML_METADATA_ID));
 		}
 		
        	
@@ -338,8 +343,50 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 		this.cacheSize = cacheSize;
 	}
 	
+    public static PersistentLookupTable fromProperties(TypedProperties properties) throws AttributeNotFoundException, GraphConfigurationException{
+
+    	for (String property : REQUESTED_ATTRIBUTE) {
+			if (!properties.containsKey(property)) {
+				throw new AttributeNotFoundException(property);
+			}
+		}
+    	String type = properties.getProperty(XML_TYPE_ATTRIBUTE);
+    	if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_PERSISTENCE_LOOKUP)){
+    		throw new GraphConfigurationException("Can't create persistent lookup table from type " + type);
+    	}
+        String[] keys = properties.getProperty(XML_LOOKUP_KEY_ATTRIBUTE).
+		split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+
+		PersistentLookupTable lookupTable = new PersistentLookupTable(
+				properties.getProperty(XML_ID_ATTRIBUTE), 
+				properties.getProperty(XML_METADATA_ID), 
+				keys, 
+				properties.getProperty(XML_FILE_URL_ATTRIBUTE));
+		
+		if (properties.containsKey(XML_NAME_ATTRIBUTE)){
+			lookupTable.setName(properties.getProperty(XML_NAME_ATTRIBUTE));
+		}
+		if (properties.containsKey(XML_COMMIT_INTERVAL_ATTRIBUTE)){
+			lookupTable.setCommitInterval(properties.getIntProperty(XML_COMMIT_INTERVAL_ATTRIBUTE));
+		}
+		if (properties.containsKey(XML_REPLACE_ATTRIBUTE)){
+			lookupTable.setReplace(properties.getBooleanProperty(XML_REPLACE_ATTRIBUTE));
+		}
+		if (properties.containsKey(XML_DISABLE_TRANSACTIONS_ATTRIBUTE)){
+			lookupTable.setDisableTransactions(properties.getBooleanProperty(XML_DISABLE_TRANSACTIONS_ATTRIBUTE));
+		}
+		if (properties.containsKey(XML_PAGE_SIZE_ATTRIBUTE)){
+			lookupTable.setPageSize(properties.getIntProperty(XML_PAGE_SIZE_ATTRIBUTE));
+		}
+		if (properties.containsKey(XML_CACHE_SIZE_ATTRIBUTE)){
+			lookupTable.setCacheSize(properties.getIntProperty(XML_CACHE_SIZE_ATTRIBUTE));
+		}
+		
+		return lookupTable;
+    }
+
 	public static PersistentLookupTable fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
-        ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+    ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
         String type;
         
         try {
@@ -361,7 +408,7 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
             
             PersistentLookupTable lookupTable = new PersistentLookupTable(
             		xattribs.getString(XML_ID_ATTRIBUTE), 
-            		xattribs.getString(XML_METADATA_ID_ATTRIBUTE), 
+            		xattribs.getString(XML_METADATA_ID), 
             		keys, 
             		xattribs.getString(XML_FILE_URL_ATTRIBUTE));
             
