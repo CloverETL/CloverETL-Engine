@@ -23,6 +23,8 @@ import java.text.Collator;
 import java.text.RuleBasedCollator;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordComparator;
@@ -86,6 +88,8 @@ import org.w3c.dom.Element;
  */
 public class SequenceChecker extends Node {
 
+    static Log logger = LogFactory.getLog(SequenceChecker.class);
+
 	private static final String XML_SORTORDER_ATTRIBUTE = "sortOrder";
 	private static final String XML_SORTKEY_ATTRIBUTE = "sortKey";
 	//private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
@@ -143,6 +147,7 @@ public class SequenceChecker extends Node {
 		records[0].init();
 		records[1].init();
 		boolean error = false; 
+		int row = 0;
 		
 		while ((records[current] = inPort.readRecord(records[current])) != null && runIt) {
 			if (isFirst) {
@@ -171,9 +176,18 @@ public class SequenceChecker extends Node {
 			// swap indexes
 			current = current ^ 1;
 			previous = previous ^ 1;
+			
+			row++;
 		}
 		if (isOutPort) broadcastEOF();
-		Result result = error ? Result.ERROR : Result.FINISHED_OK;
+		
+		Result result = null;
+		if (error) {
+			result = Result.ERROR;
+			logger.error("The sequence checker fails at row '" + row + "'.");
+		} else {
+			result = Result.FINISHED_OK;
+		}
         return runIt ? result : Result.ABORTED;
 	}
 
