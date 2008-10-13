@@ -190,7 +190,7 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 		}
 		
 		try {
-			assertEquals(2, transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1}));
+			assertEquals(1, transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1}));
 		} catch (TransformException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -264,7 +264,7 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 					inMetadata[index[0]].getField(index[1]).getName());
 		}
 		try {
-			assertEquals(0, transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1}));
+			assertEquals(RecordTransform.ALL, transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1}));
 		} catch (TransformException e) {
 			System.out.println(e.getMessage());
 		}
@@ -332,7 +332,7 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 					inMetadata[index[0]].getField(index[1]).getName());
 		}
 		try {
-			assertEquals(0, transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1}));
+			assertEquals(RecordTransform.ALL, transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1}));
 		} catch (TransformException e) {
 			e.printStackTrace();
 		}
@@ -407,7 +407,7 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 					inMetadata[index[0]].getField(index[1]).getName());
 		}
 		try {
-			assertEquals(0, transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1}));
+			assertEquals(RecordTransform.ALL, transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1}));
 		} catch (TransformException e) {
 			e.printStackTrace();
 			System.out.println("Record number: " + e.getRecNo() + " , field number " + e.getFieldNo());
@@ -465,7 +465,7 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 					inMetadata[index[0]].getField(index[1]).getName());
 		}
 		try {
-			assertEquals(0, transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1}));
+			assertEquals(RecordTransform.ALL, transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1}));
 		} catch (TransformException e) {
 			e.printStackTrace();
 		}
@@ -529,7 +529,7 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 					inMetadata[index[0]].getField(index[1]).getName());
 		}
 		try {
-			assertEquals(0, transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1}));
+			assertEquals(RecordTransform.ALL, transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1}));
 		} catch (TransformException e) {
 			e.printStackTrace();
 		}
