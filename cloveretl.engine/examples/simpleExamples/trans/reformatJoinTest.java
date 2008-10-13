@@ -40,7 +40,7 @@ public class reformatJoinTest extends DataRecordTransform{
 		target[0].getField(3).setValue(source[1].getField(0));
 		target[0].getField(4).setValue(source[1].getField(1));
 		
-		return 0;
+		return ALL;
 	}
 
 }

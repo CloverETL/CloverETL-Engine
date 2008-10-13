@@ -53,12 +53,12 @@ public class reformatOrders extends DataRecordTransform{
 		}catch(Exception ex){
 		  ex.printStackTrace();
 			errorMessage=ex.getMessage()+" ->occured with record :"+counter;
-			return -1;
+			return SKIP;
 		}
 
 		counter++;
 
-		return 0;
+		return ALL;
 	}
 
 }
