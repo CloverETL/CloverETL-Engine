@@ -53,7 +53,7 @@ public class reformatTest extends DataRecordTransform{
 		DataRecord employee; 
 		employee=mylookup.get(source[0]);
 		
-		if (employee==null) return -1; // skip this one
+		if (employee==null) return SKIP; // skip this one
 		
 		target[0].getField(0).setValue(source[0].getField(0).getValue());
   		target[0].getField(1).setValue(source[0].getField(1).getValue());
@@ -61,7 +61,7 @@ public class reformatTest extends DataRecordTransform{
 		target[0].getField(3).setValue(employee.getField(0).getValue().toString());
 		target[0].getField(4).setValue(employee.getField(1).getValue());
 
-		return 0;
+		return ALL;
 	}
 }
 ]]></attr>

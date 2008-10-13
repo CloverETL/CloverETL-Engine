@@ -137,7 +137,7 @@ import org.w3c.dom.Element;
  *        target[0].getField(1).setValue(source[0].getField(1).getValue());
  *        target[0].getField(2).setValue(source[1].getField(2).getValue());
  *
- *        return 0;
+ *        return ALL;
  *    }
  *
  *}

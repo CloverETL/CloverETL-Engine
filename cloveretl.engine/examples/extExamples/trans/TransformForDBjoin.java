@@ -16,7 +16,7 @@ public class TransformForDBjoin extends DataRecordTransform{
 		target[0].getField("employee_id").setValue(source[1].getField("employee_id").getValue());
 		target[0].getField("full_name").setValue(source[1].getField("full_name").getValue());
 
-		return 0;
+		return ALL;
 	}
 
 }

@@ -173,7 +173,7 @@ import org.w3c.dom.Element;
  *   public class reformatTest extends DataRecordTransform{
  *   
  *   	public int transform(DataRecord[] source, DataRecord[] target){
- *   		if (source[1]==null) return -1; // skip this one
+ *   		if (source[1]==null) return SKIP; // skip this one
  *   
  *   		target[0].getField(0).setValue(source[0].getField(0).getValue());
  *     		target[0].getField(1).setValue(source[0].getField(1).getValue());
@@ -181,7 +181,7 @@ import org.w3c.dom.Element;
  *   		target[0].getField(3).setValue(source[1].getField(0).getValue().toString());
  *   		target[0].getField(4).setValue(source[1].getField(1).getValue());
  *   
- *   		return 0;
+ *   		return ALL;
  *   	}
  *
  *   }

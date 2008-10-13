@@ -1454,10 +1454,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 			}
 			allOk = allOk && semiResult[i];
 			if (!allOk && result != -1) {//not all records transformed succesfully, but one for sure
-				return result + 1;
+				return result;
 			}
 		}
-		return allOk ? 0 : -1;
+		return allOk ? ALL : SKIP;
 	}
 
 	/**

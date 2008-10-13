@@ -168,7 +168,7 @@ import org.w3c.dom.Element;
  *			target[0].getField(4).setValue(source[1].getField(1).getValue());
  *		}
  *
- *		return 0;
+ *		return ALL;
  *	}
  *}
  *

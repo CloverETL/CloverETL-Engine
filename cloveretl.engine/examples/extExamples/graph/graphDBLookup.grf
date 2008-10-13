@@ -71,7 +71,7 @@ public class reformatTest extends DataRecordTransform{
 		
 		if (employee==null) {// skip this one
 			errorMessage = "Order: " + source[0].getField(0).getValue() + " - no corresponding record in lookup table";
-			return -1; 
+			return SKIP; 
 		}
 		
 		target[0].getField(0).setValue(source[0].getField(0).getValue());
@@ -80,7 +80,7 @@ public class reformatTest extends DataRecordTransform{
 		target[0].getField(3).setValue(employee.getField(0).getValue().toString());
 		target[0].getField(4).setValue(employee.getField(1).getValue());
 
-		return 0;
+		return ALL;
 	}
 }
 ]]></attr>

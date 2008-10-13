@@ -32,9 +32,9 @@ public class ShowAndResendData extends DataRecordTransform{
 			target[0].getField(0).setValue(dataField);
 		} catch(Exception ex){
 			ex.printStackTrace();
-			return -1;
+			return SKIP;
 		}
-		return 0;
+		return ALL;
 	}
 }]]></attr>
 </Node>
@@ -61,9 +61,9 @@ public class ShowAndResendData extends DataRecordTransform{
 			target[0].getField(0).setValue(dataField);
 		} catch(Exception ex){
 			ex.printStackTrace();
-			return -1;
+			return SKIP;
 		}
-		return 0;
+		return ALL;
 	}
 }]]></attr>
 </Node>
