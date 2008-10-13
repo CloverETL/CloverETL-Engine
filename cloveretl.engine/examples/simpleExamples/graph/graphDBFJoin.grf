@@ -28,7 +28,7 @@ public class joinOrdersDetails extends  DataRecordTransform{
 		target[0].getField("UNITPRICE").setValue(source[1].getField("UNITPRICE").getValue());		
 		target[0].getField("QUANTITY").setValue(source[1].getField("QUANTITY").getValue());		
 		target[0].getField("DISCOUNT").setValue(source[1].getField("DISCOUNT").getValue());		
-		return 0;
+		return ALL;
 	}
 }
 ]]></attr>
@@ -46,7 +46,7 @@ public class joinCustomers extends  DataRecordTransform{
 		target[0].copyFieldsByPosition(source[0]);
 		companyName = source[1].getField("CompanyName").getValue();
 		target[0].getField("CUSTOMER").setValue(companyName != null ? companyName : "N/A");
-		return 0;
+		return ALL;
 	}
 }]]></attr>
 <attr name="leftOuterJoin"><![CDATA[true]]></attr>

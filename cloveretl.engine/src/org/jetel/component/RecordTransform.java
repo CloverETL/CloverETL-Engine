@@ -49,6 +49,11 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public interface RecordTransform {
 
+	/** the return value of the transform() method specifying that the record will be sent to all the output ports */
+	public static final int ALL = Integer.MAX_VALUE;
+	/** the return value of the transform() method specifying that the record will be skipped */
+	public static final int SKIP = -1;
+
 	/**
 	 *  Initializes reformat class/function. This method is called only once at the
 	 * beginning of transformation process. Any object allocation/initialization should
@@ -76,10 +81,10 @@ public interface RecordTransform {
 	 * @param  sources  Source DataRecords
 	 * @param  target   Target DataRecord
 	 *
-	 * @return < -1 -- fatal error / user defined
-	 *           -1 -- error / skip record
-	 *            0 -- send to all output ports
-	 *         >= 1 -- send to a specified output port
+	 * @return RecordTransform.ALL -- send the data record(s) to all the output ports<br>
+	 *         RecordTransform.SKIP -- skip the data record(s)<br>
+	 *         >= 0 -- send the data record(s) to a specified output port<br>
+	 *         < -1 -- fatal error / user defined
 	 */
 	public int transform(DataRecord[] sources, DataRecord[] target) throws TransformException;
 

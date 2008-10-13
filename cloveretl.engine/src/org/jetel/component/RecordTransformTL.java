@@ -93,7 +93,7 @@ public class RecordTransformTL implements RecordTransform {
 		semiResult = wrapper.executePreparedFunction(inputRecords, outputRecords, null);
 
 		if (semiResult == null || semiResult == TLBooleanValue.TRUE) {
-			return 0;
+			return ALL;
 		}
 
 		if (semiResult.getType().isNumeric()) {
@@ -101,8 +101,8 @@ public class RecordTransformTL implements RecordTransform {
 		}
 
 		errorMessage = "Unexpected return result: " + semiResult.toString() + " (" + semiResult.getType().getName() + ")";
-		
-		return -1;
+
+		return SKIP;
 	}
 
 

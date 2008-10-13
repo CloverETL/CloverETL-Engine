@@ -40,7 +40,7 @@ public class reformatJoinTest3Way extends DataRecordTransform{
 			target[0].getField(5).setValue("*MISSING*");
 		}
 		target[0].getField(3).setValue("*MISSING*");
-		return 0;
+		return ALL;
 	}
 }
 

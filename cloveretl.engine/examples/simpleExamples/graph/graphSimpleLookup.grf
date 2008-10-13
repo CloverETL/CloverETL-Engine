@@ -50,7 +50,7 @@ public class reformatTest extends DataRecordTransform{
 		
 		if (employee==null) {// skip this one
 			errorMessage = "Input:\n" + source[0] + " - There is no record with corresponding key in lookup table\n";
-			return -1; 
+			return SKIP; 
 		}
 		
 		target[0].getField(0).setValue(source[0].getField(0).getValue());
@@ -59,7 +59,7 @@ public class reformatTest extends DataRecordTransform{
 		target[0].getField(3).setValue(employee.getField(0).getValue().toString());
 		target[0].getField(4).setValue(employee.getField(1).getValue());
 
-		return 0;
+		return ALL;
 	}
 	
 	public void finished(){

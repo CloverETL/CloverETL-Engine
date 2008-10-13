@@ -135,7 +135,7 @@ import org.w3c.dom.Element;
  *
  *		counter++;
  *
- *		return 0;
+ *		return ALL;
  *	}
  *
  * }
@@ -227,13 +227,12 @@ public class Reformat extends Node {
 			if (inRecord[0] != null) {
 				int transformResult = transformation.transform(inRecord, outRecord);
 
-				if (transformResult == 0) {
+				if (transformResult == RecordTransform.ALL) {
 					for (int outPort = 0; outPort < numOutputPorts; outPort++) {
 						writeRecord(outPort, outRecord[outPort]);
 					}
-				} else if (transformResult > 0) {
-					int outPort = transformResult - 1;
-					writeRecord(outPort, outRecord[outPort]);
+				} else if (transformResult >= 0) {
+					writeRecord(transformResult, outRecord[transformResult]);
 				} else if (transformResult < 0) {
 					ErrorAction action = errorActions.get(transformResult);
 					if (action == null) {

@@ -49,9 +49,9 @@ public class reformatOrders extends DataRecordTransform{
 					source[0], "ShippedDate").getTime())
 					/ 1000 / 60 / 60 / 24));
 		}catch(Exception ex){
-			return -1;
+			return SKIP;
 		}
-			return 0;
+			return ALL;
 	}
 }
 ]]></attr>

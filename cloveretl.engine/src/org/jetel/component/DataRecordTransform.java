@@ -123,7 +123,10 @@ public abstract class DataRecordTransform implements RecordTransform {
 	 *            input data records (an array)
 	 * @param targetRecords
 	 *            output data records (an array)
-	 * @return True if transformation was successfull, otherwise False
+     * @return RecordTransform.ALL -- send the data record(s) to all the output ports<br>
+     *         RecordTransform.SKIP -- skip the data record(s)<br>
+     *         >= 0 -- send the data record(s) to a specified output port<br>
+     *         < -1 -- fatal error / user defined
 	 * @see org.jetel.data.DataRecord#copyFieldsByPosition()
 	 */
 	public abstract int transform(DataRecord[] inputRecords, DataRecord[] outputRecords) throws TransformException;

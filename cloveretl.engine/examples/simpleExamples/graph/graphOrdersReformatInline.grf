@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation&#10;code (class) inlined (saved with the graph itself). The source code&#10;is automatically compiled at runtime.&#10;For successfull compilation, tools.jar library must be part of CLASSPATH.&#10;" guiVersion="1.9" id="1204549413620" licenseType="Commercial License javlinconsulting" modified="Mon Mar 03 15:08:22 CET 2008" name="Testing Reformat" revision="1.3">
+<Graph author="yanas" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation&#10;code (class) inlined (saved with the graph itself). The source code&#10;is automatically compiled at runtime.&#10;For successfull compilation, tools.jar library must be part of CLASSPATH.&#10;" guiVersion="2.0" id="1204549413620" licenseType="Evaluation license." modified="Mon Oct 13 16:48:05 CEST 2008" modifiedBy="yanas" name="Testing Reformat" revision="1.19">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata1"/>
@@ -44,15 +44,15 @@ public class reformatOrders extends DataRecordTransform{
 		}catch(Exception ex){
 		  ex.printStackTrace();
 			errorMessage=ex.getMessage()+" ->occured with record :"+counter;
-			return -1;
+			return SKIP;
 		}
 		counter++;
-			return 0;
+			return ALL;
 	}
 }
 ]]></attr>
 </Node>
-<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REF:0"/>
+<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REF:0"/>
 <Edge fromNode="REF:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>
