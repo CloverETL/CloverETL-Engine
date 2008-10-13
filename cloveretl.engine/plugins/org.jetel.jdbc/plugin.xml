@@ -1,7 +1,7 @@
 <plugin
 	id="org.jetel.jdbc"
 	version="2.5.2"
-	provider-name="Javlin Consulting s.r.o.">
+	provider-name="Javlin a.s.">
 
 	<runtime>
 		<library path="../../../cloveretl.jdbc/bin/"/>

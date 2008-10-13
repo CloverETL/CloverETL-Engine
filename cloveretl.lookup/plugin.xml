@@ -1,7 +1,7 @@
 <plugin
    id="org.jetel.lookup"
    version="2.4.7"
-   provider-name="Javlin Consulting s.r.o.">
+   provider-name="Javlin a.s.">
 
 	<runtime>
 		<library path="cloveretl.lookup.jar"/>

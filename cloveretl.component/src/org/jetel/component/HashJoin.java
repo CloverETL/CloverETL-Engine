@@ -746,8 +746,8 @@ public class HashJoin extends Node {
 			}
 
 			// legacy attributes handling {
-			if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE, false)) {
-				joinType = Join.LEFT_OUTER;
+			if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)) {
+				joinType = xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE) ? Join.LEFT_OUTER : Join.INNER;
 			}
 
 			join = new HashJoin(

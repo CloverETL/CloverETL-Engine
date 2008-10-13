@@ -36,6 +36,7 @@ import java.util.Arrays;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -99,11 +100,14 @@ public class DataFormatter implements Formatter {
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			if(metadata.getField(i).isDelimited()) {
                 try {
-					delimiters[i] = (metadata.getField(i).getDelimiters()[0]).getBytes(charSet);
+                	String[] fDelimiters = metadata.getField(i).getDelimiters();
+                	if (fDelimiters != null) { //for eof delimiter
+    					delimiters[i] = fDelimiters[0].getBytes(charSet);
+                	}
 				} catch (UnsupportedEncodingException e) {
 					// can't happen if we have encoder
 				}
-				delimiterLength[i] = delimiters[i].length;
+				delimiterLength[i] = delimiters[i] == null ? 0 : delimiters[i].length; //for eof delimiter
 			} else {
 				fieldLengths[i] = metadata.getField(i).getSize();
 			}
@@ -203,7 +207,7 @@ public class DataFormatter implements Formatter {
 					encLen += fieldLen;
 					fieldBuffer.flip();
 					dataBuffer.put(fieldBuffer);
-					dataBuffer.put(delimiters[i]);
+					if (delimiters[i] != null) dataBuffer.put(delimiters[i]); //for eof delimiter
 				} else { //fixlen field
 					if (fieldLengths[i] > dataBuffer.remaining()) {
 						flush();

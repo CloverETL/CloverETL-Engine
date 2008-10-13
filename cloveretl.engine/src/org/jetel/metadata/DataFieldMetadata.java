@@ -749,6 +749,10 @@ public class DataFieldMetadata implements Serializable {
 	}
 	
 	public boolean equals(Object o){
+		return equals(o, true);
+	}
+	
+	public boolean equals(Object o, boolean checkFixDelType){
 		if (!(o instanceof DataFieldMetadata)){
 			return false;
 		}
@@ -769,7 +773,7 @@ public class DataFieldMetadata implements Serializable {
 				}
 			}else{
 				//one fixed and the second delimited
-				return false;
+				return !checkFixDelType;
 			}
 		}
 		//different types

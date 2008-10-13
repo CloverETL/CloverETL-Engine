@@ -60,8 +60,9 @@ public class StringLib extends TLFunctionLibrary {
                 IS_INTEGER("is_integer"), IS_LONG("is_long"), IS_DATE("is_date"), 
                 REMOVE_DIACRITIC("remove_diacritic"), REMOVE_BLANK_SPACE("remove_blank_space"), 
                 GET_ALPHANUMERIC_CHARS("get_alphanumeric_chars"), TRANSLATE("translate"), 
-                JOIN("join"), INDEX_OF("index_of"), COUNT_CHAR("count_char"), CHOP("chop"), 
-                REMOVE_NONPRINTABLE("remove_nonprintable"), REMOVE_NONASCII("remove_nonascii");
+                JOIN("join"), INDEX_OF("index_of"), COUNT_CHAR("count_char"), CHOP("chop"),
+                FIND("find"),CUT("cut"), REMOVE_NONPRINTABLE("remove_nonprintable"),
+                REMOVE_NONASCII("remove_nonascii");
 
         public String name;
 
@@ -137,6 +138,10 @@ public class StringLib extends TLFunctionLibrary {
         	return new IndexOfFunction();
         case COUNT_CHAR:
         	return new CountCharFunction();
+        case FIND:
+        	return new FindFunction();
+        case CUT:
+        	return new CutFunction();
         case CHOP:
         	return new ChopFunction();
         case REMOVE_NONPRINTABLE:
@@ -1211,6 +1216,49 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 
+    class FindFunction extends TLFunctionPrototype {
+
+         public FindFunction() {
+             super("string", "find", "Finds and returns all occurences of regex in specified string",new TLValueType[] {
+                     TLValueType.STRING, TLValueType.STRING}, TLValueType.LIST);
+         }
+
+         @Override
+         public TLValue execute(TLValue[] params, TLContext context) {
+             RegexStore regex = (RegexStore) context.getContext();
+             if (regex.pattern==null){
+             	regex.initRegex(params[1].toString(), ((TLStringValue)params[0]).getCharSequence(),true,new TLListValue());
+             }else{
+             	// can we reuse pattern/matcher
+             	if(regex.storedRegex!=params[1].getValue() &&  Compare.compare(regex.storedRegex,((TLStringValue)params[1]).getCharSequence())!=0){
+             		//we can't
+             		regex.resetPattern(params[1].toString());
+             	}
+             }
+             regex.resetMatcher(((TLStringValue)params[0]).getCharSequence());
+             List<TLValue> list=((TLListValue)regex.result).getList();
+             list.clear();
+             // 1st occurence
+             while (regex.matcher.find()){
+            	 list.add(new TLStringValue(regex.matcher.group()));
+            	 int i=0;
+            	 while(i<regex.matcher.groupCount()){
+            		 list.add(new TLStringValue(regex.matcher.group(++i)));
+            	 }
+             }
+             return regex.result;
+
+         }
+
+         @Override
+         public TLContext createContext() {
+             TLContext<RegexStore> context = new TLContext<RegexStore>();
+             context.setContext(new RegexStore());
+             return context;
+         }
+     }
+
+
      //CHOP
      class ChopFunction extends TLFunctionPrototype {
     	 
@@ -1255,6 +1303,52 @@ public class StringLib extends TLFunctionLibrary {
  		}
  	}
 
+    
+     class CutFunction extends TLFunctionPrototype {
+
+         public CutFunction() {
+             super("string", "cut", "Cuts substring from specified string based on list consisting of pairs position,length",new TLValueType[] {
+                     TLValueType.STRING, TLValueType.LIST}, TLValueType.LIST);
+         }
+
+         @Override
+         public TLValue execute(TLValue[] params, TLContext context) {
+ 			 TLListValue store=(TLListValue) context.getContext();
+        	 List<TLValue> list = store.getList();
+ 			 if (params[0].type!=TLValueType.STRING || params[1].type!=TLValueType.LIST){
+ 				throw new TransformLangExecutorRuntimeException(params,
+				"cut - wrong type of literal(s)");
+	
+ 			 }
+ 			 List<TLValue> sourceList=(List<TLValue>)params[1].getValue();
+ 			 if (sourceList.size()%2!=0){
+ 				throw new TransformLangExecutorRuntimeException(params,
+ 						"cut - wrong length of intevals list");
+ 						
+ 			 }
+ 			 list.clear();
+ 			 CharSequence src=(TLStringValue)params[0];
+ 			 for(int i=0;i<sourceList.size();){
+ 				 int pos, length;
+ 				 try{
+ 					 pos=sourceList.get(i++).getNumeric().getInt();
+ 					 length=sourceList.get(i++).getNumeric().getInt();
+ 				 }catch(UnsupportedOperationException ex){
+ 					 throw new TransformLangExecutorRuntimeException("cut - wrong position or length definition at index "+i);
+ 				 }
+ 				 list.add(new TLStringValue(src.subSequence(pos, pos+length)));
+ 			 }
+ 			return store;
+
+         }
+
+         @Override
+         public TLContext createContext() {
+             return TLContext.createListContext();
+         }
+     }
+
+     
      class RegexStore{
 	    public Pattern pattern;
 	    public Matcher matcher;

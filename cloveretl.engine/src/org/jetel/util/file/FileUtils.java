@@ -477,6 +477,7 @@ public class FileUtils {
 		try {
 			String filename = multiOut.next();
 			if(filename.startsWith("port:")) return true;
+			if(filename.startsWith("dict:")) return true;
 			url = getFileURL(contextURL, filename);
             if(!url.getProtocol().equalsIgnoreCase("file")) return true;
 			file = new File(url.getPath());

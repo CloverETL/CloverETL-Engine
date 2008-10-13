@@ -22,6 +22,12 @@ package org.jetel.data.formatter;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -66,6 +72,7 @@ import org.jetel.util.string.StringUtils;
 public class JExcelXLSDataFormatter extends XLSFormatter {
 	
 	private static final String CLOVER_FIELD_PREFIX = "$";
+	private static final Object FILE_PROTOCOL = "file";
 	
 	private WritableWorkbook wb;
 	private WritableSheet sheet;
@@ -76,6 +83,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	private String currentSheetName;
 	private int currentRow;
 	private SheetData currentSheet;
+	private OutputStream os = null;
 
 	private String charset;
 
@@ -102,6 +110,10 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 				wb.close();
 				sheet = null;
 				open = false;
+				if (os != null) {
+					os.flush();
+					os.close();
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -224,15 +236,46 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
         try{
             WorkbookSettings settings = new WorkbookSettings();
     		settings.setEncoding(charset);
-            if (((File)outputDataTarget).length() > 0) {//if xls file exist add to it new data
-                oldWb = Workbook.getWorkbook(((File)outputDataTarget), settings);
-            }
-            if (oldWb != null){
-            	wb = Workbook.createWorkbook((File)outputDataTarget, oldWb, settings);
-        		open = true;
-           }else{
-            	wb = Workbook.createWorkbook((File)outputDataTarget, settings);
-            }
+    		
+    		URL url = null;
+    		WritableByteChannel writableByteChannel = null;
+    		if (outputDataTarget instanceof URL) {
+        		url = (URL) outputDataTarget;
+    		} else if (outputDataTarget instanceof WritableByteChannel) {
+    			writableByteChannel = (WritableByteChannel) outputDataTarget;
+    		}
+    		if (url != null && url.getProtocol().equals(FILE_PROTOCOL)) {
+    			File file = new File(url.getFile());
+                if (((File)file).length() > 0) {//if xls file exist add to it new data
+                    oldWb = Workbook.getWorkbook(file, settings);
+                }
+                if (oldWb != null){
+                	wb = Workbook.createWorkbook(file, oldWb, settings);
+            		open = true;
+               }else{
+                	wb = Workbook.createWorkbook(file, settings);
+                }
+    		} else {
+    			if (url != null) {
+            		URLConnection connection = url.openConnection();
+            		InputStream is = connection.getInputStream();
+                    if (is.available() > 0) {//if xls file exist add to it new data
+                        oldWb = Workbook.getWorkbook(is, settings);
+                    } else {
+                    	is.close();
+                    }
+                    os = connection.getOutputStream();
+    			} else if (writableByteChannel != null) {
+    				os = Channels.newOutputStream(writableByteChannel);
+    			}
+                if (oldWb != null){
+                	wb = Workbook.createWorkbook(os, oldWb, settings);
+            		open = true;
+               }else{
+                	wb = Workbook.createWorkbook(os, settings);
+                }
+    		}
+    		
         }catch(Exception ex){
             throw new RuntimeException(ex);
         }

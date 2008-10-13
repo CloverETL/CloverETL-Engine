@@ -1033,6 +1033,21 @@ public abstract class Node extends GraphElement implements Runnable {
      */
     protected ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> inMetadata,
     		Collection<DataRecordMetadata> outMetadata){
+    	return checkMetadata(status, inMetadata, outMetadata, true);
+    }
+    
+    /**
+     * Checks if all metadata (in inMetadata list as well as in outMetadata list) are equal
+	 * If checkFixDelType is true then checks fixed/delimited state.
+     * 
+     * @param status
+     * @param inMetadata
+     * @param outMetadata
+     * @param checkFixDelType
+     * @return
+     */
+    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> inMetadata,
+    		Collection<DataRecordMetadata> outMetadata, boolean checkFixDelType){
     	Iterator<DataRecordMetadata> iterator = inMetadata.iterator();
     	DataRecordMetadata metadata = null, nextMetadata;
     	if (iterator.hasNext()) {
@@ -1058,7 +1073,7 @@ public abstract class Node extends GraphElement implements Runnable {
     	iterator = outMetadata.iterator();
     	if (iterator.hasNext()) {
     		nextMetadata = iterator.next();
-    		if (metadata == null || !metadata.equals(nextMetadata)) {
+    		if (metadata == null || !metadata.equals(nextMetadata, checkFixDelType)) {
     			status.add(new ConfigurationProblem("Metadata " + 
     					StringUtils.quote(metadata == null ? "null" : metadata.getName()) + 
     					" does not equal to metadata " + 

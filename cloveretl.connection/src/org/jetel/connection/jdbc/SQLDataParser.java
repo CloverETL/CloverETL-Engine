@@ -264,9 +264,14 @@ public class SQLDataParser implements Parser {
 					if (mapping[0] != null) {
 						try {
 							sqlIndex = resultSet.findColumn(mapping[1]) - 1;
-						} catch (Exception e) {
+						} catch (SQLException e) {
 							String fullName = mapping[1];
-							sqlIndex = resultSet.findColumn(fullName.substring(fullName.lastIndexOf('.') + 1)) - 1;
+							try {
+								sqlIndex = resultSet.findColumn(fullName.substring(fullName.lastIndexOf('.') + 1)) - 1;
+							} catch (SQLException e1) {
+								//order in mapping should correspond to order in query
+								sqlIndex = i;
+							}
 						}
 						tMap.add(CopySQLData.createCopyObject(dbTypes.get(sqlIndex), record.getField(mapping[0]).getMetadata(), 
 								record, sqlIndex, record.getMetadata().getFieldPosition(mapping[0])));

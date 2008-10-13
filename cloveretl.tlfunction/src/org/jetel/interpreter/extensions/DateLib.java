@@ -41,7 +41,7 @@ public class DateLib extends TLFunctionLibrary {
     private static final String LIBRARY_NAME = "Date";
 
     enum Function {
-        TODAY("today"), DATEADD("dateadd"), DATEDIFF("datediff"), TRUNC("trunc");
+        TODAY("today"), DATEADD("dateadd"), DATEDIFF("datediff"), TRUNC("trunc"), TRUNC_DATE("trunc_date");
         
         public String name;
         
@@ -69,6 +69,7 @@ public class DateLib extends TLFunctionLibrary {
         case DATEADD: return new DateaddFunction();
         case DATEDIFF: return new DatediffFunction();
         case TRUNC: return new TruncFunction();
+        case TRUNC_DATE:return new TruncDateFunction();
         default: return null;
        }
     }
@@ -168,18 +169,18 @@ public class DateLib extends TLFunctionLibrary {
                 break;
             case Calendar.MINUTE:
                 // how many minutes'
-                diff = (int) diffSec / 60;
+                diff = (int) (diffSec / 60L);
                 break;
             case Calendar.HOUR_OF_DAY:
-                diff = (int) diffSec / 3600;
+                diff = (int) (diffSec / 3600L);
                 break;
             case Calendar.DAY_OF_MONTH:
                 // how many days is the difference
-                diff = (int) diffSec / 86400;
+                diff = (int) (diffSec / 86400L);
                 break;
             case Calendar.WEEK_OF_YEAR:
                 // how many weeks
-                diff = (int) diffSec / 604800;
+                diff = (int) (diffSec / 604800L);
                 break;
             case Calendar.MONTH:
                 calStore.calStart.setTime(((TLDateValue)params[0]).getDate());
@@ -266,6 +267,46 @@ public class DateLib extends TLFunctionLibrary {
 			        return context;
 			}
 		}
+	
+// TRUNC
+	
+	class TruncDateFunction extends TLFunctionPrototype {
+
+		public TruncDateFunction() {
+			super("date", "trunc_date", "Truncates date portion of datetime", new TLValueType[] { TLValueType.DATE }, TLValueType.DATE);
+		}
+
+		@Override
+		public TLValue execute(TLValue[] params, TLContext context) {
+			TruncStore store=(TruncStore)context.getContext();
+			if (store.value==null){
+					store.cal=Calendar.getInstance();
+					store.value=TLValue.create(TLValueType.DATE);
+			}
+
+			if (params[0].type==TLValueType.DATE ) {
+	            store.cal.setTime(((TLDateValue)params[0]).getDate());
+	            store.cal.set(Calendar.YEAR,0);
+	            store.cal.set(Calendar.MONTH,0);
+	            store.cal.set(Calendar.DAY_OF_MONTH,1);
+	            
+	            ((TLDateValue)store.value).getDate().setTime(store.cal.getTimeInMillis());
+	        }else {
+	            throw new TransformLangExecutorRuntimeException(params,
+	                    "trunc - wrong type of literal");
+	        }
+
+	        return store.value;
+	    }
+	
+			@Override
+			public TLContext createContext() {
+				 TLContext<TruncStore> context = new TLContext<TruncStore>();
+			        context.setContext(new TruncStore());
+			        return context;
+			}
+		}
+	
 	
 	/*General data structures*/
 	

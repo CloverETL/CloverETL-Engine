@@ -13,9 +13,6 @@
 	</taskdef>
 	    	
 	<!-- =========================== VERSIONs =========================== -->
-	<property name="major_version" value="2"/>
-	<property name="minor_version" value="5"/>
-	<property name="revision_version" value="2"/>
 	<tstamp>
 		<format property="TODAY" pattern="dd/MM/yyyy HH:mm:ss" locale="en" />
 	</tstamp>
@@ -389,7 +386,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			</doclet>
 			<doctitle><![CDATA[<h1>CloverETL: Java ETL framework</h1><h3>version: ]]>${major_version}.${minor_version}<![CDATA[</h3>]]></doctitle>
 			<bottom>
-				<![CDATA[<address>Copyright &#169; 2002-2006 Javlin consulting s.r.o</address>]]>
+				<![CDATA[<address>Copyright &#169; 2002-2006 Javlin a.s.</address>]]>
 			</bottom>
 		</javadoc>
 

@@ -594,7 +594,6 @@ public final class TransformationGraph extends GraphElement {
 			}
 		}
 		// any other deinitialization shoud go here
-		//
 	}
 
 	/**
