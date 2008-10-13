@@ -373,10 +373,10 @@ public class DataReader extends Node {
 				aDataReader.setMaxErrorCount(xattribs.getInteger(XML_MAXERRORCOUNT_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_QUOTEDSTRINGS_ATTRIBUTE)){
-				aDataReader.parser.setQuotedStrings(xattribs.getBoolean(XML_QUOTEDSTRINGS_ATTRIBUTE));
+				aDataReader.setQuotedStrings(xattribs.getBoolean(XML_QUOTEDSTRINGS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE)){
-				aDataReader.parser.setTreatMultipleDelimitersAsOne(xattribs.getBoolean(XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE));
+				aDataReader.setTreatMultipleDelimitersAsOne(xattribs.getBoolean(XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
 				aDataReader.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
@@ -391,6 +391,16 @@ public class DataReader extends Node {
 		return aDataReader;
 	}
 	
+	public void setTreatMultipleDelimitersAsOne(boolean boolean1) {
+		parser.setTreatMultipleDelimitersAsOne(boolean1);
+	}
+
+
+	public void setQuotedStrings(boolean boolean1) {
+		parser.setQuotedStrings(boolean1);		
+	}
+
+
 	public void setSkipFirstLine(boolean skip) {
 		skipFirstLine = skip;
 	}

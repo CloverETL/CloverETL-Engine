@@ -110,7 +110,9 @@ public class DefaultConnection implements Connection {
 				statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
 			} catch (SQLException e) {
 				logger.warn(e.getMessage());
-				logger.info("Result set hold ability ignored");
+				statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			}catch (UnsupportedOperationException e) {
+				logger.warn(e.getMessage());
 				statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}
 			break;
@@ -289,7 +291,9 @@ public class DefaultConnection implements Connection {
 				return connection.prepareStatement(sql,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
 			} catch (SQLException e) {
 				logger.warn(e.getMessage());
-				logger.info("Result set hold ability ignored");
+				return connection.prepareStatement(sql,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			}catch (UnsupportedOperationException e) {
+				logger.warn(e.getMessage());
 				return connection.prepareStatement(sql,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}
 		default:
@@ -451,33 +455,45 @@ public class DefaultConnection implements Connection {
 		case READ:
 			try {
 				connection.setAutoCommit(false);
-				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
 				connection.setReadOnly(true);
 				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
 			} catch (SQLException ex) {
-				// TODO: for now, do nothing
+				logger.warn("Optimazing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
+			} catch (UnsupportedOperationException ex) {
+				logger.warn("Optimazing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
 			}
 			break;
 		case WRITE:
 		case CALL:
 			try {
 				connection.setAutoCommit(false);
-				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
 				connection.setReadOnly(false);
 				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
 			} catch (SQLException ex) {
-				// TODO: for now, do nothing
+				logger.warn("Optimazing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
+			} catch (UnsupportedOperationException ex) {
+				logger.warn("Optimazing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
 			}
 			break;
 
 		case TRANSACTION:
 			try {
 				connection.setAutoCommit(true);
-				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
 				connection.setReadOnly(false);
 				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
 			} catch (SQLException ex) {
-				// TODO: for now, do nothing
+				logger.warn("Optimazing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
+			} catch (UnsupportedOperationException ex) {
+				logger.warn("Optimazing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
 			}
 			break;
 		}

@@ -1,7 +1,7 @@
 <plugin
    id="org.jetel.engine"
    version="2.5.2"
-   provider-name="Javlin Consulting s.r.o.">
+   provider-name="Javlin a.s.">
 
 	<extension point-id="dictionaryType">
 		<parameter id="type" value="string"/>

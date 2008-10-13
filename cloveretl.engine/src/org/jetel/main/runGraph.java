@@ -159,8 +159,11 @@ public class runGraph {
                 + " build#" + JetelVersion.BUILD_NUMBER + " compiled "
                 + JetelVersion.LIBRARY_BUILD_DATETIME);
 
-		logger.info("Running on " + Runtime.getRuntime().availableProcessors() + " CPU(s)"
-				+ " max available memory for JVM " + Runtime.getRuntime().maxMemory() / 1024 + " KB");
+		logger.info("Running on " + Runtime.getRuntime().availableProcessors() + " CPU(s), " +
+				"OS " + System.getProperty("os.name") +
+				", architecture " + System.getProperty("os.arch") + 
+				", Java version " + System.getProperty("java.version") +
+				", max available memory for JVM " + Runtime.getRuntime().maxMemory() / 1024 + " KB");
 
         Logger.getLogger(runGraph.class); // make log4j to init itself
         String log4jPropertiesFile = null;

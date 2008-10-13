@@ -84,4 +84,10 @@ public class TLContext<T> {
 	     return context;
     }
     
+    public static TLContext<TLValue> createListContext(){
+    	 TLContext<TLValue> context = new TLContext<TLValue>();
+	     context.setContext(TLValue.create(TLValueType.LIST));
+	     return context;
+    }
+    
 }

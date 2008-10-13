@@ -414,7 +414,7 @@ public class TargetFile {
         	if (useChannel) {
         		setDataTarget(byteChannel);
         	} else {
-        		setDataTarget(new File(FileUtils.getFileURL(contextURL, fName).getFile()));
+           		setDataTarget(FileUtils.getFileURL(contextURL, fName));
         	}
         } else {
         	byteChannel = channels.next();

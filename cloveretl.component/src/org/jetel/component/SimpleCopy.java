@@ -174,7 +174,7 @@ public class SimpleCopy extends Node {
     				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
     			return status;
     		}
-            checkMetadata(status, getInMetadata(), getOutMetadata());
+            checkMetadata(status, getInMetadata(), getOutMetadata(), false);
 
             try {
                 init();

@@ -1086,12 +1086,13 @@ public class TestInterpreter extends CloverTestCase {
 		}
 	
 	public void test_2_expression() {
-		String expStr="datediff(nvl($Born,2005-2-1),2005-1-1,month)";
+		String expStr="int months=datediff(nvl($Born,2005-2-1),2005-1-1,month); \n"+
+					  "int days=datediff(2399-01-01, 2007-01-01, day); int years=datediff(2399-01-01, 2007-01-01, year);";
 	      print_code(expStr);
 		try {
             TransformLangParser parser = new TransformLangParser(record.getMetadata(),
                     new ByteArrayInputStream(expStr.getBytes()));
-              CLVFStartExpression parseTree = parser.StartExpression();
+              CLVFStart parseTree = parser.Start();
               
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
@@ -1104,8 +1105,11 @@ public class TestInterpreter extends CloverTestCase {
               executor.visit(parseTree,null);
               System.out.println("Finished interpreting.");
       
-              assertEquals(1, executor.getResult().getNumeric().getInt());
-		      
+              assertEquals(1,executor.getGlobalVariable(parser.getGlobalVariableSlot("months")).getTLValue().getNumeric().getInt());
+              assertEquals(392,executor.getGlobalVariable(parser.getGlobalVariableSlot("years")).getTLValue().getNumeric().getInt());
+              assertEquals(143175,executor.getGlobalVariable(parser.getGlobalVariableSlot("days")).getTLValue().getNumeric().getInt());
+
+              
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
@@ -2649,6 +2653,134 @@ public class TestInterpreter extends CloverTestCase {
 	}
 
     
+    public void test_containerFunctions(){
+		System.out.println("\nBuild-in container functions test:");
+		String expStr = "list seznam=[1,2,3,4,5,6,7,8,9,10]; \n" +
+						"int pop1=pop(seznam); remove(seznam,1); print_err(seznam); \n" +
+						"int poll1=poll(seznam); \n" +
+						"push(seznam,33); print_err(seznam); \n"+
+						"insert(seznam,3,12,13,14,15,16,17); print_err(seznam); \n"+
+						"sort(seznam); print_err(seznam); reverse(seznam); print_err(seznam); \n"+
+						"copy(seznam,[ 1, 2, 3, 4, 5]); print_err(seznam); remove_all(seznam); print_err(seznam); int last=pop(seznam); boolean isNull=isnull(last); \n ";
+
+	      print_code(expStr);
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
+		      CLVFStart parseTree = parser.Start();
+
+		      if (parser.getParseExceptions().size()>0){
+		    	  //report error
+		    	  for(Iterator it=parser.getParseExceptions().iterator();it.hasNext();){
+			    	  System.out.println(it.next());
+			      }
+		    	  throw new RuntimeException("Parse exception");
+		      }
+
+
+ 		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+		      
+		      assertEquals("pop",10,executor.getGlobalVariable(parser.getGlobalVariableSlot("pop1")).getTLValue().getNumeric().getInt());
+		      assertEquals("poll",1,executor.getGlobalVariable(parser.getGlobalVariableSlot("poll1")).getTLValue().getNumeric().getInt());
+		      assertEquals("isNull",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("isNull")).getTLValue()==TLBooleanValue.TRUE);
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception",e);
+	    }
+	}
+    
+    public void test_dateFunctions(){
+		System.out.println("\nBuild-in date functions test:");
+		String expStr = "date first=2008-01-01; date second2=2008-02-01 12:12:12; \n" +
+						"print_err(first); print_err(second2); print_err(trunc(second2)); print_err(trunc_date(second2)); \n";
+
+	      print_code(expStr);
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
+		      CLVFStart parseTree = parser.Start();
+
+		      if (parser.getParseExceptions().size()>0){
+		    	  //report error
+		    	  for(Iterator it=parser.getParseExceptions().iterator();it.hasNext();){
+			    	  System.out.println(it.next());
+			      }
+		    	  throw new RuntimeException("Parse exception");
+		      }
+
+
+ 		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+		      
+		    //  assertEquals("pop",10,executor.getGlobalVariable(parser.getGlobalVariableSlot("pop1")).getTLValue().getNumeric().getInt());
+		    //  assertEquals("poll",1,executor.getGlobalVariable(parser.getGlobalVariableSlot("poll1")).getTLValue().getNumeric().getInt());
+		    //  assertEquals("isNull",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("isNull")).getTLValue()==TLBooleanValue.TRUE);
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception",e);
+	    }
+	}
+    
+    
+    public void test_stringFunctions(){
+		System.out.println("\nBuild-in string functions test:");
+		String expStr = "string numbers='abc1edf2geh3ijk10lmn999opq'; \n" +
+						"list seznam=find(numbers,'\\d{2,}'); \n" +
+						"print_err(seznam); print_err(cut(numbers,[0,1,3,4,10,5]));\n";
+	      print_code(expStr);
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
+		      CLVFStart parseTree = parser.Start();
+
+		      if (parser.getParseExceptions().size()>0){
+		    	  //report error
+		    	  for(Iterator it=parser.getParseExceptions().iterator();it.hasNext();){
+			    	  System.out.println(it.next());
+			      }
+		    	  throw new RuntimeException("Parse exception");
+		      }
+
+
+ 		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+		      
+		      //assertEquals("pop",10,executor.getGlobalVariable(parser.getGlobalVariableSlot("pop1")).getTLValue().getNumeric().getInt());
+		      //assertEquals("poll",1,executor.getGlobalVariable(parser.getGlobalVariableSlot("poll1")).getTLValue().getNumeric().getInt());
+		      //assertEquals("isNull",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("isNull")).getTLValue()==TLBooleanValue.TRUE);
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception",e);
+	    }
+	}
     
     
     public void print_code(String text){

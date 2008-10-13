@@ -638,14 +638,40 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
      */
     public String getFieldNamesHeader() {
         StringBuilder ret = new StringBuilder();
+        DataFieldMetadata dataFieldMetadata;
+        short fieldSize;
+        int headerSize;
+        char blank = ' ';
         
         for (int i = 0; i < getNumFields(); i++) {
-            ret.append(getField(i).getName());
-            if(getField(i).isDelimited()) {
-            	ret.append(getField(i).getDelimiters()[0]);
+        	dataFieldMetadata = getField(i);
+            if(dataFieldMetadata.isDelimited()) {
+            	// delim: add field name and delimiter
+                ret.append(dataFieldMetadata.getName());
+            	ret.append(dataFieldMetadata.getDelimiters()[0]);
             } else {
-            	ret.append(";");
+            	// fixlen: strip header name or add blank spaces
+            	fieldSize = dataFieldMetadata.getSize();
+            	if (fieldSize <= (headerSize = dataFieldMetadata.getName().length())) {
+            		ret.append(dataFieldMetadata.getName().substring(0, fieldSize));
+            	} else {
+            		ret.append(dataFieldMetadata.getName());
+            		for (int j=fieldSize-headerSize; j>0; j--) {
+                		ret.append(blank);
+            		}
+            	}
             }
+        }
+        // add record delimiter for fixlen
+        if (getField(getNumFields()-1).isFixed()) {
+        	String[] delimiters = getRecordDelimiters();
+        	if (delimiters != null) {
+            	for (String delim: delimiters) {
+            		if (delim != null) {
+                		ret.append(delim);
+            		}
+            	}
+        	}
         }
         
         return ret.toString();      
@@ -673,6 +699,10 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
     }
     
     public boolean equals(Object o){
+    	return equals(o, true);
+    }
+    
+    public boolean equals(Object o, boolean checkFixDelType){
     	if (o == null) {
     		return false;
     	}
@@ -684,7 +714,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
     		return false;
     	}
     	for (int i=0;i<this.getNumFields();i++){
-    		if (!this.getField(i).equals(metadata.getField(i))){
+    		if (!this.getField(i).equals(metadata.getField(i), checkFixDelType)){
     			return false;
     		}
     	}
