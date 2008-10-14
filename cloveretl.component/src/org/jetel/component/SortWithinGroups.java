@@ -18,6 +18,8 @@
  */
 package org.jetel.component;
 
+import java.io.File;
+
 import java.nio.ByteBuffer;
 
 import org.jetel.data.DataRecord;
@@ -25,13 +27,18 @@ import org.jetel.data.Defaults;
 import org.jetel.data.ExternalSortDataRecord;
 import org.jetel.data.ISortDataRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -138,8 +145,9 @@ import org.w3c.dom.Element;
  *       groupKey="id" sortKey="name(a):address(a)"/&gt;
  * </pre>
  *
- * @author mjanik
+ * @author Martin Janik <martin.janik@javlin.cz>
  * @since 26th September 2008
+ * @version 14th October 2008
  */
 public class SortWithinGroups extends Node {
 
@@ -147,15 +155,15 @@ public class SortWithinGroups extends Node {
     private static final String COMPONENT_TYPE = "SORT_WITHIN_GROUPS";
 
     /** the XML attribute used to store the group key */
-    private static final String XML_GROUP_KEY_ATTRIBUTE = "groupKey";
+    private static final String XML_ATTRIBUTE_GROUP_KEY = "groupKey";
     /** the XML attribute used to store the sort key */
-    private static final String XML_SORT_KEY_ATTRIBUTE = "sortKey";
+    private static final String XML_ATTRIBUTE_SORT_KEY = "sortKey";
     /** the XML attribute used to store the buffer capacity */
-    private static final String XML_BUFFER_CAPACITY_ATTRIBUTE = "bufferCapacity";
+    private static final String XML_ATTRIBUTE_BUFFER_CAPACITY = "bufferCapacity";
     /** the XML attribute used to store the number of tapes */
-    private static final String XML_NUMBER_OF_TAPES_ATTRIBUTE = "numberOfTapes";
+    private static final String XML_ATTRIBUTE_NUMBER_OF_TAPES = "numberOfTapes";
     /** the XML attribute used to store the temporary directories */
-    private static final String XML_TEMP_DIRECTORIES_ATTRIBUTE = "tempDirectories";
+    private static final String XML_ATTRIBUTE_TEMP_DIRECTORIES = "tempDirectories";
 
     /** the ascending sort order */
     private static final char SORT_ASCENDING = 'a';
@@ -173,12 +181,12 @@ public class SortWithinGroups extends Node {
     private static final String[] DEFAULT_TEMP_DIRECTORIES = null;
 
     /**
-     * Creates an instance of the SortWithinGroups component from a XML element.
+     * Creates an instance of the <code>SortWithinGroups</code> component from an XML element.
      *
      * @param transformationGraph the transformation graph the component belongs to
      * @param xmlElement the XML element that should be used for construction
      *
-     * @return an instance of the SortWithinGroups component
+     * @return an instance of the <code>SortWithinGroups</code> component
      *
      * @throws XMLConfigurationException when some attribute is missing
      */
@@ -189,32 +197,49 @@ public class SortWithinGroups extends Node {
         ComponentXMLAttributes componentAttributes =
                 new ComponentXMLAttributes(xmlElement, transformationGraph);
 
+        String type = null;
+
         try {
-            String groupKey = componentAttributes.getString(XML_GROUP_KEY_ATTRIBUTE);
-            String sortKey = componentAttributes.getString(XML_SORT_KEY_ATTRIBUTE);
+            type = componentAttributes.getString(XML_TYPE_ATTRIBUTE);
+        } catch (Exception exception) {
+            throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
+                    + " attribute is missing!", exception);
+        }
+
+        if (!type.equalsIgnoreCase(COMPONENT_TYPE)) {
+            throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
+                    + " attribute contains a value incompatible with this component!");
+        }
+
+        try {
+            String groupKey = componentAttributes.getString(XML_ATTRIBUTE_GROUP_KEY);
+            String sortKey = componentAttributes.getString(XML_ATTRIBUTE_SORT_KEY);
 
             sortWithinGroups = new SortWithinGroups(
                     componentAttributes.getString(XML_ID_ATTRIBUTE),
                     groupKey.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
                     sortKey.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
-            if (componentAttributes.exists(XML_BUFFER_CAPACITY_ATTRIBUTE)) {
-                sortWithinGroups.setBufferCapacity(
-                        componentAttributes.getInteger(XML_BUFFER_CAPACITY_ATTRIBUTE));
+            if (componentAttributes.exists(XML_NAME_ATTRIBUTE)) {
+                sortWithinGroups.setName(componentAttributes.getString(XML_NAME_ATTRIBUTE));
             }
 
-            if (componentAttributes.exists(XML_NUMBER_OF_TAPES_ATTRIBUTE)) {
-                sortWithinGroups.setNumberOfTapes(
-                        componentAttributes.getInteger(XML_NUMBER_OF_TAPES_ATTRIBUTE));
+            if (componentAttributes.exists(XML_ATTRIBUTE_BUFFER_CAPACITY)) {
+                sortWithinGroups.setBufferCapacity(componentAttributes.getInteger(XML_ATTRIBUTE_BUFFER_CAPACITY));
             }
 
-            if (componentAttributes.exists(XML_TEMP_DIRECTORIES_ATTRIBUTE)) {
-                sortWithinGroups.setTempDirectories(
-                        componentAttributes.getString(XML_TEMP_DIRECTORIES_ATTRIBUTE)
-                            .split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
+            if (componentAttributes.exists(XML_ATTRIBUTE_NUMBER_OF_TAPES)) {
+                sortWithinGroups.setNumberOfTapes(componentAttributes.getInteger(XML_ATTRIBUTE_NUMBER_OF_TAPES));
             }
+
+            if (componentAttributes.exists(XML_ATTRIBUTE_TEMP_DIRECTORIES)) {
+                sortWithinGroups.setTempDirectories(componentAttributes.getString(XML_ATTRIBUTE_TEMP_DIRECTORIES)
+                        .split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
+            }
+        } catch (AttributeNotFoundException exception) {
+            throw new XMLConfigurationException("Missing a required attribute!", exception);
         } catch (Exception exception) {
-            throw new XMLConfigurationException("Error loading the component!", exception);
+            throw new XMLConfigurationException("Error creating the component!", exception);
         }
 
         return sortWithinGroups;
@@ -241,29 +266,39 @@ public class SortWithinGroups extends Node {
     private ByteBuffer dataRecordBuffer = null;
 
     /**
-     * Constructs an instance of the SortWithinGroups component.
+     * Constructs a new instance of the <code>SortWithinGroups</code> component.
      *
      * @param id an identification of the component
-     * @param groupKeyParts an array of group key parts (field name + order)
-     * @param sortKeyParts an array of sort key parts (field name + order)
+     * @param groupKeyFields an array of group key fields (field name + ordering)
+     * @param sortKeyFields an array of sort key fields (field name + ordering)
      */
-    public SortWithinGroups(String id, String[] groupKeyParts, String[] sortKeyParts) {
+    public SortWithinGroups(String id, String[] groupKeyFields, String[] sortKeyFields) {
         super(id);
 
-        this.groupKeyFields = new String[groupKeyParts.length];
+        if (groupKeyFields != null && groupKeyFields.length > 0) {
+            this.groupKeyFields = new String[groupKeyFields.length];
 
-        for (int i = 0; i < groupKeyParts.length; i++) {
-            this.groupKeyFields[i] = groupKeyParts[i].replaceFirst("\\s*\\(.*$", "");
+            for (int i = 0; i < groupKeyFields.length; i++) {
+                this.groupKeyFields[i] = groupKeyFields[i].replaceFirst("\\s*\\(.*$", "");
+            }
+        } else {
+            this.groupKeyFields = null;
         }
 
-        this.sortKeyFields = new String[sortKeyParts.length];
-        this.sortKeyOrdering = new boolean[sortKeyParts.length];
+        if (sortKeyFields != null && sortKeyFields.length > 0) {
+            this.sortKeyFields = new String[sortKeyFields.length];
+            this.sortKeyOrdering = new boolean[sortKeyFields.length];
 
-        for (int i = 0; i < sortKeyParts.length; i++) {
-            String[] sortKeyPartParts = sortKeyParts[i].split("\\s*\\(\\s*");
+            for (int i = 0; i < sortKeyFields.length; i++) {
+                String[] sortKeyFieldParts = sortKeyFields[i].split("\\s*\\(\\s*", 2);
 
-            this.sortKeyFields[i] = sortKeyPartParts[0];
-            this.sortKeyOrdering[i] = sortKeyPartParts[1].matches("^[Aa].*$");
+                this.sortKeyFields[i] = sortKeyFieldParts[0];
+                this.sortKeyOrdering[i] =
+                    (sortKeyFieldParts.length == 2) ? sortKeyFieldParts[1].matches("^[Aa].*$") : true;
+            }
+        } else {
+            this.sortKeyFields = null;
+            this.sortKeyOrdering = null;
         }
     }
 
@@ -300,26 +335,21 @@ public class SortWithinGroups extends Node {
     public void toXML(Element xmlElement) {
         super.toXML(xmlElement);
 
-        xmlElement.setAttribute(XML_GROUP_KEY_ATTRIBUTE,
-                StringUtils.stringArraytoString(groupKeyFields,
-                    Defaults.Component.KEY_FIELDS_DELIMITER));
-        xmlElement.setAttribute(XML_SORT_KEY_ATTRIBUTE,
-                formatSortKey(sortKeyFields, sortKeyOrdering));
+        xmlElement.setAttribute(XML_ATTRIBUTE_GROUP_KEY,
+                StringUtils.stringArraytoString(groupKeyFields, Defaults.Component.KEY_FIELDS_DELIMITER));
+        xmlElement.setAttribute(XML_ATTRIBUTE_SORT_KEY, formatSortKey(sortKeyFields, sortKeyOrdering));
 
         if (bufferCapacity != DEFAULT_BUFFER_CAPACITY) {
-            xmlElement.setAttribute(XML_BUFFER_CAPACITY_ATTRIBUTE,
-                    Integer.toString(bufferCapacity));
+            xmlElement.setAttribute(XML_ATTRIBUTE_BUFFER_CAPACITY, Integer.toString(bufferCapacity));
         }
 
         if (numberOfTapes != DEFAULT_NUMBER_OF_TAPES) {
-            xmlElement.setAttribute(XML_NUMBER_OF_TAPES_ATTRIBUTE,
-                    Integer.toString(numberOfTapes));
+            xmlElement.setAttribute(XML_ATTRIBUTE_NUMBER_OF_TAPES, Integer.toString(numberOfTapes));
         }
 
         if (tempDirectories != DEFAULT_TEMP_DIRECTORIES) {
-            xmlElement.setAttribute(XML_TEMP_DIRECTORIES_ATTRIBUTE,
-                    StringUtils.stringArraytoString(tempDirectories,
-                        Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
+            xmlElement.setAttribute(XML_ATTRIBUTE_TEMP_DIRECTORIES,
+                    StringUtils.stringArraytoString(tempDirectories, Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
         }
     }
 
@@ -348,6 +378,44 @@ public class SortWithinGroups extends Node {
         checkOutputPorts(status, 1, Integer.MAX_VALUE);
         checkMetadata(status, getInMetadata(), getOutMetadata());
 
+        DataRecordMetadata metadata = getInputPort(INPUT_PORT_NUMBER).getMetadata();
+
+        if (groupKeyFields == null) {
+            status.add(new ConfigurationProblem("The group key is empty!", Severity.ERROR, this, Priority.HIGH));
+        } else {
+            for (String groupKeyField : groupKeyFields) {
+                if (metadata.getField(groupKeyField) == null) {
+                    status.add(new ConfigurationProblem("The group key field " + StringUtils.quote(groupKeyField)
+                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH));
+                }
+            }
+        }
+
+        if (sortKeyFields == null) {
+            status.add(new ConfigurationProblem("The sort key is empty!", Severity.ERROR, this, Priority.HIGH));
+        } else {
+            for (String sortKeyField : sortKeyFields) {
+                if (metadata.getField(sortKeyField) == null) {
+                    status.add(new ConfigurationProblem("The sort key field " + StringUtils.quote(sortKeyField)
+                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH));
+                }
+            }
+        }
+
+        if (tempDirectories != DEFAULT_TEMP_DIRECTORIES) {
+            for (String tempDirectory : tempDirectories) {
+                if (!new File(tempDirectory).exists()) {
+                    status.add(new ConfigurationProblem("The temporary directory " + StringUtils.quote(tempDirectory)
+                            + " doesn't exist!", Severity.ERROR, this, Priority.NORMAL));
+                }
+            }
+        }
+
+        if (numberOfTapes <= 0) {
+            status.add(new ConfigurationProblem("The number of tapes is less than 1!",
+                    Severity.ERROR, this, Priority.NORMAL));
+        }
+
         return status;
     }
 
@@ -360,38 +428,43 @@ public class SortWithinGroups extends Node {
         super.init();
 
         try {
-            dataRecordSorter = new ExternalSortDataRecord(
-                    getInputPort(INPUT_PORT_NUMBER).getMetadata(), sortKeyFields,
-                    sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories);
+            dataRecordSorter = new ExternalSortDataRecord(getInputPort(INPUT_PORT_NUMBER).getMetadata(),
+                    sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories);
         } catch (Exception exception) {
-            throw new ComponentNotReadyException("Error creating a data record sorter!",
-                    exception);
+            throw new ComponentNotReadyException("Error creating a data record sorter!", exception);
         }
 
         dataRecordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 
         if (dataRecordBuffer == null) {
-            throw new ComponentNotReadyException("Data record buffer allocation failed! "
-                    + "Required size: " + Defaults.Record.MAX_RECORD_SIZE);
+            throw new ComponentNotReadyException("Error allocating a data record buffer! Required size: "
+                    + Defaults.Record.MAX_RECORD_SIZE);
         }
     }
 
     @Override
     public Result execute() throws Exception {
+        if (!isInitialized()) {
+            throw new IllegalStateException("The component has NOT been initialized!");
+        }
+
         InputPort inputPort = getInputPort(INPUT_PORT_NUMBER);
 
         RecordKey groupKey = new RecordKey(groupKeyFields, inputPort.getMetadata());
         groupKey.init();
 
-        DataRecord groupDataRecord = null;
+        int current = 0;
+        int previous = 1;
 
-        DataRecord dataRecord = new DataRecord(inputPort.getMetadata());
-        dataRecord.init();
+        DataRecord[] dataRecords = new DataRecord[2];
+        dataRecords[current] = new DataRecord(inputPort.getMetadata());
+        dataRecords[current].init();
 
-        while (runIt && inputPort.readRecord(dataRecord) != null) {
-            if (groupDataRecord == null) {
-                groupDataRecord = dataRecord.duplicate();
-            } else if (!groupKey.equals(dataRecord, groupDataRecord)) {
+        while (runIt && inputPort.readRecord(dataRecords[current]) != null) {
+            if (dataRecords[previous] == null) {
+                dataRecords[previous] = new DataRecord(inputPort.getMetadata());
+                dataRecords[previous].init();
+            } else if (!groupKey.equals(dataRecords[current], dataRecords[previous])) {
                 dataRecordSorter.sort();
 
                 while (runIt && dataRecordSorter.get(dataRecordBuffer)) {
@@ -400,11 +473,12 @@ public class SortWithinGroups extends Node {
                 }
 
                 dataRecordSorter.reset();
-
-                groupDataRecord = dataRecord.duplicate();
             }
 
-            dataRecordSorter.put(dataRecord);
+            dataRecordSorter.put(dataRecords[current]);
+
+            current ^= 1;
+            previous ^= 1;
 
             SynchronizeUtils.cloverYield();
         }
@@ -448,4 +522,5 @@ public class SortWithinGroups extends Node {
             }
         }
     }
+
 }
