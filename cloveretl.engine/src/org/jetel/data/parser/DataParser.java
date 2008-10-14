@@ -447,7 +447,7 @@ public class DataParser implements Parser {
 						fieldBuffer.append((char) character);
 					}
 					//removes tailing blanks
-					if(skipTBlanks && character != -1 && fieldBuffer.length() > 0) {
+					if(/*skipTBlanks && */character != -1 && fieldBuffer.length() > 0) {
 						fieldBuffer.setLength(fieldBuffer.length() - 
 								(fieldLengths[fieldCounter] - mark - 1));
 					}
