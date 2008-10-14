@@ -32,6 +32,7 @@
 			<value>dateadd</value>
 			<value>datediff</value>
 			<value>trunc</value>
+			<value>trunc_date</value>
 		</parameter>
 	</extension>
 
@@ -67,6 +68,8 @@
 			<value>chop</value>
 			<value>remove_nonprintable</value>
 			<value>remove_nonascii</value>
+			<value>find</value>
+			<value>cut</value>
 		</parameter>
 	</extension>
 	
@@ -93,6 +96,22 @@
         <value>long2date</value>
         <value>date2long</value>
         <value>to_string</value>
+		</parameter>
+	</extension>
+	
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="container"/>
+		<parameter id="className" value="org.jetel.interpreter.extensions.ContainerLib"/>
+		<parameter id="function">
+		<value>remove_all</value>
+        <value>push</value>
+        <value>pop</value>
+        <value>poll</value>
+        <value>remove</value>
+        <value>insert</value>
+        <value>sort</value>
+        <value>copy</value>
+        <value>reverse</value>
 		</parameter>
 	</extension>
 	
