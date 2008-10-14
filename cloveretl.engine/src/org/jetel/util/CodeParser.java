@@ -959,7 +959,7 @@ public class CodeParser {
 		sourceCode.append("\t\t} catch(Exception e) {\n");
         sourceCode.append("\t\t\tthrow new TransformException(\"Error in extern transformation class \" + " + className + ".class.getName() + \": \" + e.getMessage());\n");
         sourceCode.append("\t\t}\n");
-		sourceCode.append("\t\treturn 0;\n");
+		sourceCode.append("\t\treturn ALL;\n");
 		sourceCode.append("\t}\n\n");
 		
 		sourceCode.append("\t/**\n"
