@@ -45,7 +45,6 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.ErrorMsgBody;
 import org.jetel.graph.runtime.Message;
-import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -952,30 +951,32 @@ public abstract class Node extends GraphElement implements Runnable {
      * @return true if the number of input ports is in the given interval; else false
      */
     protected boolean checkInputPorts(ConfigurationStatus status, int min, int max) {
+    	boolean retValue = true;
     	Collection<InputPort> inPorts = getInPorts();
         if(inPorts.size() < min) {
             status.add(new ConfigurationProblem("At least " + min + " input port must be defined!", Severity.ERROR, this, Priority.NORMAL));
-            return false;
+            retValue = false;
         }
         if(inPorts.size() > max) {
             status.add(new ConfigurationProblem("At most " + max + " input ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
-            return false;
+            retValue = false;
         }
+
         int index = 0;
         for (InputPort inputPort : inPorts) {
 			if (inputPort.getMetadata() == null){
                 status.add(new ConfigurationProblem("Metadata on input port " + inputPort.getInputPortNumber() + 
                 		" are not defined!", Severity.WARNING, this, Priority.NORMAL));
-                return false;
+                retValue = false;
 			}
 			if (inputPort.getInputPortNumber() != index){
                 status.add(new ConfigurationProblem("Input port " + index + " is not defined!", Severity.WARNING, this, Priority.NORMAL));
-                return false;
+                retValue = false;
 			}
 			index++;
 		}
         
-        return true;
+        return retValue;
     }
 
     /**
@@ -1097,23 +1098,6 @@ public abstract class Node extends GraphElement implements Runnable {
     		metadata = nextMetadata;
     	}
     	return status;
-    }
-    
-    /**
-     * Checks if the metadata contains at least one filed without autofilling.
-     * @param status
-     * @param metadata
-     */
-    protected void checkAutofilling(ConfigurationStatus status, DataRecordMetadata metadata) {
-    	if (metadata == null) return;
-    	for (DataFieldMetadata dataFieldMetadata: metadata.getFields()) {
-    		if (!dataFieldMetadata.isAutoFilled()) return;
-    	}
-    	status.add(new ConfigurationProblem(
-    			"No Field elements without autofilling for '" + metadata.getName() + "' have been found ! ",
-    			Severity.ERROR, 
-				this,
-				Priority.NORMAL));
     }
     
     protected ConfigurationStatus checkMetadata(ConfigurationStatus status, DataRecordMetadata inMetadata, 
