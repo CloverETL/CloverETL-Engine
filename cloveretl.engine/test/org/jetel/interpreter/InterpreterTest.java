@@ -56,7 +56,7 @@ import org.jetel.util.string.StringUtils;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-public class TestInterpreter extends CloverTestCase {
+public class InterpreterTest extends CloverTestCase {
 	
 	DataRecordMetadata metadata,metadata1,metaOut,metaOut1;
 	DataRecord record,record1,out,out1;
