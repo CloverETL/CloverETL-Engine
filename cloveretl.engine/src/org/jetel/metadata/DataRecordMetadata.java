@@ -29,7 +29,11 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jetel.data.Defaults;
+import org.jetel.exception.ConfigurationProblem;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
@@ -812,6 +816,20 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
     	}
     	return indices;
     }
+    
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        // Checks if the metadata contains at least one field without autofilling.
+    	for (DataFieldMetadata dataFieldMetadata : getFields()) {
+    		if (!dataFieldMetadata.isAutoFilled()) return status;
+    	}
+    	status.add(new ConfigurationProblem(
+    			"No Field elements without autofilling for '" + getName() + "' have been found ! ",
+    			Severity.ERROR,  
+				null, //TODO this
+				Priority.NORMAL));
+    	return status;    	
+    }
+    
 }
 /*
  *  end class DataRecordMetadata
