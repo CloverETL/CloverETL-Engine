@@ -32,6 +32,7 @@
 			<value>dateadd</value>
 			<value>datediff</value>
 			<value>trunc</value>
+			<value>trunc_date</value>
 		</parameter>
 	</extension>
 
@@ -67,6 +68,8 @@
 			<value>chop</value>
 			<value>remove_nonprintable</value>
 			<value>remove_nonascii</value>
+			<value>find</value>
+			<value>cut</value>
 		</parameter>
 	</extension>
 	
