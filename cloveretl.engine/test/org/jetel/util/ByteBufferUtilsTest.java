@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.bytes.ByteBufferUtils;
 
-public class TestByteBufferUtils extends CloverTestCase {
+public class ByteBufferUtilsTest extends CloverTestCase {
 
     ByteBuffer buffer;
     
