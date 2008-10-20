@@ -267,7 +267,8 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 	        if ( recordId != 0 ) { // reload an existing B+Tree
 	            tree = BTree.load(recordManager, recordId);
 	        } else { // create a new B+Tree data structure
-	        	tree = BTree.createInstance(recordManager, recordKeyComparator, keySerializer, recordSerializer, pageSize);
+	        	tree = BTree.createInstance(recordManager, recordKeyComparator, 
+	        			keySerializer, recordSerializer, pageSize);
 	            recordManager.setNamedObject(BTREE_NAME, tree.getRecid());
 	        }
 		} catch (IOException ioe) {
@@ -281,8 +282,10 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 		super.free();
 		
 		try {
-			recordManager.commit();
-			recordManager.close();
+			if (recordManager != null) {
+				recordManager.commit();
+				recordManager.close();
+			}
 		} catch (IOException ioe) {
 			logger.error("Free failed", ioe);
 		}
@@ -530,7 +533,6 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 
 	private static class RecordKeyComparator implements Comparator<DataRecord>, Serializable {
 		private static final long serialVersionUID = 32605276655163072L;
-
 		private transient RecordKey recordKey;
 		
 		public RecordKeyComparator(RecordKey recordKey) {
@@ -538,6 +540,13 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 		}
 		
 		public int compare(DataRecord key1, DataRecord key2) {
+			if ( key1 == null ) {
+	            throw new IllegalArgumentException( "Argument 'key1' is null" );
+	        }
+
+	        if ( key2 == null ) {
+	            throw new IllegalArgumentException( "Argument 'key2' is null" );
+	        }
 			return recordKeyComparator.doCompare(key1, key2);
 		}
 		
@@ -601,6 +610,5 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 			
 			lastRecord = null;
 		}
-		
 	}
 }
