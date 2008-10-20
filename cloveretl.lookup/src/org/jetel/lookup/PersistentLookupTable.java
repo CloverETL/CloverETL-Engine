@@ -40,15 +40,55 @@ import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
+/**
+ *  <h3>Persistent lookup table</h3>
+ *
+ * File based lookup table.
+ * 
+ * <table border="1">
+ *  <th>Lookup table:</th>
+ * <tr><td><h4><i>Name:</i></h4></td>
+ * <td>Persistent lookup table</td></tr>
+ * <tr><td><h4><i>Category:</i></h4></td>
+ * <td></td></tr>
+ * <tr><td><h4><i>Description:</i></h4></td>
+ * <td>File based lookup table. Complete lookup table stored in external file. It uses jdbm.
+ * </td></tr>
+ * <td></td></tr>
+ * </table>
+ *  <br>
+ *  <table border="1">
+ *  <th>XML attributes:</th>
+ *  <tr><td><b>id</b></td><td>component identification</td></tr>
+ *  <tr><td><b>type</b></td><td>component type</td></tr>
+ *  <tr><td><b>metadata</b></td><td>metadata associated with the DataRecord stored in this lookup table.</td></tr>
+ *  <tr><td><b>fileURL</b></td><td>data file when lookup table is stored.</td></tr>
+ *  <tr><td><b>key</b></td><td>names of fields which comprise indexKey to lookup table. Specifies what object will be used for looking up data.</td></tr>
+ *  <tr><td><b>replace</b></td><td>option to replace existing entry (persistent lookup cannot store duplicate entries)</td></tr>
+ *  <tr><td><b>commitInterval</b></td><td>commit interval in number of records (too high interval can invoke java.nio.BufferUnderflowException)</td></tr>
+ *  <tr><td><b>disableTransactions</b></td><td>option to disable transaction (to increase performance at the cost of potential data loss).</td></tr>
+ *  <tr><td><b>pageSize</b></td><td>number of entries per node</td></tr>
+ *  <tr><td><b>cacheSize</b></td><td>given maximum number of objects</td></tr>
+ *  </table>
+ *
+ *	<h4>Example:</h4>
+ *  Reading data from input port (dbload):
+ *  <pre>&lt;LookupTable fileURL="c:/Temp/data" id="LookupTable1" key="EmployeeID" 
+ *  metadata="Metadata0" name="name" type="persistentLookup"/&gt;</pre>
+ *
+ * @author      Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz)
+ *(c) Javlin Consulting (www.javlinconsulting.cz)
+ * @since 		20.10.2008
+ */
 public class PersistentLookupTable extends GraphElement implements LookupTable {
 	private static final String XML_LOOKUP_TYPE_PERSISTENCE_LOOKUP = "persistentLookup";
 	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
 	private static final String XML_LOOKUP_KEY_ATTRIBUTE = "key";
 	private static final String XML_REPLACE_ATTRIBUTE = "replace";
 	private static final String XML_COMMIT_INTERVAL_ATTRIBUTE = "commitInterval";
-	private static final String XML_DISABLE_TRANSACTIONS_ATTRIBUTE = "disableTransactions"; // Option to disable transaction (to increase performance at the cost of potential data loss).
-	private static final String XML_PAGE_SIZE_ATTRIBUTE = "pageSize"; // Default page size (number of entries per node)
-	private static final String XML_CACHE_SIZE_ATTRIBUTE = "cacheSize"; // Cache size - given maximum number of objects
+	private static final String XML_DISABLE_TRANSACTIONS_ATTRIBUTE = "disableTransactions";
+	private static final String XML_PAGE_SIZE_ATTRIBUTE = "pageSize";
+	private static final String XML_CACHE_SIZE_ATTRIBUTE = "cacheSize";
 	
     private final static String[] REQUESTED_ATTRIBUTE = {XML_ID_ATTRIBUTE, XML_TYPE_ATTRIBUTE, XML_METADATA_ID,
     	XML_LOOKUP_KEY_ATTRIBUTE, XML_FILE_URL_ATTRIBUTE
