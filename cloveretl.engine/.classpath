@@ -20,5 +20,6 @@
 	<classpathentry kind="lib" path="lib/icu4j-normalizer.jar"/>
 	<classpathentry kind="lib" path="lib/commons-net-1.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/jakarta-oro-2.0.8.jar"/>
+	<classpathentry kind="var" path="JDK_TOOLS"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
