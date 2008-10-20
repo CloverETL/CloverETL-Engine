@@ -68,7 +68,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>commitInterval</b></td><td>commit interval in number of records (too high interval can invoke java.nio.BufferUnderflowException)</td></tr>
  *  <tr><td><b>disableTransactions</b></td><td>option to disable transaction (to increase performance at the cost of potential data loss).</td></tr>
  *  <tr><td><b>pageSize</b></td><td>number of entries per node</td></tr>
- *  <tr><td><b>cacheSize</b></td><td>given maximum number of objects</td></tr>
+ *  <tr><td><b>cacheSize</b></td><td>given maximum number of objects in cache</td></tr>
  *  </table>
  *
  *	<h4>Example:</h4>
@@ -90,13 +90,13 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 	private static final String XML_PAGE_SIZE_ATTRIBUTE = "pageSize";
 	private static final String XML_CACHE_SIZE_ATTRIBUTE = "cacheSize";
 	
-    private final static String[] REQUESTED_ATTRIBUTE = {XML_ID_ATTRIBUTE, XML_TYPE_ATTRIBUTE, XML_METADATA_ID,
-    	XML_LOOKUP_KEY_ATTRIBUTE, XML_FILE_URL_ATTRIBUTE
+    private final static String[] REQUESTED_ATTRIBUTE = {XML_ID_ATTRIBUTE, XML_TYPE_ATTRIBUTE, 
+    	XML_METADATA_ID, XML_LOOKUP_KEY_ATTRIBUTE, XML_FILE_URL_ATTRIBUTE
     };
 
     private static final String BTREE_NAME = "btree";
 	private static final boolean DEFAULT_REPLACE = true;
-	private static final int DEFAULT_COMMIT_INTERVAL = 1000;
+	private static final int DEFAULT_COMMIT_INTERVAL = 100;
 	private static final boolean DEFAULT_DISABLE_TRANSACTIONS = false;
 	private static final int DEFAULT_PAGE_SIZE = BTree.DEFAULT_SIZE;
 	private static final int DEFAULT_CACHE_SIZE = 1000;
