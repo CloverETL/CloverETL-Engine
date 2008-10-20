@@ -5,7 +5,7 @@
 
 	<runtime>
 		<library path="../../../cloveretl.lookup/bin/"/>
-		<library path="lib/jdbm-1.0.jar"/>
+		<library path="../../../cloveretl.lookup/lib/jdbm-1.0.jar"/>
    	</runtime> 
 	
 	<requires engine-version="2.5.2">
