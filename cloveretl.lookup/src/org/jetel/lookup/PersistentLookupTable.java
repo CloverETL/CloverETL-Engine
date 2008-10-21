@@ -95,11 +95,13 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
     };
 
     private static final String BTREE_NAME = "btree";
-	private static final boolean DEFAULT_REPLACE = true;
-	private static final int DEFAULT_COMMIT_INTERVAL = 100;
-	private static final boolean DEFAULT_DISABLE_TRANSACTIONS = false;
-	private static final int DEFAULT_PAGE_SIZE = BTree.DEFAULT_SIZE;
-	private static final int DEFAULT_CACHE_SIZE = 1000;
+    
+    // used in GUI - com.cloveretl.gui.wizard.lookupTable PersistentLookupTablePage.java
+    public static final boolean DEFAULT_REPLACE = true;
+	public static final int DEFAULT_COMMIT_INTERVAL = 100;
+	public static final boolean DEFAULT_DISABLE_TRANSACTIONS = false;
+	public static final int DEFAULT_PAGE_SIZE = BTree.DEFAULT_SIZE;
+	public static final int DEFAULT_CACHE_SIZE = 1000;
 	
 	private static Log logger = LogFactory.getLog(PersistentLookupTable.class);
 	
