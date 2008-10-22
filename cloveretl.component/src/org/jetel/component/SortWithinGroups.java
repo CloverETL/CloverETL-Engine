@@ -142,7 +142,7 @@ import org.w3c.dom.Element;
  * <h4>Example:</h4>
  * <pre>
  *   &lt;Node id="SORT_CUSTOMER" type="SORT_WITHIN_GROUPS"
- *       groupKey="id" sortKey="name(a):address(a)"/&gt;
+ *       groupKey="id" sortKey="name(a);address(a)"/&gt;
  * </pre>
  *
  * @author Martin Janik <martin.janik@javlin.cz>
@@ -269,24 +269,20 @@ public class SortWithinGroups extends Node {
      * Constructs a new instance of the <code>SortWithinGroups</code> component.
      *
      * @param id an identification of the component
-     * @param groupKeyFields an array of group key fields (field name + ordering)
+     * @param groupKeyFields an array of group key fields (field name)
      * @param sortKeyFields an array of sort key fields (field name + ordering)
      */
     public SortWithinGroups(String id, String[] groupKeyFields, String[] sortKeyFields) {
         super(id);
 
         if (groupKeyFields != null && groupKeyFields.length > 0) {
-            this.groupKeyFields = new String[groupKeyFields.length];
-
-            for (int i = 0; i < groupKeyFields.length; i++) {
-                this.groupKeyFields[i] = groupKeyFields[i].replaceFirst("\\s*\\(.*$", "");
-            }
+            this.groupKeyFields = groupKeyFields;
         } else {
             this.groupKeyFields = null;
         }
 
         if (sortKeyFields != null && sortKeyFields.length > 0) {
-            this.sortKeyFields = new String[sortKeyFields.length];
+            this.sortKeyFields = sortKeyFields;
             this.sortKeyOrdering = new boolean[sortKeyFields.length];
 
             for (int i = 0; i < sortKeyFields.length; i++) {
