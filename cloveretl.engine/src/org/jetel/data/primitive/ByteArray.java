@@ -297,6 +297,16 @@ public class ByteArray implements Comparable, Iterable {
 		return str.toString();
 	}
 	
+	public String fromHexString(){
+		StringBuilder str=new StringBuilder(value.length/2);
+		int j;
+		for(int i=0;i<count/2; i++){
+			j = i*2;
+			str.append((char)((Character.digit(value[j], 16)<<4) + Character.digit(value[j+1], 16)));
+		}
+		return str.toString();
+	}
+
 	/**
 	 * Puts byte array to the data buffer.
 	 * 
