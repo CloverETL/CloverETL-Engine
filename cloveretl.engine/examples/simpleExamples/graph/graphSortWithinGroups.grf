@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="yanas" created="Thu Sep 25 11:48:52 CEST 2008" guiVersion="2.0" id="1222336215500" licenseType="Evaluation license." modified="Tue Oct 14 15:17:32 CEST 2008" modifiedBy="yanas" name="sortWithinGroups" revision="1.30">
+<Graph author="yanas" created="Thu Sep 25 11:48:52 CEST 2008" guiVersion="2.0" id="1222336215500" licenseType="Evaluation license." modified="Wed Oct 22 17:28:53 CEST 2008" modifiedBy="yanas" name="sortWithinGroups" revision="1.32">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="UTF-8">
 <Record fieldDelimiter=";" name="record" previewAttachmentCharset="UTF-8" recordDelimiter="\n" type="delimited">
@@ -16,8 +16,8 @@
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/friends-country-town+name.dat" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="637" guiY="46" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/friends-country+town-age.dat" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="637" guiY="136" id="DATA_WRITER1" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="237" guiY="48" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node enabled="enabled" groupKey="country(a)" guiHeight="0" guiName="SortWithinGroups" guiWidth="0" guiX="432" guiY="46" id="SORT_WITHIN_GROUPS0" sortKey="town(a);name(a)" type="SORT_WITHIN_GROUPS"/>
-<Node enabled="enabled" groupKey="country(a);town(a)" guiHeight="0" guiName="SortWithinGroups" guiWidth="0" guiX="433" guiY="136" id="SORT_WITHIN_GROUPS1" sortKey="age(d)" type="SORT_WITHIN_GROUPS"/>
+<Node enabled="enabled" groupKey="country" guiHeight="0" guiName="SortWithinGroups" guiWidth="0" guiX="432" guiY="46" id="SORT_WITHIN_GROUPS0" sortKey="town(a);name(a)" type="SORT_WITHIN_GROUPS"/>
+<Node enabled="enabled" groupKey="country;town" guiHeight="0" guiName="SortWithinGroups" guiWidth="0" guiX="433" guiY="136" id="SORT_WITHIN_GROUPS1" sortKey="age(d)" type="SORT_WITHIN_GROUPS"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
 <Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SORT_WITHIN_GROUPS0:0"/>
 <Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SORT_WITHIN_GROUPS1:0"/>
