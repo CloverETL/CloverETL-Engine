@@ -24,7 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 
@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.HashKey;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
@@ -298,15 +299,16 @@ public class LookupJoin extends Node {
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
 		DataRecord[] inRecords = new DataRecord[] { inRecord, null };
-		lookupTable.setLookupKey(recordKey);
+		LinkedList<DataRecord> lookupResults = new LinkedList<DataRecord>();
 		int counter = 0;
 		while (inRecord != null && runIt) {
 			inRecord = inPort.readRecord(inRecord);
 			if (inRecord != null) {
 				// find slave record in database
-			    Iterator<DataRecord> iterator = lookupTable.iterator(inRecord);
-                inRecords[1] = iterator.hasNext() ? iterator.next() : NullRecord.NULL_RECORD;
-				do {
+			    lookupTable.get(new HashKey(recordKey, inRecord), lookupResults);
+                inRecords[1] = !lookupResults.isEmpty() ? lookupResults.remove() : NullRecord.NULL_RECORD;
+
+                do {
 					if ((inRecords[1] != NullRecord.NULL_RECORD || leftOuterJoin)) {
 						
 						int transformResult = transformation.transform(inRecords, outRecord);
@@ -357,8 +359,10 @@ public class LookupJoin extends Node {
 						}							
 					}
 					// get next record from lookup table with the same key
-	                inRecords[1] = iterator.hasNext() ? iterator.next() : NullRecord.NULL_RECORD;
+	                inRecords[1] = !lookupResults.isEmpty() ? lookupResults.remove() : NullRecord.NULL_RECORD;
 				} while (inRecords[1] != NullRecord.NULL_RECORD);
+
+				lookupResults.clear();
 			}
 			counter++;
 		}

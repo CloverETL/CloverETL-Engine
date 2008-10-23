@@ -144,9 +144,9 @@ public class InterpreterTest extends CloverTestCase {
         }catch(Exception ex) {
             throw new RuntimeException(ex);
         }
-        lkp.put("one",record);
+        lkp.put(record);
         record.getField("Name").setValue("xxxx");
-        lkp.put("two", record);
+        lkp.put(record);
   
 //        RecordKey key = new RecordKey(new int[]{0}, metadata);
 //        key.init();
@@ -154,7 +154,7 @@ public class InterpreterTest extends CloverTestCase {
 //        DataRecord keyRecord = new DataRecord(metadata);
 //        keyRecord.init();
 //        keyRecord.getField(0).setValue("one");
-        lkp.setLookupKey("nesmysl");
+//        lkp.setLookupKey("nesmysl");
 	}
 	
 	protected void tearDown() {

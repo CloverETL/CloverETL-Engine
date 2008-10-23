@@ -156,7 +156,7 @@ public class LookupTableReaderWriter extends Node {
 			DataRecord inRecord = new DataRecord(inPort.getMetadata());
 			inRecord.init();
 			while ((inRecord = inPort.readRecord(inRecord)) != null && runIt) {
-				lookupTable.put(inRecord, inRecord);
+				lookupTable.put(inRecord);
 				SynchronizeUtils.cloverYield();
 			}			
 		}

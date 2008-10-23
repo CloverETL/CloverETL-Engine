@@ -36,8 +36,6 @@ import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
-import org.jetel.data.lookup.BasicLookupTableIterator;
-import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -48,7 +46,6 @@ import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
-import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.primitive.SimpleCache;
@@ -77,7 +74,7 @@ import org.w3c.dom.Element;
  *@author     dpavlis
  *@since      May 22, 2003
  */
-public class DBLookupTable extends GraphElement implements LookupTable {
+public class DBLookupTable extends AbstractLookupTable {
 
     private static final String XML_LOOKUP_TYPE_DB_LOOKUP = "dbLookup"; 
     //private static final String XML_LOOKUP_KEY = "key";
@@ -154,6 +151,16 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 */
 	public DataRecordMetadata getMetadata() {
 		return dbMetadata;
+	}
+
+	public DataRecord get(HashKey lookupKey) {
+	    if (lookupKey == null) {
+	        throw new NullPointerException("lookupKey");
+	    }
+
+	    setLookupKey(lookupKey.getRecordKey());
+
+	    return get(lookupKey.getDataRecord());
 	}
 
 	/**
@@ -349,7 +356,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	    return (DataRecord)resultCache.get(keyStr) ;
 	}
 
-	/**
+    /**
 	 *  Executes query and returns data record (statement must be initialized with
 	 *  parameters prior to calling this function
 	 *
@@ -696,14 +703,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		
 	}
     
-    public boolean put(Object key,DataRecord value){
-        throw new UnsupportedOperationException("Operation put() not supported");
-    }
-    
-    public boolean remove(Object key){
-        throw new UnsupportedOperationException("Operation remove() not supported");
-    }
-    
     /* (non-Javadoc)
      * @see java.lang.Iterable#iterator()
      */
@@ -734,10 +733,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		}
    }
     
-    public Iterator<DataRecord> iterator(Object lookupKey) {
-        return new BasicLookupTableIterator(this, lookupKey);
-    }
-
 /**
  * Class used as key in cache when using DBLookupTable.get(Object[]) method.
  * These objects are equal if all theirs parts are equal.

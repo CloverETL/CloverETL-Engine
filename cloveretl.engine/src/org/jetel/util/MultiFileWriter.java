@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.jetel.data.DataRecord;
+import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.provider.FormatterProvider;
@@ -170,7 +171,6 @@ public class MultiFileWriter {
 			if (partitionKey != null) {
 				multiTarget = new HashMap<Object, TargetFile>(tableInitialSize);
 				if (lookupTable != null) {
-					lookupTable.setLookupKey(partitionKey);
 					unassignedTarget = createNewTarget();
 					unassignedTarget.setFileBeforeTag("unassigned");
 					unassignedTarget.setDictionary(dictionary);
@@ -348,7 +348,8 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException
      */
     private final void writeRecord4LookupTable(DataRecord record) throws IOException, ComponentNotReadyException {
-    	DataRecord keyRecord = lookupTable.get(record);
+    	DataRecord keyRecord = lookupTable.get(new HashKey(partitionKey, record));
+
     	if (keyRecord == null) {
     		currentTarget = unassignedTarget;
     		currentFormatter = currentTarget.getFormatter();

@@ -1879,9 +1879,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 				node.jjtGetChild(i).jjtAccept(this, data);
 				keys[i] = stack.pop().getValue();
 			}
-			if (needLookupKey)
-				node.lookup.setLookupKey(keys);
-			record = node.lookup.get(keys);
+			//TODO: Zkontrolovat a opravit nasledujici tri radky
+//			if (needLookupKey)
+//				node.lookup.setLookupKey(keys);
+//			record = node.lookup.get(keys);
+
+			// nasledujici radek je tu pouze pro kompilator
+			record = null;
+
 			break;
 		default: // CLVFLookupNode.OP_NEXT:
 			record = node.lookup.getNext();
