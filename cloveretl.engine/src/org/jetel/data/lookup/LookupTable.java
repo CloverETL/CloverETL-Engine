@@ -129,6 +129,7 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      *
      * @deprecated
      */
+    @Deprecated
     public DataRecord getNext();
 
     /**
@@ -144,6 +145,7 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      *
      * @deprecated
      */
+    @Deprecated
     public int getNumFound();
 
     /**
