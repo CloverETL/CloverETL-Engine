@@ -57,7 +57,7 @@ public abstract class AbstractLookupTable extends GraphElement implements Lookup
         throw new UnsupportedOperationException("Method not supported!");
     }
 
-    public int get(HashKey lookupKey, List<DataRecord> matchingDataRecords) {
+    public synchronized int get(HashKey lookupKey, List<DataRecord> matchingDataRecords) {
         if (lookupKey == null) {
             throw new NullPointerException("lookupKey");
         }
