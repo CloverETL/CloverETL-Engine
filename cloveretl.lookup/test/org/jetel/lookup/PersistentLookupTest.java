@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.Calendar;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -19,7 +18,7 @@ public class PersistentLookupTest extends CloverTestCase {
 	private final static String dataFileExtension = ".db";
 	private final static String logFileExtension = ".lg";
 	
-	private LookupTable lookupTable;
+	private PersistentLookupTable lookupTable;
 	private DataRecordMetadata lookupMetadata;
 	
 	private DataRecord recordToFound1;
@@ -58,7 +57,7 @@ public class PersistentLookupTest extends CloverTestCase {
 	 */
 	public void testGet() throws ComponentNotReadyException {
 		// create lookup table
-		lookupTable = LookupTableFactory.createLookupTable(null, "persistentLookup", 
+		lookupTable = (PersistentLookupTable) LookupTableFactory.createLookupTable(null, "persistentLookup", 
 				new Object[] { "PersistentLookup", lookupMetadata, new String[] {"name"}, fileName }, 
 				new Class[] { String.class, DataRecordMetadata.class, String[].class, String.class });
 		ConfigurationStatus status = new ConfigurationStatus();
@@ -125,7 +124,7 @@ public class PersistentLookupTest extends CloverTestCase {
 	 */
 	public void testGet2() throws ComponentNotReadyException {
 		// create lookup table
-		lookupTable = LookupTableFactory.createLookupTable(null, "persistentLookup", 
+		lookupTable = (PersistentLookupTable) LookupTableFactory.createLookupTable(null, "persistentLookup", 
 				new Object[] { "PersistentLookup", lookupMetadata, new String[] {"name", "start"}, fileName }, 
 				new Class[] { String.class, DataRecordMetadata.class, String[].class, String.class });
 		ConfigurationStatus status = new ConfigurationStatus();
@@ -207,39 +206,39 @@ public class PersistentLookupTest extends CloverTestCase {
 		record.getField("start").setValue(10);
 		record.getField("end").setValue(20);
 		record.getField("date").setValue(cal.getTime());
-		lookupTable.put(null, record);
+		lookupTable.put(record);
 		recordToFound1 = record.duplicate();
 		
 		record.getField("name").setValue("15-20");
 		record.getField("start").setValue(15);
 		record.getField("end").setValue(20);
 		record.getField("date").setValue(cal.getTime());
-		lookupTable.put(null, record);
+		lookupTable.put(record);
 		
 		record.getField("name").setValue("20-25");
 		record.getField("start").setValue(20);
 		record.getField("end").setValue(25);
 		record.getField("date").setValue(cal.getTime());
-		lookupTable.put(null, record);
+		lookupTable.put(record);
 		
 		record.getField("name").setValue("20-30");
 		record.getField("start").setValue(20);
 		record.getField("end").setValue(30);
 		record.getField("date").setValue(cal.getTime());
-		lookupTable.put(null, record);
+		lookupTable.put(record);
 		recordToFound2 = record.duplicate();
 		
 		record.getField("name").setValue("30-40");
 		record.getField("start").setValue(30);
 		record.getField("end").setValue(40);
 		record.getField("date").setValue(cal.getTime());
-		lookupTable.put(null, record);
+		lookupTable.put(record);
 		
 		record.getField("name").setValue("0-10");
 		record.getField("start").setValue(0);
 		record.getField("end").setValue(10);
 		record.getField("date").setValue(cal.getTime());
-		lookupTable.put(null, record);
+		lookupTable.put(record);
 		recordToFound3 = record.duplicate();
 	}
 }

@@ -18,154 +18,150 @@
  */
 package org.jetel.data.lookup;
 
-import java.util.Iterator;
+import java.util.List;
 
 import org.jetel.data.DataRecord;
-import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.JetelException;
+import org.jetel.data.HashKey;
+import org.jetel.exception.NotInitializedException;
 import org.jetel.graph.IGraphElement;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Interface for lookup tables. This is a minimum functionality required.
- * <br><br>
- * The intended use of LookupTable is:<br>
+ * <p>The interface of lookup tables specifying the minimum required functionality.</p>
+ * <p>The intended use of a lookup table is the following:</p>
  * <ol>
- * <li>LookupTable constructed (new LookupTable())
- * <li>setLookupKey() method called to specify what object will be used as
- * a lookup key (usually String, RecordKey, Object[])
- * <li>init() method called to populate table with values or otherwise prepare for use
- * <li>get() or getNext() methods called repeatedly
- * <li>free() method called to free resources occupied by lookup table
+ *   <li>create/obtain an instance of the <code>LookupTable</code>
+ *   <li>call the {@link IGraphElement#init()} method to populate the lookup table and prepare it for use
+ *   <li>use the {@link #get(HashKey)} or {@link #get(HashKey, List)} methods to perform the lookup
+ *   <li>call the {@link IGraphElement#free()} method to free the resources used by the lookup table
  * </ol>
- * <br>
- * <i>Note:</i> not all variants of get() method may be supported by particular
- * LookupTable implementation.<br>
  * 
- * @author DPavlis
- * @since  8.7.2004
+ * @author David Pavlis <david.pavlis@javlin.cz>
+ * @author Martin Janik <martin.janik@javlin.cz>
  *
+ * @version 23rd October 2008
+ * @since 8th July 2004
  */
 public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
 
-    public static final String XML_METADATA_ID ="metadata";
+    public static final String XML_METADATA_ID = "metadata";
     public static final String XML_DBCONNECTION = "dbConnection";
 
     /**
-	 * Called when the lookup table is first used/needed. Usually at
-	 * the beginnig of phases in which the lookup is used. Any memory & time intensive
-	 * allocation should happen during call to this method.<br>
-	 * It may happen that this method is called several times; however it should
-	 * be secured that initialization (allocation, etc.) is performed only once or
-	 * every time close() method was called prior to this method.<br>
-	 * 
-	 * @throws ComponentNotReadyException
-     * NOTE: copy from GraphElement
-	 */
-	public void init() throws ComponentNotReadyException;
-
-
-	/**
-	 * Returns the metadata associated with the DataRecord stored in this lookup table.
-	 * @return the metadata object
-	 */
-	public DataRecordMetadata getMetadata();
-
-
-	/**
-     * Stores data into lookup-table under specified key
-     * 
-     * @param key
-     * @param data
-     * @return  true if success
-     * @since 19.11.2006
+     * <p>Determines whether the lookup table is read-only or not. Read-only lookup tables DO NOT support
+     * the {@link #put(Object, DataRecord)} and {@link #remove(Object)} methods.</p>
+     *
+     * @return <code>true</code> if the lookup table is read-only, <code>false</code> otherwise
+     *
+     * @since 23rd October 2008
      */
-    public boolean put(Object key, DataRecord data);
+    public boolean isReadOnly();
 
     /**
-     * Removes data from lookup-table identified by provided key
-     * 
-     * @param key
-     * @return  true if success
-     * @since 19.11.2006
+     * <p>Returns the meta data associated with the data records stored in this lookup table.</p>
+     *
+     * @return an instance of the <code>DataRecordMetadata</code> class
+     *
+     * @throws NotInitializedException if the lookup table has not yet been initialized
      */
-    public boolean remove(Object key); 
-
+    public DataRecordMetadata getMetadata();
 
     /**
-	 * Specifies what object type will be used for looking up data.
-	 * According to Object type used for calling this method, proper get() method
-	 * should be called then.
-	 * 
-	 * @param key can be one of these Object types - String, Object[], RecordKey
-	 */
-	public void setLookupKey(Object key);
+     * <p>Puts the given data record into the lookup table. This method will work properly iff
+     * the {@link #isReadOnly()} method returns <code>false</code>.</p>
+     *
+     * @param dataRecord the data record to be put into the lookup table
+     *
+     * @return <code>true</code> on success, <code>false</code> otherwise
+     *
+     * @throws UnsupportedOperationException if this method is not supported
+     * @throws NotInitializedException if the lookup table has not yet been initialized
+     * @throws NullPointerException if the given data record is <code>null</code>
+     * @throws IllegalArgumentException if the given data record is not compatible with the lookup table meta data
+     *
+     * @since 23rd October 2008
+     */
+    public boolean put(DataRecord dataRecord);
 
-	/**
-	 * Return DataRecord stored in lookup table under the specified String
-	 * key.
-	 * 
-	 * @param keyString - the key to be used for looking up DataRecord
-	 * @return DataRecord associated with specified key or NULL if not found
-	 */
-	public DataRecord get(String keyString);
+    /**
+     * <p>Removes the given data record from the lookup table. This method will work properly iff
+     * the {@link #isReadOnly()} method returns <code>false</code>.</p>
+     *
+     * @param dataRecord the data record to be put into the lookup table
+     *
+     * @return <code>true</code> on success, <code>false</code> otherwise
+     *
+     * @throws UnsupportedOperationException if this method is not supported
+     * @throws NotInitializedException if the lookup table has not yet been initialized
+     * @throws NullPointerException if the given data record is <code>null</code>
+     * @throws IllegalArgumentException if the given data record is not compatible with the lookup table meta data
+     *
+     * @since 23rd October 2008
+     */
+    public boolean remove(DataRecord dataRecord); 
 
-	/**
-	 * Returns DataRecord stored in lookup table. 
-	 * 
-	 * @param keyRecord DataRecord to be used for looking up data
-	 * @return DataRecord associated with specified key or NULL if not found
-	 * @throws JetelException
-	 */
-	public DataRecord get(DataRecord keyRecord);
+    /**
+     * <p>Performs lookup using the given lookup key and returns the first matching data record. To retrieve all the
+     * matching data records, use the {@link #get(HashKey, List)} method.</p>
+     *
+     * @param lookupKey the lookup key used to lookup the data record
+     *
+     * @return a <code>DataRecord</code> or <code>null</code> if no data record is stored under the lookup key
+     *
+     * @throws NotInitializedException if the lookup table has not yet been initialized
+     * @throws NullPointerException if the given lookup key is <code>null</code>
+     * @throws IllegalArgumentException if the given lookup key is not compatible with this lookup table
+     *
+     * @since 23rd October 2008
+     */
+    public DataRecord get(HashKey lookupKey);
 
-	/**
-	 * Return DataRecord stored in lookup table under the specified keys.<br>
-	 * As a lookup values, only following objects should be used - Integer, Double, Date, String)
-	 * 
-	 * @param keys values used for look-up 	of data record
-	 * @return DataRecord associated with specified keys or NULL if not found
-	 * @throws JetelException
-	 */
-	public DataRecord get(Object[] keys);
+    /**
+     * <p>Returns the next data record stored under the same key as the previous one successfully retrieved
+     * by calling the {@link #get(HashKey)} method.</p>
+     * <p>This method MAY NOT work properly when called from multiple threads! Use the {@link #get(HashKey, List)}
+     * method instead.</p>
+     *
+     * @return a <code>DataRecord</code> or <code>null</code> if no other data record is stored under the same key
+     *
+     * @throws NotInitializedException if the lookup table has not yet been initialized
+     * @throws IllegalStateException if the {@link #get(HashKey)} method has not yet been called
+     *
+     * @deprecated
+     */
+    public DataRecord getNext();
 
-	/**
-	 * Next DataRecord stored under the same key as the previous one sucessfully
-	 * retrieved while calling get() method.
-	 * 
-	 * @return DataRecord or NULL if no other DataRecord is stored under the same key
-	 */
-	public DataRecord getNext();
+    /**
+     * <p>Returns the number of data records found by the last call to the {@link #get(HashKey)} method.</p>
+     * <p>This method MAY NOT work properly when called from multiple threads! Use the {@link #get(HashKey, List)}
+     * method instead.</p>
+     *
+     * @return the number of matching data records or <code>-1</code> if this operation cannot be applied to this
+     * lookup table implementation
+     *
+     * @throws NotInitializedException if the lookup table has not yet been initialized
+     * @throws IllegalStateException if the {@link #get(HashKey)} method has not yet been called
+     *
+     * @deprecated
+     */
+    public int getNumFound();
 
-	/**
-	 * Returns number of DataRecords found by last get() method call.<br>
-	 * 
-	 * @return number of found data records or -1 if can't be applied for this lookup table
-	 * implementation
-	 * @throws JetelException
-	 */
-	public int getNumFound();
-
-
-	/**
-	 * Creates an iterator over the lookup table. The iterator finds values based on a key.
-	 * 
-	 * @param lookupKey lookup key. 
-	 * 
-	 * @return the iterator.
-	 */
-	public Iterator<DataRecord> iterator(Object lookupKey);
-
-
-	/**
-	 * Closes the lookup table - frees any allocated resource (memory, etc.)<br>
-	 * This method is called when this lookup table is no more needed during TransformationGraph
-	 * execution.<br>
-	 * Can be also called from user's transformation method. If close() is called, then
-	 * continuation in using lookup table should not be permitted - till init() is called
-	 * again.
-     * NOTE: copy from GraphElement
-	 */
-	public void free();
+    /**
+     * <p>Performs lookup using the given lookup key, adds the matching data records to the provided list,
+     * and returns the number of data records found and added to the list.</p>
+     * <p>Implementing classes should ensure that this method works correctly when called from multiple threads.</p>
+     *
+     * @param lookupKey the lookup key used to lookup the data records
+     * @param matchingDataRecords a list used to store the matching data records
+     *
+     * @return the number of matching data records added to the list
+     *
+     * @throws NotInitializedException if the lookup table has not yet been initialized
+     * @throws NullPointerException if any provided parameter is <code>null</code>
+     * @throws IllegalArgumentException if the lookup key is not compatible with this lookup table
+     *
+     * @since 23rd October 2008
+     */
+    public int get(HashKey lookupKey, List<DataRecord> matchingDataRecords);
 
 }

@@ -31,11 +31,10 @@ import java.util.TreeSet;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.HashKey;
 import org.jetel.data.RecordComparator;
 import org.jetel.data.RecordKey;
 import org.jetel.data.StringDataField;
-import org.jetel.data.lookup.BasicLookupTableIterator;
-import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenByteDataParser;
@@ -50,7 +49,6 @@ import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
-import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -82,7 +80,7 @@ import org.w3c.dom.Element;
  * @since Sep 20, 2007
  *
  */
-public class RangeLookupTable extends GraphElement implements LookupTable {
+public class RangeLookupTable extends AbstractLookupTable {
 	
 	
     private static final String XML_LOOKUP_TYPE_RANGE_LOOKUP = "rangeLookup";
@@ -362,6 +360,16 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		numFound=0;
 	}
 	
+    public DataRecord get(HashKey lookupKey) {
+        if (lookupKey == null) {
+            throw new NullPointerException("lookupKey");
+        }
+
+        setLookupKey(lookupKey.getRecordKey());
+
+        return get(lookupKey.getDataRecord());
+    }
+
 	/* (non-Javadoc)
 	 * @see org.jetel.data.lookup.LookupTable#get(java.lang.String)
 	 */
@@ -413,7 +421,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		return get();
 	}
 	
-	/**
+    /**
 	 * This method finds all greater records, then set in get(Object[]) or get(DataRecord) or get(String)
 	 * method, in lookup table and stores them in subTable
 	 * 
@@ -509,23 +517,21 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		return tmp;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.LookupTable#put(java.lang.Object, org.jetel.data.DataRecord)
-	 */
-	public boolean put(Object key, DataRecord data) {
-		lookupTable.add(data.duplicate());
+	@Override
+	public boolean isReadOnly() {
+	    return false;
+	}
+
+    @Override
+	public boolean put(DataRecord dataRecord) {
+		lookupTable.add(dataRecord.duplicate());
+
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.LookupTable#remove(java.lang.Object)
-	 */
-	public boolean remove(Object key) {
-        if (key instanceof DataRecord) {
-            return lookupTable.remove(key);
-        }else{
-            throw new IllegalArgumentException("Requires key parameter of type "+DataRecord.class.getName());
-        }
+    @Override
+	public boolean remove(DataRecord dataRecord) {
+	    return lookupTable.remove(dataRecord);
 	}
 
 	/* (non-Javadoc)
@@ -769,10 +775,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		this.data = data;
 	}
 
-
-    public Iterator<DataRecord> iterator(Object lookupKey) {
-        return new BasicLookupTableIterator(this, lookupKey);
-    }
 
 	/**
 	 * Comparator for special records (defining range lookup table). 

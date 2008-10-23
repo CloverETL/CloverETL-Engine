@@ -146,8 +146,9 @@ import org.w3c.dom.Element;
  * </pre>
  *
  * @author Martin Janik <martin.janik@javlin.cz>
+ *
+ * @version 23rd October 2008
  * @since 26th September 2008
- * @version 14th October 2008
  */
 public class SortWithinGroups extends Node {
 

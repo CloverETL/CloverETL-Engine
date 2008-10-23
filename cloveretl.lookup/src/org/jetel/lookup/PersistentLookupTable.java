@@ -20,9 +20,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
-import org.jetel.data.lookup.BasicLookupTableIterator;
-import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -32,7 +31,6 @@ import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
-import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.primitive.TypedProperties;
@@ -80,8 +78,9 @@ import org.w3c.dom.Element;
  *(c) Javlin Consulting (www.javlinconsulting.cz)
  * @since 		20.10.2008
  */
-public class PersistentLookupTable extends GraphElement implements LookupTable {
-	private static final String XML_LOOKUP_TYPE_PERSISTENCE_LOOKUP = "persistentLookup";
+public class PersistentLookupTable extends AbstractLookupTable {
+
+    private static final String XML_LOOKUP_TYPE_PERSISTENCE_LOOKUP = "persistentLookup";
 	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
 	private static final String XML_LOOKUP_KEY_ATTRIBUTE = "key";
 	private static final String XML_REPLACE_ATTRIBUTE = "replace";
@@ -142,6 +141,14 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 		this.fileURL = fileURL;
 	}
 	
+    public DataRecord get(HashKey lookupKey) {
+        if (lookupKey == null) {
+            throw new NullPointerException("lookupKey");
+        }
+
+        return get(lookupKey.getDataRecord());
+    }
+
 	public DataRecord get(String keyString) {
 		prepareGet();
 		
@@ -168,7 +175,7 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 		return find(keyRecord);
 	}
 
-	public DataRecord get(DataRecord keyRecord) {
+    public DataRecord get(DataRecord keyRecord) {
 		prepareGet();
 		
 		return find(keyRecord);
@@ -199,10 +206,6 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 		}
 	}
 	
-    public Iterator<DataRecord> iterator(Object lookupKey) {
-        return new BasicLookupTableIterator(this, lookupKey);
-    }
-
 	public DataRecordMetadata getMetadata() {
 		return metadata;
 	}
@@ -215,33 +218,41 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 		return numFound;
 	}
 
-	/**
-     * @param   key not used
-     * @param   data Data to store in lookup table by using previously defined key
-     * @see org.jetel.data.lookup.LookupTable#put(java.lang.Object, org.jetel.data.DataRecord)
-     */
-    public boolean put(Object key, DataRecord data) {
-    	DataRecord storeRecord = data.duplicate();
-        try {
+    @Override
+	public boolean isReadOnly() {
+	    return false;
+	}
+
+    @Override
+    public boolean put(DataRecord dataRecord) {
+    	DataRecord storeRecord = dataRecord.duplicate();
+
+    	try {
         	tree.insert(storeRecord, storeRecord, replace);
-			if (++uncommitedRecords == commitInterval) {
+
+        	if (++uncommitedRecords == commitInterval) {
 				recordManager.commit();
 				uncommitedRecords = 0;
 			}
 		} catch (IOException ioe) {
 			logger.error("Record wasn't put to the lookup table", ioe);
+
 			return false;
 		}
-        return true;
+
+		return true;
     }
 
-	public boolean remove(Object key) {
+    @Override
+	public boolean remove(DataRecord dataRecord) {
 		try {
-			tree.remove(key);
+			tree.remove(dataRecord);
 		} catch (IOException ioe) {
 			logger.error("Remove failed.", ioe);
+
 			return false;
 		}
+
 		return true;
 	}
 

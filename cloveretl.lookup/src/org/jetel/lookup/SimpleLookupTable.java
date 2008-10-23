@@ -29,8 +29,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
-import org.jetel.data.lookup.BasicLookupTableIterator;
-import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenByteDataParser;
@@ -45,7 +43,6 @@ import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
-import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -73,7 +70,7 @@ import org.w3c.dom.Element;
  * @author     dpavlis
  * @since    May 2, 2002
  */
-public class SimpleLookupTable extends GraphElement implements LookupTable {
+public class SimpleLookupTable extends AbstractLookupTable {
 
     private static final String XML_LOOKUP_TYPE_SIMPLE_LOOKUP = "simpleLookup";
     private static final String XML_LOOKUP_INITIAL_SIZE = "initialSize";
@@ -154,6 +151,16 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	}
 
 
+    public DataRecord get(HashKey lookupKey) {
+        if (lookupKey == null) {
+            throw new NullPointerException("lookupKey");
+        }
+
+        setLookupKey(lookupKey.getRecordKey());
+
+        return get(lookupKey.getDataRecord());
+    }
+
 	/**
 	 *  Looks-up data based on speficied indexKey.<br> The indexKey should be result of calling RecordKey.getKeyString()
 	 *
@@ -201,14 +208,13 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	    }
 	    return get();
 	}
-	
-	protected DataRecord get(){
-	    DataRecord data = lookupTable.get(lookupKey);
-	    numFound= (data!=null ? 1 : 0);
-	    return data;
-	}
-	
-	
+
+    protected DataRecord get(){
+        DataRecord data = lookupTable.get(lookupKey);
+        numFound= (data!=null ? 1 : 0);
+        return data;
+    }
+    
 	/**
 	 *  Initializtaion of lookup table - loading all data into it.
 	 *
@@ -506,30 +512,23 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     	
         return status;
     }
-    
-    /**
-     * @param   key not used
-     * @param   data Data to store in lookup table by using previously defined key
-     * @see org.jetel.data.lookup.LookupTable#put(java.lang.Object, org.jetel.data.DataRecord)
-     */
-    public boolean put(Object key,DataRecord data){
-        DataRecord storeRecord=data.duplicate();
+
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
+
+    @Override
+    public boolean put(DataRecord dataRecord) {
+        DataRecord storeRecord = dataRecord.duplicate();
         lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
+
         return true;
     }
 
-    /**
-     * @param   key a DataRecord object which will be used (together with previously
-     * defined key) for locating & deleting data)
-     * @see org.jetel.data.lookup.LookupTable#remove(java.lang.Object)
-     */
-    public boolean remove(Object key) {
-        if (key instanceof DataRecord) {
-            DataRecord storeRecord = (DataRecord) key;
-            return lookupTable.remove(new HashKey(indexKey, storeRecord))!=null;
-        }else{
-            throw new IllegalArgumentException("Requires key parameter of type "+DataRecord.class.getName());
-        }
+    @Override
+    public boolean remove(DataRecord dataRecord) {
+        return (lookupTable.remove(new HashKey(indexKey, dataRecord)) != null);
     }
     
     /* (non-Javadoc)
@@ -570,10 +569,6 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	public void setData(String data) {
 		this.data = data;
 	}
-
-    public Iterator<DataRecord> iterator(Object lookupKey) {
-    	return new BasicLookupTableIterator(this, lookupKey);
-    }
 
 }
 
