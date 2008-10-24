@@ -32,6 +32,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -257,7 +258,38 @@ public class PersistentLookupTable extends AbstractLookupTable {
 	}
 
 	public void setLookupKey(Object key) {
-		// unuse
+		if (key instanceof String) {
+			// little extra code to support looking up by String key
+            // will be used only if key is composed of 1 field of type STRING
+	        DataRecordMetadata keyMetadata = indexKey.generateKeyRecordMetadata();
+            if (indexKey.getKeyFields().length == 1 && 
+            		keyMetadata.getField(0).getType() == DataFieldMetadata.STRING_FIELD) {
+                int[] keyFields = {0};
+                RecordKey lookupKey = new RecordKey(keyFields, keyMetadata);
+                recordKeyComparator.setLookupKey(lookupKey);
+            } else {
+                throw new RuntimeException(
+                        "Can't use \""
+                                + key
+                                + "\" (String) for lookup - not compatible with the key defined for this lookup table !");
+            }
+		} else if (key instanceof Object[]) {
+			Object[] keys = (Object[])key;
+	        if (indexKey.getKeyFields().length == keys.length) {
+	            DataRecordMetadata keyMetadata = indexKey.generateKeyRecordMetadata();
+                int[] keyFields = new int[keyMetadata.getNumFields()];
+                for (int i = 0; i < keyFields.length; keyFields[i] = i, i++);
+                RecordKey lookupKey = new RecordKey(keyFields, keyMetadata);
+                recordKeyComparator.setLookupKey(lookupKey);
+	        } else {
+	            throw new RuntimeException("Supplied lookup values are not compatible with the key defined for this lookup table !");
+	        }
+		} else if (key instanceof RecordKey) {
+			recordKeyComparator.setLookupKey((RecordKey)key);
+		} else {
+			throw new RuntimeException("Incompatible Object type specified " +
+					"as lookup key: " +key.getClass().getName());
+		}
 	}
 
 	public Iterator<DataRecord> iterator() {
@@ -338,6 +370,7 @@ public class PersistentLookupTable extends AbstractLookupTable {
 			if (recordManager != null) {
 				recordManager.commit();
 				recordManager.close();
+				recordManager = null;
 			}
 		} catch (IOException ioe) {
 			logger.error("Free failed", ioe);
@@ -348,6 +381,7 @@ public class PersistentLookupTable extends AbstractLookupTable {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		numFound = 0;
+		recordKeyComparator.reset();
 	}
 
 	@Override
@@ -583,13 +617,23 @@ public class PersistentLookupTable extends AbstractLookupTable {
 		buffer.get(byteArray, 0, length);
 		return byteArray;
 	}
-
+	
 	private static class RecordKeyComparator implements Comparator<DataRecord>, Serializable {
 		private static final long serialVersionUID = 32605276655163072L;
 		private transient RecordKey recordKey;
+		private transient RecordKey lookupKey;
 		
 		public RecordKeyComparator(RecordKey recordKey) {
 			this.recordKey = recordKey;
+			this.lookupKey = recordKey;
+		}
+		
+		public void setLookupKey(RecordKey lookupKey) {
+			this.lookupKey = lookupKey;
+		}
+		
+		public void reset() {
+			lookupKey = recordKey;
 		}
 		
 		public int compare(DataRecord key1, DataRecord key2) {
@@ -604,7 +648,10 @@ public class PersistentLookupTable extends AbstractLookupTable {
 		}
 		
 		public int doCompare(DataRecord key1, DataRecord key2) {
-			return recordKey.compare(key1, key2);
+			if (lookupKey.getMetadata().equals(key2.getMetadata())) {
+				return recordKey.compare(lookupKey, key1, key2);
+			}
+			return recordKey.compare(lookupKey, key2, key1);
 		}
 	}
 	
