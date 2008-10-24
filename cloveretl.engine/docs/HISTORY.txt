@@ -24,6 +24,7 @@
 + DBOutputTable and DBExecute use fields with autofilling for filling error code and error message
 + unification of trimming attributes of readers
 + shared lookup table
++ PersistentLookupTable
 
 REL 2-5-1
 ---------
