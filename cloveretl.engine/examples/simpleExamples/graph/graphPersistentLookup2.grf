@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Mira Haupt" created="Tue Dec 12 09:10:59 CET 2006" guiVersion="2.0" id="1199361218607" licenseType="Evaluation license." modified="Tue Oct 21 19:29:02 CEST 2008" modifiedBy="Mira Haupt" name="graphLookupReader" revision="1.152">
+<Global>
+<Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<LookupTable cacheSize="1000" commitInterval="100" fileURL="c:/Temp/data" id="LookupTable1" key="EmployeeID" metadata="Metadata0" name="jmeno" pageSize="16" type="persistentLookup"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="100" x="590" y="375">
+<attr name="text"><![CDATA[Read lookup table and write to the file]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Write" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="100" x="590" y="265">
+<attr name="text"><![CDATA[Read a file and write to the lookup table]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Create file" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="100" x="590" y="142">
+<attr name="text"><![CDATA[Create file to compare result]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="66" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="255" x="205" y="65">
+<attr name="text"><![CDATA[For better test functionality of persistent lookup table is recommended run phases separately]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="14" guiY="211" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees.in" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="452" guiY="160" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="310" guiY="160" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="25" guiName="Lookup Table Writer" guiWidth="50" guiX="400" guiY="274" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable1" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="156" guiY="211" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees.out" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="400" guiY="393" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="217" guiY="393" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="LookupTableReader" guiWidth="0" guiX="29" guiY="393" id="LOOKUP_TABLE_READER_WRITER1" lookupTable="LookupTable1" type="LOOKUP_TABLE_READER_WRITER"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="LOOKUP_TABLE_READER_WRITER1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+</Phase>
+</Graph>
