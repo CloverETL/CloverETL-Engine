@@ -1,0 +1,464 @@
+/*
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2008  David Pavlis <david.pavlis@javlin.cz>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+package org.jetel.lookup;
+
+import com.swabunga.spell.engine.SpellDictionary;
+import com.swabunga.spell.engine.SpellDictionaryHashMap;
+import com.swabunga.spell.engine.Word;
+
+import java.io.IOException;
+
+import java.nio.channels.Channel;
+import java.nio.charset.Charset;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Queue;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import org.jetel.data.DataField;
+import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
+import org.jetel.data.HashKey;
+import org.jetel.data.parser.DataParser;
+import org.jetel.data.parser.DelimitedDataParser;
+import org.jetel.data.parser.FixLenCharDataParser;
+import org.jetel.data.parser.Parser;
+import org.jetel.exception.AttributeNotFoundException;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
+import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.NotInitializedException;
+import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
+
+import org.w3c.dom.Element;
+
+/**
+ * Represents an Aspell-like lookup table. This lookup table returns data records with matching or similar lookup keys
+ * as the specified lookup key. This may be useful e. g. when looking for a street the name of which is misspelled.
+ *
+ * @author Martin Janik <martin.janik@javlin.cz>
+ *
+ * @version 27th October 2008
+ * @since 27th October 2008
+ */
+public final class AspellLookupTable extends AbstractLookupTable {
+
+    /**
+     * The iterator used for iteration over all the data records stored in the lookup table.
+     * The returned data records are sorted according to the lookup key string.
+     *
+     * @author Martin Janik <martin.janik@javlin.cz>
+     *
+     * @version 27th October 2008
+     * @since 27th October 2008
+     */
+    private final class AspellLookupTableIterator implements Iterator<DataRecord> {
+
+        /** iterator over sets of similar data records associated with the same lookup key */
+        private Iterator<SortedSet<DataRecord>> similarDataRecordsIterator;
+        /** iterator over similar data records associated with the same lookup key */
+        private Iterator<DataRecord> dataRecordsIterator = null;
+
+        /**
+         * Constructs an instance of the <code>AspellLookupTableIterator</code> class that iterates over the data
+         * records stored in the lookup table of the outer class.
+         */
+        public AspellLookupTableIterator() {
+            this.similarDataRecordsIterator = dataRecords.values().iterator();
+
+            if (similarDataRecordsIterator.hasNext()) {
+                this.dataRecordsIterator = similarDataRecordsIterator.next().iterator();
+            }
+        }
+
+        public boolean hasNext() {
+            if (dataRecordsIterator == null) {
+                return false;
+            }
+
+            return (dataRecordsIterator.hasNext() || similarDataRecordsIterator.hasNext());
+        }
+
+        public DataRecord next() {
+            if (dataRecordsIterator == null) {
+                throw new NoSuchElementException();
+            }
+
+            if (!dataRecordsIterator.hasNext()) {
+                dataRecordsIterator = similarDataRecordsIterator.next().iterator();
+            }
+
+            return dataRecordsIterator.next();
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("Method not supported!");
+        }
+
+    }
+
+    /** the type of the lookup table */
+    private static final String LOOKUP_TABLE_TYPE = "aspellLookup";
+
+    /** the XML attribute used to store the ID of meta data */
+    private static final String XML_ATTRIBUTE_METADATA_ID = "metadataId";
+    /** the XML attribute used to store the lookup key field used for data record lookup */
+    private static final String XML_ATTRIBUTE_LOOKUP_KEY_FIELD = "lookupKeyField";
+    /** the XML attribute used to store the data file URL */
+    private static final String XML_ATTRIBUTE_DATA_FILE_URL = "dataFileUrl";
+    /** the XML attribute used to store the data file character set */
+    private static final String XML_ATTRIBUTE_DATA_FILE_CHARSET = "dataFileCharset";
+
+    /** the default data file character set */
+    private static final String DEFAULT_DATA_FILE_CHARSET = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
+
+    /**
+     * Creates an instance of the <code>AspellLookupTable</code> class from an XML element.
+     *
+     * @param graph the transformation graph the lookup table belongs to
+     * @param xmlElement the XML element that should be used for construction
+     *
+     * @return an instance of the AspellLookupTable class
+     *
+     * @throws XMLConfigurationException when a required attribute is missing
+     */
+    public static AspellLookupTable fromXML(TransformationGraph graph, Element xmlElement)
+            throws XMLConfigurationException {
+        AspellLookupTable aspellLookupTable = null;
+
+        ComponentXMLAttributes lookupTableAttributes = new ComponentXMLAttributes(xmlElement, graph);
+
+        String type = null;
+
+        try {
+            type = lookupTableAttributes.getString(XML_TYPE_ATTRIBUTE);
+        } catch (Exception exception) {
+            throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
+                    + " attribute is missing!", exception);
+        }
+
+        if (!type.equalsIgnoreCase(LOOKUP_TABLE_TYPE)) {
+            throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
+                    + " attribute contains a value NOT compatible with this lookup table!");
+        }
+
+        try {
+            aspellLookupTable = new AspellLookupTable(
+                    lookupTableAttributes.getString(XML_ID_ATTRIBUTE),
+                    graph.getDataRecordMetadata(lookupTableAttributes.getString(XML_ATTRIBUTE_METADATA_ID)),
+                    lookupTableAttributes.getString(XML_ATTRIBUTE_LOOKUP_KEY_FIELD),
+                    lookupTableAttributes.getString(XML_ATTRIBUTE_DATA_FILE_URL));
+            aspellLookupTable.setGraph(graph);
+
+            if (lookupTableAttributes.exists(XML_NAME_ATTRIBUTE)) {
+                aspellLookupTable.setName(lookupTableAttributes.getString(XML_NAME_ATTRIBUTE));
+            }
+
+            if (lookupTableAttributes.exists(XML_ATTRIBUTE_DATA_FILE_CHARSET)) {
+                aspellLookupTable.setDataFileCharset(
+                        lookupTableAttributes.getString(XML_ATTRIBUTE_DATA_FILE_CHARSET));
+            }
+        } catch (AttributeNotFoundException exception) {
+            throw new XMLConfigurationException("Missing a required attribute!", exception);
+        } catch (Exception exception) {
+            throw new XMLConfigurationException("Error creating the lookup table!", exception);
+        }
+
+        return aspellLookupTable;
+    }
+
+    /** the data record meta data associated with this lookup table */
+    private final DataRecordMetadata metadata;
+    /** the lookup key field used for populating the lookup table and data records lookup */
+    private final String lookupKeyField;
+    /** the URL of a data file used to populate the lookup table */
+    private final String dataFileUrl;
+
+    /** the character set of data stored in the data file */
+    private String dataFileCharset = DEFAULT_DATA_FILE_CHARSET;
+
+    /** the spell dictionary used for data lookup */
+    private SpellDictionary dictionary = null;
+    /** the map containing all the data records stored in the lookup table */
+    private SortedMap<String, SortedSet<DataRecord>> dataRecords = null;
+
+    /** the queue of matching data records looked up by the last call to the {@link #get(HashKey)} method */
+    private Queue<DataRecord> matchingDataRecords = null;
+    /** the number of data records looked up by the last call to the {@link #get(HashKey)} method */
+    private int matchingDataRecordsCount = -1;
+
+    /**
+     * Constructs a new instance of the <code>AspellLookupTable</code> class.
+     *
+     * @param id an identification of the lookup table
+     * @param metadata the data record meta data associated with this lookup table
+     * @param lookupKeyField the lookup key field used for populating the lookup table and data records lookup
+     * @param dataFileUrl the URL of a data file used to populate the lookup table
+     *
+     * @throws InvalidGraphObjectNameException if the id is invalid
+     */
+    public AspellLookupTable(String id, DataRecordMetadata metadata, String lookupKeyField, String dataFileUrl) {
+        super(id);
+
+        this.metadata = metadata;
+        this.lookupKeyField = lookupKeyField;
+        this.dataFileUrl = dataFileUrl;
+    }
+
+    public DataRecordMetadata getMetadata() {
+        return metadata;
+    }
+
+    public void setDataFileCharset(String dataFileCharset) {
+        this.dataFileCharset = dataFileCharset;
+    }
+
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        super.checkConfig(status);
+
+        if (metadata == null) {
+            status.add(new ConfigurationProblem("The meta data is NULL!",
+                    Severity.ERROR, this, Priority.HIGH, "metadata"));
+        } else {
+            if (metadata.getRecType() != DataRecordMetadata.DELIMITED_RECORD
+                    && metadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD
+                    && metadata.getRecType() != DataRecordMetadata.MIXED_RECORD) {
+                status.add(new ConfigurationProblem("The meta data record type is not supported!",
+                        Severity.ERROR, this, Priority.HIGH, "metadata"));
+            }
+
+            if (lookupKeyField == null) {
+                status.add(new ConfigurationProblem("The lookup key field is NULL!",
+                        Severity.ERROR, this, Priority.HIGH, "lookupKeyField"));
+            }
+
+            if (metadata.getField(lookupKeyField) == null) {
+                status.add(new ConfigurationProblem("The lookup key field is NOT valid!",
+                        Severity.ERROR, this, Priority.HIGH, "lookupKeyField"));
+            } else if (metadata.getField(lookupKeyField).getType() != DataFieldMetadata.STRING_FIELD) {
+                status.add(new ConfigurationProblem("The lookup key field is not a string!",
+                        Severity.ERROR, this, Priority.HIGH, "lookupKeyField"));
+            }
+        }
+
+        if (dataFileUrl == null) {
+            status.add(new ConfigurationProblem("The data file URL is NULL!",
+                    Severity.ERROR, this, Priority.HIGH, "dataFileUrl"));
+        } else {
+            Channel dataFileChannel = null;
+
+            try {
+                dataFileChannel = FileUtils.getReadableChannel(
+                        (getGraph() != null) ? getGraph().getProjectURL() : null, dataFileUrl);
+            } catch (IOException exception) {
+                status.add(new ConfigurationProblem("The data file URL is NOT valid!",
+                        Severity.ERROR, this, Priority.NORMAL, "dataFileUrl"));
+            } finally {
+                if (dataFileChannel != null) {
+                    try {
+                        dataFileChannel.close();
+                    } catch (IOException exception) {
+                        // OK, don't do anything
+                    }
+                }
+            }
+        }
+
+        if (!Charset.isSupported(dataFileCharset)) {
+            status.add(new ConfigurationProblem("The data file charset is not supported!",
+                    Severity.ERROR, this, Priority.NORMAL, "dataFileCharset"));
+        }
+
+        return status;
+    }
+
+    @Override
+    public synchronized void init() throws ComponentNotReadyException {
+        if (isInitialized()) {
+            throw new IllegalStateException("The lookup table has already been initialized!");
+        }
+
+        super.init();
+
+        try {
+            dictionary = new SpellDictionaryHashMap();
+        } catch (IOException exception) {
+            throw new ComponentNotReadyException("Error creating the dictionary!", exception);
+        }
+
+        dataRecords = new TreeMap<String, SortedSet<DataRecord>>();
+
+        Parser dataParser = null;
+
+        if (getMetadata().getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
+            dataParser = new DelimitedDataParser(dataFileCharset);
+        } else if (getMetadata().getRecType() == DataRecordMetadata.FIXEDLEN_RECORD) {
+            dataParser = new FixLenCharDataParser(dataFileCharset);
+        } else {
+            dataParser = new DataParser(dataFileCharset);
+        }
+
+        dataParser.init(getMetadata());
+
+        try {
+            dataParser.setDataSource(FileUtils.getReadableChannel(
+                    (getGraph() != null) ? getGraph().getProjectURL() : null, dataFileUrl));
+
+            DataRecord dataRecord = dataParser.getNext();
+
+            while (dataRecord != null) {
+                String dataRecordKey = dataRecord.getField(lookupKeyField).toString();
+                SortedSet<DataRecord> similarDataRecords = dataRecords.get(dataRecordKey);
+
+                if (similarDataRecords == null) {
+                    dictionary.addWord(dataRecordKey);
+
+                    similarDataRecords = new TreeSet<DataRecord>();
+                    dataRecords.put(dataRecordKey, similarDataRecords);
+                }
+
+                similarDataRecords.add(dataRecord);
+
+                dataRecord = dataParser.getNext();
+            }
+        } catch (IOException exception) {
+            throw new ComponentNotReadyException("Error opening the data file!", exception);
+        } catch (JetelException exception) {
+            throw new ComponentNotReadyException("Error populating the lookup table!", exception);
+        } finally {
+            dataParser.close();
+        }
+    }
+
+    public synchronized DataRecord get(HashKey lookupKey) {
+        if (!isInitialized()) {
+            throw new NotInitializedException("The lookup table has NOT been initialized!");
+        }
+
+        if (lookupKey.getKeyFields().length != 1) {
+            throw new IllegalArgumentException("The lookupKey cannot be composed from multiple fields!");
+        }
+
+        DataField lookupKeyField = lookupKey.getDataRecord().getField(lookupKey.getKeyFields()[0]);
+
+        if (lookupKeyField.getType() != DataFieldMetadata.STRING_FIELD) {
+            throw new IllegalArgumentException("The lookup key field is not a string!");
+        }
+
+        matchingDataRecords = new LinkedList<DataRecord>();
+
+        @SuppressWarnings("unchecked")
+        List<Word> suggestions = dictionary.getSuggestions(lookupKeyField.toString(), 0);
+
+        for (Word suggestion : suggestions) {
+            matchingDataRecords.addAll(dataRecords.get(suggestion.getWord()));
+        }
+
+        matchingDataRecordsCount = matchingDataRecords.size();
+
+        return matchingDataRecords.poll();
+    }
+
+    @Deprecated
+    public synchronized int getNumFound() {
+        if (!isInitialized()) {
+            throw new NotInitializedException("The lookup table has NOT been initialized!");
+        }
+
+        if (matchingDataRecords == null) {
+            throw new IllegalStateException("The get() method has NOT been called!");
+        }
+
+        return matchingDataRecordsCount;
+    }
+
+    @Deprecated
+    public synchronized DataRecord getNext() {
+        if (!isInitialized()) {
+            throw new NotInitializedException("The lookup table has NOT been initialized!");
+        }
+
+        if (matchingDataRecords == null) {
+            throw new IllegalStateException("The get() method has NOT been called!");
+        }
+
+        return matchingDataRecords.poll();
+    }
+
+    public synchronized Iterator<DataRecord> iterator() {
+        if (!isInitialized()) {
+            throw new NotInitializedException("The lookup table has NOT been initialized!");
+        }
+
+        return new AspellLookupTableIterator();
+    }
+
+    @Override
+    public synchronized void reset() throws ComponentNotReadyException {
+        if (!isInitialized()) {
+            throw new NotInitializedException("The lookup table has NOT been initialized!");
+        }
+
+        super.reset();
+
+        try {
+            dictionary = new SpellDictionaryHashMap();
+        } catch (IOException exception) {
+            throw new ComponentNotReadyException("Error creating the dictionary", exception);
+        }
+
+        dataRecords = new TreeMap<String, SortedSet<DataRecord>>();
+
+        matchingDataRecords = null;
+        matchingDataRecordsCount = -1;
+    }
+
+    @Override
+    public synchronized void free() {
+        if (!isInitialized()) {
+            throw new NotInitializedException("The lookup table has NOT been initialized!");
+        }
+
+        super.free();
+
+        dictionary = null;
+        dataRecords = null;
+
+        matchingDataRecords = null;
+        matchingDataRecordsCount = -1;
+    }
+
+}

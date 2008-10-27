@@ -7,5 +7,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/cloveretl.connection"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="lib" path="lib/jdbm-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/jazzy-core.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
