@@ -18,6 +18,8 @@
  */
 package org.jetel.lookup;
 
+import com.swabunga.spell.engine.Configuration;
+import com.swabunga.spell.engine.PropertyConfiguration;
 import com.swabunga.spell.engine.SpellDictionary;
 import com.swabunga.spell.engine.SpellDictionaryHashMap;
 import com.swabunga.spell.engine.Word;
@@ -27,15 +29,16 @@ import java.io.IOException;
 import java.nio.channels.Channel;
 import java.nio.charset.Charset;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.Queue;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.Set;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -76,8 +79,43 @@ import org.w3c.dom.Element;
 public final class AspellLookupTable extends AbstractLookupTable {
 
     /**
+     * Represents a Jazzy configuration class required for Jazzy configuration tools to work correctly.
+     * Without this class, Jazzy's properties cannot be modified due to an internal bug.
+     *
+     * @author Martin Janik <martin.janik@javlin.cz>
+     *
+     * @version 27th October 2008
+     * @since 27th October 2008
+     */
+    public static final class JazzyConfiguration extends Configuration {
+
+        /** the configuration properties used by Jazzy */
+        private static final Properties configurationProperties = new PropertyConfiguration().prop;
+
+        @Override
+        public void setBoolean(String key, boolean value) {
+            configurationProperties.put(key, Boolean.toString(value));
+        }
+
+        @Override
+        public boolean getBoolean(String key) {
+            return Boolean.parseBoolean(configurationProperties.getProperty(key));
+        }
+
+        @Override
+        public void setInteger(String key, int value) {
+            configurationProperties.put(key, Integer.toString(value));
+        }
+
+        @Override
+        public int getInteger(String key) {
+            return Integer.parseInt(configurationProperties.getProperty(key));
+        }
+
+    }
+
+    /**
      * The iterator used for iteration over all the data records stored in the lookup table.
-     * The returned data records are sorted according to the lookup key string.
      *
      * @author Martin Janik <martin.janik@javlin.cz>
      *
@@ -87,7 +125,7 @@ public final class AspellLookupTable extends AbstractLookupTable {
     private final class AspellLookupTableIterator implements Iterator<DataRecord> {
 
         /** iterator over sets of similar data records associated with the same lookup key */
-        private Iterator<SortedSet<DataRecord>> similarDataRecordsIterator;
+        private Iterator<Set<DataRecord>> similarDataRecordsIterator;
         /** iterator over similar data records associated with the same lookup key */
         private Iterator<DataRecord> dataRecordsIterator = null;
 
@@ -143,6 +181,13 @@ public final class AspellLookupTable extends AbstractLookupTable {
 
     /** the default data file character set */
     private static final String DEFAULT_DATA_FILE_CHARSET = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
+    /** the default spelling threshold */
+    private static final int DEFAULT_SPELLING_THRESHOLD = 230;
+
+    static {
+        // this system property needs to be set to allow modification of the Jazzy's SPELL_THRESHOLD property
+        System.setProperty("jazzy.config", "org.jetel.lookup.AspellLookupTable$JazzyConfiguration");
+    }
 
     /**
      * Creates an instance of the <code>AspellLookupTable</code> class from an XML element.
@@ -150,7 +195,7 @@ public final class AspellLookupTable extends AbstractLookupTable {
      * @param graph the transformation graph the lookup table belongs to
      * @param xmlElement the XML element that should be used for construction
      *
-     * @return an instance of the AspellLookupTable class
+     * @return an instance of the <code>AspellLookupTable</code> class
      *
      * @throws XMLConfigurationException when a required attribute is missing
      */
@@ -207,12 +252,12 @@ public final class AspellLookupTable extends AbstractLookupTable {
     private final String dataFileUrl;
 
     /** the character set of data stored in the data file */
-    private String dataFileCharset = DEFAULT_DATA_FILE_CHARSET;
+    private String dataFileCharset;
 
     /** the spell dictionary used for data lookup */
     private SpellDictionary dictionary = null;
     /** the map containing all the data records stored in the lookup table */
-    private SortedMap<String, SortedSet<DataRecord>> dataRecords = null;
+    private Map<String, Set<DataRecord>> dataRecords = null;
 
     /** the queue of matching data records looked up by the last call to the {@link #get(HashKey)} method */
     private Queue<DataRecord> matchingDataRecords = null;
@@ -220,7 +265,8 @@ public final class AspellLookupTable extends AbstractLookupTable {
     private int matchingDataRecordsCount = -1;
 
     /**
-     * Constructs a new instance of the <code>AspellLookupTable</code> class.
+     * Constructs a new instance of the <code>AspellLookupTable</code> class. Compulsory attributes are set
+     * to values provided during construction, optional attributes are set to their default values.
      *
      * @param id an identification of the lookup table
      * @param metadata the data record meta data associated with this lookup table
@@ -235,14 +281,42 @@ public final class AspellLookupTable extends AbstractLookupTable {
         this.metadata = metadata;
         this.lookupKeyField = lookupKeyField;
         this.dataFileUrl = dataFileUrl;
+
+        setDataFileCharset(DEFAULT_DATA_FILE_CHARSET);
+        setSpellingThreshold(DEFAULT_SPELLING_THRESHOLD);
     }
 
     public DataRecordMetadata getMetadata() {
         return metadata;
     }
 
+    /**
+     * Sets the character set used for data records stored in the lookup table data file.
+     *
+     * @param dataFileCharset a character set to be used
+     */
     public void setDataFileCharset(String dataFileCharset) {
         this.dataFileCharset = dataFileCharset;
+    }
+
+    /**
+     * Sets the spelling threshold used by Jazzy when looking for words. The higher the value, the more
+     * tolerant Jazzy is to spelling mistakes. The spelling threshold is shared by all instances of the
+     * <code>AspellLookupTable</code> class and should be set to a value greater than zero.
+     *
+     * @param spellingThreshold the spelling threshold to be set
+     */
+    public void setSpellingThreshold(int spellingThreshold) {
+        Configuration.getConfiguration().setInteger(Configuration.SPELL_THRESHOLD, spellingThreshold);
+    }
+
+    /**
+     * Returns the spelling threshold currently used by Jazzy.
+     *
+     * @return an <code>int<code> value specifying the spelling threshold
+     */
+    public int getSpellingThreshold() {
+        return Configuration.getConfiguration().getInteger(Configuration.SPELL_THRESHOLD);
     }
 
     @Override
@@ -302,6 +376,11 @@ public final class AspellLookupTable extends AbstractLookupTable {
                     Severity.ERROR, this, Priority.NORMAL, "dataFileCharset"));
         }
 
+        if (getSpellingThreshold() <= 0) {
+            status.add(new ConfigurationProblem("The spelling threshold is less than one!",
+                    Severity.WARNING, this, Priority.NORMAL, "spellingThreshold"));
+        }
+
         return status;
     }
 
@@ -319,7 +398,7 @@ public final class AspellLookupTable extends AbstractLookupTable {
             throw new ComponentNotReadyException("Error creating the dictionary!", exception);
         }
 
-        dataRecords = new TreeMap<String, SortedSet<DataRecord>>();
+        dataRecords = new HashMap<String, Set<DataRecord>>();
 
         Parser dataParser = null;
 
@@ -341,12 +420,12 @@ public final class AspellLookupTable extends AbstractLookupTable {
 
             while (dataRecord != null) {
                 String dataRecordKey = dataRecord.getField(lookupKeyField).toString();
-                SortedSet<DataRecord> similarDataRecords = dataRecords.get(dataRecordKey);
+                Set<DataRecord> similarDataRecords = dataRecords.get(dataRecordKey);
 
                 if (similarDataRecords == null) {
                     dictionary.addWord(dataRecordKey);
 
-                    similarDataRecords = new TreeSet<DataRecord>();
+                    similarDataRecords = new HashSet<DataRecord>();
                     dataRecords.put(dataRecordKey, similarDataRecords);
                 }
 
@@ -434,13 +513,16 @@ public final class AspellLookupTable extends AbstractLookupTable {
 
         super.reset();
 
+        setDataFileCharset(DEFAULT_DATA_FILE_CHARSET);
+        setSpellingThreshold(DEFAULT_SPELLING_THRESHOLD);
+
         try {
             dictionary = new SpellDictionaryHashMap();
         } catch (IOException exception) {
             throw new ComponentNotReadyException("Error creating the dictionary", exception);
         }
 
-        dataRecords = new TreeMap<String, SortedSet<DataRecord>>();
+        dataRecords = new HashMap<String, Set<DataRecord>>();
 
         matchingDataRecords = null;
         matchingDataRecordsCount = -1;
