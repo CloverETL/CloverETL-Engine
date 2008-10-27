@@ -58,7 +58,7 @@ public final class AspellLookupTableTest extends CloverTestCase {
     private static final String FIELD_STREET = "street";
     /** the other field used to test whether the lookup table can handle multiple records per key */
     private static final String FIELD_CITY = "city";
-    /** an invalid field used in the testCheckConfig() method */
+    /** an invalid field used in the {@link #testCheckConfig()} method */
     private static final String FIELD_INVALID = "invalid";
 
     /** the delimiter used to separate fields */
@@ -68,20 +68,21 @@ public final class AspellLookupTableTest extends CloverTestCase {
 
     /** the URL of a valid lookup table data file */
     private static final String DATA_FILE_URL = "data/aspell-lookup-table.dat";
-    /** an invalid URL of the lookup table data file used in the testCheckConfig() method */
+    /** an invalid URL of the lookup table data file used in the {@link #testCheckConfig()} method */
     private static final String DATA_FILE_URL_INVALID = "invalid-data-file-url.dat";
 
     /** the character set used by the lookup table data file */
     private static final String DATA_FILE_CHARSET = "UTF-8";
-    /** an invalid character set of the lookup table data file used in the testCheckConfig() method */
+    /** an invalid character set of the lookup table data file used in the {@link #testCheckConfig()} method */
     private static final String DATA_FILE_CHARSET_INVALID = "invalid-charset";
+
+    /** an invalid spelling threshold used in the {@link #testCheckConfig()} method */
+    private static final int SPELLING_THRESHOLD_INVALID = -1;
 
     /** the meta data used by the lookup table */
     private DataRecordMetadata metadata;
     /** the Aspell lookup table used for testing */
     private AspellLookupTable aspellLookupTable;
-    /** the configuration status */
-    private ConfigurationStatus configurationStatus;
 
     /** the hash key used for lookup */
     private HashKey lookupKey;
@@ -97,8 +98,6 @@ public final class AspellLookupTableTest extends CloverTestCase {
         aspellLookupTable = new AspellLookupTable(LOOKUP_TABLE_ID, metadata, FIELD_STREET, DATA_FILE_URL);
         aspellLookupTable.setDataFileCharset(DATA_FILE_CHARSET);
 
-        configurationStatus = new ConfigurationStatus();
-
         RecordKey recordKey = new RecordKey(new String[] {FIELD_STREET}, metadata);
         recordKey.init();
         DataRecord dataRecord = new DataRecord(metadata);
@@ -113,12 +112,14 @@ public final class AspellLookupTableTest extends CloverTestCase {
      * correctly invalid values passed to any constructor or set by any of the set*() methods.
      */
     public void testCheckConfig() {
+        ConfigurationStatus configurationStatus = new ConfigurationStatus();
+
         //
         // perform test for correct data
         //
 
         aspellLookupTable.checkConfig(configurationStatus);
-        assertFalse("An error occured even though the provided data was correct!", configurationStatus.isError());
+        assertTrue("An error occured even though the provided data was correct!", configurationStatus.isEmpty());
 
         //
         // perform tests on null values (null values are not permitted)
@@ -127,17 +128,20 @@ public final class AspellLookupTableTest extends CloverTestCase {
         aspellLookupTable = new AspellLookupTable(LOOKUP_TABLE_ID, null, FIELD_STREET, DATA_FILE_URL);
         configurationStatus.clear();
         aspellLookupTable.checkConfig(configurationStatus);
-        assertTrue("No error reported even though the metada is null!", configurationStatus.isError());
+        assertFalse("No configuration problem reported even though the metada is null!",
+                configurationStatus.isEmpty());
 
         aspellLookupTable = new AspellLookupTable(LOOKUP_TABLE_ID, metadata, null, DATA_FILE_URL);
         configurationStatus.clear();
         aspellLookupTable.checkConfig(configurationStatus);
-        assertTrue("No error reported even though the lookup key field is null!", configurationStatus.isError());
+        assertFalse("No configuration problem reported even though the lookup key field is null!",
+                configurationStatus.isEmpty());
 
         aspellLookupTable = new AspellLookupTable(LOOKUP_TABLE_ID, metadata, FIELD_STREET, null);
         configurationStatus.clear();
         aspellLookupTable.checkConfig(configurationStatus);
-        assertTrue("No error reported even though the data file URL is null!", configurationStatus.isError());
+        assertFalse("No configuration problem reported even though the data file URL is null!",
+                configurationStatus.isEmpty());
 
         //
         // perform tests on invalid values (invalid values are not permitted)
@@ -146,25 +150,35 @@ public final class AspellLookupTableTest extends CloverTestCase {
         aspellLookupTable = new AspellLookupTable(LOOKUP_TABLE_ID, metadata, FIELD_INVALID, DATA_FILE_URL);
         configurationStatus.clear();
         aspellLookupTable.checkConfig(configurationStatus);
-        assertTrue("No error reported even though the lookup key field is invalid!", configurationStatus.isError());
+        assertFalse("No configuration problem reported even though the lookup key field is invalid!",
+                configurationStatus.isEmpty());
 
         aspellLookupTable = new AspellLookupTable(LOOKUP_TABLE_ID, metadata, FIELD_STREET, DATA_FILE_URL_INVALID);
         configurationStatus.clear();
         aspellLookupTable.checkConfig(configurationStatus);
-        assertTrue("No error reported even though the data file URL is invalid!", configurationStatus.isError());
+        assertFalse("No configuration problem reported even though the data file URL is invalid!",
+                configurationStatus.isEmpty());
 
         aspellLookupTable = new AspellLookupTable(LOOKUP_TABLE_ID, metadata, FIELD_STREET, DATA_FILE_URL);
         aspellLookupTable.setDataFileCharset(DATA_FILE_CHARSET_INVALID);
         configurationStatus.clear();
         aspellLookupTable.checkConfig(configurationStatus);
-        assertTrue("No error reported even though the data file charset is invalid!", configurationStatus.isError());
+        assertFalse("No configuration problem reported even though the data file charset is invalid!",
+                configurationStatus.isEmpty());
+
+        aspellLookupTable = new AspellLookupTable(LOOKUP_TABLE_ID, metadata, FIELD_STREET, DATA_FILE_URL);
+        aspellLookupTable.setSpellingThreshold(SPELLING_THRESHOLD_INVALID);
+        configurationStatus.clear();
+        aspellLookupTable.checkConfig(configurationStatus);
+        assertFalse("No configuration problem reported even though the spelling threshold is invalid!",
+                configurationStatus.isEmpty());
     }
 
     /**
      * Tests whether the {@link AspellLookupTable#init()} method finishes correctly on a consistent Aspell lookup table.
      */
     public void testInit() {
-        aspellLookupTable.checkConfig(configurationStatus);
+        aspellLookupTable.checkConfig(new ConfigurationStatus());
 
         try {
             aspellLookupTable.init();
@@ -203,11 +217,11 @@ public final class AspellLookupTableTest extends CloverTestCase {
                 dataRecord = dataParser.getNext();
             }
         } catch (IOException exception) {
-            fail("Error opening the data file!");
+            fail("Opening of the data file failed!");
         } catch (ComponentNotReadyException exception) {
-            fail("Error populating the lookup table!");
+            fail("Populating of the lookup table failed!");
         } catch (JetelException exception) {
-            fail("Error populating the lookup table!");
+            fail("Populating of the lookup table failed!");
         } finally {
             dataParser.close();
         }
@@ -362,6 +376,25 @@ public final class AspellLookupTableTest extends CloverTestCase {
 
         assertNull("A data record returned for a non-existing key!", aspellLookupTable.getNext());
         assertEquals("The number of found data records is invalid!", 0, aspellLookupTable.getNumFound());
+    }
+
+    public void testReset() {
+        testInit();
+
+        aspellLookupTable.setDataFileCharset(DATA_FILE_CHARSET_INVALID);
+        aspellLookupTable.setSpellingThreshold(SPELLING_THRESHOLD_INVALID);
+
+        try {
+            aspellLookupTable.reset();
+        } catch (ComponentNotReadyException exception) {
+            fail("Reseting of the lookup table failed!");
+        }
+
+        ConfigurationStatus configurationStatus = new ConfigurationStatus();
+
+        aspellLookupTable.checkConfig(configurationStatus);
+        assertTrue("A configuration problem occured even though the reset() method was called!",
+                configurationStatus.isEmpty());
     }
 
 }
