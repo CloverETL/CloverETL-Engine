@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
+import org.jetel.data.RecordKey;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.graph.IGraphElement;
 import org.jetel.metadata.DataRecordMetadata;
@@ -114,7 +115,8 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      *
      * @since 23rd October 2008
      */
-    public DataRecord get(HashKey lookupKey);
+    @Deprecated
+    public DataRecord get(RecordKey key, DataRecord keyRecord);
 
     /**
      * <p>Returns the next data record stored under the same key as the previous one successfully retrieved
@@ -149,21 +151,25 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
     public int getNumFound();
 
     /**
-     * <p>Performs lookup using the given lookup key, adds the matching data records to the provided list,
-     * and returns the number of data records found and added to the list.</p>
-     * <p>Implementing classes should ensure that this method works correctly when called from multiple threads.</p>
-     *
-     * @param lookupKey the lookup key used to lookup the data records
-     * @param matchingDataRecords a list used to store the matching data records
-     *
-     * @return the number of matching data records added to the list
-     *
-     * @throws NotInitializedException if the lookup table has not yet been initialized
-     * @throws NullPointerException if any provided parameter is <code>null</code>
-     * @throws IllegalArgumentException if the lookup key is not compatible with this lookup table
-     *
-     * @since 23rd October 2008
+     * Creates lookup object based on the given key. Returned object is used to retrieve whole set of associated
+     * entries of this lookup table - implements Iterator<DataRecord> interface. Lookup object can be also used 
+     * for continuous searching based on same key and different keyRecord.
+     * 
+     * @see Lookup
      */
-    public int get(HashKey lookupKey, List<DataRecord> matchingDataRecords);
+    public Lookup createLookup(RecordKey key);
+
+    /**
+     * Creates lookup object based on the given key. Returned object is used to retrieve whole set of associated
+     * entries of this lookup table - implements Iterator<DataRecord> interface. Lookup object can be also used
+     * for continuous searching based on same key and different keyRecord.
+     * 
+     * Lookup table implementation can take advantage of second parameter, where is already stored 
+     * a first lookup query and all following queries will be passed through this record instance. 
+     *
+     * @see Lookup
+     */
+    public Lookup createLookup(RecordKey key, DataRecord keyRecord);
+
 
 }
