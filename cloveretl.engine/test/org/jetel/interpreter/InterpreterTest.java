@@ -1832,7 +1832,8 @@ public class InterpreterTest extends CloverTestCase {
 	
 	public void test_buildInFunctions(){
 		System.out.println("\nBuild-in functions test:");
-		String expStr = "string s;s='hello world';\n" +
+		String expStr = 
+			"string s;s='hello world';\n" +
 						"number lenght;lenght=5.5;\n" +
 						"string subs;subs=substring(s,1,lenght);\n" +
 						"print_err('original string:'+s );\n" +
@@ -1882,7 +1883,9 @@ public class InterpreterTest extends CloverTestCase {
 						"string righ=right(dts,5);\n" +
 						"print_err('s=word, soundex='+soundex('word'));\n" +
 						"print_err('s=world, soundex='+soundex('world'));\n" +
-						"int j;for (j=0;j<length(s);j++){print_err(char_at(s,j));};\n" ;
+						"int j;for (j=0;j<length(s);j++){print_err(char_at(s,j));};\n" +
+						"int charCount = count_char('mimimichal','i');\n" +
+						"print_err(charCount);\n";
 
 	      print_code(expStr);
 		try {
@@ -1928,6 +1931,7 @@ public class InterpreterTest extends CloverTestCase {
 		      assertEquals("dts","02.12.24",executor.getGlobalVariable(parser.getGlobalVariableSlot("dts")).getTLValue().toString());
 		      assertEquals("lef","02.12",executor.getGlobalVariable(parser.getGlobalVariableSlot("lef")).getTLValue().toString());
 		      assertEquals("righ","12.24",executor.getGlobalVariable(parser.getGlobalVariableSlot("righ")).getTLValue().toString());
+		      assertEquals("charCount",3,executor.getGlobalVariable(parser.getGlobalVariableSlot("charCount")).getTLValue().getNumeric().getInt());
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
