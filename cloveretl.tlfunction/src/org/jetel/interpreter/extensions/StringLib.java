@@ -1205,7 +1205,7 @@ public class StringLib extends TLFunctionLibrary {
 				throw new TransformLangExecutorRuntimeException(params,
 						"count_char - wrong type of literal(s)");
 			} else {
-					result.setValue(StringUtils.count((CharSequence)params[1], ((CharSequence)params[0]).charAt(0)));
+					result.setValue(StringUtils.count((CharSequence)params[0], ((CharSequence)params[1]).charAt(0)));
 			}
 			return val;
 		}
