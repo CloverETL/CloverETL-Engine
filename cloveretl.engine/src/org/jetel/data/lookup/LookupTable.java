@@ -18,8 +18,6 @@
  */
 package org.jetel.data.lookup;
 
-import java.util.List;
-
 import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
@@ -28,19 +26,21 @@ import org.jetel.graph.IGraphElement;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * <p>The interface of lookup tables specifying the minimum required functionality.</p>
+ * <p>The interface of a lookup table specifying the minimum required functionality.</p>
  * <p>The intended use of a lookup table is the following:</p>
  * <ol>
- *   <li>create/obtain an instance of the <code>LookupTable</code>
- *   <li>call the {@link IGraphElement#init()} method to populate the lookup table and prepare it for use
- *   <li>use the {@link #get(HashKey)} or {@link #get(HashKey, List)} methods to perform the lookup
- *   <li>call the {@link IGraphElement#free()} method to free the resources used by the lookup table
+ *   <li>create/obtain an instance of the <code>LookupTable</code></li>
+ *   <li>call the {@link IGraphElement#init()} method to populate the lookup table and prepare it for use</li>
+ *   <li>use the {@link #put(DataRecord)} and {@link #remove(DataRecord)} methods to manage the lookup data records</li>
+ *   <li>use the {@link #createLookup(RecordKey)} or {@link #createLookup(RecordKey, DataRecord)} for lookup</li>
+ *   <li>call the {@link IGraphElement#free()} method to free the resources used by the lookup table</li>
  * </ol>
  * 
  * @author David Pavlis <david.pavlis@javlin.cz>
  * @author Martin Janik <martin.janik@javlin.cz>
  *
- * @version 23rd October 2008
+ * @version 31st October 2008
+ * @see Lookup
  * @since 8th July 2004
  */
 public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
@@ -62,8 +62,6 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      * <p>Returns the meta data associated with the data records stored in this lookup table.</p>
      *
      * @return an instance of the <code>DataRecordMetadata</code> class
-     *
-     * @throws NotInitializedException if the lookup table has not yet been initialized
      */
     public DataRecordMetadata getMetadata();
 
@@ -102,27 +100,28 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
     public boolean remove(DataRecord dataRecord); 
 
     /**
-     * <p>Performs lookup using the given lookup key and returns the first matching data record. To retrieve all the
-     * matching data records, use the {@link #get(HashKey, List)} method.</p>
+     * <p>Performs lookup using the given lookup key and data record and returns the first matching data record.
+     * To retrieve all the matching data records, use the {@link #createLookup(RecordKey)} method.</p>
      *
-     * @param lookupKey the lookup key used to lookup the data record
+     * @param lookuKey the lookup key used for lookup
+     * @param dataRecord the data record to be used for lookup
      *
      * @return a <code>DataRecord</code> or <code>null</code> if no data record is stored under the lookup key
      *
      * @throws NotInitializedException if the lookup table has not yet been initialized
-     * @throws NullPointerException if the given lookup key is <code>null</code>
+     * @throws NullPointerException if the given lookup key or data record is <code>null</code>
      * @throws IllegalArgumentException if the given lookup key is not compatible with this lookup table
      *
      * @since 23rd October 2008
      */
     @Deprecated
-    public DataRecord get(RecordKey key, DataRecord keyRecord);
+    public DataRecord get(RecordKey lookuKey, DataRecord dataRecord);
 
     /**
      * <p>Returns the next data record stored under the same key as the previous one successfully retrieved
      * by calling the {@link #get(HashKey)} method.</p>
-     * <p>This method MAY NOT work properly when called from multiple threads! Use the {@link #get(HashKey, List)}
-     * method instead.</p>
+     * <p>This method MAY NOT work properly when called from multiple threads! Use the {@link #createLookup(RecordKey)}
+     * method instead of this one.</p>
      *
      * @return a <code>DataRecord</code> or <code>null</code> if no other data record is stored under the same key
      *
@@ -136,8 +135,8 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
 
     /**
      * <p>Returns the number of data records found by the last call to the {@link #get(HashKey)} method.</p>
-     * <p>This method MAY NOT work properly when called from multiple threads! Use the {@link #get(HashKey, List)}
-     * method instead.</p>
+     * <p>This method MAY NOT work properly when called from multiple threads! Use the {@link #createLookup(RecordKey)}
+     * method instead of this one.</p>
      *
      * @return the number of matching data records or <code>-1</code> if this operation cannot be applied to this
      * lookup table implementation
@@ -151,25 +150,42 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
     public int getNumFound();
 
     /**
-     * Creates lookup object based on the given key. Returned object is used to retrieve whole set of associated
-     * entries of this lookup table - implements Iterator<DataRecord> interface. Lookup object can be also used 
-     * for continuous searching based on same key and different keyRecord.
-     * 
-     * @see Lookup
-     */
-    public Lookup createLookup(RecordKey key);
-
-    /**
-     * Creates lookup object based on the given key. Returned object is used to retrieve whole set of associated
-     * entries of this lookup table - implements Iterator<DataRecord> interface. Lookup object can be also used
-     * for continuous searching based on same key and different keyRecord.
-     * 
-     * Lookup table implementation can take advantage of second parameter, where is already stored 
-     * a first lookup query and all following queries will be passed through this record instance. 
+     * <p>Creates a lookup proxy object for the given lookup key. Returned proxy object can be used to retrieve data
+     * records associated with the given lookup key via the <code>Iterator&lt;DataRecord&gt;</code> interface. Lookup
+     * proxy object can also be used for continuous searching based on the same key and different data records.</p>
+     *
+     * @param lookupKey a record key that will be used for lookup
+     *
+     * @returns a lookup proxy object that can be used for lookup queries with the given lookup key
+     *
+     * @throws NotInitializedException if the lookup table has not yet been initialized
+     * @throws NullPointerException if the given lookup key is <code>null</code>
+     * @throws IllegalArgumentException if the given lookup key is not compatible with this lookup table
      *
      * @see Lookup
+     * @since 29th October 2008
      */
-    public Lookup createLookup(RecordKey key, DataRecord keyRecord);
+    public Lookup createLookup(RecordKey lookupKey);
 
+    /**
+     * <p>Creates a lookup proxy object for the given lookup key. Returned proxy object can be used to retrieve data
+     * records associated with the given lookup key via the <code>Iterator&lt;DataRecord&gt;</code> interface. Lookup
+     * proxy object can also be used for continuous searching based on the same key and different data records.</p>
+     * <p>A lookup table implementation can take advantage of the second parameter to prepare a lookup query that
+     * can be reused by simple refilling the specified instance of the <code>DataRecord</code> class. 
+     *
+     * @param lookupKey a record key that will be used for lookup
+     * @param dataRecord a data record that will be used for future lookup queries
+     *
+     * @returns a lookup proxy object that can be used for lookup queries with the given lookup key and data record
+     *
+     * @throws NotInitializedException if the lookup table has not yet been initialized
+     * @throws NullPointerException if the given lookup key or data record is <code>null</code>
+     * @throws IllegalArgumentException if the given lookup key is not compatible with this lookup table
+     *
+     * @see Lookup
+     * @since 29th October 2008
+     */
+    public Lookup createLookup(RecordKey lookupKey, DataRecord dataRecord);
 
 }
