@@ -43,7 +43,9 @@ import java.util.Set;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.HashKey;
+import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.Lookup;
+import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
@@ -73,7 +75,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik <martin.janik@javlin.cz>
  *
- * @version 27th October 2008
+ * @version 31st October 2008
  * @since 27th October 2008
  */
 public final class AspellLookupTable extends AbstractLookupTable {
@@ -115,6 +117,94 @@ public final class AspellLookupTable extends AbstractLookupTable {
     }
 
     /**
+     * An implementation of the lookup proxy class for the Aspell lookup table.
+     *
+     * @author Martin Janik <martin.janik@javlin.cz>
+     *
+     * @version 31st October 2008
+     * @since 31st October 2008
+     */
+    private final class AspellLookup implements Lookup {
+
+        /** the record key used for lookup */
+        private final RecordKey lookupKey;
+
+        /** the data record used for lookup */
+        private DataRecord dataRecord = null;
+
+        /** the queue of matching data records returned by the last lookup */
+        private Queue<DataRecord> matchingDataRecords = null;
+        /** the number of data records returned by the last lookup */
+        private int matchingDataRecordsCount = -1;
+
+        /**
+         * Creates an instance of the <code>AspellLookup</code> class for the given lookup key.
+         *
+         * @param lookupKey the lookup key that will be used for lookup
+         */
+        public AspellLookup(RecordKey lookupKey) {
+            this.lookupKey = lookupKey;
+        }
+
+        public RecordKey getKey() {
+            return lookupKey;
+        }
+
+        public LookupTable getLookupTable() {
+            return AspellLookupTable.this;
+        }
+
+        public void seek() {
+            if (dataRecord == null) {
+                throw new IllegalStateException("Data record not set, use the seek(DataRecord) method!");
+            }
+
+            matchingDataRecords = performLookup(lookupKey, dataRecord);
+            matchingDataRecordsCount = matchingDataRecords.size();
+        }
+
+        public void seek(DataRecord dataRecord) {
+            if (dataRecord == null) {
+                throw new NullPointerException("dataRecord");
+            }
+
+            this.dataRecord = dataRecord;
+
+            matchingDataRecords = performLookup(lookupKey, dataRecord);
+            matchingDataRecordsCount = matchingDataRecords.size();
+        }
+
+        public int getNumFound() {
+            if (matchingDataRecords == null) {
+                throw new IllegalStateException("The seek() method has NOT been called!");
+            }
+
+            return matchingDataRecordsCount;
+        }
+
+        public boolean hasNext() {
+            if (matchingDataRecords == null) {
+                throw new IllegalStateException("The seek() method has NOT been called!");
+            }
+
+            return !matchingDataRecords.isEmpty();
+        }
+
+        public DataRecord next() {
+            if (matchingDataRecords == null) {
+                throw new IllegalStateException("The seek() method has NOT been called!");
+            }
+
+            return matchingDataRecords.remove();
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("Method not supported!");
+        }
+
+    }
+
+    /**
      * The iterator used for iteration over all the data records stored in the lookup table.
      *
      * @author Martin Janik <martin.janik@javlin.cz>
@@ -130,7 +220,7 @@ public final class AspellLookupTable extends AbstractLookupTable {
         private Iterator<DataRecord> dataRecordsIterator = null;
 
         /**
-         * Constructs an instance of the <code>AspellLookupTableIterator</code> class that iterates over the data
+         * Creates an instance of the <code>AspellLookupTableIterator</code> class that iterates over the data
          * records stored in the lookup table of the outer class.
          */
         public AspellLookupTableIterator() {
@@ -170,14 +260,14 @@ public final class AspellLookupTable extends AbstractLookupTable {
     /** the type of the lookup table */
     private static final String LOOKUP_TABLE_TYPE = "aspellLookup";
 
-    /** the XML attribute used to store the ID of meta data */
-    private static final String XML_ATTRIBUTE_METADATA_ID = "metadataId";
-    /** the XML attribute used to store the lookup key field used for data record lookup */
-    private static final String XML_ATTRIBUTE_LOOKUP_KEY_FIELD = "lookupKeyField";
-    /** the XML attribute used to store the data file URL */
-    private static final String XML_ATTRIBUTE_DATA_FILE_URL = "dataFileUrl";
-    /** the XML attribute used to store the data file character set */
-    private static final String XML_ATTRIBUTE_DATA_FILE_CHARSET = "dataFileCharset";
+    /** the required XML attribute used to store the lookup key field used for data record lookup */
+    private static final String XML_LOOKUP_KEY_FIELD_ATTRIBUTE = "lookupKeyField";
+    /** the required XML attribute used to store the data file URL */
+    private static final String XML_DATA_FILE_URL_ATTRIBUTE = "dataFileUrl";
+    /** the optional XML attribute used to store the data file character set */
+    private static final String XML_DATA_FILE_CHARSET_ATTRIBUTE = "dataFileCharset";
+    /** the optional XML attribute used to store the spelling threshold */
+    private static final String XML_SPELLING_THRESHOLD_ATTRIBUTE = "spellingThreshold";
 
     /** the default data file character set */
     private static final String DEFAULT_DATA_FILE_CHARSET = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
@@ -204,7 +294,6 @@ public final class AspellLookupTable extends AbstractLookupTable {
         AspellLookupTable aspellLookupTable = null;
 
         ComponentXMLAttributes lookupTableAttributes = new ComponentXMLAttributes(xmlElement, graph);
-
         String type = null;
 
         try {
@@ -222,18 +311,21 @@ public final class AspellLookupTable extends AbstractLookupTable {
         try {
             aspellLookupTable = new AspellLookupTable(
                     lookupTableAttributes.getString(XML_ID_ATTRIBUTE),
-                    graph.getDataRecordMetadata(lookupTableAttributes.getString(XML_ATTRIBUTE_METADATA_ID)),
-                    lookupTableAttributes.getString(XML_ATTRIBUTE_LOOKUP_KEY_FIELD),
-                    lookupTableAttributes.getString(XML_ATTRIBUTE_DATA_FILE_URL));
+                    graph.getDataRecordMetadata(lookupTableAttributes.getString(XML_METADATA_ID)),
+                    lookupTableAttributes.getString(XML_LOOKUP_KEY_FIELD_ATTRIBUTE),
+                    lookupTableAttributes.getString(XML_DATA_FILE_URL_ATTRIBUTE));
             aspellLookupTable.setGraph(graph);
 
             if (lookupTableAttributes.exists(XML_NAME_ATTRIBUTE)) {
                 aspellLookupTable.setName(lookupTableAttributes.getString(XML_NAME_ATTRIBUTE));
             }
 
-            if (lookupTableAttributes.exists(XML_ATTRIBUTE_DATA_FILE_CHARSET)) {
-                aspellLookupTable.setDataFileCharset(
-                        lookupTableAttributes.getString(XML_ATTRIBUTE_DATA_FILE_CHARSET));
+            if (lookupTableAttributes.exists(XML_DATA_FILE_CHARSET_ATTRIBUTE)) {
+                aspellLookupTable.setDataFileCharset(lookupTableAttributes.getString(XML_DATA_FILE_CHARSET_ATTRIBUTE));
+            }
+
+            if (lookupTableAttributes.exists(XML_SPELLING_THRESHOLD_ATTRIBUTE)) {
+                aspellLookupTable.setSpellingThreshold(lookupTableAttributes.getInteger(XML_SPELLING_THRESHOLD_ATTRIBUTE));
             }
         } catch (AttributeNotFoundException exception) {
             throw new XMLConfigurationException("Missing a required attribute!", exception);
@@ -259,13 +351,13 @@ public final class AspellLookupTable extends AbstractLookupTable {
     /** the map containing all the data records stored in the lookup table */
     private Map<String, Set<DataRecord>> dataRecords = null;
 
-    /** the queue of matching data records looked up by the last call to the {@link #get(HashKey)} method */
+    /** the queue of matching data records returned by the last lookup */
     private Queue<DataRecord> matchingDataRecords = null;
-    /** the number of data records looked up by the last call to the {@link #get(HashKey)} method */
+    /** the number of data records returned by the last lookup */
     private int matchingDataRecordsCount = -1;
 
     /**
-     * Constructs a new instance of the <code>AspellLookupTable</code> class. Compulsory attributes are set
+     * Creates a new instance of the <code>AspellLookupTable</code> class. Compulsory attributes are set
      * to values provided during construction, optional attributes are set to their default values.
      *
      * @param id an identification of the lookup table
@@ -442,22 +534,37 @@ public final class AspellLookupTable extends AbstractLookupTable {
         }
     }
 
-    public synchronized DataRecord get(HashKey lookupKey) {
+    public synchronized DataRecord get(RecordKey key, DataRecord keyRecord) {
         if (!isInitialized()) {
             throw new NotInitializedException("The lookup table has NOT been initialized!");
         }
 
-        if (lookupKey.getKeyFields().length != 1) {
+        matchingDataRecords = performLookup(key, keyRecord);
+        matchingDataRecordsCount = matchingDataRecords.size();
+
+        return matchingDataRecords.poll();
+    }
+
+    private synchronized Queue<DataRecord> performLookup(RecordKey lookupKey, DataRecord dataRecord) {
+        if (lookupKey == null) {
+            throw new NullPointerException("key");
+        }
+
+        if (dataRecord == null) {
+            throw new NullPointerException("keyRecord");
+        }
+
+        if (lookupKey.getLength() != 1) {
             throw new IllegalArgumentException("The lookupKey cannot be composed from multiple fields!");
         }
 
-        DataField lookupKeyField = lookupKey.getDataRecord().getField(lookupKey.getKeyFields()[0]);
+        DataField lookupKeyField = dataRecord.getField(lookupKey.getKeyFields()[0]);
 
         if (lookupKeyField.getType() != DataFieldMetadata.STRING_FIELD) {
             throw new IllegalArgumentException("The lookup key field is not a string!");
         }
 
-        matchingDataRecords = new LinkedList<DataRecord>();
+        Queue<DataRecord> matchingDataRecords = new LinkedList<DataRecord>();
 
         @SuppressWarnings("unchecked")
         List<Word> suggestions = dictionary.getSuggestions(lookupKeyField.toString(), 0);
@@ -466,7 +573,18 @@ public final class AspellLookupTable extends AbstractLookupTable {
             matchingDataRecords.addAll(dataRecords.get(suggestion.getWord()));
         }
 
-        matchingDataRecordsCount = matchingDataRecords.size();
+        return matchingDataRecords;
+    }
+
+    @Deprecated
+    public synchronized DataRecord getNext() {
+        if (!isInitialized()) {
+            throw new NotInitializedException("The lookup table has NOT been initialized!");
+        }
+
+        if (matchingDataRecords == null) {
+            throw new IllegalStateException("The get() method has NOT been called!");
+        }
 
         return matchingDataRecords.poll();
     }
@@ -484,17 +602,31 @@ public final class AspellLookupTable extends AbstractLookupTable {
         return matchingDataRecordsCount;
     }
 
-    @Deprecated
-    public synchronized DataRecord getNext() {
+    public Lookup createLookup(RecordKey lookupKey) {
         if (!isInitialized()) {
             throw new NotInitializedException("The lookup table has NOT been initialized!");
         }
 
-        if (matchingDataRecords == null) {
-            throw new IllegalStateException("The get() method has NOT been called!");
+        if (lookupKey == null) {
+            throw new NullPointerException("key");
         }
 
-        return matchingDataRecords.poll();
+        if (lookupKey.getLength() != 1) {
+            throw new IllegalArgumentException("The lookupKey cannot be composed from multiple fields!");
+        }
+
+        if (lookupKey.getMetadata().getField(lookupKey.getKeyFields()[0]).getType() != DataFieldMetadata.STRING_FIELD) {
+            throw new IllegalArgumentException("The lookup key field is not a string!");
+        }
+
+        return new AspellLookup(lookupKey);
+    }
+
+    public Lookup createLookup(RecordKey lookupKey, DataRecord dataRecord) {
+        Lookup aspellLookup = createLookup(lookupKey);
+        aspellLookup.seek(dataRecord);
+
+        return aspellLookup;
     }
 
     public synchronized Iterator<DataRecord> iterator() {
