@@ -34,7 +34,9 @@ import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.Lookup;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -180,9 +182,11 @@ public class DBJoin extends Node {
 
 	private Properties transformationParameters=null;
 	
-	private DBLookupTable lookupTable;
+	private Lookup lookup;
 	private RecordKey recordKey;
 	private DataRecordMetadata dbMetadata;
+	private InputPort inPort;
+	private DataRecord inRecord;
 	
 	static Log logger = LogFactory.getLog(Reformat.class);
 	
@@ -221,12 +225,9 @@ public class DBJoin extends Node {
 	@Override
 	public Result execute() throws Exception {
 		//initialize in and out records
-		InputPort inPort=getInputPort(READ_FROM_PORT);
 		DataRecord[] outRecord = {new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata())};
 		outRecord[0].init();
 		outRecord[0].reset();
-		DataRecord inRecord = new DataRecord(inPort.getMetadata());
-		inRecord.init();
 		DataRecord[] inRecords = new DataRecord[] {inRecord,null};
 		OutputPort rejectedPort = getOutputPort(REJECTED_PORT);
 
@@ -235,10 +236,11 @@ public class DBJoin extends Node {
 				inRecord = inPort.readRecord(inRecord);
 				if (inRecord!=null) {
 					//find slave record in database
-					inRecords[1] = lookupTable.get(inRecord);
+					lookup.seek();
+					inRecords[1] = lookup.hasNext() ? lookup.next() : NullRecord.NULL_RECORD;
 					do{
 						if (transformation != null) {//transform driver and slave
-							if ((inRecords[1] != null || leftOuterJoin)){
+							if ((inRecords[1] != NullRecord.NULL_RECORD || leftOuterJoin)){
 								int transformResult = transformation.transform(inRecords, outRecord);
 
 								if (transformResult >= 0) {
@@ -291,8 +293,8 @@ public class DBJoin extends Node {
 							}
 						}
 						//get next record from database with the same key
-						inRecords[1] = lookupTable.getNext();					
-					}while (inRecords[1] != null);
+						inRecords[1] = lookup.hasNext() ? lookup.next() : NullRecord.NULL_RECORD;		
+					}while (inRecords[1] !=  NullRecord.NULL_RECORD);
 				}
 				counter++;
 		}
@@ -313,7 +315,7 @@ public class DBJoin extends Node {
         if(!isInitialized()) return;
 		super.free();
 		
-		lookupTable.free();
+//		lookupTable.free();
 	}
 
 	/* (non-Javadoc)
@@ -407,7 +409,8 @@ public class DBJoin extends Node {
         dbMetadata = getGraph().getDataRecordMetadata(metadataName);
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
-        try {
+        DBLookupTable lookupTable;
+		try {
 			lookupTable = new DBLookupTable(
 					"LOOKUP_TABLE_FROM_" + this.getId(),
 					((DBConnection) conn).getConnection(getId(), OperationType.READ),
@@ -420,7 +423,6 @@ public class DBJoin extends Node {
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
-			lookupTable.setLookupKey(recordKey);
 			if (transformation != null){
 				transformation.init(transformationParameters, inMetadata, outMetadata);
 			}
@@ -432,6 +434,10 @@ public class DBJoin extends Node {
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
 		}
+		inPort=getInputPort(READ_FROM_PORT);
+		inRecord = new DataRecord(inPort.getMetadata());
+		inRecord.init();
+		lookup = lookupTable.createLookup(recordKey, inRecord);
 		
 		if (transformation != null && leftOuterJoin && getOutputPort(REJECTED_PORT) != null) {
 			logger.info(this.getId() + " info: There will be no skipped records " +
@@ -450,7 +456,7 @@ public class DBJoin extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		lookupTable.reset();
+//		lookupTable.reset();
 		transformation.reset();
         if (errorLogURL != null) {
         	try {
