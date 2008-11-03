@@ -21,11 +21,9 @@ package org.jetel.lookup;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 
 import org.jetel.connection.jdbc.CopySQLData;
@@ -36,6 +34,8 @@ import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.Lookup;
+import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -46,6 +46,7 @@ import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.primitive.SimpleCache;
@@ -74,7 +75,7 @@ import org.w3c.dom.Element;
  *@author     dpavlis
  *@since      May 22, 2003
  */
-public class DBLookupTable extends AbstractLookupTable {
+public class DBLookupTable extends GraphElement implements LookupTable {
 
     private static final String XML_LOOKUP_TYPE_DB_LOOKUP = "dbLookup"; 
     //private static final String XML_LOOKUP_KEY = "key";
@@ -92,24 +93,23 @@ public class DBLookupTable extends AbstractLookupTable {
 	protected DataRecordMetadata dbMetadata;
 	protected DBConnectionInstance dbConnection;
 	protected PreparedStatement pStatement;
-	protected RecordKey lookupKey;
+//	protected RecordKey lookupKey;
 	protected int[] keyFields;
 	protected String[] keys;
 	protected String sqlQuery;
-	protected ResultSet resultSet;
-	protected CopySQLData[] transMap;
+//	protected ResultSet resultSet;
+//	protected CopySQLData[] transMap;
 	protected CopySQLData[] keyTransMap;
-	protected DataRecord dbDataRecord;
+//	protected DataRecord dbDataRecord;
 	protected DataRecord keyDataRecord = null;
-	protected SimpleCache resultCache;
+//	protected SimpleCache resultCache;
 	
 	protected int maxCached = 0;
 	protected HashKey cacheKey;
-	protected KeyStore objectCacheKey;
 	protected boolean storeNulls = false;
 	
-	protected int cacheNumber = 0;
-	protected int totalNumber = 0;
+//	protected int cacheNumber = 0;
+//	protected int totalNumber = 0;
   
 	
 	public DBLookupTable(String id, String connectionId, String metadataId, String sqlQuery){
@@ -153,313 +153,74 @@ public class DBLookupTable extends AbstractLookupTable {
 		return dbMetadata;
 	}
 
-	public DataRecord get(HashKey lookupKey) {
-	    if (lookupKey == null) {
-	        throw new NullPointerException("lookupKey");
-	    }
-
-	    setLookupKey(lookupKey.getRecordKey());
-
-	    return get(lookupKey.getDataRecord());
-	}
-
-	/**
-	 *  Looks-up data based on speficied key.<br>
-	 *  The key value is taken from passed-in data record (each call of this method takes data
-	 *  from the same object, so for new call new data have to be upon this object). 
-	 *  If caching is enabled, the internal cache is searched first, then the DB is queried.
-	 *
-	 *@return                     found DataRecord or NULL
-	 *@since                      May 2, 2002
-	 */
-	public DataRecord get(DataRecord keyRecord) {
-		
+	ResultSet seek(HashKey key){
 		if (!isInitialized()) {
 			throw new NotInitializedException(this);
 		}
-		
-		totalNumber++;
-	    // if cached, then try to query cache first
-	    if (resultCache!=null){
-	        cacheKey.setDataRecord(keyRecord);
-			if (resultCache.containsKey(cacheKey)) {
-				DataRecord data = (DataRecord) resultCache.get(cacheKey);
-				cacheNumber++;
-				return data;
-			}	        
-	    }
-	    
-	    try {
-	        pStatement.clearParameters();
-	        
-	        // initialization of trans map if it was not already done
-	        if (keyTransMap==null){
-	            if (lookupKey == null) {
-	                throw new RuntimeException("RecordKey was not defined for lookup !");
-	            }
-	            
-	            try {
-	                keyTransMap = CopySQLData.jetel2sqlTransMap(
-	                        SQLUtil.getFieldTypes(pStatement.getParameterMetaData()),
-	                        keyRecord,lookupKey.getKeyFields());
-	            } catch (JetelException ex){
-	                throw new RuntimeException("Can't create keyRecord transmap: "+ex.getMessage());
-	            }catch (Throwable ex) {
-	                // PreparedStatement parameterMetadata probably not implemented - use work-around
-	                // we only guess the correct data types on JDBC side
-	                try{
-	                    keyTransMap = CopySQLData.jetel2sqlTransMap(keyRecord,lookupKey.getKeyFields(), dbConnection.getJdbcSpecific());
-	                }catch(JetelException ex1){
-	                    throw new RuntimeException("Can't create keyRecord transmap: "+ex1.getMessage());
-	                }catch(Exception ex1){
-	                    // some serious problem
-	                    throw new RuntimeException("Can't create keyRecord transmap: "+ex1.getClass().getName()+":"+ex1.getMessage());
-	                }
-	            }
-	        }
-	        // set prepared statement parameters
-	        for (int i = 0; i < keyTransMap.length; i++) {
-	            keyTransMap[i].jetel2sql(pStatement);
-	        }
-	        
-	    //execute query
-	    resultSet = pStatement.executeQuery();
-	    //put found records to cache
-	    if (resultCache!=null){
-		    HashKey hashKey = new HashKey(lookupKey, keyRecord.duplicate());
-		    if (fetch()) {
-				do {
-					DataRecord storeRecord = dbDataRecord.duplicate();
-					resultCache.put(hashKey, storeRecord);
-				} while (fetch());		    	
-		    }else{
-				if (storeNulls) {
-					resultCache.put(hashKey, (DataRecord) null);
-				}		    	
-		    }
-	    }else {
-	    	return getNext();
-	    }
-	} catch (SQLException ex) {
-	    throw new RuntimeException(ex.getMessage());
-	}
-
-	return (DataRecord)resultCache.get(cacheKey) ;
-}
-
-	/**
-	 *  Looks-up record/data based on specified array of parameters(values).
-	 * No caching is performed.
-	 *
-	 *@param  keys                Description of the Parameter
-	 *@return                     found DataRecord or NULL
-	 */
-	public DataRecord get(Object keys[]) {
-		
-		if (!isInitialized()) {
-			throw new NotInitializedException(this);
-		}
-		
-    	objectCacheKey = new KeyStore(keys);
-		totalNumber++;
-	    // if cached, then try to query cache first
-	    if (resultCache!=null){
-			if (resultCache.containsKey(objectCacheKey)) {
-				DataRecord data = (DataRecord) resultCache.get(objectCacheKey);
-				cacheNumber++;
-				return data;
-			}	        
-	    }
-
-	    try {
-			// set up parameters for query
-			// statement uses indexing from 1
+        try {
 			pStatement.clearParameters();
-			for (int i = 0; i < keys.length; i++) {
-				pStatement.setObject(i + 1, keys[i]);
+			// initialization of trans map if it was not already done
+			if (keyTransMap==null){
+			    
+			    try {
+			        keyTransMap = CopySQLData.jetel2sqlTransMap(
+			                SQLUtil.getFieldTypes(pStatement.getParameterMetaData()),  key.getDataRecord(),key.getKeyFields());
+			    } catch (JetelException ex){
+			        throw new RuntimeException("Can't create keyRecord transmap: "+ex.getMessage());
+			    }catch (Throwable ex) {
+			        // PreparedStatement parameterMetadata probably not implemented - use work-around
+			        // we only guess the correct data types on JDBC side
+			        try{
+			            keyTransMap = CopySQLData.jetel2sqlTransMap(key.getDataRecord(),key.getKeyFields(), dbConnection.getJdbcSpecific());
+			        }catch(JetelException ex1){
+			            throw new RuntimeException("Can't create keyRecord transmap: "+ex1.getMessage());
+			        }catch(Exception ex1){
+			            // some serious problem
+			            throw new RuntimeException("Can't create keyRecord transmap: "+ex1.getClass().getName()+":"+ex1.getMessage());
+			        }
+			    }
 			}
-			//execute query
-			resultSet = pStatement.executeQuery();
-		    //put found records to cache
-		    if (resultCache!=null){
-			    if (fetch()) {
-					do {
-						DataRecord storeRecord = dbDataRecord.duplicate();
-						resultCache.put(objectCacheKey, storeRecord);
-					} while (fetch());		    	
-			    }else{
-					if (storeNulls) {
-						resultCache.put(objectCacheKey, (DataRecord) null);
-					}			    	
-			    }
-		    }else {
-		    	return getNext();
-		    }
-    }
-    catch (SQLException ex) {
-			throw new RuntimeException(ex.getMessage());
+			// set prepared statement parameters
+			for (int i = 0; i < keyTransMap.length; i++) {
+			    keyTransMap[i].jetel2sql(pStatement);
+			}
+			
+		   //execute query
+		   ResultSet result = pStatement.executeQuery();
+   
+		   if (dbMetadata == null) {
+	            try {
+	                dbMetadata = SQLUtil.dbMetadata2jetel(result.getMetaData(), dbConnection.getJdbcSpecific());
+	            } catch (SQLException ex) {
+	                throw new RuntimeException(
+	                        "Can't automatically obtain dbMetadata (use other constructor and provide metadat for output record): "
+	                        + ex.getMessage());
+	            }
+		   }
+		   
+		   return result;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
 		}
-    return (DataRecord)resultCache.get(objectCacheKey) ;
 	}
-
-	/**
-	 *  Looks-up data based on specified key-string.<br>
-	 * If caching is enabled, the
-	 * internal cache is searched first, then the DB is queried.<br>
-	 * <b>Warning:</b>it is not recommended to  mix this call with call to <code>get(DataRecord keyRecord)</code> method.
-	 *
-	 *@param  keyStr              string representation of the key-value
-	 *@return                     found DataRecord or NULL
-	 */
-	public DataRecord get(String keyStr) {
-		
-		if (!isInitialized()) {
-			throw new NotInitializedException(this);
-		}
-		
-		totalNumber++;
-	    // if cached, then try to query cache first
-	    if (resultCache!=null){
-			if (resultCache.containsKey(keyStr)) {
-				DataRecord data = (DataRecord) resultCache.get(keyStr);
-				cacheNumber++;
-				return data;
-			}	        
-	    }
-
-	    try {
-	        // set up parameters for query
-	        // statement uses indexing from 1
-	        pStatement.clearParameters();
-	        pStatement.setString(1, keyStr);
-	        //execute query
-	        resultSet = pStatement.executeQuery();
-		    //put found records to cache
-		    if (resultCache!=null){
-			    if (fetch()) {
-					do {
-						DataRecord storeRecord = dbDataRecord.duplicate();
-						resultCache.put(keyStr, storeRecord);
-					} while (fetch());		    	
-			    }else{
-					if (storeNulls) {
-						resultCache.put(keyStr, (DataRecord) null);
-					}			    	
-			    }
-		    }else {
-		    	return getNext();
-		    }
-	    }
-	    catch (SQLException ex) {
-	        throw new RuntimeException(ex.getMessage());
-	    }
-	    return (DataRecord)resultCache.get(keyStr) ;
+	
+	CopySQLData[] createTransMap(ResultSet resultSet, DataRecord outRecord){
+        
+        // create trans map which will be used for fetching data
+        try {
+            return CopySQLData.sql2JetelTransMap(
+                    SQLUtil.getFieldTypes(outRecord.getMetadata(), dbConnection.getJdbcSpecific()), outRecord.getMetadata(), outRecord);
+        } catch (Exception ex) {
+            throw new RuntimeException(
+                    "Can't automatically obtain dbMetadata/create transMap : "
+                    + ex.getMessage());
+        }
 	}
+	
 
     /**
-	 *  Executes query and returns data record (statement must be initialized with
-	 *  parameters prior to calling this function
-	 *
-	 *@return                   DataRecord obtained from DB or null if not found
-	 *@exception  SQLException  Description of the Exception
-	 */
-	private boolean fetch() throws SQLException {
-		if (!resultSet.next()) {
-			return false;
-		}
-		// initialize trans map if needed
-		if (transMap==null){
-		    initInternal();
-			//check Clover and db metadata
-			ResultSetMetaData dbMeta = resultSet.getMetaData();
-			if (transMap.length != dbMeta.getColumnCount()){
-				StringBuilder message = new StringBuilder("Different number of fields " +
-						"in defined DB metadata and metadata obtained from database!!!\n" +
-						"Clover metadata:\n");
-				for (int i=0;i<dbMetadata.getNumFields();i++){
-					message.append(dbMetadata.getField(i).getName() + " - " + 
-							dbMetadata.getFieldTypeAsString(i) + "\n");
-				}
-				message.append("Database metadata:\n");
-				for (int i=1;i<=dbMeta.getColumnCount();i++){
-					message.append(dbMeta.getColumnLabel(i) + " - " + 
-							dbMeta.getColumnTypeName(i) + "\n");
-				}
-				throw new RuntimeException(message.toString());
-			}
-		}
-		//get data from results
-		for (int i = 0; i < transMap.length; i++) {
-			transMap[i].sql2jetel(resultSet);
-		}
-		return true;
-	}
-
-	/**
-	 *  Returns the next found record if previous get() method succeeded.<br>
-	 *  If no more records, returns NULL
-	 *
-	 *@return                     The next found record
-	 *@exception  JetelException  Description of the Exception
-	 */
-	public DataRecord getNext() {
-		if (resultCache!=null){
-			return (DataRecord)resultCache.getNext();
-		}else {
-	        try {
-	            if (!fetch()) {
-	                return null;
-	            } else {
-	                return dbDataRecord;
-	            }
-	        } catch (SQLException ex) {
-	            throw new RuntimeException(ex.getMessage());
-	        }
-		}
-    }
-
-    /* (non-Javadoc)
-     * @see org.jetel.data.lookup.LookupTable#getNumFound()
-     * 
-     * Using this method on this implementation of LookupTable
-     * can be time consuming as it requires sequential scan through
-     * the whole result set returned from DB (on some DBMSs).
-     */
-    public int getNumFound() {
-    	if (resultCache!=null){
-    		return resultCache.getNumFound();
-    	}
-        if (resultSet != null) {
-            try {
-                int curRow=resultSet.getRow();
-                resultSet.last();
-                int count=resultSet.getRow();
-                resultSet.first();
-                resultSet.absolute(curRow);
-                return count;
-            } catch (SQLException ex) {
-                return -1;
-            }
-        }
-        return -1;
-    }
-
-    
-    /* (non-Javadoc)
-     * @see org.jetel.data.lookup.LookupTable#setLookupKey(java.lang.Object)
-     */
-    public void setLookupKey(Object obj){
-        this.keyTransMap=null; // invalidate current transmap -if it exists
-        if (obj instanceof RecordKey){
-	        this.lookupKey=((RecordKey)obj);
-	        this.cacheKey=new HashKey(lookupKey,null);
-	    }else{
-            this.lookupKey=null;
-            this.cacheKey=null;
-        }
-    }
-    
-	/**
 	 *  Initializtaion of lookup table - loading all data into it.
 	 *
 	 *@exception  JetelException  Description of the Exception
@@ -487,65 +248,19 @@ public class DBLookupTable extends AbstractLookupTable {
 			dbMetadata = getGraph().getDataRecordMetadata(metadataId);
 		}
 		
-        // if caching is required, crate map to store records
-    	if (maxCached>0){
-            this.resultCache= new SimpleCache(maxCached);
-            resultCache.enableDuplicity();
-             
-        }
         try {
             pStatement = dbConnection.getSqlConnection().prepareStatement(sqlQuery);
         } catch (SQLException ex) {
             throw new ComponentNotReadyException("Can't create SQL statement: " + ex.getMessage());
         }
-        totalNumber = 0;
-        cacheNumber = 0;
     }
     
     @Override
     public synchronized void reset() throws ComponentNotReadyException {
     	super.reset();
-    	if (resultCache != null)
-    		resultCache.clear();
-        totalNumber = 0;
-        cacheNumber = 0;
         keyTransMap = null;
     }
     
-    /**
-     * We assume that query has already been executed and
-     * we have resultSet available to get metadata.
-     * 
-     * 
-     * @throws JetelException
-     */
-    private void initInternal()  {
-        // obtain dbMetadata info if needed
-        if (dbMetadata == null) {
-            try {
-                dbMetadata = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), dbConnection.getJdbcSpecific());
-            } catch (SQLException ex) {
-                throw new RuntimeException(
-                        "Can't automatically obtain dbMetadata (use other constructor and provide metadat for output record): "
-                        + ex.getMessage());
-            }
-        }
-        // create data record for fetching data from DB
-        dbDataRecord = new DataRecord(dbMetadata);
-        dbDataRecord.init();
-        
-        // create trans map which will be used for fetching data
-        try {
-            transMap = CopySQLData.sql2JetelTransMap(
-                    SQLUtil.getFieldTypes(dbMetadata, dbConnection.getJdbcSpecific()), dbMetadata, dbDataRecord);
-        } catch (Exception ex) {
-            throw new RuntimeException(
-                    "Can't automatically obtain dbMetadata/create transMap : "
-                    + ex.getMessage());
-        }
-
-    }
-
     public static DBLookupTable fromProperties(TypedProperties properties) 
     throws AttributeNotFoundException, GraphConfigurationException{
 
@@ -569,8 +284,10 @@ public class DBLookupTable extends AbstractLookupTable {
         }
         
         if(properties.containsKey(XML_LOOKUP_MAX_CACHE_SIZE)) {
-            lookupTable.setNumCached(properties.getIntProperty(XML_LOOKUP_MAX_CACHE_SIZE), 
-            		properties.getBooleanProperty(XML_STORE_NULL_RESPOND, true));
+            lookupTable.setNumCached(properties.getIntProperty(XML_LOOKUP_MAX_CACHE_SIZE));
+        }
+        if (properties.containsKey(XML_STORE_NULL_RESPOND)){
+        	lookupTable.setStoreNulls(properties.getBooleanProperty(XML_STORE_NULL_RESPOND));
         }
         
         return lookupTable;
@@ -607,8 +324,10 @@ public class DBLookupTable extends AbstractLookupTable {
             }
             
             if(xattribs.exists(XML_LOOKUP_MAX_CACHE_SIZE)) {
-                lookupTable.setNumCached(xattribs.getInteger(XML_LOOKUP_MAX_CACHE_SIZE), 
-                		xattribs.getBoolean(XML_STORE_NULL_RESPOND, true));
+                lookupTable.setNumCached(xattribs.getInteger(XML_LOOKUP_MAX_CACHE_SIZE));
+            }
+            if (xattribs.exists(XML_STORE_NULL_RESPOND)) {
+            	lookupTable.setStoreNulls(xattribs.getBoolean(XML_STORE_NULL_RESPOND));
             }
             
             return lookupTable;
@@ -628,8 +347,6 @@ public class DBLookupTable extends AbstractLookupTable {
             if(pStatement != null) {
                 pStatement.close();
             }
-            resultCache = null;
-            transMap = null;
         }
         catch (SQLException ex) {
             throw new RuntimeException(ex.getMessage());
@@ -643,11 +360,7 @@ public class DBLookupTable extends AbstractLookupTable {
 	 * @param numCached
 	 */
 	public void setNumCached(int numCached){
-	    if (numCached>0){
-	          this.resultCache= new SimpleCache(numCached);
-	          this.maxCached=numCached;
-	          resultCache.enableDuplicity();
-	      }
+        this.maxCached=numCached;
 	}
 
 	/**
@@ -656,13 +369,8 @@ public class DBLookupTable extends AbstractLookupTable {
 	 * @param numCached max number of stored records
 	 * @param storeNulls inicates if store key for which there aren't records in db
 	 */
-	public void setNumCached(int numCached, boolean storeNulls){
+	public void setStoreNulls(boolean storeNulls){
 		this.storeNulls = storeNulls;
-	    if (numCached>0){
-	          this.resultCache= new SimpleCache(numCached);
-	          this.maxCached=numCached;
-	          resultCache.enableDuplicity();
-	      }
 	}
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#checkConfig()
@@ -690,13 +398,13 @@ public class DBLookupTable extends AbstractLookupTable {
         return status;
     }
 
-	public int getCacheNumber() {
-		return cacheNumber;
-	}
-
-	public int getTotalNumber() {
-		return totalNumber;
-	}
+//	public int getCacheNumber() {
+//		return cacheNumber;
+//	}
+//
+//	public int getTotalNumber() {
+//		return totalNumber;
+//	}
 
 	public void toXML(Element xmlElement) {
 		// TODO Auto-generated method stub
@@ -721,10 +429,24 @@ public class DBLookupTable extends AbstractLookupTable {
         		}
         	}
         	Statement statement = dbConnection.getSqlConnection().createStatement();
-			resultSet = statement.executeQuery(query.toString());
+			ResultSet resultSet = statement.executeQuery(query.toString());
 			dbConnection.getJdbcSpecific().optimizeResultSet(resultSet, OperationType.READ);
+		   if (dbMetadata == null) {
+	            try {
+	                dbMetadata = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), dbConnection.getJdbcSpecific());
+	            } catch (SQLException ex) {
+	                throw new RuntimeException(
+	                        "Can't automatically obtain dbMetadata (use other constructor and provide metadat for output record): "
+	                        + ex.getMessage());
+	            }
+		   }
+			DataRecord dbDataRecord = new DataRecord(dbMetadata);
+			CopySQLData[] transMap = createTransMap(resultSet, dbDataRecord);
 			ArrayList<DataRecord> records = new ArrayList<DataRecord>();
-			while (fetch()){
+			while (resultSet.next()){
+				for (int i = 0; i < transMap.length; i++) {
+					transMap[i].sql2jetel(resultSet);
+				}
 				records.add(dbDataRecord.duplicate());
 			}
 			return records.iterator();
@@ -732,36 +454,159 @@ public class DBLookupTable extends AbstractLookupTable {
 			throw new RuntimeException(e);
 		}
    }
+	public Lookup createLookup(RecordKey key) {
+		return createLookup(key, null);
+	}
+	public Lookup createLookup(RecordKey key, DataRecord keyRecord) {
+		DBLookup lookup = new DBLookup(this, key, keyRecord);
+		lookup.setCacheSize(maxCached);
+		lookup.setStoreNulls(storeNulls);
+		return lookup;
+	}
+	public boolean isReadOnly() {
+		return true;
+	}
+	public boolean put(DataRecord dataRecord) {
+		throw new UnsupportedOperationException(); 
+	}
+	public boolean remove(DataRecord dataRecord) {
+		throw new UnsupportedOperationException(); 
+	}
+	public boolean remove(HashKey key) {
+		throw new UnsupportedOperationException(); 
+	}
     
-/**
- * Class used as key in cache when using DBLookupTable.get(Object[]) method.
- * These objects are equal if all theirs parts are equal.
- * 
- * @author avackova (agata.vackova@javlinconsulting.cz) ; 
- * (c) JavlinConsulting s.r.o.
- *  www.javlinconsulting.cz
- *
- * @since Oct 23, 2007
- *
- */
-private static class KeyStore {
-	
-	Object[] keyParts;
-	
-	public KeyStore(Object[] keyParts) {
-		this.keyParts = keyParts.clone();
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof KeyStore)) return false;
-		return Arrays.deepEquals(keyParts, ((KeyStore)obj).keyParts);
-	}
-	
-	@Override
-	public int hashCode() {
-		return Arrays.deepHashCode(keyParts);
-	}
-}
 }
 
+class DBLookup implements Lookup{
+
+	protected ResultSet resultSet;
+	protected SimpleCache resultCache;
+	protected DBLookupTable lookupTable;
+	protected DataRecord currentResult;
+	protected HashKey key;
+	protected CopySQLData[] transMap;
+	protected DataRecord inRecord;
+	protected RecordKey recordKey;
+	private boolean storeNulls;
+	
+	DBLookup(DBLookupTable lookupTable, RecordKey key, DataRecord record){
+		this.lookupTable = lookupTable;
+		this.recordKey = key;
+		this.inRecord = record;
+		this.key = new HashKey(recordKey, inRecord);
+	}
+	
+	public RecordKey getKey() {
+		return recordKey;
+	}
+
+	public LookupTable getLookupTable() {
+		return lookupTable;
+	}
+
+	public int getNumFound() {
+    	if (resultCache!=null){
+    		return resultCache.getNumFound();
+    	}
+        if (resultSet != null) {
+            try {
+                int curRow=resultSet.getRow();
+                resultSet.last();
+                int count=resultSet.getRow();
+                resultSet.first();
+                resultSet.absolute(curRow);
+                return count;
+            } catch (SQLException ex) {
+                return -1;
+            }
+        }
+        return -1;
+	}
+
+	public void seek() {
+		if (resultCache != null) {
+			try {
+				seekInCache();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void seekInCache() throws SQLException {
+		if (!resultCache.containsKey(key)) {
+			resultSet = lookupTable.seek(key);
+		    HashKey hashKey = new HashKey(recordKey, inRecord.duplicate());
+		    if (fetch()) {
+				do {
+					DataRecord storeRecord = currentResult.duplicate();
+					resultCache.put(hashKey, storeRecord);
+				} while (fetch());		    	
+		    }else{
+				if (storeNulls) {
+					resultCache.put(hashKey, (DataRecord) null);
+				}		    	
+		    }
+		}
+		currentResult = (DataRecord) resultCache.get(key);		
+	}
+	
+	private boolean fetch() throws SQLException {
+		if (!resultSet.next()) {
+			currentResult = null;
+			return false;
+		}
+		if (transMap == null) {
+			currentResult = new DataRecord(lookupTable.getMetadata());
+			currentResult.init();
+			transMap = lookupTable.createTransMap(resultSet, currentResult);
+		}
+		//get data from results
+		for (int i = 0; i < transMap.length; i++) {
+			transMap[i].sql2jetel(resultSet);
+		}
+		return true;
+	}
+
+	public void seek(DataRecord keyRecord) {
+		key.setDataRecord(keyRecord);
+		seek();
+	}
+
+	public boolean hasNext() {
+		return currentResult != null;
+	}
+
+	public DataRecord next() {
+		DataRecord result = currentResult;
+		if (resultCache != null){
+			currentResult = (DataRecord) resultCache.getNext();
+		}else {
+			try {
+				fetch();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+
+	public void remove() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	public void setCacheSize(int cacheSize) {
+		if (cacheSize>0){
+	        this.resultCache= new SimpleCache(cacheSize);
+	        resultCache.enableDuplicity();
+	    }
+	}
+
+	public void setStoreNulls(boolean storeNulls){
+		this.storeNulls = storeNulls;
+	}
+}
