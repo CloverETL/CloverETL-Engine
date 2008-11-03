@@ -34,6 +34,7 @@ import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.provider.FormatterProvider;
+import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
@@ -86,6 +87,7 @@ public class MultiFileWriter {
 	private DataRecordMetadata metadata;
     
 	private LookupTable lookupTable = null;
+	private Lookup lookup;
 	private String[] partitionKeyNames;
 	private RecordKey partitionKey;
 	private String[] partitionOutFields;
@@ -248,6 +250,9 @@ public class MultiFileWriter {
 	    if (partitionKey != null) {
 			try {
 				partitionKey.init();
+				if (lookupTable != null) {
+					lookup = lookupTable.createLookup(partitionKey);
+				}
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(e.getMessage());
 			}
@@ -348,9 +353,11 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException
      */
     private final void writeRecord4LookupTable(DataRecord record) throws IOException, ComponentNotReadyException {
-    	DataRecord keyRecord = lookupTable.get(new HashKey(partitionKey, record));
-
-    	if (keyRecord == null) {
+//    	DataRecord keyRecord = lookupTable.get(new HashKey(partitionKey, record));
+    	lookup.seek(record);
+    	DataRecord keyRecord;
+    	
+    	if (!lookup.hasNext()) {
     		currentTarget = unassignedTarget;
     		currentFormatter = currentTarget.getFormatter();
     		writeRecord2CurrentTarget(record);
@@ -358,14 +365,17 @@ public class MultiFileWriter {
     	}
     	
 		// data filtering
-    	while (keyRecord != null) {
+    	do  {
+    		keyRecord = lookup.next();
 			writeRecord2MultiTarget(keyRecord, record);
 			
 			// get next record from database with the same key
-			if ((keyRecord = lookupTable.getNext()) != null) {
+			if (lookup.hasNext()) {
 		        checkAndSetNextOutput();
+			}else{
+				return;
 			}
-    	}
+    	}while (true);
     }
     
     /**

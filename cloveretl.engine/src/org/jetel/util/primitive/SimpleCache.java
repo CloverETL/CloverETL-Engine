@@ -54,9 +54,8 @@ public class SimpleCache {
     protected transient int totalSize = 0;
     protected int maxSize;
     
-    protected Iterator iterator;
-    protected Entry eldest;
     protected Object savedKey;
+    protected Object[] result = new Object[1];
 
     /**
      * Creates cache with initial size of 16 entries.
@@ -98,11 +97,20 @@ public class SimpleCache {
     	keyMap = new DuplicateKeyMap(map);
     }
     
+    public Object[] getAll(Object key, Object[] returnType){
+    	if (keyMap != null) {
+    		return keyMap.getAll(key, returnType);
+    	}
+    	result[0] = map.get(key);
+    	return result;
+    }
+    
     /**
      * 
      * @param key
      * @return first entry upon the given key
      */
+    @Deprecated
     public Object get(Object key){
     	savedKey = key;
     	return (keyMap == null ? map.get(key) : keyMap.get(key) );
@@ -111,6 +119,7 @@ public class SimpleCache {
     /**
      * @return next entry upon the key from last used method get
      */
+    @Deprecated
     public Object getNext(){
     	return (keyMap == null ? null :keyMap.getNext() );
     }
@@ -134,8 +143,8 @@ public class SimpleCache {
     	}else if (keyMap==null){
      		return map.put(key,value);
     	}
-      	iterator = map.entrySet().iterator();
-      	eldest = (Entry)iterator.next();
+      	Iterator iterator = map.entrySet().iterator();
+      	Entry eldest = (Entry)iterator.next();
       	map.remove(eldest.getKey());
     	totalSize = totalSize - ((ArrayList)eldest.getValue()).size();
     	return keyMap.put(key,value);
@@ -147,6 +156,7 @@ public class SimpleCache {
     /**
      * @return number of records found for last used key
      */
+    @Deprecated
     public int getNumFound(){
     	if (keyMap==null){
     		return map.containsKey(savedKey) ? 1 : 0; 

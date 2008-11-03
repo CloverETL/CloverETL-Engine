@@ -260,6 +260,18 @@ public class DuplicateKeyMap implements Map {
         savedKey=null;
         return map.remove(key);
     }
+    
+    public boolean remove(Object key, Object value){
+        ArrayList data=(ArrayList)map.get(key);
+    	if (data == null) {
+    		return false;
+    	}
+    	boolean removed = data.remove(value);
+    	if (data.size() == 0) {
+    		remove(key);
+    	}
+    	return removed;
+    }
 
     /* (non-Javadoc)
      * @see java.util.Map#put(java.lang.Object, java.lang.Object)
