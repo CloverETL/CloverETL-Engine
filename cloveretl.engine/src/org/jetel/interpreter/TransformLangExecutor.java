@@ -1869,10 +1869,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 		case CLVFLookupNode.OP_FREE:
 			node.lookup.free();
 			return data;
-		case CLVFLookupNode.OP_NUM_FOUND:
-			stack.push(new TLNumericValue(TLValueType.INTEGER, new CloverInteger(
-					node.lookup.getNumFound())));
-			return data;
+// TODO change to new version of LookupTable			
+//		case CLVFLookupNode.OP_NUM_FOUND:
+//			stack.push(new TLNumericValue(TLValueType.INTEGER, new CloverInteger(
+//					node.lookup.getNumFound())));
+//			return data;
 		case CLVFLookupNode.OP_GET:
 			Object keys[] = new Object[node.jjtGetNumChildren()];
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
@@ -1888,8 +1889,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 			record = null;
 
 			break;
-		default: // CLVFLookupNode.OP_NEXT:
-			record = node.lookup.getNext();
+// TODO change to new version of LookupTable			
+//		default: // CLVFLookupNode.OP_NEXT:
+//			record = node.lookup.getNext();
 
 		}
 
