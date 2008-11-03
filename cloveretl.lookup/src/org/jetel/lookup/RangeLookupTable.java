@@ -35,20 +35,19 @@ import org.jetel.data.HashKey;
 import org.jetel.data.RecordComparator;
 import org.jetel.data.RecordKey;
 import org.jetel.data.StringDataField;
+import org.jetel.data.lookup.Lookup;
+import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.parser.DataParser;
-import org.jetel.data.parser.DelimitedDataParser;
-import org.jetel.data.parser.FixLenByteDataParser;
-import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
-import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -80,12 +79,11 @@ import org.w3c.dom.Element;
  * @since Sep 20, 2007
  *
  */
-public class RangeLookupTable extends AbstractLookupTable {
+public class RangeLookupTable extends GraphElement implements LookupTable {
 	
 	
     private static final String XML_LOOKUP_TYPE_RANGE_LOOKUP = "rangeLookup";
     private static final String XML_FILE_URL = "fileURL";
- 	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
     private static final String XML_START_FIELDS = "startFields";
     private static final String XML_END_FIELDS = "endFields";
     private static final String XML_CHARSET = "charset";
@@ -106,32 +104,24 @@ public class RangeLookupTable extends AbstractLookupTable {
     protected String metadataId;
 	protected Parser dataParser;
 	protected TreeSet<DataRecord> lookupTable;//set of intervals
-	protected SortedSet<DataRecord> subTable;
-	protected int numFound;
-	protected RecordKey lookupKey;
 	protected RecordKey startKey;
 	protected String[] startFields;
 	protected int[] startField;
 	protected RecordKey endKey;
 	protected String[] endFields;
 	protected int[] endField;
-	protected DataRecord tmpRecord;
 	protected IntervalRecordComparator comparator;
-	protected int[] keyFields = null;
-	protected Iterator<DataRecord> subTableIterator;
 	protected RuleBasedCollator collator = null;
 	protected boolean[] startInclude;
 	protected boolean[] endInclude;
 	protected boolean useI18N;
 	protected String locale;
-	protected boolean byteMode = false;
 	protected String charset;
 	protected String fileURL;
 	// data of the lookup table, can be used instead of an input file
 	protected String data;
 	
-	private DataRecord tmp;
-	private int[] comparison;
+	private DataRecord tmpRecord;
 	
 	/**
 	 * Constructor for most general range lookup table 
@@ -291,25 +281,14 @@ public class RangeLookupTable extends AbstractLookupTable {
 		
 		lookupTable = new TreeSet<DataRecord>(comparator);
 
+
+	    if (dataParser == null && (fileURL != null || data!= null)) {
+			dataParser = new DataParser(charset);
+	    }
+	    
 	    tmpRecord=new DataRecord(metadata);
 	    tmpRecord.init();
 
-	    if (dataParser == null && (fileURL != null || data!= null)) {
-    		switch (metadata.getRecType()) {
-			case DataRecordMetadata.DELIMITED_RECORD:
-				dataParser = new DelimitedDataParser(charset);
-				break;
-			case DataRecordMetadata.FIXEDLEN_RECORD:
-				dataParser = byteMode ? new FixLenByteDataParser(charset) : new FixLenCharDataParser(charset);
-				break;
-			case DataRecordMetadata.MIXED_RECORD:
-				dataParser = new DataParser(charset);
-				break;
-			default:
-				throw new ComponentNotReadyException(this, XML_METADATA_ID, "Unknown metadata type: " + metadata.getRecType());
-			}
-	    }
-	    
 	    //read records from file
         if (dataParser != null) {
             dataParser.init(metadata);
@@ -329,9 +308,8 @@ public class RangeLookupTable extends AbstractLookupTable {
             }
             dataParser.close();
         }
-		numFound=0;
 
-}
+	}
 	
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
@@ -357,84 +335,8 @@ public class RangeLookupTable extends AbstractLookupTable {
             }
             dataParser.close();
         }
-		numFound=0;
 	}
 	
-    public DataRecord get(HashKey lookupKey) {
-        if (lookupKey == null) {
-            throw new NullPointerException("lookupKey");
-        }
-
-        setLookupKey(lookupKey.getRecordKey());
-
-        return get(lookupKey.getDataRecord());
-    }
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.LookupTable#get(java.lang.String)
-	 */
-	public DataRecord get(String keyString) {
-		
-		if (!isInitialized()) {
-			throw new NotInitializedException(this);
-		}
-		
-		tmpRecord.getField(startFields[0]).fromString(keyString);
-		tmpRecord.getField(endFields[0]).fromString(keyString);
-		return get();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.LookupTable#get(java.lang.Object[])
-	 */
-	public DataRecord get(Object[] keys) {
-		
-		if (!isInitialized()) {
-			throw new NotInitializedException(this);
-		}
-		
-		//prepare "interval" from keyRecord:set start end end for the value
-		for (int i=0;i<keys.length;i++){
-			tmpRecord.getField(startField[i]).setValue(keys[i]);
-			tmpRecord.getField(endField[i]).setValue(keys[i]);
-		}
-		return get();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.LookupTable#get(org.jetel.data.DataRecord)
-	 */
-	public DataRecord get(DataRecord keyRecord) {
-		
-		if (!isInitialized()) {
-			throw new NotInitializedException(this);
-		}
-		
-		if (keyFields == null){
-			throw new RuntimeException("Set lookup key first!!!!");
-		}
-		//prepare "interval" from keyRecord:set start end end for the value
-		for (int i=0;i<lookupKey.getLength();i++){
-			tmpRecord.getField(startField[i]).setValue(keyRecord.getField(keyFields[i]));
-			tmpRecord.getField(endField[i]).setValue(keyRecord.getField(keyFields[i]));
-		}
-		return get();
-	}
-	
-    /**
-	 * This method finds all greater records, then set in get(Object[]) or get(DataRecord) or get(String)
-	 * method, in lookup table and stores them in subTable
-	 * 
-	 * @return
-	 */
-	private DataRecord get(){
-		//get all greater intervals
-		subTable = lookupTable.tailSet(tmpRecord);
-		subTableIterator = subTable.iterator();
-		numFound = 0;
-		return getNext();
-	}
-
 	/* (non-Javadoc)
 	 * @see org.jetel.data.lookup.LookupTable#getMetadata()
 	 */
@@ -442,108 +344,22 @@ public class RangeLookupTable extends AbstractLookupTable {
 		return metadata;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.LookupTable#getNext()
-	 */
-	public DataRecord getNext() {
-		//get next interval if exists
-		if (subTableIterator != null && subTableIterator.hasNext()) {
-			tmp = subTableIterator.next();
-		}else{
-			return null;
-		}
-		//if value is not in interval try next
-		for (int i=0;i<startField.length;i++){
-			comparison = compare(tmpRecord, tmp, i);
-			if ((comparison[0] < 0 || (comparison[0] == 0 && !startInclude[i])) ||
-				(comparison[1] > 0    || (comparison[1] == 0   && !endInclude[i])) ) {
-				return getNext();
-			}
-		}
-		numFound++;
-		return tmp;
-	}
-	
-	/**
-	 * This method compares to lookup table records on given <i>start/end </i> position.  
-	 * 
-	 * @param keyRecord 
-	 * @param lookupRecord
-	 * @param keyFieldNo compared key field
-	 * @return [compare value on start field, compare value on end field] 
-	 */
-	private int[] compare(DataRecord keyRecord, DataRecord lookupRecord, int keyFieldNo) {
-		int startComp = 0, endComp = 0;
-		//if start field of lookup record is null, start field of key record is always greater
-		if (lookupRecord.getField(startField[keyFieldNo]).isNull()) {
-			startComp = 1;
-		}
-		//if end field of lookup record is null, end field of key record is always smaller
-		if (lookupRecord.getField(endField[keyFieldNo]).isNull()){
-			endComp = -1;
-		}
-		if (startComp != 1) {//lookup record's start field is not null
-			if (collator != null && lookupRecord.getField(startField[keyFieldNo]).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
-				startComp = ((StringDataField)keyRecord.getField(startField[keyFieldNo])).compareTo(
-						lookupRecord.getField(startField[keyFieldNo]), collator);
-			}else{
-				startComp = keyRecord.getField(startField[keyFieldNo]).compareTo(
-						lookupRecord.getField(startField[keyFieldNo]));
-			}
-		}
-		if (endComp != -1) {//lookup record's end field is not null
-			if (collator != null && lookupRecord.getField(endField[keyFieldNo]).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
-				endComp = ((StringDataField)keyRecord.getField(startField[keyFieldNo])).compareTo(
-						lookupRecord.getField(endField[keyFieldNo]), collator);
-			}else{
-				endComp = keyRecord.getField(endField[keyFieldNo]).compareTo(
-						lookupRecord.getField(endField[keyFieldNo]));
-			}
-		}
-		return new int[]{startComp, endComp};
-	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.lookup.LookupTable#getNumFound()
 	 */
-	public int getNumFound() {
-		int alreadyFound = numFound;
-		while (getNext() != null) {}
-		int tmp = numFound;
-		subTableIterator = subTable.iterator();
-		for (int i=0;i<alreadyFound;i++){
-			getNext();
-		}
-		return tmp;
-	}
-
-	@Override
 	public boolean isReadOnly() {
 	    return false;
 	}
 
-    @Override
 	public boolean put(DataRecord dataRecord) {
 		lookupTable.add(dataRecord.duplicate());
 
 		return true;
 	}
 
-    @Override
 	public boolean remove(DataRecord dataRecord) {
 	    return lookupTable.remove(dataRecord);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.LookupTable#setLookupKey(java.lang.Object)
-	 */
-	public void setLookupKey(Object key) {
-		if (key instanceof RecordKey){
-	        this.lookupKey=((RecordKey)key);
-	        keyFields = lookupKey.getKeyFields();
-	    }else if (!(key instanceof String || key instanceof Object[])){
-	        throw new RuntimeException("Incompatible Object type specified as lookup key: "+key.getClass().getName());
-	    }
 	}
 
 	/* (non-Javadoc)
@@ -610,8 +426,6 @@ public class RangeLookupTable extends AbstractLookupTable {
 		}
 		lookupTable.setStartInclude(startInclude);
 		lookupTable.setEndInclude(endInclude);
-		
-		lookupTable.setByteMode(properties.getBooleanProperty(XML_BYTEMODE_ATTRIBUTE, false));
 		
         if (properties.containsKey(XML_DATA_ATTRIBUTE)) {
         	lookupTable.setData(properties.getProperty(XML_DATA_ATTRIBUTE));
@@ -689,8 +503,6 @@ public class RangeLookupTable extends AbstractLookupTable {
 			lookupTable.setStartInclude(startInclude);
 			lookupTable.setEndInclude(endInclude);
 			
-			lookupTable.setByteMode(xattribs.getBoolean(XML_BYTEMODE_ATTRIBUTE, false));
-			
             if (xattribs.exists(XML_DATA_ATTRIBUTE)) {
             	lookupTable.setData(xattribs.getString(XML_DATA_ATTRIBUTE));
             }
@@ -726,7 +538,24 @@ public class RangeLookupTable extends AbstractLookupTable {
 		setStartInclude(new boolean[]{startInclude});
 	}
 
+	public int[] getStartFields(){
+		if (startField == null) {
+			startKey = new RecordKey(startFields, metadata);
+			startKey.init();
+			startField = startKey.getKeyFields();			
+		}
+		return startField;
+	}
 
+	public int[] getEndFields(){
+		if (endField == null) {
+			endKey = new RecordKey(endFields, metadata);
+			endKey.init();
+			endField = endKey.getKeyFields();			
+		}
+		return endField;
+	}
+	
 	public String getLocale() {
 		return locale;
 	}
@@ -741,14 +570,6 @@ public class RangeLookupTable extends AbstractLookupTable {
 
 	public void setUseI18N(boolean useI18N) {
 		this.useI18N = useI18N;
-	}
-
-	public boolean isByteMode() {
-		return byteMode;
-	}
-
-	public void setByteMode(boolean byteMode) {
-		this.byteMode = byteMode;
 	}
 
 	public String getCharset() {
@@ -775,6 +596,160 @@ public class RangeLookupTable extends AbstractLookupTable {
 		this.data = data;
 	}
 
+	public RuleBasedCollator getCollator() {
+		return collator;
+	}
+
+	public Lookup createLookup(RecordKey key) {
+		return createLookup(key, null);
+	}
+
+	public Lookup createLookup(RecordKey key, DataRecord keyRecord) {
+		RangeLookup lookup = new RangeLookup(lookupTable, key, keyRecord);
+		lookup.setLookupTable(this);
+		return lookup;
+	}
+
+	public boolean remove(HashKey key) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+}
+
+class RangeLookup implements Lookup{
+	
+	private TreeSet<DataRecord> lookup;
+	private RangeLookupTable lookupTable;
+	private DataRecord tmpRecord;
+	private int[] startField;
+	private int[] endField;
+	private RecordKey key;
+	private DataRecord inRecord;
+	private int[] keyFields;
+	private SortedSet<DataRecord> subTable;
+	private Iterator<DataRecord> subTableIterator;
+	private DataRecord tmp;
+	private RuleBasedCollator collator;
+	private int[] comparison;
+	private int numFound;
+	private boolean[] startInclude;
+	private boolean[] endInclude;
+
+	RangeLookup(TreeSet<DataRecord> lookup, RecordKey key, DataRecord record){
+		this.lookup = lookup;
+		this.key = key;
+		this.inRecord = record;
+		this.keyFields = key.getKeyFields();
+	}
+
+	public RecordKey getKey() {
+		return key;
+	}
+
+	public LookupTable getLookupTable() {
+		return lookupTable;
+	}
+	
+	void setLookupTable(RangeLookupTable lookupTable){
+		this.lookupTable = lookupTable;
+	    tmpRecord=new DataRecord(lookupTable.getMetadata());
+	    tmpRecord.init();
+	    startField = lookupTable.getStartFields();
+	    endField = lookupTable.getEndFields();
+	    startInclude = lookupTable.getStartInclude();
+	    endInclude = lookupTable.getEndInclude();
+	    collator = lookupTable.getCollator();
+	}
+
+	public int getNumFound() {
+		int alreadyFound = numFound;
+		while (hasNext()) {}
+		int tmp = numFound;
+		subTableIterator = subTable.iterator();
+		for (int i=0;i<alreadyFound;i++){
+			hasNext();
+		}
+		return tmp;
+	}
+
+	public void seek() {
+		for (int i = 0; i < startField.length; i++){
+			tmpRecord.getField(startField[i]).setValue(inRecord.getField(keyFields[i]));
+			tmpRecord.getField(endField[i]).setValue(inRecord.getField(keyFields[i]));
+		}
+		subTable = lookup.tailSet(tmpRecord);
+		subTableIterator = subTable.iterator();
+	}
+
+	public void seek(DataRecord keyRecord) {
+		for (int i = 0; i < startField.length; i++){
+			tmpRecord.getField(startField[i]).setValue(keyRecord.getField(keyFields[i]));
+			tmpRecord.getField(endField[i]).setValue(keyRecord.getField(keyFields[i]));
+		}
+		subTable = lookup.tailSet(tmpRecord);
+		subTableIterator = subTable.iterator();
+	}
+
+	public boolean hasNext() {
+		if (subTableIterator != null && subTableIterator.hasNext()) {
+			tmp = subTableIterator.next();
+		}else{
+			tmp = null;
+		}
+		//if value is not in interval try next
+		for (int i=0;i<startField.length;i++){
+			comparison = compare(tmpRecord, tmp, i);
+			if ((comparison[0] < 0 || (comparison[0] == 0 && !startInclude[i])) ||
+				(comparison[1] > 0    || (comparison[1] == 0   && !endInclude[i])) ) {
+				return hasNext();
+			}
+		}
+		if (tmp != null) {
+			numFound++;
+		}
+		return tmp != null;
+	}
+
+	public DataRecord next() {
+		return tmp;
+	}
+
+	private int[] compare(DataRecord keyRecord, DataRecord lookupRecord, int keyFieldNo) {
+		int startComp = 0, endComp = 0;
+		//if start field of lookup record is null, start field of key record is always greater
+		if (lookupRecord.getField(startField[keyFieldNo]).isNull()) {
+			startComp = 1;
+		}
+		//if end field of lookup record is null, end field of key record is always smaller
+		if (lookupRecord.getField(endField[keyFieldNo]).isNull()){
+			endComp = -1;
+		}
+		if (startComp != 1) {//lookup record's start field is not null
+			if (collator != null && lookupRecord.getField(startField[keyFieldNo]).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
+				startComp = ((StringDataField)keyRecord.getField(startField[keyFieldNo])).compareTo(
+						lookupRecord.getField(startField[keyFieldNo]), collator);
+			}else{
+				startComp = keyRecord.getField(startField[keyFieldNo]).compareTo(
+						lookupRecord.getField(startField[keyFieldNo]));
+			}
+		}
+		if (endComp != -1) {//lookup record's end field is not null
+			if (collator != null && lookupRecord.getField(endField[keyFieldNo]).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
+				endComp = ((StringDataField)keyRecord.getField(startField[keyFieldNo])).compareTo(
+						lookupRecord.getField(endField[keyFieldNo]), collator);
+			}else{
+				endComp = keyRecord.getField(endField[keyFieldNo]).compareTo(
+						lookupRecord.getField(endField[keyFieldNo]));
+			}
+		}
+		return new int[]{startComp, endComp};
+	}
+
+	public void remove() {
+		subTableIterator.remove();
+	}
+	
+}
 
 	/**
 	 * Comparator for special records (defining range lookup table). 
@@ -783,7 +758,7 @@ public class RangeLookupTable extends AbstractLookupTable {
 	 * @see RecordComparator
 	 *
 	 */
-	private static class IntervalRecordComparator implements Comparator<DataRecord>{
+	class IntervalRecordComparator implements Comparator<DataRecord>{
 		
 		RecordComparator[] startComparator;//comparators for start fields
 		int[] startFields;
@@ -870,5 +845,4 @@ public class RangeLookupTable extends AbstractLookupTable {
 
 	}
 
-}
 
