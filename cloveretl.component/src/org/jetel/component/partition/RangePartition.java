@@ -21,6 +21,7 @@ package org.jetel.component.partition;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.Lookup;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.lookup.RangeLookupTable;
@@ -39,7 +40,8 @@ public class RangePartition implements PartitionFunction{
 	
 	public final static int NONEXISTENT_REJECTED_PORT = -1; 
 	
-	RangeLookupTable lookup;
+	RangeLookupTable lookupTable;
+	Lookup lookup;
 	int portField;
 	DataRecord portRecord;
 	int rejectedPort;
@@ -52,7 +54,7 @@ public class RangePartition implements PartitionFunction{
      * @param rejectedPort number for records without pair in lookup table
      */
     public RangePartition(RangeLookupTable lookup, int portField, int rejectedPort){
-        this.lookup = lookup;
+        this.lookupTable = lookup;
         this.portField = portField;
         this.rejectedPort = rejectedPort;
     }
@@ -71,15 +73,16 @@ public class RangePartition implements PartitionFunction{
      * @see org.jetel.component.partition.PartitionFunction#init(int, org.jetel.data.RecordKey)
      */
     public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException{
-        lookup.init();
-        
+        lookupTable.init();
+        lookup = lookupTable.createLookup(partitionKey);
     }
     
     /* (non-Javadoc)
      * @see org.jetel.component.partition.PartitionFunction#getOutputPort(org.jetel.data.DataRecord)
      */
     public int getOutputPort(DataRecord record){
-    	portRecord = lookup.get(record);
+    	lookup.seek(record);
+    	portRecord = lookup.hasNext() ? lookup.next() : null;
     	return portRecord != null ? ((Numeric)portRecord.getField(portField)).getInt() :
     		rejectedPort;
     }
