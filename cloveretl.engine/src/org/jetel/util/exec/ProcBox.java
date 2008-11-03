@@ -21,9 +21,14 @@ package org.jetel.util.exec;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.Defaults;
+import org.jetel.exception.JetelException;
 
 /**
  * Class for running OS processes. It's main purpose is to provide convenient mechanism
@@ -39,13 +44,44 @@ import org.apache.commons.logging.LogFactory;
  * various consumers/producers.
  * <p> Producer and both consumers are run in separate threads which repeatedly and concurrently call their
  * produce/consume method.
+ *
+ * NOTE: implementation with {@link ProducerConsumerExecutor} not tested, found in SVN revision 5242
+ *
+ * @see ProducerConsumerExecutor
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
  * @since 10/17/06 
  */
 public class ProcBox {
-	
-	private ProducerConsumerExecutor executor;
-	
+	/**
+	 * process to run
+	 */
+	private Process proc;
+	/**
+	 * producer thread
+	 */
+	private ProducerThread producer;
+	/**
+	 * consumer thread
+	 */
+	private ConsumerThread consumer;
+	/**
+	 * error consumer thread
+	 */
+	private ConsumerThread errConsumer;
+
+	/**
+	 * output stream
+	 */
+	private OutputStream outStream;
+	/**
+	 * input stream
+	 */
+	private InputStream inStream;
+	/**
+	 * error output stream
+	 */
+	private InputStream errStream;
+
 	static Log logger = LogFactory.getLog(ProcBox.class);
 
 	/**
@@ -56,18 +92,35 @@ public class ProcBox {
 	 * @param errConsumer
 	 */
 	public ProcBox(Process proc, DataProducer producer, DataConsumer consumer, DataConsumer errConsumer) {
-		this.executor = new ProducerConsumerExecutor();
-		executor.addProcess(proc);
-		
-		if (producer != null) {
-			executor.addProducer(producer, new BufferedOutputStream(proc.getOutputStream()));
+		this.proc = proc;
+		outStream = new BufferedOutputStream(proc.getOutputStream());
+		inStream = new BufferedInputStream(proc.getInputStream());
+		errStream = new BufferedInputStream(proc.getErrorStream());
+		if (producer == null) {
+			this.producer = null;
+		} else {
+			// create producer thread
+			this.producer = new ProducerThread(producer, outStream);
 		}
-		
-		executor.addConsumer(consumer, new BufferedInputStream(proc.getInputStream()));
-		
-		executor.addConsumer(errConsumer, new BufferedInputStream(proc.getErrorStream()));			
+		// create consumer thread
+		if (consumer == null) {
+			this.consumer = new ConsumerThread(new WasteDataConsumer(), inStream);
+		} else {
+			this.consumer = new ConsumerThread(consumer, inStream);
+		}
+		// create error consumer thread
+		if (errConsumer == null) {
+			this.errConsumer = new ConsumerThread(new WasteDataConsumer(), errStream);			
+		} else {
+			this.errConsumer = new ConsumerThread(errConsumer, errStream);			
+		}
 
-		executor.start();
+		// start producer/consumers
+		if (this.producer != null) {
+			this.producer.start();
+		}
+		this.consumer.start();
+		this.errConsumer.start();
 	}
 	
 	/**
@@ -77,9 +130,125 @@ public class ProcBox {
 	 */
 	public int join()
 	throws InterruptedException {
-		return executor.join();
+		if (producer != null) {
+			producer.join();
+		}
+		try {
+			outStream.close();
+		} catch (IOException e) {
+			logger.warn("Cannot close process' input", e);
+		}
+		int retval = proc.waitFor();
+		consumer.join();
+		try {
+			inStream.close();
+		} catch (IOException e) {
+			logger.warn("Cannot close process' output", e);
+		}
+		errConsumer.join();
+		try {
+			errStream.close();
+		} catch (IOException e) {
+			logger.warn("Cannot close process' error output", e);
+		}
+		return retval;
 	}
 	
+	/**
+	 * Nomen omen.
+	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 */
+	private static class ProducerThread extends Thread {
+		private boolean runIt = true;
+		private DataProducer producer;
+		private OutputStream stream;
+
+		/**
+		 * Sole ctor. Creates thread which uses specified producer to supply data to specified stream, which
+		 * is supposed to be connected to process' input.
+		 * @param producer
+		 * @param stream
+		 */
+		public ProducerThread(DataProducer producer, OutputStream stream) {
+			super(Thread.currentThread().getName() + ".ProducerThread");
+			this.producer = producer;
+			this.stream = stream;
+		}
+		
+		/**
+		 * @see java.lang.Thread#run()
+		 */
+		public void run() {
+			try {
+				producer.setOutput(stream);
+				while (runIt && producer.produce());
+				producer.close();
+			} catch (JetelException e) {
+				logger.error("Data producer failed: " + e.getMessage());
+			}
+		}
+	}
+
+	/**
+	 * Nomen omen.
+	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 */
+	private static class ConsumerThread extends Thread {
+		private boolean runIt = true;
+		private DataConsumer consumer;
+		private InputStream stream;
+
+		/**
+		 * Sole ctor. Creates thread which uses specified consumer to process data from specified stream, which
+		 * is supposed to be connected either to process' output or to process' error output.
+		 * @param consumer
+		 * @param stream
+		 */
+		public ConsumerThread(DataConsumer consumer, InputStream stream) {
+			super(Thread.currentThread().getName() + ".ConsumerThread");
+			this.consumer = consumer;
+			this.stream = stream;			
+		}
+		
+		/**
+		 * @see java.lan.Thread#run()
+		 */
+		public void run() {
+			try {
+				consumer.setInput(stream);
+				while (runIt && consumer.consume());
+				consumer.close();
+			} catch (JetelException e) {
+				logger.error("Data producer failed: " + e.getMessage());
+			}
+		}
+	}
+
+	/**
+	 * A consumer which is used whenever user doesn't specify consumer or error consumer.
+	 * It reads data from input stream and instantly discards them.
+	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 */
+	private static class WasteDataConsumer implements  DataConsumer {
+		private InputStream stream;
+		private byte buf[] = new byte[Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE];
+		
+		public void setInput(InputStream stream) {
+			this.stream = stream;
+		}
+		public boolean consume() throws JetelException {
+			try {
+				return stream.read(buf) > -1;
+			} catch (IOException e) {
+				throw new JetelException("Error while reading input buffer", e);
+			}
+		}
+		public void close() {
+		}
+	}
 	
 	/**
      * This method determine platform type.
