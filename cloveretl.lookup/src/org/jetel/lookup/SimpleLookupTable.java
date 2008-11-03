@@ -24,29 +24,29 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.Lookup;
+import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.parser.DataParser;
-import org.jetel.data.parser.DelimitedDataParser;
-import org.jetel.data.parser.FixLenByteDataParser;
-import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
-import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.primitive.DuplicateKeyMap;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -70,15 +70,15 @@ import org.w3c.dom.Element;
  * @author     dpavlis
  * @since    May 2, 2002
  */
-public class SimpleLookupTable extends AbstractLookupTable {
+public class SimpleLookupTable extends GraphElement implements LookupTable {
 
     private static final String XML_LOOKUP_TYPE_SIMPLE_LOOKUP = "simpleLookup";
     private static final String XML_LOOKUP_INITIAL_SIZE = "initialSize";
     private static final String XML_LOOKUP_KEY = "key";
     private static final String XML_FILE_URL = "fileURL";
     private static final String XML_CHARSET = "charset";
-	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
 	private static final String XML_DATA_ATTRIBUTE = "data";
+	private static final String XML_KEY_DUPLICATES_ATTRIBUTE = "keyDuplicates";
 	
     private final static String[] REQUESTED_ATTRIBUTE = {XML_ID_ATTRIBUTE, XML_TYPE_ATTRIBUTE, XML_METADATA_ID,
     	XML_LOOKUP_KEY
@@ -88,15 +88,12 @@ public class SimpleLookupTable extends AbstractLookupTable {
 	protected DataRecordMetadata metadata;
 	protected String fileURL;
 	protected String charset;
-	protected boolean byteMode = false;
 	protected Parser dataParser;
-	protected Map<HashKey, DataRecord> lookupTable;
+	protected Map lookupTable;
 	protected String[] keys;
 	protected RecordKey indexKey;
-	protected HashKey lookupKey;
-	protected int numFound;
-	protected DataRecord lookupData;
 	protected int tableInitialSize=DEFAULT_INITIAL_CAPACITY;
+	protected boolean keyDuplicates = true;
 	
 	// data of the lookup table, can be used instead of an input file
 	protected String data;
@@ -150,71 +147,18 @@ public class SimpleLookupTable extends AbstractLookupTable {
 		indexKey.init();
 	}
 
-
-    public DataRecord get(HashKey lookupKey) {
-        if (lookupKey == null) {
-            throw new NullPointerException("lookupKey");
-        }
-
-        setLookupKey(lookupKey.getRecordKey());
-
-        return get(lookupKey.getDataRecord());
-    }
-
-	/**
-	 *  Looks-up data based on speficied indexKey.<br> The indexKey should be result of calling RecordKey.getKeyString()
-	 *
-	 * @param  keyString  Key String which will be used for lookup of data record
-	 * @return            Associated DataRecord or NULL if not found
-	 */
-	public DataRecord get(String keyString) {
-		
-		if (!isInitialized()) {
-			throw new NotInitializedException(this);
-		}
-		
-		if (lookupData==null) throw new RuntimeException("Lookup key was not set/defined for lookup \""+this.getId()+"\"");
-	    lookupData.getField(0).fromString(keyString);
-	    return get();
+	public Lookup createLookup(RecordKey key, DataRecord keyRecord) {
+		SimpleLookup lookup = new SimpleLookup(lookupTable, key, keyRecord);
+		lookup.setLookupTable(this);
+		return lookup;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.LookupTable#get(org.jetel.data.DataRecord)
-	 */
-	public DataRecord get(DataRecord keyRecord){
-		
-		if (!isInitialized()) {
-			throw new NotInitializedException(this);
-		}
-		
-		if (lookupKey==null) throw new RuntimeException("Lookup key was not set/defined for lookup \""+this.getId()+"\"");
-	    lookupKey.setDataRecord(keyRecord);
-	    return get();
-	}
-
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.LookupTable#get(java.lang.Object[])
-	 */
-	public DataRecord get(Object[] keys) {
-		
-		if (!isInitialized()) {
-			throw new NotInitializedException(this);
-		}
-		
-		if (lookupData==null) throw new RuntimeException("Lookup key was not set/defined for lookup \""+this.getId()+"\"");
-		for(int i=0;i<keys.length;i++){
-	        lookupData.getField(i).setValue(keys[i]);
-	    }
-	    return get();
+	public Lookup createLookup(RecordKey key) {
+		DataRecord keyRecord = new DataRecord(key.getMetadata());
+		keyRecord.init();
+		return createLookup(key, keyRecord);
 	}
 
-    protected DataRecord get(){
-        DataRecord data = lookupTable.get(lookupKey);
-        numFound= (data!=null ? 1 : 0);
-        return data;
-    }
-    
 	/**
 	 *  Initializtaion of lookup table - loading all data into it.
 	 *
@@ -242,26 +186,15 @@ public class SimpleLookupTable extends AbstractLookupTable {
 	    record.init();
 		
 	    if (lookupTable==null){
-	        lookupTable = new HashMap<HashKey, DataRecord>(tableInitialSize);
+	    	Map<HashKey, DataRecord> store = new HashMap<HashKey, DataRecord>(tableInitialSize);
+	        lookupTable = keyDuplicates ? new DuplicateKeyMap(store) : store;
 	    }
 	    
 	    if (charset == null) {
 	    	charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
 	    }
 	    if (dataParser == null && (fileURL != null || data!= null)) {
-    		switch (metadata.getRecType()) {
-			case DataRecordMetadata.DELIMITED_RECORD:
-				dataParser = new DelimitedDataParser(charset);
-				break;
-			case DataRecordMetadata.FIXEDLEN_RECORD:
-				dataParser = byteMode ? new FixLenByteDataParser(charset) : new FixLenCharDataParser(charset);
-				break;
-			case DataRecordMetadata.MIXED_RECORD:
-	    		dataParser = new DataParser(charset);
-				break;
-			default:
-				throw new ComponentNotReadyException(this, XML_METADATA_ID, "Unknown metadata type: " + metadata.getRecType());
-			}
+    		dataParser = new DataParser(charset);
 	    }
         
 		/* populate the lookupTable (Map) with data
@@ -288,7 +221,6 @@ public class SimpleLookupTable extends AbstractLookupTable {
             }
             dataParser.close();
         }
-		numFound=0;
 	}
 	
 	@Override
@@ -317,7 +249,6 @@ public class SimpleLookupTable extends AbstractLookupTable {
             }
             dataParser.close();
         }
-		numFound=0;
 	}
 
     public static SimpleLookupTable fromProperties(TypedProperties properties) throws AttributeNotFoundException,
@@ -348,8 +279,8 @@ public class SimpleLookupTable extends AbstractLookupTable {
         if (properties.containsKey(XML_CHARSET)) {
         	lookupTable.setCharset(properties.getStringProperty(XML_CHARSET));
         }
-        if (properties.containsKey(XML_BYTEMODE_ATTRIBUTE)){
-        	lookupTable.setByteMode(properties.getBooleanProperty(XML_BYTEMODE_ATTRIBUTE));
+        if (properties.containsKey(XML_KEY_DUPLICATES_ATTRIBUTE)){
+        	lookupTable.setKeyDuplicates(properties.getBooleanProperty(XML_KEY_DUPLICATES_ATTRIBUTE));
         }
         if (properties.containsKey(XML_DATA_ATTRIBUTE)) {
         	lookupTable.setData(properties.getStringProperty(XML_DATA_ATTRIBUTE));
@@ -358,7 +289,7 @@ public class SimpleLookupTable extends AbstractLookupTable {
         return lookupTable;
     }
     
-    public static SimpleLookupTable fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+	public static SimpleLookupTable fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
         SimpleLookupTable lookupTable = null;
         String id;
@@ -394,8 +325,8 @@ public class SimpleLookupTable extends AbstractLookupTable {
             if (xattribs.exists(XML_CHARSET)) {
             	lookupTable.setCharset(xattribs.getString(XML_CHARSET));
             }
-            if (xattribs.exists(XML_BYTEMODE_ATTRIBUTE)){
-            	lookupTable.setByteMode(xattribs.getBoolean(XML_BYTEMODE_ATTRIBUTE));
+            if (xattribs.exists(XML_KEY_DUPLICATES_ATTRIBUTE)){
+            	lookupTable.setKeyDuplicates(xattribs.getBoolean(XML_KEY_DUPLICATES_ATTRIBUTE));
             }
             if (xattribs.exists(XML_DATA_ATTRIBUTE)) {
             	lookupTable.setData(xattribs.getString(XML_DATA_ATTRIBUTE));
@@ -407,48 +338,6 @@ public class SimpleLookupTable extends AbstractLookupTable {
              throw new XMLConfigurationException("can't create simple lookup table",ex);
          }
     }
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.LookupTable#setLookupKey(java.lang.Object)
-	 */
-	public void setLookupKey(Object key){
-	    if (key instanceof String){
-	        // little extra code to support looking up by String key
-            // will be used only if key is composed of 1 field of type STRING
-	        DataRecordMetadata keyMetadata=indexKey.generateKeyRecordMetadata();
-            if (indexKey.getKeyFields().length == 1 && keyMetadata.getField(0).getType() == DataFieldMetadata.STRING_FIELD) {
-                lookupData = new DataRecord(keyMetadata);
-                lookupData.init();
-                int[] keyFields={0};
-                lookupKey=new HashKey(new RecordKey(keyFields,keyMetadata),lookupData);
-            }else{
-                throw new RuntimeException(
-                        "Can't use \""
-                                + key
-                                + "\" (String) for lookup - not compatible with the key defined for this lookup table !");
-            }
-	    }else if (key instanceof Object[]){
-	        Object[] keys=(Object[])key;
-	        if (indexKey.getKeyFields().length == keys.length){
-	            DataRecordMetadata keyMetadata=indexKey.generateKeyRecordMetadata();
-	            lookupData = new DataRecord(keyMetadata);
-                lookupData.init();
-                int[] keyFields=new int[keyMetadata.getNumFields()];
-                for(int i=0;i<keyFields.length;keyFields[i]=i,i++);
-                lookupKey=new HashKey(new RecordKey(keyFields,keyMetadata),lookupData);
-	        }else{
-	            throw new RuntimeException("Supplied lookup values are not compatible with the key defined for this lookup table !");
-	        }
-	        
-	    }else if (key instanceof RecordKey){
-	        // reference to DataRecord (lookupData] will be added later in get(DataRecord ) method
-	    	if ((this.lookupKey == null) || (key != this.lookupKey.getRecordKey())) {
-	    		this.lookupKey=new HashKey((RecordKey)key,null);
-	    	}
-	    }else{
-	        throw new RuntimeException("Incompatible Object type specified as lookup key: "+key.getClass().getName());
-	    }
-	}
 	
 	synchronized public void free() {
         if(!isInitialized()) return;
@@ -468,12 +357,8 @@ public class SimpleLookupTable extends AbstractLookupTable {
 	    return null; // only one indexKey - one record is allowed
 	}
 	
-	public int getNumFound(){
-	    return numFound;
-	}
-	
 	public int getSize(){
-	    return lookupTable.size();
+	    return lookupTable instanceof DuplicateKeyMap ? ((DuplicateKeyMap)lookupTable).totalSize() : lookupTable.size();
 	}
 
     /* (non-Javadoc)
@@ -513,12 +398,10 @@ public class SimpleLookupTable extends AbstractLookupTable {
         return status;
     }
 
-    @Override
     public boolean isReadOnly() {
         return false;
     }
 
-    @Override
     public boolean put(DataRecord dataRecord) {
         DataRecord storeRecord = dataRecord.duplicate();
         lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
@@ -526,10 +409,16 @@ public class SimpleLookupTable extends AbstractLookupTable {
         return true;
     }
 
-    @Override
     public boolean remove(DataRecord dataRecord) {
-        return (lookupTable.remove(new HashKey(indexKey, dataRecord)) != null);
+    	if (!(lookupTable instanceof DuplicateKeyMap)) {
+    		return (lookupTable.remove(new HashKey(indexKey, dataRecord)) != null);
+    	}
+    	return ((DuplicateKeyMap)lookupTable).remove(new HashKey(indexKey, dataRecord), dataRecord);
     }
+    
+    public boolean remove(HashKey key) {
+        return (lookupTable.remove(key) != null);
+    }    
     
     /* (non-Javadoc)
      * @see java.lang.Iterable#iterator()
@@ -554,14 +443,6 @@ public class SimpleLookupTable extends AbstractLookupTable {
 		this.charset = charset;
 	}
 
-	public boolean isByteMode() {
-		return byteMode;
-	}
-
-	public void setByteMode(boolean byteMode) {
-		this.byteMode = byteMode;
-	}
-
 	public String getData() {
 		return data;
 	}
@@ -570,5 +451,101 @@ public class SimpleLookupTable extends AbstractLookupTable {
 		this.data = data;
 	}
 
+	public boolean isKeyDuplicates() {
+		return keyDuplicates;
+	}
+
+	public void setKeyDuplicates(boolean keyDuplicates) {
+		this.keyDuplicates = keyDuplicates;
+	}
+
 }
 
+class SimpleLookup implements Lookup{
+
+	protected Map data;
+	protected DataRecord[] curentResult;
+	protected HashKey key;
+	private int no;
+	private int numFound = 0;
+	protected SimpleLookupTable lookupTable;
+	
+	SimpleLookup(Map data, RecordKey key, DataRecord record) {
+		this.data = data;
+		if (!(data instanceof DuplicateKeyMap)) {
+			curentResult = new DataRecord[1];
+		}
+		this.key = new HashKey(key, record);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.lookup.Lookup#getKey()
+	 */
+	public RecordKey getKey() {
+		return key.getRecordKey();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.lookup.Lookup#getLookupTable()
+	 */
+	public LookupTable getLookupTable() {
+		return lookupTable;
+	}
+	
+	void setLookupTable(SimpleLookupTable lookupTable){
+		this.lookupTable = lookupTable;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.lookup.Lookup#getNumFound()
+	 */
+	public int getNumFound() {
+		return numFound;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.lookup.Lookup#seek()
+	 */
+	public void seek() {
+		if (data instanceof DuplicateKeyMap) {
+			curentResult = (DataRecord[]) ((DuplicateKeyMap)data).getAll(key, new DataRecord[0]);
+			numFound = curentResult.length;
+		}else{
+			curentResult[0] = (DataRecord) data.get(key);
+			numFound = curentResult[0] == null ? 0 : 1;
+		}
+		no = 0;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.lookup.Lookup#seek(org.jetel.data.DataRecord)
+	 */
+	public void seek(DataRecord keyRecord) {
+		key.setDataRecord(keyRecord);
+		seek();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Iterator#hasNext()
+	 */
+	public boolean hasNext() {
+		return curentResult != null && no < numFound;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Iterator#next()
+	 */
+	public DataRecord next() {
+		if (curentResult == null || no >= numFound) throw new NoSuchElementException();
+		return curentResult[no++];
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Iterator#remove()
+	 */
+	public void remove() {
+		// TODO Auto-generated method stub
+
+	}
+
+}
