@@ -9,6 +9,7 @@ import org.jetel.connection.jdbc.SQLDataParser;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.Lookup;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -16,10 +17,12 @@ import org.jetel.test.CloverTestCase;
 
 public class DBLookupTest extends CloverTestCase {
 
-	DBLookupTable lookupTable;
+	Lookup lookup;
 	DataRecord customer, employee = null;
 	SQLDataParser parser;
 	DBConnectionInstance aDBConnection;
+	private DBLookupTable lookupTable;
+	private RecordKey recordKey;
 
 	@Override
 	protected void setUp() throws ComponentNotReadyException, FileNotFoundException, SQLException, JetelException {
@@ -40,10 +43,8 @@ public class DBLookupTest extends CloverTestCase {
 
 		lookupTable = new DBLookupTable("MyLookup", aDBConnection, null, "select * from employee where last_name=?", 0);
 		lookupTable.init();
-		RecordKey recordKey = new RecordKey(new String[] { "lname" }, customerMetadata);
+		recordKey = new RecordKey(new String[] { "lname" }, customerMetadata);
 		recordKey.init();
-		lookupTable.setLookupKey(recordKey);
-
 	}
 
 	@Override
@@ -53,211 +54,123 @@ public class DBLookupTest extends CloverTestCase {
 	}
 
 	public void test1() throws JetelException, ComponentNotReadyException {
+		lookup = lookupTable.createLookup(recordKey, customer);
 		long start = System.currentTimeMillis();
 		while ((parser.getNext(customer)) != null) {
-			// System.out.println("Looking pair for :\n" + customer);
-			employee = lookupTable.get(customer);
-			if (employee != null) {
-				do {
-					// System.out.println("Found record:\n" + employee);
-				} while ((employee = lookupTable.getNext()) != null);
+//			 System.out.println("Looking pair for :\n" + customer);
+			lookup.seek();
+			while (lookup.hasNext()) {
+				employee = (DataRecord) lookup.next();
+//				System.out.println("Found record:\n" + employee);
+				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 			}
 		}
 		System.out.println("Without cashing:");
-		System.out.println("Total number searched: " + lookupTable.getTotalNumber());
-		System.out.println("From cache found: " + lookupTable.getCacheNumber());
+//		System.out.println("Total number searched: " + lookupTable.getTotalNumber());
+//		System.out.println("From cache found: " + lookupTable.getCacheNumber());
+		System.out.println("Timing: " + (System.currentTimeMillis() - start));
+//		lookupTable.free();
+
+		parser.setDataSource(aDBConnection);
+		lookup = lookupTable.createLookup(recordKey, customer);
+		start = System.currentTimeMillis();
+		while ((parser.getNext(customer)) != null) {
+			// System.out.println("Looking pair for :\n" + customer);
+			lookup.seek();
+			while (lookup.hasNext()) {
+				employee = (DataRecord) lookup.next();
+				// System.out.println("Found record:\n" + employee);
+				assertEquals(customer.getField("lname"), employee.getField("last_name"));
+			}
+		}
+		System.out.println("Without cashing:");
+//		System.out.println("Total number searched: " + lookupTable.getTotalNumber());
+//		System.out.println("From cache found: " + lookupTable.getCacheNumber());
 		System.out.println("Timing: " + (System.currentTimeMillis() - start));
 		lookupTable.free();
 
 		parser.setDataSource(aDBConnection);
+		lookupTable.setNumCached(1000);
+		lookupTable.setStoreNulls(false);
 		lookupTable.init();
+		lookup = lookupTable.createLookup(recordKey, customer);
 		start = System.currentTimeMillis();
 		while ((parser.getNext(customer)) != null) {
-			// System.out.println("Looking pair for :\n" + customer);
-			employee = lookupTable.get(customer);
-			if (employee != null) {
-				do {
-					// System.out.println("Found record:\n" + employee);
-				} while ((employee = lookupTable.getNext()) != null);
-			}
-		}
-		System.out.println("Without cashing:");
-		System.out.println("Total number searched: " + lookupTable.getTotalNumber());
-		System.out.println("From cache found: " + lookupTable.getCacheNumber());
-		System.out.println("Timing: " + (System.currentTimeMillis() - start));
-		lookupTable.free();
-
-		parser.setDataSource(aDBConnection);
-		lookupTable.setNumCached(1000, false);
-		lookupTable.init();
-		start = System.currentTimeMillis();
-		while ((parser.getNext(customer)) != null) {
-			// System.out.println("Looking pair for :\n" + customer);
-			employee = lookupTable.get(customer);
-			if (employee != null) {
-				do {
-					// System.out.println("Found record:\n" + employee);
-				} while ((employee = lookupTable.getNext()) != null);
+			 System.out.println("Looking pair for :\n" + customer);
+			lookup.seek();
+			while (lookup.hasNext()) {
+				employee = (DataRecord) lookup.next();
+				 System.out.println("Found record:\n" + employee);
+				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 			}
 		}
 		System.out.println("Cashing=1000, storeNulls=false:");
-		System.out.println("Total number searched: " + lookupTable.getTotalNumber());
-		System.out.println("From cache found: " + lookupTable.getCacheNumber());
+//		System.out.println("Total number searched: " + lookupTable.getTotalNumber());
+//		System.out.println("From cache found: " + lookupTable.getCacheNumber());
 		System.out.println("Timing: " + (System.currentTimeMillis() - start));
 		lookupTable.free();
 
 		parser.setDataSource(aDBConnection);
-		lookupTable.setNumCached(1000, true);
+		lookupTable.setNumCached(1000);
+		lookupTable.setStoreNulls(true);
 		lookupTable.init();
+		lookup = lookupTable.createLookup(recordKey, customer);
 		start = System.currentTimeMillis();
 		while ((parser.getNext(customer)) != null) {
 			// System.out.println("Looking pair for :\n" + customer);
-			employee = lookupTable.get(customer);
-			if (employee != null) {
-				do {
-					// System.out.println("Found record:\n" + employee);
-				} while ((employee = lookupTable.getNext()) != null);
+			lookup.seek();
+			while (lookup.hasNext()) {
+				employee = (DataRecord) lookup.next();
+				// System.out.println("Found record:\n" + employee);
+				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 			}
 		}
 		System.out.println("Cashing=1000, storeNulls=true:");
-		System.out.println("Total number searched: " + lookupTable.getTotalNumber());
-		System.out.println("From cache found: " + lookupTable.getCacheNumber());
+//		System.out.println("Total number searched: " + lookupTable.getTotalNumber());
+//		System.out.println("From cache found: " + lookupTable.getCacheNumber());
 		System.out.println("Timing: " + (System.currentTimeMillis() - start));
 		lookupTable.free();
 
 		parser.setDataSource(aDBConnection);
-		lookupTable.setNumCached(3000, false);
+		lookupTable.setNumCached(3000);
+		lookupTable.setStoreNulls(false);
 		lookupTable.init();
+		lookup = lookupTable.createLookup(recordKey, customer);
 		start = System.currentTimeMillis();
 		while ((parser.getNext(customer)) != null) {
 			// System.out.println("Looking pair for :\n" + customer);
-			employee = lookupTable.get(customer);
-			if (employee != null) {
-				do {
-					// System.out.println("Found record:\n" + employee);
-				} while ((employee = lookupTable.getNext()) != null);
+			lookup.seek();
+			while (lookup.hasNext()) {
+				employee = (DataRecord) lookup.next();
+				// System.out.println("Found record:\n" + employee);
+				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 			}
 		}
 		System.out.println("Cashing=3000, storeNulls=false:");
-		System.out.println("Total number searched: " + lookupTable.getTotalNumber());
-		System.out.println("From cache found: " + lookupTable.getCacheNumber());
+//		System.out.println("Total number searched: " + lookupTable.getTotalNumber());
+//		System.out.println("From cache found: " + lookupTable.getCacheNumber());
 		System.out.println("Timing: " + (System.currentTimeMillis() - start));
 		lookupTable.free();
 
 		parser.setDataSource(aDBConnection);
-		lookupTable.setNumCached(3000, true);
+		lookupTable.setNumCached(3000);
+		lookupTable.setStoreNulls(true);
 		lookupTable.init();
+		lookup = lookupTable.createLookup(recordKey, customer);
 		start = System.currentTimeMillis();
 		while ((parser.getNext(customer)) != null) {
 			// System.out.println("Looking pair for :\n" + customer);
-			employee = lookupTable.get(customer);
-			if (employee != null) {
-				do {
-					// System.out.println("Found record:\n" + employee);
-				} while ((employee = lookupTable.getNext()) != null);
+			lookup.seek();
+			while (lookup.hasNext()) {
+				employee = (DataRecord) lookup.next();
+				// System.out.println("Found record:\n" + employee);
+				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 			}
 		}
 		System.out.println("Cashing=3000, storeNulls=true:");
-		System.out.println("Total number searched: " + lookupTable.getTotalNumber());
-		System.out.println("From cache found: " + lookupTable.getCacheNumber());
+//		System.out.println("Total number searched: " + lookupTable.getTotalNumber());
+//		System.out.println("From cache found: " + lookupTable.getCacheNumber());
 		System.out.println("Timing: " + (System.currentTimeMillis() - start));
-	}
-
-	public void test_getObject() throws ComponentNotReadyException {
-		lookupTable.setLookupKey(new Object());
-		employee = lookupTable.get(new String[] { "Nowmer" });
-		assertNotNull(employee);
-		employee = lookupTable.get(new String[] { "Spencer" });
-		assertNotNull(employee);
-		employee = lookupTable.getNext();
-		assertNotNull(employee);
-		employee = lookupTable.getNext();
-		assertNull(employee);
-
-		lookupTable.setNumCached(1000, true);
-		lookupTable.init();
-		String[] key = new String[1];
-		key[0] = "Nowmer";
-		employee = lookupTable.get(key);
-		assertNotNull(employee);
-		key[0] = "Spencer";
-		employee = lookupTable.get(key);
-		assertNotNull(employee);
-		employee = lookupTable.getNext();
-		assertNotNull(employee);
-		employee = lookupTable.getNext();
-		assertNull(employee);
-		employee = lookupTable.get(key);
-		assertNotNull(employee);
-		employee = lookupTable.getNext();
-		assertNotNull(employee);
-		employee = lookupTable.getNext();
-		assertNull(employee);
-	}
-
-	public void test_getObject2() throws ComponentNotReadyException {
-		lookupTable = new DBLookupTable("MyLookup", aDBConnection, null, "select * from employee where management_role=? and gender=?", 100);
-		lookupTable.init();
-		lookupTable.setLookupKey(new Object());
-		Object[] key = new Object[2];
-		key[0] = "Senior Management";
-		key[1] = "F";
-		employee = lookupTable.get(key);
-		System.out.println(employee);
-		while ((employee = lookupTable.getNext()) != null) {
-			System.out.println(employee);
-		}
-		System.out.println("Key changed:");
-		System.out.println();
-		employee = lookupTable.get(new Object[] { "Store Management", "M" });
-		System.out.println(employee);
-		while ((employee = lookupTable.getNext()) != null) {
-			System.out.println(employee);
-		}
-		key[0] = "Middle Management";
-		System.out.println("Key changed:");
-		System.out.println();
-		employee = lookupTable.get(new Object[] { key[0], "F" });
-		System.out.println(employee);
-		while ((employee = lookupTable.getNext()) != null) {
-			System.out.println(employee);
-		}
-		System.out.println("Key changed:");
-		System.out.println();
-		employee = lookupTable.get(new Object[] { "Senior Management", key[1] });
-		System.out.println(employee);
-		while ((employee = lookupTable.getNext()) != null) {
-			System.out.println(employee);
-		}
-	}
-
-	public void test_getStringt() throws ComponentNotReadyException {
-		lookupTable.setLookupKey(new String[1]);
-		employee = lookupTable.get("Nowmer");
-		assertNotNull(employee);
-		employee = lookupTable.get("Spencer");
-		assertNotNull(employee);
-		employee = lookupTable.getNext();
-		assertNotNull(employee);
-		employee = lookupTable.getNext();
-		assertNull(employee);
-
-		lookupTable.setNumCached(1000, true);
-		lookupTable.init();
-		employee = lookupTable.get("Nowmer");
-		assertNotNull(employee);
-		employee = lookupTable.get("Spencer");
-		assertNotNull(employee);
-		employee = lookupTable.getNext();
-		assertNotNull(employee);
-		employee = lookupTable.getNext();
-		assertNull(employee);
-		employee = lookupTable.get("Spencer");
-		assertNotNull(employee);
-		employee = lookupTable.getNext();
-		assertNotNull(employee);
-		employee = lookupTable.getNext();
-		assertNull(employee);
 	}
 
 }
