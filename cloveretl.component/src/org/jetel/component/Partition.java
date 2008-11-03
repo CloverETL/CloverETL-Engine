@@ -414,7 +414,6 @@ public class Partition extends Node {
 				table.setData(rangesData);
 				table.setStartInclude(startInclude);
 				table.setEndInclude(endInclude);
-				table.setLookupKey(partitionKey);
 				int rejectedPort = getOutPorts().size();
 				partitionFce = new RangePartition(table,
 						lookupMetadata.getFieldPosition(PORT_NO_FIELD_NAME), 
