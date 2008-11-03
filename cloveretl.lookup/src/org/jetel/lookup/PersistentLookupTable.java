@@ -5,8 +5,10 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Properties;
+import java.util.Queue;
 
 import jdbm.RecordManager;
 import jdbm.RecordManagerFactory;
@@ -22,6 +24,8 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.Lookup;
+import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -31,6 +35,7 @@ import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -79,7 +84,102 @@ import org.w3c.dom.Element;
  *(c) Javlin Consulting (www.javlinconsulting.cz)
  * @since 		20.10.2008
  */
-public class PersistentLookupTable extends AbstractLookupTable {
+public class PersistentLookupTable extends GraphElement implements LookupTable {
+
+    /**
+     * An implementation of the lookup proxy class for the persistent lookup table.
+     *
+     * @author Martin Janik <martin.janik@javlin.cz>
+     *
+     * @version 3rd November 2008
+     * @since 3rd November 2008
+     */
+    private final class PersistentLookup implements Lookup {
+
+        /** the record key used for lookup */
+        private final RecordKey lookupKey;
+
+        /** the data record used for lookup */
+        private DataRecord dataRecord = null;
+
+        /** the queue of matching data records returned by the last lookup */
+        private Queue<DataRecord> matchingDataRecords = null;
+        /** the number of data records returned by the last lookup */
+        private int matchingDataRecordsCount = -1;
+
+        /**
+         * Creates an instance of the <code>PersistentLookup</code> class for the given lookup key.
+         *
+         * @param lookupKey the lookup key that will be used for lookup
+         */
+        public PersistentLookup(RecordKey lookupKey) {
+            this.lookupKey = lookupKey;
+        }
+
+        public RecordKey getKey() {
+            return lookupKey;
+        }
+
+        public LookupTable getLookupTable() {
+            return PersistentLookupTable.this;
+        }
+
+        public synchronized void seek() {
+            if (dataRecord == null) {
+                throw new IllegalStateException("Data record not set, use the seek(DataRecord) method!");
+            }
+
+            matchingDataRecords = new LinkedList<DataRecord>();
+
+            DataRecord matchingDataRecord = get(dataRecord);
+
+            while (matchingDataRecord != null) {
+                matchingDataRecords.add(matchingDataRecord);
+                matchingDataRecord = getNext();
+            }
+
+            matchingDataRecordsCount = matchingDataRecords.size();
+        }
+
+        public synchronized void seek(DataRecord dataRecord) {
+            if (dataRecord == null) {
+                throw new NullPointerException("dataRecord");
+            }
+
+            this.dataRecord = dataRecord;
+
+            seek();
+        }
+
+        public int getNumFound() {
+            if (matchingDataRecords == null) {
+                throw new IllegalStateException("The seek() method has NOT been called!");
+            }
+
+            return matchingDataRecordsCount;
+        }
+
+        public boolean hasNext() {
+            if (matchingDataRecords == null) {
+                throw new IllegalStateException("The seek() method has NOT been called!");
+            }
+
+            return !matchingDataRecords.isEmpty();
+        }
+
+        public DataRecord next() {
+            if (matchingDataRecords == null) {
+                throw new IllegalStateException("The seek() method has NOT been called!");
+            }
+
+            return matchingDataRecords.remove();
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("Method not supported!");
+        }
+
+    }
 
     private static final String XML_LOOKUP_TYPE_PERSISTENCE_LOOKUP = "persistentLookup";
 	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
@@ -219,12 +319,10 @@ public class PersistentLookupTable extends AbstractLookupTable {
 		return numFound;
 	}
 
-    @Override
 	public boolean isReadOnly() {
 	    return false;
 	}
 
-    @Override
     public boolean put(DataRecord dataRecord) {
     	DataRecord storeRecord = dataRecord.duplicate();
 
@@ -244,7 +342,6 @@ public class PersistentLookupTable extends AbstractLookupTable {
 		return true;
     }
 
-    @Override
 	public boolean remove(DataRecord dataRecord) {
 		try {
 			tree.remove(dataRecord);
@@ -256,6 +353,10 @@ public class PersistentLookupTable extends AbstractLookupTable {
 
 		return true;
 	}
+
+    public boolean remove(HashKey hashKey) {
+        return remove(hashKey.getDataRecord());
+    }
 
 	public void setLookupKey(Object key) {
 		if (key instanceof String) {
@@ -433,6 +534,25 @@ public class PersistentLookupTable extends AbstractLookupTable {
 		this.cacheSize = cacheSize;
 	}
 	
+    public Lookup createLookup(RecordKey lookupKey) {
+        if (!isInitialized()) {
+            throw new NotInitializedException("The lookup table has NOT been initialized!");
+        }
+
+        if (lookupKey == null) {
+            throw new NullPointerException("key");
+        }
+
+        return new PersistentLookup(lookupKey);
+    }
+
+    public Lookup createLookup(RecordKey lookupKey, DataRecord dataRecord) {
+        Lookup persistentLookup = createLookup(lookupKey);
+        persistentLookup.seek(dataRecord);
+
+        return persistentLookup;
+    }
+
     public static PersistentLookupTable fromProperties(TypedProperties properties) throws AttributeNotFoundException, GraphConfigurationException{
 
     	for (String property : REQUESTED_ATTRIBUTE) {

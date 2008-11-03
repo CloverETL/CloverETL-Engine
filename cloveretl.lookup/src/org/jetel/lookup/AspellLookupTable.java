@@ -43,6 +43,7 @@ import java.util.Set;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
@@ -60,6 +61,7 @@ import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -75,10 +77,10 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik <martin.janik@javlin.cz>
  *
- * @version 31st October 2008
+ * @version 3rd November 2008
  * @since 27th October 2008
  */
-public final class AspellLookupTable extends AbstractLookupTable {
+public final class AspellLookupTable extends GraphElement implements LookupTable {
 
     /**
      * Represents a Jazzy configuration class required for Jazzy configuration tools to work correctly.
@@ -378,6 +380,10 @@ public final class AspellLookupTable extends AbstractLookupTable {
         setSpellingThreshold(DEFAULT_SPELLING_THRESHOLD);
     }
 
+    public boolean isReadOnly() {
+        return true;
+    }
+
     public DataRecordMetadata getMetadata() {
         return metadata;
     }
@@ -532,6 +538,18 @@ public final class AspellLookupTable extends AbstractLookupTable {
         } finally {
             dataParser.close();
         }
+    }
+
+    public boolean put(DataRecord dataRecord) {
+        throw new UnsupportedOperationException("Method not supported!");
+    }
+
+    public boolean remove(DataRecord dataRecord) {
+        throw new UnsupportedOperationException("Method not supported!");
+    }
+
+    public boolean remove(HashKey key) {
+        throw new UnsupportedOperationException("Method not supported!");
     }
 
     public synchronized DataRecord get(RecordKey key, DataRecord keyRecord) {
