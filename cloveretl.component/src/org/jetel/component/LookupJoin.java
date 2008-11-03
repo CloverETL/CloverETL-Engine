@@ -35,6 +35,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -239,15 +240,15 @@ public class LookupJoin extends Node {
 	private Properties transformationParameters = null;
 
 	private LookupTable lookupTable;
-
-	private RecordKey recordKey;
-
-	private DataRecordMetadata lookupMetadata;
+	private Lookup lookup;
 
 	private String errorActionsString;
 	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
 	private String errorLogURL;
 	private FileWriter errorLog;
+
+	private InputPort inPort;
+	private DataRecord inRecord;
 
 	static Log logger = LogFactory.getLog(Reformat.class);
 
@@ -290,23 +291,19 @@ public class LookupJoin extends Node {
 	@Override
 	public Result execute() throws Exception {
 		// initialize in and out records
-		InputPort inPort = getInputPort(WRITE_TO_PORT);
 		OutputPort rejectedPort = getOutputPort(REJECTED_PORT);
 		DataRecord[] outRecord = { new DataRecord(getOutputPort(READ_FROM_PORT)
 				.getMetadata()) };
 		outRecord[0].init();
 		outRecord[0].reset();
-		DataRecord inRecord = new DataRecord(inPort.getMetadata());
-		inRecord.init();
 		DataRecord[] inRecords = new DataRecord[] { inRecord, null };
-		LinkedList<DataRecord> lookupResults = new LinkedList<DataRecord>();
 		int counter = 0;
 		while (inRecord != null && runIt) {
 			inRecord = inPort.readRecord(inRecord);
 			if (inRecord != null) {
 				// find slave record in database
-			    lookupTable.get(new HashKey(recordKey, inRecord), lookupResults);
-                inRecords[1] = !lookupResults.isEmpty() ? lookupResults.remove() : NullRecord.NULL_RECORD;
+			    lookup.seek();
+                inRecords[1] = lookup.hasNext() ? lookup.next() : NullRecord.NULL_RECORD;
 
                 do {
 					if ((inRecords[1] != NullRecord.NULL_RECORD || leftOuterJoin)) {
@@ -359,10 +356,9 @@ public class LookupJoin extends Node {
 						}							
 					}
 					// get next record from lookup table with the same key
-	                inRecords[1] = !lookupResults.isEmpty() ? lookupResults.remove() : NullRecord.NULL_RECORD;
+	                inRecords[1] = lookup.hasNext() ? lookup.next() : NullRecord.NULL_RECORD;
 				} while (inRecords[1] != NullRecord.NULL_RECORD);
 
-				lookupResults.clear();
 			}
 			counter++;
 		}
@@ -446,11 +442,12 @@ public class LookupJoin extends Node {
 		if (!lookupTable.isInitialized()) {
 			lookupTable.init();
 		}
-		lookupMetadata = lookupTable.getMetadata();
+		DataRecordMetadata lookupMetadata = lookupTable.getMetadata();
 		DataRecordMetadata inMetadata[] = {
 				getInputPort(READ_FROM_PORT).getMetadata(), lookupMetadata };
 		DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT)
 				.getMetadata() };
+		RecordKey recordKey;
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
@@ -464,6 +461,11 @@ public class LookupJoin extends Node {
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
 		}
+		inPort = getInputPort(WRITE_TO_PORT);
+		inRecord = new DataRecord(inPort.getMetadata());
+		inRecord.init();
+		lookup = lookupTable.createLookup(recordKey, inRecord);
+		
 
 		if (leftOuterJoin && getOutputPort(REJECTED_PORT) != null) {
 			logger.info(this.getId() + " info: There will be no skipped records " +
