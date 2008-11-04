@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Nov 22 10:24:41 CET 2006" description="This graph illustrates complex transformation. It reads data about orders made and&#10;combines them (joins) with data about which items were purchased. It then adds&#10;information about which company made particular order/bought particular item.&#10;It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.&#10;&#10;It also shows how to embed data transformation routine directly into transformation&#10;graph layou file (both joins have the transformations embedded - see below).&#10;&#10;Note: It is faster to reference record's fields by index as opposite to names - used&#10;in this example.&#10;" guiVersion="1.10" id="1204544305665" licenseType="Evaluation license." modified="Fri Jun 27 12:25:42 CEST 2008" modifiedBy="avackova" name="ComplexTransformation" revision="1.25">
+<Graph author="avackova" created="Wed Nov 22 10:24:41 CET 2006" description="This graph illustrates complex transformation. It reads data about orders made and&#10;combines them (joins) with data about which items were purchased. It then adds&#10;information about which company made particular order/bought particular item.&#10;It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.&#10;&#10;It also shows how to embed data transformation routine directly into transformation&#10;graph layou file (both joins have the transformations embedded - see below).&#10;&#10;Note: It is faster to reference record's fields by index as opposite to names - used&#10;in this example.&#10;" guiVersion="2.0" id="1204544305665" licenseType="Evaluation license." modified="Tue Oct 21 11:09:15 CEST 2008" modifiedBy="avackova" name="ComplexTransformation" revision="1.29">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata3"/>
@@ -11,10 +11,10 @@
 <Node enabled="enabled" guiHeight="25" guiName="EXT_SORT_DETAILS" guiWidth="50" guiX="196" guiY="194" id="EXT_SORT_DETAILS" sortKey="ORDERID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="25" guiName="EXT_SORT_ORDERS" guiWidth="50" guiX="196" guiY="281" id="EXT_SORT_ORDERS" sortKey="ORDERID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" filterExpression="$CUSTOMER!=&quot;N/A&quot;" guiHeight="25" guiName="FILTER" guiWidth="50" guiX="716" guiY="235" id="FILTER" type="EXT_FILTER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="25" guiName="IN_CUSTOMERS" guiWidth="50" guiX="389" guiY="102" id="IN_CUSTOMERS" type="DATA_READER"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="25" guiName="IN_CUSTOMERS" guiWidth="50" guiX="389" guiY="102" id="IN_CUSTOMERS" quotedStrings="true" type="DATA_READER"/>
 <Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/other/ODETAILS.DBF" guiHeight="25" guiName="IN_DETAILS" guiWidth="50" guiX="20" guiY="194" id="IN_DETAILS" type="DBF_DATA_READER"/>
 <Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/other/ORDERS.DBF" guiHeight="25" guiName="IN_ORDERS" guiWidth="50" guiX="20" guiY="281" id="IN_ORDERS" type="DBF_DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="389" guiY="235" id="JOIN" joinKey="$ORDERID;#$ORDERID;#" type="EXT_MERGE_JOIN">
+<Node ascendingInputs="true" enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="389" guiY="235" id="JOIN" joinKey="$ORDERID;#$ORDERID;#" joinType="leftOuter" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
@@ -32,7 +32,6 @@ public class joinOrdersDetails extends  DataRecordTransform{
 	}
 }
 ]]></attr>
-<attr name="leftOuterJoin"><![CDATA[true]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="25" guiName="JOIN_CUSTOMER" guiWidth="50" guiX="557" guiY="235" id="JOIN_CUSTOMER" joinKey="$CUSTOMERID=$CUSTOMERID;#" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[import org.jetel.component.DataRecordTransform;
@@ -49,7 +48,6 @@ public class joinCustomers extends  DataRecordTransform{
 		return ALL;
 	}
 }]]></attr>
-<attr name="leftOuterJoin"><![CDATA[true]]></attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBForders.out" guiHeight="25" guiName="WRITER1" guiWidth="50" guiX="882" guiY="189" id="WRITER1" type="DATA_WRITER"/>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBFordersNA.out" guiHeight="25" guiName="WRITER2" guiWidth="50" guiX="882" guiY="285" id="WRITER2" type="DATA_WRITER"/>
@@ -57,7 +55,7 @@ public class joinCustomers extends  DataRecordTransform{
 <Edge fromNode="EXT_SORT_ORDERS:0" guiBendpoints="" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="JOIN:0"/>
 <Edge fromNode="FILTER:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="WRITER1:0"/>
 <Edge fromNode="FILTER:1" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (rejected)" toNode="WRITER2:0"/>
-<Edge debugMode="false" fromNode="IN_CUSTOMERS:0" guiBendpoints="" id="Edge15" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="JOIN_CUSTOMER:1"/>
+<Edge debugMode="false" fromNode="IN_CUSTOMERS:0" guiBendpoints="" id="Edge15" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JOIN_CUSTOMER:1"/>
 <Edge fromNode="IN_DETAILS:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT_DETAILS:0"/>
 <Edge fromNode="IN_ORDERS:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT_ORDERS:0"/>
 <Edge fromNode="JOIN:0" guiBendpoints="" id="Edge11" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 0 (out)" toNode="JOIN_CUSTOMER:0"/>
