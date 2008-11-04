@@ -11,6 +11,7 @@ import java.util.Random;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.StringDataField;
+import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.JExcelXLSDataParser;
@@ -27,6 +28,7 @@ import org.jetel.test.CloverTestCase;
 public class RangeLookupTest extends CloverTestCase {
 
 	RangeLookupTable lookup, lookupNotOverlap;
+	Lookup lookupResult, lookupNOResult;
 	DataRecordMetadata lookupMetadata, metadata;
 	DataRecord record;
 	Random random = new Random();
@@ -170,10 +172,10 @@ public class RangeLookupTest extends CloverTestCase {
 		record = new DataRecord(metadata);
 		record.init();
 		RecordKey key = new RecordKey(new int[] { 1, 2 }, metadata);
-		lookup.setLookupKey(key);
-		lookupNotOverlap.setLookupKey(key);
+		lookupResult = lookup.createLookup(key, record);
+		lookupNOResult = lookupNotOverlap.createLookup(key, record);
 
-		DataRecord tmp, tmp1;
+		DataRecord tmp;
 		System.out.println("Lookup table:");
 		for (Iterator iter = lookup.iterator(); iter.hasNext();) {
 			System.out.print(iter.next() + "\n");
@@ -189,18 +191,20 @@ public class RangeLookupTest extends CloverTestCase {
 			record.getField("value").setValue(random.nextInt(41));
 			record.getField("value1").setValue(random.nextInt(201));
 			System.out.println("Record " + i + ":\n" + record);
-			tmp = lookup.get(record);
-			tmp1 = lookupNotOverlap.get(record);
-			System.out.println("Num found: " + lookup.getNumFound());
-			System.out.println("Num found: " + lookupNotOverlap.getNumFound());
-			while (tmp != null) {
+			lookupResult.seek();
+			lookupNOResult.seek();
+			System.out.println("Num found: " + lookupResult.getNumFound());
+			System.out.println("Num found: " + lookupNOResult.getNumFound());
+			while (lookupResult.hasNext()) {
+				tmp = lookupResult.next();
 				System.out.println("Next:\n" + tmp);
 				assertTrue((Integer) record.getField("value").getValue() >= (Integer) tmp.getField("start").getValue());
 				assertTrue((Integer) record.getField("value").getValue() <= (Integer) tmp.getField("end").getValue());
 				assertTrue((Integer) record.getField("value1").getValue() >= (Integer) tmp.getField("start1").getValue());
 				assertTrue((Integer) record.getField("value1").getValue() <= (Integer) tmp.getField("end1").getValue());
-				System.out.println("Next1:\n" + tmp1);
-				tmp = lookup.getNext();
+				if (lookupNOResult.hasNext()) {
+					System.out.println("Next1:\n" + lookupNOResult.next());
+				}
 			}
 		}
 	}
@@ -335,8 +339,8 @@ public class RangeLookupTest extends CloverTestCase {
 		record = new DataRecord(metadata);
 		record.init();
 		RecordKey key = new RecordKey(new int[] { 1, 2 }, metadata);
-		lookup.setLookupKey(key);
-		lookupNotOverlap.setLookupKey(key);
+		lookupResult = lookup.createLookup(key, record);
+		lookupNOResult = lookupNotOverlap.createLookup(key, record);
 
 		DataRecord tmp, tmp1;
 		System.out.println("Lookup table:");
@@ -354,28 +358,28 @@ public class RangeLookupTest extends CloverTestCase {
 			record.getField("value").setValue(random.nextInt(41));
 			record.getField("value1").setValue(random.nextInt(201));
 			System.out.println("Record " + i + ":\n" + record);
-			tmp = lookup.get(record);
-			tmp1 = lookupNotOverlap.get(record);
-			System.out.println("Num found: " + lookup.getNumFound());
-			System.out.println("Num found: " + lookupNotOverlap.getNumFound());
-			while (tmp != null || tmp1 != null) {
+			lookupResult.seek();
+			lookupNOResult.seek();
+			System.out.println("Num found: " + lookupResult.getNumFound());
+			System.out.println("Num found: " + lookupNOResult.getNumFound());
+			do {
+				tmp = lookupResult.hasNext() ? lookupResult.next() : null;
 				if (tmp != null) {
 					System.out.println("Next:\n" + tmp);
 					assertTrue((Integer) record.getField("value").getValue() >= (Integer) tmp.getField("start1").getValue());
 					assertTrue((Integer) record.getField("value").getValue() <= (Integer) tmp.getField("end").getValue());
 					assertTrue((Integer) record.getField("value1").getValue() >= (Integer) tmp.getField("start").getValue());
 					assertTrue((Integer) record.getField("value1").getValue() <= (Integer) tmp.getField("end1").getValue());
-					tmp = lookup.getNext();
 				}
+				tmp1 = lookupNOResult.hasNext() ? lookupNOResult.next() : null;
 				if (tmp1 != null) {
 					System.out.println("Next1:\n" + tmp1);
 					assertTrue((Integer) record.getField("value").getValue() >= (Integer) tmp1.getField("start1").getValue());
 					assertTrue((Integer) record.getField("value").getValue() <= (Integer) tmp1.getField("end").getValue());
 					assertTrue((Integer) record.getField("value1").getValue() >= (Integer) tmp1.getField("start").getValue());
 					assertTrue((Integer) record.getField("value1").getValue() <= (Integer) tmp1.getField("end1").getValue());
-					tmp1 = lookupNotOverlap.getNext();
 				}
-			}
+			} while (tmp != null || tmp1 != null);
 		}
 	}
 
@@ -443,7 +447,7 @@ public class RangeLookupTest extends CloverTestCase {
 		record = new DataRecord(metadata);
 		record.init();
 		RecordKey key = new RecordKey(new int[] { 1, 2, 3, 4, 5, 6, 7, 8 }, metadata);
-		lookup.setLookupKey(key);
+		lookupResult = lookup.createLookup(key, record);
 
 		DelimitedDataParser dataParser = new DelimitedDataParser();
 		dataParser.init(metadata);
@@ -452,9 +456,10 @@ public class RangeLookupTest extends CloverTestCase {
 		for (int i = 0; i < 500; i++) {
 			record = dataParser.getNext();
 			System.out.println("Input record " + i + ":\n" + record);
-			tmp = lookup.get(record);
-			System.out.println("Num found: " + lookup.getNumFound());
-			while (tmp != null) {
+			lookupResult.seek();
+			System.out.println("Num found: " + lookupResult.getNumFound());
+			while (lookupResult.hasNext()) {
+				tmp = lookupResult.next();
 				System.out.println("From lookup table:\n" + tmp);
 				assertTrue((Integer) record.getField("value1").getValue() >= (Integer) tmp.getField("s1").getValue());
 				assertTrue((Integer) record.getField("value1").getValue() <= (Integer) tmp.getField("e1").getValue());
@@ -472,191 +477,6 @@ public class RangeLookupTest extends CloverTestCase {
 				assertTrue((Integer) record.getField("value7").getValue() <= (Integer) tmp.getField("e7").getValue());
 				assertTrue(((Date) record.getField("value8").getValue()).compareTo((Date) tmp.getField("s8").getValue()) >= 0);
 				assertTrue(((Date) record.getField("value8").getValue()).compareTo((Date) tmp.getField("e8").getValue()) <= 0);
-				tmp = lookup.getNext();
-			}
-		}
-	}
-
-	public void test_getKeys() throws ComponentNotReadyException {
-		lookupMetadata = new DataRecordMetadata("lookupTest", DataRecordMetadata.DELIMITED_RECORD);
-		lookupMetadata.addField(new DataFieldMetadata("name", DataFieldMetadata.STRING_FIELD, ";"));
-		lookupMetadata.addField(new DataFieldMetadata("start", DataFieldMetadata.INTEGER_FIELD, ";"));
-		lookupMetadata.addField(new DataFieldMetadata("end", DataFieldMetadata.INTEGER_FIELD, ";"));
-		lookupMetadata.addField(new DataFieldMetadata("start1", DataFieldMetadata.INTEGER_FIELD, ";"));
-		lookupMetadata.addField(new DataFieldMetadata("end1", DataFieldMetadata.INTEGER_FIELD, ";"));
-		lookup = (RangeLookupTable) LookupTableFactory.createLookupTable(null, "rangeLookup", new Object[] { "RangeLookup", lookupMetadata, new String[] { "start", "start1" }, new String[] { "end", "end1" }, null }, new Class[] { String.class, DataRecordMetadata.class, String[].class, String[].class, Parser.class });
-		lookup.init();
-		record = new DataRecord(lookupMetadata);
-		record.init();
-		record.getField("name").setValue("10-20,100-200");
-		record.getField("start").setValue(10);
-		record.getField("end").setValue(20);
-		record.getField("start1").setValue(100);
-		record.getField("end1").setValue(200);
-		lookup.put(record);
-		record.getField("name").setValue("15-20,100-200");
-		record.getField("start").setValue(15);
-		record.getField("end").setValue(20);
-		record.getField("start1").setValue(100);
-		record.getField("end1").setValue(200);
-		lookup.put(record);
-		record.getField("name").setValue("20-25,100-200");
-		record.getField("start").setValue(20);
-		record.getField("end").setValue(25);
-		record.getField("start1").setValue(100);
-		record.getField("end1").setValue(200);
-		lookup.put(record);
-		record.getField("name").setValue("20-30,0-100");
-		record.getField("start").setValue(20);
-		record.getField("end").setValue(30);
-		record.getField("start1").setValue(0);
-		record.getField("end1").setValue(100);
-		lookup.put(record);
-		record.getField("name").setValue("20-30,100-200");
-		record.getField("start").setValue(20);
-		record.getField("end").setValue(30);
-		record.getField("start1").setValue(100);
-		record.getField("end1").setValue(200);
-		lookup.put(record);
-		record.getField("name").setValue("30-40,0-100");
-		record.getField("start").setValue(30);
-		record.getField("end").setValue(40);
-		record.getField("start1").setValue(0);
-		record.getField("end1").setValue(100);
-		lookup.put(record);
-		record.getField("name").setValue("30-40,100-200");
-		record.getField("start").setValue(30);
-		record.getField("end").setValue(40);
-		record.getField("start1").setValue(100);
-		record.getField("end1").setValue(200);
-		lookup.put(record);
-		record.getField("name").setValue("0-10,0-100");
-		record.getField("start").setValue(0);
-		record.getField("end").setValue(10);
-		record.getField("start1").setValue(0);
-		record.getField("end1").setValue(100);
-		lookup.put(record);
-		record.getField("name").setValue("0-10,100-200");
-		record.getField("start").setValue(0);
-		record.getField("start1").setValue(100);
-		record.getField("end").setValue(10);
-		record.getField("end1").setValue(200);
-		lookup.put(record);
-		record.getField("name").setValue("10-20,0-100");
-		record.getField("start").setValue(10);
-		record.getField("end").setValue(20);
-		record.getField("start1").setValue(0);
-		record.getField("end1").setValue(100);
-		lookup.put(record);
-
-		DataRecord tmp;
-		for (Iterator iter = lookup.iterator(); iter.hasNext();) {
-			System.out.print(iter.next());
-
-		}
-
-		Integer[] keys = new Integer[2];
-		lookup.setLookupKey(keys);
-
-		for (int i = 0; i < 200; i++) {
-			keys[0] = random.nextInt(40);
-			keys[1] = random.nextInt(200);
-			tmp = lookup.get(keys);
-			System.out.println("Keys: " + keys[0] + "," + keys[1] + "\nFrom lookup table:\n" + tmp);
-			assertTrue(keys[0] >= (Integer) tmp.getField("start").getValue());
-			assertTrue(keys[0] <= (Integer) tmp.getField("end").getValue());
-			assertTrue(keys[1] >= (Integer) tmp.getField("start1").getValue());
-			assertTrue(keys[1] <= (Integer) tmp.getField("end1").getValue());
-			System.out.println("Num found: " + lookup.getNumFound());
-			tmp = lookup.getNext();
-			while (tmp != null) {
-				System.out.println("Next:\n" + tmp);
-				assertTrue(keys[0] >= (Integer) tmp.getField("start").getValue());
-				assertTrue(keys[0] <= (Integer) tmp.getField("end").getValue());
-				assertTrue(keys[1] >= (Integer) tmp.getField("start1").getValue());
-				assertTrue(keys[1] <= (Integer) tmp.getField("end1").getValue());
-				tmp = lookup.getNext();
-			}
-		}
-	}
-
-	public void test_getString() throws ComponentNotReadyException {
-		lookupMetadata = new DataRecordMetadata("lookupTest", DataRecordMetadata.DELIMITED_RECORD);
-		lookupMetadata.addField(new DataFieldMetadata("name", DataFieldMetadata.STRING_FIELD, ";"));
-		lookupMetadata.addField(new DataFieldMetadata("start", DataFieldMetadata.DECIMAL_FIELD, ";"));
-		lookupMetadata.addField(new DataFieldMetadata("end", DataFieldMetadata.DECIMAL_FIELD, ";"));
-		// lookupMetadata.addField(new DataFieldMetadata("start",DataFieldMetadata.NUMERIC_FIELD,";"));
-		// lookupMetadata.addField(new DataFieldMetadata("end",DataFieldMetadata.NUMERIC_FIELD,";"));
-		lookup = (RangeLookupTable) LookupTableFactory.createLookupTable(null, "rangeLookup", new Object[] { "RangeLookup", lookupMetadata, new String[] { "start" }, new String[] { "end" }, null }, new Class[] { String.class, DataRecordMetadata.class, String[].class, String[].class, Parser.class });
-		lookup.init();
-		record = new DataRecord(lookupMetadata);
-		record.init();
-		record.getField("name").setValue("p1");
-		record.getField("start").setValue(0);
-		record.getField("end").setValue(20);
-		lookup.put(record);
-		record.getField("name").setValue("p2");
-		record.getField("start").setValue(10);
-		record.getField("end").setValue(20);
-		lookup.put(record);
-		record.getField("name").setValue("p3");
-		record.getField("start").setValue(0);
-		record.getField("end").setValue(10.5);
-		lookup.put(record);
-		record.getField("name").setValue("p4");
-		record.getField("start").setValue(10);
-		record.getField("end").setValue(11);
-		lookup.put(record);
-		record.getField("name").setValue("p5");
-		record.getField("start").setValue(0);
-		record.getField("end").setValue(5.123);
-		lookup.put(record);
-		record.getField("name").setValue("p6");
-		record.getField("start").setValue(2.34);
-		record.getField("end").setValue(5.351);
-		lookup.put(record);
-		record.getField("name").setValue("p7");
-		record.getField("start").setValue(7);
-		record.getField("end").setValue(12.444);
-		lookup.put(record);
-		record.getField("name").setValue("p8");
-		record.getField("start").setValue(6.32);
-		record.getField("end").setValue(14);
-		lookup.put(record);
-		record.getField("name").setValue("p9");
-		record.getField("start").setValue(0.344);
-		record.getField("end").setValue(2.345);
-		lookup.put(record);
-		record.getField("name").setValue("p10");
-		record.getField("start").setValue(4);
-		record.getField("end").setValue(7);
-		lookup.put(record);
-
-		DataRecord tmp;
-		for (Iterator iter = lookup.iterator(); iter.hasNext();) {
-			System.out.print(iter.next());
-
-		}
-
-		Decimal value = DecimalFactory.getDecimal();
-		double value1;
-
-		lookup.setLookupKey("my string");
-
-		for (int i = 0; i < 200; i++) {
-			value1 = random.nextDouble() * 20;
-			value.setValue(value1);
-			tmp = lookup.get(value.toString());
-			System.out.println(i + " - Value: " + String.valueOf(value) + "\nFrom lookup table:\n" + tmp);
-			assertTrue(value.compareTo((Decimal) tmp.getField("start").getValue()) > -1);
-			assertTrue(value.compareTo((Decimal) tmp.getField("end").getValue()) < 1);
-			System.out.println("Num found: " + lookup.getNumFound());
-			tmp = lookup.getNext();
-			while (tmp != null) {
-				System.out.println("Next:\n" + tmp);
-				assertTrue(value.compareTo((Decimal) tmp.getField("start").getValue()) > -1);
-				assertTrue(value.compareTo((Decimal) tmp.getField("end").getValue()) < 1);
-				tmp = lookup.getNext();
 			}
 		}
 	}
@@ -702,29 +522,40 @@ public class RangeLookupTest extends CloverTestCase {
 
 		}
 
+		metadata = new DataRecordMetadata("in", DataRecordMetadata.DELIMITED_RECORD);
+		metadata.addField(new DataFieldMetadata("id", DataFieldMetadata.INTEGER_FIELD, ";"));
+		metadata.addField(new DataFieldMetadata("value", DataFieldMetadata.INTEGER_FIELD, ";"));
+		record = new DataRecord(metadata);
+		record.init();
+		RecordKey key = new RecordKey(new int[]{0,1}, metadata);
+		
 		Integer[] keys = new Integer[2];
 
 		keys[0] = 20;
 		keys[1] = 120;
+		record.getField(0).setValue(keys[0]);
+		record.getField(1).setValue(keys[1]);
 
-		lookup.get(keys);
-		assertEquals(3, lookup.getNumFound());
+		lookupResult = lookup.createLookup(key, record);
+		assertEquals(3, lookupResult.getNumFound());
 
 		((RangeLookupTable) lookup).setStartInclude(new boolean[] { false, true });
 
-		lookup.get(keys);
-		assertEquals(2, lookup.getNumFound());
+		lookupResult = lookup.createLookup(key, record);
+		assertEquals(2, lookupResult.getNumFound());
 
 		((RangeLookupTable) lookup).setEndInclude(new boolean[] { false, false });
 
-		lookup.get(keys);
-		assertEquals(0, lookup.getNumFound());
+		lookupResult = lookup.createLookup(key, record);
+		assertEquals(0, lookupResult.getNumFound());
 
 		keys[0] = 17;
 		keys[1] = 100;
+		record.getField(0).setValue(keys[0]);
+		record.getField(1).setValue(keys[1]);
 
-		lookup.get(keys);
-		assertEquals(2, lookup.getNumFound());
+		lookupResult = lookup.createLookup(key, record);
+		assertEquals(2, lookupResult.getNumFound());
 	}
 
 	public void test_Strings() throws ComponentNotReadyException {
@@ -778,19 +609,23 @@ public class RangeLookupTest extends CloverTestCase {
 
 		String value;
 
+		metadata = new DataRecordMetadata("in", DataRecordMetadata.DELIMITED_RECORD);
+		metadata.addField(new DataFieldMetadata("value", DataFieldMetadata.STRING_FIELD, ";"));
+		record = new DataRecord(metadata);
+		record.init();
+		RecordKey key = new RecordKey(new int[]{0}, metadata);
+		lookupResult = lookup.createLookup(key, record);
+
 		for (int i = 0; i < 200; i++) {
 			value = randomString(5, 5);
-			tmp = lookup.get(value);
-			System.out.println(i + " - Value: " + value + "\nFrom lookup table:\n" + tmp);
-			assertTrue(((StringDataField) tmp.getField("start")).compareTo(value, collator) <= 0);
-			assertTrue(((StringDataField) tmp.getField("end")).compareTo(value, collator) > 0);
-			System.out.println("Num found: " + lookup.getNumFound());
-			tmp = lookup.getNext();
-			while (tmp != null) {
+			record.getField(0).setValue(value);
+			lookupResult.seek();
+			System.out.println(i + " - Value: " + value + "\n");
+			while (lookupResult.hasNext()) {
+				tmp = lookupResult.next();
 				System.out.println("Next:\n" + tmp);
 				assertTrue(((StringDataField) tmp.getField("start")).compareTo(value, collator) <= 0);
 				assertTrue(((StringDataField) tmp.getField("end")).compareTo(value, collator) > 0);
-				tmp = lookup.getNext();
 			}
 		}
 
@@ -822,45 +657,78 @@ public class RangeLookupTest extends CloverTestCase {
 			System.out.print(iter.next());
 
 		}
+		
+		metadata = new DataRecordMetadata("in", DataRecordMetadata.DELIMITED_RECORD);
+		metadata.addField(new DataFieldMetadata("id", DataFieldMetadata.INTEGER_FIELD, ";"));
+		record = new DataRecord(metadata);
+		record.init();
+		RecordKey key = new RecordKey(new int[]{0}, metadata);
+		lookupResult = lookup.createLookup(key, record);
 
+		record.getField(0).setValue(10);
 		System.out.println();
 		System.out.println("Looking for 10:");
-		System.out.println(lookup.get("10"));
-		System.out.println(lookup.getNext());
-		assertEquals(2, lookup.getNumFound());
+		lookupResult.seek();
+		lookupResult.hasNext();
+		System.out.println(lookupResult.next());
+		lookupResult.hasNext();
+		System.out.println(lookupResult.next());
+		assertEquals(2, lookupResult.getNumFound());
 
+		record.getField(0).setValue(25);
 		System.out.println();
 		System.out.println("Looking for 25:");
-		System.out.println(lookup.get("25"));
-		System.out.println(lookup.getNext());
-		assertEquals(2, lookup.getNumFound());
+		lookupResult.seek();
+		lookupResult.hasNext();
+		System.out.println(lookupResult.next());
+		lookupResult.hasNext();
+		System.out.println(lookupResult.next());
+		assertEquals(2, lookupResult.getNumFound());
 
+		record.getField(0).setValue(20);
 		System.out.println();
 		System.out.println("Looking for 20:");
-		System.out.println(lookup.get("20"));
-		System.out.println(lookup.getNext());
-		assertEquals(2, lookup.getNumFound());
+		lookupResult.seek();
+		lookupResult.hasNext();
+		System.out.println(lookupResult.next());
+		lookupResult.hasNext();
+		System.out.println(lookupResult.next());
+		assertEquals(2, lookupResult.getNumFound());
 
 		((RangeLookupTable) lookup).setEndInclude(true);
 		lookup.init();
+		lookupResult = lookup.createLookup(key, record);
+		record.getField(0).setValue(10);
 		System.out.println();
 		System.out.println("Looking for 10:");
-		System.out.println(lookup.get("10"));
-		System.out.println(lookup.getNext());
-		assertEquals(2, lookup.getNumFound());
+		lookupResult.seek();
+		lookupResult.hasNext();
+		System.out.println(lookupResult.next());
+		lookupResult.hasNext();
+		System.out.println(lookupResult.next());
+		assertEquals(2, lookupResult.getNumFound());
 
+		record.getField(0).setValue(25);
 		System.out.println();
 		System.out.println("Looking for 25:");
-		System.out.println(lookup.get("25"));
-		System.out.println(lookup.getNext());
-		assertEquals(2, lookup.getNumFound());
+		lookupResult.seek();
+		lookupResult.hasNext();
+		System.out.println(lookupResult.next());
+		lookupResult.hasNext();
+		System.out.println(lookupResult.next());
+		assertEquals(2, lookupResult.getNumFound());
 
+		record.getField(0).setValue(20);
 		System.out.println();
 		System.out.println("Looking for 20:");
-		System.out.println(lookup.get("20"));
-		System.out.println(lookup.getNext());
-		System.out.println(lookup.getNext());
-		assertEquals(3, lookup.getNumFound());
+		lookupResult.seek();
+		lookupResult.hasNext();
+		System.out.println(lookupResult.next());
+		lookupResult.hasNext();
+		System.out.println(lookupResult.next());
+		lookupResult.hasNext();
+		System.out.println(lookupResult.next());
+		assertEquals(3, lookupResult.getNumFound());
 	}
 
 	private boolean checkOrder(DataRecord previous, DataRecord following) {
