@@ -26,6 +26,7 @@ import java.text.RuleBasedCollator;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -628,7 +629,7 @@ class RangeLookup implements Lookup{
 	private int[] keyFields;
 	private SortedSet<DataRecord> subTable;
 	private Iterator<DataRecord> subTableIterator;
-	private DataRecord tmp;
+	private DataRecord next;
 	private RuleBasedCollator collator;
 	private int[] comparison;
 	private int numFound;
@@ -663,11 +664,11 @@ class RangeLookup implements Lookup{
 
 	public int getNumFound() {
 		int alreadyFound = numFound;
-		while (hasNext()) {}
+		while (getNext() != null) {}
 		int tmp = numFound;
 		subTableIterator = subTable.iterator();
 		for (int i=0;i<alreadyFound;i++){
-			hasNext();
+			getNext();
 		}
 		return tmp;
 	}
@@ -679,6 +680,8 @@ class RangeLookup implements Lookup{
 		}
 		subTable = lookup.tailSet(tmpRecord);
 		subTableIterator = subTable.iterator();
+		numFound = 0;
+		getNext();
 	}
 
 	public void seek(DataRecord keyRecord) {
@@ -688,29 +691,41 @@ class RangeLookup implements Lookup{
 		}
 		subTable = lookup.tailSet(tmpRecord);
 		subTableIterator = subTable.iterator();
+		numFound = 0;
+		getNext();
 	}
 
-	public boolean hasNext() {
+	private DataRecord getNext(){
 		if (subTableIterator != null && subTableIterator.hasNext()) {
-			tmp = subTableIterator.next();
+			next = subTableIterator.next();
 		}else{
-			tmp = null;
+			next = null;
+			return null;
 		}
 		//if value is not in interval try next
 		for (int i=0;i<startField.length;i++){
-			comparison = compare(tmpRecord, tmp, i);
+			comparison = compare(tmpRecord, next, i);
 			if ((comparison[0] < 0 || (comparison[0] == 0 && !startInclude[i])) ||
 				(comparison[1] > 0    || (comparison[1] == 0   && !endInclude[i])) ) {
-				return hasNext();
+				return getNext();
 			}
 		}
-		if (tmp != null) {
+		if (next != null) {
 			numFound++;
 		}
-		return tmp != null;
+		return next;
+	}
+	
+	public boolean hasNext() {
+		return next != null;
 	}
 
 	public DataRecord next() {
+		if (next == null) {
+			throw new NoSuchElementException();
+		}
+		DataRecord tmp = next.duplicate();
+		next = getNext();
 		return tmp;
 	}
 

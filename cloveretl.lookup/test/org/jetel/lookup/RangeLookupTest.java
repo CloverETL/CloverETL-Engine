@@ -454,7 +454,7 @@ public class RangeLookupTest extends CloverTestCase {
 		dataParser.setDataSource(new FileInputStream("../cloveretl.engine/data" + File.separatorChar + "data.dat"));
 
 		for (int i = 0; i < 500; i++) {
-			record = dataParser.getNext();
+			record = dataParser.getNext(record);
 			System.out.println("Input record " + i + ":\n" + record);
 			lookupResult.seek();
 			System.out.println("Num found: " + lookupResult.getNumFound());
@@ -537,16 +537,19 @@ public class RangeLookupTest extends CloverTestCase {
 		record.getField(1).setValue(keys[1]);
 
 		lookupResult = lookup.createLookup(key, record);
+		lookupResult.seek();
 		assertEquals(3, lookupResult.getNumFound());
 
 		((RangeLookupTable) lookup).setStartInclude(new boolean[] { false, true });
 
 		lookupResult = lookup.createLookup(key, record);
+		lookupResult.seek();
 		assertEquals(2, lookupResult.getNumFound());
 
 		((RangeLookupTable) lookup).setEndInclude(new boolean[] { false, false });
 
 		lookupResult = lookup.createLookup(key, record);
+		lookupResult.seek();
 		assertEquals(0, lookupResult.getNumFound());
 
 		keys[0] = 17;
@@ -555,6 +558,7 @@ public class RangeLookupTest extends CloverTestCase {
 		record.getField(1).setValue(keys[1]);
 
 		lookupResult = lookup.createLookup(key, record);
+		lookupResult.seek();
 		assertEquals(2, lookupResult.getNumFound());
 	}
 
@@ -669,9 +673,7 @@ public class RangeLookupTest extends CloverTestCase {
 		System.out.println();
 		System.out.println("Looking for 10:");
 		lookupResult.seek();
-		lookupResult.hasNext();
 		System.out.println(lookupResult.next());
-		lookupResult.hasNext();
 		System.out.println(lookupResult.next());
 		assertEquals(2, lookupResult.getNumFound());
 
@@ -679,9 +681,7 @@ public class RangeLookupTest extends CloverTestCase {
 		System.out.println();
 		System.out.println("Looking for 25:");
 		lookupResult.seek();
-		lookupResult.hasNext();
 		System.out.println(lookupResult.next());
-		lookupResult.hasNext();
 		System.out.println(lookupResult.next());
 		assertEquals(2, lookupResult.getNumFound());
 
@@ -689,9 +689,7 @@ public class RangeLookupTest extends CloverTestCase {
 		System.out.println();
 		System.out.println("Looking for 20:");
 		lookupResult.seek();
-		lookupResult.hasNext();
 		System.out.println(lookupResult.next());
-		lookupResult.hasNext();
 		System.out.println(lookupResult.next());
 		assertEquals(2, lookupResult.getNumFound());
 
@@ -702,9 +700,7 @@ public class RangeLookupTest extends CloverTestCase {
 		System.out.println();
 		System.out.println("Looking for 10:");
 		lookupResult.seek();
-		lookupResult.hasNext();
 		System.out.println(lookupResult.next());
-		lookupResult.hasNext();
 		System.out.println(lookupResult.next());
 		assertEquals(2, lookupResult.getNumFound());
 
@@ -712,9 +708,7 @@ public class RangeLookupTest extends CloverTestCase {
 		System.out.println();
 		System.out.println("Looking for 25:");
 		lookupResult.seek();
-		lookupResult.hasNext();
 		System.out.println(lookupResult.next());
-		lookupResult.hasNext();
 		System.out.println(lookupResult.next());
 		assertEquals(2, lookupResult.getNumFound());
 
@@ -722,11 +716,8 @@ public class RangeLookupTest extends CloverTestCase {
 		System.out.println();
 		System.out.println("Looking for 20:");
 		lookupResult.seek();
-		lookupResult.hasNext();
 		System.out.println(lookupResult.next());
-		lookupResult.hasNext();
 		System.out.println(lookupResult.next());
-		lookupResult.hasNext();
 		System.out.println(lookupResult.next());
 		assertEquals(3, lookupResult.getNumFound());
 	}

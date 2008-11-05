@@ -509,7 +509,7 @@ class SimpleLookup implements Lookup{
 	public void seek() {
 		if (data instanceof DuplicateKeyMap) {
 			curentResult = (DataRecord[]) ((DuplicateKeyMap)data).getAll(key, new DataRecord[0]);
-			numFound = curentResult.length;
+			numFound = curentResult != null ? curentResult.length : 0;
 		}else{
 			curentResult[0] = (DataRecord) data.get(key);
 			numFound = curentResult[0] == null ? 0 : 1;
