@@ -96,11 +96,11 @@ public class DBLookupTest extends CloverTestCase {
 		lookup = lookupTable.createLookup(recordKey, customer);
 		start = System.currentTimeMillis();
 		while ((parser.getNext(customer)) != null) {
-			 System.out.println("Looking pair for :\n" + customer);
+//			 System.out.println("Looking pair for :\n" + customer);
 			lookup.seek();
 			while (lookup.hasNext()) {
 				employee = (DataRecord) lookup.next();
-				 System.out.println("Found record:\n" + employee);
+//				 System.out.println("Found record:\n" + employee);
 				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 			}
 		}
@@ -117,11 +117,11 @@ public class DBLookupTest extends CloverTestCase {
 		lookup = lookupTable.createLookup(recordKey, customer);
 		start = System.currentTimeMillis();
 		while ((parser.getNext(customer)) != null) {
-			// System.out.println("Looking pair for :\n" + customer);
+//			 System.out.println("Looking pair for :\n" + customer);
 			lookup.seek();
 			while (lookup.hasNext()) {
 				employee = (DataRecord) lookup.next();
-				// System.out.println("Found record:\n" + employee);
+//				 System.out.println("Found record:\n" + employee);
 				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 			}
 		}

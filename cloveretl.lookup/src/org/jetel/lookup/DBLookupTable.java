@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.jetel.connection.jdbc.CopySQLData;
 import org.jetel.connection.jdbc.DBConnection;
@@ -33,6 +34,7 @@ import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
+import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
@@ -484,11 +486,14 @@ class DBLookup implements Lookup{
 	protected SimpleCache resultCache;
 	protected DBLookupTable lookupTable;
 	protected DataRecord currentResult;
+	protected List<DataRecord> result;
 	protected HashKey key;
 	protected CopySQLData[] transMap;
 	protected DataRecord inRecord;
 	protected RecordKey recordKey;
 	private boolean storeNulls;
+	private int no;
+	private boolean hasNext;
 	
 	DBLookup(DBLookupTable lookupTable, RecordKey key, DataRecord record){
 		this.lookupTable = lookupTable;
@@ -507,7 +512,7 @@ class DBLookup implements Lookup{
 
 	public int getNumFound() {
     	if (resultCache!=null){
-    		return resultCache.getNumFound();
+    		return result.size();
     	}
         if (resultSet != null) {
             try {
@@ -525,13 +530,18 @@ class DBLookup implements Lookup{
 	}
 
 	public void seek() {
-		if (resultCache != null) {
-			try {
+		try {
+			if (resultCache != null) {
 				seekInCache();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				result = resultCache.getAll(key);
+				no = 0;
+			}else {
+				resultSet = lookupTable.seek(key);
+				hasNext = fetch();
 			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
@@ -546,16 +556,14 @@ class DBLookup implements Lookup{
 				} while (fetch());		    	
 		    }else{
 				if (storeNulls) {
-					resultCache.put(hashKey, (DataRecord) null);
+					resultCache.put(hashKey, NullRecord.NULL_RECORD);
 				}		    	
 		    }
 		}
-		currentResult = (DataRecord) resultCache.get(key);		
 	}
 	
 	private boolean fetch() throws SQLException {
 		if (!resultSet.next()) {
-			currentResult = null;
 			return false;
 		}
 		if (transMap == null) {
@@ -576,27 +584,25 @@ class DBLookup implements Lookup{
 	}
 
 	public boolean hasNext() {
-		return currentResult != null;
+		return resultCache == null ? hasNext :
+			result != null && no < result.size() && result.get(no) != NullRecord.NULL_RECORD;
 	}
 
 	public DataRecord next() {
-		DataRecord result = currentResult;
-		if (resultCache != null){
-			currentResult = (DataRecord) resultCache.getNext();
-		}else {
-			try {
-				fetch();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		if (resultCache != null) {
+			return result.get(no++);
 		}
-		return result;
+		DataRecord tmp = currentResult.duplicate();
+		try {
+			hasNext = fetch();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+		return tmp;
 	}
 
 	public void remove() {
-		// TODO Auto-generated method stub
-		
+		//TODO
 	}
 	
 	public void setCacheSize(int cacheSize) {
