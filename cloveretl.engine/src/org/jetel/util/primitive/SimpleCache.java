@@ -24,6 +24,7 @@ package org.jetel.util.primitive;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -56,6 +57,7 @@ public class SimpleCache {
     
     protected Object savedKey;
     protected Object[] result = new Object[1];
+    protected List resultList = new ArrayList(1);
 
     /**
      * Creates cache with initial size of 16 entries.
@@ -105,12 +107,21 @@ public class SimpleCache {
     	return result;
     }
     
+    public List getAll(Object key){
+    	if (keyMap != null) {
+    		return keyMap.getAll(key);
+    	}
+    	if (!map.containsKey(key)) return null;
+    	resultList.clear();
+    	resultList.add(map.get(key));
+    	return resultList;
+    }
+    
     /**
      * 
      * @param key
      * @return first entry upon the given key
      */
-    @Deprecated
     public Object get(Object key){
     	savedKey = key;
     	return (keyMap == null ? map.get(key) : keyMap.get(key) );
@@ -119,7 +130,6 @@ public class SimpleCache {
     /**
      * @return next entry upon the key from last used method get
      */
-    @Deprecated
     public Object getNext(){
     	return (keyMap == null ? null :keyMap.getNext() );
     }
@@ -156,7 +166,6 @@ public class SimpleCache {
     /**
      * @return number of records found for last used key
      */
-    @Deprecated
     public int getNumFound(){
     	if (keyMap==null){
     		return map.containsKey(savedKey) ? 1 : 0; 

@@ -140,4 +140,28 @@ public enum TLValueType {
         }
     }
 
+    public final static char convertType(TLValueType tlType){
+    	switch (tlType) {
+		case INTEGER:
+			return DataFieldMetadata.INTEGER_FIELD;
+		case LONG:
+			return DataFieldMetadata.LONG_FIELD;
+		case BOOLEAN:
+			return DataFieldMetadata.BOOLEAN_FIELD;
+		case BYTE:
+			return DataFieldMetadata.BYTE_FIELD;
+		case DATE:
+			return DataFieldMetadata.DATE_FIELD;
+		case DECIMAL:
+			return DataFieldMetadata.DECIMAL_FIELD;
+		case DOUBLE: 
+			return DataFieldMetadata.NUMERIC_FIELD;
+		case STRING:
+			return DataFieldMetadata.STRING_FIELD;
+		case NULL:
+			return DataFieldMetadata.NULL_FIELD;
+		default:
+			throw new IllegalArgumentException("Can't convert TL type " + tlType.getName() + " to clover type");
+		}
+    }
 }

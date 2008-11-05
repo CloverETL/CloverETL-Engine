@@ -2499,14 +2499,10 @@ public class InterpreterTest extends CloverTestCase {
 
     public void test_lookup(){
         System.out.println("\nLookup test:");
-        String expStr = "string key='one';\n"+
-                        "string val=lookup(LKP,key).Name;\n"+
-                        "print_err(lookup(LKP,'  HELLO ').Age); \n"+
+        String expStr = "print_err(lookup(LKP,'  HELLO ').Age); \n"+
                         "print_err(lookup_found(LKP));\n"+
                         "print_err(lookup_next(LKP).Age);\n"+
-                        "print_err(lookup(LKP,'two').Name); \n"+
-                        "/*print_err(lookup(LKP,'two').Name);\n"+
-                        "print_err(lookup(LKP,'xxx').Name);\n*/";
+                        "print_err(lookup(LKP,'xxxx').Name);\n";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());

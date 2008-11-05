@@ -253,6 +253,10 @@ public class DuplicateKeyMap implements Map {
         }
     }
     
+    public List getAll(Object key){
+    	return (List) map.get(key);
+    }
+    
     /* (non-Javadoc)
      * @see java.util.Map#remove(java.lang.Object)
      */

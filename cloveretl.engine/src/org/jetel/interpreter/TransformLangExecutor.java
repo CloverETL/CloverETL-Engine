@@ -18,8 +18,12 @@
 
 package org.jetel.interpreter;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 
@@ -28,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.NullRecord;
+import org.jetel.data.lookup.Lookup;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.BadDataFormatException;
@@ -140,6 +145,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     protected ExpParser parser;
     
     static Log logger = LogFactory.getLog(TransformLangExecutor.class);
+    
+    Map<String, Lookup> lookups = new HashMap<String, Lookup>();
 
     /**
      * Constructor
@@ -1836,17 +1843,18 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     
     public Object visit(CLVFLookupNode node, Object data) {
 		DataRecord record = null;
-		boolean needLookupKey=false;
-		if (node.lookup == null) {
-			needLookupKey=true;
-			node.lookup = graph.getLookupTable(node.lookupName);
-			if (node.lookup == null) {
+		if (node.lookupTable == null) {
+			node.lookupTable = graph.getLookupTable(node.lookupName);
+			if (node.lookupTable == null) {
 				throw new TransformLangExecutorRuntimeException(node,
 						"Can't obtain LookupTable \"" + node.lookupName
 								+ "\" from graph \"" + graph.getName() + "\"");
 			}
+			if (node.lookup == null && lookups.containsKey(node.lookupTable.getId())) {
+				node.lookup = lookups.get(node.lookupTable.getId());
+			}
 			if (node.opType == CLVFLookupNode.OP_GET || node.opType==CLVFLookupNode.OP_NEXT) {
-				node.fieldNum = node.lookup.getMetadata().getFieldPosition(
+				node.fieldNum = node.lookupTable.getMetadata().getFieldPosition(
 						node.fieldName);
 				if (node.fieldNum < 0) {
 					throw new TransformLangExecutorRuntimeException(node,
@@ -1859,7 +1867,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 		switch (node.opType) {
 		case CLVFLookupNode.OP_INIT:
 			try {
-				node.lookup.init();
+				node.lookupTable.init();
 			} catch (ComponentNotReadyException ex) {
 				throw new TransformLangExecutorRuntimeException(node,
 						"Error when initializing lookup table \""
@@ -1867,32 +1875,42 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 			}
 			return data;
 		case CLVFLookupNode.OP_FREE:
-			node.lookup.free();
+			node.lookupTable.free();
+			lookups.remove(node.lookupTable.getId());
 			return data;
 // TODO change to new version of LookupTable			
-//		case CLVFLookupNode.OP_NUM_FOUND:
-//			stack.push(new TLNumericValue(TLValueType.INTEGER, new CloverInteger(
-//					node.lookup.getNumFound())));
-//			return data;
+		case CLVFLookupNode.OP_NUM_FOUND:
+			stack.push(new TLNumericValue(TLValueType.INTEGER, new CloverInteger(
+					node.lookup.getNumFound())));
+			return data;
 		case CLVFLookupNode.OP_GET:
-			Object keys[] = new Object[node.jjtGetNumChildren()];
+			TLValue keys[] = new TLValue[node.jjtGetNumChildren()];
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 				node.jjtGetChild(i).jjtAccept(this, data);
-				keys[i] = stack.pop().getValue();
+				keys[i] = stack.pop();
 			}
 			//TODO: Zkontrolovat a opravit nasledujici tri radky
 //			if (needLookupKey)
 //				node.lookup.setLookupKey(keys);
 //			record = node.lookup.get(keys);
 
-			// nasledujici radek je tu pouze pro kompilator
-			record = null;
-
-			break;
-// TODO change to new version of LookupTable			
-//		default: // CLVFLookupNode.OP_NEXT:
-//			record = node.lookup.getNext();
-
+			if (node.lookup == null) {
+				node.createLookup(keys);
+				lookups.put(node.lookupTable.getId(), node.lookup);
+			}
+			node.seek(keys);
+			if (node.lookup.hasNext()) {
+				record = node.lookup.next();
+			}else{
+				record = null;
+			}
+				break;
+		default: // CLVFLookupNode.OP_NEXT:
+			if (node.lookup.hasNext()) {
+				record = node.lookup.next();
+			}else{
+				record = null;
+			}
 		}
 
 		if (record != null) {

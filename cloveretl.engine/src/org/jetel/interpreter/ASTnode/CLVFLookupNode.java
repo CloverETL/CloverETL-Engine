@@ -2,9 +2,16 @@
 
 package org.jetel.interpreter.ASTnode;
 
+import org.jetel.data.DataRecord;
+import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
+import org.jetel.interpreter.data.TLValue;
+import org.jetel.interpreter.data.TLValueType;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 
 public class CLVFLookupNode extends SimpleNode {
     
@@ -17,8 +24,10 @@ public class CLVFLookupNode extends SimpleNode {
     public String lookupName;
     public String fieldName;
     public int opType=0; //default is get
-    public LookupTable lookup;
+    public LookupTable lookupTable;
+    public Lookup lookup;
     public int fieldNum=-1; //lazy initialization
+    private DataRecord lookupRecord;
     
   public CLVFLookupNode(int id) {
     super(id);
@@ -47,4 +56,31 @@ public class CLVFLookupNode extends SimpleNode {
       this.opType=oper;
   }
   
+  public void createLookup(TLValue[] keys){
+	  DataRecordMetadata lookupMetadata = new DataRecordMetadata("_ctl_" + lookupTable.getName());
+	  int[] keyFields = new int[keys.length];
+	  for (int i = 0; i < keys.length; i++) {
+		lookupMetadata.addField(new DataFieldMetadata("_field" + i, TLValueType.convertType(keys[i].getType()), null));
+		keyFields[i] = i;
+	  }
+	  RecordKey lookupKey = new RecordKey(keyFields, lookupMetadata);
+	  lookupRecord = new DataRecord(lookupMetadata);
+	  lookupRecord.init();
+	  lookup = lookupTable.createLookup(lookupKey, lookupRecord);
+  }
+	
+  private void prepareLookupRecord(TLValue[] keys){
+	  lookupRecord = new DataRecord(lookup.getKey().generateKeyRecordMetadata());
+	  lookupRecord.init();
+  }
+  
+	  public void seek(TLValue[] keys){
+		  if (lookupRecord == null) {
+			  prepareLookupRecord(keys);
+		  }
+		  for (int i = 0; i < keys.length; i++) {
+				keys[i].copyToDataField(lookupRecord.getField(i));
+			}
+		  lookup.seek(lookupRecord);
+	  }
 }
