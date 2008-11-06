@@ -112,8 +112,9 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
          *
          * @param lookupKey the lookup key that will be used for lookup
          */
-        public PersistentLookup(RecordKey lookupKey) {
+        public PersistentLookup(RecordKey lookupKey, DataRecord inRecord) {
             this.lookupKey = lookupKey;
+            this.dataRecord = inRecord;
         }
 
         public RecordKey getKey() {
@@ -534,7 +535,7 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 		this.cacheSize = cacheSize;
 	}
 	
-    public Lookup createLookup(RecordKey lookupKey) {
+    public Lookup createLookup(RecordKey lookupKey, DataRecord inRecord) {
         if (!isInitialized()) {
             throw new NotInitializedException("The lookup table has NOT been initialized!");
         }
@@ -543,14 +544,11 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
             throw new NullPointerException("key");
         }
 
-        return new PersistentLookup(lookupKey);
+        return new PersistentLookup(lookupKey, inRecord);
     }
 
-    public Lookup createLookup(RecordKey lookupKey, DataRecord dataRecord) {
-        Lookup persistentLookup = createLookup(lookupKey);
-        persistentLookup.seek(dataRecord);
-
-        return persistentLookup;
+    public Lookup createLookup(RecordKey lookupKey) {
+        return createLookup(lookupKey, null);
     }
 
     public static PersistentLookupTable fromProperties(TypedProperties properties) throws AttributeNotFoundException, GraphConfigurationException{

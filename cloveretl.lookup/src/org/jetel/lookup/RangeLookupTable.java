@@ -24,6 +24,7 @@ import java.security.InvalidParameterException;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -104,7 +105,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
     protected DataRecordMetadata metadata;//defines lookup table
     protected String metadataId;
 	protected Parser dataParser;
-	protected TreeSet<DataRecord> lookupTable;//set of intervals
+	protected SortedSet<DataRecord> lookupTable;//set of intervals
 	protected RecordKey startKey;
 	protected String[] startFields;
 	protected int[] startField;
@@ -121,8 +122,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	protected String fileURL;
 	// data of the lookup table, can be used instead of an input file
 	protected String data;
-	
-	private DataRecord tmpRecord;
 	
 	/**
 	 * Constructor for most general range lookup table 
@@ -280,14 +279,14 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		
 		comparator = new IntervalRecordComparator(metadata, startField, endField, collator);
 		
-		lookupTable = new TreeSet<DataRecord>(comparator);
+		lookupTable = Collections.synchronizedSortedSet(new TreeSet<DataRecord>(comparator));
 
 
 	    if (dataParser == null && (fileURL != null || data!= null)) {
 			dataParser = new DataParser(charset);
 	    }
 	    
-	    tmpRecord=new DataRecord(metadata);
+	    DataRecord tmpRecord = new DataRecord(metadata);
 	    tmpRecord.init();
 
 	    //read records from file
@@ -315,10 +314,11 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		tmpRecord.reset();
 		lookupTable.clear();
 	    //read records from file
         if (dataParser != null) {
+        	DataRecord tmpRecord = new DataRecord(metadata);
+        	tmpRecord.init();
             dataParser.reset();
             try {
 				if (fileURL != null) {
@@ -361,6 +361,10 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 
 	public boolean remove(DataRecord dataRecord) {
 	    return lookupTable.remove(dataRecord);
+	}
+
+	public boolean remove(HashKey key) {
+		throw new UnsupportedOperationException();
 	}
 
 	/* (non-Javadoc)
@@ -606,20 +610,14 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	}
 
 	public Lookup createLookup(RecordKey key, DataRecord keyRecord) {
-		RangeLookup lookup = new RangeLookup(lookupTable, key, keyRecord);
-		lookup.setLookupTable(this);
-		return lookup;
+		return new RangeLookup(this, key, keyRecord);
 	}
 
-	public boolean remove(HashKey key) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 }
 
 class RangeLookup implements Lookup{
 	
-	private TreeSet<DataRecord> lookup;
+	private SortedSet<DataRecord> lookup;
 	private RangeLookupTable lookupTable;
 	private DataRecord tmpRecord;
 	private int[] startField;
@@ -636,8 +634,16 @@ class RangeLookup implements Lookup{
 	private boolean[] startInclude;
 	private boolean[] endInclude;
 
-	RangeLookup(TreeSet<DataRecord> lookup, RecordKey key, DataRecord record){
-		this.lookup = lookup;
+	RangeLookup(RangeLookupTable lookup, RecordKey key, DataRecord record){
+		this.lookupTable = lookup;
+	    tmpRecord=new DataRecord(lookupTable.getMetadata());
+	    tmpRecord.init();
+	    startField = lookupTable.getStartFields();
+	    endField = lookupTable.getEndFields();
+	    startInclude = lookupTable.getStartInclude();
+	    endInclude = lookupTable.getEndInclude();
+	    collator = lookupTable.getCollator();
+	    this.lookup = lookupTable.lookupTable;
 		this.key = key;
 		this.inRecord = record;
 		this.keyFields = key.getKeyFields();
@@ -651,20 +657,9 @@ class RangeLookup implements Lookup{
 		return lookupTable;
 	}
 	
-	void setLookupTable(RangeLookupTable lookupTable){
-		this.lookupTable = lookupTable;
-	    tmpRecord=new DataRecord(lookupTable.getMetadata());
-	    tmpRecord.init();
-	    startField = lookupTable.getStartFields();
-	    endField = lookupTable.getEndFields();
-	    startInclude = lookupTable.getStartInclude();
-	    endInclude = lookupTable.getEndInclude();
-	    collator = lookupTable.getCollator();
-	}
-
-	public int getNumFound() {
+	public synchronized int getNumFound() {
 		int alreadyFound = numFound;
-		while (getNext() != null) {}
+		while (getNext() != null) {};
 		int tmp = numFound;
 		subTableIterator = subTable.iterator();
 		for (int i=0;i<alreadyFound;i++){
@@ -674,46 +669,41 @@ class RangeLookup implements Lookup{
 	}
 
 	public void seek() {
+		if (inRecord == null) throw new IllegalStateException("No key data for performing lookup");
 		for (int i = 0; i < startField.length; i++){
 			tmpRecord.getField(startField[i]).setValue(inRecord.getField(keyFields[i]));
 			tmpRecord.getField(endField[i]).setValue(inRecord.getField(keyFields[i]));
 		}
-		subTable = lookup.tailSet(tmpRecord);
-		subTableIterator = subTable.iterator();
+		synchronized (lookup) {
+			subTable = lookup.tailSet(tmpRecord);
+			subTableIterator = subTable.iterator();
+		}
 		numFound = 0;
-		getNext();
+		next = getNext();
 	}
 
 	public void seek(DataRecord keyRecord) {
-		for (int i = 0; i < startField.length; i++){
-			tmpRecord.getField(startField[i]).setValue(keyRecord.getField(keyFields[i]));
-			tmpRecord.getField(endField[i]).setValue(keyRecord.getField(keyFields[i]));
-		}
-		subTable = lookup.tailSet(tmpRecord);
-		subTableIterator = subTable.iterator();
-		numFound = 0;
-		getNext();
+		inRecord = keyRecord;
+		seek();
 	}
 
 	private DataRecord getNext(){
+		DataRecord result;
 		if (subTableIterator != null && subTableIterator.hasNext()) {
-			next = subTableIterator.next();
+			result = subTableIterator.next();
 		}else{
-			next = null;
 			return null;
 		}
 		//if value is not in interval try next
 		for (int i=0;i<startField.length;i++){
-			comparison = compare(tmpRecord, next, i);
+			comparison = compare(tmpRecord, result, i);
 			if ((comparison[0] < 0 || (comparison[0] == 0 && !startInclude[i])) ||
 				(comparison[1] > 0    || (comparison[1] == 0   && !endInclude[i])) ) {
 				return getNext();
 			}
 		}
-		if (next != null) {
-			numFound++;
-		}
-		return next;
+		numFound++;
+		return result;
 	}
 	
 	public boolean hasNext() {

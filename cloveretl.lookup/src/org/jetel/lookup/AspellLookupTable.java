@@ -144,8 +144,9 @@ public final class AspellLookupTable extends GraphElement implements LookupTable
          *
          * @param lookupKey the lookup key that will be used for lookup
          */
-        public AspellLookup(RecordKey lookupKey) {
+        public AspellLookup(RecordKey lookupKey, DataRecord dataRecord) {
             this.lookupKey = lookupKey;
+            this.dataRecord = dataRecord;
         }
 
         public RecordKey getKey() {
@@ -620,7 +621,7 @@ public final class AspellLookupTable extends GraphElement implements LookupTable
         return matchingDataRecordsCount;
     }
 
-    public Lookup createLookup(RecordKey lookupKey) {
+    public Lookup createLookup(RecordKey lookupKey, DataRecord inRecord) {
         if (!isInitialized()) {
             throw new NotInitializedException("The lookup table has NOT been initialized!");
         }
@@ -637,14 +638,11 @@ public final class AspellLookupTable extends GraphElement implements LookupTable
             throw new IllegalArgumentException("The lookup key field is not a string!");
         }
 
-        return new AspellLookup(lookupKey);
+        return new AspellLookup(lookupKey, inRecord);
     }
 
-    public Lookup createLookup(RecordKey lookupKey, DataRecord dataRecord) {
-        Lookup aspellLookup = createLookup(lookupKey);
-        aspellLookup.seek(dataRecord);
-
-        return aspellLookup;
+    public Lookup createLookup(RecordKey lookupKey) {
+        return createLookup(lookupKey, null);
     }
 
     public synchronized Iterator<DataRecord> iterator() {
