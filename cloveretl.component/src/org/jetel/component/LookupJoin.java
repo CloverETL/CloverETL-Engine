@@ -239,7 +239,6 @@ public class LookupJoin extends Node {
 
 	private Properties transformationParameters = null;
 
-	private LookupTable lookupTable;
 	private Lookup lookup;
 
 	private String errorActionsString;
@@ -364,7 +363,7 @@ public class LookupJoin extends Node {
 		}
 		transformation.finished();
 		if (freeLookupTable) {
-			lookupTable.free();
+			lookup.getLookupTable().free();
 		}
 		if (errorLog != null){
 			errorLog.flush();
@@ -434,7 +433,7 @@ public class LookupJoin extends Node {
 		super.init();
 		
 		// Initializing lookup table
-		lookupTable = getGraph().getLookupTable(lookupTableName);
+		LookupTable lookupTable = getGraph().getLookupTable(lookupTableName);
 		if (lookupTable == null) {
 			throw new ComponentNotReadyException("Lookup table \""
 					+ lookupTableName + "\" not found.");
