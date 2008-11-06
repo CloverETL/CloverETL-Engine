@@ -18,11 +18,9 @@
 
 package org.jetel.interpreter;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -1876,9 +1874,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 			return data;
 		case CLVFLookupNode.OP_FREE:
 			node.lookupTable.free();
+			node.lookup = null;
 			lookups.remove(node.lookupTable.getId());
 			return data;
-// TODO change to new version of LookupTable			
 		case CLVFLookupNode.OP_NUM_FOUND:
 			stack.push(new TLNumericValue(TLValueType.INTEGER, new CloverInteger(
 					node.lookup.getNumFound())));
@@ -1889,13 +1887,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 				node.jjtGetChild(i).jjtAccept(this, data);
 				keys[i] = stack.pop();
 			}
-			//TODO: Zkontrolovat a opravit nasledujici tri radky
-//			if (needLookupKey)
-//				node.lookup.setLookupKey(keys);
-//			record = node.lookup.get(keys);
-
 			if (node.lookup == null) {
-				node.createLookup(keys);
+				try {
+					node.createLookup(keys);
+				} catch (ComponentNotReadyException ex) {
+					throw new TransformLangExecutorRuntimeException(node,
+							"Error when initializing lookup table \""
+									+ node.lookupName + "\" :", ex);
+				}
 				lookups.put(node.lookupTable.getId(), node.lookup);
 			}
 			node.seek(keys);

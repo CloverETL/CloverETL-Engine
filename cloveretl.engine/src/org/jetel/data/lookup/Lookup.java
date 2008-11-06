@@ -27,7 +27,8 @@ import org.jetel.data.RecordKey;
 /**
  * This interface serves as a provider to lookup table data. Whenever user wants to access to lookup table data
  * associated with a key, he has to create this 'proxy' object via createLookup() method invoked on a lookup table.
- * The given instance provides all appropriate records through the Iterator<DataRecord> interface.
+ * Initialization of lookup is performed during the first calling of {@link #seek()} or {@link #seek(DataRecord)} method. 
+ * Then the given instance provides all appropriate records through the Iterator<DataRecord> interface.
  * The owner of this object can whenever change query to the lookup table and consequently call seek() method
  * to restart iterator on a different location of lookup table data. 
  * 
@@ -38,14 +39,39 @@ import org.jetel.data.RecordKey;
  */
 public interface Lookup extends Iterator<DataRecord> {
 
+	/**
+	 * @return underlying lookup table
+	 */
 	public LookupTable getLookupTable();
 	
+	/**
+	 * @return record key used for performing lookup on underlying lookup table
+	 */
 	public RecordKey getKey();
 	
-	public void seek();
+	/**
+	 * Performs lookup based on data stored in inner data record 
+	 * 
+	 * @see
+	 * {@link LookupTable#createLookup(RecordKey, DataRecord)} <br>
+	 * {@link #seek(DataRecord)}
+	 */
+	public void seek() throws IllegalStateException;
 	
+	/**
+	 * Performs lookup based on data in given record
+	 * 
+	 * @param keyRecord data for performing lookup
+	 */
 	public void seek(DataRecord keyRecord);
 	
-	public int getNumFound();
+	/**
+	 * Returns size of the underlying collection. <br>
+	 * It is not recommended to use this method as in some implementations it simply iterates this iterator.
+	 * 
+	 * @return number of records found by last {@link #seek()} or {@link #seek(DataRecord)} method (current size of 
+	 * this underlaying collection) or -1 if the number can't be determined.
+	 */
+	public int getNumFound() throws IllegalStateException;
 	
 }
