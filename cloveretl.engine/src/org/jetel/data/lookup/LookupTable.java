@@ -21,6 +21,7 @@ package org.jetel.data.lookup;
 import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.graph.IGraphElement;
 import org.jetel.metadata.DataRecordMetadata;
@@ -122,6 +123,7 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      * proxy object can also be used for continuous searching based on the same key and different data records.</p>
      *
      * @param lookupKey a record key that will be used for lookup
+     * @throws ComponentNotReadyException 
      *
      * @returns a lookup proxy object that can be used for lookup queries with the given lookup key
      *
@@ -132,7 +134,7 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      * @see Lookup
      * @since 29th October 2008
      */
-    public Lookup createLookup(RecordKey lookupKey);
+    public Lookup createLookup(RecordKey lookupKey) throws ComponentNotReadyException;
 
     /**
      * <p>Creates a lookup proxy object for the given lookup key. Returned proxy object can be used to retrieve data
@@ -143,6 +145,7 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      *
      * @param lookupKey a record key that will be used for lookup
      * @param dataRecord a data record that will be used for future lookup queries
+     * @throws ComponentNotReadyException 
      *
      * @returns a lookup proxy object that can be used for lookup queries with the given lookup key and data record
      *
@@ -153,6 +156,6 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      * @see Lookup
      * @since 29th October 2008
      */
-    public Lookup createLookup(RecordKey lookupKey, DataRecord dataRecord);
+    public Lookup createLookup(RecordKey lookupKey, DataRecord dataRecord) throws ComponentNotReadyException;
 
 }

@@ -6,6 +6,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
 import org.jetel.interpreter.data.TLValue;
@@ -26,8 +27,8 @@ public class CLVFLookupNode extends SimpleNode {
     public int opType=0; //default is get
     public LookupTable lookupTable;
     public Lookup lookup;
-    public int fieldNum=-1; //lazy initialization
     private DataRecord lookupRecord;
+    public int fieldNum=-1; //lazy initialization
     
   public CLVFLookupNode(int id) {
     super(id);
@@ -56,8 +57,15 @@ public class CLVFLookupNode extends SimpleNode {
       this.opType=oper;
   }
   
-  public void createLookup(TLValue[] keys){
-	  DataRecordMetadata lookupMetadata = new DataRecordMetadata("_ctl_" + lookupTable.getName());
+	  /**
+	   * Creates lookup based on requested keys - corresponds to {@link LookupTable#createLookup(RecordKey)} 
+	   * 
+	 * @param keys keys for lookup
+	 * @throws ComponentNotReadyException 
+	 */
+	public void createLookup(TLValue[] keys) throws ComponentNotReadyException{
+	  //create lookup key and lookup record based on requested keys: record contains only key fields
+	  DataRecordMetadata lookupMetadata = new DataRecordMetadata("_metadata_ctl_" + lookupTable.getName());
 	  int[] keyFields = new int[keys.length];
 	  for (int i = 0; i < keys.length; i++) {
 		lookupMetadata.addField(new DataFieldMetadata("_field" + i, TLValueType.convertType(keys[i].getType()), null));
@@ -69,14 +77,23 @@ public class CLVFLookupNode extends SimpleNode {
 	  lookup = lookupTable.createLookup(lookupKey, lookupRecord);
   }
 	
-  private void prepareLookupRecord(TLValue[] keys){
-	  lookupRecord = new DataRecord(lookup.getKey().generateKeyRecordMetadata());
-	  lookupRecord.init();
-  }
+  /**
+	 * For new lookup node, which is to work on existing lookup, creates lookup record, based on lookup key
+	 * 
+	 */
+	private void prepareLookupRecord() {
+		lookupRecord = new DataRecord(lookup.getKey().generateKeyRecordMetadata());
+		lookupRecord.init();
+	}
   
-	  public void seek(TLValue[] keys){
+	  /**
+	   *Performs lookup in lookup table - corresponds to {@link Lookup#seek(DataRecord)}
+	   * 
+	 * @param keys keys for lookup
+	 */
+	public void seek(TLValue[] keys){
 		  if (lookupRecord == null) {
-			  prepareLookupRecord(keys);
+			  prepareLookupRecord();
 		  }
 		  for (int i = 0; i < keys.length; i++) {
 				keys[i].copyToDataField(lookupRecord.getField(i));

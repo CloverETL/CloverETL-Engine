@@ -22,6 +22,7 @@
 package org.jetel.util.primitive;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -49,7 +50,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 public class SimpleCache {
     
-    protected LinkedHashMap map;
+    protected Map map;
     protected DuplicateKeyMap keyMap = null;
     
     protected transient int totalSize = 0;
@@ -64,8 +65,9 @@ public class SimpleCache {
      * Maximum size is defaulted to 100.
      */
     public SimpleCache(){
-    	map = new StoreMap();
-    	maxSize = ((StoreMap)map).getMaxEntries();
+    	StoreMap tmp = new StoreMap();
+    	map = Collections.synchronizedMap(tmp);
+    	maxSize = tmp.getMaxEntries();
     }
     
     /**
@@ -75,8 +77,9 @@ public class SimpleCache {
      * @param initialCapacity
      */
     public SimpleCache(int initialCapacity){
-    	map = new StoreMap(initialCapacity);
-       	maxSize = ((StoreMap)map).getMaxEntries();
+    	StoreMap tmp = new StoreMap(initialCapacity);
+    	map = Collections.synchronizedMap(new StoreMap(initialCapacity));
+       	maxSize = tmp.getMaxEntries();
     }
     
     /**
@@ -87,8 +90,9 @@ public class SimpleCache {
      * @param maxCapacity		
      */
     public SimpleCache(int initialCapacity,int maxCapacity){
-    	map = new StoreMap(initialCapacity,maxCapacity);
-       	maxSize = ((StoreMap)map).getMaxEntries();
+    	StoreMap tmp = new StoreMap(initialCapacity, maxCapacity);
+    	map = Collections.synchronizedMap(new StoreMap(initialCapacity,maxCapacity));
+       	maxSize = tmp.getMaxEntries();
    }
     
     /**
