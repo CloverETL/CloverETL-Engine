@@ -21,8 +21,10 @@ package org.jetel.lookup;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -93,7 +95,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	protected String[] keys;
 	protected RecordKey indexKey;
 	protected int tableInitialSize=DEFAULT_INITIAL_CAPACITY;
-	protected boolean keyDuplicates = true;
+	protected boolean keyDuplicates = false;
 	
 	// data of the lookup table, can be used instead of an input file
 	protected String data;
@@ -154,9 +156,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	}
 	
 	public Lookup createLookup(RecordKey key) {
-		DataRecord keyRecord = new DataRecord(key.getMetadata());
-		keyRecord.init();
-		return createLookup(key, keyRecord);
+		return createLookup(key, null);
 	}
 
 	/**
@@ -464,7 +464,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 class SimpleLookup implements Lookup{
 
 	protected Map data;
-	protected DataRecord[] curentResult;
+	protected List<DataRecord> curentResult;
 	protected HashKey key;
 	private int no;
 	private int numFound = 0;
@@ -473,7 +473,7 @@ class SimpleLookup implements Lookup{
 	SimpleLookup(Map data, RecordKey key, DataRecord record) {
 		this.data = data;
 		if (!(data instanceof DuplicateKeyMap)) {
-			curentResult = new DataRecord[1];
+			curentResult = new ArrayList<DataRecord>(1);
 		}
 		this.key = new HashKey(key, record);
 	}
@@ -507,12 +507,16 @@ class SimpleLookup implements Lookup{
 	 * @see org.jetel.data.lookup.Lookup#seek()
 	 */
 	public void seek() {
+		if (key.getDataRecord() == null) throw new IllegalStateException("No key data for performing lookup");
 		if (data instanceof DuplicateKeyMap) {
-			curentResult = (DataRecord[]) ((DuplicateKeyMap)data).getAll(key, new DataRecord[0]);
-			numFound = curentResult != null ? curentResult.length : 0;
+			curentResult = ((DuplicateKeyMap)data).getAll(key);
+			numFound = curentResult != null ? curentResult.size() : 0;
 		}else{
-			curentResult[0] = (DataRecord) data.get(key);
-			numFound = curentResult[0] == null ? 0 : 1;
+			curentResult.clear();
+			if (data.containsKey(key)) {
+				curentResult.add((DataRecord) data.get(key));
+			}
+			numFound = curentResult.size();
 		}
 		no = 0;
 	}
@@ -537,15 +541,19 @@ class SimpleLookup implements Lookup{
 	 */
 	public DataRecord next() {
 		if (curentResult == null || no >= numFound) throw new NoSuchElementException();
-		return curentResult[no++];
+		return curentResult.get(no++);
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Iterator#remove()
 	 */
 	public void remove() {
-		// TODO Auto-generated method stub
-
+		if (curentResult == null || no >= numFound) throw new IllegalStateException();
+		if (data instanceof DuplicateKeyMap){
+			curentResult.remove(--no);
+		}else{
+			data.remove(key);
+		}
 	}
 
 }
