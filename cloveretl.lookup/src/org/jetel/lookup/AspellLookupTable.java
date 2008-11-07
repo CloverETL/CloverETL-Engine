@@ -691,4 +691,10 @@ public final class AspellLookupTable extends GraphElement implements LookupTable
         matchingDataRecordsCount = -1;
     }
 
+	public char[] getKey() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
+		if (!isInitialized()) throw new NotInitializedException(this);
+		
+		return new char[]{metadata.getFieldType(lookupKeyField)};
+	}
+
 }

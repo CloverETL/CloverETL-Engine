@@ -41,6 +41,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
@@ -457,6 +458,17 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 
 	public void setKeyDuplicates(boolean keyDuplicates) {
 		this.keyDuplicates = keyDuplicates;
+	}
+
+	public char[] getKey() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
+		if (!isInitialized()) throw new NotInitializedException(this);
+		
+		char[] result = new char[indexKey.getLength()];
+		int[] keyField = indexKey.getKeyFields();
+		for (int i = 0; i < result.length; i++) {
+			result[i] = metadata.getFieldType(keyField[i]);
+		}
+		return result;
 	}
 
 }
