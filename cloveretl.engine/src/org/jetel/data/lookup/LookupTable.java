@@ -157,5 +157,15 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      * @since 29th October 2008
      */
     public Lookup createLookup(RecordKey lookupKey, DataRecord dataRecord) throws ComponentNotReadyException;
+    
+    /**
+     * Returns number and types of field's for creating lookup({@link #createLookup(RecordKey)} and {@link #createLookup(RecordKey, DataRecord)})
+     * 
+     * @return array with types of key fields
+     * @throws ComponentNotReadyException if lookup table is not properly configured
+     * @throws UnsupportedOperationException if key can't be obtain
+     * @throws NotInitializedException if the lookup table has not yet been initialized
+     */
+    public char[] getKey() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException;
 
 }
