@@ -19,6 +19,7 @@
 */
 package org.jetel.lookup;
 
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -45,6 +46,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
@@ -407,6 +409,23 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		lookup.setStoreNulls(storeNulls);
 		activeLookups.add(lookup);
 		return lookup;
+	}
+	
+	public char[] getKey() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
+		if (!isInitialized()) throw new NotInitializedException(this);
+		PreparedStatement pStatement;
+        char[] result;
+        try {
+            pStatement = dbConnection.getSqlConnection().prepareStatement(sqlQuery);
+    		ParameterMetaData dbMeta = pStatement.getParameterMetaData();
+            result = new char[dbMeta.getParameterCount()];
+            for (int i = 0; i < result.length; i++) {
+				result[i] = dbConnection.getJdbcSpecific().sqlType2jetel(dbMeta.getParameterType(i));
+			}
+        } catch (SQLException ex) {
+            throw new ComponentNotReadyException("Can't create SQL statement: " + ex.getMessage());
+        }
+        return result;
 	}
 	
 	public boolean isReadOnly() {

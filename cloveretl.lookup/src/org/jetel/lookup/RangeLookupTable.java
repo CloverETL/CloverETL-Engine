@@ -46,6 +46,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
@@ -611,6 +612,16 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 
 	public Lookup createLookup(RecordKey key, DataRecord keyRecord) {
 		return new RangeLookup(this, key, keyRecord);
+	}
+
+	public char[] getKey() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
+		if (!isInitialized()) throw new NotInitializedException(this);
+		
+		char[] result = new char[startField.length];
+		for (int i = 0; i < result.length; i++) {
+			result[i] = metadata.getFieldType(startField[i]);
+		}
+		return result;
 	}
 
 }
