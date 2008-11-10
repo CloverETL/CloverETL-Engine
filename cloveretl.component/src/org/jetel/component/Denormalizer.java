@@ -332,6 +332,7 @@ public class Denormalizer extends Node {
 		srcRecord[0].init();
 		srcRecord[1].init();
 		int src=0;
+		int counter = 0;
 		DataRecord prevRecord = null;
 		DataRecord currentRecord = null;
 		int transformResult;
@@ -343,22 +344,21 @@ public class Denormalizer extends Node {
 				if (transformResult >= 0) {
 					outPort.writeRecord(outRecord);
 				}else{
-					handleException("transform", transformResult, src);
+					handleException("transform", transformResult, counter);
 				}
 				denorm.clean();
 			}
 			if (currentRecord == null) { // no more input data
 				return;
 			}
+			counter++;
 			prevRecord = currentRecord;
+			src^=1;
 			transformResult = denorm.append(prevRecord);
-			if (transformResult >= 0) {
-				outPort.writeRecord(outRecord);
-			}else{
-				handleException("append", transformResult, src);
+			if (transformResult < 0) {
+				handleException("append", transformResult, counter);
 			}
 			SynchronizeUtils.cloverYield();
-			src++;
 		} // while
 	}
 
