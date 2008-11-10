@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Mira Haupt" created="Tue Dec 12 09:10:59 CET 2006" guiVersion="2.0" id="1199361218607" licenseType="Evaluation license." modified="Tue Oct 21 19:29:02 CEST 2008" modifiedBy="Mira Haupt" name="graphLookupReader" revision="1.152">
+<Graph author="Mira Haupt" created="Tue Dec 12 09:10:59 CET 2006" guiVersion="0.0" id="1199361218607" licenseType="Evaluation license." modified="Mon Nov 10 12:05:34 CET 2008" modifiedBy="avackova" name="graphLookupReader" revision="1.154">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<LookupTable cacheSize="1000" commitInterval="100" fileURL="c:/Temp/data" id="LookupTable1" key="EmployeeID" metadata="Metadata0" name="jmeno" pageSize="16" type="persistentLookup"/>
+<LookupTable cacheSize="1000" commitInterval="100" fileURL="${DATATMP_DIR}/data" id="LookupTable1" key="EmployeeID" metadata="Metadata0" name="jmeno" pageSize="16" type="persistentLookup"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="100" x="590" y="375">
 <attr name="text"><![CDATA[Read lookup table and write to the file]]></attr>
 </Note>
