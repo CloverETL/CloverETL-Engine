@@ -286,7 +286,7 @@ public class DBJoin extends Node {
 								writeRecord(REJECTED_PORT, inRecord);
 							}
 						}else { 
-							if (inRecords[1] != null){//send to output only records from DB
+							if (inRecords[1] != NullRecord.NULL_RECORD){//send to output only records from DB
 								writeRecord(WRITE_TO_PORT, inRecords[1]);
 							}else if (rejectedPort != null){
 								writeRecord(REJECTED_PORT, inRecord);
