@@ -31,6 +31,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
@@ -147,7 +148,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik <martin.janik@javlin.cz>
  *
- * @version 23rd October 2008
+ * @version 10th November 2008
  * @since 26th September 2008
  */
 public class SortWithinGroups extends Node {
@@ -418,8 +419,8 @@ public class SortWithinGroups extends Node {
 
     @Override
     public synchronized void init() throws ComponentNotReadyException {
-        if (isInitialized()) {
-            throw new IllegalStateException("The component has already been initialized!");
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
         }
 
         super.init();
@@ -442,7 +443,7 @@ public class SortWithinGroups extends Node {
     @Override
     public Result execute() throws Exception {
         if (!isInitialized()) {
-            throw new IllegalStateException("The component has NOT been initialized!");
+            throw new NotInitializedException(this);
         }
 
         InputPort inputPort = getInputPort(INPUT_PORT_NUMBER);
@@ -495,7 +496,7 @@ public class SortWithinGroups extends Node {
     @Override
     public synchronized void reset() throws ComponentNotReadyException {
         if (!isInitialized()) {
-            throw new IllegalStateException("The component has NOT been initialized!");
+            throw new NotInitializedException(this);
         }
 
         super.reset();
@@ -506,7 +507,7 @@ public class SortWithinGroups extends Node {
     @Override
     public synchronized void free() {
         if (!isInitialized()) {
-            throw new IllegalStateException("The component has NOT been initialized!");
+            throw new NotInitializedException(this);
         }
 
         super.free();
