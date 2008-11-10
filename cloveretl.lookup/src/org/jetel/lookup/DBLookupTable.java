@@ -428,10 +428,14 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         return result;
 	}
 	
-	public boolean isReadOnly() {
-		return true;
+	public boolean isPutSupported() {
+		return false;
 	}
 	
+    public boolean isRemoveSupported() {
+        return false;
+    }
+    
 	public boolean put(DataRecord dataRecord) {
 		throw new UnsupportedOperationException(); 
 	}

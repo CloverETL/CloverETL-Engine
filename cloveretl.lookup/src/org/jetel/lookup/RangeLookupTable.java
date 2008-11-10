@@ -347,12 +347,13 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	}
 
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.LookupTable#getNumFound()
-	 */
-	public boolean isReadOnly() {
-	    return false;
+	public boolean isPutSupported() {
+	    return true;
 	}
+
+	public boolean isRemoveSupported() {
+        return true;
+    }
 
 	public boolean put(DataRecord dataRecord) {
 		lookupTable.add(dataRecord.duplicate());
