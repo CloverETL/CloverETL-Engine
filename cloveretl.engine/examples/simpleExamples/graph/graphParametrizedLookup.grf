@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Fri Jan 12 15:46:21 CET 2007" description="This graph demonstrates usage of Node-level parameters" guiVersion="1.9" id="1204549694917" licenseType="Evaluation license." modified="Tue Mar 04 14:26:06 CET 2008" name="Testing Simple Lookup with parameters" revision="1.17">
+<Graph author="avackova" created="Fri Jan 12 15:46:21 CET 2007" description="This graph demonstrates usage of Node-level parameters" guiVersion="0.0" id="1204549694917" licenseType="Evaluation license." modified="Mon Nov 10 11:56:28 CET 2008" modifiedBy="avackova" name="Testing Simple Lookup with parameters" revision="1.19">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata1"/>
@@ -10,51 +10,45 @@
 <Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
 <Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="195" guiY="20" id="JOIN" type="REFORMAT">
 <attr name="transform"><![CDATA[
-import java.io.FileInputStream;
-
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
-import org.jetel.data.lookup.LookupTable;
-import org.jetel.data.parser.DelimitedDataParser;
+import org.jetel.data.lookup.Lookup;
+import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.lookup.SimpleLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 
 public class reformatTest extends DataRecordTransform{
 
-	LookupTable mylookup;
+	Lookup mylookup;
 
-	public boolean init(){
+	public boolean init() throws ComponentNotReadyException{
 		
-	Parser parser=new DelimitedDataParser();
+		Parser parser=new DataParser();
 		DataRecordMetadata lookupMetadata = getDataRecordMetadata("Metadata0");
-		try{	
 		parser.init(lookupMetadata);
-		parser.setDataSource(new FileInputStream(parameters.getProperty("lookupFile")));
 	    String[] lookupKeyStr=new String[1];
 	    lookupKeyStr[0]=parameters.getProperty("keyField");
-		mylookup = new SimpleLookupTable("mylookup",lookupMetadata, lookupKeyStr ,parser);
+		SimpleLookupTable lt = new SimpleLookupTable("mylookup",lookupMetadata, lookupKeyStr ,parser);
+		lt.setFileURL(parameters.getProperty("lookupFile"));
 		// create key 
 		RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);
 		key.init();
-		mylookup.init();
-		mylookup.setLookupKey(key);
-		}catch(Exception ex){
-			ex.printStackTrace();
-			return false;
-		}
+		lt.init();
+		mylookup = lt.createLookup(key);
 		return true;
 	}
 
 	public int transform(DataRecord[] source, DataRecord[] target){
 	        
+		mylookup.seek(source[0]);
+		
+		if (!mylookup.hasNext()) return SKIP; // skip this one
+		
+		DataRecord employee = (DataRecord)mylookup.next();
 
-		DataRecord employee; 
-		employee=mylookup.get(source[0]);
-		
-		if (employee==null) return SKIP; // skip this one
-		
 		target[0].getField(0).setValue(source[0].getField(0).getValue());
   		target[0].getField(1).setValue(source[0].getField(1).getValue());
 		target[0].getField(2).setValue(source[0].getField(2).getValue().toString());
@@ -69,7 +63,7 @@ public class reformatTest extends DataRecordTransform{
 <attr name="keyField"><![CDATA[EmployeeID]]></attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DATA_WRITER"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="JOIN:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="JOIN:0"/>
 <Edge fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITER:0"/>
 </Phase>
 </Graph>
