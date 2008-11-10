@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="yanas" created="Fri Jan 12 08:41:50 CET 2007" description="This graph illustrates how to join data using reformat component." guiVersion="2.0" id="1204558846009" licenseType="Evaluation license." modified="Mon Oct 06 20:20:32 CEST 2008" modifiedBy="yanas" name="Testing Hash Joiner" revision="1.11">
+<Graph author="yanas" created="Fri Jan 12 08:41:50 CET 2007" description="This graph illustrates how to join data using reformat component." guiVersion="0.0" id="1204558846009" licenseType="Evaluation license." modified="Mon Nov 10 11:54:35 CET 2008" modifiedBy="avackova" name="Testing Hash Joiner" revision="1.21">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata2"/>
@@ -37,43 +37,39 @@
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
-import org.jetel.exception.JetelException;
-import org.jetel.graph.TransformationGraph;
+import org.jetel.exception.ComponentNotReadyException;
 
 public class reformatTest extends DataRecordTransform{
 
-	LookupTable mylookup;
+	Lookup mylookup;
 
-	public boolean init(){
-
-		try {
-			mylookup = graph.getLookupTable("LookupTable0");
-			mylookup.init();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public boolean init() throws ComponentNotReadyException{
 		
 		// create key 
 	    String[] lookupKeyStr={"EmployeeID"};
 		RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);
 		key.init();
-		mylookup.setLookupKey(key);
+
+		LookupTable lt = graph.getLookupTable("LookupTable0");
+		lt.init();
+		mylookup = lt.createLookup(key);
+
 		return true;
 	}
 
 	public int transform(DataRecord[] source, DataRecord[] target){
 	        
-
-		DataRecord employee; 
-		employee=mylookup.get(source[0]);
-		
-		if (employee==null) {// skip this one
+		mylookup.seek(source[0]);
+				
+		if (!mylookup.hasNext()) {// skip this one
 			errorMessage = "Order: " + source[0].getField(0).getValue() + " - no corresponding record in lookup table";
 			return SKIP; 
 		}
 		
+		DataRecord employee = (DataRecord)mylookup.next(); 
+
 		target[0].getField(0).setValue(source[0].getField(0).getValue());
   		target[0].getField(1).setValue(source[0].getField(1).getValue());
 		target[0].getField(2).setValue(source[0].getField(2).getValue().toString());
