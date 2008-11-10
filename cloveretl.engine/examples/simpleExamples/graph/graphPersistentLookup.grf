@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Mira Haupt" created="Tue Dec 12 09:10:59 CET 2006" description="This graph demonstrates functionality of HASH_JOIN components. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted&#10;" guiVersion="2.0" id="1196683278570" licenseType="Evaluation license." modified="Fri Oct 24 11:02:28 CEST 2008" modifiedBy="Mira Haupt" name="Testing Hash Joiner" revision="1.47">
+<Graph author="Mira Haupt" created="Tue Dec 12 09:10:59 CET 2006" description="This graph demonstrates functionality of HASH_JOIN components. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted&#10;" guiVersion="0.0" id="1196683278570" licenseType="Evaluation license." modified="Mon Nov 10 12:02:26 CET 2008" modifiedBy="avackova" name="Testing Hash Joiner" revision="1.49">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata2"/>
@@ -19,45 +19,40 @@
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
-import org.jetel.exception.*;
-import org.jetel.graph.TransformationGraph;
+import org.jetel.exception.ComponentNotReadyException;
 
 public class reformatTest extends DataRecordTransform{
 
-	LookupTable mylookup;
+	Lookup mylookup;
 
-	public boolean init(){
+	public boolean init() throws ComponentNotReadyException{
 
-		try {
-			mylookup = graph.getLookupTable("LookupTable1");
-			if (!mylookup.isInitialized()) {
-				mylookup.init();
-			}
-		} catch (ComponentNotReadyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		LookupTable lt = graph.getLookupTable("LookupTable1");
+		if (!lt.isInitialized()) {
+			lt.init();
 		}
 	
 		// create key 
 	    String[] lookupKeyStr={"EmployeeID"};
 		RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);
 		key.init();
-		mylookup.setLookupKey(key);
+		mylookup = lt.createLookup(key);
 		return true;
 	}
 
 	public int transform(DataRecord[] source, DataRecord[] target){
 	        
-
-		DataRecord employee; 
-		employee=mylookup.get(source[0]);
+		mylookup.seek(source[0]);
 		
-		if (employee==null) {// skip this one
+		if (!mylookup.hasNext()) {// skip this one
 			errorMessage = "Input:\n" + source[0] + " - There is no record with corresponding key in lookup table\n";
 			return SKIP; 
 		}
 		
+		DataRecord employee = (DataRecord)mylookup.next();
+
 		target[0].getField(0).setValue(source[0].getField(0).getValue());
   		target[0].getField(1).setValue(source[0].getField(1).getValue());
 		target[0].getField(2).setValue(source[0].getField(2).getValue().toString());
@@ -68,7 +63,7 @@ public class reformatTest extends DataRecordTransform{
 	}
 	
 	public void finished(){
-		mylookup.free();
+		mylookup.getLookupTable().free();
 	}
 }
 ]]></attr>
