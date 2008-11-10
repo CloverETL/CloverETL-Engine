@@ -399,8 +399,12 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
         return status;
     }
 
-    public boolean isReadOnly() {
-        return false;
+    public boolean isPutSupported() {
+        return true;
+    }
+
+    public boolean isRemoveSupported() {
+        return true;
     }
 
     public boolean put(DataRecord dataRecord) {

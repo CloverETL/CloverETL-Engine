@@ -51,14 +51,23 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
     public static final String XML_DBCONNECTION = "dbConnection";
 
     /**
-     * <p>Determines whether the lookup table is read-only or not. Read-only lookup tables DO NOT support
-     * the {@link #put(DataRecord)}, {@link #remove(DataRecord)} and {@link #remove(HashKey)} methods.</p>
+     * <p>Determines whether the lookup table supports the {@link #put(DataRecord)} method.</p>
      *
-     * @return <code>true</code> if the lookup table is read-only, <code>false</code> otherwise
+     * @return <code>true</code> if the method is supported, <code>false</code> otherwise
      *
-     * @since 23rd October 2008
+     * @since 10th November 2008
      */
-    public boolean isReadOnly();
+    public boolean isPutSupported();
+
+    /**
+     * <p>Determines whether the lookup table supports the {@link #remove(DataRecord)}
+     * and {@link #remove(HashKey)} methods.</p>
+     *
+     * @return <code>true</code> if the methods are supported, <code>false</code> otherwise
+     *
+     * @since 10th November 2008
+     */
+    public boolean isRemoveSupported();
 
     /**
      * <p>Returns the meta data associated with the data records stored in this lookup table.</p>
@@ -68,8 +77,22 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
     public DataRecordMetadata getMetadata();
 
     /**
+     * <p>Returns the number and types of fields used to create the lookup proxy object by calling any of the
+     * {@link #createLookup(RecordKey)} or {@link #createLookup(RecordKey, DataRecord)} methods.</p>
+     *
+     * @return array with types of key fields
+     *
+     * @throws UnsupportedOperationException if the key cannot be obtained
+     * @throws NotInitializedException if the lookup table has not yet been initialized
+     * @throws ComponentNotReadyException if the lookup table is not properly configured
+     *
+     * @since 7th November 2008
+     */
+    public char[] getKey() throws ComponentNotReadyException;
+
+    /**
      * <p>Puts the given data record into the lookup table. This method will work properly iff
-     * the {@link #isReadOnly()} method returns <code>false</code>.</p>
+     * the {@link #isPutSupported()} method returns <code>false</code>.</p>
      *
      * @param dataRecord the data record to be put into the lookup table
      *
@@ -86,7 +109,7 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
 
     /**
      * <p>Removes the given data record from the lookup table. This method will work properly iff
-     * the {@link #isReadOnly()} method returns <code>false</code>.</p>
+     * the {@link #isPutSupported()} method returns <code>false</code>.</p>
      *
      * @param dataRecord the data record to be removed from the lookup table
      *
@@ -103,7 +126,7 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
 
     /**
      * <p>Removes records from the lookup table stored with given key. This method will work properly iff
-     * the {@link #isReadOnly()} method returns <code>false</code>.</p>
+     * the {@link #isPutSupported()} method returns <code>false</code>.</p>
      *
      * @param key the hash key to be removed from the lookup table
      *
@@ -130,6 +153,7 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      * @throws NotInitializedException if the lookup table has not yet been initialized
      * @throws NullPointerException if the given lookup key is <code>null</code>
      * @throws IllegalArgumentException if the given lookup key is not compatible with this lookup table
+     * @throws ComponentNotReadyException if the lookup table is not properly configured
      *
      * @see Lookup
      * @since 29th October 2008
@@ -152,20 +176,11 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      * @throws NotInitializedException if the lookup table has not yet been initialized
      * @throws NullPointerException if the given lookup key or data record is <code>null</code>
      * @throws IllegalArgumentException if the given lookup key is not compatible with this lookup table
+     * @throws ComponentNotReadyException if the lookup table is not properly configured
      *
      * @see Lookup
      * @since 29th October 2008
      */
     public Lookup createLookup(RecordKey lookupKey, DataRecord dataRecord) throws ComponentNotReadyException;
-    
-    /**
-     * Returns number and types of field's for creating lookup({@link #createLookup(RecordKey)} and {@link #createLookup(RecordKey, DataRecord)})
-     * 
-     * @return array with types of key fields
-     * @throws ComponentNotReadyException if lookup table is not properly configured
-     * @throws UnsupportedOperationException if key can't be obtain
-     * @throws NotInitializedException if the lookup table has not yet been initialized
-     */
-    public char[] getKey() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException;
 
 }

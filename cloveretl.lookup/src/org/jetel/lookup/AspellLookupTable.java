@@ -77,7 +77,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik <martin.janik@javlin.cz>
  *
- * @version 3rd November 2008
+ * @version 10th November 2008
  * @since 27th October 2008
  */
 public final class AspellLookupTable extends GraphElement implements LookupTable {
@@ -119,11 +119,11 @@ public final class AspellLookupTable extends GraphElement implements LookupTable
     }
 
     /**
-     * An implementation of the lookup proxy class for the Aspell lookup table.
+     * An implementation of the lookup proxy class for the Aspell-like lookup table.
      *
      * @author Martin Janik <martin.janik@javlin.cz>
      *
-     * @version 31st October 2008
+     * @version 10th November 2008
      * @since 31st October 2008
      */
     private final class AspellLookup implements Lookup {
@@ -143,6 +143,7 @@ public final class AspellLookupTable extends GraphElement implements LookupTable
          * Creates an instance of the <code>AspellLookup</code> class for the given lookup key.
          *
          * @param lookupKey the lookup key that will be used for lookup
+         * @param dataRecord the data record that will be used for lookup
          */
         public AspellLookup(RecordKey lookupKey, DataRecord dataRecord) {
             this.lookupKey = lookupKey;
@@ -354,11 +355,6 @@ public final class AspellLookupTable extends GraphElement implements LookupTable
     /** the map containing all the data records stored in the lookup table */
     private Map<String, Set<DataRecord>> dataRecords = null;
 
-    /** the queue of matching data records returned by the last lookup */
-    private Queue<DataRecord> matchingDataRecords = null;
-    /** the number of data records returned by the last lookup */
-    private int matchingDataRecordsCount = -1;
-
     /**
      * Creates a new instance of the <code>AspellLookupTable</code> class. Compulsory attributes are set
      * to values provided during construction, optional attributes are set to their default values.
@@ -381,12 +377,20 @@ public final class AspellLookupTable extends GraphElement implements LookupTable
         setSpellingThreshold(DEFAULT_SPELLING_THRESHOLD);
     }
 
-    public boolean isReadOnly() {
+    public boolean isPutSupported() {
         return true;
+    }
+
+    public boolean isRemoveSupported() {
+        return false;
     }
 
     public DataRecordMetadata getMetadata() {
         return metadata;
+    }
+
+    public char[] getKey() throws ComponentNotReadyException {
+        return new char[] {metadata.getFieldType(lookupKeyField)};
     }
 
     /**
@@ -518,17 +522,7 @@ public final class AspellLookupTable extends GraphElement implements LookupTable
             DataRecord dataRecord = dataParser.getNext();
 
             while (dataRecord != null) {
-                String dataRecordKey = dataRecord.getField(lookupKeyField).toString();
-                Set<DataRecord> similarDataRecords = dataRecords.get(dataRecordKey);
-
-                if (similarDataRecords == null) {
-                    dictionary.addWord(dataRecordKey);
-
-                    similarDataRecords = new HashSet<DataRecord>();
-                    dataRecords.put(dataRecordKey, similarDataRecords);
-                }
-
-                similarDataRecords.add(dataRecord);
+                put(dataRecord);
 
                 dataRecord = dataParser.getNext();
             }
@@ -542,7 +536,29 @@ public final class AspellLookupTable extends GraphElement implements LookupTable
     }
 
     public boolean put(DataRecord dataRecord) {
-        throw new UnsupportedOperationException("Method not supported!");
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
+        if (dataRecord == null) {
+            throw new NullPointerException("dataRecord");
+        }
+
+        if (!dataRecord.hasField(lookupKeyField)) {
+            throw new IllegalArgumentException("The data record does not contain the lookup key field!");
+        }
+
+        String dataRecordKey = dataRecord.getField(lookupKeyField).toString();
+        Set<DataRecord> similarDataRecords = dataRecords.get(dataRecordKey);
+
+        if (similarDataRecords == null) {
+            dictionary.addWord(dataRecordKey);
+
+            similarDataRecords = new HashSet<DataRecord>();
+            dataRecords.put(dataRecordKey, similarDataRecords);
+        }
+
+        return similarDataRecords.add(dataRecord);
     }
 
     public boolean remove(DataRecord dataRecord) {
@@ -555,26 +571,23 @@ public final class AspellLookupTable extends GraphElement implements LookupTable
 
     public synchronized DataRecord get(RecordKey key, DataRecord keyRecord) {
         if (!isInitialized()) {
-            throw new NotInitializedException("The lookup table has NOT been initialized!");
+            throw new NotInitializedException(this);
         }
 
-        matchingDataRecords = performLookup(key, keyRecord);
-        matchingDataRecordsCount = matchingDataRecords.size();
-
-        return matchingDataRecords.poll();
+        return performLookup(key, keyRecord).poll();
     }
 
     private synchronized Queue<DataRecord> performLookup(RecordKey lookupKey, DataRecord dataRecord) {
         if (lookupKey == null) {
-            throw new NullPointerException("key");
+            throw new NullPointerException("lookupKey");
         }
 
         if (dataRecord == null) {
-            throw new NullPointerException("keyRecord");
+            throw new NullPointerException("dataRecord");
         }
 
         if (lookupKey.getLength() != 1) {
-            throw new IllegalArgumentException("The lookupKey cannot be composed from multiple fields!");
+            throw new IllegalArgumentException("The lookup key cannot be composed from multiple fields!");
         }
 
         DataField lookupKeyField = dataRecord.getField(lookupKey.getKeyFields()[0]);
@@ -595,59 +608,53 @@ public final class AspellLookupTable extends GraphElement implements LookupTable
         return matchingDataRecords;
     }
 
-    @Deprecated
-    public synchronized DataRecord getNext() {
+    public Lookup createLookup(RecordKey lookupKey) {
         if (!isInitialized()) {
-            throw new NotInitializedException("The lookup table has NOT been initialized!");
-        }
-
-        if (matchingDataRecords == null) {
-            throw new IllegalStateException("The get() method has NOT been called!");
-        }
-
-        return matchingDataRecords.poll();
-    }
-
-    @Deprecated
-    public synchronized int getNumFound() {
-        if (!isInitialized()) {
-            throw new NotInitializedException("The lookup table has NOT been initialized!");
-        }
-
-        if (matchingDataRecords == null) {
-            throw new IllegalStateException("The get() method has NOT been called!");
-        }
-
-        return matchingDataRecordsCount;
-    }
-
-    public Lookup createLookup(RecordKey lookupKey, DataRecord inRecord) {
-        if (!isInitialized()) {
-            throw new NotInitializedException("The lookup table has NOT been initialized!");
+            throw new NotInitializedException(this);
         }
 
         if (lookupKey == null) {
-            throw new NullPointerException("key");
+            throw new NullPointerException("lookupKey");
         }
 
         if (lookupKey.getLength() != 1) {
-            throw new IllegalArgumentException("The lookupKey cannot be composed from multiple fields!");
+            throw new IllegalArgumentException("The lookup key cannot be composed from multiple fields!");
         }
 
         if (lookupKey.getMetadata().getField(lookupKey.getKeyFields()[0]).getType() != DataFieldMetadata.STRING_FIELD) {
             throw new IllegalArgumentException("The lookup key field is not a string!");
         }
 
-        return new AspellLookup(lookupKey, inRecord);
+        return new AspellLookup(lookupKey, null);
     }
 
-    public Lookup createLookup(RecordKey lookupKey) {
-        return createLookup(lookupKey, null);
+    public Lookup createLookup(RecordKey lookupKey, DataRecord dataRecord) {
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
+        if (lookupKey == null) {
+            throw new NullPointerException("lookupKey");
+        }
+
+        if (lookupKey.getLength() != 1) {
+            throw new IllegalArgumentException("The lookup key cannot be composed from multiple fields!");
+        }
+
+        if (lookupKey.getMetadata().getField(lookupKey.getKeyFields()[0]).getType() != DataFieldMetadata.STRING_FIELD) {
+            throw new IllegalArgumentException("The lookup key field is not a string!");
+        }
+
+        if (dataRecord == null) {
+            throw new NullPointerException("dataRecord");
+        }
+
+        return new AspellLookup(lookupKey, dataRecord);
     }
 
     public synchronized Iterator<DataRecord> iterator() {
         if (!isInitialized()) {
-            throw new NotInitializedException("The lookup table has NOT been initialized!");
+            throw new NotInitializedException(this);
         }
 
         return new AspellLookupTableIterator();
@@ -656,7 +663,7 @@ public final class AspellLookupTable extends GraphElement implements LookupTable
     @Override
     public synchronized void reset() throws ComponentNotReadyException {
         if (!isInitialized()) {
-            throw new NotInitializedException("The lookup table has NOT been initialized!");
+            throw new NotInitializedException(this);
         }
 
         super.reset();
@@ -671,30 +678,18 @@ public final class AspellLookupTable extends GraphElement implements LookupTable
         }
 
         dataRecords = new HashMap<String, Set<DataRecord>>();
-
-        matchingDataRecords = null;
-        matchingDataRecordsCount = -1;
     }
 
     @Override
     public synchronized void free() {
         if (!isInitialized()) {
-            throw new NotInitializedException("The lookup table has NOT been initialized!");
+            throw new NotInitializedException(this);
         }
 
         super.free();
 
         dictionary = null;
         dataRecords = null;
-
-        matchingDataRecords = null;
-        matchingDataRecordsCount = -1;
     }
-
-	public char[] getKey() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
-		if (!isInitialized()) throw new NotInitializedException(this);
-		
-		return new char[]{metadata.getFieldType(lookupKeyField)};
-	}
 
 }

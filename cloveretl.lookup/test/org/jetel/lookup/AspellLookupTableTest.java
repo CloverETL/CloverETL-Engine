@@ -42,7 +42,7 @@ import org.jetel.util.file.FileUtils;
  *
  * @author Martin Janik <martin.janik@javlin.cz>
  *
- * @version 3rd November 2008
+ * @version 10th November 2008
  * @since 27th October 2008
  */
 public final class AspellLookupTableTest extends CloverTestCase {
@@ -187,29 +187,36 @@ public final class AspellLookupTableTest extends CloverTestCase {
     }
 
     /**
-     * Tests whether the {@link AspellLookupTable#put(DataRecord)}, {@link AspellLookupTable#remove(DataRecord)} and
-     * {@link AspellLookupTable#remove(HashKey)} methods are not supported.
+     * Tests whether the {@link AspellLookupTable#put(DataRecord)} method works correctly.
      */
-    public void testPutAndRemove() {
+    public void testPut() {
         testInit();
 
-        assertTrue("The lookup table is not read-only!", aspellLookupTable.isReadOnly());
+        assertTrue("The put operation is not supported!", aspellLookupTable.isPutSupported());
 
-        try {
-            aspellLookupTable.put(null);
-            fail("The put(DataRecord) method is supported although the lookup table is read-only!");
-        } catch (UnsupportedOperationException exception) {
-        }
+        dataRecord.getField(FIELD_STREET).setValue("Křižíkova");
+        aspellLookupTable.put(dataRecord);
+        assertNotNull("No data record found for an existing lookup key!", aspellLookupTable.get(lookupKey, dataRecord));
+    }
+
+    /**
+     * Tests whether the {@link AspellLookupTable#remove(DataRecord)} and {@link AspellLookupTable#remove(HashKey)}
+     * methods are not supported.
+     */
+    public void testRemove() {
+        testInit();
+
+        assertFalse("The remove operation is supported!", aspellLookupTable.isRemoveSupported());
 
         try {
             aspellLookupTable.remove((DataRecord) null);
-            fail("The remove(DataRecord) method is supported although the lookup table is read-only!");
+            fail("The remove(DataRecord) method is supported although the isRemoveSupported() method returns false!");
         } catch (UnsupportedOperationException exception) {
         }
 
         try {
             aspellLookupTable.remove((HashKey) null);
-            fail("The remove(HashKey) method is supported although the lookup table is read-only!");
+            fail("The remove(HashKey) method is supported although the isRemoveSupported() method returns false!");
         } catch (UnsupportedOperationException exception) {
         }
     }
@@ -246,43 +253,6 @@ public final class AspellLookupTableTest extends CloverTestCase {
 
         dataRecord.getField(FIELD_STREET).setValue("Belgická");
         assertNull("A data record found for a non-existing lookup key!", aspellLookupTable.get(lookupKey, dataRecord));
-    }
-
-    /**
-     * Tests whether the deprecated methods {@link AspellLookupTable#getNext()} and {@link AspellLookupTable#getNumFound()}
-     * work correctly.
-     */
-    @SuppressWarnings("deprecation")
-    public void testGetNextAndGetNumFound() {
-        testInit();
-
-        //
-        // perform test on an existing lookup key
-        //
-
-        dataRecord.getField(FIELD_STREET).setValue("Údolní");
-
-        DataRecord matchingDataRecord = aspellLookupTable.get(lookupKey, dataRecord);
-        int dataRecordsCount = 0;
-
-        while (matchingDataRecord != null) {
-            matchingDataRecord = aspellLookupTable.getNext();
-            dataRecordsCount++;
-        }
-
-        assertEquals("The number of found data records is invalid!", 3, dataRecordsCount);
-        assertEquals("The returned number of data records differs from the number of data records actually returned!",
-                dataRecordsCount, aspellLookupTable.getNumFound());
-
-        //
-        // perform test on a non-existing lookup key
-        //
-
-        dataRecord.getField(FIELD_STREET).setValue("Vídeňská");
-        aspellLookupTable.get(lookupKey, dataRecord);
-
-        assertNull("A data record returned for a non-existing key!", aspellLookupTable.getNext());
-        assertEquals("The number of found data records is invalid!", 0, aspellLookupTable.getNumFound());
     }
 
     /**
