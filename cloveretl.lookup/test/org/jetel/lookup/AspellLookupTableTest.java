@@ -21,6 +21,8 @@ package org.jetel.lookup;
 import java.io.IOException;
 
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.jetel.data.DataRecord;
@@ -42,7 +44,7 @@ import org.jetel.util.file.FileUtils;
  *
  * @author Martin Janik <martin.janik@javlin.cz>
  *
- * @version 10th November 2008
+ * @version 11th November 2008
  * @since 27th October 2008
  */
 public final class AspellLookupTableTest extends CloverTestCase {
@@ -196,7 +198,11 @@ public final class AspellLookupTableTest extends CloverTestCase {
 
         dataRecord.getField(FIELD_STREET).setValue("Křižíkova");
         aspellLookupTable.put(dataRecord);
-        assertNotNull("No data record found for an existing lookup key!", aspellLookupTable.get(lookupKey, dataRecord));
+
+        Lookup aspellLookup = aspellLookupTable.createLookup(lookupKey, dataRecord);
+        aspellLookup.seek();
+
+        assertNotNull("No data record found for an existing lookup key!", aspellLookup.next());
     }
 
     /**
@@ -222,40 +228,6 @@ public final class AspellLookupTableTest extends CloverTestCase {
     }
 
     /**
-     * Tests whether the {@link AspellLookupTable#get(RecordKey, DataRecord)} returns some data records for slightly
-     * misspelled lookup keys and no data records for non-existing lookup keys.
-     */
-    public void testGet() {
-        testInit();
-
-        //
-        // perform tests on existing lookup keys
-        //
-
-        dataRecord.getField(FIELD_STREET).setValue("Panenská");
-        assertNotNull("No data record found for an existing lookup key!", aspellLookupTable.get(lookupKey, dataRecord));
-
-        dataRecord.getField(FIELD_STREET).setValue("miselov");
-        assertNotNull("No data record found for an existing lookup key!", aspellLookupTable.get(lookupKey, dataRecord));
-
-        dataRecord.getField(FIELD_STREET).setValue("francuzska");
-        assertNotNull("No data record found for an existing lookup key!", aspellLookupTable.get(lookupKey, dataRecord));
-
-        dataRecord.getField(FIELD_STREET).setValue("Wolkerova");
-        assertNotNull("No data record found for an existing lookup key!", aspellLookupTable.get(lookupKey, dataRecord));
-
-        //
-        // perform tests on non-existing lookup keys
-        //
-
-        dataRecord.getField(FIELD_STREET).setValue("Křižíkova");
-        assertNull("A data record found for a non-existing lookup key!", aspellLookupTable.get(lookupKey, dataRecord));
-
-        dataRecord.getField(FIELD_STREET).setValue("Belgická");
-        assertNull("A data record found for a non-existing lookup key!", aspellLookupTable.get(lookupKey, dataRecord));
-    }
-
-    /**
      * Tests whether the {@link AspellLookupTable#createLookup(RecordKey)} and
      * {@link AspellLookupTable#createLookup(RecordKey, DataRecord)} methods work correctly. The returned lookup
      * proxy object should returns multiple data records for slightly misspelled lookup keys and no data records
@@ -270,9 +242,18 @@ public final class AspellLookupTableTest extends CloverTestCase {
 
         Lookup aspellLookup = aspellLookupTable.createLookup(lookupKey);
 
+        assertFalse("The Lookup.hasNext() method returned true even though the data record was not set!",
+                aspellLookup.hasNext());
+
+        try {
+            aspellLookup.next();
+            fail("The Lookup.next() method did work even though the data record was not set!");
+        } catch (NoSuchElementException exception) {
+        }
+
         try {
             aspellLookup.seek();
-            fail("The Lookup.seek() method did work although the data record was not set!");
+            fail("The Lookup.seek() method did work even though the data record was not set!");
         } catch (IllegalStateException exception) {
         }
 
@@ -291,6 +272,12 @@ public final class AspellLookupTableTest extends CloverTestCase {
 
         assertFalse("The number of data records returned by the iterator is invalid!", aspellLookup.hasNext());
 
+        try {
+            aspellLookup.next();
+            fail("The Lookup.next() method returned another data record even though there should not be any!");
+        } catch (NoSuchElementException exception) {
+        }
+
         dataRecord.getField(FIELD_STREET).setValue("Elišky krásnohorské");
         aspellLookup.seek(dataRecord);
         assertTrue("No data records found for an existing key!", aspellLookup.hasNext());
@@ -301,6 +288,12 @@ public final class AspellLookupTableTest extends CloverTestCase {
         aspellLookup.next();
 
         assertFalse("The number of data records returned by the iterator is invalid!", aspellLookup.hasNext());
+
+        try {
+            aspellLookup.next();
+            fail("The Lookup.next() method returned another data record even though there should not be any!");
+        } catch (NoSuchElementException exception) {
+        }
 
         dataRecord.getField(FIELD_STREET).setValue("husova");
         aspellLookup.seek(dataRecord);
@@ -314,6 +307,12 @@ public final class AspellLookupTableTest extends CloverTestCase {
 
         assertFalse("The number of data records returned by the iterator is invalid!", aspellLookup.hasNext());
 
+        try {
+            aspellLookup.next();
+            fail("The Lookup.next() method returned another data record even though there should not be any!");
+        } catch (NoSuchElementException exception) {
+        }
+
         dataRecord.getField(FIELD_STREET).setValue("orli");
         aspellLookup.seek(dataRecord);
         assertTrue("No data records found for an existing key!", aspellLookup.hasNext());
@@ -322,6 +321,12 @@ public final class AspellLookupTableTest extends CloverTestCase {
         aspellLookup.next();
 
         assertFalse("The number of data records returned by the iterator is invalid!", aspellLookup.hasNext());
+
+        try {
+            aspellLookup.next();
+            fail("The Lookup.next() method returned another data record even though there should not be any!");
+        } catch (NoSuchElementException exception) {
+        }
 
         //
         // perform tests on non-existing lookup keys
@@ -390,8 +395,27 @@ public final class AspellLookupTableTest extends CloverTestCase {
 
         assertEquals("The iterator returned invalid number of data records!", 0, dataRecordsCount);
         assertTrue("The iterator did not return all the data records!", lookupTableDataRecords.isEmpty());
+
+        //
+        // test the behaviour of the next() method when there are no more data records
+        //
+
+        Iterator<DataRecord> iterator = aspellLookupTable.iterator();
+
+        while (iterator.hasNext()) {
+            iterator.next();
+        }
+
+        try {
+            iterator.next();
+            fail("The next() method returned another data record even though there should not be any!");
+        } catch (NoSuchElementException exception) {
+        }
     }
 
+    /**
+     * Tests whether the {@link AspellLookupTable#reset()} method resets the state of the lookup table correctly.
+     */
     public void testReset() {
         testInit();
 

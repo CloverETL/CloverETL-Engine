@@ -43,35 +43,41 @@ public interface Lookup extends Iterator<DataRecord> {
 	 * @return underlying lookup table
 	 */
 	public LookupTable getLookupTable();
-	
+
 	/**
 	 * @return record key used for performing lookup on underlying lookup table
 	 */
 	public RecordKey getKey();
-	
+
 	/**
-	 * Performs lookup based on data stored in inner data record 
-	 * 
+	 * Performs lookup based on data stored in the inner data record.
+	 *
+     * @throws IllegalStateException if the inner data record has not yet been initialized
+     *
 	 * @see
 	 * {@link LookupTable#createLookup(RecordKey, DataRecord)} <br>
 	 * {@link #seek(DataRecord)}
 	 */
-	public void seek() throws IllegalStateException;
-	
+	public void seek();
+
 	/**
-	 * Performs lookup based on data in given record
-	 * 
-	 * @param keyRecord data for performing lookup
+	 * Performs lookup based on data in the given record.
+	 *
+	 * @param keyRecord data record for performing lookup
+	 *
+     * @throws NullPointerException if the given lookup key record is <code>null</code>
 	 */
 	public void seek(DataRecord keyRecord);
-	
+
 	/**
 	 * Returns size of the underlying collection. <br>
 	 * It is not recommended to use this method as in some implementations it simply iterates this iterator.
-	 * 
+	 *
 	 * @return number of records found by last {@link #seek()} or {@link #seek(DataRecord)} method (current size of 
 	 * this underlaying collection) or -1 if the number can't be determined.
+	 *
+     * @throws IllegalStateException if no seeking has not yet been performed
 	 */
-	public int getNumFound() throws IllegalStateException;
-	
+	public int getNumFound();
+
 }
