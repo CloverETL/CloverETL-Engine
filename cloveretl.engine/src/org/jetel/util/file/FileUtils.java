@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -51,7 +50,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.MultiOutFile;
-import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.protocols.ftp.FTPStreamHandler;
 import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
@@ -605,7 +603,7 @@ public class FileUtils {
 	 * @return
 	 */
 	public static String appendSlash(String directoryPath) {
-		if(directoryPath.endsWith("/") || directoryPath.endsWith("\\")) {
+		if(directoryPath.length() == 0 || directoryPath.endsWith("/") || directoryPath.endsWith("\\")) {
 			return directoryPath;
 		} else {
 			return directoryPath + "/";
