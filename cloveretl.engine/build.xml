@@ -522,12 +522,12 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		</ant>
 	</target>
 	
-	<target name="runtests-scenario-after-commit" depends="build,compile-tests,coverage-instrument">
-		<echo message="Runtests environment"/>
+	<target name="runtests-scenario-after-commit" depends="build,coverage-instrument">
+		<echo message="Executing Clover Test Environment environment - after commit"/>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
-			<property name="dir.dist" value="${dir.package}"/>
-			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
-			<property name="dir.engine.classestest" value="${dir.classestest}"/>
+            <property name="scenarios" value="simpleExamples.ts;after-commit.ts" />
+			<property name="dir.engine.classes" value="${dir.coverage.bin}:${dir.bin}"/>
+			<property name="dir.plugins" value="${dir.coverage.plugins}/plugins"/>
 			<property name="cobertura.ser" value="${cobertura.ser}"/>
 			<property name="major_version" value="${major_version}"/>
 			<property name="minor_version" value="${minor_version}"/>
@@ -535,13 +535,12 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		</ant>
 	</target>
 	
-	<target name="runtests-scenario-night" depends="build,compile-tests,coverage-instrument">
-		<echo message="Runtests environment"/>
+	<target name="runtests-scenario-night" depends="build">
+		<echo message="Executing Clover Test Environment environment - night"/>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
-			<property name="dir.dist" value="${dir.package}"/>
-			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
-			<property name="dir.engine.classestest" value="${dir.classestest}"/>
-			<property name="cobertura.ser" value="${cobertura.ser}"/>
+            <property name="scenarios" value="night.ts" />
+			<property name="dir.engine.classes" value="${dir.bin}"/>
+			<property name="dir.plugins" value="${dir.dist}/plugins"/>
 			<property name="major_version" value="${major_version}"/>
 			<property name="minor_version" value="${minor_version}"/>
 			<property name="revision_version" value="${revision_version}"/>
