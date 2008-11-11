@@ -102,10 +102,11 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
         /** the data record used for lookup */
         private DataRecord dataRecord = null;
 
-        /** the queue of matching data records returned by the last lookup */
-        private Queue<DataRecord> matchingDataRecords = null;
+        /** the  data record returned by the last lookup */
+        private DataRecord matchingDataRecord = null;
+        
         /** the number of data records returned by the last lookup */
-        private int matchingDataRecordsCount = -1;
+        private int matchingDataRecordCount = -1;
 
         /**
          * Creates an instance of the <code>PersistentLookup</code> class for the given lookup key.
@@ -130,16 +131,8 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
                 throw new IllegalStateException("Data record not set, use the seek(DataRecord) method!");
             }
 
-            matchingDataRecords = new LinkedList<DataRecord>();
-
-            DataRecord matchingDataRecord = get(dataRecord);
-
-            while (matchingDataRecord != null) {
-                matchingDataRecords.add(matchingDataRecord);
-                matchingDataRecord = getNext();
-            }
-
-            matchingDataRecordsCount = matchingDataRecords.size();
+            matchingDataRecord = get(dataRecord);
+            matchingDataRecordCount = (matchingDataRecord != null ? 1 : 0);
         }
 
         public synchronized void seek(DataRecord dataRecord) {
@@ -148,38 +141,30 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
             }
 
             this.dataRecord = dataRecord;
-
             seek();
         }
 
         public int getNumFound() {
-            if (matchingDataRecords == null) {
-                throw new IllegalStateException("The seek() method has NOT been called!");
-            }
-
-            return matchingDataRecordsCount;
+            return matchingDataRecordCount;
         }
 
         public boolean hasNext() {
-            if (matchingDataRecords == null) {
-                throw new IllegalStateException("The seek() method has NOT been called!");
-            }
-
-            return !matchingDataRecords.isEmpty();
+            return matchingDataRecord != null;
         }
 
         public DataRecord next() {
-            if (matchingDataRecords == null) {
-                throw new IllegalStateException("The seek() method has NOT been called!");
+            if (matchingDataRecord == null) {
+                throw new IllegalStateException();
             }
 
-            return matchingDataRecords.remove();
+            DataRecord tmp = matchingDataRecord;
+            matchingDataRecord = null;
+            return tmp;
         }
 
         public void remove() {
             throw new UnsupportedOperationException("Method not supported!");
         }
-
     }
 
     private static final String XML_LOOKUP_TYPE_PERSISTENCE_LOOKUP = "persistentLookup";
