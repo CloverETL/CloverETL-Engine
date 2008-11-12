@@ -88,7 +88,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * &lt;!ATTLIST Mapping<br>
  * &nbsp;element NMTOKEN #REQUIRED<br>      
  * &nbsp;&nbsp;//name of binded XML element<br>  
- * &nbsp;outPort NMTOKEN #REQUIRED<br>      
+ * &nbsp;outPort NMTOKEN #IMPLIED<br>      
  * &nbsp;&nbsp;//name of output port for this mapped XML element<br>
  * &nbsp;parentKey NMTOKEN #IMPLIED<br>     
  * &nbsp;&nbsp;//field name of parent record, which is copied into field of the current record<br>
@@ -277,11 +277,17 @@ public class XMLExtract extends Node {
                 m_activeMapping.setLevel(m_level);
                 
                 if (mapping.getOutRecord() == null) {
-                    // If it's null that means that there's no edge mapped to
-                    // the output port
-                    // remove this mapping so we don't repeat this logic (and
-                    // logging)
-                    LOG.warn("XML Extract: " + getId() + " Element ("
+                	// Former comment was reading:
+                    	// If it's null that means that there's no edge mapped to
+                    	// the output port
+                    	// remove this mapping so we don't repeat this logic (and
+                    	// logging)
+                	// Improved behaviour: (jlehotsky)
+                	    // If it's null that means either that there's no edge mapped
+                	    // to the output port, or output port is not specified.
+                	    // This is OK, we simply ignore the fact and continue.
+                	    // Thus the original code is commented out
+                    /*LOG.warn("XML Extract: " + getId() + " Element ("
                             + localName
                             + ") does not have an edge mapped to that port.");
                     if(m_activeMapping.getParent() != null) {
@@ -290,7 +296,7 @@ public class XMLExtract extends Node {
                     } else {
                         m_elementPortMap.remove(m_activeMapping);
                         m_activeMapping = null;
-                    }
+                    }*/
                     
                     return;
                 }
@@ -330,8 +336,10 @@ public class XMLExtract extends Node {
                                 m_activeMapping.setParentKey(null);
                             } else {
                                 for(int i = 0; i < parentKey.length; i++) {
-                                    boolean existGeneratedKeyField = generatedKey.length == 1 ? outRecord.hasField(generatedKey[0]) : outRecord.hasField(generatedKey[i]);
-                                    boolean existParentKeyField = m_activeMapping.getParent().getOutRecord().hasField(parentKey[i]);
+                                    boolean existGeneratedKeyField = (outRecord != null) 
+                                    			&& (generatedKey.length == 1 ? outRecord.hasField(generatedKey[0]) : outRecord.hasField(generatedKey[i]));
+                                    boolean existParentKeyField = m_activeMapping.getParent().getOutRecord() != null 
+                                    					&& m_activeMapping.getParent().getOutRecord().hasField(parentKey[i]);
                                     if (!existGeneratedKeyField) {
                                         LOG
                                                 .warn(getId()
@@ -347,6 +355,8 @@ public class XMLExtract extends Node {
                                         m_activeMapping.setGeneratedKey(null);
                                         m_activeMapping.setParentKey(null);
                                     } else {
+                                    	// both outRecord and m_activeMapping.getParrent().getOutRecord are not null
+                                    	// here, because of if-else if-else chain
                                         DataField generatedKeyField = generatedKey.length == 1 ? outRecord.getField(generatedKey[0]) : outRecord.getField(generatedKey[i]);
                                         DataField parentKeyField = m_activeMapping.getParent().getOutRecord().getField(parentKey[i]);
                                         if(generatedKey.length != parentKey.length) {
@@ -388,7 +398,7 @@ public class XMLExtract extends Node {
                        attrName = xmlCloverMap.get(attrName);
                     }
                     
-                    if (m_activeMapping.getOutRecord().hasField(attrName)) {
+                    if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(attrName)) {
                         m_activeMapping.getOutRecord().getField(attrName).fromString(attributes.getValue(i));
                     }
                 }
@@ -423,7 +433,7 @@ public class XMLExtract extends Node {
                 }
                 // Store the characters processed by the characters() call back
                 //only if we have corresponding output field and we are on the right level or we want to use data from nested unmapped nodes
-                if (m_activeMapping.getOutRecord().hasField(localName) 
+                if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(localName) 
                         && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
                     DataField field = m_activeMapping.getOutRecord().getField(localName);
                     // If field is nullable and there's no character data set it
@@ -479,21 +489,25 @@ public class XMLExtract extends Node {
                 if (runIt) {
                     try {
                         OutputPort outPort = getOutputPort(m_activeMapping.getOutPort());
-                        DataRecord outRecord = m_activeMapping.getOutRecord();
-                    	if (skipRows > 0) {
-                    		if (m_activeMapping.getParent() == null) skipRows--;
-                    	} else {
-                            //check for index of last returned record
-                            if(!(numRecords >= 0 && numRecords == globalCounter)) {
-                                //send off record
-                                outPort.writeRecord(outRecord);
-                                if (m_activeMapping.getParent() == null) globalCounter++;
-                            }
-                    	}
-                    	
-                        // reset record
-                        outRecord.reset();
                         
+                        if (outPort != null) {
+                            // we just ignore creating output, if port is empty (without metadata) or not specified
+	                        DataRecord outRecord = m_activeMapping.getOutRecord();
+	                    	if (skipRows > 0) {
+	                    		if (m_activeMapping.getParent() == null) skipRows--;
+	                    	} else {
+	                            //check for index of last returned record
+	                            if(!(numRecords >= 0 && numRecords == globalCounter)) {
+	                                //send off record
+	                                outPort.writeRecord(outRecord);
+	                                if (m_activeMapping.getParent() == null) globalCounter++;
+	                            }
+	                    	}
+	                    	
+                        	// reset record
+	                        outRecord.reset();
+                        }
+                       
                         m_activeMapping = m_activeMapping.getParent();
                     } catch (Exception ex) {
                         throw new SAXException(ex);
@@ -620,13 +634,14 @@ public class XMLExtract extends Node {
                     m_outRecord = new DataRecord(outPort.getMetadata());
                     m_outRecord.init();
                     m_outRecord.reset();
-                } else {
+                } // Original code is commented, it is valid to have null port now
+                /* else {
                     LOG
                             .warn(getId()
                             + ": Port "
                             + getOutPort()
                             + " does not have an edge connected.  Please connect the edge or remove the mapping.");
-                }
+                }*/ 
             }
             return m_outRecord;
         }
@@ -785,8 +800,10 @@ public class XMLExtract extends Node {
             Mapping mapping = null;
             
             try {
-                mapping = extract.new Mapping(attributes.getString(XML_ELEMENT),
-                        attributes.getInteger(XML_OUTPORT));
+            	int outputPort = -1;
+            	if (attributes.exists(XML_OUTPORT)) 
+            		outputPort = attributes.getInteger(XML_OUTPORT); 
+                mapping = extract.new Mapping(attributes.getString(XML_ELEMENT), outputPort);
             } catch(AttributeNotFoundException ex) {
                 if (attributes.exists(XML_OUTPORT)) {
                     LOG
