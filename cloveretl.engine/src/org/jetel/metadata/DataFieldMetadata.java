@@ -57,6 +57,11 @@ public class DataFieldMetadata implements Serializable {
 	private DataRecordMetadata dataRecordMetadata;
 	
 	/**
+	 * Ordinal number of the field within data record metadata.
+	 */
+	private int number;
+	
+	/**
 	 *  Name of the field
 	 */
 	private String name;
@@ -311,6 +316,15 @@ public class DataFieldMetadata implements Serializable {
 		return ret;
 	}
 	
+	public int getNumber() {
+		return number;
+	}
+
+
+	public void setNumber(int number) {
+		this.number = number;
+	}
+
 	/**
 	 *  Sets name of the field
 	 *
@@ -499,7 +513,7 @@ public class DataFieldMetadata implements Serializable {
 			String[] ret;
 			if(delimiter != null) { 
 				ret = delimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
-				if(getDataRecordMetadata().getField(getDataRecordMetadata().getNumFields() - 1) == this) { //if field is last
+				if(isLastNonAutoFilledField()) { //if field is last
 					if(getDataRecordMetadata().isSpecifiedRecordDelimiter()) {
 						List<String> tempDelimiters = new ArrayList<String>();
 						for(int i = 0; i < ret.length; i++) { //combine each field delimiter with each record delimiter
@@ -512,7 +526,7 @@ public class DataFieldMetadata implements Serializable {
 					}
 				}
 			} else {
-				if(getDataRecordMetadata().getField(getDataRecordMetadata().getNumFields() - 1) != this) { //if field is not last
+				if(!isLastNonAutoFilledField()) { //if field is not last
 					ret = getDataRecordMetadata().getFieldDelimiters();
 				} else {
 					ret = getDataRecordMetadata().getRecordDelimiters();
@@ -526,6 +540,24 @@ public class DataFieldMetadata implements Serializable {
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * @return true whether this is last non autofilled field within record metadata
+	 */
+	private boolean isLastNonAutoFilledField() {
+		if (isAutoFilled()) {
+			return false;
+		}
+		DataRecordMetadata metadata = getDataRecordMetadata();
+		DataFieldMetadata[] fields = metadata.getFields();
+		for (int i = getNumber() + 1; i < metadata.getNumFields(); i++) {
+			if (!fields[i].isAutoFilled()) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 
 	public String getDelimiterStr() {

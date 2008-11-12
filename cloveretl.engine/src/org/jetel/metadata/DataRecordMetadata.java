@@ -373,7 +373,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
         numNullableFields=0;
         fieldNullSwitch.resize(fields.size());
         int count=0;
-        for(DataFieldMetadata fieldMeta: fields){
+        for(DataFieldMetadata fieldMeta: fields) {
+        	fieldMeta.setNumber(count);
             if (fieldMeta.isNullable()){
                 numNullableFields++;
                 fieldNullSwitch.set(count);
