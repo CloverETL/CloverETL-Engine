@@ -148,7 +148,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik <martin.janik@javlin.cz>
  *
- * @version 10th November 2008
+ * @version 12th November 2008
  * @since 26th September 2008
  */
 public class SortWithinGroups extends Node {
@@ -419,8 +419,8 @@ public class SortWithinGroups extends Node {
 
     @Override
     public synchronized void init() throws ComponentNotReadyException {
-        if (!isInitialized()) {
-            throw new NotInitializedException(this);
+        if (isInitialized()) {
+            throw new IllegalStateException("The component has already been initialized!");
         }
 
         super.init();
