@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Mira Haupt" created="Tue Dec 12 09:10:59 CET 2006" description="This graph demonstrates functionality of HASH_JOIN components. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted&#10;" guiVersion="0.0" id="1196683278570" licenseType="Evaluation license." modified="Mon Nov 10 12:02:26 CET 2008" modifiedBy="avackova" name="Testing Hash Joiner" revision="1.49">
+<Graph author="Mira Haupt" created="Tue Dec 12 09:10:59 CET 2006" description="This graph demonstrates functionality of HASH_JOIN components. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted&#10;" guiVersion="2.0" id="1196683278570" licenseType="Evaluation license." modified="Wed Nov 12 11:25:01 CET 2008" modifiedBy="Mira Haupt" name="Testing Hash Joiner" revision="1.66">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <LookupTable cacheSize="1000" commitInterval="100" fileURL="${PROJECT}/data-out/persistentLookup" id="LookupTable1" key="EmployeeID" metadata="Metadata0" name="jmeno" pageSize="16" type="persistentLookup"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="71" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title=" " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="221" x="550" y="302">
+<attr name="text"><![CDATA[The same as phase one but it uses LookupJoin instead of Reformat.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${PROJECT}/data-in/delimited/employees.dat" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="83" guiY="77" id="DATA_READER0" type="DATA_READER"/>
@@ -71,5 +74,30 @@ public class reformatTest extends DataRecordTransform{
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash2.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="376" guiY="169" id="WRITER" type="DATA_WRITER"/>
 <Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="JOIN:0"/>
 <Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="WRITER:0"/>
+</Phase>
+<Phase number="2">
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="26" guiY="306" id="INPUT2" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="0" guiName="LookupJoin" guiWidth="0" guiX="201" guiY="306" id="LOOKUP_JOIN0" joinKey="EmployeeID" lookupTable="LookupTable1" type="LOOKUP_JOIN">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.OrderID := $0.OrderID;
+	$0.CustomerID := $0.CustomerID;
+	$0.EmployeeID := num2str($0.EmployeeID);
+	$0.EmployeeID2 := num2str($1.EmployeeID);
+	$0.LastName := $1.LastName;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash3.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="376" guiY="306" id="WRITER1" type="DATA_WRITER"/>
+<Edge fromNode="INPUT2:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="LOOKUP_JOIN0:0"/>
+<Edge fromNode="LOOKUP_JOIN0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (joined records)" toNode="WRITER1:0"/>
 </Phase>
 </Graph>
