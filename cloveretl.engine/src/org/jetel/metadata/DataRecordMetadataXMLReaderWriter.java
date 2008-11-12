@@ -667,7 +667,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		}
 
 		// change delimiter for autofilling
-		changeDefaultDelimiter(recordMetadata);
+//		changeDefaultDelimiter(recordMetadata);
 		
 		return recordMetadata;
 	}
@@ -677,25 +677,25 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	 * 
 	 * @param recordMetadata
 	 */
-	private void changeDefaultDelimiter(DataRecordMetadata recordMetadata) {
-		String strDelimiter = recordMetadata.getRecordDelimiterStr();
-		if (strDelimiter == null) return;
-		
-		DataFieldMetadata field = recordMetadata.getField(recordMetadata.getNumFields()-1);
-		if (!field.isAutoFilled()) {
-			return;
-		}
-		
-		for (int i=recordMetadata.getNumFields()-1; i>=0; i--) {
-			field = recordMetadata.getField(i);
-			if (!field.isAutoFilled()) {
-				if (field.getDelimiterStr() == null) {
-					field.setDelimiter(strDelimiter);
-				}
-				return;
-			}
-		}
-	}
+//	private void changeDefaultDelimiter(DataRecordMetadata recordMetadata) {
+//		String strDelimiter = recordMetadata.getRecordDelimiterStr();
+//		if (strDelimiter == null) return;
+//		
+//		DataFieldMetadata field = recordMetadata.getField(recordMetadata.getNumFields()-1);
+//		if (!field.isAutoFilled()) {
+//			return;
+//		}
+//		
+//		for (int i=recordMetadata.getNumFields()-1; i>=0; i--) {
+//			field = recordMetadata.getField(i);
+//			if (!field.isAutoFilled()) {
+//				if (field.getDelimiterStr() == null) {
+//					field.setDelimiter(strDelimiter);
+//				}
+//				return;
+//			}
+//		}
+//	}
 	
 	/**
 	 * Gets the FieldType attribute of the DataRecordMetadataXMLReaderWriter
