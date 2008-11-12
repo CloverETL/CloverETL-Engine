@@ -2051,8 +2051,14 @@ public class InterpreterTest extends CloverTestCase {
         				"\",true,false);\n" +
            				"string an4 = get_alphanumeric_chars(\"" +
            				StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + 
-        				"\",false,true);\n" +
-        				"string t=translate('hello','leo','pii');\n" +
+           				"\",false,true);\n" +
+           				"string an5 = remove_nonprintable(\"" +
+           				new StringBuffer("separator").append((char)0x07).append("is").append((char)0x1B).append("special").append((char)0x0C).append("character").toString() + 
+           				"\");\n" +
+           				"string an6 = remove_nonascii(\"" +
+           				new StringBuffer("separator").append((char)0xA9).append("is").append((char)0xB4).append("nonascii").append((char)0xC2).append("character").toString() + 
+           				"\");\n" +
+           				"string t=translate('hello','leo','pii');\n" +
         				"string t1=translate('hello','leo','pi');\n" +
         				"string t2=translate('hello','leo','piims');\n" +
         				"string t3=translate('hello','leo',null); print_err(t3);\n" +
@@ -2093,6 +2099,8 @@ public class InterpreterTest extends CloverTestCase {
 		      assertEquals("a1bcde2f",(executor.getGlobalVariable(parser.getGlobalVariableSlot("an2")).getTLValue().toString()));
 		      assertEquals("abcdef",(executor.getGlobalVariable(parser.getGlobalVariableSlot("an3")).getTLValue().toString()));
 		      assertEquals("12",(executor.getGlobalVariable(parser.getGlobalVariableSlot("an4")).getTLValue().toString()));
+		      assertEquals("separatorisspecialcharacter",(executor.getGlobalVariable(parser.getGlobalVariableSlot("an5")).getTLValue().toString()));
+		      assertEquals("separatorisnonasciicharacter",(executor.getGlobalVariable(parser.getGlobalVariableSlot("an6")).getTLValue().toString()));
 		      assertEquals("hippi",(executor.getGlobalVariable(parser.getGlobalVariableSlot("t")).getTLValue().toString()));
 		      assertEquals("hipp",(executor.getGlobalVariable(parser.getGlobalVariableSlot("t1")).getTLValue().toString()));
 		      assertEquals("hippi",(executor.getGlobalVariable(parser.getGlobalVariableSlot("t2")).getTLValue().toString()));
@@ -2782,6 +2790,49 @@ public class InterpreterTest extends CloverTestCase {
 	    }
 	}
     
+    
+    public void test_remove_diacritic() {
+    	System.out.println("\nBuild-in string functions test:");
+		String expStr = "list input= ['piËiak',null,'riù',null,'piËka']; \n" +
+						"int i=0;\n" +
+						"for (i=0; i<5; i++) { \n" +
+						"	print_err(remove_diacritic(input[i]));\n" +
+						"}\n";
+	      print_code(expStr);
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
+		      CLVFStart parseTree = parser.Start();
+
+		      if (parser.getParseExceptions().size()>0){
+		    	  //report error
+		    	  for(Iterator it=parser.getParseExceptions().iterator();it.hasNext();){
+			    	  System.out.println(it.next());
+			      }
+		    	  throw new RuntimeException("Parse exception");
+		      }
+
+
+ 		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+		      
+		      //assertEquals("pop",10,executor.getGlobalVariable(parser.getGlobalVariableSlot("pop1")).getTLValue().getNumeric().getInt());
+		      //assertEquals("poll",1,executor.getGlobalVariable(parser.getGlobalVariableSlot("poll1")).getTLValue().getNumeric().getInt());
+		      //assertEquals("isNull",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("isNull")).getTLValue()==TLBooleanValue.TRUE);
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception",e);
+	    }
+    }
     
     public void print_code(String text){
         String[] lines=text.split("\n");
