@@ -5,10 +5,8 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Properties;
-import java.util.Queue;
 
 import jdbm.RecordManager;
 import jdbm.RecordManagerFactory;
@@ -37,7 +35,6 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -130,6 +127,8 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
             if (dataRecord == null) {
                 throw new IllegalStateException("Data record not set, use the seek(DataRecord) method!");
             }
+            
+   			recordKeyComparator.setLookupKey(lookupKey);
 
             matchingDataRecord = get(dataRecord);
             matchingDataRecordCount = (matchingDataRecord != null ? 1 : 0);
@@ -211,7 +210,6 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 	
 	protected RecordKey indexKey;
 	private int uncommitedRecords = 0;
-	private int numFound;
 	private DataRecord keyRecord;
 
 	public PersistentLookupTable(String id, DataRecordMetadata metadata, String[] keys, String fileURL) {
@@ -239,43 +237,9 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 		return result;
 	}
 
-	public DataRecord get(HashKey lookupKey) {
-        if (lookupKey == null) {
-            throw new NullPointerException("lookupKey");
-        }
-
-        return get(lookupKey.getDataRecord());
-    }
-
-	public DataRecord get(String keyString) {
+	private DataRecord get(DataRecord keyRecord) {
 		prepareGet();
-		
-		keyRecord.reset();
-        keyRecord.getField(0).fromString(keyString);
-		
-		return find(keyRecord);
-	}
 
-	public DataRecord get(Object[] keys) {
-		prepareGet();
-		
-		if (metadata.getNumFields() < keys.length) {
-			logger.error("Too long keys.");
-			return null;
-		}
-		
-		keyRecord.reset();
-		
-		for (int i = 0; i < keys.length; i++) {
-	        keyRecord.getField(i).setValue(keys[i]);
-	    }
-		
-		return find(keyRecord);
-	}
-
-    public DataRecord get(DataRecord keyRecord) {
-		prepareGet();
-		
 		return find(keyRecord);
 	}
 	
@@ -283,7 +247,7 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 		if (!isInitialized()) {
 			throw new NotInitializedException(this);
 		}
-		
+
 		if (uncommitedRecords != 0) {
 			try {
 				recordManager.commit();
@@ -292,28 +256,19 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 			}
 		}
 	}
-	
+
 	private DataRecord find(DataRecord keyRecord) {
 		try {
 	    	DataRecord record = (DataRecord)tree.find(keyRecord);
-	    	numFound = (record != null ? 1 : 0);
 	    	return record;
 		} catch (IOException ioe) {
 			logger.error("Find failed", ioe);
 			return null;
 		}
 	}
-	
+
 	public DataRecordMetadata getMetadata() {
 		return metadata;
-	}
-
-	public DataRecord getNext() {
-		return null; // only (one recordKey) - (one record) is allowed
-	}
-
-	public int getNumFound() {
-		return numFound;
 	}
 
     public boolean isPutSupported() {
@@ -359,41 +314,6 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
         return remove(hashKey.getDataRecord());
     }
 
-	public void setLookupKey(Object key) {
-		if (key instanceof String) {
-			// little extra code to support looking up by String key
-            // will be used only if key is composed of 1 field of type STRING
-	        DataRecordMetadata keyMetadata = indexKey.generateKeyRecordMetadata();
-            if (indexKey.getKeyFields().length == 1 && 
-            		keyMetadata.getField(0).getType() == DataFieldMetadata.STRING_FIELD) {
-                int[] keyFields = {0};
-                RecordKey lookupKey = new RecordKey(keyFields, keyMetadata);
-                recordKeyComparator.setLookupKey(lookupKey);
-            } else {
-                throw new RuntimeException(
-                        "Can't use \""
-                                + key
-                                + "\" (String) for lookup - not compatible with the key defined for this lookup table !");
-            }
-		} else if (key instanceof Object[]) {
-			Object[] keys = (Object[])key;
-	        if (indexKey.getKeyFields().length == keys.length) {
-	            DataRecordMetadata keyMetadata = indexKey.generateKeyRecordMetadata();
-                int[] keyFields = new int[keyMetadata.getNumFields()];
-                for (int i = 0; i < keyFields.length; keyFields[i] = i, i++);
-                RecordKey lookupKey = new RecordKey(keyFields, keyMetadata);
-                recordKeyComparator.setLookupKey(lookupKey);
-	        } else {
-	            throw new RuntimeException("Supplied lookup values are not compatible with the key defined for this lookup table !");
-	        }
-		} else if (key instanceof RecordKey) {
-			recordKeyComparator.setLookupKey((RecordKey)key);
-		} else {
-			throw new RuntimeException("Incompatible Object type specified " +
-					"as lookup key: " +key.getClass().getName());
-		}
-	}
-
 	public Iterator<DataRecord> iterator() {
 		try {
 			return new PersistentLookupIterator(tree);
@@ -432,8 +352,6 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 		}
 		
 		openBTree();
-		
-		numFound = 0;
 		
 		keyRecord = new DataRecord(metadata);
 		keyRecord.init();
@@ -482,7 +400,6 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		numFound = 0;
 		recordKeyComparator.reset();
 	}
 
@@ -594,7 +511,7 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
     }
 
 	public static PersistentLookupTable fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
-    ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
         String type;
         
         try {
@@ -610,7 +527,6 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
         
         //create simple lookup table
         try {
-//            int initialSize = xattribs.getInteger(XML_LOOKUP_INITIAL_SIZE, Defaults.Lookup.LOOKUP_INITIAL_CAPACITY);
             String[] keys = xattribs.getString(XML_LOOKUP_KEY_ATTRIBUTE).
             				split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
             
