@@ -1974,6 +1974,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     	TLVariable var=(TLVariable)child.jjtAccept(this, data);
     	int operatorType=((CLVFOperator)node.jjtGetChild(1)).kind;
     	
+    	// value instance on stack is variable's internal value
+    	// duplicate it before incrementing 
+    	TLValue origValue = stack.pop();
+    	stack.push(origValue.duplicate());
+    	
     	if (operatorType==INCR) {
             if (var.getType().isNumeric()) {
                 ((TLNumericValue)var.getTLValue()).add(Stack.NUM_ONE_P);

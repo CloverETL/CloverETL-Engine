@@ -1,12 +1,15 @@
-<plugin id="org.jetel.lookup" version="2.5.2" provider-name="Javlin a.s.">
+<plugin
+   id="org.jetel.lookup"
+   version="2.5.4"
+   provider-name="Javlin a.s.">
 
 	<runtime>
 		<library path="cloveretl.lookup.jar"/>
 		<library path="lib/jdbm-1.0.jar"/>
         <library path="lib/jazzy-core.jar"/>
    	</runtime> 
-
-	<requires engine-version="2.5.2">
+    
+	<requires engine-version="2.5.4">
 		<import plugin-id="org.jetel.connection"/>
 	</requires>
 

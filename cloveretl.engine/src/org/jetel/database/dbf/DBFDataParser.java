@@ -195,9 +195,6 @@ public class DBFDataParser implements Parser {
             fieldCounter++;
         }
         recordCounter++;
-        if (recordCounter == 28) {
-        	System.err.print(1);
-        }
         return record;
     }
 

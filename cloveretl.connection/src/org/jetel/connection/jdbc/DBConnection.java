@@ -501,7 +501,7 @@ public class DBConnection extends GraphElement implements IConnection {
             try {
                 decryptedPassword = enigma.decrypt(getPassword());
             } catch (JetelException e) {
-                logger.error("Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
+                logger.error("Can't decrypt password on DBConnection (id=" + this.getId() + "). Incorrect password.");
                 //throw new ComponentNotReadyException(this, "Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.", e);
             }
             // If password decryption returns failure, try with the password

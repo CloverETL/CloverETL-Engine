@@ -33,7 +33,7 @@ public class joinOrdersDetails extends  DataRecordTransform{
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="25" guiName="JOIN_CUSTOMER" guiWidth="50" guiX="557" guiY="235" id="JOIN_CUSTOMER" joinKey="$CUSTOMERID=$CUSTOMERID;#" joinType="fullOuter" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="25" guiName="JOIN_CUSTOMER" guiWidth="50" guiX="557" guiY="235" id="JOIN_CUSTOMER" joinKey="$CUSTOMERID=$CUSTOMERID;#" joinType="leftOuter" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
 

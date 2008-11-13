@@ -2,8 +2,6 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
-+ DbConnection: explicit unregistering of JDBC drivers
-+ WatchDog: explicit interruption of nodes for failed graph
 + changed RecordTransform interface: method transform(DataRecor[],DataRecord[]) returns: 
 	- < -1 -- fatal error / user defined
 	-    SKIP = -1 -- error / skip record
@@ -25,6 +23,19 @@
 + unification of trimming attributes of readers
 + shared lookup table
 + PersistentLookupTable
+
+REL 2-5-3
+---------
++ DbConnection: explicit unregistering of JDBC drivers
++ WatchDog: explicit interruption of nodes for failed graph
++ SimpleCopy checkConfig uses deep validation of metadata equality
++ DBInputTable SQL queries parsing fixed
++ CTL datediff fixed
+
+REL 2-5-2
+---------
+Changes/bug fixes:
++ metadata externalization fixed
 
 REL 2-5-1
 ---------

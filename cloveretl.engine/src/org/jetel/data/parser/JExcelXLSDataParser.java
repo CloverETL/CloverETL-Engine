@@ -394,9 +394,10 @@ public class JExcelXLSDataParser extends XLSParser {
         sheet = null;
         recordCounter = 1;
         sheetCounter = -1;
-        if (sheetNumber != null){
+        if (sheetNumber != null && sheetNumberIterator != null){
         	sheetNumberIterator.reset();
         }
+        incremental = null;
 	}
 
 	public Object getPosition() {

@@ -225,6 +225,9 @@ public class Reformat extends Node {
 			inRecord[0] = readRecord(READ_FROM_PORT, inRecord[0]);
 
 			if (inRecord[0] != null) {
+				for (int i=0;i<numOutputPorts;i++){
+				    outRecord[i].reset();
+				}
 				int transformResult = transformation.transform(inRecord, outRecord);
 
 				if (transformResult == RecordTransform.ALL) {

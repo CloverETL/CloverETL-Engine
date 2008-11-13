@@ -192,14 +192,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
            	
            	if(runtimeContext.isWaitForJMXClient()) {
            		//wait for a JMX client (GUI) to download all tracking information
-	           	long restTime = WAITTIME_FOR_STOP_SIGNAL - (System.nanoTime() - cloverJMX.getGraphDetail().getStartTime());
-	           	while (restTime > 0 && !cloverJMX.canCloseServer()) {
+           		long startWaitingTime = System.nanoTime();
+	           	while (WAITTIME_FOR_STOP_SIGNAL > (System.nanoTime() - startWaitingTime) && !cloverJMX.canCloseServer()) {
 	           		try {
 	    				Thread.sleep(10);
 	    	           	finalJmxNotification();
 	    			} catch (InterruptedException e) {
-					} finally {
-	                   	restTime = WAITTIME_FOR_STOP_SIGNAL - (System.nanoTime() - cloverJMX.getGraphDetail().getStartTime());
+	    				//DO NOTHING
 	    			}
 	           	}
            	}
@@ -434,6 +433,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
         //now we can notify all waiting phases for free threads
         synchronized(threadManager) {
         	threadManager.releaseNodeThreads(phase.getNodes().size());
+        	/////////////////
+        	//is this code really necessary? why?
         	for (Node node : phase.getNodes().values()){
         		Thread t = node.getNodeThread();
         		long runId = this.getGraphRuntimeContext().getRunId();
@@ -451,6 +452,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
             		} // catch
             	}
         	}// for
+        	/////////////////
             threadManager.notifyAll();
         }
         

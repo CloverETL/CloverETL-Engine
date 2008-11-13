@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Jan 16 09:47:22 CET 2007" guiVersion="1.10" id="1204547632760" licenseType="Evaluation license." modified="Fri Jun 27 13:12:44 CEST 2008" modifiedBy="avackova" name="test" revision="1.75">
+<Graph author="avackova" created="Tue Jan 16 09:47:22 CET 2007" guiVersion="2.0" id="1204547632760" licenseType="Evaluation license." modified="Tue Oct 21 12:15:39 CEST 2008" modifiedBy="avackova" name="test" revision="1.79">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders3way.fmt" id="Metadata2"/>
@@ -13,7 +13,7 @@
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="251" guiY="21" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="251" guiY="128" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="251" guiY="214" id="EXT_SORT2" sortKey="ReportsTo(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="Ext Merge Join" guiWidth="0" guiX="456" guiY="128" id="MERGE_JOIN1" joinKey="$EmployeeID;#$EmployeeID;#$ReportsTo;#" type="EXT_MERGE_JOIN">
+<Node ascendingInputs="true" enabled="enabled" guiHeight="0" guiName="Ext Merge Join" guiWidth="0" guiX="456" guiY="128" id="MERGE_JOIN1" joinKey="$EmployeeID;#$EmployeeID;#$ReportsTo;#" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
@@ -48,7 +48,7 @@ public class reformatJoinTest3Way extends DataRecordTransform{
 </Node>
 <Node enabled="enabled" fieldMap="$OrderDate:=#D;$EmployeeID:=#C;$Freight:=#H;$ShipAddress:=#J;$RequiredDate:=#E;$OrderID:=#A;$ShipPostalCode:=#M;$ShippedDate:=#F;$ShipName:=#I;$ShipRegion:=#L;$CustomerID:=#B;$ShipVia:=#G;$ShipCity:=#K;$ShipCountry:=#N;" fileURL="${DATAIN_DIR}/other/ORDERS.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="24" guiY="21" id="XLS_READER0" metadataRow="1" startRow="2" type="XLS_READER"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT2:0"/>
-<Edge fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT1:0"/>
 <Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="MERGE_JOIN1:0"/>
 <Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge4" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="MERGE_JOIN1:1"/>
 <Edge debugMode="false" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge5" inPort="Port 2 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="MERGE_JOIN1:2"/>
