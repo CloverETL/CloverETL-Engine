@@ -142,13 +142,13 @@ public class DBInputTable extends Node {
 
     static Log logger = LogFactory.getLog(DBInputTable.class);
 	
-	private static final String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
-	private static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
-	private static final String XML_SQLQUERY_ATTRIBUTE = "sqlQuery";
-	private static final String XML_URL_ATTRIBUTE = "url";
-	private static final String XML_FETCHSIZE_ATTRIBUTE = "fetchSize";
-	private static final String XML_SQLCODE_ELEMENT = "SQLCode";
-	private static final String XML_CHARSET_ATTRIBUTE = "charset"; 
+	public static final String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
+	public static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
+	public static final String XML_SQLQUERY_ATTRIBUTE = "sqlQuery";
+	public static final String XML_URL_ATTRIBUTE = "url";
+	public static final String XML_FETCHSIZE_ATTRIBUTE = "fetchSize";
+	public static final String XML_SQLCODE_ELEMENT = "SQLCode";
+	public static final String XML_CHARSET_ATTRIBUTE = "charset"; 
 	public static final String XML_INCREMENTAL_FILE_ATTRIBUTE = "incrementalFile";
 	public static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
 	
