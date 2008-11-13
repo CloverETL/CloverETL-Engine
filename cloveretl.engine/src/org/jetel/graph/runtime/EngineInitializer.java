@@ -145,7 +145,7 @@ public class EngineInitializer {
 		if(status.isError()) {
 			logger.error("Graph configuration is invalid.");
 			status.log();
-			throw new ComponentNotReadyException(graph, "Graph configuration is invalid.");
+			throw new ComponentNotReadyException(graph, "Graph configuration is invalid (" + status.getFirst().toString() + ").");
 		} else {
 			logger.info("Graph configuration is valid.");
 			status.log();

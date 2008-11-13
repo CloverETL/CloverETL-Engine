@@ -253,12 +253,15 @@ public class JmsConnection extends GraphElement implements IConnection {
 			    
 			    if (passwordEncrypted) {
 	            	Enigma enigma = getGraph().getEnigma();
+	                if (enigma == null) {
+	                	throw new ComponentNotReadyException("Can't decrypt password on JmsConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
+	                }
 		            //Enigma enigma = Enigma.getInstance();
 		            String decryptedPassword = null;
 		            try {
 		                decryptedPassword = enigma.decrypt(pwd);
 		            } catch (JetelException e) {
-		                throw new ComponentNotReadyException("Can't decrypt password on JmsConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.", e);
+		                throw new ComponentNotReadyException("Can't decrypt password on JmsConnection (id=" + this.getId() + "). Incorrect password.", e);
 		            }
 		            // If password decryption fails, try to use the unencrypted password
 		            if (decryptedPassword != null) {

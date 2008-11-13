@@ -931,7 +931,7 @@ public class StringLib extends TLFunctionLibrary {
                      val.setValue(StringUtils.removeDiacritic(params[0].toString()));
                  }
              }
-             return val;
+             return TLNullValue.getInstance();
          }
 
          @Override

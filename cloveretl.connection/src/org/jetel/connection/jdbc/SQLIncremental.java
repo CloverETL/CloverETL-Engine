@@ -262,7 +262,9 @@ public class SQLIncremental {
 		//find groups for substituting by values (#keyName)
 		while (keyValueMatcher.find()) {
 			keyValueMatcher1.find();
-			field = keyRecord.getField(keyValueMatcher.group().substring(INCREMENTAL_KEY_INDICATOR.length()));
+			String keyName = keyValueMatcher.group().substring(INCREMENTAL_KEY_INDICATOR.length());
+			if (keyRecord.hasField(keyName)) field = keyRecord.getField(keyName);
+			else throw new RuntimeException("The key name '" + keyName + "' doesn't exist for incremental reading.");
 			//replace it with ? in prepared statement
 			keyValueMatcher.appendReplacement(query, "?");
 			//replace it with proper value for logging

@@ -373,12 +373,13 @@ public class Partition extends Node {
 		}else if (partitionClass != null){
 			partitionFce = createPartitionFce(partitionClass);
 		}else {
-			if (partitionSource == null && partitionURL != null) {
+			if (partitionURL != null &&
+				(partitionSource == null || (partitionSource != null && StringUtils.isEmpty(partitionSource.trim())))) {
 				partitionSource = FileUtils.getStringFromURL(
 						getGraph().getProjectURL(), partitionURL, 
 						charset);
 			}
-			if (partitionSource != null) {
+			if (partitionSource != null && !StringUtils.isEmpty(partitionSource.trim())) {
 				partitionFce = createPartitionDynamic(partitionSource);
 			}else if (partitionRanges != null){
 				//create RangePartition function from parttionKey and partitionRanges

@@ -84,7 +84,15 @@ public class EdgeDebuger {
 
 	public void reset() throws ComponentNotReadyException {
 		//TODO DataRecordTape should be able to reset itself
-        //dataTape.reset();
+        try { //TODO dataTape doesn't have reset method?
+			dataTape.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
         dataTape = new DataRecordTape(debugFile, !isReadMode, false);
         try {
 			dataTape.open();

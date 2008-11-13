@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.HashJoin.Join;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
@@ -694,11 +695,11 @@ public class MergeJoin extends Node {
 			}
 
 			// legacy attributes handling {
-			if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE, false)) {
-				joinType = Join.LEFT_OUTER;
+			if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)) {
+				joinType = xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE) ? Join.LEFT_OUTER : Join.INNER;
 			}
-			if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.getBoolean(XML_FULLOUTERJOIN_ATTRIBUTE, false)) {
-				joinType = Join.FULL_OUTER;
+			if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.exists(XML_FULLOUTERJOIN_ATTRIBUTE)) {
+				joinType = xattribs.getBoolean(XML_FULLOUTERJOIN_ATTRIBUTE) ? Join.FULL_OUTER : Join.INNER;
 			}
 
 			join = new MergeJoin(xattribs.getString(XML_ID_ATTRIBUTE),
