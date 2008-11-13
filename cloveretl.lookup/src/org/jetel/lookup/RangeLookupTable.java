@@ -763,7 +763,7 @@ class RangeLookup implements Lookup{
 	}
 
 	public void remove() {
-		subTableIterator.remove();
+		throw new UnsupportedOperationException("Method not supported!");
 	}
 	
 }
