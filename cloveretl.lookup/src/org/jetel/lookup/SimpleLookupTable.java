@@ -564,12 +564,7 @@ class SimpleLookup implements Lookup{
 	 * @see java.util.Iterator#remove()
 	 */
 	public void remove() {
-		if (curentResult == null || no >= numFound) throw new IllegalStateException();
-		if (data instanceof DuplicateKeyMap){
-			curentResult.remove(--no);
-		}else{
-			data.remove(key);
-		}
+		throw new UnsupportedOperationException("Method not supported!");
 	}
 
 }
