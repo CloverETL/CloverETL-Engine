@@ -153,7 +153,7 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 
         public DataRecord next() {
             if (matchingDataRecord == null) {
-                throw new IllegalStateException();
+                throw new NoSuchElementException();
             }
 
             DataRecord tmp = matchingDataRecord;
@@ -299,6 +299,9 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
     }
 
 	public boolean remove(DataRecord dataRecord) {
+		if (dataRecord == null) {
+			throw new IllegalArgumentException("dataRecord");
+		}
 		try {
 			tree.remove(dataRecord);
 		} catch (IOException ioe) {
@@ -324,6 +327,9 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 	
 	private void loadMetadata() throws ComponentNotReadyException {
 		if (metadata == null) {
+			if (getGraph() == null) {
+				throw new ComponentNotReadyException("Component has assigned neither graph or metadata.");
+			}
 			metadata = getGraph().getDataRecordMetadata(metadataName);
 		}		
 		if (metadata == null) {
