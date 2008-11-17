@@ -472,7 +472,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 	<target name="runtests" depends="runtests-engine,runtests-plugins">
 	</target>
 	
-	<target name="runtests-engine" depends="init,compile,compile-tests,coverage-instrument">
+	<target name="runtests-engine" depends="init,compile,compile-tests,coverage-instrument" description="Runs Clover engine JUnit tests">
 		<mkdir dir="${dir.testsresult}"/>
 		<junit 
 				haltonerror="false" 
