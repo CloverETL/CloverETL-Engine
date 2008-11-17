@@ -469,7 +469,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		</ant>
 	</target>
 
-	<target name="runtests" depends="runtests-engine,runtests-plugins">
+	<target name="runtests" depends="runtests-engine,runtests-plugins" description="Runs engine and plugins JUnit tests">
 	</target>
 	
 	<target name="runtests-engine" depends="init,compile,compile-tests,coverage-instrument" description="Runs Clover engine JUnit tests">
