@@ -19,25 +19,17 @@
 */
 package org.jetel.connection.jdbc.specific.conn;
 
-import java.sql.Array;
-import java.sql.Blob;
 import java.sql.CallableStatement;
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Driver;
-import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
-import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
-import java.sql.Struct;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -507,70 +499,4 @@ public class DefaultConnection implements Connection {
 		}
 	}
 
-	@Override
-	public Array createArrayOf(String arg0, Object[] arg1) throws SQLException {
-		return connection.createArrayOf(arg0, arg1);
-	}
-
-	@Override
-	public Blob createBlob() throws SQLException {
-		return connection.createBlob();
-	}
-
-	@Override
-	public Clob createClob() throws SQLException {
-		return connection.createClob();
-	}
-
-	@Override
-	public NClob createNClob() throws SQLException {
-		return connection.createNClob();
-	}
-
-	@Override
-	public SQLXML createSQLXML() throws SQLException {
-		return connection.createSQLXML();
-	}
-
-	@Override
-	public Struct createStruct(String arg0, Object[] arg1) throws SQLException {
-		return connection.createStruct(arg0, arg1);
-	}
-
-	@Override
-	public Properties getClientInfo() throws SQLException {
-		return connection.getClientInfo();
-	}
-
-	@Override
-	public String getClientInfo(String arg0) throws SQLException {
-		return connection.getClientInfo(arg0);
-	}
-
-	@Override
-	public boolean isValid(int arg0) throws SQLException {
-		return connection.isValid(arg0);
-	}
-
-	@Override
-	public void setClientInfo(Properties arg0) throws SQLClientInfoException {
-		connection.setClientInfo(arg0);
-	}
-
-	@Override
-	public void setClientInfo(String arg0, String arg1)
-			throws SQLClientInfoException {
-		connection.setClientInfo(arg0, arg1);
-	}
-
-	@Override
-	public boolean isWrapperFor(Class<?> arg0) throws SQLException {
-		return connection.isWrapperFor(arg0);
-	}
-
-	@Override
-	public <T> T unwrap(Class<T> arg0) throws SQLException {
-		return unwrap(arg0);
-	}
-	
 }
