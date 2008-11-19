@@ -38,15 +38,12 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.jetel.data.Defaults;
-import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
-import org.jetel.graph.dictionary.DictionaryTypeFactory;
-import org.jetel.graph.dictionary.IDictionaryType;
 import org.jetel.graph.dictionary.SerializedDictionaryValue;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -331,11 +328,8 @@ public class runGraph {
 	        try {
 	        	String key = serializedDictionaryValue.getKey();
 	        	String type = serializedDictionaryValue.getType();
-	        	IDictionaryType dictionaryType = DictionaryTypeFactory.getDictionaryType(type);
-	        	Object dictionaryValue = dictionaryType.parseProperties(serializedDictionaryValue.getProperties());
-	        	graph.getDictionary().setValue(key, dictionaryType, dictionaryValue);
-	        } catch(AttributeNotFoundException ex){
-	            throw new XMLConfigurationException("Dictionary - Attributes missing " + ex.getMessage());
+	        	Properties properties = serializedDictionaryValue.getProperties();
+	        	graph.getDictionary().setValueFromProperties(key, type, properties);
 	        } catch (ComponentNotReadyException e) {
 	            throw new XMLConfigurationException("Dictionary initialization problem.", e);
 			}

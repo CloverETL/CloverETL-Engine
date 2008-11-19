@@ -21,8 +21,10 @@ package org.jetel.graph.dictionary;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.GraphElement;
@@ -38,6 +40,8 @@ public class Dictionary extends GraphElement {
 
 	private static final String DEFAULT_ID = "_DICTIONARY";
 
+	private static final String DEFAULT_DICTIONARY_TYPE_ID = ObjectDictionaryType.TYPE_ID;
+	
 	private Map<String, DictionaryEntry> dictionary;
 
 	public Dictionary(TransformationGraph graph) {
@@ -96,11 +100,36 @@ public class Dictionary extends GraphElement {
 		return getEntry(key).getValue();
 	}
 
-	public void setValue(String key, Object value) throws ComponentNotReadyException, JetelException {
-		setValue(key, new ObjectDictionaryType(), value);
+	public void setValue(String key, Object value) throws ComponentNotReadyException {
+		setValue(key, DictionaryTypeFactory.getDictionaryType(DEFAULT_DICTIONARY_TYPE_ID), value);
 	}
+
+	public void setValue(String key, String typeId, Object value) throws ComponentNotReadyException {
+		IDictionaryType dictionaryType;
+		try {
+			dictionaryType = DictionaryTypeFactory.getDictionaryType(typeId);
+		} catch(Exception e) {
+			throw new ComponentNotReadyException("Dictionary type '" + typeId + "' does not exist (key = " + key + ").");
+		}
+		setValue(key, dictionaryType, value);
+	}
+
+	public void setValueFromProperties(String key, String typeId, Properties properties) throws ComponentNotReadyException {
+		IDictionaryType dictionaryType;
+		try {
+			dictionaryType = DictionaryTypeFactory.getDictionaryType(typeId);
+		} catch(Exception e) {
+			throw new ComponentNotReadyException("Dictionary type '" + typeId + "' does not exist (key = " + key + ").", e);
+		}
+		try {
+			setValue(key, dictionaryType, dictionaryType.parseProperties(properties));
+		} catch (AttributeNotFoundException e) {
+			throw new ComponentNotReadyException("Dictionary type '" + typeId + "' cannot be initialized by given properties (key = " + key + "): " + properties, e);
+		}
+	}
+
 	
-	public void setValue(String key, IDictionaryType type, Object value) throws ComponentNotReadyException {
+	private void setValue(String key, IDictionaryType type, Object value) throws ComponentNotReadyException {
 		DictionaryEntry entry = dictionary.get(key);
 
 		try {
