@@ -178,7 +178,7 @@ public class SubGraph extends Node {
 			final PortDataProducer producer = new PortDataProducer(port);
 			final OutputStream dictOutputStream = new FileOutputStream("");
 //TODO			
-			dictionary.setValue(mapping.getDictionaryKey(), new ReadableChannelDictionaryType(), dictOutputStream);
+			dictionary.setValue(mapping.getDictionaryKey(), ReadableChannelDictionaryType.TYPE_ID, dictOutputStream);
 			executor.addProducer(producer, dictOutputStream);
 		}
 

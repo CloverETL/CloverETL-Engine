@@ -1,7 +1,5 @@
 package org.jetel.util;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -29,7 +27,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.dictionary.IDictionaryType;
-import org.jetel.graph.dictionary.ObjectDictionaryType;
 import org.jetel.graph.dictionary.WritableChannelDictionaryType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
@@ -244,7 +241,7 @@ public class TargetFile {
 				break;
 			case DISCRETE:
 				dictOutArray = new ArrayList<byte[]>();
-				dictionary.setValue(aDict[0], new ObjectDictionaryType(), dictOutArray);
+				dictionary.setValue(aDict[0], dictOutArray);
 				break;
 			default:
 				throw new ComponentNotReadyException("invalid dictionary processting type " + dictProcesstingType);

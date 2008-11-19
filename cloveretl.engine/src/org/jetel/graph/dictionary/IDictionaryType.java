@@ -59,7 +59,7 @@ public interface IDictionaryType {
 	public Object parseProperties(Properties properties) throws AttributeNotFoundException;
 	
 	/**
-	 * Tests, whether given value is acceptable for this dictionary entry type.
+	 * Tests, whether the given value is acceptable for this dictionary entry type.
 	 */
 	public boolean isValidValue(Object value);
 	

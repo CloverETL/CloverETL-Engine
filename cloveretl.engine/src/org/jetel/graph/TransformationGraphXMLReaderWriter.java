@@ -52,8 +52,6 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.dictionary.Dictionary;
-import org.jetel.graph.dictionary.DictionaryTypeFactory;
-import org.jetel.graph.dictionary.IDictionaryType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
@@ -788,7 +786,6 @@ public class TransformationGraphXMLReaderWriter {
 			        try {
 			        	String type = attributes.getString(DICTIONARY_ENTRY_TYPE);
 			        	String name = attributes.getString(DICTIONARY_ENTRY_NAME);
-			        	IDictionaryType dictionaryType = DictionaryTypeFactory.getDictionaryType(type);
 			        	final Properties entryProperties = attributes.attributes2Properties(null);
 			        	entryProperties.remove(DICTIONARY_ENTRY_TYPE);
 			        	entryProperties.remove(DICTIONARY_ENTRY_NAME);
@@ -797,10 +794,9 @@ public class TransformationGraphXMLReaderWriter {
 			        	entryProperties.remove(DICTIONARY_ENTRY_REQUIRED);
 			        	entryProperties.remove(DICTIONARY_ENTRY_CONTENT_TYPE);
 			        	if (!entryProperties.isEmpty()) {
-							Object value = dictionaryType.parseProperties(entryProperties);
-				        	dictionary.setValue(name, dictionaryType, value);
+				        	dictionary.setValueFromProperties(name, type, entryProperties);
 						} else {
-							dictionary.setValue(name, dictionaryType, null);
+							dictionary.setValue(name, type, null);
 						}
 			        	
 			        	if (attributes.exists(DICTIONARY_ENTRY_INPUT) && attributes.getBoolean(DICTIONARY_ENTRY_INPUT)) {
