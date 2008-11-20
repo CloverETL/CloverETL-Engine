@@ -1739,6 +1739,10 @@ public class InterpreterTest extends CloverTestCase {
         				 "map mapa; mapa['f1']=10; mapa['f2']='hello'; map mapa2; mapa2[]=mapa; map mapa3; \n"+
         				 "int i; for(i=0;i<20;i++) { seznam[]=i; if (i>10) seznam2[]=seznam;  }\n"+
         				 "seznam[1]=999; seznam2[3]='hello'; \n"+
+        				 "list negative=[-1,-2,-3];\n" +
+        				 "print_err(negative);\n" +
+        				 "for(i=0;i<3;i++) { negative[i]=negative[i]+1;}\n"+
+        				 "print_err(negative);\n" +
         				 "fields=split('a,b,c,d,e,f,g,h',','); fields[]=null;"+
         				 "int length=length(seznam); print_err('length: '+length);\n print_err(seznam);\n print_err(seznam2); print_err(fields);\n"+
         				 "list novy; novy[]=mapa; print_err('novy1:'+novy); mapa2['f2']='xxx'; novy[]=mapa2; mapa['f1']=99; novy[]=mapa; \n" +
