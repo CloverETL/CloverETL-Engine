@@ -896,9 +896,23 @@ void LitExp() #void :            //
 
 void ListOfLiterals() :
 {
+	boolean negative = false;
+	CLVFLiteral lit = null;
 }
 {
-	"[" LitExp() ( "," LitExp() )* "]"	
+	"[" 
+		[ "-" { negative = true; } ] LitExp() 
+		{
+			lit = (CLVFLiteral)jjtree.peekNode();
+			lit.setNegative(negative);
+		}
+		( "," [ "-" { negative = true; } ]LitExp() 
+		{
+			lit = (CLVFLiteral)jjtree.peekNode();
+			lit.setNegative(negative);
+		}
+		)* 
+	"]"	
 }
 
 void InputFieldExp() #void :
