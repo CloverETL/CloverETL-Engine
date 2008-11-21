@@ -1164,15 +1164,16 @@ public class DBOutputTable extends Node {
              if(!(conn instanceof DBConnection)) {
                  throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
              }
-//             dbConnection = (DBConnection) conn;
-//       		 dbConnection.init();
-//     		// create connection instance, which represents connection to a database
-//     		try {
-//     			connection = dbConnection.getConnection(getId(), OperationType.WRITE);
-//     		} catch (JetelException e1) {
-//     			throw new ComponentNotReadyException(e1);
-//     		}
+             dbConnection = (DBConnection) conn;
+       		 dbConnection.init();
+     		// create connection instance, which represents connection to a database
+     		try {
+     			connection = dbConnection.getConnection(getId(), OperationType.WRITE);
+     		} catch (JetelException e1) {
+     			throw new ComponentNotReadyException(e1);
+     		}
              
+             inPort = getInputPort(READ_FROM_PORT);
      		if (sqlQuery == null) {
     			sqlQuery = new String[1];
     			if (dbFields != null) {
