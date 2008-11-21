@@ -49,6 +49,7 @@ import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -82,12 +83,10 @@ public class SQLDataParser implements Parser {
 	protected IParserExceptionHandler exceptionHandler;
 	protected DataRecordMetadata metadata;
 	protected int recordCounter;
-	protected int fieldCount = 0;
 
 	protected DBConnectionInstance dbConnection;
 	protected String sqlQuery;
 	protected Statement statement;
-	protected QueryAnalyzer analyzer;
 
 	protected ResultSet resultSet = null;
 	protected CopySQLData[] transMap=null;
@@ -100,9 +99,12 @@ public class SQLDataParser implements Parser {
 	private String incrementalFile;
 	private Properties incrementalKey;
 	private SQLIncremental incremental;
+	private String[] cloverOutputFields;
 	
 	static Log logger = LogFactory.getLog(SQLDataParser.class);
-	
+
+	private final static Pattern CLOVER_OUTPUT_FIELD = Pattern.compile("\\$(\\w+)\\s*" + Defaults.ASSIGN_SIGN);
+
 	/**
 	 * @param sqlQuery
 	 */
@@ -117,8 +119,7 @@ public class SQLDataParser implements Parser {
 	 * @param sqlQuery query to be executed against DB
 	 */
 	public SQLDataParser(String sqlQuery) {
-		analyzer = new QueryAnalyzer(sqlQuery);
-		this.sqlQuery = analyzer.getSelectQuery();
+		this.sqlQuery = sqlQuery;
 	}
 	
 
@@ -196,13 +197,18 @@ public class SQLDataParser implements Parser {
 		}
 		// init transMap if null
 		if (transMap==null){
-		    initSQLMap(record);
+		    try {
+				initSQLMap(record);
+			} catch (SQLException ex) {
+	            logger.debug(ex.getMessage(),ex);
+				throw new JetelException(ex.getMessage(),ex);
+			}
 		}else if (record!=outRecord){
 		    CopySQLData.resetDataRecord(transMap,record);
 		    outRecord=record;
 		}
 			
-		for (int i = 1; i <= fieldCount; i++) {
+		for (int i = 1; i <= transMap.length; i++) {
 			populateField(record, i);
 		}
 		try {
@@ -247,44 +253,11 @@ public class SQLDataParser implements Parser {
 		}
 	}
 
-	public void initSQLDataMap(DataRecord record){
-	    initSQLMap(record);
-	}
-	
-	protected void initSQLMap(DataRecord record){
-		try{
-			List<String[]> cloverDbMap = analyzer.getCloverDbFieldMap();
-			List<Integer> dbTypes = SQLUtil.getFieldTypes(resultSet.getMetaData());
-			if (analyzer.isQueryInCloverFormat() && cloverDbMap.size() > 0 ) {
-				List<CopySQLData> tMap = new ArrayList<CopySQLData>();
-				String[] mapping;
-				int sqlIndex;
-				for(int i = 0; i < cloverDbMap.size(); i++) {
-					mapping = cloverDbMap.get(i);
-					if (mapping[0] != null) {
-						try {
-							sqlIndex = resultSet.findColumn(mapping[1]) - 1;
-						} catch (SQLException e) {
-							String fullName = mapping[1];
-							try {
-								sqlIndex = resultSet.findColumn(fullName.substring(fullName.lastIndexOf('.') + 1)) - 1;
-							} catch (SQLException e1) {
-								//order in mapping should correspond to order in query
-								sqlIndex = i;
-							}
-						}
-						tMap.add(CopySQLData.createCopyObject(dbTypes.get(sqlIndex), record.getField(mapping[0]).getMetadata(), 
-								record, sqlIndex, record.getMetadata().getFieldPosition(mapping[0])));
-					}
-				}
-				transMap = tMap.toArray(new CopySQLData[tMap.size()]);
-			}else{
-				transMap = CopySQLData.sql2JetelTransMap(dbTypes ,metadata, record);
-			}
-			fieldCount = transMap.length;
-		}catch (Exception ex) {
-            logger.debug(ex.getMessage(),ex);
-			throw new RuntimeException(ex.getMessage(),ex);
+	protected void initSQLMap(DataRecord record) throws SQLException{
+		if (cloverOutputFields == null) {
+			transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultSet.getMetaData()) ,metadata, record);
+		}else{
+			transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultSet.getMetaData()) , metadata, record, cloverOutputFields);
 		}
 	}
 
@@ -304,6 +277,23 @@ public class SQLDataParser implements Parser {
 	public void setReleaseDataSource(boolean releaseInputSource)  {
 	}
 
+	private String prepareQuery(){
+		//remove clover output fields from query
+		Matcher outputFieldsMatcher = CLOVER_OUTPUT_FIELD.matcher(sqlQuery);
+		ArrayList<String> outputFields = new ArrayList<String>();
+		StringBuffer query = new StringBuffer();
+		while (outputFieldsMatcher.find()) {
+			outputFields.add(outputFieldsMatcher.group(1));
+			outputFieldsMatcher.appendReplacement(query, "");
+		}
+		outputFieldsMatcher.appendTail(query);
+		if (outputFields.size() > 0) {
+			cloverOutputFields = outputFields.toArray(new String[outputFields.size()]);
+		}
+		
+		return query.toString();
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
@@ -317,12 +307,12 @@ public class SQLDataParser implements Parser {
         }
         dbConnection = (DBConnectionInstance) inputDataSource;
         
-        
+        String query = prepareQuery();
         long startTime;
         try{
-        	if (incrementalKey != null && sqlQuery.toString().contains("where")) {
+        	if (incrementalKey != null && sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
 				if (incremental == null) {
-					incremental = new SQLIncremental(incrementalKey, sqlQuery,	incrementalFile);
+					incremental = new SQLIncremental(incrementalKey, query,	incrementalFile);
 				}
 				statement = incremental.updateQuery(dbConnection);
 		        logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Sending query " + 
@@ -332,9 +322,9 @@ public class SQLDataParser implements Parser {
         	}else{
             	statement = dbConnection.getSqlConnection().createStatement();
                 logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Sending query " + 
-                		StringUtils.quote(sqlQuery));
+                		StringUtils.quote(query));
             	startTime = System.currentTimeMillis();
-                resultSet = statement.executeQuery(sqlQuery);
+                resultSet = statement.executeQuery(query);
         	}
             long executionTime = System.currentTimeMillis() - startTime;
             SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
@@ -359,9 +349,9 @@ public class SQLDataParser implements Parser {
 	}
 	
 	public boolean checkIncremental() throws ComponentNotReadyException{
-    	if (incrementalKey != null && sqlQuery.toString().contains("where")) {
+    	if (incrementalKey != null && sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
 			try {
-				incremental = new SQLIncremental(incrementalKey, sqlQuery,	incrementalFile);
+				incremental = new SQLIncremental(incrementalKey, prepareQuery(), incrementalFile);
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(e);
 			}

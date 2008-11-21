@@ -51,8 +51,6 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test extends CloverTest
 
 		record = new DataRecord(metadata);
 		record.init();
-		aParser1.initSQLDataMap(record);
-		aParser2.initSQLDataMap(record);
 	}
 
 	protected void tearDown() {
