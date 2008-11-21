@@ -845,7 +845,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof Node)) {
+		if (obj == null || !(obj instanceof Node)) {
 			return false;
 		}
 		final Node other = (Node) obj;
