@@ -516,6 +516,10 @@ public class RecordKey {
    	
     	return status;
     }
+
+	public String[] getKeyFieldNames() {
+		return keyFieldNames;
+	}
 }
 // end RecordKey
 
