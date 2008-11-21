@@ -233,7 +233,6 @@ public class DBInputTable extends Node {
 		record.init();
 		record.reset();
 		parser.setDataSource(connection.getConnection(getId(), OperationType.READ));
-		parser.initSQLDataMap(record);
 
 		// till it reaches end of data or it is stopped from outside
 		while (record != null && runIt){
