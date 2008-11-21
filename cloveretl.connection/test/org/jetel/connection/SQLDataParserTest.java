@@ -46,7 +46,6 @@ public class SQLDataParserTest extends CloverTestCase {
 
 		aParser2.init(metadata);
 		aParser2.setDataSource(aDBConnection.getConnection(aDBConnection.getId()));
-		aParser2.initSQLDataMap(record);
 	}
 
 	protected void tearDown() {

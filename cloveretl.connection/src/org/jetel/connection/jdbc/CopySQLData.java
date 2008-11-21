@@ -320,7 +320,7 @@ public abstract class CopySQLData {
 	 * @exception  SQLException  Description of Exception
 	 * @since                    October 4, 2002
 	 */
-	public static CopySQLData[] jetel2sqlTransMap(List fieldTypes, DataRecord record) throws SQLException {
+	public static CopySQLData[] jetel2sqlTransMap(List fieldTypes, DataRecord record) {
 		int i = 0;
 		/* test that both sides have at least the same number of fields, less
 		 * fields on DB side is O.K. (some of Clover fields won't be assigned to JDBC).
