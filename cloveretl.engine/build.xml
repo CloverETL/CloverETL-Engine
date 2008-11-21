@@ -540,7 +540,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
             <property name="scenarios" value="night.ts" />
 			<property name="dir.engine.classes" value="${dir.bin}"/>
-			<property name="dir.plugins" value="${dir.dist}/plugins"/>
+			<property name="dir.plugins" value="${dir.package}/plugins"/>
 			<property name="major_version" value="${major_version}"/>
 			<property name="minor_version" value="${minor_version}"/>
 			<property name="revision_version" value="${revision_version}"/>
