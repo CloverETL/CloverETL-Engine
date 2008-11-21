@@ -22,6 +22,7 @@ package org.jetel.lookup;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -31,10 +32,13 @@ import java.util.NoSuchElementException;
 
 import org.jetel.connection.jdbc.CopySQLData;
 import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.SQLCloverStatement;
 import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
+import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
@@ -52,6 +56,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.primitive.SimpleCache;
 import org.jetel.util.primitive.TypedProperties;
@@ -96,7 +101,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
 	protected DataRecordMetadata dbMetadata;
 	protected DBConnectionInstance dbConnection;
-	protected String sqlQuery;
+	protected String sqlQuery;//this query can contain $field
 	
 	protected int maxCached = 0;
 	protected boolean storeNulls = false;
@@ -357,17 +362,31 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         			query.setLength(whereIndex);
         		}
         	}
-        	Statement statement = dbConnection.getSqlConnection().createStatement();
-			ResultSet resultSet = statement.executeQuery(query.toString());
+        	SQLCloverStatement st = new SQLCloverStatement(dbConnection, query.toString(), null);
+        	st.init();
+        	PreparedStatement statement = st.getStatement();
+			ResultSet resultSet = statement.executeQuery();
 			dbConnection.getJdbcSpecific().optimizeResultSet(resultSet, OperationType.READ);
 		   if (dbMetadata == null) {
-	            try {
-	                dbMetadata = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), dbConnection.getJdbcSpecific());
-	            } catch (SQLException ex) {
-	                throw new RuntimeException(
-	                        "Can't automatically obtain dbMetadata (use other constructor and provide metadat for output record): "
-	                        + ex.getMessage());
-	            }
+	            if (st.getCloverOutputFields() == null) {
+					dbMetadata = SQLUtil.dbMetadata2jetel(resultSet	.getMetaData(), dbConnection.getJdbcSpecific());
+				}else{
+					ResultSetMetaData dbMeta = resultSet.getMetaData();
+					JdbcSpecific jdbcSpecific = dbConnection.getJdbcSpecific();
+					String[] fieldName = st.getCloverOutputFields();
+					DataFieldMetadata fieldMetadata;
+					String tableName = dbMeta.getTableName(1);
+					if (!StringUtils.isValidObjectName(tableName)) {
+						tableName = StringUtils.normalizeName(tableName);
+					}
+					dbMetadata = new DataRecordMetadata(tableName, DataRecordMetadata.DELIMITED_RECORD);
+					dbMetadata.setFieldDelimiter(Defaults.Component.KEY_FIELDS_DELIMITER);
+					dbMetadata.setRecordDelimiters("\n");
+					for (int i = 1; i <= dbMeta.getColumnCount(); i++) {
+						fieldMetadata = SQLUtil.dbMetadata2jetel(fieldName[i], dbMeta, i, jdbcSpecific);
+						dbMetadata.addField(fieldMetadata);
+					}
+				}
 		   }
 		   DataRecord record = new DataRecord(dbMetadata);
 		   record.init();
@@ -381,7 +400,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 				records.add(record.duplicate());
 			}
 			return records.iterator();
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
    }
@@ -397,13 +416,14 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 * @see org.jetel.data.lookup.LookupTable#createLookup(org.jetel.data.RecordKey, org.jetel.data.DataRecord)
 	 */
 	public Lookup createLookup(RecordKey key, DataRecord keyRecord) throws ComponentNotReadyException {
-		PreparedStatement pStatement;
-        try {
-            pStatement = dbConnection.getSqlConnection().prepareStatement(sqlQuery);
-        } catch (SQLException ex) {
-            throw new ComponentNotReadyException("Can't create SQL statement: " + ex.getMessage());
-        }
-		DBLookup lookup = new DBLookup(pStatement, key, keyRecord);
+		DBLookup lookup;
+		key.init();
+		try {
+			lookup = new DBLookup(new SQLCloverStatement(dbConnection, sqlQuery, keyRecord, key.getKeyFieldNames()), 
+					key, keyRecord);
+		} catch (SQLException e) {
+			throw new ComponentNotReadyException(this, e);
+		}
 		lookup.setLookupTable(this);
 		lookup.setCacheSize(maxCached);
 		lookup.setStoreNulls(storeNulls);
@@ -413,10 +433,11 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	
 	public char[] getKey() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
 		if (!isInitialized()) throw new NotInitializedException(this);
-		PreparedStatement pStatement;
+		SQLCloverStatement statement = new SQLCloverStatement(dbConnection, sqlQuery, null);
         char[] result;
-        try {
-            pStatement = dbConnection.getSqlConnection().prepareStatement(sqlQuery);
+		try {
+        	statement.init();
+            PreparedStatement pStatement = statement.getStatement();
     		ParameterMetaData dbMeta = pStatement.getParameterMetaData();
             result = new char[dbMeta.getParameterCount()];
             for (int i = 0; i < result.length; i++) {
@@ -478,16 +499,16 @@ class DBLookup implements Lookup{
 	private int totalNumber = 0;
 
 	private DataRecordMetadata dbMetadata;
-	private PreparedStatement pStatement;
-	private CopySQLData[] keyTransMap;
+	private SQLCloverStatement statement;
 	private ResultSet resultSet;
 	private CopySQLData[] transMap;
 	
-	DBLookup(PreparedStatement pStatement, RecordKey key, DataRecord record){
+	DBLookup(SQLCloverStatement statement, RecordKey key, DataRecord record) throws ComponentNotReadyException, SQLException {
 		this.recordKey = key;
 		this.inRecord = record;
 		this.key = new HashKey(recordKey, inRecord);
-		this.pStatement = pStatement;
+		this.statement = statement;
+		statement.init();
 	}
 	
 	public RecordKey getKey() {
@@ -545,39 +566,29 @@ class DBLookup implements Lookup{
 	}
 
 	private void seekInDB() throws SQLException {
-		pStatement.clearParameters();
-		// initialization of trans map if it was not already done
-		if (keyTransMap==null){
-		    
-		    try {
-		        keyTransMap = CopySQLData.jetel2sqlTransMap(
-		                SQLUtil.getFieldTypes(pStatement.getParameterMetaData()),  inRecord,key.getKeyFields());
-		    } catch (JetelException ex){
-		        throw new RuntimeException("Can't create keyRecord transmap: "+ex.getMessage());
-		    }catch (Throwable ex) {
-		        // PreparedStatement parameterMetadata probably not implemented - use work-around
-		        // we only guess the correct data types on JDBC side
-		        try{
-		            keyTransMap = CopySQLData.jetel2sqlTransMap(key.getDataRecord(),key.getKeyFields(), lookupTable.dbConnection.getJdbcSpecific());
-		        }catch(JetelException ex1){
-		            throw new RuntimeException("Can't create keyRecord transmap: "+ex1.getMessage());
-		        }catch(Exception ex1){
-		            // some serious problem
-		            throw new RuntimeException("Can't create keyRecord transmap: "+ex1.getClass().getName()+":"+ex1.getMessage());
-		        }
-		    }
-		    
-		}
-		// set prepared statement parameters
-		for (int i = 0; i < keyTransMap.length; i++) {
-			keyTransMap[i].jetel2sql(pStatement);
-		}
-
 		//execute query
-	   resultSet = pStatement.executeQuery();
+	   resultSet = statement.executeQuery();
 	   
 	   if (dbMetadata == null) {
-		   dbMetadata = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), lookupTable.dbConnection.getJdbcSpecific());
+		   if (statement.getCloverOutputFields() == null) {
+			dbMetadata = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), lookupTable.dbConnection.getJdbcSpecific());
+		   }else{
+				ResultSetMetaData dbMeta = resultSet.getMetaData();
+				JdbcSpecific jdbcSpecific = lookupTable.dbConnection.getJdbcSpecific();
+				String[] fieldName = statement.getCloverOutputFields();
+				DataFieldMetadata fieldMetadata;
+				String tableName = dbMeta.getTableName(1);
+				if (!StringUtils.isValidObjectName(tableName)) {
+					tableName = StringUtils.normalizeName(tableName);
+				}
+				dbMetadata = new DataRecordMetadata(tableName, DataRecordMetadata.DELIMITED_RECORD);
+				dbMetadata.setFieldDelimiter(Defaults.Component.KEY_FIELDS_DELIMITER);
+				dbMetadata.setRecordDelimiters("\n");
+				for (int i = 1; i <= dbMeta.getColumnCount(); i++) {
+					fieldMetadata = SQLUtil.dbMetadata2jetel(fieldName[i], dbMeta, i, jdbcSpecific);
+					dbMetadata.addField(fieldMetadata);
+				}
+		   }
 	   }
 	}
 	
@@ -620,6 +631,11 @@ class DBLookup implements Lookup{
 
 	public void seek(DataRecord keyRecord) {
 		key.setDataRecord(keyRecord);
+		try {
+			statement.setInRecord(keyRecord);
+		} catch (ComponentNotReadyException e) {
+			throw new IllegalStateException(e);
+		}
 		seek();
 	}
 
@@ -649,7 +665,7 @@ class DBLookup implements Lookup{
 	}
 
 	public void close() throws SQLException{
-		pStatement.close();
+		statement.close();
 	}
 	
 	public void remove() {
