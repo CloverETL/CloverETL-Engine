@@ -521,11 +521,12 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<property name="revision_version" value="${revision_version}"/>
 		</ant>
 	</target>
-	
+	<!-- TODO - path to simple and other examples -->
 	<target name="runtests-scenario-after-commit" depends="build,coverage-instrument">
 		<echo message="Executing Clover Test Environment environment - after commit"/>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
-            <property name="scenarios" value="simpleExamples.ts;after-commit.ts" />
+            <property name="scenarios" value="simpleExamples.ts;extExamples.ts;advancedExamples.ts;after-commit.ts" />
+			<property name="dir.scenarios" value="../cloveretl.test.environment/scenarios;${dir.examples}/simpleExamples;${dir.examples}/extExamples;${dir.examples}/advancedExamples" />
 			<property name="dir.engine.classes" value="${dir.coverage.bin}:${dir.bin}"/>
 			<property name="dir.plugins" value="${dir.coverage.plugins}/plugins"/>
 			<property name="cobertura.ser" value="${cobertura.ser}"/>
