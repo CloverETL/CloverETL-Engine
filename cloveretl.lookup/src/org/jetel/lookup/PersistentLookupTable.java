@@ -279,10 +279,11 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
         return true;
     }
 
-    public boolean put(DataRecord dataRecord) {
+    public synchronized boolean put(DataRecord dataRecord) {
     	DataRecord storeRecord = dataRecord.duplicate();
 
     	try {
+    		recordKeyComparator.setLookupKey(indexKey);
         	tree.insert(storeRecord, storeRecord, replace);
 
         	if (++uncommitedRecords == commitInterval) {
@@ -299,11 +300,26 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
     }
 
 	public boolean remove(DataRecord dataRecord) {
-		if (dataRecord == null) {
-			throw new IllegalArgumentException("dataRecord");
+		return remove(dataRecord, indexKey);
+	}
+
+    public boolean remove(HashKey hashKey) {
+        return remove(hashKey.getDataRecord(), hashKey.getRecordKey());
+    }
+    
+    private synchronized boolean remove(DataRecord dataRecord, RecordKey recordKey) {
+    	if (dataRecord == null) {
+			throw new NullPointerException("dataRecord");
 		}
+    	if (recordKey == null) {
+			throw new NullPointerException("recordKey");
+		}
+
 		try {
-			tree.remove(dataRecord);
+			recordKeyComparator.setLookupKey(recordKey);
+			if (tree.remove(dataRecord) == null) {
+				return false;
+			}
 		} catch (IOException ioe) {
 			logger.error("Remove failed.", ioe);
 
@@ -311,10 +327,6 @@ public class PersistentLookupTable extends GraphElement implements LookupTable {
 		}
 
 		return true;
-	}
-
-    public boolean remove(HashKey hashKey) {
-        return remove(hashKey.getDataRecord());
     }
 
 	public Iterator<DataRecord> iterator() {
