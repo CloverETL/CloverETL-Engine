@@ -1,7 +1,11 @@
 package org.jetel.lookup;
 
 import java.io.File;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
@@ -32,6 +36,9 @@ public class PersistentLookupTest extends CloverTestCase {
 	
 	private PersistentLookupTable lookupTable;
 	private DataRecordMetadata lookupMetadata;
+	
+	// record used in testSeek... - it is concrete DataRecord   
+	private DataRecord testRecord = null;
 	
 	protected void setUp() throws Exception {
 		initEngine();
@@ -137,15 +144,15 @@ public class PersistentLookupTest extends CloverTestCase {
         dataRecord.getField(FIELD_NAME).setValue("Křižíkova");
         lookupTable.put(dataRecord);
 
-        Lookup aspellLookup = lookupTable.createLookup(lookupKey, dataRecord);
-        aspellLookup.seek();
+        Lookup persistentLookup = lookupTable.createLookup(lookupKey, dataRecord);
+        persistentLookup.seek();
 
-        assertNotNull("No data record found for an existing lookup key!", aspellLookup.next());
+        assertNotNull("No data record found for an existing lookup key!", persistentLookup.next());
     }
 
     /**
-     * Tests whether the {@link PersistentLookupTable#remove(DataRecord)} and {@link AspellLookupTable#remove(HashKey)}
-     * methods are not supported.
+     * Tests whether the {@link PersistentLookupTable#remove(DataRecord)} and {@link PersistentLookupTable#remove(HashKey)}
+     * methods are supported and work correctly.
      */
     public void testRemove() {
         testInit();
@@ -153,13 +160,15 @@ public class PersistentLookupTest extends CloverTestCase {
         assertTrue("The remove operation is not supported!", lookupTable.isRemoveSupported());
 
         try {
-            lookupTable.remove((DataRecord) dataRecord);
+            assertFalse("A data record removed for an non existing lookup key!", 
+            		lookupTable.remove((DataRecord) dataRecord));
         } catch (UnsupportedOperationException exception) {
         	fail("The remove(DataRecord) method is not supported although the isRemoveSupported() method returns true!");
         }
 
         try {
-            lookupTable.remove((HashKey) new HashKey(null, dataRecord));
+        	assertFalse("A data record removed for an non existing lookup key!", 
+        			lookupTable.remove((HashKey) new HashKey(new RecordKey(new int[0], null), dataRecord)));
         } catch (UnsupportedOperationException exception) {
         	fail("The remove(HashKey) method is not supported although the isRemoveSupported() method returns true!");
         }
@@ -168,7 +177,7 @@ public class PersistentLookupTest extends CloverTestCase {
         dataRecord.getField(FIELD_NAME).setValue("name");
         
         lookupTable.put(dataRecord);
-        lookupTable.remove(dataRecord);
+        assertTrue("A data record not removed for an existing lookup key!", lookupTable.remove(dataRecord));
         
         Lookup persistentLookup = lookupTable.createLookup(lookupKey, dataRecord);
         persistentLookup.seek();
@@ -177,16 +186,16 @@ public class PersistentLookupTest extends CloverTestCase {
         	assertNull("A data record found for an non existing lookup key!", persistentLookup.next());
         }
         
-// TODO        
-//        lookupTable.put(dataRecord);
-//        lookupTable.remove(new HashKey(..., dataRecord));
-//        
-//        Lookup persistentLookup = lookupTable.createLookup(lookupKey, dataRecord);
-//        persistentLookup.seek();
-//
-//        while (persistentLookup.hasNext()) {
-//        	assertNull("A data record found for an non existing lookup key!", persistentLookup.next());
-//        }
+     
+        lookupTable.put(dataRecord);
+        lookupTable.remove(new HashKey(lookupKey, dataRecord));
+        
+        persistentLookup = lookupTable.createLookup(lookupKey, dataRecord);
+        persistentLookup.seek();
+
+        while (persistentLookup.hasNext()) {
+        	assertNull("A data record found for an non existing lookup key!", persistentLookup.next());
+        }
     }
 
     /**
@@ -248,45 +257,50 @@ public class PersistentLookupTest extends CloverTestCase {
         assertEquals("The number of returned data records is invalid!", 0, persistentLookup.getNumFound());
     }
 
-//    /**
-//     * Tests whether the iterator returned by the {@link PersistentLookupTable#iterator()} method correctly returns all
-//     * the data records stored in the lookup table.
-//     */
-//    public void testIterator() {
-//        testInit();
-//
-//        // the data records that should be contained in the lookup table
-//        Set<DataRecord> lookupTableDataRecords = getTestRecords();
-//        
-//        // fill the lookup table
-//        for (DataRecord tmpRecord : lookupTableDataRecords) {
-//			lookupTable.put(tmpRecord);
-//		}
-//
-//        // count the data records and check their content
-//        int dataRecordsCount = lookupTableDataRecords.size();
-//
-//        for (DataRecord dataRecord : lookupTable) {
-//            lookupTableDataRecords.remove(dataRecord);
-//            dataRecordsCount--;
-//        }
-//
-//        assertEquals("The iterator returned invalid number of data records!", 0, dataRecordsCount);
-//        assertTrue("The iterator did not return all the data records!", lookupTableDataRecords.isEmpty());
-//
-//        // test the behaviour of the next() method when there are no more data records
-//        Iterator<DataRecord> iterator = lookupTable.iterator();
-//
-//        while (iterator.hasNext()) {
-//            iterator.next();
-//        }
-//
-//        try {
-//            iterator.next();
-//            fail("The next() method returned another data record even though there should not be any!");
-//        } catch (NoSuchElementException exception) {
-//        }
-//    }
+    /**
+     * Tests whether the iterator returned by the {@link PersistentLookupTable#iterator()} method correctly returns all
+     * the data records stored in the lookup table.
+     */
+    public void testIterator() {
+        testInit();
+        
+        // the data records that should be contained in the lookup table
+        Set<DataRecord> lookupTableDataRecords = getTestRecords();
+        
+        // fill the lookup table
+        for (DataRecord tmpRecord : lookupTableDataRecords) {
+			lookupTable.put(tmpRecord);
+		}
+
+        // count the data records and check their content
+        int dataRecordsCount = lookupTableDataRecords.size();
+        
+        int numFoundTestRecord = 0;
+        for (DataRecord dataRecord : lookupTable) {
+        	if (testRecord.equals(dataRecord)) {
+        		numFoundTestRecord++;
+        	}
+            lookupTableDataRecords.remove(dataRecord);
+            dataRecordsCount--;
+        }
+
+        assertEquals("The iterator didn't return test data record!", 1, numFoundTestRecord);
+        assertEquals("The iterator returned invalid number of data records!", 0, dataRecordsCount);
+        assertTrue("The iterator did not return all the data records!", lookupTableDataRecords.isEmpty());
+
+        // test the behaviour of the next() method when there are no more data records
+        Iterator<DataRecord> iterator = lookupTable.iterator();
+
+        while (iterator.hasNext()) {
+            iterator.next();
+        }
+
+        try {
+            iterator.next();
+            fail("The next() method returned another data record even though there should not be any!");
+        } catch (NoSuchElementException exception) {
+        }
+    }
 
     /**
      * Tests whether the {@link PersistentLookupTable#reset()} method resets the state of the lookup table correctly.
@@ -307,44 +321,157 @@ public class PersistentLookupTest extends CloverTestCase {
                 configurationStatus.isEmpty());
     }
 
-//	private Set<DataRecord> getTestRecords() {
-//		Set<DataRecord> lookupTableDataRecords = new HashSet<DataRecord>();
-//		DataRecord record;
-//		record = new DataRecord(lookupMetadata);
-//		record.init();
-//		
-//		Calendar cal = Calendar.getInstance();
-//		
-//		record.getField("name").setValue("10-20");
-//		record.getField("start").setValue(10);
-//		record.getField("date").setValue(cal.getTime());
-//		lookupTableDataRecords.add(record);
-//		
-//		record.getField("name").setValue("15-20");
-//		record.getField("start").setValue(15);
-//		record.getField("date").setValue(cal.getTime());
-//		lookupTableDataRecords.add(record);
-//		
-//		record.getField("name").setValue("20-25");
-//		record.getField("start").setValue(20);
-//		record.getField("date").setValue(cal.getTime());
-//		lookupTableDataRecords.add(record);
-//		
-//		record.getField("name").setValue("20-30");
-//		record.getField("start").setValue(20);
-//		record.getField("date").setValue(cal.getTime());
-//		lookupTableDataRecords.add(record);
-//		
-//		record.getField("name").setValue("30-40");
-//		record.getField("start").setValue(30);
-//		record.getField("date").setValue(cal.getTime());
-//		lookupTableDataRecords.add(record);
-//		
-//		record.getField("name").setValue("0-10");
-//		record.getField("start").setValue(0);
-//		record.getField("date").setValue(cal.getTime());
-//		lookupTableDataRecords.add(record);
-//		
-//		return lookupTableDataRecords;
-//	}
+    /**
+     * Tests whether the {@link PersistentLookup#seek()} returns correct data when as input data is used
+     * data record with different lookup key.
+     */
+    public void testSeekDifferentLookupKey() {
+    	testInit();
+    	fillLookupTable();
+    	
+    	DataRecordMetadata recMet = new DataRecordMetadata("rec", DataRecordMetadata.DELIMITED_RECORD);
+        recMet.addField(new DataFieldMetadata("in", DataFieldMetadata.INTEGER_FIELD, ";"));
+        recMet.addField(new DataFieldMetadata("jmeno2", DataFieldMetadata.STRING_FIELD, ";"));
+        
+        RecordKey lookupKey2 = new RecordKey(new String[] {"jmeno2"}, recMet);
+        lookupKey2.init();
+        
+        DataRecord rec = new DataRecord(recMet);
+        rec.init();
+        rec.getField("jmeno2").setValue(testRecord.getField(FIELD_NAME));
+        
+        Lookup persistentLookup = lookupTable.createLookup(lookupKey2);
+       	persistentLookup.seek(rec);
+       	
+       	assertTrue("No data records found for an existing key!", persistentLookup.hasNext());
+        assertEquals("The number of returned data records is invalid!", 1, persistentLookup.getNumFound());
+        assertEquals("The returned record isn't correct!", testRecord, persistentLookup.next());
+        assertFalse("The number of data records returned by the iterator is invalid!", persistentLookup.hasNext());
+    }
+    
+    /**
+     * Tests whether the {@link PersistentLookupTable#remove(DataRecord)} and {@link PersistentLookupTable#remove(HashKey)}
+     * methods work correctly with different lookup key.
+     */
+    public void testRemoveDifferentLookupKey() {
+    	testInit();
+    	fillLookupTable();
+    	
+    	DataRecordMetadata recMet = new DataRecordMetadata("rec", DataRecordMetadata.DELIMITED_RECORD);
+        recMet.addField(new DataFieldMetadata("in", DataFieldMetadata.INTEGER_FIELD, ";"));
+        recMet.addField(new DataFieldMetadata("inin", DataFieldMetadata.INTEGER_FIELD, ";"));
+        recMet.addField(new DataFieldMetadata("ininin", DataFieldMetadata.INTEGER_FIELD, ";"));
+        recMet.addField(new DataFieldMetadata("jmeno2", DataFieldMetadata.STRING_FIELD, ";"));
+        
+        RecordKey lookupKey2 = new RecordKey(new String[] {"jmeno2"}, recMet);
+        lookupKey2.init();
+        
+        DataRecord rec = new DataRecord(recMet);
+        rec.init();
+        rec.getField("jmeno2").setValue(testRecord.getField(FIELD_NAME));
+
+        int initRecordCount = getRecordCount();
+        
+        try {
+        	lookupTable.remove(rec);
+            fail("A data record was removed for an lookup key although lookup different key wasn't set!");
+        } catch (Exception e) {
+		}
+        
+        assertEquals("The number of returned data records is invalid!", initRecordCount, getRecordCount());
+        
+        assertTrue("A data record wasn't removed for an lookup key although lookup key was set!",
+        		lookupTable.remove(new HashKey(lookupKey2, rec)));
+        
+        assertEquals("The number of returned data records is invalid!", initRecordCount - 1, getRecordCount());
+    }
+    
+    /**
+     * Tests whether the {@link PersistentLookupTable#put(DataRecord)} 
+     * methods work correctly with different lookup key.
+     */
+    public void testPutDifferentLookupKey() {
+    	testInit();
+    	
+    	DataRecordMetadata recMet = new DataRecordMetadata("rec", DataRecordMetadata.DELIMITED_RECORD);
+        recMet.addField(new DataFieldMetadata("in", DataFieldMetadata.INTEGER_FIELD, ";"));
+        recMet.addField(new DataFieldMetadata("inin", DataFieldMetadata.INTEGER_FIELD, ";"));
+        recMet.addField(new DataFieldMetadata("ininin", DataFieldMetadata.INTEGER_FIELD, ";"));
+        recMet.addField(new DataFieldMetadata("jmeno2", DataFieldMetadata.STRING_FIELD, ";"));
+        
+        RecordKey lookupKey2 = new RecordKey(new String[] {"jmeno2"}, recMet);
+        lookupKey2.init();
+
+        // only for set testRecord
+        getTestRecords();
+        
+        DataRecord rec = new DataRecord(recMet);
+        rec.init();
+        rec.getField("jmeno2").setValue(testRecord.getField(FIELD_NAME));
+
+        // set differnet lookup key
+        assertFalse("A data record was removed for an lookup key although no record is in!", 
+        		lookupTable.remove(new HashKey(lookupKey2, rec)));
+        
+       	assertTrue("A data record wasn't put to an lookup key!", lookupTable.put(testRecord));
+    }
+    
+    private int getRecordCount() {
+    	int recordCount = 0;
+        for (@SuppressWarnings("unused") DataRecord record : lookupTable) {
+			recordCount++;
+		}
+        return recordCount;
+    }
+    
+    private void fillLookupTable() {
+    	Set<DataRecord> lookupTableDataRecords = getTestRecords();
+        
+        // fill the lookup table
+        for (DataRecord tmpRecord : lookupTableDataRecords) {
+			lookupTable.put(tmpRecord);
+		}
+    }
+    
+	private Set<DataRecord> getTestRecords() {
+		Set<DataRecord> lookupTableDataRecords = new HashSet<DataRecord>();
+		DataRecord record;
+		record = new DataRecord(lookupMetadata);
+		record.init();
+		
+		Calendar cal = Calendar.getInstance();
+		
+		record.getField("name").setValue("10-20");
+		record.getField("start").setValue(10);
+		record.getField("date").setValue(cal.getTime());
+		lookupTableDataRecords.add(record.duplicate());
+		
+		record.getField("name").setValue("15-20");
+		record.getField("start").setValue(15);
+		record.getField("date").setValue(cal.getTime());
+		lookupTableDataRecords.add(record.duplicate());
+		
+		record.getField("name").setValue("20-25");
+		record.getField("start").setValue(20);
+		record.getField("date").setValue(cal.getTime());
+		testRecord = record.duplicate();
+		lookupTableDataRecords.add(record.duplicate());
+		
+		record.getField("name").setValue("20-30");
+		record.getField("start").setValue(20);
+		record.getField("date").setValue(cal.getTime());
+		lookupTableDataRecords.add(record.duplicate());
+		
+		record.getField("name").setValue("30-40");
+		record.getField("start").setValue(30);
+		record.getField("date").setValue(cal.getTime());
+		lookupTableDataRecords.add(record.duplicate());
+		
+		record.getField("name").setValue("0-10");
+		record.getField("start").setValue(0);
+		record.getField("date").setValue(cal.getTime());
+		lookupTableDataRecords.add(record.duplicate());
+		
+		return lookupTableDataRecords;
+	}
 }
