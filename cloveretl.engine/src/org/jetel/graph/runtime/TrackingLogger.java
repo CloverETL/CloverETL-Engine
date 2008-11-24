@@ -52,7 +52,7 @@ import org.jetel.util.string.StringUtils;
  */
 public class TrackingLogger implements NotificationListener {
 	
-    private final static String TRACKING_LOGGER_NAME = "Tracking";
+    public final static String TRACKING_LOGGER_NAME = "Tracking";
     private static final Log logger = LogFactory.getLog(TRACKING_LOGGER_NAME);
 
     private static final int[] ARG_SIZES_WITH_CPU = { -6, -4, 28, -5, 9, 12, 7, 8 };
