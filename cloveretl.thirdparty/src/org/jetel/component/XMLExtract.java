@@ -196,6 +196,7 @@ public class XMLExtract extends Node {
     private static final Log    LOG = LogFactory.getLog(XMLExtract.class);
 
     private static final String XML_SOURCEURI_ATTRIBUTE = "sourceUri";
+    private static final String XML_SCHEMA_ATTRIBUTE = "schema";
     private static final String XML_USENESTEDNODES_ATTRIBUTE = "useNestedNodes";
     private static final String XML_MAPPING_ATTRIBUTE = "mapping";
 
@@ -228,6 +229,8 @@ public class XMLExtract extends Node {
     
     private int skipRows=0; // do not skip rows by default
     private int numRecords = -1;
+
+	private String schemaFile;
 
     /**
      * SAX Handler that will dispatch the elements to the different ports.
@@ -732,6 +735,10 @@ public class XMLExtract extends Node {
             
             extract.setInputFile(xattribs.getString(XML_SOURCEURI_ATTRIBUTE));
             
+            if (xattribs.exists(XML_SCHEMA_ATTRIBUTE)) {
+            	extract.setSchemaFile(xattribs.getString(XML_SCHEMA_ATTRIBUTE));
+            }
+            
             if(xattribs.exists(XML_USENESTEDNODES_ATTRIBUTE)) {
                 extract.setUseNestedNodes(xattribs.getBoolean(XML_USENESTEDNODES_ATTRIBUTE));
             }
@@ -1047,6 +1054,10 @@ public class XMLExtract extends Node {
     
     public void setInputFile(String inputFile) {
     	this.inputFile = inputFile;
+    }
+    
+    public void setSchemaFile(String schemaFile) {
+    	this.schemaFile = schemaFile;
     }
 
     public void setUseNestedNodes(boolean useNestedNodes) {
