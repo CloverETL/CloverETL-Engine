@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Record fieldDelimiter=";" name="employee" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Record fieldDelimiter=";" name="employee" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field name="employee_id" nullable="true" shift="0" type="integer"/>
 <Field name="full_name" nullable="true" shift="0" type="string"/>
 <Field name="first_name" nullable="true" shift="0" type="string"/>
@@ -11,7 +11,7 @@
 <Field name="birth_date" nullable="true" shift="0" type="date"/>
 <Field name="hire_date" nullable="true" shift="0" type="date"/>
 <Field name="end_date" nullable="true" shift="0" type="date"/>
-<Field name="salary" nullable="true" shift="0" type="numeric"/>
+<Field name="salary" nullable="true" shift="0" type="decimal"/>
 <Field name="supervisor_id" nullable="true" shift="0" type="integer"/>
 <Field name="education_level" nullable="true" shift="0" type="string"/>
 <Field name="marital_status" nullable="true" shift="0" type="string"/>

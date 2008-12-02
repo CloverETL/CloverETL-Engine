@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Apr 16 10:51:00 CEST 2007" description="This graph ilustrates usage of range lookup table" guiVersion="2.0" id="1204550037871" licenseType="Evaluation license." modified="Fri Oct 31 10:37:48 CET 2008" modifiedBy="avackova" name="graphRangeLookup" revision="1.35">
+<Graph author="avackova" created="Mon Apr 16 10:51:00 CEST 2007" description="This graph ilustrates usage of range lookup table" guiVersion="2.0" id="1204550037871" licenseType="Evaluation license." modified="Fri Nov 14 10:23:36 CET 2008" modifiedBy="avackova" name="graphRangeLookup" revision="1.34">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/schedule.fmt" id="Metadata0"/>
 <Metadata id="Metadata1">
 <Record fieldDelimiter=";" name="person" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field name="name" nullable="true" shift="0" type="string"/>
 <Field format="dd.MM.yyyy" name="date" nullable="true" shift="0" type="date"/>
-<Field name="time" nullable="true" shift="0" type="numeric"/>
+<Field name="time" nullable="true" shift="0" type="number"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata2">
 <Record fieldDelimiter=";" name="personAtTime" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field name="name" nullable="true" shift="0" type="string"/>
 <Field format="dd.MM.yyyy" name="date" nullable="true" shift="0" type="date"/>
-<Field format="##.00" name="time" nullable="true" shift="0" type="numeric"/>
+<Field format="##.00" name="time" nullable="true" shift="0" type="number"/>
 <Field name="activity" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
@@ -22,17 +22,20 @@
 </Global>
 <Phase number="0">
 <Node enabled="enabled" freeLookupTable="false" guiHeight="0" guiName="Lookup table reader/writer" guiWidth="0" guiX="260" guiY="74" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/TourSchedule.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="62" guiY="74" id="XLS_READER0" sheetNumber="0" type="XLS_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/TourSchedule.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="62" guiY="74" id="XLS_READER0" type="XLS_READER"/>
 <Edge debugMode="false" fromNode="XLS_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoplesOnTour.dat" guiHeight="0" guiName="Delimited Data Reader" guiWidth="0" guiX="63" guiY="223" id="DATA_READER0" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/peopleAtTour.out" guiHeight="0" guiName="Universal Data Writer" guiWidth="0" guiX="483" guiY="223" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Lookup Join" guiWidth="0" guiX="261" guiY="223" id="LOOKUP_JOIN0" joinKey="date;time;name" lookupTable="LookupTable0" type="LOOKUP_JOIN">
-<attr name="transform"><![CDATA[${out.0.name} = ${in.0.name};
-${out.0.date} = ${in.0.date};
-${out.0.time} = ${in.0.time};
-${out.0.activity} = ${in.1.name};
+<attr name="transform"><![CDATA[// automatically generated on Fri Nov 14 10:22:16 CET 2008
+function transform() {
+	$0.name := $0.name;
+	$0.date := $0.date;
+	$0.time := $0.time;
+	$0.activity := $1.name;
+}
 ]]></attr>
 </Node>
 <Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="LOOKUP_JOIN0:0"/>

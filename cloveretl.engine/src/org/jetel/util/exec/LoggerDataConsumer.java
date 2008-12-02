@@ -50,6 +50,10 @@ public class LoggerDataConsumer implements DataConsumer {
 	 * Error log level.
 	 */
 	public static final int LVL_ERROR = 2;
+	/**
+	 * Info log level.
+	 */
+	public static final int LVL_INFO = 3;
 	// TODO add more levels(?)
 	
 	private int level;
@@ -69,6 +73,7 @@ public class LoggerDataConsumer implements DataConsumer {
 		case LVL_DEBUG:
 		case LVL_WARN:
 		case LVL_ERROR:
+		case LVL_INFO:
 			this.level = level;
 			break;
 		default:
@@ -113,6 +118,9 @@ public class LoggerDataConsumer implements DataConsumer {
 			break;
 		case LVL_ERROR:
 			logger.error(line);
+			break;
+		case LVL_INFO:
+			logger.info(line);
 			break;
 		}
 		return true;

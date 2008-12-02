@@ -125,6 +125,7 @@ public class ReadableChannelIterator {
 	
 	private void initFileIterator() throws ComponentNotReadyException {
 		WcardPattern pat = new WcardPattern();
+		pat.setParent(contextURL);
         pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
         files = pat.filenames();
         firstPortProtocolPosition = getFirstProtocolPosition(files, PORT);

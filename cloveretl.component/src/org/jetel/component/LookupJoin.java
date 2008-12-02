@@ -24,7 +24,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 
@@ -32,7 +31,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.HashKey;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
@@ -246,8 +244,7 @@ public class LookupJoin extends Node {
 	private String errorLogURL;
 	private FileWriter errorLog;
 
-	private InputPort inPort;
-	private DataRecord inRecord;
+	private RecordKey recordKey;
 
 	static Log logger = LogFactory.getLog(Reformat.class);
 
@@ -290,6 +287,10 @@ public class LookupJoin extends Node {
 	@Override
 	public Result execute() throws Exception {
 		// initialize in and out records
+		InputPort inPort = getInputPort(WRITE_TO_PORT);
+		DataRecord inRecord = new DataRecord(inPort.getMetadata());
+		inRecord.init();
+		lookup = getGraph().getLookupTable(lookupTableName).createLookup(recordKey, inRecord);
 		OutputPort rejectedPort = getOutputPort(REJECTED_PORT);
 		DataRecord[] outRecord = { new DataRecord(getOutputPort(READ_FROM_PORT)
 				.getMetadata()) };
@@ -446,7 +447,6 @@ public class LookupJoin extends Node {
 				getInputPort(READ_FROM_PORT).getMetadata(), lookupMetadata };
 		DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT)
 				.getMetadata() };
-		RecordKey recordKey;
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
@@ -459,12 +459,7 @@ public class LookupJoin extends Node {
 			}
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
-		}
-		inPort = getInputPort(WRITE_TO_PORT);
-		inRecord = new DataRecord(inPort.getMetadata());
-		inRecord.init();
-		lookup = lookupTable.createLookup(recordKey, inRecord);
-		
+		}		
 
 		if (leftOuterJoin && getOutputPort(REJECTED_PORT) != null) {
 			logger.info(this.getId() + " info: There will be no skipped records " +

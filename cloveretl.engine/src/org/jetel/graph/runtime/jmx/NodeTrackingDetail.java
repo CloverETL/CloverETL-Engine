@@ -65,18 +65,38 @@ public class NodeTrackingDetail implements Serializable {
 		this.inputPortsDetails = new InputPortTrackingDetail[node.getInPorts().size()];
 		i = 0;
 		for (InputPort inputPort : node.getInPorts()) {
-			inputPortsDetails[i] = new InputPortTrackingDetail(this, inputPort, i);
+			inputPortsDetails[i] = new InputPortTrackingDetail(this, inputPort);
 			i++;
 		}
 		
 		this.outputPortsDetails = new OutputPortTrackingDetail[node.getOutPorts().size()];
 		i = 0;
 		for (OutputPort outputPort : node.getOutPorts()) {
-			outputPortsDetails[i] = new OutputPortTrackingDetail(this, outputPort, i);
+			outputPortsDetails[i] = new OutputPortTrackingDetail(this, outputPort);
 			i++;
 		}
 	}
 
+	public void copyFrom(NodeTrackingDetail nodeDetail) {
+		this.result = nodeDetail.result;
+		this.totalCPUTime = nodeDetail.totalCPUTime;
+		this.totalUserTime = nodeDetail.totalUserTime;
+		this.usageCPU = nodeDetail.usageCPU;
+		this.peakUsageCPU = nodeDetail.peakUsageCPU;
+		this.usageUser = nodeDetail.usageUser;
+		this.peakUsageUser = nodeDetail.peakUsageUser;
+		
+		int i = 0;
+		for (InputPortTrackingDetail inputPortDetail : inputPortsDetails) {
+			inputPortDetail.copyFrom(nodeDetail.inputPortsDetails[i++]);
+		}
+
+		i = 0;
+		for (OutputPortTrackingDetail outputPortDetail : outputPortsDetails) {
+			outputPortDetail.copyFrom(nodeDetail.outputPortsDetails[i++]);
+		}
+	}
+	
 	Node getNode() {
 		return node;
 	}
@@ -97,8 +117,26 @@ public class NodeTrackingDetail implements Serializable {
 		return inputPortsDetails;
 	}
 
+	public InputPortTrackingDetail getInputPortsDetail(int portNumber) {
+		for (InputPortTrackingDetail inputPortDetail : inputPortsDetails) {
+			if (inputPortDetail.getIndex() == portNumber) {
+				return inputPortDetail;
+			}
+		}
+		return null;
+	}
+
 	public OutputPortTrackingDetail[] getOutputPortsDetails() {
 		return outputPortsDetails;
+	}
+
+	public OutputPortTrackingDetail getOutputPortsDetail(int portNumber) {
+		for (OutputPortTrackingDetail outputPortDetail : outputPortsDetails) {
+			if (outputPortDetail.getIndex() == portNumber) {
+				return outputPortDetail;
+			}
+		}
+		return null;
 	}
 
 	/**

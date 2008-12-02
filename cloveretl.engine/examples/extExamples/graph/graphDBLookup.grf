@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="yanas" created="Fri Jan 12 08:41:50 CET 2007" description="This graph illustrates how to join data using reformat component." guiVersion="0.0" id="1204558846009" licenseType="Evaluation license." modified="Mon Nov 10 11:54:35 CET 2008" modifiedBy="avackova" name="Testing Hash Joiner" revision="1.21">
+<Graph author="yanas" created="Fri Jan 12 08:41:50 CET 2007" description="This graph illustrates how to join data using reformat component." guiVersion="0.0" id="1204558846009" licenseType="Evaluation license." modified="Mon Nov 24 12:22:38 CET 2008" modifiedBy="avackova" name="Testing Hash Joiner" revision="1.23">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata2"/>
@@ -16,7 +16,7 @@
 <Field name="birth_date" nullable="true" shift="0" type="date"/>
 <Field name="hire_date" nullable="true" shift="0" type="date"/>
 <Field name="end_date" nullable="true" shift="0" type="date"/>
-<Field name="salary" nullable="true" shift="0" type="numeric"/>
+<Field name="salary" nullable="true" shift="0" type="number"/>
 <Field name="supervisor_id" nullable="true" shift="0" type="integer"/>
 <Field name="education_level" nullable="true" shift="0" type="string"/>
 <Field name="marital_status" nullable="true" shift="0" type="string"/>
@@ -32,7 +32,7 @@
 </Global>
 <Phase number="0">
 <Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="228" guiY="20" id="JOIN" type="REFORMAT">
+<Node enabled="enabled" errorActions="-2=CONTINUE;" errorLog="${DATAOUT_DIR}/log.err" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="228" guiY="20" id="JOIN" type="REFORMAT">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.DataRecord;
@@ -65,7 +65,7 @@ public class reformatTest extends DataRecordTransform{
 				
 		if (!mylookup.hasNext()) {// skip this one
 			errorMessage = "Order: " + source[0].getField(0).getValue() + " - no corresponding record in lookup table";
-			return SKIP; 
+			return -2; 
 		}
 		
 		DataRecord employee = (DataRecord)mylookup.next(); 

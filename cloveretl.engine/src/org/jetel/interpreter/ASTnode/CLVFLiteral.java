@@ -135,9 +135,9 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 				((TLNumericValue)value).neg();
 				valueObj = value.getValue();
 				valueImage = "-" + valueImage;
+			}else {
+				throw new TransformLangExecutorRuntimeException(this,new Object[0], "Unary minus is not applicable on literal " + valueImage);
 			}
-		} else {
-			throw new TransformLangExecutorRuntimeException(this,new Object[0], "Unary minus is not applicable on literal " + valueImage);
-		}
+		} 
 	}
 }

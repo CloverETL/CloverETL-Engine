@@ -4,13 +4,13 @@
 <Metadata id="Metadata2">
 <Record fieldDelimiter=";" name="Aggr_revenues" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
-<Field locale="cs.CZ" name="Aggr_revenue" nullable="true" shift="0" type="numeric"/>
+<Field locale="cs.CZ" name="Aggr_revenue" nullable="true" shift="0" type="number"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata5">
 <Record fieldDelimiter=";" name="Bonus" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
-<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="numeric"/>
+<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="number"/>
 <Field locale="cs.CZ" name="Contract_nr" nullable="true" shift="0" type="integer"/>
 </Record>
 </Metadata>
@@ -23,26 +23,26 @@
 <Record fieldDelimiter=";" name="Db_revenues" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field name="client_id" nullable="true" shift="0" type="integer"/>
 <Field name="year_month" nullable="true" shift="0" type="string"/>
-<Field name="revenue" nullable="true" shift="0" type="numeric"/>
+<Field name="revenue" nullable="true" shift="0" type="number"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata9">
 <Record fieldDelimiter=";" name="Disprate" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
-<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="numeric"/>
+<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="number"/>
 <Field locale="cs.CZ" name="Contract_nr" nullable="true" shift="0" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata10">
 <Record fieldDelimiter=";" name="Matched" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
-<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="numeric"/>
+<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="number"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata3">
 <Record fieldDelimiter=";" name="Matching" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
-<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="numeric"/>
+<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="number"/>
 <Field locale="cs.CZ" name="Contract_nr" nullable="true" shift="0" type="integer"/>
 <Field locale="cs.CZ" name="Client_id_n" nullable="true" shift="0" type="integer"/>
 </Record>
@@ -51,7 +51,7 @@
 <Record fieldDelimiter=";" name="Without_revenue_matching" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
 <Field locale="cs.CZ" name="Client_id_n" nullable="true" shift="0" type="integer"/>
-<Field name="Aggr_revenue" nullable="true" shift="0" type="numeric"/>
+<Field name="Aggr_revenue" nullable="true" shift="0" type="number"/>
 </Record>
 </Metadata>
 <Connection dbConfig="conn/postgre.cfg" id="Connection0" type="JDBC"/>

@@ -19,10 +19,12 @@
 */
 package org.jetel.component;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
@@ -174,20 +176,39 @@ public class OracleDataWriter extends Node {
      */
     public Result execute() throws Exception {
 		int processExitValue = 0;
+		boolean unstableStdinIsUsed = false;
 
 		if (isDataReadFromPort) {
 			if (useFileForExchange) { // dataFile is used for exchange data
 				readFromPortAndWriteByFormatter();
 				ProcBox box = createProcBox();
 				processExitValue = box.join();
-			} else { // data is send to process through named pipe
-				processExitValue = runWithPipe();
+			} else { // data is send to process through stdin of sqlldr
+				if (ProcBox.isWindowsPlatform()) {
+					unstableStdinIsUsed = true;
+					Process process = Runtime.getRuntime().exec(createCommandlineForSqlldr());
+		            ProcBox box = createProcBox(process);
+		            
+		            // stdin (-) is used for exchange data - set data target to stdin (-) of process
+		        	OutputStream processIn = new BufferedOutputStream(process.getOutputStream());
+		        	readFromPortAndWriteByFormatter(processIn);
+		        	processExitValue = box.join();
+				} else { // data is send to process through named pipe
+					processExitValue = runWithPipe();
+				}
 			}
 		} else {
 			processExitValue = readDataDirectlyFromFile();
 		}
 
 		if (processExitValue != 0) {
+			if (unstableStdinIsUsed) {
+				throw new JetelException("Sqlldr utility has failed. See log file for details.\n" +
+						"You are using stdio of sqlldr that in mostly case of combination " +
+						"(OS and oracle client) failed. Set " + 
+						StringUtils.quote(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE+"=true") +
+						" to resolve the problem.");
+			}
 			throw new JetelException("Sqlldr utility has failed. See log file for details.");
 		}
 
@@ -220,8 +241,8 @@ public class OracleDataWriter extends Node {
 		}
     }
 
-	private void readFromPortAndWriteByFormatter() throws Exception {
-		formatter.setDataTarget(new FileOutputStream(dataFile));
+    private void readFromPortAndWriteByFormatter(Object dataTarget) throws Exception {
+		formatter.setDataTarget(dataTarget);
 		
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
@@ -239,6 +260,10 @@ public class OracleDataWriter extends Node {
 		}
 	}
     
+	private void readFromPortAndWriteByFormatter() throws Exception {
+		readFromPortAndWriteByFormatter(new FileOutputStream(dataFile));
+	}
+    
 	/**
 	 * Call sqlldr process with parameters - sqlldr process reads data directly from file.
 	 * 
@@ -252,14 +277,26 @@ public class OracleDataWriter extends Node {
 
 	/**
 	 * Create instance of ProcBox.
+	 * @param process running process; when process is null, default process is created
+	 * @return instance of ProcBox
+	 * @throws IOException
+	 */
+	private ProcBox createProcBox(Process process) throws IOException {
+		if (process == null) {
+			process = Runtime.getRuntime().exec(createCommandlineForSqlldr());			
+		}
+        return new ProcBox(process, null, consumer, errConsumer);
+	}
+	
+	/**
+	 * Create instance of ProcBox.
 	 * 
 	 * @param process running process; when process is null, default process is created
 	 * @return instance of ProcBox
 	 * @throws IOException
 	 */
 	private ProcBox createProcBox() throws IOException {
-		Process process = Runtime.getRuntime().exec(createCommandlineForSqlldr());
-		return new ProcBox(process, null, consumer, errConsumer);
+		return createProcBox(null);
 	}
 	
     @Override
@@ -596,11 +633,7 @@ public class OracleDataWriter extends Node {
     }
     
     private boolean getDefaultUsingFileForExchange() {
-    	if (ProcBox.isWindowsPlatform()) {
-    		return true;
-    	} else {
-    		return false;
-    	}
+    	return ProcBox.isWindowsPlatform();
     }
     
     private void setInDataFileName(String inDataFileName) {

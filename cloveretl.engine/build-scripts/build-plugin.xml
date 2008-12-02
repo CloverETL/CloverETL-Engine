@@ -244,7 +244,8 @@
 				haltonfailure="false" 
 				printsummary="true" 
 				fork="true" 
-				forkmode="once" 
+				forkmode="once"
+				dir="${basedir}"
 				>
     		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
     		<sysproperty key="file.encoding" value="UTF-8" />

@@ -71,6 +71,18 @@ public class PhaseTrackingDetail implements Serializable {
 		}
 	}
 	
+	public void copyFrom(PhaseTrackingDetail phaseDetail) {
+		this.startTime = phaseDetail.startTime;
+		this.endTime = phaseDetail.endTime;
+		this.memoryUtilization = phaseDetail.memoryUtilization;
+		this.result = phaseDetail.result;
+		
+		int i = 0;
+		for (NodeTrackingDetail nodeDetail : nodesDetails) {
+			nodeDetail.copyFrom(phaseDetail.nodesDetails[i++]);
+		}
+	}
+	
 	Phase getPhase() {
 		return phase;
 	}

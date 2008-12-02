@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Jul 31 09:29:05 CEST 2007" description="This graph illustrates usage of Db2DataWriterComponent.&#10;This component can be used in two ways:&#10;* data read from input port, are properly formated and saved in temporary file or named pipe (on Linux/Unix) and then load to database (phase 0)&#10;* data from existing file are lodaed to database (phase 1)&#10;Information about rejected records can be sent to output port." guiVersion="1.10" id="1204537468815" licenseType="Evaluation license." modified="Tue May 20 13:24:32 CEST 2008" modifiedBy="avackova" name="test" revision="1.451">
+<Graph author="avackova" created="Tue Jul 31 09:29:05 CEST 2007" description="This graph illustrates usage of Db2DataWriterComponent.&#10;This component can be used in two ways:&#10;* data read from input port, are properly formated and saved in temporary file or named pipe (on Linux/Unix) and then load to database (phase 0)&#10;* data from existing file are lodaed to database (phase 1)&#10;Information about rejected records can be sent to output port." guiVersion="0.0" id="1204537468815" licenseType="Evaluation license." modified="Thu Nov 27 12:51:17 CET 2008" modifiedBy="avackova" name="test" revision="1.460">
 <Global>
 <Metadata id="Metadata2">
 <Record fieldDelimiter=";" name="errors" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -13,9 +13,9 @@
 <Field delimiter=";" name="LONG_COL" nullable="true" shift="0" type="long"/>
 <Field delimiter=";" format="dd.MM.yyyy" name="DATE_COL" nullable="true" shift="0" type="date"/>
 <Field delimiter=";" length="8" name="DECIMAL_COL_NOT_NULL" nullable="true" scale="2" shift="0" type="decimal"/>
-<Field delimiter=";" name="DOUBLE_COL_NOT_NULL_DEFAULT" nullable="true" shift="0" type="numeric"/>
+<Field delimiter=";" name="DOUBLE_COL_NOT_NULL_DEFAULT" nullable="true" shift="0" type="number"/>
 <Field delimiter=";" name="INT_COL_NOT_NULL" nullable="true" shift="0" type="integer"/>
-<Field delimiter=";" name="REAL_COL" nullable="true" shift="0" type="numeric"/>
+<Field delimiter=";" name="REAL_COL" nullable="true" shift="0" type="number"/>
 <Field delimiter=";" format="HH:mm" name="TIME_COL_NOT_NULL_DEFAULT" nullable="true" shift="0" type="date"/>
 <Field delimiter=";" format="dd-MM-yyyy HH:mm" name="TIMESTAMP_COLL_NOT_NULL" nullable="true" shift="0" type="date"/>
 <Field delimiter="\n" name="STRING_COL" nullable="true" shift="0" type="string"/>
@@ -26,9 +26,9 @@
 <Field name="LONG_COL" nullable="true" shift="0" size="10" type="long"/>
 <Field format="dd.MM.yyyy" name="DATE_COL" nullable="true" shift="0" size="10" type="date"/>
 <Field length="8" name="DECIMAL_COL_NOT_NULL" nullable="true" scale="2" shift="0" size="10" type="decimal"/>
-<Field name="DOUBLE_COL_NOT_NULL_DEFAULT" nullable="true" shift="0" size="10" type="numeric"/>
+<Field name="DOUBLE_COL_NOT_NULL_DEFAULT" nullable="true" shift="0" size="10" type="number"/>
 <Field name="INT_COL_NOT_NULL" nullable="true" shift="0" size="6" type="integer"/>
-<Field name="REAL_COL" nullable="true" shift="0" size="10" type="numeric"/>
+<Field name="REAL_COL" nullable="true" shift="0" size="10" type="number"/>
 <Field format="HH:mm" name="TIME_COL_NOT_NULL_DEFAULT" nullable="true" shift="0" size="5" type="date"/>
 <Field format="dd-MM-yyyy HH:mm" name="TIMESTAMP_COLL_NOT_NULL" nullable="true" shift="0" size="16" type="date"/>
 <Field name="STRING_COL" nullable="true" shift="0" size="20" type="string"/>
@@ -47,19 +47,22 @@
 <attr name="transferMode"><![CDATA[file]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="219" guiY="141" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[${out.0.LONG_COL} = ${in.0.LONG_COL};
-${out.0.DATE_COL} = ${in.0.DATE_COL};
-if (${in.0.DECIMAL_COL_NOT_NULL}.compareTo(0.1)<0) {
-${out.0.DECIMAL_COL_NOT_NULL} = (Number)null;
-}else{
-${out.0.DECIMAL_COL_NOT_NULL} = ${in.0.DECIMAL_COL_NOT_NULL};
+<attr name="transform"><![CDATA[function decimalColumnValue(inputValue){
+	if (inputValue < 0.1) return null;
+	return inputValue;
 }
-${out.0.DOUBLE_COL_NOT_NULL_DEFAULT} = ${in.0.DOUBLE_COL_NOT_NULL_DEFAULT};
-${out.0.INT_COL_NOT_NULL} = ${in.0.INT_COL_NOT_NULL};
-${out.0.REAL_COL} = ${in.0.REAL_COL};
-${out.0.TIME_COL_NOT_NULL_DEFAULT} = ${in.0.TIME_COL_NOT_NULL_DEFAULT};
-${out.0.TIMESTAMP_COLL_NOT_NULL} = ${in.0.TIMESTAMP_COLL_NOT_NULL};
-${out.0.STRING_COL} = ${in.0.STRING_COL};
+
+function transform() {
+	$0.LONG_COL := $0.LONG_COL;
+	$0.DATE_COL := $0.DATE_COL;
+	$0.DECIMAL_COL_NOT_NULL := decimalColumnValue($0.DECIMAL_COL_NOT_NULL);
+	$0.DOUBLE_COL_NOT_NULL_DEFAULT := $0.DOUBLE_COL_NOT_NULL_DEFAULT;
+	$0.INT_COL_NOT_NULL := $0.INT_COL_NOT_NULL;
+	$0.REAL_COL := $0.REAL_COL;
+	$0.TIME_COL_NOT_NULL_DEFAULT := $0.TIME_COL_NOT_NULL_DEFAULT;
+	$0.TIMESTAMP_COLL_NOT_NULL := $0.TIMESTAMP_COLL_NOT_NULL;
+	$0.STRING_COL := $0.STRING_COL;
+}
 ]]></attr>
 </Node>
 <Node debugPrint="false" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="580" guiY="141" id="TRASH0" type="TRASH"/>

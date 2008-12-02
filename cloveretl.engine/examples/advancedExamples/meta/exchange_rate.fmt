@@ -2,7 +2,7 @@
 <Record fieldDelimiter="|" name="exchange_rate" recordDelimiter="\n" type="delimited">
 <Field name="Country" nullable="true" shift="0" type="string"/>
 <Field name="Currency" nullable="true" shift="0" type="string"/>
-<Field name="Amount" nullable="true" shift="0" type="numeric"/>
+<Field name="Amount" nullable="true" shift="0" type="number"/>
 <Field name="Code" nullable="false" shift="0" type="string"/>
-<Field name="Rate" nullable="true" shift="0" type="numeric"/>
+<Field name="Rate" nullable="true" shift="0" type="number"/>
 </Record>

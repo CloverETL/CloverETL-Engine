@@ -45,6 +45,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.AutoFilling;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -303,8 +304,8 @@ public class DBExecute extends Node {
 		if (errPort != null){
 			errRecord = new DataRecord(errPort.getMetadata());
 			errRecord.init();
-			errorCodeFieldNum = errRecord.getMetadata().findAutoFilledField(MultiFileReader.ERROR_CODE);
-			errMessFieldNum = errRecord.getMetadata().findAutoFilledField(MultiFileReader.ERROR_MESSAGE);
+			errorCodeFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_CODE);
+			errMessFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_MESSAGE);
 		}
 		try {
 			if (procedureCall) {

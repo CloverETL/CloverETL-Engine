@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.formatter.DataFormatter;
+import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -314,10 +314,6 @@ import org.w3c.dom.Element;
  * match data file columns with table columns.<br>
  * </td>
  * </tr>
- * <tr>
- * <td>useFileForExchange</td>
- * <td>Specifies if file for exchange will be used. (default value: Unix = false; win = true).</td>
- * </tr>
  * </table></td>
  * </tr>
  * </table>
@@ -373,7 +369,6 @@ public class MysqlDataWriter extends Node {
 	private static final String XML_COMMAND_URL_ATTRIBUTE = "commandURL";
 	private static final String XML_IGNORE_ROWS_ATTRIBUTE = "ignoreRows";
 	private static final String XML_PARAMETERS_ATTRIBUTE = "parameters";
-    private static final String XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE = "useFileForExchange"; // default value: Unix = false; win = true
 
 	// params for mysql client
 	private static final String MYSQL_SKIP_AUTO_REHASH_PARAM = "skipAutoRehash";
@@ -472,17 +467,21 @@ public class MysqlDataWriter extends Node {
 	private String parameters;
 	private String commandURL;
 	private File commandFile;
-	private boolean useFileForExchange = false;
-    private boolean isDefinedUseFileForExchange = false;
 
 	private Properties properties;
 	private File dataFile; // file that is used for exchange data between clover and mysql - file from dataURL
 	private String[] commandLine; // command line of mysql
 	private DataRecordMetadata dbMetadata; // it correspond to mysql input format
-	private DataFormatter formatter; // format data to mysql format and write them to dataFileName
+	private DelimitedDataFormatter formatter; // format data to mysql format and write them to dataFileName
 	private DataConsumer consumer = null; // consume data from out stream of mysql
 	private DataConsumer errConsumer; // consume data from err stream of mysql - write them to by logger
 
+	/**
+	 *  flag that determine if execute() method was already executed;
+	 *  used for deleting temp data file and reporting about it
+	 */
+	private boolean alreadyExecuted = false;
+	
 	/**
 	 * true - data is read from in port; 
 	 * false - data is read from file directly by mysql utility
@@ -515,6 +514,7 @@ public class MysqlDataWriter extends Node {
 	 * @since April 4, 2002
 	 */
 	public Result execute() throws Exception {
+		alreadyExecuted = true;
 		ProcBox box;
 		int processExitValue = 0;
 
@@ -828,21 +828,16 @@ public class MysqlDataWriter extends Node {
 		isDataReadDirectlyFromFile = !isDataReadFromPort && 
 				!StringUtils.isEmpty(dataURL);
 
-		// set undefined useFileForExchange when input port is connected
-        if (!isDefinedUseFileForExchange && isDataReadFromPort) {
-        	useFileForExchange = getDefaultUsingFileForExchange();
-        }
-		
 		properties = parseParameters(parameters);
 		checkParams();
 
 		// data is read directly from file -> file isn't used for exchange
     	if (isDataReadDirectlyFromFile) {
     		dataFile = openFile(dataURL);
-    		useFileForExchange = false;
+    	} else {
+    		createFileForExchange();
     	}
-		
-    	createFileForExchange();
+    	
 		commandLine = createCommandLineForDbLoader();
 		printCommandLineToLog(commandLine);
 
@@ -852,7 +847,7 @@ public class MysqlDataWriter extends Node {
 			dbMetadata = createMysqlMetadata(inPort.getMetadata());
 
 			// init of data formatter
-			formatter = new DataFormatter(CHARSET_NAME);
+			formatter = new DelimitedDataFormatter(CHARSET_NAME);
 			formatter.init(dbMetadata);
 		}
 
@@ -872,25 +867,15 @@ public class MysqlDataWriter extends Node {
 	}
 
 	private void createFileForExchange() throws ComponentNotReadyException {
-    	if (!useFileForExchange) {
-    		if (!ProcBox.isWindowsPlatform() && isDataReadFromPort) {
-    			dataFile = createTempFile();
-    		}
-   			return;
-    	}
-    	
-		if (isDataReadFromPort) {
-			if (ProcBox.isWindowsPlatform() || dataURL != null) {
-				if (dataURL != null) {
-					dataFile = new File(dataURL);
-					dataFile.delete();
-				} else {
-					dataFile = createTempFile();
-				}
+		if (ProcBox.isWindowsPlatform() || dataURL != null) {
+			if (dataURL != null) {
+				dataFile = new File(dataURL);
+				dataFile.delete();
 			} else {
 				dataFile = createTempFile();
-				useFileForExchange = false;
 			}
+		} else {
+			dataFile = createTempFile();
 		}
     }
 	
@@ -1003,21 +988,6 @@ public class MysqlDataWriter extends Node {
 						+ " is ignored because it is used only when data is read directly from file.");
 			}
 		}
-		
-		if ((useFileForExchange && isDefinedUseFileForExchange) 
-        		&& !isDataReadFromPort) {
-        	logger.warn("When no port is connected" +
-        			" (data is read directly from file) then " +
-        			StringUtils.quote(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE) + 
-        			" attribute is omitted.");
-        }
-        
-        if (!useFileForExchange && isDataReadFromPort && !StringUtils.isEmpty(dataURL)) {
-        	logger.warn("When port is connected and " +
-        			StringUtils.quote(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE) + " attribute" +
-        			" is set to false then " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + 
-        			" attribute is omitted.");
-        }
 	}
 	
 	/**
@@ -1046,16 +1016,18 @@ public class MysqlDataWriter extends Node {
 		metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
 		for (int idx = 0; idx < metadata.getNumFields() - 1; idx++) {
 			metadata.getField(idx).setDelimiter(columnDelimiter);
+			metadata.getField(idx).setSize((short)0);
 			setMysqlDateFormat(metadata.getField(idx));
 		}
 		if (properties.containsKey(LOAD_RECORD_DELIMITER_PARAM)) {
 			metadata.getField(metadata.getNumFields() - 1).setDelimiter((String) properties.get(LOAD_RECORD_DELIMITER_PARAM));
-			metadata.setRecordDelimiters("");
 		} else {
 			metadata.getField(metadata.getNumFields() - 1).setDelimiter(DEFAULT_RECORD_DELIMITER);
-			metadata.setRecordDelimiters("");
 		}
-		setMysqlDateFormat(metadata.getField(metadata.getNumFields() - 1));
+		int lastIndex = metadata.getNumFields() - 1;
+		metadata.getField(lastIndex).setSize((short)0);
+		metadata.setRecordDelimiters("");
+		setMysqlDateFormat(metadata.getField(lastIndex));
 
 		return metadata;
 	}
@@ -1096,6 +1068,7 @@ public class MysqlDataWriter extends Node {
 		
 		deleteDataFile();
 		deleteCommandFile();
+		alreadyExecuted = false;
 	}
 
 	/**
@@ -1106,11 +1079,13 @@ public class MysqlDataWriter extends Node {
 			return;
 		}
 		
-		if (isDataReadFromPort && dataURL == null) {
-			if (!dataFile.delete()) {
-				logger.warn("Temp data file was not deleted.");
-			}
-    	}
+		if (!alreadyExecuted) {
+			return;
+		}
+		
+		if (isDataReadFromPort && dataURL == null && !dataFile.delete()) {
+			logger.warn("Temp data file was not deleted.");
+		}
     }
 
 	private void deleteCommandFile() {
@@ -1221,14 +1196,6 @@ public class MysqlDataWriter extends Node {
 		}
 	}
 
-	private boolean getDefaultUsingFileForExchange() {
-    	if (ProcBox.isWindowsPlatform()) {
-    		return true;
-    	} else {
-    		return false;
-    	}
-    }
-	
 	/** Description of the Method */
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {

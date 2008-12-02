@@ -22,6 +22,7 @@ package org.jetel.util.file;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -113,6 +114,8 @@ public class WcardPattern {
 	 */
 	private List<String> patterns;
 	
+	private URL parent;
+	
 	/**
 	 * ctor. Creates instance with empty set of patterns.
 	 * It doesn't match any filenames initially.  
@@ -188,7 +191,8 @@ public class WcardPattern {
 			boolean fileProtocol = false;
 
 			try {
-				fileProtocol = FileUtils.getFileURL(fileName).getProtocol().equals("file");
+				fileProtocol = parent != null ? parent.getProtocol().equals("file") :
+					FileUtils.getFileURL(fileName).getProtocol().equals("file");
 			} catch (MalformedURLException e) {
 				// NOTHING
 			}
@@ -196,13 +200,18 @@ public class WcardPattern {
 			if (!fileProtocol || !splitPattern(fileName, dirName, filePat)) {	// no wildcards
 				mfiles.add(fileName);
 			} else {
-				File dir = new File(dirName.toString());
+				File dir;
+				try {
+					dir = parent != null ? new File(FileUtils.getFileURL(parent, dirName.toString()).toURI()) : new File(dirName.toString());
+				} catch (Exception e) {
+					dir = new File(dirName.toString());
+				} 
 				if (dir.exists()) {
 					FilenameFilter filter = new WcardFilter(filePat.toString());
 					String[] curMatch = dir.list(filter);
 					Arrays.sort(curMatch);
 					for (int fnIdx = 0; fnIdx < curMatch.length; fnIdx++) {
-						File f = new File(dirName.toString(), curMatch[fnIdx]);
+						File f = new File(dir, curMatch[fnIdx]);
 						mfiles.add(f.getAbsolutePath());
 					}
 				}
@@ -213,6 +222,14 @@ public class WcardPattern {
 
 	public static boolean checkName(String pattern, String name){
 		return new WcardFilter(pattern).accept(name);
+	}
+
+	public URL getParent() {
+		return parent;
+	}
+
+	public void setParent(URL parent) {
+		this.parent = parent;
 	}
 	
 }

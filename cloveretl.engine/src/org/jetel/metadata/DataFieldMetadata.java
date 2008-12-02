@@ -139,42 +139,56 @@ public class DataFieldMetadata implements Serializable {
 
 	/**  Description of the Field */
 	public final static char STRING_FIELD = 'S';
+	public final static String STRING_TYPE = "string";
 
 	/**  Description of the Field */
 	public final static char DATE_FIELD = 'D';
+	public final static String DATE_TYPE = "date";
 
 	/**  Description of the Field */
 	public final static char DATETIME_FIELD = 'T';
+	public final static String DATETIME_TYPE = "datetime";
 
 	/**  Description of the Field */
 	public final static char NUMERIC_FIELD = 'N';
+	public final static String NUMERIC_TYPE = "number";
+	public final static String NUMERIC_TYPE_DEPRECATED = "numeric";
 
 	/**  Description of the Field */
 	public final static char INTEGER_FIELD = 'i';
+	public final static String INTEGER_TYPE = "integer";
 
 	/**  Description of the Field */
 	public final static char LONG_FIELD = 'l';
+	public final static String LONG_TYPE = "long";
 	
 	/**  Description of the Field */
 	public final static char DECIMAL_FIELD = 'd';
+	public final static String DECIMAL_TYPE = "decimal";
 
 	/**  Description of the Field */
 	public final static char BYTE_FIELD = 'B';
+	public final static String BYTE_TYPE = "byte";
 	
 	/**  Description of the Field */
 	public final static char BOOLEAN_FIELD = 'b';
+	public final static String BOOLEAN_TYPE = "boolean";
 
 	/**  Description of the Field */
 	public final static char BYTE_FIELD_COMPRESSED = 'Z';
+	public final static String BYTE_COMPRESSED_TYPE = "cbyte";
 
 	/**  Description of the Field */
 	public final static char SEQUENCE_FIELD = 'q';
+	public final static String SEQUENCE_TYPE = "sequence";
 
 	/**  Description of the Field */
 	public final static char NULL_FIELD = 'n';
+	public final static String NULL_TYPE = "null";
 
 	/**  Description of the Field */
 	public final static char UNKNOWN_FIELD = ' ';
+	public final static String UNKNOWN_TYPE = "unknown";
 
 	public final static String LENGTH_ATTR = "length";
 	
@@ -726,57 +740,59 @@ public class DataFieldMetadata implements Serializable {
 	public static String type2Str(char fieldType) {
 		switch (fieldType) {
 			case DataFieldMetadata.NUMERIC_FIELD:
-				return "numeric";
+				return NUMERIC_TYPE;
 			case DataFieldMetadata.INTEGER_FIELD:
-				return "integer";
+				return INTEGER_TYPE;
 			case DataFieldMetadata.STRING_FIELD:
-				return "string";
+				return STRING_TYPE;
 			case DataFieldMetadata.DATE_FIELD:
-				return "date";
+				return DATE_TYPE;
 			case DataFieldMetadata.LONG_FIELD:
-				return "long";
+				return LONG_TYPE;
 			case DataFieldMetadata.DECIMAL_FIELD:
-			    return "decimal";
+			    return DECIMAL_TYPE;
 			case DataFieldMetadata.BOOLEAN_FIELD:
-			    return "boolean";
+			    return BOOLEAN_TYPE;
 			case DataFieldMetadata.BYTE_FIELD:
-			    return "byte";
+			    return BYTE_TYPE;
 			case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-			    return "cbyte";
+			    return BYTE_COMPRESSED_TYPE;
 			case DataFieldMetadata.DATETIME_FIELD:
-			    return "datetime";
+			    return DATETIME_TYPE;
 			case DataFieldMetadata.SEQUENCE_FIELD:
-			    return "sequence";
+			    return SEQUENCE_TYPE;
 			case DataFieldMetadata.NULL_FIELD:
-			    return "null";
+			    return NULL_TYPE;
 			default:
-				return "!!! UNKNOWN !!!";
+				return UNKNOWN_TYPE;
 		}
 	}
 	
 	public static char str2Type(String fieldType) {
-		if(fieldType.compareToIgnoreCase("numeric") == 0)
+		if(fieldType.compareToIgnoreCase(NUMERIC_TYPE) == 0 || fieldType.compareToIgnoreCase(NUMERIC_TYPE_DEPRECATED) == 0)
 		    return DataFieldMetadata.NUMERIC_FIELD;
-		else if(fieldType.compareToIgnoreCase("integer") == 0)
+		else if(fieldType.compareToIgnoreCase(INTEGER_TYPE) == 0)
 		    return DataFieldMetadata.INTEGER_FIELD;
-		else if(fieldType.compareToIgnoreCase("string") == 0)
+		else if(fieldType.compareToIgnoreCase(STRING_TYPE) == 0)
 		    return DataFieldMetadata.STRING_FIELD;
-		else if(fieldType.compareToIgnoreCase("date") == 0)
+		else if(fieldType.compareToIgnoreCase(DATE_TYPE) == 0)
 		    return DataFieldMetadata.DATE_FIELD;
-		else if(fieldType.compareToIgnoreCase("long") == 0)
+		else if(fieldType.compareToIgnoreCase(LONG_TYPE) == 0)
 		    return DataFieldMetadata.LONG_FIELD;
-		else if(fieldType.compareToIgnoreCase("decimal") == 0)
+		else if(fieldType.compareToIgnoreCase(DECIMAL_TYPE) == 0)
 		    return DataFieldMetadata.DECIMAL_FIELD;
-		else if(fieldType.compareToIgnoreCase("boolean") == 0)
+		else if(fieldType.compareToIgnoreCase(BOOLEAN_TYPE) == 0)
 		    return DataFieldMetadata.BOOLEAN_FIELD;
-		else if(fieldType.compareToIgnoreCase("byte") == 0)
+		else if(fieldType.compareToIgnoreCase(BYTE_TYPE) == 0)
 		    return DataFieldMetadata.BYTE_FIELD;
-		else if(fieldType.compareToIgnoreCase("cbyte") == 0)
+		else if(fieldType.compareToIgnoreCase(BYTE_COMPRESSED_TYPE) == 0)
 		    return DataFieldMetadata.BYTE_FIELD_COMPRESSED;
-		else if(fieldType.compareToIgnoreCase("datetime") == 0)
+		else if(fieldType.compareToIgnoreCase(DATETIME_TYPE) == 0)
 		    return DataFieldMetadata.DATETIME_FIELD;
-		else if(fieldType.compareToIgnoreCase("sequence") == 0)
+		else if(fieldType.compareToIgnoreCase(SEQUENCE_TYPE) == 0)
 		    return DataFieldMetadata.SEQUENCE_FIELD;
+		else if (fieldType.compareToIgnoreCase(NULL_TYPE) == 0)
+			return DataFieldMetadata.NULL_FIELD;
 		return DataFieldMetadata.UNKNOWN_FIELD;
 	}
 	

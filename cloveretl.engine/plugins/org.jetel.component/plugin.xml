@@ -29,13 +29,13 @@
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="DELIMITED_DATA_READER"/>
 		<parameter id="className" value="org.jetel.component.DelimitedDataReader"/>
+		<parameter id="type" value="DELIMITED_DATA_READER"/>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="DELIMITED_DATA_WRITER"/>
 		<parameter id="className" value="org.jetel.component.DelimitedDataWriter"/>
+		<parameter id="type" value="DELIMITED_DATA_WRITER"/>
 	</extension>
 
 	<extension point-id="component">
@@ -148,6 +148,11 @@
 	    <parameter id="type" value="EXT_SORT"/>
 	</extension>
 
+    <extension point-id="component">
+        <parameter id="className" value="org.jetel.component.SortWithinGroups"/>
+        <parameter id="type" value="SORT_WITHIN_GROUPS"/>
+    </extension>
+
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.Partition"/>
 	    <parameter id="type" value="PARTITION"/>
@@ -167,7 +172,7 @@
 	    <parameter id="className" value="org.jetel.component.SystemExecute"/>
 	    <parameter id="type" value="SYS_EXECUTE"/>
 	</extension>
-
+	
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.RunGraph"/>
 	    <parameter id="type" value="RUN_GRAPH"/>
@@ -189,22 +194,23 @@
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="className" value="org.jetel.component.XLSReader"/>
-		<parameter id="type" value="XLS_READER"/>
+	    <parameter id="className" value="org.jetel.component.XLSReader"/>
+	    <parameter id="type" value="XLS_READER"/>
 	</extension>
 
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.XLSWriter"/>
 	    <parameter id="type" value="XLS_WRITER"/>
 	</extension>
+	
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.CloverDataWriter"/>
 	    <parameter id="type" value="CLOVER_WRITER"/>
 	</extension>
 	
 	<extension point-id="component">
-		<parameter id="className" value="org.jetel.component.CloverDataReader"/>
-		<parameter id="type" value="CLOVER_READER"/>
+	    <parameter id="className" value="org.jetel.component.CloverDataReader"/>
+	    <parameter id="type" value="CLOVER_READER"/>
 	</extension>
 	
 	<extension point-id="component">
@@ -282,15 +288,14 @@
 		<parameter id="type" value="JAVA_EXECUTE"/>
 	</extension>
 
-	
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.XmlWriter"/>
 	    <parameter id="type" value="XML_WRITER"/>
-	</extension>	
-	
+	</extension>
+
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.XSLDataTransformer"/>
 	    <parameter id="type" value="XSL_TRANSFORMER"/>
 	</extension>
-	
+
 </plugin>

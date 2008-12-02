@@ -1,11 +1,13 @@
 package org.jetel.component;
 
+import java.io.File;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,9 +33,12 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.sequence.PrimitiveSequence;
+import org.jetel.util.AutoFilling;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -230,6 +235,8 @@ public class XMLExtract extends Node {
     private int skipRows=0; // do not skip rows by default
     private int numRecords = -1;
 
+    private AutoFilling autoFilling = new AutoFilling();
+
 	private String schemaFile;
 
     /**
@@ -257,8 +264,6 @@ public class XMLExtract extends Node {
         
         // the active mapping
         private Mapping m_activeMapping = null;
-        
-        private int globalCounter;
         
         /**
          * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
@@ -500,10 +505,11 @@ public class XMLExtract extends Node {
 	                    		if (m_activeMapping.getParent() == null) skipRows--;
 	                    	} else {
 	                            //check for index of last returned record
-	                            if(!(numRecords >= 0 && numRecords == globalCounter)) {
+	                            if(!(numRecords >= 0 && numRecords == autoFilling.getGlobalCounter())) {
 	                                //send off record
+	                                autoFilling.setAutoFillingFields(outRecord);
 	                                outPort.writeRecord(outRecord);
-	                                if (m_activeMapping.getParent() == null) globalCounter++;
+//	                                if (m_activeMapping.getParent() == null) autoFilling.incGlobalCounter();
 	                            }
 	                    	}
 	                    	
@@ -634,7 +640,9 @@ public class XMLExtract extends Node {
             if (m_outRecord == null) {
                 OutputPort outPort = getOutputPort(getOutPort());
                 if (outPort != null) {
-                    m_outRecord = new DataRecord(outPort.getMetadata());
+                	DataRecordMetadata dataRecordMetadata = outPort.getMetadata();
+                	autoFilling.addAutoFillingFields(dataRecordMetadata);
+                    m_outRecord = new DataRecord(dataRecordMetadata);
                     m_outRecord.init();
                     m_outRecord.reset();
                 } // Original code is commented, it is valid to have null port now
@@ -691,20 +699,21 @@ public class XMLExtract extends Node {
         
         public Sequence getSequence() {
             if(sequence == null) {
+                String element = StringUtils.trimXmlNamespace(getElement());
+
                 if(getSequenceId() == null) {
-                    sequence = new PrimitiveSequence(getElement(), getGraph(), getElement());
+                    sequence = new PrimitiveSequence(element, getGraph(), element);
                 } else {
                     sequence = getGraph().getSequence(getSequenceId());
+
                     if(sequence == null) {
-                        LOG
-                                .warn(getId()
-                                + ": Sequence "
-                                + getSequenceId()
-                                + " does not exist in transformation graph. Primitive sequence is used instead.");
-                        sequence = new PrimitiveSequence(getElement(), getGraph(), getElement());
+                        LOG.warn(getId() + ": Sequence " + getSequenceId() + " does not exist in "
+                                + "transformation graph. Primitive sequence is used instead.");
+                        sequence = new PrimitiveSequence(element, getGraph(), element);
                     }
                 }
             }
+
             return sequence;
         }
     }
@@ -997,6 +1006,7 @@ public class XMLExtract extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
+		autoFilling.reset();
         this.readableChannelIterator.reset();
         prepareNextSource();
 	}
@@ -1019,8 +1029,15 @@ public class XMLExtract extends Node {
 	private boolean nextSource() throws JetelException {
 		ReadableByteChannel stream = null; 
 		while (readableChannelIterator.hasNext()) {
+			autoFilling.setSourceCounter(0);
+			autoFilling.setGlobalSourceCounter(0);
 			stream = readableChannelIterator.next();
 			if (stream == null) continue; // if record no record found
+			autoFilling.setFilename(readableChannelIterator.getCurrentFileName());
+			File tmpFile = new File(autoFilling.getFilename());
+			long timestamp = tmpFile.lastModified();
+			autoFilling.setFileSize(tmpFile.length());
+			autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));				
 			m_inputSource = new InputSource(Channels.newInputStream(stream));
 			return true;
 		}

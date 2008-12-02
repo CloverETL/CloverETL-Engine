@@ -38,8 +38,8 @@ public class InputPortTrackingDetail extends PortTrackingDetail implements Seria
 	
 	private final transient InputPort inputPort;
 	
-	public InputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, InputPort inputPort, int index) {
-		super(parentNodeDetail, index);
+	public InputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, InputPort inputPort) {
+		super(parentNodeDetail, inputPort.getInputPortNumber());
 		this.inputPort = inputPort;
 		
 	}

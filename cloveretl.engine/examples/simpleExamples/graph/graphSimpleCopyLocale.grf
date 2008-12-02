@@ -19,7 +19,7 @@
 <Field name="Extension" nullable="true" shift="0" type="string"/>
 <Field name="Photo" nullable="true" shift="0" type="string"/>
 <Field name="Memo" nullable="true" shift="0" type="string"/>
-<Field format="#" name="ReportsTo" nullable="true" shift="0" type="numeric"/>
+<Field format="#" name="ReportsTo" nullable="true" shift="0" type="number"/>
 </Record>
 </Metadata>
 <Metadata id="InMetadata">
@@ -40,7 +40,7 @@
 <Field name="Extension" nullable="true" shift="0" type="string"/>
 <Field name="Photo" nullable="true" shift="0" type="string"/>
 <Field name="Memo" nullable="true" shift="0" type="string"/>
-<Field format="#" name="ReportsTo" nullable="true" shift="0" type="numeric"/>
+<Field format="#" name="ReportsTo" nullable="true" shift="0" type="number"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
