@@ -325,19 +325,6 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 //		MessageFormat fieldForm = new MessageFormat(
 //				"\t<Field name=\"{0}\" type=\"{1}\" ");
 
-		char[] fieldTypeLimits = { DataFieldMetadata.STRING_FIELD,
-				DataFieldMetadata.DATE_FIELD, 
-				DataFieldMetadata.DATETIME_FIELD,
-				DataFieldMetadata.NUMERIC_FIELD,
-				DataFieldMetadata.INTEGER_FIELD,
-				DataFieldMetadata.LONG_FIELD,
-				DataFieldMetadata.DECIMAL_FIELD, 
-				DataFieldMetadata.BYTE_FIELD, 
-				DataFieldMetadata.BYTE_FIELD_COMPRESSED,
-				DataFieldMetadata.BOOLEAN_FIELD};
-		String[] fieldTypeParts = { "string", "date", "datetime", "numeric",
-				"integer", "long", "decimal", "byte", "cbyte", "boolean" };
-
 		Document doc = metadataElement.getOwnerDocument();
 		for (int i = 0; i < record.getNumFields(); i++) {
 			field = record.getField(i);			
@@ -348,9 +335,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				metadataElement.appendChild(fieldElement);
 
 				fieldElement.setAttribute(NAME_ATTR, field.getName());
-			    fieldElement.setAttribute(TYPE_ATTR,
-			            fieldTypeFormat(field.getType(), fieldTypeLimits,
-						fieldTypeParts));
+			    fieldElement.setAttribute(TYPE_ATTR, DataFieldMetadata.type2Str(field.getType()));
 
 				fieldElement.setAttribute(SHIFT_ATTR, String.valueOf(field.getShift()));
 				if (record.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
@@ -708,37 +693,11 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	 */
 	private char getFieldType(String fieldType) {
 
-		if (fieldType.equalsIgnoreCase("string")) {
-			return DataFieldMetadata.STRING_FIELD;
+		char type = DataFieldMetadata.str2Type(fieldType);
+		if (type == DataFieldMetadata.UNKNOWN_FIELD) {
+			throw new RuntimeException("Unrecognized field type specified: '" + fieldType + "'.");
 		}
-		if (fieldType.equalsIgnoreCase("date")) {
-			return DataFieldMetadata.DATE_FIELD;
-		}
-		if (fieldType.equalsIgnoreCase("datetime")) {
-			return DataFieldMetadata.DATETIME_FIELD;
-		}
-		if (fieldType.equalsIgnoreCase("numeric")) {
-			return DataFieldMetadata.NUMERIC_FIELD;
-		}
-		if (fieldType.equalsIgnoreCase("integer")) {
-			return DataFieldMetadata.INTEGER_FIELD;
-		}
-		if (fieldType.equalsIgnoreCase("long")) {
-			return DataFieldMetadata.LONG_FIELD;
-		}
-		if (fieldType.equalsIgnoreCase("decimal")) {
-			return DataFieldMetadata.DECIMAL_FIELD;
-		}
-		if (fieldType.equalsIgnoreCase("byte")) {
-			return DataFieldMetadata.BYTE_FIELD;
-		}
-		if (fieldType.equalsIgnoreCase("cbyte")) {
-			return DataFieldMetadata.BYTE_FIELD_COMPRESSED;
-		}
-		if (fieldType.equalsIgnoreCase("boolean")) {
-			return DataFieldMetadata.BOOLEAN_FIELD;
-		}
-		throw new RuntimeException("Unrecognized field type specified: '" + fieldType + "'.");
+		return type;
 	}
 
 	/**

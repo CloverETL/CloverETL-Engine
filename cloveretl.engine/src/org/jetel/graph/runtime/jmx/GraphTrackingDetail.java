@@ -73,6 +73,18 @@ public class GraphTrackingDetail implements Serializable {
 		}
 	}
 	
+	public void copyFrom(GraphTrackingDetail graphDetail) {
+		this.runningPhaseDetail = getPhaseDetail(graphDetail.getRunningPhaseDetail().getPhaseNum());
+		this.startTime = graphDetail.startTime;
+		this.endTime = graphDetail.endTime;
+		this.result = graphDetail.result;
+		
+		int i = 0;
+		for (PhaseTrackingDetail phaseDetail : phasesDetails) {
+			phaseDetail.copyFrom(graphDetail.phasesDetails[i++]);
+		}
+	}
+	
 	TransformationGraph getGraph() {
 		return graph;
 	}
@@ -87,6 +99,15 @@ public class GraphTrackingDetail implements Serializable {
 	
 	public void setRunningPhaseDetail(PhaseTrackingDetail runningphaseDetail) {
 		this.runningPhaseDetail = runningphaseDetail; 
+	}
+	
+	public PhaseTrackingDetail getPhaseDetail(int phaseNum) {
+		for (PhaseTrackingDetail phaseDetail : phasesDetails) {
+			if (phaseDetail.getPhaseNum() == phaseNum) {
+				return phaseDetail;
+			}
+		}
+		return null;
 	}
 	
 	public PhaseTrackingDetail[] getPhasesDetails() {

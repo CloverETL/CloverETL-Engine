@@ -441,7 +441,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     		ParameterMetaData dbMeta = pStatement.getParameterMetaData();
             result = new char[dbMeta.getParameterCount()];
             for (int i = 0; i < result.length; i++) {
-				result[i] = dbConnection.getJdbcSpecific().sqlType2jetel(dbMeta.getParameterType(i));
+				result[i] = dbConnection.getJdbcSpecific().sqlType2jetel(dbMeta.getParameterType(i + 1));
 			}
         } catch (SQLException ex) {
             throw new ComponentNotReadyException("Can't create SQL statement: " + ex.getMessage());

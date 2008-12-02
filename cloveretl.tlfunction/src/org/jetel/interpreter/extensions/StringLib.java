@@ -923,15 +923,13 @@ public class StringLib extends TLFunctionLibrary {
          public TLValue execute(TLValue[] params, TLContext context) {
              TLValue val = (TLValue)context.getContext();
 
-             if (params[0]!=TLNullValue.getInstance()) {
-                 if (!(params[0].type == TLValueType.STRING)){
-                     throw new TransformLangExecutorRuntimeException(params,
-                     "remove_diacritic - wrong type of literal");
-                 }else{
-                     val.setValue(StringUtils.removeDiacritic(params[0].toString()));
-                 }
+             if (!(params[0].type == TLValueType.STRING)){
+                 throw new TransformLangExecutorRuntimeException(params,
+                 "remove_diacritic - wrong type of literal");
+             }else{
+                 val.setValue(StringUtils.removeDiacritic(params[0].toString()));
              }
-             return TLNullValue.getInstance();
+             return val;
          }
 
          @Override
@@ -952,13 +950,11 @@ public class StringLib extends TLFunctionLibrary {
          public TLValue execute(TLValue[] params, TLContext context) {
              TLValue val = (TLValue)context.getContext();
 
-             if (params[0]!=TLNullValue.getInstance()) {
-                 if (!(params[0].type == TLValueType.STRING)){
-                     throw new TransformLangExecutorRuntimeException(params,
-                     "remove_blank_space - wrong type of literal");
-                 }else{
-                     val.setValue(StringUtils.removeBlankSpace(params[0].toString()));
-                 }
+             if (!(params[0].type == TLValueType.STRING)){
+                 throw new TransformLangExecutorRuntimeException(params,
+                 "remove_blank_space - wrong type of literal");
+             }else{
+                 val.setValue(StringUtils.removeBlankSpace(params[0].toString()));
              }
              return val;
          }
@@ -981,13 +977,11 @@ public class StringLib extends TLFunctionLibrary {
          public TLValue execute(TLValue[] params, TLContext context) {
              TLValue val = (TLValue)context.getContext();
 
-             if (params[0]!=TLNullValue.getInstance()) {
-                 if (!(params[0].type == TLValueType.STRING)){
-                     throw new TransformLangExecutorRuntimeException(params,
-                     "remove_nonprintable - wrong type of literal");
-                 }else{
-                     val.setValue(StringUtils.removeNonPrintable(params[0].toString()));
-                 }
+             if (!(params[0].type == TLValueType.STRING)){
+                 throw new TransformLangExecutorRuntimeException(params,
+                 "remove_nonprintable - wrong type of literal");
+             }else{
+                 val.setValue(StringUtils.removeNonPrintable(params[0].toString()));
              }
              return val;
          }
@@ -1010,13 +1004,11 @@ public class StringLib extends TLFunctionLibrary {
          public TLValue execute(TLValue[] params, TLContext context) {
              TLValue val = (TLValue)context.getContext();
 
-             if (params[0]!=TLNullValue.getInstance()) {
-                 if (!(params[0].type == TLValueType.STRING)){
-                     throw new TransformLangExecutorRuntimeException(params,
-                     "remove_nonascii - wrong type of literal");
-                 }else{
-                     val.setValue(StringUtils.removeNonAscii(params[0].toString()));
-                 }
+             if (!(params[0].type == TLValueType.STRING)){
+                 throw new TransformLangExecutorRuntimeException(params,
+                 "remove_nonascii - wrong type of literal");
+             }else{
+                 val.setValue(StringUtils.removeNonAscii(params[0].toString()));
              }
              return val;
          }
@@ -1040,20 +1032,18 @@ public class StringLib extends TLFunctionLibrary {
          public TLValue execute(TLValue[] params, TLContext context) {
              TLValue val = (TLValue)context.getContext();
 
-             if (params[0]!=TLNullValue.getInstance()) {
-                 if (!(params[0].type == TLValueType.STRING)){
-                     throw new TransformLangExecutorRuntimeException(params,
-                     "get_alphanumeric_chars - wrong type of literal(s)");
-                 }else{
-                	 if (params.length > 1) 
-                		 if (!(params[1].type == TLValueType.BOOLEAN && 
-                				 params[2].type == TLValueType.BOOLEAN)) 
-                			 throw new TransformLangExecutorRuntimeException(params,
-                                     "get_alphanumeric_chars - wrong type of literal(s)");
-                	 boolean alpha = params.length > 1 ? params[1]==TLBooleanValue.TRUE : true;
-                	 boolean numeric = params.length > 1 ? params[2]==TLBooleanValue.TRUE : true;
-                     val.setValue(StringUtils.getOnlyAlphaNumericChars(params[0].toString(), alpha, numeric));
-                 }
+             if (!(params[0].type == TLValueType.STRING)){
+                 throw new TransformLangExecutorRuntimeException(params,
+                 "get_alphanumeric_chars - wrong type of literal(s)");
+             }else{
+            	 if (params.length > 1) 
+            		 if (!(params[1].type == TLValueType.BOOLEAN && 
+            				 params[2].type == TLValueType.BOOLEAN)) 
+            			 throw new TransformLangExecutorRuntimeException(params,
+                                 "get_alphanumeric_chars - wrong type of literal(s)");
+            	 boolean alpha = params.length > 1 ? params[1]==TLBooleanValue.TRUE : true;
+            	 boolean numeric = params.length > 1 ? params[2]==TLBooleanValue.TRUE : true;
+                 val.setValue(StringUtils.getOnlyAlphaNumericChars(params[0].toString(), alpha, numeric));
              }
              return val;
          }

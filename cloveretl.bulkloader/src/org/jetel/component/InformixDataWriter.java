@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.formatter.DataFormatter;
+import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.BadDataFormatException;
@@ -255,7 +255,7 @@ public class InformixDataWriter extends Node {
 
     private String tmpDataFileName; // file that is used for exchange data between clover and dbload
     private DataRecordMetadata dbMetadata; // it correspond to dbload input format
-    private DataFormatter formatter; // format data to dbload format and write them to dataFileName 
+    private DelimitedDataFormatter formatter; // format data to dbload format and write them to dataFileName 
     private DataConsumer consumer = null; // consume data from out stream of dbload
     private DataConsumer errConsumer; // consume data from err stream of dbload - write them to by logger
     
@@ -520,7 +520,7 @@ public class InformixDataWriter extends Node {
 	        dbMetadata = createInformixMetadata(inPort.getMetadata());
 	        
 	        // init of data formatter
-	        formatter = new DataFormatter(CHARSET_NAME);
+	        formatter = new DelimitedDataFormatter(CHARSET_NAME);
 	        formatter.init(dbMetadata);
         }
         
@@ -562,11 +562,14 @@ public class InformixDataWriter extends Node {
 		
 		for (int idx = 0; idx < metadata.getNumFields() - 1; idx++) {
 			metadata.getField(idx).setDelimiter(colDel);
+			metadata.getField(idx).setSize((short)0);
 			setInformixDateFormat(metadata.getField(idx));
 		}
-		metadata.getField(metadata.getNumFields() - 1).setDelimiter("\n");
+		int lastIndex = metadata.getNumFields() - 1;
+		metadata.getField(lastIndex).setDelimiter("\n");
+		metadata.getField(lastIndex).setSize((short)0);
 		metadata.setRecordDelimiters("");
-		setInformixDateFormat(metadata.getField(metadata.getNumFields() - 1));
+		setInformixDateFormat(metadata.getField(lastIndex));
 		
 		return metadata;
     }

@@ -1,4 +1,5 @@
-PROJECT= <<your project path>>
+PROJECT=.
+# PROJECT= <<your project path>>
 # PROJECT = /home/user/workspace/examples
 # PROJECT = c:\\workspace\\examples
 GRAPH_DIR=${PROJECT}/graph

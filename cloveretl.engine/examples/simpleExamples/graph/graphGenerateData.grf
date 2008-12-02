@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu Jan 11 09:49:56 CET 2007" guiVersion="2.0" id="1199787231325" licenseType="Evaluation license." modified="Thu Sep 11 11:17:53 CEST 2008" modifiedBy="avackova" name="graphGenerateData" revision="1.83">
+<Graph author="avackova" created="Thu Jan 11 09:49:56 CET 2007" guiVersion="0.0" id="1199787231325" licenseType="Evaluation license." modified="Fri Nov 28 12:35:22 CET 2008" modifiedBy="avackova" name="graphGenerateData" revision="1.123">
 <Global>
-<Metadata fileURL="${META_DIR}/fixlen/ordersFix.fmt" id="Metadata0"/>
-<Metadata id="in">
-<Record name="Orders" recordDelimiter="&#10;" recordSize="149" type="fixed">
-<Field format="#" name="OrderID" nullable="true" shift="0" size="5" type="numeric"/>
-<Field name="CustomerID" nullable="true" shift="0" size="20" type="string"/>
-<Field format="dd.MM.yyyy" name="OrderDate" nullable="true" shift="5" size="10" type="date"/>
-<Field format="dd.MM.yyyy" name="ShippedDate" nullable="true" shift="10" size="10" type="date"/>
-<Field format="#" name="Freight" nullable="true" shift="3" size="8" type="numeric"/>
-<Field name="ShipName" nullable="true" shift="0" size="20" type="string"/>
-<Field name="ShipAddress" nullable="true" shift="0" size="15" type="string"/>
-<Field name="ShipCity" nullable="true" shift="0" size="5" type="string"/>
-<Field name="ShipPostalCode" nullable="true" shift="5" size="8" type="string"/>
-<Field name="ShipCountry" nullable="true" shift="0" size="25" type="string"/>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record name="Orders" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="149" type="mixed">
+<Field format="#" name="OrderID" nullable="true" shift="0" size="5" type="number"/>
+<Field delimiter="|" name="CustomerID" nullable="true" shift="0" size="20" type="string"/>
+<Field format="#" name="EmployeeID" nullable="true" shift="0" size="5" type="number"/>
+<Field delimiter="|" format="dd.MM.yyyy" name="OrderDate" nullable="true" shift="0" size="10" type="date"/>
+<Field delimiter="|" format="dd.MM.yyyy" name="RequiredDate" nullable="true" shift="0" size="10" type="date"/>
+<Field format="dd.MM.yyyy" name="ShippedDate" nullable="true" shift="0" size="10" type="date"/>
+<Field delimiter="|" format="#" name="ShipVia" nullable="true" shift="0" size="3" type="integer"/>
+<Field delimiter="|" format="#" name="Freight" nullable="true" shift="0" size="8" type="number"/>
+<Field delimiter="|" name="ShipName" nullable="true" shift="0" size="20" type="string"/>
+<Field delimiter="|" name="ShipAddress" nullable="true" shift="0" size="15" type="string"/>
+<Field delimiter="|" name="ShipCity" nullable="true" shift="0" size="5" type="string"/>
+<Field delimiter="|" name="ShipRegion" nullable="true" shift="0" size="5" type="string"/>
+<Field delimiter="|" name="ShipPostalCode" nullable="true" shift="0" size="8" type="string"/>
+<Field eofAsDelimiter="true" name="ShipCountry" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
 <Property id="GraphParameter0" name="ORDER_DATE" value="01.01.2007"/>
@@ -22,7 +25,7 @@
 <Sequence cached="20" fileURL="${SEQ_DIR}/seq.seq" id="Sequence0" name="ordersID" start="1" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="44" guiY="90" id="DATA_GENERATOR1" pattern="                 aga${ORDER_DATE}${REQUIRED_DATE}  1      10                name          adressPragu   EU   12000CZ&#10;" randomFields="$EmployeeID:=random(&quot;1&quot;,&quot;1000&quot;);$ShippedDate:=random(&quot;${ORDER_DATE}&quot;,&quot;${REQUIRED_DATE}&quot;)" recordsNumber="1000" sequenceFields="OrderID" type="DATA_GENERATOR"/>
+<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="44" guiY="90" id="DATA_GENERATOR1" pattern="aga|${ORDER_DATE}|${REQUIRED_DATE}|1|10|name|adress|Prague|EU|12000|CR&#10;" randomFields="$EmployeeID:=random(&quot;1&quot;,&quot;1000&quot;);$ShippedDate:=random(&quot;01.11.2008&quot;,&quot;30.11.2008&quot;)" recordsNumber="1000" sequenceFields="OrderID" type="DATA_GENERATOR"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.fix" guiHeight="0" guiName="Universal Data Writer" guiWidth="0" guiX="373" guiY="90" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="217" guiY="90" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
 <Edge debugMode="false" fromNode="DATA_GENERATOR1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>

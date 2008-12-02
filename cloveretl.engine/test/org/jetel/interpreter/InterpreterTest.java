@@ -2795,49 +2795,6 @@ public class InterpreterTest extends CloverTestCase {
 	}
     
     
-    public void test_remove_diacritic() {
-    	System.out.println("\nBuild-in string functions test:");
-		String expStr = "list input= ['piËiak',null,'riù',null,'piËka']; \n" +
-						"int i=0;\n" +
-						"for (i=0; i<5; i++) { \n" +
-						"	print_err(remove_diacritic(input[i]));\n" +
-						"}\n";
-	      print_code(expStr);
-		try {
-			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
-		      CLVFStart parseTree = parser.Start();
-
-		      if (parser.getParseExceptions().size()>0){
-		    	  //report error
-		    	  for(Iterator it=parser.getParseExceptions().iterator();it.hasNext();){
-			    	  System.out.println(it.next());
-			      }
-		    	  throw new RuntimeException("Parse exception");
-		      }
-
-
- 		      System.out.println("Initializing parse tree..");
-		      parseTree.init();
-		      System.out.println("Parse tree:");
-		      parseTree.dump("");
-		      
-		      System.out.println("Interpreting parse tree..");
-		      TransformLangExecutor executor=new TransformLangExecutor();
-		      executor.setInputRecords(new DataRecord[] {record});
-		      executor.visit(parseTree,null);
-		      System.out.println("Finished interpreting.");
-		      
-		      //assertEquals("pop",10,executor.getGlobalVariable(parser.getGlobalVariableSlot("pop1")).getTLValue().getNumeric().getInt());
-		      //assertEquals("poll",1,executor.getGlobalVariable(parser.getGlobalVariableSlot("poll1")).getTLValue().getNumeric().getInt());
-		      //assertEquals("isNull",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("isNull")).getTLValue()==TLBooleanValue.TRUE);
-		      
-		} catch (ParseException e) {
-		    	System.err.println(e.getMessage());
-		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception",e);
-	    }
-    }
-    
     public void print_code(String text){
         String[] lines=text.split("\n");
         System.out.println("\t:         1         2         3         4         5         ");

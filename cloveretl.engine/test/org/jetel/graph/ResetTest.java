@@ -53,7 +53,10 @@ public class ResetTest extends TestCase{
 				 	&& !pathname.getName().equals("graphOrdersReformat.grf") // ok, uses class file that is not created
 					&& !pathname.getName().equals("graphParametrizedLookup.grf") // ok, wrong path to lookup
 					&& !pathname.getName().equals("graphRunGraph.grf") // ok, wrong path to output file
-					&& !pathname.getName().equals("graphSystemExecute.grf"); // ok, wrong path
+					&& !pathname.getName().equals("graphSystemExecute.grf") // ok, wrong path
+					&& !pathname.getName().equals("graphAspellLookup.grf") // ok, use commercial components
+					&& !pathname.getName().equals("graphPersistentLookup.grf") // ok, use commercial components
+					&& !pathname.getName().equals("graphPersistentLookup2.grf"); // ok, use commercial components
 			}
 		});
 		
@@ -151,7 +154,7 @@ public class ResetTest extends TestCase{
 		EngineInitializer.initEngine(args[0], null, null);
 
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-		runtimeContext.addAdditionalProperty("PROJECT_DIR", ".");
+		runtimeContext.addAdditionalProperty("PROJECT_DIR", "examples/extExamples/");
 		runtimeContext.setUseJMX(false);
 
 		TransformationGraph graph = null;

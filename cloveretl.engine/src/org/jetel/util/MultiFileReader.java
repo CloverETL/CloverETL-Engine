@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -74,8 +73,6 @@ public class MultiFileReader {
     private int skip;
     private int fSkip;
 	private int fileSkip;
-	private int globalCounter; //number of returned records
-	private int sourceCounter; //number of returned records in one source
 	private int numRecords; //max number of returned records
     private boolean noInputFile = false;
     private String incrementalFile;
@@ -85,30 +82,12 @@ public class MultiFileReader {
     private ArrayList<String> incrementalOutValues;
     private int iSource;
 
-    private String filename;
-    private Date fileTimestamp;
-    private long fileSize;
-    private Map<DataRecordMetadata, AutoFillingData> autoFillingMap;
-    private AutoFillingData autoFillingData;
+    private AutoFilling autoFilling = new AutoFilling();
     
     private InputPort inputPort;
 	private String charset;
 	private Dictionary dictionary;
 	private boolean initializeDataDependentSource;
-    
-    private static final String GLOBAL_ROW_COUNT = "global_row_count";
-    private static final String SOURCE_ROW_COUNT = "source_row_count";
-    private static final String METADATA_ROW_COUNT = "metadata_row_count";
-    private static final String METADATA_SOURCE_ROW_COUNT = "metadata_source_row_count";
-    private static final String SOURCE_NAME = "source_name";
-    private static final String SOURCE_TIMESTAMP = "source_timestamp";
-    private static final String SOURCE_SIZE = "source_size";
-    private static final String DEFAULT_VALUE = "default_value";
-    public static final String ERROR_CODE = "ErrCode";
-    public static final String ERROR_MESSAGE = "ErrText";
-    
-    public static final String[] AUTOFILLING = new String[] {DEFAULT_VALUE, GLOBAL_ROW_COUNT, SOURCE_ROW_COUNT, METADATA_ROW_COUNT, 
-    	METADATA_SOURCE_ROW_COUNT, SOURCE_NAME, SOURCE_TIMESTAMP, SOURCE_SIZE, ERROR_CODE, ERROR_MESSAGE};
     
     /**
 	 * Sole ctor.
@@ -130,8 +109,7 @@ public class MultiFileReader {
     public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
 		initIncrementalReading();
         parser.init(metadata);
-        autoFillingMap = new HashMap<DataRecordMetadata, AutoFillingData>();
-    	if (metadata != null) autoFillingData = addAutoFillingFields(metadata);
+    	if (metadata != null) autoFilling.addAutoFillingFields(metadata);
 		iSource = -1;
         
 		initChannelIterator();
@@ -183,9 +161,9 @@ public class MultiFileReader {
 				parser.setReleaseDataSource(!fName.equals(STD_IN));
 				parser.setDataSource(FileUtils.getReadableChannel(contextURL, fName));
 			} catch (IOException e) {
-				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
+				throw new ComponentNotReadyException("File is unreachable: " + autoFilling.getFilename(), e);
 			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException("File is unreachable: " + filename, e);
+				throw new ComponentNotReadyException("File is unreachable: " + autoFilling.getFilename(), e);
 			}
 		}
 	}
@@ -281,20 +259,18 @@ public class MultiFileReader {
 		// next source
 		ReadableByteChannel stream = null;
 		while (channelIterator.hasNext()) {
-			for (Object autoFillingData : autoFillingMap.entrySet()) {
-				((AutoFillingData)((Entry<?, ?>)autoFillingData).getValue()).sourceCounter = 0;
-			}
-			sourceCounter = 0;
+			autoFilling.setSourceCounter(0);
+			autoFilling.setGlobalSourceCounter(0);
 			try {
 				stream = channelIterator.next();
 				if (stream == null) continue; // if record no record found
-				filename = channelIterator.getCurrentFileName();
-				File tmpFile = new File(filename);
+				autoFilling.setFilename(channelIterator.getCurrentFileName());
+				File tmpFile = new File(autoFilling.getFilename());
 				long timestamp = tmpFile.lastModified();
-				fileSize = tmpFile.length();
-				fileTimestamp = timestamp == 0 ? null : new Date(timestamp);				
+				autoFilling.setFileSize(tmpFile.length());
+				autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));				
 				iSource++;
-				parser.setReleaseDataSource(!filename.equals(STD_IN));
+				parser.setReleaseDataSource(!autoFilling.getFilename().equals(STD_IN));
 				parser.setDataSource(stream);
 				if (incrementalInValues != null && iSource < incrementalInValues.length) {
 					parser.movePosition(incrementalInValues[iSource]);
@@ -302,7 +278,7 @@ public class MultiFileReader {
 				if(fileSkip > 0) parser.skip(fileSkip);
 				return true;
 			} catch (Exception e) {
-				logger.error("An error occured while skipping records in file " + filename + ", the file will be ignored", e);
+				logger.error("An error occured while skipping records in file " + autoFilling.getFilename() + ", the file will be ignored", e);
 				continue;
 			}
 		}
@@ -321,7 +297,7 @@ public class MultiFileReader {
             try {
                 skipped += parser.skip(skip - skipped);            
             } catch (JetelException e) {
-                logger.error("An error occured while skipping records in file " + filename + ", the file will be ignored", e);
+                logger.error("An error occured while skipping records in file " + autoFilling.getFilename() + ", the file will be ignored", e);
             }
         } while (skipped < skip && nextSource());
     }
@@ -339,7 +315,7 @@ public class MultiFileReader {
         }
         
         //check for index of last returned record
-        if(numRecords > 0 && numRecords == globalCounter) {
+        if(numRecords > 0 && numRecords == autoFilling.getGlobalCounter()) {
             return null;
         }
         
@@ -355,11 +331,11 @@ public class MultiFileReader {
             initializeDataDependentSource();
             while((rec = parser.getNext(record)) == null && nextSource());
         } catch(JetelException e) {
-            globalCounter++;
-            sourceCounter++;
+            autoFilling.incGlobalCounter();
+            autoFilling.incSourceCounter();
             throw e;
         }
-        setAutoFillingFields(rec);
+        autoFilling.setAutoFillingFields(rec);
         
         if (rec == null) channelIterator.blankRead();
         
@@ -379,7 +355,7 @@ public class MultiFileReader {
         }
         
         //check for index of last returned record
-        if(numRecords > 0 && numRecords == globalCounter) {
+        if(numRecords > 0 && numRecords == autoFilling.getGlobalCounter()) {
             return null;
         }
         
@@ -395,10 +371,10 @@ public class MultiFileReader {
             initializeDataDependentSource();
             while((rec = parser.getNext()) == null && nextSource());
         } catch(JetelException e) {
-            globalCounter++;
+            autoFilling.incGlobalCounter();
             throw e;
         }
-        setAutoFillingFields(rec);
+        autoFilling.setAutoFillingFields(rec);
         
         if (rec == null) channelIterator.blankRead();
         
@@ -410,48 +386,6 @@ public class MultiFileReader {
         	nextSource();
         	initializeDataDependentSource = false;
         }
-	}
-
-	/**
-	 * Sets autofilling fields in data record.
-	 * 
-	 * @param rec
-	 */
-	private void setAutoFillingFields(DataRecord rec) {
-        if(rec == null) return;
-
-        autoFillingData = autoFillingMap.get(rec.getMetadata());
-        if (autoFillingData == null) {
-        	autoFillingData = addAutoFillingFields(rec.getMetadata());
-        }
-       	for (int i : autoFillingData.globalRowCount) {
-       		rec.getField(i).setValue(globalCounter);
-       	}
-       	for (int i : autoFillingData.sourceRowCount) {
-       		rec.getField(i).setValue(sourceCounter);
-       	}
-       	for (int i : autoFillingData.metadataRowCount) {
-       		rec.getField(i).setValue(autoFillingData.counter);
-       	}
-       	for (int i : autoFillingData.metadataSourceRowCount) {
-       		rec.getField(i).setValue(autoFillingData.sourceCounter);
-       	}
-       	for (int i : autoFillingData.sourceName) {
-       		rec.getField(i).setValue(filename);
-       	}
-       	for (int i : autoFillingData.sourceTimestamp) {
-       		rec.getField(i).setValue(fileTimestamp);
-       	}
-       	for (int i : autoFillingData.sourceSize) {
-       		rec.getField(i).setValue(fileSize);
-       	}
-       	for (int i : autoFillingData.defaultValue) {
-       		rec.getField(i).setToDefaultValue();
-       	}
-        globalCounter++;
-        sourceCounter++;
-        autoFillingData.counter++;
-        autoFillingData.sourceCounter++;
 	}
 	
 	/**
@@ -481,85 +415,14 @@ public class MultiFileReader {
 		parser.close();
 	}
 	
-	private static class AutoFillingData {
-	    private int[] globalRowCount;	// number of returned records for every getNext method
-	    private int[] sourceRowCount;
-	    private int[] sourceName;
-	    private int[] sourceTimestamp;
-	    private int[] sourceSize;
-	    private int[] defaultValue;
-
-	    private int counter; // number of returned records for one metadata
-	    private int[] metadataRowCount;
-	    
-		private int sourceCounter; // number of returned records in one source for one metadata
-	    private int[] metadataSourceRowCount;
-	}
-	
-    private AutoFillingData addAutoFillingFields(DataRecordMetadata metadata) {
-        int numFields = metadata.getNumFields();
-        int[] globalRowCountTmp = new int[numFields];
-        int[] sourceRowCountTmp = new int[numFields];
-        int[] metadataRowCountTmp = new int[numFields];
-        int[] metadataSourceRowCountTmp = new int[numFields];
-        int[] sourceNameTmp = new int[numFields];
-        int[] sourceTimestampTmp = new int[numFields];
-        int[] sourceSizeTmp = new int[numFields];
-        int[] defaultValueTmp = new int[numFields];
-        AutoFillingData data = new AutoFillingData();
-        int globalRowCountLen = 0;
-        int sourceNameLen = 0;
-        int sourceTimestampLen = 0;
-        int sourceSizeLen = 0;
-        int defaultLen = 0;
-	    int sourceRowCountLen = 0;
-	    int metadataRowCountLen = 0;
-	    int metadataSourceRowCountLen = 0;
-        for (int i=0; i<numFields; i++) {
-        	if (metadata.getField(i).getAutoFilling() != null) {
-        		if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(GLOBAL_ROW_COUNT)) globalRowCountTmp[globalRowCountLen++] = i;
-        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(SOURCE_ROW_COUNT)) sourceRowCountTmp[sourceRowCountLen++] = i;
-        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(METADATA_ROW_COUNT)) metadataRowCountTmp[metadataRowCountLen++] = i;
-        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(METADATA_SOURCE_ROW_COUNT)) metadataSourceRowCountTmp[metadataSourceRowCountLen++] = i;
-        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(SOURCE_NAME)) sourceNameTmp[sourceNameLen++] = i;
-        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(SOURCE_TIMESTAMP)) sourceTimestampTmp[sourceTimestampLen++] = i;
-        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(SOURCE_SIZE)) sourceSizeTmp[sourceSizeLen++] = i;
-        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(DEFAULT_VALUE)) defaultValueTmp[defaultLen++] = i;
-        	}
-        }
-        data.globalRowCount = new int[globalRowCountLen];
-        data.sourceRowCount = new int[sourceRowCountLen];
-        data.metadataRowCount = new int[metadataRowCountLen];
-        data.metadataSourceRowCount = new int[metadataSourceRowCountLen];
-        data.sourceName = new int[sourceNameLen];
-        data.sourceTimestamp = new int[sourceTimestampLen];
-        data.sourceSize = new int[sourceSizeLen];
-        data.defaultValue = new int[defaultLen];
-        // reduce arrays' sizes
-        System.arraycopy(globalRowCountTmp, 0, data.globalRowCount, 0, globalRowCountLen);
-        System.arraycopy(sourceRowCountTmp, 0, data.sourceRowCount, 0, sourceRowCountLen);
-        System.arraycopy(metadataRowCountTmp, 0, data.metadataRowCount, 0, metadataRowCountLen);
-        System.arraycopy(metadataSourceRowCountTmp, 0, data.metadataSourceRowCount, 0, metadataSourceRowCountLen);
-        System.arraycopy(sourceNameTmp, 0, data.sourceName, 0, sourceNameLen);
-        System.arraycopy(sourceTimestampTmp, 0, data.sourceTimestamp, 0, sourceTimestampLen);
-        System.arraycopy(sourceSizeTmp, 0, data.sourceSize, 0, sourceSizeLen);
-        System.arraycopy(defaultValueTmp, 0, data.defaultValue, 0, defaultLen);
-        
-        autoFillingMap.put(metadata, data);
-        return data;
-    }
-
     /**
 	 * Reset reader for next graph execution. 
      * @throws ComponentNotReadyException 
      */
 	public void reset() throws ComponentNotReadyException {
 		parser.reset();
-		globalCounter=0;
-		sourceCounter=0;
 		noInputFile = false;
-		autoFillingMap.clear();
-		autoFillingData = null;
+		autoFilling.reset();
 		iSource = -1;
 		skip = fSkip;
 

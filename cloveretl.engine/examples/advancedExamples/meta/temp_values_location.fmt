@@ -5,6 +5,6 @@
 <Field name="type" type="string"/>
 <Field name="units" type="string"/>
 <Field name="name" type="string"/>
-<Field name="value" type="numeric"/>
+<Field name="value" type="number"/>
 <Field name="temp_dim_id" type="integer"/>
 </Record>

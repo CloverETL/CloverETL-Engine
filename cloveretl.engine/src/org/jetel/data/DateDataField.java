@@ -331,7 +331,8 @@ public class DateDataField extends DataField implements Comparable{
 		if ((dateFormat != null)) {
 			return dateFormat.format(value);
 		} else {
-			return value.toString();
+			dateFormat = SimpleDateFormat.getDateInstance();
+			return toString();
 		}
 	}
 
@@ -390,7 +391,8 @@ public class DateDataField extends DataField implements Comparable{
 			if (dateFormat != null) {
 				value = dateFormat.parse(seq.toString());//, parsePosition);
 			} else {
-				value = SimpleDateFormat.getDateInstance().parse(seq.toString());
+				dateFormat = SimpleDateFormat.getDateInstance();
+				value = dateFormat.parse(seq.toString());
 			}
 			setNull(false);
 		} catch (ParseException e) {

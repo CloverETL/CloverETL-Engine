@@ -20,9 +20,10 @@
 	- Denormalizer
 	- DBExecute
 + DBOutputTable and DBExecute use fields with autofilling for filling error code and error message
-+ unification of trimming attributes of readers
++ unification of trimming attributes of flat file readers
 + shared lookup table
 + PersistentLookupTable
++ field type "numeric" is substituted by "number" - all graphs with "numeric" field type work while engine recognizes both type representation
 
 REL 2-5-3
 ---------

@@ -61,6 +61,18 @@ abstract public class PortTrackingDetail implements Serializable {
     	this.index = index;
 	}
 
+    public void copyFrom(PortTrackingDetail portDetail) {
+    	this.lastGatherTime = portDetail.lastGatherTime;
+    	this.totalRows = portDetail.totalRows;
+    	this.totalBytes = portDetail.totalBytes;
+    	this.averageRows = portDetail.averageRows;
+    	this.peakRows = portDetail.peakRows;
+    	this.averageBytes = portDetail.averageBytes;
+    	this.peakBytes = portDetail.peakBytes;
+    	this.waitingRows = portDetail.waitingRows;
+    	this.averageWaitingRows = portDetail.averageWaitingRows;
+    }
+    
 	public NodeTrackingDetail getParentNodeDetail() {
 		return parentNodeDetail;
 	}

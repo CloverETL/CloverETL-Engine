@@ -39,7 +39,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.DataFormatter;
+import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.BadDataFormatException;
@@ -190,6 +190,15 @@ import org.w3c.dom.Element;
  * and Row Terminators</a>.<br>
  * This attribute has the same meaning as parameter <i>fieldTerminator</i> in attribute <i>parameters</i>. When this attribute is
  * defined, this attribute is used and <i>fieldTerminator</i> parameter is ignored.</td>
+ * </tr>
+ * <td><b>serverName</b><br>
+ * <i>optional</i></td>
+ * <td>Specifies the instance of SQL Server to which to connect. If no server is specified, the <b>bcp</b> utility connects to
+ * the default instance of SQL Server on the local computer. This option is required when a <b>bcp</b> command is run from a
+ * remote computer on the network or a local named instance. To connect to the default instance of SQL Server on a server, specify
+ * only server_name. To connect to a named instance of SQL Server 2005, specify server_name\instance_name.<br>
+ * This attribute has the same meaning as parameter <i>serverName</i> in attribute <i>parameters</i>. When this attribute is
+ * defined, this attribute is used and <i>serverName</i> parameter is ignored.</td>
  * </tr>
  * <tr>
  * <td><b>parameters</b><br>
@@ -513,6 +522,7 @@ public class MsSqlDataWriter extends Node {
 	private final static String XML_USER_ATTRIBUTE = "username";
 	private final static String XML_PASSWORD_ATTRIBUTE = "password";
 	private static final String XML_COLUMN_DELIMITER_ATTRIBUTE = "columnDelimiter";
+	private static final String XML_SERVER_NAME_ATTRIBUTE = "serverName";
 
 	private final static String MS_SQL_MAX_ERRORS_PARAM = "maxErrors";
 	private final static char MS_SQL_MAX_ERRORS_SWITCH = 'm';
@@ -580,7 +590,16 @@ public class MsSqlDataWriter extends Node {
 	private final static File TMP_DIR = new File(".");
 	private final static String CHARSET_NAME = "UTF-8";
 	private final static String DEFAULT_COLUMN_DELIMITER = "\t"; // according bcp
-	private final static String DEFAULT_RECORD_DELIMITER = "\n"; // according bcp
+	
+	/**
+	 * bcp utility behave unusually:
+	 * in data file: default record delimiter is "\r\n"
+	 * in command line as parameter: default record delimiter is "\n"
+	 * data file can't contain only "\n" as a record delimiter - it isn't allowed by bcp
+	 */
+	private final static String DEFAULT_RECORD_DELIMITER = "\r\n"; // according bcp
+	private final static String DEFAULT_RECORD_DELIMITER_IN_COMMAND = "\n"; // according bcp
+	
 
 	private final static String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 	private final static String DEFAULT_DATE_FORMAT = "MM/dd/yyyy";
@@ -599,6 +618,7 @@ public class MsSqlDataWriter extends Node {
 	private String errFileName = null; // errFile insert by user or tmpErrFile for parsing bad rows
 	private boolean isErrFileFromUser; // true if errFile was inserted by user; false when errFile is tmpErrFile
 	private String columnDelimiter;
+	private String serverName;
 
 	private Properties properties = new Properties();
 	private DataConsumer consumer; // consume data from out stream of bcp
@@ -606,9 +626,11 @@ public class MsSqlDataWriter extends Node {
 	private MsSqlBadRowReaderWriter badRowReaderWriter;
 
 	private DataRecordMetadata dbMetadata; // it correspond to bcp input format
-	private DataFormatter formatter; // format data to bcp format and write them to dataFileName
+	private DelimitedDataFormatter formatter; // format data to bcp format and write them to dataFileName
 	private String commandLine; // command line of bcp
 	private File dataFile; // file that is used for exchange data between clover and bcp - file from dataURL
+											 // flag that determine if execute() method was already executed;
+	private boolean alreadyExecuted = false; // used for deleting temp data file and reporting about it
 
 	/**
 	 * true - data is read from port;
@@ -639,6 +661,7 @@ public class MsSqlDataWriter extends Node {
 	 * @since April 4, 2002
 	 */
 	public Result execute() throws Exception {
+		alreadyExecuted = true;
 		ProcBox box;
 		int processExitValue = 0;
 
@@ -760,12 +783,12 @@ public class MsSqlDataWriter extends Node {
 		command.addParameterSwitch(MS_SQL_FILE_FORMAT_VERSION_PARAM, MS_SQL_FILE_FORMAT_VERSION_SWITCH);
 		command.addParameterBooleanSwitch(MS_SQL_QUOTED_IDENTIFIER_PARAM, MS_SQL_QUOTED_IDENTIFIER_SWITCH);
 		command.addParameterSwitch(MS_SQL_CODE_PAGE_SPECIFIER_PARAM, MS_SQL_CODE_PAGE_SPECIFIER_SWITCH);
-		command.addSwitch(MS_SQL_COLUMN_DELIMITER_SWITCH, getColumnDelimiter());
-		command.addSwitch(MS_SQL_RECORD_DELIMITER_SWITCH, getRecordDelimiter());
+		command.addSwitch(MS_SQL_COLUMN_DELIMITER_SWITCH, getColumnDelimiter(true));
+		command.addSwitch(MS_SQL_RECORD_DELIMITER_SWITCH, getRecordDelimiter(true));
 		command.addParameterSwitch(MS_SQL_INPUT_FILE_PARAM, MS_SQL_INPUT_FILE_SWITCH);
 		command.addParameterSwitch(MS_SQL_OUTPUT_FILE_PARAM, MS_SQL_OUTPUT_FILE_SWITCH);
 		command.addParameterSwitch(MS_SQL_PACKET_SIZE_PARAM, MS_SQL_PACKET_SIZE_SWITCH);
-		command.addParameterSwitch(MS_SQL_SERVER_NAME_PARAM, MS_SQL_SERVER_NAME_SWITCH);
+		command.addSwitch(MS_SQL_SERVER_NAME_SWITCH, getServerName());
 		command.addSwitch(MS_SQL_USER_NAME_SWITCH, user);
 		command.addSwitch(MS_SQL_PASSWORD_SWITCH, password);
 		command.addParameterBooleanSwitch(MS_SQL_TRUSTED_CONNECTION_PARAM, MS_SQL_TRUSTED_CONNECTION_SWITCH);
@@ -805,6 +828,23 @@ public class MsSqlDataWriter extends Node {
 			logger.warn("Parameter " + StringUtils.quote(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM) + " in attribute "
 					+ StringUtils.quote(XML_PARAMETERS_ATTRIBUTE) + " is ignored. Parameter "
 					+ StringUtils.quote(MS_SQL_RECORD_DELIMITER_PARAM) + " is used.");
+		}
+		
+		if (serverName != null && properties.containsKey(MS_SQL_SERVER_NAME_PARAM)) {
+			logger.warn("Parameter " + StringUtils.quote(MS_SQL_SERVER_NAME_PARAM) + " in attribute "
+					+ StringUtils.quote(XML_PARAMETERS_ATTRIBUTE) + " is ignored. Attribute "
+					+ StringUtils.quote(XML_SERVER_NAME_ATTRIBUTE) + " is used.");
+		}
+		
+		checkServerName();
+	}
+	
+	private void checkServerName() {
+		String sn = getServerName();
+		if (sn != null && sn.contains(":")) {
+			logger.warn("If attribute " + StringUtils.quote(XML_SERVER_NAME_ATTRIBUTE) 
+					+ " contains port number then 'bcp' utility can failed - " + 
+					StringUtils.quote("Connection string is not valid") + ":.");
 		}
 	}
 
@@ -865,12 +905,12 @@ public class MsSqlDataWriter extends Node {
 			dbMetadata = createMsSqlMetadata(inPort.getMetadata());
 
 			// init of data formatter
-			formatter = new DataFormatter(CHARSET_NAME);
+			formatter = new DelimitedDataFormatter(CHARSET_NAME);
 			formatter.init(dbMetadata);
 		}
 
 		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
-		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
+		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_INFO, 0);
 
 		if (isDataWrittenToPort) {
 			badRowReaderWriter = new MsSqlBadRowReaderWriter(getOutputPort(WRITE_TO_PORT));
@@ -880,31 +920,61 @@ public class MsSqlDataWriter extends Node {
 	/**
 	 * Get column delimiter.
 	 */
-	private String getColumnDelimiter() {
+	private String getColumnDelimiter(boolean inCommand) {
+		String colDel;
 		if (columnDelimiter != null) {
-			return columnDelimiter;
+			colDel = columnDelimiter;
+		} else if (properties.containsKey(MS_SQL_COLUMN_DELIMITER_PARAM)) {
+			colDel = properties.getProperty(MS_SQL_COLUMN_DELIMITER_PARAM);
+		} else {
+			colDel = DEFAULT_COLUMN_DELIMITER; 
 		}
 		
-		if (properties.containsKey(MS_SQL_COLUMN_DELIMITER_PARAM)) {
-			return properties.getProperty(MS_SQL_COLUMN_DELIMITER_PARAM);
+		if (inCommand) {
+			return StringUtils.specCharToString(colDel);
 		}
-		
-		return DEFAULT_COLUMN_DELIMITER;
+		return colDel;
 	}
 	
 	/**
 	 * Get record delimiter.
 	 */
-	private String getRecordDelimiter() {
+	private String getRecordDelimiter(boolean inCommand) {
+		String recDel;
 		if (properties.containsKey(MS_SQL_RECORD_DELIMITER_PARAM)) {
-			return properties.getProperty(MS_SQL_RECORD_DELIMITER_PARAM);
+			recDel = properties.getProperty(MS_SQL_RECORD_DELIMITER_PARAM);
+		} else if (properties.containsKey(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM)) {
+			recDel = properties.getProperty(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM);
+		} else if (inCommand){
+			recDel = DEFAULT_RECORD_DELIMITER_IN_COMMAND;
+		} else {
+			recDel = DEFAULT_RECORD_DELIMITER;
 		}
 		
-		if (properties.containsKey(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM)) {
-			return properties.getProperty(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM);
+		if (inCommand) {
+			return StringUtils.specCharToString(recDel);
+		} else {
+			// data file can't contain only "\n" as a record delimiter - it isn't allowed by bcp
+			if ("\n".equals(recDel)) {
+				recDel = DEFAULT_RECORD_DELIMITER;
+			}
+			return recDel;
+		}
+	}
+	
+	/**
+	 * Get server name.
+	 */
+	private String getServerName() {
+		if (serverName != null) {
+			return serverName;
 		}
 		
-		return DEFAULT_RECORD_DELIMITER;
+		if (properties.containsKey(MS_SQL_SERVER_NAME_PARAM)) {
+			return properties.getProperty(MS_SQL_SERVER_NAME_PARAM);
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -966,13 +1036,15 @@ public class MsSqlDataWriter extends Node {
 		DataRecordMetadata metadata = originalMetadata.duplicate();
 		metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
 		for (int idx = 0; idx < metadata.getNumFields() - 1; idx++) {
-			metadata.getField(idx).setDelimiter(getColumnDelimiter());
-			setMsSqlDateFormat(metadata.getField(idx), idx);
+			metadata.getField(idx).setDelimiter(getColumnDelimiter(false));
+			metadata.getField(idx).setSize((short)0);
+			setMsSqlDateFormat(metadata.getField(idx));
 		}
 		int lastIndex = metadata.getNumFields() - 1;
-		metadata.getField(lastIndex).setDelimiter(getRecordDelimiter());
+		metadata.getField(lastIndex).setDelimiter(getRecordDelimiter(false));
+		metadata.getField(lastIndex).setSize((short)0);
 		metadata.setRecordDelimiters("");
-		setMsSqlDateFormat(metadata.getField(lastIndex), lastIndex);
+		setMsSqlDateFormat(metadata.getField(lastIndex));
 
 		return metadata;
 	}
@@ -982,7 +1054,7 @@ public class MsSqlDataWriter extends Node {
 	 * 
 	 * @param field
 	 */
-	private void setMsSqlDateFormat(DataFieldMetadata field, int fieldNum) {
+	private void setMsSqlDateFormat(DataFieldMetadata field) {
 		if (field.getType() == DataFieldMetadata.DATE_FIELD || 
 				field.getType() == DataFieldMetadata.DATETIME_FIELD) {
 			boolean isDate = field.isDateFormat();
@@ -1006,12 +1078,16 @@ public class MsSqlDataWriter extends Node {
 
 		deleteDataFile();
 		deleteErrFile();
+		alreadyExecuted = false;
 	}
 
 	/**
 	 * Deletes data file which was used for exchange data.
 	 */
 	private void deleteDataFile() {
+		if (!alreadyExecuted) {
+			return;
+		}
 		if (isDataReadFromPort && dataURL == null && !dataFile.delete()) {
 			logger.warn("Temp data file was not deleted.");
 		}
@@ -1068,6 +1144,9 @@ public class MsSqlDataWriter extends Node {
 			if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
         		msSqlDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_SERVER_NAME_ATTRIBUTE)) {
+        		msSqlDataWriter.setServerName(xattribs.getString(XML_SERVER_NAME_ATTRIBUTE));
+			}
 			if (xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
 				msSqlDataWriter.setParameters(xattribs.getString(XML_PARAMETERS_ATTRIBUTE));
 			}
@@ -1104,6 +1183,9 @@ public class MsSqlDataWriter extends Node {
 		}
 		if (!DEFAULT_COLUMN_DELIMITER.equals(columnDelimiter)) {
 			xmlElement.setAttribute(XML_COLUMN_DELIMITER_ATTRIBUTE, columnDelimiter);
+		}
+		if (!StringUtils.isEmpty(serverName)) {
+			xmlElement.setAttribute(XML_SERVER_NAME_ATTRIBUTE, serverName);
 		}
 		if (!StringUtils.isEmpty(parameters)) {
 			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, parameters);
@@ -1181,6 +1263,10 @@ public class MsSqlDataWriter extends Node {
 	
 	private void setColumnDelimiter(String columnDelimiter) {
 		this.columnDelimiter = columnDelimiter;
+	}
+	
+	private void setServerName(String serverName) {
+		this.serverName = serverName;
 	}
 
 	/**

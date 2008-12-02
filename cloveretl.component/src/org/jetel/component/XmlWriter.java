@@ -55,11 +55,8 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -127,7 +124,8 @@ public class XmlWriter extends Node {
 	private static final String XML_RECORDS_SKIP_ATTRIBUTE = "recordSkip";
 	private static final String XML_RECORDS_COUNT_ATTRIBUTE = "recordCount";
 	
-	private static final String XML_SINGLE_ROW_ATTRIBUTE = "singleRow";
+	private static final String XML_SINGLE_ROW_ATTRIBUTE = "singleRow"; // alias for XML_OMIT_NEW_LINES_ATTRIBUTE
+	private static final String XML_OMIT_NEW_LINES_ATTRIBUTE = "omitNewLines"; 
 	private static final String XML_USE_ROOT_ELEMENT_ATTRIBUTE = "useRootElement";
 	private static final String DEFAULT_ROOT_ELEMENT = "root";
 	private static final String DEFAULT_RECORD_ELEMENT = "record";
@@ -172,7 +170,7 @@ public class XmlWriter extends Node {
 	private int recordsSkip = 0;
 	private int recordsCount = 0;
 	private int recordsPerFile = 0;
-	private boolean singleRow = false;
+	private boolean omitNewLines = false;
 	/** If set to false, XML without root element is produced, which is invalid XML. */
 	private boolean useRootElement = true;
 	private Map<String, String> namespaces;
@@ -331,7 +329,7 @@ public class XmlWriter extends Node {
 		// records may be stored by more different keys
 		Map<String,Map<HashKey, TreeRecord>> dataMapsByRelationKeys = new HashMap<String,Map<HashKey, TreeRecord>>();
 		DataRecordMetadata metadata;
-		List<DataRecord> dataRecords = null;
+		List<DataRecord> dataRecords = new ArrayList<DataRecord>();
 		
 		/** Flag which indicates, that fields will be written as attributes in output XML. */
 		boolean fieldsAsAttributes;
@@ -437,8 +435,6 @@ public class XmlWriter extends Node {
 						portDefinition.addDataRecord(relationKeysString, relationKeysArray, record);
 					}// for relationKeys
 					if (portDefinition.parent == null){ // root mapping has records list in addition
-						if (portDefinition.dataRecords==null)
-							portDefinition.dataRecords = new ArrayList<DataRecord>();
 						portDefinition.dataRecords.add(record);
 					}
 				} catch (InterruptedException e) {
@@ -485,7 +481,7 @@ public class XmlWriter extends Node {
 	 */
 	public XmlWriter(String id, String fileUrl, String rootElement, 
 			Map<Integer, PortDefinition> allPortDefinitionMap, PortDefinition rootPortDefinition, 
-			int recordsSkip, int recordsCount, int recordsPerFile, boolean singleRow, 
+			int recordsSkip, int recordsCount, int recordsPerFile, boolean omitNewLines, 
 			boolean useRootElement, String rootDefaultNamespace, Map<String, String> namespaces, String dtdPublicId, String dtdSystemId, String xsdSchemaLocation) {
 		super(id);
 		this.fileUrl = fileUrl;
@@ -495,7 +491,7 @@ public class XmlWriter extends Node {
 		this.recordsSkip = recordsSkip;
 		this.recordsCount = recordsCount;
 		this.recordsPerFile = recordsPerFile;
-		this.singleRow = singleRow;
+		this.omitNewLines = omitNewLines;
 		this.useRootElement = useRootElement;
 		this.namespaces = namespaces;
 		this.dtdPublicId = dtdPublicId;
@@ -628,7 +624,7 @@ public class XmlWriter extends Node {
 		serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 		serializer.setOutputProperty(OutputKeys.ENCODING, this.charset);
 		//serializer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM,"users.dtd");
-		if (singleRow)
+		if (omitNewLines)
 			serializer.setOutputProperty(OutputKeys.INDENT,"no");
 		else
 			serializer.setOutputProperty(OutputKeys.INDENT,"yes");
@@ -862,7 +858,8 @@ public class XmlWriter extends Node {
 		}
 		
 		try {
-			boolean singleRow = xattribs.getBoolean(XML_SINGLE_ROW_ATTRIBUTE, false);
+			boolean omitNewLines = xattribs.getBoolean(XML_SINGLE_ROW_ATTRIBUTE, false); // singleRow is deprecated attribute, but still possible ... 
+			omitNewLines = xattribs.getBoolean(XML_OMIT_NEW_LINES_ATTRIBUTE, omitNewLines); // ... thus omitNewLines takes precedence over singleRow
 			boolean useRootElement = xattribs.getBoolean(XML_USE_ROOT_ELEMENT_ATTRIBUTE, true);
 			String dtdPublicId = xattribs.getString(XML_DTD_PUBLIC_ID_ATTRIBUTE, null);
 			String dtdSystemId = xattribs.getString(XML_DTD_SYSTEM_ID_ATTRIBUTE, null);
@@ -877,7 +874,7 @@ public class XmlWriter extends Node {
 			int recordsPerFile = xattribs.getInteger(XML_RECORDS_PER_FILE_ATTRIBUTE, 0);
 			writer = new XmlWriter(xattribs.getString(XML_ID_ATTRIBUTE), fileUrl, 
 					xattribs.getString(XML_ROOT_ELEMENT_ATTRIBUTE, DEFAULT_ROOT_ELEMENT), allPortDefinitionMap, rootPortDefinition, 
-					recordsSkip, recordsCount, recordsPerFile, singleRow, 
+					recordsSkip, recordsCount, recordsPerFile, omitNewLines, 
 					useRootElement, rootDefaultNamespace, namespaces, dtdPublicId, dtdSystemId, xsdSchemaLocation);
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE))
 				writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));

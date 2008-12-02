@@ -5,8 +5,6 @@
 
 	<runtime>
 		<library path="cloveretl.lookup.jar"/>
-		<library path="lib/jdbm-1.0.jar"/>
-        <library path="lib/jazzy-core.jar"/>
    	</runtime> 
     
 	<requires engine-version="2.5.4">
@@ -27,15 +25,5 @@
 		<parameter id="type" value="rangeLookup"/>
 		<parameter id="className" value="org.jetel.lookup.RangeLookupTable"/>
 	</extension>
-
-	<extension point-id="lookup">
-		<parameter id="type" value="persistentLookup"/>
-		<parameter id="className" value="org.jetel.lookup.PersistentLookupTable"/>
-	</extension>
-
-    <extension point-id="lookup">
-        <parameter id="type" value="aspellLookup"/>
-        <parameter id="className" value="org.jetel.lookup.AspellLookupTable"/>
-    </extension>
 
 </plugin>

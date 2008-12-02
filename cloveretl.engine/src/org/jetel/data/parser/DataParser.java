@@ -391,10 +391,10 @@ public class DataParser implements Parser {
 						//test field delimiter
 						if (!inQuote) {
 							if(delimiterSearcher.isPattern(fieldCounter)) {
-							    fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
-//								if(!skipBlanks) {
-//								    fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
-//                                }
+//							    fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
+								if(!skipLBlanks) {
+								    fieldBuffer.setLength(Math.max(0, fieldBuffer.length() - delimiterSearcher.getMatchLength()));
+                                }
 								if (skipTBlanks) {
 									StringUtils.trimTrailing(fieldBuffer);
 								}

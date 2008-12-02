@@ -35,7 +35,7 @@ import java.util.Map.Entry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.formatter.DataFormatter;
+import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -172,7 +172,7 @@ public class PostgreSqlDataWriter extends Node {
 	private File dataFile = null; // file that is used for exchange data between clover and psql - file from dataURL
 	private String[] commandLine; // command line of psql
 	private DataRecordMetadata dbMetadata; // it correspond to psql input format
-	private DataFormatter formatter; // format data to psql format and write them to dataFileName
+	private DelimitedDataFormatter formatter; // format data to psql format and write them to dataFileName
 	private DataConsumer consumer = null; // consume data from out stream of psql
 	private DataConsumer errConsumer; // consume data from err stream of psql - write them to by logger
 
@@ -542,7 +542,7 @@ public class PostgreSqlDataWriter extends Node {
 			dbMetadata = createPsqlMetadata(inPort.getMetadata());
 
 			// init of data formatter
-			formatter = new DataFormatter(CHARSET_NAME);
+			formatter = new DelimitedDataFormatter(CHARSET_NAME);
 			formatter.init(dbMetadata);
 		}
 
@@ -684,11 +684,14 @@ public class PostgreSqlDataWriter extends Node {
 		metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
 		for (int idx = 0; idx < metadata.getNumFields() - 1; idx++) {
 			metadata.getField(idx).setDelimiter(columnDelimiter);
+			metadata.getField(idx).setSize((short)0);
 			setPsqlDateFormat(metadata.getField(idx));
 		}
-		metadata.getField(metadata.getNumFields() - 1).setDelimiter(DEFAULT_RECORD_DELIMITER);
+		int lastIndex = metadata.getNumFields() - 1;
+		metadata.getField(lastIndex).setDelimiter(DEFAULT_RECORD_DELIMITER);
+		metadata.getField(lastIndex).setSize((short)0);
 		metadata.setRecordDelimiters("");
-		setPsqlDateFormat(metadata.getField(metadata.getNumFields() - 1));
+		setPsqlDateFormat(metadata.getField(lastIndex));
 
 		return metadata;
 	}

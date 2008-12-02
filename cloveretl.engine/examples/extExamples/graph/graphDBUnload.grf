@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Mar 12 09:03:19 CET 2007" description="In this example, the DBInputTable component connects to database and unloads all records from employee table. It then stores the records in employees.list.out file. " guiVersion="1.10" id="1204559079189" licenseType="Evaluation license." modified="Tue Jul 29 10:30:56 CEST 2008" modifiedBy="avackova" name="Testing DB Unload" revision="1.133">
+<Graph author="avackova" created="Mon Mar 12 09:03:19 CET 2007" description="In this example, the DBInputTable component connects to database and unloads all records from employee table. It then stores the records in employees.list.out file. " guiVersion="0.0" id="1204559079189" licenseType="Evaluation license." modified="Mon Nov 24 12:14:27 CET 2008" modifiedBy="avackova" name="Testing DB Unload" revision="1.135">
 <Global>
-<Metadata id="Metadata0">
-<Record fieldDelimiter=";" name="employee" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="employee" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field name="employee_id" nullable="true" shift="0" type="integer"/>
 <Field name="full_name" nullable="true" shift="0" type="string"/>
 <Field name="first_name" nullable="true" shift="0" type="string"/>
@@ -14,7 +14,7 @@
 <Field name="birth_date" nullable="true" shift="0" type="date"/>
 <Field name="hire_date" nullable="true" shift="0" type="date"/>
 <Field name="end_date" nullable="true" shift="0" type="date"/>
-<Field name="salary" nullable="true" shift="0" type="numeric"/>
+<Field name="salary" nullable="true" shift="0" type="decimal"/>
 <Field name="supervisor_id" nullable="true" shift="0" type="integer"/>
 <Field name="education_level" nullable="true" shift="0" type="string"/>
 <Field name="marital_status" nullable="true" shift="0" type="string"/>

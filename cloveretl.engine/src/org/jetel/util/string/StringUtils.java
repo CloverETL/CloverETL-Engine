@@ -54,6 +54,8 @@ public class StringUtils {
 	public final static char EXPONENT_SYMBOL = 'e';
 	public final static char EXPONENT_SYMBOL_C = 'E';
 
+	public static final char XML_NAMESPACE_DELIMITER = ':';
+
 	public final static int ASCII_LAST_CHAR = 127;
 
 	private final static int SEQUENTIAL_TRANLATE_LENGTH = 16;
@@ -67,6 +69,22 @@ public class StringUtils {
 		delimiterPattern = Pattern.compile(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 	}
 
+	/**
+	 * Trims the XML namespace prefix and delimiter from the given elemenet name.
+	 *
+	 * @param elementName the element name with (or without) its namespace prefix
+	 *
+	 * @return the element name without its namespace prefix
+	 *
+	 * @since 30th November 2008
+	 */
+	public static String trimXmlNamespace(String elementName) {
+		if (elementName == null) {
+			return null;
+		}
+
+		return elementName.substring(elementName.indexOf(XML_NAMESPACE_DELIMITER) + 1);
+	}
 	/**
 	 * Converts control characters into textual representation<br>
 	 * Note: This code handles only \n, \r ,\t ,\f, \b, \\ special chars

@@ -24,8 +24,12 @@ import java.util.Properties;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
+import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.Lookup;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.lookup.DBLookupTable;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
@@ -97,7 +101,6 @@ public class testDBLookup{
 	System.out.println("***************************************************");
 	
 	DataRecordMetadata metadataIn = null;
-	DataRecord data;
 	
 	if (arg[METADATA_PROPERTY_INDEX] != null) {
 		DataRecordMetadataXMLReaderWriter metaReader = new DataRecordMetadataXMLReaderWriter();
@@ -113,38 +116,44 @@ public class testDBLookup{
 		dbCon.init();
 		
 		// create lookup table. Will use previously created connection. The query string
-		// is specified as a second parameter
+		// is specified as a parameter
 		// query string should contain ? (questionmark) in where clause
 		// e.g. select * from customers where customer_id = ? and customer_city= ?
-		DBLookupTable lookup=new DBLookupTable("lookup",dbCon.getConnection(dbCon.getId()),metadataIn,arg[QUERY_PROPERTY_INDEX]);
+		DBLookupTable lookupTable=new DBLookupTable("lookup",dbCon.getConnection(dbCon.getId()),metadataIn,arg[QUERY_PROPERTY_INDEX]);
+				
+		// we initialize lookup table
+		lookupTable.init();
+
+		//creating data record for seeking
+		char[] fieldType = lookupTable.getKey();
 		
-		/*
-		* in case the DB doesn't support getMetadata, use following constructor:
-		* (don't forget to create metadata object first. For example by analyzing DB
-		* first and then using DataRecordMetadataXMLReaderWriter
+		DataRecordMetadata keyMetadata = new DataRecordMetadata("key_metadata", DataRecordMetadata.DELIMITED_RECORD);
+		keyMetadata.setFieldDelimiter(";");
+		keyMetadata.setRecordDelimiters("\n");
+		int[] keyFields = new int[fieldType.length];
+		for (int i = 0; i < fieldType.length; i++) {
+			keyMetadata.addField(new DataFieldMetadata("field" + i, fieldType[i], null));
+			keyFields[i] = i;
+		}
+		DataRecord keyRecord = new DataRecord(keyMetadata);
+		keyRecord.init();
+		RecordKey key = new RecordKey(keyFields, keyMetadata);
+		key.init();
 		
+		//create lookup query based on requested key
+		Lookup lookup = lookupTable.createLookup(key, keyRecord);
 		
-		
-		*/
-		
-		// we initialize lookup
-		lookup.init();
-		//try to lookup based on specified parameter
-		//following version of get() method is valid for queries with one parameter only
-		//in case you have more (as with the example shown above), use array of objects (strings, integers, etc.) and
-		//call get(Object[])
-		
-		
-		data=lookup.get(arg[KEY_PROPERTY_INDEX]);
-		
-		if (data == null) {
-			System.out.println("Nothing found for given key");
+		String[] keyValue = arg[KEY_PROPERTY_INDEX].split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		for (int i = 0; i < keyValue.length; i++) {
+			keyRecord.getField(i).fromString(keyValue[i]);
 		}
 		
-		//in case query returns more than one record, continue displaying it.
-		while(data!=null){
-			System.out.println(data);
-			data=lookup.getNext();
+		//try to lookup based on specified parameter
+		lookup.seek();
+
+		//display results, if there are any
+		while(lookup.hasNext()){
+			System.out.println(lookup.next());
 		}
 		
 	}catch(Exception ex){

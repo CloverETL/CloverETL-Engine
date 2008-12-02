@@ -91,7 +91,7 @@ import org.w3c.dom.Element;
  *  &lt;Field delimiter="|" format="dd.MM.yyyy" name="RequiredDate" nullable="true" type="date"/&gt;
  *  &lt;Field delimiter="|" format="dd.MM.yyyy" name="ShippedDate" nullable="true" type="date"/&gt;
  *  &lt;Field delimiter="|" format="#" name="ShipVia" nullable="true" type="integer"/&gt;
- *  &lt;Field delimiter="|" format="#" length="8" name="Freight" nullable="true" scale="6" type="numeric"/&gt;
+ *  &lt;Field delimiter="|" format="#" length="8" name="Freight" nullable="true" scale="6" type="number"/&gt;
  *  &lt;Field delimiter="|" name="ShipName" nullable="true" type="string"/&gt;
  *  &lt;Field delimiter="|" name="ShipAddress" nullable="true" type="string"/&gt;
  *  &lt;Field delimiter="|" name="ShipCity" nullable="true" type="string"/&gt;

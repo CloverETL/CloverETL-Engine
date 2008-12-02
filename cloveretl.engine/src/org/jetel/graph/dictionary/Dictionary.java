@@ -101,7 +101,17 @@ public class Dictionary extends GraphElement {
 	}
 
 	public void setValue(String key, Object value) throws ComponentNotReadyException {
-		setValue(key, DictionaryTypeFactory.getDictionaryType(DEFAULT_DICTIONARY_TYPE_ID), value);
+		DictionaryEntry entry = dictionary.get(key);
+
+		if (entry != null) { //is this key already present in the dictionary?
+			if (entry.getType().isValidValue(value)) {
+				setValue(key, entry.getType(), value);
+			} else { //incompatible dictionary type for the given value
+				throw new ComponentNotReadyException(this, "The dictionary key '" + key + "' has asociated incompatible type ('" + value + "' cannot be assigned to " + entry.getType().getTypeId() + " type).");
+			}
+		} else { // we will safe the given value under default dictionary type
+			setValue(key, DictionaryTypeFactory.getDictionaryType(DEFAULT_DICTIONARY_TYPE_ID), value);
+		}
 	}
 
 	public void setValue(String key, String typeId, Object value) throws ComponentNotReadyException {

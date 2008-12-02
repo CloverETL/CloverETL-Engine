@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="1.9" id="1204804033806" licenseType="Evaluation license." modified="Thu Apr 03 11:14:27 CEST 2008" name="PsqlDataWriter" revision="1.83">
+<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="0.0" id="1204804033806" licenseType="Evaluation license." modified="Mon Nov 24 12:28:56 CET 2008" modifiedBy="avackova" name="PsqlDataWriter" revision="1.86">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter="," name="test" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -24,8 +24,8 @@
 </Node>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/postgreSqlFlat.dat" guiHeight="25" guiName="Delimited Data Reader" guiWidth="50" guiX="20" guiY="20" id="DELIMITED_DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/postgreSqlFlat.dat" guiHeight="25" guiName="Data Reader" guiWidth="50" guiX="20" guiY="20" id="DATA_READER0" type="DATA_READER"/>
 <Node database="test" enabled="enabled" guiHeight="25" guiName="PostgreSql Data Writer" guiWidth="50" guiX="245" guiY="20" host="koule" id="POSTGRESQL_DATA_WRITER1" psqlPath="C:\Program Files\PostgreSQL\8.3\bin\psql.exe" table="test" type="POSTGRESQL_DATA_WRITER" username="test"/>
-<Edge fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="POSTGRESQL_DATA_WRITER1:0"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="POSTGRESQL_DATA_WRITER1:0"/>
 </Phase>
 </Graph>

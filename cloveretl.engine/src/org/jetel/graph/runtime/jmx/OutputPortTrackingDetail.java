@@ -38,8 +38,8 @@ public class OutputPortTrackingDetail extends PortTrackingDetail implements Seri
 	
 	private final transient OutputPort outputPort;
 	
-	public OutputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, OutputPort outputPort, int index) {
-		super(parentNodeDetail, index);
+	public OutputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, OutputPort outputPort) {
+		super(parentNodeDetail, outputPort.getOutputPortNumber());
 		this.outputPort = outputPort;
 		
 	}
