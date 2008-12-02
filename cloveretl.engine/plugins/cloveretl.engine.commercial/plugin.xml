@@ -6,6 +6,7 @@
 		<library path="../../../cloveretl.lookup.commercial/bin/"/>
 		<library path="../../../cloveretl.lookup.commercial/lib/jdbm-1.0.jar"/>
         <library path="../../../cloveretl.lookup.commercial/lib/jazzy-core.jar"/>
+        <library path="../../../cloveretl.tools.commercial/lib/dnsjava-2.0.6.jar"/>
    	</runtime> 
     
 	<requires engine-version="2.5.4">
@@ -20,5 +21,10 @@
         <parameter id="type" value="aspellLookup"/>
         <parameter id="className" value="com.opensys.cloveretl.lookup.AspellLookupTable"/>
     </extension>
+
+	<extension point-id="component">
+		<parameter id="className" value="com.opensys.cloveretl.EmailFilter"/>
+		<parameter id="type" value="EMAIL_FILTER"/>
+	</extension>
 
 </plugin>
