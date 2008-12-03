@@ -70,6 +70,7 @@
 			<value>remove_nonascii</value>
 			<value>find</value>
 			<value>cut</value>
+			<value>edit_distance</value>
 		</parameter>
 	</extension>
 	
