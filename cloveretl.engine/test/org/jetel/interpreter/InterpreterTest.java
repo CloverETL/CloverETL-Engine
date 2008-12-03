@@ -48,6 +48,7 @@ import org.jetel.interpreter.data.TLVariable;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.string.StringAproxComparator;
 import org.jetel.util.string.StringUtils;
 /**
  * @author dpavlis
@@ -2220,7 +2221,15 @@ public class InterpreterTest extends CloverTestCase {
 						"string s2=chop(\"hello\\r\\n\");\n" +
 						"string s7=chop(\"hello\\nworld\\r\\n\");\n" +
 						"string s3=chop(\"hello world\",'world');\n" +
-						"string s4=chop(\"hello world\",' world');\n"; 
+						"string s4=chop(\"hello world\",' world');\n" +
+						"int dist = edit_distance('agata','ahata');\n"+
+						"int dist1 = edit_distance('agata','agatą');\n"+ 
+						"int dist2 = edit_distance('agata','agatą'," + StringAproxComparator.SECONDARY + ");\n"+ 
+						"int dist5 = edit_distance('agata','agatą'," + StringAproxComparator.SECONDARY + ",'CZ.cz');\n"+ 
+						"int dist3 = edit_distance('agata','agatą'," + StringAproxComparator.TERTIARY + ");\n"+
+						"int dist4 = edit_distance('agata','Agata'," + StringAproxComparator.TERTIARY + ");\n"+
+						"int dist6 = edit_distance('hello','vitej'," + StringAproxComparator.TERTIARY + ");\n"+
+						"int dist7 = edit_distance('hello','vitej'," + StringAproxComparator.TERTIARY + ",10);\n"; 
    	
 	      print_code(expStr);
 			try {
@@ -2253,7 +2262,15 @@ public class InterpreterTest extends CloverTestCase {
 			      assertEquals("s2","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s2")).getTLValue().getValue().toString());
 			      assertEquals("s7","hello\nworld",executor.getGlobalVariable(parser.getGlobalVariableSlot("s7")).getTLValue().getValue().toString());
 			      assertEquals("s3","hello ",executor.getGlobalVariable(parser.getGlobalVariableSlot("s3")).getTLValue().getValue().toString());
-			      assertEquals("s4)","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s4")).getTLValue().getValue().toString());
+			      assertEquals("s4","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s4")).getTLValue().getValue().toString());
+			      assertEquals("dist",1,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist")).getTLValue().getNumeric().getInt());
+			      assertEquals("dist1",1,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist1")).getTLValue().getNumeric().getInt());
+			      assertEquals("dist2",0,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist2")).getTLValue().getNumeric().getInt());
+			      assertEquals("dist5",1,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist5")).getTLValue().getNumeric().getInt());
+			      assertEquals("dist3",1,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist3")).getTLValue().getNumeric().getInt());
+			      assertEquals("dist4",0,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist4")).getTLValue().getNumeric().getInt());
+			      assertEquals("dist6",4,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist6")).getTLValue().getNumeric().getInt());
+			      assertEquals("dist7",5,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist7")).getTLValue().getNumeric().getInt());
 			} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();

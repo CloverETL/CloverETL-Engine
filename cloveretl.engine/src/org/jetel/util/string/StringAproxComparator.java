@@ -41,10 +41,19 @@ public class StringAproxComparator{
 
 	//strength fields
 	public final static int  IDENTICAL=4;
-	public final static int TERTIARY=3; //upper case = lower case
-	public final static int SECONDARY=2;//diacritic letters = letters without diacritic (locale dependent)
-			// now done only for CZ and PL
-	public final static int PRIMARY=1;// mistakes acceptable (Collator.PRIMARY,new Locale("en","UK"))
+	/**
+	 * Upper case = lower case
+	 */
+	public final static int TERTIARY=3;
+	/**
+	 * diacritic letters = letters without diacritic (locale dependent)
+	 * now done only for CZ and PL
+	 */
+	public final static int SECONDARY=2;
+	/**
+	 * mistakes acceptable (Collator.PRIMARY,new Locale("en","UK"))
+	 */
+	public final static int PRIMARY=1;
 	
 	private int strength;
 	private boolean IDEN; 	//if comparator on level IDENTICAL works
