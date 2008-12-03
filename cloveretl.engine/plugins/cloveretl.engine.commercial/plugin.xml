@@ -1,14 +1,13 @@
-<plugin id="com.opensys.clover.commercial.lookup"
+<plugin id="com.opensys.clover.commercial"
    version="2.5.4"
    provider-name="Javlin a.s.">
 
 	<runtime>
 		<library path="../../../cloveretl.lookup.commercial/bin/"/>
-		<library path="../../../cloveretl.tools.commercial/bin/"/>
 		<library path="../../../cloveretl.component.commercial/bin/"/>
 		<library path="../../../cloveretl.lookup.commercial/lib/jdbm-1.0.jar"/>
         <library path="../../../cloveretl.lookup.commercial/lib/jazzy-core.jar"/>
-        <library path="../../../cloveretl.tools.commercial/lib/dnsjava-2.0.6.jar"/>
+        <library path="../../../cloveretl.component.commercial/lib/dnsjava-2.0.6.jar"/>
    	</runtime> 
     
 	<requires engine-version="2.5.4">
