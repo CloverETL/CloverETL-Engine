@@ -821,23 +821,10 @@ public class XMLExtract extends Node {
             		outputPort = attributes.getInteger(XML_OUTPORT); 
                 mapping = extract.new Mapping(attributes.getString(XML_ELEMENT), outputPort);
             } catch(AttributeNotFoundException ex) {
-                if (attributes.exists(XML_OUTPORT)) {
-                    LOG
-                            .warn(extract.getId()
-                            + ": XML Extract : Mapping missing a required attribute, element for outPort "
-                            + attributes.getString(XML_OUTPORT, null)
-                            + ".  Skipping this mapping and all children.");
-                } else if (attributes.exists("element")) {
-                    LOG
-                            .warn(extract.getId()
-                            + ": XML Extract : Mapping missing a required attribute, outPort for element "
-                            + attributes.getString(XML_ELEMENT, null)
-                            + ".  Skipping this mapping and all children.");
-                } else {
-                    LOG
-                            .warn(extract.getId()
-                            + ": XML Extract Mapping missing required attributes, element and outPort.  Skipping this mapping and all children.");
-                }
+                LOG
+                        .warn(extract.getId()
+                        + ": XML Extract : Mapping missing a required attribute - element."
+                        + "  Skipping this mapping and all children.");
                 return;
             }
             
