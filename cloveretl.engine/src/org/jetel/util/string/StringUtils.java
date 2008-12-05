@@ -102,7 +102,7 @@ public class StringUtils {
     * with only characters in the A - Z range, no punctuation or numbers.
     *
     * @param input String to find the metaphone code for
-    * @param maxLength Maximal lenth of output string
+    * @param maxLength Maximal length of output string
     * @return A metaphone code corresponding to the String supplied
     */
 	public static String metaphone(String input, int maxLength){
