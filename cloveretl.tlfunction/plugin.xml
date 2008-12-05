@@ -72,6 +72,7 @@
 			<value>cut</value>
 			<value>edit_distance</value>
 			<value>metaphone</value>
+			<value>NYSIIS</value>
 		</parameter>
 	</extension>
 	
