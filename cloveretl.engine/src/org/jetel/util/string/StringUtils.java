@@ -287,6 +287,192 @@ public class StringUtils {
 	}
 	
 	/**
+	 * Finds The New York State Identification and Intelligence System Phonetic Code
+	 * 
+	 * @param input String to find the NYSIIS code for
+	 * @return NYSIIS code
+	 */
+	public static String NYSIIS(String input){
+		StringBuilder nysiis = new StringBuilder();
+		String tmp = input.trim().toUpperCase();
+		char[] in = new char[tmp.length()]; 
+		int index = 0;
+		if (tmp.startsWith("MAC")) {
+			in[index++] = 'M';
+			in[index++] = 'C';
+			in[index++] = 'C';
+		}else if (tmp.startsWith("KN")){
+			in[index++] = 'N';
+			in[index++] = 'N';
+		}else if (tmp.startsWith("K")){
+			in[index++] = 'C';
+		}else if (tmp.startsWith("PH")){
+			in[index++] = 'F';
+			in[index++] = 'F';
+		}else if (tmp.startsWith("PF")){
+			in[index++] = 'F';
+			in[index++] = 'F';
+		}else if (tmp.startsWith("SCH")) {
+			in[index++] = 'S';
+			in[index++] = 'S';
+			in[index++] = 'S';
+		}
+		int endIndex = tmp.length();
+		if (tmp.endsWith("EE")) {
+			in[--endIndex] = (char)-1;
+			in[--endIndex] = 'Y';
+		}else if (tmp.endsWith("IE")){
+			in[--endIndex] = (char)-1;
+			in[--endIndex] = 'Y';
+		}else if (tmp.endsWith("DT")){
+			in[--endIndex] = (char)-1;
+			in[--endIndex] = 'D';
+		}else if (tmp.endsWith("RT")){
+			in[--endIndex] = (char)-1;
+			in[--endIndex] = 'D';
+		}else if (tmp.endsWith("RD")){
+			in[--endIndex] = (char)-1;
+			in[--endIndex] = 'D';
+		}else if (tmp.endsWith("NT")){
+			in[--endIndex] = (char)-1;
+			in[--endIndex] = 'D';
+		}else if (tmp.endsWith("ND")){
+			in[--endIndex] = (char)-1;
+			in[--endIndex] = 'D';
+		}
+		tmp.getChars(index, endIndex, in, index);
+		index = 0;
+		char previous = in[index++];
+		char current = in.length > index ?  in[index++] : (char)-1;
+		char next = in.length > index ? in[index++] : (char)-1;
+		char afternext = in.length > index ? in[index++] : (char)-1;		
+		char lastAppended = previous;
+		nysiis.append(previous);
+		
+		while (current != (char)-1) {
+			if (isVowel(current)) {
+				if (lastAppended != 'A') {
+					lastAppended = 'A';
+					nysiis.append(lastAppended);
+				}
+				if (current == 'E' && next == 'V') {
+					previous = 'A';
+					current = 'F';
+					next = afternext;
+					afternext = in.length > index ?  in[index++] : (char)-1;
+				}else{
+					previous = 'A';
+					current = next;
+					next = afternext;
+					afternext = in.length > index ?  in[index++] : (char)-1;
+				}
+			}else{
+				switch (current) {
+				case 'Q':
+					previous = 'G';
+					current = next;
+					next = afternext;
+					afternext = in.length > index ?  in[index++] : (char)-1;
+					break;
+				case 'Z':
+					previous = 'S';
+					current = next;
+					next = afternext;
+					afternext = in.length > index ?  in[index++] : (char)-1;
+					break;
+				case 'M':
+					previous = 'N';
+					current = next;
+					next = afternext;
+					afternext = in.length > index ?  in[index++] : (char)-1;
+					break;
+				case 'K':
+					if (next == 'N'){
+						previous = 'N';
+						current = afternext;
+						next = in.length > index ?  in[index++] : (char)-1;
+						afternext = in.length > index ?  in[index++] : (char)-1;
+					}else{
+						previous = 'C';
+						current = next;
+						next = afternext;
+						afternext = in.length > index ?  in[index++] : (char)-1;
+					}
+					break;
+				case 'S':
+					if (next == 'C' && afternext == 'H') {
+						previous = current;
+						current = 'S';
+						next = 'S';
+						afternext = in.length > index ?  in[index++] : (char)-1;
+					}else{
+						previous = current;
+						current = next;
+						next = afternext;
+						afternext = in.length > index ?  in[index++] : (char)-1;
+					}
+					break;
+					case 'P':
+						if (next == 'H') {
+							previous = 'F';
+							current = 'F';
+							next = afternext;
+							afternext = in.length > index ?  in[index++] : (char)-1;
+						}else{
+							previous = current;
+							current = next;
+							next = afternext;
+							afternext = in.length > index ?  in[index++] : (char)-1;
+							
+						}
+						break;
+					case 'H':
+						if (!isVowel(previous) || !isVowel(next)) {
+							current = next;
+							next = afternext;
+							afternext = in.length > index ?  in[index++] : (char)-1;
+						}else{
+							previous = current;
+							current = next;
+							next = afternext;
+							afternext = in.length > index ?  in[index++] : (char)-1;
+						}
+						break;
+					case 'W':
+						if (isVowel(previous)){
+							current = next;
+							next = afternext;
+							afternext = in.length > index ?  in[index++] : (char)-1;
+						}else{
+							previous = current;
+							current = next;
+							next = afternext;
+							afternext = in.length > index ?  in[index++] : (char)-1;
+						}
+						break;
+				default:
+					previous = current;
+					current = next;
+					next = afternext;
+					afternext = in.length > index ?  in[index++] : (char)-1;
+					break;
+				}
+				if (lastAppended != previous) {
+					lastAppended = previous;
+					nysiis.append(lastAppended);
+				}
+			}
+		}
+		if (lastAppended == 'S' || lastAppended == 'A') {
+			nysiis.setLength(nysiis.length() - 1);
+		}else if (nysiis.toString().endsWith("AY")) {//repleace "AY" by "Y"
+			nysiis.deleteCharAt(nysiis.length() - 2);
+		}
+		
+		return nysiis.toString();
+	}
+	
+	/**
 	 * Converts control characters into textual representation<br>
 	 * Note: This code handles only \n, \r ,\t ,\f, \b, \\ special chars
 	 * 

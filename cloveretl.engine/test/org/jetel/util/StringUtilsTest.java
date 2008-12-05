@@ -457,6 +457,25 @@ public class StringUtilsTest extends CloverTestCase {
 		assertEquals("TM", StringUtils.metaphone("TOMMY", 10));
 		assertEquals("TRFRT", StringUtils.metaphone("Trafford", 10));
 	}
+	
+	public void testNYSIIS() throws Exception {
+		assertEquals("BRAN", StringUtils.NYSIIS("Brian"));
+		assertEquals("BRAN", StringUtils.NYSIIS("Brown"));
+		assertEquals("BRAN", StringUtils.NYSIIS("Brun"));
+		assertEquals("CAP", StringUtils.NYSIIS("Capp"));
+		assertEquals("CAP", StringUtils.NYSIIS("Cope"));
+		assertEquals("CAP", StringUtils.NYSIIS("Copp"));
+		assertEquals("CAP", StringUtils.NYSIIS("Kipp"));
+		assertEquals("DAN", StringUtils.NYSIIS("Dane"));
+		assertEquals("DAN", StringUtils.NYSIIS("Dean"));
+		assertEquals("DAD", StringUtils.NYSIIS("Dent"));
+		assertEquals("DAN", StringUtils.NYSIIS("Dionne"));
+		assertEquals("SNAT", StringUtils.NYSIIS("Smith"));
+		assertEquals("SNAT", StringUtils.NYSIIS("Schmit"));
+		assertEquals("SNAD", StringUtils.NYSIIS("Schmidt"));
+		assertEquals("TRANAN", StringUtils.NYSIIS("Trueman"));
+		assertEquals("TRANAN", StringUtils.NYSIIS("Truman"));
+	}
 }
 
 /*
