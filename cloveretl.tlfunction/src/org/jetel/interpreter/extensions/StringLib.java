@@ -65,7 +65,8 @@ public class StringLib extends TLFunctionLibrary {
                 GET_ALPHANUMERIC_CHARS("get_alphanumeric_chars"), TRANSLATE("translate"), 
                 JOIN("join"), INDEX_OF("index_of"), COUNT_CHAR("count_char"), CHOP("chop"),
                 FIND("find"),CUT("cut"), REMOVE_NONPRINTABLE("remove_nonprintable"),
-                REMOVE_NONASCII("remove_nonascii"), EDIT_DISTANCE("edit_distance"), METAPHONE("metaphone");
+                REMOVE_NONASCII("remove_nonascii"), EDIT_DISTANCE("edit_distance"), METAPHONE("metaphone"),
+                NYSIIS("nysiis");
 
         public String name;
 
@@ -155,6 +156,8 @@ public class StringLib extends TLFunctionLibrary {
         	return new EditDistanceFunction();
         case METAPHONE:
         	return new MetaphoneFunction();
+        case NYSIIS:
+        	return new NYSIISFunction();
         default:
             return null;
         }
@@ -1455,6 +1458,33 @@ public class StringLib extends TLFunctionLibrary {
 
      }
 
+     class NYSIISFunction extends TLFunctionPrototype {
+
+         public NYSIISFunction() {
+             super("string", "NYSIIS", "Finds The New York State Identification and Intelligence System Phonetic Code", 
+            		 new TLValueType[] { TLValueType.STRING }, 
+            		 TLValueType.STRING);
+         }
+
+         @Override
+         public TLValue execute(TLValue[] params, TLContext context) {
+             TLValue val = (TLValue)context.getContext();
+
+             if (!(params[0].type == TLValueType.STRING)){
+                 throw new TransformLangExecutorRuntimeException(params,
+                 "NYSIIS - wrong type of literal");
+             }else{
+                 val.setValue(StringUtils.NYSIIS(params[0].toString()));
+             }
+             return val;
+         }
+
+         @Override
+         public TLContext createContext() {
+             return TLContext.createStringContext();
+         }
+     }
+     
      class RegexStore{
 	    public Pattern pattern;
 	    public Matcher matcher;
