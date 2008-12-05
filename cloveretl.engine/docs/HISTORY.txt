@@ -1,7 +1,12 @@
 *******************************************************************************
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
++ new CTL functions
+	- edit_distance
+	- metaphone
+	- NYSIIS
 
+2.6
 + changed RecordTransform interface: method transform(DataRecor[],DataRecord[]) returns: 
 	- < -1 -- fatal error / user defined
 	-    SKIP = -1 -- error / skip record
