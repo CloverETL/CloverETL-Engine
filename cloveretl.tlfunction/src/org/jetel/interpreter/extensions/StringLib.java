@@ -65,7 +65,7 @@ public class StringLib extends TLFunctionLibrary {
                 GET_ALPHANUMERIC_CHARS("get_alphanumeric_chars"), TRANSLATE("translate"), 
                 JOIN("join"), INDEX_OF("index_of"), COUNT_CHAR("count_char"), CHOP("chop"),
                 FIND("find"),CUT("cut"), REMOVE_NONPRINTABLE("remove_nonprintable"),
-                REMOVE_NONASCII("remove_nonascii"), EDIT_DISTANCE("edit_distance");
+                REMOVE_NONASCII("remove_nonascii"), EDIT_DISTANCE("edit_distance"), METAPHONE("metaphone");
 
         public String name;
 
@@ -153,6 +153,8 @@ public class StringLib extends TLFunctionLibrary {
         	return new RemoveNonAsciiFunction();
         case EDIT_DISTANCE:
         	return new EditDistanceFunction();
+        case METAPHONE:
+        	return new MetaphoneFunction();
         default:
             return null;
         }
@@ -1400,7 +1402,7 @@ public class StringLib extends TLFunctionLibrary {
 			}
 			int compResult = store.comparator.distance(params[0].toString(), params[1].toString());
 			//we need to normalize it
- 			store.value.setValue(compResult/(StringAproxComparator.IDENTICAL - strength +1));
+ 			store.value.setValue(compResult/store.comparator.getMaxCostForOneLetter());
  			
  			return store.value;
          }
@@ -1413,6 +1415,46 @@ public class StringLib extends TLFunctionLibrary {
          }
      }
      
+     class MetaphoneFunction extends TLFunctionPrototype {
+
+         public MetaphoneFunction() {
+             super("string", "metaphone", "Finds the metaphone value of a String", 
+                     new TLValueType[] { TLValueType.STRING , TLValueType.INTEGER},
+                     TLValueType.STRING, 2, 1);
+         }
+
+         @Override
+         public TLValue execute(TLValue[] params, TLContext context) {
+             TLValue val = (TLValue)context.getContext();
+             StringBuilder strBuf = (StringBuilder)val.getValue();
+             strBuf.setLength(0);
+
+             if (params[0]!=TLNullValue.getInstance() && params[0].type == TLValueType.STRING) {
+            	 if (params.length > 1) {
+            		 if (params[1].getType().isNumeric()) {
+            			 strBuf.append(StringUtils.metaphone(params[0].toString(), params[1].getNumeric().getInt()));
+            		 }else{
+                         throw new TransformLangExecutorRuntimeException(params,
+                         "metaphone - wrong type of literal");
+            		 }
+            	 }else{
+            		 strBuf.append(StringUtils.metaphone(params[0].toString()));
+            	 }
+             } else {
+                 throw new TransformLangExecutorRuntimeException(params,
+                         "uppercase - wrong type of literal");
+             }
+
+             return val;
+         }
+
+         @Override
+         public TLContext createContext() {
+             return TLContext.createStringContext();
+         }
+
+     }
+
      class RegexStore{
 	    public Pattern pattern;
 	    public Matcher matcher;

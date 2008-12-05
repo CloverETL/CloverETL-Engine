@@ -71,6 +71,7 @@
 			<value>find</value>
 			<value>cut</value>
 			<value>edit_distance</value>
+			<value>metaphone</value>
 		</parameter>
 	</extension>
 	
