@@ -56,6 +56,8 @@ public class StringUtils {
 
 	public static final char XML_NAMESPACE_DELIMITER = ':';
 
+	private static final int DEFAULT_METAPHONE_LENGTH = 4;
+
 	public final static int ASCII_LAST_CHAR = 127;
 
 	private final static int SEQUENTIAL_TRANLATE_LENGTH = 16;
@@ -64,6 +66,8 @@ public class StringUtils {
 	
 	private final static String OBJECT_NAME_PATTERN = "[_A-Za-z]+[_A-Za-z0-9]*";
 	private final static Pattern INVALID_CHAR = Pattern.compile("[^_A-Za-z0-9]{1}");
+	
+	private final static char[] vowels = {'A', 'E', 'I', 'O', 'U'};
 
 	private static void initPattern() {
 		delimiterPattern = Pattern.compile(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
@@ -85,6 +89,203 @@ public class StringUtils {
 
 		return elementName.substring(elementName.indexOf(XML_NAMESPACE_DELIMITER) + 1);
 	}
+	
+	public static boolean isVowel(char ch){
+		return Arrays.binarySearch(vowels, ch) > -1;
+	}
+	
+	/**
+    * Finds the metaphone value of a String. This is similar to the
+    * soundex algorithm, but better at finding similar sounding words.
+    * All input is converted to upper case.
+    * Limitations: Input format is expected to be a single ASCII word
+    * with only characters in the A - Z range, no punctuation or numbers.
+    *
+    * @param input String to find the metaphone code for
+    * @param maxLength Maximal lenth of output string
+    * @return A metaphone code corresponding to the String supplied
+    */
+	public static String metaphone(String input, int maxLength){
+		char[] in = new char[input.trim().length()]; 
+		input.trim().toUpperCase().getChars(0, in.length, in, 0);
+		StringBuilder metaphone = new StringBuilder();
+		char previous = (char)-1;
+		char current = in.length > 0 ?  in[0] : (char)-1;
+		char next = in.length > 1 ? in[1] : (char)-1;
+		char afternext = in.length > 2 ? in[2] : (char)-1;
+		int length = 0;
+		int index = 3;
+		while (current != (char)-1 && length < maxLength) {
+			if (isVowel(current)) {
+				if (previous == (char)-1) {//vowels are only kept when they are first letter
+					if (current == 'A' && next == 'E') {//if starts with ae - drop first letter
+						previous = (char)-1; 
+						current = next;
+						next = afternext;
+						afternext = in.length > index ? afternext = in[index++] : (char)-1;
+						continue;
+					}else{
+						metaphone.append(current);
+						length++;
+					}
+				}
+			}else if (current == 'C' || current != previous){//consonant, double letters except "c" -> drop 2nd letter
+				switch (current) {
+				case 'B'://unless at the end of e word after "m" as in "dumb"
+					if (previous != 'M' || next != (char)-1) {
+						metaphone.append('B');
+						length++;
+					}
+					break;
+				case 'C':
+					if ((next == 'I' && afternext != 'A') || next == 'E' || next == 'Y') {// -ci-, -ce-, -cy-, but not -cia-
+						metaphone.append('S');
+					}else if ((next == 'I' && afternext == 'A') || (next == 'H' && previous != 'S')) {//-cia- or -ch-, but not -sch-
+						metaphone.append('X');
+						if (next == 'H') {
+							previous = next; 
+							current = afternext;
+							next = in.length > index ? afternext = in[index++] : (char)-1;
+							afternext = in.length > index ? afternext = in[index++] : (char)-1;
+							length++;
+							continue;
+						}
+					}else{
+						metaphone.append('K');
+					}
+					length++;
+					break;
+				case 'D':
+					if (previous == 'D' && (next == 'E' || next == 'Y' || next == 'I')){
+						metaphone.append('J');
+					}else{
+						metaphone.append('T');
+					}
+					length++;
+					break;
+				case 'F':
+				case 'J':
+				case 'L':
+				case 'M':
+				case 'N':
+				case 'R':
+					metaphone.append(current);
+					length++;
+					break;
+				case 'G':
+					if (next == 'I' || next == 'E' || next == 'Y'){
+						metaphone.append('J');
+						length++;
+					}else if (next != 'N' && (next != 'H' || (afternext != (char)-1 && isVowel(afternext)))) {
+						metaphone.append('K');
+						length++;
+					}//silent if in -gh- and not at the end or before a vowel in -gn- or -gned-
+					break;
+				case 'H'://silent if after vowel and no vowel follows
+					if (!isVowel(previous) || isVowel(next)) {
+						metaphone.append('H');
+						length++;
+					}
+					break;
+				case 'K'://silent if after 'c' or kn- on the beginning
+					if (previous != 'C' && (previous != (char)-1 || next != 'N')) {
+						metaphone.append('K');
+						length++;
+					}
+					break;
+				case 'P':
+					if ((previous != (char)-1 || next != 'N')) {
+						if (next == 'H') {
+							metaphone.append('F');
+						}else{
+							metaphone.append('P');
+						}
+						length++;
+					}
+					break;
+				case 'Q':
+					metaphone.append('K');
+					length++;
+					break;
+				case 'S':
+					if (next == 'H' || (next == 'I' && (afternext == 'O' || afternext == 'A'))){
+						metaphone.append('X');
+						if (next == 'H') {
+							previous = next; 
+							current = afternext;
+							next = in.length > index ? afternext = in[index++] : (char)-1;
+							afternext = in.length > index ? afternext = in[index++] : (char)-1;
+							length++;
+							continue;
+						}
+					}else{
+						metaphone.append('S');
+					}
+					length++;
+					break;
+				case 'T':
+					if (next == 'I' && (afternext == 'A' || afternext == 'O')) {//if -tia- or -tio-
+						metaphone.append('X');
+						length++;
+					}else if (next == 'H'){//if before 'h'
+						metaphone.append('0');
+						length++;
+						previous = next; 
+						current = afternext;
+						next = in.length > index ? afternext = in[index++] : (char)-1;
+						afternext = in.length > index ? afternext = in[index++] : (char)-1;
+						length++;
+						continue;
+					}else if (next != 'C' || afternext != 'H'){//if not -tch-
+						metaphone.append('T');
+						length++;
+					}
+					break;
+				case 'V': 
+					metaphone.append('F');
+					length++;
+					break;
+				case 'W':
+					if (isVowel(next)) {
+						metaphone.append('W');
+						length++;
+					}
+					break;
+				case 'X':
+					if (previous != (char)-1) {
+						metaphone.append("KS");
+						length++;
+					}else{
+						metaphone.append('S');
+					}
+					length++;
+					break;
+				case 'Y':
+					if (isVowel(next)) {
+						metaphone.append('Y');
+						length++;
+					}
+					break;
+				case 'Z':
+					metaphone.append('S');
+					length++;
+					break;
+				default:
+					throw new IllegalArgumentException("Not English word: " + input);
+				}
+			}
+			previous = current; 
+			current = next;
+			next = afternext;
+			afternext = in.length > index ? afternext = in[index++] : (char)-1;
+		}
+		return metaphone.toString();
+	}
+	
+	public static String metaphone(String input){
+		return metaphone(input, DEFAULT_METAPHONE_LENGTH);
+	}
+	
 	/**
 	 * Converts control characters into textual representation<br>
 	 * Note: This code handles only \n, \r ,\t ,\f, \b, \\ special chars

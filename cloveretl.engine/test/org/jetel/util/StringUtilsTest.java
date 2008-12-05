@@ -390,6 +390,73 @@ public class StringUtilsTest extends CloverTestCase {
 	}
 
 
+	public void testMetaphone() {
+		assertEquals("ATL", StringUtils.metaphone("ADELLE", 10));
+		assertEquals("ANTRSN", StringUtils.metaphone("Anderson", 10));
+		assertEquals("ARLN", StringUtils.metaphone("Arlene", 10));
+		assertEquals("AKST", StringUtils.metaphone("August", 10));
+		assertEquals("B0N", StringUtils.metaphone("BETHANIE", 10));
+		assertEquals("BRTN", StringUtils.metaphone("BRITTANY", 10));
+		assertEquals("BF", StringUtils.metaphone("BUFFY", 10));
+		assertEquals("KRLN", StringUtils.metaphone("CAROLINE", 10));
+		assertEquals("XRS", StringUtils.metaphone("CHRISSIE", 10));
+		assertEquals("KLNTN", StringUtils.metaphone("Clinton", 10));
+		assertEquals("KLBRT", StringUtils.metaphone("Colbert", 10));
+		assertEquals("SN0", StringUtils.metaphone("CYNTHIA", 10));
+		assertEquals("TLX", StringUtils.metaphone("DELICIA", 10));
+		assertEquals("TKSTR", StringUtils.metaphone("Dexter", 10));
+		assertEquals("TN", StringUtils.metaphone("DIANA", 10));
+		assertEquals("TLN", StringUtils.metaphone("DYLAN", 10));
+		assertEquals("ELFS", StringUtils.metaphone("Elvis", 10));
+		assertEquals("ESMRLT", StringUtils.metaphone("Esmeralda", 10));
+		assertEquals("E0N", StringUtils.metaphone("ETHAN", 10));
+		assertEquals("FRNK", StringUtils.metaphone("FRANKIE", 10));
+		assertEquals("JNFF", StringUtils.metaphone("GENEVIEVE", 10));
+		assertEquals("KRHM", StringUtils.metaphone("GRAHAM", 10));
+		assertEquals("KRFN", StringUtils.metaphone("Griffin", 10));
+		assertEquals("KWNTLN", StringUtils.metaphone("Gwendoline", 10));
+		assertEquals("HNTRSN", StringUtils.metaphone("Henderson", 10));
+		assertEquals("IRM", StringUtils.metaphone("Irma", 10));
+		assertEquals("JMS", StringUtils.metaphone("James", 10));
+		assertEquals("JNT", StringUtils.metaphone("JANNETTE", 10));
+		assertEquals("JKLN", StringUtils.metaphone("JAQUELINE", 10));
+		assertEquals("JRMN", StringUtils.metaphone("JERMAINE", 10));
+		assertEquals("JN0N", StringUtils.metaphone("JOHNATHAN", 10));
+		assertEquals("JLN", StringUtils.metaphone("JULIANA", 10));
+		assertEquals("KLN", StringUtils.metaphone("KAILYN", 10));
+		assertEquals("K0LN", StringUtils.metaphone("KATHLEEN", 10));
+		assertEquals("KRMT", StringUtils.metaphone("KERMIT", 10));
+		assertEquals("KPLNK", StringUtils.metaphone("Kipling", 10));
+		assertEquals("KRSTN", StringUtils.metaphone("Krystine", 10));
+		assertEquals("LS", StringUtils.metaphone("LACEY", 10));
+		assertEquals("LRNS", StringUtils.metaphone("Lawrence", 10));
+		assertEquals("LNT", StringUtils.metaphone("LINDA", 10));
+		assertEquals("LSNT", StringUtils.metaphone("Lucinda", 10));
+		assertEquals("LNTS", StringUtils.metaphone("Lyndsay", 10));
+		assertEquals("MKNS", StringUtils.metaphone("MACKENZIE", 10));
+		assertEquals("MRKRT", StringUtils.metaphone("MARGARET", 10));
+		assertEquals("MKNS", StringUtils.metaphone("MCKENZIE", 10));
+		assertEquals("MXL", StringUtils.metaphone("MITCHELL", 10));
+		assertEquals("MNTK", StringUtils.metaphone("MONTAGUE", 10));
+		assertEquals("NLSN", StringUtils.metaphone("NELSON", 10));
+		assertEquals("NRWT", StringUtils.metaphone("Norwood", 10));
+		assertEquals("PTNS", StringUtils.metaphone("Patience", 10));
+		assertEquals("PKSTN", StringUtils.metaphone("Paxton", 10));
+		assertEquals("PS", StringUtils.metaphone("PEACE", 10));
+		assertEquals("PRSKH", StringUtils.metaphone("PORSCHE", 10));
+		assertEquals("RJNLT", StringUtils.metaphone("Reginald", 10));
+		assertEquals("RT", StringUtils.metaphone("RODDY", 10));
+		assertEquals("RLNT", StringUtils.metaphone("ROLLAND", 10));
+		assertEquals("RSFLT", StringUtils.metaphone("Roosvelt", 10));
+		assertEquals("SXFRL", StringUtils.metaphone("SACHEVERELL", 10));
+		assertEquals("XNN", StringUtils.metaphone("SHANNON", 10));
+		assertEquals("SN", StringUtils.metaphone("SIENNA", 10));
+		assertEquals("SK", StringUtils.metaphone("SKY", 10));
+		assertEquals("TLL", StringUtils.metaphone("TALLULAH", 10));
+		assertEquals("0MS", StringUtils.metaphone("THOMAS", 10));
+		assertEquals("TM", StringUtils.metaphone("TOMMY", 10));
+		assertEquals("TRFRT", StringUtils.metaphone("Trafford", 10));
+	}
 }
 
 /*
