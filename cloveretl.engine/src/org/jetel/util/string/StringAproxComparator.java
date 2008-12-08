@@ -311,8 +311,8 @@ public class StringAproxComparator{
 	 * @return distance between Strings s and t
 	 */
 	public int distance(String s,String t){
-		if (s.length()==0 || t.length()==0)
-			return Math.max(s.length(),t.length())*delCost;
+		if (StringUtils.isEmpty(s)|| StringUtils.isEmpty(t))
+			return Math.min(Math.max(s.length(),t.length())*delCost, maxDifference*delCost);
 
 		int slength=s.length()+1;
 		int tlength=t.length()+1;
@@ -369,7 +369,7 @@ public class StringAproxComparator{
 			}
 		}
 		
-		return Math.min(tlast[tlength-1],maxDifference+Math.max(delCost,changeCost));
+		return Math.min(tlast[tlength-1],maxDifference*Math.max(delCost,changeCost));
 		
 	}
 
