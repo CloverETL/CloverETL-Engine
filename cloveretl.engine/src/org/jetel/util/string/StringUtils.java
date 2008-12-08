@@ -106,8 +106,9 @@ public class StringUtils {
     * @return A metaphone code corresponding to the String supplied
     */
 	public static String metaphone(String input, int maxLength){
-		char[] in = new char[input.trim().length()]; 
-		input.trim().toUpperCase().getChars(0, in.length, in, 0);
+		String tmp = getOnlyAlphaNumericChars(input.trim(), true, true).toUpperCase();
+		char[] in = new char[tmp.length()]; 
+		tmp.getChars(0, in.length, in, 0);
 		StringBuilder metaphone = new StringBuilder();
 		char previous = (char)-1;
 		char current = in.length > 0 ?  in[0] : (char)-1;
@@ -293,6 +294,7 @@ public class StringUtils {
 	 * @return NYSIIS code
 	 */
 	public static String NYSIIS(String input){
+		if (isEmpty(input)) return "";
 		StringBuilder nysiis = new StringBuilder();
 		String tmp = input.trim().toUpperCase();
 		char[] in = new char[tmp.length()]; 
