@@ -172,4 +172,8 @@ public class SQLCloverCallableStatement {
 		CopySQLData.resetDataRecord(inTransMap, inRecord);
 	}
 
+	public void close() throws SQLException {
+		statement.close();
+	}
+
 }
