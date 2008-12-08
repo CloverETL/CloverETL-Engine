@@ -21,8 +21,9 @@ package org.jetel.component;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.PreparedStatement;
+import java.nio.channels.ReadableByteChannel;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +35,7 @@ import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.DataParser;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -45,8 +47,10 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
-import org.jetel.util.MultiFileReader;
+import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -68,7 +72,7 @@ import org.w3c.dom.Text;
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>This component executes specified command(s) (SQL/DML) against specified DB</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
- * <td>[0]- stored procedure input parameters</td></tr>
+ * <td>[0] (<i>optional</i>) - stored procedure input parameters or sql statements</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
  * <td>[0] (<i>optional</i>) - stored procedure output parameters and/or query result set<br>
  * [1] (<i>optional</i>) - errors: field with <i>ErrCode</i> autofilling is filled by error code,field with <i>ErrText</i>
@@ -96,7 +100,8 @@ import org.w3c.dom.Text;
  *  <tr><td><b>outputFields</b></td><td>when stored procedure/function returns set of data its output will be parsed
  *  to given output fields. This is list of output fields delimited by semicolon.<i></td>
  *  <tr><td><b>sqlStatementDelimiter</b><br><i>optional</i></td><td>delimiter of sql statement in sqlQuery attribute</td>
- *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by the url</td>
+ *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by the url or 
+ *  read from input port (see {@link DataReader} component)</td>
  *  <tr><td><b>charset </b><i>optional</i></td><td>encoding of extern query</td></tr>
  *  <tr><td><b>inTransaction<br><i>optional</i></b></td><td>one of: <i>ONE,SET,ALL</i> specifying whether statement(s) should be executed
  * in transaction. For <ul><li>ONE - commit is perform after each query execution</li>
@@ -149,6 +154,9 @@ import org.w3c.dom.Text;
  * <pre>
  * &lt;Node callStatement="true" dbConnection="Connection1" id="DB_EXECUTE2" inParameters="1:=$date" 
  * 			outputFields="id;string;date" type="DB_EXECUTE" sqlQuery="{call SPDownload(?)}" &gt;
+ * 
+ * &lt;Node dbConnection="Connection0" errorActions="MIN_INT=CONTINUE;" id="DB_EXECUTE0" printStatements="true" 
+ * 			type="DB_EXECUTE" url="port:$0.field1:discrete"/>
  *
  * @author      dpavlis, avackova (avackova@javlinconsulting.cz)
  * @since       Jan 17 2004
@@ -200,12 +208,14 @@ public class DBExecute extends Node {
 	private final static int ERROR_PORT = 1;
 	
 	static Log logger = LogFactory.getLog(DBExecute.class);
-	private PreparedStatement[] sqlStatement;
+	private Statement sqlStatement;
 	private SQLCloverCallableStatement[] callableStatement;
 	
 	private DataRecord inRecord, outRecord;
 	private Map<Integer, String>[] inParams, outParams;
 	private String[] outputFields;
+	private String fileUrl;
+	private String charset;
 
 	private String errorActionsString;
 	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
@@ -215,6 +225,10 @@ public class DBExecute extends Node {
 	private int errMessFieldNum;
 	private DataRecord errRecord;
 	private OutputPort errPort;
+	private ReadableChannelIterator channelIterator;
+	private OutputPort outPort;
+	private DataParser parser;
+	private DataRecordMetadata statementMetadata;
 
 	/**
 	 *  Constructor for the DBExecute object
@@ -285,9 +299,24 @@ public class DBExecute extends Node {
 		}        
 		if (dbSQL==null){
             String delimiter = sqlStatementDelimiter !=null ? sqlStatementDelimiter : DEFAULT_SQL_STATEMENT_DELIMITER;
-            dbSQL=sqlQuery.split(delimiter);
+            if (sqlQuery != null) {
+				dbSQL = sqlQuery.split(delimiter);
+			}else{//read statements from file or input port
+				channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT), getGraph().getProjectURL(),
+						fileUrl);
+				channelIterator.init();
+				//statements are single strings delimited by delimiter (see above)
+				statementMetadata = new DataRecordMetadata("_statement_metadata_", DataRecordMetadata.DELIMITED_RECORD);
+				statementMetadata.setFieldDelimiter(delimiter);
+				DataFieldMetadata statementField = new DataFieldMetadata("_statement_field_", DataFieldMetadata.STRING_FIELD, null);
+				statementField.setEofAsDelimiter(true);
+				statementField.setTrim(true);
+				statementMetadata.addField(statementField);
+				parser = charset != null ? new DataParser(charset) : new DataParser();
+				parser.init(statementMetadata);
+			}
         }
-		if (printStatements){
+		if (printStatements && dbSQL != null){
 			for (int i = 0; i < dbSQL.length; i++) {
 				logger.info(dbSQL[i]);
 			}
@@ -296,8 +325,8 @@ public class DBExecute extends Node {
 			inRecord = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
 			inRecord.init();
 		}
-		if (getOutputPort(WRITE_TO_PORT) != null) {
-			outRecord = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
+		if ((outPort = getOutputPort(WRITE_TO_PORT)) != null) {
+			outRecord = new DataRecord(outPort.getMetadata());
 			outRecord.init();
 		}
 		errPort = getOutputPort(ERROR_PORT);
@@ -308,25 +337,39 @@ public class DBExecute extends Node {
 			errMessFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_MESSAGE);
 		}
 		try {
+			//prepare statements if are not read from file or port
 			if (procedureCall) {
 				connectionInstance = dbConnection.getConnection(getId(), OperationType.CALL);
-				callableStatement = new SQLCloverCallableStatement[dbSQL.length];
-				for (int i = 0; i < callableStatement.length; i++){
-					callableStatement[i] = new SQLCloverCallableStatement(connectionInstance, dbSQL[i], inRecord, outRecord);
-					if (inParams != null) {
-						callableStatement[i].setInParameters(inParams[i]);
+				if (dbSQL != null) {
+					callableStatement = new SQLCloverCallableStatement[dbSQL.length];
+					for (int i = 0; i < callableStatement.length; i++) {
+						callableStatement[i] = new SQLCloverCallableStatement(connectionInstance, dbSQL[i], 
+								inRecord, outRecord);
+						if (inParams != null) {
+							callableStatement[i].setInParameters(inParams[i]);
+						}
+						if (outParams != null) {
+							callableStatement[i].setOutParameters(outParams[i]);
+						}
+						callableStatement[i].setOutputFields(outputFields);
+						callableStatement[i].prepareCall();
 					}
-					if (outParams != null) {
-						callableStatement[i].setOutParameters(outParams[i]);
-					}
-					callableStatement[i].setOutputFields(outputFields);
-					callableStatement[i].prepareCall();
+				}else if (inParams != null) {
+					throw new ComponentNotReadyException(this, XML_SQLQUERY_ATTRIBUTE, 
+							"Can't read statement and parameters from input port");
+				}else{
+					callableStatement = new SQLCloverCallableStatement[1];
 				}
 			}else{
 				connectionInstance = dbConnection.getConnection(getId(), OperationType.WRITE);
-				sqlStatement = new PreparedStatement[dbSQL.length];
-				for (int i = 0; i < sqlStatement.length; i++){
-					sqlStatement[i] = connectionInstance.getSqlConnection().prepareStatement(dbSQL[i]);
+				sqlStatement = connectionInstance.getSqlConnection().createStatement();
+			}
+			// this does not work for some drivers
+			try {
+				connectionInstance.getSqlConnection().setAutoCommit(false);
+			} catch (SQLException ex) {
+				if (transaction == InTransaction.ONE) {
+					throw new ComponentNotReadyException("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
 				}
 			}
 		} catch (SQLException e) {
@@ -420,7 +463,9 @@ public class DBExecute extends Node {
 		}
 		if (action == ErrorAction.CONTINUE) {
 			if (errRecord != null) {
-				errRecord.copyFieldsByName(inRecord);
+				if (inRecord != null) {
+					errRecord.copyFieldsByName(inRecord);
+				}
 				if (errorCodeFieldNum != -1) {
 					errRecord.getField(errorCodeFieldNum).setValue(e.getErrorCode());
 				}
@@ -458,54 +503,71 @@ public class DBExecute extends Node {
 	
 	@Override
 	public Result execute() throws Exception {
-		// this does not work for some drivers
-		try {
-			connectionInstance.getSqlConnection().setAutoCommit(false);
-		} catch (SQLException ex) {
-			if (transaction == InTransaction.ONE) {
-				logger.error("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
-				throw new JetelException("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
-			}
-		}
 
-		InputPort inPort = getInputPort(READ_FROM_PORT);
-		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
-		if (inPort != null) {
-			inRecord = inPort.readRecord(inRecord);
-		}
-		boolean sendOut;
-		do {
-			for (int i = 0; i < dbSQL.length; i++){
-				sendOut = outParams != null && outParams[i] != null;
-				try {
-					if (procedureCall) {
-						callableStatement[i].executeCall();
-						if (outPort != null) {
-							sendOut = sendOut || callableStatement[i].isNext();
-							do {
-								if (sendOut) {
-									outPort.writeRecord(callableStatement[i].getOutRecord());
-								}
-								sendOut = callableStatement[i].isNext();
-							}while (sendOut);
-						}
-					}else{
-						sqlStatement[i].executeUpdate();
+		if (channelIterator != null) {
+			DataRecord statementRecord;
+			ReadableByteChannel tmp;//TODO remove it !!!!!!
+			while (channelIterator.hasNext()) {
+				tmp = channelIterator.next();
+				if (tmp == null) break;
+				parser.setDataSource(tmp);
+				statementRecord = new DataRecord(statementMetadata);
+				statementRecord.init();
+				int index = 0;
+				//read statements from byte channel
+				while ((statementRecord = parser.getNext(statementRecord)) != null) {
+					if (printStatements) {
+						logger.info("Executing  statement: " + statementRecord.getField(0).toString());
 					}
-				} catch (SQLException e) {
-					handleException(e, inRecord, i);
+					try {
+						if (procedureCall) {
+							callableStatement[0] = new SQLCloverCallableStatement(connectionInstance, 
+									statementRecord.getField(0).toString(), null, outRecord);
+							callableStatement[0].prepareCall();
+							executeCall(callableStatement[0], index);
+						}else{
+							sqlStatement.executeUpdate(statementRecord.getField(0).toString());
+						}
+					} catch (SQLException e) {
+						handleException(e, null, index);
+					}
+					index++;
+					if (transaction == InTransaction.ONE){
+						commit();
+					}
 				}
-				if (transaction == InTransaction.ONE){
+				if (transaction == InTransaction.SET){
 					commit();
 				}
 			}
-			if (transaction == InTransaction.SET){
-				commit();
-			}
+		}else{//sql statements are "solid" (set as sql query)
+			InputPort inPort = getInputPort(READ_FROM_PORT);
 			if (inPort != null) {
 				inRecord = inPort.readRecord(inRecord);
 			}
-		} while (runIt && inRecord != null);
+			do {
+				for (int i = 0; i < dbSQL.length; i++){
+					try {
+						if (procedureCall) {
+							executeCall(callableStatement[i], i);
+						}else{
+							sqlStatement.executeUpdate(dbSQL[i]);
+						}
+					} catch (SQLException e) {
+						handleException(e, inRecord, i);
+					}
+					if (transaction == InTransaction.ONE){
+						commit();
+					}
+				}
+				if (transaction == InTransaction.SET){
+					commit();
+				}
+				if (inPort != null) {
+					inRecord = inPort.readRecord(inRecord);
+				}
+			} while (runIt && inRecord != null);
+		}
 		if (transaction == InTransaction.ALL){
 			commit();
 		}
@@ -520,11 +582,42 @@ public class DBExecute extends Node {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
+	/**
+	 * Executes call and sends results to output port
+	 * 
+	 * @param callableStatement callable sql clover statement
+	 * @param i number of statement (for proper setting output parameters)
+	 * @throws SQLException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	private void executeCall(SQLCloverCallableStatement callableStatement, int i) throws SQLException, IOException, InterruptedException{
+		boolean sendOut = outParams != null && i < outParams.length && outParams[i] != null;
+		callableStatement.executeCall();
+		if (outPort != null) {
+			sendOut = sendOut || callableStatement.isNext();
+			do {
+				if (sendOut) {
+					outPort.writeRecord(callableStatement.getOutRecord());
+				}
+				sendOut = callableStatement.isNext();
+			}while (sendOut);
+		}
+	}
+	
 	@Override
 	public synchronized void free() {
 		super.free();
-		if (dbConnection != null) {
-			dbConnection.free();
+		try {
+			if (procedureCall) {
+				for (SQLCloverCallableStatement statement : callableStatement) {
+					statement.close();
+				}
+			}else{
+				sqlStatement.close();
+			}
+		} catch (SQLException e) {
+			 logger.warn("SQLException when closing statement",e);
 		}
 	}
 
@@ -572,7 +665,12 @@ public class DBExecute extends Node {
         // use attribute for single SQL command, SQLCode element for multiple
 		if (this.dbSQL.length == 1) {
 			xmlElement.setAttribute(XML_SQLQUERY_ATTRIBUTE, this.dbSQL[0]);
-		} else {
+		}else if (fileUrl != null){
+			xmlElement.setAttribute(XML_URL_ATTRIBUTE, fileUrl);
+			if (charset != null) {
+				xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
+			}
+		}else {
 			Document doc = xmlElement.getOwnerDocument();
 			Element childElement = doc.createElement(ComponentXMLAttributes.XML_ATTRIBUTE_NODE_NAME);
             childElement.setAttribute(ComponentXMLAttributes.XML_ATTRIBUTE_NODE_NAME_ATTRIBUTE, XML_SQLCODE_ELEMENT);
@@ -609,7 +707,7 @@ public class DBExecute extends Node {
         org.w3c.dom.Node childNode;
         ComponentXMLAttributes xattribsChild;
         DBExecute executeSQL;
-        String query = null;
+        String query = null, fileURL = null;
 
         try {
             if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)) {
@@ -617,9 +715,7 @@ public class DBExecute extends Node {
             } else if (xattribs.exists(XML_DBSQL_ATTRIBUTE)) {
                 query = xattribs.getString(XML_DBSQL_ATTRIBUTE);
             } else if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-                query = xattribs.resolveReferences(FileUtils.getStringFromURL(
-						graph.getProjectURL(), xattribs.getString(XML_URL_ATTRIBUTE), 
-						xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
+                fileURL = xattribs.getString(XML_URL_ATTRIBUTE);
             } else if (xattribs.exists(XML_SQLCODE_ELEMENT)) {
                 query = xattribs.getString(XML_SQLCODE_ELEMENT);
             } else {// we try to get it from child text node - slightly obsolete
@@ -636,7 +732,12 @@ public class DBExecute extends Node {
                     .getString(XML_ID_ATTRIBUTE), xattribs
                     .getString(XML_DBCONNECTION_ATTRIBUTE), 
                     query);
-
+            if (fileURL != null) {
+            	executeSQL.setFileURL(fileURL);
+            	if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+            		executeSQL.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+            	}
+            }
             if (xattribs.exists(XML_INTRANSACTION_ATTRIBUTE)) {
                 executeSQL.setTransaction(xattribs
                         .getString(XML_INTRANSACTION_ATTRIBUTE));
@@ -675,6 +776,16 @@ public class DBExecute extends Node {
 
         return executeSQL;
     }
+
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
+
+
+	public void setFileURL(String fileURL) {
+		this.fileUrl = fileURL;
+	}
+
 
 	public void setErrorLog(String errorLog) {
 		this.errorLogURL = errorLog;
@@ -769,8 +880,6 @@ public class DBExecute extends Node {
             }
             status.add(problem);
             
-        }finally{
-        	free();
         }
         
         return status;
