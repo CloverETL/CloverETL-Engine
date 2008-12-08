@@ -398,8 +398,8 @@ public class AproxMergeJoin extends Node {
 			comparator[i].setMaxLettersToChange(maxDifferenceLetters[i]);
 			max=(maxDifferenceLetters[i]+1)*comparator[i].getMaxCostForOneLetter();
 			int distance=comparator[i].distance(
-					record1.getField(fieldsToCompare[DRIVER_ON_PORT][i]).getValue().toString(),
-					record2.getField(fieldsToCompare[SLAVE_ON_PORT][i]).getValue().toString());
+					record1.getField(fieldsToCompare[DRIVER_ON_PORT][i]).toString(),
+					record2.getField(fieldsToCompare[SLAVE_ON_PORT][i]).toString());
 			result[i+1]=1-(double)distance/(double)max;
 			totalResult+=result[i+1]*weights[i];
 		}
