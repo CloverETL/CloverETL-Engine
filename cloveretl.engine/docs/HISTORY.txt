@@ -5,6 +5,7 @@
 	- edit_distance
 	- metaphone
 	- NYSIIS
++  DBExecute can read statements from input port
 
 2.6
 + changed RecordTransform interface: method transform(DataRecor[],DataRecord[]) returns: 
