@@ -18,6 +18,7 @@
 *
 */
 package org.jetel.util.property;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -130,6 +131,7 @@ public class ComponentXMLAttributes {
 	    String newAttributeValue;
 	    
 		// add all "inlined" attributes in form of "attr" node as normal attributes
+	    ArrayList<Node> toRemove = new ArrayList<Node>();
 		if (_nodeXML!=null && _nodeXML.hasChildNodes()) {
 			list = _nodeXML.getChildNodes();
 			for (int i = 0; i < list.getLength(); i++) {
@@ -152,11 +154,15 @@ public class ComponentXMLAttributes {
 					    newAttribute.setNodeValue(newAttributeValue);
 					    _nodeXML.getAttributes().setNamedItem(newAttribute);
 					    // remove child node as it is now included as an attribute - in attribute
-						_nodeXML.removeChild(childNode);
+//						_nodeXML.removeChild(childNode);
+					    toRemove.add(childNode);
 					}
 					
 				}
 			}
+		}
+		for (Node node : toRemove) {
+			nodeXML.removeChild(node);
 		}
 		
 	}
