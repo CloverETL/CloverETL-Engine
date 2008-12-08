@@ -65,7 +65,7 @@ import org.w3c.dom.Element;
  *   <td><b>Description:</b></td>
  *   <td>
  *     Receives data records through connected input port and sorts them according to the
- *     specified sort key within group specified by the group key. Sorted data records are
+ *     specified sort key within a group specified by the group key. Sorted data records are
  *     sent to all the connected output ports. The sort key (as well as the group key) is
  *     a name or a combination of names of field(s) of incoming data records. Sort order
  *     of each data field can be either Ascending (default) or Descending. Any number
@@ -114,7 +114,7 @@ import org.w3c.dom.Element;
  *   </td>
  *   <td>
  *     Defines the maximum number of records that will be sorted in memory. If the number
- *     of records exceed this value, external sorting is performed.
+ *     of records exceeds this value, external sorting is performed.
  *   </td>
  * </tr>
  * <tr>
@@ -124,7 +124,7 @@ import org.w3c.dom.Element;
  *   </td>
  *   <td>
  *     Denotes how many tapes (temporary files) will be used for external data sorting. This
- *     value must be a even number greater than 2. <i>The default value is 8.</i>
+ *     value must be an even number greater than 2. <i>The default value is 8.</i>
  *   </td>
  * </tr>
  * <tr>

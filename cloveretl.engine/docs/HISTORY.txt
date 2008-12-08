@@ -7,7 +7,10 @@
 	- NYSIIS
 +  DBExecute can read statements from input port
 
-2.6
+REL 2-6-0
+---------
+
+Features:
 + changed RecordTransform interface: method transform(DataRecor[],DataRecord[]) returns: 
 	- < -1 -- fatal error / user defined
 	-    SKIP = -1 -- error / skip record
@@ -27,9 +30,23 @@
 	- DBExecute
 + DBOutputTable and DBExecute use fields with autofilling for filling error code and error message
 + unification of trimming attributes of flat file readers
-+ shared lookup table
-+ PersistentLookupTable
 + field type "numeric" is substituted by "number" - all graphs with "numeric" field type work while engine recognizes both type representation
++ XSLTransformer reading and writing, dictionary support
++ new component SortWithinGroups
++ graph run Debug informations
++ Lookup tables interfaces refactored
+
+Fixed:
++ Persistent lookup table doesn't work properly when changing key
++ XML Extract simple sequence with namespaces doesn't work
++ Unable to read date field without format written before
++ CTL push(), pop(), insert(), poll() behaviour fixed
++ CTL negative literals parsing fixed
++ Reformat transform method now returns error code instead of boolean
++ DataParser - Problem with empty fields with blank delimiter
++ DBInputTable - query parsing
++ FixLength mode allows arbitrary fill characters
++ XLSWriter - error during initialization 
 
 REL 2-5-3
 ---------
