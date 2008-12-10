@@ -21,8 +21,10 @@ package org.jetel.connection.jdbc;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.CallableStatement;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -462,7 +464,58 @@ public abstract class CopySQLData {
         }
         return transMap;
     }
+	
+	/**
+	 * This method validates translation map between clover record and prepared statement
+	 * 
+	 * @param transMap translation map to validate
+	 * @param statement prepared statement
+	 * @param inMetadata input metadata
+	 * @param jdbcSpecific jdbc specific for checking types
+	 * @return error message if map is invalid, null in other case
+	 * @throws SQLException
+	 */
+	public static String validateJetel2sqlMap(CopySQLData[] transMap, PreparedStatement statement, 
+			DataRecordMetadata inMetadata, JdbcSpecific jdbcSpecific) throws SQLException{
+		ParameterMetaData pMeta = statement.getParameterMetaData();
+		if (transMap.length != pMeta.getParameterCount()) {
+			return "Wrong number of parameteres - actually: " + transMap.length + ", required: " + pMeta.getParameterCount();
+		}
+		for (int i = 0; i < transMap.length; i++) {
+			if (inMetadata.getFieldType(transMap[i].fieldJetel) != jdbcSpecific.sqlType2jetel(pMeta.getParameterType(i + 1))){
+				return "Incompatible Clover & JDBC field types - field "+inMetadata.getField(transMap[i].fieldJetel).getName()+
+	            ". Clover type: "+ SQLUtil.jetelType2Str(inMetadata.getFieldType(transMap[i].fieldJetel)) + 
+	            ", sql type: " + SQLUtil.sqlType2str(pMeta.getParameterType(i + 1));
+			}
+		}
+		return null;
+	}
 
+	/**
+	 * This method validates translation map between result set and clover record
+	 * 
+	 * @param transMap translation map to validate
+	 * @param sqlMeta statement result set metadata
+	 * @param outMetadata output metadata
+	 * @param jdbcSpecific jdbc specific for checking types
+	 * @return error message if map is invalid, null in other case
+	 * @throws SQLException
+	 */
+	public static String validateSql2JetelMap(CopySQLData[] transMap, ResultSetMetaData sqlMeta,
+			DataRecordMetadata outMetadata, JdbcSpecific jdbcSpecific) throws SQLException{
+		if (transMap.length != sqlMeta.getColumnCount()) {
+			return "Wrong number of output fields - actually: " + transMap.length + ", required: " + sqlMeta.getColumnCount();
+		}
+		for (int i = 0; i < transMap.length; i++) {
+			if (outMetadata.getFieldType(transMap[i].fieldJetel) != jdbcSpecific.sqlType2jetel(sqlMeta.getColumnType(i + 1))){
+				return "Incompatible Clover & JDBC field types - field "+outMetadata.getField(transMap[i].fieldJetel).getName()+
+	            ". Clover type: "+ SQLUtil.jetelType2Str(outMetadata.getFieldType(transMap[i].fieldJetel)) + 
+	            ", sql type: " + SQLUtil.sqlType2str(sqlMeta.getColumnType(i + 1));
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 *  Creates copy object - bridge between JDBC data types and Clover data types
 	 *
@@ -1468,6 +1521,7 @@ public abstract class CopySQLData {
 		}
 
     }
+
 }
 
 
