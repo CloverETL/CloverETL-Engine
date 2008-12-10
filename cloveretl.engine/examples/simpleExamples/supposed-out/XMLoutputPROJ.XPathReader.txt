@@ -1,0 +1,6 @@
+JSP;34;John Smith;06062006;in progress;1;3
+Data warehouse;51;John Major;01062005;31052006;1;3
+JSP;6;John Smith;06062006;in progress;2;5
+OLAP;24;Raymond Brown;11052004;31012006;2;5
+Javascripting;7;Brandon Morrison;01032006;in progress;3;10
+OLAP;12;Raymond Brown;11052004;31012006;3;10

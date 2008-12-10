@@ -1,0 +1,20 @@
+<Header record>
+	<customer id = 11>
+</Header record>
+<Header record>
+	<customer id = 12>
+</Header record>
+<Customer id=11>
+	<last name = Murraiin>
+	<first name = Jonathan>
+</Customer>
+<Customer id=12>
+	<last name = Creek>
+	<first name = Jewel>
+</Customer>
+<Footer record>
+	<account number = 87572824064>
+</Footer record>
+<Footer record>
+	<account number = 87579238400>
+</Footer record>
