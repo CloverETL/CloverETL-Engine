@@ -1224,6 +1224,15 @@ public class DBOutputTable extends Node {
 					} catch (SQLException e) {
 						throw new ComponentNotReadyException(this, e);
 					}
+					try{
+						keysPort = getOutputPort(WRITE_AUTO_KEY_TO_PORT);
+						String validation = statement.validate(keysPort == null ? null : keysPort.getMetadata());
+						if (validation != null) {
+							throw new ComponentNotReadyException(this, XML_SQLQUERY_ATRIBUTE, validation);
+						}
+					}catch (SQLException e) {
+						// Probably only can't validate
+					}
 				}
 			}
              
