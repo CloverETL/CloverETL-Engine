@@ -304,6 +304,8 @@ public class DBExecute extends Node {
 			}else{//read statements from file or input port
 				channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT), getGraph().getProjectURL(),
 						fileUrl);
+				channelIterator.setCharset(charset);
+				channelIterator.setDictionary(getGraph().getDictionary());
 				channelIterator.init();
 				//statements are single strings delimited by delimiter (see above)
 				statementMetadata = new DataRecordMetadata("_statement_metadata_", DataRecordMetadata.DELIMITED_RECORD);
