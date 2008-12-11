@@ -1139,11 +1139,6 @@ public class DBOutputTable extends Node {
 	}
 
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Return Value
-	 */
      @Override
      public ConfigurationStatus checkConfig(ConfigurationStatus status) {
          super.checkConfig(status);
@@ -1226,10 +1221,7 @@ public class DBOutputTable extends Node {
 					}
 					try{
 						keysPort = getOutputPort(WRITE_AUTO_KEY_TO_PORT);
-						String validation = statement.validate(keysPort == null ? null : keysPort.getMetadata());
-						if (validation != null) {
-							throw new ComponentNotReadyException(this, XML_SQLQUERY_ATRIBUTE, validation);
-						}
+						statement.checkConfig(status, keysPort == null ? null : keysPort.getMetadata());
 					}catch (SQLException e) {
 						// Probably only can't validate
 					}
