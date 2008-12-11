@@ -44,17 +44,17 @@ abstract public class PortTrackingDetail implements Serializable {
 
 	protected final int index;
 	
-	protected int totalRows;
+	protected int totalRecords;
 	protected long totalBytes;
     
-	protected int averageRows;
-	protected int peakRows;
+	protected int recordFlow;
+	protected int recordPeak;
     
-	protected int averageBytes;
-	protected int peakBytes;
+	protected int byteFlow;
+	protected int bytePeak;
     
-	protected int waitingRows;
-	protected int averageWaitingRows;
+	protected int waitingRecords;
+	protected int averageWaitingRecords;
 
     protected PortTrackingDetail(NodeTrackingDetail parentNodeDetail, int index) {
     	this.parentNodeDetail = parentNodeDetail;
@@ -63,14 +63,14 @@ abstract public class PortTrackingDetail implements Serializable {
 
     public void copyFrom(PortTrackingDetail portDetail) {
     	this.lastGatherTime = portDetail.lastGatherTime;
-    	this.totalRows = portDetail.totalRows;
+    	this.totalRecords = portDetail.totalRecords;
     	this.totalBytes = portDetail.totalBytes;
-    	this.averageRows = portDetail.averageRows;
-    	this.peakRows = portDetail.peakRows;
-    	this.averageBytes = portDetail.averageBytes;
-    	this.peakBytes = portDetail.peakBytes;
-    	this.waitingRows = portDetail.waitingRows;
-    	this.averageWaitingRows = portDetail.averageWaitingRows;
+    	this.recordFlow = portDetail.recordFlow;
+    	this.recordPeak = portDetail.recordPeak;
+    	this.byteFlow = portDetail.byteFlow;
+    	this.bytePeak = portDetail.bytePeak;
+    	this.waitingRecords= portDetail.waitingRecords;
+    	this.averageWaitingRecords = portDetail.averageWaitingRecords;
     }
     
 	public NodeTrackingDetail getParentNodeDetail() {
@@ -81,51 +81,51 @@ abstract public class PortTrackingDetail implements Serializable {
 		return index;
 	}
 
-	public int getTotalRows() {
-		return totalRows;
+	public int getTotalRecords() {
+		return totalRecords;
 	}
 	public long getTotalBytes() {
 		return totalBytes;
 	}
-	public int getAverageRows() {
-		return averageRows;
+	public int getRecordFlow() {
+		return recordFlow;
 	}
-	public int getPeakRows() {
-		return peakRows;
+	public int getRecordPeak() {
+		return recordPeak;
 	}
-	public int getAverageBytes() {
-		return averageBytes;
+	public int getByteFlow() {
+		return byteFlow;
 	}
-	public int getPeakBytes() {
-		return peakBytes;
+	public int getBytePeak() {
+		return bytePeak;
 	}
-	public int getWaitingRows() {
-		return waitingRows;
+	public int getWaitingRecords() {
+		return waitingRecords;
 	}
-	public int getAverageWaitingRows() {
-		return averageWaitingRows;
+	public int getAverageWaitingRecords() {
+		return averageWaitingRecords;
 	}
 
 	abstract public String getType();
 	
 	abstract void gatherTrackingDetails();
 	
-	protected void gatherTrackingDetails0(int newTotalRows, long newTotalBytes, int waitingRows) {
+	protected void gatherTrackingDetails0(int newTotalRecords, long newTotalBytes, int waitingRecords) {
 		long currentTime = System.nanoTime();
 		long timespan = lastGatherTime != 0 ? currentTime - lastGatherTime : 0; 
 
     	if(timespan > MIN_TIMESLACE) { // for too small time slice are statistic values too distorted
-    	    //averageRows
-	        averageRows = (int) (((long) (newTotalRows - totalRows)) * 1000000000 / timespan);
+    	    //recordFlow
+	        recordFlow = (int) (((long) (newTotalRecords - totalRecords)) * 1000000000 / timespan);
 
-	        //peakRows
-	        peakRows = Math.max(peakRows, averageRows);
+	        //recordPeak
+	        recordPeak = Math.max(recordPeak, recordFlow);
 
-    	    //averageBytes
-	        averageBytes = (int) (((long) (newTotalBytes - totalBytes)) * 1000000000 / timespan);
+    	    //byteFlow
+	        byteFlow = (int) (((long) (newTotalBytes - totalBytes)) * 1000000000 / timespan);
 
-	        //peakBytes
-	        peakBytes = Math.max(peakBytes, averageBytes);
+	        //bytePeak
+	        bytePeak = Math.max(bytePeak, byteFlow);
 	        
 	    	lastGatherTime = currentTime;
     	} else {
@@ -135,24 +135,24 @@ abstract public class PortTrackingDetail implements Serializable {
     	}
 		
 		//totalRows
-	    totalRows = newTotalRows;
+	    totalRecords = newTotalRecords;
 
 	    //totalBytes
 	    totalBytes = newTotalBytes;
 	    
-    	//waitingRows
-        this.waitingRows = waitingRows;
+    	//waitingRecords
+        this.waitingRecords = waitingRecords;
         
-	    //averageWaitingRows
-        averageWaitingRows = Math.abs(waitingRows - averageWaitingRows) / 2;
+	    //averageWaitingRecords
+        averageWaitingRecords = Math.abs(waitingRecords - averageWaitingRecords) / 2;
 	}
 
 	void phaseFinished() {
-	    //averageRows
-        averageRows = 0;
+	    //recordFlow
+        recordFlow = 0;
 
-	    //averageBytes
-        averageBytes = 0;
+	    //byteFlow
+        byteFlow = 0;
 	}
 	
 }

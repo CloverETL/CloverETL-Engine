@@ -103,17 +103,17 @@ public class TrackingLogger implements NotificationListener {
                     final float cpuUsage = (finalTracking ? nodeDetail.getPeakUsageCPU()  : nodeDetail.getUsageCPU());
                     portInfo = new Object[] {" %cpu:", cpuUsage >= 0.01f ? Float.toString(cpuUsage) : "..",
                             "In:", Integer.toString(i), 
-                            Integer.toString(inputPortDetail.getTotalRows()),
+                            Integer.toString(inputPortDetail.getTotalRecords()),
                             Long.toString(inputPortDetail.getTotalBytes() >> 10),
-                            Integer.toString(inputPortDetail.getAverageRows()),
-                            Integer.toString(inputPortDetail.getAverageBytes() >> 10)};
+                            Integer.toString(inputPortDetail.getRecordFlow()),
+                            Integer.toString(inputPortDetail.getByteFlow() >> 10)};
                     logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU)); 
                 } else {
                         portInfo = new Object[] {"In:", Integer.toString(i), 
-                        Integer.toString(inputPortDetail.getTotalRows()),
+                        Integer.toString(inputPortDetail.getTotalRecords()),
                         Long.toString(inputPortDetail.getTotalBytes() >> 10),
-                        Integer.toString(inputPortDetail.getAverageRows()),
-                        Integer.toString(inputPortDetail.getAverageBytes())};
+                        Integer.toString(inputPortDetail.getRecordFlow()),
+                        Integer.toString(inputPortDetail.getByteFlow())};
                     logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
                 }
                 i++;
@@ -125,17 +125,17 @@ public class TrackingLogger implements NotificationListener {
                     final float cpuUsage = (finalTracking ? nodeDetail.getPeakUsageCPU() : nodeDetail.getUsageCPU());
                     portInfo = new Object[] {" %cpu:", cpuUsage > 0.01f ? Float.toString(cpuUsage) : "..",
                             "Out:", Integer.toString(i), 
-                            Integer.toString(outputPortDetail.getTotalRows()),
+                            Integer.toString(outputPortDetail.getTotalRecords()),
                             Long.toString(outputPortDetail.getTotalBytes() >> 10),
-                            Integer.toString(outputPortDetail.getAverageRows()),
-                            Integer.toString(outputPortDetail.getAverageBytes() >> 10)};
+                            Integer.toString(outputPortDetail.getRecordFlow()),
+                            Integer.toString(outputPortDetail.getByteFlow() >> 10)};
                     logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU));
                 }else{
                     portInfo = new Object[] {"Out:", Integer.toString(i), 
-                        Integer.toString(outputPortDetail.getTotalRows()),
+                        Integer.toString(outputPortDetail.getTotalRecords()),
                         Long.toString(outputPortDetail.getTotalBytes() >> 10),
-                        Integer.toString(outputPortDetail.getAverageRows()),
-                        Integer.toString(outputPortDetail.getAverageBytes() >> 10)};
+                        Integer.toString(outputPortDetail.getRecordFlow()),
+                        Integer.toString(outputPortDetail.getByteFlow() >> 10)};
                     logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
                 }
                 i++;
