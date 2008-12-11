@@ -35,6 +35,7 @@ import java.util.Locale;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.string.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -98,7 +99,7 @@ public class DateDataField extends DataField implements Comparable{
             // handle format string
             String formatString;
             formatString = _metadata.getFormatStr();
-            if ((formatString != null) && (formatString.length() != 0)) {
+            if (!StringUtils.isEmpty(formatString)) {
                 if (locale != null) {
                     dateFormat = new SimpleDateFormat(formatString, locale);
                 } else {
@@ -106,9 +107,10 @@ public class DateDataField extends DataField implements Comparable{
                 }
                 dateFormat.setLenient(false);
             } else if (locale != null) {
-                dateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT,
-                        locale);
+                dateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT, locale);
                 dateFormat.setLenient(false);
+            } else {
+            	dateFormat = SimpleDateFormat.getDateInstance();
             }
         }
     }
@@ -328,12 +330,8 @@ public class DateDataField extends DataField implements Comparable{
 		if (value == null) {
 			return "";
 		}
-		if ((dateFormat != null)) {
-			return dateFormat.format(value);
-		} else {
-			dateFormat = SimpleDateFormat.getDateInstance();
-			return toString();
-		}
+		
+		return dateFormat.format(value);
 	}
 
 
@@ -388,12 +386,7 @@ public class DateDataField extends DataField implements Comparable{
 			return;
 		}
 		try {
-			if (dateFormat != null) {
-				value = dateFormat.parse(seq.toString());//, parsePosition);
-			} else {
-				dateFormat = SimpleDateFormat.getDateInstance();
-				value = dateFormat.parse(seq.toString());
-			}
+			value = dateFormat.parse(seq.toString());//, parsePosition);
 			setNull(false);
 		} catch (ParseException e) {
 			throw new BadDataFormatException("not a Date", seq.toString());
