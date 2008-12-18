@@ -59,7 +59,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Sequence cached="50" fileURL="${SEQ_DIR}seqkey.seq" id="Sequence0" name="seqKey" start="0" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="50" fileURL="${SEQ_DIR}/seqkey.seq" id="Sequence0" name="seqKey" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
 <Phase number="0">
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputEMPL.txt" guiHeight="0" guiName="Employees" guiWidth="0" guiX="391" guiY="27" id="DATA_WRITER0" type="DATA_WRITER">
