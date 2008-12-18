@@ -288,6 +288,7 @@
 	 <FlatFile outputFile="data-out/XMLoutputCUSTOM.txt" supposedFile="supposed-out/XMLoutputCUSTOM.XPathReader.txt"/>
 	 <FlatFile outputFile="data-out/XMLoutputEMPL.txt" supposedFile="supposed-out/XMLoutputEMPL.XPathReader.txt"/>
 	 <FlatFile outputFile="data-out/XMLoutputPROJ.txt" supposedFile="supposed-out/XMLoutputPROJ.XPathReader.txt"/>	 
+	 <DeleteFile file="seq/seqkey.seq"/> 
 </FunctionalTest>
 
 
