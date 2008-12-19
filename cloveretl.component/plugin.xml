@@ -1,6 +1,6 @@
 <plugin
    id="org.jetel.component"
-   version="2.6.0"
+   version="2.7.0"
    provider-name="Javlin a.s.">
 
 	<runtime>
@@ -8,7 +8,7 @@
 		<library path="lib/saxon8.jar"/>
    	</runtime> 
 
-	<requires engine-version="2.6.0">
+	<requires engine-version="2.7.0">
 		<import plugin-id="org.jetel.connection"/>
 		<import plugin-id="org.jetel.lookup"/>
 	</requires>
