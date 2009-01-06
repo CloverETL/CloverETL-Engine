@@ -19,6 +19,7 @@
  */
 package org.jetel.util.string;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +63,11 @@ public class StringUtils {
 
 	private final static int SEQUENTIAL_TRANLATE_LENGTH = 16;
 
-	private static Pattern delimiterPattern;
+    private static final String HEX_STRING_ENCODING = "ISO-8859-1";
+    private static final String HEX_STRING_LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final int HEX_STRING_BYTES_PER_LINE = 16;
+
+    private static Pattern delimiterPattern;
 	
 	private final static String OBJECT_NAME_PATTERN = "[_A-Za-z]+[_A-Za-z0-9]*";
 	private final static Pattern INVALID_CHAR = Pattern.compile("[^_A-Za-z0-9]{1}");
@@ -89,7 +94,58 @@ public class StringUtils {
 
 		return elementName.substring(elementName.indexOf(XML_NAMESPACE_DELIMITER) + 1);
 	}
-	
+
+	/**
+	 * Converts a string into its HEX representation (that can be used for display).
+	 *
+	 * @param string the string to be converted
+	 *
+	 * @return the string in HEX mode
+	 *
+	 * @throws NullPointerException if the string is <code>null</code>
+	 *
+	 * @since 6th January 2009
+	 */
+    public static String stringToHexString(String string) {
+        if (string == null) {
+            throw new NullPointerException("string");
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        byte[] stringBytes = null;
+
+        try {
+            stringBytes = string.getBytes(HEX_STRING_ENCODING);
+        } catch (UnsupportedEncodingException exception) {
+            // this should NOT happen at all
+        }
+
+        for (int i = 0; i < stringBytes.length; i += HEX_STRING_BYTES_PER_LINE) {
+            stringBuilder.append(String.format("%1$08X:  ", i));
+
+            int lineLength = Math.min(HEX_STRING_BYTES_PER_LINE, stringBytes.length - i);
+
+            for (int j = 0; j < lineLength; j++) {
+                stringBuilder.append(String.format("%1$02X ", stringBytes[i + j]));
+            }
+
+            for (int j = lineLength; j < HEX_STRING_BYTES_PER_LINE; j++) {
+                stringBuilder.append("   ");
+            }
+
+            stringBuilder.append(' ');
+
+            for (int j = 0; j < lineLength; j++) {
+                char currentChar = (char) stringBytes[i + j];
+                stringBuilder.append(!Character.isWhitespace(currentChar) ? currentChar : ' ');
+            }
+
+            stringBuilder.append(HEX_STRING_LINE_SEPARATOR);
+        }
+
+        return stringBuilder.toString();
+    }
+
 	public static boolean isVowel(char ch){
 		return Arrays.binarySearch(vowels, ch) > -1;
 	}
