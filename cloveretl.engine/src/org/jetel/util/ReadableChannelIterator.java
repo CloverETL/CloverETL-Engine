@@ -201,7 +201,12 @@ public class ReadableChannelIterator {
 	}
 	
 	/**
-	 * @see java.util.Iterator
+	 * !!!returns!!! 
+	 * 		true  - if the source contains data OR if the input port is NOT eof, 
+	 * 				then it is necessary to call the method next() that returns null or an input stream. 
+	 * 		false - no input data
+	 * 
+	 * TODO to make hasData method for the InputPort that waits for new data if the edge is empty. Is it good solution???
 	 */
 	public boolean hasNext() {
 		return hasNextWithoutStream() || hasNextWithStream();
