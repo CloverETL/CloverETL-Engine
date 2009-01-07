@@ -56,6 +56,9 @@ import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 
 import sun.misc.BASE64Encoder;
 
+import com.ice.tar.TarArchive;
+import com.ice.tar.TarEntry;
+import com.ice.tar.TarInputStream;
 import com.jcraft.jsch.ChannelSftp;
 /**
  *  Helper class with some useful methods regarding file manipulation
@@ -223,12 +226,13 @@ public class FileUtils {
 	 * @throws IOException
 	 */
     public static InputStream getInputStream(URL contextURL, String input) throws IOException {
-        String zipAnchor = null;
+        String anchor = null;
         URL url = null;
         InputStream innerStream = null;
 		boolean isZip = false;
 		boolean isGzip = false;
 		boolean isFile = false;
+		boolean isTar = false;
         
 		// get inner source
 		Matcher matcher = getInnerInput(input);
@@ -245,13 +249,12 @@ public class FileUtils {
 		}
 		
         //resolve url format for zip files
-        if(input.startsWith("zip:")) {
-        	isZip = true;
+        if((isZip = input.startsWith("zip:")) || (isTar = input.startsWith("tar:"))) {
             if(!input.contains("#")) { //url is given without anchor - later is returned channel from first zip entry 
-                zipAnchor = null;
+                anchor = null;
             	input = input.substring(input.indexOf(':') + 1);
             } else {
-                zipAnchor = input.substring(input.lastIndexOf('#') + 1);
+                anchor = input.substring(input.lastIndexOf('#') + 1);
                 input = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
             }
         }
@@ -259,7 +262,7 @@ public class FileUtils {
         	isGzip = true;
         	input = input.substring(input.indexOf(':') + 1);
         }
-        
+
         //open channel
         if (innerStream == null) {
         	url = FileUtils.getFileURL(contextURL, input);
@@ -267,34 +270,13 @@ public class FileUtils {
         	innerStream = getAuthorizedStream(url);
         }
 
-        if (isZip) {
-            //resolve url format for zip files
-            ZipInputStream zin = new ZipInputStream(innerStream) ;     
-            ZipEntry entry;
-            while((entry = zin.getNextEntry()) != null) {
-                if(zipAnchor == null) { //url is given without anchor; first entry in zip file is used
-                    return zin;
-                }
-                if(entry.getName().equals(zipAnchor)) {
-                    return zin;
-                }
-                //finish up with entry
-                zin.closeEntry();
-            }
-            //close the archive
-            zin.close();
-            //no channel found report
-            if(zipAnchor == null) {
-                throw new IOException("Zip file is empty.");
-            } else {
-                throw new IOException("Wrong anchor (" + zipAnchor + ") to zip file.");
-            }
-        } 
-        
-        // gzip
-        else if (isGzip) {
-            GZIPInputStream gzin = new GZIPInputStream(innerStream, Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
-            return gzin;
+        // create archive streams
+        if (isZip) { 
+        	return getZipInputStream(innerStream, anchor);
+        } else if (isGzip) {
+            return new GZIPInputStream(innerStream, Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
+        } else if (isTar) {
+        	return getTarInputStream(innerStream, anchor);
         }
         
         if (isFile) {
@@ -305,6 +287,66 @@ public class FileUtils {
         return innerStream;
     }
 
+    /**
+     * Creates zip input stream.
+     * @param innerStream
+     * @param anchor
+     * @return
+     * @throws IOException
+     */
+    private static InputStream getZipInputStream(InputStream innerStream, String anchor) throws IOException {
+        //resolve url format for zip files
+        ZipInputStream zin = new ZipInputStream(innerStream) ;     
+        ZipEntry entry;
+        while((entry = zin.getNextEntry()) != null) {
+            if(anchor == null) { //url is given without anchor; first entry in zip file is used
+                return zin;
+            }
+            if(entry.getName().equals(anchor)) {
+                return zin;
+            }
+            //finish up with entry
+            zin.closeEntry();
+        }
+        //close the archive
+        zin.close();
+        //no channel found report
+        if(anchor == null) {
+            throw new IOException("Zip file is empty.");
+        } else {
+            throw new IOException("Wrong anchor (" + anchor + ") to zip file.");
+        }
+    }
+
+    
+    /**
+     * Creates tar input stream.
+     * @param innerStream
+     * @param anchor
+     * @return
+     * @throws IOException
+     */
+    private static InputStream getTarInputStream(InputStream innerStream, String anchor) throws IOException {
+    	TarInputStream tin = new TarInputStream(innerStream);
+        TarEntry entry;
+        while((entry = tin.getNextEntry()) != null) {
+            if(anchor == null) { //url is given without anchor; first entry in zip file is used
+                return tin;
+            }
+            if(entry.getName().equals(anchor)) {
+                return tin;
+            }
+        }
+        //close the archive
+        tin.close();
+        //no channel found report
+        if(anchor == null) {
+            throw new IOException("Tar file is empty.");
+        } else {
+            throw new IOException("Wrong anchor (" + anchor + ") to tar file.");
+        }
+    }
+    
     private static InputStream getAuthorizedStream(URL url) throws IOException {
         URLConnection uc = url.openConnection();
         // check autorization
