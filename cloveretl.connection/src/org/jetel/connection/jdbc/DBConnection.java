@@ -143,10 +143,18 @@ public class DBConnection extends GraphElement implements IConnection {
     public static final String XML_USER_ATTRIBUTE = "user";
     public static final String XML_THREAD_SAFE_CONNECTIONS="threadSafeConnection";
     public static final String XML_IS_PASSWORD_ENCRYPTED = "passwordEncrypted";
+    public static final String XML_HOLDABILITY  = "holdability";
+    public static final String XML_TRANSACTION_ISOLATION = "transactionIsolation";
     
     public static final String XML_JDBC_PROPERTIES_PREFIX = "jdbc.";
     
     public static final String EMBEDDED_UNLOCK_CLASS = "com.ddtek.jdbc.extensions.ExtEmbeddedConnection";
+    
+    private final static String[] TRANSACTION_ISOLATION = {"TRANSACTION_NONE", "READ_UNCOMMITTED", "READ_COMMITTED", 
+    	"REPEATABLE_READ", "SERIALIZABLE"
+    };
+
+	private static final String[] HOLDABILITY = {"HOLD_CURSORS", "CLOSE_CURSORS"};
 
     // not yet used by component
     public static final String XML_NAME_ATTRIBUTE = "name";
@@ -163,6 +171,8 @@ public class DBConnection extends GraphElement implements IConnection {
     private String password;
     private String driverLibrary;
     private String jdbcSpecificId;
+    private Integer holdability;
+    private Integer transactionIsolation;
     
     // properties specific to the JDBC connection (not used by Clover)
     private TypedProperties jdbcProperties;
@@ -214,6 +224,26 @@ public class DBConnection extends GraphElement implements IConnection {
 		setJndiName(typedProperties.getStringProperty(XML_JNDI_NAME_ATTRIBUTE, null));
 		setThreadSafeConnections(typedProperties.getBooleanProperty(XML_THREAD_SAFE_CONNECTIONS, true));
 		setPasswordEncrypted(typedProperties.getBooleanProperty(XML_IS_PASSWORD_ENCRYPTED, false));
+		try {
+			setHoldability(typedProperties.getIntProperty(XML_HOLDABILITY));
+		} catch (NumberFormatException e) {
+			int index = StringUtils.findString(typedProperties.getStringProperty(XML_HOLDABILITY), HOLDABILITY);
+			if (index != -1) {
+				setHoldability(index + 1);
+			}else {
+				logger.warn("Unknown holdability");
+			}
+		}
+		try {
+			setTransactionIsolation(typedProperties.getIntProperty(XML_TRANSACTION_ISOLATION));
+		} catch (Exception e) {
+			int index = StringUtils.findString(typedProperties.getStringProperty(XML_HOLDABILITY), TRANSACTION_ISOLATION);
+			if (index != -1) {
+				setTransactionIsolation(index > 0 ? 2 ^ (index - 1) : 0);
+			}else {
+				logger.warn("Unknown transaction isolation");
+			}
+		}
 
 		jdbcProperties = typedProperties.getPropertiesStartWith(XML_JDBC_PROPERTIES_PREFIX);
 	}
@@ -454,6 +484,12 @@ public class DBConnection extends GraphElement implements IConnection {
         }
         if(getJndiName() != null) {
         	propsToStore.setProperty(XML_JNDI_NAME_ATTRIBUTE, getJndiName());
+        }
+        if (getHoldability() != null) {
+        	propsToStore.setProperty(XML_HOLDABILITY, Integer.toString(getHoldability()));
+        }
+        if (getTransactionIsolation() != null) {
+        	propsToStore.setProperty(XML_TRANSACTION_ISOLATION, Integer.toString(getTransactionIsolation()));
         }
         propsToStore.setProperty(XML_THREAD_SAFE_CONNECTIONS, Boolean.toString(isThreadSafeConnections()));
         propsToStore.setProperty(XML_IS_PASSWORD_ENCRYPTED, Boolean.toString(isPasswordEncrypted()));
@@ -731,6 +767,34 @@ public class DBConnection extends GraphElement implements IConnection {
 			}
 			return hashCode;
 		}
+	}
+
+	/**
+	 * @return the holdability
+	 */
+	public Integer getHoldability() {
+		return holdability;
+	}
+
+	/**
+	 * @param holdability the holdability to set
+	 */
+	public void setHoldability(Integer holdability) {
+		this.holdability = holdability;
+	}
+
+	/**
+	 * @return the transactionIsolation
+	 */
+	public Integer getTransactionIsolation() {
+		return transactionIsolation;
+	}
+
+	/**
+	 * @param transactionIsolation the transactionIsolation to set
+	 */
+	public void setTransactionIsolation(Integer transactionIsolation) {
+		this.transactionIsolation = transactionIsolation;
 	}
 
 }

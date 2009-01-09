@@ -592,13 +592,15 @@ public class MsSqlDataWriter extends Node {
 	private final static String DEFAULT_COLUMN_DELIMITER = "\t"; // according bcp
 	
 	/**
+	 * when Character Format is used to Import Data then data file can't 
+	 * contain only "\n" as a record delimiter - it isn't allowed by bcp
 	 * bcp utility behave unusually:
 	 * in data file: default record delimiter is "\r\n"
 	 * in command line as parameter: default record delimiter is "\n"
-	 * data file can't contain only "\n" as a record delimiter - it isn't allowed by bcp
 	 */
 	private final static String DEFAULT_RECORD_DELIMITER = "\r\n"; // according bcp
-	private final static String DEFAULT_RECORD_DELIMITER_IN_COMMAND = "\n"; // according bcp
+	
+	private final static String DEFAULT_RECORD_DELIMITER_WIDE = "\n"; // according bcp
 	
 
 	private final static String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
@@ -816,6 +818,37 @@ public class MsSqlDataWriter extends Node {
 					+ StringUtils.quote(XML_VIEW_ATTRIBUTE) + " attribute must be set.");
 		}
 		
+		if (isUsedDataTypeForImportData() > 1) {
+			throw new ComponentNotReadyException(this, "Only one parameter from these " + 
+					StringUtils.quote(MS_SQL_NATIVE_TYPE_PARAM) + ", " +
+					StringUtils.quote(MS_SQL_CHARACTER_TYPE_PARAM) + ", " +
+					StringUtils.quote(MS_SQL_WIDE_CHARACTER_TYPE_PARAM) + ", " +
+					StringUtils.quote(MS_SQL_KEEP_NON_TEXT_NATIVE_PARAM) +
+					" can be used simultaneously.");
+		}
+		
+		if (isUsedDataTypeForImportData() < 1 && 
+				!properties.containsKey(MS_SQL_FORMAT_FILE_PARAM) &&
+				!properties.containsKey(MS_SQL_INPUT_FILE_PARAM)) {
+			throw new ComponentNotReadyException(this, "One of these parameters has to be set: " + 
+					StringUtils.quote(MS_SQL_NATIVE_TYPE_PARAM) + ", " +
+					StringUtils.quote(MS_SQL_CHARACTER_TYPE_PARAM) + ", " +
+					StringUtils.quote(MS_SQL_WIDE_CHARACTER_TYPE_PARAM) + ", " +
+					StringUtils.quote(MS_SQL_KEEP_NON_TEXT_NATIVE_PARAM) + ", " +
+					StringUtils.quote(MS_SQL_FORMAT_FILE_PARAM) + ", " +
+					StringUtils.quote(MS_SQL_INPUT_FILE_PARAM) + ".\n" +
+					"For most cases (when input port is connected) " + 
+					StringUtils.quote(MS_SQL_CHARACTER_TYPE_PARAM) + " should be used.");
+		}
+
+		// report that some problem can occur
+		if (StringUtils.specCharToString("\r\n").equals(getRecordDelimiter(true)) && 
+				isCharTypeUseToLoad()) {
+			logger.warn("When " + StringUtils.quote(MS_SQL_RECORD_DELIMITER_PARAM +
+					"=" + StringUtils.specCharToString("\r\n")) + 
+					" then problem with loading data can occur.");
+		}
+		
 		// report on ignoring some attributes
 		if (columnDelimiter != null && properties.containsKey(MS_SQL_COLUMN_DELIMITER_PARAM)) {
 			logger.warn("Parameter " + StringUtils.quote(MS_SQL_COLUMN_DELIMITER_PARAM) + " in attribute "
@@ -837,6 +870,28 @@ public class MsSqlDataWriter extends Node {
 		}
 		
 		checkServerName();
+	}
+	
+	/**
+	 * nativeType, characterType, wideCharacterType, keepNonTextNative
+	 * If it uses all of under types then returns 4
+	 * @return number of data type import definition
+	 */
+	private int isUsedDataTypeForImportData() {
+		int dataTypeDefinition = 0;
+		if (isNativeTypeUseToLoad()) {
+			dataTypeDefinition++;
+		}
+		if (isCharTypeUseToLoad()) {
+			dataTypeDefinition++;
+		} 
+		if (isWideCharTypeUseToLoad()) {
+			dataTypeDefinition++;
+		}
+		if (isKeepNonTextTypeUseToLoad()) {
+			dataTypeDefinition++;
+		}
+		return dataTypeDefinition;
 	}
 	
 	private void checkServerName() {
@@ -927,7 +982,11 @@ public class MsSqlDataWriter extends Node {
 		} else if (properties.containsKey(MS_SQL_COLUMN_DELIMITER_PARAM)) {
 			colDel = properties.getProperty(MS_SQL_COLUMN_DELIMITER_PARAM);
 		} else {
-			colDel = DEFAULT_COLUMN_DELIMITER; 
+			if (inCommand) {
+				return null; // default value is used
+			} else {
+				return DEFAULT_COLUMN_DELIMITER;
+			}
 		}
 		
 		if (inCommand) {
@@ -946,20 +1005,43 @@ public class MsSqlDataWriter extends Node {
 		} else if (properties.containsKey(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM)) {
 			recDel = properties.getProperty(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM);
 		} else if (inCommand){
-			recDel = DEFAULT_RECORD_DELIMITER_IN_COMMAND;
+			return null; // default value is used
 		} else {
-			recDel = DEFAULT_RECORD_DELIMITER;
+			if (isCharTypeUseToLoad()) {
+				return DEFAULT_RECORD_DELIMITER;
+			} else if (isWideCharTypeUseToLoad()) {
+				return DEFAULT_RECORD_DELIMITER_WIDE;
+			} else {
+				return DEFAULT_RECORD_DELIMITER; // shouldn't be occur
+			}
 		}
 		
 		if (inCommand) {
 			return StringUtils.specCharToString(recDel);
 		} else {
-			// data file can't contain only "\n" as a record delimiter - it isn't allowed by bcp
-			if ("\n".equals(recDel)) {
+			// when Character Format is used to Import Data then in data file 
+			// can't contain only "\n" as a record delimiter - it isn't allowed by bcp
+			if ("\n".equals(recDel) && isCharTypeUseToLoad()) {
 				recDel = DEFAULT_RECORD_DELIMITER;
 			}
 			return recDel;
 		}
+	}
+	
+	private boolean isCharTypeUseToLoad() {
+		return properties.containsKey(MS_SQL_CHARACTER_TYPE_PARAM);
+	}
+	
+	private boolean isWideCharTypeUseToLoad() {
+		return properties.containsKey(MS_SQL_WIDE_CHARACTER_TYPE_PARAM);
+	}
+	
+	private boolean isNativeTypeUseToLoad() {
+		return properties.containsKey(MS_SQL_NATIVE_TYPE_PARAM);
+	}
+	
+	private boolean isKeepNonTextTypeUseToLoad() {
+		return properties.containsKey(MS_SQL_KEEP_NON_TEXT_NATIVE_PARAM);
 	}
 	
 	/**
@@ -1370,6 +1452,7 @@ public class MsSqlDataWriter extends Node {
 			}
 			// re-set last delimiter
 			metadata.getField(metadata.getNumFields() - 1).setDelimiter(DEFAULT_RECORD_DELIMITER);
+			metadata.setRecordDelimiters("");
 
 			return metadata;
 		}
@@ -1453,7 +1536,6 @@ public class MsSqlDataWriter extends Node {
 									errPort.writeRecord(errRecord);
 								}
 							} catch (BadDataFormatException e) {
-								e.printStackTrace();
 								logger.warn("Bad row - it couldn't be parsed and sent to out port. Line: " + line);
 							}
 						}

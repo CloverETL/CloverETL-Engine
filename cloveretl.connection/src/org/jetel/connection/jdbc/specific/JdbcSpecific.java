@@ -92,5 +92,15 @@ public interface JdbcSpecific {
 	 * @return
 	 */
 	public int jetelType2sql(DataFieldMetadata field);
+	
+	/**
+	 * @return class name where are constants with sql types
+	 */
+	public String getTypesClassName();
+	
+	/**
+	 * @return constant for sql type, which will be regarded as "Result set"
+	 */
+	public String getResultSetParameterTypeField();
 
 }

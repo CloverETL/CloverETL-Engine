@@ -67,6 +67,17 @@ public class DefaultConnection implements Connection {
 		this.connection = connect(dbConnection);
 		
 		optimizeConnection(operationType);
+		
+		try {
+			if (dbConnection.getHoldability() != null) {
+				setHoldability(dbConnection.getHoldability());
+			}
+			if (dbConnection.getTransactionIsolation() != null) {
+				setTransactionIsolation(dbConnection.getTransactionIsolation());
+			}
+		} catch (SQLException e) {
+			throw new JetelException("Wrong connection configuration.", e);
+		}
 	}
 
 	/**

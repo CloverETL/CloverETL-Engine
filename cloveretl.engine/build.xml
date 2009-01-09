@@ -182,7 +182,7 @@
 			<fileset file="readme.bin.txt" />
 		</copy>
 
-		<copy todir="${src.distribution.dir.engine}/..">
+		<copy todir="${src.distribution.dir.engine}/.." encoding="UTF-8">
 			<fileset file="readme.src.txt" />
 			<filterset refid="versionFilter"/>
 		</copy>
@@ -328,7 +328,7 @@
 		</copy>
 
 		<!-- copy readme.txt -->
-		<copy todir="${dir.package}">
+		<copy todir="${dir.package}" encoding="UTF-8">
 			<fileset file="${basedir}/readme.bin.txt"/>
 			<filterset refid="versionFilter"/>
 		</copy>
@@ -339,7 +339,7 @@
 	<!-- make a temp copy of source - necessary to substitute release number constants in the source code -->
 	<target name="improve-java-sources">
 		<echo message="Copying source code.." />
-		<copy todir="${dir.src.improved}">
+		<copy todir="${dir.src.improved}" encoding="UTF-8">
 			<fileset dir="${dir.src}" />
 			<filterset refid="versionFilter"/>
 		</copy>

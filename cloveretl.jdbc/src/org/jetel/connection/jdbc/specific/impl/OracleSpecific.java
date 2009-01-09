@@ -38,6 +38,10 @@ import org.jetel.util.string.StringUtils;
  */
 public class OracleSpecific extends AbstractJdbcSpecific {
 
+	private static final String ORACLE_TYPES_CLASS_NAME = "oracle.jdbc.OracleTypes";
+
+	private static final String ORACLE_RESULT_SET_PARAMETER_TYPE_FIELD = "CURSOR";
+
 	private static final OracleSpecific INSTANCE = new OracleSpecific();
 	
 	protected OracleSpecific() {
@@ -136,6 +140,20 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 			default:
 				throw new IllegalArgumentException("Can't handle JDBC.Type :"+sqlType);
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#getResultSetParameterTypeField()
+	 */
+	public String getResultSetParameterTypeField() {
+		return ORACLE_RESULT_SET_PARAMETER_TYPE_FIELD;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#getTypesClassName()
+	 */
+	public String getTypesClassName() {
+		return ORACLE_TYPES_CLASS_NAME;
 	}
 
 }

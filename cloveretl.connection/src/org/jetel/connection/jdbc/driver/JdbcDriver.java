@@ -24,7 +24,6 @@ import java.net.URLClassLoader;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Enumeration;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,7 +33,7 @@ import org.jetel.util.string.StringUtils;
 
 /**
  * JDBC driver represents a JDBC driver. Can be create based on JDBC driver description or by all
- * necessary attributes. Method getDriver() is root knowlage of this class.
+ * necessary attributes. Method getDriver() is root knowledge of this class.
  * 
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
@@ -137,6 +136,24 @@ public class JdbcDriver {
     }
     
     /**
+     * @return type of associated result set
+     * @throws ComponentNotReadyException
+     */
+    public int getResultSetType() throws ComponentNotReadyException {
+		Class<?> typesClass;
+		try {
+			typesClass = getClassLoader().loadClass(getJdbcSpecific().getTypesClassName());
+		} catch (ClassNotFoundException e) {
+			throw new ComponentNotReadyException("Invalid Types class name in jdbc specific: " + getJdbcSpecific().getTypesClassName(), e);
+		}
+		try {
+			return typesClass.getField(getJdbcSpecific().getResultSetParameterTypeField()).getInt(null);
+		} catch (Exception e) {
+			throw new ComponentNotReadyException("Invalid ResultSet type field name in jdbc specific: " + getJdbcSpecific().getResultSetParameterTypeField(), e);
+		}
+    }
+    
+    /**
      * That is major method of this class. Returns a java.sql.Driver represented by this entity.
      */
     public Driver getDriver() {
@@ -178,6 +195,9 @@ public class JdbcDriver {
 				DriverManager.deregisterDriver(driver);
 			} catch (SQLException e1) {
 				logger.error(e1.getMessage(), e1);
+			} catch (SecurityException e2) {
+				// thrown by Sybase driver
+				logger.warn("SecurityException while DriverManager.deregisterDriver() message:" + e2.getMessage());
 			}
 		}
 		/*

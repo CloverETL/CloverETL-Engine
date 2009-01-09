@@ -2136,7 +2136,7 @@ public class InterpreterTest extends CloverTestCase {
         		"		if (try_convert(from,to)) print_err('converted:'+from+'-->'+to);\n" +
         		"		else print_err('cant convert:'+from+'-->'+to);\n" +
         		"	}else{\n" +
-        		"		if (try_convert(from,to, format)) print_err('converted:'+from+'-->'+to);\n" +
+        		"		if (try_convert(from,to, format)) print_err('converted:'+from+'-->'+to+' with pattern:'+format);\n" +
         		"		else print_err('cant convert:'+from+'-->'+to+' with pattern '+format);\n" +
         		"	}\n" +
         		"};\n" +
@@ -2169,7 +2169,11 @@ public class InterpreterTest extends CloverTestCase {
         		"print_result(1,b,null);\n" +
         		"print_result(b,d2,null);\n" +
         		"boolean b1;\n" +
-        		"print_result('prawda',b1,null);\n";
+        		"print_result('prawda',b1,null);\n" +
+        		"string curr;\n" +
+        		"print_result(1247,curr,'¤###,000.00');\n" +
+        		"string ns;\n" +
+        		"print_result(1247,ns,null);";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
@@ -2204,6 +2208,8 @@ public class InterpreterTest extends CloverTestCase {
 		      assertEquals(DecimalFactory.getDecimal(75.32, 6, 4),(executor.getGlobalVariable(parser.getGlobalVariableSlot("d1")).getTLValue().getNumeric()));
 		      assertEquals(DecimalFactory.getDecimal(75.32, 6, 4),(executor.getGlobalVariable(parser.getGlobalVariableSlot("d1")).getTLValue().getNumeric()));
 		      assertEquals(DecimalFactory.getDecimal(1), executor.getGlobalVariable(parser.getGlobalVariableSlot("d2")).getTLValue().getNumeric());
+		      assertEquals("$1,247.00", executor.getGlobalVariable(parser.getGlobalVariableSlot("curr")).getTLValue().toString());
+		      assertEquals("1247", executor.getGlobalVariable(parser.getGlobalVariableSlot("ns")).getTLValue().toString());
 		      
         } catch (ParseException e) {
             System.err.println(e.getMessage());

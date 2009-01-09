@@ -185,7 +185,8 @@ public class DBExecute extends Node {
     private enum InTransaction {
     	ONE,
     	SET,
-    	ALL;
+    	ALL,
+    	NEVER_COMMIT;
     }
     
 	private DBConnection dbConnection;
@@ -341,6 +342,8 @@ public class DBExecute extends Node {
 		try {
 			//prepare statements if are not read from file or port
 			if (procedureCall) {
+				int resultSetType = dbConnection.getJdbcDriver().getResultSetType();
+
 				connectionInstance = dbConnection.getConnection(getId(), OperationType.CALL);
 				if (dbSQL != null) {
 					callableStatement = new SQLCloverCallableStatement[dbSQL.length];
@@ -376,7 +379,7 @@ public class DBExecute extends Node {
 			}
 		} catch (SQLException e) {
 			throw new ComponentNotReadyException(this, XML_SQLCODE_ELEMENT, e.getMessage());
-		} catch (JetelException e) {
+		} catch (Exception e) {
 			throw new ComponentNotReadyException(e);
 		}
 		errorActions = new HashMap<Integer, ErrorAction>();
@@ -490,7 +493,11 @@ public class DBExecute extends Node {
 				errorLog.flush();
 				errorLog.close();
 			}
-			connectionInstance.getSqlConnection().rollback();
+			try {
+				connectionInstance.getSqlConnection().rollback();
+			} catch (SQLException e1) {
+				logger.warn("Can't rollback!!", e);
+			}
 			throw e;
 		}
 	}
