@@ -22,4 +22,5 @@
 	<classpathentry kind="lib" path="lib/jakarta-oro-2.0.8.jar"/>
 	<classpathentry kind="lib" path="lib/tar.jar"/>
 	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="lib" path="lib/joda-time-1.6.jar"/>
 </classpath>
