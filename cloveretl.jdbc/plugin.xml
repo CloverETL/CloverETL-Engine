@@ -53,6 +53,13 @@
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.PostgreSpecific"/>
 	</extension>
 
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="SYBASE"/>
+		<parameter id="name" value="Sybase"/>
+		<!--parameter id="majorVersion" value="x"/-->
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.SybaseSpecific"/>
+	</extension>
+
 	<extension point-id="jdbcDriver">
 		<parameter id="database" value="MYSQL"/>
 		<parameter id="name" value="MySQL"/>

@@ -146,13 +146,13 @@ public class ConvertLib extends TLFunctionLibrary {
 
         public Num2StrFunction() {
             super("convert", "num2str", "Returns string representation of a number in a given numeral system", 
-            		new TLValueType[] { TLValueType.DECIMAL, TLValueType.INTEGER }, 
+            		new TLValueType[] { TLValueType.DECIMAL, TLValueType.STRING}, 
                     TLValueType.STRING, 2,1);
         }
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
-            TLValue val = (TLValue)context.getContext();
+            TLValue val = ((Num2StrContext)context.getContext()).value;
             TLValue input=params[0];
             StringBuilder strBuf = (StringBuilder)val.getValue();
             strBuf.setLength(0);
@@ -161,16 +161,29 @@ public class ConvertLib extends TLFunctionLibrary {
                 throw new TransformLangExecutorRuntimeException(params,
                         Function.NUM2STR.name()+" - NULL value not allowed");
             }
-            int radix=10;
+            Integer radix = null;
+            String formatString = null;
             
             if (params.length>1) {
-                if (params[1]==TLNullValue.getInstance() || !params[1].type.isNumeric() ){
+                if (params[1]==TLNullValue.getInstance()){
                     throw new TransformLangExecutorRuntimeException(params,
                         Function.NUM2STR.name()+" - wrong type of literals");
                 }
-                radix=((TLNumericValue)params[1]).getInt();
+                if (params[1].getType().isNumeric()) {
+					radix = ((TLNumericValue) params[1]).getInt();
+				}else if (params[1].getType() == TLValueType.STRING) {
+					formatString = params[1].toString();
+				}else {
+                    throw new TransformLangExecutorRuntimeException(params,
+                            Function.NUM2STR.name()+" - wrong type of literals");
+				}
             }
             
+            if (radix == null && formatString == null) {
+            	radix = 10;
+            }
+            
+            if (radix != null) {
                 if (radix == 10) {
                     strBuf.append(input.toString());
                 } else {
@@ -189,6 +202,13 @@ public class ConvertLib extends TLFunctionLibrary {
                             Function.NUM2STR.name()+" - can't convert number to string using specified radix");
                     }
                 }
+             } else {//radix == null --> formatString != null
+            	 DecimalFormat format =((Num2StrContext)context.getContext()).format;
+            	 if (!format.toPattern().equals(formatString)) {
+            		 format.applyPattern(formatString);
+            	 }
+            	 strBuf.append(format.format(((TLNumericValue)input).getDouble()));
+            }
 
             
             return val;
@@ -196,7 +216,7 @@ public class ConvertLib extends TLFunctionLibrary {
 
         @Override
         public TLContext createContext() {
-            return TLContext.createStringContext();
+            return Num2StrContext.createContex();
         }
     }
 
@@ -805,6 +825,10 @@ public class ConvertLib extends TLFunctionLibrary {
 	
     // TRY_CONVERT
     class TryConvertFunction extends TLFunctionPrototype {
+    	
+    	private final static int FROM_INDEX = 0;
+    	private final static int TO_INDEX = 1;
+    	private final static int FORMAT_INDEX = 2;
 
         public TryConvertFunction() {
             super("convert", "try_convert", "Tries to convert variable of one type to another",  new TLValueType[] { TLValueType.OBJECT, TLValueType.OBJECT, TLValueType.STRING }, 
@@ -853,9 +877,8 @@ public class ConvertLib extends TLFunctionLibrary {
         }
         
         private TLContext getConvertContext(TLFunctionPrototype function, TLContext context){
-        	if ((function instanceof Num2StrFunction || function instanceof ToStringFunction) && 
-        			!(context.getContext() instanceof TLStringValue)) {
-        		return TLContext.createStringContext();
+        	if (function instanceof Num2StrFunction && !(context.getContext() instanceof Num2StrContext)) {
+        		return Num2StrContext.createContex();
         	}
         	if (function instanceof Date2StrFunction && !(context.getContext() instanceof Date2StrContext)){
         		return Date2StrContext.createContex();
@@ -873,32 +896,34 @@ public class ConvertLib extends TLFunctionLibrary {
            	if (function instanceof Str2NumFunction && !(context.getContext() instanceof Str2NumContext)){
            		return Str2NumContext.createContext();
            	}
-           	return null;
+           	return TLContext.createStringContext();
         }
         
         private TLValue[] getConvertParams(TLFunctionPrototype function, TLValue[] convertParams){
         	if (function instanceof Num2StrFunction){
-        		return new TLValue[]{convertParams[0], 
+        		TLValue parameter2 = convertParams.length > FORMAT_INDEX ? convertParams[FORMAT_INDEX] : null;
+        		return new TLValue[]{convertParams[FROM_INDEX], 
+        				parameter2 != null ? parameter2 :
         				new TLNumericValue<CloverInteger>(TLValueType.INTEGER, new CloverInteger(DEFAULT_RADIX))};
         	}
         	if (function instanceof Date2StrFunction || function instanceof Str2DateFunction) {
-        		return new TLValue[]{convertParams[0], convertParams[2]};
+        		return new TLValue[]{convertParams[FROM_INDEX], convertParams[FORMAT_INDEX]};
         	}
         	if (function instanceof Num2NumFunction || function instanceof Bool2NumFunction) {
-        		return new TLValue[]{convertParams[0], new TLNumericValue(
-        				TLValueType.SYM_CONST,new CloverInteger(TLFunctionUtils.valueType2astToken(convertParams[1].getType())))};
+        		return new TLValue[]{convertParams[FROM_INDEX], new TLNumericValue(
+        				TLValueType.SYM_CONST,new CloverInteger(TLFunctionUtils.valueType2astToken(convertParams[TO_INDEX].getType())))};
         	}
         	if (function instanceof Str2NumFunction ) {
         		TLValue[] result = new TLValue[convertParams.length];
-        		result[0] = convertParams[0];
+        		result[0] = convertParams[FROM_INDEX];
         		result[1] = new TLNumericValue(TLValueType.SYM_CONST,
-        				new CloverInteger(TLFunctionUtils.valueType2astToken(convertParams[1].getType())));
+        				new CloverInteger(TLFunctionUtils.valueType2astToken(convertParams[TO_INDEX].getType())));
         		if (result.length > 2) {
-        			result[2] = convertParams[2];
+        			result[2] = convertParams[FORMAT_INDEX];
         		}
         		return result;
         	}
-         	return new TLValue[]{convertParams[0]};
+         	return new TLValue[]{convertParams[FROM_INDEX]};
         }
     
     }
@@ -1031,6 +1056,23 @@ class Str2DateContext {
         return context;
 	}
 }
+
+class Num2StrContext {
+    TLValue value;
+    DecimalFormat format;
+    
+    static TLContext createContex(){
+        Num2StrContext con=new Num2StrContext();
+        con.value=TLValue.create(TLValueType.STRING);
+        con.format= new DecimalFormat();
+
+        TLContext<Num2StrContext> context=new TLContext<Num2StrContext>();
+        context.setContext(con);
+        
+        return context;        	
+    }
+}
+
 
 class Str2NumContext{
 	TLValue value;

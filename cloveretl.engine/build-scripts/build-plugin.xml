@@ -97,7 +97,7 @@
 
 	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
 	<target name="improve-java-sources" depends="revision-set">
-		<copy todir="${dir.src.improved}">
+		<copy todir="${dir.src.improved}" encoding="UTF-8">
 			<fileset dir="${dir.src}" />
 			<filterset>
 				<filter token="MAJOR_VERSION" value="${major_version}" />
@@ -135,6 +135,7 @@
 				destdir="${dir.classes}"
 				source="1.5"
 				target="1.5"  
+				encoding="UTF-8"
 				classpath="${cp.compile}">
 			<classpath>
 				<fileset refid="plugin-libs"/>

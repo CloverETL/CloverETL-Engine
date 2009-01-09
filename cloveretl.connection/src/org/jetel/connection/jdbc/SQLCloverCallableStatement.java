@@ -24,6 +24,7 @@ package org.jetel.connection.jdbc;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -45,14 +46,22 @@ import org.jetel.util.string.StringUtils;
 
 public class SQLCloverCallableStatement {
 	
-	private String query;
-	private DBConnectionInstance connection;
-	private CallableStatement statement;
-	private CopySQLData[] inTransMap, outTransMap, resultOutMap;
-	private DataRecord inRecord, outRecord;
-	private Map<Integer, String> inParameters, outParameters;
-	private String[] outputFields;
-	private ResultSet resultSet;
+	public final String RESULT_SET_OUTPARAMETER_NAME = "result_set";
+	
+	protected int RESULT_SET_OUTPARAMETER_TYPE = Types.OTHER;
+	
+	protected String query;
+	protected DBConnectionInstance connection;
+	protected CallableStatement statement;
+	protected CopySQLData[] inTransMap, outTransMap, resultOutMap;
+	protected DataRecord inRecord, outRecord;
+	protected Map<Integer, String> inParameters, outParameters;
+	protected String[] outputFields;
+	protected ResultSet resultSet;
+	protected int resultSetOutParameterNumber = -1;
+	protected int resultSetOutParameterType = RESULT_SET_OUTPARAMETER_TYPE;
+	
+	private boolean gotOutParams;
 
 	public SQLCloverCallableStatement(DBConnectionInstance connection, String query, DataRecord inRecord, DataRecord outRecord) {
 		this.query = query;
@@ -61,6 +70,12 @@ public class SQLCloverCallableStatement {
 		this.outRecord = outRecord;
 	}
 
+	public SQLCloverCallableStatement(DBConnectionInstance connection, String query, DataRecord inRecord, DataRecord outRecord,
+			int resultSetOutParameterType) {
+		this(connection, query, inRecord, outRecord);
+		this.resultSetOutParameterType = resultSetOutParameterType;
+	}
+	
 	public Map<Integer, String> getInParameters() {
 		return inParameters;
 	}
@@ -89,6 +104,7 @@ public class SQLCloverCallableStatement {
 		statement = connection.getSqlConnection().prepareCall(query);
 		int fieldNumber;
 		int parameterNumber;
+		//prepare transition map for input parameters
 		if (inRecord != null && inParameters != null) {
 			DataRecordMetadata inMetadata = inRecord.getMetadata();
 			inTransMap = new CopySQLData[inParameters.size()];
@@ -104,49 +120,92 @@ public class SQLCloverCallableStatement {
 						inMetadata.getField(fieldNumber), inRecord, parameterNumber - 1, fieldNumber);
 			}
 		}
+		//prepare transition map for output parameters, register parameter number for output result set
 		if (outParameters != null) {
 			DataRecordMetadata outMetadata = outRecord.getMetadata();
-			outTransMap = new CopySQLData[outParameters.size()];
+			outTransMap = new CopySQLData[outParameters.containsValue(RESULT_SET_OUTPARAMETER_NAME) ? outParameters.size() - 1 : 
+				outParameters.size()];
 			int sqlType;
-			if (outParameters != null) {
-				int i = 0;
-				for (Entry<Integer, String> entry : outParameters.entrySet()) {
-					parameterNumber = entry.getKey();
-					fieldNumber = outMetadata.getFieldPosition(entry.getValue());
-					sqlType = connection.getJdbcSpecific().jetelType2sql(outMetadata.getField(fieldNumber));
-					outTransMap[i++] = CopySQLData.createCopyObject(sqlType, 
-							outMetadata.getField(fieldNumber), outRecord, parameterNumber - 1, fieldNumber);
-					statement.registerOutParameter(parameterNumber, sqlType);
+			int i = 0;
+			for (Entry<Integer, String> entry : outParameters.entrySet()) {
+				parameterNumber = entry.getKey();
+				fieldNumber = outMetadata.getFieldPosition(entry.getValue());
+				sqlType = entry.getValue().equalsIgnoreCase(RESULT_SET_OUTPARAMETER_NAME) ? resultSetOutParameterType : 
+					connection.getJdbcSpecific().jetelType2sql(outMetadata.getField(fieldNumber));
+				if (sqlType != resultSetOutParameterType) {
+					outTransMap[i++] = CopySQLData.createCopyObject(sqlType, outMetadata.getField(fieldNumber),
+							outRecord, parameterNumber - 1, fieldNumber);
+				}else {
+					resultSetOutParameterNumber = parameterNumber;
 				}
+				statement.registerOutParameter(parameterNumber, sqlType);
 			}
 		}
 		return true;
 	}
 
+	/**
+	 * Executes call and prepares result set for reading
+	 * 
+	 * @throws SQLException
+	 */
 	public void executeCall() throws SQLException{
 		if (inTransMap != null) {
 			for (int i = 0; i < inTransMap.length; i++) {
 				inTransMap[i].jetel2sql(statement);
 			}
 		}
-		resultSet = statement.executeQuery();
-		if (outParameters != null) {
-			for (int i = 0; i < outTransMap.length; i++) {
-				//TODO dodac lapanie bledow, jak w sql2jete
-				outTransMap[i].setJetel(statement);
-			}
+//      don't work on Sybase		
+//		resultSet = statement.executeQuery();
+//		Petr Uher recommended use statement.executeUpdate() if will return results in query 
+//		statement.executeQuery();
+		statement.execute();
+		resultSet = statement.getResultSet();
+		
+		if (resultSetOutParameterNumber > -1) {
+			resultSet = (ResultSet)statement.getObject(resultSetOutParameterNumber);
 		}
-		if (outRecord == null) {
+		
+		if (resultSet != null) {
 			connection.getJdbcSpecific().optimizeResultSet(resultSet, OperationType.READ);
 		}
+		
+		gotOutParams = false;
 	}
 	
+	/**
+	 * Checks if there is next output record
+	 * 
+	 * @return true if next output record was fulfilled or false if there is no next result
+	 * @throws SQLException
+	 */
 	public boolean isNext() throws SQLException{
-		if (outRecord == null) {
+		if (outRecord == null || gotOutParams) {//no output or output parameters has been got
 			return false;
 		}
 		
-		if(outputFields == null || resultSet.next() == false){
+		//get out parameters 
+		if (outTransMap != null && !gotOutParams && outTransMap.length > 0 ) {
+			for (int i = 0; i < outTransMap.length; i++) {
+				try {
+					outTransMap[i].setJetel(statement);
+				} catch (SQLException ex) {
+					throw new SQLException(ex.getMessage() + " with field " + outTransMap[i].field.getMetadata().getName());
+				} catch (ClassCastException ex){
+				    throw new SQLException("Incompatible Clover & JDBC field types - field "+outTransMap[i].field.getMetadata().getName()+
+				            " Clover type: "+SQLUtil.jetelType2Str(outTransMap[i].field.getMetadata().getType()));
+				}
+			}
+			gotOutParams = true;
+			return true;
+		}
+
+		//check result set
+		if(outputFields == null){
+			return false;
+		}else if (resultSet == null) {
+			throw new SQLException("No result set for this query.");
+		}else if (!resultSet.next()){
 			return false;
 		}
 

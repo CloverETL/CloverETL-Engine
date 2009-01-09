@@ -311,31 +311,23 @@ public class XPathParser implements Parser {
 		return namespaces;
 	}
 	
-	private void setDefaultNamespacesToEvaluator(Set<String> defaultNamespacePaths) {
-		Iterator<?> it = defaultNamespacePaths.iterator();
-		String ns;
-		while (it.hasNext()) {
-			ns = (String)it.next();
-			xPathEvaluator.setDefaultElementNamespace(ns);
-		}
-	}
-
 	private void setNamespacesToEvaluator(Map<String, String> namespacePaths, Set<String> sDefaultNamestaces) {
 		IndependentContext context = new IndependentContext();
-		if (namespacePaths == null || namespacePaths.size() == 0) {
-			xPathEvaluator.setNamespaceResolver(context.getNamespaceResolver());
-			return;
-		}
-		Iterator<?> it = namespacePaths.keySet().iterator();
 		Object ns;
-		while (it.hasNext()) {
-			ns = it.next();
-			context.declareNamespace(ns.toString(), namespacePaths.get(ns).toString());
+		Iterator<?> it;
+		if (namespacePaths != null) {
+			it = namespacePaths.keySet().iterator();
+			while (it.hasNext()) {
+				ns = it.next();
+				context.declareNamespace(ns.toString(), namespacePaths.get(ns).toString());
+			}
 		}
-		it = sDefaultNamestaces.iterator();
-		while (it.hasNext()) {
-			ns = it.next();
-			xPathEvaluator.setDefaultElementNamespace(ns.toString());
+		if (sDefaultNamestaces != null) {
+			it = sDefaultNamestaces.iterator();
+			while (it.hasNext()) {
+				ns = it.next();
+				xPathEvaluator.setDefaultElementNamespace(ns.toString());
+			}
 		}
 		xPathEvaluator.setNamespaceResolver(context.getNamespaceResolver());
 	}
