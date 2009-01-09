@@ -29,13 +29,10 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.parser.XPathParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -160,6 +157,7 @@ public class XmlXPathReader extends Node {
     private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
     private static final String XML_CHARSET_ATTRIBUTE = "charset";
+    private static final String XML_XML_FEATURES_ATTRIBUTE = "xmlFeatures";
 	
 	private final static int OUTPUT_PORT = 0;
 	private final static int INPUT_PORT = 0;
@@ -173,6 +171,7 @@ public class XmlXPathReader extends Node {
     private Object[] ports;
 
 	private String charset;
+	private String xmlFeatures;
 
 	/**
 	 *Constructor for the DelimitedDataReaderNIO object
@@ -244,6 +243,7 @@ public class XmlXPathReader extends Node {
         parser.setSkip(skipRows);
         parser.setNumRecords(numRecords);
         parser.setGraph(getGraph());
+        parser.setXmlFeatures(xmlFeatures);
         reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
         reader.setCharset(charset);
         reader.setDictionary(graph.getDictionary());
@@ -300,6 +300,10 @@ public class XmlXPathReader extends Node {
             if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
                 aXmlXPathReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
             }
+            if (xattribs.exists(XML_XML_FEATURES_ATTRIBUTE)){
+                aXmlXPathReader.setXmlFeatures(xattribs.getString(XML_XML_FEATURES_ATTRIBUTE));
+            }
+            
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -402,6 +406,10 @@ public class XmlXPathReader extends Node {
     
     private void setCharset(String charset) {
     	this.charset = charset;
+	}
+
+    private void setXmlFeatures(String xmlFeatures) {
+    	this.xmlFeatures = xmlFeatures;
 	}
 
 }

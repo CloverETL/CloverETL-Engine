@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
 
@@ -40,6 +41,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
 
 /**
  * This class is parser for Xml XPath reader. 
@@ -70,7 +74,9 @@ public class XPathParser implements Parser {
     private static final String ATTRIBUTE_NAMESPACE_PATHS = "namespacePaths";
 
     private static final String PRIMITIVE_SEQUENCE = "PRIMITIVE_SEQUENCE";
-    
+    private static final String FEATURES_DELIMETER = ";";
+    private static final String FEATURES_ASSIGN = ":=";
+
     private TransformationGraph graph;
     private XPathContext xpathContext;
 	private Document xpathDocument;
@@ -82,6 +88,8 @@ public class XPathParser implements Parser {
 	private boolean isReseted;
 	private int skipRows;
 	private int numRecords = -1;
+	private XMLReader reader;
+	private String xmlFeatures;
 
 	private static XPathEvaluator xPathEvaluator = new XPathEvaluator();
 
@@ -363,15 +371,37 @@ public class XPathParser implements Parser {
 	}
 
 
-	public void init(DataRecordMetadata metadata)
-	throws ComponentNotReadyException {		
+	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
 		try {
+			// parse xml mapping
 			xpathContext = parseXPath(xpathDocument);
+			
+			// create and init factory
+		    SAXParserFactory factory = SAXParserFactory.newInstance();
+			initXmlFeatures(factory);
+
+			// create a xml reader
+		    reader = factory.newSAXParser().getXMLReader();
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e);
 		}
 	}
 
+	/**
+	 * Xml features initialization.
+	 */
+	private void initXmlFeatures(SAXParserFactory factory) throws ComponentNotReadyException, SAXNotRecognizedException, SAXNotSupportedException, ParserConfigurationException {
+		if (xmlFeatures == null) return;
+		String[] aXmlFeatures = xmlFeatures.split(FEATURES_DELIMETER);
+		String[] aOneFeature;
+		for (String oneFeature: aXmlFeatures) {
+			aOneFeature = oneFeature.split(FEATURES_ASSIGN);
+			if (aOneFeature.length != 2) 
+				throw new ComponentNotReadyException("The xml feature '" + oneFeature + "' has wrong format");
+		    factory.setFeature(aOneFeature[0], Boolean.parseBoolean(aOneFeature[1]));
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
@@ -389,7 +419,7 @@ public class XPathParser implements Parser {
 			input = Channels.newInputStream((ReadableByteChannel)inputDataSource);
 		}
 		try {
-			xpathContext.init(new SAXSource(new InputSource(input)));
+			xpathContext.init(new SAXSource(reader, new InputSource(input)));
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e);
 		}
@@ -490,6 +520,10 @@ public class XPathParser implements Parser {
 
 	public void setNumRecords(int numRecords) {
 		this.numRecords = numRecords;
+	}
+	
+	public void setXmlFeatures(String xmlFeatures) {
+		this.xmlFeatures = xmlFeatures;
 	}
 	
 }
