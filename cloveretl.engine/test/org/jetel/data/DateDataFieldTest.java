@@ -20,6 +20,9 @@
 package org.jetel.data;
 
 import java.nio.ByteBuffer;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -27,6 +30,8 @@ import java.util.GregorianCalendar;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.test.CloverTestCase;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 /**
  * @author maciorowski
@@ -38,7 +43,6 @@ public class DateDataFieldTest extends CloverTestCase {
 	private DateDataField aDateDataField3 = null;
 	private DateDataField aDateDataField4 = null;
 
-	
 
 protected void setUp() { 
 	Calendar calendar = new GregorianCalendar(2003,4,10);
@@ -63,8 +67,6 @@ protected void setUp() {
 	delimFieldMeta2.setFormatStr("hhhh");
 	delimFieldMeta2.setNullable(false);
 	aDateDataField4 = new DateDataField(delimFieldMeta2);
-
-
 }
 
 
@@ -75,7 +77,6 @@ protected void tearDown() {
 	aDateDataField3 = null;
 	aDateDataField4 = null;
 }
-
 
 /**
  *  Test for @link org.jetel.data.DateDataField.DateDataField(DataFieldMetadata _metadata)
@@ -183,6 +184,43 @@ public void test_1_DateDataField() {
 			aDateDataField1.fromString("123.234");
 			fail("Should raise an BadDataFormatException");
 		} catch (BadDataFormatException e){	}
+	}
+
+	public void test_fromStringJoda() {
+		String as400DateFormat = "yyyy-MM-dd-HH.mm.ss.SSS000";
+		String as400TestDate = "2002-07-10-22.36.15.129000";
+
+		DataFieldMetadata javaDateMetadataDefault = new DataFieldMetadata("date", ";");
+		javaDateMetadataDefault.setFormatStr(as400DateFormat);
+		DateDataField javaDateDataFieldDefault = new DateDataField(javaDateMetadataDefault);
+
+		try {
+			javaDateDataFieldDefault.fromString(as400TestDate);
+			fail("The BadDataFormatException should be thrown for no prefix specified.");
+		} catch (BadDataFormatException exception) {
+			// OK
+		}
+
+		DataFieldMetadata javaDateMetadataPrefix = new DataFieldMetadata("date", ";");
+		javaDateMetadataPrefix.setFormatStr(DateDataField.JAVA_FORMAT_PREFIX + as400DateFormat);
+		DateDataField javaDateDataFieldPrefix = new DateDataField(javaDateMetadataPrefix);
+
+		try {
+			javaDateDataFieldPrefix.fromString(as400TestDate);
+			fail("The BadDataFormatException should be thrown for the Java prefix specified.");
+		} catch (BadDataFormatException exception) {
+			// OK
+		}
+
+		DataFieldMetadata jodaDateMetadata = new DataFieldMetadata("date", ";");
+		jodaDateMetadata.setFormatStr(DateDataField.JODA_FORMAT_PREFIX + as400DateFormat);
+		DateDataField jodaDateDataField = new DateDataField(jodaDateMetadata);
+
+		try {
+			jodaDateDataField.fromString(as400TestDate);
+		} catch (BadDataFormatException exception) {
+			fail("The BadDataFormatException has been thrown even though the Joda-Time prefix was specified.");
+		}
 	}
 
 

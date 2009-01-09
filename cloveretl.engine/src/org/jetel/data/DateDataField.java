@@ -69,9 +69,9 @@ public class DateDataField extends DataField implements Comparable{
 	private DateFormat dateFormat;
 
 	/** the Java prefix specifying date format strings used by the Java's DateFormat class */
-	private static final String JAVA_FORMAT_PREFIX = "java:";
+	public static final String JAVA_FORMAT_PREFIX = "java:";
 	/** the Joda-Time prefix specifying date format strings used by the Joda-Time's DateTimeFormatter class */
-	private static final String JODA_FORMAT_PREFIX = "joda:";
+	public static final String JODA_FORMAT_PREFIX = "joda:";
 
 	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
 
