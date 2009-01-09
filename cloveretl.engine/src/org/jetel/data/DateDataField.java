@@ -36,6 +36,8 @@ import java.util.Locale;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.string.StringUtils;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -60,8 +62,17 @@ public class DateDataField extends DataField implements Comparable{
 	 * @since    March 28, 2002
 	 */
 	private Date value;
+
+	/** Joda-Time date time formatter */
+	private DateTimeFormatter dateTimeFormatter;
+	/** classic Java date format */
 	private DateFormat dateFormat;
-		
+
+	/** the Java prefix specifying date format strings used by the Java's DateFormat class */
+	private static final String JAVA_FORMAT_PREFIX = "java:";
+	/** the Joda-Time prefix specifying date format strings used by the Joda-Time's DateTimeFormatter class */
+	private static final String JODA_FORMAT_PREFIX = "joda:";
+
 	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
 
 
@@ -72,16 +83,16 @@ public class DateDataField extends DataField implements Comparable{
 	/**
      * Constructor for the DateDataField object
      * 
-	 * @param _metadata Metadata describing field
+	 * @param metadata Metadata describing field
 	 * @param plain create plain data field - no formatters,etc. will be assigned/created
 	 */
-	public DateDataField(DataFieldMetadata _metadata, boolean plain) {
-        super(_metadata);
+	public DateDataField(DataFieldMetadata metadata, boolean plain) {
+        super(metadata);
         if (!plain) {
             Locale locale;
             // handle locale
-            if (_metadata.getLocaleStr() != null) {
-                String[] localeLC = _metadata.getLocaleStr().split(
+            if (metadata.getLocaleStr() != null) {
+                String[] localeLC = metadata.getLocaleStr().split(
                         Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
                 if (localeLC.length > 1) {
                     locale = new Locale(localeLC[0], localeLC[1]);
@@ -91,21 +102,35 @@ public class DateDataField extends DataField implements Comparable{
                 // probably wrong locale string defined
                 if (locale == null) {
                     throw new RuntimeException("Can't create Locale based on "
-                            + _metadata.getLocaleStr());
+                            + metadata.getLocaleStr());
                 }
             } else {
                 locale = null;
             }
             // handle format string
-            String formatString;
-            formatString = _metadata.getFormatStr();
+            String formatString = metadata.getFormatStr();
+
             if (!StringUtils.isEmpty(formatString)) {
-                if (locale != null) {
-                    dateFormat = new SimpleDateFormat(formatString, locale);
-                } else {
-                    dateFormat = new SimpleDateFormat(formatString);
-                }
-                dateFormat.setLenient(false);
+            	if (formatString.startsWith(JODA_FORMAT_PREFIX)) {
+            		dateTimeFormatter = DateTimeFormat.forPattern(
+            				formatString.substring(JODA_FORMAT_PREFIX.length()));
+
+            		if (locale != null) {
+                    	dateTimeFormatter = dateTimeFormatter.withLocale(locale);
+                    }
+            	} else {
+            		if (formatString.startsWith(JAVA_FORMAT_PREFIX)) {
+            			formatString = formatString.substring(JAVA_FORMAT_PREFIX.length());
+            		}
+
+            		if (locale != null) {
+                        dateFormat = new SimpleDateFormat(formatString, locale);
+                    } else {
+                        dateFormat = new SimpleDateFormat(formatString);
+                    }
+
+                    dateFormat.setLenient(false);
+            	}
             } else if (locale != null) {
                 dateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT, locale);
                 dateFormat.setLenient(false);
@@ -143,14 +168,18 @@ public class DateDataField extends DataField implements Comparable{
      * <i>Warning: not a thread safe as the clone will reference the same
      * DateFormat object!</i>
 	 * 
-	 * @param _metadata
-	 * @param _value
-	 * @param _dateFormat
+	 * @param metadata
+	 * @param value
+	 * @param dateTimeFormatter
+	 * @param dateFormat
 	 */
-	private DateDataField(DataFieldMetadata _metadata, Date _value, DateFormat _dateFormat){
-	    super(_metadata);
-	    setValue(_value);
-	    this.dateFormat=_dateFormat;
+	private DateDataField(DataFieldMetadata metadata, Date value, DateTimeFormatter dateTimeFormatter, DateFormat dateFormat) {
+	    super(metadata);
+
+	    setValue(value);
+
+	    this.dateTimeFormatter = dateTimeFormatter;
+	    this.dateFormat = dateFormat;
 	}
 	
 
@@ -158,8 +187,9 @@ public class DateDataField extends DataField implements Comparable{
 	 * @see org.jetel.data.DataField#copy()
 	 */
 	public DataField duplicate(){
-	    DateDataField newField=new DateDataField(metadata,value,dateFormat);
+	    DateDataField newField = new DateDataField(metadata, value, dateTimeFormatter, dateFormat);
 	    newField.setNull(isNull());
+
 	    return newField;
 	}
 	
@@ -330,7 +360,11 @@ public class DateDataField extends DataField implements Comparable{
 		if (value == null) {
 			return "";
 		}
-		
+
+		if (dateTimeFormatter != null) {
+			return dateTimeFormatter.print(value.getTime());
+		}
+
 		return dateFormat.format(value);
 	}
 
@@ -380,18 +414,25 @@ public class DateDataField extends DataField implements Comparable{
 	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
 	 */
 	public void fromString(CharSequence seq) {
-		//parsePosition.setIndex(0);
 		if (seq == null || seq.length() == 0) {
 		    setNull(true);
-			return;
+
+		    return;
 		}
+
 		try {
-			value = dateFormat.parse(seq.toString());//, parsePosition);
+			if (dateTimeFormatter != null) {
+				value = dateTimeFormatter.parseDateTime(seq.toString()).toDate();
+			} else {
+				value = dateFormat.parse(seq.toString());
+			}
+
 			setNull(false);
+		} catch (IllegalArgumentException exception) {
+			throw new BadDataFormatException("not a Date", seq.toString());
 		} catch (ParseException e) {
 			throw new BadDataFormatException("not a Date", seq.toString());
 		}
-
 	}
 
 	/**
