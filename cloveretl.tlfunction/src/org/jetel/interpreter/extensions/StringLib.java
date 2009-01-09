@@ -152,17 +152,12 @@ public class StringLib extends TLFunctionLibrary {
         	return new RemoveNonPrintableFunction();
         case REMOVE_NONASCII:
         	return new RemoveNonAsciiFunction();
-<<<<<<< .working
         case EDIT_DISTANCE:
         	return new EditDistanceFunction();
         case METAPHONE:
         	return new MetaphoneFunction();
         case NYSIIS:
         	return new NYSIISFunction();
-=======
-        case EDIT_DISTANCE:
-        	return new EditDistanceFunction();
->>>>>>> .merge-right.r5581
         default:
             return null;
         }
@@ -1353,7 +1348,6 @@ public class StringLib extends TLFunctionLibrary {
          }
      }
 
-<<<<<<< .working
      class EditDistanceFunction extends TLFunctionPrototype {
 
          public EditDistanceFunction() {
@@ -1490,77 +1484,6 @@ public class StringLib extends TLFunctionLibrary {
              return TLContext.createStringContext();
          }
      }
-=======
-     class EditDistanceFunction extends TLFunctionPrototype {
-
-         public EditDistanceFunction() {
-             super("string", "edit_distance", "Calculates edit distance between two strings",new TLValueType[] {
-                     TLValueType.STRING, TLValueType.STRING, TLValueType.INTEGER, TLValueType.STRING, TLValueType.INTEGER}, 
-                     TLValueType.INTEGER, 5, 2);
-         }
-
-         @Override
-         public TLValue execute(TLValue[] params, TLContext context) {
- 			 if (params[0].type!=TLValueType.STRING || params[1].type!=TLValueType.STRING){
- 				throw new TransformLangExecutorRuntimeException(params,
-				"edit_distance - wrong type of literal(s)");
-	
- 			 }
- 			 ComparatorStore store = (ComparatorStore) context.getContext();
-			 int strength = StringAproxComparator.IDENTICAL;
- 			 String locale = null;
- 			 int maxLetters = -1;
- 			 if (params.length > 2) {
- 				 if (params[2].type.isNumeric()) {
- 					 strength = params[2].getNumeric().getInt();
- 				 }else if (params[2].type == TLValueType.STRING) {
- 					 locale = params[2].toString();
- 				 }else {
- 	 				throw new TransformLangExecutorRuntimeException(params,
- 					"edit_distance - wrong type of literal(s)");
- 				 }
- 				 if (params.length > 3) {
- 					 if (params[3].type == TLValueType.STRING) {
- 						 locale = params[3].toString();
- 					 }else if (params[3].type.isNumeric()) {
- 						 maxLetters = params[3].getNumeric().getInt();
- 				 	}else {
- 		 				throw new TransformLangExecutorRuntimeException(params,
- 						"edit_distance - wrong type of literal(s)");
- 					 }
- 				 }
- 			 }
- 			 if (strength != store.strength || locale != store.locale) {
-				try {
-					store.init(strength, locale);
-				} catch (JetelException e) {
-					throw new TransformLangExecutorRuntimeException(e
-							.getMessage());
-				}
-			}
-			if (maxLetters > -1 || params.length > 4) {
-				if (maxLetters > -1 || params[4].type.isNumeric()) {
-					store.comparator.setMaxLettersToChange(maxLetters > -1 ? maxLetters : params[4].getNumeric().getInt());
-				}else {
-	 				throw new TransformLangExecutorRuntimeException(params,
-	 						"edit_distance - wrong type of literal(s)");
-	 			}
-			}
-			int compResult = store.comparator.distance(params[0].toString(), params[1].toString());
-			//we need to normalize it
- 			store.value.setValue(compResult/(StringAproxComparator.IDENTICAL - strength +1));
- 			
- 			return store.value;
-         }
-
-         @Override
-         public TLContext createContext() {
-             TLContext<ComparatorStore> context = new TLContext<ComparatorStore>();
-             context.setContext(new ComparatorStore());
-             return context;
-         }
-     }
->>>>>>> .merge-right.r5581
      
      class RegexStore{
 	    public Pattern pattern;
