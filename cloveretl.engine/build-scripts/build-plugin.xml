@@ -19,13 +19,15 @@
 	<property name="dir.engine.lib" value="${dir.engine}/lib"/>
 	<property name="dir.engine.tools" value="${dir.engine}/tools"/>
 	<property name="dir.cobertura" value="${dir.engine.tools}/cobertura" />
-
+	<property name="dir.build-scripts" value="${dir.engine}/build-scripts"/>
+	
 	<property name="dir.build" value="${basedir}/build"/>
 	<property name="dir.testsresult" value="${dir.build}/testsresult"/>
 	<property name="dir.classes" value="${dir.build}/classes"/>
 	<property name="dir.classestest" value="${dir.build}/classes-test"/>
 	<property name="dir.coverage.classes" value="${dir.build}/classes-coverage"/>
 	<property name="dir.src.improved" value="${dir.build}/src-improved"/>
+	<property name="dir.findbugsreport" value="${dir.build}/findbugsreport"/>
 	<property name="required.plugins.file" value="${dir.build}/required-plugins.txt"/>
 	<property name="cobertura.ser" value="${dir.build}/plugin-cobertura.ser"/>
 
@@ -217,25 +219,27 @@
 	</target>
 
 	
-	<target name="compile-tests" depends="find-required-plugins" if="tests-available">
+	<target name="compile-tests" depends="find-required-plugins">
 		<mkdir dir="${dir.classestest}"/>
-		<echo>fileset dir="${dir.engine.classestest}"</echo>
-		<javac 
-				debug="true" 
-				destdir="${dir.classestest}" 
-				target="1.5" 
-				source="1.5" 
-				encoding="UTF-8"
-				classpath="${cp.compile}">
-			<classpath>
-				<fileset refid="plugin-libs"/>
-				<fileset refid="engine-libs"/>
-				<fileset refid="engine-tools"/>
-				<pathelement path="${dir.engine.classestest}"/>
-				<pathelement path="${dir.classes}"/>
-			</classpath>
-			<src path="${dir.src.test}"/>
-		</javac>
+		<if><isset property="tests-available"/><then>
+			<echo>fileset dir="${dir.engine.classestest}"</echo>
+			<javac 
+					debug="true" 
+					destdir="${dir.classestest}" 
+					target="1.5" 
+					source="1.5" 
+					encoding="UTF-8"
+					classpath="${cp.compile}">
+				<classpath>
+					<fileset refid="plugin-libs"/>
+					<fileset refid="engine-libs"/>
+					<fileset refid="engine-tools"/>
+					<pathelement path="${dir.engine.classestest}"/>
+					<pathelement path="${dir.classes}"/>
+				</classpath>
+				<src path="${dir.src.test}"/>
+			</javac>
+		</then></if>
 	</target>
 	
 	<target name="runtests" depends="init,compile-tests" if="tests-available">
@@ -280,6 +284,39 @@
 		    </fileset>
 		</cobertura-merge>
 		-->
+	</target>
+
+	
+	<target name="findbugs-init">
+		<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
+		  <classpath>
+		    <pathelement location="${dir.findbugs}/lib/findbugs-ant.jar"/>
+		  </classpath>
+		</taskdef>
+	</target>
+	
+	<target name="findbugs-xml" depends="init,findbugs-init,compile,compile-tests">
+		<mkdir dir="${dir.findbugsreport}"/>
+		<findbugs 
+				home="${dir.findbugs}" 
+				output="xml"
+				outputfile="${dir.findbugsreport}/bugreport.xml" 
+				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
+				effort="max"
+				reportlevel="low"
+				jvmargs="-Xmx500m">
+			<class location="${dir.classes}"/>
+			<class location="${dir.classestest}"/>
+			<sourcePath path="${dir.src}" />
+			<sourcePath path="${dir.src.test}" />
+			<auxClasspath path="${cp.compile} "/>
+			<auxClasspath path="${dir.engine.classestest}"/>
+			<auxClasspath>
+				<fileset refid="engine-libs"/>
+				<fileset refid="plugin-libs"/>
+				<fileset refid="engine-tools"/>
+			</auxClasspath>
+		</findbugs>
 	</target>
 	
 </project>
