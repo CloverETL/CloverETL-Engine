@@ -36,13 +36,14 @@ import org.jetel.metadata.DataFieldMetadata;
  *@author     dpavlis
  *@created    February 28, 2004
  *@since      February 28, 2004
- *@revision    $Revision:  $
+ *@revision    $Revision$
  */
 public class RecordComparator implements Comparator{
 
 	protected int keyFields[];
     protected RuleBasedCollator collator;
     protected boolean equalNULLs = false; // specifies whether two NULLs are deemed equal
+	private boolean[] sortOrderings;
 	
 	/**
 	 *  Constructor for the RecordComparator object
@@ -63,6 +64,8 @@ public class RecordComparator implements Comparator{
     public RecordComparator(int keyFields[], RuleBasedCollator collator){
         this.keyFields = keyFields;
         this.collator=collator;
+        sortOrderings = new boolean[keyFields.length];
+        Arrays.fill(sortOrderings, true);        
     }
     
 	/**
@@ -106,11 +109,11 @@ public class RecordComparator implements Comparator{
                     if (equalNULLs) {
                         if (!(record1.getField(keyFields[i]).isNull && record2
                                 .getField(keyFields[i]).isNull)) {
-                            return compResult;
+                            return orderCorrection(i, compResult);
                         }
                         continue;
                     }
-                    return compResult;
+                    return orderCorrection(i, compResult);
                 }
             }
 
@@ -124,11 +127,11 @@ public class RecordComparator implements Comparator{
                     if (equalNULLs) {
                         if (!(record1.getField(keyFields[i]).isNull && record2
                                 .getField(keyFields[i]).isNull)) {
-                            return compResult;
+                            return orderCorrection(i, compResult);
                         }
                         continue;
                     }
-                    return compResult;
+                    return orderCorrection(i, compResult);
                 }
             }
         }
@@ -136,6 +139,15 @@ public class RecordComparator implements Comparator{
         // seem to be the same
     }
 
+	/**
+	 * Turns the compare result sign if the sort ordering is descending.
+	 * @param keyField
+	 * @param compResult
+	 * @return
+	 */
+	private final int orderCorrection(int keyField, int compResult) {
+		return sortOrderings[keyField] ? compResult : compResult * -1;
+	}
 
 	/**
      * Compares two records (can have different layout) based on defined
@@ -172,11 +184,11 @@ public class RecordComparator implements Comparator{
                      if (equalNULLs) {
                          if (!(record1.getField(keyFields[i]).isNull && record2
                                  .getField(record2KeyFields[i]).isNull)) {
-                             return compResult;
+                             return orderCorrection(i, compResult);
                          }
                          continue;
                      }
-                     return compResult;
+                     return orderCorrection(i, compResult);
                  }
                  
             }             
@@ -191,11 +203,11 @@ public class RecordComparator implements Comparator{
                     if (equalNULLs) {
                         if (!(record1.getField(keyFields[i]).isNull && record2
                                 .getField(record2KeyFields[i]).isNull)) {
-                            return compResult;
+                            return orderCorrection(i, compResult);
                         }
                         continue;
                     }
-                    return compResult;
+                    return orderCorrection(i, compResult);
                 }
             }
         }
@@ -215,7 +227,8 @@ public class RecordComparator implements Comparator{
 			}else{
 				collatorEquals = collator.equals(comp.getCollator());
 			}
-			return collatorEquals && Arrays.equals(this.keyFields,comp.getKeyFields()); 
+			return collatorEquals && Arrays.equals(this.keyFields,comp.getKeyFields()) && 
+				Arrays.equals(this.sortOrderings,comp.getSortOrderings()); 
 		}else{
 			return false;
 		}
@@ -251,6 +264,22 @@ public class RecordComparator implements Comparator{
      */
     public void setEqualNULLs(boolean equalNULLs) {
         this.equalNULLs = equalNULLs;
+    }
+    
+    /**
+     * Sets orderings for key fields.
+     * @param sortOrderings
+     */
+    public void setSortOrderings(boolean[] sortOrderings) {
+    	this.sortOrderings = sortOrderings;
+    }
+    
+    /**
+     * Gets orderings for key fields.
+     * @return
+     */
+    public boolean[] getSortOrderings() {
+    	return sortOrderings;
     }
     
     /**

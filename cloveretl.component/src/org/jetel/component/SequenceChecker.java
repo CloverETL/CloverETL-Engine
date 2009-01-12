@@ -21,7 +21,10 @@ package org.jetel.component;
 
 import java.text.Collator;
 import java.text.RuleBasedCollator;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -102,8 +105,8 @@ public class SequenceChecker extends Node {
 
 	private final static int READ_FROM_PORT = 0;
 
-	private String keyFieldNames[];
-	private boolean sortOrderAscending;
+	private String[] keyFieldNames;
+	private boolean[] sortOrderings;
 	private RecordComparator recordComparator;
 	//private boolean equalNULLs = true;
 	private boolean uniqueKeys = false;
@@ -117,11 +120,25 @@ public class SequenceChecker extends Node {
 	 *
 	 * @param  id               Description of the Parameter
 	 * @param  keyFieldNames    Description of the Parameter
-	 * @param  sortOrder        Description of the Parameter
+	 * @param  oldAscendingOrder        Description of the Parameter
 	 */
-	public SequenceChecker(String id, String[] keyFieldNames, boolean sortOrder) {
+	public SequenceChecker(String id, String[] keyFieldNames, boolean oldAscendingOrder) {
 		super(id);
-		this.sortOrderAscending = sortOrder;
+        this.sortOrderings = new boolean[keyFieldNames.length];
+        Arrays.fill(sortOrderings, oldAscendingOrder);
+		
+        Pattern pat = Pattern.compile("^(.*)\\((.*)\\)$");
+        
+        for (int i = 0; i < keyFieldNames.length; i++) {
+        	Matcher matcher = pat.matcher(keyFieldNames[i]);
+        	if (matcher.find()) {
+	        	String keyPart = keyFieldNames[i].substring(matcher.start(1), matcher.end(1));
+	        	if (matcher.groupCount() > 1) {
+	        		sortOrderings[i] = (keyFieldNames[i].substring(matcher.start(2), matcher.end(2))).matches("^[Aa].*");	        		
+	        	}
+	        	keyFieldNames[i] = keyPart;
+        	}
+        }
 		this.keyFieldNames = keyFieldNames;
 	}
 
@@ -160,12 +177,7 @@ public class SequenceChecker extends Node {
 						error = true;
 						break;
 					}
-				} else if (compareResult > 0) {
-					if (!sortOrderAscending) {
-						error = true;
-						break;
-					}
-				} else if (sortOrderAscending) {
+				} else if (compareResult < 0) {
 					error = true;
 					break;
 				}
@@ -195,14 +207,6 @@ public class SequenceChecker extends Node {
 	public void free() {
         if(!isInitialized()) return;
 		super.free();
-	}
-	/**
-	 *  Sets the keyOrderAscending attribute of the SequenceChecker object
-	 *
-	 * @param  ascending  The new sortOrderAscending value
-	 */
-	public void setSortOrderAscending(boolean ascending) {
-		sortOrderAscending = ascending;
 	}
 
 
@@ -239,6 +243,7 @@ public class SequenceChecker extends Node {
         }else{
         	recordComparator=new RecordComparator(keyFields);
         }
+        recordComparator.setSortOrderings(sortOrderings);
 	}
 
 	@Override
@@ -257,12 +262,10 @@ public class SequenceChecker extends Node {
 		if (keyFieldNames != null) {
 			StringBuffer buf = new StringBuffer(keyFieldNames[0]);
 			for (int i=1; i< keyFieldNames.length; i++) {
-				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + keyFieldNames[i]); 
+				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + keyFieldNames[i]).
+				append("(").append(sortOrderings[i]).append(")"); 
 			}
 			xmlElement.setAttribute(XML_SORTKEY_ATTRIBUTE,buf.toString());
-		}
-		if (sortOrderAscending == false) {
-			xmlElement.setAttribute(XML_SORTORDER_ATTRIBUTE, "Descending");
 		}
         
         if (useI18N){
@@ -294,13 +297,8 @@ public class SequenceChecker extends Node {
 		SequenceChecker checker;
 		try {
 			checker = new SequenceChecker(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_SORTKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-			if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
-				checker.setSortOrderAscending(xattribs.getString(XML_SORTORDER_ATTRIBUTE).matches("^[Aa].*"));
-			}
-			/*if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
-				checker.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
-			}*/
+					xattribs.getString(XML_SORTKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+					xattribs.getString(XML_SORTORDER_ATTRIBUTE, "A").matches("^[Aa].*"));
 			if (xattribs.exists(XML_UNIQUE_ATTRIBUTE)){
 				checker.setUnique(xattribs.getBoolean(XML_UNIQUE_ATTRIBUTE));
 			}
