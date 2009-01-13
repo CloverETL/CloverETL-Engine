@@ -22,6 +22,7 @@ package org.jetel.component;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Map.Entry;
 
@@ -43,6 +44,8 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.AutoFilling;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -168,6 +171,8 @@ public class DBInputTable extends Node {
 
 	private String incrementalFile; 
 
+    private AutoFilling autoFilling = new AutoFilling();
+
 	/**
 	 *Constructor for the DBInputTable object
 	 *
@@ -217,12 +222,17 @@ public class DBInputTable extends Node {
 						XML_INCREMENTAL_FILE_ATTRIBUTE, e.getMessage());
 			}
 		}
+		
+		List<DataRecordMetadata> lDataRecordMetadata;
+    	if ((lDataRecordMetadata = getOutMetadata()).size() > 0) 
+    		autoFilling.addAutoFillingFields(lDataRecordMetadata.get(0));
 	}
 
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		parser.reset();
+		autoFilling.reset();
 		//TODO storeValues() ? or should it be in parser.reset() ?
 	}
 
@@ -233,12 +243,14 @@ public class DBInputTable extends Node {
 		record.init();
 		record.reset();
 		parser.setDataSource(connection.getConnection(getId(), OperationType.READ));
+		autoFilling.setFilename(sqlQuery);
 
 		// till it reaches end of data or it is stopped from outside
 		while (record != null && runIt){
 			try{
 				record = parser.getNext();
 				if (record != null) {
+			        autoFilling.setAutoFillingFields(record);
 					writeRecordBroadcast(record);
 				}
 			}catch(BadDataFormatException bdfe){
