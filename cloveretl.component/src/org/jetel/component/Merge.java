@@ -28,6 +28,8 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -288,11 +290,15 @@ public class Merge extends Node {
         public ConfigurationStatus checkConfig(ConfigurationStatus status) {
             super.checkConfig(status);
             
-            if(!checkInputPorts(status, 2, Integer.MAX_VALUE)
+            if(!checkInputPorts(status, 1, Integer.MAX_VALUE)
             		|| !checkOutputPorts(status, 1, 1)) {
             	return status;
             }
             
+            if (getInPorts().size() < 2) {
+                status.add(new ConfigurationProblem("At least 2 input ports should be defined!", Severity.WARNING, this, Priority.NORMAL));
+            }
+
             checkMetadata(status, getInMetadata());
 
             try {
