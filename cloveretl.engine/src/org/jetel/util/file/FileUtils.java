@@ -704,7 +704,7 @@ public class FileUtils {
 		}
 		
         //resolve url format for zip files
-        if(input.startsWith("zip:")) {
+        if(input.startsWith("zip:") || input.startsWith("tar:")) {
             if(!input.contains("#")) { //url is given without anchor - later is returned channel from first zip entry 
             	input = input.substring(input.indexOf(':') + 1);
             } else {
