@@ -500,7 +500,7 @@ public class FileUtils {
 		}
 		
 		String fileName;
-		if (fileURL.startsWith("zip:")){
+		if (fileURL.startsWith("zip:") || fileURL.startsWith("tar:")){
 			int pos;
 			fileName = fileURL.substring(fileURL.indexOf(':') + 1, 
 					(pos = fileURL.indexOf('#')) == -1 ? fileURL.length() : pos);
@@ -628,7 +628,7 @@ public class FileUtils {
 		if (url.getRef() != null) return url.getRef();
 		else {
 			input = url.getFile();
-			if (input.startsWith("zip:")) {
+			if (input.startsWith("zip:") || input.startsWith("tar:")) {
 				input = input.contains("#") ? 
 					input.substring(input.lastIndexOf('#') + 1) : 
 					input.substring(input.indexOf(':') + 1);
