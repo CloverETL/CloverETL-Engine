@@ -159,7 +159,7 @@ public class MultiFileReader {
 					continue;
 				}
 				parser.setReleaseDataSource(!fName.equals(STD_IN));
-				parser.setDataSource(FileUtils.getReadableChannel(contextURL, url.getFile()));
+				parser.setDataSource(FileUtils.getReadableChannel(contextURL, url.toString()));
 			} catch (IOException e) {
 				throw new ComponentNotReadyException("File is unreachable: " + autoFilling.getFilename(), e);
 			} catch (ComponentNotReadyException e) {
