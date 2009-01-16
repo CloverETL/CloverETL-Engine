@@ -401,7 +401,7 @@ public class DelimitedDataParser implements Parser {
 	 *@exception  IOException  Description of Exception
 	 *@since                   March 27, 2002
 	 */
-	private boolean parseNext(DataRecord record) throws JetelException {
+	public boolean parseNext(DataRecord record) throws JetelException {
 		int result;
 		int fieldCounter = 0;
 		int character;
