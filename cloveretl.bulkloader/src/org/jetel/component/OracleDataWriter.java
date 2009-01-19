@@ -25,7 +25,10 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -87,6 +90,11 @@ import org.w3c.dom.Element;
  *  <tr><td><b>discard</b></td><td>name of file where records not meeting selection criteria are written</td></tr>
  *  <tr><td><b>control</b></td><td>a control script for the sqlldr utility; if this parameter is empty default control script is used</td></tr>
  *  <tr><td><b>dbFields</b></td><td>name of all columns in db table</td></tr>
+ *  <tr><td><b>maxErrors</b></td><td>number of errors to allow</td></tr>
+ *  <tr><td><b>maxDiscards</b></td><td>number of discards to allow</td></tr>
+ *  <tr><td><b>ignoreRows</b></td><td>number of logical records to skip</td></tr>
+ *  <tr><td><b>commitInterval</b></td><td>number of rows in conventional path bind array or between direct path data saves</td></tr>
+ *  <tr><td><b>parameters</b></td><td>See: http://wiki.cloveretl.org/doku.php?id=components:bulkloaders:oracle_data_writer</td></tr>
  *  </table>
  *
  * @author      Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
@@ -113,7 +121,58 @@ public class OracleDataWriter extends Node {
     private static final String XML_DBFIELDS_ATTRIBUTE = "dbFields";
     private static final String XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE = "useFileForExchange"; // default value: Unix = false; win = true
     private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
+    private static final String XML_MAX_ERRORS_ATTRIBUTE = "maxErrors";
+    private static final String XML_MAX_DISCARDS_ATTRIBUTE = "maxDiscards";
+    private static final String XML_IGNORE_ROWS_ATTRIBUTE = "ignoreRows";
+    private static final String XML_COMMIT_INTERVAL_ATTRIBUTE = "commitInterval";
+    private static final String XML_PARAMETERS_ATTRIBUTE = "parameters";
+
+    // keywords for sqlldr client, these keywords have own xml attributes
+    private static final String SQLLDR_MAX_ERRORS_KEYWORD = "errors";
+    private static final String SQLLDR_MAX_DISCARDS_KEYWORD = "discardmax";
+    private static final String SQLLDR_IGNORE_ROWS_KEYWORD = "skip";
+    private static final String SQLLDR_COMMIT_INTERVAL_KEYWORD = "rows";
+
+    // keywords for sqlldr client
+	private static final String SQLLDR_RECORD_COUNT_KEYWORD = "load";
+	private static final String SQLLDR_BIND_SIZE_KEYWORD = "bindsize";
+	private static final String SQLLDR_SILENT_KEYWORD = "silent";
+	private static final String SQLLDR_DIRECT_KEYWORD = "direct";
+	private static final String SQLLDR_PARALLEL_KEYWORD = "parallel";
+	private static final String SQLLDR_FILE_KEYWORD = "file";
+	private static final String SQLLDR_SKIP_UNUSABLE_INDEX_KEYWORD = "skip_unusable_indexes";
+	private static final String SQLLDR_SKIP_INDEX_MAINTEANCE_KEYWORD = "skip_index_maintenance";
+	private static final String SQLLDR_COMMIT_DISCONTINUED_KEYWORD = "commit_discontinued";
+	private static final String SQLLDR_READ_SIZE_KEYWORD = "readsize";
+	private static final String SQLLDR_EXTERNAL_TABLE_KEYWORD = "external_table";
+	private static final String SQLLDR_COLUMNARRAYROWS_KEYWORD = "columnarrayrows";
+	private static final String SQLLDR_STREAM_SIZE_KEYWORD = "streamsize";
+	private static final String SQLLDR_MULTITHREADING_KEYWORD = "multithreading";  
+	private static final String SQLLDR_RESUMABLE_KEYWORD = "resumable";
+	private static final String SQLLDR_RESUMABLE_NAME_KEYWORD = "resumable_name";
+	private static final String SQLLDR_RESUMABLE_TIMEOUT_KEYWORD = "resumable_timeout";
+	private static final String SQLLDR_DATA_CACHE_KEYWORD = "date_cache";
     
+    // params for sqlldr client - it's included in parameters attribute
+	private static final String SQLLDR_RECORD_COUNT_PARAM = "recordCount";
+	private static final String SQLLDR_BIND_SIZE_PARAM = "bindSize";
+	private static final String SQLLDR_SILENT_PARAM = SQLLDR_SILENT_KEYWORD;
+	private static final String SQLLDR_DIRECT_PARAM = SQLLDR_DIRECT_KEYWORD;
+	private static final String SQLLDR_PARALLEL_PARAM = SQLLDR_PARALLEL_KEYWORD;
+	private static final String SQLLDR_FILE_PARAM = SQLLDR_FILE_KEYWORD;
+	private static final String SQLLDR_SKIP_UNUSABLE_INDEX_PARAM = "skipUnusableIndexes";
+	private static final String SQLLDR_SKIP_INDEX_MAINTEANCE_PARAM = "skipIndexMaintenance";
+	private static final String SQLLDR_COMMIT_DISCONTINUED_PARAM = "commitDiscontinued";
+	private static final String SQLLDR_READ_SIZE_PARAM = "readSize";
+	private static final String SQLLDR_EXTERNAL_TABLE_PARAM = "externalTable";
+	private static final String SQLLDR_COLUMNARRAYROWS_PARAM = "columnArrayRows";
+	private static final String SQLLDR_STREAM_SIZE_PARAM = "streamSize";
+	private static final String SQLLDR_MULTITHREADING_PARAM = "multithreading";  
+	private static final String SQLLDR_RESUMABLE_PARAM = SQLLDR_RESUMABLE_KEYWORD;
+	private static final String SQLLDR_RESUMABLE_NAME_PARAM = "resumableName";
+	private static final String SQLLDR_RESUMABLE_TIMEOUT_PARAM = "resumableTimeout";
+	private static final String SQLLDR_DATA_CACHE_PARAM = "dateCache";
+	
     private final static String lineSeparator = System.getProperty("line.separator");
     
     public final static String COMPONENT_TYPE = "ORACLE_DATA_WRITER";
@@ -123,6 +182,12 @@ public class OracleDataWriter extends Node {
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
     private final static String CONTROL_FILE_NAME_SUFFIX = ".ctl";
     private final static File TMP_DIR = new File(".");
+    private final static int UNUSED_INT = -1;
+    private final static String EQUAL_CHAR = "=";
+    
+    private final static int EXEC_SQLLDR_SUCC = 0;
+    private final static int EXEC_SQLLDR_WARN = 2;
+    
     private DataFormatter formatter = null;
     private DataConsumer consumer = null; // consume data from out stream of sqlldr
 	private DataConsumer errConsumer; // consume data from err stream of sqlldr
@@ -143,6 +208,13 @@ public class OracleDataWriter extends Node {
     private boolean useFileForExchange = false;
     private boolean isDefinedUseFileForExchange = false;
     private String dataURL; // fileUrl from XML - data file that is used when no input port is connected or for log
+    private int maxErrors = UNUSED_INT;
+    private int maxDiscards = UNUSED_INT;
+    private int ignoreRows = UNUSED_INT;
+    private int commitInterval = UNUSED_INT;
+    private String parameters;
+
+    private Properties properties;
     
     private File dataFile = null; // file that is used for exchange data between clover and sqlldr - file from dataURL
 
@@ -201,7 +273,14 @@ public class OracleDataWriter extends Node {
 			processExitValue = readDataDirectlyFromFile();
 		}
 
-		if (processExitValue != 0) {
+		switch (processExitValue) {
+		case EXEC_SQLLDR_SUCC:
+			logger.info("Sqlldr utility execution successful.");
+			break;
+		case EXEC_SQLLDR_WARN:
+			logger.warn("Sqlldr utility exited with WARN. See log file for details.");
+			break;
+		default:
 			if (unstableStdinIsUsed) {
 				throw new JetelException("Sqlldr utility has failed. See log file for details.\n" +
 						"You are using stdio of sqlldr that in mostly case of combination " +
@@ -351,17 +430,41 @@ public class OracleDataWriter extends Node {
      * @return
      */
     private String[] createCommandlineForSqlldr() {
-        String[] ret = new String[] {
-                sqlldrPath, 
-                "control='" + controlFileName + "'", 
-                "userid=" + userId,
-                "data=" + getData(),
-                logFileName != null ? "log='" + logFileName + "'" : "",
-                badFileName != null ? "bad='" + badFileName + "'" : "",
-                discardFileName != null ? "discard='" + discardFileName + "'" : ""
-//                "silent=all"
-        };
-        
+    	OracleCommandBuilder cmdBuilder = new OracleCommandBuilder(sqlldrPath, properties);
+    	cmdBuilder.addAttribute("control", controlFileName, true);
+    	cmdBuilder.addAttribute("userid", userId, false);
+    	cmdBuilder.addAttribute("data", getData(), false);
+    	cmdBuilder.addAttribute("log", logFileName, true);
+    	cmdBuilder.addAttribute("bad", badFileName, true);
+    	cmdBuilder.addAttribute("discard", discardFileName, true);
+    	
+    	cmdBuilder.addAttribute(SQLLDR_MAX_ERRORS_KEYWORD, maxErrors, false);
+    	cmdBuilder.addAttribute(SQLLDR_MAX_DISCARDS_KEYWORD, maxDiscards, false);
+    	cmdBuilder.addAttribute(SQLLDR_IGNORE_ROWS_KEYWORD, ignoreRows, false);
+    	cmdBuilder.addAttribute(SQLLDR_COMMIT_INTERVAL_KEYWORD, commitInterval, false);
+    	
+    	// add parameters
+    	cmdBuilder.addParam(SQLLDR_RECORD_COUNT_PARAM ,SQLLDR_RECORD_COUNT_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_BIND_SIZE_PARAM ,SQLLDR_BIND_SIZE_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_SILENT_PARAM ,SQLLDR_SILENT_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_DIRECT_PARAM ,SQLLDR_DIRECT_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_PARALLEL_PARAM ,SQLLDR_PARALLEL_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_FILE_PARAM ,SQLLDR_FILE_KEYWORD, true);
+    	cmdBuilder.addParam(SQLLDR_SKIP_UNUSABLE_INDEX_PARAM ,SQLLDR_SKIP_UNUSABLE_INDEX_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_SKIP_INDEX_MAINTEANCE_PARAM ,SQLLDR_SKIP_INDEX_MAINTEANCE_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_COMMIT_DISCONTINUED_PARAM ,SQLLDR_COMMIT_DISCONTINUED_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_READ_SIZE_PARAM ,SQLLDR_READ_SIZE_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_EXTERNAL_TABLE_PARAM ,SQLLDR_EXTERNAL_TABLE_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_COLUMNARRAYROWS_PARAM ,SQLLDR_COLUMNARRAYROWS_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_STREAM_SIZE_PARAM ,SQLLDR_STREAM_SIZE_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_MULTITHREADING_PARAM ,SQLLDR_MULTITHREADING_KEYWORD, false);  
+    	cmdBuilder.addParam(SQLLDR_RESUMABLE_PARAM ,SQLLDR_RESUMABLE_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_RESUMABLE_NAME_PARAM ,SQLLDR_RESUMABLE_NAME_KEYWORD, true);
+    	cmdBuilder.addParam(SQLLDR_RESUMABLE_TIMEOUT_PARAM ,SQLLDR_RESUMABLE_TIMEOUT_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_DATA_CACHE_PARAM ,SQLLDR_DATA_CACHE_KEYWORD, false);
+    	
+    	String[] ret = cmdBuilder.getCommand();
+    	
         logger.debug("System command: " + Arrays.toString(ret));
         return ret;
     }
@@ -399,6 +502,7 @@ public class OracleDataWriter extends Node {
         	useFileForExchange = getDefaultUsingFileForExchange();
         }
         
+        properties = parseParameters(parameters);
         checkParams();
         
         // data is read directly from file -> file isn't used for exchange
@@ -461,6 +565,26 @@ public class OracleDataWriter extends Node {
         }
 	}
     
+	/**
+	 * Create instance of Properties from String. 
+	 * Parse parameters from string "parameters" and fill properties by them.
+	 * 
+	 * @param parameters string that contains parameters
+	 * @return instance of Properties created by parsing string
+	 */
+	private static Properties parseParameters(String parameters) {
+		Properties properties = new Properties();
+
+		if (parameters != null) {
+			for (String param : StringUtils.split(parameters)) {
+				String[] par = param.split(EQUAL_CHAR);
+				properties.setProperty(par[0], par.length > 1 ? StringUtils.unquote(par[1]) : "true");
+			}
+		}
+
+		return properties;
+	}
+	
     private void createFileForExchange() throws ComponentNotReadyException {
     	if (!useFileForExchange) {
     		if (!ProcBox.isWindowsPlatform() && isDataReadFromPort) {
@@ -577,31 +701,47 @@ public class OracleDataWriter extends Node {
                     xattribs.getString(XML_PASSWORD_ATTRIBUTE),
                     xattribs.getString(XML_TNSNAME_ATTRIBUTE),
                     xattribs.getString(XML_TABLE_ATTRIBUTE));
-            if(xattribs.exists(XML_APPEND_ATTRIBUTE)) {
+            if (xattribs.exists(XML_APPEND_ATTRIBUTE)) {
                 oracleDataWriter.setAppend(Append.valueOf(xattribs.getString(XML_APPEND_ATTRIBUTE)));
             }
-            if(xattribs.exists(XML_CONTROL_ATTRIBUTE)) {
+            if (xattribs.exists(XML_CONTROL_ATTRIBUTE)) {
                 oracleDataWriter.setControl(xattribs.getString(XML_CONTROL_ATTRIBUTE));
             }
-            if(xattribs.exists(XML_LOG_ATTRIBUTE)) {
+            if (xattribs.exists(XML_LOG_ATTRIBUTE)) {
                 oracleDataWriter.setLogFileName(xattribs.getString(XML_LOG_ATTRIBUTE));
             }
-            if(xattribs.exists(XML_BAD_ATTRIBUTE)) {
+            if (xattribs.exists(XML_BAD_ATTRIBUTE)) {
                 oracleDataWriter.setBadFileName(xattribs.getString(XML_BAD_ATTRIBUTE));
             }
-            if(xattribs.exists(XML_DISCARD_ATTRIBUTE)) {
+            if (xattribs.exists(XML_DISCARD_ATTRIBUTE)) {
                 oracleDataWriter.setDiscardFileName(xattribs.getString(XML_DISCARD_ATTRIBUTE));
             }
-            if(xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
+            if (xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
                 oracleDataWriter.setDbFields(xattribs.getString(XML_DBFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             }
-            if(xattribs.exists(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE)) {
+            if (xattribs.exists(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE)) {
                 oracleDataWriter.setUseFileForExchange(xattribs.getBoolean(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE));
                 oracleDataWriter.isDefinedUseFileForExchange = true;
             }
             if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
             	oracleDataWriter.setInDataFileName(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
 			}
+            if (xattribs.exists(XML_MAX_ERRORS_ATTRIBUTE)) {
+            	oracleDataWriter.setMaxErrors(xattribs.getInteger(XML_MAX_ERRORS_ATTRIBUTE));
+			}
+            if (xattribs.exists(XML_MAX_DISCARDS_ATTRIBUTE)) {
+            	oracleDataWriter.setMaxDiscards(xattribs.getInteger(XML_MAX_DISCARDS_ATTRIBUTE));
+			}
+            if (xattribs.exists(XML_IGNORE_ROWS_ATTRIBUTE)) {
+            	oracleDataWriter.setIgnoreRows(xattribs.getInteger(XML_IGNORE_ROWS_ATTRIBUTE));
+			}
+            if (xattribs.exists(XML_COMMIT_INTERVAL_ATTRIBUTE)) {
+            	oracleDataWriter.setCommitInterval(xattribs.getInteger(XML_COMMIT_INTERVAL_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
+				oracleDataWriter.setParameters(xattribs.getString(XML_PARAMETERS_ATTRIBUTE));
+			}
+            
             return oracleDataWriter;
         } catch (Exception ex) {
                throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -638,6 +778,26 @@ public class OracleDataWriter extends Node {
     
     private void setInDataFileName(String inDataFileName) {
 		this.dataURL = inDataFileName;
+	}
+    
+    private void setMaxErrors(int maxErrors) {
+		this.maxErrors = maxErrors;
+	}
+    
+    private void setMaxDiscards(int maxDiscards) {
+		this.maxDiscards = maxDiscards;
+	}
+    
+    private void setIgnoreRows(int ignoreRows) {
+		this.ignoreRows = ignoreRows;
+	}
+    
+    private void setCommitInterval(int commitInterval) {
+		this.commitInterval = commitInterval;
+	}
+    
+    private void setParameters(String parameters) {
+		this.parameters = parameters;
 	}
     
     /**  Description of the Method */
@@ -771,4 +931,77 @@ public class OracleDataWriter extends Node {
         
         return ret.toString();
     }
+    
+    /**
+	 * Class for creating command for sqldr from string pieces and parameters.
+	 * Each parameter is one field in array.
+	 * 
+	 * @author Miroslav Haupt (Mirek.Haupt@javlin.cz) 
+	 * (c) Javlin a.s. (www.javlin.cz)
+	 * @since 13.1.2009
+	 */
+	private static class OracleCommandBuilder {
+		private Properties params;
+		private List<String> cmdList;
+
+		private OracleCommandBuilder(String command, Properties properties) {
+			this.params = properties;
+			cmdList = new ArrayList<String>();
+			cmdList.add(command);
+		}
+
+		/**
+		 *  Adds attribute and it's value:
+		 *  for exmaple:  host=localhost or host='localhost'
+		 * 
+		 * @param attrName
+		 * @param attrValue
+		 * @param singleQuoted
+		 */
+		private void addAttribute(String attrName, String attrValue, boolean singleQuoted) {
+			if (attrValue == null) {
+				return;
+			}
+
+			if (singleQuoted) {
+				cmdList.add(attrName + EQUAL_CHAR + "'" + attrValue + "'");
+			} else {
+				cmdList.add(attrName + EQUAL_CHAR + attrValue);
+			}
+		}
+		
+		/**
+		 *  Adds attribute and it's value:
+		 *  for exmaple:  host=localhost or host='localhost'
+		 * 
+		 * @param attrName
+		 * @param attrValue
+		 * @param singleQuoted
+		 */
+		private void addAttribute(String attrName, int attrValue, boolean singleQuoted) {
+			if (attrValue == UNUSED_INT) {
+				return;
+			}
+			addAttribute(attrName, String.valueOf(attrValue), singleQuoted);
+		}
+		
+		/**
+		 *  Adds param and it's value:
+		 *  for exmaple:  host=localhost or host='localhost'
+		 * 
+		 * @param paramName name of parameter used in 'parameters' attribute
+		 * @param paramKeyword name of parameter used in sqlldr command
+		 * @param singleQuoted
+		 */
+		private void addParam(String paramName, String paramKeyword, boolean singleQuoted) {
+			if (!params.containsKey(paramName)) {
+				return;
+			}
+			addAttribute(paramKeyword, params.getProperty(paramName), singleQuoted);
+		}
+
+		private String[] getCommand() {
+			return cmdList.toArray(new String[cmdList.size()]);
+		}
+	}
 }
