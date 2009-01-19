@@ -881,7 +881,6 @@ public class DBExecute extends Node {
  				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
             }
 		    
-//            init();
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {

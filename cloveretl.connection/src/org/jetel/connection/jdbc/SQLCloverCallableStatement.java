@@ -158,9 +158,14 @@ public class SQLCloverCallableStatement {
 //      don't work on Sybase		
 //		resultSet = statement.executeQuery();
 //		Petr Uher recommended use statement.executeUpdate() if will return results in query 
-//		statement.executeQuery();
-		statement.execute();
-		resultSet = statement.getResultSet();
+//		statement.executeUpdate();
+		
+		if (outputFields != null) {
+			statement.execute();
+			resultSet = statement.getResultSet();
+		}else {
+			statement.executeUpdate();
+		}
 		
 		if (resultSetOutParameterNumber > -1) {
 			resultSet = (ResultSet)statement.getObject(resultSetOutParameterNumber);

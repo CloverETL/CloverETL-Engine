@@ -410,7 +410,11 @@ public class DBConnection extends GraphElement implements IConnection {
         try {
         	if (!connection.isClosed()) {
                 if (!connection.getAutoCommit()) {
-                    connection.commit();
+                    try {
+						connection.commit();
+					} catch (SQLException e) {
+			            logger.warn("DBConnection '" + getId() + "' commit operation failed.");
+					}
                 }
                 connection.close();
         	}

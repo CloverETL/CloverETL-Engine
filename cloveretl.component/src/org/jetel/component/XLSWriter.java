@@ -205,7 +205,8 @@ public class XLSWriter extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		writer.close();
+		if (writer != null)
+			writer.close();
 	}
 	
 	/* (non-Javadoc)

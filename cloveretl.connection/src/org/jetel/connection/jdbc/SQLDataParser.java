@@ -449,6 +449,7 @@ public class SQLDataParser implements Parser {
 	}
 	
 	public void storeIncrementalReading() throws IOException {
+		if (incremental == null || incrementalFile == null) return;
 		Properties incVal = (Properties)incremental.getPosition();
 		incVal.store(new FileOutputStream(incrementalFile), null);
 	}
