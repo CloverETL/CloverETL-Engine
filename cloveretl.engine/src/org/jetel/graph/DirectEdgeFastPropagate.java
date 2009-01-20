@@ -256,7 +256,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         volatile int writePointer;
         final int size;
         volatile boolean isOpen;
-        
+        volatile boolean eofWasRead;
 
 
         /**
@@ -279,6 +279,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
                 }
             }
             isOpen = true; // the buffer is implicitly open - can be read/written
+            eofWasRead = false;
         }
 
 
@@ -355,12 +356,14 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         synchronized ByteBuffer getFullBuffer() throws InterruptedException {
             // already closed and no more data left
             if ((!isOpen) && (readPointer==writePointer)) {
+            	eofWasRead = true;
                 return null;
             }
             while (readPointer==writePointer) {
                 // wait till something shows up
                 wait();
                 if ((!isOpen) && (readPointer==writePointer)){
+                	eofWasRead = true;
                     return null;
                 }
             }
@@ -392,16 +395,13 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         synchronized void reset() {
             readPointer=0;
             writePointer=0;
+        	eofWasRead = false;
         	
         	open();
         }
         
-        public boolean hasData(){
-            if (readPointer!=writePointer){
-                return true;
-            }else{
-                return false;
-            }
+        public boolean hasData() {
+            return readPointer != writePointer || (!isOpen && !eofWasRead);
         }
     }
 }
