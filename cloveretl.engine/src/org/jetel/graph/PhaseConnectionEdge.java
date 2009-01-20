@@ -52,6 +52,8 @@ public class PhaseConnectionEdge extends EdgeBase {
 	private boolean isReadMode;
 	private boolean wasInitialized;
 
+	private boolean isEmpty;
+	
 	private ByteBuffer recordBuffer;
 	
 	/**
@@ -82,6 +84,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 		isReadMode=false;
 		wasInitialized = false;
+		isEmpty = false;
 	}
 
 
@@ -130,6 +133,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 	@Override
 	public void reset() {
 		isReadMode=false;
+		isEmpty = false;
 		writeCounter = 0;
 		readCounter = 0;
         writeByteCounter = 0;
@@ -167,6 +171,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 		    readCounter++;
 		    return record;
 		}else{
+			isEmpty = true;
 		    return null;
 		}
 		
@@ -193,6 +198,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 		    readCounter++;
 		    return true;
 		}else{
+			isEmpty = true;
 		    return false;
 		}
 	}
@@ -256,7 +262,8 @@ public class PhaseConnectionEdge extends EdgeBase {
 	}
 
 	public boolean hasData(){
-		return writeCounter - readCounter > 0;
+		return !isEmpty;
+//		return writeCounter - readCounter > 0;
 	}
 	
 	/* (non-Javadoc)

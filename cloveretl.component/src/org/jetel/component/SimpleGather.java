@@ -125,7 +125,7 @@ public class SimpleGather extends Node {
 		readFromPort = 0;
 		while (runIt && numActive > 0) {
 			inPort = inputPorts[readFromPort];
-			if (!isEOF[readFromPort] && (inPort.hasData() || !inPort.isEOF())) {
+			if (!isEOF[readFromPort] && inPort.hasData()) {
 				emptyLoopCounter = 0;
 				inRecord = inPort.readRecord(record);
 				if (inRecord != null) {
