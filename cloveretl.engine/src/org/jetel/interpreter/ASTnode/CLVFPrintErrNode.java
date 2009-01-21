@@ -5,8 +5,6 @@ import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
 public class CLVFPrintErrNode extends SimpleNode {
  
-  public boolean printLine=false;
-    
   public CLVFPrintErrNode(int id) {
     super(id);
   }
@@ -21,7 +19,4 @@ public class CLVFPrintErrNode extends SimpleNode {
     return visitor.visit(this, data);
   }
   
-  public void setPrintLine(boolean printLine){
-      this.printLine=printLine;
-  }
 }
