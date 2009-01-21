@@ -21,18 +21,10 @@ package org.jetel.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URL;
-import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -77,9 +69,7 @@ public class MultiFileReader {
     private boolean noInputFile = false;
     private String incrementalFile;
     private String incrementalKey;
-    private static Map<String, Incremental> incrementalProperties;
-    private String[] incrementalInValues;
-    private ArrayList<String> incrementalOutValues;
+    private IncrementalReading incrementalReading;
     private int iSource;
 
     private AutoFilling autoFilling = new AutoFilling();
@@ -107,7 +97,9 @@ public class MultiFileReader {
      * @throws ComponentNotReadyException
      */
     public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
-		initIncrementalReading();
+    	incrementalReading = new IncrementalReading(incrementalFile, incrementalKey);
+    	incrementalReading.setContextURL(contextURL);
+    	incrementalReading.init();
         parser.init(metadata);
     	if (metadata != null) autoFilling.addAutoFillingFields(metadata);
 		iSource = -1;
@@ -168,57 +160,6 @@ public class MultiFileReader {
 		}
 	}
 	
-    /**
-     * Initializes incremental reading.
-     * @throws ComponentNotReadyException
-     */
-    private void initIncrementalReading() throws ComponentNotReadyException {
-    	if (incrementalFile == null && incrementalKey != null) throw new ComponentNotReadyException("Incremental file is not defined for the '" + incrementalKey + "' incremental key attribute!");
-    	if (incrementalFile != null && incrementalKey == null) throw new ComponentNotReadyException("Incremental key is not defined for the '" + incrementalFile + "' incremental file attribute!");
-    	
-    	if (incrementalFile == null) return;
-    	if (incrementalProperties == null) {
-    		incrementalProperties = new HashMap<String, Incremental>();
-    	}
-    	Incremental incremental;
-    	Properties prop = new Properties();
-    	try {
-    		prop.load(Channels.newInputStream(FileUtils.getReadableChannel(contextURL, incrementalFile)));
-		} catch (IOException e) {
-			logger.warn("The incremental file not found or it is corrupted! Cause: " + e.getMessage());
-		}
-		incremental = new Incremental(prop);
-		incremental.add(incrementalKey);
-		incrementalProperties.put(incrementalFile, incremental);
-    	
-		String incrementalValue = (String) prop.get(incrementalKey);
-		if (incrementalValue == null) {
-			logger.warn("The incremental key '" + incrementalKey + "' not found!");
-		}
-		incrementalInValues = incrementalValue != null && !incrementalValue.equals("") ? incrementalValue.split(";") : new String[0];
-		incrementalOutValues = new ArrayList<String>();
-		for (String value: incrementalInValues) {
-			incrementalOutValues.add(value);
-		}
-		try {
-			storeIncrementalReading();
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(e);
-		}
-    }
-
-    /**
-     * Resets incremental reading. 
-     * @throws IOException 
-     */
-    private void resetIncrementalReading() throws IOException {
-    	storeIncrementalReading();
-		if (incrementalOutValues != null) {
-			incrementalInValues = new String[incrementalOutValues.size()];
-			incrementalOutValues.toArray(incrementalInValues);
-		}
-    }
-    
 	/**
      * Sets number of skipped records in next call of getNext() method.
      * @param skip
@@ -250,12 +191,8 @@ public class MultiFileReader {
 	 */
 	private boolean nextSource() throws JetelException {
 		// update incremental value from previous source
-		if (incrementalOutValues != null && iSource >= 0) {
-			for (int i=incrementalOutValues.size(); i<iSource; i++) incrementalOutValues.add(null);
-			Object position = parser.getPosition();
-			if (iSource < incrementalOutValues.size()) incrementalOutValues.remove(iSource);
-			incrementalOutValues.add(iSource, position != null ? position.toString() : null);
-		}
+		incrementalReading.nextSource(iSource, parser.getPosition());
+		
 		// next source
 		ReadableByteChannel stream = null;
 		while (channelIterator.hasNext()) {
@@ -272,8 +209,9 @@ public class MultiFileReader {
 				iSource++;
 				parser.setReleaseDataSource(!autoFilling.getFilename().equals(STD_IN));
 				parser.setDataSource(stream);
-				if (incrementalInValues != null && iSource < incrementalInValues.length) {
-					parser.movePosition(incrementalInValues[iSource]);
+				Object sourcePosition;
+				if ((sourcePosition = incrementalReading.getSourcePosition(iSource)) != null) {
+					parser.movePosition(sourcePosition);
 				}
 				if(fileSkip > 0) parser.skip(fileSkip);
 				return true;
@@ -393,18 +331,7 @@ public class MultiFileReader {
 	 * @throws IOException 
 	 */
 	public void storeIncrementalReading() throws IOException {
-		if (incrementalFile == null || incrementalProperties == null) return;
-		
-		OutputStream os = Channels.newOutputStream(FileUtils.getWritableChannel(contextURL, incrementalFile, false));
-		Properties prop = incrementalProperties.get(incrementalFile).getProperties();
-		prop.remove(incrementalKey);
-		StringBuilder sb = new StringBuilder();
-		for (String value: incrementalOutValues) sb.append(value).append(";");
-		if (sb.length() > 0) sb.deleteCharAt(sb.length()-1);
-		prop.put(incrementalKey, sb.toString());
-		prop.store(os, "Incremental reading properties");
-		os.flush();
-		os.close();
+		incrementalReading.storeIncrementalReading();
 	}
 	
 	/**
@@ -428,7 +355,7 @@ public class MultiFileReader {
 
 		channelIterator.reset();
         try {
-    		resetIncrementalReading();
+    		incrementalReading.reset();
 			if(!(initializeDataDependentSource = channelIterator.isGraphDependentSource()) && !nextSource()) 
 			    noInputFile = true;
 		} catch (JetelException e) {
@@ -454,36 +381,4 @@ public class MultiFileReader {
     	this.incrementalKey = incrementalKey;
     }
 
-
-    /**
-     * The class for incremental reading.
-     */
-    private static class Incremental {
-    	// properties for a file
-    	private Properties properties;
-    	// used keys
-    	private Set<String> used;
-
-    	/**
-    	 * Constructor
-    	 */
-    	public Incremental(Properties properties) {
-    		this.properties = properties;
-    		used = new HashSet<String>();
-    	}
-    	
-    	/**
-    	 * properties for particular file
-    	 */
-    	public Properties getProperties() {
-    		return properties;
-    	}
-
-    	public boolean contains(String key) {
-    		return used.contains(key);
-    	}
-    	public void add(String key) {
-    		used.add(key);
-    	}
-    }
 }
