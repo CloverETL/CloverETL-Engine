@@ -1255,9 +1255,9 @@ void BuildInFunction() #void :
 
 
 void PrintErrNode() :
-{ Token t;}
+{}
 {
-	"print_err(" AdditiveExpression() [ "," t=<BOOLEAN_LITERAL> {jjtThis.setPrintLine(Boolean.parseBoolean(t.image));} ] ")" 
+	"print_err(" AdditiveExpression() [ "," ConditionalOrExpression() ] ")" 
 }
 
 

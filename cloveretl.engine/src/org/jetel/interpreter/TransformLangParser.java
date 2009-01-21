@@ -3472,15 +3472,14 @@ void OutputFieldExp() #void :// IDExp -> ID
   CLVFPrintErrNode jjtn000 = new CLVFPrintErrNode(this, JJTPRINTERRNODE);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-  jjtreeOpenNodeScope(jjtn000);Token t;
+  jjtreeOpenNodeScope(jjtn000);
     try {
       jj_consume_token(115);
       AdditiveExpression();
       switch (jj_nt.kind) {
       case 103:
         jj_consume_token(103);
-        t = jj_consume_token(BOOLEAN_LITERAL);
-                                                                     jjtn000.setPrintLine(Boolean.parseBoolean(t.image));
+        ConditionalOrExpression();
         break;
       default:
         jj_la1[57] = jj_gen;
@@ -4229,7 +4228,7 @@ void OutputFieldExp() #void :// IDExp -> ID
 
   final private boolean jj_3R_98() {
     if (jj_scan_token(103)) return true;
-    if (jj_scan_token(BOOLEAN_LITERAL)) return true;
+    if (jj_3R_58()) return true;
     return false;
   }
 

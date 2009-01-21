@@ -1890,7 +1890,11 @@ public class InterpreterTest extends CloverTestCase {
 						"print_err('s=world, soundex='+soundex('world'));\n" +
 						"int j;for (j=0;j<length(s);j++){print_err(char_at(s,j));};\n" +
 						"int charCount = count_char('mimimichal','i');\n" +
-						"print_err(charCount);\n";
+						"print_err(charCount);\n" +
+						"int debug_print = 1;\n" +
+						"print_err('debug print is on: ',debug_print == 1);\n" + // second argument can be any boolean expression
+						"print_err('debug print is off: ',debug_print == 0);\n" +
+						"print_err('debug print is off by default:');\n";  // do not print position by default
 
 	      print_code(expStr);
 		try {

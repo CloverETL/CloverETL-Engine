@@ -845,15 +845,29 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
     public Object visit(CLVFPrintErrNode node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue a = stack.pop();
-        if (node.printLine){
-            StringBuilder buf=new StringBuilder((a != null ? a.toString() : "<null>"));
+        node.childrenAccept(this, data);
+        boolean printLocationFlag = false;
+        
+        // interpret optional parameter
+        if (node.jjtGetNumChildren() > 1) {
+	        TLValue printLocation = stack.pop();
+	        
+	        if (printLocation.type != TLValueType.BOOLEAN) {
+	        	throw new TransformLangExecutorRuntimeException(node,new Object[]{printLocation},
+	            "print_err - the second argument does not evaluate to a BOOLEAN value");
+	        }
+	        
+	        printLocationFlag = (Boolean)printLocation.getValue();
+        }
+        
+        TLValue message = stack.pop();
+        if (printLocationFlag) {
+            StringBuilder buf=new StringBuilder((message != null ? message.toString() : "<null>"));
             buf.append(" (on line: ").append(node.getLineNumber());
             buf.append(" col: ").append(node.getColumnNumber()).append(")");
             System.err.println(buf);
         }else{
-            System.err.println(a != null ? a : "<null>");
+            System.err.println(message != null ? message : "<null>");
         }
 
         return data;

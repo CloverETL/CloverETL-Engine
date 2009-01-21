@@ -2889,11 +2889,11 @@ void PrintErrNode() :
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);
-/*@egen*/ Token t;}
+/*@egen*/}
 {/*@bgen(jjtree) PrintErrNode */
         try {
 /*@egen*/
-	"print_err(" AdditiveExpression() [ "," t=<BOOLEAN_LITERAL> {jjtn000.setPrintLine(Boolean.parseBoolean(t.image));} ] ")"/*@bgen(jjtree)*/
+	"print_err(" AdditiveExpression() [ "," ConditionalOrExpression() ] ")"/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
