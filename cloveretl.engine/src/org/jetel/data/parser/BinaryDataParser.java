@@ -64,8 +64,19 @@ public class BinaryDataParser implements Parser {
 	}
 
 	public BinaryDataParser(int bufferLimit) {
+		setBufferLimit(bufferLimit);
+	}
+	
+	
+	
+	public int getBufferLimit() {
+		return bufferLimit;
+	}
+
+	public void setBufferLimit(int bufferLimit) {
 		this.bufferLimit = bufferLimit;
 	}
+
 	public BinaryDataParser(InputStream inputStream) {
 		try {
 			setDataSource(inputStream);
@@ -169,16 +180,17 @@ public class BinaryDataParser implements Parser {
 		System.out.println("  Deserialize: " + (timeDeserialize / 1000.0) + " s");
 	}
 	
-	ByteBuffer[] buffers;
-	int curBuffer = 0;
-	int buffersCount = 2;
+//	ByteBuffer[] buffers;
+//	int curBuffer = 0;
+//	int buffersCount = 2;
 	void reloadBuffer() throws IOException {
-		curBuffer = (curBuffer+1) % buffersCount;
-		byte[] remainder = new byte[buffer.remaining()];
-		buffer.get(remainder);
-		buffer.clear();
-		buffer = buffers[curBuffer];
-		buffer.put(remainder);
+//		curBuffer = (curBuffer+1) % buffersCount;
+//		byte[] remainder = new byte[buffer.remaining()];
+//		buffer.get(remainder);
+//		buffer.clear();
+//		buffer = buffers[curBuffer];
+//		buffer.put(remainder);
+		buffer.compact();
 		reader.read(buffer);
 		buffer.flip();
 	}
@@ -196,11 +208,16 @@ public class BinaryDataParser implements Parser {
 			throw new ComponentNotReadyException("Metadata cannot be null");
 		}
 		this.metaData = _metadata;
-		buffers = new ByteBuffer[buffersCount];
-		for(int i = 0; i < buffersCount; i++) {
-			buffers[i] = ByteBuffer.allocateDirect(bufferLimit > 0 ? Math.min(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE, bufferLimit) : Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		}
-		buffer = buffers[0];
+		int buffSize = bufferLimit > 0 ? Math.min(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE, bufferLimit) : Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
+// Multiple buffers in roundrobin
+// disabled - complexity without any yield
+//		buffers = new ByteBuffer[buffersCount];
+//		for(int i = 0; i < buffersCount; i++) {
+//			buffers[i] = ByteBuffer.allocateDirect(buffSize);
+//		}
+//		buffer = buffers[0];
+		buffer = ByteBuffer.allocateDirect(buffSize);
+//		buffer = ByteBuffer.allocate(buffSize);
 	}
 
 	public void movePosition(Object position) throws IOException {
