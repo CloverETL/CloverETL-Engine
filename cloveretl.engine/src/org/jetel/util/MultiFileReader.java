@@ -112,7 +112,7 @@ public class MultiFileReader {
             }
         } catch (JetelException e) {
             noInputFile = true;
-            throw new ComponentNotReadyException("FileURL attribute (" + fileURL + ") doesn't contain valid file url.");
+            throw new ComponentNotReadyException("FileURL attribute (" + fileURL + ") doesn't contain valid file url.", e);
         }
     }
 
@@ -215,9 +215,10 @@ public class MultiFileReader {
 				}
 				if(fileSkip > 0) parser.skip(fileSkip);
 				return true;
-			} catch (Exception e) {
-				logger.error("An error occured while skipping records in file " + autoFilling.getFilename() + ", the file will be ignored", e);
-				continue;
+			} catch (IOException e) {
+				throw new JetelException("An error occured while skipping records in file " + autoFilling.getFilename() + ", the file will be ignored", e);
+			} catch (ComponentNotReadyException e) {
+				throw new JetelException("An error occured while switching input file " + autoFilling.getFilename() + ", the file will be ignored" ,e);
 			}
 		}
 		return false;
