@@ -28,4 +28,9 @@
 		<parameter id="type" value="EMAIL_FILTER"/>
 	</extension>
 
+	<extension point-id="component">
+		<parameter id="className" value="com.opensys.cloveretl.component.ExtSort2"/>
+		<parameter id="type" value="EXT_SORT2"/>
+	</extension>
+
 </plugin>
