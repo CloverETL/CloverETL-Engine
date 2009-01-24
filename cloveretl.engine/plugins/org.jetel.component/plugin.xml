@@ -149,11 +149,6 @@
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.ExtSort2"/>
-	    <parameter id="type" value="EXT_SORT2"/>
-	</extension>
-
-	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.ExtSortNative"/>
 	    <parameter id="type" value="EXT_SORT_NATIVE"/>
 	</extension>
