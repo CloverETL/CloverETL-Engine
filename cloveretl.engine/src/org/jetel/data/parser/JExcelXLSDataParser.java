@@ -401,7 +401,7 @@ public class JExcelXLSDataParser extends XLSParser {
 	}
 
 	public Object getPosition() {
-		return incremental.getPosition();
+		return incremental != null ? incremental.getPosition() : null;
 	}
 
 	public void movePosition(Object oPosition) {
