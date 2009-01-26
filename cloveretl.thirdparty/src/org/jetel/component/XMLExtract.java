@@ -9,7 +9,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.SAXParser;
@@ -198,13 +200,15 @@ import org.xml.sax.helpers.DefaultHandler;
 public class XMLExtract extends Node {
 
     // Logger
-    private static final Log    LOG = LogFactory.getLog(XMLExtract.class);
+    private static final Log LOG = LogFactory.getLog(XMLExtract.class);
 
+    // xml attributes
     private static final String XML_SOURCEURI_ATTRIBUTE = "sourceUri";
     private static final String XML_SCHEMA_ATTRIBUTE = "schema";
     private static final String XML_USENESTEDNODES_ATTRIBUTE = "useNestedNodes";
     private static final String XML_MAPPING_ATTRIBUTE = "mapping";
 
+    // mapping attributes
     private static final String XML_MAPPING = "Mapping";
     private static final String XML_ELEMENT = "element";
     private static final String XML_OUTPORT = "outPort";
@@ -217,8 +221,10 @@ public class XMLExtract extends Node {
     private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 
+    // component name
     public final static String COMPONENT_TYPE = "XML_EXTRACT";
     
+    // from which input port to read
 	private final static int INPUT_PORT = 0;
 
     // Map of elementName => output port
@@ -226,17 +232,22 @@ public class XMLExtract extends Node {
     
     // Where the XML comes from
     private InputSource m_inputSource;
-    
+
+    // input file
     private String inputFile;
 	private ReadableChannelIterator readableChannelIterator;
 
+	// can I use nested nodes for mapping processing?
     private boolean useNestedNodes = true;
-    
+
+    // global skip and numRecords
     private int skipRows=0; // do not skip rows by default
     private int numRecords = -1;
 
+    // autofilling support
     private AutoFilling autoFilling = new AutoFilling();
 
+    //
 	private String schemaFile;
 
     /**
@@ -324,6 +335,9 @@ public class XMLExtract extends Node {
                         sequenceField.fromString(sequence.nextValueString());
                     }
                 }
+               	m_activeMapping.prepareDoMap();
+               	m_activeMapping.incCurrentRecord4Mapping();
+                
                 // This is the closing element of the matched element that
                 // triggered the processing
                 // That should be the end of this record so send it off to the
@@ -501,18 +515,28 @@ public class XMLExtract extends Node {
                         if (outPort != null) {
                             // we just ignore creating output, if port is empty (without metadata) or not specified
 	                        DataRecord outRecord = m_activeMapping.getOutRecord();
+	                        
+	                        // skip or process row
 	                    	if (skipRows > 0) {
 	                    		if (m_activeMapping.getParent() == null) skipRows--;
 	                    	} else {
 	                            //check for index of last returned record
 	                            if(!(numRecords >= 0 && numRecords == autoFilling.getGlobalCounter())) {
-	                                //send off record
+	                            	// set autofilling
 	                                autoFilling.setAutoFillingFields(outRecord);
-	                                outPort.writeRecord(outRecord);
+	                                
+	                                // can I do the map? it depends on skip and numRecords.
+	                                if (m_activeMapping.doMap()) {
+		                                //send off record
+	                                	outPort.writeRecord(outRecord);
+	                                }
 //	                                if (m_activeMapping.getParent() == null) autoFilling.incGlobalCounter();
 	                            }
 	                    	}
 	                    	
+	                    	// resets all child's mappings for skip and numRecords 
+                           	m_activeMapping.resetCurrentRecord4ChildMapping();
+
                         	// reset record
 	                        outRecord.reset();
                         }
@@ -538,29 +562,38 @@ public class XMLExtract extends Node {
      * Mapping holds a single mapping.
      */
     public class Mapping {
-        String m_element;
-        int m_outPort;
-        DataRecord m_outRecord;
-        String[] m_parentKey;
-        String[] m_generatedKey;
-        Map<String, Mapping> m_childMap;
-        WeakReference<Mapping> m_parent;
-        int m_level;
-        String m_sequenceField;
-        String m_sequenceId;
-        Sequence sequence;
+        String m_element;								// name of an element for this mapping
+        int m_outPort;									// output port number
+        DataRecord m_outRecord;							// output record
+        String[] m_parentKey;							// parent keys
+        String[] m_generatedKey;						// generated keys
+        Map<String, Mapping> m_childMap;				// direct children for this mapping 
+        WeakReference<Mapping> m_parent;				// direct parent mapping
+        int m_level;									// original xml tree level (a deep of this element) 
+        String m_sequenceField;							// sequence field
+        String m_sequenceId;							// sequence ID
+        Sequence sequence;								// sequence (Simple, Db,..)
         
+        // mapping - xml name -> clover field name
         Map<String, String> xml2CloverFieldsMap = new HashMap<String, String>();
         
-                /*
-                 * Minimally required information.
-                 */
+        // for skip and number a record attribute for this mapping
+		int skipRecords4Mapping;						// skip records
+		int numRecords4Mapping = Integer.MAX_VALUE;		// number records
+		int currentRecord4Mapping;						// record counter for this mapping
+		boolean processSkipOrNumRecords;				// what xml element can be skiped
+		boolean bDoMap = true;							// should I skip an xml element? depends on processSkipOrNumRecords
+		boolean bReset4CurrentRecord4Mapping;			// should I reset submappings?
+        
+        /*
+         * Minimally required information.
+         */
         public Mapping(String element, int outPort) {
             m_element = element;
             m_outPort = outPort;
         }
         
-        /**
+		/**
          * Gives the optional attributes parentKey and generatedKey.
          */
         public Mapping(String element, int outPort, String parentKey[],
@@ -571,18 +604,35 @@ public class XMLExtract extends Node {
             m_generatedKey = generatedKey;
         }
         
+        /**
+         * Gets original xml tree level (a deep of this element)
+         * @return
+         */
         public int getLevel() {
             return m_level;
         }
         
+        /**
+         * Sets original xml tree level (a deep of this element)
+         * @param level
+         */
         public void setLevel(int level) {
             m_level = level;
         }
         
+        /**
+         * Sets direct children for this mapping. 
+         * @return
+         */
         public Map<String, Mapping> getChildMap() {
             return m_childMap;
         }
         
+        /**
+         * Gets direct children for this mapping. 
+         * @param element
+         * @return
+         */
         public Mapping getChildMapping(String element) {
             if (m_childMap == null) {
                 return null;
@@ -590,6 +640,10 @@ public class XMLExtract extends Node {
             return m_childMap.get(element);
         }
         
+        /**
+         * Adds a direct child for this mapping.
+         * @param mapping
+         */
         public void addChildMapping(Mapping mapping) {
             if (m_childMap == null) {
                 m_childMap = new HashMap<String, Mapping>();
@@ -597,6 +651,10 @@ public class XMLExtract extends Node {
             m_childMap.put(mapping.getElement(), mapping);
         }
         
+        /**
+         * Removes a direct child for this mapping.
+         * @param mapping
+         */
         public void removeChildMapping(Mapping mapping) {
             if (m_childMap == null) {
                 return;
@@ -604,38 +662,74 @@ public class XMLExtract extends Node {
             m_childMap.remove(mapping.getElement());
         }
         
+        /**
+         * Gets an element name for this mapping.
+         * @return
+         */
         public String getElement() {
             return m_element;
         }
         
+        /**
+         * Sets an element name for this mapping.
+         * @param element
+         */
         public void setElement(String element) {
             m_element = element;
         }
         
+        /**
+         * Gets generated keys of for this mapping.
+         * @return
+         */
         public String[] getGeneratedKey() {
             return m_generatedKey;
         }
         
+        /**
+         * Sets generated keys of for this mapping.
+         * @param generatedKey
+         */
         public void setGeneratedKey(String[] generatedKey) {
             m_generatedKey = generatedKey;
         }
         
+        /**
+         * Gets an output port.
+         * @return
+         */
         public int getOutPort() {
             return m_outPort;
         }
         
+        /**
+         * Sets an output port.
+         * @param outPort
+         */
         public void setOutPort(int outPort) {
             m_outPort = outPort;
         }
         
+        /**
+         * Gets mapping - xml name -> clover field name 
+         * @return
+         */
         public Map<String, String> getXml2CloverFieldsMap() {
             return xml2CloverFieldsMap;
         }
         
+        /**
+         * Sets mapping - xml name -> clover field name
+         * @param xml2CloverFieldsMap
+         */
         public void setXml2CloverFieldsMap(Map<String, String> xml2CloverFieldsMap) {
             this.xml2CloverFieldsMap = xml2CloverFieldsMap;
         }
         
+        /**
+         * Gets an output record.
+         * @return
+         */
         public DataRecord getOutRecord() {
             if (m_outRecord == null) {
                 OutputPort outPort = getOutputPort(getOutPort());
@@ -657,18 +751,34 @@ public class XMLExtract extends Node {
             return m_outRecord;
         }
         
+        /**
+         * Sets an output record.
+         * @param outRecord
+         */
         public void setOutRecord(DataRecord outRecord) {
             m_outRecord = outRecord;
         }
         
+        /**
+         * Gets parent key.
+         * @return
+         */
         public String[] getParentKey() {
             return m_parentKey;
         }
         
+        /**
+         * Sets parent key.
+         * @param parentKey
+         */
         public void setParentKey(String[] parentKey) {
             m_parentKey = parentKey;
         }
         
+        /**
+         * Gets a parent mapping.
+         * @return
+         */
         public Mapping getParent() {
             if (m_parent != null) {
                 return m_parent.get();
@@ -677,26 +787,50 @@ public class XMLExtract extends Node {
             }
         }
         
+        /**
+         * Sets a parent mapping.
+         * @param parent
+         */
         public void setParent(Mapping parent) {
             m_parent = new WeakReference<Mapping>(parent);
         }
 
+        /**
+         * Gets a sequence name.
+         * @return
+         */
         public String getSequenceField() {
             return m_sequenceField;
         }
 
+        /**
+         * Sets a sequence name.
+         * @param field
+         */
         public void setSequenceField(String field) {
             m_sequenceField = field;
         }
 
+        /**
+         * Gets a sequence ID.
+         * @return
+         */
         public String getSequenceId() {
             return m_sequenceId;
         }
 
+        /**
+         * Sets a sequence ID.
+         * @param id
+         */
         public void setSequenceId(String id) {
             m_sequenceId = id;
         }
         
+        /**
+         * Gets a Sequence (simple sequence, db sequence, ...).
+         * @return
+         */
         public Sequence getSequence() {
             if(sequence == null) {
                 String element = StringUtils.trimXmlNamespace(getElement());
@@ -716,6 +850,108 @@ public class XMLExtract extends Node {
 
             return sequence;
         }
+        
+        /**
+         * processSkipOrNumRecords is true - mapping can be skipped
+         */
+		public boolean getProcessSkipOrNumRecords() {
+			if (processSkipOrNumRecords) return true;
+			Mapping parent = getParent();
+			if (parent == null) {
+				return processSkipOrNumRecords;
+			}
+			return parent.getProcessSkipOrNumRecords();
+		}
+		
+		/**
+		 * Sets inner variables for processSkipOrNumRecords.
+		 */
+		public void prepareProcessSkipOrNumRecords() {
+			Mapping parentMapping = getParent();
+			processSkipOrNumRecords = parentMapping != null && parentMapping.getProcessSkipOrNumRecords() ||
+				(skipRecords4Mapping > 0 || numRecords4Mapping < Integer.MAX_VALUE);
+		}
+		
+		/**
+		 * Sets inner variables for bReset4CurrentRecord4Mapping.
+		 */
+		public void prepareReset4CurrentRecord4Mapping() {
+			bReset4CurrentRecord4Mapping = processSkipOrNumRecords;
+        	if (m_childMap != null) {
+        		Mapping mapping;
+        		for (Iterator<Entry<String, Mapping>> it=m_childMap.entrySet().iterator(); it.hasNext();) {
+        			mapping = it.next().getValue();
+        			if (mapping.processSkipOrNumRecords) {
+        				bReset4CurrentRecord4Mapping = true;
+        				break;
+        			}
+        		}
+        	}
+		}
+		
+		/**
+		 * skipRecords for this mapping.
+		 * @param skipRecords4Mapping
+		 */
+        public void setSkipRecords4Mapping(int skipRecords4Mapping) {
+        	this.skipRecords4Mapping = skipRecords4Mapping;
+        }
+        
+        /**
+         * numRecords for this mapping.
+         * @param numRecords4Mapping
+         */
+        public void setNumRecords4Mapping(int numRecords4Mapping) {
+        	this.numRecords4Mapping = numRecords4Mapping;
+        }
+        
+        /**
+         * Counter for this mapping.
+         */
+        public void incCurrentRecord4Mapping() {
+        	currentRecord4Mapping++;
+		}
+        
+        /**
+         * Resets submappings.
+         */
+        public void resetCurrentRecord4ChildMapping() {
+        	if (!bReset4CurrentRecord4Mapping) return;
+        	if (m_childMap != null) {
+        		Mapping mapping;
+        		for (Iterator<Entry<String, Mapping>> it=m_childMap.entrySet().iterator(); it.hasNext();) {
+        			mapping = it.next().getValue();
+        			mapping.currentRecord4Mapping = 0;
+        			mapping.resetCurrentRecord4ChildMapping();
+        		}
+        	}
+		}
+
+        /**
+         * Sets if this and child mapping should be skipped.
+         */
+		public void prepareDoMap() {
+			if (!processSkipOrNumRecords) return;
+			Mapping parent = getParent();
+        	bDoMap = (parent == null || parent.doMap()) && 
+        		currentRecord4Mapping >= skipRecords4Mapping && currentRecord4Mapping-skipRecords4Mapping < numRecords4Mapping;
+        	if (m_childMap != null) {
+        		Mapping mapping;
+        		for (Iterator<Entry<String, Mapping>> it=m_childMap.entrySet().iterator(); it.hasNext();) {
+        			mapping = it.next().getValue();
+        			mapping.prepareDoMap();
+        		}
+        	}
+		}
+		
+		/**
+		 * Can process this mapping? It depends on currentRecord4Mapping, skipRecords4Mapping and numRecords4Mapping
+		 * for this and parent mappings.
+		 * @return
+		 */
+        public boolean doMap() {
+        	return !processSkipOrNumRecords || (processSkipOrNumRecords && bDoMap);
+        }
     }
     
     /**
@@ -725,29 +961,31 @@ public class XMLExtract extends Node {
         super(id);
     }
     
-    // //////////////////////////////////////////////////////////////////////////
-    // De-Serialization
-    //
+
+    /**
+     * Creates an inctence of this class from a xml node.
+     * @param graph
+     * @param xmlElement
+     * @return
+     * @throws XMLConfigurationException
+     */
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         XMLExtract extract;
         
         try {
-            // Go through this round about method so that sub classes may
-            // re-use this logic like:
-            // fromXML(nodeXML) {
-            //  MyXMLExtract = (MyXMLExtract) XMLExtract.fromXML(nodeXML);
-            //  //Do more stuff with MyXMLExtract
-            //  return MyXMLExtract
-            // }
+        	// constructor
             extract = new XMLExtract(xattribs.getString(XML_ID_ATTRIBUTE));
             
+            // set input file
             extract.setInputFile(xattribs.getString(XML_SOURCEURI_ATTRIBUTE));
             
+            // set dtd schema
             if (xattribs.exists(XML_SCHEMA_ATTRIBUTE)) {
             	extract.setSchemaFile(xattribs.getString(XML_SCHEMA_ATTRIBUTE));
             }
             
+            // if can use nested nodes.
             if(xattribs.exists(XML_USENESTEDNODES_ATTRIBUTE)) {
                 extract.setUseNestedNodes(xattribs.getBoolean(XML_USENESTEDNODES_ATTRIBUTE));
             }
@@ -771,9 +1009,13 @@ public class XMLExtract extends Node {
                 org.w3c.dom.Node node = nodes.item(i);
                 processMappings(graph, extract, null, node);
             }
+            
+            // set a skip row attribute
             if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
             	extract.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
             }
+            
+            // set a numRecord attribute
             if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
             	extract.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
             }
@@ -808,6 +1050,14 @@ public class XMLExtract extends Node {
         return doc;
     }
     
+    /**
+     * Creates mappings.
+     * 
+     * @param graph
+     * @param extract
+     * @param parentMapping
+     * @param nodeXML
+     */
     private static void processMappings(TransformationGraph graph, XMLExtract extract, Mapping parentMapping, org.w3c.dom.Node nodeXML) {
         if (XML_MAPPING.equals(nodeXML.getNodeName())) {
             // for a mapping declaration, process all of the attributes
@@ -849,21 +1099,15 @@ public class XMLExtract extends Node {
             }
             
             if (parentKeyPresent != generatedKeyPresent) {
-                LOG
-                        .warn(extract.getId()
-                        + ": XML Extract Mapping for element: "
-                        + mapping.getElement()
-                        + " must either have both parentKey and generatedKey attributes or neither.");
+                LOG.warn(extract.getId() + ": XML Extract Mapping for element: " + 
+                		mapping.getElement() + " must either have both parentKey and generatedKey attributes or neither.");
                 mapping.setParentKey(null);
                 mapping.setGeneratedKey(null);
             }
 
             if (parentKeyPresent && mapping.getParent() == null) {
-                LOG
-                        .warn(extract.getId()
-                        + ": XML Extact Mapping for element: "
-                        + mapping.getElement()
-                        + " may only have parentKey or generatedKey attributes if it is a nested mapping.");
+                LOG.warn(extract.getId() + ": XML Extact Mapping for element: "
+                        + mapping.getElement() + " may only have parentKey or generatedKey attributes if it is a nested mapping.");
                 mapping.setParentKey(null);
                 mapping.setGeneratedKey(null);
             }
@@ -894,12 +1138,31 @@ public class XMLExtract extends Node {
                 mapping.setSequenceId(attributes.getString(XML_SEQUENCEID, null));
             }
             
+            //skip rows field
+            int skipRecords4Mapping = 0;
+            if (attributes.exists(XML_SKIP_ROWS_ATTRIBUTE)) {
+                mapping.setSkipRecords4Mapping(skipRecords4Mapping = attributes.getInteger(XML_SKIP_ROWS_ATTRIBUTE, skipRecords4Mapping));
+            }
+            
+            //number records field
+            int numRecords4Mapping = Integer.MAX_VALUE;
+            if (attributes.exists(XML_NUMRECORDS_ATTRIBUTE)) {
+                mapping.setNumRecords4Mapping(attributes.getInteger(XML_NUMRECORDS_ATTRIBUTE, numRecords4Mapping));
+            }
+
+            // prepare variables for skip and numRecords for this mapping
+        	mapping.prepareProcessSkipOrNumRecords();
+
             // Process all nested mappings
             NodeList nodes = nodeXML.getChildNodes();
             for (int i = 0; i < nodes.getLength(); i++) {
                 org.w3c.dom.Node node = nodes.item(i);
                 processMappings(graph, extract, mapping, node);
             }
+            
+            // prepare variable reset of skip and numRecords' attributes
+            mapping.prepareReset4CurrentRecord4Mapping();
+            
         } else if (nodeXML.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
             // Ignore text values inside nodes
         } else {
@@ -912,11 +1175,17 @@ public class XMLExtract extends Node {
     @Override
     public Result execute() throws Exception {
     	Result result;
+    	
+    	// parse xml from input file(s).
     	if (parseXML()) {
+    		// finished successfully
     		result = runIt ? Result.FINISHED_OK : Result.ABORTED;
-    	}else{
+    		
+    	} else {
+    		// an error occurred 
     		result = runIt ? Result.ERROR : Result.ABORTED;
     	}
+
     	broadcastEOF();
 		return result;
     }
@@ -927,22 +1196,30 @@ public class XMLExtract extends Node {
      * encountered during processing.
      */
     private boolean parseXML() throws JetelException{
+    	// create new sax factory
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser parser;
         
         try {
+        	// create new sax parser
             parser = factory.newSAXParser();
         } catch (Exception ex) {
         	throw new JetelException(ex.getMessage(), ex);
         }
         
         try {
-            if (readableChannelIterator.isGraphDependentSource()) prepareNextSource();
+        	// prepare next source
+            if (readableChannelIterator.isGraphDependentSource()) 
+            	prepareNextSource();
     		do {
+    			// parse the input source
                 parser.parse(m_inputSource, new SAXHandler());
+                
+                // get a next source
     		} while (nextSource());
     		
         } catch (SAXException ex) {
+        	// process error
             if (!runIt) {
                 return true; // we were stopped by a stop signal... probably
             }
@@ -955,9 +1232,6 @@ public class XMLExtract extends Node {
         return true;
     }
     
-    // //////////////////////////////////////////////////////////////////
-    // Clover Call Back Methods
-    //
     /**
      * Perform sanity checks.
      */
@@ -977,6 +1251,7 @@ public class XMLExtract extends Node {
                     + ": At least one mapping has to be defined.  <Mapping element=\"elementToMatch\" outPort=\"123\" [parentKey=\"key in parent\" generatedKey=\"new foreign key in target\"]/>");
         }
         
+        // sets input file to readableChannelIterator and sets its settings (directory, charset, input port,...)
         if (inputFile != null) {
         	TransformationGraph graph = getGraph();
             this.readableChannelIterator = new ReadableChannelIterator(
@@ -998,6 +1273,10 @@ public class XMLExtract extends Node {
         prepareNextSource();
 	}
 	
+	/**
+	 * Prepares a next source.
+	 * @throws ComponentNotReadyException
+	 */
 	private void prepareNextSource() throws ComponentNotReadyException {
         try {
             if(!nextSource()) {
@@ -1046,9 +1325,6 @@ public class XMLExtract extends Node {
         return null;
     }
     
-    // //////////////////////////////////////////////////////////////////
-    // Accessors
-    //
     /**
      * Set the input source containing the XML this will parse.
      */
@@ -1056,14 +1332,26 @@ public class XMLExtract extends Node {
         m_inputSource = inputSource;
     }
     
+    /**
+     * Sets an input file.
+     * @param inputFile
+     */
     public void setInputFile(String inputFile) {
     	this.inputFile = inputFile;
     }
     
+    /**
+     * Sets a dtd schema.
+     * @param schemaFile
+     */
     public void setSchemaFile(String schemaFile) {
     	this.schemaFile = schemaFile;
     }
 
+    /**
+     * 
+     * @param useNestedNodes
+     */
     public void setUseNestedNodes(boolean useNestedNodes) {
         this.useNestedNodes = useNestedNodes;
     }
@@ -1083,14 +1371,19 @@ public class XMLExtract extends Node {
         // read-only map
         return m_elementPortMap;
     }
-    
+
     /**
-     * @param skipRows The skipRows to set.
+     * Sets skipRows - how many elements to skip.
+     * @param skipRows
      */
     public void setSkipRows(int skipRows) {
         this.skipRows = skipRows;
     }
     
+    /**
+     * Sets numRecords - how many elements to process.
+     * @param numRecords
+     */
     public void setNumRecords(int numRecords) {
         this.numRecords = Math.max(numRecords, 0);
     }
