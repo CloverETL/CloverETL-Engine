@@ -423,7 +423,7 @@ public class SQLDataParser implements Parser {
 	}
 
 	public Object getPosition() {
-		return incremental.getPosition();
+		return incremental != null ? incremental.getPosition() : null;
 	}
 
 	public void movePosition(Object position) {
