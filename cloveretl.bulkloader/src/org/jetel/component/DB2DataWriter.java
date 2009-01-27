@@ -796,7 +796,7 @@ public class DB2DataWriter extends Node {
 		
 		//prepare metadata for formatting input data
 		if (fileMetadataName != null) {
-			fileMetadata = getGraph().getDataRecordMetadata(fileMetadataName);
+			fileMetadata = getGraph().getDataRecordMetadata(fileMetadataName, true);
 		}
 
 		if (!getInPorts().isEmpty()) {

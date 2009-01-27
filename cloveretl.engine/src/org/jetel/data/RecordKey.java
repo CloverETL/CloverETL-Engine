@@ -125,7 +125,7 @@ public class RecordKey {
 		if (isInitialized) return;
 
         if (metadata == null) {
-        	throw new RuntimeException("Metadata are null.");
+        	throw new NullPointerException("Metadata are null.");
         }
 
 	    if (keyFields == null) {

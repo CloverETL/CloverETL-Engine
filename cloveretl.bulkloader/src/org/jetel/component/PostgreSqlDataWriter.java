@@ -50,6 +50,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -525,10 +526,15 @@ public class PostgreSqlDataWriter extends Node {
 				dataFile.delete();
 			}
 		} else {
-			if (!new File(dataURL).exists()) {
-				free();
-				throw new ComponentNotReadyException(this, 
-						"Data file " + StringUtils.quote(dataURL) + " not exists.");
+			try {
+				if (!FileUtils.isServerURL(FileUtils.getInnerAddress(dataURL)) && 
+						!(new File(FileUtils.getFile(getGraph().getProjectURL(), dataURL))).exists()) {
+					free();
+					throw new ComponentNotReadyException(this, 
+							"Data file " + StringUtils.quote(dataURL) + " not exists.");
+				}
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, e);
 			}
 			dataFile = new File(dataURL);
 		}

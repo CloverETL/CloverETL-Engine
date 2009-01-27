@@ -51,6 +51,7 @@ import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
@@ -361,9 +362,26 @@ public final class TransformationGraph extends GraphElement {
 	 * @return
 	 */
 	public DataRecordMetadata getDataRecordMetadata(String name){
-	    return dataRecordMetadata.get(name);
+		Object metadata = dataRecordMetadata.get(name);
+		if (metadata != null && metadata instanceof DataRecordMetadataStub) {
+			metadata = null;
+		}
+	    return (DataRecordMetadata)metadata;
 	}
 	
+	public DataRecordMetadata getDataRecordMetadata(String name, boolean forceFromStub) throws ComponentNotReadyException{
+		Object metadata = dataRecordMetadata.get(name);
+		if (metadata != null && metadata instanceof DataRecordMetadataStub) {
+			try {
+				metadata = ((DataRecordMetadataStub)metadata).createMetadata();
+				dataRecordMetadata.put(name, (DataRecordMetadata) metadata);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException("Creating metadata from stubn failed: ", e);
+			}
+		}
+	    return (DataRecordMetadata)metadata;
+	}
+
 	/**
 	 * Gets the Iterator which can be used to go through all DataRecordMetadata objects
 	 * (their names) registered with graph.<br>

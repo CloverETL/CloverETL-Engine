@@ -36,13 +36,10 @@ public class TLBooleanValue extends TLValue {
 	public static final TLBooleanValue TRUE=new TLBooleanValue(true);
 	public static final TLBooleanValue FALSE=new TLBooleanValue(false);
 	
-	private boolean value;
+	private final boolean value;
 	
-	public TLBooleanValue() {
-		this(false);
-	}
-
-	public TLBooleanValue(boolean value){
+	private TLBooleanValue(boolean value){
+		// do not instantiate me - use getInstance() instead
 		super(TLValueType.BOOLEAN);
 		this.value=value;
 	}
@@ -87,7 +84,7 @@ public class TLBooleanValue extends TLValue {
 
 	@Override
 	public TLValue duplicate() {
-		return new TLBooleanValue(value);
+		return getInstance(value);
 	}
 
 	@Override
@@ -102,69 +99,56 @@ public class TLBooleanValue extends TLValue {
 	
 	@Override
 	public void setValue(Object _value) {
-		if (this==TRUE || this == FALSE)
-			throw new UnsupportedOperationException("Can't set value of "+TLValueType.BOOLEAN+" - static class !");
-		
-		if (_value instanceof Boolean){
-			this.value = ((Boolean)_value).booleanValue();
-		}else if (_value instanceof Numeric){
-			this.value = ((Numeric)_value).getInt() == 0 ? false : true;
-		}else if (_value instanceof CharSequence){
-			this.value = ((CharSequence)_value).charAt(0) == 'T' || ((CharSequence)_value).charAt(0)=='t';
-		}else{
-			throw new IllegalArgumentException("Can't set TLBoolean value from "+_value.getClass());
-		}
+		throw new UnsupportedOperationException(TLValueType.BOOLEAN+" is immutable, setValue(Object) not allowed");
 	}
 
 	@Override
+	/**
+	 * Immutable class, setValue() not available
+	 * Get corresponding reference via getInstance()
+	 */
 	public void setValue(TLValue _value) {
-		if (this==TRUE || this == FALSE)
-			throw new UnsupportedOperationException("Can't set value of "+TLValueType.BOOLEAN+" - static class !");
-		if (_value.type==TLValueType.BOOLEAN){
-			this.value=((TLBooleanValue)_value).value;
-		}else if (_value.type.isNumeric()){
-			this.value= _value.compareTo(TLNumericValue.ZERO)==0 ? false : true; 
-		}else if (_value.type==TLValueType.STRING){
-			this.value = _value.toString().startsWith("T") || _value.toString().startsWith("t");
-		}else{
-			throw new IllegalArgumentException("Can't set TLBoolean value from "+_value.type);
-		}
+		throw new UnsupportedOperationException(TLValueType.BOOLEAN + " is immutable, setValue(TLValue) not allowed");
 	}
 	
+	/**
+	 * Immutable class, setValue() not available
+	 * Get corresponding reference via getInstance()
+	 */
 	@Override
-	@SuppressWarnings("BC")
 	public void setValue(DataField field) {
-		if (this==TRUE || this == FALSE)
-			throw new UnsupportedOperationException("Can't set value of "+TLValueType.BOOLEAN+" - static class !");
-		switch(field.getType()){
-		case DataFieldMetadata.BOOLEAN_FIELD:
-			this.value=((BooleanDataField)field).getBoolean();
-			break;
-		case DataFieldMetadata.INTEGER_FIELD:
-		case DataFieldMetadata.NUMERIC_FIELD:
-		case DataFieldMetadata.LONG_FIELD:
-		case DataFieldMetadata.DECIMAL_FIELD:
-			this.value=((Numeric)field).getInt()==0 ? false : true;
-			break;
-		case DataFieldMetadata.STRING_FIELD:
-			this.value=field.toString().startsWith("T") || field.toString().startsWith("t");
-			break;
-			default:
-				throw new IllegalArgumentException("Can't set TLBoolean value from "+field.getMetadata().getTypeAsString());
-		}
+		throw new UnsupportedOperationException(TLValueType.BOOLEAN + " is immutable, setValue(DataField) not allowed");
 	}
 
+	/**
+	 * Immutable class, setValue() not available
+	 * Get corresponding reference via getInstance()
+	 */
 	@Override
 	public String toString() {
 		return Boolean.toString(value);
 	}
-	
-	@Override public boolean equals(Object val){
-		// taking advantage of private constructor of TLBooleanValue
-		if (val instanceof TLBooleanValue){
-			return this.value==((TLBooleanValue)val).value;
-		}
-		return false;
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (value ? 1231 : 1237);
+		return result;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof TLBooleanValue))
+			return false;
+		final TLBooleanValue other = (TLBooleanValue) obj;
+		if (value != other.value)
+			return false;
+		return true;
+	}
+	
 }

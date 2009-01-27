@@ -608,7 +608,7 @@ public class StringLib extends TLFunctionLibrary {
         public TLValue execute(TLValue[] params, TLContext context) {
             RegexStore regex = (RegexStore) context.getContext();
             if (regex.pattern==null){
-            	regex.initRegex(params[1].toString(), ((TLStringValue)params[0]).getCharSequence(),true,new TLStringValue());
+            	regex.initRegex(params[1].toString(), ((TLStringValue)params[0]).getCharSequence(),new TLStringValue());
             	regex.strbuf=new StringBuffer();
             }else{
             	// can we reuse pattern/matcher
@@ -654,7 +654,7 @@ public class StringLib extends TLFunctionLibrary {
         public TLValue execute(TLValue[] params, TLContext context) {
             RegexStore regex = (RegexStore) context.getContext();
             if (regex.pattern==null){
-            	regex.initRegex(params[1].toString(), ((TLStringValue)params[0]).getCharSequence(),false,new TLListValue());
+            	regex.initRegex(params[1].toString(), ((TLStringValue)params[0]).getCharSequence(),new TLListValue());
             }else{
             	// can we reuse pattern/matcher
             	if(regex.storedRegex!=params[1].getValue() &&  Compare.compare(regex.storedRegex,((TLStringValue)params[1]).getCharSequence())!=0){
@@ -1227,7 +1227,7 @@ public class StringLib extends TLFunctionLibrary {
          public TLValue execute(TLValue[] params, TLContext context) {
              RegexStore regex = (RegexStore) context.getContext();
              if (regex.pattern==null){
-             	regex.initRegex(params[1].toString(), ((TLStringValue)params[0]).getCharSequence(),true,new TLListValue());
+             	regex.initRegex(params[1].toString(), ((TLStringValue)params[0]).getCharSequence(),new TLListValue());
              }else{
              	// can we reuse pattern/matcher
              	if(regex.storedRegex!=params[1].getValue() &&  Compare.compare(regex.storedRegex,((TLStringValue)params[1]).getCharSequence())!=0){
@@ -1271,35 +1271,62 @@ public class StringLib extends TLFunctionLibrary {
 
  		@Override
  		public TLValue execute(TLValue[] params, TLContext context) {
-            RegexStore regex = (RegexStore) context.getContext();
-			String pattern = params.length > 1 ? params[1].getValue().toString() + "$" : "[\r\n]+$";
-            if (regex.pattern==null){
-            	regex.initRegex(pattern, ((TLStringValue)params[0]).getCharSequence(),true,new TLStringValue());
-            }else{
-            	// can we reuse pattern/matcher
-            	if(!regex.storedRegex.equals(pattern)){
-            		//we can't
-            		regex.resetPattern(pattern);
-            	}
-            	//            	 reset matcher
-                regex.resetMatcher(((TLStringValue)params[0]).getCharSequence());
-            }
-
+            TLValue val = (TLValue)context.getContext();
  			if (params[0].type != TLValueType.STRING || 
  					(params.length == 2 && params[1].type !=TLValueType.STRING)) {
  				throw new TransformLangExecutorRuntimeException(params,
  						"chop - wrong type of literal(s)");
- 			} else {
- 	            regex.result.setValue(regex.matcher.replaceAll(""));
+ 			} 
+ 			
+ 			
+			StringBuilder input = (StringBuilder)params[0].getValue();
+			StringBuilder output = (StringBuilder)val.getValue();
+			// erase the output value - this will also handle empty strings
+			output.setLength(0); 
+
+			// nothing to do for empty strings
+			if (input.length() != 0) {
+
+				// second parameter is pattern to chop from the end of the string
+ 				if (params.length > 1) {
+ 					output.append(input);
+					StringBuilder pattern = (StringBuilder) params[1].getValue();
+					int endIndex = input.length();
+					int startIndex = endIndex - pattern.length();
+					
+					if (startIndex < 0) {
+						// pattern is longer than our input -> no match
+						return val;
+					}
+					
+					if (input.substring(startIndex, endIndex).equals(pattern.toString())) {
+						output.setLength(startIndex);
+					}
+				} else {
+					int index = input.length()-1; // let's examine input from the end
+					boolean done = false;
+					while (index >= 0 && ! done) {
+						switch (input.charAt(index)) {
+						case '\r':
+						case '\n':
+							index--;
+							continue;
+						default:
+							done = true;
+							break;
+						}
+					}
+					
+					// index now points at the first non-newline character
+					output.append(input.substring(0, index+1));
+				}
  			}
- 			return regex.result;
+ 			return val;
  		}
 
  		@Override
  		public TLContext createContext() {
-            TLContext<RegexStore> context = new TLContext<RegexStore>();
-            context.setContext(new RegexStore());
-            return context;
+              return TLContext.createStringContext();
  		}
  	}
 
@@ -1492,9 +1519,9 @@ public class StringLib extends TLFunctionLibrary {
 	    public TLValue result;
 	    public StringBuffer strbuf;
 	    
-	    public void initRegex(String regex,CharSequence input,boolean initMatcher,TLValue value){
+	    public void initRegex(String regex,CharSequence input,TLValue value){
         	pattern=Pattern.compile(regex);
-        	if (initMatcher) matcher=pattern.matcher(input);
+        	matcher=pattern.matcher(input);
         	storedRegex=regex;
         	result=value;
         	strbuf=null;

@@ -159,7 +159,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String SIZE_ATTR = "size";
 	private static final String SKIP_FIRST_LINE_ATTR = "skipFirstLine";
 	private static final String AUTO_FILLING_ATTR = "auto_filling";
-	
+	public static final String CONNECTION_ATTR = "connection";
+		
 	private static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
 
 	  private static final String XSL_FORMATER

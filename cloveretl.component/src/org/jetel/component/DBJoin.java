@@ -406,7 +406,7 @@ public class DBJoin extends Node {
         }
         conn.init();
         
-        dbMetadata = getGraph().getDataRecordMetadata(metadataName);
+        dbMetadata = getGraph().getDataRecordMetadata(metadataName, true);
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
         DBLookupTable lookupTable;
