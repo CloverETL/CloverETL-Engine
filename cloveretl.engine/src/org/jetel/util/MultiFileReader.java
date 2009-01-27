@@ -196,8 +196,8 @@ public class MultiFileReader {
 		// next source
 		ReadableByteChannel stream = null;
 		while (channelIterator.hasNext()) {
-			autoFilling.setSourceCounter(0);
-			autoFilling.setGlobalSourceCounter(0);
+			autoFilling.resetSourceCounter();
+			autoFilling.resetGlobalSourceCounter();
 			try {
 				stream = channelIterator.next();
 				if (stream == null) continue; // if record no record found
