@@ -194,21 +194,17 @@ public class WcardPattern {
 	 * @return Set of matching filenames.
 	 * @throws IOException 
 	 */
-	public List<String> filenames() {
+	public List<String> filenames() throws IOException {
 		List<String> mfiles = new ArrayList<String>();
 		String fileName;
 		
 		// goes through filenames separated by ';'
 		for (int i = 0; i < patterns.size(); i++) {
 			fileName = patterns.get(i);
-			try {
-				// returns list of names for filename that can have a wild card '?' or '*'
-				for (FileStreamName fileStreamName: innerFileNames(fileName, false)) {
-					if (fileStreamName.getInputStream() != null) fileStreamName.getInputStream().close();
-					mfiles.add(fileStreamName.getFileName());
-				}
-			} catch (IOException e) { //the zip cannot work for zip:zip:....
-				mfiles.add(fileName);
+			// returns list of names for filename that can have a wild card '?' or '*'
+			for (FileStreamName fileStreamName: innerFileNames(fileName, false)) {
+				if (fileStreamName.getInputStream() != null) fileStreamName.getInputStream().close();
+				mfiles.add(fileStreamName.getFileName());
 			}
 		}
 		return mfiles;
@@ -229,8 +225,11 @@ public class WcardPattern {
 		String originalFileName = fileName;
 		Matcher matcher = FileUtils.getInnerInput(fileName);
 		String innerSource;
+		int iPreName = 0;
+		int iPostName = 0;
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
-			fileName = matcher.group(2) + matcher.group(3) + matcher.group(7);
+			iPreName = (matcher.group(2) + matcher.group(3)).length()+1;
+			iPostName = iPreName + innerSource.length();
 			fileStreamNames = innerFileNames(innerSource, outherPathNeedsInputStream || fileName.contains(WILD_QUESTION) || fileName.contains(WILD_STAR));
 		}
 		
@@ -239,6 +238,10 @@ public class WcardPattern {
 		StringBuilder sbInnerInput = new StringBuilder();
 		ArchiveType archiveType = FileUtils.getArchiveType(fileName, sbInnerInput, sbAnchor);
 		String anchor = sbAnchor.toString();
+		if (archiveType != null && iPreName == 0) {
+			iPreName = archiveType.name().length()+1;
+			iPostName = fileName.length() - anchor.length()-1;
+		}
 		fileName = sbInnerInput.toString();
 
         //open channels for all filenames
@@ -264,8 +267,10 @@ public class WcardPattern {
                 	// create list of new names generated from the anchor
                 	for (int i=0; lis == null || i<lis.size(); i++) {
                 		newFileStreamNames.add(
-                				new FileStreamName(originalFileName.replace(anchor, mfiles.get(i)), 
-                				lis.get(i)));
+                				new FileStreamName(
+                					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
+                						originalFileName.substring(iPostName)).replace(anchor, mfiles.get(i)), 
+                					lis.get(i)));
                 	}
             	} else {
             		// add original name
@@ -275,10 +280,12 @@ public class WcardPattern {
             // create gzip streams
             } else if (archiveType == ArchiveType.GZIP) {
             	//TODO
+            	return fileStreamNames;
             	
             // create tar streams
             } else if (archiveType == ArchiveType.TAR) {
             	//TODO
+            	return fileStreamNames;
             
             // return original names
             } else {
@@ -313,7 +320,7 @@ public class WcardPattern {
 		} else {
 			File dir;
 			try {
-				dir = parent != null ? new File(FileUtils.getFileURL(parent, dirName.toString()).toURI()) : new File(dirName.toString());
+				dir = parent != null ? new File(FileUtils.getFileURL(parent, dirName.toString()).getPath()) : new File(dirName.toString());
 			} catch (Exception e) {
 				dir = new File(dirName.toString());
 			} 
