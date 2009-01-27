@@ -1295,8 +1295,8 @@ public class XMLExtract extends Node {
 	private boolean nextSource() throws JetelException {
 		ReadableByteChannel stream = null; 
 		while (readableChannelIterator.hasNext()) {
-			autoFilling.setSourceCounter(0);
-			autoFilling.setGlobalSourceCounter(0);
+			autoFilling.resetSourceCounter();
+			autoFilling.resetGlobalSourceCounter();
 			stream = readableChannelIterator.next();
 			if (stream == null) continue; // if record no record found
 			autoFilling.setFilename(readableChannelIterator.getCurrentFileName());
