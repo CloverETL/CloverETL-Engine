@@ -196,19 +196,17 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		if (metadata == null) {
 			metadata = getGraph().getDataRecordMetadata(metadataId);
 		}		
-        if (metadata == null) {
-        	status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadataId) + 
-					" does not exist!!!", Severity.ERROR, this, Priority.NORMAL, XML_METADATA_ID));
-        }
 
-        if (startKey == null) {
+		if (startKey == null) {
 			startKey = new RecordKey(startFields, metadata);
 		}		
 		if (endKey == null) {
 			endKey = new RecordKey(endFields, metadata);
 		}		
 		RecordKey.checkKeys(startKey, XML_START_FIELDS, endKey, XML_END_FIELDS, status, this);
-		
+  		startKey = null;//we have to create it once again in init method after creating metadata from stub
+  		endKey = null;//we have to create it once again in init method after creating metadata from stub
+  	    	  		
 		if (startInclude == null) {
 			startInclude = new boolean[startFields.length];
 			Arrays.fill(startInclude, DEFAULT_START_INCLUDE);
@@ -242,7 +240,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		super.init();
 		
 		if (metadata == null) {
-			metadata = getGraph().getDataRecordMetadata(metadataId);
+			metadata = getGraph().getDataRecordMetadata(metadataId, true);
 		}
         if (metadata == null) {
         	throw new ComponentNotReadyException("Metadata " + StringUtils.quote(metadataId) + 
@@ -384,29 +382,29 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 				throw new AttributeNotFoundException(property);
 			}
 		}
-    	String type = properties.getProperty(XML_TYPE_ATTRIBUTE);
+    	String type = properties.getStringProperty(XML_TYPE_ATTRIBUTE);
     	if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_RANGE_LOOKUP)){
     		throw new GraphConfigurationException("Can't create range lookup table from type " + type);
     	}
-        String id = properties.getProperty(XML_ID_ATTRIBUTE);
-        String metadataString = properties.getProperty(XML_METADATA_ID);
-        String[] startFields = properties.getProperty(XML_START_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-        String[] endFields = properties.getProperty(XML_END_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+        String id = properties.getStringProperty(XML_ID_ATTRIBUTE);
+        String metadataString = properties.getStringProperty(XML_METADATA_ID);
+        String[] startFields = properties.getStringProperty(XML_START_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+        String[] endFields = properties.getStringProperty(XML_END_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
         RangeLookupTable lookupTable = new RangeLookupTable(id, metadataString, startFields, endFields);
         if (properties.containsKey(XML_NAME_ATTRIBUTE)){
-        	lookupTable.setName(properties.getProperty(XML_NAME_ATTRIBUTE));
+        	lookupTable.setName(properties.getStringProperty(XML_NAME_ATTRIBUTE));
         }
         lookupTable.setUseI18N(properties.getBooleanProperty(XML_USE_I18N, false));
 		if (properties.containsKey(XML_LOCALE)){
 			lookupTable.setLocale(XML_LOCALE);
 		}
 		if (properties.containsKey(XML_FILE_URL)){
-			lookupTable.setFileURL(properties.getProperty(XML_FILE_URL));
+			lookupTable.setFileURL(properties.getStringProperty(XML_FILE_URL));
 		}
-		lookupTable.setCharset(properties.getProperty(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
+		lookupTable.setCharset(properties.getStringProperty(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
 		boolean[] startInclude = null;
 		if (properties.containsKey(XML_START_INCLUDE)){
-			String[] sI = properties.getProperty(XML_START_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+			String[] sI = properties.getStringProperty(XML_START_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 			startInclude = new boolean[sI.length];
 			for (int i = 0; i < sI.length; i++) {
 				startInclude[i] = Boolean.parseBoolean(sI[i]);
@@ -414,7 +412,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		}
 		boolean[] endInclude = null;
 		if (properties.containsKey(XML_END_INCLUDE)){
-			String[] eI = properties.getProperty(XML_END_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+			String[] eI = properties.getStringProperty(XML_END_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 			endInclude = new boolean[eI.length];
 			for (int i = 0; i < eI.length; i++) {
 				endInclude[i] = Boolean.parseBoolean(eI[i]);
@@ -435,7 +433,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		lookupTable.setEndInclude(endInclude);
 		
         if (properties.containsKey(XML_DATA_ATTRIBUTE)) {
-        	lookupTable.setData(properties.getProperty(XML_DATA_ATTRIBUTE));
+        	lookupTable.setData(properties.getStringProperty(XML_DATA_ATTRIBUTE));
         }
 
         return lookupTable;

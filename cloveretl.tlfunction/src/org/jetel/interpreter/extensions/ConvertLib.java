@@ -840,6 +840,21 @@ public class ConvertLib extends TLFunctionLibrary {
         	TLValueType fromType = params[0].type;
         	TLValueType toType = params[1].type;
         	
+        	/*
+        	 * /*
+        	 * NOTE: try_convert function is wrong design as it passes its parameters by REFERENCE
+        	 * while all other functions pass them by VALUE.
+        	 * Additionally, TLBooleanValue is IMMUTABLE thus we cannot modify its internal
+        	 * value by setValue() call, instead we need to modify directly params[1] via assignment.
+        	 * However since parameters in CTL are passed by value, the result of assignment will never
+        	 * be read .... therefore we throw an exception when user tries convert to boolean.
+        	 * 
+        	 * FIXME: try_convert should be probably removed....
+        	 */
+        	if (toType == TLValueType.BOOLEAN) {
+        		throw new IllegalArgumentException("try_convert function is not capable of converting to " +TLValueType.BOOLEAN + " !");
+        	}
+        	
         	boolean canConvert = false;
         	if (fromType == toType) {
         		if (fromType == TLValueType.DECIMAL) {//check precision

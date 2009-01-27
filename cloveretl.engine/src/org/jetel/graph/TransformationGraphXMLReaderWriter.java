@@ -54,6 +54,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
+import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
@@ -393,10 +394,10 @@ public class TransformationGraphXMLReaderWriter {
                 }
 			}// metadata from analyzing DB table (JDBC) - will be resolved
 			// later during Edge init - just put stub now.
-			else if (attributes.exists("connection")){
-				IConnection connection = graph.getConnection(attributes.getString("connection"));
+			else if (attributes.exists(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR)){
+				IConnection connection = graph.getConnection(attributes.getString(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR));
 				if(connection == null) {
-					throw new XMLConfigurationException("Can't find Connection id - " + attributes.getString("connection") + ".");
+					throw new XMLConfigurationException("Can't find Connection id - " + attributes.getString(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR) + ".");
 				}
 				recordMetadata = new DataRecordMetadataStub(connection, attributes.attributes2Properties(null));
 			} // probably metadata inserted directly into graph

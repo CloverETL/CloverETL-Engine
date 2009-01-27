@@ -127,7 +127,7 @@ public abstract class TLValue implements Comparable<TLValue>{
         case BYTE:
         	return new TLByteArrayValue();
         case BOOLEAN:
-            return new TLBooleanValue();
+            return TLBooleanValue.getInstance(false);
         case LIST:
             return new TLListValue();
         case MAP:

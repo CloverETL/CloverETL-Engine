@@ -202,7 +202,7 @@ public class WcardPattern {
 			} else {
 				File dir;
 				try {
-					dir = parent != null ? new File(FileUtils.getFileURL(parent, dirName.toString()).toURI()) : new File(dirName.toString());
+					dir = parent != null ? new File(FileUtils.getFileURL(parent, dirName.toString()).getPath()) : new File(dirName.toString());
 				} catch (Exception e) {
 					dir = new File(dirName.toString());
 				} 

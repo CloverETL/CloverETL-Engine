@@ -26,6 +26,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -55,6 +56,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -577,10 +579,15 @@ public class MysqlDataWriter extends Node {
     }
     
     private File openFile(String fileURL) throws ComponentNotReadyException {
-    	if (!new File(fileURL).exists()) {
-			free();
-			throw new ComponentNotReadyException(this, 
-					"Data file " + StringUtils.quote(fileURL) + " not exists.");
+    	try {
+			if (!FileUtils.isServerURL(FileUtils.getInnerAddress(fileURL)) && 
+					!(new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL))).exists()) {
+				free();
+				throw new ComponentNotReadyException(this, 
+						"Data file " + StringUtils.quote(fileURL) + " not exists.");
+			}
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(this, e);
 		}
 		return new File(fileURL);
     }

@@ -777,7 +777,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 				return null;
 			}
 
-			if (node.value == null) {
+			if (node.value == null  || node.field.getMetadata().getType() == DataFieldMetadata.BOOLEAN_FIELD) {
+				// since TLBooleanValue is immutable, we have to pass correct reference
 				node.value = TLValue.convertValue(node.field);
 			} else {
 				node.value.setValue(node.field);
@@ -1256,7 +1257,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             value = new TLDateValue();
             break;
         case BOOLEAN_VAR:
-            value = new TLBooleanValue();
+            value = TLBooleanValue.getInstance(false);
             break;
         case BYTE_VAR:
         {
@@ -1289,7 +1290,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         case RECORD_VAR:
         	DataRecordMetadata metadata =null;
         	try{
-        		metadata = graph.getDataRecordMetadata(node.metadataId);
+        		metadata = graph.getDataRecordMetadata(node.metadataId, true);
         	}catch(Exception ex){
         		throw new TransformLangExecutorRuntimeException(node,"error in Record declaration",ex);
         	}

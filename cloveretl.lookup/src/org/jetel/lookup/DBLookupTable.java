@@ -183,7 +183,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		}
 		
 		if (metadataId != null) {
-			dbMetadata = getGraph().getDataRecordMetadata(metadataId);
+			dbMetadata = getGraph().getDataRecordMetadata(metadataId, true);
 		}
 		
     }
@@ -211,17 +211,17 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 			}
 		}
         
-    	String type = properties.getProperty(XML_TYPE_ATTRIBUTE);
+    	String type = properties.getStringProperty(XML_TYPE_ATTRIBUTE);
     	if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_DB_LOOKUP)){
     		throw new GraphConfigurationException("Can't create db lookup table from type " + type);
     	}
     	
         DBLookupTable lookupTable = new DBLookupTable(properties.getProperty(XML_ID_ATTRIBUTE), 
-        		properties.getProperty(XML_DBCONNECTION), properties.getProperty(XML_METADATA_ID), 
-        		properties.getProperty(XML_SQL_QUERY));
+        		properties.getStringProperty(XML_DBCONNECTION), properties.getStringProperty(XML_METADATA_ID), 
+        		properties.getStringProperty(XML_SQL_QUERY));
         
         if (properties.containsKey(XML_NAME_ATTRIBUTE)){
-        	lookupTable.setName(properties.getProperty(XML_NAME_ATTRIBUTE));
+        	lookupTable.setName(properties.getStringProperty(XML_NAME_ATTRIBUTE));
         }
         
         if(properties.containsKey(XML_LOOKUP_MAX_CACHE_SIZE)) {

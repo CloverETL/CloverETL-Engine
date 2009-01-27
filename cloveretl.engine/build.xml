@@ -12,12 +12,6 @@
 	  </classpath>
 	</taskdef>
 	    	
-	<!-- =========================== VERSIONs =========================== -->
-	<tstamp>
-		<format property="TODAY" pattern="dd/MM/yyyy HH:mm:ss" locale="en" />
-	</tstamp>
-	<property name="build.number" value="devel"/>
-	
 	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
 	<property name="dir.build-scripts" value="${basedir}/build-scripts"/>
 	<property name="dir.src" value="${basedir}/src"/>
@@ -51,6 +45,26 @@
 	<!--load external properties-->
 	<property file="build.properties"/>
 		
+	<!-- =========================== VERSIONs =========================== -->
+	<property name="version" value="${cloverEngineVersion}"/>
+    <propertyregex property="major_version"
+              input="${version}"
+	          regexp="([^\.]*)\.([^\.]*)\.([^\.]*)(.*)"
+              select="\1" />
+    <propertyregex property="minor_version"
+              input="${version}"
+              regexp="([^\.]*)\.([^\.]*)\.([^\.]*)(.*)"
+              select="\2" />
+    <propertyregex property="revision_version"
+              input="${version}"
+              regexp="([^\.]*)\.([^\.]*)\.([^\.]*)(.*)"
+              select="\3" />
+	<tstamp>
+		<format property="TODAY" pattern="dd/MM/yyyy HH:mm:ss" locale="en" />
+	</tstamp>
+	<property name="build.number" value="devel"/>
+	
+	<!-- =========================== PATHS ============================= -->
 	<path id="all.sources">
 		<pathelement path="${dir.src}" />
 		<pathelement path="../cloveretl.component/src" />
@@ -412,6 +426,12 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 	</target>
 
 	<target name="init">
+		<echo>
+			version=${version}
+			major_version=${major_version}
+			minor_version=${minor_version}
+			revision_version=${revision_version}
+		</echo>
 		<mkdir dir="${dir.build}"/>
 
 		<echo message="Using directory for classes: ${dir.bin}"/> 

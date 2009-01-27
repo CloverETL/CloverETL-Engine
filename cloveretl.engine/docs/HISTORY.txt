@@ -7,6 +7,27 @@
 	- NYSIIS
 +  DBExecute can read statements from input port
 
+REL 2-6-1
+---------
+
+Features:
++ extend OracleDataWriter to allows setting of other parameters of sqlldr utility
++ JDBC specific for Sybase database was added
+
+Fixed:
++ second paratemer of split CTL function doesn't need to be constant
++ both keyword 'number' and 'numeric' can be used for decimal floating point metadata field
++ added format parameter to Num2String function to enable formatting numbers in CTL
++ CTL function dateadd() accepts data record fields as a parameter (not only constants)
++ EdgeBase.hasData() method was updated so the EOF flag in the edge is recognised as a piece of data
+	- SimpleGather component now works well with all edge types (including phase edge type)
++ LookupJoin and SequenceChecker components have correct reset functionality
++ fix in free method for XLSWriter, StructureWriter and TextTableWriter components 
++ problems with stored procedures in Oracle are solved
++ all build scripts are UTF-8 compliant
++ XmlXPathReaderu component accepts xml input with default namespace
++ HISTORY.txt updated for minor release 2.6.1
+
 REL 2-6-0
 ---------
 

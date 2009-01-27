@@ -2169,11 +2169,8 @@ public class InterpreterTest extends CloverTestCase {
         		"print_result(d1,d2,null);\n" +
         		"d2 = 75.32;\n" +
         		"print_result(d2,d1,null);\n" +
-        		"boolean b;\n" +
-        		"print_result(1,b,null);\n" +
+        		"boolean b=true;\n" +
         		"print_result(b,d2,null);\n" +
-        		"boolean b1;\n" +
-        		"print_result('prawda',b1,null);\n" +
         		"string curr;\n" +
         		"print_result(1247,curr,'¤###,000.00');\n" +
         		"string ns;\n" +
@@ -2225,13 +2222,22 @@ public class InterpreterTest extends CloverTestCase {
 
     public void test_string_functions(){
 		System.out.println("\nString functions test:");
-		String expStr = "string s1=chop(\"hello\\n\");\n" +
-						"string s6=chop(\"hello\\r\");\n" +
-						"string s5=chop(\"hello\\n\\n\");\n" +
+		final String expStr = 
+						"string s1=chop(\"hello\\n\");\n" +
 						"string s2=chop(\"hello\\r\\n\");\n" +
-						"string s7=chop(\"hello\\nworld\\r\\n\");\n" +
 						"string s3=chop(\"hello world\",'world');\n" +
 						"string s4=chop(\"hello world\",' world');\n" +
+						"string s5=chop(\"hello\\n\\n\");\n" +
+						"string s6=chop(\"hello\\r\");\n" +
+						"string s7=chop(\"hello\\nworld\\r\\n\");\n" +
+						"string s8=chop(\"hello world\",'wo');\n" +
+						"string s9=chop(\"\");\n" + // empty string
+						"string s10=chop(\"\\n\");\n" + // UNIX
+						"string s11=chop(\"\\r\");\n" + // MAC
+						"string s12=chop(\"\\r\\n\");\n" +  // WINDOWS
+						"string s13=chop(\"\",'wo');\n" + 
+						"string s14=chop(\"hello world\",'hello world');\n" +
+						"string s15=chop(\"hello\",'hello world');\n" +
 						"int dist = edit_distance('agata','ahata');\n"+
 						"int dist1 = edit_distance('agata','agatą');\n"+ 
 						"int dist2 = edit_distance('agata','agatą'," + StringAproxComparator.SECONDARY + ");\n"+ 
@@ -2273,6 +2279,14 @@ public class InterpreterTest extends CloverTestCase {
 			      assertEquals("s7","hello\nworld",executor.getGlobalVariable(parser.getGlobalVariableSlot("s7")).getTLValue().getValue().toString());
 			      assertEquals("s3","hello ",executor.getGlobalVariable(parser.getGlobalVariableSlot("s3")).getTLValue().getValue().toString());
 			      assertEquals("s4","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s4")).getTLValue().getValue().toString());
+			      assertEquals("s8","hello world",executor.getGlobalVariable(parser.getGlobalVariableSlot("s8")).getTLValue().getValue().toString());
+			      assertEquals("s9","",executor.getGlobalVariable(parser.getGlobalVariableSlot("s9")).getTLValue().getValue().toString());
+			      assertEquals("s10","",executor.getGlobalVariable(parser.getGlobalVariableSlot("s10")).getTLValue().getValue().toString());
+			      assertEquals("s11","",executor.getGlobalVariable(parser.getGlobalVariableSlot("s11")).getTLValue().getValue().toString());
+			      assertEquals("s12","",executor.getGlobalVariable(parser.getGlobalVariableSlot("s12")).getTLValue().getValue().toString());
+			      assertEquals("s13","",executor.getGlobalVariable(parser.getGlobalVariableSlot("s13")).getTLValue().getValue().toString());
+			      assertEquals("s14","",executor.getGlobalVariable(parser.getGlobalVariableSlot("s14")).getTLValue().getValue().toString());
+			      assertEquals("s15","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s15")).getTLValue().getValue().toString());
 			      assertEquals("dist",1,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist")).getTLValue().getNumeric().getInt());
 			      assertEquals("dist1",1,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist1")).getTLValue().getNumeric().getInt());
 			      assertEquals("dist2",0,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist2")).getTLValue().getNumeric().getInt());

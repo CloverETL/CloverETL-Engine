@@ -130,7 +130,8 @@ public interface InputPort {
     public long getInputByteCounter();
 	
 	/**
-	 * Method which tests whether data is awaiting/ready to be read
+	 * Method which tests whether data (including EOF flag) is awaiting/ready to be read.
+	 * Following read operation should not block, nonetheless can return null as EOF flag.
 	 * 
 	 * @return True if read operation won't block due to lack of data
 	 */

@@ -171,7 +171,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		super.init();
 
 		if (metadata == null) {
-			metadata = getGraph().getDataRecordMetadata(metadataName);
+			metadata = getGraph().getDataRecordMetadata(metadataName, true);
 		}		
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata " + StringUtils.quote(metadataName) + 
@@ -260,7 +260,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 				throw new AttributeNotFoundException(property);
 			}
 		}
-    	String type = properties.getProperty(XML_TYPE_ATTRIBUTE);
+    	String type = properties.getStringProperty(XML_TYPE_ATTRIBUTE);
     	if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_SIMPLE_LOOKUP)){
     		throw new GraphConfigurationException("Can't create simple lookup table from type " + type);
     	}
@@ -372,11 +372,6 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		if (metadata == null) {
 			metadata = getGraph().getDataRecordMetadata(metadataName);
 		}		
-        if (metadata == null) {
-        	status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadataName) + 
-					" does not exist!!!", Severity.ERROR, this, Priority.NORMAL, XML_METADATA_ID));
-        }
-        
         if (indexKey == null) {
         	indexKey = new RecordKey(keys, metadata);
         }
@@ -384,6 +379,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     		indexKey.init();
     	}catch(NullPointerException e) {
     		status.add(new ConfigurationProblem("Key metadata are null.",Severity.WARNING, this, Priority.NORMAL, XML_LOOKUP_KEY ));
+    		indexKey = null;//we have to create it once again in init method after creating metadata from stub
     	}catch(RuntimeException e) {
     		status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_LOOKUP_KEY));
     	}
