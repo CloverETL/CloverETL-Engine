@@ -24,10 +24,12 @@ public class AutoFilling {
     private static final String DEFAULT_VALUE = "default_value";
     public static final String ERROR_CODE = "ErrCode";
     public static final String ERROR_MESSAGE = "ErrText";
+    private static final String ROW_TIMESTAMP = "row_timestamp";
+    private static final String READER_TIMESTAMP = "reader_timestamp";
     
     // names of functions for gui
     public static final String[] AUTOFILLING = new String[] {DEFAULT_VALUE, GLOBAL_ROW_COUNT, SOURCE_ROW_COUNT, METADATA_ROW_COUNT, 
-    	METADATA_SOURCE_ROW_COUNT, SOURCE_NAME, SOURCE_TIMESTAMP, SOURCE_SIZE, ERROR_CODE, ERROR_MESSAGE};
+    	METADATA_SOURCE_ROW_COUNT, SOURCE_NAME, SOURCE_TIMESTAMP, SOURCE_SIZE, ROW_TIMESTAMP, READER_TIMESTAMP, ERROR_CODE, ERROR_MESSAGE};
     
     // autofilling for metadata
     private Map<DataRecordMetadata, AutoFillingData> autoFillingMap = new HashMap<DataRecordMetadata, AutoFillingData>();
@@ -39,6 +41,7 @@ public class AutoFilling {
 	private int globalCounter; //number of returned records
 	private int sourceCounter; //number of returned records in one source
     private String filename;
+    private Date readerTimestamp;
 
     // data object
 	private static class AutoFillingData {
@@ -48,6 +51,8 @@ public class AutoFilling {
 	    private int[] sourceTimestamp;
 	    private int[] sourceSize;
 	    private int[] defaultValue;
+	    private int[] rowTimestamp;
+	    private int[] readerTimestamp;
 
 	    private int counter; // number of returned records for one metadata
 	    private int[] metadataRowCount;
@@ -61,7 +66,13 @@ public class AutoFilling {
 	 * @param metadata
 	 */
     public void addAutoFillingFields(DataRecordMetadata metadata) {
+    	// create and put new autofilling
         autoFillingMap.put(metadata, createAutoFillingFields(metadata));
+        
+        // creates a timestamp for a corresponding reader
+        if (readerTimestamp == null) {
+        	readerTimestamp = new Date();
+        }
     }
 
     /**
@@ -79,6 +90,8 @@ public class AutoFilling {
         int[] sourceTimestampTmp = new int[numFields];
         int[] sourceSizeTmp = new int[numFields];
         int[] defaultValueTmp = new int[numFields];
+        int[] rowTimestampTmp = new int[numFields];
+        int[] readerTimestampTmp = new int[numFields];
         AutoFillingData data = new AutoFillingData();
         int globalRowCountLen = 0;
         int sourceNameLen = 0;
@@ -88,6 +101,8 @@ public class AutoFilling {
 	    int sourceRowCountLen = 0;
 	    int metadataRowCountLen = 0;
 	    int metadataSourceRowCountLen = 0;
+        int rowTimestampLen = 0;
+        int readerTimestampLen = 0;
         for (int i=0; i<numFields; i++) {
         	if (metadata.getField(i).getAutoFilling() != null) {
         		if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(GLOBAL_ROW_COUNT)) globalRowCountTmp[globalRowCountLen++] = i;
@@ -98,6 +113,8 @@ public class AutoFilling {
         		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(SOURCE_TIMESTAMP)) sourceTimestampTmp[sourceTimestampLen++] = i;
         		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(SOURCE_SIZE)) sourceSizeTmp[sourceSizeLen++] = i;
         		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(DEFAULT_VALUE)) defaultValueTmp[defaultLen++] = i;
+        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(ROW_TIMESTAMP)) rowTimestampTmp[rowTimestampLen++] = i;
+        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(READER_TIMESTAMP)) readerTimestampTmp[readerTimestampLen++] = i;
         	}
         }
         data.globalRowCount = new int[globalRowCountLen];
@@ -108,6 +125,8 @@ public class AutoFilling {
         data.sourceTimestamp = new int[sourceTimestampLen];
         data.sourceSize = new int[sourceSizeLen];
         data.defaultValue = new int[defaultLen];
+        data.rowTimestamp = new int[rowTimestampLen];
+        data.readerTimestamp = new int[readerTimestampLen];
         // reduce arrays' sizes
         System.arraycopy(globalRowCountTmp, 0, data.globalRowCount, 0, globalRowCountLen);
         System.arraycopy(sourceRowCountTmp, 0, data.sourceRowCount, 0, sourceRowCountLen);
@@ -117,7 +136,9 @@ public class AutoFilling {
         System.arraycopy(sourceTimestampTmp, 0, data.sourceTimestamp, 0, sourceTimestampLen);
         System.arraycopy(sourceSizeTmp, 0, data.sourceSize, 0, sourceSizeLen);
         System.arraycopy(defaultValueTmp, 0, data.defaultValue, 0, defaultLen);
-        
+        System.arraycopy(rowTimestampTmp, 0, data.rowTimestamp, 0, rowTimestampLen);
+        System.arraycopy(readerTimestampTmp, 0, data.readerTimestamp, 0, readerTimestampLen);
+
         return data;
     }
 
@@ -158,6 +179,12 @@ public class AutoFilling {
        	for (int i : autoFillingData.defaultValue) {
        		rec.getField(i).setToDefaultValue();
        	}
+       	for (int i : autoFillingData.rowTimestamp) {
+       		rec.getField(i).setValue(new Date());
+       	}
+       	for (int i : autoFillingData.readerTimestamp) {
+       		rec.getField(i).setValue(readerTimestamp);
+       	}
         globalCounter++;
         sourceCounter++;
         autoFillingData.counter++;
@@ -174,40 +201,72 @@ public class AutoFilling {
 		autoFillingData = null;
 	}
 
-	public void setSourceCounter(int i) {
+	/**
+	 * Sets source counter to 0.
+	 */
+	public void resetSourceCounter() {
 		for (Object autoFillingData : autoFillingMap.entrySet()) {
 			((AutoFillingData)((Entry<?, ?>)autoFillingData).getValue()).sourceCounter = 0;
 		}
 	}
 
-	public void setGlobalSourceCounter(int i) {
+	/**
+	 * Sets global source counter to 0.
+	 */
+	public void resetGlobalSourceCounter() {
 		sourceCounter=0;
 	}
 
+	/**
+	 * Sets file or source size for a current source.
+	 * @param fileSize
+	 */
 	public void setFileSize(long fileSize) {
 		this.fileSize = fileSize;
 	}
 
+	/**
+	 * Sets file or source time stamp for a current source.
+	 * @param fileTimestamp
+	 */
 	public void setFileTimestamp(Date fileTimestamp) {
 		this.fileTimestamp = fileTimestamp;
 	}
 
+	/**
+	 * Adds 1 to the global counter.
+	 */
 	public void incGlobalCounter() {
 		globalCounter++;
 	}
 
+	/**
+	 * Gets global counter.
+	 * @return
+	 */
 	public final int getGlobalCounter() {
 		return globalCounter;
 	}
 
+	/**
+	 * Adds 1 to the source counter.
+	 */
 	public void incSourceCounter() {
 		sourceCounter++;
 	}
 
+	/**
+	 * Gets a file or source name.
+	 * @return
+	 */
 	public String getFilename() {
 		return filename;
 	}
 
+	/**
+	 * Sets a file or source name.
+	 * @param filename
+	 */
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
