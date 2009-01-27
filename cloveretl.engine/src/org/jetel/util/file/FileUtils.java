@@ -19,6 +19,7 @@
 */
 package org.jetel.util.file;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,6 +49,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
+import org.jetel.enums.ArchiveType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.MultiOutFile;
 import org.jetel.util.protocols.ftp.FTPStreamHandler;
@@ -56,7 +58,6 @@ import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 
 import sun.misc.BASE64Encoder;
 
-import com.ice.tar.TarArchive;
 import com.ice.tar.TarEntry;
 import com.ice.tar.TarInputStream;
 import com.jcraft.jsch.ChannelSftp;
@@ -226,44 +227,29 @@ public class FileUtils {
 	 * @throws IOException
 	 */
     public static InputStream getInputStream(URL contextURL, String input) throws IOException {
-        String anchor = null;
-        URL url = null;
-        InputStream innerStream = null;
-		boolean isZip = false;
-		boolean isGzip = false;
-		boolean isFile = false;
-		boolean isTar = false;
-        
-		// get inner source
-		Matcher matcher = getInnerInput(input);
-		String innerSource;
-		if (matcher != null && (innerSource = matcher.group(5)) != null) {
-			innerStream = getInputStream(null, innerSource);
-//			innerStream = Channels.newInputStream(getReadableChannel(null, innerSource));
-			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
-		}
-		
 		// std input (console)
 		if (input.equals(STD_SOURCE)) {
 			return System.in;
 		}
+
+        // get inner source
+		Matcher matcher = getInnerInput(input);
+		String innerSource;
+        InputStream innerStream = null;
+		if (matcher != null && (innerSource = matcher.group(5)) != null) {
+			innerStream = getInputStream(null, innerSource);
+			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
+		}
 		
-        //resolve url format for zip files
-        if((isZip = input.startsWith("zip:")) || (isTar = input.startsWith("tar:"))) {
-            if(!input.contains("#")) { //url is given without anchor - later is returned channel from first zip entry 
-                anchor = null;
-            	input = input.substring(input.indexOf(':') + 1);
-            } else {
-                anchor = input.substring(input.lastIndexOf('#') + 1);
-                input = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
-            }
-        }
-        else if (input.startsWith("gzip:")) {
-        	isGzip = true;
-        	input = input.substring(input.indexOf(':') + 1);
-        }
+		// get archive type
+		StringBuilder sbAnchor = new StringBuilder();
+		StringBuilder sbInnerInput = new StringBuilder();
+		ArchiveType archiveType = getArchiveType(input, sbInnerInput, sbAnchor);
+		input = sbInnerInput.toString();
 
         //open channel
+        URL url = null;
+        boolean isFile = false;
         if (innerStream == null) {
         	url = FileUtils.getFileURL(contextURL, input);
         	isFile = url.getProtocol().equals("file");
@@ -271,43 +257,118 @@ public class FileUtils {
         }
 
         // create archive streams
-        if (isZip) { 
-        	return getZipInputStream(innerStream, anchor);
-        } else if (isGzip) {
+        if (archiveType == ArchiveType.ZIP) {
+        	List<InputStream> lIs = getZipInputStreamsInner(innerStream, sbAnchor.toString(), 0, null);
+        	return lIs.size() > 0 ? lIs.get(0) : null;
+        } else if (archiveType == ArchiveType.GZIP) {
             return new GZIPInputStream(innerStream, Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
-        } else if (isTar) {
-        	return getTarInputStream(innerStream, anchor);
+        } else if (archiveType == ArchiveType.TAR) {
+        	return getTarInputStream(innerStream, sbAnchor.toString());
         }
         
+    	// creates file input stream for incremental reading (random access file)
         if (isFile) {
         	return new FileInputStream(url.getFile());
-//            RandomAccessFile raf = new RandomAccessFile(url.getFile()/*pridani kontextu*//*input*/, "r");
-//        	return raf.getChannel();
         }
         return innerStream;
     }
 
     /**
-     * Creates zip input stream.
+     * Gets archive type.
+     * @param input - input file
+     * @param innerInput - output parameter
+     * @param anchor - output parameter
+     * @return
+     */
+    public static ArchiveType getArchiveType(String input, StringBuilder innerInput, StringBuilder anchor) {
+    	// result value
+    	ArchiveType archiveType = null;
+    	
+        //resolve url format for zip files
+    	if (input.startsWith("zip:")) archiveType = ArchiveType.ZIP;
+    	else if (input.startsWith("tar:")) archiveType = ArchiveType.ZIP;
+    	else if (input.startsWith("gzip:")) archiveType = ArchiveType.GZIP;
+    	
+    	// parse the archive
+        if((archiveType == ArchiveType.ZIP) || (archiveType == ArchiveType.TAR)) {
+            if(!input.contains("#")) { //url is given without anchor - later is returned channel from first zip entry 
+                anchor = null;
+                innerInput.append(input.substring(input.indexOf(':') + 1));
+            } else {
+                anchor.append(input.substring(input.lastIndexOf('#') + 1));
+                innerInput.append(input.substring(input.indexOf(':') + 1, input.lastIndexOf('#')));
+            }
+        }
+        else if (archiveType == ArchiveType.GZIP) {
+        	innerInput.append(input.substring(input.indexOf(':') + 1));
+        }
+        
+        // if doesn't exist inner input, inner input is input
+        if (innerInput.length() == 0) innerInput.append(input);
+        
+        return archiveType;
+    }
+    
+    /**
+     * Creates a zip input stream.
      * @param innerStream
      * @param anchor
+     * @param resolvedAnchors - output parameter
      * @return
      * @throws IOException
      */
-    private static InputStream getZipInputStream(InputStream innerStream, String anchor) throws IOException {
+    public static List<InputStream> getZipInputStreams(InputStream innerStream, String anchor, List<String> resolvedAnchors) throws IOException {
+    	return getZipInputStreamsInner(innerStream, anchor, 0, resolvedAnchors);
+    }
+
+    /**
+     * Creates a zip input stream.
+     * @param innerStream
+     * @param anchor
+     * @param matchFilesFrom
+     * @param resolvedAnchors
+     * @return
+     * @throws IOException
+     */
+    private static List<InputStream> getZipInputStreamsInner(InputStream innerStream, String anchor, 
+    		int matchFilesFrom, List<String> resolvedAnchors) throws IOException {
+    	List<InputStream> streams = new ArrayList<InputStream>();
+    	
         //resolve url format for zip files
+    	if (!innerStream.markSupported()) {
+    		innerStream = new BufferedInputStream(innerStream);
+    	}
+		innerStream.mark(Integer.MAX_VALUE);
+    	
         ZipInputStream zin = new ZipInputStream(innerStream) ;     
         ZipEntry entry;
+        Pattern WILDCARD_PATTERS = Pattern.compile(anchor.replaceAll("\\.", "\\\\.").replaceAll("\\?", "\\.").replaceAll("\\*", ".*"));
+        Matcher matcher;
+
+        int iMatched = 0;
         while((entry = zin.getNextEntry()) != null) {
             if(anchor == null) { //url is given without anchor; first entry in zip file is used
-                return zin;
+            	streams.add(zin);
+            	return streams;
             }
             if(entry.getName().equals(anchor)) {
-                return zin;
+            	streams.add(zin);
+            	return streams;
+            }
+       		matcher = WILDCARD_PATTERS.matcher(entry.getName());
+       		if (matcher.find() && iMatched++ == matchFilesFrom) {
+            	streams.add(zin);
+            	if (resolvedAnchors != null) resolvedAnchors.add(entry.getName());
+            	innerStream.reset();
+            	streams.addAll(getZipInputStreamsInner(innerStream, anchor, ++matchFilesFrom, resolvedAnchors));
+            	innerStream.reset();
+            	return streams;
             }
             //finish up with entry
             zin.closeEntry();
         }
+        if (matchFilesFrom > 0 || streams.size() > 0) return streams;
+        
         //close the archive
         zin.close();
         //no channel found report
@@ -347,7 +408,13 @@ public class FileUtils {
         }
     }
     
-    private static InputStream getAuthorizedStream(URL url) throws IOException {
+    /**
+     * Creates an authorized stream.
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    public static InputStream getAuthorizedStream(URL url) throws IOException {
         URLConnection uc = url.openConnection();
         // check autorization
         if (url.getUserInfo() != null) {
@@ -399,43 +466,30 @@ public class FileUtils {
 	 * @return
 	 * @throws IOException
 	 */
-	public static OutputStream getOutputStream(URL contextURL, String input, boolean appendData, int compressLevel) 
-			throws IOException {
-        String zipAnchor = null;
-		boolean isZip = false;
-		boolean isGzip = false;
-		boolean isFtp = false;
-        OutputStream os = null;
-		
-		// get inner source
-		Matcher matcher = getInnerInput(input);
-		String innerSource;
-		if (matcher != null && (innerSource = matcher.group(5)) != null) {
-			os = getOutputStream(null, innerSource, appendData, compressLevel);
-			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
-		}
+	public static OutputStream getOutputStream(URL contextURL, String input, boolean appendData, int compressLevel)	
+		throws IOException {
 		
 		// std input (console)
 		if (input.equals(STD_SOURCE)) {
 			return System.out;
 		}
 		
-		// prepare string/path to output file
-		if(input.startsWith("zip:")) {
-	        //resolve url format for zip files
-			isZip = true;
-            if(input.contains("#")) {
-                zipAnchor = input.substring(input.lastIndexOf('#') + 1);
-                input = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
-            } else {
-            	input = input.substring(input.indexOf(':') + 1);
-                zipAnchor = "default_output";
-            }
-        } else if(input.startsWith("gzip:")) {
-            //resolve url format for gzip files
-    		isGzip = true;
-    		input = input.substring(5);
-        } 
+		// get inner source
+		Matcher matcher = getInnerInput(input);
+		String innerSource;
+        OutputStream os = null;
+		if (matcher != null && (innerSource = matcher.group(5)) != null) {
+			os = getOutputStream(null, innerSource, appendData, compressLevel);
+			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
+		}
+		
+		// get archive type
+		StringBuilder sbAnchor = new StringBuilder();
+		StringBuilder sbInnerInput = new StringBuilder();
+		ArchiveType archiveType = getArchiveType(input, sbInnerInput, sbAnchor);
+		input = sbInnerInput.toString();
+		
+		boolean isFtp = false;
 		if (input.startsWith("ftp") || input.startsWith("sftp") || input.startsWith("scp")) {
         	isFtp = true;
         }
@@ -460,19 +514,20 @@ public class FileUtils {
 		
 		// create writable channel
 		// zip channel
-		if(isZip) {
+		if(archiveType == ArchiveType.ZIP) {
 			// resolve url format for zip files
 			ZipOutputStream zout = new ZipOutputStream(os);
 			if (compressLevel != -1) {
 				zout.setLevel(compressLevel);
 			}
-			ZipEntry entry = new ZipEntry(zipAnchor);
+			String anchor = sbAnchor.toString();
+			ZipEntry entry = new ZipEntry(anchor.equals("") ? "default_output" : anchor);
 			zout.putNextEntry(entry);
 			return zout;
         } 
 		
 		// gzip channel
-		else if (isGzip) {
+		else if (archiveType == ArchiveType.GZIP) {
             GZIPOutputStream gzos = new GZIPOutputStream(os, Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
             return gzos;
         } 
