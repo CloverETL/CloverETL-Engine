@@ -68,11 +68,6 @@ public class AutoFilling {
     public void addAutoFillingFields(DataRecordMetadata metadata) {
     	// create and put new autofilling
         autoFillingMap.put(metadata, createAutoFillingFields(metadata));
-        
-        // creates a timestamp for a corresponding reader
-        if (readerTimestamp == null) {
-        	readerTimestamp = new Date();
-        }
     }
 
     /**
@@ -179,11 +174,11 @@ public class AutoFilling {
        	for (int i : autoFillingData.defaultValue) {
        		rec.getField(i).setToDefaultValue();
        	}
+       	for (int i : autoFillingData.readerTimestamp) {
+       		rec.getField(i).setValue(readerTimestamp == null ? readerTimestamp = new Date() : readerTimestamp);
+       	}
        	for (int i : autoFillingData.rowTimestamp) {
        		rec.getField(i).setValue(new Date());
-       	}
-       	for (int i : autoFillingData.readerTimestamp) {
-       		rec.getField(i).setValue(readerTimestamp);
        	}
         globalCounter++;
         sourceCounter++;
