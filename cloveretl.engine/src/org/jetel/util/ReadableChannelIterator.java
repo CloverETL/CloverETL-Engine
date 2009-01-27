@@ -127,7 +127,11 @@ public class ReadableChannelIterator {
 		WcardPattern pat = new WcardPattern();
 		pat.setParent(contextURL);
         pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-        files = pat.filenames();
+        try {
+			files = pat.filenames();
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(e);
+		}
         firstPortProtocolPosition = getFirstProtocolPosition(files, PORT);
         firstDictProtocolPosition = getFirstProtocolPosition(files, DICT);
 		if (firstPortProtocolPosition >= 0 && inputPort == null) throw new ComponentNotReadyException("Input port is not defined for '" + files.get(firstPortProtocolPosition) + "'.");

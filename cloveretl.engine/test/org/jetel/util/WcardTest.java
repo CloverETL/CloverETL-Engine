@@ -19,6 +19,8 @@
 */
 package org.jetel.util;
 
+import java.io.IOException;
+
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.file.WcardPattern;
 
@@ -42,7 +44,11 @@ public class WcardTest extends CloverTestCase {
     	fgen.addPattern("/etc/fstab");
     	fgen.addPattern("/etc/*tab*");
     	fgen.addPattern("/?????*");
-        System.out.println(fgen.filenames().toString());
+        try {
+			System.out.println(fgen.filenames().toString());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
     
     protected void tearDown(){
