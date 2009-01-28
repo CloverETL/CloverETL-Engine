@@ -357,7 +357,7 @@ public class FileUtils {
 
         // find entries
         int iMatched = 0;
-        while((entry = zin.getNextEntry()) != null) {
+        while((entry = zin.getNextEntry()) != null) {	// zin is changing -> recursion !!!
             // wild cards
             if (bWildsCardedAnchor) {
            		matcher = WILDCARD_PATTERS.matcher(entry.getName());
@@ -443,7 +443,7 @@ public class FileUtils {
 
         // find entries
         int iMatched = 0;
-        while((entry = tin.getNextEntry()) != null) {
+        while((entry = tin.getNextEntry()) != null) {	// tin is changing -> recursion !!!
             // wild cards
             if (bWildsCardedAnchor) {
            		matcher = WILDCARD_PATTERS.matcher(entry.getName());
