@@ -322,7 +322,7 @@ public class FileUtils {
     }
 
     /**
-     * Creates a zip input stream.
+     * Creates list of zip input streams.
      * @param innerStream
      * @param anchor
      * @param matchFilesFrom
@@ -332,42 +332,59 @@ public class FileUtils {
      */
     private static List<InputStream> getZipInputStreamsInner(InputStream innerStream, String anchor, 
     		int matchFilesFrom, List<String> resolvedAnchors) throws IOException {
+    	// result list of input streams
     	List<InputStream> streams = new ArrayList<InputStream>();
+
+    	// check and prepare support for wild card matching
+        Matcher matcher;
+        Pattern WILDCARD_PATTERS = null;
+        boolean bWildsCardedAnchor = anchor.contains("?") || anchor.contains("*");
+        if (bWildsCardedAnchor) 
+        	WILDCARD_PATTERS = Pattern.compile(anchor.replaceAll("\\.", "\\\\.").replaceAll("\\?", "\\.").replaceAll("\\*", ".*"));
+
+    	// the input stream must support a buffer for wild cards.
+    	if (bWildsCardedAnchor && !innerStream.markSupported()) {
+    		innerStream = new BufferedInputStream(innerStream);
+    		innerStream.mark(Integer.MAX_VALUE);
+    	}
     	
         //resolve url format for zip files
-    	if (!innerStream.markSupported()) {
-    		innerStream = new BufferedInputStream(innerStream);
-    	}
-		innerStream.mark(Integer.MAX_VALUE);
-    	
         ZipInputStream zin = new ZipInputStream(innerStream) ;     
         ZipEntry entry;
-        Pattern WILDCARD_PATTERS = Pattern.compile(anchor.replaceAll("\\.", "\\\\.").replaceAll("\\?", "\\.").replaceAll("\\*", ".*"));
-        Matcher matcher;
 
+        // find entries
         int iMatched = 0;
         while((entry = zin.getNextEntry()) != null) {
-            if(anchor == null || entry.getName().equals(anchor)) { //url is given without anchor; first entry in zip file is used
-            	streams.add(zin);
-            	if (resolvedAnchors != null) resolvedAnchors.add(anchor);
-            	return streams;
+            // wild cards
+            if (bWildsCardedAnchor) {
+           		matcher = WILDCARD_PATTERS.matcher(entry.getName());
+           		if (matcher.find() && iMatched++ == matchFilesFrom) {
+                	streams.add(zin);
+                	if (resolvedAnchors != null) resolvedAnchors.add(entry.getName());
+                	innerStream.reset();
+                	streams.addAll(getZipInputStreamsInner(innerStream, anchor, ++matchFilesFrom, resolvedAnchors));
+                	innerStream.reset();
+                	return streams;
+                }
+            
+        	// without wild cards
+            } else if(anchor == null || entry.getName().equals(anchor)) { //url is given without anchor; first entry in zip file is used
+               	streams.add(zin);
+               	if (resolvedAnchors != null) resolvedAnchors.add(anchor);
+               	return streams;
             }
-       		matcher = WILDCARD_PATTERS.matcher(entry.getName());
-       		if (matcher.find() && iMatched++ == matchFilesFrom) {
-            	streams.add(zin);
-            	if (resolvedAnchors != null) resolvedAnchors.add(entry.getName());
-            	innerStream.reset();
-            	streams.addAll(getZipInputStreamsInner(innerStream, anchor, ++matchFilesFrom, resolvedAnchors));
-            	innerStream.reset();
-            	return streams;
-            }
+            
             //finish up with entry
             zin.closeEntry();
         }
         if (matchFilesFrom > 0 || streams.size() > 0) return streams;
         
+        // if no wild carded entry found, it is ok, return null
+        if (bWildsCardedAnchor) return null;
+        
         //close the archive
         zin.close();
+        
         //no channel found report
         if(anchor == null) {
             throw new IOException("Zip file is empty.");

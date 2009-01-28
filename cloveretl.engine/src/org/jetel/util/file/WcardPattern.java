@@ -38,98 +38,40 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 /**
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 09/05/06  
- * Class generating collection of filenames which match
- * given wildcard patterns.
+ * Class generating collection of filenames which match given wildcard patterns.
  * The pattern may describe either relative or absolute filenames.
  * '*' represents any count of characters, '?' represents one character.
  * Wildcards cannot be followed by directory separators. 
  */
 public class WcardPattern {
 
-	/**
-	 * Wild card marks.
-	 */
-	private static String WILD_QUESTION = "?";
-	private static String WILD_STAR = "*";
-
-	/**
-	 * Filename filter for wildcard matching.
-	 */
-	private static class WcardFilter implements FilenameFilter {
-		
-		
-		/**
-		 * Regex pattern equivalent to specified wildcard pattern.
-		 */
-		private Pattern rePattern;
-		
-		/**
-		 * ctor. Creates regex pattern so that it is equivalent to given wildcard pattern. 
-		 * @param str Wildcard pattern. 
-		 */
-		public WcardFilter(String str) {
-
-			StringBuffer regex = new StringBuffer(str);
-			regex.insert(0, REGEX_START_ANCHOR + REGEX_START_QUOTE);
-			for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
-				regex.replace(0, regex.length(), 
-						regex.toString().replace("" + WCARD_CHAR[wcardIdx],
-								REGEX_END_QUOTE + REGEX_SUBST[wcardIdx] + REGEX_START_QUOTE));
-			}
-			regex.append(REGEX_END_QUOTE + REGEX_END_ANCHOR);
-
-			// Create compiled regex pattern
-			rePattern = Pattern.compile(regex.toString());
-		}
-
-		/**
-		 * Part of FilenameFilter interface.
-		 */
-		public boolean accept(File dir, String name) {
-			return rePattern.matcher(name).matches();
-		}
-		
-		public boolean accept(String name){
-			return rePattern.matcher(name).matches();
-		}
-	}
-
-	/**
-	 * Wildcard characters.
-	 */
+	// Wildcard characters.
 	@SuppressWarnings("MS")
 	public final static char[] WCARD_CHAR = {'*', '?'};
-	/**
-	 * Regex substitutions for wildcards. 
-	 */
+
+	// Regex substitutions for wildcards. 
 	private final static String[] REGEX_SUBST = {".*", "."};
-	/**
-	 * Start sequence for regex quoting.
-	 */
+
+	// Start sequence for regex quoting.
 	private final static String REGEX_START_QUOTE = "\\Q";
-	/**
-	 * End sequence for regex quoting
-	 */
+
+	// End sequence for regex quoting
 	private final static String REGEX_END_QUOTE = "\\E";
-	/**
-	 * Regex start anchor.
-	 */
+
+	// Regex start anchor.
 	private final static char REGEX_START_ANCHOR = '^';
-	/**
-	 * Regex end anchor.
-	 */
+
+	// Regex end anchor.
 	private final static char REGEX_END_ANCHOR = '$';
 	
-	/**
-	 * Collection of filename patterns.
-	 */
+	// Collection of filename patterns.
 	private List<String> patterns;
 	
+	// Context URL.
 	private URL parent;
 	
 	/**
-	 * ctor. Creates instance with empty set of patterns.
-	 * It doesn't match any filenames initially.  
+	 * Constructor. Creates instance with empty set of patterns. It doesn't match any filenames initially.  
 	 */
 	public WcardPattern() {
 		patterns = new ArrayList<String>(1);
@@ -211,14 +153,14 @@ public class WcardPattern {
 	}
 
 	/**
-	 * Gets names from sub-archives.
+	 * Gets names from file system and sub-archives.
 	 * @param fileName
 	 * @param outherPathNeedsInputStream
 	 * @return
 	 * @throws IOException
 	 */
     private List<FileStreamName> innerFileNames(String fileName, boolean outherPathNeedsInputStream) throws IOException {
-        URL url = null;
+    	// result list for non-archive files
         List<FileStreamName> fileStreamNames = new ArrayList<FileStreamName>();
         
 		// get inner source
@@ -230,7 +172,8 @@ public class WcardPattern {
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
 			iPreName = (matcher.group(2) + matcher.group(3)).length()+1;
 			iPostName = iPreName + innerSource.length();
-			fileStreamNames = innerFileNames(innerSource, outherPathNeedsInputStream || fileName.contains(WILD_QUESTION) || fileName.contains(WILD_STAR));
+			fileStreamNames = innerFileNames(innerSource, outherPathNeedsInputStream 
+					|| fileName.contains("" + WCARD_CHAR[0]) || fileName.contains("" + WCARD_CHAR[1]));
 		}
 		
 		// get archive type
@@ -248,41 +191,43 @@ public class WcardPattern {
 		List<String> newFileNames = resolveAndSetFileNames(fileName); // returns simple file names
         if (fileStreamNames.size() == 0) {
         	for (String newFileName: newFileNames) {
-            	url = FileUtils.getFileURL(parent, newFileName);
-            	if ((outherPathNeedsInputStream || (anchor.contains(WILD_QUESTION) || anchor.contains(WILD_STAR))))
+                URL url = FileUtils.getFileURL(parent, newFileName);
+            	if ((outherPathNeedsInputStream || (anchor.contains("" + WCARD_CHAR[0]) || anchor.contains("" + WCARD_CHAR[1]))))
             		fileStreamNames.add(new FileStreamName(newFileName, FileUtils.getAuthorizedStream(url)));
-            	else fileStreamNames.add(new FileStreamName(newFileName, null));
+            	else fileStreamNames.add(new FileStreamName(newFileName));
         	}
         }
         
+        // check sub-archives
         List<FileStreamName> newFileStreamNames = new ArrayList<FileStreamName>();
         for (FileStreamName fileStreamName: fileStreamNames) {
-            // create archive streams
+            // zip archive
             if (archiveType == ArchiveType.ZIP) {
-            	if (fileStreamName.getInputStream() != null) {
-            		// look into an archive and check the anchor
-            		List<String> mfiles = new ArrayList<String>();
-                	List<InputStream> lis = FileUtils.getZipInputStreams(fileStreamName.getInputStream(), anchor, mfiles);
-                	
-                	// create list of new names generated from the anchor
-                	for (int i=0; lis == null || i<lis.size(); i++) {
-                		newFileStreamNames.add(
-                				new FileStreamName(
-                					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
-                						originalFileName.substring(iPostName)).replace(anchor, mfiles.get(i)), 
-                					lis.get(i)));
-                	}
-            	} else {
-            		// add original name
-            		newFileStreamNames.add(new FileStreamName(originalFileName, null));
+        		// add original name
+            	if (fileStreamName.getInputStream() == null) {
+            		newFileStreamNames.add(new FileStreamName(originalFileName));
+            		continue;
+            	}
+            	
+        		// look into an archive and check the anchor
+        		List<String> mfiles = new ArrayList<String>();
+            	List<InputStream> lis = FileUtils.getZipInputStreams(fileStreamName.getInputStream(), anchor, mfiles);
+            	
+            	// create list of new names generated from the anchor
+            	for (int i=0; lis != null && i<lis.size(); i++) {
+            		newFileStreamNames.add(
+            				new FileStreamName(
+            					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
+            						originalFileName.substring(iPostName)).replace(anchor, mfiles.get(i)), 
+            					lis.get(i)));
             	}
             
-            // create gzip streams
+            // gzip archive
             } else if (archiveType == ArchiveType.GZIP) {
             	//TODO
             	return fileStreamNames;
             	
-            // create tar streams
+            // tar archive
             } else if (archiveType == ArchiveType.TAR) {
             	//TODO
             	return fileStreamNames;
@@ -292,21 +237,26 @@ public class WcardPattern {
             	return fileStreamNames;
             }
         }
-        
         return newFileStreamNames;
     }
 
     /**
-     * Gets list of file names or an original name. 
+     * Gets list of file names or an original name from file system. 
      * @param fileName
      * @return
      */
 	private List<String> resolveAndSetFileNames(String fileName) {
-		StringBuffer dirName = new StringBuffer();
-		StringBuffer filePat = new StringBuffer();
-		boolean fileProtocol = false;
+		// result list
 		List<String> mfiles = new ArrayList<String>();
 
+		// directory name and file name part
+		StringBuffer dirName = new StringBuffer();
+		StringBuffer filePat = new StringBuffer();
+		
+		// is file fileName protocol?
+		boolean fileProtocol = false;
+		
+		// check if the filename is a file or something else
 		try {
 			fileProtocol = parent != null ? parent.getProtocol().equals("file") :
 				FileUtils.getFileURL(fileName).getProtocol().equals("file");
@@ -314,41 +264,97 @@ public class WcardPattern {
 			// NOTHING
 		}
 		
+		// if not file or doesn't contains wild cards, return original filename
 		if (!fileProtocol || !splitPattern(fileName, dirName, filePat)) {	// no wildcards
 			mfiles.add(fileName);
 			return mfiles;
-		} else {
-			File dir;
-			try {
-				dir = parent != null ? new File(FileUtils.getFileURL(parent, dirName.toString()).getPath()) : new File(dirName.toString());
-			} catch (Exception e) {
-				dir = new File(dirName.toString());
-			} 
-			if (dir.exists()) {
-				FilenameFilter filter = new WcardFilter(filePat.toString());
-				String[] curMatch = dir.list(filter);
-				Arrays.sort(curMatch);
-				for (int fnIdx = 0; fnIdx < curMatch.length; fnIdx++) {
-					File f = new File(dir, curMatch[fnIdx]);
-					mfiles.add(f.getAbsolutePath());
-				}
+		}
+
+		// check a directory
+		File dir;
+		try {
+			dir = parent != null ? new File(FileUtils.getFileURL(parent, dirName.toString()).getPath()) : new File(dirName.toString());
+		} catch (Exception e) {
+			dir = new File(dirName.toString());
+		} 
+		
+		// list the directory and return its files
+		if (dir.exists()) {
+			FilenameFilter filter = new WcardFilter(filePat.toString());
+			String[] curMatch = dir.list(filter);
+			Arrays.sort(curMatch);
+			for (int fnIdx = 0; fnIdx < curMatch.length; fnIdx++) {
+				File f = new File(dir, curMatch[fnIdx]);
+				mfiles.add(f.getAbsolutePath());
 			}
 		}
 		return mfiles;
 	}
 
+	/**
+	 * Checks if the name accepts the pattern
+	 * @param pattern
+	 * @param name
+	 * @return
+	 */
 	public static boolean checkName(String pattern, String name){
 		return new WcardFilter(pattern).accept(name);
 	}
 
+	/**
+	 * Gets context URL.
+	 * @return
+	 */
 	public URL getParent() {
 		return parent;
 	}
 
+	/**
+	 * Sets context URL.
+	 */
 	public void setParent(URL parent) {
 		this.parent = parent;
 	}
 	
+	/**
+	 * Filename filter for wildcard matching.
+	 */
+	private static class WcardFilter implements FilenameFilter {
+		
+		// Regex pattern equivalent to specified wildcard pattern.
+		private Pattern rePattern;
+		
+		/**
+		 * Constructor. Creates regex pattern so that it is equivalent to given wildcard pattern. 
+		 * @param str Wildcard pattern. 
+		 */
+		public WcardFilter(String str) {
+
+			StringBuffer regex = new StringBuffer(str);
+			regex.insert(0, REGEX_START_ANCHOR + REGEX_START_QUOTE);
+			for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
+				regex.replace(0, regex.length(), 
+						regex.toString().replace("" + WCARD_CHAR[wcardIdx],
+								REGEX_END_QUOTE + REGEX_SUBST[wcardIdx] + REGEX_START_QUOTE));
+			}
+			regex.append(REGEX_END_QUOTE + REGEX_END_ANCHOR);
+
+			// Create compiled regex pattern
+			rePattern = Pattern.compile(regex.toString());
+		}
+
+		/**
+		 * Part of FilenameFilter interface.
+		 */
+		public boolean accept(File dir, String name) {
+			return rePattern.matcher(name).matches();
+		}
+		
+		public boolean accept(String name){
+			return rePattern.matcher(name).matches();
+		}
+	}
+
 	/**
 	 * Supports filename and their input stream.
 	 * @author Jan Ausperger (jan.ausperger@javlin.eu)
@@ -356,29 +362,44 @@ public class WcardPattern {
 	 */
 	private static class FileStreamName {
 		
+		// name of file
 		private String fileName;
+		// input stream - optional
 		private InputStream inputStream;
 
+		/**
+		 * Constructor.
+		 * @param fileName
+		 */
+		public FileStreamName(String fileName) {
+			this(fileName, null);
+		}
+
+		/**
+		 * Constructor.
+		 * @param fileName
+		 * @param inputStream
+		 */
 		public FileStreamName(String fileName, InputStream inputStream) {
 			this.fileName = fileName;
 			this.inputStream = inputStream;
 		}
 		
-		public void setInputStream(InputStream inputStream) {
-			this.inputStream = inputStream;
-		}
-		
-		public void setFileName(String fileName) {
-			this.fileName = fileName;
-		}
-		
+		/**
+		 * Gets file name.
+		 * @return
+		 */
 		public String getFileName() {
 			return fileName;
 		}
 		
+		/**
+		 * Gets input stream.
+		 * @return
+		 */
 		public InputStream getInputStream() {
 			return inputStream;
-		}		
+		}
 	}
 
 }
