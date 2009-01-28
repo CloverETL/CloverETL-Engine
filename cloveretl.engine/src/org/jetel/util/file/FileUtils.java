@@ -347,12 +347,9 @@ public class FileUtils {
 
         int iMatched = 0;
         while((entry = zin.getNextEntry()) != null) {
-            if(anchor == null) { //url is given without anchor; first entry in zip file is used
+            if(anchor == null || entry.getName().equals(anchor)) { //url is given without anchor; first entry in zip file is used
             	streams.add(zin);
-            	return streams;
-            }
-            if(entry.getName().equals(anchor)) {
-            	streams.add(zin);
+            	if (resolvedAnchors != null) resolvedAnchors.add(anchor);
             	return streams;
             }
        		matcher = WILDCARD_PATTERS.matcher(entry.getName());
