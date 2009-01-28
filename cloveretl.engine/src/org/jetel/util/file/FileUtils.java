@@ -263,7 +263,8 @@ public class FileUtils {
         } else if (archiveType == ArchiveType.GZIP) {
             return new GZIPInputStream(innerStream, Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
         } else if (archiveType == ArchiveType.TAR) {
-        	return getTarInputStream(innerStream, sbAnchor.toString());
+        	List<InputStream> lIs = getTarInputStreamsInner(innerStream, sbAnchor.toString(), 0, null);
+        	return lIs.size() > 0 ? lIs.get(0) : null;
         }
         
     	// creates file input stream for incremental reading (random access file)
@@ -286,7 +287,7 @@ public class FileUtils {
     	
         //resolve url format for zip files
     	if (input.startsWith("zip:")) archiveType = ArchiveType.ZIP;
-    	else if (input.startsWith("tar:")) archiveType = ArchiveType.ZIP;
+    	else if (input.startsWith("tar:")) archiveType = ArchiveType.TAR;
     	else if (input.startsWith("gzip:")) archiveType = ArchiveType.GZIP;
     	
     	// parse the archive
@@ -340,13 +341,15 @@ public class FileUtils {
         Pattern WILDCARD_PATTERS = null;
         boolean bWildsCardedAnchor = anchor.contains("?") || anchor.contains("*");
         if (bWildsCardedAnchor) 
-        	WILDCARD_PATTERS = Pattern.compile(anchor.replaceAll("\\.", "\\\\.").replaceAll("\\?", "\\.").replaceAll("\\*", ".*"));
+        	WILDCARD_PATTERS = Pattern.compile(anchor.replaceAll("\\\\", "\\\\\\\\").replaceAll("\\.", "\\\\.").replaceAll("\\?", "\\.").replaceAll("\\*", ".*"));
 
     	// the input stream must support a buffer for wild cards.
-    	if (bWildsCardedAnchor && !innerStream.markSupported()) {
-    		innerStream = new BufferedInputStream(innerStream);
+        if (bWildsCardedAnchor) {
+        	if (!innerStream.markSupported()) {
+        		innerStream = new BufferedInputStream(innerStream);
+        	}
     		innerStream.mark(Integer.MAX_VALUE);
-    	}
+        }
     	
         //resolve url format for zip files
         ZipInputStream zin = new ZipInputStream(innerStream) ;     
@@ -393,27 +396,81 @@ public class FileUtils {
         }
     }
 
-    
     /**
-     * Creates tar input stream.
+     * Creates a tar input stream.
      * @param innerStream
      * @param anchor
+     * @param resolvedAnchors - output parameter
      * @return
      * @throws IOException
      */
-    private static InputStream getTarInputStream(InputStream innerStream, String anchor) throws IOException {
+    public static List<InputStream> getTarInputStreams(InputStream innerStream, String anchor, List<String> resolvedAnchors) throws IOException {
+    	return getTarInputStreamsInner(innerStream, anchor, 0, resolvedAnchors);
+    }
+
+    /**
+     * Creates list of tar input streams.
+     * @param innerStream
+     * @param anchor
+     * @param matchFilesFrom
+     * @param resolvedAnchors
+     * @return
+     * @throws IOException
+     */
+    private static List<InputStream> getTarInputStreamsInner(InputStream innerStream, String anchor, 
+    		int matchFilesFrom, List<String> resolvedAnchors) throws IOException {
+    	// result list of input streams
+    	List<InputStream> streams = new ArrayList<InputStream>();
+
+    	// check and prepare support for wild card matching
+        Matcher matcher;
+        Pattern WILDCARD_PATTERS = null;
+        boolean bWildsCardedAnchor = anchor.contains("?") || anchor.contains("*");
+        if (bWildsCardedAnchor) 
+        	WILDCARD_PATTERS = Pattern.compile(anchor.replaceAll("\\\\", "\\\\\\\\").replaceAll("\\.", "\\\\.").replaceAll("\\?", "\\.").replaceAll("\\*", ".*"));
+
+    	// the input stream must support a buffer for wild cards.
+        if (bWildsCardedAnchor) {
+        	if (!innerStream.markSupported()) {
+        		innerStream = new BufferedInputStream(innerStream);
+        	}
+    		innerStream.mark(Integer.MAX_VALUE);
+        }
+    	
+        //resolve url format for zip files
     	TarInputStream tin = new TarInputStream(innerStream);
         TarEntry entry;
+
+        // find entries
+        int iMatched = 0;
         while((entry = tin.getNextEntry()) != null) {
-            if(anchor == null) { //url is given without anchor; first entry in zip file is used
-                return tin;
-            }
-            if(entry.getName().equals(anchor)) {
-                return tin;
+            // wild cards
+            if (bWildsCardedAnchor) {
+           		matcher = WILDCARD_PATTERS.matcher(entry.getName());
+           		if (matcher.find() && iMatched++ == matchFilesFrom) {
+                	streams.add(tin);
+                	if (resolvedAnchors != null) resolvedAnchors.add(entry.getName());
+                	innerStream.reset();
+                	streams.addAll(getTarInputStreamsInner(innerStream, anchor, ++matchFilesFrom, resolvedAnchors));
+                	innerStream.reset();
+                	return streams;
+                }
+            
+        	// without wild cards
+            } else if(anchor == null || entry.getName().equals(anchor)) { //url is given without anchor; first entry in zip file is used
+               	streams.add(tin);
+               	if (resolvedAnchors != null) resolvedAnchors.add(anchor);
+               	return streams;
             }
         }
+        if (matchFilesFrom > 0 || streams.size() > 0) return streams;
+        
+        // if no wild carded entry found, it is ok, return null
+        if (bWildsCardedAnchor) return null;
+        
         //close the archive
         tin.close();
+        
         //no channel found report
         if(anchor == null) {
             throw new IOException("Tar file is empty.");
@@ -421,7 +478,7 @@ public class FileUtils {
             throw new IOException("Wrong anchor (" + anchor + ") to tar file.");
         }
     }
-    
+
     /**
      * Creates an authorized stream.
      * @param url
