@@ -185,7 +185,7 @@ public class WcardPattern {
 		String anchor = sbAnchor.toString();
 		if (archiveType != null && iPreName == 0) {
 			iPreName = archiveType.name().length()+1;
-			iPostName = fileName.length() - (anchor.length() == 0 ? 0 : anchor.length()-1);
+			iPostName = fileName.length() - (anchor.length() == 0 ? 0 : anchor.length()+1);
 		}
 		fileName = sbInnerInput.toString();
 
