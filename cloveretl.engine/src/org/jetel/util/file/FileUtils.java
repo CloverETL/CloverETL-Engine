@@ -371,7 +371,7 @@ public class FileUtils {
                 }
             
         	// without wild cards
-            } else if(anchor == null || entry.getName().equals(anchor)) { //url is given without anchor; first entry in zip file is used
+            } else if(anchor == null || anchor.equals("") || entry.getName().equals(anchor)) { //url is given without anchor; first entry in zip file is used
                	streams.add(zin);
                	if (resolvedAnchors != null) resolvedAnchors.add(anchor);
                	return streams;
@@ -457,7 +457,7 @@ public class FileUtils {
                 }
             
         	// without wild cards
-            } else if(anchor == null || entry.getName().equals(anchor)) { //url is given without anchor; first entry in zip file is used
+            } else if(anchor == null || anchor.equals("") || entry.getName().equals(anchor)) { //url is given without anchor; first entry in zip file is used
                	streams.add(tin);
                	if (resolvedAnchors != null) resolvedAnchors.add(anchor);
                	return streams;
