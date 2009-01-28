@@ -30,7 +30,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
+import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -183,7 +185,7 @@ public class WcardPattern {
 		String anchor = sbAnchor.toString();
 		if (archiveType != null && iPreName == 0) {
 			iPreName = archiveType.name().length()+1;
-			iPostName = fileName.length() - anchor.length()-1;
+			iPostName = fileName.length() - (anchor.length() == 0 ? 0 : anchor.length()-1);
 		}
 		fileName = sbInnerInput.toString();
 
@@ -207,8 +209,7 @@ public class WcardPattern {
             
             // gzip archive
             } else if (archiveType == ArchiveType.GZIP) {
-            	//TODO
-            	return fileStreamNames;
+            	processGZipArchive(fileStreamName, originalFileName, iPreName, iPostName, newFileStreamNames);
             	
             // tar archive
             } else if (archiveType == ArchiveType.TAR) {
@@ -254,7 +255,7 @@ public class WcardPattern {
     }
     
     /**
-     * Gets list of zip files with full anchor names.
+     * Gets list of tar files with full anchor names.
      * @param fileStreamName
      * @param originalFileName
      * @param anchor
@@ -284,6 +285,32 @@ public class WcardPattern {
     	}
     }
 
+    /**
+     * Gets gzip file.
+     * @param fileStreamName
+     * @param originalFileName
+     * @param iPreName
+     * @param iPostName
+     * @param newFileStreamNames
+     * @throws IOException
+     */
+    private void processGZipArchive(FileStreamName fileStreamName, String originalFileName, int iPreName, int iPostName, List<FileStreamName> newFileStreamNames) throws IOException {
+		// add original name
+    	if (fileStreamName.getInputStream() == null) {
+    		newFileStreamNames.add(new FileStreamName(originalFileName));
+    		return;
+    	}
+    	
+		// create input stream
+    	InputStream is = new GZIPInputStream(fileStreamName.getInputStream(), Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
+    	
+    	// create list of new names generated from the anchor
+    	newFileStreamNames.add(new FileStreamName(
+    			originalFileName.substring(0, iPreName) + fileStreamName.getFileName() + originalFileName.substring(iPostName), 
+				is));
+    }
+    
+    
     /**
      * Gets list of file names or an original name from file system. 
      * @param fileName
