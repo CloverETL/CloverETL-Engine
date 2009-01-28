@@ -203,24 +203,7 @@ public class WcardPattern {
         for (FileStreamName fileStreamName: fileStreamNames) {
             // zip archive
             if (archiveType == ArchiveType.ZIP) {
-        		// add original name
-            	if (fileStreamName.getInputStream() == null) {
-            		newFileStreamNames.add(new FileStreamName(originalFileName));
-            		continue;
-            	}
-            	
-        		// look into an archive and check the anchor
-        		List<String> mfiles = new ArrayList<String>();
-            	List<InputStream> lis = FileUtils.getZipInputStreams(fileStreamName.getInputStream(), anchor, mfiles);
-            	
-            	// create list of new names generated from the anchor
-            	for (int i=0; lis != null && i<lis.size(); i++) {
-            		newFileStreamNames.add(
-            				new FileStreamName(
-            					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
-            						originalFileName.substring(iPostName)).replace(anchor, mfiles.get(i)), 
-            					lis.get(i)));
-            	}
+            	processZipArchive(fileStreamName, originalFileName, anchor, iPreName, iPostName, newFileStreamNames);
             
             // gzip archive
             } else if (archiveType == ArchiveType.GZIP) {
@@ -229,8 +212,7 @@ public class WcardPattern {
             	
             // tar archive
             } else if (archiveType == ArchiveType.TAR) {
-            	//TODO
-            	return fileStreamNames;
+            	processTarArchive(fileStreamName, originalFileName, anchor, iPreName, iPostName, newFileStreamNames);
             
             // return original names
             } else {
@@ -238,6 +220,68 @@ public class WcardPattern {
             }
         }
         return newFileStreamNames;
+    }
+
+    /**
+     * Gets list of zip files with full anchor names.
+     * @param fileStreamName
+     * @param originalFileName
+     * @param anchor
+     * @param iPreName
+     * @param iPostName
+     * @param newFileStreamNames
+     * @throws IOException
+     */
+    private void processZipArchive(FileStreamName fileStreamName, String originalFileName, String anchor, int iPreName, int iPostName, List<FileStreamName> newFileStreamNames) throws IOException {
+		// add original name
+    	if (fileStreamName.getInputStream() == null) {
+    		newFileStreamNames.add(new FileStreamName(originalFileName));
+    		return;
+    	}
+    	
+		// look into an archive and check the anchor
+		List<String> mfiles = new ArrayList<String>();
+    	List<InputStream> lis = FileUtils.getZipInputStreams(fileStreamName.getInputStream(), anchor, mfiles);
+    	
+    	// create list of new names generated from the anchor
+    	for (int i=0; lis != null && i<lis.size(); i++) {
+    		newFileStreamNames.add(
+    				new FileStreamName(
+    					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
+    						originalFileName.substring(iPostName)).replace(anchor, mfiles.get(i)), 
+    					lis.get(i)));
+    	}
+    }
+    
+    /**
+     * Gets list of zip files with full anchor names.
+     * @param fileStreamName
+     * @param originalFileName
+     * @param anchor
+     * @param iPreName
+     * @param iPostName
+     * @param newFileStreamNames
+     * @throws IOException
+     */
+    private void processTarArchive(FileStreamName fileStreamName, String originalFileName, String anchor, int iPreName, int iPostName, List<FileStreamName> newFileStreamNames) throws IOException {
+		// add original name
+    	if (fileStreamName.getInputStream() == null) {
+    		newFileStreamNames.add(new FileStreamName(originalFileName));
+    		return;
+    	}
+    	
+		// look into an archive and check the anchor
+		List<String> mfiles = new ArrayList<String>();
+    	List<InputStream> lis = FileUtils.getTarInputStreams(fileStreamName.getInputStream(), anchor, mfiles);
+    	
+    	// create list of new names generated from the anchor
+    	for (int i=0; lis != null && i<lis.size(); i++) {
+    		newFileStreamNames.add(
+    				new FileStreamName(
+    					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
+    						originalFileName.substring(iPostName)).replace(anchor, mfiles.get(i)), 
+    					lis.get(i)));
+    	}
     }
 
     /**
