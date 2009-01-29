@@ -23,16 +23,12 @@ package org.jetel.connection.jdbc;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
 import java.util.TimeZone;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
@@ -77,7 +73,6 @@ public class SQLDataParser implements Parser {
 
 	protected DBConnectionInstance dbConnection;
 	protected String sqlQuery;
-	protected Statement statement;
 
 	protected ResultSet resultSet = null;
 	protected CopySQLData[] transMap=null;
@@ -91,10 +86,9 @@ public class SQLDataParser implements Parser {
 	private Properties incrementalKey;
 	private SQLIncremental incremental;
 	private String[] cloverOutputFields;
+	private SQLCloverStatement sqlCloverStatement;
 	
 	static Log logger = LogFactory.getLog(SQLDataParser.class);
-
-	private final static Pattern CLOVER_OUTPUT_FIELD = Pattern.compile("\\$(\\w+)\\s*" + Defaults.ASSIGN_SIGN);
 
 	/**
 	 * @param sqlQuery
@@ -268,23 +262,6 @@ public class SQLDataParser implements Parser {
 	public void setReleaseDataSource(boolean releaseInputSource)  {
 	}
 
-	private String prepareQuery(){
-		//remove clover output fields from query
-		Matcher outputFieldsMatcher = CLOVER_OUTPUT_FIELD.matcher(sqlQuery);
-		ArrayList<String> outputFields = new ArrayList<String>();
-		StringBuffer query = new StringBuffer();
-		while (outputFieldsMatcher.find()) {
-			outputFields.add(outputFieldsMatcher.group(1));
-			outputFieldsMatcher.appendReplacement(query, "");
-		}
-		outputFieldsMatcher.appendTail(query);
-		if (outputFields.size() > 0) {
-			cloverOutputFields = outputFields.toArray(new String[outputFields.size()]);
-		}
-		
-		return query.toString();
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
@@ -298,33 +275,27 @@ public class SQLDataParser implements Parser {
         }
         dbConnection = (DBConnectionInstance) inputDataSource;
         
-        String query = prepareQuery();
         long startTime;
-        try{
-        	if (incrementalKey != null && sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
-				if (incremental == null) {
-					incremental = new SQLIncremental(incrementalKey, query,	incrementalFile);
-				}
-				statement = incremental.updateQuery(dbConnection);
-		        logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Sending query " + 
-		        		StringUtils.quote(incremental.getPreparedQuery()));
-				startTime = System.currentTimeMillis();
-				resultSet = ((PreparedStatement)statement).executeQuery();
-        	}else{
-            	statement = dbConnection.getSqlConnection().createStatement();
-                logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Sending query " + 
-                		StringUtils.quote(query));
-            	startTime = System.currentTimeMillis();
-                resultSet = statement.executeQuery(query);
-        	}
+        sqlCloverStatement = new SQLCloverStatement(dbConnection, sqlQuery, null);
+        sqlCloverStatement.setLogger(logger);
+        try {
+			if (incrementalKey != null && sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
+				sqlCloverStatement.setIncremental(incremental != null ? incremental : 
+					new SQLIncremental(incrementalKey, sqlQuery, incrementalFile));
+			}
+			sqlCloverStatement.init();
+	        logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Sending query " + 
+	        		StringUtils.quote(sqlCloverStatement.getQuery()));
+			startTime = System.currentTimeMillis();
+			resultSet = sqlCloverStatement.executeQuery();
             long executionTime = System.currentTimeMillis() - startTime;
             SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
             formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
             logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Query execution time: " + 
             		formatter.format(new Date(executionTime)));
-        } catch (Exception e) {
-            throw new ComponentNotReadyException(e);
-        }        
+		} catch (Exception e1) {
+            throw new ComponentNotReadyException(e1);
+		}
         
         dbConnection.getJdbcSpecific().optimizeResultSet(resultSet, OperationType.READ);
         if (fetchSize > -1) {
@@ -342,7 +313,7 @@ public class SQLDataParser implements Parser {
 	public boolean checkIncremental() throws ComponentNotReadyException{
     	if (incrementalKey != null && sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
 			try {
-				incremental = new SQLIncremental(incrementalKey, prepareQuery(), incrementalFile);
+				new SQLIncremental(incrementalKey, sqlQuery, incrementalFile);
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(e);
 			}
@@ -365,7 +336,7 @@ public class SQLDataParser implements Parser {
 				conn.commit();
 			}            
 			// close statement
-			statement.close();
+			sqlCloverStatement.close();
 		}
 		catch (SQLException ex) {
             logger.warn("SQLException when closing statement",ex);
@@ -405,7 +376,7 @@ public class SQLDataParser implements Parser {
 				resultSet.close();
 			}
 			// close statement
-			statement.close();
+			sqlCloverStatement.close();
 		}
 		catch (SQLException ex) {
             logger.warn("SQLException when closing statement",ex);
