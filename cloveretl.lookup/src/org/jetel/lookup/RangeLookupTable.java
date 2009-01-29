@@ -613,14 +613,16 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		return new RangeLookup(this, key, keyRecord);
 	}
 
-	public char[] getKey() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
+	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
 		if (!isInitialized()) throw new NotInitializedException(this);
 		
-		char[] result = new char[startField.length];
-		for (int i = 0; i < result.length; i++) {
-			result[i] = metadata.getFieldType(startField[i]);
+		DataRecordMetadata keyMetadata = new DataRecordMetadata( "_rangeLookupTable_" + getName(), getMetadata().getRecType());
+		keyMetadata.setFieldDelimiter(getMetadata().getFieldDelimiterStr());
+		keyMetadata.setRecordDelimiters(getMetadata().getRecordDelimiterStr());
+		for (int index : startField) {
+			keyMetadata.addField(getMetadata().getField(index).duplicate());
 		}
-		return result;
+		return keyMetadata;
 	}
 
 }
