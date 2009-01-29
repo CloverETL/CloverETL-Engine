@@ -460,15 +460,10 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		this.keyDuplicates = keyDuplicates;
 	}
 
-	public char[] getKey() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
+	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
 		if (!isInitialized()) throw new NotInitializedException(this);
 		
-		char[] result = new char[indexKey.getLength()];
-		int[] keyField = indexKey.getKeyFields();
-		for (int i = 0; i < result.length; i++) {
-			result[i] = metadata.getFieldType(keyField[i]);
-		}
-		return result;
+		return indexKey.generateKeyRecordMetadata();
 	}
 
 }

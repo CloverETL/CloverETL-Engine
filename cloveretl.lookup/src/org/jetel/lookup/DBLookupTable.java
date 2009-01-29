@@ -364,8 +364,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         	}
         	SQLCloverStatement st = new SQLCloverStatement(dbConnection, query.toString(), null);
         	st.init();
-        	PreparedStatement statement = st.getStatement();
-			ResultSet resultSet = statement.executeQuery();
+			ResultSet resultSet = st.executeQuery();
 			dbConnection.getJdbcSpecific().optimizeResultSet(resultSet, OperationType.READ);
 		   if (dbMetadata == null) {
 	            if (st.getCloverOutputFields() == null) {
@@ -431,22 +430,24 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		return lookup;
 	}
 	
-	public char[] getKey() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
+	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
 		if (!isInitialized()) throw new NotInitializedException(this);
-		SQLCloverStatement statement = new SQLCloverStatement(dbConnection, sqlQuery, null);
-        char[] result;
+		DataRecordMetadata dbMetadata = getMetadata();
+		if (dbMetadata != null) return dbMetadata;
+		DataRecord tmpRecord = new DataRecord(new DataRecordMetadata("_tmp_"));
+		tmpRecord.init();
+		SQLCloverStatement statement = new SQLCloverStatement(dbConnection, sqlQuery, tmpRecord);
 		try {
-        	statement.init();
-            PreparedStatement pStatement = statement.getStatement();
-    		ParameterMetaData dbMeta = pStatement.getParameterMetaData();
-            result = new char[dbMeta.getParameterCount()];
-            for (int i = 0; i < result.length; i++) {
-				result[i] = dbConnection.getJdbcSpecific().sqlType2jetel(dbMeta.getParameterType(i + 1));
-			}
-        } catch (SQLException ex) {
-            throw new ComponentNotReadyException("Can't create SQL statement: " + ex.getMessage());
-        }
-        return result;
+			statement.init();
+		} catch (SQLException e) {
+			throw new ComponentNotReadyException(this, e);
+		}
+		try {
+			ParameterMetaData sqlMetadata = ((PreparedStatement)statement.getStatement()).getParameterMetaData();
+			return SQLUtil.dbMetadata2jetel(sqlMetadata, "_dbLookupTable_" + getName(), dbConnection.getJdbcSpecific());
+		} catch (SQLException e) {
+			throw new RuntimeException("Can't get metadata from database");
+		}
 	}
 	
 	public boolean isPutSupported() {
