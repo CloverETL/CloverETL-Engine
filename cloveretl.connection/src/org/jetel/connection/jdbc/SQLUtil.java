@@ -186,6 +186,56 @@ public class SQLUtil {
 		return fieldMetadata;
 	}
 	
+	public static DataFieldMetadata dbMetadata2jetel(String name, ParameterMetaData dbMetadata, int sqlIndex, JdbcSpecific jdbcSpecific) throws SQLException{
+		DataFieldMetadata fieldMetadata = new DataFieldMetadata(name, null);
+		
+		int type = dbMetadata.getParameterType(sqlIndex);
+		char cloverType = jdbcSpecific.sqlType2jetel(type);
+		//set length and scale for decimal field
+		if (cloverType == DataFieldMetadata.DECIMAL_FIELD) {
+			int scale = 0;
+			int length = 0;
+			try {
+				scale = dbMetadata.getScale(sqlIndex);
+				if (scale < 0) {
+					cloverType = DataFieldMetadata.NUMERIC_FIELD;
+				}else{
+					fieldMetadata.setFieldProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(scale));
+				}
+			} catch (SQLException e) {
+				cloverType = DataFieldMetadata.NUMERIC_FIELD;
+			}
+			try {
+				length = scale + dbMetadata.getPrecision(sqlIndex);
+				if (length <= scale) {
+					cloverType = DataFieldMetadata.NUMERIC_FIELD;
+				}else{
+					fieldMetadata.setFieldProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(length));				
+				}
+			} catch (SQLException e) {
+				cloverType = DataFieldMetadata.NUMERIC_FIELD;
+			}
+		}
+		fieldMetadata.setType(cloverType);
+		//for Date Data Field set proper format
+		switch (type) {
+		case Types.DATE:
+			fieldMetadata.setFormatStr(Defaults.DEFAULT_DATE_FORMAT);
+			break;
+		case Types.TIME:
+			fieldMetadata.setFormatStr(Defaults.DEFAULT_TIME_FORMAT);
+			break;
+		case Types.TIMESTAMP:
+			fieldMetadata.setFormatStr(Defaults.DEFAULT_DATETIME_FORMAT);
+			break;
+		}
+		
+		if (dbMetadata.isNullable(sqlIndex) == ResultSetMetaData.columnNullable) {
+			fieldMetadata.setNullable(true);
+		}
+		return fieldMetadata;
+	}
+
 	/**
 	 *  Converts SQL metadata into Clover's DataRecordMetadata
 	 *
@@ -222,7 +272,26 @@ public class SQLUtil {
 		return dbMetadata2jetel(dbMetadata, DefaultJdbcSpecific.getInstance());
 	}
 
-	/**
+	public static DataRecordMetadata dbMetadata2jetel(ParameterMetaData dbMetadata, String metadataName, JdbcSpecific jdbcSpecific) throws SQLException {
+		DataFieldMetadata fieldMetadata;
+		DataRecordMetadata jetelMetadata = new DataRecordMetadata(metadataName, DataRecordMetadata.DELIMITED_RECORD);
+		jetelMetadata.setFieldDelimiter(DEFAULT_DELIMITER);
+		jetelMetadata.setRecordDelimiters(END_RECORD_DELIMITER);
+		String colName;
+
+		for (int i = 1; i <= dbMetadata.getParameterCount(); i++) {
+			colName = "field" + i;
+			fieldMetadata = dbMetadata2jetel(colName, dbMetadata, i, jdbcSpecific);
+			jetelMetadata.addField(fieldMetadata);
+		}
+		return jetelMetadata;
+	}
+
+	@Deprecated
+	public static DataRecordMetadata dbMetadata2jetel(ParameterMetaData dbMetadata, String metadataName) throws SQLException {
+		return dbMetadata2jetel(dbMetadata, metadataName, DefaultJdbcSpecific.getInstance());
+	}
+		/**
 	 *  For specified table returns names of individual fileds
 	 *
 	 * @param  conn       database connection
