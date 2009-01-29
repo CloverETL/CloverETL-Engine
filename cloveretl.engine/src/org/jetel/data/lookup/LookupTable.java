@@ -77,18 +77,19 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
     public DataRecordMetadata getMetadata();
 
     /**
-     * <p>Returns the number and types of fields used to create the lookup proxy object by calling any of the
+     * <p>Returns metadata used to create the lookup proxy object by calling any of the
      * {@link #createLookup(RecordKey)} or {@link #createLookup(RecordKey, DataRecord)} methods.</p>
      *
-     * @return array with types of key fields
+     * @return metadata that is used for joining records
      *
      * @throws UnsupportedOperationException if the key cannot be obtained
      * @throws NotInitializedException if the lookup table has not yet been initialized
      * @throws ComponentNotReadyException if the lookup table is not properly configured
+     * @throws RuntimeException if metadata is not set by user and can't be obtained for external source (eg. database)
      *
      * @since 7th November 2008
      */
-    public char[] getKey() throws ComponentNotReadyException;
+    public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException;
 
     /**
      * <p>Puts the given data record into the lookup table. This method will work properly iff
