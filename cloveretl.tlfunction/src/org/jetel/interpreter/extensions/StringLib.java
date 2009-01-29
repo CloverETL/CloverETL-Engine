@@ -881,33 +881,59 @@ public class StringLib extends TLFunctionLibrary {
                     throw new TransformLangExecutorRuntimeException(params,
                     "is_date - wrong type of literal");
                 }
-                if (params[0].toString().length() == 0){
-                	return TLBooleanValue.TRUE;
+                DateFormatStore formatter = (DateFormatStore) context.getContext();
+                String pattern = params[1].toString();
+                String locale = params.length > 2 && params[2].type == TLValueType.STRING ? 
+                		params[2].toString() : null;
+                
+        		/*
+				 * When parsing in lenient mode the parser is allowed to
+				 * skip part of input string or accept illegal values
+				 * for days in month (@see java.util.Calendar.setLenient())
+				 * 
+				 * In lenient mode we additionally allow an empty string to be treated 
+				 * as a valid date.
+				 * 
+				 * Therefore we will use strict validation
+				 * (lenient=false) by default and additionally check that whole input 
+				 * was consumed in parsing (parsePostion = input.length).
+				 * Empty string will be treated as an illegal date.
+				 */		
+                boolean lenient = false;
+                if (params.length == 3 && params[2].type == TLValueType.BOOLEAN){
+                	lenient = ((TLBooleanValue)params[2]).getBoolean();
+                }else if (params.length == 4) {
+                	lenient = ((TLBooleanValue)params[3]).getBoolean();
+                }
+                
+                // empty string handling in lenient mode
+                final String input = params[0].toString();
+                if (lenient) {
+                	if (input.length() == 0) {
+                		return TLBooleanValue.TRUE;
+                	}
+                }
+                
+                if (formatter.formatter == null){
+                	formatter.init(locale, pattern);
+                }else if (locale != null) {
+                	formatter.reset(locale, pattern);
                 }else{
-                    DateFormatStore formatter = (DateFormatStore) context.getContext();
-                    String pattern = params[1].toString();
-                    String locale = params.length > 2 && params[2].type == TLValueType.STRING ? 
-                    		params[2].toString() : null;
-                    Boolean lenient = null;
-                    if (params.length == 3 && params[2].type == TLValueType.BOOLEAN){
-                    	lenient = ((TLBooleanValue)params[2]).getBoolean();
-                    }else if (params.length == 4) {
-                    	lenient = ((TLBooleanValue)params[2]).getBoolean();
-                    }
-                    if (formatter.formatter == null){
-                    	formatter.init(locale, pattern);
-                    }else if (locale != null) {
-                    	formatter.reset(locale, pattern);
-                    }else{
-                    	formatter.resetPattern(pattern);
-                    }
-                    if (lenient != null){
-                    	formatter.setLenient(lenient);
-                    }else{
-                    	formatter.setLenient(true);
-                    }
-                    formatter.formatter.parse(params[0].toString(), formatter.position);
-                    return formatter.position.getIndex() != 0 ? TLBooleanValue.TRUE : TLBooleanValue.FALSE;
+                	formatter.resetPattern(pattern);
+                }
+
+                formatter.setLenient(lenient);
+                formatter.formatter.parse(input, formatter.position);
+                if (!lenient) {
+                	// strict: valid input must be non-empty & exact match to pattern
+                	return TLBooleanValue.getInstance(
+                			input.length() > 0 
+                			&&
+                			formatter.position.getIndex() == input.length()
+                	);
+                } else {
+                	// lenient: return true if something was parsed
+                	return TLBooleanValue.getInstance(formatter.position.getIndex() != 0); 
                 }
             }
 
