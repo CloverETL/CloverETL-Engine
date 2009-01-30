@@ -45,6 +45,9 @@ public class AutoFilling {
 
     // data object
 	private static class AutoFillingData {
+		
+		private boolean noAutoFillingData; // the attribute indicates if metadata doesn't contain any autofilling field
+		
 	    private int[] globalRowCount;	// number of returned records for every getNext method
 	    private int[] sourceRowCount;
 	    private int[] sourceName;
@@ -122,6 +125,16 @@ public class AutoFilling {
         data.defaultValue = new int[defaultLen];
         data.rowTimestamp = new int[rowTimestampLen];
         data.readerTimestamp = new int[readerTimestampLen];
+        data.noAutoFillingData = 
+        	globalRowCountLen <= 0 &&
+        	sourceRowCountLen <= 0 &&
+        	metadataRowCountLen <= 0 &&
+        	metadataSourceRowCountLen <= 0 &&
+        	sourceNameLen <= 0 &&
+        	sourceTimestampLen <= 0 &&
+        	sourceSizeLen <= 0 &&
+        	defaultLen <= 0;
+
         // reduce arrays' sizes
         System.arraycopy(globalRowCountTmp, 0, data.globalRowCount, 0, globalRowCountLen);
         System.arraycopy(sourceRowCountTmp, 0, data.sourceRowCount, 0, sourceRowCountLen);
@@ -150,6 +163,12 @@ public class AutoFilling {
         	autoFillingData = createAutoFillingFields(rec.getMetadata());
             autoFillingMap.put(rec.getMetadata(), autoFillingData);
         }
+        
+        if (autoFillingData.noAutoFillingData) {
+            globalCounter++;
+        	return;
+        }
+        
        	for (int i : autoFillingData.globalRowCount) {
        		rec.getField(i).setValue(globalCounter);
        	}
