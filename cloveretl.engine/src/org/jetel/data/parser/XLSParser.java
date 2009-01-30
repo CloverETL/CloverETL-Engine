@@ -21,6 +21,7 @@
 
 package org.jetel.data.parser;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.naming.InvalidNameException;
@@ -60,6 +61,66 @@ import org.jetel.util.NumberIterator;
  */
 public abstract class XLSParser implements Parser {
 
+	/**
+	 * For incremental reading.
+	 */
+	protected static class Incremental {
+		private Map<String, Integer> sheetRow;
+
+		public Incremental() {
+			this(null);
+		}
+
+		public Incremental(String position) {
+			sheetRow = new HashMap<String, Integer>();
+			parsePosition(position);
+		}
+		
+		private void parsePosition(String position) {
+			if (position == null) return;
+			String[] all = position.split("#");
+			if (all.length != 2) return;
+			String[] tabs = all[0].split(",");
+			String[] rows = all[1].split(",");
+			if (tabs.length != rows.length) return;
+			
+			try {
+				for (int i=0; i<tabs.length; i++) {
+					sheetRow.put(tabs[i], Integer.parseInt(rows[i]));
+				}
+			} catch (NumberFormatException e) {
+				sheetRow.clear();
+				return;
+			}
+		}
+		
+		public Integer getRow(String sheetName) {
+			return sheetRow.get(sheetName);
+		}
+		
+		public void setRow(String sheetName, int row) {
+			sheetRow.put(sheetName, row);
+		}
+		
+		public void clear() {
+			sheetRow.clear();
+		}
+		
+		public String getPosition() {
+			StringBuilder sbKey = new StringBuilder();
+			StringBuilder sbValue = new StringBuilder();
+			if (sheetRow.size() <= 0) return "";
+			for (String key: sheetRow.keySet()) {
+				sbKey.append(key).append(",");
+				sbValue.append(sheetRow.get(key)).append(",");
+			}
+			sbKey.deleteCharAt(sbKey.length()-1);
+			sbValue.deleteCharAt(sbValue.length()-1);
+			sbKey.append("#");
+			return sbKey.append(sbValue.toString()).toString();
+		}
+	}
+	
 	public final static int NO_METADATA_INFO = 0;
 	public final static int ONLY_CLOVER_FIELDS = 1;
 	public final static int CLOVER_FIELDS_AND_XLS_NUMBERS = 2;
@@ -78,7 +139,9 @@ public abstract class XLSParser implements Parser {
 	protected IParserExceptionHandler exceptionHandler;
 	protected String sheetName = null;
 	protected String sheetNumber = null;
+	protected Incremental incremental;
 	protected NumberIterator sheetNumberIterator = null;
+	protected short sheetCounter = -1;
 	protected int recordCounter = 1;
 	protected int firstRow = 0;
 	protected int currentRow;
@@ -90,56 +153,29 @@ public abstract class XLSParser implements Parser {
 	protected int mappingType = -1;
 	protected int[][] fieldNumber ; //mapping of xls fields and clover fields
 	protected boolean[] isAutoFilling;
+	protected boolean releaseDataSource = true;
 	
 	protected final int XLS_NUMBER = 0;
 	protected final int CLOVER_NUMBER = 1;
 	
 	public final static int MAX_NAME_LENGTH = 15;
 
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#close()
-	 */
-	public abstract void close() ;
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#setExceptionHandler(org.jetel.exception.IParserExceptionHandler)
-	 */
 	public void setExceptionHandler(IParserExceptionHandler handler) {
         this.exceptionHandler = handler;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#getExceptionHandler()
-	 */
 	public IParserExceptionHandler getExceptionHandler() {
         return exceptionHandler;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#getNext()
-	 */
 	public DataRecord getNext() throws JetelException {
 		// create a new data record
 		DataRecord record = new DataRecord(metadata);
-
 		record.init();
 
 		return getNext(record);
 	}
 
-	/**
-	 * An operation that produces next record from Input data or null
-	 * 
-	 * @param record to fill
-	 * @return The Next value
-	 * @throws JetelException
-	 */
-	protected abstract DataRecord parseNext(DataRecord record) throws JetelException;
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#getNext(org.jetel.data.DataRecord)
-	 */
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
 		if(exceptionHandler != null ) {  //use handler only if configured
@@ -157,16 +193,22 @@ public abstract class XLSParser implements Parser {
 	}
 
 	/**
+	 * An operation that produces next record from Input data or null
+	 * 
+	 * @param record to fill
+	 * @return The Next value
+	 * @throws JetelException
+	 */
+	protected abstract DataRecord parseNext(DataRecord record) throws JetelException;
+	
+	/**
 	 * This method checks if there is next sheet with name conforming with 
 	 * sheetName or sheetNumber pattern
 	 * 
 	 * @return
 	 */
-	public abstract boolean getNextSheet();
+	protected abstract boolean getNextSheet();
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#getPolicyType()
-	 */
 	public PolicyType getPolicyType() {
         if(exceptionHandler != null) {
             return exceptionHandler.getType();
@@ -174,9 +216,6 @@ public abstract class XLSParser implements Parser {
         return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
-	 */
 	public void init(DataRecordMetadata _metadata)throws ComponentNotReadyException{
 		if (_metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
@@ -191,15 +230,12 @@ public abstract class XLSParser implements Parser {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
-	 */
 	public abstract void setDataSource(Object inputDataSource) throws ComponentNotReadyException;
 
+	public void setReleaseDataSource(boolean releaseDataSource)  {
+		this.releaseDataSource = releaseDataSource;
+	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#skip(int)
-	 */
 	public int skip(int nRec) throws JetelException {
 		currentRow+=nRec;
 		return nRec;
@@ -246,21 +282,32 @@ public abstract class XLSParser implements Parser {
      * Method for mapping metadata with columns in xls
      * 
      */
-    protected void mapFields() throws ComponentNotReadyException{
-        for (int i=0;i<fieldNumber.length;i++){
-            fieldNumber[i][CLOVER_NUMBER] = -1;
-        }
-        Map fieldNames = metadata.getFieldNames();
-        switch (mappingType) {
-        case ONLY_CLOVER_FIELDS:onlyCloverFields(fieldNames);break;
-        case CLOVER_FIELDS_AND_XLS_NUMBERS:cloverFieldsAndXlsNumbers(fieldNames);break;
-        case MAP_NAMES:mapNames(fieldNames);break;
-        case CLOVER_FIELDS_AND_XLS_NAMES:cloverfieldsAndXlsNames(fieldNames);break;
-        case NO_METADATA_INFO:
-        default:noMetadataInfo();break;
-        }
-    	
-    }
+    protected void mapFields() throws ComponentNotReadyException {
+		for (int i = 0; i < fieldNumber.length; i++) {
+			fieldNumber[i][CLOVER_NUMBER] = -1;
+		}
+
+		Map fieldNames = metadata.getFieldNames();
+
+		switch (mappingType) {
+			case ONLY_CLOVER_FIELDS:
+				onlyCloverFields(fieldNames);
+				break;
+			case CLOVER_FIELDS_AND_XLS_NUMBERS:
+				cloverFieldsAndXlsNumbers(fieldNames);
+				break;
+			case MAP_NAMES:
+				mapNames(fieldNames);
+				break;
+			case CLOVER_FIELDS_AND_XLS_NAMES:
+				cloverfieldsAndXlsNames(fieldNames);
+				break;
+			case NO_METADATA_INFO:
+			default:
+				noMetadataInfo();
+				break;
+		}
+	}
     
 	/**
 	 * If any of the metadata attribute wasn't set cell order coresponds with field order in metadata
@@ -498,5 +545,40 @@ public abstract class XLSParser implements Parser {
 	 * @return sheet name in current workbook
 	 */
 	public abstract String getSheetName(int index);
+
+	public Object getPosition() {
+		return ((incremental != null) ? incremental.getPosition() : null);
+	}
+
+	public void movePosition(Object position) {
+		incremental = new Incremental(position.toString());
+		discardBytes(getSheetName(sheetCounter));
+	}
+
+	protected void discardBytes(String sheetName) {
+		if (incremental == null) {
+			return;
+		}
+
+		Integer position = incremental.getRow(sheetName);
+
+		if (position != null && position.intValue() > 0) {
+			currentRow = position.intValue();
+		}
+	}
+
+	public void reset() throws ComponentNotReadyException {
+        sheetCounter = -1;
+        recordCounter = 1;
+		currentRow = firstRow;
+
+		if (sheetNumber != null && sheetNumberIterator != null){
+        	sheetNumberIterator.reset();
+        }
+
+		incremental = null;
+	}
+
+	public abstract void close();
 
 }

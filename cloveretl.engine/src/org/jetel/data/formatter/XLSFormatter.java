@@ -20,11 +20,12 @@
 
 package org.jetel.data.formatter;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.naming.InvalidNameException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
@@ -52,10 +53,16 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public abstract class XLSFormatter implements Formatter {
 	
-	protected final static int CELL_NUMBER_IN_SHEET = 'Z'-'A'+1;//number of "AA" cell in excel sheet
+	protected static final String FILE_PROTOCOL = "file";
+	protected static final String CLOVER_FIELD_PREFIX = "$";
+
+	protected static final int CELL_NUMBER_IN_SHEET = 'Z' - 'A' + 1; // number of "AA" cell in excel sheet
+
+	protected static final int FIELD_SIZE_MULTIPLIER = 256;
+
+	protected static Log logger = LogFactory.getLog(XLSFormatter.class);
 
 	protected DataRecordMetadata metadata;
-	protected FileOutputStream out;
 	protected int firstRow = 0;
 	protected int namesRow = -1;
 	protected boolean append;
@@ -246,18 +253,16 @@ public abstract class XLSFormatter implements Formatter {
 	}
 	
 	public int writeHeader() throws IOException {
-//		if (!(namesRow == -1 || (append && recCounter > 0))){
-//			saveNames();
-//		}
-		//saveNames() should be called from prepareSheet()
 		return 0;
 	}
 	
-	/**
-	 * Saves metadata field's names to current sheet
-	 * 
-	 * @throws IOException
-	 */
-	protected abstract void saveNames() throws IOException;
+	public int writeFooter() throws IOException {
+		return 0;
+	}
+
+	public void finish() throws IOException {
+		flush();
+	}
+	
 }
 
