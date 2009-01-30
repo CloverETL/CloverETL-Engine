@@ -178,7 +178,7 @@ public class ComponentXMLAttributes {
      * reference to global parameter/property included in atribute's textual/string value
 	 */
 	public String getString(String key) throws AttributeNotFoundException {
-		return getString(key, true);
+		return getString(key, PropertyRefResolver.DEFAULT_RESOLVE_SPEC_CHAR);
 	}
     
     /**
@@ -191,10 +191,10 @@ public class ComponentXMLAttributes {
      * reference to global parameter/property included in atribute's textual/string value
      */
     public String getString(String key, boolean resolveSpecChars) throws AttributeNotFoundException {
-        String value=nodeXML.getAttribute(key);
-        if (value.length()==0){
+    	if (!nodeXML.hasAttribute(key)) {
             throw new AttributeNotFoundException(key);
-        }
+    	}
+        String value=nodeXML.getAttribute(key);
         return refResolver.resolveRef(value, resolveSpecChars);
     }
 
@@ -207,11 +207,7 @@ public class ComponentXMLAttributes {
 	 * @return               The string value
 	 */
 	public String getString(String key, String defaultValue) {
-        String value=nodeXML.getAttribute(key);
-        if (value.length()==0){
-            return defaultValue;
-        }
-        return refResolver.resolveRef(value);
+		return getString(key, defaultValue, PropertyRefResolver.DEFAULT_RESOLVE_SPEC_CHAR);
 	}
 
 	/**
@@ -222,10 +218,10 @@ public class ComponentXMLAttributes {
 	 * @return               The string value
 	 */
 	public String getString(String key, String defaultValue, boolean resolveSpecChars) {
-        String value=nodeXML.getAttribute(key);
-        if (value.length()==0){
+		if (!nodeXML.hasAttribute(key)) {
             return defaultValue;
-        }
+		}
+        String value=nodeXML.getAttribute(key);
         return refResolver.resolveRef(value, resolveSpecChars);
 	}
 
@@ -249,11 +245,7 @@ public class ComponentXMLAttributes {
      * reference to global parameter/property included in atribute's textual/string value
 	 */
 	public int getInteger(String key) throws AttributeNotFoundException {
-        String value=nodeXML.getAttribute(key);
-        if (value.length()==0){
-            throw new AttributeNotFoundException(key);
-        }
-        value = refResolver.resolveRef(value);
+        String value = getString(key);
         if (value.equalsIgnoreCase(STR_MIN_INT)){
             return Integer.MIN_VALUE;
         }else if (value.equalsIgnoreCase(STR_MAX_INT)){
@@ -270,12 +262,8 @@ public class ComponentXMLAttributes {
 	 * @return               The integer value
 	 */
 	public int getInteger(String key, int defaultValue) {
-	    String value=nodeXML.getAttribute(key);
-	    if (value.length()==0){
-	        return defaultValue;
-	    }
 	    try{
-	        value = refResolver.resolveRef(value);
+	        String value = getString(key);
 	        if (value.equalsIgnoreCase(STR_MIN_INT)){
 	            return Integer.MIN_VALUE;
 	        }else if (value.equalsIgnoreCase(STR_MAX_INT)){
@@ -284,15 +272,13 @@ public class ComponentXMLAttributes {
 	        return Integer.parseInt(value);
 	    } catch (NumberFormatException ex) {
 	        return defaultValue;
-	    }
+	    } catch (AttributeNotFoundException e) {
+	        return defaultValue;
+		}
 	}
     
 	public short getShort(String key) throws AttributeNotFoundException {
-        String value=nodeXML.getAttribute(key);
-        if (value.length()==0){
-            throw new AttributeNotFoundException(key);
-        }
-        value = refResolver.resolveRef(value);
+        String value = getString(key);
         if (value.equalsIgnoreCase(STR_MIN_INT)){
             return Short.MIN_VALUE;
         }else if (value.equalsIgnoreCase(STR_MAX_INT)){
@@ -302,11 +288,8 @@ public class ComponentXMLAttributes {
 	}
 
 	public short getShort(String key, short defaultValue) {
-	    String value=nodeXML.getAttribute(key);
-	    if (value.length()==0){
-	        return defaultValue;
-	    }
 	    try{
+	        String value = getString(key);
 	        value = refResolver.resolveRef(value);
 	        if (value.equalsIgnoreCase(STR_MIN_INT)){
 	            return Short.MIN_VALUE;
@@ -316,11 +299,10 @@ public class ComponentXMLAttributes {
 			return Short.parseShort(value);
 	    } catch (NumberFormatException ex) {
 	        return defaultValue;
-	    }
+	    } catch (AttributeNotFoundException e) {
+	        return defaultValue;
+		}
 	}
-    
-
-   
     
     /**
      * Sets value of specified attribute
@@ -342,11 +324,7 @@ public class ComponentXMLAttributes {
      * reference to global parameter/property included in atribute's textual/string value
 	 */
 	public long getLong(String key) throws AttributeNotFoundException {
-        String value=nodeXML.getAttribute(key);
-        if (value.length()==0){
-            throw new AttributeNotFoundException(key);
-        }
-        value = refResolver.resolveRef(value);
+        String value = getString(key);
         if (value.equalsIgnoreCase(STR_MIN_LONG)){
             return Long.MIN_VALUE;
         }else if (value.equalsIgnoreCase(STR_MAX_LONG)){
@@ -365,12 +343,8 @@ public class ComponentXMLAttributes {
 	 * @return               The long value
 	 */
 	public long getLong(String key, long defaultValue) {
-	    String value=nodeXML.getAttribute(key);
-	    if (value.length()==0){
-	        return defaultValue;
-	    }
 	    try{
-	        value = refResolver.resolveRef(value);
+	        String value = getString(key);
 	        if (value.equalsIgnoreCase(STR_MIN_LONG)){
 	            return Long.MIN_VALUE;
 	        }else if (value.equalsIgnoreCase(STR_MAX_LONG)){
@@ -379,7 +353,9 @@ public class ComponentXMLAttributes {
 	        return Long.parseLong(value);
 	    } catch (NumberFormatException ex) {
 	        return defaultValue;
-	    }
+	    } catch (AttributeNotFoundException e) {
+	        return defaultValue;
+		}
 	}
 
     /**
@@ -401,11 +377,7 @@ public class ComponentXMLAttributes {
      * reference to global parameter/property included in atribute's textual/string value
 	 */
     public boolean getBoolean(String key) throws AttributeNotFoundException {
-        String value=nodeXML.getAttribute(key);
-        if (value.length()==0){
-            throw new AttributeNotFoundException(key);
-        }
-        value = refResolver.resolveRef(value);
+        String value = getString(key);
         return value.matches("^[tTyY].*");
 	}
 
@@ -418,17 +390,12 @@ public class ComponentXMLAttributes {
 	 * @return               The boolean value
 	 */
 	public boolean getBoolean(String key, boolean defaultValue) {
-        String value=nodeXML.getAttribute(key);
-        if (value.length()==0){
-            return defaultValue;
-        }
 		try {
-			value = refResolver.resolveRef(nodeXML.getAttribute(key));
+	        String value = getString(key);
 			return value.matches("^[tTyY].*");
-		} catch (Exception ex) {
+		} catch (AttributeNotFoundException ex) {
 			return defaultValue;
 		}
-
 	}
     
    
@@ -452,11 +419,7 @@ public class ComponentXMLAttributes {
      * reference to global parameter/property included in atribute's textual/string value
 	 */
 	public double getDouble(String key) throws AttributeNotFoundException {
-	    String value=nodeXML.getAttribute(key);
-	    if (value.length()==0){
-	        throw new AttributeNotFoundException(key);
-	    }
-	    value = refResolver.resolveRef(value);
+        String value = getString(key);
 	    if (value.equalsIgnoreCase(STR_MIN_DOUBLE)){
 	        return Double.MIN_VALUE;
 	    }else if (value.equalsIgnoreCase(STR_MAX_DOUBLE)){
@@ -474,12 +437,8 @@ public class ComponentXMLAttributes {
 	 * @return               The double value
 	 */
 	public double getDouble(String key, double defaultValue){
-        String value=nodeXML.getAttribute(key);
-        if (value.length()==0){
-            return defaultValue;
-        }
 		try {
-			value = refResolver.resolveRef(value);
+	        String value = getString(key);
 			if (value.equalsIgnoreCase(STR_MIN_DOUBLE)){
 			    return Double.MIN_VALUE;
 			}else if (value.equalsIgnoreCase(STR_MAX_DOUBLE)){
@@ -487,6 +446,8 @@ public class ComponentXMLAttributes {
 			}
 			return Double.parseDouble(value);
 		} catch (NumberFormatException ex) {
+			return defaultValue;
+		} catch (AttributeNotFoundException e) {
 			return defaultValue;
 		} 
 	}
@@ -500,7 +461,7 @@ public class ComponentXMLAttributes {
      * @param value value to be set
      */
     public void setDouble(String key, double value) {
-             nodeXML.setAttribute(key,String.valueOf(value));
+    	nodeXML.setAttribute(key,String.valueOf(value));
     }
 
     
