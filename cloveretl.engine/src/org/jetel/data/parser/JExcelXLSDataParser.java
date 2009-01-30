@@ -1,33 +1,32 @@
-
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2005-06  Javlin Consulting <info@javlinconsulting.cz>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
-
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2008  David Pavlis <david.pavlis@javlin.cz>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.data.parser;
 
 import java.io.InputStream;
+
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -60,7 +59,6 @@ import org.jetel.util.string.StringUtils;
  *  www.javlinconsulting.cz
  *
  * @since Jan 16, 2007
- *
  */
 public class JExcelXLSDataParser extends XLSParser {
 	
@@ -68,9 +66,6 @@ public class JExcelXLSDataParser extends XLSParser {
 	private Sheet sheet;
 	private Cell cell;
 	private String charset = null;
-	private short sheetCounter;
-	private boolean releaseInputSource = true;
-	private Incremental incremental;
 	
 	/**
 	 * Default constructor
@@ -94,10 +89,9 @@ public class JExcelXLSDataParser extends XLSParser {
 	}
 
 	@Override
-	protected void cloverfieldsAndXlsNames(Map fieldNames)
-			throws ComponentNotReadyException {
+	protected void cloverfieldsAndXlsNames(Map fieldNames) throws ComponentNotReadyException {
 		if (cloverFields.length!=xlsFields.length){
-			throw new ComponentNotReadyException("Number of clover fields and xls fields must be the same");
+			throw new ComponentNotReadyException("Number of clover fields and XLS fields must be the same");
 		}
 		//getting metadata row
 		Cell[] row = sheet.getRow(metadataRow);
@@ -186,9 +180,6 @@ public class JExcelXLSDataParser extends XLSParser {
 		return getPreview(0, length);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.XLSParser#createMetadata()
-	 */
 	@Override
 	public DataRecordMetadata createMetadata(){
 		if (wb == null) return null;
@@ -341,17 +332,10 @@ public class JExcelXLSDataParser extends XLSParser {
 		return record;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
-	 */
-	public void setReleaseDataSource(boolean releaseInputSource)  {
-		this.releaseInputSource = releaseInputSource;
-	}
-
 	@Override
 	public void setDataSource(Object inputDataSource)
 			throws ComponentNotReadyException {
-		if (releaseInputSource && wb != null) {
+		if (releaseDataSource && wb != null) {
 			wb.close();
 			sheetNumberIterator = null;
 		}
@@ -386,42 +370,18 @@ public class JExcelXLSDataParser extends XLSParser {
         }
 	}
 	
-	public void reset() {
+	public void reset() throws ComponentNotReadyException {
+		super.reset();
+
 		if (wb != null) {
 			wb.close();
 		}
-        currentRow = firstRow;
+
         sheet = null;
-        recordCounter = 1;
-        sheetCounter = -1;
-        if (sheetNumber != null && sheetNumberIterator != null){
-        	sheetNumberIterator.reset();
-        }
-        incremental = null;
 	}
 
-	public Object getPosition() {
-		return incremental != null ? incremental.getPosition() : null;
-	}
-
-	public void movePosition(Object oPosition) {
-		incremental = new Incremental(oPosition.toString());
-		discardBytes();
-	}
-	
-	public void discardBytes() {
-		if (incremental == null) return;
-		Integer position = incremental.getRow(sheet.getName());
-		if (position != null && position.intValue() > 0) {
-			currentRow = position.intValue();
-		}
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.XLSParser#getNextSheet()
-	 */
 	@Override
-	public boolean getNextSheet() {
+	protected boolean getNextSheet() {
 		if (sheet != null) {
 			if (incremental == null) incremental = new Incremental();
 			incremental.setRow(sheet.getName(), currentRow);
@@ -457,10 +417,11 @@ public class JExcelXLSDataParser extends XLSParser {
 			lastRow = lastRowAttribute;
 		}
 		
-		discardBytes();
+		discardBytes(sheet.getName());
+
 		return true;
 	}
-	
+
 	@Override
 	public boolean getSheet(int sheetNumber){
 		if (sheetNumber >= wb.getNumberOfSheets()) return false;
@@ -494,64 +455,4 @@ public class JExcelXLSDataParser extends XLSParser {
 		return wb.getSheet(index).getName();
 	}
 
-	/**
-	 * For incremental reading.
-	 */
-	private static class Incremental {
-		private Map<String, Integer> sheetRow;
-
-		public Incremental() {
-			this(null);
-		}
-
-		public Incremental(String position) {
-			sheetRow = new HashMap<String, Integer>();
-			parsePosition(position);
-		}
-		
-		private void parsePosition(String position) {
-			if (position == null) return;
-			String[] all = position.split("#");
-			if (all.length != 2) return;
-			String[] tabs = all[0].split(",");
-			String[] rows = all[1].split(",");
-			if (tabs.length != rows.length) return;
-			
-			try {
-				for (int i=0; i<tabs.length; i++) {
-					sheetRow.put(tabs[i], Integer.parseInt(rows[i]));
-				}
-			} catch (NumberFormatException e) {
-				sheetRow.clear();
-				return;
-			}
-		}
-		
-		public Integer getRow(String sheetName) {
-			return sheetRow.get(sheetName);
-		}
-		
-		public void setRow(String sheetName, int row) {
-			sheetRow.put(sheetName, row);
-		}
-		
-		public void clear() {
-			sheetRow.clear();
-		}
-		
-		public String getPosition() {
-			StringBuilder sbKey = new StringBuilder();
-			StringBuilder sbValue = new StringBuilder();
-			if (sheetRow.size() <= 0) return "";
-			for (String key: sheetRow.keySet()) {
-				sbKey.append(key).append(",");
-				sbValue.append(sheetRow.get(key)).append(",");
-			}
-			sbKey.deleteCharAt(sbKey.length()-1);
-			sbValue.deleteCharAt(sbValue.length()-1);
-			sbKey.append("#");
-			return sbKey.append(sbValue.toString()).toString();
-		}
-	}
-	
 }

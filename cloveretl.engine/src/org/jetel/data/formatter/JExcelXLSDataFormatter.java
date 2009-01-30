@@ -71,9 +71,18 @@ import org.jetel.util.string.StringUtils;
  */
 public class JExcelXLSDataFormatter extends XLSFormatter {
 	
-	private static final String CLOVER_FIELD_PREFIX = "$";
-	private static final Object FILE_PROTOCOL = "file";
-	
+	private static final class SheetData {
+		
+		private WritableSheet sheet;
+		private Integer currentRow = 0;
+		
+		public SheetData(WritableSheet sheet, int currentRow) {
+			this.sheet = sheet;
+			this.currentRow = currentRow;
+		}
+		
+	}
+
 	private WritableWorkbook wb;
 	private WritableSheet sheet;
 	private Map<String, SheetData> sheets = null;
@@ -185,7 +194,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		}
 		for (short i=0;i<metadata.getNumFields();i++){
 			if (metadata.getField(i).getSize() > 0){
-				view.setSize(metadata.getField(i).getSize() * 256);
+				view.setSize(metadata.getField(i).getSize() * FIELD_SIZE_MULTIPLIER);
 			}
 			sheet.setColumnView(firstColumn + i, view);
 			cellStyle[i] = getCellFormat(metadata.getField(i));
@@ -305,15 +314,12 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		}
 	}
 	
-	public void finish() throws IOException {
-		flush();
-	}
-	
-    /**
-     * Method for saving names of columns
-     */
+	/**
+	 * Saves metadata field's names to current sheet
+	 * 
+	 * @throws IOException
+	 */
     protected void saveNames() throws IOException{
-//		recCounter = namesRow > -1 ? namesRow : 0;
 		WritableFont font = new WritableFont(WritableFont.ARIAL, WritableFont.DEFAULT_POINT_SIZE, WritableFont.BOLD);
 		WritableCellFormat format = new WritableCellFormat(font);
 		Label name;
@@ -325,9 +331,6 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 				throw new IOException(e.getMessage());
 			}
 		}
-//		if (firstRow > ++recCounter) {
-//			recCounter = firstRow;
-//		}
     }
 	
 	/* (non-Javadoc)
@@ -429,11 +432,6 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
         return 0;
 	}
 
-	public int writeFooter() throws IOException {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
 	@Override
 	public void prepareSheet(DataRecord record) {
 		currentSheetName = sheetNameKeyRecord.getKeyString(record);
@@ -445,16 +443,4 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		}
 	}
 
-}
-
-class SheetData {
-	
-	WritableSheet sheet;
-	Integer currentRow = 0;
-	
-	SheetData(WritableSheet sheet, int currentRow) {
-		this.sheet = sheet;
-		this.currentRow = currentRow;
-	}
-	
 }
