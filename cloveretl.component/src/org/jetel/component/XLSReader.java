@@ -420,10 +420,10 @@ public class XLSReader extends Node {
                         ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
             }
 
-            if (sheetNumber != null) {
-                parser.setSheetNumber(sheetNumber);
-            } else {
+            if (sheetName != null) {
                 parser.setSheetName(sheetName);
+            } else {
+                parser.setSheetNumber(sheetNumber);
             }
 
             reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
@@ -457,12 +457,10 @@ public class XLSReader extends Node {
 
         parser.setMetadataRow(metadataRow - 1);
 
-        if (sheetNumber != null) {
-            parser.setSheetNumber(sheetNumber);
-        } else if (sheetName != null) {
+        if (sheetName != null) {
             parser.setSheetName(sheetName);
         } else {
-            parser.setSheetNumber("0");
+            parser.setSheetNumber((sheetNumber != null) ? sheetNumber : "0");
         }
 
         //set proper mapping type between clover and xls fields

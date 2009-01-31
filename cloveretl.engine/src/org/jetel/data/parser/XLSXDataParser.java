@@ -51,7 +51,7 @@ import org.openxml4j.opc.Package;
  *
  * @author Martin Janik <martin.janik@javlin.cz>
  *
- * @version 30th January 2009
+ * @version 31st January 2009
  * @since 30th January 2009
  */
 public final class XLSXDataParser extends XLSParser {
@@ -93,7 +93,9 @@ public final class XLSXDataParser extends XLSParser {
 			}
 		}
 
-		sheetNumberIterator = new NumberIterator(sheetNumber, 0, Integer.MAX_VALUE);
+		if (sheetName == null && sheetNumber != null) {
+			sheetNumberIterator = new NumberIterator(sheetNumber, 0, Integer.MAX_VALUE);
+		}
 
 		sheet = null;
 		sheetCounter = -1;
