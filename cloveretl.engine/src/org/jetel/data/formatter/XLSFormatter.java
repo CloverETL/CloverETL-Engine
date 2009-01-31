@@ -1,23 +1,21 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2005-06  Javlin Consulting <info@javlinconsulting.cz>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
-
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2008  David Pavlis <david.pavlis@javlin.cz>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.data.formatter;
 
 import java.io.IOException;
@@ -45,14 +43,44 @@ import org.jetel.metadata.DataRecordMetadata;
  * <li>close()</li></ul>
  * 
  * @author avackova (agata.vackova@javlinconsulting.cz) ; 
- * (c) JavlinConsulting s.r.o.
- *  www.javlinconsulting.cz
+ * @author Martin Janik <martin.janik@javlin.cz>
  *
- * @since Jan 15, 2007
- *
+ * @version 31st January 2009
+ * @since 15th January 2007
  */
 public abstract class XLSFormatter implements Formatter {
 	
+    /**
+     * The type of a XLS(X) that should be used.
+     *
+     * @author Martin Janik <martin.janik@javlin.cz>
+     *
+     * @version 31st January 2009
+     * @since 31st January 2009
+     */
+    public static enum XLSType {
+
+        /** the type should be chosen automatically (based on a file extension) */
+        AUTO,
+        /** the classic XLS parser (JExcel) should be used */
+        XLS,
+        /** the XLSX parser (Apache POI) should be used */
+        XLSX;
+
+        public static XLSType valueOfIgnoreCase(String string) {
+            for (XLSType parserType : values()) {
+                if (parserType.name().equalsIgnoreCase(string)) {
+                    return parserType;
+                }
+            }
+
+            return AUTO;
+        }
+
+    }
+
+    public static final String XLSX_FILE_PATTERN = "^.*\\.[Xx][Ll][Ss][Xx]$";
+
 	protected static final String FILE_PROTOCOL = "file";
 	protected static final String CLOVER_FIELD_PREFIX = "$";
 
@@ -82,9 +110,6 @@ public abstract class XLSFormatter implements Formatter {
 		this.append = append;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
-	 */
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException{
 		this.metadata = _metadata;
 	}

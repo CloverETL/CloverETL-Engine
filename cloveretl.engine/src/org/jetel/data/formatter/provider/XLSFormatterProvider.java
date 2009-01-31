@@ -1,18 +1,40 @@
+/*
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2008  David Pavlis <david.pavlis@javlin.cz>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.data.formatter.provider;
 
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.JExcelXLSDataFormatter;
 import org.jetel.data.formatter.XLSFormatter;
+import org.jetel.data.formatter.XLSXDataFormatter;
 
 /**
  * Provides support for getting the delimited data formatter.
  * 
- * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
- *         (c) Javlin Consulting (www.javlinconsulting.cz)
+ * @author Jan Ausperger <jan.ausperger@javlinconsulting.cz>
+ * @author Martin Janik <martin.janik@javlin.cz>
+ * 
+ * @version 31st January 2009
  */
 public class XLSFormatterProvider implements FormatterProvider {
 
+	private boolean useXLSX;
 	private boolean append;
 	private String sheetName;
 	private int namesRow = -1;
@@ -20,32 +42,33 @@ public class XLSFormatterProvider implements FormatterProvider {
 	private int sheetNumber = -1;
 	private String firstColumnIndex = "A";
 	private String charset;
-	
-	/**
-	 * Contructors.
-	 */
+
 	public XLSFormatterProvider(boolean append) {
-		this(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER, append);
+		this(append, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
-	public XLSFormatterProvider(String charset, boolean append) {
+	public XLSFormatterProvider(boolean append, String charset) {
 		this.append = append;
 		this.charset = charset;
 	}
 
 	/**
-	 * Creates new data formatter.
+	 * Creates a new data formatter.
 	 * 
 	 * @return data formatter
 	 */
 	public Formatter getNewFormatter() {
-		XLSFormatter formatter = new JExcelXLSDataFormatter(charset, append);
+		XLSFormatter formatter = useXLSX ? new XLSXDataFormatter(append) : new JExcelXLSDataFormatter(charset, append);
 		formatter.setSheetName(sheetName);
 		formatter.setSheetNumber(sheetNumber);
 		formatter.setFirstColumn(firstColumnIndex);
 		formatter.setFirstRow(firstRow);
 		formatter.setNamesRow(namesRow);
 		return formatter;
+	}
+
+	public void setUseXLSX(boolean useXLSX) {
+		this.useXLSX = useXLSX;
 	}
 
 	/**
@@ -56,8 +79,7 @@ public class XLSFormatterProvider implements FormatterProvider {
 	}
 
 	/**
-	 * Set name of sheet, data will be written to. It has higher prioryty then
-	 * setSheetNumber method
+	 * Set name of sheet, data will be written to. It has higher prioryty then setSheetNumber method
 	 * 
 	 * @param sheetName
 	 */
@@ -66,8 +88,8 @@ public class XLSFormatterProvider implements FormatterProvider {
 	}
 
 	/**
-	 * Set number of sheet, data will be written to. If there was called method
-	 * setSheetName before calling prepareSheet, this number will be ignored.
+	 * Set number of sheet, data will be written to. If there was called method setSheetName before calling
+	 * prepareSheet, this number will be ignored.
 	 * 
 	 * @param sheetNumber
 	 */
@@ -103,7 +125,7 @@ public class XLSFormatterProvider implements FormatterProvider {
 	 * 
 	 * @param firstRow
 	 */
-	public void setFirstRow(int firstRow){
+	public void setFirstRow(int firstRow) {
 		this.firstRow = firstRow;
 	}
 
@@ -115,11 +137,12 @@ public class XLSFormatterProvider implements FormatterProvider {
 	}
 
 	/**
-	 * Sets the code of first column 
+	 * Sets the code of first column
 	 * 
-	 * @param firstColumn: "A","B",..,"AA",...
+	 * @param firstColumn
+	 *            : "A","B",..,"AA",...
 	 */
-	public void setFirstColumn(String firstColumn){
+	public void setFirstColumn(String firstColumn) {
 		this.firstColumnIndex = firstColumn;
 	}
 
@@ -137,4 +160,5 @@ public class XLSFormatterProvider implements FormatterProvider {
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
+
 }
