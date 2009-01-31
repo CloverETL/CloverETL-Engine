@@ -52,13 +52,13 @@ import org.jetel.util.file.WcardPattern;
 import org.jetel.util.string.StringUtils;
 
 /**
- * Parsing data from xls file using JExcelAPI.
+ * Parsing data from a XLS file using JExcelAPI.
  * 
- * @author avackova (agata.vackova@javlinconsulting.cz) ; 
- * (c) JavlinConsulting s.r.o.
- *  www.javlinconsulting.cz
+ * @author avackova <agata.vackova@javlinconsulting.cz> 
+ * @author Martin Janik <martin.janik@javlin.cz>
  *
- * @since Jan 16, 2007
+ * @version 31st January 2009
+ * @since 16th January 2007
  */
 public class JExcelXLSDataParser extends XLSParser {
 	
@@ -347,27 +347,26 @@ public class JExcelXLSDataParser extends XLSParser {
 		}else{
 			input = Channels.newInputStream((ReadableByteChannel)inputDataSource);
 		}
-		//creating workbook from input stream 
-        try {
-            wb = Workbook.getWorkbook(input,settings);
-       }catch(Exception ex){
-            throw new ComponentNotReadyException(ex);
-        }
-       sheet = null;
-        currentRow = firstRow;
-         sheetCounter = -1;
-         if (sheetNumber != null){
-        	 sheetNumberIterator = new NumberIterator(sheetNumber,0,Integer.MAX_VALUE);
-         }
-        if (!getNextSheet()) {
-        	throw new ComponentNotReadyException("There is no sheet conforming sheet name nor sheet number pattern");
-        }
-        logger.info("Reading data from sheet " + sheetCounter + " (" + 
-           		sheet.getName() + ")." );
+		// creating workbook from input stream
+		try {
+			wb = Workbook.getWorkbook(input, settings);
+		} catch (Exception ex) {
+			throw new ComponentNotReadyException(ex);
+		}
+		sheet = null;
+		currentRow = firstRow;
+		sheetCounter = -1;
+		if (sheetName == null && sheetNumber != null) {
+			sheetNumberIterator = new NumberIterator(sheetNumber, 0, Integer.MAX_VALUE);
+		}
+		if (!getNextSheet()) {
+			throw new ComponentNotReadyException("There is no sheet conforming sheet name nor sheet number pattern");
+		}
+		logger.info("Reading data from sheet " + sheetCounter + " (" + sheet.getName() + ").");
 		if (metadata != null) {
-        	fieldNumber = new int[metadata.getNumFields()][2];
-        	mapFields();
-        }
+			fieldNumber = new int[metadata.getNumFields()][2];
+			mapFields();
+		}
 	}
 	
 	public void reset() throws ComponentNotReadyException {
