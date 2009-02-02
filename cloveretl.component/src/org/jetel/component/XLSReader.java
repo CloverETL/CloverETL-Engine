@@ -136,6 +136,7 @@ public class XLSReader extends Node {
     public static final String XML_PARSER_ATTRIBUTE = "parser";
     public static final String XML_STARTROW_ATTRIBUTE = "startRow";
     public static final String XML_FINALROW_ATTRIBUTE = "finalRow";
+	private static final String XML_SKIPROWS_ATTRIBUTE = "skipRows";
     public static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
     public static final String XML_MAXERRORCOUNT_ATTRIBUTE = "maxErrorCount";
     public static final String XML_FILE_ATTRIBUTE = "fileURL";
@@ -188,7 +189,9 @@ public class XLSReader extends Node {
             if (xattribs.exists(XML_FINALROW_ATTRIBUTE)) {
                 aXLSReader.setFinalRow(xattribs.getInteger(XML_FINALROW_ATTRIBUTE));
             }
-
+            if (xattribs.exists(XML_SKIPROWS_ATTRIBUTE)) {
+                aXLSReader.setSkipRows(xattribs.getInteger(XML_SKIPROWS_ATTRIBUTE));
+            }
             if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)) {
                 aXLSReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
             }
@@ -224,9 +227,8 @@ public class XLSReader extends Node {
     
     private XLSType parserType = XLSType.AUTO;
     private String fileURL;
-    private int startRow = 0;
-    private int finalRow = -1;
-    private int numRecords = -1;
+	private int skipRows;
+	private int numRecords = Integer.MAX_VALUE;
     private int maxErrorCount = -1;
     private String incrementalFile;
     private String incrementalKey;
@@ -278,33 +280,41 @@ public class XLSReader extends Node {
      * @param startRow The startRow to set.
      */
     public void setStartRow(int startRecord) {
-        if(startRecord < 1 || (finalRow != -1 && startRecord > finalRow)) {
-            throw new InvalidParameterException("Invalid StartRecord parameter.");
-        }
-        this.startRow = startRecord;
+    	setSkipRows(startRecord-1);
     }
     
     public int getStartRow() {
-        return startRow;
+        return skipRows;
     }
     
     /**
      * @param finalRow The finalRow to set.
      */
     public void setFinalRow(int finalRecord) {
-        if(finalRecord < 0 || (startRow != -1 && startRow > finalRecord)) {
-            throw new InvalidParameterException("Invalid finalRow parameter.");
-        }
-        this.finalRow = finalRecord;
+    	setNumRecords(finalRecord-skipRows-2);
     }
 
     /**
      * @return Returns the finalRow.
      */
     public int getFinalRow() {
-        return finalRow;
+        return numRecords + (numRecords == Integer.MAX_VALUE ? 0 : skipRows+1);
     }
     
+	/**
+	 * @param startRecord The startRecord to set.
+	 */
+	public void setSkipRows(int skipRows) {
+		this.skipRows = Math.max(skipRows, 0);
+	}
+	
+	/**
+	 * @param finalRecord The finalRecord to set.
+	 */
+	public void setNumRecords(int numRecords) {
+		this.numRecords = Math.max(numRecords, 0);
+	}
+
     /**
      * @param finalRow The finalRow to set.
      */
@@ -326,10 +336,6 @@ public class XLSReader extends Node {
 
     public void setMetadataRow(int metadaRow) {
         this.metadataRow = metadaRow;
-    }
-
-    public void setNumRecords(int numRecords) {
-        this.numRecords = numRecords;
     }
 
     public void setIncrementalFile(String incrementalFile) {
@@ -358,10 +364,10 @@ public class XLSReader extends Node {
                     Defaults.Component.KEY_FIELDS_DELIMITER));
         }
 
-        xmlElement.setAttribute(XML_STARTROW_ATTRIBUTE, String.valueOf(startRow));
+        xmlElement.setAttribute(XML_SKIPROWS_ATTRIBUTE, String.valueOf(skipRows));
 
-        if (finalRow > -1) {
-            xmlElement.setAttribute(XML_FINALROW_ATTRIBUTE, String.valueOf(finalRow));
+        if (numRecords > -1) {
+            xmlElement.setAttribute(XML_NUMRECORDS_ATTRIBUTE, String.valueOf(numRecords));
         }
 
         if (maxErrorCount > -1) {
@@ -407,11 +413,8 @@ public class XLSReader extends Node {
             instantiateParser();
 
             parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
-            parser.setFirstRow(startRow - 1);
-
-            if (finalRow > -1) {
-                parser.setLastRow(finalRow - 1);
-            }
+            parser.setFirstRow(skipRows+1);
+            parser.setLastRow(numRecords + (numRecords == Integer.MAX_VALUE ? 0 : skipRows+1));
 
             try {
                 parser.setMetadataRow(metadataRow - 1);
@@ -449,11 +452,8 @@ public class XLSReader extends Node {
         instantiateParser();
 
         parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
-        parser.setFirstRow(startRow - 1);
-
-        if (finalRow > -1) {
-            parser.setLastRow(finalRow - 1);
-        }
+        parser.setFirstRow(skipRows+1);
+        parser.setLastRow(numRecords + (numRecords == Integer.MAX_VALUE ? 0 : skipRows+1));
 
         parser.setMetadataRow(metadataRow - 1);
 
