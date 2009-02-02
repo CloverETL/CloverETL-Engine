@@ -21,7 +21,6 @@
 package org.jetel.component;
 
 import java.io.File;
-import java.security.InvalidParameterException;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.CloverDataParser;
@@ -98,14 +97,17 @@ public class CloverDataReader extends Node {
 	private final static String XML_INDEXFILEURL_ATTRIBUTE = "indexFileURL";
 	private static final String XML_STARTRECORD_ATTRIBUTE = "startRecord";
 	private static final String XML_FINALRECORD_ATTRIBUTE = "finalRecord";
+	private static final String XML_SKIPROWS_ATTRIBUTE = "skipRows";
+	private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 
 	private final static int OUTPUT_PORT = 0;
 
 	private String fileURL;
 	private String indexFileURL;
 	private CloverDataParser parser;
-	private int startRecord = -1;
-	private int finalRecord = -1;
+
+	private int skipRows;
+	private int numRecords = Integer.MAX_VALUE;
 
 	/**
 	 * @param id
@@ -131,14 +133,16 @@ public class CloverDataReader extends Node {
 	public Result execute() throws Exception {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
         record.init();
-		int diffRecord = (startRecord != -1) ? finalRecord - startRecord : finalRecord - 1;
 		int recordCount = 0;
 		while ((record = parser.getNext(record))!=null && runIt){
-		    writeRecordBroadcast(record);
-			if(finalRecord != -1 && ++recordCount > diffRecord) {
+	        //check for index of last returned record
+	        if(numRecords == recordCount) {
 				break;
-			}
+	        }
+		    writeRecordBroadcast(record);
 			SynchronizeUtils.cloverYield();
+			System.err.println(recordCount);
+		    recordCount++;
 		}
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -159,6 +163,12 @@ public class CloverDataReader extends Node {
 			if (xattribs.exists(XML_FINALRECORD_ATTRIBUTE)){
 				aDataReader.setFinalRecord(xattribs.getInteger(XML_FINALRECORD_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_SKIPROWS_ATTRIBUTE)){
+				aDataReader.setSkipRows(xattribs.getInteger(XML_SKIPROWS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
+				aDataReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
+			}
 		} catch (Exception ex) {
 		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -172,11 +182,11 @@ public class CloverDataReader extends Node {
 		if (indexFileURL != null){
 			xmlElement.setAttribute(XML_INDEXFILEURL_ATTRIBUTE,indexFileURL);
 		}
-		if (finalRecord > -1) {
-			xmlElement.setAttribute(XML_FINALRECORD_ATTRIBUTE,String.valueOf(finalRecord));
+		if (skipRows > 0) {
+			xmlElement.setAttribute(XML_SKIPROWS_ATTRIBUTE,String.valueOf(skipRows));
 		}
-		if (startRecord > -1){
-			xmlElement.setAttribute(XML_STARTRECORD_ATTRIBUTE,String.valueOf(startRecord));
+		if (numRecords > 0){
+			xmlElement.setAttribute(XML_NUMRECORDS_ATTRIBUTE,String.valueOf(numRecords));
 		}
 	}
 	/* (non-Javadoc)
@@ -226,9 +236,9 @@ public class CloverDataReader extends Node {
 		super.init();
 		
 		//set start record
-		if (startRecord != -1) {
+		if (skipRows > 0) {
 			try{
-				parser.skip(startRecord);
+				parser.skip(skipRows);
 			}catch (JetelException ex) {}
 		}
 		parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
@@ -252,15 +262,28 @@ public class CloverDataReader extends Node {
 		parser.reset();
 	}
 	
+	@Deprecated
 	public void setStartRecord(int startRecord){
-		this.startRecord = startRecord;
+		setSkipRows(startRecord);
 	}
 
+	@Deprecated
 	public void setFinalRecord(int finalRecord) {
-		if(finalRecord < 0 || (startRecord != -1 && startRecord > finalRecord)) {
-			throw new InvalidParameterException("Invalid finalRecord parameter.");
-		}
-		this.finalRecord = finalRecord;
+		setNumRecords(finalRecord-skipRows);
 	}
 	
+	/**
+	 * @param startRecord The startRecord to set.
+	 */
+	public void setSkipRows(int skipRows) {
+		this.skipRows = Math.max(skipRows, 0);
+	}
+	
+	/**
+	 * @param finalRecord The finalRecord to set.
+	 */
+	public void setNumRecords(int numRecords) {
+		this.numRecords = Math.max(numRecords, 0);
+	}
+
 }
