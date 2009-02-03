@@ -57,6 +57,8 @@ public class StringLib extends TLFunctionLibrary {
 
     private static final String LIBRARY_NAME = "String";
     
+    private DataGenerator dataGenerator = new DataGenerator();
+    
     enum Function {
         CONCAT("concat"), UPPERCASE("uppercase"), LOWERCASE("lowercase"), LEFT(
                 "left"), SUBSTRING("substring"), RIGHT("right"), TRIM("trim"), LENGTH(
@@ -1558,7 +1560,7 @@ public class StringLib extends TLFunctionLibrary {
                  throw new TransformLangExecutorRuntimeException(params,
                  "randomString - wrong integer type");
              }else{
-                 val.setValue(DataGenerator.randomString(params[0].getNumeric().getInt(), params[1].getNumeric().getInt()));
+                 val.setValue(dataGenerator.randomString(params[0].getNumeric().getInt(), params[1].getNumeric().getInt()));
              }
              return val;
          }

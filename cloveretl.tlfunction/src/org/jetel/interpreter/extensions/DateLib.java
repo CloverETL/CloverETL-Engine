@@ -36,13 +36,14 @@ import org.jetel.interpreter.data.TLNullValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
-import org.jetel.interpreter.extensions.StringLib.RandomStringFunction;
 import org.jetel.util.DataGenerator;
 
 public class DateLib extends TLFunctionLibrary {
 
     private static final String LIBRARY_NAME = "Date";
 
+    private DataGenerator dataGenerator = new DataGenerator();
+    
     enum Function {
         TODAY("today"), DATEADD("dateadd"), DATEDIFF("datediff"), TRUNC("trunc"), TRUNC_DATE("trunc_date"), 
         RANDOM_DATE("random_date");
@@ -328,7 +329,7 @@ public class DateLib extends TLFunctionLibrary {
         	TLDateValue tlDateValue=(TLDateValue)context.getContext();
 
 			if (params[0].type == TLValueType.DATE && params[1].type == TLValueType.DATE) {
-				long time = DataGenerator.randomLong(params[0].getDate().getTime(), params[1].getDate().getTime());
+				long time = dataGenerator.randomLong(params[0].getDate().getTime(), params[1].getDate().getTime());
 				tlDateValue.setValue(new Date(time));
 	        }else {
 	            throw new TransformLangExecutorRuntimeException(params,
