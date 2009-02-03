@@ -26,6 +26,7 @@ package org.jetel.interpreter.extensions;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
@@ -35,13 +36,16 @@ import org.jetel.interpreter.data.TLNullValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
+import org.jetel.interpreter.extensions.StringLib.RandomStringFunction;
+import org.jetel.util.DataGenerator;
 
 public class DateLib extends TLFunctionLibrary {
 
     private static final String LIBRARY_NAME = "Date";
 
     enum Function {
-        TODAY("today"), DATEADD("dateadd"), DATEDIFF("datediff"), TRUNC("trunc"), TRUNC_DATE("trunc_date");
+        TODAY("today"), DATEADD("dateadd"), DATEDIFF("datediff"), TRUNC("trunc"), TRUNC_DATE("trunc_date"), 
+        RANDOM_DATE("random_date");
         
         public String name;
         
@@ -70,6 +74,7 @@ public class DateLib extends TLFunctionLibrary {
         case DATEDIFF: return new DatediffFunction();
         case TRUNC: return new TruncFunction();
         case TRUNC_DATE:return new TruncDateFunction();
+        case RANDOM_DATE: return new RandomDateFunction();
         default: return null;
        }
     }
@@ -308,6 +313,40 @@ public class DateLib extends TLFunctionLibrary {
 		}
 	
 	
+// RANDOM_DATE
+	
+    class RandomDateFunction extends TLFunctionPrototype {
+
+        public RandomDateFunction() {
+            super("date", "random_date", "Generates a random date", 
+           		 new TLValueType[] { TLValueType.DATE, TLValueType.DATE }, 
+           		 TLValueType.DATE);
+        }
+
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+        	TLDateValue tlDateValue=(TLDateValue)context.getContext();
+
+			if (params[0].type == TLValueType.DATE && params[1].type == TLValueType.DATE) {
+				long time = DataGenerator.randomLong(params[0].getDate().getTime(), params[1].getDate().getTime());
+				tlDateValue.setValue(new Date(time));
+	        }else {
+	            throw new TransformLangExecutorRuntimeException(params,
+	                    "random_date - wrong type of literal");
+	        }
+			
+	        return tlDateValue;
+        }
+
+        @Override
+        public TLContext createContext() {
+			TLContext<TLDateValue> context = new TLContext<TLDateValue>();
+			context.setContext(new TLDateValue());
+			return context;
+        }
+    }
+	
+
 	/*General data structures*/
 	
 	public static class CalendarStore {

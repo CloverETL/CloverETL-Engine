@@ -33,6 +33,7 @@
 			<value>datediff</value>
 			<value>trunc</value>
 			<value>trunc_date</value>
+			<value>random_date</value>
 		</parameter>
 	</extension>
 
@@ -73,6 +74,7 @@
 			<value>edit_distance</value>
 			<value>metaphone</value>
 			<value>NYSIIS</value>
+			<value>random_string</value>
 		</parameter>
 	</extension>
 	
