@@ -29,6 +29,8 @@ import org.jetel.test.CloverTestCase;
  */
 public class DataGeneratorTest extends CloverTestCase {
 
+	DataGenerator dataGenerator = new DataGenerator();
+	
     protected void setUp() throws Exception {
         super.setUp();
     }
@@ -41,7 +43,7 @@ public class DataGeneratorTest extends CloverTestCase {
     	for (long i=0; i<step-1; i++) {
     		dFrom = i*Long.MAX_VALUE/step;
     		dTo = i*Long.MAX_VALUE/step+1;
-    		date = DataGenerator.randomLong(dFrom, dTo);
+    		date = dataGenerator.randomLong(dFrom, dTo);
     		assertTrue(date >= dFrom && date<=dTo);
     	}
     }

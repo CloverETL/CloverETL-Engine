@@ -23,7 +23,6 @@ package org.jetel.util;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -75,7 +74,7 @@ public class DataRecordGenerator implements Parser {
 	// private DataRecord record;
 	private String[] randomFields = null;
 	private String[][] randomRanges;
-	private Random random;
+	private DataGenerator random = new DataGenerator();
 	private long randomSeed = Long.MIN_VALUE;
 	private String[] sequenceFields = null;
 	private String[] sequenceIDs;
@@ -280,9 +279,7 @@ public class DataRecordGenerator implements Parser {
 		}
 		// set random seed
 		if (randomSeed > Long.MIN_VALUE) {
-			random = new Random(randomSeed);
-		} else {
-			random = new Random();
+			random.setSeed(randomSeed);
 		}
 		if (cutMetadata.getNumFields() > 0) {
 			patternRecord = new DataRecord(cutMetadata);
@@ -398,7 +395,7 @@ public class DataRecordGenerator implements Parser {
 						break;
 					case DataFieldMetadata.STRING_FIELD:
 						// create random string of random length (between given ranges)
-						value = randomString((Integer) specialValue[j][MIN], (Integer) specialValue[j][MAX]);
+						value = random.randomString((Integer) specialValue[j][MIN], (Integer) specialValue[j][MAX]);
 						break;
 					}
 					record.getField(j).setValue(value);
@@ -432,28 +429,6 @@ public class DataRecordGenerator implements Parser {
 			}
 		}
 		return record;
-	}
-
-	/**
-	 * This method creates random string from chars 'a' till 'z'
-	 * 
-	 * @param minLenght
-	 *            minumum length of string
-	 * @param maxLenght
-	 *            maximum length of string
-	 * @return string created from random characters. Length of this string is between minLenght and maxLenght inclusive
-	 */
-	private String randomString(int minLenght, int maxLenght) {
-		StringBuilder result;
-		if (maxLenght != minLenght) {
-			result = new StringBuilder(random.nextInt(maxLenght - minLenght + 1) + minLenght);
-		} else {// minLenght == maxLenght
-			result = new StringBuilder(minLenght);
-		}
-		for (int i = 0; i < result.capacity(); i++) {
-			result.append((char) (random.nextInt('z' - 'a' + 1) + 'a'));
-		}
-		return result.toString();
 	}
 
 	/**
