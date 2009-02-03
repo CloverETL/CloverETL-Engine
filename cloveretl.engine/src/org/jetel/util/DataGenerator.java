@@ -37,10 +37,8 @@ public class DataGenerator extends Random {
 	/**
 	 * This method creates random string from chars 'a' till 'z'
 	 * 
-	 * @param minLenght
-	 *            minumum length of string
-	 * @param maxLenght
-	 *            maximum length of string
+	 * @param minLenght of string
+	 * @param maxLenght of string
 	 * @return string created from random characters. Length of this string is between minLenght and maxLenght inclusive
 	 */
 	public String nextString(int minLenght, int maxLenght) {
@@ -58,19 +56,36 @@ public class DataGenerator extends Random {
 
 	/**
 	 * This method creates random long
-	 * @param lFrom
-	 * @param lTo
-	 * @return random date
+	 * @param min
+	 * @param max
+	 * @return random long
 	 */
-	public long nextLong(long lFrom, long lTo) {
+	public long nextLong(long min, long max) {
 		// raw random number
 		long r = Math.abs(nextLong());
 		
 		// calculate an interval
-		long interval = lTo-lFrom;
+		long interval = max-min;
 		
 		// adjust the random number to the interval
-		return r-(r/interval*interval)+lFrom;
+		return r-(r/interval*interval)+min;
+	}
+
+	/**
+	 * This method creates random integer
+	 * @param min
+	 * @param max
+	 * @return random integer
+	 */
+	public long nextInt(int min, int max) {
+		// raw random number
+		int r = Math.abs(nextInt());
+		
+		// calculate an interval
+		int interval = max-min;
+		
+		// adjust the random number to the interval
+		return r-(r/interval*interval)+min;
 	}
 
 }
