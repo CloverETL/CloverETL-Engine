@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -46,6 +47,7 @@ import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.DataGenerator;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.string.Compare;
 import org.jetel.util.string.StringAproxComparator;
@@ -66,7 +68,7 @@ public class StringLib extends TLFunctionLibrary {
                 JOIN("join"), INDEX_OF("index_of"), COUNT_CHAR("count_char"), CHOP("chop"),
                 FIND("find"),CUT("cut"), REMOVE_NONPRINTABLE("remove_nonprintable"),
                 REMOVE_NONASCII("remove_nonascii"), EDIT_DISTANCE("edit_distance"), METAPHONE("metaphone"),
-                NYSIIS("nysiis");
+                NYSIIS("nysiis"), RANDOM_STRING("random_string");
 
         public String name;
 
@@ -158,6 +160,8 @@ public class StringLib extends TLFunctionLibrary {
         	return new MetaphoneFunction();
         case NYSIIS:
         	return new NYSIISFunction();
+        case RANDOM_STRING:
+        	return new RandomStringFunction();
         default:
             return null;
         }
@@ -1537,6 +1541,34 @@ public class StringLib extends TLFunctionLibrary {
              return TLContext.createStringContext();
          }
      }
+     
+     class RandomStringFunction extends TLFunctionPrototype {
+
+         public RandomStringFunction() {
+             super("string", "random_string", "Generates a random string", 
+            		 new TLValueType[] { TLValueType.INTEGER, TLValueType.INTEGER }, 
+            		 TLValueType.STRING);
+         }
+
+         @Override
+         public TLValue execute(TLValue[] params, TLContext context) {
+             TLValue val = (TLValue)context.getContext();
+
+             if (!(params[0].type == TLValueType.INTEGER)){
+                 throw new TransformLangExecutorRuntimeException(params,
+                 "randomString - wrong integer type");
+             }else{
+                 val.setValue(DataGenerator.randomString(params[0].getNumeric().getInt(), params[1].getNumeric().getInt()));
+             }
+             return val;
+         }
+
+         @Override
+         public TLContext createContext() {
+             return TLContext.createStringContext();
+         }
+     }
+     
      
      class RegexStore{
 	    public Pattern pattern;
