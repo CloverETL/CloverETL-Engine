@@ -43,7 +43,7 @@ public class DataGenerator extends Random {
 	 *            maximum length of string
 	 * @return string created from random characters. Length of this string is between minLenght and maxLenght inclusive
 	 */
-	public String randomString(int minLenght, int maxLenght) {
+	public String nextString(int minLenght, int maxLenght) {
 		StringBuilder result;
 		if (maxLenght != minLenght) {
 			result = new StringBuilder(nextInt(maxLenght - minLenght + 1) + minLenght);
@@ -58,19 +58,19 @@ public class DataGenerator extends Random {
 
 	/**
 	 * This method creates random long
-	 * @param millisecondFrom
-	 * @param millisecondTo
+	 * @param lFrom
+	 * @param lTo
 	 * @return random date
 	 */
-	public long randomLong(long millisecondFrom, long millisecondTo) {
+	public long nextLong(long lFrom, long lTo) {
 		// raw random number
 		long r = Math.abs(nextLong());
 		
 		// calculate an interval
-		long interval = millisecondTo-millisecondFrom;
+		long interval = lTo-lFrom;
 		
 		// adjust the random number to the interval
-		return r-(r/interval*interval)+millisecondFrom;
+		return r-(r/interval*interval)+lFrom;
 	}
 
 }

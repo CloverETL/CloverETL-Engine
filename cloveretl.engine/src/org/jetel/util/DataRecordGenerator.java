@@ -395,7 +395,7 @@ public class DataRecordGenerator implements Parser {
 						break;
 					case DataFieldMetadata.STRING_FIELD:
 						// create random string of random length (between given ranges)
-						value = random.randomString((Integer) specialValue[j][MIN], (Integer) specialValue[j][MAX]);
+						value = random.nextString((Integer) specialValue[j][MIN], (Integer) specialValue[j][MAX]);
 						break;
 					}
 					record.getField(j).setValue(value);

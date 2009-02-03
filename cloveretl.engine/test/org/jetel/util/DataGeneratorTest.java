@@ -43,7 +43,7 @@ public class DataGeneratorTest extends CloverTestCase {
     	for (long i=0; i<step-1; i++) {
     		dFrom = i*Long.MAX_VALUE/step;
     		dTo = i*Long.MAX_VALUE/step+1;
-    		date = dataGenerator.randomLong(dFrom, dTo);
+    		date = dataGenerator.nextLong(dFrom, dTo);
     		assertTrue(date >= dFrom && date<=dTo);
     	}
     }

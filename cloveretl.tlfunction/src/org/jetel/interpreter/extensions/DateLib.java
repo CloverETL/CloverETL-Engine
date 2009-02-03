@@ -42,8 +42,6 @@ public class DateLib extends TLFunctionLibrary {
 
     private static final String LIBRARY_NAME = "Date";
 
-    private DataGenerator dataGenerator = new DataGenerator();
-    
     enum Function {
         TODAY("today"), DATEADD("dateadd"), DATEDIFF("datediff"), TRUNC("trunc"), TRUNC_DATE("trunc_date"), 
         RANDOM_DATE("random_date");
@@ -318,6 +316,8 @@ public class DateLib extends TLFunctionLibrary {
 	
     class RandomDateFunction extends TLFunctionPrototype {
 
+        private DataGenerator dataGenerator = new DataGenerator();
+        
         public RandomDateFunction() {
             super("date", "random_date", "Generates a random date", 
            		 new TLValueType[] { TLValueType.DATE, TLValueType.DATE }, 
@@ -329,7 +329,7 @@ public class DateLib extends TLFunctionLibrary {
         	TLDateValue tlDateValue=(TLDateValue)context.getContext();
 
 			if (params[0].type == TLValueType.DATE && params[1].type == TLValueType.DATE) {
-				long time = dataGenerator.randomLong(params[0].getDate().getTime(), params[1].getDate().getTime());
+				long time = dataGenerator.nextLong(params[0].getDate().getTime(), params[1].getDate().getTime());
 				tlDateValue.setValue(new Date(time));
 	        }else {
 	            throw new TransformLangExecutorRuntimeException(params,
