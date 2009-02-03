@@ -787,8 +787,8 @@ public class RunGraph extends Node{
 	 */
 	private void initGraphOutputFile() throws ComponentNotReadyException {
 		if (outputFileName != null){
-			File outFile = new File(outputFileName);
 			try {
+				File outFile = new File(FileUtils.getFile(getGraph().getProjectURL(), outputFileName));
 				outFile.createNewFile();
 				outputFile = new FileWriter(outFile, append);
 			} catch (IOException ex) {
