@@ -65,7 +65,7 @@ public class DataGenerator extends Random {
 		long r = Math.abs(nextLong());
 		
 		// calculate an interval
-		long interval = max-min;
+		long interval = max-min+1;
 		
 		// adjust the random number to the interval
 		return r-(r/interval*interval)+min;
@@ -82,7 +82,7 @@ public class DataGenerator extends Random {
 		int r = Math.abs(nextInt());
 		
 		// calculate an interval
-		int interval = max-min;
+		int interval = max-min+1;
 		
 		// adjust the random number to the interval
 		return r-(r/interval*interval)+min;

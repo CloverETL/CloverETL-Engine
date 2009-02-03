@@ -19,6 +19,10 @@
 */
 package org.jetel.util;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.jetel.test.CloverTestCase;
 
 /**
@@ -39,12 +43,21 @@ public class DataGeneratorTest extends CloverTestCase {
     	long date;
     	long dFrom;
     	long dTo;
-    	int step = 1000000;
-    	for (long i=0; i<step-1; i++) {
-    		dFrom = i*Long.MAX_VALUE/step;
-    		dTo = i*Long.MAX_VALUE/step+1;
+    	Map<Long, Integer> aggr = new HashMap<Long, Integer>();
+    	Integer res;
+		dFrom = -10;
+		dTo = 10;
+    	for (long i=0; i<1000000; i++) {
     		date = dataGenerator.nextLong(dFrom, dTo);
+    		
+    		res = aggr.get(Long.valueOf(date));
+    		if (res == null) aggr.put(new Long(date), new Integer(1));
+    		else aggr.put(new Long(date), new Integer(res.intValue() + 1));
+    		
     		assertTrue(date >= dFrom && date<=dTo);
+    	}
+    	for (Entry<Long, Integer> e: aggr.entrySet()) {
+    		System.out.println(e.getKey() + " " + e.getValue());
     	}
     }
     
