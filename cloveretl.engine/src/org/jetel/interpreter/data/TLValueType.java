@@ -29,7 +29,7 @@ public enum TLValueType {
     NULL(0,"NULL",true,false,false),
     INTEGER(1,"INTEGER",true,true,false),
     LONG(2,"LONG",true,true,false),
-    DOUBLE(3,"DOUBLE",true,true,false),
+    NUMBER(3,"NUMBER",true,true,false),
     DECIMAL(4,"DECIMAL",true,true,false),
     BYTE(5,"BYTE",true,false,true),
     STRING(6,"STRING",true,false,true),
@@ -68,7 +68,7 @@ public enum TLValueType {
         switch (this) {
         case INTEGER:
         case LONG:
-        case DOUBLE:
+        case NUMBER:
         case DECIMAL:
             if (_type.isNumeric())
                 return true;
@@ -105,7 +105,7 @@ public enum TLValueType {
             if (_type == INTEGER)
                 return true;
             break;
-        case DOUBLE:
+        case NUMBER:
             if (_type == LONG || _type == INTEGER)
                 return true;
             break;
@@ -124,7 +124,7 @@ public enum TLValueType {
         case DataFieldMetadata.LONG_FIELD:
             return LONG;
         case DataFieldMetadata.NUMERIC_FIELD:
-            return DOUBLE;
+            return NUMBER;
         case DataFieldMetadata.DECIMAL_FIELD:
             return DECIMAL;
         case DataFieldMetadata.DATE_FIELD:
@@ -154,7 +154,7 @@ public enum TLValueType {
 			return DataFieldMetadata.DATE_FIELD;
 		case DECIMAL:
 			return DataFieldMetadata.DECIMAL_FIELD;
-		case DOUBLE: 
+		case NUMBER: 
 			return DataFieldMetadata.NUMERIC_FIELD;
 		case STRING:
 			return DataFieldMetadata.STRING_FIELD;

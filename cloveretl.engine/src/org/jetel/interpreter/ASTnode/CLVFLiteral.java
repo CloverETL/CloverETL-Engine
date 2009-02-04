@@ -59,7 +59,7 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
                         valueImage.endsWith(DECIMAL_DISTINCTER_UPPERCASE)){
                     value=new TLNumericValue(TLValueType.DECIMAL,DecimalFactory.getDecimal(valueImage.substring(0,valueImage.length()-1)));
                 }else{
-                    value=new TLNumericValue(TLValueType.DOUBLE,new CloverDouble( Double.parseDouble(valueImage)));
+                    value=new TLNumericValue(TLValueType.NUMBER,new CloverDouble( Double.parseDouble(valueImage)));
                 }
 				break;
 			case STRING_LITERAL:

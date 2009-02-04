@@ -38,8 +38,8 @@ public class TLNumericValue<T extends Numeric> extends TLValue implements Numeri
 	public static final TLValue ZERO = new TLNumericValue(TLValueType.INTEGER, new CloverInteger(0));
 	public static final TLValue ONE = new TLNumericValue(TLValueType.INTEGER, new CloverInteger(1));
 	public static final TLValue MINUS_ONE = new TLNumericValue(TLValueType.INTEGER, new CloverInteger(-1));
-	public static final TLValue PI = new TLNumericValue(TLValueType.DOUBLE, new CloverDouble(Math.PI));
-	public static final TLValue E = new TLNumericValue(TLValueType.DOUBLE, new CloverDouble(Math.E));
+	public static final TLValue PI = new TLNumericValue(TLValueType.NUMBER, new CloverDouble(Math.PI));
+	public static final TLValue E = new TLNumericValue(TLValueType.NUMBER, new CloverDouble(Math.E));
 
 	private Numeric value;
 
@@ -49,7 +49,7 @@ public class TLNumericValue<T extends Numeric> extends TLValue implements Numeri
 		case INTEGER:
 			value = (T) new CloverInteger(0);
 			break;
-		case DOUBLE:
+		case NUMBER:
 			value = (T) new CloverDouble(0);
 			break;
 		case LONG:

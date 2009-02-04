@@ -99,7 +99,7 @@ public class MathLib extends TLFunctionLibrary {
     // SQRT
     class SqrtFunction extends TLFunctionPrototype {
         public SqrtFunction() {
-            super("math", "sqrt", "Square root", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE);
+            super("math", "sqrt", "Square root", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.NUMBER);
         }
 
         @Override
@@ -127,7 +127,7 @@ public class MathLib extends TLFunctionLibrary {
     // LOG
     class LogFunction extends TLFunctionPrototype {
         public LogFunction() {
-            super("math", "log", "Natural logarithm", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE);
+            super("math", "log", "Natural logarithm", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.NUMBER);
         }
         
         @Override
@@ -154,7 +154,7 @@ public class MathLib extends TLFunctionLibrary {
     // LOG10
     class Log10Function extends TLFunctionPrototype {
         public Log10Function() {
-            super("math", "log10", "Base 10 logarithm", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE);
+            super("math", "log10", "Base 10 logarithm", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.NUMBER);
         }
         
         @Override
@@ -181,7 +181,7 @@ public class MathLib extends TLFunctionLibrary {
     // EXP
     class ExpFunction extends TLFunctionPrototype {
         public ExpFunction() {
-            super("math", "exp", "Returns exponent", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE);
+            super("math", "exp", "Returns exponent", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.NUMBER);
         }
 
         @Override
@@ -209,7 +209,7 @@ public class MathLib extends TLFunctionLibrary {
     // ROUND
     class RoundFunction extends TLFunctionPrototype { 
         public RoundFunction() {
-            super("math", "round", "Returns rounded value",  new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE);
+            super("math", "round", "Returns rounded value",  new TLValueType[] { TLValueType.DECIMAL }, TLValueType.NUMBER);
         }
 
         @Override
@@ -237,7 +237,7 @@ public class MathLib extends TLFunctionLibrary {
     // POW
     class PowFunction extends TLFunctionPrototype { 
         public PowFunction() {
-            super("math", "pow", "Calculates power", new TLValueType[] { TLValueType.DECIMAL, TLValueType.DECIMAL }, TLValueType.DOUBLE);
+            super("math", "pow", "Calculates power", new TLValueType[] { TLValueType.DECIMAL, TLValueType.DECIMAL }, TLValueType.NUMBER);
         }
 
         @Override
@@ -264,7 +264,7 @@ public class MathLib extends TLFunctionLibrary {
     // PI
     class PiFunction extends TLFunctionPrototype { 
         public PiFunction() {
-            super("math", "pi", "The PI constant", new TLValueType[] { }, TLValueType.DOUBLE);
+            super("math", "pi", "The PI constant", new TLValueType[] { }, TLValueType.NUMBER);
         }
 
         @Override
@@ -276,7 +276,7 @@ public class MathLib extends TLFunctionLibrary {
     //  E
     class EFunction extends TLFunctionPrototype { 
         public EFunction() {
-            super("math", "e", "The e constant", new TLValueType[] { }, TLValueType.DOUBLE);
+            super("math", "e", "The e constant", new TLValueType[] { }, TLValueType.NUMBER);
         }
 
         @Override
@@ -288,7 +288,7 @@ public class MathLib extends TLFunctionLibrary {
     // RANDOM
     class RandomFunction extends TLFunctionPrototype {
         public RandomFunction() {
-            super("math", "random", "Random number (>=0, <1)", new TLValueType[] { }, TLValueType.DOUBLE);
+            super("math", "random", "Random number (>=0, <1)", new TLValueType[] { }, TLValueType.NUMBER);
         }
 
         @Override
@@ -313,7 +313,7 @@ public class MathLib extends TLFunctionLibrary {
     // ABS
     class AbsFunction extends TLFunctionPrototype { 
         public AbsFunction() {
-            super("math", "abs", "Absolute value", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE);
+            super("math", "abs", "Absolute value", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.NUMBER);
         }
 
         @Override
