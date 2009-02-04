@@ -63,12 +63,12 @@ public class DynamicRecordBuffer {
     private int lastSlot;
     private int dataBufferSize;
     
-	private boolean hasFile;   // indicates whether buffer contains unwritten data
-	private boolean isClosed;  // indicates whether buffer has been closed - no more r&w can occure
+	private volatile boolean hasFile;   // indicates whether buffer contains unwritten data
+	private volatile boolean isClosed;  // indicates whether buffer has been closed - no more r&w can occure
 
 
 	// size of data (in bytes) needed to store record length
-	private final static int LEN_SIZE_SPECIFIER = 4;
+	private final static int LEN_SIZE_SPECIFIER = 5;
 	// size of integer variable used to keep record length
     
 	private final static String TMP_FILE_PREFIX = ".fbuf";
@@ -208,7 +208,11 @@ public class DynamicRecordBuffer {
 		int recordSize = record.remaining();
 
         if (writeDataBuffer.remaining() < recordSize + LEN_SIZE_SPECIFIER) {
-            flushWriteBuffer();
+        	synchronized(this) {
+                if (writeDataBuffer.remaining() < recordSize + LEN_SIZE_SPECIFIER) {
+                    flushWriteBuffer();
+                }
+			}
         }
 		try {
 			//writeDataBuffer.putInt(recordSize);
@@ -243,21 +247,8 @@ public class DynamicRecordBuffer {
                     "Internal buffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)");
         }
         tmpDataRecord.flip();
-        int length = tmpDataRecord.remaining();
-
-        if (writeDataBuffer.remaining() < length + LEN_SIZE_SPECIFIER) {
-            flushWriteBuffer();
-        }
-        try {
-            // writeDataBuffer.putInt(recordSize);
-            encodeLength(writeDataBuffer, length);
-            writeDataBuffer.put(tmpDataRecord);
-            bufferedRecords.incrementAndGet();
-        } catch (BufferOverflowException ex) {
-            throw new IOException(
-                    "WriteBuffer is not big enough to accomodate data record !");
-        }
-        return length;
+        
+        return writeRecord(tmpDataRecord);
     }
     
     
@@ -268,7 +259,7 @@ public class DynamicRecordBuffer {
      * @throws InterruptedException 
      * @since 27.11.2006
      */
-    public void setEOF() throws IOException, InterruptedException {
+    public synchronized void setEOF() throws IOException, InterruptedException {
         if(isClosed){
             throw new IOException("Buffer has been closed !");
         }
@@ -347,9 +338,12 @@ public class DynamicRecordBuffer {
 		}
 
         // test that we have enough data
-        if (readDataBuffer.remaining()<LEN_SIZE_SPECIFIER){
-            secureReadBuffer();
-            
+        if (readDataBuffer.remaining() == 0) {
+        	synchronized(this) {
+                if (readDataBuffer.remaining() == 0) {
+                	secureReadBuffer();
+                }
+        	}
         }
         //int recordSize = readDataBuffer.getInt();
         int recordSize= decodeLength(readDataBuffer);
@@ -385,9 +379,12 @@ public class DynamicRecordBuffer {
         }
 
         // test that we have enough data
-        if (readDataBuffer.remaining()<LEN_SIZE_SPECIFIER){
-            secureReadBuffer();
-            
+        if (readDataBuffer.remaining() == 0) {
+        	synchronized(this) {
+                if (readDataBuffer.remaining() == 0) {
+                	secureReadBuffer();
+                }
+        	}
         }
         //int recordSize = readDataBuffer.getInt();
         int recordSize= decodeLength(readDataBuffer);
@@ -429,7 +426,7 @@ public class DynamicRecordBuffer {
 	 * @return     true if buffer is empty (contains no records) or false
 	 * @since 27.11.2006
 	 */
-	public boolean isEmpty(){
+	public synchronized boolean isEmpty(){
 		return !(writeDataBuffer.hasRemaining() || readDataBuffer.hasRemaining() ||
             fullFileBuffers.size()>0);
 	}
@@ -441,7 +438,7 @@ public class DynamicRecordBuffer {
      * @return  true if data is ready to be read, otherwise false
      * @since 27.11.2006
      */
-    public boolean hasData(){
+    public synchronized boolean hasData(){
         return readDataBuffer.hasRemaining() ||
         fullFileBuffers.size()>0;
     }
@@ -465,7 +462,7 @@ public class DynamicRecordBuffer {
      * @return number of records currently stored in buffer
      * @since 20.11.2006
      */
-    public int getBufferedRecords() {
+    public synchronized int getBufferedRecords() {
         return bufferedRecords.get();
     }
     
@@ -473,7 +470,7 @@ public class DynamicRecordBuffer {
     /**
      * Remove data from writeDataBuffer and put it to readDataBuffer.
      */
-    protected void swapWriteBufferToReadBuffer() {
+    protected synchronized void swapWriteBufferToReadBuffer() {
     	writeDataBuffer.flip();
         readDataBuffer.clear();
         readDataBuffer.put(writeDataBuffer);
