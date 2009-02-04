@@ -16,6 +16,7 @@
 <Field name="duration" nullable="true" type="decimal"/>
 </Record>
 </Metadata>
+<Property id="GraphParameter10" name="PLUGINS" value="C:\Programming\Java\Javlin\Clover\cloveretl.gui\lib\plugins"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note: phase 0" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="165" x="573" y="87">
 <attr name="text"><![CDATA[To execute phase 0 you must set attribute "Command line arguments" at RunGraph component to correct value.]]></attr>
@@ -23,7 +24,7 @@
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${PROJECT}/data-in/delimited/graphsToRun.dat" guiHeight="0" guiName="Data Reader" guiWidth="0" guiX="24" guiY="96" id="DELIMITED_DATA_READER0" type="DATA_READER"/>
-<Node cloverCmdLineArgs="-plugins &quot;C:\Programming\Java\Javlin\Clover\cloveretl.gui\lib\plugins\&quot;" enabled="enabled" guiHeight="25" guiName="RunGraph" guiWidth="50" guiX="204" guiY="96" id="RUN1" logAppend="false" logFile="${DATAOUT_DIR}/log.txt" sameInstance="false" type="RUN_GRAPH">
+<Node cloverCmdLineArgs="-plugins ${PLUGINS}" enabled="enabled" guiHeight="25" guiName="RunGraph" guiWidth="50" guiX="204" guiY="96" id="RUN1" logAppend="false" logFile="${DATAOUT_DIR}/log.txt" sameInstance="false" type="RUN_GRAPH">
 <attr name="dataPolicy"><![CDATA[Strict]]></attr>
 </Node>
 <Node debugFilename="${PROJECT}/data-out/Trash1_output.txt" debugPrint="true" enabled="enabled" guiHeight="25" guiName="Trash" guiWidth="50" guiX="408" guiY="96" id="TRASH1" type="TRASH"/>
@@ -40,7 +41,7 @@
 <Edge debugMode="false" fromNode="RUN2:0" guiBendpoints="" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="TRASH2:0"/>
 </Phase>
 <Phase number="2">
-<Node enabled="disabled" graphName="${PROJECT}/graph/graphSystemExecute.grf" guiHeight="0" guiName="RunGraph" guiWidth="0" guiX="204" guiY="384" id="RUN_GRAPH0" logAppend="false" logFile="${PROJECT}/data-out/log.txt" type="RUN_GRAPH"/>
+<Node enabled="disabled" graphName="${PROJECT}/graph/graphDedup.grf" guiHeight="0" guiName="RunGraph" guiWidth="0" guiX="204" guiY="384" id="RUN_GRAPH0" logAppend="false" logFile="${PROJECT}/data-out/log.txt" type="RUN_GRAPH"/>
 <Node debugFilename="${PROJECT}/data-out/Trash1_output.txt" debugPrint="true" enabled="disabled" guiHeight="0" guiName="Trash1" guiWidth="0" guiX="406" guiY="355" id="TRASH0" type="TRASH"/>
 <Node debugFilename="${PROJECT}/data-out/Trash2_output.txt" debugPrint="true" enabled="disabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="406" guiY="445" id="TRASH3" type="TRASH"/>
 <Edge debugMode="false" fromNode="RUN_GRAPH0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="TRASH0:0"/>
