@@ -55,7 +55,7 @@ public class TLFunctionUtils implements TransformLangParserConstants  {
 			case INT_VAR: return TLValueType.INTEGER;
 			  case LONG_VAR: return TLValueType.LONG ;
 			  case DATE_VAR: return TLValueType.DATE ;
-			  case DOUBLE_VAR: return TLValueType.DOUBLE ;
+			  case DOUBLE_VAR: return TLValueType.NUMBER ;
 			  case DECIMAL_VAR:  return TLValueType.DECIMAL;
 			  case BOOLEAN_VAR: return TLValueType.BOOLEAN ;
 			  case STRING_VAR: return TLValueType.STRING ;
@@ -76,7 +76,7 @@ public class TLFunctionUtils implements TransformLangParserConstants  {
 		case INTEGER:	return TransformLangParserConstants.INT_VAR;
 		case LONG:		return TransformLangParserConstants.LONG_VAR;
 		case DATE:		return TransformLangParserConstants.DATE_VAR;
-		case DOUBLE:	return TransformLangParserConstants.DOUBLE_VAR;
+		case NUMBER:	return TransformLangParserConstants.DOUBLE_VAR;
 		case DECIMAL:	return TransformLangParserConstants.DECIMAL_VAR;
 		case BOOLEAN:	return TransformLangParserConstants.BOOLEAN_VAR;
 		case STRING:	return TransformLangParserConstants.STRING_VAR;

@@ -194,7 +194,7 @@ public class ConvertLib extends TLFunctionLibrary {
                     case LONG:
                         strBuf.append(Long.toString(((TLNumericValue)input).getLong(),radix));
                         break;
-                    case DOUBLE:
+                    case NUMBER:
                         strBuf.append(Double.toHexString(((TLNumericValue)input).getDouble()));
                         break;
                     default:
@@ -420,7 +420,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	                                "str2num - can't convert string to decimal number using specified radix");
 	                    }
 	                    break;
-	                case DOUBLE:
+	                case NUMBER:
 	                	if (radix==10 || radix==16){
 	                		result = Double.parseDouble(params[0].toString());
 	                }else{
@@ -951,12 +951,12 @@ public class ConvertLib extends TLFunctionLibrary {
     	switch (fromType) {
         case INTEGER:
         case LONG:
-        case DOUBLE:
+        case NUMBER:
         case DECIMAL:
         	switch (toType) {
             case INTEGER:
             case LONG:
-            case DOUBLE:
+            case NUMBER:
             case DECIMAL:
 				return new Num2NumFunction();
             case BOOLEAN:
@@ -973,7 +973,7 @@ public class ConvertLib extends TLFunctionLibrary {
         	switch (toType) {
             case INTEGER:
             case LONG:
-            case DOUBLE:
+            case NUMBER:
             case DECIMAL:
             	return new Bool2NumFunction();
             case BYTE:
@@ -995,7 +995,7 @@ public class ConvertLib extends TLFunctionLibrary {
         	switch (toType) {
             case INTEGER:
             case LONG:
-            case DOUBLE:
+            case NUMBER:
             case DECIMAL:
             	return new Str2NumFunction();
             case BOOLEAN:
@@ -1097,7 +1097,7 @@ class Str2NumContext{
 		if (pattern != null) {
 			switch (type) {
 			case DECIMAL:
-			case DOUBLE:
+			case NUMBER:
 				format = new NumericFormat(pattern);
 				break;
 			case INTEGER:

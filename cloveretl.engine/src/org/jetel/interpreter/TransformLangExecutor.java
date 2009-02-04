@@ -436,7 +436,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             switch (a.type) {
             case INTEGER:
             case LONG:
-            case DOUBLE:
+            case NUMBER:
             case DECIMAL:
             case DATE:
             case STRING:
@@ -1234,7 +1234,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             value = new TLNumericValue(TLValueType.LONG);
             break;
         case DOUBLE_VAR:
-            value = new TLNumericValue(TLValueType.DOUBLE);
+            value = new TLNumericValue(TLValueType.NUMBER);
             break;
         case DECIMAL_VAR:
         {

@@ -59,7 +59,7 @@ public class TLContext<T> {
 
     public static TLContext<TLValue> createDoubleContext() {
         TLContext<TLValue> context = new TLContext<TLValue>();
-        context.setContext(TLValue.create(TLValueType.DOUBLE));
+        context.setContext(TLValue.create(TLValueType.NUMBER));
         return context;
 
     }
