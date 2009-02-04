@@ -124,7 +124,7 @@ import org.w3c.dom.Element;
  * @author avackova <agata.vackova@javlinconsulting.cz>
  * @author Martin Janik <martin.janik@javlin.cz>
  *
- * @version 31st January 2009
+ * @version 4th February 2009
  * @since 10th October 2006
  */
 public class XLSReader extends Node {
@@ -200,11 +200,11 @@ public class XLSReader extends Node {
                 aXLSReader.setMaxErrorCount(xattribs.getInteger(XML_MAXERRORCOUNT_ATTRIBUTE));
             }
 
-            if (xattribs.exists(XML_SHEETNUMBER_ATTRIBUTE)) {
-                aXLSReader.setSheetNumber(xattribs.getString(XML_SHEETNUMBER_ATTRIBUTE));
-            } else if (xattribs.exists(XML_SHEETNAME_ATTRIBUTE)) {
+            if (xattribs.exists(XML_SHEETNAME_ATTRIBUTE)) {
                 aXLSReader.setSheetName(xattribs.getString(XML_SHEETNAME_ATTRIBUTE));
-            }
+            } else if (xattribs.exists(XML_SHEETNUMBER_ATTRIBUTE)) {
+                aXLSReader.setSheetNumber(xattribs.getString(XML_SHEETNUMBER_ATTRIBUTE));
+            } 
 
             if (xattribs.exists(XML_METADATAROW_ATTRIBUTE)) {
                 aXLSReader.setMetadataRow(xattribs.getInteger(XML_METADATAROW_ATTRIBUTE));
