@@ -1,11 +1,11 @@
 CREATE TABLE asd.pet
 (
-	name.xyz VARCHAR2(20),
+	pet.xyz VARCHAR2(20),
 	owner VARCHAR(20),
 	species VARCHAR(20),
 	sex CHAR(1),			/* komentar */
 	birth DATE, 			// a propo
-	death DATE
+	death TIMESTAMP
 );
 
 
@@ -42,7 +42,7 @@ Age int
 );
 
 
-CREATE TABLE employees
+CREATE TABLE employee
 (
 id INT(3) NOT NULL,
 Lastname VARCHAR(50),

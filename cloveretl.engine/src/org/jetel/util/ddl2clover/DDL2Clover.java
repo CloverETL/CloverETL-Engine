@@ -27,13 +27,6 @@ public class DDL2Clover implements DDL2CloverConstants {
         private static final Long dateTimeLenght = Long.valueOf(24); // "10.10.2007 23:10:10.111"
         private static final Long textLenght = Long.valueOf(256);
 
-        public static void main(String args[]) throws ParseException, FileNotFoundException {
-                DDL2Clover parser = new DDL2Clover(new FileInputStream(new File("./src/org/jetel/util/ddl2clover/ddl_statements.txt")));
-                parser.getDataRecordMetadataList(";", "\n");
-                parser.testPrint(parser.list);
-                System.out.println("Ok");
-        }
-
         public List<DataRecordMetadata> getDataRecordMetadataList() throws ParseException {
                 return getDataRecordMetadataList(null, null);
         }

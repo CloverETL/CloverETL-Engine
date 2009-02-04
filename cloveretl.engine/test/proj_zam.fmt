@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="Proj_Zam" recordSize="17" type="fixed">
+<Field name="ID_Projektu" nullable="false" shift="0" size="6" skipFirstLine="false" type="string"/>
+<Field name="OsobniCislo" nullable="false" shift="0" size="11" skipFirstLine="false" type="integer"/>
+</Record>

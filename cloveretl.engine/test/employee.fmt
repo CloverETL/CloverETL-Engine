@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="employee" recordSize="88" type="fixed">
+<Field name="id" nullable="false" shift="0" size="3" skipFirstLine="false" type="integer"/>
+<Field name="Lastname" nullable="true" shift="0" size="50" skipFirstLine="false" type="string"/>
+<Field name="Firstname" nullable="true" shift="0" size="25" skipFirstLine="false" type="string"/>
+<Field default="crew" name="Title" nullable="true" shift="0" size="10" skipFirstLine="false" type="string"/>
+</Record>
