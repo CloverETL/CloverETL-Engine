@@ -2264,7 +2264,9 @@ public class InterpreterTest extends CloverTestCase {
 						"int dist3 = edit_distance('agata','agatą'," + StringAproxComparator.TERTIARY + ");\n"+
 						"int dist4 = edit_distance('agata','Agata'," + StringAproxComparator.TERTIARY + ");\n"+
 						"int dist6 = edit_distance('hello','vitej'," + StringAproxComparator.TERTIARY + ");\n"+
-						"int dist7 = edit_distance('hello','vitej'," + StringAproxComparator.TERTIARY + ",10);\n"; 
+						"int dist7 = edit_distance('hello','vitej'," + StringAproxComparator.TERTIARY + ",10);\n"+ 
+						"int dist8 = edit_distance('aAeEiIoOuUÚnN','áÁéÉíÍóÓúüÜñÑ'," + StringAproxComparator.SECONDARY + ",'SP.sp');\n"+
+						"int dist9 = edit_distance('aAAaaeeeeEEEEcC','àâAÀÂéêëEÈÉÊËçÇ'," + StringAproxComparator.SECONDARY + ",'FR.fr');\n";
    	
 	      print_code(expStr);
 			try {
@@ -2314,6 +2316,8 @@ public class InterpreterTest extends CloverTestCase {
 			      assertEquals("dist4",0,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist4")).getTLValue().getNumeric().getInt());
 			      assertEquals("dist6",4,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist6")).getTLValue().getNumeric().getInt());
 			      assertEquals("dist7",5,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist7")).getTLValue().getNumeric().getInt());
+			      assertEquals("dist8",0,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist8")).getTLValue().getNumeric().getInt());
+			      assertEquals("dist9",0,executor.getGlobalVariable(parser.getGlobalVariableSlot("dist9")).getTLValue().getNumeric().getInt());
 			} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
