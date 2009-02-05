@@ -2265,7 +2265,7 @@ public class InterpreterTest extends CloverTestCase {
 						"int dist4 = edit_distance('agata','Agata'," + StringAproxComparator.TERTIARY + ");\n"+
 						"int dist6 = edit_distance('hello','vitej'," + StringAproxComparator.TERTIARY + ");\n"+
 						"int dist7 = edit_distance('hello','vitej'," + StringAproxComparator.TERTIARY + ",10);\n"+ 
-						"int dist8 = edit_distance('aAeEiIoOuUÚnN','áÁéÉíÍóÓúüÜñÑ'," + StringAproxComparator.SECONDARY + ",'SP.sp');\n"+
+						"int dist8 = edit_distance('aAeEiIoOuUÚnN','áÁéÉíÍóÓúüÜñÑ'," + StringAproxComparator.SECONDARY + ",'ES.es');\n"+
 						"int dist9 = edit_distance('aAAaaeeeeEEEEcC','àâAÀÂéêëEÈÉÊËçÇ'," + StringAproxComparator.SECONDARY + ",'FR.fr');\n";
    	
 	      print_code(expStr);

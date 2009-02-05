@@ -65,7 +65,7 @@ public class StringAproxComparatorLocaleRules {
 		"z=ż=ź=Z=Ż=Ź"
 	};
 
-	private static final String[] SP_RULES={
+	private static final String[] ES_RULES={
 		"a=á=A=Á",
 		"e=é=E=É",
 		"i=í=I=Í",
@@ -88,8 +88,32 @@ public class StringAproxComparatorLocaleRules {
 	static {
 		rules.put("CZ",CZ_RULES);
 		rules.put("CS",CZ_RULES);
-		rules.put("SP",SP_RULES);
+		
+		rules.put("AR",ES_RULES);
+		rules.put("BO",ES_RULES);
+		rules.put("CL",ES_RULES);
+		rules.put("CO",ES_RULES);
+		rules.put("CR",ES_RULES);
+		rules.put("DO",ES_RULES);
+		rules.put("SV",ES_RULES);
+		rules.put("GT",ES_RULES);
+		rules.put("HN",ES_RULES);
+		rules.put("MX",ES_RULES);
+		rules.put("NI",ES_RULES);
+		rules.put("PA",ES_RULES);
+		rules.put("PY",ES_RULES);
+		rules.put("PE",ES_RULES);
+		rules.put("PR",ES_RULES);
+		rules.put("ES",ES_RULES);
+		rules.put("UY",ES_RULES);
+		rules.put("VE",ES_RULES);
+		
+		rules.put("BE",FR_RULES);
+		rules.put("CA",FR_RULES);
 		rules.put("FR",FR_RULES);
+		rules.put("LU",FR_RULES);
+		rules.put("CH",FR_RULES);
+		
 		rules.put("PL",PL_RULES);
 	}
 	
