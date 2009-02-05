@@ -65,6 +65,23 @@ public class StringAproxComparatorLocaleRules {
 		"z=ż=ź=Z=Ż=Ź"
 	};
 
+	private static final String[] SP_RULES={
+//		"a=á=A=Á",
+//		e=é=E=É
+//		i=í=I=Í
+//		o=ó=O=Ó
+//		u=ú=ü=U=Ú=Ü
+//		n=ñ=N=Ñ
+	};
+
+	private static final String[] FR_RULES={
+//		a=à=â=A=À=Â
+//		e=è=é=ê=ë=E=È=É=Ê=Ë
+//		i=ï=I=Ï
+//		o=ô=O=Ô
+//		u=ù=û=ü=U=Ù=Û=Ü
+//		c=ç=C=Ç
+	};
 	/**
 	 * Static initalization for rules HashMap
 	 */
