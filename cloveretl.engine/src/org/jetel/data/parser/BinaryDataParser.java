@@ -25,12 +25,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.Channels;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.StringDataField;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
@@ -49,13 +53,37 @@ import org.jetel.util.bytes.ByteBufferUtils;
 public class BinaryDataParser implements Parser {
 
 	ReadableByteChannel reader;
+	/*
+	 * just remember the inputstream we used to create "reader" channel
+	 */
 	InputStream backendStream;
 	DataRecordMetadata metaData;
 	ByteBuffer buffer;
 	IParserExceptionHandler exceptionHandler;
+	/*
+	 * aux variable
+	 */
 	int recordSize;
+	/*
+	 * whether this parser has been opened
+	 */
 	boolean opened = false;
+	/*
+	 * Size of read buffer
+	 */
 	int bufferLimit = -1;
+	/*
+	 * Charset name of serialized string field
+	 */
+	String stringCharset;
+	/*
+	 * Decoder instance
+	 */
+	CharsetDecoder stringDecoder;
+	/*
+	 * temp char buffer
+	 */
+	CharBuffer charBuffer;
 	
 	private final static int LEN_SIZE_SPECIFIER = 4;
 
@@ -66,7 +94,6 @@ public class BinaryDataParser implements Parser {
 	public BinaryDataParser(int bufferLimit) {
 		setBufferLimit(bufferLimit);
 	}
-	
 	
 	
 	public int getBufferLimit() {
@@ -104,6 +131,9 @@ public class BinaryDataParser implements Parser {
 		if (reader != null && reader.isOpen()) {
 			try {
 				reader.close();
+				if (backendStream != null) {
+					backendStream.close();
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -122,47 +152,33 @@ public class BinaryDataParser implements Parser {
 		return getNext(record);
 	}
 
-	long timeTotal;
-	long timeReload1;
-	long timeReload2;
-	long timeDecode;
-	long timeDeserialize;
-	long _timeStart1;
-	long _timeStart2;
 	public DataRecord getNext(DataRecord record) throws JetelException {
-		_timeStart1 = System.currentTimeMillis();
 		try {
 			if (!opened) {
 				open();
 			}
-			_timeStart2 = System.currentTimeMillis();
 			if (LEN_SIZE_SPECIFIER > buffer.remaining()) {
 				reloadBuffer();
 				if (buffer.remaining() == 0) {
 					return null;
 				}
 			}
-			timeReload1 += System.currentTimeMillis() - _timeStart2;
 			
-			_timeStart2 = System.currentTimeMillis();
 			recordSize = ByteBufferUtils.decodeLength(buffer);
-			timeDecode += System.currentTimeMillis() - _timeStart2;
 
 			// check that internal buffer has enough data to read data record
-			_timeStart2 = System.currentTimeMillis();
 			if (recordSize > buffer.remaining()) {
 				reloadBuffer();
 				if (recordSize > buffer.remaining()) {
 					return null;
 				}
 			}
-			timeReload2 += System.currentTimeMillis() - _timeStart2;
 
-			_timeStart2 = System.currentTimeMillis();
-			record.deserialize(buffer);
-			timeDeserialize += System.currentTimeMillis() - _timeStart2;
-			
-			timeTotal += System.currentTimeMillis() - _timeStart1;
+			if (stringCharset == null) {
+				record.deserialize(buffer);
+			} else {
+				deserialize(record, buffer);
+			}
 			
 			return record;
 		} catch (IOException e) {
@@ -171,25 +187,38 @@ public class BinaryDataParser implements Parser {
 
 	}
 
-	public void printStats() {
-		System.out.println("BinaryDataParser stats [" + this.backendStream + "]");
-		System.out.println("Total time: " + (timeTotal / 1000.0) + " s");
-		System.out.println("  Reload 1st: " + (timeReload1 / 1000.0) + " s");
-		System.out.println("  Decode: " + (timeDecode / 1000.0) + " s");
-		System.out.println("  Reload 2nd: " + (timeReload2 / 1000.0) + " s");
-		System.out.println("  Deserialize: " + (timeDeserialize / 1000.0) + " s");
+	public void deserialize(DataRecord record, ByteBuffer buffer) {
+		DataField field;
+		for(int i = 0; i < record.getNumFields(); i++) {
+			field = record.getField(i);
+			if (field instanceof StringDataField) {
+				deserialize((StringDataField) field, buffer);
+			} else {
+				field.deserialize(buffer);
+			}
+		}
 	}
 	
-//	ByteBuffer[] buffers;
-//	int curBuffer = 0;
-//	int buffersCount = 2;
+	public void deserialize(StringDataField field, ByteBuffer buffer) {
+        final int length=ByteBufferUtils.decodeLength(buffer);
+		StringBuilder value = (StringBuilder) field.getValue();
+        value.setLength(0);
+
+		if (length == 0) {
+			field.setNull(true);
+		} else {
+			field.setNull(false);
+			int curLimit = buffer.limit();
+			buffer.limit(buffer.position() + length);
+			charBuffer.clear();
+			stringDecoder.decode(buffer, charBuffer, true);
+			buffer.limit(curLimit);
+			charBuffer.flip();
+			value.append(charBuffer);
+		}
+	}
+	
 	void reloadBuffer() throws IOException {
-//		curBuffer = (curBuffer+1) % buffersCount;
-//		byte[] remainder = new byte[buffer.remaining()];
-//		buffer.get(remainder);
-//		buffer.clear();
-//		buffer = buffers[curBuffer];
-//		buffer.put(remainder);
 		buffer.compact();
 		reader.read(buffer);
 		buffer.flip();
@@ -209,15 +238,18 @@ public class BinaryDataParser implements Parser {
 		}
 		this.metaData = _metadata;
 		int buffSize = bufferLimit > 0 ? Math.min(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE, bufferLimit) : Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
-// Multiple buffers in roundrobin
-// disabled - complexity without any yield
-//		buffers = new ByteBuffer[buffersCount];
-//		for(int i = 0; i < buffersCount; i++) {
-//			buffers[i] = ByteBuffer.allocateDirect(buffSize);
-//		}
-//		buffer = buffers[0];
+
 		buffer = ByteBuffer.allocateDirect(buffSize);
-//		buffer = ByteBuffer.allocate(buffSize);
+//		buffer = ByteBuffer.allocate(buffSize); // for memory consumption testing
+	}
+
+	public void init(DataRecordMetadata _metadata, String charsetName) throws ComponentNotReadyException {
+		init(_metadata);
+		setStringCharset(charsetName);
+	}
+
+	public DataRecordMetadata getMetadata() {
+		return this.metaData;
 	}
 
 	public void movePosition(Object position) throws IOException {
@@ -270,4 +302,26 @@ public class BinaryDataParser implements Parser {
 		return 0;
 	}
 
+	public String getStringCharset() {
+		return stringCharset;
+	}
+
+	public void setStringCharset(String stringCharset) {
+		if (stringCharset != null && (! Defaults.Record.USE_FIELDS_NULL_INDICATORS || ! getMetadata().isNullable())) {
+			this.stringCharset = stringCharset;
+			stringDecoder = Charset.forName(stringCharset).newDecoder();
+			charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		} else {
+			this.stringCharset = null;
+			stringDecoder = null;
+			charBuffer = null;
+		}
+	}
+
+	public InputStream getBackendStream() {
+		return backendStream;
+	}
+
+	
+	
 }
