@@ -47,7 +47,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.file.FileUtils;
@@ -74,7 +73,7 @@ import org.w3c.dom.Element;
  * @since 		30.10.2007
  * 
  */
-public class PostgreSqlDataWriter extends Node {
+public class PostgreSqlDataWriter extends BulkLoader {
 
 	private static Log logger = LogFactory.getLog(PostgreSqlDataWriter.class);
 
@@ -142,7 +141,6 @@ public class PostgreSqlDataWriter extends Node {
 	private final static String POSTGRESQL_FILE_NAME_PREFIX = "postgresql";
 	private final static String COMMAND_FILE_NAME_SUFFIX = ".ctl";
 	private final static File TMP_DIR = new File(".");
-	private final static String EQUAL_CHAR = "=";
 	private final static String DEFAULT_COLUMN_DELIMITER = "\t";
 	private final static String DEFAULT_COLUMN_DELIMITER_IN_CSV_MODE = ",";
 	
@@ -155,27 +153,15 @@ public class PostgreSqlDataWriter extends Node {
 	private final static String DEFAULT_NULL_VALUE_IN_TEXT_MODE = "\\N";
 
 	// variables for psql client
-	private String psqlPath;
-	private String database;
 	private String commandURL;
 	private String host;
-	private String user;
 
 	// variables for copy statement
-	private String table;
-	private String columnDelimiter = null;
-	private String dataURL; // fileUrl from XML - data file that is used when no input port is connected or for log
-	private String parameters;
-	
 	private File commandFile;
 
-	private Properties properties;
 	private File dataFile = null; // file that is used for exchange data between clover and psql - file from dataURL
 	private String[] commandLine; // command line of psql
 	private DataRecordMetadata dbMetadata; // it correspond to psql input format
-	private DelimitedDataFormatter formatter; // format data to psql format and write them to dataFileName
-	private DataConsumer consumer = null; // consume data from out stream of psql
-	private DataConsumer errConsumer; // consume data from err stream of psql - write them to by logger
 
 	private boolean csvMode; // true if CSV mode is used for loading data
 	
@@ -191,9 +177,7 @@ public class PostgreSqlDataWriter extends Node {
 	 * @param id Description of the Parameter
 	 */
 	public PostgreSqlDataWriter(String id, String psqlPath, String database) {
-		super(id);
-		this.psqlPath = psqlPath;
-		this.database = database;
+		super(id, psqlPath, database);
 	}
 	
 	/**
@@ -322,9 +306,9 @@ public class PostgreSqlDataWriter extends Node {
 	 */
 	private String[] createCommandLineForDbLoader() throws ComponentNotReadyException {
 		if (ProcBox.isWindowsPlatform()) {
-			psqlPath = StringUtils.backslashToSlash(psqlPath);
+			loadUtilityPath = StringUtils.backslashToSlash(loadUtilityPath);
 		}
-		PsqlCommandBuilder command = new PsqlCommandBuilder(psqlPath, properties);
+		PsqlCommandBuilder command = new PsqlCommandBuilder(loadUtilityPath, properties);
 
 		command.addParam(null, PSQL_DATABASE_SWITCH, database);
 		command.addParam(null, PSQL_COMMAND_URL_SWITCH, createCommandFile());
@@ -514,7 +498,6 @@ public class PostgreSqlDataWriter extends Node {
 
 		isDataReadFromPort = !getInPorts().isEmpty();
 
-		properties = parseParameters(parameters);
 		csvMode = isCsvModeUsed(properties);
 		setDefaultColumnDelimiter(csvMode);
 		checkParams();
@@ -596,26 +579,6 @@ public class PostgreSqlDataWriter extends Node {
 			prop.containsKey(COPY_CSV_ESCAPE_PARAM) || 
 			prop.containsKey(COPY_CSV_FORCE_NOT_NULL_PARAM);
 	}
-	
-	/**
-	 * Create instance of Properties from String. 
-	 * Parse parameters from string "parameters" and fill properties by them.
-	 * 
-	 * @param parameters string that contains parameters
-	 * @return instance of Properties created by parsing string
-	 */
-	private Properties parseParameters(String parameters) {
-		Properties properties = new Properties();
-
-		if (parameters != null) {
-			for (String param : StringUtils.split(parameters)) {
-				String[] par = param.split(EQUAL_CHAR);
-				properties.setProperty(par[0], par.length > 1 ? StringUtils.unquote(par[1]) : "true");
-			}
-		}
-
-		return properties;
-	}
 
 	/**
 	 * Checks if mandatory parameters are defined.
@@ -624,7 +587,7 @@ public class PostgreSqlDataWriter extends Node {
 	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
 	 */
 	private void checkParams() throws ComponentNotReadyException {
-		if (StringUtils.isEmpty(psqlPath)) {
+		if (StringUtils.isEmpty(loadUtilityPath)) {
 			throw new ComponentNotReadyException(this,
 					StringUtils.quote(XML_PSQL_PATH_ATTRIBUTE) + " attribute have to be set.");
 		}
@@ -799,7 +762,7 @@ public class PostgreSqlDataWriter extends Node {
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 
-		xmlElement.setAttribute(XML_PSQL_PATH_ATTRIBUTE, psqlPath);
+		xmlElement.setAttribute(XML_PSQL_PATH_ATTRIBUTE, loadUtilityPath);
 		xmlElement.setAttribute(XML_DATABASE_ATTRIBUTE, database);
 		if (!StringUtils.isEmpty(commandURL)) {
 			xmlElement.setAttribute(XML_COMMAND_URL_ATTRIBUTE, commandURL);
