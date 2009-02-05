@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.channels.Channels;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,7 +55,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CommandBuilder;
-import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.PortDataConsumer;
 import org.jetel.util.exec.ProcBox;
@@ -507,7 +505,7 @@ import org.w3c.dom.Element;
  * @see org.jetel.graph.Edge
  * @since 29.8.2007
  */
-public class MsSqlDataWriter extends Node {
+public class MsSqlDataWriter extends BulkLoader {
 
 	private static Log logger = LogFactory.getLog(MsSqlDataWriter.class);
 
@@ -581,7 +579,6 @@ public class MsSqlDataWriter extends Node {
 	public final static String COMPONENT_TYPE = "MS_SQL_DATA_WRITER";
 	private final static int READ_FROM_PORT = 0;
 	private final static int WRITE_TO_PORT = 0; // port for write bad record
-	private final static char EQUAL_CHAR = '=';
 
 	private final static String DATA_FILE_NAME_PREFIX = "data";
 	private final static String DATA_FILE_NAME_SUFFIX = ".dat";
@@ -608,27 +605,15 @@ public class MsSqlDataWriter extends Node {
 	private final static String DEFAULT_TIME_FORMAT = DEFAULT_DATETIME_FORMAT;
 
 	// variables for bcp's command
-	private String bcpUtilityPath;
-	private String database;
 	private String owner;
-	private String table;
 	private String view;
-	private String dataURL; // fileUrl from XML - data file that is used when no input port is connected
-	private String user;
-	private String password;
-	private String parameters;
 	private String errFileName = null; // errFile insert by user or tmpErrFile for parsing bad rows
 	private boolean isErrFileFromUser; // true if errFile was inserted by user; false when errFile is tmpErrFile
-	private String columnDelimiter;
 	private String serverName;
 
-	private Properties properties = new Properties();
-	private DataConsumer consumer; // consume data from out stream of bcp
-	private DataConsumer errConsumer; // consume data from err stream of bcp - write them to by logger
 	private MsSqlBadRowReaderWriter badRowReaderWriter;
 
 	private DataRecordMetadata dbMetadata; // it correspond to bcp input format
-	private DelimitedDataFormatter formatter; // format data to bcp format and write them to dataFileName
 	private String commandLine; // command line of bcp
 	private File dataFile; // file that is used for exchange data between clover and bcp - file from dataURL
 											 // flag that determine if execute() method was already executed;
@@ -652,9 +637,7 @@ public class MsSqlDataWriter extends Node {
 	 * @param id Description of the Parameter
 	 */
 	public MsSqlDataWriter(String id, String bcpUtilityPath, String database) {
-		super(id);
-		this.bcpUtilityPath = bcpUtilityPath;
-		this.database = database;
+		super(id, bcpUtilityPath, database);
 	}
 
 	/**
@@ -751,7 +734,7 @@ public class MsSqlDataWriter extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private String createCommandLineForDbLoader() throws ComponentNotReadyException {
-		CommandBuilder command = new CommandBuilder(bcpUtilityPath + " ");
+		CommandBuilder command = new CommandBuilder(loadUtilityPath + " ");
 		command.setParams(properties);
 
 		if (!StringUtils.isEmpty(database)) {
@@ -808,7 +791,7 @@ public class MsSqlDataWriter extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private void checkParams() throws ComponentNotReadyException {
-		if (StringUtils.isEmpty(bcpUtilityPath)) {
+		if (StringUtils.isEmpty(loadUtilityPath)) {
 			throw new ComponentNotReadyException(this, StringUtils.quote(XML_BCP_UTILITY_PATH_ATTRIBUTE)
 					+ " attribute must be set.");
 		}
@@ -913,7 +896,6 @@ public class MsSqlDataWriter extends Node {
 		if (isInitialized()) return;
 		super.init();
 
-		parseParameters();
 		checkParams();
 		getUserAndPassword();
 
@@ -1088,25 +1070,6 @@ public class MsSqlDataWriter extends Node {
 	}
 
 	/**
-	 * Parse parameters from string "parameters" and save them to properties.
-	 */
-	private void parseParameters() {
-		if (parameters != null) {
-			String[] param = StringUtils.split(parameters);
-			int index;
-			for (String string : param) {
-				index = string.indexOf(EQUAL_CHAR);
-				if (index > -1) {
-					properties.setProperty(string.substring(0, index),
-							 StringUtils.unquote(string.substring(index + 1)));
-				} else {
-					properties.setProperty(string, String.valueOf(true));
-				}
-			}
-		}
-	}
-
-	/**
 	 * Modify metadata so that they correspond to bcp input format.
 	 * Each field is delimited and it has the same delimiter.
 	 * Only last field is delimited by '\n'.
@@ -1244,7 +1207,7 @@ public class MsSqlDataWriter extends Node {
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 
-		xmlElement.setAttribute(XML_BCP_UTILITY_PATH_ATTRIBUTE, bcpUtilityPath);
+		xmlElement.setAttribute(XML_BCP_UTILITY_PATH_ATTRIBUTE, loadUtilityPath);
 		xmlElement.setAttribute(XML_DATABASE_ATTRIBUTE, database);
 		xmlElement.setAttribute(XML_FILE_URL_ATTRIBUTE, dataURL);
 
