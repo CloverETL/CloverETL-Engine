@@ -220,6 +220,10 @@ public class XMLExtract extends Node {
     private static final String XML_SEQUENCEID = "sequenceId";
     private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
+    private static final String XML_XML_FEATURES_ATTRIBUTE = "xmlFeatures";
+
+    private static final String FEATURES_DELIMETER = ";";
+    private static final String FEATURES_ASSIGN = ":=";
 
     // component name
     public final static String COMPONENT_TYPE = "XML_EXTRACT";
@@ -249,6 +253,8 @@ public class XMLExtract extends Node {
 
     //
 	private String schemaFile;
+
+	private String xmlFeatures;
 
     /**
      * SAX Handler that will dispatch the elements to the different ports.
@@ -1020,6 +1026,9 @@ public class XMLExtract extends Node {
             	extract.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
             }
             
+            if (xattribs.exists(XML_XML_FEATURES_ATTRIBUTE)){
+            	extract.setXmlFeatures(xattribs.getString(XML_XML_FEATURES_ATTRIBUTE));
+            }
             return extract;
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -1198,6 +1207,7 @@ public class XMLExtract extends Node {
     private boolean parseXML() throws JetelException{
     	// create new sax factory
         SAXParserFactory factory = SAXParserFactory.newInstance();
+		initXmlFeatures(factory);
         SAXParser parser;
         
         try {
@@ -1232,6 +1242,26 @@ public class XMLExtract extends Node {
         return true;
     }
     
+	/**
+	 * Xml features initialization.
+	 * @throws JetelException 
+	 */
+	private void initXmlFeatures(SAXParserFactory factory) throws JetelException {
+		if (xmlFeatures == null) return;
+		String[] aXmlFeatures = xmlFeatures.split(FEATURES_DELIMETER);
+		String[] aOneFeature;
+	    try {
+			for (String oneFeature: aXmlFeatures) {
+				aOneFeature = oneFeature.split(FEATURES_ASSIGN);
+				if (aOneFeature.length != 2) 
+					throw new JetelException("The xml feature '" + oneFeature + "' has wrong format");
+					factory.setFeature(aOneFeature[0], Boolean.parseBoolean(aOneFeature[1]));
+			}
+		} catch (Exception e) {
+			throw new JetelException(e.getMessage(), e);
+		}
+	}
+
     /**
      * Perform sanity checks.
      */
@@ -1387,6 +1417,14 @@ public class XMLExtract extends Node {
     public void setNumRecords(int numRecords) {
         this.numRecords = Math.max(numRecords, 0);
     }
+
+    /**
+     * Sets the xml feature.
+     * @param xmlFeatures
+     */
+    private void setXmlFeatures(String xmlFeatures) {
+    	this.xmlFeatures = xmlFeatures;
+	}
 
 //    private void resetRecord(DataRecord record) {
 //        // reset the record setting the nullable fields to null and default
