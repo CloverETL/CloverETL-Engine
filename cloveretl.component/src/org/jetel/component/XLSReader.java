@@ -374,7 +374,7 @@ public class XLSReader extends Node {
             xmlElement.setAttribute(XML_MAXERRORCOUNT_ATTRIBUTE, String.valueOf(maxErrorCount));
         }
 
-        if (metadataRow > -1) {
+        if (metadataRow > 0) {
             xmlElement.setAttribute(XML_METADATAROW_ATTRIBUTE, String.valueOf(metadataRow));
         }
 

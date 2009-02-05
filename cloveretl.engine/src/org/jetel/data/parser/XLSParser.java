@@ -442,11 +442,14 @@ public abstract class XLSParser implements Parser {
 	 * @throws ComponentNotReadyException
 	 */
 	public void setMetadataRow(int metadataRow) throws ComponentNotReadyException{
-		if (metadataRow < 0) 
-			throw new ComponentNotReadyException("Number of metadata row has to be greater then 0");
+		if (metadataRow < -1) { 
+			throw new ComponentNotReadyException("Number of metadata row has to be greater than -1");
+		}
+
 		this.metadataRow = metadataRow;
+
 		if (firstRow == 0) {
-			firstRow = this.metadataRow +1;
+			firstRow = this.metadataRow + 1;
 		}
 	}
 	
@@ -457,8 +460,10 @@ public abstract class XLSParser implements Parser {
 	 * @throws ComponentNotReadyException
 	 */
 	public void setMetadataRowWithAllowedNone(int metadataRow) throws ComponentNotReadyException{
-		if (metadataRow < -1) 
-			throw new ComponentNotReadyException("Number of metadata row has to be greater then -1");
+		if (metadataRow < -1) { 
+			throw new ComponentNotReadyException("Number of metadata row has to be greater than -1");
+		}
+
 		this.metadataRow = metadataRow;
 	}
 
