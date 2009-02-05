@@ -694,7 +694,6 @@ public class RangeLookupTest extends CloverTestCase {
 		assertEquals(2, lookupResult.getNumFound());
 
 		((RangeLookupTable) lookup).setEndInclude(true);
-		lookup.init();
 		lookupResult = lookup.createLookup(key, record);
 		record.getField(0).setValue(10);
 		System.out.println();

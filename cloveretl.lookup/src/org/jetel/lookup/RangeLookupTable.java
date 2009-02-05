@@ -1,22 +1,21 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2005-06  Javlin Consulting <info@javlinconsulting.cz>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.cz>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.lookup;
 
 import java.io.ByteArrayInputStream;
@@ -231,12 +230,12 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		return status;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#init()
-	 */
 	@Override
 	public synchronized void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
+        if (isInitialized()) {
+            throw new IllegalStateException("The lookup table has already been initialized!");
+        }
+
 		super.init();
 		
 		if (metadata == null) {
@@ -313,33 +312,42 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		lookupTable.clear();
-	    //read records from file
+
+        lookupTable.clear();
+
+        // read records from file
         if (dataParser != null) {
-        	DataRecord tmpRecord = new DataRecord(metadata);
-        	tmpRecord.init();
+            DataRecord tmpRecord = new DataRecord(metadata);
+            tmpRecord.init();
             dataParser.reset();
+
             try {
-				if (fileURL != null) {
-					dataParser.setDataSource(FileUtils.getReadableChannel(
-							getGraph() != null ? getGraph().getProjectURL() : null, 
-							fileURL));
-				}else if (data != null) {
-					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
-				}                
-				while (dataParser.getNext(tmpRecord) != null) {
+                if (fileURL != null) {
+                    dataParser.setDataSource(FileUtils.getReadableChannel(
+                            (getGraph() != null) ? getGraph().getProjectURL() : null, fileURL));
+                } else if (data != null) {
+                    dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
+                }
+                while (dataParser.getNext(tmpRecord) != null) {
                     lookupTable.add(tmpRecord.duplicate());
                 }
             } catch (Exception e) {
                 throw new ComponentNotReadyException(this, e.getMessage(), e);
             }
+
             dataParser.close();
         }
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.LookupTable#getMetadata()
-	 */
+
+    @Override
+    public synchronized void free() {
+        if (isInitialized()) {
+            super.free();
+
+            // TODO: any appropriate clean-up code
+        }
+    }
+    
 	public DataRecordMetadata getMetadata() {
 		return metadata;
 	}
@@ -354,12 +362,20 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
     }
 
 	public boolean put(DataRecord dataRecord) {
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
 		lookupTable.add(dataRecord.duplicate());
 
 		return true;
 	}
 
 	public boolean remove(DataRecord dataRecord) {
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
 	    return lookupTable.remove(dataRecord);
 	}
 
@@ -367,10 +383,11 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		throw new UnsupportedOperationException();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	public Iterator<DataRecord> iterator() {
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
 		return lookupTable.iterator();
 	}
 	
@@ -610,18 +627,26 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	}
 
 	public Lookup createLookup(RecordKey key, DataRecord keyRecord) {
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
 		return new RangeLookup(this, key, keyRecord);
 	}
 
-	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
-		if (!isInitialized()) throw new NotInitializedException(this);
+	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException {
+		if (!isInitialized()) {
+            throw new NotInitializedException(this);
+		}
 		
 		DataRecordMetadata keyMetadata = new DataRecordMetadata( "_rangeLookupTable_" + getName(), getMetadata().getRecType());
 		keyMetadata.setFieldDelimiter(getMetadata().getFieldDelimiterStr());
 		keyMetadata.setRecordDelimiters(getMetadata().getRecordDelimiterStr());
+
 		for (int index : startField) {
 			keyMetadata.addField(getMetadata().getField(index).duplicate());
 		}
+
 		return keyMetadata;
 	}
 
