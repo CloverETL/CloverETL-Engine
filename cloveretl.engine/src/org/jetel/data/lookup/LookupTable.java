@@ -41,7 +41,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Agata Vackova <agata.vackova@javlin.cz>
  * @author Martin Janik <martin.janik@javlin.cz>
  *
- * @version 3rd November 2008
+ * @version 5th February 2009
  * @see Lookup
  * @since 8th July 2004
  */
@@ -147,7 +147,6 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      * proxy object can also be used for continuous searching based on the same key and different data records.</p>
      *
      * @param lookupKey a record key that will be used for lookup
-     * @throws ComponentNotReadyException 
      *
      * @returns a lookup proxy object that can be used for lookup queries with the given lookup key
      *
@@ -170,7 +169,6 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      *
      * @param lookupKey a record key that will be used for lookup
      * @param dataRecord a data record that will be used for future lookup queries
-     * @throws ComponentNotReadyException 
      *
      * @returns a lookup proxy object that can be used for lookup queries with the given lookup key and data record
      *
