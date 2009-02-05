@@ -1,22 +1,21 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.cz>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.lookup;
 
 import java.io.ByteArrayInputStream;
@@ -151,9 +150,14 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	}
 
 	public Lookup createLookup(RecordKey key, DataRecord keyRecord) {
-		SimpleLookup lookup = new SimpleLookup(lookupTable, key, keyRecord);
-		lookup.setLookupTable(this);
-		return lookup;
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
+        SimpleLookup lookup = new SimpleLookup(lookupTable, key, keyRecord);
+        lookup.setLookupTable(this);
+
+        return lookup;
 	}
 	
 	public Lookup createLookup(RecordKey key) {
@@ -166,8 +170,11 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	 * @exception  IOException  Description of Exception
 	 * @since                   May 2, 2002
 	 */
-	synchronized public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
+	public synchronized void init() throws ComponentNotReadyException {
+        if (isInitialized()) {
+            throw new IllegalStateException("The lookup table has already been initialized!");
+        }
+
 		super.init();
 
 		if (metadata == null) {
@@ -227,27 +234,30 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		DataRecord record=new DataRecord(metadata);
-	    record.init();
-		lookupTable.clear();
-	    //read records from file
+
+		DataRecord record = new DataRecord(metadata);
+        record.init();
+        lookupTable.clear();
+
+        // read records from file
         if (dataParser != null) {
             dataParser.reset();
+
             try {
-				if (fileURL != null) {
-					dataParser.setDataSource(FileUtils.getReadableChannel(
-							getGraph() != null ? getGraph().getProjectURL() : null, 
-							fileURL));
-				}else if (data != null) {
-					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
-				}                
-				while (dataParser.getNext(record) != null) {
+                if (fileURL != null) {
+                    dataParser.setDataSource(FileUtils.getReadableChannel(
+                            (getGraph() != null) ? getGraph().getProjectURL() : null, fileURL));
+                } else if (data != null) {
+                    dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
+                }
+                while (dataParser.getNext(record) != null) {
                     DataRecord storeRecord = record.duplicate();
                     lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
                 }
             } catch (Exception e) {
                 throw new ComponentNotReadyException(this, e.getMessage(), e);
             }
+
             dataParser.close();
         }
 	}
@@ -340,16 +350,18 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
          }
     }
 	
-	synchronized public void free() {
-        if(!isInitialized()) return;
-        super.free();
+    @Override
+	public synchronized void free() {
+        if (isInitialized()) {
+            super.free();
 
-        if (lookupTable!=null){
-	    	lookupTable.clear();
-	    	lookupTable=null;
-	    }
-	}
-	
+            if (lookupTable != null) {
+                lookupTable.clear();
+                lookupTable = null;
+            }
+        }
+    }
+
 	public DataRecordMetadata getMetadata(){
 	    return metadata;
 	}
@@ -362,36 +374,35 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	    return lookupTable instanceof DuplicateKeyMap ? ((DuplicateKeyMap)lookupTable).totalSize() : lookupTable.size();
 	}
 
-    /* (non-Javadoc)
-     * @see org.jetel.graph.GraphElement#checkConfig()
-     */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
 
-		if (metadata == null) {
-			metadata = getGraph().getDataRecordMetadata(metadataName);
-		}		
-        if (indexKey == null) {
-        	indexKey = new RecordKey(keys, metadata);
+        if (metadata == null) {
+            metadata = getGraph().getDataRecordMetadata(metadataName);
         }
-    	try{
-    		indexKey.init();
-    	}catch(NullPointerException e) {
-    		status.add(new ConfigurationProblem("Key metadata are null.",Severity.WARNING, this, Priority.NORMAL, XML_LOOKUP_KEY ));
-    		indexKey = null;//we have to create it once again in init method after creating metadata from stub
-    	}catch(RuntimeException e) {
-    		status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_LOOKUP_KEY));
-    	}
-    
-    	if (fileURL != null){
-    		try {
-				FileUtils.getReadableChannel(getGraph().getProjectURL(), fileURL);
-			} catch (IOException e) {
-	    		status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_FILE_URL));
-			}
-    	}
-    	
+
+        if (indexKey == null) {
+            indexKey = new RecordKey(keys, metadata);
+        }
+
+        try {
+            indexKey.init();
+        } catch (NullPointerException e) {
+            status.add(new ConfigurationProblem("Key metadata are null.", Severity.WARNING, this, Priority.NORMAL, XML_LOOKUP_KEY));
+            indexKey = null; // we have to create it once again in init method after creating metadata from stub
+        } catch (RuntimeException e) {
+            status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_LOOKUP_KEY));
+        }
+
+        if (fileURL != null) {
+            try {
+                FileUtils.getReadableChannel(getGraph().getProjectURL(), fileURL);
+            } catch (IOException e) {
+                status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_FILE_URL));
+            }
+        }
+
         return status;
     }
 
@@ -404,6 +415,10 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     }
 
     public boolean put(DataRecord dataRecord) {
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
         DataRecord storeRecord = dataRecord.duplicate();
         lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
 
@@ -411,20 +426,30 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     }
 
     public boolean remove(DataRecord dataRecord) {
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
     	if (!(lookupTable instanceof DuplicateKeyMap)) {
-    		return (lookupTable.remove(new HashKey(indexKey, dataRecord)) != null);
-    	}
-    	return ((DuplicateKeyMap)lookupTable).remove(new HashKey(indexKey, dataRecord), dataRecord);
+            return (lookupTable.remove(new HashKey(indexKey, dataRecord)) != null);
+        }
+
+    	return ((DuplicateKeyMap) lookupTable).remove(new HashKey(indexKey, dataRecord), dataRecord);
     }
     
     public boolean remove(HashKey key) {
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
         return (lookupTable.remove(key) != null);
     }    
     
-    /* (non-Javadoc)
-     * @see java.lang.Iterable#iterator()
-     */
     public Iterator<DataRecord> iterator() {
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
     	return lookupTable.values().iterator();
     }
 
@@ -460,9 +485,11 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		this.keyDuplicates = keyDuplicates;
 	}
 
-	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
-		if (!isInitialized()) throw new NotInitializedException(this);
-		
+	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException {
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
 		return indexKey.generateKeyRecordMetadata();
 	}
 
@@ -485,16 +512,10 @@ class SimpleLookup implements Lookup{
 		this.key = new HashKey(key, record);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.Lookup#getKey()
-	 */
 	public RecordKey getKey() {
 		return key.getRecordKey();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.Lookup#getLookupTable()
-	 */
 	public LookupTable getLookupTable() {
 		return lookupTable;
 	}
@@ -503,16 +524,10 @@ class SimpleLookup implements Lookup{
 		this.lookupTable = lookupTable;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.Lookup#getNumFound()
-	 */
 	public int getNumFound() {
 		return numFound;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.Lookup#seek()
-	 */
 	public void seek() {
 		if (key.getDataRecord() == null) throw new IllegalStateException("No key data for performing lookup");
 		if (data instanceof DuplicateKeyMap) {
@@ -528,32 +543,20 @@ class SimpleLookup implements Lookup{
 		no = 0;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.Lookup#seek(org.jetel.data.DataRecord)
-	 */
 	public void seek(DataRecord keyRecord) {
 		key.setDataRecord(keyRecord);
 		seek();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Iterator#hasNext()
-	 */
 	public boolean hasNext() {
 		return curentResult != null && no < numFound;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Iterator#next()
-	 */
 	public DataRecord next() {
 		if (curentResult == null || no >= numFound) throw new NoSuchElementException();
 		return curentResult.get(no++);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Iterator#remove()
-	 */
 	public void remove() {
 		throw new UnsupportedOperationException("Method not supported!");
 	}

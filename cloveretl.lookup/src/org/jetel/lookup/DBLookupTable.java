@@ -1,22 +1,21 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.cz>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.lookup;
 
 import java.sql.ParameterMetaData;
@@ -24,7 +23,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -87,7 +85,6 @@ import org.w3c.dom.Element;
 public class DBLookupTable extends GraphElement implements LookupTable {
 
     private static final String XML_LOOKUP_TYPE_DB_LOOKUP = "dbLookup"; 
-    //private static final String XML_LOOKUP_KEY = "key";
     private static final String XML_SQL_QUERY = "sqlQuery";
     private static final String XML_LOOKUP_MAX_CACHE_SIZE = "maxCached";
     private static final String XML_STORE_NULL_RESPOND = "storeNulls";
@@ -165,7 +162,10 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@since                      May 2, 2002
 	 */
     synchronized public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
+        if (isInitialized()) {
+            throw new IllegalStateException("The lookup table has already been initialized!");
+        }
+
 		super.init();
 		
 		if (dbConnection == null) {
@@ -191,15 +191,16 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     @Override
     public synchronized void reset() throws ComponentNotReadyException {
     	super.reset();
+
     	try {
-			for (DBLookup activeLookup : activeLookups) {
-				activeLookup.close();
-			}
-		} catch (SQLException e) {
-			throw new ComponentNotReadyException(this, e);
-		}finally{
-			activeLookups.clear();
-		}
+            for (DBLookup activeLookup : activeLookups) {
+                activeLookup.close();
+            }
+        } catch (SQLException e) {
+            throw new ComponentNotReadyException(this, e);
+        } finally {
+            activeLookups.clear();
+        }
     }
     
     public static DBLookupTable fromProperties(TypedProperties properties) 
@@ -277,24 +278,22 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         }
     }
 
-	/**
-	 *  Deallocates resources
-	 */
-    synchronized public void free() {
-        if(!isInitialized()) return;
-        super.free();
-        
-    	try {
-			for (DBLookup activeLookup : activeLookups) {
-				activeLookup.close();
-			}
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}finally{
-			activeLookups.clear();
-		}
+    @Override
+    public synchronized void free() {
+        if (isInitialized()) {
+            super.free();
+
+            try {
+                for (DBLookup activeLookup : activeLookups) {
+                    activeLookup.close();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            } finally {
+                activeLookups.clear();
+            }
+        }
     }
-	
 	
 	/**
 	 * Set max number of records stored in cache
@@ -314,9 +313,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	public void setStoreNulls(boolean storeNulls){
 		this.storeNulls = storeNulls;
 	}
-    /* (non-Javadoc)
-     * @see org.jetel.graph.GraphElement#checkConfig()
-     */
+
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
@@ -345,10 +342,11 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		
 	}
     
-    /* (non-Javadoc)
-     * @see java.lang.Iterable#iterator()
-     */
     public Iterator<DataRecord> iterator() {
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
         try {
         	//remove WHERE condidion from sql query
         	StringBuilder query = new StringBuilder(sqlQuery);
@@ -404,50 +402,61 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		}
    }
     
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.LookupTable#createLookup(org.jetel.data.RecordKey)
-	 */
 	public Lookup createLookup(RecordKey key) throws ComponentNotReadyException {
 		return createLookup(key, null);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.lookup.LookupTable#createLookup(org.jetel.data.RecordKey, org.jetel.data.DataRecord)
-	 */
 	public Lookup createLookup(RecordKey key, DataRecord keyRecord) throws ComponentNotReadyException {
-		DBLookup lookup;
-		key.init();
-		try {
-			lookup = new DBLookup(new SQLCloverStatement(dbConnection, sqlQuery, keyRecord, key.getKeyFieldNames()), 
-					key, keyRecord);
-		} catch (SQLException e) {
-			throw new ComponentNotReadyException(this, e);
-		}
-		lookup.setLookupTable(this);
-		lookup.setCacheSize(maxCached);
-		lookup.setStoreNulls(storeNulls);
-		activeLookups.add(lookup);
-		return lookup;
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
+        DBLookup lookup;
+        key.init();
+
+        try {
+            lookup = new DBLookup(new SQLCloverStatement(dbConnection, sqlQuery, keyRecord, key.getKeyFieldNames()), key, keyRecord);
+        } catch (SQLException e) {
+            throw new ComponentNotReadyException(this, e);
+        }
+
+        lookup.setLookupTable(this);
+        lookup.setCacheSize(maxCached);
+        lookup.setStoreNulls(storeNulls);
+        activeLookups.add(lookup);
+
+        return lookup;
 	}
 	
-	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException, UnsupportedOperationException, NotInitializedException {
-		if (!isInitialized()) throw new NotInitializedException(this);
-		DataRecordMetadata dbMetadata = getMetadata();
-		if (dbMetadata != null) return dbMetadata;
-		DataRecord tmpRecord = new DataRecord(new DataRecordMetadata("_tmp_"));
-		tmpRecord.init();
-		SQLCloverStatement statement = new SQLCloverStatement(dbConnection, sqlQuery, tmpRecord);
-		try {
-			statement.init();
-		} catch (SQLException e) {
-			throw new ComponentNotReadyException(this, e);
-		}
-		try {
-			ParameterMetaData sqlMetadata = ((PreparedStatement)statement.getStatement()).getParameterMetaData();
-			return SQLUtil.dbMetadata2jetel(sqlMetadata, "_dbLookupTable_" + getName(), dbConnection.getJdbcSpecific());
-		} catch (SQLException e) {
-			throw new RuntimeException("Can't get metadata from database");
-		}
+	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException {
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
+
+        DataRecordMetadata dbMetadata = getMetadata();
+
+        if (dbMetadata != null) {
+            return dbMetadata;
+        }
+
+        DataRecord tmpRecord = new DataRecord(new DataRecordMetadata("_tmp_"));
+        tmpRecord.init();
+
+        SQLCloverStatement statement = new SQLCloverStatement(dbConnection, sqlQuery, tmpRecord);
+
+        try {
+            statement.init();
+        } catch (SQLException e) {
+            throw new ComponentNotReadyException(this, e);
+        }
+
+        try {
+            ParameterMetaData sqlMetadata = ((PreparedStatement) statement.getStatement()).getParameterMetaData();
+
+            return SQLUtil.dbMetadata2jetel(sqlMetadata, "_dbLookupTable_" + getName(), dbConnection.getJdbcSpecific());
+        } catch (SQLException e) {
+            throw new RuntimeException("Can't get metadata from database");
+        }
 	}
 	
 	public boolean isPutSupported() {
