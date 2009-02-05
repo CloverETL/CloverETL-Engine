@@ -174,7 +174,7 @@ import org.w3c.dom.Element;
  * @see         org.jetel.graph.Edge
  * @since 		20.8.2007
  */
-public class InformixDataWriter extends Node {
+public class InformixDataWriter extends BulkLoader {
 	private static Log logger = LogFactory.getLog(InformixDataWriter.class);
 
     /**  Description of the Field */
@@ -236,29 +236,19 @@ public class InformixDataWriter extends Node {
     private final static boolean DEFAULT_USE_INSERT_CURSOR = true;
     
     // variables for dbload's command
-	private String dbLoaderPath;
     private String command; //contains user-defined control script fot dbload utility
-    private String database;
     private String host;
     private String errorLog;
     private int maxErrors = UNUSED_INT;
     private int ignoreRows = UNUSED_INT;
     private int commitInterval = UNUSED_INT;
-    private String table;
-    private String columnDelimiter = DEFAULT_COLUMN_DELIMITER;
     private String commandFileName; //file where dbload command is saved
-    private String dataURL; // fileUrl from XML - data file that is used when no input port is connected
     private boolean useLoadUtility = DEFAULT_USE_LOAD_UTILITY;
-    private String user;
-    private String password;
     private boolean ignoreUniqueKeyViolation = DEFAULT_IGNORE_UNIQUE_KEY_VIOLATION;
     private boolean useInsertCursor = DEFAULT_USE_INSERT_CURSOR;
 
     private String tmpDataFileName; // file that is used for exchange data between clover and dbload
     private DataRecordMetadata dbMetadata; // it correspond to dbload input format
-    private DelimitedDataFormatter formatter; // format data to dbload format and write them to dataFileName 
-    private DataConsumer consumer = null; // consume data from out stream of dbload
-    private DataConsumer errConsumer; // consume data from err stream of dbload - write them to by logger
     
     /**
      * true - data is read from in port;
@@ -278,9 +268,9 @@ public class InformixDataWriter extends Node {
      * @param  id  Description of the Parameter
      */
     public InformixDataWriter(String id, String dbLoaderPath, String database) { 
-        super(id);
-        this.dbLoaderPath = dbLoaderPath;
-        this.database = database;
+        super(id, dbLoaderPath, database);
+        
+        columnDelimiter = DEFAULT_COLUMN_DELIMITER;
     }
     
     /**
@@ -383,7 +373,7 @@ public class InformixDataWriter extends Node {
     	List<String> cmdList = new ArrayList<String>();
 		
 		if (useLoadUtility) {
-			cmdList.add(dbLoaderPath);
+			cmdList.add(loadUtilityPath);
 			
 			cmdList.add(LOAD_DATABASE_OPTION);
 			cmdList.add(database);
@@ -425,7 +415,7 @@ public class InformixDataWriter extends Node {
 				cmdList.add(tmpDataFileName);
 			} // else - when no file is defined stdio is used
 		} else {
-			cmdList.add(dbLoaderPath);
+			cmdList.add(loadUtilityPath);
 			
 			cmdList.add(INFORMIX_COMMAND_PATH_OPTION);
 			cmdList.add(commandFileName);
@@ -618,7 +608,7 @@ public class InformixDataWriter extends Node {
 		}
 		
 		// check if each of mandatory attributes is set
-		if (StringUtils.isEmpty(dbLoaderPath) || StringUtils.isEmpty(database) || 
+		if (StringUtils.isEmpty(loadUtilityPath) || StringUtils.isEmpty(database) || 
 				(StringUtils.isEmpty(command) && StringUtils.isEmpty(table))) {
 			throw new ComponentNotReadyException(this, "dbLoaderPath, database or (table and command simultaneously) argument isn't fill.");
 		}
@@ -875,7 +865,7 @@ public class InformixDataWriter extends Node {
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		
-		xmlElement.setAttribute(XML_DB_LOADER_PATH_ATTRIBUTE, dbLoaderPath);
+		xmlElement.setAttribute(XML_DB_LOADER_PATH_ATTRIBUTE, loadUtilityPath);
 		xmlElement.setAttribute(XML_DATABASE_ATTRIBUTE, database);
 
 		if (!StringUtils.isEmpty(table)) {
