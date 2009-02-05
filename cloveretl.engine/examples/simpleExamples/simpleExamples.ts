@@ -81,18 +81,6 @@
 </FunctionalTest>
 
 
-<FunctionalTest ident="Filter" graphFile="graph/graphFilter.grf">
-	 <FlatFile outputFile="data-out/employees.filtered_1.dat" supposedFile="supposed-out/employees.filtered_1.Filter.dat"/>
-	 <FlatFile outputFile="data-out/employees.filtered_2.dat" supposedFile="supposed-out/employees.filtered_2.Filter.dat"/>
-</FunctionalTest>
-
-
-<FunctionalTest ident="FixLenByteMode" graphFile="graph/graphFixLenByteMode.grf">
-	 <FlatFile outputFile="data-out/allBytes_byteMode_false.dat" supposedFile="supposed-out/allBytes_byteMode_false.FixLenByteMode.dat"/>
-	 <FlatFile outputFile="data-out/allBytes_byteMode_true.dat" supposedFile="supposed-out/allBytes_byteMode_true.FixLenByteMode.dat"/>
-</FunctionalTest>
-
-
 <FunctionalTest ident="GenerateData" graphFile="graph/graphGenerateData.grf">	 
 </FunctionalTest>
 
@@ -121,11 +109,6 @@
 
 <FunctionalTest ident="JoinHashInline" graphFile="graph/graphJoinHashInline.grf">
 	 <FlatFile outputFile="data-out/joined_data_hash.out" supposedFile="supposed-out/joined_data_hash.JoinHashInline.out"/>
-</FunctionalTest>
-
-
-<FunctionalTest ident="JoinHashUsingTransform" graphFile="graph/graphJoinHashUsingTransform.grf">
-	 <FlatFile outputFile="data-out/joined_data_hash.out" supposedFile="supposed-out/joined_data_hash.JoinHashUsingTransform.out"/>
 </FunctionalTest>
 
 
@@ -174,12 +157,6 @@
 <FunctionalTest ident="OrdersReformatInline" graphFile="graph/graphOrdersReformatInline.grf">
 	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersReformatInline.out"/>
 </FunctionalTest>
-
-
-<FunctionalTest ident="OrdersReformatUsingTransform" graphFile="graph/graphOrdersReformatUsingTransform.grf">
-	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersReformatUsingTransform.out"/>
-</FunctionalTest>
-
 
 
 <FunctionalTest ident="OrdersTLReformat" graphFile="graph/graphOrdersTLReformat.grf">
@@ -253,8 +230,8 @@
 </FunctionalTest>
 
 <FunctionalTest ident="SortWithinGroups" graphFile="graph/graphSortWithinGroups.grf">
-	 <FlatFile outputFile="data-out/friends-country-town+name.dat" supposedFile="supposed-out//friends-country-town+name.SortWithinGroups.dat"/>
-	 <FlatFile outputFile="data-out/friends-country+town-age.dat" supposedFile="supposed-out//friends-country+town-age.SortWithinGroups.dat"/>
+	 <FlatFile outputFile="data-out/friends-country-town-name.dat" supposedFile="supposed-out//friends-country-town-name.SortWithinGroups.dat"/>
+	 <FlatFile outputFile="data-out/friends-country-town-age.dat" supposedFile="supposed-out//friends-country-town-age.SortWithinGroups.dat"/>
 </FunctionalTest>
 
 <FunctionalTest ident="ViewData" graphFile="graph/graphViewData.grf">
