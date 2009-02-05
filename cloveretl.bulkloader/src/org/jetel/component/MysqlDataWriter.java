@@ -354,7 +354,7 @@ import org.w3c.dom.Element;
  * @since 		24.9.2007
  * 
  */
-public class MysqlDataWriter extends Node {
+public class MysqlDataWriter extends BulkLoader {
 
 	private static Log logger = LogFactory.getLog(MysqlDataWriter.class);
 
@@ -439,7 +439,6 @@ public class MysqlDataWriter extends Node {
 	public final static String COMPONENT_TYPE = "MYSQL_DATA_WRITER";
 	private final static int READ_FROM_PORT = 0;
 	private final static int WRITE_TO_PORT = 0;
-	private final static String EQUAL_CHAR = "=";
 	private final static String LINE_SEPARATOR = System.getProperty("line.separator");
 
 	private final static String EXCHANGE_FILE_PREFIX = "mysqlExchange";
@@ -456,26 +455,14 @@ public class MysqlDataWriter extends Node {
 	private final static String DEFAULT_YEAR_FORMAT = "yyyy";
 
 	// variables for dbload's command
-	private String mysqlPath;
-	private String database;
-	private String table;
 	private String host;
-	private String user;
-	private String password;
-	private String columnDelimiter = DEFAULT_COLUMN_DELIMITER;
-	private String dataURL; // fileUrl from XML - data file that is used when no input port is connected or for log
 	private int ignoreRows = UNUSED_INT;
-	private String parameters;
 	private String commandURL;
 	private File commandFile;
 
-	private Properties properties;
 	private File dataFile; // file that is used for exchange data between clover and mysql - file from dataURL
 	private String[] commandLine; // command line of mysql
 	private DataRecordMetadata dbMetadata; // it correspond to mysql input format
-	private DelimitedDataFormatter formatter; // format data to mysql format and write them to dataFileName
-	private DataConsumer consumer = null; // consume data from out stream of mysql
-	private DataConsumer errConsumer; // consume data from err stream of mysql - write them to by logger
 
 	/**
 	 *  flag that determine if execute() method was already executed;
@@ -503,10 +490,10 @@ public class MysqlDataWriter extends Node {
 	 * @param id Description of the Parameter
 	 */
 	public MysqlDataWriter(String id, String mysqlPath, String database, String table) {
-		super(id);
-		this.mysqlPath = mysqlPath;
-		this.database = database;
+		super(id, mysqlPath, database);
 		this.table = table;
+		
+		columnDelimiter = DEFAULT_COLUMN_DELIMITER;
 	}
 
 	/**
@@ -658,9 +645,9 @@ public class MysqlDataWriter extends Node {
 	 */
 	private String[] createCommandLineForDbLoader() throws ComponentNotReadyException {
 		if (ProcBox.isWindowsPlatform()) {
-			mysqlPath = StringUtils.backslashToSlash(mysqlPath);
+			loadUtilityPath = StringUtils.backslashToSlash(loadUtilityPath);
 		}
-		MysqlCommandBuilder command = new MysqlCommandBuilder(mysqlPath, properties);
+		MysqlCommandBuilder command = new MysqlCommandBuilder(loadUtilityPath, properties);
 
 		command.addBooleanParam(MYSQL_SKIP_AUTO_REHASH_PARAM, MYSQL_SKIP_AUTO_REHASH_SWITCH, true);
 		command.addParam(null, MYSQL_HOST_SWITCH, host);
@@ -834,7 +821,6 @@ public class MysqlDataWriter extends Node {
 		isDataReadDirectlyFromFile = !isDataReadFromPort && 
 				!StringUtils.isEmpty(dataURL);
 
-		properties = parseParameters(parameters);
 		checkParams();
 
 		// data is read directly from file -> file isn't used for exchange
@@ -899,26 +885,6 @@ public class MysqlDataWriter extends Node {
 	}
 	
 	/**
-	 * Create instance of Properties from String. 
-	 * Parse parameters from string "parameters" and fill properties by them.
-	 * 
-	 * @param parameters string that contains parameters
-	 * @return instance of Properties created by parsing string
-	 */
-	private Properties parseParameters(String parameters) {
-		Properties properties = new Properties();
-
-		if (parameters != null) {
-			for (String param : StringUtils.split(parameters)) {
-				String[] par = param.split(EQUAL_CHAR);
-				properties.setProperty(par[0], par.length > 1 ? StringUtils.unquote(par[1]) : "true");
-			}
-		}
-
-		return properties;
-	}
-
-	/**
 	 * Checks if mandatory parameters are defined.
 	 * And check combination of some parameters.
 	 * 
@@ -926,7 +892,7 @@ public class MysqlDataWriter extends Node {
 	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
 	 */
 	private void checkParams() throws ComponentNotReadyException {
-		if (StringUtils.isEmpty(mysqlPath)) {
+		if (StringUtils.isEmpty(loadUtilityPath)) {
 			throw new ComponentNotReadyException(this,
 					StringUtils.quote(XML_MYSQL_PATH_ATTRIBUTE) + " attribute have to be set.");
 		}
@@ -1161,7 +1127,7 @@ public class MysqlDataWriter extends Node {
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 
-		xmlElement.setAttribute(XML_MYSQL_PATH_ATTRIBUTE, mysqlPath);
+		xmlElement.setAttribute(XML_MYSQL_PATH_ATTRIBUTE, loadUtilityPath);
 		xmlElement.setAttribute(XML_DATABASE_ATTRIBUTE, database);
 		xmlElement.setAttribute(XML_TABLE_ATTRIBUTE, table);
 
