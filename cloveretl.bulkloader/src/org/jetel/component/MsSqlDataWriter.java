@@ -672,13 +672,16 @@ public class MsSqlDataWriter extends BulkLoader {
 	/**
 	 * Create instance of ProcBox.
 	 * 
+	 * @param process running process; when process is null, default process is created
 	 * @return instance of ProcBox
 	 * @throws IOException
 	 */
-	private ProcBox createProcBox() throws IOException {
-		Process process = Runtime.getRuntime().exec(commandLine);
-		ProcBox box = new ProcBox(process, null, consumer, errConsumer);
-		return box;
+	// TODO this method will be deleted from this class after removing commandLine attribute to superclass
+	protected ProcBox createProcBox(Process process) throws IOException {
+		if (process == null) {
+			process = Runtime.getRuntime().exec(commandLine);
+		}
+		return new ProcBox(process, null, consumer, errConsumer);
 	}
 
 	/**
