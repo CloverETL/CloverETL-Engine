@@ -447,8 +447,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 			}
 		} else {
 			try {
-				if (!FileUtils.isServerURL(FileUtils.getInnerAddress(dataURL)) && 
-						!(new File(FileUtils.getFile(getGraph().getProjectURL(), dataURL))).exists()) {
+				if (!fileExists(dataURL)) {
 					free();
 					throw new ComponentNotReadyException(this, 
 							"Data file " + StringUtils.quote(dataURL) + " not exists.");
@@ -561,20 +560,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 					StringUtils.quote("csv") + " param in binary mode (" + 
 					StringUtils.quote(COPY_BINARY_PARAM) + ").");
 		}
-	}
-
-	
-	/**
-	 * Return true if fileURL exists.
-	 * @param fileURL
-	 * @return
-	 */
-	private boolean fileExists(String fileURL) {
-		if (StringUtils.isEmpty(fileURL) || !(new File(fileURL).exists())) {
-			return false;
-		}
-		
-		return true;
 	}
 	
 	/**
