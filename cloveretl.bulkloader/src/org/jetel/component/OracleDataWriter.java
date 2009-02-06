@@ -322,17 +322,6 @@ public class OracleDataWriter extends BulkLoader {
 	private void readFromPortAndWriteByFormatter() throws Exception {
 		readFromPortAndWriteByFormatter(new FileOutputStream(dataFile));
 	}
-    
-	/**
-	 * Call sqlldr process with parameters - sqlldr process reads data directly from file.
-	 * 
-	 * @return value of finished process
-	 * @throws Exception
-	 */
-	private int readDataDirectlyFromFile() throws Exception {
-		ProcBox box = createProcBox();
-		return box.join();
-	}
 
 	/**
 	 * Create instance of ProcBox.

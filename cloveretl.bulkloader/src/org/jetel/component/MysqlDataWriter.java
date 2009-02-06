@@ -566,17 +566,6 @@ public class MysqlDataWriter extends BulkLoader {
 	}
 
 	/**
-	 * Call mysql process with parameters - mysql process reads data directly from file.
-	 * 
-	 * @return value of finished process
-	 * @throws Exception
-	 */
-	private int readDataDirectlyFromFile() throws Exception {
-		ProcBox box = createProcBox();
-		return box.join();
-	}
-
-	/**
 	 * Create instance of ProcBox.
 	 * 
 	 * @param process running process; when process is null, default process is created
