@@ -41,7 +41,7 @@ import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.ComponentNotReadyException;
 
-public class reformatTest extends DataRecordTransform{
+public class ReformatTestInline extends DataRecordTransform{
 
 	Lookup mylookup;
 

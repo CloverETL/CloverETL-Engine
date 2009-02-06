@@ -19,7 +19,7 @@
 import org.jetel.component.normalize.DataRecordNormalize;
 import org.jetel.data.*;
 
-public class normalizeTest extends DataRecordNormalize {
+public class NormalizeTestInline extends DataRecordNormalize {
 
 	String[] customers;
 

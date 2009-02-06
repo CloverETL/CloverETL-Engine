@@ -19,7 +19,7 @@ import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
 
 
-public class reformatJoinTest3Way extends DataRecordTransform{
+public class ReformatJoinTest3WayInline extends DataRecordTransform{
 
 	public int transform(DataRecord[] source, DataRecord[] target){
 		if (source[0] != NullRecord.NULL_RECORD) {

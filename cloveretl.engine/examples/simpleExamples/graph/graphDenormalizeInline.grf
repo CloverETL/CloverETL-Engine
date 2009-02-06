@@ -10,7 +10,7 @@
 import org.jetel.component.denormalize.DataRecordDenormalize;
 import org.jetel.data.*;
 
-public class DenormalizeTest extends DataRecordDenormalize {
+public class DenormalizeTestInline extends DataRecordDenormalize {
 	private int recNum = 0;
 	private String customerID = "";
 	private int employeeID;

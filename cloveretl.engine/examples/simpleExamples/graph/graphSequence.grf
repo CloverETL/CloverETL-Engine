@@ -18,7 +18,7 @@ import org.jetel.data.SetVal;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.graph.TransformationGraph;
 
-public class reformatOrders extends DataRecordTransform{
+public class ReformatOrdersInline extends DataRecordTransform{
 
 	Sequence sequence;
 	int field=0;

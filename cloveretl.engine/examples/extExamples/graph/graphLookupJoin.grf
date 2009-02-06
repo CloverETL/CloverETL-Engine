@@ -21,7 +21,7 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.TransformationGraph;
 
-public class reformatTest extends DataRecordTransform{
+public class ReformatTestInline extends DataRecordTransform{
 
 	public int transform(DataRecord[] source, DataRecord[] target){
 	        

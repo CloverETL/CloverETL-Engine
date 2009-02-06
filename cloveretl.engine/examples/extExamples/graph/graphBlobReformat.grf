@@ -24,7 +24,7 @@ import org.jetel.component.*;
 import org.jetel.exception.*;
 import org.jetel.data.sequence.*;
 
-public class Transform extends DataRecordTransform { 
+public class TransformInlineInline extends DataRecordTransform { 
 
 
 	/**

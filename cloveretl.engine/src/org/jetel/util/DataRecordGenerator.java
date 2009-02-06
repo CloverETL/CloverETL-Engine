@@ -378,11 +378,10 @@ public class DataRecordGenerator implements Parser {
 					case DataFieldMetadata.DATE_FIELD:
 					case DataFieldMetadata.DATETIME_FIELD:
 					case DataFieldMetadata.LONG_FIELD:
+						value = getRandomDouble((Double) specialValue[j][MULTIPLIER], (Double) specialValue[j][MOVE]);
+						break;
 					case DataFieldMetadata.INTEGER_FIELD:
-						// get random long from given interval
-						value = random.nextLong() * (Double) specialValue[j][MULTIPLIER]
-								+ (Double) specialValue[j][MOVE];
-						value = Math.floor(((Double) value).doubleValue());
+						value = getRandomInt((Double) specialValue[j][MULTIPLIER], (Double) specialValue[j][MOVE]).intValue();
 						break;
 					case DataFieldMetadata.BOOLEAN_FIELD:
 						value = Boolean.valueOf(Math.random() > 0.5);
@@ -430,6 +429,18 @@ public class DataRecordGenerator implements Parser {
 		}
 		return record;
 	}
+
+	private final Integer getRandomInt(double multiplier, double move) {
+		int result;
+		while ((result = getRandomDouble(multiplier, move).intValue()) == Integer.MIN_VALUE) {}
+		return Integer.valueOf(result);
+	}
+	
+	private final Double getRandomDouble(double multiplier, double move) {
+		// get random long from given interval
+		return Double.valueOf(Math.floor(random.nextLong() * multiplier + move));
+	}
+
 
 	/**
 	 * Reads names of random fields with ranges from parameter and sets them to global variables randomFields and

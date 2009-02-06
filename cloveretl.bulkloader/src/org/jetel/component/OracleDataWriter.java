@@ -19,12 +19,16 @@
 */
 package org.jetel.component;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,16 +39,21 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DataFormatter;
+import org.jetel.data.parser.DelimitedDataParser;
+import org.jetel.data.parser.FixLenCharDataParser;
+import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.file.FileUtils;
@@ -103,7 +112,7 @@ import org.w3c.dom.Element;
  * @see         org.jetel.graph.Node
  * @see         org.jetel.graph.Edge
  */
-public class OracleDataWriter extends BulkLoader {
+public class OracleDataWriter extends Node {
 
     private static Log logger = LogFactory.getLog(OracleDataWriter.class);
 
@@ -177,18 +186,29 @@ public class OracleDataWriter extends BulkLoader {
     
     public final static String COMPONENT_TYPE = "ORACLE_DATA_WRITER";
     private final static int READ_FROM_PORT = 0;
+    private final static int WRITE_TO_PORT = 0;
     
     private final static String EXCHANGE_FILE_PREFIX = "oracleExchange";
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
     private final static String CONTROL_FILE_NAME_SUFFIX = ".ctl";
     private final static File TMP_DIR = new File(".");
     private final static int UNUSED_INT = -1;
+    private final static String EQUAL_CHAR = "=";
     
     private final static int EXEC_SQLLDR_SUCC = 0;
     private final static int EXEC_SQLLDR_WARN = 2;
     
+    private DataFormatter formatter = null;
+    private DataConsumer consumer = null; // consume data from out stream of sqlldr
+	private DataConsumer errConsumer; // consume data from err stream of sqlldr
+	private OracleBadRowReaderWriter oracleBadRowReaderWriter;
+    
+    private String sqlldrPath;
+    private String username;
+    private String password;
     private String tnsname;
     private String userId;
+    private String tableName;
     private Append append = Append.append;
     private String controlFileName;
     private String logFileName;
@@ -198,18 +218,30 @@ public class OracleDataWriter extends BulkLoader {
     private String[] dbFields; // contains name of all database columns 
     private boolean useFileForExchange = false;
     private boolean isDefinedUseFileForExchange = false;
+    private String dataURL; // fileUrl from XML - data file that is used when no input port is connected or for log
     private int maxErrors = UNUSED_INT;
     private int maxDiscards = UNUSED_INT;
     private int ignoreRows = UNUSED_INT;
     private int commitInterval = UNUSED_INT;
+    private String parameters;
 
+    private Properties properties;
+    
     private File dataFile = null; // file that is used for exchange data between clover and sqlldr - file from dataURL
+    private File badFile = null;
+    private File discardFile = null;
 
     /**
 	 * true - data is read from in port; 
 	 * false - data is read from file directly by psql utility
 	 */
 	private boolean isDataReadFromPort;
+	
+	/**
+	 * true - rejected/discarded rows is written to out port; 
+	 * false - rejected/discarded rows isn't written to anywhere
+	 */
+	private boolean isDataWrittenToPort;
 	
 	private boolean isDataReadDirectlyFromFile;
     
@@ -219,11 +251,12 @@ public class OracleDataWriter extends BulkLoader {
      * @param  id  Description of the Parameter
      */
     public OracleDataWriter(String id, String sqlldrPath, String username, String password, String tnsname, String tableName) {
-        super(id, sqlldrPath, null);
-        this.user = username;
+        super(id);
+        this.sqlldrPath = sqlldrPath;
+        this.username = username;
         this.password = password;
         this.tnsname = tnsname;
-        this.table = tableName;
+        this.tableName = tableName;
     }
 
 
@@ -265,6 +298,9 @@ public class OracleDataWriter extends BulkLoader {
 			break;
 		case EXEC_SQLLDR_WARN:
 			logger.warn("Sqlldr utility exited with WARN. See log file for details.");
+			if (isDataWrittenToPort) {
+				oracleBadRowReaderWriter.run();
+			}
 			break;
 		default:
 			if (unstableStdinIsUsed) {
@@ -276,6 +312,10 @@ public class OracleDataWriter extends BulkLoader {
 			}
 			throw new JetelException("Sqlldr utility has failed. See log file for details.");
 		}
+
+		if (isDataWrittenToPort) {
+    		oracleBadRowReaderWriter.close();
+    	}
 
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
@@ -416,7 +456,7 @@ public class OracleDataWriter extends BulkLoader {
      * @return
      */
     private String[] createCommandlineForSqlldr() {
-    	OracleCommandBuilder cmdBuilder = new OracleCommandBuilder(loadUtilityPath, properties);
+    	OracleCommandBuilder cmdBuilder = new OracleCommandBuilder(sqlldrPath, properties);
     	cmdBuilder.addAttribute("control", controlFileName, true);
     	cmdBuilder.addAttribute("userid", userId, false);
     	cmdBuilder.addAttribute("data", getData(), false);
@@ -480,6 +520,7 @@ public class OracleDataWriter extends BulkLoader {
         super.init();
   
         isDataReadFromPort = !getInPorts().isEmpty();
+        isDataWrittenToPort = !getOutPorts().isEmpty();
         isDataReadDirectlyFromFile = !isDataReadFromPort && 
         		!StringUtils.isEmpty(dataURL);
         
@@ -488,6 +529,7 @@ public class OracleDataWriter extends BulkLoader {
         	useFileForExchange = getDefaultUsingFileForExchange();
         }
         
+        properties = parseParameters(parameters);
         checkParams();
         
         // data is read directly from file -> file isn't used for exchange
@@ -510,6 +552,34 @@ public class OracleDataWriter extends BulkLoader {
         
 		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
 		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
+
+		if (isDataWrittenToPort) {
+			getRejectedAndDiscardedFile();
+			oracleBadRowReaderWriter = new OracleBadRowReaderWriter();
+    	}
+    }
+
+    private void getRejectedAndDiscardedFile() throws ComponentNotReadyException {
+    	String name = dataFile.getName();
+		String baseName = name.substring(0, name.lastIndexOf("."));
+    	
+		badFile = createFile(getGraph().getProjectURL(), badFileName, baseName, "bad");
+		discardFile = createFile(getGraph().getProjectURL(), discardFileName, baseName, "dis");
+
+    }
+    
+    private static File createFile(URL projectURL, String fileName, String baseName, 
+    		String extension) throws ComponentNotReadyException {
+    	
+    	if (StringUtils.isEmpty(fileName)) {
+    		try {
+				return new File(FileUtils.getFile(projectURL, baseName + "." + extension));
+			} catch (MalformedURLException e) {
+				throw new ComponentNotReadyException(e);
+			}
+    	}
+    	
+    	return new File(fileName);
     }
     
     /**
@@ -548,6 +618,26 @@ public class OracleDataWriter extends BulkLoader {
         			" is set to false then " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + 
         			" attribute is omitted.");
         }
+	}
+    
+	/**
+	 * Create instance of Properties from String. 
+	 * Parse parameters from string "parameters" and fill properties by them.
+	 * 
+	 * @param parameters string that contains parameters
+	 * @return instance of Properties created by parsing string
+	 */
+	private static Properties parseParameters(String parameters) {
+		Properties properties = new Properties();
+
+		if (parameters != null) {
+			for (String param : StringUtils.split(parameters)) {
+				String[] par = param.split(EQUAL_CHAR);
+				properties.setProperty(par[0], par.length > 1 ? StringUtils.unquote(par[1]) : "true");
+			}
+		}
+
+		return properties;
 	}
 	
     private void createFileForExchange() throws ComponentNotReadyException {
@@ -613,7 +703,7 @@ public class OracleDataWriter extends BulkLoader {
      * @return
      */
     private String getUserId() {
-        return user + "/" + password + "@" + tnsname;
+        return username + "/" + password + "@" + tnsname;
     }
 
 
@@ -633,7 +723,7 @@ public class OracleDataWriter extends BulkLoader {
         try {
             controlFile.createNewFile();
             controlWriter = new FileWriter(controlFile);
-            String content = control == null ? getDefaultControlFileContent(table, append, getInputPort(READ_FROM_PORT).getMetadata(), dbFields) : control;
+            String content = control == null ? getDefaultControlFileContent(tableName, append, getInputPort(READ_FROM_PORT).getMetadata(), dbFields) : control;
             logger.debug("Control file content: " + content);
             controlWriter.write(content);
             controlWriter.close();
@@ -776,7 +866,7 @@ public class OracleDataWriter extends BulkLoader {
         super.checkConfig(status);
          
         if (!checkInputPorts(status, 0, 1)
-        		|| !checkOutputPorts(status, 0, 0)) {
+        		|| !checkOutputPorts(status, 0, 1)) {
         	return status;
         }
 
@@ -973,5 +1063,101 @@ public class OracleDataWriter extends BulkLoader {
 		private String[] getCommand() {
 			return cmdList.toArray(new String[cmdList.size()]);
 		}
+	}
+	
+	/**
+	 * Class for reading and parsing data from input files, 
+	 * and sends them to output port.
+	 * 
+	 * @author 		Miroslav Haupt (Mirek.Haupt@javlin.cz)
+	 *				(c) Javlin a.s. (www.javlin.cz)
+	 * @since 30.1.2009
+	 */
+	private class OracleBadRowReaderWriter {
+		private Parser parser = null;
+		private DataRecordMetadata metadata;
+		private OutputPort outPort = null;
+		
+		public OracleBadRowReaderWriter() throws ComponentNotReadyException {
+			outPort = getOutputPort(WRITE_TO_PORT);
+			checkErrPortMetadata(getInputPort(READ_FROM_PORT), outPort);
+		}
+		
+		private void init() throws ComponentNotReadyException {
+	    	metadata = outPort.getMetadata();
+	    	
+	    	if (metadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
+	    		parser = new DelimitedDataParser();
+	    	} else { // FIXEDLEN_RECORD
+	    		parser = new FixLenCharDataParser();
+	    	}
+	    	
+			parser.init(metadata);
+		}
+		
+		public void run() throws Exception {
+	    	try {
+	    		init();
+
+		    	writeDataToOutPort(badFile, "bad");
+		    	writeDataToOutPort(discardFile, "discard");
+	    	} catch (Exception e) {
+	    		throw new JetelException("Error while writing output record", e);
+			} finally {
+				close();
+			}
+		}
+		
+	    private void writeDataToOutPort(File sourceFile, String fileType) throws Exception {
+	    	if (sourceFile == null || !sourceFile.exists()) {
+	    		logger.info("File " + ((sourceFile == null) ? "" : StringUtils.quote(sourceFile.getAbsolutePath()) + " ") + 
+	    				 "with " + fileType + " records doesn't exist. Any " + fileType + " records don't exist.");
+	    		return;
+	    	}
+	    	
+	    	parser.setDataSource(new BufferedInputStream(new FileInputStream(sourceFile)));
+	    	
+	    	DataRecord record = new DataRecord(metadata);
+			record.init();
+	    	
+	    	while ((record = parser.getNext(record)) != null) {
+	    		outPort.writeRecord(record);
+	    	}
+	    }
+	    
+	    public void close() {
+	    	if (parser != null) {
+	    		parser.close();
+	    		parser = null;
+	    	}
+
+	    	try {
+	    		if (outPort != null) {
+	    			outPort.eof();
+	    			outPort = null;
+	    		}
+			} catch (Exception ie) {
+				logger.warn("Out port wasn't closed.", ie);
+			}
+	    }
+
+	    /**
+    	 * check metadata at output port against metadata at input port
+    	 * if metadata isn't correct then throws ComponentNotReadyException
+    	 * @throws ComponentNotReadyException when metadata isn't correct
+    	 */
+    	private void checkErrPortMetadata(InputPort inPort, OutputPort outPort) throws ComponentNotReadyException {
+    		if (inPort == null || outPort == null) {
+    			return;
+    		}
+    		DataRecordMetadata inMeta = inPort.getMetadata();
+    		DataRecordMetadata outMeta = outPort.getMetadata();
+    		
+    		// check number of fields; if inNumFields == outNumFields
+			if (inMeta.getNumFields() != outMeta.getNumFields()) {
+				throw new ComponentNotReadyException("Number of fields of " +  StringUtils.quote(outMeta.getName()) +  
+						" isn't equal number of fields of " +  StringUtils.quote(inMeta.getName()) + ".");
+			}
+    	}
 	}
 }
