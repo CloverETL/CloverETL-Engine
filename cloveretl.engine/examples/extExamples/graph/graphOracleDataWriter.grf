@@ -1,22 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Mira Haupt" created="Fri Mar 21 12:32:53 CET 2008" guiVersion="0.0" id="1206099302913" licenseType="Evaluation license." modified="Mon Nov 24 12:28:14 CET 2008" modifiedBy="avackova" name="OracleDataWriter" revision="1.51">
+<Graph author="Mira Haupt" created="Fri Mar 21 12:32:53 CET 2008" guiVersion="0.0" id="1206099302913" licenseType="Evaluation license." modified="Fri Jan 30 14:33:46 CET 2009" modifiedBy="mirek" name="OracleDataWriter" revision="1.68">
 <Global>
-<Metadata id="Metadata0">
-<Record name="recordName1" recordDelimiter="\n" type="delimited">
+<Metadata id="FixMetadata1">
+<Record name="FixMetadata1" recordDelimiter="\n" type="fixed">
+<Field name="name" nullable="true" shift="0" size="6" type="string"/>
+<Field name="value" nullable="true" shift="0" size="5" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record name="recordName2" recordDelimiter="\n" type="delimited">
 <Field delimiter=";" name="name" type="string"/>
-<Field name="value" type="integer"/>
+<Field name="value" type="string"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="55" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="DELIMITED" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="111" x="742" y="155"/>
+<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="55" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="FIXED" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="111" x="744" y="374"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/oracle.dat" guiHeight="0" guiName="Data Reader" guiWidth="0" guiX="58" guiY="105" id="DATA_READER0" type="DATA_READER"/>
-<Node append="append" enabled="enabled" guiHeight="0" guiName="Oracle Data Writer" guiWidth="0" guiX="293" guiY="105" id="ORACLE_DATA_WRITER0" log="${DATAOUT_DIR}/log0.txt" password="test" sqlldr="sqlldr" table="test" tnsname="koule" type="ORACLE_DATA_WRITER" username="test"/>
-<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="ORACLE_DATA_WRITER0:0"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/oracle.dat" guiHeight="0" guiName="Data Reader" guiWidth="0" guiX="58" guiY="85" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/bad0Port.bad" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="500" guiY="85" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node append="append" enabled="enabled" guiHeight="0" guiName="Oracle Data Writer" guiWidth="0" guiX="287" guiY="85" id="ORACLE_DATA_WRITER0" log="${DATAOUT_DIR}/log0.txt" password="test" sqlldr="sqlldr" table="test" tnsname="koule" type="ORACLE_DATA_WRITER" username="test"/>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="ORACLE_DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="ORACLE_DATA_WRITER0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 </Phase>
 <Phase number="1">
-<Node append="append" control="LOAD DATA&#13;&#10;INFILE *&#13;&#10;INTO TABLE test&#13;&#10;append&#13;&#10;(&#13;&#10;&#9;name TERMINATED BY ';',&#13;&#10;&#9;value TERMINATED BY '\n'&#13;&#10;)" enabled="enabled" guiHeight="0" guiName="Oracle Data Writer" guiWidth="0" guiX="293" guiY="250" id="ORACLE_DATA_WRITER1" log="${DATAOUT_DIR}/log1.txt" password="test" sqlldr="sqlldr" table="test" tnsname="koule" type="ORACLE_DATA_WRITER" username="test">
-<attr name="fileURL"><![CDATA[${DATAIN_DIR}/delimited/oracle.dat]]></attr>
-</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/bad1Port.bad" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="287" guiY="201" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node append="insert" bad="${DATAOUT_DIR}/bad1.kkk" control="LOAD DATA&#13;&#10;INFILE *&#13;&#10;INTO TABLE test&#13;&#10;append&#13;&#10;(&#13;&#10;&#9;name TERMINATED BY ';',&#13;&#10;&#9;value TERMINATED BY '\n'&#13;&#10;)" discard="${DATAOUT_DIR}/discard.kkk" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/oracle.dat" guiHeight="0" guiName="Oracle Data Writer" guiWidth="0" guiX="58" guiY="201" id="ORACLE_DATA_WRITER1" log="${DATAOUT_DIR}/log1.txt" password="test" sqlldr="sqlldr" table="test" tnsname="koule" type="ORACLE_DATA_WRITER" username="test"/>
+<Edge debugMode="true" fromNode="ORACLE_DATA_WRITER1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+<Phase number="2">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/oracle.dat" guiHeight="0" guiName="Data Reader" guiWidth="0" guiX="58" guiY="313" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/bad2Port.bad" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="500" guiY="313" id="DATA_WRITER2" type="DATA_WRITER"/>
+<Node append="append" enabled="enabled" guiHeight="25" guiName="Oracle Data Writer" guiWidth="50" guiX="287" guiY="313" id="ORACLE_DATA_WRITER2" log="${DATAOUT_DIR}/log2.txt" password="test" sqlldr="sqlldr" table="test" tnsname="koule" type="ORACLE_DATA_WRITER" username="test"/>
+<Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="FixMetadata1" outPort="Port 0 (output)" toNode="ORACLE_DATA_WRITER2:0"/>
+<Edge debugMode="true" fromNode="ORACLE_DATA_WRITER2:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="FixMetadata1" outPort="Port 0 (out)" toNode="DATA_WRITER2:0"/>
+</Phase>
+<Phase number="3">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/bad3Port.bad" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="287" guiY="408" id="DATA_WRITER3" type="DATA_WRITER"/>
+<Node append="insert" bad="${DATAOUT_DIR}/bad2.kkk" control="LOAD DATA&#13;&#10;INFILE *&#13;&#10;INTO TABLE test&#13;&#10;append&#13;&#10;(name POSITION (1:6),&#13;&#10;value POSITION (7:11))" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/oracle.dat" guiHeight="0" guiName="Oracle Data Writer" guiWidth="0" guiX="58" guiY="408" id="ORACLE_DATA_WRITER3" log="${DATAOUT_DIR}/log3.txt" password="test" sqlldr="sqlldr" table="test" tnsname="koule" type="ORACLE_DATA_WRITER" username="test"/>
+<Edge debugMode="true" fromNode="ORACLE_DATA_WRITER3:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="FixMetadata1" outPort="Port 0 (out)" toNode="DATA_WRITER3:0"/>
 </Phase>
 </Graph>

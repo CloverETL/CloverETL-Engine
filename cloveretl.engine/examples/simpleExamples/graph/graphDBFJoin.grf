@@ -19,7 +19,7 @@
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
 
-public class joinOrdersDetails extends  DataRecordTransform{
+public class JoinOrdersDetailsInline extends  DataRecordTransform{
 
 	public int transform(DataRecord[] source, DataRecord[] target){
 		target[0].getField("ORDERID").setValue(source[0].getField("ORDERID").getValue());
@@ -37,7 +37,7 @@ public class joinOrdersDetails extends  DataRecordTransform{
 <attr name="transform"><![CDATA[import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
 
-public class joinCustomers extends  DataRecordTransform{
+public class JoinCustomersInline extends  DataRecordTransform{
 
 	Object companyName;
 

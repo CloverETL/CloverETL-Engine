@@ -45,7 +45,7 @@ import org.xml.sax.InputSource;
 import org.jetel.data.parser.*;
 import java.io.*;
 
-public class reformatOrders extends DataRecordTransform{
+public class ReformatOrdersInline extends DataRecordTransform{
 
 	int counter=0;
 	private XPathParser parser;

@@ -14,7 +14,7 @@ import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
 
 
-public class reformatOrders extends DataRecordTransform{
+public class ReformatOrdersInline extends DataRecordTransform{
 
 	int counter=0;
 	int field=0;

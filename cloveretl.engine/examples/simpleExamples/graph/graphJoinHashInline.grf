@@ -17,7 +17,7 @@ import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
 
 
-public class reformatJoinTest3Way extends DataRecordTransform{
+public class ReformatJoinTest3WayInline extends DataRecordTransform{
 
 	private final static String MISSING = "*MISSING*";
 
