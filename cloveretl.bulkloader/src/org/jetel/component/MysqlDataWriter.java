@@ -557,28 +557,12 @@ public class MysqlDataWriter extends BulkLoader {
     }
 	
 	/**
-	 * This method reads incoming data from port 
-	 * and sends them by formatter to mysql process.
+	 * This method reads incoming data from port and sends them by formatter to mysql process.
 	 * 
 	 * @throws Exception
 	 */
-	private void readFromPortAndWriteByFormatter() throws Exception {
-		formatter.setDataTarget(new FileOutputStream(dataFile));
-		
-		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord record = new DataRecord(dbMetadata);
-		record.init();
-
-		try {
-			while (runIt && ((record = inPort.readRecord(record)) != null)) {
-				formatter.write(record);
-			}
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			formatter.finish();
-			formatter.close();
-		}
+    private void readFromPortAndWriteByFormatter() throws Exception {
+		readFromPortAndWriteByFormatter(new FileOutputStream(dataFile));
 	}
 
 	/**
