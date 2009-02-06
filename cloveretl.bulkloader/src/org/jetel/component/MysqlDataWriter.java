@@ -544,8 +544,7 @@ public class MysqlDataWriter extends BulkLoader {
     
     private File openFile(String fileURL) throws ComponentNotReadyException {
     	try {
-			if (!FileUtils.isServerURL(FileUtils.getInnerAddress(fileURL)) && 
-					!(new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL))).exists()) {
+			if (!fileExists(fileURL)) {
 				free();
 				throw new ComponentNotReadyException(this, 
 						"Data file " + StringUtils.quote(fileURL) + " not exists.");
@@ -903,19 +902,6 @@ public class MysqlDataWriter extends BulkLoader {
 						+ " is ignored because it is used only when data is read directly from file.");
 			}
 		}
-	}
-	
-	/**
-	 * Return true if fileURL exists.
-	 * @param fileURL
-	 * @return
-	 */
-	private static boolean fileExists(String fileURL) {
-		if (StringUtils.isEmpty(fileURL) || !(new File(fileURL).exists())) {
-			return false;
-		}
-		
-		return true;
 	}
 
 	/**
