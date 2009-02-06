@@ -245,6 +245,7 @@ public class InformixDataWriter extends BulkLoader {
     private boolean ignoreUniqueKeyViolation = DEFAULT_IGNORE_UNIQUE_KEY_VIOLATION;
     private boolean useInsertCursor = DEFAULT_USE_INSERT_CURSOR;
 
+    private String[] commandLine; // command line of dbload
     private String tmpDataFileName; // file that is used for exchange data between clover and dbload
     private DataRecordMetadata dbMetadata; // it correspond to dbload input format
     
@@ -276,7 +277,7 @@ public class InformixDataWriter extends BulkLoader {
 	        	
 	            box = createProcBox(null);
 	        } else {
-	        	Process process = Runtime.getRuntime().exec(createCommandLineForDbLoader());
+	        	Process process = Runtime.getRuntime().exec(commandLine);
 	            box = createProcBox(process);
 	            
 	            // stdin is used for exchange data - set data target to stdin of process
@@ -345,7 +346,7 @@ public class InformixDataWriter extends BulkLoader {
 	 */
 	private ProcBox createProcBox(Process process) throws IOException {
 		if (process == null) {
-			process = Runtime.getRuntime().exec(createCommandLineForDbLoader());			
+			process = Runtime.getRuntime().exec(commandLine);			
 		}
         return new ProcBox(process, null, consumer, errConsumer);
 	}
@@ -489,6 +490,8 @@ public class InformixDataWriter extends BulkLoader {
     		free();
             throw new ComponentNotReadyException(this, "Some of the temporary files cannot be created.");
 		}
+		
+		commandLine = createCommandLineForDbLoader();
 		
         if (isDataReadFromPort) {
 	        InputPort inPort = getInputPort(READ_FROM_PORT);
