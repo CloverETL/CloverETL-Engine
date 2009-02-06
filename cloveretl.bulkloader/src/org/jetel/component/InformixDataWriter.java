@@ -266,7 +266,7 @@ public class InformixDataWriter extends BulkLoader {
 	        	// temp file is used for exchange data
 	        	readFromPortAndWriteByFormatter(new FileOutputStream(tmpDataFileName));
 	        	
-	            box = createProcBox(null);
+	            box = createProcBox();
 	        } else {
 	        	Process process = Runtime.getRuntime().exec(commandLine);
 	            box = createProcBox(process);
@@ -294,7 +294,7 @@ public class InformixDataWriter extends BulkLoader {
 	 * @throws Exception
 	 */
 	private int readDataDirectlyFromFile() throws Exception {
-        ProcBox box = createProcBox(null);
+        ProcBox box = createProcBox();
         return box.join();
 	}
 
@@ -304,7 +304,8 @@ public class InformixDataWriter extends BulkLoader {
 	 * @return instance of ProcBox
 	 * @throws IOException
 	 */
-	private ProcBox createProcBox(Process process) throws IOException {
+	// TODO this method will be deleted from this class after removing commandLine attribute to superclass
+	protected ProcBox createProcBox(Process process) throws IOException {
 		if (process == null) {
 			process = Runtime.getRuntime().exec(commandLine);			
 		}
