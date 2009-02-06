@@ -583,8 +583,11 @@ public class MysqlDataWriter extends BulkLoader {
 	 * @return instance of ProcBox
 	 * @throws IOException
 	 */
-	private ProcBox createProcBox() throws IOException {
-		Process process = Runtime.getRuntime().exec(commandLine);
+	// TODO this method will be deleted from this class after removing commandLine attribute to superclass
+	protected ProcBox createProcBox(Process process) throws IOException {
+		if (process == null) {
+			process = Runtime.getRuntime().exec(commandLine);
+		}
 		return new ProcBox(process, null, consumer, errConsumer);
 	}
 
