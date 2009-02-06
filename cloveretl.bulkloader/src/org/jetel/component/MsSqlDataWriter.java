@@ -655,22 +655,7 @@ public class MsSqlDataWriter extends BulkLoader {
 	 * @throws Exception
 	 */
 	private void readFromPortAndWriteByFormatter() throws Exception {
-		formatter.setDataTarget(new FileOutputStream(dataFile));
-		
-		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord record = new DataRecord(dbMetadata);
-		record.init();
-
-		try {
-			while (runIt && ((record = inPort.readRecord(record)) != null)) {
-				formatter.write(record);
-			}
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			formatter.finish();
-			formatter.close();
-		}
+		readFromPortAndWriteByFormatter(new FileOutputStream(dataFile));
 	}
 
 	/**
