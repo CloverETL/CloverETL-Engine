@@ -1,5 +1,6 @@
 package org.jetel.component;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
@@ -12,6 +13,7 @@ import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.ProcBox;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -169,5 +171,25 @@ public abstract class BulkLoader extends Node {
 	 */
 	protected ProcBox createProcBox() throws IOException {
 		return createProcBox(null);
+	}
+	
+	/**
+	 * Return true if fileURL exists.
+	 * @param fileURL
+	 * @return true if fileURL exists else false
+	 */
+	protected boolean fileExists(String fileURL) throws ComponentNotReadyException {
+		if (StringUtils.isEmpty(fileURL)) {
+			return false;
+		}
+		try {
+			if (!FileUtils.isServerURL(FileUtils.getInnerAddress(fileURL)) && 
+					!(new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL))).exists()) {
+				return false;
+			}
+			return true;
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(this, e);
+		}
 	}
 }
