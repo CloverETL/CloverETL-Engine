@@ -117,23 +117,18 @@ public class OracleDataWriter extends BulkLoader {
 
     /**  Description of the Field */
     private static final String XML_SQLLDR_ATTRIBUTE = "sqlldr";
-    private static final String XML_USERNAME_ATTRIBUTE = "username";
-    private static final String XML_PASSWORD_ATTRIBUTE = "password";
     private static final String XML_TNSNAME_ATTRIBUTE = "tnsname";
     private static final String XML_APPEND_ATTRIBUTE = "append";
-    private static final String XML_TABLE_ATTRIBUTE = "table";
     private static final String XML_LOG_ATTRIBUTE = "log";
     private static final String XML_BAD_ATTRIBUTE = "bad";
     private static final String XML_DISCARD_ATTRIBUTE = "discard";
     private static final String XML_CONTROL_ATTRIBUTE = "control";
     private static final String XML_DBFIELDS_ATTRIBUTE = "dbFields";
     private static final String XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE = "useFileForExchange"; // default value: Unix = false; win = true
-    private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
     private static final String XML_MAX_ERRORS_ATTRIBUTE = "maxErrors";
     private static final String XML_MAX_DISCARDS_ATTRIBUTE = "maxDiscards";
     private static final String XML_IGNORE_ROWS_ATTRIBUTE = "ignoreRows";
     private static final String XML_COMMIT_INTERVAL_ATTRIBUTE = "commitInterval";
-    private static final String XML_PARAMETERS_ATTRIBUTE = "parameters";
 
     // keywords for sqlldr client, these keywords have own xml attributes
     private static final String SQLLDR_MAX_ERRORS_KEYWORD = "errors";
@@ -700,7 +695,7 @@ public class OracleDataWriter extends BulkLoader {
         try {
             OracleDataWriter oracleDataWriter = new OracleDataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
                     xattribs.getString(XML_SQLLDR_ATTRIBUTE),
-                    xattribs.getString(XML_USERNAME_ATTRIBUTE),
+                    xattribs.getString(XML_USER_ATTRIBUTE),
                     xattribs.getString(XML_PASSWORD_ATTRIBUTE),
                     xattribs.getString(XML_TNSNAME_ATTRIBUTE),
                     xattribs.getString(XML_TABLE_ATTRIBUTE));

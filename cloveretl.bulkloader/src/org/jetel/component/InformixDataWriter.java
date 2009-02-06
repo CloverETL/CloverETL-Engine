@@ -180,18 +180,12 @@ public class InformixDataWriter extends BulkLoader {
     /**  Description of the Field */
 	private static final String XML_DB_LOADER_PATH_ATTRIBUTE = "dbLoaderPath";
     private static final String XML_COMMAND_ATTRIBUTE = "command";
-    private static final String XML_DATABASE_ATTRIBUTE = "database";
     private static final String XML_HOST_ATTRIBUTE = "host";
     private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
     private static final String XML_MAX_ERRORS_ATTRIBUTE = "maxErrors";
     private static final String XML_IGNORE_ROWS_ATTRIBUTE = "ignoreRows";
     private static final String XML_COMMIT_INTERVAL_ATTRIBUTE = "commitInterval";
-    private static final String XML_TABLE_ATTRIBUTE = "table";
-    private static final String XML_COLUMN_DELIMITER_ATTRIBUTE = "columnDelimiter";
-    private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
     private static final String XML_USE_LOAD_UTILITY_ATTRIBUTE = "useLoadUtility";
-    private static final String XML_USER_ATTRIBUTE = "username";
-    private static final String XML_PASSWORD_ATTRIBUTE = "password";
     private static final String XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE = "ignoreUniqueKeyViolation";
     private static final String XML_USE_INSERT_CUROSOR_ATTRIBUTE = "useInsertCursor";
     
