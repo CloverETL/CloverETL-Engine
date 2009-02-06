@@ -437,8 +437,6 @@ public class MysqlDataWriter extends BulkLoader {
 	private static final String LOAD_RECORD_DELIMITER_KEYWORD = "TERMINATED BY";
 
 	public final static String COMPONENT_TYPE = "MYSQL_DATA_WRITER";
-	private final static int READ_FROM_PORT = 0;
-	private final static int WRITE_TO_PORT = 0;
 	private final static String LINE_SEPARATOR = System.getProperty("line.separator");
 
 	private final static String EXCHANGE_FILE_PREFIX = "mysqlExchange";
@@ -470,18 +468,6 @@ public class MysqlDataWriter extends BulkLoader {
 	 */
 	private boolean alreadyExecuted = false;
 	
-	/**
-	 * true - data is read from in port; 
-	 * false - data is read from file directly by mysql utility
-	 */
-	private boolean isDataReadFromPort;
-
-	/**
-	 * true - bad rows is written to out port; 
-	 * false - bad rows isn't written to anywhere
-	 */
-	private boolean isDataWrittenToPort;
-
 	private boolean isDataReadDirectlyFromFile;
 	
 	/**
@@ -816,8 +802,6 @@ public class MysqlDataWriter extends BulkLoader {
         if(isInitialized()) return;
 		super.init();
 
-		isDataReadFromPort = !getInPorts().isEmpty();
-		isDataWrittenToPort = !getOutPorts().isEmpty();
 		isDataReadDirectlyFromFile = !isDataReadFromPort && 
 				!StringUtils.isEmpty(dataURL);
 
