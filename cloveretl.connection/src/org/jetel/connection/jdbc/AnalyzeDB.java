@@ -63,6 +63,7 @@ import org.jetel.graph.runtime.EngineInitializer;
  * -q          *SQL query on command line
  * -info       *Displays list of driver's properties
  * -cfg        *CloverETL engine property file
+ * -plugins    *directory where to look for plugins/components
  *
  * Parameters marked [*] are optional. Either -f or -q parameter must be present.
  * If -config option is specified, mandatory parameters are loaded from property file.
@@ -109,9 +110,10 @@ public class AnalyzeDB {
 	 */
 	public static void main(String argv[]) {
 		
-		Properties config=new Properties();
-		int optionSwitch = 0;
-		String engineConfig = null;
+		Properties config = new Properties();
+        int optionSwitch = 0;
+        String engineConfig = null;
+        String pluginsRootDirectory = null;
 
 		if (argv.length == 0) {
 			printInfo();
@@ -145,16 +147,18 @@ public class AnalyzeDB {
 				config.setProperty("password",argv[++i]);
 			} else if (argv[i].equalsIgnoreCase("-config")) {
 				try{
-					InputStream stream=new BufferedInputStream(new FileInputStream(argv[++i]));
-					config.load(stream);
+					InputStream stream = new BufferedInputStream(new FileInputStream(argv[++i]));
+                    config.load(stream);
 					stream.close();
-					if (config.getProperty("dbDriver")!=null) optionSwitch |= 0x01; 
-					if (config.getProperty("dbURL")!=null) optionSwitch |= 0x02;
+					if (config.getProperty("dbDriver") != null) optionSwitch |= 0x01; 
+					if (config.getProperty("dbURL") != null) optionSwitch |= 0x02;
 				}catch(Exception ex){
 					System.err.println("[Error] "+ex.getMessage());
 					System.exit(-1);
 				}
-				
+			} else if (argv[i].equalsIgnoreCase("-plugins")) {
+                i++;
+			    pluginsRootDirectory = argv[i];
 			} else {
 				System.err.println("[Error] Unknown option: " + argv[i] + "\n");
 				printInfo();
@@ -193,7 +197,7 @@ public class AnalyzeDB {
 		if (delimiter == null) {
 			delimiter = DEFAULT_DELIMITER;
 		}
-		EngineInitializer.initEngine((String) null, engineConfig, null);
+		EngineInitializer.initEngine(pluginsRootDirectory, engineConfig, null);
 		try {
 			doAnalyze(config);
 		}
@@ -339,6 +343,7 @@ public class AnalyzeDB {
 		System.out.println("-f          *Read SQL query from filename");
 		System.out.println("-q          *SQL query on command line");
 		System.out.println("-info       *Displays list of driver's properties");
+		System.out.println("-plugins    *directory where to look for plugins/components");
 		System.out.println("\nParameters marked [*] are optional. Either -f or -q parameter must be present.");
 		System.out.println("If -config option is specified, mandatory parameters are loaded from property file.");
 		System.out.println("When output is directed to file (-o option used), UTF-8 encoding is used - this should");
