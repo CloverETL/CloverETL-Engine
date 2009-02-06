@@ -4,9 +4,7 @@
 
 
 # usage
-# analyzeDB <analyze_arguments>
-# example:
-# analyzeDB -config interbase.cfg -o employee.fmt -q "select * from EMPLOYEE"
+# DBFAnalyzer [-v(erbose)] <DBF filename> [<metadata output filename>]
 
 
 cmd_line_arguments=
@@ -71,8 +69,6 @@ for i in $CLOVER_LIB/*.jar $CLOVER_LIB/*.zip; do
 	LOCAL_CLASSPATH="$LOCAL_CLASSPATH:$i"
 done;
 
-LOCAL_CLASSPATH="$LOCAL_CLASSPATH:$CLOVER_HOME/plugins/org.jetel.connection/cloveretl.connection.jar"
-
-clover_exec_command="exec \"$JAVACMD\" -classpath \"$LOCAL_CLASSPATH\" org.jetel.connection.jdbc.AnalyzeDB $cmd_line_arguments -plugins $CLOVER_HOME/plugins"
+clover_exec_command="exec \"$JAVACMD\" -classpath \"$LOCAL_CLASSPATH\" org.jetel.database.dbf.DBFAnalyzer $cmd_line_arguments"
 echo "$clover_exec_command"
 eval "$clover_exec_command"
