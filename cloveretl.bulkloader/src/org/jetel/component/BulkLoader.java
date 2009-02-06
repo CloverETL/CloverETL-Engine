@@ -5,6 +5,7 @@ import java.util.Properties;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.string.StringUtils;
 
@@ -46,6 +47,7 @@ public abstract class BulkLoader extends Node {
 	protected String parameters = null;
 	protected Properties properties = null;
 	
+	protected DataRecordMetadata dbMetadata; // it correspond to load utility input format
 	protected DataConsumer consumer = null; // consume data from out stream of load utility
 	protected DataConsumer errConsumer = null; // consume data from err stream of utility - write them to by logger
 	protected Formatter formatter = null; // format data to load utility format and write them to dataFileName
