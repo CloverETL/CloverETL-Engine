@@ -564,15 +564,6 @@ public class MysqlDataWriter extends BulkLoader {
 		return new File(fileURL);
     }
 	
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		
-		if (formatter != null) {
-			formatter.reset();
-		}
-	}
-	
 	/**
 	 * This method reads incoming data from port 
 	 * and sends them by formatter to mysql process.

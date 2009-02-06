@@ -641,15 +641,6 @@ public class OracleDataWriter extends BulkLoader {
 		return new File(fileURL);
     }
     
-    @Override
-    public synchronized void reset() throws ComponentNotReadyException {
-    	super.reset();
-    	
-    	if (formatter != null) {
-			formatter.reset();
-		}
-    }
-    
     /**
      * Creates userid parameter for sqlldr utility. Builds string this form: "user/password@schema" 
      * @return
