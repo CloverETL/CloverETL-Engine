@@ -23,6 +23,9 @@ public abstract class BulkLoader extends Node {
 
 	protected final static String EQUAL_CHAR = "=";
 	
+	protected final static int READ_FROM_PORT = 0;
+    protected final static int WRITE_TO_PORT = 0;	//port for write bad record
+	
 	// variables for load utility's command
 	protected String loadUtilityPath = null; // format data to load utility format and write them to dataFileName
 	protected String dataURL = null; // fileUrl from XML - data file that is used when no input port is connected or for log
@@ -39,6 +42,18 @@ public abstract class BulkLoader extends Node {
 	protected DataConsumer errConsumer = null; // consume data from err stream of utility - write them to by logger
 	protected Formatter formatter = null; // format data to load utility format and write them to dataFileName
 	
+	/**
+     * true - data is read from in port;
+     * false - data is read from file directly by load utility
+     */
+    protected boolean isDataReadFromPort;
+    
+    /**
+     * true - bad rows is written to out port;
+     * false - bad rows isn't written to anywhere
+     */
+    protected boolean isDataWrittenToPort;
+	
 	public BulkLoader(String id, String loadUtilityPath, String database) {
 		super(id);
 		this.loadUtilityPath = loadUtilityPath;
@@ -48,6 +63,9 @@ public abstract class BulkLoader extends Node {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
+		
+		isDataReadFromPort = !getInPorts().isEmpty();
+        isDataWrittenToPort = !getOutPorts().isEmpty();
 		
 		properties = parseParameters(parameters);
 	}
