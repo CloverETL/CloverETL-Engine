@@ -80,16 +80,8 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	/** Description of the Field */
 	// attributes for psql client
 	private static final String XML_PSQL_PATH_ATTRIBUTE = "psqlPath";
-	private static final String XML_DATABASE_ATTRIBUTE = "database";
 	private static final String XML_COMMAND_URL_ATTRIBUTE = "commandURL";
 	private static final String XML_HOST_ATTRIBUTE = "host";
-	private static final String XML_USER_ATTRIBUTE = "username";
-	
-	// attributes for copy statement	
-	private static final String XML_TABLE_ATTRIBUTE = "table";
-	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
-	private static final String XML_COLUMN_DELIMITER_ATTRIBUTE = "columnDelimiter";
-	private static final String XML_PARAMETERS_ATTRIBUTE = "parameters";
 
 	// params for psql client
 	private static final String PSQL_ECHO_ALL_PARAM = "echoAll";

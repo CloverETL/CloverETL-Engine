@@ -360,16 +360,9 @@ public class MysqlDataWriter extends BulkLoader {
 
 	/** Description of the Field */
 	private static final String XML_MYSQL_PATH_ATTRIBUTE = "mysqlPath";
-	private static final String XML_DATABASE_ATTRIBUTE = "database";
-	private static final String XML_TABLE_ATTRIBUTE = "table";
-	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
-	private static final String XML_COLUMN_DELIMITER_ATTRIBUTE = "columnDelimiter";
 	private static final String XML_HOST_ATTRIBUTE = "host";
-	private static final String XML_USER_ATTRIBUTE = "username";
-	private static final String XML_PASSWORD_ATTRIBUTE = "password";
 	private static final String XML_COMMAND_URL_ATTRIBUTE = "commandURL";
 	private static final String XML_IGNORE_ROWS_ATTRIBUTE = "ignoreRows";
-	private static final String XML_PARAMETERS_ATTRIBUTE = "parameters";
 
 	// params for mysql client
 	private static final String MYSQL_SKIP_AUTO_REHASH_PARAM = "skipAutoRehash";

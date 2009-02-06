@@ -511,15 +511,8 @@ public class MsSqlDataWriter extends BulkLoader {
 
 	/** Description of the Field */
 	private final static String XML_BCP_UTILITY_PATH_ATTRIBUTE = "bcpUtilityPath";
-	private final static String XML_DATABASE_ATTRIBUTE = "database";
 	private final static String XML_OWNER_ATTRIBUTE = "owner";
-	private final static String XML_TABLE_ATTRIBUTE = "table";
 	private final static String XML_VIEW_ATTRIBUTE = "view";
-	private final static String XML_FILE_URL_ATTRIBUTE = "fileURL";
-	private final static String XML_PARAMETERS_ATTRIBUTE = "parameters";
-	private final static String XML_USER_ATTRIBUTE = "username";
-	private final static String XML_PASSWORD_ATTRIBUTE = "password";
-	private static final String XML_COLUMN_DELIMITER_ATTRIBUTE = "columnDelimiter";
 	private static final String XML_SERVER_NAME_ATTRIBUTE = "serverName";
 
 	private final static String MS_SQL_MAX_ERRORS_PARAM = "maxErrors";
