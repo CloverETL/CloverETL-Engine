@@ -53,7 +53,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.file.FileUtils;
@@ -112,7 +111,7 @@ import org.w3c.dom.Element;
  * @see         org.jetel.graph.Node
  * @see         org.jetel.graph.Edge
  */
-public class OracleDataWriter extends Node {
+public class OracleDataWriter extends BulkLoader {
 
     private static Log logger = LogFactory.getLog(OracleDataWriter.class);
 
@@ -193,22 +192,14 @@ public class OracleDataWriter extends Node {
     private final static String CONTROL_FILE_NAME_SUFFIX = ".ctl";
     private final static File TMP_DIR = new File(".");
     private final static int UNUSED_INT = -1;
-    private final static String EQUAL_CHAR = "=";
     
     private final static int EXEC_SQLLDR_SUCC = 0;
     private final static int EXEC_SQLLDR_WARN = 2;
     
-    private DataFormatter formatter = null;
-    private DataConsumer consumer = null; // consume data from out stream of sqlldr
-	private DataConsumer errConsumer; // consume data from err stream of sqlldr
 	private OracleBadRowReaderWriter oracleBadRowReaderWriter;
     
-    private String sqlldrPath;
-    private String username;
-    private String password;
     private String tnsname;
     private String userId;
-    private String tableName;
     private Append append = Append.append;
     private String controlFileName;
     private String logFileName;
@@ -218,14 +209,10 @@ public class OracleDataWriter extends Node {
     private String[] dbFields; // contains name of all database columns 
     private boolean useFileForExchange = false;
     private boolean isDefinedUseFileForExchange = false;
-    private String dataURL; // fileUrl from XML - data file that is used when no input port is connected or for log
     private int maxErrors = UNUSED_INT;
     private int maxDiscards = UNUSED_INT;
     private int ignoreRows = UNUSED_INT;
     private int commitInterval = UNUSED_INT;
-    private String parameters;
-
-    private Properties properties;
     
     private File dataFile = null; // file that is used for exchange data between clover and sqlldr - file from dataURL
     private File badFile = null;
@@ -251,12 +238,11 @@ public class OracleDataWriter extends Node {
      * @param  id  Description of the Parameter
      */
     public OracleDataWriter(String id, String sqlldrPath, String username, String password, String tnsname, String tableName) {
-        super(id);
-        this.sqlldrPath = sqlldrPath;
-        this.username = username;
+        super(id, sqlldrPath, null);
+        this.user = username;
         this.password = password;
         this.tnsname = tnsname;
-        this.tableName = tableName;
+        this.table = tableName;
     }
 
 
@@ -456,7 +442,7 @@ public class OracleDataWriter extends Node {
      * @return
      */
     private String[] createCommandlineForSqlldr() {
-    	OracleCommandBuilder cmdBuilder = new OracleCommandBuilder(sqlldrPath, properties);
+    	OracleCommandBuilder cmdBuilder = new OracleCommandBuilder(loadUtilityPath, properties);
     	cmdBuilder.addAttribute("control", controlFileName, true);
     	cmdBuilder.addAttribute("userid", userId, false);
     	cmdBuilder.addAttribute("data", getData(), false);
@@ -529,7 +515,6 @@ public class OracleDataWriter extends Node {
         	useFileForExchange = getDefaultUsingFileForExchange();
         }
         
-        properties = parseParameters(parameters);
         checkParams();
         
         // data is read directly from file -> file isn't used for exchange
@@ -620,26 +605,6 @@ public class OracleDataWriter extends Node {
         }
 	}
     
-	/**
-	 * Create instance of Properties from String. 
-	 * Parse parameters from string "parameters" and fill properties by them.
-	 * 
-	 * @param parameters string that contains parameters
-	 * @return instance of Properties created by parsing string
-	 */
-	private static Properties parseParameters(String parameters) {
-		Properties properties = new Properties();
-
-		if (parameters != null) {
-			for (String param : StringUtils.split(parameters)) {
-				String[] par = param.split(EQUAL_CHAR);
-				properties.setProperty(par[0], par.length > 1 ? StringUtils.unquote(par[1]) : "true");
-			}
-		}
-
-		return properties;
-	}
-	
     private void createFileForExchange() throws ComponentNotReadyException {
     	if (!useFileForExchange) {
     		if (!ProcBox.isWindowsPlatform() && isDataReadFromPort) {
@@ -703,7 +668,7 @@ public class OracleDataWriter extends Node {
      * @return
      */
     private String getUserId() {
-        return username + "/" + password + "@" + tnsname;
+        return user + "/" + password + "@" + tnsname;
     }
 
 
@@ -723,7 +688,7 @@ public class OracleDataWriter extends Node {
         try {
             controlFile.createNewFile();
             controlWriter = new FileWriter(controlFile);
-            String content = control == null ? getDefaultControlFileContent(tableName, append, getInputPort(READ_FROM_PORT).getMetadata(), dbFields) : control;
+            String content = control == null ? getDefaultControlFileContent(table, append, getInputPort(READ_FROM_PORT).getMetadata(), dbFields) : control;
             logger.debug("Control file content: " + content);
             controlWriter.write(content);
             controlWriter.close();
