@@ -558,8 +558,7 @@ public class InformixDataWriter extends BulkLoader {
         				+ StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute specified.");
         	}
 			try {
-				if (!FileUtils.isServerURL(FileUtils.getInnerAddress(dataURL)) && 
-						!(new File(FileUtils.getFile(getGraph().getProjectURL(), dataURL))).exists()) {
+				if (!fileExists(dataURL)) {
 					throw new ComponentNotReadyException(this, "Data file "
 								+ StringUtils.quote(dataURL) + " not exists.");
 				}
