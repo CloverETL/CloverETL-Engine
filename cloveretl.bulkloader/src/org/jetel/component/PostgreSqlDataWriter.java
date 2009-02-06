@@ -152,7 +152,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 
 	private File dataFile = null; // file that is used for exchange data between clover and psql - file from dataURL
 	private String[] commandLine; // command line of psql
-	private DataRecordMetadata dbMetadata; // it correspond to psql input format
 
 	private boolean csvMode; // true if CSV mode is used for loading data
 	
@@ -244,6 +243,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		} catch (Exception e) {
 			throw e;
 		} finally {
+			formatter.finish();
 			formatter.close();
 		}
 	}

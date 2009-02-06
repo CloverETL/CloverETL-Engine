@@ -314,11 +314,11 @@ public class OracleDataWriter extends BulkLoader {
 		}
     }
 
-    private void readFromPortAndWriteByFormatter(Object dataTarget) throws Exception {
+    private void readFromPortAndWriteByFormatter(OutputStream dataTarget) throws Exception {
 		formatter.setDataTarget(dataTarget);
 		
 		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord record = new DataRecord(inPort.getMetadata());
+		DataRecord record = new DataRecord(dbMetadata);
 		record.init();
 
 		try {
@@ -513,8 +513,10 @@ public class OracleDataWriter extends BulkLoader {
         
         //init of data formatter
         if (isDataReadFromPort) {
+        	dbMetadata = getInputPort(READ_FROM_PORT).getMetadata();
+        	
         	formatter = new DataFormatter();
-            formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
+            formatter.init(dbMetadata);
 		}
         
 		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);

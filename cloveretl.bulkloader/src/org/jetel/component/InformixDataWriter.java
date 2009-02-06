@@ -241,7 +241,6 @@ public class InformixDataWriter extends BulkLoader {
 
     private String[] commandLine; // command line of dbload
     private String tmpDataFileName; // file that is used for exchange data between clover and dbload
-    private DataRecordMetadata dbMetadata; // it correspond to dbload input format
     
 	/**
      * Constructor for the InformixDataWriter object
@@ -309,6 +308,7 @@ public class InformixDataWriter extends BulkLoader {
 		} catch (Exception e) {
 			throw e;
 		} finally {
+			formatter.finish();
 		    formatter.close();
 		}
 	}
