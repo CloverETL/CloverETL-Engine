@@ -89,4 +89,13 @@ public abstract class BulkLoader extends Node {
 
 		return properties;
 	}
+
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		
+		if (formatter != null) {
+			formatter.reset();
+		}
+	}
 }
