@@ -1,9 +1,12 @@
 package org.jetel.component;
 
+import java.io.OutputStream;
 import java.util.Properties;
 
+import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.DataConsumer;
@@ -100,6 +103,31 @@ public abstract class BulkLoader extends Node {
 		return properties;
 	}
 
+	/**
+	 * This method reads incoming data from port and sends them by formatter to load utility process.
+	 *
+	 * @param dataTarget OutputStream where data will be sent
+	 * @throws Exception
+	 */
+	protected void readFromPortAndWriteByFormatter(OutputStream dataTarget) throws Exception {
+		formatter.setDataTarget(dataTarget);
+		
+		InputPort inPort = getInputPort(READ_FROM_PORT);
+		DataRecord record = new DataRecord(dbMetadata);
+		record.init();
+
+		try {
+			while (runIt && ((record = inPort.readRecord(record)) != null)) {
+				formatter.write(record);
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			formatter.finish();
+			formatter.close();
+		}
+	}
+	
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
