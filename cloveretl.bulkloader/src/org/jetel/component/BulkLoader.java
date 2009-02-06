@@ -21,6 +21,14 @@ import org.jetel.util.string.StringUtils;
  */
 public abstract class BulkLoader extends Node {
 
+	protected final static String XML_DATABASE_ATTRIBUTE = "database";
+	protected final static String XML_TABLE_ATTRIBUTE = "table";
+	protected final static String XML_USER_ATTRIBUTE = "username";
+	protected final static String XML_PASSWORD_ATTRIBUTE = "password";
+	protected final static String XML_COLUMN_DELIMITER_ATTRIBUTE = "columnDelimiter";
+	protected final static String XML_FILE_URL_ATTRIBUTE = "fileURL";
+	protected final static String XML_PARAMETERS_ATTRIBUTE = "parameters";
+	
 	protected final static String EQUAL_CHAR = "=";
 	
 	protected final static int READ_FROM_PORT = 0;
