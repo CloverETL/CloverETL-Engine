@@ -1,5 +1,6 @@
 package org.jetel.component;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
 
@@ -10,6 +11,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.DataConsumer;
+import org.jetel.util.exec.ProcBox;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -135,5 +137,25 @@ public abstract class BulkLoader extends Node {
 		if (formatter != null) {
 			formatter.reset();
 		}
+	}
+	
+	/**
+	 * Create instance of ProcBox.
+	 * 
+	 * @param process running process; when process is null, default process is created
+	 * @return instance of ProcBox
+	 * @throws IOException
+	 */
+	protected abstract ProcBox createProcBox(Process process) throws IOException;
+	// TODO implementation will be copied from descendant after removing commandLine attribute to this class
+	
+	/**
+	 * Create instance of ProcBox. Default process is created.
+	 * 
+	 * @return instance of ProcBox
+	 * @throws IOException
+	 */
+	protected ProcBox createProcBox() throws IOException {
+		return createProcBox(null);
 	}
 }
