@@ -136,7 +136,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	private final static String COPY_STDIN_KEYWORD = "pstdin";
 
 	public final static String COMPONENT_TYPE = "POSTGRESQL_DATA_WRITER";
-	private final static int READ_FROM_PORT = 0;
 
 	private final static String POSTGRESQL_FILE_NAME_PREFIX = "postgresql";
 	private final static String COMMAND_FILE_NAME_SUFFIX = ".ctl";
@@ -165,12 +164,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 
 	private boolean csvMode; // true if CSV mode is used for loading data
 	
-	/**
-	 * true - data is read from in port; 
-	 * false - data is read from file directly by psql utility
-	 */
-	private boolean isDataReadFromPort;
-
 	/**
 	 * Constructor for the PostgreSqlDataWriter object
 	 * 
@@ -495,8 +488,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	public void init() throws ComponentNotReadyException {
 		if (isInitialized()) return;
 		super.init();
-
-		isDataReadFromPort = !getInPorts().isEmpty();
 
 		csvMode = isCsvModeUsed(properties);
 		setDefaultColumnDelimiter(csvMode);
