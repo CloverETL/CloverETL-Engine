@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -34,7 +33,6 @@ import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -176,8 +174,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		if (isDataReadFromPort) {
 			if (dataURL != null) {
 				// dataFile is used for exchange data
-				formatter.setDataTarget(Channels.newChannel(new FileOutputStream(dataFile)));
-				readFromPortAndWriteByFormatter();
+				readFromPortAndWriteByFormatter(new FileOutputStream(dataFile));
 				box = createProcBox(null);
 			} else {
 				Process process = Runtime.getRuntime().exec(commandLine);
@@ -185,8 +182,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 
 				// stdin is used for exchange data - set data target to stdin of process
 				OutputStream processIn = new BufferedOutputStream(process.getOutputStream());
-				formatter.setDataTarget(Channels.newChannel(processIn));
-				readFromPortAndWriteByFormatter();
+				readFromPortAndWriteByFormatter(processIn);
 			}
 
 			processExitValue = box.join();
@@ -225,29 +221,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		return "psql utility has failed - " + errorMsg + ".";
 	}
 	
-	/**
-	 * This method reads incoming data from port 
-	 * and sends them by formatter to psql process.
-	 * 
-	 * @throws Exception
-	 */
-	private void readFromPortAndWriteByFormatter() throws Exception {
-		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord record = new DataRecord(dbMetadata);
-		record.init();
-
-		try {
-			while (runIt && ((record = inPort.readRecord(record)) != null)) {
-				formatter.write(record);
-			}
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			formatter.finish();
-			formatter.close();
-		}
-	}
-
 	/**
 	 * Call psql process with parameters - psql process reads data directly from file.
 	 * 
