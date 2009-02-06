@@ -313,26 +313,12 @@ public class OracleDataWriter extends BulkLoader {
 			throw e;
 		}
     }
-
-    private void readFromPortAndWriteByFormatter(OutputStream dataTarget) throws Exception {
-		formatter.setDataTarget(dataTarget);
-		
-		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord record = new DataRecord(dbMetadata);
-		record.init();
-
-		try {
-			while (runIt && ((record = inPort.readRecord(record)) != null)) {
-				formatter.write(record);
-			}
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			formatter.finish();
-			formatter.close();
-		}
-	}
     
+    /**
+	 * This method reads incoming data from port and sends them by formatter to sqlldr process.
+	 * 
+	 * @throws Exception
+	 */
 	private void readFromPortAndWriteByFormatter() throws Exception {
 		readFromPortAndWriteByFormatter(new FileOutputStream(dataFile));
 	}
