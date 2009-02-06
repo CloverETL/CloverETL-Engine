@@ -184,8 +184,6 @@ public class OracleDataWriter extends BulkLoader {
     private final static String lineSeparator = System.getProperty("line.separator");
     
     public final static String COMPONENT_TYPE = "ORACLE_DATA_WRITER";
-    private final static int READ_FROM_PORT = 0;
-    private final static int WRITE_TO_PORT = 0;
     
     private final static String EXCHANGE_FILE_PREFIX = "oracleExchange";
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
@@ -218,18 +216,6 @@ public class OracleDataWriter extends BulkLoader {
     private File badFile = null;
     private File discardFile = null;
 
-    /**
-	 * true - data is read from in port; 
-	 * false - data is read from file directly by psql utility
-	 */
-	private boolean isDataReadFromPort;
-	
-	/**
-	 * true - rejected/discarded rows is written to out port; 
-	 * false - rejected/discarded rows isn't written to anywhere
-	 */
-	private boolean isDataWrittenToPort;
-	
 	private boolean isDataReadDirectlyFromFile;
     
     /**
@@ -505,8 +491,6 @@ public class OracleDataWriter extends BulkLoader {
         if (isInitialized()) return;
         super.init();
   
-        isDataReadFromPort = !getInPorts().isEmpty();
-        isDataWrittenToPort = !getOutPorts().isEmpty();
         isDataReadDirectlyFromFile = !isDataReadFromPort && 
         		!StringUtils.isEmpty(dataURL);
         
