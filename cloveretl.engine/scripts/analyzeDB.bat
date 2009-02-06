@@ -2,7 +2,7 @@
 
 REM this script was inspired by practices gained from ant run scripts (http://ant.apache.org/)
 
-REM usage 
+REM usage
 REM analyzeDB.bat <analyze_arguments>
 REM example:
 REM analyzeDB.bat -config interbase.cfg -o employee.fmt -q "select * from EMPLOYEE"
