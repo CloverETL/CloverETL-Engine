@@ -196,8 +196,6 @@ public class InformixDataWriter extends BulkLoader {
     private static final String XML_USE_INSERT_CUROSOR_ATTRIBUTE = "useInsertCursor";
     
     public final static String COMPONENT_TYPE = "INFORMIX_DATA_WRITER";
-    private final static int READ_FROM_PORT = 0;
-    private final static int WRITE_TO_PORT = 0;	//port for write bad record
 
     private final static String INFORMIX_COMMAND_PATH_OPTION = "-c";
     private final static String INFORMIX_DATABASE_OPTION = "-d";
@@ -249,18 +247,6 @@ public class InformixDataWriter extends BulkLoader {
 
     private String tmpDataFileName; // file that is used for exchange data between clover and dbload
     private DataRecordMetadata dbMetadata; // it correspond to dbload input format
-    
-    /**
-     * true - data is read from in port;
-     * false - data is read from file directly by dbload utility
-     */
-    private boolean isDataReadFromPort;
-    
-    /**
-     * true - bad rows is written to out port;
-     * false - bad rows isn't written to anywhere
-     */
-    private boolean isDataWrittenToPort;
     
 	/**
      * Constructor for the InformixDataWriter object
@@ -460,7 +446,6 @@ public class InformixDataWriter extends BulkLoader {
 		super.init();
 
 		isDataReadFromPort = !getInPorts().isEmpty() && StringUtils.isEmpty(command);
-		isDataWrittenToPort = !getOutPorts().isEmpty();
 
 		try {
 			checkAttributes();
