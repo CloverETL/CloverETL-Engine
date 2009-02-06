@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -265,8 +264,7 @@ public class InformixDataWriter extends BulkLoader {
         if (isDataReadFromPort) {
 	        if (!StringUtils.isEmpty(dataURL) || (ProcBox.isWindowsPlatform() && !useLoadUtility)) {
 	        	// temp file is used for exchange data
-	        	formatter.setDataTarget(Channels.newChannel(new FileOutputStream(tmpDataFileName)));
-	        	readFromPortAndWriteByFormatter();
+	        	readFromPortAndWriteByFormatter(new FileOutputStream(tmpDataFileName));
 	        	
 	            box = createProcBox(null);
 	        } else {
@@ -275,8 +273,7 @@ public class InformixDataWriter extends BulkLoader {
 	            
 	            // stdin is used for exchange data - set data target to stdin of process
 	        	OutputStream processIn = new BufferedOutputStream(process.getOutputStream());
-	        	formatter.setDataTarget(Channels.newChannel(processIn));
-	        	readFromPortAndWriteByFormatter();
+	        	readFromPortAndWriteByFormatter(processIn);
 	        }
     		
     		processExitValue = box.join();
@@ -291,28 +288,6 @@ public class InformixDataWriter extends BulkLoader {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
     
-    /**
-     * This method reads incoming data from port and sends them by formatter to dbload process.
-     * 
-	 * @throws Exception
-	 */
-	private void readFromPortAndWriteByFormatter() throws Exception {
-		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord record = new DataRecord(dbMetadata);
-		record.init();
-		
-		try {
-			while (runIt && ((record = inPort.readRecord(record)) != null)) {
-		        formatter.write(record);
-			}
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			formatter.finish();
-		    formatter.close();
-		}
-	}
-	
 	/**
 	 * Call dbload process with parameters - dbload process reads data directly from file.  
 	 * @return value of finished process
