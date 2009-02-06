@@ -212,6 +212,7 @@ public class OracleDataWriter extends BulkLoader {
     private int ignoreRows = UNUSED_INT;
     private int commitInterval = UNUSED_INT;
     
+    private String[] commandLine; // command line of sqlldr
     private File dataFile = null; // file that is used for exchange data between clover and sqlldr - file from dataURL
     private File badFile = null;
     private File discardFile = null;
@@ -249,7 +250,7 @@ public class OracleDataWriter extends BulkLoader {
 			} else { // data is send to process through stdin of sqlldr
 				if (ProcBox.isWindowsPlatform()) {
 					unstableStdinIsUsed = true;
-					Process process = Runtime.getRuntime().exec(createCommandlineForSqlldr());
+					Process process = Runtime.getRuntime().exec(commandLine);
 		            ProcBox box = createProcBox(process);
 		            
 		            // stdin (-) is used for exchange data - set data target to stdin (-) of process
@@ -360,7 +361,7 @@ public class OracleDataWriter extends BulkLoader {
 	 */
 	private ProcBox createProcBox(Process process) throws IOException {
 		if (process == null) {
-			process = Runtime.getRuntime().exec(createCommandlineForSqlldr());			
+			process = Runtime.getRuntime().exec(commandLine);			
 		}
         return new ProcBox(process, null, consumer, errConsumer);
 	}
@@ -512,6 +513,8 @@ public class OracleDataWriter extends BulkLoader {
         
         //compute userId as sqlldr parameter
         userId = getUserId();
+        
+        commandLine = createCommandlineForSqlldr();
         
         //init of data formatter
         if (isDataReadFromPort) {
