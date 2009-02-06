@@ -125,19 +125,10 @@ public class testDBLookup{
 		lookupTable.init();
 
 		//creating data record for seeking
-		char[] fieldType = lookupTable.getKey();
-		
-		DataRecordMetadata keyMetadata = new DataRecordMetadata("key_metadata", DataRecordMetadata.DELIMITED_RECORD);
-		keyMetadata.setFieldDelimiter(";");
-		keyMetadata.setRecordDelimiters("\n");
-		int[] keyFields = new int[fieldType.length];
-		for (int i = 0; i < fieldType.length; i++) {
-			keyMetadata.addField(new DataFieldMetadata("field" + i, fieldType[i], null));
-			keyFields[i] = i;
-		}
+		DataRecordMetadata keyMetadata = lookupTable.getKeyMetadata();
 		DataRecord keyRecord = new DataRecord(keyMetadata);
 		keyRecord.init();
-		RecordKey key = new RecordKey(keyFields, keyMetadata);
+		RecordKey key = new RecordKey((String[])keyMetadata.getFieldNames().keySet().toArray(new String[keyMetadata.getNumFields()]), keyMetadata);
 		key.init();
 		
 		//create lookup query based on requested key
