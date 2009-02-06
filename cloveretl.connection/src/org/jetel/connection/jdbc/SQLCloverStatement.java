@@ -361,6 +361,12 @@ public class SQLCloverStatement {
 		this.record = inRecord;
 		if (statement != null && !(statement instanceof PreparedStatement)) {//we haven't counted on input record, so statement have been created, not PreparedStatement
 			try {
+				try {
+					close();
+				} catch (SQLException e) {
+					// do nothing
+				}
+				isInitialized = false;
 				init();
 			} catch (SQLException e) {
 				throw new ComponentNotReadyException(e);
