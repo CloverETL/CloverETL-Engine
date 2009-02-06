@@ -130,6 +130,18 @@ public abstract class BulkLoader extends Node {
 		}
 	}
 	
+	/**
+	 * Call load utility process with parameters,
+	 * load utility process reads data directly from file.
+	 * 
+	 * @return value of finished process
+	 * @throws Exception
+	 */
+	protected int readDataDirectlyFromFile() throws Exception {
+		ProcBox box = createProcBox();
+		return box.join();
+	}
+	
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
