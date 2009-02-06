@@ -577,8 +577,6 @@ public class MsSqlDataWriter extends BulkLoader {
 	private final static char MS_SQL_LOAD_HINTS_SWITCH = 'h';
 
 	public final static String COMPONENT_TYPE = "MS_SQL_DATA_WRITER";
-	private final static int READ_FROM_PORT = 0;
-	private final static int WRITE_TO_PORT = 0; // port for write bad record
 
 	private final static String DATA_FILE_NAME_PREFIX = "data";
 	private final static String DATA_FILE_NAME_SUFFIX = ".dat";
@@ -618,18 +616,6 @@ public class MsSqlDataWriter extends BulkLoader {
 	private File dataFile; // file that is used for exchange data between clover and bcp - file from dataURL
 											 // flag that determine if execute() method was already executed;
 	private boolean alreadyExecuted = false; // used for deleting temp data file and reporting about it
-
-	/**
-	 * true - data is read from port;
-	 * false - data is read from file directly by bcp utility
-	 */
-	private boolean isDataReadFromPort;
-
-	/**
-	 * true - bad rows is written to out port;
-	 * false - bad rows isn't written to anywhere
-	 */
-	private boolean isDataWrittenToPort;
 
 	/**
 	 * Constructor for the MsSqlDataWriter object
@@ -899,8 +885,6 @@ public class MsSqlDataWriter extends BulkLoader {
 		checkParams();
 		getUserAndPassword();
 
-		isDataReadFromPort = !getInPorts().isEmpty();
-		isDataWrittenToPort = !getOutPorts().isEmpty();
 		isErrFileFromUser = properties.containsKey(MS_SQL_ERR_FILE_PARAM);
 
 		// prepare name for temporary data file
