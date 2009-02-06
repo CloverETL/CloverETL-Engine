@@ -344,7 +344,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
         if (isInitialized()) {
             super.free();
 
-            // TODO: any appropriate clean-up code
+        lookupTable.clear();
         }
     }
     
