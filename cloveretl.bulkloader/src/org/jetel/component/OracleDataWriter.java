@@ -592,8 +592,7 @@ public class OracleDataWriter extends BulkLoader {
     
     private File openFile(String fileURL) throws ComponentNotReadyException {
     	try {
-			if (!FileUtils.isServerURL(FileUtils.getInnerAddress(fileURL)) && 
-					!(new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL))).exists()) {
+			if (!fileExists(fileURL)) {
 				free();
 				throw new ComponentNotReadyException(this, 
 						"Data file " + StringUtils.quote(fileURL) + " not exists.");
