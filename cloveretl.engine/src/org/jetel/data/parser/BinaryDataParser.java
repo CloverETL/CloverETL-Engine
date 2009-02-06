@@ -84,6 +84,10 @@ public class BinaryDataParser implements Parser {
 	 * temp char buffer
 	 */
 	CharBuffer charBuffer;
+	/*
+	 * Whether an attempt to delete file from the underlying should be made on close()
+	 */
+	File deleteOnClose;
 	
 	private final static int LEN_SIZE_SPECIFIER = 4;
 
@@ -133,6 +137,9 @@ public class BinaryDataParser implements Parser {
 				reader.close();
 				if (backendStream != null) {
 					backendStream.close();
+				}
+				if (deleteOnClose != null) {
+					deleteOnClose.delete();
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -322,6 +329,13 @@ public class BinaryDataParser implements Parser {
 		return backendStream;
 	}
 
-	
+	public File getDeleteOnClose() {
+		return deleteOnClose;
+	}
+
+	public void setDeleteOnClose(File deleteOnClose) {
+		this.deleteOnClose = deleteOnClose;
+	}
+
 	
 }
