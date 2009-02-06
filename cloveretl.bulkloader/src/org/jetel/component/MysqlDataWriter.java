@@ -453,7 +453,6 @@ public class MysqlDataWriter extends BulkLoader {
 
 	private File dataFile; // file that is used for exchange data between clover and mysql - file from dataURL
 	private String[] commandLine; // command line of mysql
-	private DataRecordMetadata dbMetadata; // it correspond to mysql input format
 
 	/**
 	 *  flag that determine if execute() method was already executed;

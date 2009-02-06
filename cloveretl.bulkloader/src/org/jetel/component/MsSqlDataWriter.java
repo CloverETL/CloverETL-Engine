@@ -28,7 +28,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.channels.Channels;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -604,7 +603,6 @@ public class MsSqlDataWriter extends BulkLoader {
 
 	private MsSqlBadRowReaderWriter badRowReaderWriter;
 
-	private DataRecordMetadata dbMetadata; // it correspond to bcp input format
 	private String commandLine; // command line of bcp
 	private File dataFile; // file that is used for exchange data between clover and bcp - file from dataURL
 											 // flag that determine if execute() method was already executed;
@@ -631,7 +629,6 @@ public class MsSqlDataWriter extends BulkLoader {
 
 		if (isDataReadFromPort) {
 			// temp file is used for exchange data
-			formatter.setDataTarget(Channels.newChannel(new FileOutputStream(dataFile)));
 			readFromPortAndWriteByFormatter();
 
 			box = createProcBox();
@@ -658,6 +655,8 @@ public class MsSqlDataWriter extends BulkLoader {
 	 * @throws Exception
 	 */
 	private void readFromPortAndWriteByFormatter() throws Exception {
+		formatter.setDataTarget(new FileOutputStream(dataFile));
+		
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(dbMetadata);
 		record.init();
@@ -669,6 +668,7 @@ public class MsSqlDataWriter extends BulkLoader {
 		} catch (Exception e) {
 			throw e;
 		} finally {
+			formatter.finish();
 			formatter.close();
 		}
 	}
