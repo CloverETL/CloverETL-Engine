@@ -254,14 +254,10 @@ public abstract class BulkLoader extends Node {
     }
 	
 	protected File openFile(String fileURL) throws ComponentNotReadyException {
-    	try {
-			if (!fileExists(fileURL)) {
-				free();
-				throw new ComponentNotReadyException(this, 
-						"Data file " + StringUtils.quote(fileURL) + " not exists.");
-			}
-		} catch (Exception e) {
-			throw new ComponentNotReadyException(this, e);
+		if (!fileExists(fileURL)) {
+			free();
+			throw new ComponentNotReadyException(this, 
+					"Data file " + StringUtils.quote(fileURL) + " not exists.");
 		}
 		return new File(fileURL);
     }
