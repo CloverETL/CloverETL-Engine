@@ -42,6 +42,7 @@ import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
@@ -207,6 +208,12 @@ public class OracleDataWriter extends BulkLoader {
     private File badFile = null;
     private File discardFile = null;
 
+    /**
+	 *  flag that determine if execute() method was already executed;
+	 *  used for deleting temp data file and reporting about it
+	 */
+	private boolean alreadyExecuted = false;
+    
 	private boolean isDataReadDirectlyFromFile;
     
     /**
@@ -229,6 +236,7 @@ public class OracleDataWriter extends BulkLoader {
      * @since    April 4, 2002
      */
     public Result execute() throws Exception {
+    	alreadyExecuted = true;
 		int processExitValue = 0;
 		boolean unstableStdinIsUsed = false;
 
@@ -305,6 +313,7 @@ public class OracleDataWriter extends BulkLoader {
 
     	deleteFile(controlFileName, logger);
     	deleteDataFile();
+    	alreadyExecuted = false;
     }
 
     /**
@@ -315,10 +324,12 @@ public class OracleDataWriter extends BulkLoader {
 			return;
 		}
 		
-		if (isDataReadFromPort && dataURL == null ) {
-			if (!dataFile.delete()) {
-				logger.warn("Temp data file was not deleted.");
-			}
+		if (!alreadyExecuted) {
+			return;
+		}
+		
+		if (isDataReadFromPort && dataURL == null && !dataFile.delete()) {
+			logger.warn("Temp data file was not deleted.");
     	}
     }
 
@@ -685,16 +696,18 @@ public class OracleDataWriter extends BulkLoader {
         	return status;
         }
 
-//        try {
-//            init();
-//            free();
-//        } catch (ComponentNotReadyException e) {
-//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-//            if(!StringUtils.isEmpty(e.getAttributeName())) {
-//                problem.setAttributeName(e.getAttributeName());
-//            }
-//            status.add(problem);
-//        }
+        try {
+			init();
+		} catch (ComponentNotReadyException e) {
+			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(),
+					ConfigurationStatus.Severity.ERROR, this,ConfigurationStatus.Priority.NORMAL);
+			if (!StringUtils.isEmpty(e.getAttributeName())) {
+				problem.setAttributeName(e.getAttributeName());
+			}
+			status.add(problem);
+        } finally {
+        	free();
+		}
         
         return status;
     }
