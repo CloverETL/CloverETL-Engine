@@ -759,16 +759,15 @@ public class MysqlDataWriter extends BulkLoader {
 	}
 	
 	/**
-	 * Checks if mandatory parameters are defined.
+	 * Checks if mandatory attributes are defined.
 	 * And check combination of some parameters.
-	 * 
 	 * 
 	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
 	 */
 	private void checkParams() throws ComponentNotReadyException {
 		if (StringUtils.isEmpty(loadUtilityPath)) {
-			throw new ComponentNotReadyException(this,
-					StringUtils.quote(XML_MYSQL_PATH_ATTRIBUTE) + " attribute have to be set.");
+			throw new ComponentNotReadyException(this, StringUtils.quote(XML_MYSQL_PATH_ATTRIBUTE)
+					+ " attribute have to be set.");
 		}
 
 		if (StringUtils.isEmpty(database)) {

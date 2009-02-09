@@ -394,7 +394,7 @@ public class InformixDataWriter extends BulkLoader {
 		isDataReadFromPort = !getInPorts().isEmpty() && StringUtils.isEmpty(command);
 
 		try {
-			checkAttributes();
+			checkParams();
 		} catch (ComponentNotReadyException cnre) {
 			free();
 			throw new ComponentNotReadyException(cnre);
@@ -523,11 +523,20 @@ public class InformixDataWriter extends BulkLoader {
 	 * Checks if mandatory attributes are defined.
 	 * And check combination of some parameters.
 	 * 
-	 * 
 	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
 	 */
-    private void checkAttributes() throws ComponentNotReadyException {
-    	if (columnDelimiter.length() != 1) {
+	private void checkParams() throws ComponentNotReadyException {
+		if (StringUtils.isEmpty(loadUtilityPath)) {
+			throw new ComponentNotReadyException(this, StringUtils.quote(XML_DB_LOADER_PATH_ATTRIBUTE)
+					+ " attribute have to be set.");
+		}
+
+		if (StringUtils.isEmpty(database)) {
+			throw new ComponentNotReadyException(this, 
+					StringUtils.quote(XML_DATABASE_ATTRIBUTE) + " attribute have to be set.");
+		}
+		
+    	if (columnDelimiter != null && columnDelimiter.length() != 1) {
 			throw new ComponentNotReadyException(this, XML_COLUMN_DELIMITER_ATTRIBUTE, "Max. length of column delimiter is one.");
 		}
     	if (maxErrors != UNUSED_INT && maxErrors < 0) {
@@ -541,9 +550,11 @@ public class InformixDataWriter extends BulkLoader {
 		}
 		
 		// check if each of mandatory attributes is set
-		if (StringUtils.isEmpty(loadUtilityPath) || StringUtils.isEmpty(database) || 
-				(StringUtils.isEmpty(command) && StringUtils.isEmpty(table))) {
-			throw new ComponentNotReadyException(this, "dbLoaderPath, database or (table and command simultaneously) argument isn't fill.");
+		if (StringUtils.isEmpty(command) && StringUtils.isEmpty(table)) {
+			throw new ComponentNotReadyException(this, 
+					StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
+					StringUtils.quote(XML_COMMAND_ATTRIBUTE) + 
+					" attribute has to be specified.");
 		}
 		
 		if (!isDataReadFromPort) {
@@ -551,13 +562,9 @@ public class InformixDataWriter extends BulkLoader {
         		throw new ComponentNotReadyException(this, "There is neither input port nor " 
         				+ StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute specified.");
         	}
-			try {
-				if (!fileExists(dataURL)) {
-					throw new ComponentNotReadyException(this, "Data file "
-								+ StringUtils.quote(dataURL) + " not exists.");
-				}
-			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, e);
+			if (!fileExists(dataURL)) {
+				throw new ComponentNotReadyException(this, "Data file "
+							+ StringUtils.quote(dataURL) + " not exists.");
 			}
 		}
 		

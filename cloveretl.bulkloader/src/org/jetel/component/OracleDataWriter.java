@@ -478,12 +478,17 @@ public class OracleDataWriter extends BulkLoader {
     }
     
     /**
-	 * Checks if mandatory parameters are defined.
+	 * Checks if mandatory attributes are defined.
 	 * And check combination of some parameters.
 	 * 
 	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
 	 */
 	private void checkParams() throws ComponentNotReadyException {
+		if (StringUtils.isEmpty(loadUtilityPath)) {
+			throw new ComponentNotReadyException(this, StringUtils.quote(XML_SQLLDR_ATTRIBUTE)
+					+ " attribute have to be set.");
+		}
+		
 		if (!isDataReadFromPort && StringUtils.isEmpty(dataURL)) {
 			throw new ComponentNotReadyException(this, "Input port or " + 
 					StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + 

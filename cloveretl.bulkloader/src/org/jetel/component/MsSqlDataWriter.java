@@ -720,14 +720,15 @@ public class MsSqlDataWriter extends BulkLoader {
 	}
 
 	/**
-	 * if any of mandatory parameters is empty then throw ComponentNotReadyException
+	 * Checks if mandatory attributes are defined.
+	 * And check combination of some parameters.
 	 * 
-	 * @throws ComponentNotReadyException
+	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
 	 */
 	private void checkParams() throws ComponentNotReadyException {
 		if (StringUtils.isEmpty(loadUtilityPath)) {
 			throw new ComponentNotReadyException(this, StringUtils.quote(XML_BCP_UTILITY_PATH_ATTRIBUTE)
-					+ " attribute must be set.");
+					+ " attribute have to be set.");
 		}
 
 		if (StringUtils.isEmpty(table) && StringUtils.isEmpty(view)) {
