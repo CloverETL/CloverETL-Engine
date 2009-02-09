@@ -42,7 +42,6 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -708,10 +707,8 @@ public class MysqlDataWriter extends BulkLoader {
 		printCommandLineToLog(commandLine);
 
 		if (isDataReadFromPort) {
-			InputPort inPort = getInputPort(READ_FROM_PORT);
-
-			dbMetadata = createMysqlMetadata(inPort.getMetadata());
-
+			dbMetadata = createLoadUtilityMetadata(columnDelimiter, getRecordDelimiter());
+			
 			// init of data formatter
 			formatter = new DelimitedDataFormatter(CHARSET_NAME);
 			formatter.init(dbMetadata);
@@ -834,41 +831,8 @@ public class MysqlDataWriter extends BulkLoader {
 		}
 	}
 
-	/**
-	 * Modify metadata so that they correspond to mysql input format. 
-	 * Each field is delimited and it has the same delimiter.
-	 * Only last field has different delimiter.
-	 * 
-	 * @param oldMetadata original metadata
-	 * @return modified metadata
-	 */
-	private DataRecordMetadata createMysqlMetadata(DataRecordMetadata originalMetadata) {
-		DataRecordMetadata metadata = originalMetadata.duplicate();
-		metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
-		for (int idx = 0; idx < metadata.getNumFields() - 1; idx++) {
-			metadata.getField(idx).setDelimiter(columnDelimiter);
-			metadata.getField(idx).setSize((short)0);
-			setMysqlDateFormat(metadata.getField(idx));
-		}
-		if (properties.containsKey(LOAD_RECORD_DELIMITER_PARAM)) {
-			metadata.getField(metadata.getNumFields() - 1).setDelimiter((String) properties.get(LOAD_RECORD_DELIMITER_PARAM));
-		} else {
-			metadata.getField(metadata.getNumFields() - 1).setDelimiter(DEFAULT_RECORD_DELIMITER);
-		}
-		int lastIndex = metadata.getNumFields() - 1;
-		metadata.getField(lastIndex).setSize((short)0);
-		metadata.setRecordDelimiters("");
-		setMysqlDateFormat(metadata.getField(lastIndex));
-
-		return metadata;
-	}
-
-	/**
-	 * If field has format of date or time then default mysql format is set.
-	 * 
-	 * @param field
-	 */
-	private void setMysqlDateFormat(DataFieldMetadata field) {
+	@Override
+	protected void setLoadUtilityDateFormat(DataFieldMetadata field) {
 		if (field.getType() == DataFieldMetadata.DATE_FIELD || 
 				field.getType() == DataFieldMetadata.DATETIME_FIELD) {
 			boolean isDate = field.isDateFormat();
@@ -885,6 +849,14 @@ public class MysqlDataWriter extends BulkLoader {
 			} else {
 				field.setFormatStr(DEFAULT_TIME_FORMAT);
 			}
+		}
+	}
+	
+	private String getRecordDelimiter() {
+		if (properties.containsKey(LOAD_RECORD_DELIMITER_PARAM)) {
+			return (String) properties.get(LOAD_RECORD_DELIMITER_PARAM);
+		} else {
+			return DEFAULT_RECORD_DELIMITER;
 		}
 	}
 
