@@ -208,11 +208,7 @@ public class DynamicRecordBuffer {
 		int recordSize = record.remaining();
 
         if (writeDataBuffer.remaining() < recordSize + LEN_SIZE_SPECIFIER) {
-        	synchronized(this) {
-                if (writeDataBuffer.remaining() < recordSize + LEN_SIZE_SPECIFIER) {
-                    flushWriteBuffer();
-                }
-			}
+            flushWriteBuffer();
         }
 		try {
 			//writeDataBuffer.putInt(recordSize);
@@ -259,7 +255,7 @@ public class DynamicRecordBuffer {
      * @throws InterruptedException 
      * @since 27.11.2006
      */
-    public synchronized void setEOF() throws IOException, InterruptedException {
+    public void setEOF() throws IOException, InterruptedException {
         if(isClosed){
             throw new IOException("Buffer has been closed !");
         }
@@ -339,11 +335,7 @@ public class DynamicRecordBuffer {
 
         // test that we have enough data
         if (readDataBuffer.remaining() == 0) {
-        	synchronized(this) {
-                if (readDataBuffer.remaining() == 0) {
-                	secureReadBuffer();
-                }
-        	}
+			secureReadBuffer();
         }
         //int recordSize = readDataBuffer.getInt();
         int recordSize= decodeLength(readDataBuffer);
@@ -380,12 +372,9 @@ public class DynamicRecordBuffer {
 
         // test that we have enough data
         if (readDataBuffer.remaining() == 0) {
-        	synchronized(this) {
-                if (readDataBuffer.remaining() == 0) {
-                	secureReadBuffer();
-                }
-        	}
+			secureReadBuffer();
         }
+        
         //int recordSize = readDataBuffer.getInt();
         int recordSize= decodeLength(readDataBuffer);
         if (recordSize==EOF){
@@ -425,6 +414,7 @@ public class DynamicRecordBuffer {
      *  
 	 * @return     true if buffer is empty (contains no records) or false
 	 * @since 27.11.2006
+	 * @deprecated should not be used, threat of race condition
 	 */
 	public synchronized boolean isEmpty(){
 		return !(writeDataBuffer.hasRemaining() || readDataBuffer.hasRemaining() ||
@@ -438,9 +428,8 @@ public class DynamicRecordBuffer {
      * @return  true if data is ready to be read, otherwise false
      * @since 27.11.2006
      */
-    public synchronized boolean hasData(){
-        return readDataBuffer.hasRemaining() ||
-        fullFileBuffers.size()>0;
+    public synchronized boolean hasData() {
+        return readDataBuffer.hasRemaining() || fullFileBuffers.size() > 0;
     }
 
 
@@ -462,7 +451,7 @@ public class DynamicRecordBuffer {
      * @return number of records currently stored in buffer
      * @since 20.11.2006
      */
-    public synchronized int getBufferedRecords() {
+    public int getBufferedRecords() {
         return bufferedRecords.get();
     }
     
