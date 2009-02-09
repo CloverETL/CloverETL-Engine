@@ -782,12 +782,11 @@ public class MysqlDataWriter extends BulkLoader {
 					" attribute has to be specified and file at the URL must exists.");
 		}
 		
-		if (!isDataReadFromPort && StringUtils.isEmpty(dataURL)
-				&& (StringUtils.isEmpty(commandURL) || !(new File(commandURL).exists()))) {
+		if (!isDataReadFromPort && !fileExists(dataURL) && !fileExists(commandURL)) {
 			throw new ComponentNotReadyException(this, "Input port or " + 
 					StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + 
 					" attribute or " + StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) +
-					" attribute have to be specified.");
+					" attribute have to be specified and specified file must exist.");
 		}
 
 		if (ignoreRows != UNUSED_INT && ignoreRows < 0) {
