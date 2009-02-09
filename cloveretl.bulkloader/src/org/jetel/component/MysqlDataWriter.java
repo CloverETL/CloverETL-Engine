@@ -893,10 +893,6 @@ public class MysqlDataWriter extends BulkLoader {
         if(!isInitialized()) return;
 		super.free();
 		
-		if (formatter != null) {
-			formatter.close();
-		}
-		
 		deleteDataFile();
 		deleteCommandFile();
 		alreadyExecuted = false;
