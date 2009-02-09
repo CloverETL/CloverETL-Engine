@@ -303,29 +303,10 @@ public class OracleDataWriter extends BulkLoader {
     	if(!isInitialized()) return;
     	super.free();
 
-    	deleteControlFile();
+    	deleteFile(controlFileName, logger);
     	deleteDataFile();
     }
-    
-    /**
-     * Deletes temp file with loader script (CONTROL_FILE_NAME). 
-     */
-    private void deleteControlFile() {
-    	if (controlFileName == null) {
-        	return;
-        }
-    	
-        File controlFile = new File(controlFileName);
-        
-        if (controlFile == null) {
-        	return;
-        }
-        
-        if (!controlFile.delete()) {
-        	logger.warn("Control file was not deleted.");        	
-        }
-    }
-    
+
     /**
 	 * Deletes data file which was used for exchange data.
 	 */
@@ -340,7 +321,7 @@ public class OracleDataWriter extends BulkLoader {
 			}
     	}
     }
-    
+
     /**
      * Create command line for process, where sqlldr utility is running.
      * Example: c:\Oracle\Client\bin\sqlldr.exe control=loader.ctl userid=user/password@schema log=loader.log bad=loader.bad data=\"=\"
