@@ -94,6 +94,16 @@ public abstract class BulkLoader extends Node {
 		properties = parseParameters(parameters);
 	}
 
+	@Override
+	public synchronized void free() {
+		if(!isInitialized()) return;
+		super.free();
+		
+		if (formatter != null) {
+			formatter.close();
+		}
+	}
+	
 	/**
 	 * Create instance of Properties from String. 
 	 * Parse parameters from string "parameters" and fill properties by them.
