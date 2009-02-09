@@ -300,12 +300,9 @@ public class OracleDataWriter extends BulkLoader {
 	
     @Override
     public synchronized void free() {
+    	if(!isInitialized()) return;
     	super.free();
-    	
-    	if (formatter != null) {
-			formatter.close();
-		}
-    	
+
     	deleteControlFile();
     	deleteDataFile();
     }
