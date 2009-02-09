@@ -12,6 +12,7 @@ import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.ProcBox;
@@ -231,6 +232,46 @@ public abstract class BulkLoader extends Node {
 		}.start();
 		return box.join();
     }
+	
+	/**
+	 * Modify metadata so that they correspond to load utility input format.
+	 * Each field is delimited and it has the same delimiter.
+	 * Only last field can be delimited by another delimiter.
+	 * If this method is used then setLoadUtilityDateFormat(DataFieldMetadata)
+	 * method must be implemented.
+	 *
+	 * @param originalMetadata original metadata
+	 * @param colDel columnDelimiter
+	 * @param recDel recordDelimiter
+	 * @return modified metadata
+	 */
+	protected DataRecordMetadata createLoadUtilityMetadata(DataRecordMetadata originalMetadata, 
+			String colDel, String recDel) {
+		DataRecordMetadata metadata = originalMetadata.duplicate();
+		metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
+		
+		for (int idx = 0; idx < metadata.getNumFields() - 1; idx++) {
+			metadata.getField(idx).setDelimiter(colDel);
+			metadata.getField(idx).setSize((short)0);
+			setLoadUtilityDateFormat(metadata.getField(idx));
+		}
+		int lastIndex = metadata.getNumFields() - 1;
+		metadata.getField(lastIndex).setDelimiter(recDel);
+		metadata.getField(lastIndex).setSize((short)0);
+		metadata.setRecordDelimiters("");
+		setLoadUtilityDateFormat(metadata.getField(lastIndex));
+
+		return metadata;
+	}
+	
+	/**
+	 * If field has format of date or time then default load utility format is set.
+	 * This method must be implemented only if 
+	 * createLoadUtilityMetadata(DataRecordMetadata, String, String) is used. 
+	 * 
+	 * @param field
+	 */
+	protected abstract void setLoadUtilityDateFormat(DataFieldMetadata field);
 	
 	/**
 	 * Return true if fileURL exists.
