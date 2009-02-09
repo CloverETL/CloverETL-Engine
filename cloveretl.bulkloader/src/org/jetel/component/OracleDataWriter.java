@@ -688,7 +688,7 @@ public class OracleDataWriter extends BulkLoader {
                 oracleDataWriter.isDefinedUseFileForExchange = true;
             }
             if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-            	oracleDataWriter.setInDataFileName(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
+            	oracleDataWriter.setFileUrl(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
 			}
             if (xattribs.exists(XML_MAX_ERRORS_ATTRIBUTE)) {
             	oracleDataWriter.setMaxErrors(xattribs.getInteger(XML_MAX_ERRORS_ATTRIBUTE));
@@ -739,10 +739,6 @@ public class OracleDataWriter extends BulkLoader {
     private boolean getDefaultUsingFileForExchange() {
     	return ProcBox.isWindowsPlatform();
     }
-    
-    private void setInDataFileName(String inDataFileName) {
-		this.dataURL = inDataFileName;
-	}
     
     private void setMaxErrors(int maxErrors) {
 		this.maxErrors = maxErrors;

@@ -770,7 +770,7 @@ public class InformixDataWriter extends BulkLoader {
         		informixDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
         	}
         	if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-        		informixDataWriter.setInDataFileName(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
+        		informixDataWriter.setFileUrl(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
         	}
         	if (xattribs.exists(XML_HOST_ATTRIBUTE)) {
         		informixDataWriter.setHost(xattribs.getString(XML_HOST_ATTRIBUTE));
@@ -897,32 +897,12 @@ public class InformixDataWriter extends BulkLoader {
     	this.commitInterval = commitInterval;
 	}
     
-    private void setColumnDelimiter(String columnDelimiter) {
-    	this.columnDelimiter = columnDelimiter;
-	}
-    
-    private void setInDataFileName(String inDataFileName) {
-    	this.dataURL = inDataFileName;
-	}
-    
-    private void setTable(String table) {
-    	this.table = table;
-	}
-    
     private void setHost(String host) {
     	this.host = host;
 	}
     
     private void setUseLoadUtility(boolean useLoadUtility) {
 		this.useLoadUtility = useLoadUtility;
-	}
-
-	private void setUser(String user) {
-		this.user = user;
-	}
-
-	private void setPassword(String password) {
-		this.password = password;
 	}
 
 	private void setIgnoreUniqueKeyViolation(boolean ignoreUniqueKeyViolation) {
