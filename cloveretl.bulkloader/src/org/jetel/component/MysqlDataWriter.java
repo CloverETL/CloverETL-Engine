@@ -26,10 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -955,19 +953,10 @@ public class MysqlDataWriter extends BulkLoader {
 		if (!StringUtils.isEmpty(parameters)) {
 			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, parameters);
 		} else if (!properties.isEmpty()) {
-			StringBuilder props = new StringBuilder();
-			for (Iterator iter = properties.entrySet().iterator(); iter.hasNext();) {
-				Entry<String, String> element = (Entry<String, String>) iter.next();
-				props.append(element.getKey());
-				props.append('=');
-				props.append(StringUtils.isQuoted(element.getValue()) ? element.getValue() : StringUtils
-						.quote(element.getValue()));
-				props.append(';');
-			}
-			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, props.toString());
+			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, getPropertiesAsString());
 		}
 	}
-
+	
 	/** Description of the Method */
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
