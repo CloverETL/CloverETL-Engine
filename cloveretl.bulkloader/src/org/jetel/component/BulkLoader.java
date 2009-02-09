@@ -38,6 +38,7 @@ public abstract class BulkLoader extends Node {
 	protected final static String XML_PARAMETERS_ATTRIBUTE = "parameters";
 	
 	protected final static String EQUAL_CHAR = "=";
+	protected final static int UNUSED_INT = -1;
 	
 	protected final static int READ_FROM_PORT = 0;
     protected final static int WRITE_TO_PORT = 0;	//port for write bad record

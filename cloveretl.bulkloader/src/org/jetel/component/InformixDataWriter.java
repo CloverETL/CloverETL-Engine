@@ -61,7 +61,6 @@ import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.PortDataConsumer;
 import org.jetel.util.exec.ProcBox;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -214,7 +213,6 @@ public class InformixDataWriter extends BulkLoader {
     private final static String CONTROL_FILE_NAME_SUFFIX = ".ctl";
     private final static String DEFAULT_ERROR_FILE = "error.log";
     private final static File TMP_DIR = new File(".");
-    private final static int UNUSED_INT = -1;
     private final static String DEFAULT_COLUMN_DELIMITER = "|";
     private final static String LINE_SEPARATOR = System.getProperty("line.separator");
     private final static String UNIX_STDIN = "/dev/stdin";

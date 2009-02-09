@@ -184,7 +184,6 @@ public class OracleDataWriter extends BulkLoader {
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
     private final static String CONTROL_FILE_NAME_SUFFIX = ".ctl";
     private final static File TMP_DIR = new File(".");
-    private final static int UNUSED_INT = -1;
     
     private final static int EXEC_SQLLDR_SUCC = 0;
     private final static int EXEC_SQLLDR_WARN = 2;
