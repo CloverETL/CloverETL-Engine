@@ -55,7 +55,6 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -436,7 +435,6 @@ public class MysqlDataWriter extends BulkLoader {
 	private final static String MYSQL_FILE_NAME_PREFIX = "mysql";
 	private final static String COMMAND_FILE_NAME_SUFFIX = ".ctl";
 	private final static File TMP_DIR = new File(".");
-	private final static int UNUSED_INT = -1;
 	private final static String DEFAULT_COLUMN_DELIMITER = "\t";
 	private final static String DEFAULT_RECORD_DELIMITER = "\n";
 	private final static String CHARSET_NAME = "UTF-8";
