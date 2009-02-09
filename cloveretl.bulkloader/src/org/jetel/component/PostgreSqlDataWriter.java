@@ -598,22 +598,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	public synchronized void free() {
 		if(!isInitialized()) return;
 		super.free();
-		deleteCommandFile();
-	}
-
-	/**
-	 * If command file isn't temporary then it is deleted.
-	 */
-	private void deleteCommandFile() {
-		if (commandFile == null) {
-			return;
-		}
-
-		if (commandURL == null) {
-			if (!commandFile.delete()) {
-				logger.warn("Temp command data file was not deleted.");
-			}
-		}
+		deleteTempFile(commandFile, commandURL, logger);
 	}
 
 	/**
