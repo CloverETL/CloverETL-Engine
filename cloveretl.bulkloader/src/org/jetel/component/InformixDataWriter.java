@@ -212,6 +212,7 @@ public class InformixDataWriter extends BulkLoader {
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
     private final static String DEFAULT_ERROR_FILE = "error.log";
     private final static String DEFAULT_COLUMN_DELIMITER = "|";
+    private final static String DEFAULT_RECORD_DELIMITER = "\n";
     private final static String LINE_SEPARATOR = System.getProperty("line.separator");
     private final static String UNIX_STDIN = "/dev/stdin";
     private final static String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
@@ -439,9 +440,7 @@ public class InformixDataWriter extends BulkLoader {
 		commandLine = createCommandLineForDbLoader();
 		
         if (isDataReadFromPort) {
-	        InputPort inPort = getInputPort(READ_FROM_PORT);
-	
-	        dbMetadata = createInformixMetadata(inPort.getMetadata());
+	        dbMetadata = createLoadUtilityMetadata(getColumnDelimiter(), DEFAULT_RECORD_DELIMITER);
 	        
 	        // init of data formatter
 	        formatter = new DelimitedDataFormatter(CHARSET_NAME);
@@ -466,43 +465,9 @@ public class InformixDataWriter extends BulkLoader {
         	throw new ComponentNotReadyException(this, "Error during initialization of InformixPortDataConsumer.", cnre);
         }
     }
-    
-    /**
-     * Modify metadata so that they correspond to dbload or load input format. 
-     * Each field is delimited and it has the same delimiter.
-     * Only last field is delimited by '\n'.
-     *
-     * @param oldMetadata original metadata
-     * @return modified metadata
-     */
-    private DataRecordMetadata createInformixMetadata(DataRecordMetadata originalMetadata) {
-    	DataRecordMetadata metadata = originalMetadata.duplicate();
-		metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
-		
-		String colDel = columnDelimiter;
-		if (useLoadUtility) {
-			colDel = DEFAULT_COLUMN_DELIMITER;
-		}
-		
-		for (int idx = 0; idx < metadata.getNumFields() - 1; idx++) {
-			metadata.getField(idx).setDelimiter(colDel);
-			metadata.getField(idx).setSize((short)0);
-			setInformixDateFormat(metadata.getField(idx));
-		}
-		int lastIndex = metadata.getNumFields() - 1;
-		metadata.getField(lastIndex).setDelimiter("\n");
-		metadata.getField(lastIndex).setSize((short)0);
-		metadata.setRecordDelimiters("");
-		setInformixDateFormat(metadata.getField(lastIndex));
-		
-		return metadata;
-    }
 
-    /**
-     * If field has format of date or time then default informix format is set.
-     * @param field 
-     */
-    private void setInformixDateFormat(DataFieldMetadata field) {
+    @Override
+	protected void setLoadUtilityDateFormat(DataFieldMetadata field) {
 		if (field.getType() == DataFieldMetadata.DATE_FIELD ||
 				field.getType() == DataFieldMetadata.DATETIME_FIELD) {
 			boolean isDate = field.isDateFormat();
@@ -518,6 +483,14 @@ public class InformixDataWriter extends BulkLoader {
 			}
 		}
 	}
+    
+    private String getColumnDelimiter() {
+		if (useLoadUtility) {
+			return DEFAULT_COLUMN_DELIMITER;
+		}
+		
+		return columnDelimiter;
+    }
     
     /**
 	 * Checks if mandatory attributes are defined.
