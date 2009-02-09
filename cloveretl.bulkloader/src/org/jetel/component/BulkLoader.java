@@ -273,6 +273,37 @@ public abstract class BulkLoader extends Node {
 	 */
 	protected abstract void setLoadUtilityDateFormat(DataFieldMetadata field);
 	
+	/** 
+	 * Helper method for implementation of setLoadUtilityDateFormat method.
+	 * If yearFm is null then year format is not supported. 
+	 * 
+	 * @param field
+	 * @param timeFm time format
+	 * @param dateFm date format
+	 * @param datetimeFm datetime format
+	 * @param yearFm year format
+	 */
+	protected static void setLoadUtilityDateFormat(DataFieldMetadata field, String timeFm, 
+			String dateFm, String datetimeFm, String yearFm) {
+		if (field.getType() == DataFieldMetadata.DATE_FIELD || 
+				field.getType() == DataFieldMetadata.DATETIME_FIELD) {
+			boolean isDate = field.isDateFormat();
+			boolean isTime = field.isTimeFormat();
+			boolean isOnlyYearFormat = isDate && field.getFormatStr().matches("(y|Y)*");
+
+			// if formatStr is undefined then DEFAULT_DATETIME_FORMAT is assigned
+			if (isOnlyYearFormat && yearFm != null) {
+				field.setFormatStr(yearFm);
+			} else if ((isDate && isTime) || (StringUtils.isEmpty(field.getFormatStr()))) {
+				field.setFormatStr(datetimeFm);
+			} else if (isDate) {
+				field.setFormatStr(dateFm);
+			} else {
+				field.setFormatStr(timeFm);
+			}
+		}
+	}
+	
 	/**
 	 * Return true if fileURL exists.
 	 * @param fileURL
