@@ -440,16 +440,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 				dataFile.delete();
 			}
 		} else {
-			try {
-				if (!fileExists(dataURL)) {
-					free();
-					throw new ComponentNotReadyException(this, 
-							"Data file " + StringUtils.quote(dataURL) + " not exists.");
-				}
-			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, e);
-			}
-			dataFile = new File(dataURL);
+			dataFile = openFile(dataURL);
 		}
 		
 		commandLine = createCommandLineForDbLoader();
