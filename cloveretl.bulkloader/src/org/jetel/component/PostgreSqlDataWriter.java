@@ -142,7 +142,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 
 	// variables for psql client
 	private String commandURL;
-	private String host;
 
 	// variables for copy statement
 	private File commandFile;
@@ -748,14 +747,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 
 	public String getType() {
 		return COMPONENT_TYPE;
-	}
-
-	private void setHost(String host) {
-		this.host = host;
-	}
-
-	private void setParameters(String parameters) {
-		this.parameters = parameters;
 	}
 
 	public void setCommandURL(String commandURL) {
