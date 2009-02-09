@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
@@ -272,6 +273,40 @@ public abstract class BulkLoader extends Node {
 		return new File(fileURL);
     }
 
+	/**
+	 * Delete file if the file is temporary.
+	 * File is temporary when fileURL parameter is defined. 
+	 * 
+	 * @param commandFile
+	 * @param commandURL
+	 * @param logger
+	 */
+	protected static void deleteTempFile(File file, String fileURL, Log logger) {
+		if (file == null) {
+			return;
+		}
+
+		if (StringUtils.isEmpty(fileURL) && !file.delete()) {
+			logger.warn("Temp command data file was not deleted.");
+		}
+	}
+	
+	/**
+	 * Delete file and report to log when it isn't possible.
+	 * @param fileName
+	 * @param logger
+	 */
+	protected static void deleteFile(String fileName, Log logger) {
+    	if (StringUtils.isEmpty(fileName)) {
+    		return;
+    	}
+    	
+    	File file = new File(fileName);
+    	if (!file.delete()) {
+        	logger.warn("Temp file " + StringUtils.quote(fileName) + " was not deleted.");        	
+        }
+    }
+	
 	protected void setUser(String user) {
 		this.user = user;
 	}
