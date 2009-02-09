@@ -833,23 +833,8 @@ public class MysqlDataWriter extends BulkLoader {
 
 	@Override
 	protected void setLoadUtilityDateFormat(DataFieldMetadata field) {
-		if (field.getType() == DataFieldMetadata.DATE_FIELD || 
-				field.getType() == DataFieldMetadata.DATETIME_FIELD) {
-			boolean isDate = field.isDateFormat();
-			boolean isTime = field.isTimeFormat();
-			boolean isOnlyYearFormat = isDate && field.getFormatStr().matches("(y|Y)*");
-
-			// if formatStr is undefined then DEFAULT_DATETIME_FORMAT is assigned
-			if (isOnlyYearFormat) {
-				field.setFormatStr(DEFAULT_YEAR_FORMAT);
-			} else if ((isDate && isTime) || (StringUtils.isEmpty(field.getFormatStr()))) {
-				field.setFormatStr(DEFAULT_DATETIME_FORMAT);
-			} else if (isDate) {
-				field.setFormatStr(DEFAULT_DATE_FORMAT);
-			} else {
-				field.setFormatStr(DEFAULT_TIME_FORMAT);
-			}
-		}
+		setLoadUtilityDateFormat(field, DEFAULT_TIME_FORMAT, DEFAULT_DATE_FORMAT, 
+				DEFAULT_DATETIME_FORMAT, DEFAULT_YEAR_FORMAT);
 	}
 	
 	private String getRecordDelimiter() {
