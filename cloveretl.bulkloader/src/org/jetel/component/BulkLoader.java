@@ -85,6 +85,7 @@ public abstract class BulkLoader extends Node {
 
 	@Override
 	public void init() throws ComponentNotReadyException {
+		if (isInitialized()) return;
 		super.init();
 		
 		isDataReadFromPort = !getInPorts().isEmpty();
@@ -264,7 +265,7 @@ public abstract class BulkLoader extends Node {
 		}
 		return new File(fileURL);
     }
-	
+
 	protected void setUser(String user) {
 		this.user = user;
 	}
