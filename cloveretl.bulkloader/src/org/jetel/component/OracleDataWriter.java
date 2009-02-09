@@ -711,7 +711,12 @@ public class OracleDataWriter extends BulkLoader {
         this.append = append;
     }
     
-    /**
+    @Override
+	protected void setLoadUtilityDateFormat(DataFieldMetadata field) {
+    	throw new UnsupportedOperationException("Not use in this class.");
+	}
+
+	/**
      * All type of dealing with empty vs. nonempty tables.
      * 
      * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
