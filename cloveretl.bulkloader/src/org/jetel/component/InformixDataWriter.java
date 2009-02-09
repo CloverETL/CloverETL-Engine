@@ -468,20 +468,8 @@ public class InformixDataWriter extends BulkLoader {
 
     @Override
 	protected void setLoadUtilityDateFormat(DataFieldMetadata field) {
-		if (field.getType() == DataFieldMetadata.DATE_FIELD ||
-				field.getType() == DataFieldMetadata.DATETIME_FIELD) {
-			boolean isDate = field.isDateFormat();
-			boolean isTime = field.isTimeFormat();
-
-			// if formatStr is undefined then DEFAULT_DATETIME_FORMAT is assigned
-			if ((isDate && isTime) || (StringUtils.isEmpty(field.getFormatStr()))) {
-				field.setFormatStr(DEFAULT_DATETIME_FORMAT);
-			}else if (isDate) {
-				field.setFormatStr(DEFAULT_DATE_FORMAT);
-			}else{
-				field.setFormatStr(DEFAULT_TIME_FORMAT);
-			}
-		}
+    	setLoadUtilityDateFormat(field, DEFAULT_TIME_FORMAT, 
+				DEFAULT_DATE_FORMAT, DEFAULT_DATETIME_FORMAT, null);
 	}
     
     private String getColumnDelimiter() {
