@@ -20,6 +20,7 @@ import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
+import org.w3c.dom.Element;
 
 /**
  * It is a base class for all kinds of bulkloaders.
@@ -382,7 +383,7 @@ public abstract class BulkLoader extends Node {
     }
 	
 	@SuppressWarnings("unchecked")
-	protected String getPropertiesAsString() {
+	private String getPropertiesAsString() {
 		StringBuilder props = new StringBuilder();
 		for (Iterator iter = properties.entrySet().iterator(); iter.hasNext();) {
 			Entry<String, String> element = (Entry<String, String>) iter.next();
@@ -421,5 +422,31 @@ public abstract class BulkLoader extends Node {
 	
 	protected void setHost(String host) {
 		this.host = host;
+	}
+	
+	@Override
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		
+		if (!StringUtils.isEmpty(database)) {
+			xmlElement.setAttribute(XML_DATABASE_ATTRIBUTE, database);
+		}
+		if (!StringUtils.isEmpty(table)) {
+			xmlElement.setAttribute(XML_TABLE_ATTRIBUTE, table);
+		}
+		if (!StringUtils.isEmpty(user)) {
+			xmlElement.setAttribute(XML_USER_ATTRIBUTE, user);
+		}
+		if (!StringUtils.isEmpty(password)) {
+			xmlElement.setAttribute(XML_PASSWORD_ATTRIBUTE, password);
+		}
+		if (!StringUtils.isEmpty(dataURL)) {
+			xmlElement.setAttribute(XML_FILE_URL_ATTRIBUTE, dataURL);
+		}
+		if (!StringUtils.isEmpty(parameters)) {
+			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, parameters);
+		} else if (!properties.isEmpty()) {
+			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, getPropertiesAsString());
+		}
 	}
 }

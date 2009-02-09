@@ -1095,34 +1095,18 @@ public class MsSqlDataWriter extends BulkLoader {
 		super.toXML(xmlElement);
 
 		xmlElement.setAttribute(XML_BCP_UTILITY_PATH_ATTRIBUTE, loadUtilityPath);
-		xmlElement.setAttribute(XML_DATABASE_ATTRIBUTE, database);
-		xmlElement.setAttribute(XML_FILE_URL_ATTRIBUTE, dataURL);
 
-		if (!StringUtils.isEmpty(table)) {
-			xmlElement.setAttribute(XML_TABLE_ATTRIBUTE, table);
-		}
 		if (!StringUtils.isEmpty(owner)) {
 			xmlElement.setAttribute(XML_OWNER_ATTRIBUTE, owner);
 		}
 		if (!StringUtils.isEmpty(view)) {
 			xmlElement.setAttribute(XML_VIEW_ATTRIBUTE, view);
 		}
-		if (!StringUtils.isEmpty(user)) {
-			xmlElement.setAttribute(XML_USER_ATTRIBUTE, user);
-		}
-		if (!StringUtils.isEmpty(password)) {
-			xmlElement.setAttribute(XML_PASSWORD_ATTRIBUTE, password);
-		}
 		if (!DEFAULT_COLUMN_DELIMITER.equals(columnDelimiter)) {
 			xmlElement.setAttribute(XML_COLUMN_DELIMITER_ATTRIBUTE, columnDelimiter);
 		}
 		if (!StringUtils.isEmpty(serverName)) {
 			xmlElement.setAttribute(XML_SERVER_NAME_ATTRIBUTE, serverName);
-		}
-		if (!StringUtils.isEmpty(parameters)) {
-			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, parameters);
-		} else if (!properties.isEmpty()) {
-			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, getPropertiesAsString());
 		}
 	}
 

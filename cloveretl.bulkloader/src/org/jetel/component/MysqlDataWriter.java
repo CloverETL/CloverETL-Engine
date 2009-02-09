@@ -926,34 +926,18 @@ public class MysqlDataWriter extends BulkLoader {
 		super.toXML(xmlElement);
 
 		xmlElement.setAttribute(XML_MYSQL_PATH_ATTRIBUTE, loadUtilityPath);
-		xmlElement.setAttribute(XML_DATABASE_ATTRIBUTE, database);
-		xmlElement.setAttribute(XML_TABLE_ATTRIBUTE, table);
 
-		if (!StringUtils.isEmpty(dataURL)) {
-			xmlElement.setAttribute(XML_FILE_URL_ATTRIBUTE, dataURL);
-		}
 		if (!DEFAULT_COLUMN_DELIMITER.equals(columnDelimiter)) {
 			xmlElement.setAttribute(XML_COLUMN_DELIMITER_ATTRIBUTE, columnDelimiter);
 		}
 		if (!StringUtils.isEmpty(host)) {
 			xmlElement.setAttribute(XML_HOST_ATTRIBUTE, host);
 		}
-		if (!StringUtils.isEmpty(user)) {
-			xmlElement.setAttribute(XML_USER_ATTRIBUTE, user);
-		}
-		if (!StringUtils.isEmpty(password)) {
-			xmlElement.setAttribute(XML_PASSWORD_ATTRIBUTE, password);
-		}
 		if (!StringUtils.isEmpty(commandURL)) {
 			xmlElement.setAttribute(XML_COMMAND_URL_ATTRIBUTE, commandURL);
 		}
 		if (ignoreRows != UNUSED_INT) {
 			xmlElement.setAttribute(XML_IGNORE_ROWS_ATTRIBUTE, String.valueOf(ignoreRows));
-		}
-		if (!StringUtils.isEmpty(parameters)) {
-			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, parameters);
-		} else if (!properties.isEmpty()) {
-			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, getPropertiesAsString());
 		}
 	}
 	
