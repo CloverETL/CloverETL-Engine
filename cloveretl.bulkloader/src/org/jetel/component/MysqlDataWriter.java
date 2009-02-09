@@ -894,7 +894,7 @@ public class MysqlDataWriter extends BulkLoader {
 		super.free();
 		
 		deleteDataFile();
-		deleteCommandFile();
+		deleteTempFile(commandFile, commandURL, logger);
 		alreadyExecuted = false;
 	}
 
@@ -914,18 +914,6 @@ public class MysqlDataWriter extends BulkLoader {
 			logger.warn("Temp data file was not deleted.");
 		}
     }
-
-	private void deleteCommandFile() {
-		if (commandFile == null) {
-			return;
-		}
-
-		if (commandURL == null) {
-			if (!commandFile.delete()) {
-				logger.warn("Temp command data file was not deleted.");
-			}
-		}
-	}
 
 	/**
 	 * Description of the Method
