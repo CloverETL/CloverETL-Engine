@@ -1018,7 +1018,7 @@ public class MysqlDataWriter extends BulkLoader {
 					xattribs.getString(XML_TABLE_ATTRIBUTE));
 
 			if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-				mysqlDataWriter.setInDataFileName(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
+				mysqlDataWriter.setFileUrl(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
 				mysqlDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
@@ -1125,24 +1125,8 @@ public class MysqlDataWriter extends BulkLoader {
 		return COMPONENT_TYPE;
 	}
 
-	private void setColumnDelimiter(String columnDelimiter) {
-		this.columnDelimiter = columnDelimiter;
-	}
-
-	private void setInDataFileName(String inDataFileName) {
-		this.dataURL = inDataFileName;
-	}
-
 	private void setHost(String host) {
 		this.host = host;
-	}
-
-	private void setUser(String user) {
-		this.user = user;
-	}
-
-	private void setPassword(String password) {
-		this.password = password;
 	}
 
 	private void setIgnoreRows(int ignoreRows) {

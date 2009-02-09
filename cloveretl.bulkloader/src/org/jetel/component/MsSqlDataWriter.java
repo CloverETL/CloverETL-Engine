@@ -1223,10 +1223,6 @@ public class MsSqlDataWriter extends BulkLoader {
 		return COMPONENT_TYPE;
 	}
 
-	private void setTable(String table) {
-		this.table = table;
-	}
-
 	private void setOwner(String owner) {
 		this.owner = owner;
 	}
@@ -1239,22 +1235,6 @@ public class MsSqlDataWriter extends BulkLoader {
 		this.parameters = parameters;
 	}
 
-	private void setFileUrl(String dataURL) {
-		this.dataURL = dataURL;
-	}
-
-	private void setUser(String user) {
-		this.user = user;
-	}
-
-	private void setPassword(String password) {
-		this.password = password;
-	}
-	
-	private void setColumnDelimiter(String columnDelimiter) {
-		this.columnDelimiter = columnDelimiter;
-	}
-	
 	private void setServerName(String serverName) {
 		this.serverName = serverName;
 	}

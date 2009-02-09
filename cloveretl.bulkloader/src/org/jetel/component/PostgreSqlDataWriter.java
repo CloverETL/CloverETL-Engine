@@ -47,7 +47,6 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -662,7 +661,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 				postgreSQLDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-				postgreSQLDataWriter.setInDataFileName(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
+				postgreSQLDataWriter.setFileUrl(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
 				postgreSQLDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
@@ -751,24 +750,8 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		return COMPONENT_TYPE;
 	}
 
-	private void setColumnDelimiter(String columnDelimiter) {
-		this.columnDelimiter = columnDelimiter;
-	}
-
-	private void setInDataFileName(String inDataFileName) {
-		this.dataURL = inDataFileName;
-	}
-
 	private void setHost(String host) {
 		this.host = host;
-	}
-
-	private void setUser(String user) {
-		this.user = user;
-	}
-
-	private void setTable(String table) {
-		this.table = table;
 	}
 
 	private void setParameters(String parameters) {

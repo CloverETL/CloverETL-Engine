@@ -193,4 +193,24 @@ public abstract class BulkLoader extends Node {
 			throw new ComponentNotReadyException(this, e);
 		}
 	}
+	
+	protected void setUser(String user) {
+		this.user = user;
+	}
+
+	protected void setPassword(String password) {
+		this.password = password;
+	}
+	
+	protected void setColumnDelimiter(String columnDelimiter) {
+		this.columnDelimiter = columnDelimiter;
+	}
+	
+	protected void setFileUrl(String dataURL) {
+		this.dataURL = dataURL;
+	}
+	
+	protected void setTable(String table) {
+		this.table = table;
+	}
 }
