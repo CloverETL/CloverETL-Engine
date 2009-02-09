@@ -44,7 +44,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -447,9 +446,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		printCommandLineToLog(commandLine);
 
 		if (isDataReadFromPort) {
-			InputPort inPort = getInputPort(READ_FROM_PORT);
-
-			dbMetadata = createPsqlMetadata(inPort.getMetadata());
+			dbMetadata = createLoadUtilityMetadata(columnDelimiter, DEFAULT_RECORD_DELIMITER);
 
 			// init of data formatter
 			formatter = new DelimitedDataFormatter(CHARSET_NAME);
@@ -547,37 +544,8 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		}
 	}
 	
-	/**
-	 * Modify metadata so that they correspond to psql input format. 
-	 * Each field is delimited and it has the same delimiter.
-	 * Only last field has different delimiter.
-	 * 
-	 * @param oldMetadata original metadata
-	 * @return modified metadata
-	 */
-	private DataRecordMetadata createPsqlMetadata(DataRecordMetadata originalMetadata) {
-		DataRecordMetadata metadata = originalMetadata.duplicate();
-		metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
-		for (int idx = 0; idx < metadata.getNumFields() - 1; idx++) {
-			metadata.getField(idx).setDelimiter(columnDelimiter);
-			metadata.getField(idx).setSize((short)0);
-			setPsqlDateFormat(metadata.getField(idx));
-		}
-		int lastIndex = metadata.getNumFields() - 1;
-		metadata.getField(lastIndex).setDelimiter(DEFAULT_RECORD_DELIMITER);
-		metadata.getField(lastIndex).setSize((short)0);
-		metadata.setRecordDelimiters("");
-		setPsqlDateFormat(metadata.getField(lastIndex));
-
-		return metadata;
-	}
-	
-	/**
-	 * If field has format of date or time then default psql format is set.
-	 * 
-	 * @param field
-	 */
-	private void setPsqlDateFormat(DataFieldMetadata field) {
+	@Override
+	protected void setLoadUtilityDateFormat(DataFieldMetadata field) {
 		if (field.getType() == DataFieldMetadata.DATE_FIELD || 
 				field.getType() == DataFieldMetadata.DATETIME_FIELD) {
 			boolean isDate = field.isDateFormat();
