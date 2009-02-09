@@ -613,7 +613,7 @@ public class InformixDataWriter extends BulkLoader {
 	public synchronized void free() {
         if(!isInitialized()) return;
 		super.free();
-		deleteCommandFile();
+		deleteFile(commandFileName, logger);
 		deleteDataFile();
 	}
 
@@ -706,18 +706,6 @@ public class InformixDataWriter extends BulkLoader {
         return "FILE " + StringUtils.quote(fileName) + " DELIMITER '" + delimiter + "' " +
         	numFields + ";" + LINE_SEPARATOR +
         	"INSERT INTO " + tableName + ";";
-    }
-   
-    /**
-     * Deletes temp file with loader script. 
-     */
-    private void deleteCommandFile() {
-    	if (StringUtils.isEmpty(commandFileName)) {
-    		return;
-    	}
-    	
-    	File controlFile = new File(commandFileName);
-        controlFile.delete();
     }
     
     /**
