@@ -753,11 +753,7 @@ public class InformixDataWriter extends BulkLoader {
 		super.toXML(xmlElement);
 		
 		xmlElement.setAttribute(XML_DB_LOADER_PATH_ATTRIBUTE, loadUtilityPath);
-		xmlElement.setAttribute(XML_DATABASE_ATTRIBUTE, database);
 
-		if (!StringUtils.isEmpty(table)) {
-			xmlElement.setAttribute(XML_TABLE_ATTRIBUTE, table);
-		}
 		if (!StringUtils.isEmpty(command)) {
 			xmlElement.setAttribute(XML_COMMIT_INTERVAL_ATTRIBUTE, command);
 		}
@@ -776,20 +772,11 @@ public class InformixDataWriter extends BulkLoader {
 		if (!DEFAULT_COLUMN_DELIMITER.equals(columnDelimiter)) {
 			xmlElement.setAttribute(XML_COLUMN_DELIMITER_ATTRIBUTE, columnDelimiter);
 		}
-		if (!StringUtils.isEmpty(dataURL)) {
-			xmlElement.setAttribute(XML_FILE_URL_ATTRIBUTE, dataURL);
-		}
 		if (!StringUtils.isEmpty(host)) {
 			xmlElement.setAttribute(XML_HOST_ATTRIBUTE, host);
 		}
 		if (useLoadUtility != DEFAULT_USE_LOAD_UTILITY) {
 			xmlElement.setAttribute(XML_USE_LOAD_UTILITY_ATTRIBUTE, String.valueOf(useLoadUtility));
-		}
-		if (!StringUtils.isEmpty(user)) {
-			xmlElement.setAttribute(XML_USER_ATTRIBUTE, user);
-		}
-		if (!StringUtils.isEmpty(password)) {
-			xmlElement.setAttribute(XML_PASSWORD_ATTRIBUTE, password);
 		}
 		if (ignoreUniqueKeyViolation != DEFAULT_IGNORE_UNIQUE_KEY_VIOLATION) {
 			xmlElement.setAttribute(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE, String.valueOf(ignoreUniqueKeyViolation));

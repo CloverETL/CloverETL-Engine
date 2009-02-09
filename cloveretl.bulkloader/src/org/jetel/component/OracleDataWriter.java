@@ -573,8 +573,9 @@ public class OracleDataWriter extends BulkLoader {
      * @since     May 21, 2002
      */
     public void toXML(Element xmlElement) {
-        //TODO
         super.toXML(xmlElement);
+      
+        //TODO
     }
 
 
