@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Iterator;
 import java.util.Properties;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.jetel.data.DataRecord;
@@ -378,6 +380,20 @@ public abstract class BulkLoader extends Node {
         	logger.warn("Temp file " + StringUtils.quote(fileName) + " was not deleted.");        	
         }
     }
+	
+	@SuppressWarnings("unchecked")
+	protected String getPropertiesAsString() {
+		StringBuilder props = new StringBuilder();
+		for (Iterator iter = properties.entrySet().iterator(); iter.hasNext();) {
+			Entry<String, String> element = (Entry<String, String>) iter.next();
+			props.append(element.getKey());
+			props.append('=');
+			props.append(StringUtils.isQuoted(element.getValue()) ? element.getValue() : StringUtils
+					.quote(element.getValue()));
+			props.append(';');
+		}
+		return props.toString();
+	}
 	
 	protected void setUser(String user) {
 		this.user = user;
