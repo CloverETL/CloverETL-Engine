@@ -851,7 +851,7 @@ public class MsSqlDataWriter extends BulkLoader {
 					throw new ComponentNotReadyException(this, "There is neither input port nor "
 							+ StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute specified.");
 				}
-				dataFile = new File(dataURL);
+				dataFile = openFile(dataURL);
 			}
 
 			if (isErrFileFromUser) {
@@ -863,7 +863,7 @@ public class MsSqlDataWriter extends BulkLoader {
 
 		} catch (IOException e) {
 			free();
-			throw new ComponentNotReadyException(this, "Some of the temp files cannot be created.");
+			throw new ComponentNotReadyException(this, "Some of the temp files can't be created.");
 		}
 
 		commandLine = createCommandLineForDbLoader();
