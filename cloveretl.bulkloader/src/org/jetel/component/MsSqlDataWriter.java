@@ -1231,10 +1231,6 @@ public class MsSqlDataWriter extends BulkLoader {
 		this.view = view;
 	}
 
-	private void setParameters(String parameters) {
-		this.parameters = parameters;
-	}
-
 	private void setServerName(String serverName) {
 		this.serverName = serverName;
 	}

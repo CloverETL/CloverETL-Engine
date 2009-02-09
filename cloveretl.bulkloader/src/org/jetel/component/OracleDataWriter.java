@@ -756,10 +756,6 @@ public class OracleDataWriter extends BulkLoader {
 		this.commitInterval = commitInterval;
 	}
     
-    private void setParameters(String parameters) {
-		this.parameters = parameters;
-	}
-    
     /**  Description of the Method */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {

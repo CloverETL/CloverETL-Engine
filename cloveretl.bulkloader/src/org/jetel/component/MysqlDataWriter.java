@@ -444,7 +444,6 @@ public class MysqlDataWriter extends BulkLoader {
 	private final static String DEFAULT_YEAR_FORMAT = "yyyy";
 
 	// variables for dbload's command
-	private String host;
 	private int ignoreRows = UNUSED_INT;
 	private String commandURL;
 	private File commandFile;
@@ -1125,16 +1124,8 @@ public class MysqlDataWriter extends BulkLoader {
 		return COMPONENT_TYPE;
 	}
 
-	private void setHost(String host) {
-		this.host = host;
-	}
-
 	private void setIgnoreRows(int ignoreRows) {
 		this.ignoreRows = ignoreRows;
-	}
-
-	private void setParameters(String parameters) {
-		this.parameters = parameters;
 	}
 
 	public void setCommandURL(String commandURL) {

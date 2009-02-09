@@ -226,7 +226,6 @@ public class InformixDataWriter extends BulkLoader {
     
     // variables for dbload's command
     private String command; //contains user-defined control script fot dbload utility
-    private String host;
     private String errorLog;
     private int maxErrors = UNUSED_INT;
     private int ignoreRows = UNUSED_INT;
@@ -895,10 +894,6 @@ public class InformixDataWriter extends BulkLoader {
     
     private void setCommitInterval(int commitInterval) {
     	this.commitInterval = commitInterval;
-	}
-    
-    private void setHost(String host) {
-    	this.host = host;
 	}
     
     private void setUseLoadUtility(boolean useLoadUtility) {

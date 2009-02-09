@@ -51,10 +51,10 @@ public abstract class BulkLoader extends Node {
 	protected String password = null;
 	protected String columnDelimiter = null;
 	protected String database = null;
-	
+	protected String host = null;
 	protected String parameters = null;
-	protected Properties properties = null;
 	
+	protected Properties properties = null;
 	protected DataRecordMetadata dbMetadata; // it correspond to load utility input format
 	protected DataConsumer consumer = null; // consume data from out stream of load utility
 	protected DataConsumer errConsumer = null; // consume data from err stream of utility - write them to by logger
@@ -212,5 +212,13 @@ public abstract class BulkLoader extends Node {
 	
 	protected void setTable(String table) {
 		this.table = table;
+	}
+	
+	protected void setParameters(String parameters) {
+		this.parameters = parameters;
+	}
+	
+	protected void setHost(String host) {
+		this.host = host;
 	}
 }
