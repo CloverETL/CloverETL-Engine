@@ -1,6 +1,7 @@
 package org.jetel.component;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
@@ -39,6 +40,9 @@ public abstract class BulkLoader extends Node {
 	
 	protected final static String EQUAL_CHAR = "=";
 	protected final static int UNUSED_INT = -1;
+	protected final static File TMP_DIR = new File(".");
+	protected final static String CONTROL_FILE_NAME_SUFFIX = ".ctl";
+	protected final static String CHARSET_NAME = "UTF-8";
 	
 	protected final static int READ_FROM_PORT = 0;
     protected final static int WRITE_TO_PORT = 0;	//port for write bad record
@@ -54,6 +58,7 @@ public abstract class BulkLoader extends Node {
 	protected String host = null;
 	protected String parameters = null;
 	
+	protected File dataFile = null; // file that is used for exchange data between clover and load utility - file from dataURL
 	protected Properties properties = null;
 	protected DataRecordMetadata dbMetadata; // it correspond to load utility input format
 	protected DataConsumer consumer = null; // consume data from out stream of load utility
@@ -134,6 +139,17 @@ public abstract class BulkLoader extends Node {
 	}
 	
 	/**
+	 * This method reads incoming data from port and sends them by formatter 
+	 * to load utility process through dataFile.
+	 * 
+	 * 
+	 * @throws Exception
+	 */
+	protected void readFromPortAndWriteByFormatter() throws Exception {
+		readFromPortAndWriteByFormatter(new FileOutputStream(dataFile));
+	}
+	
+	/**
 	 * Call load utility process with parameters,
 	 * load utility process reads data directly from file.
 	 * 
@@ -175,6 +191,36 @@ public abstract class BulkLoader extends Node {
 	}
 	
 	/**
+	 * Create named pipe - gets name from dataFile.
+	 * @throws Exception
+	 */
+	protected void createNamedPipe() throws Exception {
+    	try {
+			Process proc = Runtime.getRuntime().exec("mkfifo " + dataFile.getCanonicalPath());
+			ProcBox box = new ProcBox(proc, null, consumer, errConsumer);
+			box.join();
+		} catch (Exception e) {
+			throw e;
+		}
+    }
+	
+	protected int runWithPipe() throws Exception {
+    	createNamedPipe();
+    	ProcBox box = createProcBox();
+		
+		new Thread() {
+			public void run() {
+				try {
+					readFromPortAndWriteByFormatter();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}.start();
+		return box.join();
+    }
+	
+	/**
 	 * Return true if fileURL exists.
 	 * @param fileURL
 	 * @return true if fileURL exists else false
@@ -193,6 +239,31 @@ public abstract class BulkLoader extends Node {
 			throw new ComponentNotReadyException(this, e);
 		}
 	}
+	
+	protected File createTempFile(String prefix) throws ComponentNotReadyException {
+    	try {
+			File file = File.createTempFile(prefix, null, TMP_DIR);
+			file.delete();
+			return file;
+		} catch (IOException e) {
+			free();
+			throw new ComponentNotReadyException(this, 
+					"Temporary data file wasn't created.");
+		}
+    }
+	
+	protected File openFile(String fileURL) throws ComponentNotReadyException {
+    	try {
+			if (!fileExists(fileURL)) {
+				free();
+				throw new ComponentNotReadyException(this, 
+						"Data file " + StringUtils.quote(fileURL) + " not exists.");
+			}
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(this, e);
+		}
+		return new File(fileURL);
+    }
 	
 	protected void setUser(String user) {
 		this.user = user;

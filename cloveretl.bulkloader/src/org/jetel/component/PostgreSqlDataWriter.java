@@ -127,13 +127,10 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	public final static String COMPONENT_TYPE = "POSTGRESQL_DATA_WRITER";
 
 	private final static String POSTGRESQL_FILE_NAME_PREFIX = "postgresql";
-	private final static String COMMAND_FILE_NAME_SUFFIX = ".ctl";
-	private final static File TMP_DIR = new File(".");
 	private final static String DEFAULT_COLUMN_DELIMITER = "\t";
 	private final static String DEFAULT_COLUMN_DELIMITER_IN_CSV_MODE = ",";
 	
 	private final static String DEFAULT_RECORD_DELIMITER = "\n";
-	private final static String CHARSET_NAME = "UTF-8";
 	private final static String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	private final static String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
 	private final static String DEFAULT_TIME_FORMAT = "HH:mm:ss";
@@ -146,7 +143,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	// variables for copy statement
 	private File commandFile;
 
-	private File dataFile = null; // file that is used for exchange data between clover and psql - file from dataURL
 	private String[] commandLine; // command line of psql
 
 	private boolean csvMode; // true if CSV mode is used for loading data
@@ -282,7 +278,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 				}
 			} else {
 				commandFile = File.createTempFile(POSTGRESQL_FILE_NAME_PREFIX, 
-						COMMAND_FILE_NAME_SUFFIX, TMP_DIR);
+						CONTROL_FILE_NAME_SUFFIX, TMP_DIR);
 			}
 
 			saveCommandToFile(commandFile, getDefaultCommandFileContent());

@@ -21,7 +21,6 @@ package org.jetel.component;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -433,11 +432,8 @@ public class MysqlDataWriter extends BulkLoader {
 
 	private final static String EXCHANGE_FILE_PREFIX = "mysqlExchange";
 	private final static String MYSQL_FILE_NAME_PREFIX = "mysql";
-	private final static String COMMAND_FILE_NAME_SUFFIX = ".ctl";
-	private final static File TMP_DIR = new File(".");
 	private final static String DEFAULT_COLUMN_DELIMITER = "\t";
 	private final static String DEFAULT_RECORD_DELIMITER = "\n";
-	private final static String CHARSET_NAME = "UTF-8";
 	private final static String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	private final static String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
 	private final static String DEFAULT_TIME_FORMAT = "HH:mm:ss";
@@ -448,7 +444,6 @@ public class MysqlDataWriter extends BulkLoader {
 	private String commandURL;
 	private File commandFile;
 
-	private File dataFile; // file that is used for exchange data between clover and mysql - file from dataURL
 	private String[] commandLine; // command line of mysql
 
 	/**
@@ -499,66 +494,6 @@ public class MysqlDataWriter extends BulkLoader {
 		}
 
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
-	}
-
-	private int runWithPipe() throws Exception {
-    	createNamedPipe();
-    	ProcBox box = createProcBox();
-		
-		new Thread() {
-			public void run() {
-				try {
-					readFromPortAndWriteByFormatter();
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-			}
-		}.start();
-		return box.join();
-    }
-    
-    private void createNamedPipe() throws Exception {
-    	try {
-			Process proc = Runtime.getRuntime().exec("mkfifo " + dataFile.getCanonicalPath());
-			ProcBox box = new ProcBox(proc, null, consumer, errConsumer);
-			box.join();
-		} catch (Exception e) {
-			throw e;
-		}
-    }
-    
-    private File createTempFile() throws ComponentNotReadyException {
-    	try {
-			File file = File.createTempFile(EXCHANGE_FILE_PREFIX, null, TMP_DIR);
-			file.delete();
-			return file;
-		} catch (IOException e) {
-			free();
-			throw new ComponentNotReadyException(this, 
-					"Temporary data file wasn't created.");
-		}
-    }
-    
-    private File openFile(String fileURL) throws ComponentNotReadyException {
-    	try {
-			if (!fileExists(fileURL)) {
-				free();
-				throw new ComponentNotReadyException(this, 
-						"Data file " + StringUtils.quote(fileURL) + " not exists.");
-			}
-		} catch (Exception e) {
-			throw new ComponentNotReadyException(this, e);
-		}
-		return new File(fileURL);
-    }
-	
-	/**
-	 * This method reads incoming data from port and sends them by formatter to mysql process.
-	 * 
-	 * @throws Exception
-	 */
-    private void readFromPortAndWriteByFormatter() throws Exception {
-		readFromPortAndWriteByFormatter(new FileOutputStream(dataFile));
 	}
 
 	/**
@@ -638,7 +573,7 @@ public class MysqlDataWriter extends BulkLoader {
 				}
 			} else {
 				commandFile = File.createTempFile(MYSQL_FILE_NAME_PREFIX, 
-						COMMAND_FILE_NAME_SUFFIX, TMP_DIR);
+						CONTROL_FILE_NAME_SUFFIX, TMP_DIR);
 			}
 
 			saveCommandFile(commandFile);
@@ -803,10 +738,10 @@ public class MysqlDataWriter extends BulkLoader {
 				dataFile = new File(dataURL);
 				dataFile.delete();
 			} else {
-				dataFile = createTempFile();
+				dataFile = createTempFile(EXCHANGE_FILE_PREFIX);
 			}
 		} else {
-			dataFile = createTempFile();
+			dataFile = createTempFile(EXCHANGE_FILE_PREFIX);
 		}
     }
 	
