@@ -23,7 +23,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -574,8 +573,6 @@ public class MsSqlDataWriter extends BulkLoader {
 	private final static String DATA_FILE_NAME_SUFFIX = ".dat";
 	private final static String ERROR_FILE_NAME_PREFIX = "error";
 	private final static String ERROR_FILE_NAME_SUFFIX = ".log";
-	private final static File TMP_DIR = new File(".");
-	private final static String CHARSET_NAME = "UTF-8";
 	private final static String DEFAULT_COLUMN_DELIMITER = "\t"; // according bcp
 	
 	/**
@@ -604,7 +601,6 @@ public class MsSqlDataWriter extends BulkLoader {
 	private MsSqlBadRowReaderWriter badRowReaderWriter;
 
 	private String commandLine; // command line of bcp
-	private File dataFile; // file that is used for exchange data between clover and bcp - file from dataURL
 											 // flag that determine if execute() method was already executed;
 	private boolean alreadyExecuted = false; // used for deleting temp data file and reporting about it
 
@@ -649,15 +645,6 @@ public class MsSqlDataWriter extends BulkLoader {
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
-	/**
-	 * This method reads incoming data from port and sends them by formatter to bcp process.
-	 * 
-	 * @throws Exception
-	 */
-	private void readFromPortAndWriteByFormatter() throws Exception {
-		readFromPortAndWriteByFormatter(new FileOutputStream(dataFile));
-	}
-
 	/**
 	 * Create instance of ProcBox.
 	 * 

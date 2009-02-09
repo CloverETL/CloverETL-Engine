@@ -210,13 +210,10 @@ public class InformixDataWriter extends BulkLoader {
     private final static String DATA_FILE_NAME_PREFIX = "data";
     private final static String DATA_FILE_NAME_SUFFIX = ".dat";
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
-    private final static String CONTROL_FILE_NAME_SUFFIX = ".ctl";
     private final static String DEFAULT_ERROR_FILE = "error.log";
-    private final static File TMP_DIR = new File(".");
     private final static String DEFAULT_COLUMN_DELIMITER = "|";
     private final static String LINE_SEPARATOR = System.getProperty("line.separator");
     private final static String UNIX_STDIN = "/dev/stdin";
-    private final static String CHARSET_NAME = "UTF-8";
     private final static String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private final static String DEFAULT_DATE_FORMAT = "MM/dd/yyyy"; 
     private final static String DEFAULT_TIME_FORMAT = "HH:mm:ss";

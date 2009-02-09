@@ -23,7 +23,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -182,8 +181,6 @@ public class OracleDataWriter extends BulkLoader {
     
     private final static String EXCHANGE_FILE_PREFIX = "oracleExchange";
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
-    private final static String CONTROL_FILE_NAME_SUFFIX = ".ctl";
-    private final static File TMP_DIR = new File(".");
     
     private final static int EXEC_SQLLDR_SUCC = 0;
     private final static int EXEC_SQLLDR_WARN = 2;
@@ -207,7 +204,6 @@ public class OracleDataWriter extends BulkLoader {
     private int commitInterval = UNUSED_INT;
     
     private String[] commandLine; // command line of sqlldr
-    private File dataFile = null; // file that is used for exchange data between clover and sqlldr - file from dataURL
     private File badFile = null;
     private File discardFile = null;
 
@@ -287,41 +283,6 @@ public class OracleDataWriter extends BulkLoader {
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
     
-    private int runWithPipe() throws Exception {
-    	createNamedPipe();
-    	ProcBox box = createProcBox();
-		
-		new Thread() {
-			public void run() {
-				try {
-					readFromPortAndWriteByFormatter();
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-			}
-		}.start();
-		return box.join();
-    }
-    
-    private void createNamedPipe() throws Exception {
-    	try {
-			Process proc = Runtime.getRuntime().exec("mkfifo " + dataFile.getCanonicalPath());
-			ProcBox box = new ProcBox(proc, null, consumer, errConsumer);
-			box.join();
-		} catch (Exception e) {
-			throw e;
-		}
-    }
-    
-    /**
-	 * This method reads incoming data from port and sends them by formatter to sqlldr process.
-	 * 
-	 * @throws Exception
-	 */
-	private void readFromPortAndWriteByFormatter() throws Exception {
-		readFromPortAndWriteByFormatter(new FileOutputStream(dataFile));
-	}
-
 	/**
 	 * Create instance of ProcBox.
 	 * 
@@ -557,7 +518,7 @@ public class OracleDataWriter extends BulkLoader {
     private void createFileForExchange() throws ComponentNotReadyException {
     	if (!useFileForExchange) {
     		if (!ProcBox.isWindowsPlatform() && isDataReadFromPort) {
-    			dataFile = createTempFile();
+    			dataFile = createTempFile(EXCHANGE_FILE_PREFIX);
     		}
    			return;
     	}
@@ -568,40 +529,15 @@ public class OracleDataWriter extends BulkLoader {
 					dataFile = new File(dataURL);
 					dataFile.delete();
 				} else {
-					dataFile = createTempFile();
+					dataFile = createTempFile(EXCHANGE_FILE_PREFIX);
 				}
 			} else {
-				dataFile = createTempFile();
+				dataFile = createTempFile(EXCHANGE_FILE_PREFIX);
 				useFileForExchange = false;
 			}
 		}
     }
-    
-    private File createTempFile() throws ComponentNotReadyException {
-    	try {
-			File file = File.createTempFile(EXCHANGE_FILE_PREFIX, null, TMP_DIR);
-			file.delete();
-			return file;
-		} catch (IOException e) {
-			free();
-			throw new ComponentNotReadyException(this, 
-					"Temporary data file wasn't created.");
-		}
-    }
-    
-    private File openFile(String fileURL) throws ComponentNotReadyException {
-    	try {
-			if (!fileExists(fileURL)) {
-				free();
-				throw new ComponentNotReadyException(this, 
-						"Data file " + StringUtils.quote(fileURL) + " not exists.");
-			}
-		} catch (Exception e) {
-			throw new ComponentNotReadyException(this, e);
-		}
-		return new File(fileURL);
-    }
-    
+
     /**
      * Creates userid parameter for sqlldr utility. Builds string this form: "user/password@schema" 
      * @return
