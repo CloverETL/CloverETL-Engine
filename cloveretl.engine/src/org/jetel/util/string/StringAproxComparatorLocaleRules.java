@@ -82,6 +82,32 @@ public class StringAproxComparatorLocaleRules {
 		"u=ù=û=ü=U=Ù=Û=Ü",
 		"c=ç=C=Ç"
 	};
+	
+	private static final String[] SK_RULES={
+		"a=á=ä=A=Á=Ä",
+		"c=č=C=Č",
+		"d=ď=D=Ď",
+		"e=é=E=É",
+		"i=í=I=Í",
+		"l=ĺ=ľ=L=Ĺ=Ľ",
+		"n=ň=N=Ň",
+		"o=ó=ô=O=Ó=Ô",
+		"r=ŕ=R=Ŕ",
+		"s=š=S=Š",
+		"t=ť=T=Ť",
+		"u=ú=U=Ú",
+		"y=ý=Y=Ý",
+		"z=ž=Z=Ž"
+	};
+
+	private static final String[] HU_RULES={
+		"a=á=A=Á",
+		"e=é=E=É",
+		"i=í=I=Í",
+		"o=ó=ö=ő=O=Ó=Ö=Ő",
+		"u=ú=ü=ű=U=Ú=Ü=Ű"
+	};
+
 	/**
 	 * Static initalization for rules HashMap
 	 */
@@ -115,6 +141,10 @@ public class StringAproxComparatorLocaleRules {
 		rules.put("CH",FR_RULES);
 		
 		rules.put("PL",PL_RULES);
+		
+		rules.put("HU",HU_RULES);
+
+		rules.put("SK",SK_RULES);
 	}
 	
 	
