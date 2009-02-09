@@ -27,8 +27,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1124,16 +1122,7 @@ public class MsSqlDataWriter extends BulkLoader {
 		if (!StringUtils.isEmpty(parameters)) {
 			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, parameters);
 		} else if (!properties.isEmpty()) {
-			StringBuilder props = new StringBuilder();
-			for (Iterator iter = properties.entrySet().iterator(); iter.hasNext();) {
-				Entry<String, String> element = (Entry<String, String>) iter.next();
-				props.append(element.getKey());
-				props.append('=');
-				props.append(StringUtils.isQuoted(element.getValue()) ? element.getValue() : 
-				StringUtils.quote(element.getValue()));
-				props.append(';');
-			}
-			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, props.toString());
+			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, getPropertiesAsString());
 		}
 	}
 
