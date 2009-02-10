@@ -347,10 +347,10 @@ public class OracleDataWriter extends BulkLoader {
     	cmdBuilder.addAttribute("bad", badFileName, true);
     	cmdBuilder.addAttribute("discard", discardFileName, true);
     	
-    	cmdBuilder.addAttribute(SQLLDR_MAX_ERRORS_KEYWORD, maxErrors, false);
-    	cmdBuilder.addAttribute(SQLLDR_MAX_DISCARDS_KEYWORD, maxDiscards, false);
-    	cmdBuilder.addAttribute(SQLLDR_IGNORE_ROWS_KEYWORD, ignoreRows, false);
-    	cmdBuilder.addAttribute(SQLLDR_COMMIT_INTERVAL_KEYWORD, commitInterval, false);
+    	cmdBuilder.addAttribute(SQLLDR_MAX_ERRORS_KEYWORD, maxErrors);
+    	cmdBuilder.addAttribute(SQLLDR_MAX_DISCARDS_KEYWORD, maxDiscards);
+    	cmdBuilder.addAttribute(SQLLDR_IGNORE_ROWS_KEYWORD, ignoreRows);
+    	cmdBuilder.addAttribute(SQLLDR_COMMIT_INTERVAL_KEYWORD, commitInterval);
     	
     	// add parameters
     	cmdBuilder.addParam(SQLLDR_RECORD_COUNT_PARAM ,SQLLDR_RECORD_COUNT_KEYWORD, false);
@@ -902,17 +902,17 @@ public class OracleDataWriter extends BulkLoader {
 		
 		/**
 		 *  Adds attribute and it's value:
-		 *  for exmaple:  host=localhost or host='localhost'
+		 *  attrName=attrValue
+		 *  for exmaple:  port=123
 		 * 
 		 * @param attrName
 		 * @param attrValue
-		 * @param singleQuoted
 		 */
-		private void addAttribute(String attrName, int attrValue, boolean singleQuoted) {
+		private void addAttribute(String attrName, int attrValue) {
 			if (attrValue == UNUSED_INT) {
 				return;
 			}
-			addAttribute(attrName, String.valueOf(attrValue), singleQuoted);
+			addAttribute(attrName, String.valueOf(attrValue), false);
 		}
 		
 		/**
