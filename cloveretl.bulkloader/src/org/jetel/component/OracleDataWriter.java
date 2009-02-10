@@ -575,9 +575,45 @@ public class OracleDataWriter extends BulkLoader {
     public void toXML(Element xmlElement) {
         super.toXML(xmlElement);
       
-        //TODO
+        xmlElement.setAttribute(XML_SQLLDR_ATTRIBUTE, loadUtilityPath);
+        xmlElement.setAttribute(XML_TNSNAME_ATTRIBUTE, tnsname);
+		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, append.name());
+		
+        if (!StringUtils.isEmpty(control)) {
+			xmlElement.setAttribute(XML_CONTROL_ATTRIBUTE, control);
+        }
+        if (!StringUtils.isEmpty(logFileName)) {
+			xmlElement.setAttribute(XML_LOG_ATTRIBUTE, logFileName);
+        }
+        if (!StringUtils.isEmpty(badFileName)) {
+			xmlElement.setAttribute(XML_BAD_ATTRIBUTE, badFileName);
+        }
+        if (!StringUtils.isEmpty(discardFileName)) {
+			xmlElement.setAttribute(XML_DISCARD_ATTRIBUTE, discardFileName);
+        }
+        if (dbFields != null) {
+			String keys = dbFields[0];
+			for (int i = 1; i < dbFields.length; i++) {
+				keys += Defaults.Component.KEY_FIELDS_DELIMITER + dbFields[i];
+			}
+			xmlElement.setAttribute(XML_DBFIELDS_ATTRIBUTE, keys);
+        }
+        if (isDefinedUseFileForExchange) {
+			xmlElement.setAttribute(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE, String.valueOf(useFileForExchange));
+        }
+        if (maxErrors != UNUSED_INT) {
+			xmlElement.setAttribute(XML_MAX_ERRORS_ATTRIBUTE, String.valueOf(maxErrors));
+        }
+        if (maxDiscards != UNUSED_INT) {
+			xmlElement.setAttribute(XML_MAX_DISCARDS_ATTRIBUTE, String.valueOf(maxDiscards));
+        }
+        if (ignoreRows != UNUSED_INT) {
+			xmlElement.setAttribute(XML_IGNORE_ROWS_ATTRIBUTE, String.valueOf(ignoreRows));
+        }
+        if (commitInterval != UNUSED_INT) {
+			xmlElement.setAttribute(XML_COMMIT_INTERVAL_ATTRIBUTE, String.valueOf(commitInterval));
+        }
     }
-
 
     /**
      *  Description of the Method
