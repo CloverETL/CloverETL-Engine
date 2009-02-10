@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.List;
@@ -262,18 +263,9 @@ public class runGraph {
             System.exit(-1);
         }
 
-        if (log4jPropertiesFile != null){
-        	PropertyConfigurator.configure( log4jPropertiesFile );
-        } else {
-        	/*
-        	String wdFile = "./log4j.properties";
-        	File f = new File(wdFile);
-        	if (f.canRead())
-            	PropertyConfigurator.configure( wdFile );
-        	else
-        		BasicConfigurator.configure();
-        		*/
-        }
+        if (log4jPropertiesFile != null) {
+			PropertyConfigurator.configure(log4jPropertiesFile);
+		}
         
         if (logLevel != null)
         	Logger.getRootLogger().setLevel(logLevel);
@@ -281,7 +273,7 @@ public class runGraph {
         // engine initialization - should be called only once
         EngineInitializer.initEngine(pluginsRootDirectory, configFileName, logHost);
 
-        //tohle je nutne odstranit - runtimeContext je potreba vytvorit az po initiazlizaci enginu!!! Kokon
+        // TODO: tohle je nutne odstranit - runtimeContext je potreba vytvorit az po initiazlizaci enginu!!! Kokon
         if (runtimeContext.getTrackingInterval() == 0) {
         	runtimeContext.setTrackingInterval(Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL);
         }
@@ -292,9 +284,19 @@ public class runGraph {
             logger.info("Graph definition loaded from STDIN");
             in = System.in;
         } else {
-            logger.info("Graph definition file: " + graphFileName);
-            try {
-                in = Channels.newInputStream(FileUtils.getReadableChannel(null, graphFileName));
+        	logger.info("Graph definition file: " + graphFileName);
+
+        	try {
+            	URL projectDirURL = null;
+            	String projectDir = runtimeContext.getAdditionalProperties().getProperty(
+            			TransformationGraph.PROJECT_DIR_PROPERTY);
+
+            	if (projectDir != null) {
+                	logger.info(TransformationGraph.PROJECT_DIR_PROPERTY + " property: " + projectDir);
+            		projectDirURL = FileUtils.getFileURL(FileUtils.appendSlash(projectDir));
+            	}
+
+            	in = Channels.newInputStream(FileUtils.getReadableChannel(projectDirURL, graphFileName));
             } catch (IOException e) {
                 logger.error("Error - graph definition file can't be read: " + e.getMessage());
                 System.exit(-1);
@@ -436,7 +438,6 @@ public class runGraph {
         System.out.println("-stdin\t\t\tload graph definition from STDIN");
         System.out.println("-loghost\t\tdefine host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445");
         System.out.println("-checkconfig\t\tonly check graph configuration");
-       // System.out.println("-mbean <name>\t\tname under which register Clover's JMXBean");
         System.out.println("-noJMX\t\t\tturns off sending graph tracking information");
         System.out.println("-config <filename>\t\tload default engine properties from specified file");
         System.out.println("-nodebug\t\tturns off all runtime debugging e.g edge debugging");

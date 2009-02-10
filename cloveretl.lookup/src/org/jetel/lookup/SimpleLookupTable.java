@@ -215,8 +215,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
             try {
 				if (fileURL != null) {
 					dataParser.setDataSource(FileUtils.getReadableChannel(
-							getGraph() != null ? getGraph().getProjectURL() : null,
-							fileURL));
+							(getGraph() != null) ? getGraph().getProjectURL() : null, fileURL));
 				} else if (data != null) {
 					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes(charset)));
 				}
@@ -326,7 +325,8 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
             String metadata = xattribs.getString(XML_METADATA_ID);
             
             lookupTable = new SimpleLookupTable(id, metadata, keys, initialSize);
-            
+            lookupTable.setGraph(graph);
+
             if (xattribs.exists(XML_NAME_ATTRIBUTE)){
             	lookupTable.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
             }

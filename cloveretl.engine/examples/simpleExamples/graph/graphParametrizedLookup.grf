@@ -33,6 +33,7 @@ public class ReformatTestInline extends DataRecordTransform{
 	    lookupKeyStr[0]=parameters.getProperty("keyField");
 		SimpleLookupTable lt = new SimpleLookupTable("mylookup",lookupMetadata, lookupKeyStr ,parser);
 		lt.setFileURL(parameters.getProperty("lookupFile"));
+		getGraph().addLookupTable(lt);
 		// create key 
 		RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);
 		key.init();
