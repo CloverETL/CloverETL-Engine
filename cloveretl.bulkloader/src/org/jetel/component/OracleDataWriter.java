@@ -882,11 +882,12 @@ public class OracleDataWriter extends BulkLoader {
 
 		/**
 		 *  Adds attribute and it's value:
+		 *  attrName=attrValue or attrName='attrValue'
 		 *  for exmaple:  host=localhost or host='localhost'
 		 * 
 		 * @param attrName
 		 * @param attrValue
-		 * @param singleQuoted
+		 * @param singleQuoted decides if attrValue will be single quoted
 		 */
 		private void addAttribute(String attrName, String attrValue, boolean singleQuoted) {
 			if (attrValue == null) {
@@ -916,12 +917,13 @@ public class OracleDataWriter extends BulkLoader {
 		}
 		
 		/**
-		 *  Adds param and it's value:
+		 *  Adds param and it's value - value is get from properties:
+		 *  paramKeyword=paramValue or paramKeyword='paramValue'
 		 *  for exmaple:  host=localhost or host='localhost'
 		 * 
-		 * @param paramName name of parameter used in 'parameters' attribute
-		 * @param paramKeyword name of parameter used in sqlldr command
-		 * @param singleQuoted
+		 * @param paramName name of parameter used in properties
+		 * @param paramKeyword name of parameter used in load utility command
+		 * @param singleQuoted decides if attrValue will be single quoted
 		 */
 		private void addParam(String paramName, String paramKeyword, boolean singleQuoted) {
 			if (!params.containsKey(paramName)) {
