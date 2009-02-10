@@ -1,25 +1,23 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
-// FILE: c:/projects/jetel/org/jetel/graph/TransformationGraph.java
-
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.cz>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.graph;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -58,10 +56,6 @@ import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
 
-/*
- *  import org.apache.log4j.Logger;
- *  import org.apache.log4j.BasicConfigurator;
- */
 /**
  * A class that represents Transformation Graph - all the Nodes and connecting Edges
  *
@@ -70,7 +64,6 @@ import org.jetel.util.string.StringUtils;
  * @revision    $Revision$
  * @see         org.jetel.graph.runtime.WatchDog
  */
-
 public final class TransformationGraph extends GraphElement {
 
 	public static final String DEFAULT_GRAPH_ID = "DEFAULT_GRAPH_ID";
@@ -103,8 +96,6 @@ public final class TransformationGraph extends GraphElement {
     private boolean debugMode = true;
     
     private String debugModeStr;
-    
-//    private String debugDirectory;
     
     private int debugMaxRecords = 0;
     
@@ -139,8 +130,6 @@ public final class TransformationGraph extends GraphElement {
 		sequences = new HashMap<String,Sequence> ();
 		lookupTables = new HashMap<String,LookupTable> ();
 		dataRecordMetadata = new HashMap<String,DataRecordMetadata> ();
-		// initialize logger - just basic
-		//BasicConfigurator.configure();
 		graphProperties = new TypedProperties();
 		dictionary = new Dictionary(this);
 		authorityProxy = new PrimitiveAuthorityProxy();
@@ -151,6 +140,7 @@ public final class TransformationGraph extends GraphElement {
         if(firstCallProjectURL) {
             firstCallProjectURL = false;
             String projectURLStr = null;
+
             if(getGraphProperties().containsKey(PROJECT_DIR_PROPERTY)) {
                 projectURLStr = getGraphProperties().getStringProperty(PROJECT_DIR_PROPERTY);
             } else {
@@ -159,7 +149,7 @@ public final class TransformationGraph extends GraphElement {
             
             if(projectURLStr != null) {
                 try {
-                    projectURL = FileUtils.getFileURL(projectURLStr);
+                    projectURL = FileUtils.getFileURL(FileUtils.appendSlash(projectURLStr));
                 } catch (MalformedURLException e) {
                     getLogger().warn("Home project dir is not in valid URL format - " + projectURLStr);
                 }
@@ -222,38 +212,6 @@ public final class TransformationGraph extends GraphElement {
         }
     }
     
-//    /**
-//     * Sets debug directory. Default is System.getProperty("java.io.tmpdir").
-//     * @param debugDirectory
-//     */
-//    private boolean isDebugDirectoryResolved;
-//
-//    public void setDebugDirectory(String debugDirectory) {
-//        if(debugDirectory == null || debugDirectory.length() == 0) {
-//            this.debugDirectory = null;
-//            isDebugDirectoryResolved = true;
-//        } else {
-//            this.debugDirectory = debugDirectory;
-//            isDebugDirectoryResolved = false;
-//        }
-//    }
-//    
-//    /**
-//     * @return debug directory. Default is System.getProperty("java.io.tmpdir").
-//     */
-//    public String getDebugDirectory() {
-//        if(!isDebugDirectoryResolved) {
-//            PropertyRefResolver prr = new PropertyRefResolver(getGraphProperties());
-//                debugDirectory = prr.resolveRef(debugDirectory);
-//            isDebugDirectoryResolved = true;
-//        }
-//        if(debugDirectory == null) {
-//            return System.getProperty("java.io.tmpdir");
-//        } else {
-//            return debugDirectory;
-//        }
-//    }
-    
     /**
      * Sets maximum debugged records on the edges.
      * @param debugMaxRecords
@@ -269,29 +227,6 @@ public final class TransformationGraph extends GraphElement {
         return debugMaxRecords;
     }
 
-//    /**
-//     * Returns URL from PROJECT_DIR graph property value.
-//     * It is used as context URL for conversion from relative to absolute path.
-//     * @return 
-//     */
-//    private boolean firstCallprojectURL = true;
-//    public URL getProjectURL() {
-//        if(firstCallprojectURL) {
-//            firstCallprojectURL = false;
-//            String projectURLStr = getGraphProperties().getStringProperty(PROJECT_DIR_PROPERTY);
-//            
-//            if(projectURLStr != null) {
-//                try {
-//                    projectURL = FileUtils.getFileURL(null, projectURLStr);
-//                } catch (MalformedURLException e) {
-//                    logger.warn("Home project dir is not in valid URL format - " + projectURLStr);
-//                }
-//            }
-//        }
-//
-//        return projectURL;
-//    }
-    
 	/**
 	 *  Gets the IConnection object asssociated with the name provided
 	 *
@@ -419,18 +354,6 @@ public final class TransformationGraph extends GraphElement {
         return phases.get(Integer.valueOf(phaseNum));
     }
     
-//	/**
-//	 * An operation that aborts execution of graph
-//	 *
-//	 * @since    April 2, 2002
-//	 */
-//	public void abort() {
-//		if (watchDog != null) {
-//			watchDog.abort();
-//		}
-//	}
-
-
 	/**
 	 *  initializes graph (must be called prior attemting to run graph)
 	 *
@@ -440,7 +363,8 @@ public final class TransformationGraph extends GraphElement {
 	 * @deprecated The OutputStream is now ignored, please call init().  The logging is
 	 * sent to commons-logging.
 	 */
-	@Deprecated public boolean init(OutputStream out) {
+	@Deprecated
+	public boolean init(OutputStream out) {
 		try {
 			init();
 		} catch (ComponentNotReadyException e) {
@@ -520,15 +444,6 @@ public final class TransformationGraph extends GraphElement {
 			logger.error(ex.getMessage(),ex);
 			throw new ComponentNotReadyException("Graph topology analyze failed: " + ex.getMessage(), ex);
 		}
-
-        //initialization of all phases
-		//phases have to be initialized separately and immediately before is run - in runtime after previous phase is finished
-		//temporarily solution
-//        for(Phase phase : phases.values()) {
-//        	phase.init();
-//        }
-		
-		// initialized OK
 	}
 
 	@Override
@@ -821,24 +736,11 @@ public final class TransformationGraph extends GraphElement {
 		graphProperties.putAll(properties);
 	}
 
-//	/**
-//	 * If graph is running (WatchDog thread is running) then
-//	 * it returns which phase (number) is currently beeing executed.
-//	 * Otherwise it returns -1;
-//	 * 
-//	 * @return Phase number or -1 is no phase is beeing executed
-//	 */
-//	public int getRunningPhaseNum(){
-//		if (watchDog!=null){
-//			return watchDog.getCurrentPhaseNum();
-//		}else{
-//			return -1;
-//		}
-//	}
 	/**
 	 * @param trackingInterval Sets the tracking interval. How often is the processing status printed  (in milliseconds).
 	 */
-	@Deprecated public void setTrackingInterval(int trackingInterval) {
+	@Deprecated
+	public void setTrackingInterval(int trackingInterval) {
 		// do nothing - obsolete
 	}
     
@@ -1076,7 +978,3 @@ public final class TransformationGraph extends GraphElement {
     }
 
 }
-/*
- *  end class TransformationGraph
- */
-
