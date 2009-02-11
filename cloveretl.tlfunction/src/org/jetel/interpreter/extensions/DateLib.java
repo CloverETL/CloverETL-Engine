@@ -23,17 +23,21 @@
  */
 package org.jetel.interpreter.extensions;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLContainerValue;
 import org.jetel.interpreter.data.TLDateValue;
 import org.jetel.interpreter.data.TLNullValue;
 import org.jetel.interpreter.data.TLNumericValue;
+import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.util.DataGenerator;
@@ -317,26 +321,87 @@ public class DateLib extends TLFunctionLibrary {
     class RandomDateFunction extends TLFunctionPrototype {
 
         private DataGenerator dataGenerator = new DataGenerator();
+        private SimpleDateFormat simpleDateFormat;
+        private Locale locale;
+        
+        private long fromDate;
+        private long toDate;
         
         public RandomDateFunction() {
             super("date", "random_date", "Generates a random date", 
-           		 new TLValueType[] { TLValueType.DATE, TLValueType.DATE }, 
-           		 TLValueType.DATE);
+           		 new TLValueType[] { TLValueType.OBJECT, TLValueType.OBJECT, TLValueType.STRING, TLValueType.STRING}, 
+           		 TLValueType.DATE, 4, 2);
         }
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
         	TLDateValue tlDateValue=(TLDateValue)context.getContext();
 
-			if (params[0].type == TLValueType.DATE && params[1].type == TLValueType.DATE) {
-				long time = dataGenerator.nextLong(params[0].getDate().getTime(), params[1].getDate().getTime());
-				tlDateValue.setValue(new Date(time));
-	        }else {
-	            throw new TransformLangExecutorRuntimeException(params,
-	                    "random_date - wrong type of literal");
+			if (params[0].type == TLValueType.DATE) {
+				fromDate = params[0].getDate().getTime();
+			} else if (params[0].type == TLValueType.STRING) {
+	        	// prepare the locale
+	        	parseLocale(params);
+
+	        	// prepare the date formatter
+	        	parseDataFormater(params);
+				
+        		try {
+					fromDate = simpleDateFormat.parse(((TLStringValue)params[0]).getCharSequence().toString()).getTime();
+				} catch (ParseException e) {
+		            throw new TransformLangExecutorRuntimeException(params, "random_date - " + e.getMessage(), e);
+				}
+			} else {
+	            throw new TransformLangExecutorRuntimeException(params, "random_date - wrong type of first literal");
+			}
+			
+			if (params[1].type == TLValueType.DATE) {
+				toDate = params[1].getDate().getTime();
+			} else if (params[1].type == TLValueType.STRING) {
+				if (params[0].type != TLValueType.STRING) {
+		        	// prepare the locale
+		        	parseLocale(params);
+
+		        	// prepare the date formatter
+		        	parseDataFormater(params);
+				}
+        		try {
+					toDate = simpleDateFormat.parse(((TLStringValue)params[1]).getCharSequence().toString()).getTime();
+				} catch (ParseException e) {
+		            throw new TransformLangExecutorRuntimeException(params, "random_date - " + e.getMessage(), e);
+				}
+	        } else {
+	            throw new TransformLangExecutorRuntimeException(params, "random_date - wrong type of second literal");
 	        }
 			
+			// generate date
+			tlDateValue.setValue(new Date(dataGenerator.nextLong(fromDate, toDate)));
 	        return tlDateValue;
+        }
+
+        private final void parseLocale(TLValue[] params) {
+        	// prepare the locale
+    		if (params.length == 4) {
+    			if (params[3].type != TLValueType.STRING) {
+    	            throw new TransformLangExecutorRuntimeException(params, "random_date - wrong locale type");
+    			}
+    			String[] aLocale = ((TLStringValue)params[3]).getCharSequence().toString().split("\\.");// '.' standard delimiter
+    			if (aLocale.length < 2) locale = new Locale(aLocale[0]);
+    			else locale = new Locale(aLocale[0], aLocale[1]);
+    		}
+        }
+        
+        private final void parseDataFormater(TLValue[] params) {
+        	// prepare the date formatter
+        	if (params.length > 2) {
+    			if (params[2].type != TLValueType.STRING) {
+    	            throw new TransformLangExecutorRuntimeException(params, "random_date - wrong format type");
+    			}
+    			String sFormat = ((TLStringValue)params[2]).getCharSequence().toString();
+    			simpleDateFormat = locale == null ? new SimpleDateFormat(sFormat) : new SimpleDateFormat(sFormat, locale);
+        	} else {
+        		simpleDateFormat = new SimpleDateFormat();
+        	}
         }
 
         @Override
