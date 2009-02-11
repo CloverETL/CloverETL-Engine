@@ -320,7 +320,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
     public void reset(){
         if (metadata.isNullable()){
             setNull(true);
-        }else if (metadata.isDefaultValue()){
+        }else if (metadata.isDefaultValueSet()){
             setToDefaultValue();
         }else{
             value=0;

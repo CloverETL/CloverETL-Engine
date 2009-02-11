@@ -150,7 +150,7 @@ public class SQLUtil {
 				if (scale < 0) {
 					cloverType = DataFieldMetadata.NUMERIC_FIELD;
 				}else{
-					fieldMetadata.setFieldProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(scale));
+					fieldMetadata.setProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(scale));
 				}
 			} catch (SQLException e) {
 				cloverType = DataFieldMetadata.NUMERIC_FIELD;
@@ -160,7 +160,7 @@ public class SQLUtil {
 				if (length <= scale) {
 					cloverType = DataFieldMetadata.NUMERIC_FIELD;
 				}else{
-					fieldMetadata.setFieldProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(length));				
+					fieldMetadata.setProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(length));				
 				}
 			} catch (SQLException e) {
 				cloverType = DataFieldMetadata.NUMERIC_FIELD;
@@ -200,7 +200,7 @@ public class SQLUtil {
 				if (scale < 0) {
 					cloverType = DataFieldMetadata.NUMERIC_FIELD;
 				}else{
-					fieldMetadata.setFieldProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(scale));
+					fieldMetadata.setProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(scale));
 				}
 			} catch (SQLException e) {
 				cloverType = DataFieldMetadata.NUMERIC_FIELD;
@@ -210,7 +210,7 @@ public class SQLUtil {
 				if (length <= scale) {
 					cloverType = DataFieldMetadata.NUMERIC_FIELD;
 				}else{
-					fieldMetadata.setFieldProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(length));				
+					fieldMetadata.setProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(length));				
 				}
 			} catch (SQLException e) {
 				cloverType = DataFieldMetadata.NUMERIC_FIELD;

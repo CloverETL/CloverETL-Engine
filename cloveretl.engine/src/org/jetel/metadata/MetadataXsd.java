@@ -158,10 +158,10 @@ public class MetadataXsd extends MXAbstract {
 			if ((rest = getNode(restParent, XSD_TOTAL_DIGITS)) == null) {
 				type = DataFieldMetadata.NUMERIC_FIELD;
 			} else {
-				dataFieldMetadata.setFieldProperty(LENGTH, getAttributeValue(rest, VALUE));
+				dataFieldMetadata.setProperty(LENGTH, getAttributeValue(rest, VALUE));
 			}
 			if ((rest = getNode(restParent, XSD_FRACTION_DIGITS)) != null) {
-				dataFieldMetadata.setFieldProperty(SCALE, getAttributeValue(rest, VALUE));
+				dataFieldMetadata.setProperty(SCALE, getAttributeValue(rest, VALUE));
 			}
 			if ((rest = getNode(restParent, XSD_LENGHT)) != null) {
 				dataFieldMetadata.setSize(Short.parseShort(getAttributeValue(rest, VALUE)));

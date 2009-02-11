@@ -325,7 +325,7 @@ public class DateDataField extends DataField implements Comparable{
     public void reset(){
             if (metadata.isNullable()){
                 setNull(true);
-            }else if (metadata.isDefaultValue()){
+            }else if (metadata.isDefaultValueSet()){
                 setToDefaultValue();
             }else{
             	if (value == null) {

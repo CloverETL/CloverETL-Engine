@@ -247,7 +247,7 @@ public class StringDataField extends DataField implements CharSequence{
     public void reset(){
         if (metadata.isNullable()){
             setNull(true);
-        }else if (metadata.isDefaultValue()){
+        }else if (metadata.isDefaultValueSet()){
             setToDefaultValue();
         }else{
             value.setLength(0);
