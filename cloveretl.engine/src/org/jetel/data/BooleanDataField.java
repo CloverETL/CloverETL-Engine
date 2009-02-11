@@ -181,7 +181,7 @@ public class BooleanDataField extends DataField implements Comparable{
     public void reset(){
             if (metadata.isNullable()){
                 setNull(true);
-            }else if (metadata.isDefaultValue()){
+            }else if (metadata.isDefaultValueSet()){
                 setToDefaultValue();
             }else{
             	throw new IllegalStateException(getMetadata().getName() + " Field cannot be null and default value is not defined");

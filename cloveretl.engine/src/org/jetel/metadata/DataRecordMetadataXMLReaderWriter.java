@@ -341,7 +341,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				fieldElement.setAttribute(SHIFT_ATTR, String.valueOf(field.getShift()));
 				if (record.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
 					fieldElement.setAttribute(DELIMITER_ATTR,
-					        StringUtils.specCharToString(field.getDelimiterStr()));
+					        StringUtils.specCharToString(field.getDelimiter()));
 				} else {
 					fieldElement.setAttribute(SIZE_ATTR, String.valueOf(field.getSize()));
 				}

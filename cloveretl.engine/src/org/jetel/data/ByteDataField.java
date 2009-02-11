@@ -223,7 +223,7 @@ public class ByteDataField extends DataField implements Comparable{
     public void reset(){
          if (metadata.isNullable()){
              setNull(true);
-         }else if (metadata.isDefaultValue()){
+         }else if (metadata.isDefaultValueSet()){
              setToDefaultValue();
          }else{
              value = null;

@@ -2080,7 +2080,7 @@ class SequenceRule extends Rule {
 		if (value == null) {
 			warn("There is no sequence \"" + sequenceID + "\" in graph");
 			if (!(targetMetadata[recNo].getField(fieldNo).isNullable() || targetMetadata[recNo].getField(fieldNo)
-					.isDefaultValue())) {
+					.isDefaultValueSet())) {
 				error("Null value not allowed to record: " + targetMetadata[recNo].getName() + " , field: "
 						+ targetMetadata[recNo].getField(fieldNo).getName());
 			} else {
@@ -2325,7 +2325,7 @@ class ParameterRule extends Rule {
 			}
 			if (paramValue == null) {
 				if (!(targetMetadata[recNo].getField(fieldNo).isNullable() || targetMetadata[recNo].getField(fieldNo)
-						.isDefaultValue())) {
+						.isDefaultValueSet())) {
 					error("Not found parameter: " + source);
 				} else {
 					warn("Not found parameter: " + source);

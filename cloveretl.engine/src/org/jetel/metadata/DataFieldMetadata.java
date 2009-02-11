@@ -1,24 +1,21 @@
 /*
- *  jETeL/Clover - Java based ETL application framework.
- *  Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.cz>
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-// FILE: c:/projects/jetel/org/jetel/metadata/DataFieldMetadata.java
-
 package org.jetel.metadata;
 
 import java.io.Serializable;
@@ -34,711 +31,83 @@ import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
 /**
- *  A class that represents metadata describing one particular data field.<br>
- *  Handles encoding of characters.
- *
- * @author      D.Pavlis
- * @since       March 26, 2002
- * @revision    $Revision$
- * @see         org.jetel.metadata.DataRecordMetadata
+ * A class that represents meta data describing one particular data field.<br>
+ * Handles encoding of characters.
+ * 
+ * @author D.Pavlis
+ * @since March 26, 2002
+ * @revision $Revision$
+ * @see org.jetel.metadata.DataRecordMetadata
  */
 public class DataFieldMetadata implements Serializable {
-	
+
 	private static final long serialVersionUID = -880873886732472663L;
-  
-    public static final int INTEGER_LENGTH = 9;
+
+	public static final char STRING_FIELD = 'S';
+	public static final String STRING_TYPE = "string";
+
+	public static final char DATE_FIELD = 'D';
+	public static final String DATE_TYPE = "date";
+
+	public static final char DATETIME_FIELD = 'T';
+	public static final String DATETIME_TYPE = "datetime";
+
+	public static final char NUMERIC_FIELD = 'N';
+	public static final String NUMERIC_TYPE = "number";
+	public static final String NUMERIC_TYPE_DEPRECATED = "numeric";
+
+	public static final char INTEGER_FIELD = 'i';
+	public static final String INTEGER_TYPE = "integer";
+
+	public static final char LONG_FIELD = 'l';
+	public static final String LONG_TYPE = "long";
+
+	public static final char DECIMAL_FIELD = 'd';
+	public static final String DECIMAL_TYPE = "decimal";
+
+	public static final char BYTE_FIELD = 'B';
+	public static final String BYTE_TYPE = "byte";
+
+	public static final char BOOLEAN_FIELD = 'b';
+	public static final String BOOLEAN_TYPE = "boolean";
+
+	public static final char BYTE_FIELD_COMPRESSED = 'Z';
+	public static final String BYTE_COMPRESSED_TYPE = "cbyte";
+
+	public static final char SEQUENCE_FIELD = 'q';
+	public static final String SEQUENCE_TYPE = "sequence";
+
+	public static final char NULL_FIELD = 'n';
+	public static final String NULL_TYPE = "null";
+
+	public static final char UNKNOWN_FIELD = ' ';
+	public static final String UNKNOWN_TYPE = "unknown";
+
+	public static final int INTEGER_LENGTH = 9;
 	public static final int LONG_LENGTH = 18;
 	public static final int DOUBLE_SCALE = 323;
 	public static final int DOUBLE_LENGTH = DOUBLE_SCALE + 615;
 
-	/**
-	 * Parent data record metadata.
-	 */
-	private DataRecordMetadata dataRecordMetadata;
-	
-	/**
-	 * Ordinal number of the field within data record metadata.
-	 */
-	private int number;
-	
-	/**
-	 *  Name of the field
-	 */
-	private String name;
-	/**
-	 *  Delimiter of the field (could be empty if field belongs to fixLength record)
-	 */
-	private String delimiter = null;
-	/**
-	 * If this switch is set to true, eof works as delimiter for this field.
-	 * It's usefull for last field in the record.
-	 */
-	private boolean eofAsDelimiter = false;
-	/**
-	 *  Format of Number, Date, DateTime, String(regExp) or empty if not applicable
-	 */
-	private String formatStr;
-	/**
-	 *  Length of the field (in bytes) if the field belongs to fixLength record.
-	 */
-	private short size = 0;
+	public static final String BINARY_FORMAT_STRING = "binary";
+	public static final String BLOB_FORMAT_STRING = "blob";
+
+	public static final String LENGTH_ATTR = "length";
+	public static final String SCALE_ATTR = "scale";
+
+	/** Characters that can be contained in format of date. */
+	private static final Pattern DATE_ONLY_PATTERN = Pattern.compile("[GyMwWDdFE]");
+	/** Characters that can be contained in format of time. */
+	private static final Pattern TIME_ONLY_PATTERN = Pattern.compile("[aHhKkmsSzZ]");
 
 	/**
-	 * Relative shift of the beginning of the field
-	 */
-	private short shift = 0;
-
-	private char fieldType = ' ';
-	
-	/**
-	 * Indicates if when reading from file try to trim string value to obtain value
-	 */
-	private boolean trim = false;
-
-	/**
-	 *  Fields can assume null value by default.
-	 */
-	private boolean nullable = true;
-
-	private String defaultValueStr;
-
-    private Object defaultValue;
-    
-    private String autoFilling;
-    
-    
-	/**
-	 * Field can be populated by execution of Java code which
-	 * can include references to fields from input records.  The
-	 * code corresponds to a body of a methodwhich has to return
-	 * a value that has a type of the field type.
+	 * Converts a type of a data field into its full string form.
 	 *
-	 * The syntax for the field references is as follows:
+	 * @param type the type of a data field
 	 *
-	 *   [record name].[field name]
+	 * @return the type of the data field as a string
 	 */
-//	private String codeStr;
-
-	private TypedProperties fieldProperties;
-	
-	/**
-	 * Locale string. Both language and country can be specified - if both
-	 * are specified then language string & country string have to be
-	 * delimited by "." (dot) -> e.g. "en.UK" , "fr.CA".
-	 * If only language should be specified, then use language
-	 * code according to ISO639 -> e.g. "en" , "de". 
-	 * @see	java.util.Locale
-	 */
-	private String localeStr;
-
-	public final static String BINARY_FORMAT_STRING = "binary";
-
-	public final static String BLOB_FORMAT_STRING = "blob";
-
-	// Attributes
-
-	/**  Description of the Field */
-	public final static char STRING_FIELD = 'S';
-	public final static String STRING_TYPE = "string";
-
-	/**  Description of the Field */
-	public final static char DATE_FIELD = 'D';
-	public final static String DATE_TYPE = "date";
-
-	/**  Description of the Field */
-	public final static char DATETIME_FIELD = 'T';
-	public final static String DATETIME_TYPE = "datetime";
-
-	/**  Description of the Field */
-	public final static char NUMERIC_FIELD = 'N';
-	public final static String NUMERIC_TYPE = "number";
-	public final static String NUMERIC_TYPE_DEPRECATED = "numeric";
-
-	/**  Description of the Field */
-	public final static char INTEGER_FIELD = 'i';
-	public final static String INTEGER_TYPE = "integer";
-
-	/**  Description of the Field */
-	public final static char LONG_FIELD = 'l';
-	public final static String LONG_TYPE = "long";
-	
-	/**  Description of the Field */
-	public final static char DECIMAL_FIELD = 'd';
-	public final static String DECIMAL_TYPE = "decimal";
-
-	/**  Description of the Field */
-	public final static char BYTE_FIELD = 'B';
-	public final static String BYTE_TYPE = "byte";
-	
-	/**  Description of the Field */
-	public final static char BOOLEAN_FIELD = 'b';
-	public final static String BOOLEAN_TYPE = "boolean";
-
-	/**  Description of the Field */
-	public final static char BYTE_FIELD_COMPRESSED = 'Z';
-	public final static String BYTE_COMPRESSED_TYPE = "cbyte";
-
-	/**  Description of the Field */
-	public final static char SEQUENCE_FIELD = 'q';
-	public final static String SEQUENCE_TYPE = "sequence";
-
-	/**  Description of the Field */
-	public final static char NULL_FIELD = 'n';
-	public final static String NULL_TYPE = "null";
-
-	/**  Description of the Field */
-	public final static char UNKNOWN_FIELD = ' ';
-	public final static String UNKNOWN_TYPE = "unknown";
-
-	public final static String LENGTH_ATTR = "length";
-	
-	public final static String SCALE_ATTR = "scale";
-
-	/**
-	 *  Characters that can be contained in format of date
-	 */
-	private final static Pattern DATE_ONLY_PATTERN = Pattern.compile("[GyMwWDdFE]");
-	
-	/**
-	 *  Characters that can be contained in format of time
-	 */
-	private final static Pattern TIME_ONLY_PATTERN = Pattern.compile("[aHhKkmsSzZ]");
-	
-	/**
-	 *  Constructor for delimited type of field
-	 *
-	 * @param  _name       Name of the field
-	 * @param  _delimiter  String to be used as a delimiter for this field
-	 * @param  _type       Description of Parameter
-	 * @param shift   Relative shift of the beginning of the field.
-	 * @since
-	 */
-	public DataFieldMetadata(String _name, char _type, String _delimiter) {
-		if (!StringUtils.isValidObjectName(_name)) {
-			throw new InvalidGraphObjectNameException(_name, "FIELD");
-		}
-		this.name = _name;
-		this.delimiter = _delimiter;
-		this.fieldType = _type;
-		setFieldProperties(new TypedProperties());
-		this.localeStr=null;
-		if (isNumeric() || fieldType == DATE_FIELD || fieldType == DATETIME_FIELD || fieldType == BOOLEAN_FIELD){
-			trim = true;
-		}
-	}
-
-
-	/**
-	 *  Constructor for default(String) delimited type of field
-	 *
-	 * @param  _name       Name of the field
-	 * @param  _delimiter  String to be used as a delimiter for this field
-	 * @param shift   Relative shift of the beginning of the field.
-	 * @since
-	 */
-	public DataFieldMetadata(String _name, String _delimiter) {
-		if (!StringUtils.isValidObjectName(_name)) {
-			throw new InvalidGraphObjectNameException(_name, "FIELD");
-		}
-		this.name = _name;
-		this.delimiter = _delimiter;
-		this.fieldType = STRING_FIELD;
-        setFieldProperties(new TypedProperties());
-		this.localeStr=null;
-	}
-
-
-	/**
-	 *  Constructor for default(String) fixLength type of field
-	 *
-	 * @param  _name  Name of the field
-	 * @param  size   Description of Parameter
-	 * @param shift   Relative shift of the beginning of the field.
-	 * @since
-	 */
-	public DataFieldMetadata(String _name, short size) {
-		if (!StringUtils.isValidObjectName(_name)) {
-			throw new InvalidGraphObjectNameException(_name, "FIELD");
-		}
-		this.name = _name;
-		this.size = size;
-		this.fieldType = STRING_FIELD;
-        setFieldProperties(new TypedProperties());
-		this.localeStr=null;
-	}
-
-	/**
-	 *  Constructor for fixLength type of field
-	 *
-	 * @param  _name  Name of the field
-	 * @param  _type  Description of Parameter
-	 * @param  size   Description of Parameter
-	 * @param shift   Relative shift of the beginning of the field.
-	 * @since
-	 */
-	public DataFieldMetadata(String _name, char _type, short size) {
-		if (!StringUtils.isValidObjectName(_name)) {
-			throw new InvalidGraphObjectNameException(_name, "FIELD");
-		}
-		this.name = _name;
-		this.size = size;
-		this.fieldType = _type;
-        setFieldProperties(new TypedProperties());
-		this.localeStr=null;
-		if (isNumeric() || fieldType == DATE_FIELD || fieldType == DATETIME_FIELD){
-			trim = true;
-		}
-	}
-
-	private DataFieldMetadata() {
-	    //EMPTY
-	}
-
-	/**
-	 * Creates deep copy of existing field metadata. 
-	 * 
-	 * @return new metadata (exact copy of current field metatada)
-	 */
-	public DataFieldMetadata duplicate() {
-	    DataFieldMetadata ret = new DataFieldMetadata();
-
-		ret.setName(getName());
-	    ret.setDelimiter(getDelimiterStr());
-		ret.setEofAsDelimiter(this.isEofAsDelimiter());
-	    ret.setFormatStr(getFormatStr());
-	    ret.setShift(getShift());
-	    ret.setSize(getSize());
-		ret.setType(getType());
-		ret.setNullable(isNullable());
-		ret.setDefaultValueStr(getDefaultValueStr());
-//		ret.setCodeStr(getCodeStr());
-		ret.setLocaleStr(getLocaleStr());
-		ret.setAutoFilling(getAutoFilling());
-		ret.setTrim(isTrim());
-
-		//copy record properties
-		Properties target = new Properties();
-		Properties source = getFieldProperties();
-		if(source != null) {
-		    for(Enumeration e = source.propertyNames(); e.hasMoreElements();) {
-		        String key = (String) e.nextElement();
-		        target.put(key, source.getProperty(key));
-		    }
-			ret.setFieldProperties(target);
-		}
-
-		return ret;
-	}
-	
-	public int getNumber() {
-		return number;
-	}
-
-
-	public void setNumber(int number) {
-		this.number = number;
-	}
-
-	/**
-	 *  Sets name of the field
-	 *
-	 * @param  _name  The new Name value
-	 * @since
-	 */
-	public void setName(String _name) {
-		if (!StringUtils.isValidObjectName(_name)) {
-			throw new InvalidGraphObjectNameException(_name, "FIELD");
-		}
-		this.name = _name;
-	}
-
-
-	/**
-	 *  Sets delimiter string
-	 *
-	 * @param  _delimiter  The new Delimiter value
-	 * @since
-	 */
-	public void setDelimiter(String _delimiter) {
-		this.delimiter = _delimiter;
-	}
-
-
-	/**
-	 *  Sets format pattern for the field
-	 *
-	 * @param  _format  The new format pattern (acceptable value depends on DataField type)
-	 * @since
-	 */
-	public void setFormatStr(String _format) {
-		this.formatStr = _format;
-	}
-
-
-	/**
-	 * @return Returns the localeStr.
-	 */
-	public String getLocaleStr() {
-		return localeStr;
-	}
-	/**
-	 * Sets the localeStr.<br> Formatters/Parsers
-	 * are generated based on this field's value.
-	 * @param localeStr The locale code. (eg. "en", "fr",..).
-	 */
-	public void setLocaleStr(String localeStr) {
-		this.localeStr = localeStr;
-	}
-	/**
-	 *  Sets the DefaultValue defined for this field
-	 *
-	 * @param  defaultValue  The new DefaultValue value
-	 * @since                October 30, 2002
-	 */
-	public void setDefaultValueStr(String defaultValue) {
-		this.defaultValueStr = defaultValue;
-	}
-
-    public void setDefaultValue(Object defaultValue) {
-        this.defaultValue = defaultValue;
-    }
-
-
-	// Operations
-	/**
-	 *  An operation that does ...
-	 *
-	 * @return    The Name value
-	 * @since
-	 */
-	public String getName() {
-		return name;
-	}
-
-
-	/**
-	 *  Gets the Type attribute of the DataFieldMetadata object
-	 *
-	 * @return    The Type value
-	 * @since     October 30, 2002
-	 */
-	public char getType() {
-		return fieldType;
-	}
-
-	/**
-	 *  Gets the Type attribute of the DataFieldMetadata object
-	 *
-	 * @return    The Type value in full string form.
-	 */
-	public String getTypeAsString() {
-		return type2Str(fieldType);
-	}
-
-	/**
-	 *  Sets the Type attribute of the DataFieldMetadata object
-	 *
-	 * @param  type  The new type value
-	 * @since        October 30, 2002
-	 */
-	public void setType(char type) {
-		fieldType = type;
-	}
-
-	public void setType(String type) {
-		fieldType = str2Type(type);
-	}
-
-
-	/**
-	 *  Returns position of the field in data record (used only when dealing with fixed-size type of record)
-	 *
-	 * @return    The Length value
-	 * @since
-	 */
-	public short getShift() {
-		return shift;
-	}
-
-
-	/**
-	 *  Sets position of the field in data record (used only when dealing with fixed-size type of record)
-	 *
-	 * @param  _size  The new size value
-	 */
-	public void setShift(short shift) {
-		this.shift = shift;
-	}
-
-	
-	/**
-	 *  Returns the specified maximum field size (used only when dealing with fixed-size type of record)
-	 *
-	 * @return    The Length value
-	 * @since
-	 */
-	public short getSize() {
-		return size;
-	}
-
-
-	/**
-	 *  Sets the maximum field size (used only when dealing with fixed-size type of record)
-	 *
-	 * @param  _size  The new size value
-	 */
-	public void setSize(short _size) {
-		size = _size;
-	}
-
-
-//	/**
-//	 *  An operation that does ...
-//	 *
-//	 * @return    The Delimiter value
-//	 * @since
-//	 */
-//	public String getDelimiter() {
-//		if(isDelimited()) {
-//			if(delimiter != null) { 
-//				return delimiter;
-//			} else {
-//				if(getDataRecordMetadata().getField(getDataRecordMetadata().getNumFields() - 1) != this) {
-//					return getDataRecordMetadata().getFieldDelimiters()[0];
-//				} else {
-//					return null;
-//				}
-//			}
-//		} else {
-//			return null;
-//		}
-//	}
-
-	/**
-	 * Returns an array of all field delimiters assigned to this field.
-	 * In case no field delimiters are defined, default field delimiters from parent metadata are returned.
-	 * Delimiters for last field are extended by a record delimiter.
-	 *
-	 * @return    The Delimiter value
-	 * @since
-	 */
-	public String[] getDelimiters() {
-		if(isDelimited()) {
-			String[] ret;
-			if(delimiter != null) { 
-				ret = delimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
-				if(isLastNonAutoFilledField()) { //if field is last
-					if(getDataRecordMetadata().isSpecifiedRecordDelimiter()) {
-						List<String> tempDelimiters = new ArrayList<String>();
-						for(int i = 0; i < ret.length; i++) { //combine each field delimiter with each record delimiter
-							String[] recordDelimiters = getDataRecordMetadata().getRecordDelimiters();
-							for(int j = 0; j < recordDelimiters.length; j++) {
-								tempDelimiters.add(ret[i] + recordDelimiters[j]);
-							}
-						}
-						ret = tempDelimiters.toArray(new String[tempDelimiters.size()]);
-					}
-				}
-			} else {
-				if(!isLastNonAutoFilledField()) { //if field is not last
-					ret = getDataRecordMetadata().getFieldDelimiters();
-				} else {
-					ret = getDataRecordMetadata().getRecordDelimiters();
-					if(ret == null) {
-						ret = getDataRecordMetadata().getFieldDelimiters();
-					}
-				}
-			}
-
-			return ret;
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * @return true whether this is last non autofilled field within record metadata
-	 */
-	private boolean isLastNonAutoFilledField() {
-		if (isAutoFilled()) {
-			return false;
-		}
-		DataRecordMetadata metadata = getDataRecordMetadata();
-		DataFieldMetadata[] fields = metadata.getFields();
-		for (int i = getNumber() + 1; i < metadata.getNumFields(); i++) {
-			if (!fields[i].isAutoFilled()) {
-				return false;
-			}
-		}
-		
-		return true;
-	}
-
-	public String getDelimiterStr() {
-		return delimiter;
-	}
-	
-	/**
-	 *  Gets Format string specifying pattern which will be used when
-	 *  outputing field's value in text form
-	 *
-	 * @return    The FormatStr value
-	 * @since
-	 */
-	public String getFormatStr() {
-		return formatStr;
-	}
-
-
-	/**
-	 *  Gets the DefaultValue of the DataFieldMetadata object
-	 *
-	 * @return    The DefaultValue value
-	 * @since     October 30, 2002
-	 */
-	public String getDefaultValueStr() {
-		if (defaultValueStr != null) {
-			return defaultValueStr;
-		} else if (defaultValue != null) {
-			return defaultValue.toString();
-		}
-		return null;
-	}
-
-    public Object getDefaultValue() {
-        return defaultValue;
-    }
-    
-	/**
-	 * @return true if default value is set
-	 */
-	public boolean isDefaultValue() {
-	    return !StringUtils.isEmpty(defaultValueStr) || defaultValue != null;    
-    }
-    
-	/**
-	 * Sets the nullable attribute of the DataFieldMetadata object
-	 *
-	 * @param  nullable
-	 */
-	public void setNullable(boolean nullable) {
-		this.nullable = nullable;
-	}
-
-
-	/**
-	 * Gets the nullable of the DataFieldMetadata object
-	 *
-	 * @return
-	 */
-	public boolean isNullable() {
-		return nullable;
-	}
-
-	public void setAutoFilling(String autoFilling) {
-		this.autoFilling = autoFilling;
-	}
-
-	public String getAutoFilling() {
-		return autoFilling;
-	}
-
-    public boolean isAutoFilled() {
-        return !StringUtils.isEmpty(autoFilling);
-    }
-    
-	/**
-	 * Sets the codeStr attribute of the DataFieldMetadata object
-	 *
-	 * @param  codeStr
-	 */
-//	public void setCodeStr(String codeStr) {
-//		this.codeStr = codeStr;
-//	}
-
-
-	/**
-	 * Gets the codeStr of the DataFieldMetadata object
-	 *
-	 * @return
-	 */
-//	public String getCodeStr() {
-//		return codeStr;
-//	}
-
-
-	/**
-	 *  Gets the fieldProperties attribute of the DataFieldMetadata object.<br>
-	 *  These properties are automatically filled-in when parsing XML (.fmt) file
-	 * containing data record metadata. Any attribute not directly recognized by Clover
-	 * is stored within properties object.<br>
-	 * Example:
-	 * <pre>&lt;Field name="Field1" type="numeric" delimiter=";" myOwn1="1" myOwn2="xyz" /&gt;</pre>
-	 *
-	 * @return    The fieldProperties value
-	 */
-	public TypedProperties getFieldProperties() {
-		return fieldProperties;
-	}
-
-    /**
-     * Gets the one property value from the fieldProperties attribute according given attribute name.
-     * @param attrName
-     * @return
-     * @see this.getFieldProperties()
-     */
-    public String getProperty(String attrName) {
-        return fieldProperties.getProperty(attrName);
-    }
-
-	/**
-	 *  Sets the fieldProperties attribute of the DataRecordMetadata object.
-	 *  Field properties allows defining additional parameters for individual fields.
-	 *  These parameters (key-value pairs) are NOT normally handled by CloverETL, but
-	 *  can be used in user's code or Components - thus allow for greater flexibility.
-	 *
-	 * @param  properties  The new recordProperties value
-	 */
-	public void setFieldProperties(Properties properties) {
-		fieldProperties = new TypedProperties(properties);
-		
-		//set default attribute values
-		if(fieldType == DECIMAL_FIELD) {
-			if(fieldProperties.getProperty(LENGTH_ATTR) == null) {
-				fieldProperties.setProperty(LENGTH_ATTR, Integer.toString(Defaults.DataFieldMetadata.DECIMAL_LENGTH));
-			}
-			if(fieldProperties.getProperty(SCALE_ATTR) == null) {
-				fieldProperties.setProperty(SCALE_ATTR, Integer.toString(Defaults.DataFieldMetadata.DECIMAL_SCALE));
-			}
-		}
-	}
-	
-	public void setFieldProperty(String key, String value){
-		if (fieldProperties == null) setFieldProperties(new Properties());
-		
-		fieldProperties.setProperty(key, value);
-	}
-
-	public boolean isDelimited() {
-		return (size == 0);
-	}
-
-	public boolean isFixed() {
-		return (size != 0);
-	}
-	
-	/**
-	 * @return true if data field of this metadata field implements numeric interface; false else
-	 */
-	public boolean isNumeric() {
-	    return fieldType == NUMERIC_FIELD
-	    	|| fieldType == INTEGER_FIELD
-	    	|| fieldType == LONG_FIELD
-	    	|| fieldType == DECIMAL_FIELD;
-	}
-	
-	public static String type2Str(char fieldType) {
-		switch (fieldType) {
+	public static String type2Str(char type) {
+		switch (type) {
 			case DataFieldMetadata.NUMERIC_FIELD:
 				return NUMERIC_TYPE;
 			case DataFieldMetadata.INTEGER_FIELD:
@@ -750,326 +119,947 @@ public class DataFieldMetadata implements Serializable {
 			case DataFieldMetadata.LONG_FIELD:
 				return LONG_TYPE;
 			case DataFieldMetadata.DECIMAL_FIELD:
-			    return DECIMAL_TYPE;
+				return DECIMAL_TYPE;
 			case DataFieldMetadata.BOOLEAN_FIELD:
-			    return BOOLEAN_TYPE;
+				return BOOLEAN_TYPE;
 			case DataFieldMetadata.BYTE_FIELD:
-			    return BYTE_TYPE;
+				return BYTE_TYPE;
 			case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-			    return BYTE_COMPRESSED_TYPE;
+				return BYTE_COMPRESSED_TYPE;
 			case DataFieldMetadata.DATETIME_FIELD:
-			    return DATETIME_TYPE;
+				return DATETIME_TYPE;
 			case DataFieldMetadata.SEQUENCE_FIELD:
-			    return SEQUENCE_TYPE;
+				return SEQUENCE_TYPE;
 			case DataFieldMetadata.NULL_FIELD:
-			    return NULL_TYPE;
+				return NULL_TYPE;
+
 			default:
 				return UNKNOWN_TYPE;
 		}
 	}
-	
+
+	/**
+	 * Converts a type of a data field in a full string form into its character form.
+	 *
+	 * @param type the type of the data field as a string
+	 *
+	 * @return the type of a data field
+	 */
 	public static char str2Type(String fieldType) {
-		if(fieldType.compareToIgnoreCase(NUMERIC_TYPE) == 0 || fieldType.compareToIgnoreCase(NUMERIC_TYPE_DEPRECATED) == 0)
-		    return DataFieldMetadata.NUMERIC_FIELD;
-		else if(fieldType.compareToIgnoreCase(INTEGER_TYPE) == 0)
-		    return DataFieldMetadata.INTEGER_FIELD;
-		else if(fieldType.compareToIgnoreCase(STRING_TYPE) == 0)
-		    return DataFieldMetadata.STRING_FIELD;
-		else if(fieldType.compareToIgnoreCase(DATE_TYPE) == 0)
-		    return DataFieldMetadata.DATE_FIELD;
-		else if(fieldType.compareToIgnoreCase(LONG_TYPE) == 0)
-		    return DataFieldMetadata.LONG_FIELD;
-		else if(fieldType.compareToIgnoreCase(DECIMAL_TYPE) == 0)
-		    return DataFieldMetadata.DECIMAL_FIELD;
-		else if(fieldType.compareToIgnoreCase(BOOLEAN_TYPE) == 0)
-		    return DataFieldMetadata.BOOLEAN_FIELD;
-		else if(fieldType.compareToIgnoreCase(BYTE_TYPE) == 0)
-		    return DataFieldMetadata.BYTE_FIELD;
-		else if(fieldType.compareToIgnoreCase(BYTE_COMPRESSED_TYPE) == 0)
-		    return DataFieldMetadata.BYTE_FIELD_COMPRESSED;
-		else if(fieldType.compareToIgnoreCase(DATETIME_TYPE) == 0)
-		    return DataFieldMetadata.DATETIME_FIELD;
-		else if(fieldType.compareToIgnoreCase(SEQUENCE_TYPE) == 0)
-		    return DataFieldMetadata.SEQUENCE_FIELD;
-		else if (fieldType.compareToIgnoreCase(NULL_TYPE) == 0)
+		if (fieldType.equalsIgnoreCase(NUMERIC_TYPE) || fieldType.equalsIgnoreCase(NUMERIC_TYPE_DEPRECATED)) {
+			return DataFieldMetadata.NUMERIC_FIELD;
+		} else if (fieldType.equalsIgnoreCase(INTEGER_TYPE)) {
+			return DataFieldMetadata.INTEGER_FIELD;
+		} else if (fieldType.equalsIgnoreCase(STRING_TYPE)) {
+			return DataFieldMetadata.STRING_FIELD;
+		} else if (fieldType.equalsIgnoreCase(DATE_TYPE)) {
+			return DataFieldMetadata.DATE_FIELD;
+		} else if (fieldType.equalsIgnoreCase(LONG_TYPE)) {
+			return DataFieldMetadata.LONG_FIELD;
+		} else if (fieldType.equalsIgnoreCase(DECIMAL_TYPE)) {
+			return DataFieldMetadata.DECIMAL_FIELD;
+		} else if (fieldType.equalsIgnoreCase(BOOLEAN_TYPE)) {
+			return DataFieldMetadata.BOOLEAN_FIELD;
+		} else if (fieldType.equalsIgnoreCase(BYTE_TYPE)) {
+			return DataFieldMetadata.BYTE_FIELD;
+		} else if (fieldType.equalsIgnoreCase(BYTE_COMPRESSED_TYPE)) {
+			return DataFieldMetadata.BYTE_FIELD_COMPRESSED;
+		} else if (fieldType.equalsIgnoreCase(DATETIME_TYPE)) {
+			return DataFieldMetadata.DATETIME_FIELD;
+		} else if (fieldType.equalsIgnoreCase(SEQUENCE_TYPE)) {
+			return DataFieldMetadata.SEQUENCE_FIELD;
+		} else if (fieldType.equalsIgnoreCase(NULL_TYPE)) {
 			return DataFieldMetadata.NULL_FIELD;
+		}
+
 		return DataFieldMetadata.UNKNOWN_FIELD;
 	}
-	
-	public boolean equals(Object o){
-		return equals(o, true);
-	}
-	
-	public boolean equals(Object o, boolean checkFixDelType){
-		if (!(o instanceof DataFieldMetadata)){
-			return false;
-		}
-		if (this.fieldType==((DataFieldMetadata)o).fieldType){
-			if (isFixed() && ((DataFieldMetadata)o).isFixed()) {
-				//both fixed
-				return getSize() == ((DataFieldMetadata)o).getSize();
-			}else if (!isFixed() && !((DataFieldMetadata)o).isFixed()) {
-				//both delimited
-				if (this.fieldType==DECIMAL_FIELD){
-					return (getProperty(LENGTH_ATTR).equals(
-							((DataFieldMetadata)o).getProperty(LENGTH_ATTR)) && 
-							getProperty(SCALE_ATTR).equals(
-									((DataFieldMetadata)o).getProperty(SCALE_ATTR)));
-				}else{
-					//the same type and both delimited
-					return true;
-				}
-			}else{
-				//one fixed and the second delimited
-				return !checkFixDelType;
-			}
-		}
-		//different types
-		return false;
-	}
-	
-	public int hashCode(){
-		return (int)this.fieldType;
-	}
-	
+
+	/** Parent data record meta data. */
+	private DataRecordMetadata dataRecordMetadata;
+
+	/** Ordinal number of the field within data record meta data. */
+	private int number;
+	/** Name of the field. */
+	private String name;
+	/** Description of the field. */
+	private String description;
+
+	/** The type of the field. */
+	private char type = UNKNOWN_FIELD;
+
+	/** Delimiter of the field (could be empty if field belongs to fixLength record). */
+	private String delimiter = null;
+	/** If this switch is set to true, EOF works as delimiter for this field. It's useful for last field in the record. */
+	private boolean eofAsDelimiter = false;
+	/** Format of Number, Date, DateTime, String (RegExp) or empty if not applicable. */
+	private String formatStr;
+	/** Length of the field (in bytes) if the field belongs to fixLength record. */
+	private short size = 0;
+
+	/** Relative shift of the beginning of the field. */
+	private short shift = 0;
+	/** Indicates if when reading from file try to trim string value to obtain value */
+	private boolean trim = false;
+	/** Fields can assume null value by default. */
+	private boolean nullable = true;
+
+	/** The default value. */
+	private Object defaultValue;
+	/** The default value as a string. */
+	private String defaultValueStr;
+	/** The auto-filling value. */
+	private String autoFilling;
+
 	/**
-	 * This method checks if value from this field can be put safe in another field
+	 * Field can be populated by execution of Java code which can include references to fields from input records. The
+	 * code corresponds to a body of a method which has to return a value that has a type of the field type.
 	 * 
-	 * @param anotherField
-	 * @return true if conversion is save, false in another case
+	 * The syntax for the field references is as follows:
+	 * 
+	 * [record name].[field name]
 	 */
-	public boolean isSubtype(DataFieldMetadata anotherField){
-		int anotherFieldLength;
-		int anotherFieldScale;
-		switch (fieldType) {
-		case BOOLEAN_FIELD:
-			switch (anotherField.getType()) {
-			case STRING_FIELD:
-			case BOOLEAN_FIELD:
-				return true;
-			default:
-				return false;
-			}
-		case BYTE_FIELD:
-		case BYTE_FIELD_COMPRESSED:
-			switch (anotherField.getType()) {
-			case BYTE_FIELD:
-			case BYTE_FIELD_COMPRESSED:
-				return true;
-			default:
-				return false;
-			}
-		case STRING_FIELD:
-			switch (anotherField.getType()) {
-			case BYTE_FIELD:
-			case BYTE_FIELD_COMPRESSED:
-			case STRING_FIELD:
-				return true;
-			default:
-				return false;
-			}
-		case DATE_FIELD:
-			switch (anotherField.getType()) {
-			case BYTE_FIELD:
-			case BYTE_FIELD_COMPRESSED:
-			case STRING_FIELD:
-			case DATE_FIELD:
-			case DATETIME_FIELD:
-				return true;
-			default:
-				return false;
-			}
-		case DATETIME_FIELD:
-			switch (anotherField.getType()) {
-			case BYTE_FIELD:
-			case BYTE_FIELD_COMPRESSED:
-			case STRING_FIELD:
-			case DATETIME_FIELD:
-				return true;
-			default:
-				return false;
-			}
-		case INTEGER_FIELD:
-			switch (anotherField.getType()) {
-			case BYTE_FIELD:
-			case BYTE_FIELD_COMPRESSED:
-			case STRING_FIELD:
-			case INTEGER_FIELD:
-			case LONG_FIELD:
-			case NUMERIC_FIELD:
-				return true;
-			case DECIMAL_FIELD:
-				anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
-				anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
-				if (anotherFieldLength - anotherFieldScale >= INTEGER_LENGTH) {
-					return true;
-				}else{
-					return false;
-				}
-			default:
-				return false;
-			}
-		case LONG_FIELD:
-			switch (anotherField.getType()) {
-			case BYTE_FIELD:
-			case BYTE_FIELD_COMPRESSED:
-			case STRING_FIELD:
-			case LONG_FIELD:
-			case NUMERIC_FIELD:
-				return true;
-			case DECIMAL_FIELD:
-				anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
-				anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
-				if (anotherFieldLength - anotherFieldScale >= LONG_LENGTH) {
-					return true;
-				}else{
-					return false;
-				}
-			default:
-				return false;
-			}
-		case NUMERIC_FIELD:
-			switch (anotherField.getType()) {
-			case BYTE_FIELD:
-			case BYTE_FIELD_COMPRESSED:
-			case STRING_FIELD:
-			case NUMERIC_FIELD:
-				return true;
-			case DECIMAL_FIELD:
-				anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
-				anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
-				if (anotherFieldLength >= DOUBLE_LENGTH && anotherFieldScale >= DOUBLE_SCALE) {
-					return true;
-				}else{
-					return false;
-				}
-			default:
-				return false;
-			}
-		case DECIMAL_FIELD:
-			switch (anotherField.getType()) {
-			case BYTE_FIELD:
-			case BYTE_FIELD_COMPRESSED:
-			case STRING_FIELD:
-				return true;
-			case DECIMAL_FIELD:
-				anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
-				anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
-				if (anotherFieldLength >= Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) && 
-						anotherFieldScale >= Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR))) {
-					return true;
-				}else{
-					return false;
-				}
-			case NUMERIC_FIELD:
-				if (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) <= DOUBLE_LENGTH && 
-						Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) <= DOUBLE_SCALE ) {
-					return true;
-				}else{
-					return false;
-				}
-			case INTEGER_FIELD:
-				if (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) - 
-						Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) 
-						<= INTEGER_LENGTH ) {
-					return true;
-				}else{
-					return false;
-				}
-			case LONG_FIELD:
-				if (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) - 
-						Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) 
-						<= LONG_LENGTH ) {
-					return true;
-				}else{
-					return false;
-				}
-			default:
-				return false;
-			}
+	private TypedProperties fieldProperties;
+
+	/**
+	 * Locale string. Both language and country can be specified - if both are specified then language string & country
+	 * string have to be delimited by "." (dot) -> e.g. "en.UK" , "fr.CA". If only language should be specified, then
+	 * use language code according to ISO639 -> e.g. "en" , "de".
+	 * 
+	 * @see java.util.Locale
+	 */
+	private String localeStr;
+
+	/**
+	 * Constructor for a delimited type of field.
+	 * 
+	 * @param name the name of the field
+	 * @param fieldType the type of this field
+	 * @param delimiter a string to be used as a delimiter for this field
+	 */
+	public DataFieldMetadata(String name, char fieldType, String delimiter) {
+		if (!StringUtils.isValidObjectName(name)) {
+			throw new InvalidGraphObjectNameException(name, "FIELD");
 		}
-		return false;
-	}
 
+		this.name = name;
+		this.type = fieldType;
+		this.delimiter = delimiter;
 
-	public boolean isTrim() {
-		return trim;
-	}
+		if (isNumeric() || fieldType == DATE_FIELD || fieldType == DATETIME_FIELD || fieldType == BOOLEAN_FIELD) {
+			trim = true;
+		}
 
-
-	public void setTrim(boolean trim) {
-		this.trim = trim;
+		setFieldProperties(new TypedProperties());
+		this.localeStr = null;
 	}
 
 	/**
-	 * This method checks if type of field is date or datetime 
-	 * and if formatString isn't null or empty.
+	 * Constructor for a default (String) delimited type of field.
+	 * 
+	 * @param name the name of the field
+	 * @param delimiter a string to be used as a delimiter for this field
+	 */
+	public DataFieldMetadata(String name, String delimiter) {
+		this(name, STRING_FIELD, delimiter);
+	}
+
+	/**
+	 * Constructor for a fixed-length type of field.
+	 * 
+	 * @param name the name of the field
+	 * @param fieldType the type of this field
+	 * @param size the size of the field (in bytes)
+	 */
+	public DataFieldMetadata(String name, char fieldType, short size) {
+		if (!StringUtils.isValidObjectName(name)) {
+			throw new InvalidGraphObjectNameException(name, "FIELD");
+		}
+
+		this.name = name;
+		this.type = fieldType;
+		this.size = size;
+
+		if (isNumeric() || fieldType == DATE_FIELD || fieldType == DATETIME_FIELD) {
+			trim = true;
+		}
+
+		setFieldProperties(new TypedProperties());
+		this.localeStr = null;
+	}
+
+	/**
+	 * Constructor for a default (String) fixed-length type of field.
+	 * 
+	 * @param name the name of the field
+	 * @param size the size of the field (in bytes)
+	 */
+	public DataFieldMetadata(String name, short size) {
+		this(name, STRING_FIELD, size);
+	}
+
+	/**
+	 * Private constructor used in the duplicate() method.
+	 */
+	private DataFieldMetadata() {
+	}
+
+	/**
+	 * Sets the parent data record meta data.
+	 *
+	 * @param dataRecordMetadata the new parent data record meta data
+	 */
+	public void setDataRecordMetadata(DataRecordMetadata dataRecordMetadata) {
+		this.dataRecordMetadata = dataRecordMetadata;
+	}
+
+	/**
+	 * Returns the parent data record meta data.
+	 *
+	 * @return the parent data record meta data
+	 */
+	public DataRecordMetadata getDataRecordMetadata() {
+		return dataRecordMetadata;
+	}
+
+	/**
+	 * Sets the ordinal number of the data field.
+	 *
+	 * @param number the new ordinal number
+	 */
+	public void setNumber(int number) {
+		this.number = number;
+	}
+
+	/**
+	 * Returns the ordinal number of the data field.
+	 *
+	 * @return the ordinal number of the data field
+	 */
+	public int getNumber() {
+		return number;
+	}
+
+	/**
+	 * Sets the name of the field.
+	 *
+	 * @param name the new name of the field
+	 */
+	public void setName(String name) {
+		if (!StringUtils.isValidObjectName(name)) {
+			throw new InvalidGraphObjectNameException(name, "FIELD");
+		}
+
+		this.name = name;
+	}
+
+	/**
+	 * Returns the name of the field.
+	 *
+	 * @return the name of the field
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Sets the description of the field.
+	 *
+	 * @param name the new description of the field
+	 */
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	/**
+	 * Returns the description of the field.
+	 *
+	 * @return the description of the field
+	 */
+	public String getDescription() {
+		return description;
+	}
+
+	/**
+	 * Sets the type of the data field.
+	 * 
+	 * @param type the new type of the data field
+	 *
+	 * @since 30th October 2002
+	 */
+	public void setType(char type) {
+		this.type = type;
+	}
+
+	/**
+	 * Returns the type of the data field.
+	 * 
+	 * @return the type of the data field
+	 *
+	 * @since 30th October 2002
+	 */
+	public char getType() {
+		return type;
+	}
+
+	/**
+	 * Sets the type of the data field using the full string form.
+	 * 
+	 * @param type the new type of the data field as a string
+	 */
+	public void setTypeAsString(String type) {
+		this.type = str2Type(type);
+	}
+
+	/**
+	 * Returns the type of the data field in the full string form.
+	 * 
+	 * @return the type of the data field as a string
+	 */
+	public String getTypeAsString() {
+		return type2Str(type);
+	}
+
+	/**
+	 * Returns true if this data field is numeric, false otherwise.
+	 *
+	 * @return true if this data field is numeric, false otherwise
+	 */
+	public boolean isNumeric() {
+		return (type == NUMERIC_FIELD || type == INTEGER_FIELD || type == LONG_FIELD || type == DECIMAL_FIELD);
+	}
+
+	/**
+	 * Sets the delimiter string.
+	 * 
+	 * @param delimiter the new delimiter string
+	 */
+	public void setDelimiter(String delimiter) {
+		this.delimiter = delimiter;
+	}
+
+	/**
+	 * Returns the delimiter string.
+	 * 
+	 * @return the delimiter string
+	 */
+	public String getDelimiter() {
+		return delimiter;
+	}
+
+	/**
+	 * Returns an array of all field delimiters assigned to this field. In case no field delimiters are defined, default
+	 * field delimiters from parent meta data are returned. Delimiters for last field are extended by a record delimiter.
+	 * 
+	 * @return the array of all field delimiters
+	 */
+	public String[] getDelimiters() {
+		if (isDelimited()) {
+			String[] delimiters = null;
+
+			if (delimiter != null) {
+				delimiters = delimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
+
+				if (isLastNonAutoFilledField()) { // if field is last
+					if (getDataRecordMetadata().isSpecifiedRecordDelimiter()) {
+						List<String> tempDelimiters = new ArrayList<String>();
+
+						for (int i = 0; i < delimiters.length; i++) {
+							// combine each field delimiter with each record delimiter
+							String[] recordDelimiters = getDataRecordMetadata().getRecordDelimiters();
+
+							for (int j = 0; j < recordDelimiters.length; j++) {
+								tempDelimiters.add(delimiters[i] + recordDelimiters[j]);
+							}
+						}
+
+						delimiters = tempDelimiters.toArray(new String[tempDelimiters.size()]);
+					}
+				}
+			} else {
+				if (!isLastNonAutoFilledField()) { // if the field is not last
+					delimiters = getDataRecordMetadata().getFieldDelimiters();
+				} else {
+					delimiters = getDataRecordMetadata().getRecordDelimiters();
+
+					if (delimiters == null) {
+						delimiters = getDataRecordMetadata().getFieldDelimiters();
+					}
+				}
+			}
+
+			return delimiters;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Sets the OEF-as-delimiter flag.
+	 *
+	 * @param eofAsDelimiter the new value of the flag
+	 */
+	public void setEofAsDelimiter(boolean eofAsDelimiter) {
+		this.eofAsDelimiter = eofAsDelimiter;
+	}
+
+	/**
+	 * Returns the value of the OEF-as-delimiter flag.
+	 *
+	 * @return the value of the OEF-as-delimiter flag
+	 */
+	public boolean isEofAsDelimiter() {
+		return eofAsDelimiter;
+	}
+
+	/**
+	 * Sets the format pattern of this data field.
+	 *
+	 * @param formatStr the new format pattern (acceptable value depends on the type of the data field)
+	 */
+	public void setFormatStr(String formatStr) {
+		this.formatStr = formatStr;
+	}
+
+	/**
+	 * Returns the format pattern which will be used when outputting field's value as a string.
+	 * 
+	 * @return the format pattern of this data field
+	 */
+	public String getFormatStr() {
+		return formatStr;
+	}
+
+	/**
+	 * This method checks if type of field is date or datetime and if formatString isn't null or empty.
+	 *
 	 * @return true if type of field is date or datetime and if formatString isn't null or empty.
-	 * @since     24.8.2007
-     * @see       org.jetel.component.DataFieldmetadata.isTimeFormat(CharSequence)
+	 *
+	 * @since 24th August 2007
+	 * @see org.jetel.component.DataFieldmetadata.isTimeFormat(CharSequence)
 	 */
 	private boolean isDateOrTimeFieldWithFormatStr() {
-		if (getType() != DATE_FIELD && fieldType != DATETIME_FIELD) {
+		if (type != DATE_FIELD && type != DATETIME_FIELD) {
 			return false;
 		}
-		if (StringUtils.isEmpty(getFormatStr())) {
-			return false;
-		}
-		return true;
+
+		return !StringUtils.isEmpty(formatStr);
 	}
-	
+
 	/**
-	 * This method checks if formatString has a format of date.
-	 * If formatString is null or empty then formatString hasn't a format of date.
-	 * Note: formatString can has a format of date and format of time at the same time.
+	 * This method checks if formatString has a format of date. If formatString is null or empty then formatString
+	 * hasn't a format of date. Note: formatString can has a format of date and format of time at the same time.
+	 *
 	 * @return true if formatString has a format of date.
-	 * @since     24.8.2007
-     * @see       org.jetel.component.DataFieldmetadata.isTimeFormat(CharSequence)
+	 *
+	 * @since 24th August 2007
+	 * @see org.jetel.component.DataFieldmetadata.isTimeFormat(CharSequence)
 	 */
 	public boolean isDateFormat() {
 		if (!isDateOrTimeFieldWithFormatStr()) {
 			return false;
 		}
-		return DATE_ONLY_PATTERN.matcher(getFormatStr()).find();
+
+		return DATE_ONLY_PATTERN.matcher(formatStr).find();
 	}
 
 	/**
-	 * This method checks if formatString has a format of time.
-	 * If formatString is null or empty then formatString hasn't a format of time.
-	 * Note: formatString can has a format of date and format of time at the same time.
+	 * This method checks if formatString has a format of time. If formatString is null or empty then formatString
+	 * hasn't a format of time. Note: formatString can has a format of date and format of time at the same time.
+	 *
 	 * @return true if formatString has a format of time.
-	 * @since     24.8.2007
-     * @see       org.jetel.component.DataFieldmetadata.isDateFormat(CharSequence)
+	 *
+	 * @since 24th August 2007
+	 * @see org.jetel.component.DataFieldmetadata.isDateFormat(CharSequence)
 	 */
 	public boolean isTimeFormat() {
 		if (!isDateOrTimeFieldWithFormatStr()) {
 			return false;
 		}
-		return TIME_ONLY_PATTERN.matcher(getFormatStr()).find();
+
+		return TIME_ONLY_PATTERN.matcher(formatStr).find();
 	}
 
-
-	public boolean isEofAsDelimiter() {
-		return eofAsDelimiter;
+	/**
+	 * Sets the maximum field size (used only when dealing with a fixed-size type of record).
+	 *
+	 * @param size the new size of the data field
+	 */
+	public void setSize(short size) {
+		this.size = size;
 	}
 
-
-	public void setEofAsDelimiter(boolean eofAsDelimiter) {
-		this.eofAsDelimiter = eofAsDelimiter;
+	/**
+	 * Returns the specified maximum field size (used only when dealing with a fixed-size type of record).
+	 *
+	 * @return the size of the data field
+	 */
+	public short getSize() {
+		return size;
 	}
 
-
-	public DataRecordMetadata getDataRecordMetadata() {
-		return dataRecordMetadata;
+	/**
+	 * Returns true if this data field is delimited, false otherwise.
+	 *
+	 * @return true if this data field is delimited, false otherwise
+	 */
+	public boolean isDelimited() {
+		return (size == 0);
 	}
 
-
-	public void setDataRecordMetadata(DataRecordMetadata dataRecordMetadata) {
-		this.dataRecordMetadata = dataRecordMetadata;
+	/**
+	 * Returns true if this data field is fixed-length, false otherwise.
+	 *
+	 * @return true if this data field is fixed-length, false otherwise
+	 */
+	public boolean isFixed() {
+		return (size != 0);
 	}
+
+	/**
+	 * Sets the position of the field in a data record (used only when dealing with fixed-size type of record).
+	 * 
+	 * @param shift the new position of the field in a data record
+	 */
+	public void setShift(short shift) {
+		this.shift = shift;
+	}
+
+	/**
+	 * Returns the position of the field in a data record (used only when dealing with fixed-size type of record).
+	 * 
+	 * @return the position of the field in a data record
+	 */
+	public short getShift() {
+		return shift;
+	}
+
+	/**
+	 * Sets the trim flag.
+	 *
+	 * @param trim the new value of the trim flag
+	 */
+	public void setTrim(boolean trim) {
+		this.trim = trim;
+	}
+
+	/**
+	 * Returns the value of the trim flag.
+	 *
+	 * @return the value of the trim flag
+	 */
+	public boolean isTrim() {
+		return trim;
+	}
+
+	/**
+	 * Sets the nullable flag.
+	 * 
+	 * @param nullable the new value of the nullable flag
+	 */
+	public void setNullable(boolean nullable) {
+		this.nullable = nullable;
+	}
+
+	/**
+	 * Returns the value of the nullable flag.
+	 * 
+	 * @param the value of the nullable flag
+	 */
+	public boolean isNullable() {
+		return nullable;
+	}
+
+	/**
+	 * Sets the default value.
+	 *
+	 * @param defaultValue the new default value
+	 */
+	public void setDefaultValue(Object defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+
+	/**
+	 * Returns the default value.
+	 *
+	 * @return the default value
+	 */
+	public Object getDefaultValue() {
+		return defaultValue;
+	}
+
+	/**
+	 * Sets the default string value.
+	 *
+	 * @param defaultValueStr the new default string value
+	 *
+	 * @since 30th October 2002
+	 */
+	public void setDefaultValueStr(String defaultValueStr) {
+		this.defaultValueStr = defaultValueStr;
+	}
+
+	/**
+	 * Returns the default string value.
+	 *
+	 * @return the default string value
+	 *
+	 * @since 30th October 2002
+	 */
+	public String getDefaultValueStr() {
+		if (defaultValueStr != null) {
+			return defaultValueStr;
+		} else if (defaultValue != null) {
+			return defaultValue.toString();
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns true if the default value is set, false otherwise.
+	 *
+	 * @return true if the default value is set, false otherwise
+	 */
+	public boolean isDefaultValueSet() {
+		return (!StringUtils.isEmpty(defaultValueStr) || defaultValue != null);
+	}
+
+	/**
+	 * Sets the auto-filling value.
+	 *
+	 * @param autoFilling the new auto-filling value
+	 */
+	public void setAutoFilling(String autoFilling) {
+		this.autoFilling = autoFilling;
+	}
+
+	/**
+	 * Returns the auto-filling value.
+	 *
+	 * @return the auto-filling value
+	 */
+	public String getAutoFilling() {
+		return autoFilling;
+	}
+
+	/**
+	 * Returns true if the data field is auto filled, false otherwise.
+	 *
+	 * @return true if the data field is auto filled, false otherwise
+	 */
+	public boolean isAutoFilled() {
+		return !StringUtils.isEmpty(autoFilling);
+	}
+
+	/**
+	 * Returns true if this data field is the last non-autofilled field within the data record meta data, false otherwise.
+	 *
+	 * @return true if this data field is the last non-autofilled field
+	 */
+	private boolean isLastNonAutoFilledField() {
+		if (isAutoFilled()) {
+			return false;
+		}
+
+		DataRecordMetadata metadata = getDataRecordMetadata();
+		DataFieldMetadata[] fields = metadata.getFields();
+
+		for (int i = getNumber() + 1; i < metadata.getNumFields(); i++) {
+			if (!fields[i].isAutoFilled()) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Sets the fieldProperties attribute of the DataRecordMetadata object. Field properties allows defining additional
+	 * parameters for individual fields. These parameters (key-value pairs) are NOT normally handled by CloverETL, but
+	 * can be used in user's code or Components - thus allow for greater flexibility.
+	 * 
+	 * @param properties The new recordProperties value
+	 */
+	public void setFieldProperties(Properties properties) {
+		fieldProperties = new TypedProperties(properties);
+
+		// set default attribute values
+		if (type == DECIMAL_FIELD) {
+			if (fieldProperties.getProperty(LENGTH_ATTR) == null) {
+				fieldProperties.setProperty(LENGTH_ATTR, Integer.toString(Defaults.DataFieldMetadata.DECIMAL_LENGTH));
+			}
+			if (fieldProperties.getProperty(SCALE_ATTR) == null) {
+				fieldProperties.setProperty(SCALE_ATTR, Integer.toString(Defaults.DataFieldMetadata.DECIMAL_SCALE));
+			}
+		}
+	}
+
+	/**
+	 * Gets the fieldProperties attribute of the DataFieldMetadata object.<br>
+	 * These properties are automatically filled-in when parsing XML (.fmt) file containing data record metadata. Any
+	 * attribute not directly recognized by Clover is stored within properties object.<br>
+	 * Example:
+	 * 
+	 * <pre>
+	 * &lt;Field name=&quot;Field1&quot; type=&quot;numeric&quot; delimiter=&quot;;&quot; myOwn1=&quot;1&quot; myOwn2=&quot;xyz&quot; /&gt;
+	 * </pre>
+	 * 
+	 * @return The fieldProperties value
+	 */
+	public TypedProperties getFieldProperties() {
+		return fieldProperties;
+	}
+
+	/**
+	 * Sets a value of the property with the given key.
+	 *
+	 * @param key the key of the property
+	 * @param value the value to be set
+	 */
+	public void setProperty(String key, String value) {
+		if (fieldProperties == null) {
+			setFieldProperties(new Properties());
+		}
+
+		fieldProperties.setProperty(key, value);
+	}
+
+	/**
+	 * Returns a value of the property with the given key.
+	 * 
+	 * @param key the key of the property
+	 *
+	 * @return the value of the property
+	 */
+	public String getProperty(String key) {
+		return fieldProperties.getProperty(key);
+	}
+
+	/**
+	 * Sets the locale code string.<br>
+	 * Formatters/Parsers are generated based on this field's value.
+	 *
+	 * @param localeStr the locale code (eg. "en", "fr", ...)
+	 */
+	public void setLocaleStr(String localeStr) {
+		this.localeStr = localeStr;
+	}
+
+	/**
+	 * Returns the locale code string.
+	 *
+	 * @return the locale code string.
+	 */
+	public String getLocaleStr() {
+		return localeStr;
+	}
+
+	/**
+	 * This method checks if value from this field can be put safe in another field.
+	 *
+	 * @param anotherField the another field to be checked
+	 *
+	 * @return true if conversion is save, false otherwise
+	 */
+	public boolean isSubtype(DataFieldMetadata anotherField) {
+		switch (type) {
+			case BOOLEAN_FIELD:
+				switch (anotherField.getType()) {
+					case STRING_FIELD:
+					case BOOLEAN_FIELD:
+						return true;
+					default:
+						return false;
+				}
+			case BYTE_FIELD:
+			case BYTE_FIELD_COMPRESSED:
+				switch (anotherField.getType()) {
+					case BYTE_FIELD:
+					case BYTE_FIELD_COMPRESSED:
+						return true;
+					default:
+						return false;
+				}
+			case STRING_FIELD:
+				switch (anotherField.getType()) {
+					case BYTE_FIELD:
+					case BYTE_FIELD_COMPRESSED:
+					case STRING_FIELD:
+						return true;
+					default:
+						return false;
+				}
+			case DATE_FIELD:
+				switch (anotherField.getType()) {
+					case BYTE_FIELD:
+					case BYTE_FIELD_COMPRESSED:
+					case STRING_FIELD:
+					case DATE_FIELD:
+					case DATETIME_FIELD:
+						return true;
+					default:
+						return false;
+				}
+			case DATETIME_FIELD:
+				switch (anotherField.getType()) {
+					case BYTE_FIELD:
+					case BYTE_FIELD_COMPRESSED:
+					case STRING_FIELD:
+					case DATETIME_FIELD:
+						return true;
+					default:
+						return false;
+				}
+			case INTEGER_FIELD:
+				switch (anotherField.getType()) {
+					case BYTE_FIELD:
+					case BYTE_FIELD_COMPRESSED:
+					case STRING_FIELD:
+					case INTEGER_FIELD:
+					case LONG_FIELD:
+					case NUMERIC_FIELD:
+						return true;
+					case DECIMAL_FIELD:
+						int anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
+						int anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
+
+						return (anotherFieldLength - anotherFieldScale >= INTEGER_LENGTH);
+					default:
+						return false;
+				}
+			case LONG_FIELD:
+				switch (anotherField.getType()) {
+					case BYTE_FIELD:
+					case BYTE_FIELD_COMPRESSED:
+					case STRING_FIELD:
+					case LONG_FIELD:
+					case NUMERIC_FIELD:
+						return true;
+					case DECIMAL_FIELD:
+						int anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
+						int anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
 	
-}
-/*
- *  end class DataFieldMetadata
- */
+						return (anotherFieldLength - anotherFieldScale >= LONG_LENGTH);
+					default:
+						return false;
+				}
+			case NUMERIC_FIELD:
+				switch (anotherField.getType()) {
+					case BYTE_FIELD:
+					case BYTE_FIELD_COMPRESSED:
+					case STRING_FIELD:
+					case NUMERIC_FIELD:
+						return true;
+					case DECIMAL_FIELD:
+						int anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
+						int anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
+	
+						return (anotherFieldLength >= DOUBLE_LENGTH && anotherFieldScale >= DOUBLE_SCALE);
+					default:
+						return false;
+				}
+			case DECIMAL_FIELD:
+				switch (anotherField.getType()) {
+					case BYTE_FIELD:
+					case BYTE_FIELD_COMPRESSED:
+					case STRING_FIELD:
+						return true;
+					case DECIMAL_FIELD:
+						int anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
+						int anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
+	
+						return (anotherFieldLength >= Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR))
+								&& anotherFieldScale >= Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)));
+					case NUMERIC_FIELD:
+						return (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) <= DOUBLE_LENGTH
+								&& Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) <= DOUBLE_SCALE);
+					case INTEGER_FIELD:
+						return (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR))
+								- Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) <= INTEGER_LENGTH);
+					case LONG_FIELD:
+						return (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR))
+								- Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) <= LONG_LENGTH);
+					default:
+						return false;
+				}
+		}
 
+		return false;
+	}
+
+	/**
+	 * Creates deep copy of an existing data field meta data object.
+	 * 
+	 * @return new data field meta data (exact copy of current data field meta data)
+	 */
+	public DataFieldMetadata duplicate() {
+		DataFieldMetadata ret = new DataFieldMetadata();
+
+		ret.setName(getName());
+		ret.setType(getType());
+		ret.setDelimiter(getDelimiter());
+		ret.setEofAsDelimiter(this.isEofAsDelimiter());
+		ret.setFormatStr(getFormatStr());
+		ret.setShift(getShift());
+		ret.setSize(getSize());
+		ret.setNullable(isNullable());
+		ret.setDefaultValueStr(getDefaultValueStr());
+		ret.setLocaleStr(getLocaleStr());
+		ret.setAutoFilling(getAutoFilling());
+		ret.setTrim(isTrim());
+
+		// copy record properties
+		Properties target = new Properties();
+		Properties source = getFieldProperties();
+
+		if (source != null) {
+			for (Enumeration<?> element = source.propertyNames(); element.hasMoreElements();) {
+				String key = (String) element.nextElement();
+				target.put(key, source.getProperty(key));
+			}
+
+			ret.setFieldProperties(target);
+		}
+
+		return ret;
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		return equals(object, true);
+	}
+
+	public boolean equals(Object object, boolean checkFixDelType) {
+		if (!(object instanceof DataFieldMetadata)) {
+			return false;
+		}
+
+		if (this.type == ((DataFieldMetadata) object).type) {
+			if (isFixed() && ((DataFieldMetadata) object).isFixed()) {
+				// both fixed
+				return (getSize() == ((DataFieldMetadata) object).getSize());
+			} else if (!isFixed() && !((DataFieldMetadata) object).isFixed()) {
+				// both delimited
+				if (this.type == DECIMAL_FIELD) {
+					return (getProperty(LENGTH_ATTR).equals(((DataFieldMetadata) object).getProperty(LENGTH_ATTR))
+							&& getProperty(SCALE_ATTR).equals(((DataFieldMetadata) object).getProperty(SCALE_ATTR)));
+				} else {
+					// the same type and both delimited
+					return true;
+				}
+			} else {
+				// one fixed and the second delimited
+				return !checkFixDelType;
+			}
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return (int) this.type;
+	}
+
+}
