@@ -330,7 +330,7 @@ public class WcardPattern {
 		// check if the filename is a file or something else
 		try {
 			fileProtocol = parent != null ? parent.getProtocol().equals("file") :
-				FileUtils.getFileURL(fileName).getProtocol().equals("file");
+				FileUtils.getFileURL(parent, fileName).getProtocol().equals("file");
 		} catch (MalformedURLException e) {
 			// NOTHING
 		}

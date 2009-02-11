@@ -145,7 +145,7 @@ public class MultiFileReader {
 		while (fit.hasNext()) {
 			try {
 				fName = fit.next();
-				URL url = FileUtils.getInnerAddress(fName);
+				URL url = FileUtils.getInnerAddress(contextURL, fName);
 				if (FileUtils.isServerURL(url)) {
 					//FileUtils.checkServer(url); //this is very long operation
 					continue;

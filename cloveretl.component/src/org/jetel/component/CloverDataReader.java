@@ -204,7 +204,7 @@ public class CloverDataReader extends Node {
         checkMetadata(status, getOutMetadata());
         
     	try {
-			if (!FileUtils.isServerURL(FileUtils.getInnerAddress(fileURL)) && 
+			if (!FileUtils.isServerURL(FileUtils.getInnerAddress(getGraph().getProjectURL(), fileURL)) && 
 					!(new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL))).exists()) {
 				status.add(new ConfigurationProblem("File " + fileURL + " does not exist.", Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
 			}
