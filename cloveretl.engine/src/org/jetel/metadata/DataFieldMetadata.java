@@ -33,11 +33,15 @@ import org.jetel.util.string.StringUtils;
 /**
  * A class that represents meta data describing one particular data field.<br>
  * Handles encoding of characters.
- * 
- * @author D.Pavlis
- * @since March 26, 2002
- * @revision $Revision$
+ *
+ * @author David Pavlis <david.pavlis@javlin.eu>
+ * @author Martin Janik <martin.janik@javlin.eu>
+ *
+ * @version 11th February 2009
+ * @since 26th March 2002
  * @see org.jetel.metadata.DataRecordMetadata
+ *
+ * @revision $Revision$
  */
 public class DataFieldMetadata implements Serializable {
 
@@ -250,7 +254,7 @@ public class DataFieldMetadata implements Serializable {
 			trim = true;
 		}
 
-		setFieldProperties(new TypedProperties());
+		setFieldProperties(new Properties());
 		this.localeStr = null;
 	}
 
@@ -284,7 +288,7 @@ public class DataFieldMetadata implements Serializable {
 			trim = true;
 		}
 
-		setFieldProperties(new TypedProperties());
+		setFieldProperties(new Properties());
 		this.localeStr = null;
 	}
 
@@ -784,11 +788,11 @@ public class DataFieldMetadata implements Serializable {
 	public void setFieldProperties(Properties properties) {
 		fieldProperties = new TypedProperties(properties);
 
-		// set default attribute values
 		if (type == DECIMAL_FIELD) {
 			if (fieldProperties.getProperty(LENGTH_ATTR) == null) {
 				fieldProperties.setProperty(LENGTH_ATTR, Integer.toString(Defaults.DataFieldMetadata.DECIMAL_LENGTH));
 			}
+
 			if (fieldProperties.getProperty(SCALE_ATTR) == null) {
 				fieldProperties.setProperty(SCALE_ATTR, Integer.toString(Defaults.DataFieldMetadata.DECIMAL_SCALE));
 			}
@@ -994,35 +998,32 @@ public class DataFieldMetadata implements Serializable {
 	 * @return new data field meta data (exact copy of current data field meta data)
 	 */
 	public DataFieldMetadata duplicate() {
-		DataFieldMetadata ret = new DataFieldMetadata();
+		DataFieldMetadata dataFieldMetadata = new DataFieldMetadata();
 
-		ret.setName(getName());
-		ret.setType(getType());
-		ret.setDelimiter(getDelimiter());
-		ret.setEofAsDelimiter(this.isEofAsDelimiter());
-		ret.setFormatStr(getFormatStr());
-		ret.setShift(getShift());
-		ret.setSize(getSize());
-		ret.setNullable(isNullable());
-		ret.setDefaultValueStr(getDefaultValueStr());
-		ret.setLocaleStr(getLocaleStr());
-		ret.setAutoFilling(getAutoFilling());
-		ret.setTrim(isTrim());
+		dataFieldMetadata.setNumber(number);
+		dataFieldMetadata.setName(name);
+		dataFieldMetadata.setDescription(description);
+		dataFieldMetadata.setType(type);
+		dataFieldMetadata.setDelimiter(delimiter);
+		dataFieldMetadata.setEofAsDelimiter(eofAsDelimiter);
+		dataFieldMetadata.setFormatStr(formatStr);
+		dataFieldMetadata.setSize(size);
+		dataFieldMetadata.setShift(shift);
+		dataFieldMetadata.setTrim(trim);
+		dataFieldMetadata.setNullable(nullable);
+		dataFieldMetadata.setDefaultValueStr(getDefaultValueStr());
+		dataFieldMetadata.setAutoFilling(autoFilling);
 
-		// copy record properties
-		Properties target = new Properties();
-		Properties source = getFieldProperties();
-
-		if (source != null) {
-			for (Enumeration<?> element = source.propertyNames(); element.hasMoreElements();) {
+		if (fieldProperties != null) {
+			for (Enumeration<?> element = fieldProperties.propertyNames(); element.hasMoreElements(); ) {
 				String key = (String) element.nextElement();
-				target.put(key, source.getProperty(key));
+				dataFieldMetadata.setProperty(key, fieldProperties.getProperty(key));
 			}
-
-			ret.setFieldProperties(target);
 		}
 
-		return ret;
+		dataFieldMetadata.setLocaleStr(localeStr);
+
+		return dataFieldMetadata;
 	}
 
 	@Override
