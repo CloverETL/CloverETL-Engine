@@ -317,7 +317,7 @@ public abstract class BulkLoader extends Node {
 			return false;
 		}
 		try {
-			if (!FileUtils.isServerURL(FileUtils.getInnerAddress(fileURL)) && 
+			if (!FileUtils.isServerURL(FileUtils.getInnerAddress(getGraph().getProjectURL(), fileURL)) && 
 					!(new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL))).exists()) {
 				return false;
 			}

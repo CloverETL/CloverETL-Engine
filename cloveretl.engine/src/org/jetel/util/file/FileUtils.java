@@ -808,19 +808,20 @@ public class FileUtils {
 
 	/**
 	 * Gets the most inner url address.
+	 * @param contextURL 
 	 * 
 	 * @param input
 	 * @return
 	 * @throws IOException
 	 */
-	public static URL getInnerAddress(String input) throws IOException {
+	public static URL getInnerAddress(URL contextURL, String input) throws IOException {
         URL url = null;
         
 		// get inner source
 		Matcher matcher = getInnerInput(input);
 		String innerSource;
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
-			url = getInnerAddress(innerSource);
+			url = getInnerAddress(contextURL, innerSource);
 			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
 		}
 		
@@ -841,7 +842,7 @@ public class FileUtils {
         	input = input.substring(input.indexOf(':') + 1);
         }
         
-        return url == null ? FileUtils.getFileURL(input) : url;
+        return url == null ? FileUtils.getFileURL(contextURL, input) : url;
 	}
 	
 }
