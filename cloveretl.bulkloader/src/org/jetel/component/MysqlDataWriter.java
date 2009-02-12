@@ -25,14 +25,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.util.CommandBuilder;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
@@ -46,7 +44,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.CommandBuilder;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
@@ -426,6 +423,8 @@ public class MysqlDataWriter extends BulkLoader {
 
 	public final static String COMPONENT_TYPE = "MYSQL_DATA_WRITER";
 	private final static String LINE_SEPARATOR = System.getProperty("line.separator");
+	private final static String SWITCH_MARK = "--";
+	private final static char SPACE_CHAR = ' ';
 
 	private final static String EXCHANGE_FILE_PREFIX = "mysqlExchange";
 	private final static String MYSQL_FILE_NAME_PREFIX = "mysql";
@@ -520,37 +519,38 @@ public class MysqlDataWriter extends BulkLoader {
 		if (ProcBox.isWindowsPlatform()) {
 			loadUtilityPath = StringUtils.backslashToSlash(loadUtilityPath);
 		}
-		MysqlCommandBuilder command = new MysqlCommandBuilder(loadUtilityPath, properties);
+		CommandBuilder cmdBuilder = new CommandBuilder(properties, SWITCH_MARK);
 
-		command.addBooleanParam(MYSQL_SKIP_AUTO_REHASH_PARAM, MYSQL_SKIP_AUTO_REHASH_SWITCH, true);
-		command.addParam(null, MYSQL_HOST_SWITCH, host);
-		command.addParam(null, MYSQL_USER_SWITCH, user);
-		command.addParam(null, MYSQL_PASSWORD_SWITCH, password);
-		command.addParam(null, MYSQL_DATABASE_SWITCH, database);
+		cmdBuilder.add(loadUtilityPath);
+		cmdBuilder.addBooleanParam(MYSQL_SKIP_AUTO_REHASH_PARAM, MYSQL_SKIP_AUTO_REHASH_SWITCH, true);
+		cmdBuilder.addAttribute(MYSQL_HOST_SWITCH, host);
+		cmdBuilder.addAttribute(MYSQL_USER_SWITCH, user);
+		cmdBuilder.addAttribute(MYSQL_PASSWORD_SWITCH, password);
+		cmdBuilder.addAttribute(MYSQL_DATABASE_SWITCH, database);
 
-		command.addParam(MYSQL_CHARACTER_SETS_DIR_PARAM, MYSQL_CHARACTER_SETS_DIR_SWITCH, null);
-		command.addBooleanParam(MYSQL_COMPRESS_PARAM, MYSQL_COMPRESS_SWITCH);
-		command.addParam(MYSQL_DEFAULT_CHARACTER_SET_PARAM, MYSQL_DEFAULT_CHARACTER_SET_SWITCH, null);
+		cmdBuilder.addParam(MYSQL_CHARACTER_SETS_DIR_PARAM, MYSQL_CHARACTER_SETS_DIR_SWITCH);
+		cmdBuilder.addBooleanParam(MYSQL_COMPRESS_PARAM, MYSQL_COMPRESS_SWITCH);
+		cmdBuilder.addParam(MYSQL_DEFAULT_CHARACTER_SET_PARAM, MYSQL_DEFAULT_CHARACTER_SET_SWITCH);
 
 		String commandFileName = createCommandFile();
 		if (ProcBox.isWindowsPlatform()) {
 			commandFileName = StringUtils.backslashToSlash(commandFileName);
 		}
-		command.addParam(null, MYSQL_EXECUTE_SWITCH, "source " + commandFileName);
-		command.addBooleanParam(MYSQL_FORCE_PARAM, MYSQL_FORCE_SWITCH);
-		command.addBooleanParam("", MYSQL_LOCAL_INFILE_SWITCH, true);
-		command.addBooleanParam(MYSQL_NO_BEEP_PARAM, MYSQL_NO_BEEP_SWITCH);
+		cmdBuilder.addAttribute(MYSQL_EXECUTE_SWITCH, "source " + commandFileName);
+		cmdBuilder.addBooleanParam(MYSQL_FORCE_PARAM, MYSQL_FORCE_SWITCH);
+		cmdBuilder.addBooleanParam("", MYSQL_LOCAL_INFILE_SWITCH, true);
+		cmdBuilder.addBooleanParam(MYSQL_NO_BEEP_PARAM, MYSQL_NO_BEEP_SWITCH);
 
-		command.addParam(MYSQL_PORT_PARAM, MYSQL_PORT_SWITCH, null);
-		command.addParam(MYSQL_PROTOCOL_PARAM, MYSQL_PROTOCOL_SWITCH, null);
-		command.addBooleanParam(MYSQL_RECONNECT_PARAM, MYSQL_RECONNECT_SWITCH);
-		command.addBooleanParam(MYSQL_SECURE_AUTH_PARAM, MYSQL_SECURE_AUTH_SWITCH);
-		command.addBooleanParam(MYSQL_SHOW_WARNINGS_PARAM, MYSQL_SHOW_WARNINGS_SWITCH, true);
-		command.addBooleanParam(MYSQL_SILENT_PARAM, MYSQL_SILENT_SWITCH);
-		command.addParam(MYSQL_SOCKET_PARAM, MYSQL_SOCKET_SWITCH, null);
-		command.addBooleanParam(MYSQL_SSL_PARAM, MYSQL_SSL_SWITCH);
+		cmdBuilder.addParam(MYSQL_PORT_PARAM, MYSQL_PORT_SWITCH);
+		cmdBuilder.addParam(MYSQL_PROTOCOL_PARAM, MYSQL_PROTOCOL_SWITCH);
+		cmdBuilder.addBooleanParam(MYSQL_RECONNECT_PARAM, MYSQL_RECONNECT_SWITCH);
+		cmdBuilder.addBooleanParam(MYSQL_SECURE_AUTH_PARAM, MYSQL_SECURE_AUTH_SWITCH);
+		cmdBuilder.addBooleanParam(MYSQL_SHOW_WARNINGS_PARAM, MYSQL_SHOW_WARNINGS_SWITCH, true);
+		cmdBuilder.addBooleanParam(MYSQL_SILENT_PARAM, MYSQL_SILENT_SWITCH);
+		cmdBuilder.addParam(MYSQL_SOCKET_PARAM, MYSQL_SOCKET_SWITCH);
+		cmdBuilder.addBooleanParam(MYSQL_SSL_PARAM, MYSQL_SSL_SWITCH);
 
-		return command.getCommand();
+		return cmdBuilder.getCommand();
 	}
 
 	/**
@@ -602,32 +602,22 @@ public class MysqlDataWriter extends BulkLoader {
 	 */
 	private String getDefaultCommandFileContent() throws IOException {
 		// LOAD DATA [LOW_PRIORITY | CONCURRENT] [LOCAL] INFILE 'file_name'
-		CommandBuilder command = new CommandBuilder("LOAD DATA", "");
-		command.setParams(properties);
-		command.addParameterBooleanSwitch(LOAD_LOW_PRIORITY_PARAM, LOAD_LOW_PRIORITY_KEYWORD);
-		command.addParameterBooleanSwitch(LOAD_CONCURRENT_PARAM, LOAD_CONCURRENT_KEYWORD);
-		command.addParameterBooleanSwitch(LOAD_LOCAL_PARAM, LOAD_LOCAL_KEYWORD, true);
-		command.append(" INFILE ");
+		CommandBuilder cmdBuilder = new CommandBuilder(properties, SPACE_CHAR);
+		cmdBuilder.add("LOAD DATA");
+		cmdBuilder.addBooleanParam(LOAD_LOW_PRIORITY_PARAM, LOAD_LOW_PRIORITY_KEYWORD);
+		cmdBuilder.addBooleanParam(LOAD_CONCURRENT_PARAM, LOAD_CONCURRENT_KEYWORD);
+		cmdBuilder.addBooleanParam(LOAD_LOCAL_PARAM, LOAD_LOCAL_KEYWORD, true);
 		
-		String dataFilePath = dataFile.getCanonicalPath();
-		if (ProcBox.isWindowsPlatform()) {
-			// convert "C:\examples\xxx.dat" to "C:/examples/xxx.dat"
-			dataFilePath = StringUtils.backslashToSlash(dataFilePath);
-		}		
-		command.append(StringUtils.quote(dataFilePath));
-	
-		command.append(LINE_SEPARATOR);
+		cmdBuilder.add("INFILE " + StringUtils.quote(getDataFilePath()) + LINE_SEPARATOR);
 
 		// [REPLACE | IGNORE]
-		if (command.addParameterBooleanSwitch(LOAD_REPLACE_PARAM, LOAD_REPLACE_KEYWORD)
-				|| command.addParameterBooleanSwitch(LOAD_IGNORE_PARAM, LOAD_IGNORE_KEYWORD)) {
-			command.append(LINE_SEPARATOR);
+		if (cmdBuilder.addBooleanParam(LOAD_REPLACE_PARAM, LOAD_REPLACE_KEYWORD)
+				|| cmdBuilder.addBooleanParam(LOAD_IGNORE_PARAM, LOAD_IGNORE_KEYWORD)) {
+			cmdBuilder.add(LINE_SEPARATOR);
 		}
 
 		// INTO TABLE tbl_name
-		command.append("INTO TABLE ");
-		command.append(table);
-		command.append(LINE_SEPARATOR);
+		cmdBuilder.add("INTO TABLE " + table + LINE_SEPARATOR);
 
 		// [FIELDS
 		// [TERMINATED BY 'string']
@@ -637,16 +627,16 @@ public class MysqlDataWriter extends BulkLoader {
 		if (!columnDelimiter.equals(DEFAULT_COLUMN_DELIMITER) || 
 				properties.containsKey(LOAD_FIELDS_ENCLOSED_BY_PARAM) ||
 				properties.containsKey(LOAD_FIELDS_ESCAPED_BY_PARAM)) {
-			command.append("FIELDS" + LINE_SEPARATOR);
-			command.append("TERMINATED BY " + StringUtils.quote(columnDelimiter) + LINE_SEPARATOR);
+			cmdBuilder.add("FIELDS" + LINE_SEPARATOR);
+			cmdBuilder.add("TERMINATED BY " + StringUtils.quote(columnDelimiter) + LINE_SEPARATOR);
 
-			command.addParameterBooleanSwitch(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM,
+			cmdBuilder.addBooleanParam(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM,
 							LOAD_FIELDS_OPTIONALLY_ENCLOSED_KEYWORD);
-			if (command.addParameterSwitch(LOAD_FIELDS_ENCLOSED_BY_PARAM, LOAD_FIELDS_ENCLOSED_BY_KEYWORD)) {
-				command.append(LINE_SEPARATOR);
+			if (cmdBuilder.addParam(LOAD_FIELDS_ENCLOSED_BY_PARAM, LOAD_FIELDS_ENCLOSED_BY_KEYWORD, true)) {
+				cmdBuilder.add(LINE_SEPARATOR);
 			}
-			if (command.addParameterSwitch(LOAD_FIELDS_ESCAPED_BY_PARAM, LOAD_FIELDS_ESCAPED_BY_KEYWORD)) {
-				command.append(LINE_SEPARATOR);
+			if (cmdBuilder.addParam(LOAD_FIELDS_ESCAPED_BY_PARAM, LOAD_FIELDS_ESCAPED_BY_KEYWORD, true)) {
+				cmdBuilder.add(LINE_SEPARATOR);
 			}
 		}
 
@@ -656,27 +646,35 @@ public class MysqlDataWriter extends BulkLoader {
 		// ]
 		if (properties.containsKey(LOAD_LINES_STARTING_BY_PARAM) ||
 				properties.containsKey(LOAD_RECORD_DELIMITER_PARAM)) {
-			command.append("LINES" + LINE_SEPARATOR);
+			cmdBuilder.add("LINES" + LINE_SEPARATOR);
 
-			if (command.addParameterSwitch(LOAD_LINES_STARTING_BY_PARAM, LOAD_LINES_STARTING_BY_KEYWORD)) {
-				command.append(LINE_SEPARATOR);
+			if (cmdBuilder.addParam(LOAD_LINES_STARTING_BY_PARAM, LOAD_LINES_STARTING_BY_KEYWORD, true)) {
+				cmdBuilder.add(LINE_SEPARATOR);
 			}
-			if (command.addParameterSwitch(LOAD_RECORD_DELIMITER_PARAM, LOAD_RECORD_DELIMITER_KEYWORD)) {
-				command.append(LINE_SEPARATOR);
+			if (cmdBuilder.addParam(LOAD_RECORD_DELIMITER_PARAM, LOAD_RECORD_DELIMITER_KEYWORD, true)) {
+				cmdBuilder.add(LINE_SEPARATOR);
 			}
 		}
 
 		// [IGNORE number LINES]
 		if (ignoreRows != UNUSED_INT) {
-			command.append("IGNORE " + ignoreRows + " LINES" + LINE_SEPARATOR);
+			cmdBuilder.add("IGNORE " + ignoreRows + " LINES" + LINE_SEPARATOR);
 		}
 
 		// [(col_name_or_user_var,...)]
 		if (properties.containsKey(LOAD_COLUMNS_PARAM)) {
-			command.append("'" + properties.getProperty(LOAD_COLUMNS_PARAM) + "'");
+			cmdBuilder.add("'" + properties.getProperty(LOAD_COLUMNS_PARAM) + "'");
 		}
-
-		return command.getCommand();
+		
+		return cmdBuilder.getCommandAsString();
+	}
+	
+	private String getDataFilePath() throws IOException {
+		if (ProcBox.isWindowsPlatform()) {
+			// convert "C:\examples\xxx.dat" to "C:/examples/xxx.dat"
+			return StringUtils.backslashToSlash(dataFile.getCanonicalPath());
+		}
+		return dataFile.getCanonicalPath();
 	}
 	
 	/**
@@ -744,7 +742,7 @@ public class MysqlDataWriter extends BulkLoader {
 	 * Print system command with it's parameters to log. 
 	 * @param command
 	 */
-	private void printCommandLineToLog(String[] command) {
+	private static void printCommandLineToLog(String[] command) {
 		StringBuilder msg = new StringBuilder("System command: \"");
 		msg.append(command[0]).append("\" with parameters:\n");
 		for (int idx = 1; idx < command.length; idx++) {
@@ -977,93 +975,6 @@ public class MysqlDataWriter extends BulkLoader {
 
 	public void setCommandURL(String commandURL) {
 		this.commandURL = commandURL;
-	}
-
-	/**
-	 * Class for creating command for mysql from string pieces and parameters.
-	 * Each parameter is one field in array.
-	 * 
-	 * @see org.jetel.util.exec.ProcBox
-	 * @see org.jetel.util.exec.DataConsumer
-	 * @author Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz) 
-	 * (c) Javlin Consulting (www.javlinconsulting.cz)
-	 * @since 17.10.2007
-	 */
-	private class MysqlCommandBuilder {
-		private final static String SWITCH_MARK = "--";
-
-		private Properties params;
-		private List<String> cmdList;
-
-		private MysqlCommandBuilder(String command, Properties properties) {
-			this.params = properties;
-			cmdList = new ArrayList<String>();
-			cmdList.add(command);
-		}
-
-		/**
-		 *  If paramName is in properties adds: 
-		 *  "<i><b>switchMark</b>switchString</i>"<br>
-		 *  When paramName isn't in properties and defaultValue==true then it is added too.
-		 *  for exmaple:  --compress
-		 * 
-		 * @param paramName
-		 * @param switchString
-		 * @param defaultValue
-		 */
-		private void addBooleanParam(String paramName, String switchString, boolean defaultValue) {
-			if (params.containsKey(paramName)) {
-				addBooleanParam(paramName, switchString);
-				return;
-			}
-
-			if (defaultValue) {
-				cmdList.add(SWITCH_MARK + switchString);
-			}
-		}
-
-		/**
-		 *  If paramName is in properties adds: 
-		 *  "<i><b>switchMark</b>switchString</i>"<br>
-		 *  for exmaple:  --compress
-		 * 
-		 * @param paramName
-		 * @param switchString
-		 */
-		private void addBooleanParam(String paramName, String switchString) {
-			if (params.containsKey(paramName) && !"false".equalsIgnoreCase(params.getProperty(paramName))) {
-				cmdList.add(SWITCH_MARK + switchString);
-			}
-		}
-
-		/**
-		 * if paramValue isn't null or paramName is in properties adds:
-		 *  "<i><b>switchMark</b>switchString</i>=paramValue"<br>
-		 *  for exmaple:  --host=localhost
-		 * 
-		 * @param paramName
-		 * @param switchString
-		 * @param paramValue
-		 */
-		private void addParam(String paramName, String switchString, String paramValue) {
-			if (paramValue == null && (paramName == null || !params.containsKey(paramName))) {
-				return;
-			}
-
-			String param = SWITCH_MARK + switchString + EQUAL_CHAR;
-
-			if (paramValue != null) {
-				param += StringUtils.specCharToString(paramValue);
-			} else {
-				param += StringUtils.specCharToString(params.getProperty(paramName));
-			}
-
-			cmdList.add(param);
-		}
-
-		private String[] getCommand() {
-			return cmdList.toArray(new String[cmdList.size()]);
-		}
 	}
 
 	/**
