@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -371,10 +370,7 @@ public class OracleDataWriter extends BulkLoader {
     	cmdBuilder.addParam(SQLLDR_RESUMABLE_TIMEOUT_PARAM ,SQLLDR_RESUMABLE_TIMEOUT_KEYWORD);
     	cmdBuilder.addParam(SQLLDR_DATA_CACHE_PARAM ,SQLLDR_DATA_CACHE_KEYWORD);
     	
-    	String[] ret = cmdBuilder.getCommand();
-    	
-        logger.debug("System command: " + Arrays.toString(ret));
-        return ret;
+    	return cmdBuilder.getCommand();
     }
     
     private String getData() {
@@ -424,6 +420,7 @@ public class OracleDataWriter extends BulkLoader {
         userId = getUserId();
         
         commandLine = createCommandlineForSqlldr();
+        printCommandLineToLog(commandLine, logger);
         
         //init of data formatter
         if (isDataReadFromPort) {

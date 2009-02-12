@@ -443,7 +443,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		}
 		
 		commandLine = createCommandLineForDbLoader();
-		printCommandLineToLog(commandLine);
+		printCommandLineToLog(commandLine, logger);
 
 		if (isDataReadFromPort) {
 			dbMetadata = createLoadUtilityMetadata(columnDelimiter, DEFAULT_RECORD_DELIMITER);
@@ -457,20 +457,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
 	}
 	
-	
-	/**
-	 * Print system command with it's parameters to log. 
-	 * @param command
-	 */
-	private static void printCommandLineToLog(String[] command) {
-		StringBuilder msg = new StringBuilder("System command: \"");
-		msg.append(command[0]).append("\" with parameters:\n");
-		for (int idx = 1; idx < command.length; idx++) {
-			msg.append(idx).append(": ").append(command[idx]).append("\n");
-		}
-		logger.debug(msg.toString());
-	}
-
 	/**
 	 * If no columnDelimiter is set then default column delimiter is set.
 	 * @param csvModeUsed
