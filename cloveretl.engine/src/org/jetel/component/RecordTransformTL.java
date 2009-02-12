@@ -44,6 +44,8 @@ import org.jetel.metadata.DataRecordMetadata;
 public class RecordTransformTL implements RecordTransform {
 
     public static final String TRANSFORM_FUNCTION_NAME="transform";
+    public static final String GENERATE_FUNCTION_NAME="generate";
+    private String functionName = TRANSFORM_FUNCTION_NAME;
     public static final String FINISHED_FUNCTION_NAME="finished";
     public static final String INIT_FUNCTION_NAME="init";
     public static final String RESET_FUNCTION_NAME="reset";
@@ -83,7 +85,7 @@ public class RecordTransformTL implements RecordTransform {
 			//do nothing: function init is not necessary
 		}
 		
-		wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
+		wrapper.prepareFunctionExecution(functionName);
 		
 		return semiResult == null ? true : (semiResult==TLBooleanValue.TRUE);
  	}
@@ -172,6 +174,10 @@ public class RecordTransformTL implements RecordTransform {
 		} catch (JetelException e) {
 			//do nothing: function reset is not necessary
 		}
+	}
+	
+	public void setFunctionName(String functionName) {
+		this.functionName = functionName;
 	}
 }
 

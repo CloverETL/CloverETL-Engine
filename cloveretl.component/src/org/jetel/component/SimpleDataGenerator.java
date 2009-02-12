@@ -23,10 +23,14 @@ package org.jetel.component;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.exception.XMLConfigurationException;
-import org.jetel.graph.Node;
-import org.jetel.graph.TransformationGraph;
-import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
+import org.jetel.exception.ConfigurationStatus;
+import org.jetel.graph.Result;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.DataRecordGenerator;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -107,109 +111,134 @@ import org.w3c.dom.Element;
  * @since Dec 21, 2006
  *
  */
-public abstract class DataGenerator extends Node {
+public class SimpleDataGenerator extends DataGenerator {
 	
-    static Log logger = LogFactory.getLog(DataGenerator.class);
-
-	/**  Description of the Field */
-	public final static String COMPONENT_TYPE = "DATA_GENERATOR";
+    static Log logger = LogFactory.getLog(SimpleDataGenerator.class);
 
 	/** XML attribute names */
-	private static final String XML_GENERATECLASS_ATTRIBUTE = "generateClass";
-	public static final String XML_GENERATE_ATTRIBUTE = "generate";
-	private static final String XML_GENERATEURL_ATTRIBUTE = "generateURL";
-	private static final String XML_RECORDS_NUMBER_ATTRIBUTE = "recordsNumber"; 
-	private static final String XML_RANDOM_SEED_ATTRIBUTE = "randomSeed";
-
 	private static final String XML_PATTERN_ATTRIBUTE = "pattern";
 	public static final String XML_RANDOM_FIELDS_ATTRIBUTE = "randomFields";
 	public static final String XML_SEQUENCE_FIELDS_ATTRIBUTE = "sequenceFields";
 
-	protected long randomSeed = Long.MIN_VALUE;
-	protected int recordsNumber;
-	
-	protected final static int WRITE_TO_PORT = 0;
+	private String pattern;
+	private DataRecordMetadata metadata;
+	private String randomFieldsString;
+	private String sequenceFieldsString;
+	private DataRecordGenerator recordGenerator;
 
 	/**
 	 * @param id
+	 * @param pattern
+	 * @param recordsNumber
 	 */
-	public DataGenerator(String id) {
+	public SimpleDataGenerator(String id, String pattern, int recordsNumber) {
 		super(id);
+		this.pattern = pattern;
+		this.recordsNumber = recordsNumber;
 	}
 
-	/**
-	 * @param graph
-	 * @param nodeXML
-	 * @return
-	 * @throws XMLConfigurationException
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#init()
 	 */
-	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
-		DataGenerator dataGenerator = null;
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
+        super.init();
+        
+        metadata = getOutputPort(0).getMetadata();
 
-		try {
-			if (xattribs.exists(XML_GENERATE_ATTRIBUTE) || 
-				xattribs.exists(XML_GENERATECLASS_ATTRIBUTE) ||
-				xattribs.exists(XML_GENERATEURL_ATTRIBUTE)){
-				dataGenerator = new ExtDataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 
-						xattribs.getString(XML_GENERATE_ATTRIBUTE, null), 
-						xattribs.getString(XML_GENERATECLASS_ATTRIBUTE, null), 
-						xattribs.getString(XML_GENERATEURL_ATTRIBUTE, null),
-						xattribs.getInteger(XML_RECORDS_NUMBER_ATTRIBUTE));
-			} else {
-				dataGenerator = new SimpleDataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 
-						xattribs.getString(XML_PATTERN_ATTRIBUTE,""), 
-						xattribs.getInteger(XML_RECORDS_NUMBER_ATTRIBUTE));
-				if (xattribs.exists(XML_RANDOM_FIELDS_ATTRIBUTE)){
-					((SimpleDataGenerator)dataGenerator).setRandomFields(xattribs.getString(XML_RANDOM_FIELDS_ATTRIBUTE));
-				}
-				if (xattribs.exists(XML_SEQUENCE_FIELDS_ATTRIBUTE)){
-					((SimpleDataGenerator)dataGenerator).setSequenceFields(xattribs.getString(XML_SEQUENCE_FIELDS_ATTRIBUTE));
-				}
-			}
-			
-			if (xattribs.exists(XML_RANDOM_SEED_ATTRIBUTE)){
-				dataGenerator.setRandomSeed(xattribs.getLong(XML_RANDOM_SEED_ATTRIBUTE));
-			}
-		} catch (Exception ex) {
-		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
-		}
-
-		return dataGenerator;
+        try {
+            recordGenerator = new DataRecordGenerator(this, metadata, pattern, this.randomFieldsString, this.randomSeed, this.sequenceFieldsString, this.recordsNumber);
+            recordGenerator.init();
+        } catch (ComponentNotReadyException e){
+        	throw e;
+        } catch (Exception e){
+			throw new ComponentNotReadyException(this, "Can't initialize record generator", e);
+        }
+	}
+	
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		recordGenerator.reset();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#execute()
+	 */
+	@Override
+	public Result execute() throws Exception {
+		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
+		record.init();
+		for (int i=0;i<recordsNumber && runIt;i++){
+			 record = recordGenerator.getNext();
+			writeRecordBroadcast(record);
+		}
+		broadcastEOF();
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
 	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_RECORDS_NUMBER_ATTRIBUTE, String.valueOf(recordsNumber));
-		if (randomSeed > Long.MIN_VALUE) {
-			xmlElement.setAttribute(XML_RANDOM_SEED_ATTRIBUTE, String.valueOf(randomSeed));
-		}
+		xmlElement.setAttribute(XML_PATTERN_ATTRIBUTE, pattern);
+		String randomFields = recordGenerator.getRandomFieldsString();
+		if (randomFields != null)
+			xmlElement.setAttribute(XML_RANDOM_FIELDS_ATTRIBUTE, randomFields);
+		
+		String seqFields = recordGenerator.getSequenceFieldsString();
+		if (seqFields != null)
+			xmlElement.setAttribute(XML_SEQUENCE_FIELDS_ATTRIBUTE, seqFields);
+		
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
+	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception.ConfigurationStatus)
 	 */
 	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
+  		 
+		if(!checkInputPorts(status, 0, 0)
+				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+			return status;
+		}
+        checkMetadata(status, getOutMetadata());
+        
+        try {
+            init();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        } finally {
+        	free();
+        }
+        
+        return status;
 	}
 
 	/**
-	 * @param randomSeed the randomSeed to set
+	 * Reads names of random fields with ranges from parameter and sets them 
+	 * to global variables randomFields and randomRanges. If random ranges are
+	 * not given sets them to empty strings
+	 * 
+	 * @param randomFields the randomFields to set in form fieldName=random(min,max)
 	 */
-	public void setRandomSeed(long randomSeed) {
-		this.randomSeed = randomSeed;
+	public void setRandomFields(String randomFields) {
+		this.randomFieldsString = randomFields;
 	}
 
-	public int getRecordsNumber() {
-		return recordsNumber;
+	/**
+	 * Reads names of sequence fields with sequence IDs from parameter and sets 
+	 * them to global variables sequenceFields and sequenceIDs.
+	 * 
+	 * @param sequenceFields the sequenceFields to set in form fieldName=sequenceName or fieldName only
+	 */
+	public void setSequenceFields(String sequenceFields) {
+		this.sequenceFieldsString = sequenceFields; 
 	}
-
-	public void setRecordsNumber(int recordsNumber) {
-		this.recordsNumber = recordsNumber;
-	}
-	
 }

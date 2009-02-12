@@ -185,7 +185,7 @@ public class DataFieldMetadata implements Serializable {
 	/** Ordinal number of the field within data record meta data. */
 	private int number;
 	/** Name of the field. */
-	private String name;
+	protected String name;
 	/** Description of the field. */
 	private String description;
 
