@@ -700,7 +700,7 @@ public class MysqlDataWriter extends BulkLoader {
     	}
     	
 		commandLine = createCommandLineForDbLoader();
-		printCommandLineToLog(commandLine);
+		printCommandLineToLog(commandLine, logger);
 
 		if (isDataReadFromPort) {
 			dbMetadata = createLoadUtilityMetadata(columnDelimiter, getRecordDelimiter());
@@ -737,19 +737,6 @@ public class MysqlDataWriter extends BulkLoader {
 			dataFile = createTempFile(EXCHANGE_FILE_PREFIX);
 		}
     }
-	
-	/**
-	 * Print system command with it's parameters to log. 
-	 * @param command
-	 */
-	private static void printCommandLineToLog(String[] command) {
-		StringBuilder msg = new StringBuilder("System command: \"");
-		msg.append(command[0]).append("\" with parameters:\n");
-		for (int idx = 1; idx < command.length; idx++) {
-			msg.append(idx).append(": ").append(command[idx]).append("\n");
-		}
-		logger.debug(msg.toString());
-	}
 	
 	/**
 	 * Checks if mandatory attributes are defined.
