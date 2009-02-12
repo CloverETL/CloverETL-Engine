@@ -396,6 +396,19 @@ public abstract class BulkLoader extends Node {
 		return props.toString();
 	}
 	
+	/**
+	 * Print system command with it's parameters to log. 
+	 * @param command
+	 */
+	protected static void printCommandLineToLog(String[] command, Log logger) {
+		StringBuilder msg = new StringBuilder("System command: \"");
+		msg.append(command[0]).append("\" with parameters:\n");
+		for (int idx = 1; idx < command.length; idx++) {
+			msg.append(idx).append(": ").append(command[idx]).append("\n");
+		}
+		logger.debug(msg.toString());
+	}
+	
 	protected void setUser(String user) {
 		this.user = user;
 	}
