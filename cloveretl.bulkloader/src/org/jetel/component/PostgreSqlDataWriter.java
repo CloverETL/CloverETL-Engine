@@ -25,12 +25,11 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.util.CommandBuilder;
 import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -122,6 +121,8 @@ public class PostgreSqlDataWriter extends BulkLoader {
 
 	public final static String COMPONENT_TYPE = "POSTGRESQL_DATA_WRITER";
 
+	private final static char SPACE_CHAR = ' ';
+	private final static String SWITCH_MARK = "--";
 	private final static String POSTGRESQL_FILE_NAME_PREFIX = "postgresql";
 	private final static String DEFAULT_COLUMN_DELIMITER = "\t";
 	private final static String DEFAULT_COLUMN_DELIMITER_IN_CSV_MODE = ",";
@@ -237,24 +238,26 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		if (ProcBox.isWindowsPlatform()) {
 			loadUtilityPath = StringUtils.backslashToSlash(loadUtilityPath);
 		}
-		PsqlCommandBuilder command = new PsqlCommandBuilder(loadUtilityPath, properties);
 
-		command.addParam(null, PSQL_DATABASE_SWITCH, database);
-		command.addParam(null, PSQL_COMMAND_URL_SWITCH, createCommandFile());
-		command.addParam(null, PSQL_HOST_SWITCH, host);
-		command.addParam(null, PSQL_USER_SWITCH, user);
-		command.addBooleanParam(PSQL_ECHO_ALL_PARAM, PSQL_ECHO_ALL_SWITCH);
-		command.addBooleanParam(PSQL_ECHO_QUERIES_PARAM, PSQL_ECHO_QUERIES_SWITCH);
-		command.addBooleanParam(PSQL_ECHO_HIDDEN_PARAM, PSQL_ECHO_HIDDEN_SWITCH);
-		command.addParam(PSQL_LOG_FILE_PARAM, PSQL_LOG_FILE_SWITCH, null);
-		command.addParam(PSQL_OUTPUT_PARAM, PSQL_OUTPUT_SWITCH, null);
-		command.addParam(PSQL_PORT_PARAM, PSQL_PORT_SWITCH, null);
-		command.addParam(PSQL_PSET_PARAM, PSQL_PSET_SWITCH, null);
-		command.addBooleanParam(PSQL_QUIET_PARAM, PSQL_QUIET_SWITCH);
-		command.addBooleanParam(PSQL_NO_PSQLRC_PARAM, PSQL_NO_PSQLRC_SWITCH);
-		command.addBooleanParam(PSQL_SINGLE_TRANSACTION_PARAM, PSQL_SINGLE_TRANSACTION_SWITCH);
+		CommandBuilder cmdBuilder = new CommandBuilder(properties, SWITCH_MARK);
 
-		return command.getCommand();
+		cmdBuilder.add(loadUtilityPath);
+		cmdBuilder.addAttribute(PSQL_DATABASE_SWITCH, database);
+		cmdBuilder.addAttribute(PSQL_COMMAND_URL_SWITCH, createCommandFile());
+		cmdBuilder.addAttribute(PSQL_HOST_SWITCH, host);
+		cmdBuilder.addAttribute(PSQL_USER_SWITCH, user);
+		cmdBuilder.addBooleanParam(PSQL_ECHO_ALL_PARAM, PSQL_ECHO_ALL_SWITCH);
+		cmdBuilder.addBooleanParam(PSQL_ECHO_QUERIES_PARAM, PSQL_ECHO_QUERIES_SWITCH);
+		cmdBuilder.addBooleanParam(PSQL_ECHO_HIDDEN_PARAM, PSQL_ECHO_HIDDEN_SWITCH);
+		cmdBuilder.addParam(PSQL_LOG_FILE_PARAM, PSQL_LOG_FILE_SWITCH);
+		cmdBuilder.addParam(PSQL_OUTPUT_PARAM, PSQL_OUTPUT_SWITCH);
+		cmdBuilder.addParam(PSQL_PORT_PARAM, PSQL_PORT_SWITCH);
+		cmdBuilder.addParam(PSQL_PSET_PARAM, PSQL_PSET_SWITCH);
+		cmdBuilder.addBooleanParam(PSQL_QUIET_PARAM, PSQL_QUIET_SWITCH);
+		cmdBuilder.addBooleanParam(PSQL_NO_PSQLRC_PARAM, PSQL_NO_PSQLRC_SWITCH);
+		cmdBuilder.addBooleanParam(PSQL_SINGLE_TRANSACTION_PARAM, PSQL_SINGLE_TRANSACTION_SWITCH);
+
+		return cmdBuilder.getCommand();
 	}
 	
 	/**
@@ -319,34 +322,35 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	 * @throws IOException
 	 */
 	private String getDefaultCommandFileContent() throws IOException {
-		CopyCommandBuilder command = new CopyCommandBuilder("\\copy", properties);
+		CommandBuilder cmdBuilder = new CommandBuilder(properties, SPACE_CHAR);
 
+		cmdBuilder.add("\\copy");
 		// \copy table [ ( column_list ) ]
-		command.append(table);
+		cmdBuilder.add(table);
 		if (properties.containsKey(COPY_COLUMNS_PARAM)) {
-			command.append("(" + properties.getProperty(COPY_COLUMNS_PARAM) + ")");
+			cmdBuilder.add("(" + properties.getProperty(COPY_COLUMNS_PARAM) + ")");
 		}
 		
 		// from { filename | pstdin }
-		command.append("from");
+		cmdBuilder.add("from");
 		if (dataFile != null) {
-			command.append(dataFile.getCanonicalPath());
+			cmdBuilder.add(dataFile.getCanonicalPath());
 		} else {
-			command.append(COPY_STDIN_KEYWORD);
+			cmdBuilder.add(COPY_STDIN_KEYWORD);
 		}
 		
 		// [ with ] [ binary ] [ oids ] [ delimiter [ as ] 'character' ] [ null [ as ] 'string' ]
 		if (isWithKeywordUsed()) {
-			command.append("with");
-			command.addBooleanParam(COPY_BINARY_PARAM, COPY_BINARY_PARAM);
-			command.addBooleanParam(COPY_OIDS_PARAM, COPY_OIDS_PARAM);
+			cmdBuilder.add("with");
+			cmdBuilder.addBooleanParam(COPY_BINARY_PARAM, COPY_BINARY_PARAM);
+			cmdBuilder.addBooleanParam(COPY_OIDS_PARAM, COPY_OIDS_PARAM);
 			if (isColumnDelimiterUsed()) {
-				command.append("delimiter '" + columnDelimiter + "'");
+				cmdBuilder.addAttribute("delimiter", columnDelimiter, true);
 			}
 			
 			String nullValue = getNullValue();
 			if (nullValue != null) {
-				command.addSingleQuotedParam(null, COPY_NULL_PARAM, nullValue);
+				cmdBuilder.addAttribute(COPY_NULL_PARAM, nullValue, true);
 
 				// warning that user defined value is ignored - default nullValue is used
 				if (isDataReadFromPort && properties.containsKey(COPY_NULL_PARAM) &&
@@ -360,16 +364,15 @@ public class PostgreSqlDataWriter extends BulkLoader {
 
 		// [ csv [ header ] [ quote [ as ] 'character' ] [ escape [ as ] 'character' ] [ force not null column_list ] ]
 		if (csvMode) {
-			command.append("csv");
-			command.addBooleanParam(COPY_CSV_HEADER_PARAM, "header");
-			command.addSingleQuotedParam(COPY_CSV_QUOTE_PARAM, "quote");
-			command.addSingleQuotedParam(COPY_CSV_ESCAPE_PARAM, "escape");
-			command.addParam(COPY_CSV_FORCE_NOT_NULL_PARAM, "force not null");
+			cmdBuilder.add("csv");
+			cmdBuilder.addBooleanParam(COPY_CSV_HEADER_PARAM, "header");
+			cmdBuilder.addParam(COPY_CSV_QUOTE_PARAM, "quote", true);
+			cmdBuilder.addParam(COPY_CSV_ESCAPE_PARAM, "escape", true);
+			cmdBuilder.addParam(COPY_CSV_FORCE_NOT_NULL_PARAM, "force not null");
 		}
-
-		return command.toString();
+		
+		return cmdBuilder.getCommandAsString();
 	}
-	
 	
 	/**
 	 * Return true if <i>with</i> keyword is used in copy statement.
@@ -459,7 +462,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	 * Print system command with it's parameters to log. 
 	 * @param command
 	 */
-	private void printCommandLineToLog(String[] command) {
+	private static void printCommandLineToLog(String[] command) {
 		StringBuilder msg = new StringBuilder("System command: \"");
 		msg.append(command[0]).append("\" with parameters:\n");
 		for (int idx = 1; idx < command.length; idx++) {
@@ -651,163 +654,5 @@ public class PostgreSqlDataWriter extends BulkLoader {
 
 	public void setCommandURL(String commandURL) {
 		this.commandURL = commandURL;
-	}
-
-	/**
-	 * Helper class for creating command for psql from string pieces and parameters.
-	 * Each parameter is one field in array.
-	 * 
-	 * @see org.jetel.util.exec.ProcBox
-	 * @see org.jetel.util.exec.DataConsumer
-	 * @author Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz) 
-	 * (c) Javlin Consulting (www.javlinconsulting.cz)
-	 * @since 5.11.2007
-	 */
-	private class PsqlCommandBuilder {
-		private final static String SWITCH_MARK = "--";
-		private Properties params;
-		private List<String> cmdList;
-
-		private PsqlCommandBuilder(String command, Properties properties) {
-			this.params = properties;
-			cmdList = new ArrayList<String>();
-			cmdList.add(command);
-		}
-
-		/**
-		 *  If paramName is in properties and doesn't equal "false" adds: 
-		 *  "<i><b>switchMark</b>switchString</i>"<br>
-		 *  for exmaple:  --compress
-		 * 
-		 * @param paramName
-		 * @param switchString
-		 */
-		private void addBooleanParam(String paramName, String switchString) {
-			if (params.containsKey(paramName) && !"false".equalsIgnoreCase(params.getProperty(paramName))) {
-				cmdList.add(SWITCH_MARK + switchString);
-			}
-		}
-
-		/**
-		 * if paramValue isn't null or paramName is in properties adds:
-		 *  "<i><b>switchMark</b>switchString</i>=paramValue"<br>
-		 *  for exmaple:  --host=localhost
-		 * 
-		 * @param paramName
-		 * @param switchString
-		 * @param paramValue
-		 */
-		private void addParam(String paramName, String switchString, String paramValue) {
-			if (paramValue == null && (paramName == null || !params.containsKey(paramName))) {
-				return;
-			}
-
-			String param = SWITCH_MARK + switchString + EQUAL_CHAR;
-
-			if (paramValue != null) {
-				param += StringUtils.specCharToString(paramValue);
-			} else {
-				param += StringUtils.specCharToString(params.getProperty(paramName));
-			}
-
-			cmdList.add(param);
-		}
-
-		
-		/**
-		 * Return command line where each parameter is one field in array.
-		 * @return command line
-		 */
-		private String[] getCommand() {
-			return cmdList.toArray(new String[cmdList.size()]);
-		}
-	}
-
-	/**
-	 * Helper class for creating <i>copy</i> statement.
-	 * 
-	 * @see org.jetel.util.exec.ProcBox
-	 * @see org.jetel.util.exec.DataConsumer
-	 * @author Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz) 
-	 * (c) Javlin Consulting (www.javlinconsulting.cz)
-	 * @since 5.11.2007
-	 */
-	private class CopyCommandBuilder {
-		private StringBuilder command;
-		private Properties properties;
-		
-		public CopyCommandBuilder(String command, Properties properties) {
-			this.command = new StringBuilder(command);
-			this.properties = properties;
-		}
-
-		public StringBuilder append(String str) {
-			return command.append(" " + str);
-		}
-
-		public String toString() {
-			return command.toString();
-		}
-		
-		/**
-		 * If paramName is contained in properties and it's value 
-		 * doesn't equal "false" then param is added to command.
-		 * 
-		 * @param paramName name of param in properties
-		 * @param param name of param in command
-		 */
-		public void addBooleanParam(String paramName, String param) {
-			if (properties.containsKey(paramName) && 
-					!"false".equalsIgnoreCase(properties.getProperty(paramName))) {
-				append(param);
-			}
-		}
-		
-		/**
-		 * Add single quoted param at the end of command.
-		 * If <i>paramName</i> is contained in properties then <i>param</i> and 
-		 * single quoted value of <i>paramName</i> are added to command.
-		 * 
-		 * @param paramName name of param in properties
-		 * @param param name of param in command
-		 */
-		public void addSingleQuotedParam(String paramName, String param) {
-			addSingleQuotedParam(paramName, param, null);
-		}
-		
-		/**
-		 * Add single quoted param at the end of command.
-		 * If <i>paramName</i> is contained in properties then <i>param</i> and 
-		 * single quoted value of <i>paramName</i> are added to command.
-		 * If paramName is null or isn't in properties then default value is 
-		 * used instead of value of <i>paramName</i> 
-		 * 
-		 * @param paramName name of param in properties
-		 * @param param name of param in command
-		 * @param defaultValue value that is used when paramName isn't in properties 
-		 */
-		public void addSingleQuotedParam(String paramName, String param, String defaultValue) {
-			if (paramName != null && properties.containsKey(paramName)) {
-				append(param + " '" + properties.getProperty(paramName) + "'");
-				return;
-			}
-			
-			if (defaultValue != null) {
-				append(param + " '" + defaultValue + "'");
-			}
-		}
-		
-		/**
-		 * If <i>paramName</i> is contained in properties then <i>param</i> and 
-		 * value of <i>paramName</i> are added to command.
-		 * 
-		 * @param paramName name of param in properties
-		 * @param param name of param in command
-		 */
-		public void addParam(String paramName, String param) {
-			if (properties.containsKey(paramName)) {
-				append(param + " " + properties.getProperty(paramName));
-			}
-		}
 	}
 }
