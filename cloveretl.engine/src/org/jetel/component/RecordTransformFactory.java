@@ -51,13 +51,50 @@ public class RecordTransformFactory {
     public static final int TRANSFORM_JAVA_PREPROCESS=3;
     
     public static final Pattern PATTERN_CLASS = Pattern.compile("class\\s+\\w+"); 
-    public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+transform");
+    public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+((transform)|(generate))");
     public static final Pattern PATTERN_PARTITION_CODE = Pattern.compile("function\\s+getOutputPort"); 
     
     public static final Pattern PATTERN_PREPROCESS_1 = Pattern.compile("\\$\\{out\\."); 
     public static final Pattern PATTERN_PREPROCESS_2 = Pattern.compile("\\$\\{in\\."); 
     
     public static RecordTransform createTransform(String transform, String transformClass, 
+    		String transformURL, String charset, Node node, 
+    		DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, 
+    		Properties transformationParameters, ClassLoader classLoader) throws ComponentNotReadyException {
+    	
+    	// create transformation
+    	RecordTransform transformation = createTransformCommon(transform, transformClass, 
+        		transformURL, charset, node, 
+        		inMetadata, outMetadata, 
+        		transformationParameters, classLoader);
+    	
+        // init transformation
+        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
+            throw new ComponentNotReadyException("Error when initializing tranformation function !");
+        }
+        
+        return transformation;
+    }
+
+    public static RecordTransform createGenerator(String generate, String generateClass, 
+    		String generateURL, Node node, DataRecordMetadata[] outMetadata, 
+    		Properties transformationParameters, ClassLoader classLoader) throws ComponentNotReadyException {
+    	
+    	// create generator
+    	RecordTransform transformation = createTransformCommon(generate, generateClass, generateURL, null, node, 
+    			new DataRecordMetadata[0] , outMetadata, transformationParameters, classLoader);
+    	
+        // init generator
+    	if (transformation instanceof RecordTransformTL) 
+    		((RecordTransformTL)transformation).setFunctionName(RecordTransformTL.GENERATE_FUNCTION_NAME);
+        if (!transformation.init(transformationParameters, new DataRecordMetadata[0], outMetadata)) {
+            throw new ComponentNotReadyException("Error when initializing tranformation function !");
+        }
+        
+        return transformation;
+    }
+    
+    private static RecordTransform createTransformCommon(String transform, String transformClass, 
     		String transformURL, String charset, Node node, 
     		DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, 
     		Properties transformationParameters, ClassLoader classLoader) throws ComponentNotReadyException {
@@ -99,17 +136,10 @@ public class RecordTransformFactory {
                         "Can't determine transformation code type at component ID :" + node.getId());
             }
         }
-
         transformation.setGraph(node.getGraph());
 
-        // init transformation
-        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
-            throw new ComponentNotReadyException("Error when initializing tranformation function !");
-        }
-        
         return transformation;
     }
-    
     
     public static RecordTransform loadClass(Log logger, String transformClass) throws ComponentNotReadyException {
         //TODO parsing url from transformClass parameter
@@ -289,6 +319,12 @@ public class RecordTransformFactory {
     public static boolean isSimpleTransform(DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String transform) {
     	
+    	return isSimpleFunction(inMeta, outMeta, transform, "transform");
+    }
+    
+    public static boolean isSimpleFunction(DataRecordMetadata[] inMeta,
+    		DataRecordMetadata[] outMeta, String transform, String funtionName) {
+    	
     	TransformLangParser parser = new TransformLangParser(inMeta, outMeta, transform);
     	CLVFStart record = null;
     	
@@ -299,9 +335,9 @@ public class RecordTransformFactory {
             System.out.println("Error when parsing expression: " + e.getMessage().split(System.getProperty("line.separator"))[0]);
             return false;
         }
-    	return isSimpleTransformFunctionNode(record, "transform", 0);
+    	return isSimpleTransformFunctionNode(record, funtionName, 0);
     }
-    
+
     public static boolean isSimpleDenormalizer(DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String transform) {
     	
