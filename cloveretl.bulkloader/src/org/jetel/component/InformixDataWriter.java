@@ -32,7 +32,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -302,6 +301,7 @@ public class InformixDataWriter extends BulkLoader {
      * @return
      */
     private String[] createCommandLineForDbLoader() {
+    	// TODO use CommandLoader
     	List<String> cmdList = new ArrayList<String>();
 		
 		if (useLoadUtility) {
@@ -375,10 +375,7 @@ public class InformixDataWriter extends BulkLoader {
 			}
 		}
 		
-		
-		String[] ret = cmdList.toArray(new String[cmdList.size()]);
-		logger.debug("System command: " + Arrays.toString(ret));
-		return ret;
+		return cmdList.toArray(new String[cmdList.size()]);
     }
 
     /**
@@ -437,6 +434,7 @@ public class InformixDataWriter extends BulkLoader {
 		}
 		
 		commandLine = createCommandLineForDbLoader();
+		printCommandLineToLog(commandLine, logger);
 		
         if (isDataReadFromPort) {
 	        dbMetadata = createLoadUtilityMetadata(getColumnDelimiter(), DEFAULT_RECORD_DELIMITER);
