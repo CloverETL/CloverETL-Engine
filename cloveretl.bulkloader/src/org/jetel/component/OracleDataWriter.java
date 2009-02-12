@@ -28,13 +28,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.util.CommandBuilder;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DataFormatter;
@@ -339,10 +337,11 @@ public class OracleDataWriter extends BulkLoader {
      * @return
      */
     private String[] createCommandlineForSqlldr() {
-    	OracleCommandBuilder cmdBuilder = new OracleCommandBuilder(loadUtilityPath, properties);
+    	CommandBuilder cmdBuilder = new CommandBuilder(properties);
+    	cmdBuilder.add(loadUtilityPath);
     	cmdBuilder.addAttribute("control", controlFileName, true);
-    	cmdBuilder.addAttribute("userid", userId, false);
-    	cmdBuilder.addAttribute("data", getData(), false);
+    	cmdBuilder.addAttribute("userid", userId);
+    	cmdBuilder.addAttribute("data", getData());
     	cmdBuilder.addAttribute("log", logFileName, true);
     	cmdBuilder.addAttribute("bad", badFileName, true);
     	cmdBuilder.addAttribute("discard", discardFileName, true);
@@ -353,24 +352,24 @@ public class OracleDataWriter extends BulkLoader {
     	cmdBuilder.addAttribute(SQLLDR_COMMIT_INTERVAL_KEYWORD, commitInterval);
     	
     	// add parameters
-    	cmdBuilder.addParam(SQLLDR_RECORD_COUNT_PARAM ,SQLLDR_RECORD_COUNT_KEYWORD, false);
-    	cmdBuilder.addParam(SQLLDR_BIND_SIZE_PARAM ,SQLLDR_BIND_SIZE_KEYWORD, false);
-    	cmdBuilder.addParam(SQLLDR_SILENT_PARAM ,SQLLDR_SILENT_KEYWORD, false);
-    	cmdBuilder.addParam(SQLLDR_DIRECT_PARAM ,SQLLDR_DIRECT_KEYWORD, false);
-    	cmdBuilder.addParam(SQLLDR_PARALLEL_PARAM ,SQLLDR_PARALLEL_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_RECORD_COUNT_PARAM ,SQLLDR_RECORD_COUNT_KEYWORD);
+    	cmdBuilder.addParam(SQLLDR_BIND_SIZE_PARAM ,SQLLDR_BIND_SIZE_KEYWORD);
+    	cmdBuilder.addParam(SQLLDR_SILENT_PARAM ,SQLLDR_SILENT_KEYWORD);
+    	cmdBuilder.addParam(SQLLDR_DIRECT_PARAM ,SQLLDR_DIRECT_KEYWORD);
+    	cmdBuilder.addParam(SQLLDR_PARALLEL_PARAM ,SQLLDR_PARALLEL_KEYWORD);
     	cmdBuilder.addParam(SQLLDR_FILE_PARAM ,SQLLDR_FILE_KEYWORD, true);
-    	cmdBuilder.addParam(SQLLDR_SKIP_UNUSABLE_INDEX_PARAM ,SQLLDR_SKIP_UNUSABLE_INDEX_KEYWORD, false);
-    	cmdBuilder.addParam(SQLLDR_SKIP_INDEX_MAINTEANCE_PARAM ,SQLLDR_SKIP_INDEX_MAINTEANCE_KEYWORD, false);
-    	cmdBuilder.addParam(SQLLDR_COMMIT_DISCONTINUED_PARAM ,SQLLDR_COMMIT_DISCONTINUED_KEYWORD, false);
-    	cmdBuilder.addParam(SQLLDR_READ_SIZE_PARAM ,SQLLDR_READ_SIZE_KEYWORD, false);
-    	cmdBuilder.addParam(SQLLDR_EXTERNAL_TABLE_PARAM ,SQLLDR_EXTERNAL_TABLE_KEYWORD, false);
-    	cmdBuilder.addParam(SQLLDR_COLUMNARRAYROWS_PARAM ,SQLLDR_COLUMNARRAYROWS_KEYWORD, false);
-    	cmdBuilder.addParam(SQLLDR_STREAM_SIZE_PARAM ,SQLLDR_STREAM_SIZE_KEYWORD, false);
-    	cmdBuilder.addParam(SQLLDR_MULTITHREADING_PARAM ,SQLLDR_MULTITHREADING_KEYWORD, false);  
-    	cmdBuilder.addParam(SQLLDR_RESUMABLE_PARAM ,SQLLDR_RESUMABLE_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_SKIP_UNUSABLE_INDEX_PARAM ,SQLLDR_SKIP_UNUSABLE_INDEX_KEYWORD);
+    	cmdBuilder.addParam(SQLLDR_SKIP_INDEX_MAINTEANCE_PARAM ,SQLLDR_SKIP_INDEX_MAINTEANCE_KEYWORD);
+    	cmdBuilder.addParam(SQLLDR_COMMIT_DISCONTINUED_PARAM ,SQLLDR_COMMIT_DISCONTINUED_KEYWORD);
+    	cmdBuilder.addParam(SQLLDR_READ_SIZE_PARAM ,SQLLDR_READ_SIZE_KEYWORD);
+    	cmdBuilder.addParam(SQLLDR_EXTERNAL_TABLE_PARAM ,SQLLDR_EXTERNAL_TABLE_KEYWORD);
+    	cmdBuilder.addParam(SQLLDR_COLUMNARRAYROWS_PARAM ,SQLLDR_COLUMNARRAYROWS_KEYWORD);
+    	cmdBuilder.addParam(SQLLDR_STREAM_SIZE_PARAM ,SQLLDR_STREAM_SIZE_KEYWORD);
+    	cmdBuilder.addParam(SQLLDR_MULTITHREADING_PARAM ,SQLLDR_MULTITHREADING_KEYWORD);  
+    	cmdBuilder.addParam(SQLLDR_RESUMABLE_PARAM ,SQLLDR_RESUMABLE_KEYWORD);
     	cmdBuilder.addParam(SQLLDR_RESUMABLE_NAME_PARAM ,SQLLDR_RESUMABLE_NAME_KEYWORD, true);
-    	cmdBuilder.addParam(SQLLDR_RESUMABLE_TIMEOUT_PARAM ,SQLLDR_RESUMABLE_TIMEOUT_KEYWORD, false);
-    	cmdBuilder.addParam(SQLLDR_DATA_CACHE_PARAM ,SQLLDR_DATA_CACHE_KEYWORD, false);
+    	cmdBuilder.addParam(SQLLDR_RESUMABLE_TIMEOUT_PARAM ,SQLLDR_RESUMABLE_TIMEOUT_KEYWORD);
+    	cmdBuilder.addParam(SQLLDR_DATA_CACHE_PARAM ,SQLLDR_DATA_CACHE_KEYWORD);
     	
     	String[] ret = cmdBuilder.getCommand();
     	
@@ -862,81 +861,6 @@ public class OracleDataWriter extends BulkLoader {
         return ret.toString();
     }
     
-    /**
-	 * Class for creating command for sqldr from string pieces and parameters.
-	 * Each parameter is one field in array.
-	 * 
-	 * @author Miroslav Haupt (Mirek.Haupt@javlin.cz) 
-	 * (c) Javlin a.s. (www.javlin.cz)
-	 * @since 13.1.2009
-	 */
-	private static class OracleCommandBuilder {
-		private Properties params;
-		private List<String> cmdList;
-
-		private OracleCommandBuilder(String command, Properties properties) {
-			this.params = properties;
-			cmdList = new ArrayList<String>();
-			cmdList.add(command);
-		}
-
-		/**
-		 *  Adds attribute and it's value:
-		 *  attrName=attrValue or attrName='attrValue'
-		 *  for exmaple:  host=localhost or host='localhost'
-		 * 
-		 * @param attrName
-		 * @param attrValue
-		 * @param singleQuoted decides if attrValue will be single quoted
-		 */
-		private void addAttribute(String attrName, String attrValue, boolean singleQuoted) {
-			if (attrValue == null) {
-				return;
-			}
-
-			if (singleQuoted) {
-				cmdList.add(attrName + EQUAL_CHAR + "'" + attrValue + "'");
-			} else {
-				cmdList.add(attrName + EQUAL_CHAR + attrValue);
-			}
-		}
-		
-		/**
-		 *  Adds attribute and it's value:
-		 *  attrName=attrValue
-		 *  for exmaple:  port=123
-		 * 
-		 * @param attrName
-		 * @param attrValue
-		 */
-		private void addAttribute(String attrName, int attrValue) {
-			if (attrValue == UNUSED_INT) {
-				return;
-			}
-			addAttribute(attrName, String.valueOf(attrValue), false);
-		}
-		
-		/**
-		 *  Adds param and it's value - value is get from properties:
-		 *  paramKeyword=paramValue or paramKeyword='paramValue'
-		 *  for exmaple:  host=localhost or host='localhost'
-		 * 
-		 * @param paramName name of parameter used in properties
-		 * @param paramKeyword name of parameter used in load utility command
-		 * @param singleQuoted decides if attrValue will be single quoted
-		 */
-		private void addParam(String paramName, String paramKeyword, boolean singleQuoted) {
-			if (!params.containsKey(paramName)) {
-				return;
-			}
-			addAttribute(paramKeyword, params.getProperty(paramName), singleQuoted);
-		}
-
-		private String[] getCommand() {
-			return cmdList.toArray(new String[cmdList.size()]);
-		}
-	}
-	
 	/**
 	 * Class for reading and parsing data from input files, 
 	 * and sends them to output port.
