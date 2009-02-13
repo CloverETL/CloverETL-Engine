@@ -184,9 +184,13 @@ public class XLSReader extends Node {
 
             aXLSReader.setParserType(XLSType.valueOfIgnoreCase(xattribs.getString(XML_PARSER_ATTRIBUTE, null)));
             aXLSReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
-            aXLSReader.setStartRow(xattribs.getInteger(XML_STARTROW_ATTRIBUTE, 1));
 
-            if (xattribs.exists(XML_FINALROW_ATTRIBUTE)) {
+            if (xattribs.exists(XML_METADATAROW_ATTRIBUTE)) { // do not move
+                aXLSReader.setMetadataRow(xattribs.getInteger(XML_METADATAROW_ATTRIBUTE));
+            }
+
+            aXLSReader.setStartRow(xattribs.getInteger(XML_STARTROW_ATTRIBUTE, 1)); // do not move
+            if (xattribs.exists(XML_FINALROW_ATTRIBUTE)) { // do not move
                 aXLSReader.setFinalRow(xattribs.getInteger(XML_FINALROW_ATTRIBUTE));
             }
             if (xattribs.exists(XML_SKIPROWS_ATTRIBUTE)) {
@@ -206,10 +210,6 @@ public class XLSReader extends Node {
                 aXLSReader.setSheetNumber(xattribs.getString(XML_SHEETNUMBER_ATTRIBUTE));
             } 
 
-            if (xattribs.exists(XML_METADATAROW_ATTRIBUTE)) {
-                aXLSReader.setMetadataRow(xattribs.getInteger(XML_METADATAROW_ATTRIBUTE));
-            }
-
             if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
                 aXLSReader.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
             }
@@ -227,8 +227,8 @@ public class XLSReader extends Node {
     
     private XLSType parserType = XLSType.AUTO;
     private String fileURL;
-	private int skipRows;
-	private int numRecords = Integer.MAX_VALUE;
+    private int startRow = 0;
+    private int finalRow = -1;
     private int maxErrorCount = -1;
     private String incrementalFile;
     private String incrementalKey;
@@ -280,39 +280,45 @@ public class XLSReader extends Node {
      * @param startRow The startRow to set.
      */
     public void setStartRow(int startRecord) {
-    	setSkipRows(startRecord-1);
+        if(startRecord < 1 || (finalRow != -1 && startRecord > finalRow)) {
+            throw new InvalidParameterException("Invalid StartRecord parameter.");
+        }
+        this.startRow = startRecord;
     }
     
     public int getStartRow() {
-        return skipRows;
+        return startRow;
     }
     
     /**
      * @param finalRow The finalRow to set.
      */
     public void setFinalRow(int finalRecord) {
-    	setNumRecords(finalRecord-skipRows-2);
+        if(finalRecord < 0 || (startRow != -1 && startRow > finalRecord)) {
+            throw new InvalidParameterException("Invalid finalRow parameter.");
+        }
+        this.finalRow = finalRecord;
     }
 
     /**
      * @return Returns the finalRow.
      */
     public int getFinalRow() {
-        return numRecords + (numRecords == Integer.MAX_VALUE ? 0 : skipRows+1);
+        return finalRow;
     }
     
 	/**
 	 * @param startRecord The startRecord to set.
 	 */
 	public void setSkipRows(int skipRows) {
-		this.skipRows = Math.max(skipRows, 0);
+		setStartRow(metadataRow+skipRows+1);
 	}
 	
 	/**
 	 * @param finalRecord The finalRecord to set.
 	 */
 	public void setNumRecords(int numRecords) {
-		this.numRecords = Math.max(numRecords, 0);
+		setFinalRow(numRecords + (startRow > metadataRow ? startRow : metadataRow+1));
 	}
 
     /**
@@ -364,10 +370,10 @@ public class XLSReader extends Node {
                     Defaults.Component.KEY_FIELDS_DELIMITER));
         }
 
-        xmlElement.setAttribute(XML_SKIPROWS_ATTRIBUTE, String.valueOf(skipRows));
+        xmlElement.setAttribute(XML_STARTROW_ATTRIBUTE, String.valueOf(startRow));
 
-        if (numRecords > -1) {
-            xmlElement.setAttribute(XML_NUMRECORDS_ATTRIBUTE, String.valueOf(numRecords));
+        if (finalRow > -1) {
+            xmlElement.setAttribute(XML_FINALROW_ATTRIBUTE, String.valueOf(finalRow));
         }
 
         if (maxErrorCount > -1) {
@@ -413,8 +419,11 @@ public class XLSReader extends Node {
             instantiateParser();
 
             parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
-            parser.setFirstRow(skipRows+1);
-            parser.setLastRow(numRecords + (numRecords == Integer.MAX_VALUE ? 0 : skipRows+1));
+            parser.setFirstRow(startRow - 1);
+
+            if (finalRow > -1) {
+                parser.setLastRow(finalRow - 1);
+            }
 
             try {
                 parser.setMetadataRow(metadataRow - 1);
@@ -452,8 +461,11 @@ public class XLSReader extends Node {
         instantiateParser();
 
         parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
-        parser.setFirstRow(skipRows+1);
-        parser.setLastRow(numRecords + (numRecords == Integer.MAX_VALUE ? 0 : skipRows+1));
+        parser.setFirstRow(startRow - 1);
+
+        if (finalRow > -1) {
+            parser.setLastRow(finalRow - 1);
+        }
 
         parser.setMetadataRow(metadataRow - 1);
 
@@ -502,7 +514,6 @@ public class XLSReader extends Node {
         TransformationGraph graph = getGraph();
         reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
         reader.setLogger(logger);
-        reader.setNumRecords(numRecords);
         reader.setIncrementalFile(incrementalFile);
         reader.setIncrementalKey(incrementalKey);
         reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
