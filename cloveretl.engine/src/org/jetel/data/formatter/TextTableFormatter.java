@@ -65,7 +65,7 @@ public class TextTableFormatter implements Formatter {
 	private CharBuffer blank;
 	private CharBuffer horizontal;
 	private boolean setOutputFieldNames = true;
-	private int rowSize = 0;
+//	private int rowSize = 0;
 	private int leftBytes = 0;
 	private DataFieldParams[] maskAnalize;
 	private String[] mask;
@@ -84,7 +84,7 @@ public class TextTableFormatter implements Formatter {
 	private boolean headerWritten = false;
 
 	public static final int MAX_ROW_ANALYZED = 20;
-	private static final int PADDING_SPACE = 3;
+	private int PADDING_SPACE = 3;
 
 	private static final byte[] TABLE_CORNER = new byte[] {('+')};
 	private static final char TABLE_HORIZONTAL = '-';
@@ -409,11 +409,14 @@ public class TextTableFormatter implements Formatter {
 				maskAnalize[i].length = maskAnalize[i].length < lenght ? lenght : maskAnalize[i].length;
 			}
 		}
-		for (int i=0; i<maskAnalize.length; i++) {
-			maskAnalize[i].length += PADDING_SPACE;
-			rowSize += maskAnalize[i].length;
+		if (PADDING_SPACE != 0) {
+			for (int i=0; i<maskAnalize.length; i++) {
+				maskAnalize[i].length += PADDING_SPACE;
+//				rowSize += maskAnalize[i].length;
+			}
+			PADDING_SPACE = 0;
 		}
-		rowSize++;
+//		rowSize++;
 		
 		for (DataFieldParams dataFieldParams : maskAnalize) {
 			max = max > dataFieldParams.length ? max : dataFieldParams.length;
