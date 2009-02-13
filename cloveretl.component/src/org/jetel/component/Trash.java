@@ -22,17 +22,12 @@ package org.jetel.component;
 import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.TextTableFormatter;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -88,7 +83,6 @@ import org.w3c.dom.Element;
  * @see         org.jetel.graph.Edge
  */
 public class Trash extends Node {
-	private static final Log log = LogFactory.getLog(Trash.class);
 
 	private static final String XML_DEBUGFILENAME_ATTRIBUTE = "debugFilename";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
@@ -151,16 +145,16 @@ public class Trash extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
-		int count = 0;
+//		int count = 0;
 		while (record != null && runIt) {
 			record = inPort.readRecord(record);
 			if (writer != null && record != null) {
 		        writer.write(record);
-				if (debugFilename == null) {
-					if (count >= TextTableFormatter.MAX_ROW_ANALYZED)
-						formatter.flush(); // if we debug into stdout
-				}
-				count++;
+//				if (debugFilename == null) {
+//					if (count >= TextTableFormatter.MAX_ROW_ANALYZED)
+//						formatter.flush(); // if we debug into stdout
+//				}
+//				count++;
 			}
 			SynchronizeUtils.cloverYield();
 		}
