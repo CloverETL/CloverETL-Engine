@@ -53,8 +53,6 @@ public class TransformLangParser extends ExpParser {
 
 	   public static final String SRC_ENCODING = "UTF-8";
 		
-	   boolean wildcardMappingActive=true;
-
        DataRecordMetadata[] inRecordsMetadata;
        DataRecordMetadata[] outRecordsMetadata;
        Map inDataRecordsMap;
@@ -730,12 +728,6 @@ void WildCardMapping() :
 	 |LOOKAHEAD(3) t=<REC_NAME_WILDCARD> <MAPPING> r=<REC_NUM_WILDCARD> {jjtThis.setRule(t.image,r.image,getCustRecordTransform()); }
 	 | t=<REC_NAME_WILDCARD> <MAPPING> r=<REC_NAME_WILDCARD> {jjtThis.setRule(t.image,r.image,getCustRecordTransform()); }
 	 )
-	 {
-	 	if (!wildcardMappingActive){
-	 		jjtThis.activate();
-	 		wildcardMappingActive=true;
-	 	}
-	 }
 }
 
 /* Other nonterminals and their productions */

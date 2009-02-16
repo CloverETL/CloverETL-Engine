@@ -13,7 +13,6 @@ public class CLVFWildCardMapping extends SimpleNode {
   public TLValue nodeVal;
   public CustomizedRecordTransform custTrans;
   public boolean initialized=false;
-  public boolean active=false;
   
   public CLVFWildCardMapping(int id) {
     super(id);
@@ -26,15 +25,12 @@ public class CLVFWildCardMapping extends SimpleNode {
 
   /** Accept the visitor. **/
   public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
-	  if (active)
-		  return visitor.visit(this, data);
-	  else
-		  return data;
+	  return visitor.visit(this, data);
   }
   
   public void setRule(String outRec, String inRec,CustomizedRecordTransform custTrans) throws ParseException {
 	  String outRecId=outRec.substring(1, outRec.indexOf('.'));
-	  String inRecId=outRec.substring(1, inRec.indexOf('.'));
+	  String inRecId=inRec.substring(1, inRec.indexOf('.'));
 	  // validate OUTrecord first
 	  if (Character.isDigit(outRecId.charAt(0))){
 		  int recordNo=Integer.parseInt(outRecId);
@@ -57,7 +53,7 @@ public class CLVFWildCardMapping extends SimpleNode {
 	  }
 	  // IN record
 	  if (Character.isDigit(inRecId.charAt(0))){
-		  int recordNo=Integer.parseInt(outRecId);
+		  int recordNo=Integer.parseInt(inRecId);
 	       DataRecordMetadata record=parser.getInRecordMeta(recordNo);
 	       if (record==null){
 	           throw new ParseException("Unknown input record ["+inRec+"]"); 
@@ -65,13 +61,13 @@ public class CLVFWildCardMapping extends SimpleNode {
 	  }else{
 		  DataRecordMetadata record;
 		  try{
-	     	  int recordNo=parser.getInRecordNum(outRecId);
+	     	  int recordNo=parser.getInRecordNum(inRecId);
 	     	  record=parser.getInRecordMeta(recordNo);
 	       }catch(Exception ex){
-	           throw new ParseException("Error accessing record \""+outRecId+"\" "+ex.getMessage());
+	           throw new ParseException("Error accessing record \""+inRecId+"\" "+ex.getMessage());
 	       }
 	       if (record==null){
-	           throw new ParseException("Unknown in record \""+outRecId+"\""); 
+	           throw new ParseException("Unknown in record \""+inRecId+"\""); 
 	       }
 	  }
 	  StringBuffer outPattern=new StringBuffer().append("${").append(outRec.substring(1)).append("}");
@@ -80,8 +76,5 @@ public class CLVFWildCardMapping extends SimpleNode {
 	  this.custTrans=custTrans;
   }
   
-  public void activate(){
-	  this.active=true;
-  }
   
 }

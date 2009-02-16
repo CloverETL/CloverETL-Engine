@@ -24,8 +24,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
   protected JJTTransformLangParserState jjtree = new JJTTransformLangParserState();
            public static final String SRC_ENCODING = "UTF-8";
 
-           boolean wildcardMappingActive=true;
-
        DataRecordMetadata[] inRecordsMetadata;
        DataRecordMetadata[] outRecordsMetadata;
        Map inDataRecordsMap;
@@ -1077,6 +1075,9 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         t = jj_consume_token(REC_NUM_WILDCARD);
         jj_consume_token(MAPPING);
         r = jj_consume_token(REC_NUM_WILDCARD);
+                                                               jjtree.closeNodeScope(jjtn000, true);
+                                                               jjtc000 = false;
+                                                               jjtreeCloseNodeScope(jjtn000);
                                                               jjtn000.setRule(t.image,r.image,getCustRecordTransform());
       } else {
         switch (jj_nt.kind) {
@@ -1084,6 +1085,9 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
           t = jj_consume_token(REC_NUM_WILDCARD);
           jj_consume_token(MAPPING);
           r = jj_consume_token(REC_NAME_WILDCARD);
+                                                                  jjtree.closeNodeScope(jjtn000, true);
+                                                                  jjtc000 = false;
+                                                                  jjtreeCloseNodeScope(jjtn000);
                                                                  jjtn000.setRule(t.image,r.image,getCustRecordTransform());
           break;
         default:
@@ -1092,6 +1096,9 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
             t = jj_consume_token(REC_NAME_WILDCARD);
             jj_consume_token(MAPPING);
             r = jj_consume_token(REC_NUM_WILDCARD);
+                                                                              jjtree.closeNodeScope(jjtn000, true);
+                                                                              jjtc000 = false;
+                                                                              jjtreeCloseNodeScope(jjtn000);
                                                                              jjtn000.setRule(t.image,r.image,getCustRecordTransform());
           } else {
             switch (jj_nt.kind) {
@@ -1099,6 +1106,9 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
               t = jj_consume_token(REC_NAME_WILDCARD);
               jj_consume_token(MAPPING);
               r = jj_consume_token(REC_NAME_WILDCARD);
+                                                                   jjtree.closeNodeScope(jjtn000, true);
+                                                                   jjtc000 = false;
+                                                                   jjtreeCloseNodeScope(jjtn000);
                                                                   jjtn000.setRule(t.image,r.image,getCustRecordTransform());
               break;
             default:
@@ -1109,13 +1119,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
           }
         }
       }
-           jjtree.closeNodeScope(jjtn000, true);
-           jjtc000 = false;
-           jjtreeCloseNodeScope(jjtn000);
-                if (!wildcardMappingActive){
-                        jjtn000.activate();
-                        wildcardMappingActive=true;
-                }
     } finally {
            if (jjtc000) {
              jjtree.closeNodeScope(jjtn000, true);
@@ -3834,6 +3837,24 @@ void OutputFieldExp() #void :// IDExp -> ID
     finally { jj_save(7, xla); }
   }
 
+  final private boolean jj_3R_73() {
+    if (jj_3R_57()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_56() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_73()) {
+    jj_scanpos = xsp;
+    if (jj_3_6()) {
+    jj_scanpos = xsp;
+    if (jj_3R_74()) return true;
+    }
+    }
+    return false;
+  }
+
   final private boolean jj_3R_45() {
     if (jj_scan_token(BLOCK_START)) return true;
     return false;
@@ -3864,6 +3885,13 @@ void OutputFieldExp() #void :// IDExp -> ID
     return false;
   }
 
+  final private boolean jj_3R_57() {
+    if (jj_3R_20()) return true;
+    if (jj_scan_token(104)) return true;
+    if (jj_3R_58()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_34() {
     if (jj_3R_51()) return true;
     return false;
@@ -3874,14 +3902,18 @@ void OutputFieldExp() #void :// IDExp -> ID
     return false;
   }
 
+  final private boolean jj_3_1() {
+    if (jj_3R_20()) return true;
+    if (jj_scan_token(104)) return true;
+    return false;
+  }
+
   final private boolean jj_3R_32() {
     if (jj_3R_49()) return true;
     return false;
   }
 
-  final private boolean jj_3R_57() {
-    if (jj_3R_20()) return true;
-    if (jj_scan_token(104)) return true;
+  final private boolean jj_3R_41() {
     if (jj_3R_58()) return true;
     return false;
   }
@@ -3896,24 +3928,28 @@ void OutputFieldExp() #void :// IDExp -> ID
     return false;
   }
 
-  final private boolean jj_3_1() {
-    if (jj_3R_20()) return true;
-    if (jj_scan_token(104)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_29() {
     if (jj_3R_46()) return true;
     return false;
   }
 
-  final private boolean jj_3R_41() {
-    if (jj_3R_58()) return true;
+  final private boolean jj_3R_28() {
+    if (jj_3R_45()) return true;
     return false;
   }
 
-  final private boolean jj_3R_28() {
-    if (jj_3R_45()) return true;
+  final private boolean jj_3R_24() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_40()) {
+    jj_scanpos = xsp;
+    if (jj_3R_41()) return true;
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_40() {
+    if (jj_3R_57()) return true;
     return false;
   }
 
@@ -3957,21 +3993,6 @@ void OutputFieldExp() #void :// IDExp -> ID
     }
     }
     }
-    return false;
-  }
-
-  final private boolean jj_3R_24() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_40()) {
-    jj_scanpos = xsp;
-    if (jj_3R_41()) return true;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_40() {
-    if (jj_3R_57()) return true;
     return false;
   }
 
@@ -5037,6 +5058,13 @@ void OutputFieldExp() #void :// IDExp -> ID
     return false;
   }
 
+  final private boolean jj_3_2() {
+    if (jj_scan_token(REC_NUM_WILDCARD)) return true;
+    if (jj_scan_token(MAPPING)) return true;
+    if (jj_scan_token(REC_NUM_WILDCARD)) return true;
+    return false;
+  }
+
   final private boolean jj_3_5() {
     if (jj_3R_20()) return true;
     if (jj_scan_token(104)) return true;
@@ -5053,23 +5081,6 @@ void OutputFieldExp() #void :// IDExp -> ID
     return false;
   }
 
-  final private boolean jj_3R_74() {
-    if (jj_3R_21()) return true;
-    return false;
-  }
-
-  final private boolean jj_3_6() {
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
-  final private boolean jj_3_2() {
-    if (jj_scan_token(REC_NUM_WILDCARD)) return true;
-    if (jj_scan_token(MAPPING)) return true;
-    if (jj_scan_token(REC_NUM_WILDCARD)) return true;
-    return false;
-  }
-
   final private boolean jj_3_3() {
     if (jj_scan_token(REC_NAME_WILDCARD)) return true;
     if (jj_scan_token(MAPPING)) return true;
@@ -5077,21 +5088,13 @@ void OutputFieldExp() #void :// IDExp -> ID
     return false;
   }
 
-  final private boolean jj_3R_73() {
-    if (jj_3R_57()) return true;
+  final private boolean jj_3R_74() {
+    if (jj_3R_21()) return true;
     return false;
   }
 
-  final private boolean jj_3R_56() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_73()) {
-    jj_scanpos = xsp;
-    if (jj_3_6()) {
-    jj_scanpos = xsp;
-    if (jj_3R_74()) return true;
-    }
-    }
+  final private boolean jj_3_6() {
+    if (jj_3R_22()) return true;
     return false;
   }
 
