@@ -2858,6 +2858,91 @@ public class InterpreterTest extends CloverTestCase {
 	    }
 	}
     
+    public void test_wildcardMapping(){
+		System.out.println("\nBuild-in string functions test:");
+		String expStr = "$0.* := $0.*; \n" +
+						"$metaPort1.* := $0.*; \n" +
+						"$2.* := $in.*;\n" +
+						"$metaPort3.* := $in.*;\n";
+	      print_code(expStr);
+		try {
+			
+
+			// We use for different metadata with the same structure but different names
+			// so that they resolve to different ports
+			DataRecordMetadata[] outputMetadata = new DataRecordMetadata[4];
+			DataRecord[] outputRecords = new DataRecord[4];
+			for (int i=0; i<4; i++) {
+				outputMetadata[i] = metaOut.duplicate();
+				outputMetadata[i].setName("metaPort" + i);
+				outputRecords[i] = new DataRecord(outputMetadata[i]);
+				outputRecords[i].init();
+			}
+
+			
+			
+			// We create input field with identical structure
+			DataRecordMetadata[] inputMetadata = new DataRecordMetadata[1];
+			inputMetadata[0] = metaOut.duplicate();
+			inputMetadata[0].setName("in");
+			
+			DataRecord[] inputRecords = new DataRecord[1];
+			inputRecords[0] = new DataRecord(inputMetadata[0]);
+			inputRecords[0].init();
+			
+			final String NAME_CONTENTS = "  My name ";
+			final double AGE_CONTENTS = 13.5;
+			final String CITY_CONTENTS = "Prague";
+			final Date BORN_CONTENTS = ((GregorianCalendar)Calendar.getInstance()).getTime();
+			
+			SetVal.setString(inputRecords[0],"Name",NAME_CONTENTS);
+			SetVal.setDouble(inputRecords[0],"Age",AGE_CONTENTS);
+			SetVal.setString(inputRecords[0],"City",CITY_CONTENTS);
+			SetVal.setValue(inputRecords[0],"Born",BORN_CONTENTS);
+			inputRecords[0].getField("Value").setNull(true);
+			
+			TransformLangParser parser = new TransformLangParser(inputMetadata,outputMetadata,
+					  new ByteArrayInputStream(expStr.getBytes()),"UTF-8");
+			  
+			CLVFStart parseTree = parser.Start();
+
+			if (parser.getParseExceptions().size()>0){
+				  // report error
+				for(Throwable t : parser.getParseExceptions()) {
+					System.out.println(t);
+				}
+				throw new RuntimeException("Parse exception");
+			}
+
+
+ 		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setParser(parser);
+		      executor.setInputRecords(inputRecords);
+		      executor.setOutputRecords(outputRecords);
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+		      
+		      // Compare for each output records if the original values were copied successfully
+		      for (int i=0; i < outputRecords.length; i++) {
+		    	  assertEquals(((StringBuilder)outputRecords[i].getField("Name").getValue()).toString(),NAME_CONTENTS);
+		    	  assertEquals(outputRecords[i].getField("Age").getValue(),AGE_CONTENTS);
+		    	  assertEquals(((StringBuilder)outputRecords[i].getField("City").getValue()).toString(),CITY_CONTENTS);
+		    	  assertEquals(outputRecords[i].getField("Born").getValue(),BORN_CONTENTS);
+		    	  assertTrue(outputRecords[i].getField("Value").isNull());
+		      }
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception",e);
+	    }
+	}
     
     public void print_code(String text){
         String[] lines=text.split("\n");

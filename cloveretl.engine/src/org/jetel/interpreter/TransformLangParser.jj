@@ -49,8 +49,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
 	   public static final String SRC_ENCODING = "UTF-8";
 		
-	   boolean wildcardMappingActive=true;
-
        DataRecordMetadata[] inRecordsMetadata;
        DataRecordMetadata[] outRecordsMetadata;
        Map inDataRecordsMap;
@@ -934,23 +932,35 @@ void WildCardMapping() :
          try {
 /*@egen*/
 	 ( 	 LOOKAHEAD(3)
-	 t=<REC_NUM_WILDCARD> <MAPPING> r=<REC_NUM_WILDCARD> {jjtn000.setRule(t.image,r.image,getCustRecordTransform()); }
-	 | t=<REC_NUM_WILDCARD> <MAPPING> r=<REC_NAME_WILDCARD> {jjtn000.setRule(t.image,r.image,getCustRecordTransform()); }
-	 |LOOKAHEAD(3) t=<REC_NAME_WILDCARD> <MAPPING> r=<REC_NUM_WILDCARD> {jjtn000.setRule(t.image,r.image,getCustRecordTransform()); }
-	 | t=<REC_NAME_WILDCARD> <MAPPING> r=<REC_NAME_WILDCARD> {jjtn000.setRule(t.image,r.image,getCustRecordTransform()); }
+	 t=<REC_NUM_WILDCARD> <MAPPING> r=<REC_NUM_WILDCARD>/*@bgen(jjtree)*/
+                                                             {
+                                                               jjtree.closeNodeScope(jjtn000, true);
+                                                               jjtc000 = false;
+                                                               jjtreeCloseNodeScope(jjtn000);
+                                                             }
+/*@egen*/ {jjtn000.setRule(t.image,r.image,getCustRecordTransform()); }
+	 | t=<REC_NUM_WILDCARD> <MAPPING> r=<REC_NAME_WILDCARD>/*@bgen(jjtree)*/
+                                                                {
+                                                                  jjtree.closeNodeScope(jjtn000, true);
+                                                                  jjtc000 = false;
+                                                                  jjtreeCloseNodeScope(jjtn000);
+                                                                }
+/*@egen*/ {jjtn000.setRule(t.image,r.image,getCustRecordTransform()); }
+	 |LOOKAHEAD(3) t=<REC_NAME_WILDCARD> <MAPPING> r=<REC_NUM_WILDCARD>/*@bgen(jjtree)*/
+                                                                            {
+                                                                              jjtree.closeNodeScope(jjtn000, true);
+                                                                              jjtc000 = false;
+                                                                              jjtreeCloseNodeScope(jjtn000);
+                                                                            }
+/*@egen*/ {jjtn000.setRule(t.image,r.image,getCustRecordTransform()); }
+	 | t=<REC_NAME_WILDCARD> <MAPPING> r=<REC_NAME_WILDCARD>/*@bgen(jjtree)*/
+                                                                 {
+                                                                   jjtree.closeNodeScope(jjtn000, true);
+                                                                   jjtc000 = false;
+                                                                   jjtreeCloseNodeScope(jjtn000);
+                                                                 }
+/*@egen*/ {jjtn000.setRule(t.image,r.image,getCustRecordTransform()); }
 	 )/*@bgen(jjtree)*/
-         {
-           jjtree.closeNodeScope(jjtn000, true);
-           jjtc000 = false;
-           jjtreeCloseNodeScope(jjtn000);
-         }
-/*@egen*/
-	 {
-	 	if (!wildcardMappingActive){
-	 		jjtn000.activate();
-	 		wildcardMappingActive=true;
-	 	}
-	 }/*@bgen(jjtree)*/
          } finally {
            if (jjtc000) {
              jjtree.closeNodeScope(jjtn000, true);
