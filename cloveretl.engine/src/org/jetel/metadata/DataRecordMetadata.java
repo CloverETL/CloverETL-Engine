@@ -1,25 +1,23 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
-// FILE: c:/projects/jetel/org/jetel/metadata/DataRecordMetadata.java
-
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.cz>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.metadata;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,543 +39,743 @@ import org.jetel.util.string.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
- *  A class that represents metadata describing DataRecord
- *
- * @author      D.Pavlis
- * @since       March 26, 2002
- * @revision    $Revision$
- * @see         DataFieldMetadata
- * @see         org.jetel.data.DataRecord
- * @see         org.jetel.data.DataField
+ * A class that represents meta data describing a data record.
+ * 
+ * @author David Pavlis <david.pavlis@javlin.eu>
+ * @author Martin Janik <martin.janik@javlin.eu>
+ * 
+ * @version 17th February 2009
+ * @since 26th March 2002
+ * 
+ * @see DataFieldMetadata
+ * @see org.jetel.data.DataRecord
+ * @see org.jetel.data.DataField
+ * 
+ * @revision $Revision$
  */
 public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetadata> {
 
 	private static final long serialVersionUID = 7032218607804024730L;
 
-    // Associations
-	@SuppressWarnings("Se")
-	private List<DataFieldMetadata> fields;
-	private BitArray fieldNullSwitch;
-    
-	@SuppressWarnings("Se")
-	private Map<String, Integer> fieldNames;
-	@SuppressWarnings("Se")
-	private Map<Integer, String> fieldTypes;
-	@SuppressWarnings("Se")
-	private Map<String, Integer> fieldOffset;
+	public static final char DELIMITED_RECORD = 'D';
+	public static final char FIXEDLEN_RECORD = 'F';
+	public static final char MIXED_RECORD = 'M';
 
+	public static final String BYTE_MODE_ATTR = "byteMode";
+
+	/** Name of the data record. */
 	private String name;
+
+	/** The type of the data record. */
 	private char recType;
-	private String recordDelimiters;
-	private String fieldDelimiters;
-	private int recordSize=-1;
-	private String localeStr;
-    private short numNullableFields;
+
 	private boolean skipFirstLine;
 
-	private TypedProperties recordProperties;
+	private String recordDelimiter;
+	private String fieldDelimiter;
+	private int recordSize = -1;
 
-	/**  Description of the Field */
-	public final static char DELIMITED_RECORD = 'D';
-	/**  Description of the Field */
-	public final static char FIXEDLEN_RECORD = 'F';
-	/**  Description of the Field */
-	public final static char MIXED_RECORD = 'M';
+	@SuppressWarnings("Se")
+	private List<DataFieldMetadata> fields = new ArrayList<DataFieldMetadata>();
+	@SuppressWarnings("Se")
+	private Map<String, Integer> fieldNames = new HashMap<String, Integer>();
+	@SuppressWarnings("Se")
+	private Map<Integer, String> fieldTypes = new HashMap<Integer, String>();
+	@SuppressWarnings("Se")
+	private Map<String, Integer> fieldOffset = new HashMap<String, Integer>();
 
-    public final static String BYTE_MODE_ATTR = "byteMode";
+	private BitArray fieldNullSwitch = new BitArray();
+	private short numNullableFields = 0;
 
-	// Operations
+	private TypedProperties recordProperties = new TypedProperties();
+	private String localeStr = null;
 
 	/**
-	 *  Constructor for the DataRecordMetadata object
+	 * Constructs data record meta data with given name.
 	 *
-	 * @param  _name  Name of the Data Record
-	 * @param  _type  Type of record - delimited/fix-length
-	 * @since         May 2, 2002
+	 * @param name the name of the data record
+	 *
+	 * @since 2nd May 2002
 	 */
-	public DataRecordMetadata(String _name, char _type) {
-		this(_name);
-		this.recType = _type;
+	public DataRecordMetadata(String name) {
+		setName(name);
 	}
 
+	/**
+	 * Constructs data record meta data with given name and type.
+	 *
+	 * @param name the name of the data record
+	 * @param recType the type of the data record
+	 *
+	 * @since 2nd May 2002
+	 */
+	public DataRecordMetadata(String name, char recType) {
+		this(name);
+
+		this.recType = recType;
+	}
 
 	/**
-	 *  Constructor for the DataRecordMetadata object
+	 * Sets the name of the data record.
 	 *
-	 * @param  _name  Name of the Data Record
-	 * @since         May 2, 2002
+	 * @param name the new name of the data record
 	 */
-	public DataRecordMetadata(String _name) {
-		if (!StringUtils.isValidObjectName(_name)){
-			throw new InvalidGraphObjectNameException(_name,"RECORD");
+	public void setName(String name) {
+		if (!StringUtils.isValidObjectName(name)) {
+			throw new InvalidGraphObjectNameException(name, "RECORD");
 		}
-		this.name = _name;
-		this.fields = new ArrayList<DataFieldMetadata>();
-		fieldNames = new HashMap();
-		fieldTypes = new HashMap();
-		fieldOffset = new HashMap<String, Integer>();
-		recordProperties = new TypedProperties();
-		localeStr=null;
-        numNullableFields=0;
-        fieldNullSwitch=new BitArray();
+
+		this.name = name;
 	}
 
 	/**
-	 * Creates deep copy of existing metadata. 
-	 * 
-	 * @return new metadata (exact copy of current metatada)
-	 */
-	public DataRecordMetadata duplicate() {
-	    DataRecordMetadata ret = new DataRecordMetadata(getName(), getRecType());
-
-		ret.setRecordDelimiters(getRecordDelimiterStr());
-		ret.setFieldDelimiter(getFieldDelimiterStr());
-		ret.setLocaleStr(getLocaleStr());
-		ret.setRecordSize(getRecordSize());
-		ret.setSkipFirstLine(isSkipFirstLine());
-
-		//copy record properties
-        ret.setRecordProperties(getRecordProperties());
-		
-		//copy fields
-		DataFieldMetadata[] sourceFields = getFields();
-		for(int i = 0; i < sourceFields.length; i++) {
-		    ret.addField(sourceFields[i].duplicate());
-		}
-		
-	    return ret;
-	}
-
-	/**
-	 *  An operation that sets Record Name
-	 *
-	 * @param  _name  The new Record Name
-	 * @since
-	 */
-	public void setName(String _name) {
-		if (!StringUtils.isValidObjectName(_name)){
-			throw new InvalidGraphObjectNameException(_name,"RECORD");
-		}
-		this.name = _name;
-	}
-
-
-	/**
-	 *  An operation that returns Record Name
-	 *
-	 * @return    The Record Name
-	 * @since
+	 * @return the name of the data record
 	 */
 	public String getName() {
 		return name;
 	}
 
-
 	/**
-	 * @return Returns the localeStr.
-	 */
-	public String getLocaleStr() {
-		return localeStr;
-	}
-	/**
-	 * @param localeStr The localeStr to set.
-	 */
-	public void setLocaleStr(String localeStr) {
-		this.localeStr = localeStr;
-	}
-	/**
-	 *  An operation that returns number of Data Fields within Data Record
+	 * Sets the type of record (delimited/fixed-length).
 	 *
-	 * @return    Number of Data Fields defined for the record
-	 * @since
-	 */
-	public int getNumFields() {
-		return fields.size();
-	}
-
-
-	/**
-	 *  An operation that returns DataFieldMetadata reference based on field's
-	 *  position within record
+	 * @param recType the new type of record
 	 *
-	 * @param  _fieldNum  ordinal number of requested field
-	 * @return            DataFieldMetadata reference
-	 * @since
+	 * @since 3rd May 2002
 	 */
-	public DataFieldMetadata getField(int _fieldNum) {
-
-		try {
-			return (DataFieldMetadata) fields.get(_fieldNum);
-		} catch (IndexOutOfBoundsException e) {
-			return null;
-		}
-
+	public void setRecType(char recType) {
+		this.recType = recType;
 	}
 
-
 	/**
-	 *  An operation that returns DataFieldMetadata reference based on field's name
+	 * @return the type of record (delimited/fixed-length)
 	 *
-	 * @param  _fieldName  name of the field requested
-	 * @return             DataFieldMetadata reference
-	 * @since
-	 */
-	public DataFieldMetadata getField(String _fieldName) {
-		Integer position;
-		if (fieldNames.isEmpty()) {
-			updateFieldNamesMap();
-		}
-
-		position = (Integer) fieldNames.get(_fieldName);
-		if (position != null) {
-			return getField(position.intValue());
-		} else {
-			return null;
-		}
-
-	}
-
-
-	/**
-	 *  Gets the fieldPosition attribute of the DataRecordMetadata object
-	 *
-	 * @param  fieldName  Description of the Parameter
-	 * @return            The position of the field within record or -1 if
-     * such field does not exist.
-	 */
-	public int getFieldPosition(String fieldName) {
-		Integer position;
-		if (fieldNames.isEmpty()) {
-			updateFieldNamesMap();
-		}
-
-		position = (Integer) fieldNames.get(fieldName);
-		if (position != null) {
-			return position.intValue();
-		} else {
-			return -1;
-		}
-	}
-
-	public int getFieldOffset(String fieldName){
-		if (getRecType() != FIXEDLEN_RECORD ) return -1;
-		
-		if (fieldOffset.isEmpty()) {
-			updateFieldOffsetMap();
-		}
-		Integer offset = fieldOffset.get(fieldName);
-		if (offset != null) {
-			return offset.intValue();
-		} else {
-			return -1;
-		}
-	}
-
-	/**
-	 *  Gets the fieldType attribute of the DataFieldMetadata identified by fieldName
-	 *
-	 * @param  fieldName  Description of the Parameter
-	 * @return            The field type
-	 */
-	public char getFieldType(String fieldName) {
-		Integer position;
-		if (fieldNames.isEmpty()) {
-			updateFieldNamesMap();
-		}
-
-		position = (Integer) fieldNames.get(fieldName);
-		if (position != null) {
-			DataFieldMetadata fieldMetadata = getField(position.intValue());
-			return fieldMetadata.getType();
-		} else {
-			return DataFieldMetadata.UNKNOWN_FIELD;
-		}
-	}
-
-
-	/**
-	 *  Gets the fieldType attribute of the DataFieldMetadata identified by fieldName
-	 *
-	 * @param  fieldNo      Description of the Parameter
-	 * @return              The field type
-	 */
-	public char getFieldType(int fieldNo) {
-		DataFieldMetadata fieldMetadata = getField(fieldNo);
-		if (fieldMetadata != null) {
-			return fieldMetadata.getType();
-		} else {
-			return DataFieldMetadata.UNKNOWN_FIELD;
-		}
-	}
-
-	/**
-	 *  Gets the fieldType attribute of the DataFieldMetadata identified by fieldName
-	 *
-	 * @param  fieldNo      Description of the Parameter
-	 * @return              The field type as String
-	 */
-	public String getFieldTypeAsString(int fieldNo) {
-		DataFieldMetadata fieldMetadata = getField(fieldNo);
-		if (fieldMetadata != null) {
-			return fieldMetadata.getTypeAsString();
-		} else {
-			return DataFieldMetadata.type2Str(DataFieldMetadata.UNKNOWN_FIELD);
-		}
-	}
-
-
-	/**
-	 *  Gets the Map where keys are FieldNames and values Field Order Numbers
-	 *
-	 * @return    Map object {FieldName->Order Number}
-	 * @since     May 2, 2002
-	 */
-	public Map getFieldNames() {
-		if (fieldNames.isEmpty()) {
-			updateFieldNamesMap();
-		}
-		return new HashMap(fieldNames);
-	}
-
-
-
-	/**
-	 *  Gets the Map where keys are FieldNames and values Field Types
-	 *
-	 * @return    Map object {FieldName->Order Number}
-	 * @since     May 2, 2002
-	 */
-	public Map getFieldTypes() {
-		if (fieldTypes.isEmpty()) {
-			updateFieldTypesMap();
-		}
-		return new HashMap(fieldTypes);
-	}
-
-	/**
-	 * Gets array of data field metadata objects.
-	 * @return
-	 */
-	public DataFieldMetadata[] getFields() {
-		return (DataFieldMetadata[]) fields.toArray(new DataFieldMetadata[fields.size()]);
-	}
-
-	/**
-	 * Call if structure of metedata changes (add or remove some field).
-	 */
-	private void structureChanged() {
-		recordSize = -1;
-	    fieldNames.clear();
-	    fieldTypes.clear();
-	    fieldOffset.clear();
-        numNullableFields=0;
-        fieldNullSwitch.resize(fields.size());
-        int count=0;
-        for(DataFieldMetadata fieldMeta: fields) {
-        	fieldMeta.setNumber(count);
-            if (fieldMeta.isNullable()){
-                numNullableFields++;
-                fieldNullSwitch.set(count);
-            }
-            count++;
-        }
-	}
-	
-	/**  Description of the Method */
-	private void updateFieldTypesMap() {
-		DataFieldMetadata field;
-		// fieldNames.clear(); - not necessary as it is called only if Map is empty
-	
-		for (int i = 0; i < fields.size(); i++) {
-			field = (DataFieldMetadata) fields.get(i);
-			fieldTypes.put(Integer.valueOf(i), String.valueOf(field.getType()));
-		}
-	}
-
-
-
-	/**  Description of the Method */
-	private void updateFieldNamesMap() {
-		DataFieldMetadata field;
-		// fieldNames.clear(); - not necessary as it is called only if Map is empty
-		for (int i = 0; i < fields.size(); i++) {
-			field = (DataFieldMetadata) fields.get(i);
-			fieldNames.put(field.getName(), Integer.valueOf(i));
-		}
-	}
-	
-	private void updateFieldOffsetMap(){
-		if (getRecType() != FIXEDLEN_RECORD) return;
-		
-		int offset = 0;
-		for (DataFieldMetadata field : fields) {
-			fieldOffset.put(field.getName(), offset + field.getShift());
-			offset += field.getSize();
-		}
-	}
-
-	/**
-	 *  Sets the Record Type (Delimited/Fix-length)
-	 *
-	 * @param  c  The new recType value
-	 * @since     May 3, 2002
-	 */
-	public void setRecType(char type) {
-		recType = type;
-	}
-
-
-	/**
-	 *  Gets the Record Type (Delimited/Fix-length)
-	 *
-	 * @return    The Record Type
-	 * @since     May 3, 2002
+	 * @since 3rd May 2002
 	 */
 	public char getRecType() {
 		return recType;
 	}
 
-	public void setRecordSize(int recSize) {
-		this.recordSize = recSize;
+	/**
+	 * Sets the value of the skip-first-line flag.
+	 *
+	 * @param isSkipFirstLine the new value of the skip-first-line flag
+	 */
+	public void setSkipFirstLine(boolean isSkipFirstLine) {
+		skipFirstLine = isSkipFirstLine;
 	}
-	
+
+	/**
+	 * @return the value of the skip-first-line flag
+	 */
+	public boolean isSkipFirstLine() {
+		return skipFirstLine;
+	}
+
+	/**
+	 * Sets the field delimiter.
+	 *
+	 * @param fieldDelimiter the new field delimiter
+	 */
+	public void setFieldDelimiter(String fieldDelimiter) {
+		this.fieldDelimiter = fieldDelimiter;
+	}
+
+	/**
+	 * @return the field delimiter
+	 */
+	public String getFieldDelimiter() {
+		return fieldDelimiter;
+	}
+
+	/**
+	 * @return an array of field delimiters
+	 */
+	public String[] getFieldDelimiters() {
+		if (!StringUtils.isEmpty(fieldDelimiter)) {
+			return fieldDelimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
+		}
+
+		return null;
+	}
+
+	/**
+	 * @return <code>true</code> if the field delimiter is specified, <code>false</code> otherwise
+	 */
+	public boolean isSpecifiedFieldDelimiter() {
+		return (getFieldDelimiters() != null);
+	}
+
+	/**
+	 * Sets the data record delimiter.
+	 *
+	 * @param recordDelimiter the new data record delimiter
+	 */
+	public void setRecordDelimiter(String recordDelimiter) {
+		this.recordDelimiter = recordDelimiter;
+	}
+
+	/**
+	 * @return the data record delimiter
+	 */
+	public String getRecordDelimiter() {
+		return recordDelimiter;
+	}
+
+	/**
+	 * @return an array of data record delimiters
+	 */
+	public String[] getRecordDelimiters() {
+		if (!StringUtils.isEmpty(recordDelimiter)) {
+			return recordDelimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
+		}
+
+		return null;
+	}
+
+	/**
+	 * @return <code>true</code> if the data record delimiter is specified, <code>false</code> otherwise
+	 */
+	public boolean isSpecifiedRecordDelimiter() {
+		return (getRecordDelimiters() != null);
+	}
+
+	/**
+	 * Sets the size of the data record.
+	 *
+	 * @param recordSize the new size
+	 */
+	public void setRecordSize(int recordSize) {
+		this.recordSize = recordSize;
+	}
+
+	/**
+	 * @return the size of the data record
+	 */
 	public int getRecordSize() {
 		if (recType != FIXEDLEN_RECORD) {
-			return -1;	// unknown size
+			return -1; // unknown size
 		}
 
 		if (recordSize > -1) {
 			return recordSize;
-		}		
-		
+		}
+
 		return getRecordSizeStripAutoFilling();
 	}
 
+	/**
+	 * @return the size of the data record with auto-filling stripped off
+	 */
 	public int getRecordSizeStripAutoFilling() {
 		if (recType != FIXEDLEN_RECORD) {
-			return -1;	// unknown size
+			return -1; // unknown size
 		}
+
 		// compute size of fixed record (without trailing filler)
 		int recSize = 0;
 		int prevEnd = 0;
+
 		for (DataFieldMetadata field : fields) {
 			if (field.getAutoFilling() == null) {
 				prevEnd += field.getSize() + field.getShift();
 				recSize = Math.max(recSize, prevEnd);
 			}
 		}
+
 		return recSize;
 	}
 
 	/**
-	 *  Gets the recordProperties attribute of the DataRecordMetadata object
-	 *
-	 * @return    The recordProperties value
+	 * @return an array of data field meta data objects
 	 */
-	public TypedProperties getRecordProperties() {
-		return recordProperties;
+	public DataFieldMetadata[] getFields() {
+		return fields.toArray(new DataFieldMetadata[fields.size()]);
 	}
 
-    /**
-     * Gets the one property value from the recordProperties attribute according given attribute name.
-     * @param attrName
-     * @return
-     * @see this.getRecordProperties()
-     */
-    public String getProperty(String attrName) {
-        return recordProperties.getProperty(attrName);
-    }
+	/**
+	 * @return the number of data fields within the data record
+	 */
+	public int getNumFields() {
+		return fields.size();
+	}
 
 	/**
-	 *  Sets the recordProperties attribute of the DataRecordMetadata object
-	 *  Record properties allows defining additional parameters for record.
-	 *  These parameters (key-value pairs) are NOT normally handled by CloverETL, but
-	 *  can be used in user's code or specialised Components. 
+	 * Returns a <code>DataFieldMetadata</code> reference based on the field's position within a data record.
 	 *
-	 * @param  properties  The new recordProperties value
+	 * @param fieldNumber the ordinal number of the requested field
+	 *
+	 * @return a <code>DataFieldMetadata</code> reference
+	 */
+	public DataFieldMetadata getField(int fieldNumber) {
+		if (fieldNumber < 0 || fieldNumber >= fields.size()) {
+			return null;
+		}
+
+		return fields.get(fieldNumber);
+	}
+
+	/**
+	 * Returns a <code>DataFieldMetadata</code> reference based on the field's name.
+	 *
+	 * @param fieldName the name of the requested field
+	 *
+	 * @return a <code>DataFieldMetadata</code> reference
+	 */
+	public DataFieldMetadata getField(String fieldName) {
+		int position = getFieldPosition(fieldName);
+
+		if (position >= 0) {
+			return getField(position);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the type of a field based on the field's position within a data record.
+	 *
+	 * @param fieldNumber the ordinal number of the requested field
+	 *
+	 * @return the type of the field
+	 */
+	public char getFieldType(int fieldNumber) {
+		DataFieldMetadata field = getField(fieldNumber);
+
+		if (field != null) {
+			return field.getType();
+		}
+
+		return DataFieldMetadata.UNKNOWN_FIELD;
+	}
+
+	/**
+	 * Returns the type of a field based on the field's name.
+	 * 
+	 * @param fieldName the name of the requested field
+	 *
+	 * @return the type of the field
+	 */
+	public char getFieldType(String fieldName) {
+		DataFieldMetadata field = getField(fieldName);
+
+		if (field != null) {
+			return field.getType();
+		}
+
+		return DataFieldMetadata.UNKNOWN_FIELD;
+	}
+
+	/**
+	 * Returns the type of a field based on the field's position within a data record as a string.
+	 *
+	 * @param fieldNumber the ordinal number of the requested field
+	 *
+	 * @return the type of the field as a string
+	 */
+	public String getFieldTypeAsString(int fieldNumber) {
+		DataFieldMetadata field = getField(fieldNumber);
+
+		if (field != null) {
+			return field.getTypeAsString();
+		}
+
+		return DataFieldMetadata.UNKNOWN_TYPE;
+	}
+
+	/**
+	 * Returns the position of a field based on the field's name.
+	 * 
+	 * @param fieldName the name of the requested field
+	 *
+	 * @return the position of the field within the data record or -1 if no such field exists
+	 */
+	public int getFieldPosition(String fieldName) {
+		if (fieldNames.isEmpty()) {
+			updateFieldNamesMap();
+		}
+
+		Integer position = fieldNames.get(fieldName);
+
+		if (position != null) {
+			return position;
+		}
+
+		return -1;
+	}
+
+	/**
+	 * Adds a field to the data record.
+	 *
+	 * @param field a <code>DataFieldMetadata</code> reference
+	 */
+	public void addField(DataFieldMetadata field) {
+		addField(fields.size(), field);
+	}
+
+	/**
+	 * Adds a field to the data record at the specified index.
+	 *
+	 * @param index the index to be used to add the field
+	 * @param field a <code>DataFieldMetadata</code> reference
+	 */
+	public void addField(int index, DataFieldMetadata field) {
+		field.setDataRecordMetadata(this);
+		fields.add(index, field);
+
+		structureChanged();
+	}
+
+	/**
+	 * Deletes a data field identified by the given field number.
+	 *
+	 * @param fieldNumber the ordinal number of the field to be deleted
+	 */
+	public void delField(int fieldNumber) {
+		if (fieldNumber >= 0 && fieldNumber < fields.size()) {
+			fields.remove(fieldNumber);
+			structureChanged();
+		}
+	}
+
+	/**
+	 * Deletes a data field identified by the given field number.
+	 *
+	 * @param fieldName the name of the field to be deleted
+	 */
+	public void delField(String fieldName) {
+		int position = getFieldPosition(fieldName);
+
+		if (position >= 0) {
+			delField(position);
+		}
+	}
+
+	/**
+	 * Deletes all fields in this data field meta data.
+	 */
+	public void delAllFields() {
+		fields.clear();
+		structureChanged();
+	}
+
+	/**
+	 * Call if the structure of the meta data changes (a field was added/removed).
+	 */
+	private void structureChanged() {
+		recordSize = -1;
+
+		fieldNames.clear();
+		fieldTypes.clear();
+		fieldOffset.clear();
+
+		fieldNullSwitch.resize(fields.size());
+		numNullableFields = 0;
+
+		int count = 0;
+
+		for (DataFieldMetadata fieldMeta : fields) {
+			fieldMeta.setNumber(count);
+
+			if (fieldMeta.isNullable()) {
+				fieldNullSwitch.set(count);
+				numNullableFields++;
+			}
+
+			count++;
+		}
+	}
+
+	/**
+	 * @return a map mapping field names to field ordinal numbers
+	 *
+	 * @since 2nd May 2002
+	 */
+	public Map<String, Integer> getFieldNames() {
+		if (fieldNames.isEmpty()) {
+			updateFieldNamesMap();
+		}
+
+		return new HashMap<String, Integer>(fieldNames);
+	}
+
+	/**
+	 * Used to populate the fieldNames map if empty.
+	 */
+	private void updateFieldNamesMap() {
+		assert (fieldNames.isEmpty());
+
+		for (int i = 0; i < fields.size(); i++) {
+			fieldNames.put(fields.get(i).getName(), i);
+		}
+	}
+
+	/**
+	 * @return a map mapping field ordinal numbers to field types
+	 *
+	 * @since 2nd May 2002
+	 */
+	public Map<Integer, String> getFieldTypes() {
+		if (fieldTypes.isEmpty()) {
+			for (int i = 0; i < fields.size(); i++) {
+				fieldTypes.put(i, Character.toString(fields.get(i).getType()));
+			}
+		}
+
+		return new HashMap<Integer, String>(fieldTypes);
+	}
+
+	/**
+	 * Returns the offset of a field based on the field's name.
+	 * 
+	 * @param fieldName the name of the requested field
+	 *
+	 * @return the offset of the field within the data record or -1 if no such field exists
+	 */
+	public int getFieldOffset(String fieldName) {
+		if (recType != FIXEDLEN_RECORD) {
+			return -1;
+		}
+
+		if (fieldOffset.isEmpty()) {
+			int offset = 0;
+
+			for (DataFieldMetadata field : fields) {
+				fieldOffset.put(field.getName(), offset + field.getShift());
+				offset += field.getSize();
+			}
+		}
+
+		Integer offset = fieldOffset.get(fieldName);
+
+		if (offset != null) {
+			return offset;
+		}
+
+		return -1;
+	}
+
+	/**
+	 * @return a <code>BitArray</code> where bits are set for fields which may contain a NULL value.
+	 *
+	 * @since 18th January 2007
+	 */
+	public BitArray getFieldsNullSwitches() {
+		return fieldNullSwitch;
+	}
+
+	/**
+	 * @return the number of nullable fields
+	 *
+	 * @since 18th January 2007
+	 */
+	public short getNumNullableFields() {
+		return numNullableFields;
+	}
+
+	/**
+	 * @return <code>true</code> if a data record described by this meta data contains at least one field which may
+	 * contain a NULL value, <code>false</code> otherwise
+	 *
+	 * @since 18th January 2007
+	 */
+	public boolean isNullable() {
+		return (numNullableFields != 0);
+	}
+
+	/**
+	 * Sets the recordProperties attribute of the DataRecordMetadata object Record properties allows defining additional
+	 * parameters for record. These parameters (key-value pairs) are NOT normally handled by CloverETL, but can be used
+	 * in user's code or specialized Components.
+	 * 
+	 * @param properties The new recordProperties value
 	 */
 	public void setRecordProperties(Properties properties) {
 		recordProperties = new TypedProperties(properties);
 	}
 
 	/**
-	 *  An operation that adds DataField (metadata) into DataRecord
+	 * Gets the recordProperties attribute of the DataRecordMetadata object.
 	 *
-	 * @param  _field  DataFieldMetadata reference
-	 * @since
+	 * @return The recordProperties value
 	 */
-	public void addField(DataFieldMetadata _field) {
-		_field.setDataRecordMetadata(this);
-		fields.add(_field);
-		structureChanged();
+	public TypedProperties getRecordProperties() {
+		return recordProperties;
 	}
 
-	public void addField(int index, DataFieldMetadata field){
-		field.setDataRecordMetadata(this);
-		fields.add(index, field);
-		structureChanged();
-	}
-	
 	/**
-	 *  An operation that deletes data field identified by index
+	 * Sets a value of the property with the given key.
 	 *
-	 * @param  _fieldNum  ordinal number of the field to be deleted
-	 * @since
+	 * @param key the key of the property
+	 * @param value the value to be set
 	 */
-	public void delField(int _fieldNum) {
-		try {
-			fields.remove(_fieldNum);
-			structureChanged();
-		} catch (IndexOutOfBoundsException e) {
-			// do nothing - may-be singnalize error
+	public String getProperty(String attrName) {
+		return recordProperties.getProperty(attrName);
+	}
+
+	/**
+	 * Sets the locale code string.
+	 *
+	 * @param localeStr the locale code (eg. "en", "fr", ...)
+	 */
+	public void setLocaleStr(String localeStr) {
+		this.localeStr = localeStr;
+	}
+
+	/**
+	 * @return the locale code string.
+	 */
+	public String getLocaleStr() {
+		return localeStr;
+	}
+
+	/**
+	 * Creates a deep copy of this data record meta data object.
+	 *
+	 * @return an exact copy of current data record meta data object
+	 */
+	public DataRecordMetadata duplicate() {
+		DataRecordMetadata dataRecordMetadata = new DataRecordMetadata(name, recType);
+
+		dataRecordMetadata.setName(name);
+		dataRecordMetadata.setRecType(recType);
+		dataRecordMetadata.setSkipFirstLine(skipFirstLine);
+		dataRecordMetadata.setRecordDelimiter(recordDelimiter);
+		dataRecordMetadata.setFieldDelimiter(fieldDelimiter);
+		dataRecordMetadata.setRecordSize(recordSize);
+
+		for (DataFieldMetadata field : fields) {
+			dataRecordMetadata.addField(field.duplicate());
 		}
+
+		dataRecordMetadata.setRecordProperties(recordProperties);
+		dataRecordMetadata.setLocaleStr(localeStr);
+
+		return dataRecordMetadata;
 	}
 
-
 	/**
-	 *  An operation that deletes field identified by name
+	 * Checks if the meta data contains at least one field without auto-filling.
 	 *
-	 * @param  _fieldName  Description of Parameter
-	 * @since
+	 * @param status
+	 * @return
 	 */
-	public void delField(String _fieldName) {
-		Integer position;
-		if (fieldNames.isEmpty()) {
-			updateFieldNamesMap();
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		for (DataFieldMetadata dataFieldMetadata : getFields()) {
+			if (!dataFieldMetadata.isAutoFilled()) {
+				return status;
+			}
 		}
 
-		position = (Integer) fieldNames.get(_fieldName);
-		if (position != null) {
-			delField(position.intValue());
-		}
+		// TODO: this
+		status.add(new ConfigurationProblem("No field elements without autofilling for '" + name + "' have been found!",
+				Severity.ERROR, null, Priority.NORMAL));
+
+		return status;
 	}
 
 	/**
-	 * Deletes all fields in metadata.
-	 */
-	public void delAllFields() {
-	    fields.clear();
-	    structureChanged();
-	}
-	
-	/**
-	 * This method is used by gui to prepopulate record meta info with
-	 * default fields and user defined sizes.  It also adjusts the number of fields
-	 * and their sizes based on user selection.
+	 * Finds a field with a given autoFilling function.
+	 * 
+	 * @param autoFilling the autoFilling function.
 	 *
-	 * @param  fieldWidths  Description of the Parameter
+	 * @return index of the field or -1 if no such field exists
+	 */
+	public int findAutoFilledField(String autoFilling) {
+		int fieldNumber = 0;
+
+		for (DataFieldMetadata field : fields) {
+			if (autoFilling.equals(field.getAutoFilling())) {
+				return fieldNumber;
+			}
+
+			fieldNumber++;
+		}
+
+		return -1;
+	}
+
+	/**
+	 * Returns field ordinal numbers for all specified field names.
+	 *
+	 * @param fieldNames an array of field names
+	 *
+	 * @return an array of corresponding field ordinal numbers
+	 */
+	public int[] fieldsIndices(String... fieldNames) {
+		int[] indices = new int[fieldNames.length];
+
+		for (int i = 0; i < fieldNames.length; i++) {
+			indices[i] = getFieldPosition(name);
+
+			if (indices[i] == -1) {
+				throw new RuntimeException("No such field name found for: '" + name + "'");
+			}
+		}
+
+		return indices;
+	}
+
+	/**
+	 * @return header with field names ended by field delimiters; used by flat file writers for file header describing data
+	 */
+	public String getFieldNamesHeader() {
+		StringBuilder ret = new StringBuilder();
+		DataFieldMetadata dataFieldMetadata;
+		short fieldSize;
+		int headerSize;
+		char blank = ' ';
+
+		for (int i = 0; i < getNumFields(); i++) {
+			dataFieldMetadata = getField(i);
+			if (dataFieldMetadata.isDelimited()) {
+				// delim: add field name and delimiter
+				ret.append(dataFieldMetadata.getName());
+				ret.append(dataFieldMetadata.getDelimiters()[0]);
+			} else {
+				// fixlen: strip header name or add blank spaces
+				fieldSize = dataFieldMetadata.getSize();
+				if (fieldSize <= (headerSize = dataFieldMetadata.getName().length())) {
+					ret.append(dataFieldMetadata.getName().substring(0, fieldSize));
+				} else {
+					ret.append(dataFieldMetadata.getName());
+					for (int j = fieldSize - headerSize; j > 0; j--) {
+						ret.append(blank);
+					}
+				}
+			}
+		}
+		// add record delimiter for fixlen
+		if (getField(getNumFields() - 1).isFixed()) {
+			String[] delimiters = getRecordDelimiters();
+			if (delimiters != null) {
+				for (String delim : delimiters) {
+					if (delim != null) {
+						ret.append(delim);
+					}
+				}
+			}
+		}
+
+		return ret.toString();
+	}
+
+	/**
+	 * This method is used by GUI to prepopulate record meta info with default fields and user defined sizes. It also
+	 * adjusts the number of fields and their sizes based on user selection.
+	 * 
+	 * @param fieldWidths
 	 */
 	public void bulkLoadFieldSizes(short[] fieldWidths) {
 		DataFieldMetadata aField = null;
 		int fieldsNumber = fields.size();
 
-		//if no fields then create default fields with sizes as in objects
+		// if no fields then create default fields with sizes as in objects
 		if (fieldsNumber == 0) {
 			for (int i = 0; i < fieldWidths.length; i++) {
 				addField(new DataFieldMetadata("Field" + Integer.toString(i), fieldWidths[i]));
 			}
 		} else {
-			//fields exist
+			// fields exist
 			for (int i = 0; i < fieldWidths.length; i++) {
 				if (i < fieldsNumber) {
 					// adjust the sizes
@@ -598,241 +796,70 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 	}
 
-	public void setFieldDelimiter(String fieldDelimiters) {
-		this.fieldDelimiters = fieldDelimiters;
+	public boolean equals(Object object) {
+		return equals(object, true);
 	}
 
-	public boolean isSpecifiedFieldDelimiter() {
-		return getFieldDelimiters() != null;
+	public boolean equals(Object object, boolean checkFixDelType) {
+		if (object == this) {
+			return true;
+		}
+
+		if (!(object instanceof DataRecordMetadata)) {
+			return false;
+		}
+
+		DataRecordMetadata dataRecordMetadata = (DataRecordMetadata) object;
+
+		if (getNumFields() != dataRecordMetadata.getNumFields()) {
+			return false;
+		}
+
+		for (int i = 0; i < getNumFields(); i++) {
+			if (!getField(i).equals(dataRecordMetadata.getField(i), checkFixDelType)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
-	public String[] getFieldDelimiters() {
-        if(!StringUtils.isEmpty(fieldDelimiters)) {
-        	return fieldDelimiters.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
-        }
-		return null;
-	}
-	
-	public String getFieldDelimiterStr() {
-		return fieldDelimiters;
-	}
-	
-	public void setRecordDelimiters(String recordDelimiters) {
-		this.recordDelimiters = recordDelimiters;
+	public int hashCode() {
+		int hashCode = 17;
+
+		for (DataFieldMetadata field : fields) {
+			hashCode = 37 * hashCode + field.hashCode();
+		}
+
+		return hashCode;
 	}
 
-	public boolean isSpecifiedRecordDelimiter() {
-		return getRecordDelimiters() != null;
+	public String toString() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("DataRecordMetadata[");
+		buffer.append("fields = ").append(fields);
+		buffer.append(", fieldNames = ").append(getFieldNames());
+		buffer.append(", fieldTypes = ").append(getFieldTypes());
+		buffer.append(", name = ").append(name);
+		buffer.append(", recType = ").append(recType);
+		buffer.append(", localeStr = ").append(localeStr);
+		buffer.append(", skipFirstLine = ").append(skipFirstLine);
+		buffer.append(", recordProperties = ").append(recordProperties);
+		buffer.append(", DELIMITED_RECORD = ").append(DELIMITED_RECORD);
+		buffer.append(", FIXEDLEN_RECORD = ").append(FIXEDLEN_RECORD);
+		buffer.append("]");
+
+		return buffer.toString();
 	}
 
-	public String[] getRecordDelimiters() {
-        if(!StringUtils.isEmpty(recordDelimiters)) {
-        	return recordDelimiters.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
-        }
-		return null;
+	/**
+	 * Iterator for contained field meta data.
+	 *
+	 * @see java.lang.Iterable#iterator()
+	 */
+	public Iterator<DataFieldMetadata> iterator() {
+		return fields.iterator();
 	}
 
-	public String getRecordDelimiterStr() {
-		return recordDelimiters;
-	}
-	
-    /**
-     * Returns header with field names ended by field delimiters.
-     * Used in flat file writers for file header describing data.
-     * @return
-     */
-    public String getFieldNamesHeader() {
-        StringBuilder ret = new StringBuilder();
-        DataFieldMetadata dataFieldMetadata;
-        short fieldSize;
-        int headerSize;
-        char blank = ' ';
-        
-        for (int i = 0; i < getNumFields(); i++) {
-        	dataFieldMetadata = getField(i);
-            if(dataFieldMetadata.isDelimited()) {
-            	// delim: add field name and delimiter
-                ret.append(dataFieldMetadata.getName());
-            	ret.append(dataFieldMetadata.getDelimiters()[0]);
-            } else {
-            	// fixlen: strip header name or add blank spaces
-            	fieldSize = dataFieldMetadata.getSize();
-            	if (fieldSize <= (headerSize = dataFieldMetadata.getName().length())) {
-            		ret.append(dataFieldMetadata.getName().substring(0, fieldSize));
-            	} else {
-            		ret.append(dataFieldMetadata.getName());
-            		for (int j=fieldSize-headerSize; j>0; j--) {
-                		ret.append(blank);
-            		}
-            	}
-            }
-        }
-        // add record delimiter for fixlen
-        if (getField(getNumFields()-1).isFixed()) {
-        	String[] delimiters = getRecordDelimiters();
-        	if (delimiters != null) {
-            	for (String delim: delimiters) {
-            		if (delim != null) {
-                		ret.append(delim);
-            		}
-            	}
-        	}
-        }
-        
-        return ret.toString();      
-    }
-
-    /**
-     * toString method: creates a String representation of the object
-     * @return the String representation
-     */
-    public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("DataRecordMetadata[");
-        buffer.append("fields = ").append(fields);
-        buffer.append(", fieldNames = ").append(getFieldNames());
-        buffer.append(", fieldTypes = ").append(getFieldTypes());
-        buffer.append(", name = ").append(name);
-        buffer.append(", recType = ").append(recType);
-        buffer.append(", localeStr = ").append(localeStr);
-        buffer.append(", skipFirstLine = ").append(skipFirstLine);
-        buffer.append(", recordProperties = ").append(recordProperties);
-        buffer.append(", DELIMITED_RECORD = ").append(DELIMITED_RECORD);
-        buffer.append(", FIXEDLEN_RECORD = ").append(FIXEDLEN_RECORD);
-        buffer.append("]");
-        return buffer.toString();
-    }
-    
-    public boolean equals(Object o){
-    	return equals(o, true);
-    }
-    
-    public boolean equals(Object o, boolean checkFixDelType){
-    	if (o == null) {
-    		return false;
-    	}
-    	if (!(o instanceof DataRecordMetadata)) {
-    		return false;
-    	}
-    	DataRecordMetadata metadata = (DataRecordMetadata)o;
-    	if (getNumFields() != metadata.getNumFields()){
-    		return false;
-    	}
-    	for (int i=0;i<this.getNumFields();i++){
-    		if (!this.getField(i).equals(metadata.getField(i), checkFixDelType)){
-    			return false;
-    		}
-    	}
-    	return true;
-    }
-    
-    public int hashCode(){
-    	int result = 0;
-    	for (int i=0;i<this.getNumFields();i++){
-    		result = 37*result + this.getField(i).hashCode();
-    	}
-    	return result;
-    }
-
-
-    /**
-     * Determine whether DataRecord described by this metadata
-     * has at least one field which may contain a NULL value.<br>
-     * 
-     * @return true if at least nullable field is present otherwise false
-     * @since 18.1.2007
-     */
-    public boolean isNullable() {
-        return numNullableFields!=0;
-    }
-        
-    public void setSkipFirstLine(boolean isSkipFirstLine) {
-    	skipFirstLine = isSkipFirstLine;
-    }
-    
-    public boolean isSkipFirstLine() {
-    	return skipFirstLine;
-    }
-
-
-    /**
-     * Returns BitArray where bits are set for fields
-     * which may contain NULL.
-     * 
-     * @return the fieldNullSwitch
-     * @since 18.1.2007
-     */
-    public BitArray getFieldsNullSwitches() {
-        return fieldNullSwitch;
-    }
-
-
-    /**
-     * @return the countNullableFields
-     * @since 18.1.2007
-     */
-    public short getNumNullableFields() {
-        return numNullableFields;
-    }
-    
-    /**
-     * Finds field with a given autoFilling function.
-     * 
-     * @param autoFilling
-     * @return if field exists, returns index of the field, else -1 
-     */
-    public int findAutoFilledField(String autoFilling) {
-        int i = 0;
-        for(DataFieldMetadata field : this) {
-            if(autoFilling.equals(field.getAutoFilling())) {
-                return i;
-            }
-            i++;
-        }
-        return -1;
-    }
-
-
-    /**
-     * Iterator for contained field metadata.
-     * @see java.lang.Iterable#iterator()
-     */
-    public Iterator<DataFieldMetadata> iterator() {
-        return fields.iterator();
-    }
-    
-    /**
-     * Returns field positions for all field names.
-     * 
-     * @param fieldNames - array of field names
-     * @return field positions
-     */
-    public int[] fieldsIndices(String... fieldNames) {
-    	int[] indices = new int[fieldNames.length];
-    	int i=0;
-    	for (String name: fieldNames) {
-    		if ((indices[i++] = getFieldPosition(name)) == -1) {
-    			throw new RuntimeException("No such field name found for: '" + name + "'");
-    		}
-    	}
-    	return indices;
-    }
-    
-    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        // Checks if the metadata contains at least one field without autofilling.
-    	for (DataFieldMetadata dataFieldMetadata : getFields()) {
-    		if (!dataFieldMetadata.isAutoFilled()) return status;
-    	}
-    	status.add(new ConfigurationProblem(
-    			"No Field elements without autofilling for '" + getName() + "' have been found ! ",
-    			Severity.ERROR,  
-				null, //TODO this
-				Priority.NORMAL));
-    	return status;    	
-    }
-    
 }
-/*
- *  end class DataRecordMetadata
- */
 

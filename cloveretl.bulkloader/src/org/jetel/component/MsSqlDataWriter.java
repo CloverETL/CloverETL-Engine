@@ -1253,7 +1253,7 @@ public class MsSqlDataWriter extends BulkLoader {
 			}
 			// re-set last delimiter
 			metadata.getField(metadata.getNumFields() - 1).setDelimiter(DEFAULT_RECORD_DELIMITER);
-			metadata.setRecordDelimiters("");
+			metadata.setRecordDelimiter("");
 
 			return metadata;
 		}

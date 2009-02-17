@@ -262,7 +262,7 @@ public abstract class BulkLoader extends Node {
 		int lastIndex = metadata.getNumFields() - 1;
 		metadata.getField(lastIndex).setDelimiter(recDel);
 		metadata.getField(lastIndex).setSize((short)0);
-		metadata.setRecordDelimiters("");
+		metadata.setRecordDelimiter("");
 		setLoadUtilityDateFormat(metadata.getField(lastIndex));
 
 		return metadata;

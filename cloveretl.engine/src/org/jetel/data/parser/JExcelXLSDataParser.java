@@ -189,7 +189,7 @@ public class JExcelXLSDataParser extends XLSParser {
 		}
 		DataRecordMetadata xlsMetadata = new DataRecordMetadata(name, DataRecordMetadata.DELIMITED_RECORD);
 		xlsMetadata.setFieldDelimiter(DEFAULT_FIELD_DELIMITER);
-		xlsMetadata.setRecordDelimiters(DEFAULT_RECORD_DELIMITER);
+		xlsMetadata.setRecordDelimiter(DEFAULT_RECORD_DELIMITER);
 		Cell[] namesRow;
 		if (metadataRow > -1) {
 			 namesRow = sheet.getRow(metadataRow);

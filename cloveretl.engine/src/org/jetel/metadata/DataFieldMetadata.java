@@ -20,7 +20,6 @@ package org.jetel.metadata;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -37,8 +36,9 @@ import org.jetel.util.string.StringUtils;
  * @author David Pavlis <david.pavlis@javlin.eu>
  * @author Martin Janik <martin.janik@javlin.eu>
  *
- * @version 11th February 2009
+ * @version 17th February 2009
  * @since 26th March 2002
+ *
  * @see org.jetel.metadata.DataRecordMetadata
  *
  * @revision $Revision$
@@ -224,7 +224,6 @@ public class DataFieldMetadata implements Serializable {
 	 * [record name].[field name]
 	 */
 	private TypedProperties fieldProperties;
-
 	/**
 	 * Locale string. Both language and country can be specified - if both are specified then language string & country
 	 * string have to be delimited by "." (dot) -> e.g. "en.UK" , "fr.CA". If only language should be specified, then
@@ -242,16 +241,13 @@ public class DataFieldMetadata implements Serializable {
 	 * @param delimiter a string to be used as a delimiter for this field
 	 */
 	public DataFieldMetadata(String name, char fieldType, String delimiter) {
-		if (!StringUtils.isValidObjectName(name)) {
-			throw new InvalidGraphObjectNameException(name, "FIELD");
-		}
+		setName(name);
 
-		this.name = name;
 		this.type = fieldType;
 		this.delimiter = delimiter;
 
 		if (isNumeric() || fieldType == DATE_FIELD || fieldType == DATETIME_FIELD || fieldType == BOOLEAN_FIELD) {
-			trim = true;
+			this.trim = true;
 		}
 
 		setFieldProperties(new Properties());
@@ -276,16 +272,13 @@ public class DataFieldMetadata implements Serializable {
 	 * @param size the size of the field (in bytes)
 	 */
 	public DataFieldMetadata(String name, char fieldType, short size) {
-		if (!StringUtils.isValidObjectName(name)) {
-			throw new InvalidGraphObjectNameException(name, "FIELD");
-		}
+		setName(name);
 
-		this.name = name;
 		this.type = fieldType;
 		this.size = size;
 
 		if (isNumeric() || fieldType == DATE_FIELD || fieldType == DATETIME_FIELD) {
-			trim = true;
+			this.trim = true;
 		}
 
 		setFieldProperties(new Properties());
@@ -318,8 +311,6 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the parent data record meta data.
-	 *
 	 * @return the parent data record meta data
 	 */
 	public DataRecordMetadata getDataRecordMetadata() {
@@ -336,8 +327,6 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the ordinal number of the data field.
-	 *
 	 * @return the ordinal number of the data field
 	 */
 	public int getNumber() {
@@ -358,8 +347,6 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the name of the field.
-	 *
 	 * @return the name of the field
 	 */
 	public String getName() {
@@ -376,8 +363,6 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the description of the field.
-	 *
 	 * @return the description of the field
 	 */
 	public String getDescription() {
@@ -396,8 +381,6 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the type of the data field.
-	 * 
 	 * @return the type of the data field
 	 *
 	 * @since 30th October 2002
@@ -416,8 +399,6 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the type of the data field in the full string form.
-	 * 
 	 * @return the type of the data field as a string
 	 */
 	public String getTypeAsString() {
@@ -425,9 +406,7 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns true if this data field is numeric, false otherwise.
-	 *
-	 * @return true if this data field is numeric, false otherwise
+	 * @return <code>true</code> if this data field is numeric, <code>false</code> otherwise
 	 */
 	public boolean isNumeric() {
 		return (type == NUMERIC_FIELD || type == INTEGER_FIELD || type == LONG_FIELD || type == DECIMAL_FIELD);
@@ -443,8 +422,6 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the delimiter string.
-	 * 
 	 * @return the delimiter string
 	 */
 	public String getDelimiter() {
@@ -508,8 +485,6 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the value of the OEF-as-delimiter flag.
-	 *
 	 * @return the value of the OEF-as-delimiter flag
 	 */
 	public boolean isEofAsDelimiter() {
@@ -526,18 +501,16 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the format pattern which will be used when outputting field's value as a string.
-	 * 
-	 * @return the format pattern of this data field
+	 * @return the format pattern which will be used when outputting field's value as a string
 	 */
 	public String getFormatStr() {
 		return formatStr;
 	}
 
 	/**
-	 * This method checks if type of field is date or datetime and if formatString isn't null or empty.
+	 * This method checks if type of field is date or datetime and if formatString isn't <code>null</code> or empty.
 	 *
-	 * @return true if type of field is date or datetime and if formatString isn't null or empty.
+	 * @return <code>true</code> if type of field is date or datetime, <code>false</code> otherwise
 	 *
 	 * @since 24th August 2007
 	 * @see org.jetel.component.DataFieldmetadata.isTimeFormat(CharSequence)
@@ -551,10 +524,11 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * This method checks if formatString has a format of date. If formatString is null or empty then formatString
-	 * hasn't a format of date. Note: formatString can has a format of date and format of time at the same time.
+	 * This method checks if formatString has a format of date. If formatString is <code>null</code> or empty then
+	 * formatString hasn't a format of date.
+	 * Note: formatString can has a format of date and format of time at the same time.
 	 *
-	 * @return true if formatString has a format of date.
+	 * @return <code>true</code> if formatString has a format of date, <code>false</code> otherwise
 	 *
 	 * @since 24th August 2007
 	 * @see org.jetel.component.DataFieldmetadata.isTimeFormat(CharSequence)
@@ -568,10 +542,11 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * This method checks if formatString has a format of time. If formatString is null or empty then formatString
-	 * hasn't a format of time. Note: formatString can has a format of date and format of time at the same time.
+	 * This method checks if formatString has a format of time. If formatString is <code>null</code> or empty then
+	 * formatString hasn't a format of time.
+	 * Note: formatString can has a format of date and format of time at the same time.
 	 *
-	 * @return true if formatString has a format of time.
+	 * @return <code>true</code> if formatString has a format of time, <code>false</code> otherwise
 	 *
 	 * @since 24th August 2007
 	 * @see org.jetel.component.DataFieldmetadata.isDateFormat(CharSequence)
@@ -594,27 +569,21 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the specified maximum field size (used only when dealing with a fixed-size type of record).
-	 *
-	 * @return the size of the data field
+	 * @return the specified maximum field size (used only when dealing with a fixed-size type of record)
 	 */
 	public short getSize() {
 		return size;
 	}
 
 	/**
-	 * Returns true if this data field is delimited, false otherwise.
-	 *
-	 * @return true if this data field is delimited, false otherwise
+	 * @return <code>true</code> if this data field is delimited, <code>false</code> otherwise
 	 */
 	public boolean isDelimited() {
 		return (size == 0);
 	}
 
 	/**
-	 * Returns true if this data field is fixed-length, false otherwise.
-	 *
-	 * @return true if this data field is fixed-length, false otherwise
+	 * @return <code>true</code> if this data field is fixed-length, <code>false</code> otherwise
 	 */
 	public boolean isFixed() {
 		return (size != 0);
@@ -630,9 +599,7 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the position of the field in a data record (used only when dealing with fixed-size type of record).
-	 * 
-	 * @return the position of the field in a data record
+	 * @return the position of the field in a data record (used only when dealing with fixed-size type of record)
 	 */
 	public short getShift() {
 		return shift;
@@ -648,8 +615,6 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the value of the trim flag.
-	 *
 	 * @return the value of the trim flag
 	 */
 	public boolean isTrim() {
@@ -666,9 +631,7 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the value of the nullable flag.
-	 * 
-	 * @param the value of the nullable flag
+	 * @return the value of the nullable flag
 	 */
 	public boolean isNullable() {
 		return nullable;
@@ -684,8 +647,6 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the default value.
-	 *
 	 * @return the default value
 	 */
 	public Object getDefaultValue() {
@@ -704,8 +665,6 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the default string value.
-	 *
 	 * @return the default string value
 	 *
 	 * @since 30th October 2002
@@ -721,9 +680,7 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns true if the default value is set, false otherwise.
-	 *
-	 * @return true if the default value is set, false otherwise
+	 * @return <code>true</code> if the default value is set, <code>false</code> otherwise
 	 */
 	public boolean isDefaultValueSet() {
 		return (!StringUtils.isEmpty(defaultValueStr) || defaultValue != null);
@@ -739,8 +696,6 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the auto-filling value.
-	 *
 	 * @return the auto-filling value
 	 */
 	public String getAutoFilling() {
@@ -748,18 +703,15 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns true if the data field is auto filled, false otherwise.
-	 *
-	 * @return true if the data field is auto filled, false otherwise
+	 * @return true if the data field is auto filled, <code>false</code> otherwise
 	 */
 	public boolean isAutoFilled() {
 		return !StringUtils.isEmpty(autoFilling);
 	}
 
 	/**
-	 * Returns true if this data field is the last non-autofilled field within the data record meta data, false otherwise.
-	 *
-	 * @return true if this data field is the last non-autofilled field
+	 * @return <code>true</code> if this data field is the last non-autofilled field within the data record meta data,
+	 * <code>false</code> otherwise.
 	 */
 	private boolean isLastNonAutoFilledField() {
 		if (isAutoFilled()) {
@@ -851,8 +803,6 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Returns the locale code string.
-	 *
 	 * @return the locale code string.
 	 */
 	public String getLocaleStr() {
@@ -864,7 +814,7 @@ public class DataFieldMetadata implements Serializable {
 	 *
 	 * @param anotherField the another field to be checked
 	 *
-	 * @return true if conversion is save, false otherwise
+	 * @return <code>true</code> if conversion is save, <code>false</code> otherwise
 	 */
 	public boolean isSubtype(DataFieldMetadata anotherField) {
 		switch (type) {
@@ -993,9 +943,9 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Creates deep copy of an existing data field meta data object.
-	 * 
-	 * @return new data field meta data (exact copy of current data field meta data)
+	 * Creates a deep copy of this data field meta data object.
+	 *
+	 * @return an exact copy of current data field meta data object
 	 */
 	public DataFieldMetadata duplicate() {
 		DataFieldMetadata dataFieldMetadata = new DataFieldMetadata();
@@ -1011,16 +961,9 @@ public class DataFieldMetadata implements Serializable {
 		dataFieldMetadata.setShift(shift);
 		dataFieldMetadata.setTrim(trim);
 		dataFieldMetadata.setNullable(nullable);
-		dataFieldMetadata.setDefaultValueStr(getDefaultValueStr());
+		dataFieldMetadata.setDefaultValueStr(defaultValueStr);
 		dataFieldMetadata.setAutoFilling(autoFilling);
-
-		if (fieldProperties != null) {
-			for (Enumeration<?> element = fieldProperties.propertyNames(); element.hasMoreElements(); ) {
-				String key = (String) element.nextElement();
-				dataFieldMetadata.setProperty(key, fieldProperties.getProperty(key));
-			}
-		}
-
+		dataFieldMetadata.setFieldProperties(fieldProperties);
 		dataFieldMetadata.setLocaleStr(localeStr);
 
 		return dataFieldMetadata;
@@ -1032,19 +975,25 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	public boolean equals(Object object, boolean checkFixDelType) {
+		if (object == this) {
+			return true;
+		}
+
 		if (!(object instanceof DataFieldMetadata)) {
 			return false;
 		}
 
-		if (this.type == ((DataFieldMetadata) object).type) {
-			if (isFixed() && ((DataFieldMetadata) object).isFixed()) {
+		DataFieldMetadata dataFieldMetadata = (DataFieldMetadata) object;
+
+		if (this.type == dataFieldMetadata.getType()) {
+			if (isFixed() && dataFieldMetadata.isFixed()) {
 				// both fixed
-				return (getSize() == ((DataFieldMetadata) object).getSize());
-			} else if (!isFixed() && !((DataFieldMetadata) object).isFixed()) {
+				return (getSize() == dataFieldMetadata.getSize());
+			} else if (!isFixed() && !dataFieldMetadata.isFixed()) {
 				// both delimited
 				if (this.type == DECIMAL_FIELD) {
-					return (getProperty(LENGTH_ATTR).equals(((DataFieldMetadata) object).getProperty(LENGTH_ATTR))
-							&& getProperty(SCALE_ATTR).equals(((DataFieldMetadata) object).getProperty(SCALE_ATTR)));
+					return (getProperty(LENGTH_ATTR).equals(dataFieldMetadata.getProperty(LENGTH_ATTR))
+							&& getProperty(SCALE_ATTR).equals(dataFieldMetadata.getProperty(SCALE_ATTR)));
 				} else {
 					// the same type and both delimited
 					return true;
@@ -1060,7 +1009,7 @@ public class DataFieldMetadata implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return (int) this.type;
+		return this.type;
 	}
 
 }
