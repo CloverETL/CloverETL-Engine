@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jetel.data.Defaults;
+import org.jetel.data.RecordKey;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
@@ -85,6 +86,9 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private Map<Integer, String> fieldTypes = new HashMap<Integer, String>();
 	@SuppressWarnings("Se")
 	private Map<String, Integer> fieldOffset = new HashMap<String, Integer>();
+
+	/** an array of field names specifying a primary key */
+	private String[] keyFieldNames = null;
 
 	private BitArray fieldNullSwitch = new BitArray();
 	private short numNullableFields = 0;
@@ -570,6 +574,40 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		}
 
 		return -1;
+	}
+
+	/**
+	 * Sets the array of field names specifying a primary key of the data record.
+	 *
+	 * @param keyFieldNames the array of field names to be used
+	 */
+	public void setKeyFieldNames(String[] keyFieldNames) {
+		this.keyFieldNames = keyFieldNames;
+	}
+
+	/**
+	 * @return an array of field names specifying a primary key of the data record
+	 */
+	public String[] getKeyFieldNames() {
+		return keyFieldNames;
+	}
+
+	/**
+	 * Creates and initializes a record key for the specified key field names.
+	 *
+	 * @return a new initialized record key or <code>null</code> no key field names are specified
+	 *
+	 * @throw RuntimeException if any of the field names is invalid
+	 */
+	public RecordKey getRecordKey() {
+		if (keyFieldNames == null) {
+			return null;
+		}
+
+		RecordKey recordKey = new RecordKey(keyFieldNames, this);
+		recordKey.init();
+
+		return recordKey;
 	}
 
 	/**
