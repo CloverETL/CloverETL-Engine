@@ -65,6 +65,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 	/** Name of the data record. */
 	private String name;
+	/** Description of the data record. */
+	private String description;
 
 	/** The type of the data record. */
 	private char recType;
@@ -133,6 +135,22 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 */
 	public String getName() {
 		return name;
+	}
+
+	/**
+	 * Sets the description of the data record.
+	 *
+	 * @param description the new description of the data record
+	 */
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	/**
+	 * @return the description of the data record
+	 */
+	public String getDescription() {
+		return description;
 	}
 
 	/**
@@ -637,6 +655,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		DataRecordMetadata dataRecordMetadata = new DataRecordMetadata(name, recType);
 
 		dataRecordMetadata.setName(name);
+		dataRecordMetadata.setDescription(description);
 		dataRecordMetadata.setRecType(recType);
 		dataRecordMetadata.setSkipFirstLine(skipFirstLine);
 		dataRecordMetadata.setRecordDelimiter(recordDelimiter);
