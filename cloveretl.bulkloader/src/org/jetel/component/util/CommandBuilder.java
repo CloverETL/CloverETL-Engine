@@ -39,6 +39,11 @@ public class CommandBuilder {
 		this(properties);
 		this.equalChar = equalChar;
 	}
+	
+	public CommandBuilder(Properties properties, String switchMark, char equalChar) {
+		this(properties, switchMark);
+		this.equalChar = equalChar;
+	}
 
 	/**
 	 *  Adds attribute and it's value:
