@@ -43,6 +43,7 @@ public abstract class BulkLoader extends Node {
 	protected final static String XML_FILE_URL_ATTRIBUTE = "fileURL";
 	protected final static String XML_PARAMETERS_ATTRIBUTE = "parameters";
 	
+	protected final static char SPACE_CHAR = ' ';
 	protected final static String EQUAL_CHAR = "=";
 	protected final static int UNUSED_INT = -1;
 	protected final static File TMP_DIR = new File(".");
