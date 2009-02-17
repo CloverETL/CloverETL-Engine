@@ -121,7 +121,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 
 	public final static String COMPONENT_TYPE = "POSTGRESQL_DATA_WRITER";
 
-	private final static char SPACE_CHAR = ' ';
 	private final static String SWITCH_MARK = "--";
 	private final static String POSTGRESQL_FILE_NAME_PREFIX = "postgresql";
 	private final static String DEFAULT_COLUMN_DELIMITER = "\t";
