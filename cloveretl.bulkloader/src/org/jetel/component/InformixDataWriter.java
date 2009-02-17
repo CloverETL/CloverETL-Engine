@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.util.CommandBuilder;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.parser.DelimitedDataParser;
@@ -187,24 +188,25 @@ public class InformixDataWriter extends BulkLoader {
     
     public final static String COMPONENT_TYPE = "INFORMIX_DATA_WRITER";
 
-    private final static String INFORMIX_COMMAND_PATH_OPTION = "-c";
-    private final static String INFORMIX_DATABASE_OPTION = "-d";
-    private final static String INFORMIX_ERROR_LOG_OPTION = "-l";
-    private final static String INFORMIX_ERRORS_OPTION = "-e";
-    private final static String INFORMIX_IGNORE_ROWS_OPTION = "-i";
-    private final static String INFORMIX_COMMIT_INTERVAL_OPTION = "-n";
+    private final static String INFORMIX_COMMAND_PATH_OPTION = "c";
+    private final static String INFORMIX_DATABASE_OPTION = "d";
+    private final static String INFORMIX_ERROR_LOG_OPTION = "l";
+    private final static String INFORMIX_ERRORS_OPTION = "e";
+    private final static String INFORMIX_IGNORE_ROWS_OPTION = "i";
+    private final static String INFORMIX_COMMIT_INTERVAL_OPTION = "n";
     
-    private final static String LOAD_DATABASE_OPTION = "-d";
-    private final static String LOAD_ERROR_LOG_OPTION = "-l";
-    private final static String LOAD_ERRORS_OPTION = "-i";
-    private final static String LOAD_COMMIT_INTERVAL_OPTION = "-n";
-    private final static String LOAD_HOST_OPTION = "-s"; // server
-    private final static String LOAD_USER_OPTION = "-u";
-    private final static String LOAD_PASSWORD_OPTION = "-p";
-    private final static String LOAD_TABLE_OPTION = "-t";
-    private final static String LOAD_IGNORE_UNIQUE_KEY_VIOLATION_OPTION = "-k";
-    private final static String LOAD_USE_INSERT_CURSOR_OPTION = "-z";
+    private final static String LOAD_DATABASE_OPTION = "d";
+    private final static String LOAD_ERROR_LOG_OPTION = "l";
+    private final static String LOAD_ERRORS_OPTION = "i";
+    private final static String LOAD_COMMIT_INTERVAL_OPTION = "n";
+    private final static String LOAD_HOST_OPTION = "s"; // server
+    private final static String LOAD_USER_OPTION = "u";
+    private final static String LOAD_PASSWORD_OPTION = "p";
+    private final static String LOAD_TABLE_OPTION = "t";
+    private final static String LOAD_IGNORE_UNIQUE_KEY_VIOLATION_OPTION = "k";
+    private final static String LOAD_USE_INSERT_CURSOR_OPTION = "z";
     
+    private final static String SWITCH_MARK = "-";
     private final static String DATA_FILE_NAME_PREFIX = "data";
     private final static String DATA_FILE_NAME_SUFFIX = ".dat";
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
@@ -295,87 +297,74 @@ public class InformixDataWriter extends BulkLoader {
         return new ProcBox(process, null, consumer, errConsumer);
 	}
     
-    /**
+	/**
      * Create command line for process, where dbload utility is running.
      * Example: /home/Informix/bin/dbload -d test@pnc -c cmdData.ctl -l data.log
-     * @return
+     * 
+     * @return array first field is name of laod utility and the others fields are parameters
+	 * @throws ComponentNotReadyException when command file isn't created
      */
     private String[] createCommandLineForDbLoader() {
-    	// TODO use CommandLoader
-    	List<String> cmdList = new ArrayList<String>();
-		
+    	CommandBuilder cmdBuilder = new CommandBuilder(properties, SWITCH_MARK, SPACE_CHAR);
+    	
 		if (useLoadUtility) {
-			cmdList.add(loadUtilityPath);
+			cmdBuilder.add(loadUtilityPath);
 			
-			cmdList.add(LOAD_DATABASE_OPTION);
-			cmdList.add(database);
+			cmdBuilder.addAttribute(LOAD_DATABASE_OPTION, database);
 			
 			if (!StringUtils.isEmpty(host)) {
-				cmdList.add(LOAD_HOST_OPTION);
-				cmdList.add(host);
+				cmdBuilder.addAttribute(LOAD_HOST_OPTION, host);
 			}
 			if (!StringUtils.isEmpty(user)) {
-				cmdList.add(LOAD_USER_OPTION);
-				cmdList.add(user);
+				cmdBuilder.addAttribute(LOAD_USER_OPTION, user);
 			}
 			if (!StringUtils.isEmpty(password)) {
-				cmdList.add(LOAD_PASSWORD_OPTION);
-				cmdList.add(password);
+				cmdBuilder.addAttribute(LOAD_PASSWORD_OPTION, password);
 			}
-			cmdList.add(LOAD_TABLE_OPTION);
-			cmdList.add(table);
+			cmdBuilder.addAttribute(LOAD_TABLE_OPTION, table);
 			
 			if (commitInterval != UNUSED_INT) {
-				cmdList.add(LOAD_COMMIT_INTERVAL_OPTION);
-				cmdList.add(String.valueOf(commitInterval));
+				cmdBuilder.addAttribute(LOAD_COMMIT_INTERVAL_OPTION, commitInterval);
 			}
 			if (ignoreUniqueKeyViolation) {
-				cmdList.add(LOAD_IGNORE_UNIQUE_KEY_VIOLATION_OPTION);
+				cmdBuilder.add(SWITCH_MARK + LOAD_IGNORE_UNIQUE_KEY_VIOLATION_OPTION);
 			}
 			if (useInsertCursor) {
-				cmdList.add(LOAD_USE_INSERT_CURSOR_OPTION);
+				cmdBuilder.add(SWITCH_MARK + LOAD_USE_INSERT_CURSOR_OPTION);
 			}
 			if (maxErrors != UNUSED_INT) {
-				cmdList.add(LOAD_ERRORS_OPTION);
-				cmdList.add(String.valueOf(maxErrors));
+				cmdBuilder.addAttribute(LOAD_ERRORS_OPTION, maxErrors);
 			}
 			if (!StringUtils.isEmpty(errorLog)) {
-				cmdList.add(LOAD_ERROR_LOG_OPTION);
-				cmdList.add(errorLog);
+				cmdBuilder.addAttribute(LOAD_ERROR_LOG_OPTION, errorLog);
 			}
 			if (!isDataReadFromPort || !StringUtils.isEmpty(dataURL)) {
-				cmdList.add(tmpDataFileName);
+				cmdBuilder.add(tmpDataFileName);
 			} // else - when no file is defined stdio is used
 		} else {
-			cmdList.add(loadUtilityPath);
+			cmdBuilder.add(loadUtilityPath);
 			
-			cmdList.add(INFORMIX_COMMAND_PATH_OPTION);
-			cmdList.add(commandFileName);
+			cmdBuilder.addAttribute(INFORMIX_COMMAND_PATH_OPTION, commandFileName);
 			
-			cmdList.add(INFORMIX_DATABASE_OPTION);
 			if (!StringUtils.isEmpty(host)) {
 				database = "//" + host + "/" + database;
 			}
-			cmdList.add(database);
+			cmdBuilder.addAttribute(INFORMIX_DATABASE_OPTION, database);
 			
-			cmdList.add(INFORMIX_ERROR_LOG_OPTION);
-			cmdList.add(errorLog);
+			cmdBuilder.addAttribute(INFORMIX_ERROR_LOG_OPTION, errorLog);
 			
 			if (maxErrors != UNUSED_INT) {
-				cmdList.add(INFORMIX_ERRORS_OPTION);
-				cmdList.add(String.valueOf(maxErrors));
+				cmdBuilder.addAttribute(INFORMIX_ERRORS_OPTION, maxErrors);
 			}
 			if (ignoreRows != UNUSED_INT) {
-				cmdList.add(INFORMIX_IGNORE_ROWS_OPTION);
-				cmdList.add(String.valueOf(ignoreRows));
+				cmdBuilder.addAttribute(INFORMIX_IGNORE_ROWS_OPTION, ignoreRows);
 			}
 			if (commitInterval != UNUSED_INT) {
-				cmdList.add(INFORMIX_COMMIT_INTERVAL_OPTION);
-				cmdList.add(String.valueOf(commitInterval));
+				cmdBuilder.addAttribute(INFORMIX_COMMIT_INTERVAL_OPTION, commitInterval);
 			}
 		}
 		
-		return cmdList.toArray(new String[cmdList.size()]);
+		return cmdBuilder.getCommand();
     }
 
     /**
