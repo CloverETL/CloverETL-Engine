@@ -424,7 +424,6 @@ public class MysqlDataWriter extends BulkLoader {
 	public final static String COMPONENT_TYPE = "MYSQL_DATA_WRITER";
 	private final static String LINE_SEPARATOR = System.getProperty("line.separator");
 	private final static String SWITCH_MARK = "--";
-	private final static char SPACE_CHAR = ' ';
 
 	private final static String EXCHANGE_FILE_PREFIX = "mysqlExchange";
 	private final static String MYSQL_FILE_NAME_PREFIX = "mysql";
