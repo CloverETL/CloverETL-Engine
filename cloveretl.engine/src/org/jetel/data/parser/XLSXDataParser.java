@@ -281,7 +281,7 @@ public final class XLSXDataParser extends XLSParser {
 
 		DataRecordMetadata xlsMetadata = new DataRecordMetadata(sheetName, DataRecordMetadata.DELIMITED_RECORD);
 		xlsMetadata.setFieldDelimiter(DEFAULT_FIELD_DELIMITER);
-		xlsMetadata.setRecordDelimiters(DEFAULT_RECORD_DELIMITER);
+		xlsMetadata.setRecordDelimiter(DEFAULT_RECORD_DELIMITER);
 
 		Row namesRow = (metadataRow > -1) ? sheet.getRow(metadataRow) : sheet.getRow(firstRow);
 		Row dataRow = sheet.getRow(firstRow);

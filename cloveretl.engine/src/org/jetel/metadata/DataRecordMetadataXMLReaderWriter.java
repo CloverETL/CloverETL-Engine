@@ -301,7 +301,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
         metadataElement.setAttribute(TYPE_ATTR, rt);
 
         if(record.isSpecifiedRecordDelimiter()) {
-            metadataElement.setAttribute(RECORD_DELIMITER_ATTR, StringUtils.specCharToString(record.getRecordDelimiterStr()));
+            metadataElement.setAttribute(RECORD_DELIMITER_ATTR, StringUtils.specCharToString(record.getRecordDelimiter()));
         }
 
         if (record.getRecordSize() != 0) {
@@ -309,7 +309,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
         }
         
         if (record.isSpecifiedFieldDelimiter()) {
-        	metadataElement.setAttribute(FIELD_DELIMITER_ATTR, StringUtils.specCharToString(record.getFieldDelimiterStr()));
+        	metadataElement.setAttribute(FIELD_DELIMITER_ATTR, StringUtils.specCharToString(record.getFieldDelimiter()));
         }
 
 		Properties prop = record.getRecordProperties();
@@ -485,7 +485,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		}
 		recordMetadata.setRecordProperties(recordProperties);
 		if(!StringUtils.isEmpty(recordDelimiter)) {
-			recordMetadata.setRecordDelimiters(recordDelimiter);
+			recordMetadata.setRecordDelimiter(recordDelimiter);
 		}
 		if(!StringUtils.isEmpty(fieldDelimiter)) {
 			recordMetadata.setFieldDelimiter(fieldDelimiter);

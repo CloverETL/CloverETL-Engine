@@ -253,7 +253,7 @@ public class SQLUtil {
 		}
 		DataRecordMetadata jetelMetadata = new DataRecordMetadata(tableName, DataRecordMetadata.DELIMITED_RECORD);
 		jetelMetadata.setFieldDelimiter(DEFAULT_DELIMITER);
-		jetelMetadata.setRecordDelimiters(END_RECORD_DELIMITER);
+		jetelMetadata.setRecordDelimiter(END_RECORD_DELIMITER);
 		String colName;
 
 		for (int i = 1; i <= dbMetadata.getColumnCount(); i++) {
@@ -276,7 +276,7 @@ public class SQLUtil {
 		DataFieldMetadata fieldMetadata;
 		DataRecordMetadata jetelMetadata = new DataRecordMetadata(metadataName, DataRecordMetadata.DELIMITED_RECORD);
 		jetelMetadata.setFieldDelimiter(DEFAULT_DELIMITER);
-		jetelMetadata.setRecordDelimiters(END_RECORD_DELIMITER);
+		jetelMetadata.setRecordDelimiter(END_RECORD_DELIMITER);
 		String colName;
 
 		for (int i = 1; i <= dbMetadata.getParameterCount(); i++) {

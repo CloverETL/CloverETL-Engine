@@ -378,7 +378,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 					}
 					dbMetadata = new DataRecordMetadata(tableName, DataRecordMetadata.DELIMITED_RECORD);
 					dbMetadata.setFieldDelimiter(Defaults.Component.KEY_FIELDS_DELIMITER);
-					dbMetadata.setRecordDelimiters("\n");
+					dbMetadata.setRecordDelimiter("\n");
 					for (int i = 1; i <= dbMeta.getColumnCount(); i++) {
 						fieldMetadata = SQLUtil.dbMetadata2jetel(fieldName[i], dbMeta, i, jdbcSpecific);
 						dbMetadata.addField(fieldMetadata);
@@ -593,7 +593,7 @@ class DBLookup implements Lookup{
 				}
 				dbMetadata = new DataRecordMetadata(tableName, DataRecordMetadata.DELIMITED_RECORD);
 				dbMetadata.setFieldDelimiter(Defaults.Component.KEY_FIELDS_DELIMITER);
-				dbMetadata.setRecordDelimiters("\n");
+				dbMetadata.setRecordDelimiter("\n");
 				for (int i = 1; i <= dbMeta.getColumnCount(); i++) {
 					fieldMetadata = SQLUtil.dbMetadata2jetel(fieldName[i], dbMeta, i, jdbcSpecific);
 					dbMetadata.addField(fieldMetadata);

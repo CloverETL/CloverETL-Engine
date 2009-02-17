@@ -61,7 +61,7 @@ public class MetadataXsd extends MXAbstract {
 		DataRecordMetadata metadata;
 		if (fieldDelimiter != null) {
 			metadata = new DataRecordMetadata(recordName, DataRecordMetadata.DELIMITED_RECORD);
-			metadata.setRecordDelimiters(recordDelimiter);
+			metadata.setRecordDelimiter(recordDelimiter);
 		}
 		else if (defaultFieldSize > -1) metadata = new DataRecordMetadata(recordName, DataRecordMetadata.FIXEDLEN_RECORD);
 		else metadata = new DataRecordMetadata(recordName);

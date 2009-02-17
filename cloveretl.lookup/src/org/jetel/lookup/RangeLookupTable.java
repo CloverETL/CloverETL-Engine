@@ -640,8 +640,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		}
 		
 		DataRecordMetadata keyMetadata = new DataRecordMetadata( "_rangeLookupTable_" + getName(), getMetadata().getRecType());
-		keyMetadata.setFieldDelimiter(getMetadata().getFieldDelimiterStr());
-		keyMetadata.setRecordDelimiters(getMetadata().getRecordDelimiterStr());
+		keyMetadata.setFieldDelimiter(getMetadata().getFieldDelimiter());
+		keyMetadata.setRecordDelimiter(getMetadata().getRecordDelimiter());
 
 		for (int index : startField) {
 			keyMetadata.addField(getMetadata().getField(index).duplicate());
