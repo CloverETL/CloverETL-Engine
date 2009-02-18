@@ -48,20 +48,6 @@ public class CommandBuilder {
 	char endCharacter;
 	String switchMark;
 	Properties params;
-	
-	/**
-	 * Creates command object
-	 * 
-	 * @param command input command as string
-	 * @param parameterDelimiter char, which will be used as parameter delimiter
-	 * @param endCharacter char, which will be used as last char
-	 */
-	public CommandBuilder(String command, char parameterDelimiter, char endCharacter){
-		this.command = new StringBuilder(command);
-		this.parameterDelimiter = parameterDelimiter;
-		this.endCharacter = endCharacter;
-		this.switchMark = DEFAULT_SWITCH_MARK;
-	}
 
 	/**
 	 * Creates command object with default parameter delimiter (' '), end char ('\n') and switch mark ("-")
@@ -73,17 +59,6 @@ public class CommandBuilder {
 		this.parameterDelimiter = DEFAULT_PARAMETER_DELIMITER;
 		this.endCharacter = DEFAULT_END_CHARACTER;
 		this.switchMark = DEFAULT_SWITCH_MARK;
-	}
-
-	/**
-	 * Creates command object
-	 * 
-	 * @param command input command as string
-	 * @param switchMark String, which will be used as switchMark; for example "-" or "--"
-	 */
-	public CommandBuilder(String command, String switchMark){
-		this(command);
-		this.switchMark = switchMark;
 	}
 	
 	/**
@@ -122,22 +97,6 @@ public class CommandBuilder {
 			command.append(EQUAL_CHAR);
 			command.append(params.getProperty(paramName));
 		}
-	}
-	
-	/**
-	 * if paramName is in properties adds to the end of command:
-	 * 	" paramName=paramValue"
-	 * if doesn't exist:
-	 * 	" paramName=defaultValue"
-	 * 
-	 * @param paramName
-	 * @param defaultValue
-	 */
-	public void addParameter(String paramName, String defaultValue){
-		command.append(parameterDelimiter);
-		command.append(paramName);
-		command.append(EQUAL_CHAR);
-		command.append(params.getProperty(paramName, defaultValue));
 	}
 	
 	/**
@@ -291,145 +250,7 @@ public class CommandBuilder {
 			command.append(params.getProperty(paramName));
 		}
 	}
-	
-	/**
-	 * if paramName is in properties adds to the end of command: 
-	 *  " <i><b>switchMark</b>switchChar</i>paramValue"<br>
-	 *  for exmaple:  -P"password"
-	 * 
-	 * @param paramName
-	 * @param switchChar
-	 */
-	public void addParameterSwitch(String paramName, char switchChar) {
-		if (params.containsKey(paramName)) {
-			command.append(parameterDelimiter);
-			command.append(switchMark);
-			command.append(switchChar);
-			command.append(StringUtils.quote(params.getProperty(paramName)));
-		}
-	}
-	
-	/**
-	 * if paramName is in properties adds to the end of command: 
-	 *  " <i><b>switchMark</b>switchString</i>paramValue"<br>
-	 *  for exmaple:  -PASSWORD password
-	 * 
-	 * @param paramName
-	 * @param switchString
-	 */
-	public boolean addParameterSwitch(String paramName, String switchString) {
-		if (params.containsKey(paramName)) {
-			command.append(parameterDelimiter);
-			command.append(switchMark);
-			command.append(switchString);
-			command.append(" ");
-			command.append(StringUtils.quote(params.getProperty(paramName)));
-			
-			return true;
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * if value isn;t null adds to the end of command: 
-	 *  " <i><b>switchMark</b>switchChar</i>value"<br>
-	 *  for exmaple:  -P"password"
-	 *  
-	 * @param switchChar
-	 * @param value
-	 */
-	public void addSwitch(char switchChar, String value) {
-		if (value != null) {
-			command.append(parameterDelimiter);
-			command.append(switchMark);
-			command.append(switchChar);
-			command.append(StringUtils.quote(value));
-		}
-	}
-	
-	/**
-	 * if paramName is in properties adds to the end of command: 
-	 *  " <i><b>switchMark</b>switchChar</i>"<br>
-	 *  for exmaple:  -P
-	 * 
-	 * @param paramName
-	 * @param switchChar
-	 */
-	public boolean addParameterBooleanSwitch(String paramName, char switchChar) {
-		return addParameterBooleanSwitch(paramName, String.valueOf(switchChar));
-	}
-	
-	/**
-	 * if paramValue isn't null or paramName is in properties adds to the end of command:
-	 *  " <i><b>switchMark</b>switchString</i>paramValue"<br>
-	 *  for exmaple:  --host=localhost
-	 * 
-	 * @param paramName
-	 * @param switchString
-	 * @param paramValue
-	 */
-	public void addParameterSwitchWithEqualChar(String paramName, String switchString, String paramValue) {
-		if (paramValue == null && (paramName == null || !params.containsKey(paramName))) {
-			return;
-		}
-		
-		command.append(parameterDelimiter);
-		command.append(switchMark);
-		command.append(switchString);
-		command.append(EQUAL_CHAR);
-		if (paramValue != null) {
-			command.append(StringUtils.specCharToString(paramValue));
-		} else {
-			command.append(StringUtils.specCharToString(params.getProperty(paramName)));
-		}
-	}
-	
-	/**
-	 *  If paramName is in properties adds to the end of command: 
-	 *  " <i><b>switchMark</b>switchString</i>"<br>
-	 *  for exmaple:  --compress
-	 * 
-	 * @param paramName
-	 * @param switchString
-	 */
-	public boolean addParameterBooleanSwitch(String paramName, String switchString) {
-		if (params.containsKey(paramName) && !"false".equalsIgnoreCase(params.getProperty(paramName))) {
-			addBooleanSwitch(switchString);
-			return true;
-		}
-		return false;
-	}
-	
-	/**
-	 *  If paramName is in properties adds to the end of command: 
-	 *  " <i><b>switchMark</b>switchString</i>"<br>
-	 *  When paramName isn't in properties and defaultValue==true then it is added too.
-	 *  for exmaple:  --compress
-	 * 
-	 * @param paramName
-	 * @param switchString
-	 * @param defaultValue
-	 */
-	public boolean addParameterBooleanSwitch(String paramName, String switchString, boolean defaultValue) {
-		if (params.containsKey(paramName)) {
-			addParameterBooleanSwitch(paramName, switchString);
-			return true;
-		}
-		
-		if (defaultValue) {
-			addBooleanSwitch(switchString);
-		}
-		
-		return defaultValue;
-	}
-	
-	private void addBooleanSwitch(String switchString) {
-		command.append(parameterDelimiter);
-		command.append(switchMark);
-		command.append(switchString);
-	}
-	
+
 	/**
 	 * appends given string to the end of command
 	 * 
