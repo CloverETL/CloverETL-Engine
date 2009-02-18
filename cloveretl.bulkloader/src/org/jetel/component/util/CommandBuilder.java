@@ -15,7 +15,7 @@ import org.jetel.util.string.StringUtils;
  * @since 10.2.2009
  */
 public class CommandBuilder {
-	private final static char DEFAULT_EQUAL_CHAR = '=';
+	private final static String DEFAULT_EQUAL_MARK = "=";
 	private final static int UNUSED_INT = -1;
 	private final static String DEFAULT_SWITCH_MARK = "";
 	private final static String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -23,7 +23,7 @@ public class CommandBuilder {
 	private Properties params;
 	private List<String> cmdList;
 	private String switchMark = DEFAULT_SWITCH_MARK;
-	private char equalChar = DEFAULT_EQUAL_CHAR;
+	private String equalMark = DEFAULT_EQUAL_MARK;
 
 	public CommandBuilder(Properties properties) {
 		this.params = properties;
@@ -37,12 +37,12 @@ public class CommandBuilder {
 	
 	public CommandBuilder(Properties properties, char equalChar) {
 		this(properties);
-		this.equalChar = equalChar;
+		this.equalMark = String.valueOf(equalChar);
 	}
 	
-	public CommandBuilder(Properties properties, String switchMark, char equalChar) {
+	public CommandBuilder(Properties properties, String switchMark, String equalMark) {
 		this(properties, switchMark);
-		this.equalChar = equalChar;
+		this.equalMark = equalMark;
 	}
 
 	/**
@@ -60,9 +60,9 @@ public class CommandBuilder {
 		}
 
 		if (singleQuoted) {
-			cmdList.add(switchMark + attrName + equalChar + "'" + StringUtils.specCharToString(attrValue) + "'");
+			cmdList.add(switchMark + attrName + equalMark + "'" + StringUtils.specCharToString(attrValue) + "'");
 		} else {
-			cmdList.add(switchMark + attrName + equalChar + StringUtils.specCharToString(attrValue));
+			cmdList.add(switchMark + attrName + equalMark + StringUtils.specCharToString(attrValue));
 		}
 	}
 	
