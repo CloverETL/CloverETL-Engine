@@ -305,7 +305,7 @@ public class InformixDataWriter extends BulkLoader {
 	 * @throws ComponentNotReadyException when command file isn't created
      */
     private String[] createCommandLineForDbLoader() {
-    	CommandBuilder cmdBuilder = new CommandBuilder(properties, SWITCH_MARK, SPACE_CHAR);
+    	CommandBuilder cmdBuilder = new CommandBuilder(properties, SWITCH_MARK, SPACE_MARK);
     	
 		if (useLoadUtility) {
 			cmdBuilder.add(loadUtilityPath);
