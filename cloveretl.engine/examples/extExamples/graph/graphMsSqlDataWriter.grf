@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="0.0" id="1204803555291" licenseType="Evaluation license." modified="Mon Nov 24 12:26:48 CET 2008" modifiedBy="avackova" name="graphMsSqlDataWriter.grf" revision="1.49">
+<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="0.0" id="1204803555291" licenseType="Evaluation license." modified="Mon Nov 24 12:26:48 CET 2008" modifiedBy="mhaupt" name="graphMsSqlDataWriter.grf" revision="1.49">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter=";" name="inMssqlData" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -22,19 +22,20 @@
 <Field name="ErrorMsg" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
+<Property id="GraphParameter10" name="SERVER_NAME" value="192.168.1.113"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/mssql.dat" guiHeight="25" guiName="DATA_READER0" guiWidth="50" guiX="31" guiY="28" id="DATA_READER0" type="DATA_READER"/>
-<Node bcpUtilityPath="bcp" columnDelimiter="|" database="test" enabled="enabled" fileURL="${DATAOUT_DIR}/exchange.bcp" guiHeight="25" guiName="MS_SQL_DATA_WRITER0" guiWidth="50" guiX="282" guiY="28" id="MS_SQL_DATA_WRITER0" owner="dbo" password="test" table="test" type="MS_SQL_DATA_WRITER" username="test">
-<attr name="parameters"><![CDATA[characterType|codePageSpecifier=ACP|errFile=${DATAOUT_DIR}\err.bcp]]></attr>
+<Node bcpUtilityPath="bcp" columnDelimiter="|" database="test" enabled="enabled" fileURL="${DATAOUT_DIR}/exchange.bcp" guiHeight="25" guiName="MS_SQL_DATA_WRITER0" guiWidth="50" guiX="282" guiY="28" id="MS_SQL_DATA_WRITER0" owner="dbo" password="clover" serverName="${SERVER_NAME}" table="test" type="MS_SQL_DATA_WRITER" username="clover">
+<attr name="parameters"><![CDATA[characterType|errFile=${DATAOUT_DIR}\err.bcp]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MS_SQL_DATA_WRITER0:0"/>
 </Phase>
 <Phase number="1">
 <Node append="false" charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}\out.txt" guiHeight="25" guiName="DATA_WRITER0" guiWidth="50" guiX="282" guiY="168" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node bcpUtilityPath="bcp" columnDelimiter=";" database="test" enabled="enabled" fileURL="${DATAIN_DIR}\data\delimited\mssql.dat" guiHeight="25" guiName="MS_SQL_DATA_WRITER1" guiWidth="50" guiX="31" guiY="168" id="MS_SQL_DATA_WRITER1" owner="dbo" password="test" table="test" type="MS_SQL_DATA_WRITER" username="test">
-<attr name="parameters"><![CDATA[characterType|codePageSpecifier=ACP|errFile=${DATAOUT_DIR}\err.bcp]]></attr>
+<Node bcpUtilityPath="bcp" columnDelimiter=";" database="test" enabled="enabled" fileURL="${DATAIN_DIR}\delimited\mssql.dat" guiHeight="25" guiName="MS_SQL_DATA_WRITER1" guiWidth="50" guiX="31" guiY="168" id="MS_SQL_DATA_WRITER1" owner="dbo" password="clover" serverName="${SERVER_NAME}" table="test" type="MS_SQL_DATA_WRITER" username="clover">
+<attr name="parameters"><![CDATA[characterType|errFile=${DATAOUT_DIR}\err.bcp]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="MS_SQL_DATA_WRITER1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="MetadataOut" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 </Phase>
