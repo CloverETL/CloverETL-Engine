@@ -139,8 +139,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	// variables for copy statement
 	private File commandFile;
 
-	private String[] commandLine; // command line of psql
-
 	private boolean csvMode; // true if CSV mode is used for loading data
 	
 	/**
@@ -209,21 +207,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		}
 		
 		return "psql utility has failed - " + errorMsg + ".";
-	}
-	
-	/**
-	 * Create instance of ProcBox.
-	 * 
-	 * @param process running process; when process is null, default process is created
-	 * @return instance of ProcBox
-	 * @throws IOException
-	 */
-	// TODO this method will be deleted from this class after removing commandLine attribute to superclass
-	protected ProcBox createProcBox(Process process) throws IOException {
-		if (process == null) {
-			process = Runtime.getRuntime().exec(commandLine);
-		}
-		return new ProcBox(process, null, consumer, errConsumer);
 	}
 	
 	/**

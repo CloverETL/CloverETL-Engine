@@ -201,7 +201,6 @@ public class OracleDataWriter extends BulkLoader {
     private int ignoreRows = UNUSED_INT;
     private int commitInterval = UNUSED_INT;
     
-    private String[] commandLine; // command line of sqlldr
     private File badFile = null;
     private File discardFile = null;
 
@@ -287,21 +286,6 @@ public class OracleDataWriter extends BulkLoader {
 
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
-    
-	/**
-	 * Create instance of ProcBox.
-	 * 
-	 * @param process running process; when process is null, default process is created
-	 * @return instance of ProcBox
-	 * @throws IOException
-	 */
-	// TODO this method will be deleted from this class after removing commandLine attribute to superclass
-	protected ProcBox createProcBox(Process process) throws IOException {
-		if (process == null) {
-			process = Runtime.getRuntime().exec(commandLine);
-		}
-		return new ProcBox(process, null, consumer, errConsumer);
-	}
 	
     @Override
     public synchronized void free() {
