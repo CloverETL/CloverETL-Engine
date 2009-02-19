@@ -55,7 +55,7 @@ public class CommandBuilder {
 	 * @param singleQuoted decides if attrValue will be single quoted
 	 */
 	public void addAttribute(String attrName, String attrValue, boolean singleQuoted) {
-		if (attrValue == null) {
+		if (StringUtils.isEmpty(attrValue)) {
 			return;
 		}
 
