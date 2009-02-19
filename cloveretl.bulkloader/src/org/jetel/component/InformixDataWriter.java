@@ -307,19 +307,16 @@ public class InformixDataWriter extends BulkLoader {
 				cmdBuilder.addAttribute(LOAD_PASSWORD_OPTION, password);
 			}
 			cmdBuilder.addAttribute(LOAD_TABLE_OPTION, table);
-			
-			if (commitInterval != UNUSED_INT) {
-				cmdBuilder.addAttribute(LOAD_COMMIT_INTERVAL_OPTION, commitInterval);
-			}
+			cmdBuilder.addAttribute(LOAD_COMMIT_INTERVAL_OPTION, commitInterval);
+
 			if (ignoreUniqueKeyViolation) {
 				cmdBuilder.add(SWITCH_MARK + LOAD_IGNORE_UNIQUE_KEY_VIOLATION_OPTION);
 			}
 			if (useInsertCursor) {
 				cmdBuilder.add(SWITCH_MARK + LOAD_USE_INSERT_CURSOR_OPTION);
 			}
-			if (maxErrors != UNUSED_INT) {
-				cmdBuilder.addAttribute(LOAD_ERRORS_OPTION, maxErrors);
-			}
+			cmdBuilder.addAttribute(LOAD_ERRORS_OPTION, maxErrors);
+
 			if (!StringUtils.isEmpty(errorLog)) {
 				cmdBuilder.addAttribute(LOAD_ERROR_LOG_OPTION, errorLog);
 			}
@@ -335,18 +332,10 @@ public class InformixDataWriter extends BulkLoader {
 				database = "//" + host + "/" + database;
 			}
 			cmdBuilder.addAttribute(INFORMIX_DATABASE_OPTION, database);
-			
 			cmdBuilder.addAttribute(INFORMIX_ERROR_LOG_OPTION, errorLog);
-			
-			if (maxErrors != UNUSED_INT) {
-				cmdBuilder.addAttribute(INFORMIX_ERRORS_OPTION, maxErrors);
-			}
-			if (ignoreRows != UNUSED_INT) {
-				cmdBuilder.addAttribute(INFORMIX_IGNORE_ROWS_OPTION, ignoreRows);
-			}
-			if (commitInterval != UNUSED_INT) {
-				cmdBuilder.addAttribute(INFORMIX_COMMIT_INTERVAL_OPTION, commitInterval);
-			}
+			cmdBuilder.addAttribute(INFORMIX_ERRORS_OPTION, maxErrors);
+			cmdBuilder.addAttribute(INFORMIX_IGNORE_ROWS_OPTION, ignoreRows);
+			cmdBuilder.addAttribute(INFORMIX_COMMIT_INTERVAL_OPTION, commitInterval);
 		}
 		
 		return cmdBuilder.getCommand();
