@@ -36,7 +36,7 @@ import org.jetel.util.string.StringUtils;
  * @author David Pavlis <david.pavlis@javlin.eu>
  * @author Martin Janik <martin.janik@javlin.eu>
  *
- * @version 17th February 2009
+ * @version 19th February 2009
  * @since 26th March 2002
  *
  * @see org.jetel.metadata.DataRecordMetadata
@@ -231,7 +231,7 @@ public class DataFieldMetadata implements Serializable {
 	 * 
 	 * @see java.util.Locale
 	 */
-	private String localeStr;
+	private String localeStr = null;
 
 	/**
 	 * Constructor for a delimited type of field.
@@ -251,7 +251,6 @@ public class DataFieldMetadata implements Serializable {
 		}
 
 		setFieldProperties(new Properties());
-		this.localeStr = null;
 	}
 
 	/**
@@ -282,7 +281,6 @@ public class DataFieldMetadata implements Serializable {
 		}
 
 		setFieldProperties(new Properties());
-		this.localeStr = null;
 	}
 
 	/**
@@ -806,7 +804,11 @@ public class DataFieldMetadata implements Serializable {
 	 * @return the locale code string.
 	 */
 	public String getLocaleStr() {
-		return localeStr;
+		if (localeStr != null) {
+			return localeStr;
+		}
+
+		return dataRecordMetadata.getLocaleStr();
 	}
 
 	/**
