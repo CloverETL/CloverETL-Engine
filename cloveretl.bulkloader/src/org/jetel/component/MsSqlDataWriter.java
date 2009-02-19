@@ -909,9 +909,6 @@ public class MsSqlDataWriter extends BulkLoader {
 			}
 		}
 		
-		if (inCommand) {
-			return StringUtils.specCharToString(colDel);
-		}
 		return colDel;
 	}
 	
@@ -937,7 +934,7 @@ public class MsSqlDataWriter extends BulkLoader {
 		}
 		
 		if (inCommand) {
-			return StringUtils.specCharToString(recDel);
+			return recDel;
 		} else {
 			// when Character Format is used to Import Data then in data file 
 			// can't contain only "\n" as a record delimiter - it isn't allowed by bcp
