@@ -321,10 +321,11 @@ public class InformixDataWriter extends BulkLoader {
 			
 			cmdBuilder.addAttribute(INFORMIX_COMMAND_PATH_OPTION, commandFileName);
 			
+			String db = database;
 			if (!StringUtils.isEmpty(host)) {
-				database = "//" + host + "/" + database;
+				db = "//" + host + "/" + database;
 			}
-			cmdBuilder.addAttribute(INFORMIX_DATABASE_OPTION, database);
+			cmdBuilder.addAttribute(INFORMIX_DATABASE_OPTION, db);
 			cmdBuilder.addAttribute(INFORMIX_ERROR_LOG_OPTION, errorLog);
 			cmdBuilder.addAttribute(INFORMIX_ERRORS_OPTION, maxErrors);
 			cmdBuilder.addAttribute(INFORMIX_IGNORE_ROWS_OPTION, ignoreRows);
