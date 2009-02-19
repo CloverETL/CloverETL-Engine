@@ -668,9 +668,10 @@ public class MsSqlDataWriter extends BulkLoader {
 	private String[] createCommandLineForDbLoader() throws ComponentNotReadyException {
 		CommandBuilder cmdBuilder =	new CommandBuilder(properties, SWITCH_MARK, "");
 		
-		cmdBuilder.add(loadUtilityPath + " " + getDbTable() + " in " + getData());
-
-		// TODO vsechny hodnoty u addParam byli StringUtils.quote()
+		cmdBuilder.add(loadUtilityPath);
+		cmdBuilder.add(getDbTable());
+		cmdBuilder.add("in");
+		cmdBuilder.add(getData());
 		cmdBuilder.addParam(MS_SQL_MAX_ERRORS_PARAM, MS_SQL_MAX_ERRORS_SWITCH);
 		cmdBuilder.addParam(MS_SQL_FORMAT_FILE_PARAM, MS_SQL_FORMAT_FILE_SWITCH);
 		cmdBuilder.addAttribute(MS_SQL_ERR_FILE_SWITCH, errFileName);
