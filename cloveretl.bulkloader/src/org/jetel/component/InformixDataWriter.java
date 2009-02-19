@@ -233,7 +233,6 @@ public class InformixDataWriter extends BulkLoader {
     private boolean ignoreUniqueKeyViolation = DEFAULT_IGNORE_UNIQUE_KEY_VIOLATION;
     private boolean useInsertCursor = DEFAULT_USE_INSERT_CURSOR;
 
-    private String[] commandLine; // command line of dbload
     private String tmpDataFileName; // file that is used for exchange data between clover and dbload
     
 	/**
@@ -282,20 +281,6 @@ public class InformixDataWriter extends BulkLoader {
         
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
-    
-	/**
-	 * Create instance of ProcBox.
-	 * @param process running process; when process is null, default process is created
-	 * @return instance of ProcBox
-	 * @throws IOException
-	 */
-	// TODO this method will be deleted from this class after removing commandLine attribute to superclass
-	protected ProcBox createProcBox(Process process) throws IOException {
-		if (process == null) {
-			process = Runtime.getRuntime().exec(commandLine);			
-		}
-        return new ProcBox(process, null, consumer, errConsumer);
-	}
     
 	/**
      * Create command line for process, where dbload utility is running.
