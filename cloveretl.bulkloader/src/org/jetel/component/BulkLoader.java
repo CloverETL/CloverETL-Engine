@@ -71,6 +71,7 @@ public abstract class BulkLoader extends Node {
 	protected DataConsumer consumer = null; // consume data from out stream of load utility
 	protected DataConsumer errConsumer = null; // consume data from err stream of utility - write them to by logger
 	protected Formatter formatter = null; // format data to load utility format and write them to dataFileName
+	protected String[] commandLine; // command line of load utility
 	
 	/**
      * true - data is read from in port;
@@ -195,8 +196,12 @@ public abstract class BulkLoader extends Node {
 	 * @return instance of ProcBox
 	 * @throws IOException
 	 */
-	protected abstract ProcBox createProcBox(Process process) throws IOException;
-	// TODO implementation will be copied from descendant after removing commandLine attribute to this class
+	protected ProcBox createProcBox(Process process) throws IOException {
+		if (process == null) {
+			process = Runtime.getRuntime().exec(commandLine);
+		}
+		return new ProcBox(process, null, consumer, errConsumer);
+	}
 	
 	/**
 	 * Create instance of ProcBox. Default process is created.
