@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.util.CommandBuilder;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DelimitedDataFormatter;
@@ -49,7 +50,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.CommandBuilder;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.PortDataConsumer;
 import org.jetel.util.exec.ProcBox;
@@ -511,58 +511,58 @@ public class MsSqlDataWriter extends BulkLoader {
 	private static final String XML_SERVER_NAME_ATTRIBUTE = "serverName";
 
 	private final static String MS_SQL_MAX_ERRORS_PARAM = "maxErrors";
-	private final static char MS_SQL_MAX_ERRORS_SWITCH = 'm';
+	private final static String MS_SQL_MAX_ERRORS_SWITCH = "m";
 	private final static String MS_SQL_FORMAT_FILE_PARAM = "formatFile";
-	private final static char MS_SQL_FORMAT_FILE_SWITCH = 'f';
+	private final static String MS_SQL_FORMAT_FILE_SWITCH = "f";
 	private final static String MS_SQL_ERR_FILE_PARAM = "errFile";
-	private final static char MS_SQL_ERR_FILE_SWITCH = 'e';
+	private final static String MS_SQL_ERR_FILE_SWITCH = "e";
 	private final static String MS_SQL_FIRST_ROW_PARAM = "firstRow";
-	private final static char MS_SQL_FIRST_ROW_SWITCH = 'F';
+	private final static String MS_SQL_FIRST_ROW_SWITCH = "F";
 	private final static String MS_SQL_LAST_ROW_PARAM = "lastRow";
-	private final static char MS_SQL_LAST_ROW_SWITCH = 'L';
+	private final static String MS_SQL_LAST_ROW_SWITCH = "L";
 	private final static String MS_SQL_BATCH_SIZE_PARAM = "batchSize";
-	private final static char MS_SQL_BATCH_SIZE_SWITCH = 'b';
+	private final static String MS_SQL_BATCH_SIZE_SWITCH = "b";
 	private final static String MS_SQL_NATIVE_TYPE_PARAM = "nativeType";
-	private final static char MS_SQL_NATIVE_TYPE_SWITCH = 'n';
+	private final static String MS_SQL_NATIVE_TYPE_SWITCH = "n";
 	private final static String MS_SQL_CHARACTER_TYPE_PARAM = "characterType";
-	private final static char MS_SQL_CHARACTER_TYPE_SWITCH = 'c';
+	private final static String MS_SQL_CHARACTER_TYPE_SWITCH = "c";
 	private final static String MS_SQL_WIDE_CHARACTER_TYPE_PARAM = "wideCharacterType";
-	private final static char MS_SQL_WIDE_CHARACTER_TYPE_SWITCH = 'w';
+	private final static String MS_SQL_WIDE_CHARACTER_TYPE_SWITCH = "w";
 	private final static String MS_SQL_KEEP_NON_TEXT_NATIVE_PARAM = "keepNonTextNative";
-	private final static char MS_SQL_KEEP_NON_TEXT_NATIVE_SWITCH = 'N';
+	private final static String MS_SQL_KEEP_NON_TEXT_NATIVE_SWITCH = "N";
 	private final static String MS_SQL_FILE_FORMAT_VERSION_PARAM = "fileFormatVersion";
-	private final static char MS_SQL_FILE_FORMAT_VERSION_SWITCH = 'V';
+	private final static String MS_SQL_FILE_FORMAT_VERSION_SWITCH = "V";
 	private final static String MS_SQL_QUOTED_IDENTIFIER_PARAM = "quotedIdentifier";
-	private final static char MS_SQL_QUOTED_IDENTIFIER_SWITCH = 'q';
+	private final static String MS_SQL_QUOTED_IDENTIFIER_SWITCH = "q";
 	private final static String MS_SQL_CODE_PAGE_SPECIFIER_PARAM = "codePageSpecifier";
-	private final static char MS_SQL_CODE_PAGE_SPECIFIER_SWITCH = 'C';
+	private final static String MS_SQL_CODE_PAGE_SPECIFIER_SWITCH = "C";
 	private final static String MS_SQL_COLUMN_DELIMITER_PARAM = "fieldTerminator";
-	private final static char MS_SQL_COLUMN_DELIMITER_SWITCH = 't';
+	private final static String MS_SQL_COLUMN_DELIMITER_SWITCH = "t";
 	private final static String MS_SQL_RECORD_DELIMITER_ALIAS_PARAM = "rowTerminator";
 	private final static String MS_SQL_RECORD_DELIMITER_PARAM = "recordDelimiter";
-	private final static char MS_SQL_RECORD_DELIMITER_SWITCH = 'r';
+	private final static String MS_SQL_RECORD_DELIMITER_SWITCH = "r";
 	private final static String MS_SQL_INPUT_FILE_PARAM = "inputFile";
-	private final static char MS_SQL_INPUT_FILE_SWITCH = 'i';
+	private final static String MS_SQL_INPUT_FILE_SWITCH = "i";
 	private final static String MS_SQL_OUTPUT_FILE_PARAM = "outputFile";
-	private final static char MS_SQL_OUTPUT_FILE_SWITCH = 'o';
+	private final static String MS_SQL_OUTPUT_FILE_SWITCH = "o";
 	private final static String MS_SQL_PACKET_SIZE_PARAM = "packetSize";
-	private final static char MS_SQL_PACKET_SIZE_SWITCH = 'a';
+	private final static String MS_SQL_PACKET_SIZE_SWITCH = "a";
 	private final static String MS_SQL_SERVER_NAME_PARAM = "serverName";
-	private final static char MS_SQL_SERVER_NAME_SWITCH = 'S';
+	private final static String MS_SQL_SERVER_NAME_SWITCH = "S";
 	private final static String MS_SQL_USER_NAME_PARAM = "userName";
-	private final static char MS_SQL_USER_NAME_SWITCH = 'U';
+	private final static String MS_SQL_USER_NAME_SWITCH = "U";
 	private final static String MS_SQL_PASSWORD_PARAM = "password";
-	private final static char MS_SQL_PASSWORD_SWITCH = 'P';
+	private final static String MS_SQL_PASSWORD_SWITCH = "P";
 	private final static String MS_SQL_TRUSTED_CONNECTION_PARAM = "trustedConnection";
-	private final static char MS_SQL_TRUSTED_CONNECTION_SWITCH = 'T';
+	private final static String MS_SQL_TRUSTED_CONNECTION_SWITCH = "T";
 	private final static String MS_SQL_REGIONAL_ENABLE_PARAM = "regionalEnable";
-	private final static char MS_SQL_REGIONAL_ENABLE_SWITCH = 'R';
+	private final static String MS_SQL_REGIONAL_ENABLE_SWITCH = "R";
 	private final static String MS_SQL_KEEP_NULL_VALUES_PARAM = "keepNullValues";
-	private final static char MS_SQL_KEEP_NULL_VALUES_SWITCH = 'k';
+	private final static String MS_SQL_KEEP_NULL_VALUES_SWITCH = "k";
 	private final static String MS_SQL_KEEP_IDENTITY_VALUES_PARAM = "keepIdentityValues";
-	private final static char MS_SQL_KEEP_IDENTITY_VALUES_SWITCH = 'E';
+	private final static String MS_SQL_KEEP_IDENTITY_VALUES_SWITCH = "E";
 	private final static String MS_SQL_LOAD_HINTS_PARAM = "loadHints";
-	private final static char MS_SQL_LOAD_HINTS_SWITCH = 'h';
+	private final static String MS_SQL_LOAD_HINTS_SWITCH = "h";
 
 	public final static String COMPONENT_TYPE = "MS_SQL_DATA_WRITER";
 
@@ -571,6 +571,7 @@ public class MsSqlDataWriter extends BulkLoader {
 	private final static String ERROR_FILE_NAME_PREFIX = "error";
 	private final static String ERROR_FILE_NAME_SUFFIX = ".log";
 	private final static String DEFAULT_COLUMN_DELIMITER = "\t"; // according bcp
+	private final static String SWITCH_MARK = "-";
 	
 	/**
 	 * when Character Format is used to Import Data then data file can't 
@@ -597,7 +598,7 @@ public class MsSqlDataWriter extends BulkLoader {
 
 	private MsSqlBadRowReaderWriter badRowReaderWriter;
 
-	private String commandLine; // command line of bcp
+	private String[] commandLine; // command line of bcp
 											 // flag that determine if execute() method was already executed;
 	private boolean alreadyExecuted = false; // used for deleting temp data file and reporting about it
 
@@ -664,56 +665,64 @@ public class MsSqlDataWriter extends BulkLoader {
 	 * @return
 	 * @throws ComponentNotReadyException
 	 */
-	private String createCommandLineForDbLoader() throws ComponentNotReadyException {
-		CommandBuilder command = new CommandBuilder(loadUtilityPath + " ");
-		command.setParams(properties);
+	private String[] createCommandLineForDbLoader() throws ComponentNotReadyException {
+		CommandBuilder cmdBuilder =	new CommandBuilder(properties, SWITCH_MARK, "");
+		
+		cmdBuilder.add(loadUtilityPath + " " + getDbTable() + " in " + getData());
 
+		// TODO vsechny hodnoty u addParam byli StringUtils.quote()
+		cmdBuilder.addParam(MS_SQL_MAX_ERRORS_PARAM, MS_SQL_MAX_ERRORS_SWITCH);
+		cmdBuilder.addParam(MS_SQL_FORMAT_FILE_PARAM, MS_SQL_FORMAT_FILE_SWITCH);
+		cmdBuilder.addAttribute(MS_SQL_ERR_FILE_SWITCH, errFileName);
+		cmdBuilder.addParam(MS_SQL_FIRST_ROW_PARAM, MS_SQL_FIRST_ROW_SWITCH);
+		cmdBuilder.addParam(MS_SQL_LAST_ROW_PARAM, MS_SQL_LAST_ROW_SWITCH);
+		cmdBuilder.addParam(MS_SQL_BATCH_SIZE_PARAM, MS_SQL_BATCH_SIZE_SWITCH);
+		cmdBuilder.addBooleanParam(MS_SQL_NATIVE_TYPE_PARAM, MS_SQL_NATIVE_TYPE_SWITCH);
+		cmdBuilder.addBooleanParam(MS_SQL_CHARACTER_TYPE_PARAM, MS_SQL_CHARACTER_TYPE_SWITCH);
+		cmdBuilder.addBooleanParam(MS_SQL_WIDE_CHARACTER_TYPE_PARAM, MS_SQL_WIDE_CHARACTER_TYPE_SWITCH);
+		cmdBuilder.addBooleanParam(MS_SQL_KEEP_NON_TEXT_NATIVE_PARAM, MS_SQL_KEEP_NON_TEXT_NATIVE_SWITCH);
+		cmdBuilder.addParam(MS_SQL_FILE_FORMAT_VERSION_PARAM, MS_SQL_FILE_FORMAT_VERSION_SWITCH);
+		cmdBuilder.addBooleanParam(MS_SQL_QUOTED_IDENTIFIER_PARAM, MS_SQL_QUOTED_IDENTIFIER_SWITCH);
+		cmdBuilder.addParam(MS_SQL_CODE_PAGE_SPECIFIER_PARAM, MS_SQL_CODE_PAGE_SPECIFIER_SWITCH);
+		cmdBuilder.addAttribute(MS_SQL_COLUMN_DELIMITER_SWITCH, getColumnDelimiter(true));
+		cmdBuilder.addAttribute(MS_SQL_RECORD_DELIMITER_SWITCH, getRecordDelimiter(true));
+		cmdBuilder.addParam(MS_SQL_INPUT_FILE_PARAM, MS_SQL_INPUT_FILE_SWITCH);
+		cmdBuilder.addParam(MS_SQL_OUTPUT_FILE_PARAM, MS_SQL_OUTPUT_FILE_SWITCH);
+		cmdBuilder.addParam(MS_SQL_PACKET_SIZE_PARAM, MS_SQL_PACKET_SIZE_SWITCH);
+		cmdBuilder.addAttribute(MS_SQL_SERVER_NAME_SWITCH, getServerName());
+		cmdBuilder.addAttribute(MS_SQL_USER_NAME_SWITCH, user);
+		cmdBuilder.addAttribute(MS_SQL_PASSWORD_SWITCH, password);
+		cmdBuilder.addBooleanParam(MS_SQL_TRUSTED_CONNECTION_PARAM, MS_SQL_TRUSTED_CONNECTION_SWITCH);
+		cmdBuilder.addBooleanParam(MS_SQL_REGIONAL_ENABLE_PARAM, MS_SQL_REGIONAL_ENABLE_SWITCH);
+		cmdBuilder.addBooleanParam(MS_SQL_KEEP_NULL_VALUES_PARAM, MS_SQL_KEEP_NULL_VALUES_SWITCH);
+		cmdBuilder.addBooleanParam(MS_SQL_KEEP_IDENTITY_VALUES_PARAM, MS_SQL_KEEP_IDENTITY_VALUES_SWITCH);
+		cmdBuilder.addParam(MS_SQL_LOAD_HINTS_PARAM, MS_SQL_LOAD_HINTS_SWITCH);
+		
+		return cmdBuilder.getCommand();
+	}
+
+	private String getDbTable() {
+		StringBuilder dbTable = new StringBuilder(); 
 		if (!StringUtils.isEmpty(database)) {
-			command.append(database + ".");
+			dbTable.append(database + ".");
 		}
 		if (!StringUtils.isEmpty(owner)) {
-			command.append(owner + ".");
+			dbTable.append(owner + ".");
 		}
 		if (!StringUtils.isEmpty(table)) {
-			command.append(table);
+			dbTable.append(table);
 		} else {
-			command.append(view);
+			dbTable.append(view);
 		}
-		command.append(" in ");
+		return dbTable.toString();
+	}
+	
+	private String getData() {
 		try {
-			command.append(StringUtils.quote(dataFile.getCanonicalPath()));
+			return StringUtils.quote(dataFile.getCanonicalPath());
 		} catch (IOException ioe) {
-			throw new ComponentNotReadyException(this, ioe);
+			return StringUtils.quote(dataFile.getAbsolutePath());
 		}
-
-		command.addParameterSwitch(MS_SQL_MAX_ERRORS_PARAM, MS_SQL_MAX_ERRORS_SWITCH);
-		command.addParameterSwitch(MS_SQL_FORMAT_FILE_PARAM, MS_SQL_FORMAT_FILE_SWITCH);
-		command.addSwitch(MS_SQL_ERR_FILE_SWITCH, errFileName);
-		command.addParameterSwitch(MS_SQL_FIRST_ROW_PARAM, MS_SQL_FIRST_ROW_SWITCH);
-		command.addParameterSwitch(MS_SQL_LAST_ROW_PARAM, MS_SQL_LAST_ROW_SWITCH);
-		command.addParameterSwitch(MS_SQL_BATCH_SIZE_PARAM, MS_SQL_BATCH_SIZE_SWITCH);
-		command.addParameterBooleanSwitch(MS_SQL_NATIVE_TYPE_PARAM, MS_SQL_NATIVE_TYPE_SWITCH);
-		command.addParameterBooleanSwitch(MS_SQL_CHARACTER_TYPE_PARAM, MS_SQL_CHARACTER_TYPE_SWITCH);
-		command.addParameterBooleanSwitch(MS_SQL_WIDE_CHARACTER_TYPE_PARAM, MS_SQL_WIDE_CHARACTER_TYPE_SWITCH);
-		command.addParameterBooleanSwitch(MS_SQL_KEEP_NON_TEXT_NATIVE_PARAM, MS_SQL_KEEP_NON_TEXT_NATIVE_SWITCH);
-		command.addParameterSwitch(MS_SQL_FILE_FORMAT_VERSION_PARAM, MS_SQL_FILE_FORMAT_VERSION_SWITCH);
-		command.addParameterBooleanSwitch(MS_SQL_QUOTED_IDENTIFIER_PARAM, MS_SQL_QUOTED_IDENTIFIER_SWITCH);
-		command.addParameterSwitch(MS_SQL_CODE_PAGE_SPECIFIER_PARAM, MS_SQL_CODE_PAGE_SPECIFIER_SWITCH);
-		command.addSwitch(MS_SQL_COLUMN_DELIMITER_SWITCH, getColumnDelimiter(true));
-		command.addSwitch(MS_SQL_RECORD_DELIMITER_SWITCH, getRecordDelimiter(true));
-		command.addParameterSwitch(MS_SQL_INPUT_FILE_PARAM, MS_SQL_INPUT_FILE_SWITCH);
-		command.addParameterSwitch(MS_SQL_OUTPUT_FILE_PARAM, MS_SQL_OUTPUT_FILE_SWITCH);
-		command.addParameterSwitch(MS_SQL_PACKET_SIZE_PARAM, MS_SQL_PACKET_SIZE_SWITCH);
-		command.addSwitch(MS_SQL_SERVER_NAME_SWITCH, getServerName());
-		command.addSwitch(MS_SQL_USER_NAME_SWITCH, user);
-		command.addSwitch(MS_SQL_PASSWORD_SWITCH, password);
-		command.addParameterBooleanSwitch(MS_SQL_TRUSTED_CONNECTION_PARAM, MS_SQL_TRUSTED_CONNECTION_SWITCH);
-		command.addParameterBooleanSwitch(MS_SQL_REGIONAL_ENABLE_PARAM, MS_SQL_REGIONAL_ENABLE_SWITCH);
-		command.addParameterBooleanSwitch(MS_SQL_KEEP_NULL_VALUES_PARAM, MS_SQL_KEEP_NULL_VALUES_SWITCH);
-		command.addParameterBooleanSwitch(MS_SQL_KEEP_IDENTITY_VALUES_PARAM, MS_SQL_KEEP_IDENTITY_VALUES_SWITCH);
-		command.addParameterSwitch(MS_SQL_LOAD_HINTS_PARAM, MS_SQL_LOAD_HINTS_SWITCH);
-
-		return command.getCommand();
 	}
 
 	/**
@@ -864,7 +873,7 @@ public class MsSqlDataWriter extends BulkLoader {
 		}
 
 		commandLine = createCommandLineForDbLoader();
-		logger.info("System command: " + commandLine);
+		printCommandLineToLog(commandLine, logger);
 
 		if (isDataReadFromPort) {
 			dbMetadata = createLoadUtilityMetadata(getColumnDelimiter(false), getRecordDelimiter(false));
