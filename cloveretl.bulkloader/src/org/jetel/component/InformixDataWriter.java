@@ -296,16 +296,9 @@ public class InformixDataWriter extends BulkLoader {
 			cmdBuilder.add(loadUtilityPath);
 			
 			cmdBuilder.addAttribute(LOAD_DATABASE_OPTION, database);
-			
-			if (!StringUtils.isEmpty(host)) {
-				cmdBuilder.addAttribute(LOAD_HOST_OPTION, host);
-			}
-			if (!StringUtils.isEmpty(user)) {
-				cmdBuilder.addAttribute(LOAD_USER_OPTION, user);
-			}
-			if (!StringUtils.isEmpty(password)) {
-				cmdBuilder.addAttribute(LOAD_PASSWORD_OPTION, password);
-			}
+			cmdBuilder.addAttribute(LOAD_HOST_OPTION, host);
+			cmdBuilder.addAttribute(LOAD_USER_OPTION, user);
+			cmdBuilder.addAttribute(LOAD_PASSWORD_OPTION, password);
 			cmdBuilder.addAttribute(LOAD_TABLE_OPTION, table);
 			cmdBuilder.addAttribute(LOAD_COMMIT_INTERVAL_OPTION, commitInterval);
 
