@@ -309,10 +309,8 @@ public class InformixDataWriter extends BulkLoader {
 				cmdBuilder.add(SWITCH_MARK + LOAD_USE_INSERT_CURSOR_OPTION);
 			}
 			cmdBuilder.addAttribute(LOAD_ERRORS_OPTION, maxErrors);
+			cmdBuilder.addAttribute(LOAD_ERROR_LOG_OPTION, errorLog);
 
-			if (!StringUtils.isEmpty(errorLog)) {
-				cmdBuilder.addAttribute(LOAD_ERROR_LOG_OPTION, errorLog);
-			}
 			if (!isDataReadFromPort || !StringUtils.isEmpty(dataURL)) {
 				cmdBuilder.add(tmpDataFileName);
 			} // else - when no file is defined stdio is used
