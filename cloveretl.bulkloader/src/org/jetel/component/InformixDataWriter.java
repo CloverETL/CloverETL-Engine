@@ -294,7 +294,6 @@ public class InformixDataWriter extends BulkLoader {
     	
 		if (useLoadUtility) {
 			cmdBuilder.add(loadUtilityPath);
-			
 			cmdBuilder.addAttribute(LOAD_DATABASE_OPTION, database);
 			cmdBuilder.addAttribute(LOAD_HOST_OPTION, host);
 			cmdBuilder.addAttribute(LOAD_USER_OPTION, user);
@@ -316,14 +315,8 @@ public class InformixDataWriter extends BulkLoader {
 			} // else - when no file is defined stdio is used
 		} else {
 			cmdBuilder.add(loadUtilityPath);
-			
 			cmdBuilder.addAttribute(INFORMIX_COMMAND_PATH_OPTION, commandFileName);
-			
-			String db = database;
-			if (!StringUtils.isEmpty(host)) {
-				db = "//" + host + "/" + database;
-			}
-			cmdBuilder.addAttribute(INFORMIX_DATABASE_OPTION, db);
+			cmdBuilder.addAttribute(INFORMIX_DATABASE_OPTION, getDbConn());
 			cmdBuilder.addAttribute(INFORMIX_ERROR_LOG_OPTION, errorLog);
 			cmdBuilder.addAttribute(INFORMIX_ERRORS_OPTION, maxErrors);
 			cmdBuilder.addAttribute(INFORMIX_IGNORE_ROWS_OPTION, ignoreRows);
@@ -331,6 +324,13 @@ public class InformixDataWriter extends BulkLoader {
 		}
 		
 		return cmdBuilder.getCommand();
+    }
+    
+    private String getDbConn() {
+		if (!StringUtils.isEmpty(host)) {
+			return "//" + host + "/" + database;
+		}
+		return database;
     }
 
     /**
