@@ -96,6 +96,11 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private TypedProperties recordProperties = new TypedProperties();
 	private String localeStr = null;
 
+	/** a format string for numbers */
+	private String numberFormatStr = null;
+	/** a format string for dates */
+	private String dateFormatStr = null;
+
 	/**
 	 * Constructs data record meta data with given name.
 	 *
@@ -678,10 +683,44 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
-	 * @return the locale code string.
+	 * @return the locale code string, or <code>null</code> if no locale string is set
 	 */
 	public String getLocaleStr() {
 		return localeStr;
+	}
+
+	/**
+	 * Sets the number format pattern as a default format string for numeric data fields.
+	 *
+	 * @param numberFormatStr the new number format pattern
+	 */
+	public void setNumberFormatStr(String numberFormatStr) {
+		this.numberFormatStr = numberFormatStr;
+	}
+
+	/**
+	 * @return the number format pattern as a default format string for numeric data fields, or <code>null</code> if no
+	 * format pattern is set
+	 */
+	public String getNumberFormatStr() {
+		return numberFormatStr;
+	}
+
+	/**
+	 * Sets the date format pattern as a default format string for date/time data fields, or <code>null</code> if no
+	 * format pattern is set
+	 *
+	 * @param dateFormatStr the new date format pattern
+	 */
+	public void setDateFormatStr(String dateFormatStr) {
+		this.dateFormatStr = dateFormatStr;
+	}
+
+	/**
+	 * @return the date format pattern as a default format string for date/time data fields
+	 */
+	public String getDateFormatStr() {
+		return dateFormatStr;
 	}
 
 	/**

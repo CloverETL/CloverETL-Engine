@@ -197,7 +197,7 @@ public class DataFieldMetadata implements Serializable {
 	/** If this switch is set to true, EOF works as delimiter for this field. It's useful for last field in the record. */
 	private boolean eofAsDelimiter = false;
 	/** Format of Number, Date, DateTime, String (RegExp) or empty if not applicable. */
-	private String formatStr;
+	private String formatStr = null;
 	/** Length of the field (in bytes) if the field belongs to fixLength record. */
 	private short size = 0;
 
@@ -499,10 +499,23 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * @return the format pattern which will be used when outputting field's value as a string
+	 * @return the format pattern which will be used when outputting field's value as a string, or <code>null</code> if
+	 * no format pattern is set for this field
 	 */
 	public String getFormatStr() {
-		return formatStr;
+		if (formatStr != null) {
+			return formatStr;
+		}
+
+		if (isNumeric()) {
+			return dataRecordMetadata.getNumberFormatStr();
+		}
+
+		if (type == DATE_FIELD || type == DATETIME_FIELD) {
+			return dataRecordMetadata.getDateFormatStr();
+		}
+
+		return null;
 	}
 
 	/**
@@ -801,7 +814,7 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * @return the locale code string.
+	 * @return the locale code string, or <code>null</code> if no locale string is set
 	 */
 	public String getLocaleStr() {
 		if (localeStr != null) {
