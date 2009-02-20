@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Pavel" created="Thu Feb 19 17:45:33 CET 2009" guiVersion="0.0" id="1235062922098" licenseType="Evaluation license." modified="Fri Feb 20 13:13:04 CET 2009" modifiedBy="Pavel" name="graphMultiLevelReader" revision="1.14">
+<Global>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="," name="recordName1" recordDelimiter="\r\n" type="delimited">
+<Field name="type" type="string"/>
+<Field name="product_name" type="string"/>
+<Field name="product_code" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record fieldDelimiter="," name="recordName2" recordDelimiter="\r\n" type="delimited">
+<Field name="type" type="string"/>
+<Field name="service_name" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2">
+<Record fieldDelimiter="," name="recordName3" recordDelimiter="\r\n" type="delimited">
+<Field name="type" type="string"/>
+<Field name="range_name" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/multilevel_product.txt" guiHeight="0" guiName="Products" guiWidth="0" guiX="502" guiY="106" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/multilevel_service.txt" guiHeight="0" guiName="Services" guiWidth="0" guiX="502" guiY="229" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/multilevel_product_range.txt" guiHeight="0" guiName="Product_ranges" guiWidth="0" guiX="502" guiY="342" id="DATA_WRITER2" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/multilevel_prefix.txt" guiHeight="0" guiName="MultiLevelReader" guiWidth="0" guiX="43" guiY="219" id="MULTI_LEVEL_READER0" selectorClass="org.jetel.data.parser.PrefixMultiLevelSelector" selectorProperties="product=0&#10;product_range=2&#10;service=1&#10;" type="MULTI_LEVEL_READER"/>
+<Edge fromNode="MULTI_LEVEL_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="MULTI_LEVEL_READER0:1" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="DATA_WRITER1:0"/>
+<Edge fromNode="MULTI_LEVEL_READER0:2" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (out)" toNode="DATA_WRITER2:0"/>
+</Phase>
+</Graph>
