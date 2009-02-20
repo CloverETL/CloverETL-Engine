@@ -1,320 +1,354 @@
-/*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2006 Javlin Consulting <info@javlinconsulting>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
 package org.jetel.data.parser;
 
 import java.io.IOException;
-import java.nio.charset.CharacterCodingException;
+import java.io.InputStream;
+import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 
-/**
- * Multi-level parser. Parses multi-level input file. The file may contain records
- * of different types. The types are supposed to have fixed-length of records. This applies
- * for each type but the length associated with different types may differ.
- * User-specified type-selector decides which record type definition will
- * be used for each part of input.
- *   
- * @see TypeSelector
- * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
- * @since 15/12/06  
- */
-public class MultiLevelParser extends FixLenDataParser {
+public class MultiLevelParser implements Parser {
 
-	private int dataPos;
-	private int dataLim;
+	static Log logger = LogFactory.getLog(MultiLevelParser.class);
 
-	/**
-	 * Record description.
-	 */
-	private DataRecordMetadata[] metadata = null;
+	private String charset;
+	private MultiLevelSelector selector;
+	private int selectorLookAheadChars;
+	private int selectorSkipChars;
+	private DataRecordMetadata[] metadataPool;
+
+	private DataRecordMetadata lastRecordMetadata;
+	private int lastRecordMetadataIndex;
+	private Parser lastRecordParser;
 	
-	private int[] fieldCnt;
-	private int[][] fieldStart;
-	private int[][] fieldEnd;
-	private int[] recordLength;
-
-	private int seltorDataLen;
-
-	private TypeSelector seltor;
-	
+	private Parser[] parserPool;
 	private Properties properties;
+	private boolean releaseDataSource = true;
 	
-	private DataRecord[] record;
+	private ReadableByteChannel reader;
+	private CharsetDecoder decoder;
+	private boolean isEof = false;
 	
-	private int metaIdx;
+	private ByteBuffer dataBuffer;
+	private CharBuffer charBuffer;
+
+	private IParserExceptionHandler exceptionHandler;
 	
-	/**
-	 * Create instance for specified charset.
-	 * @param charset
-	 */
-	public MultiLevelParser(String charset, TypeSelector seltor, DataRecordMetadata[] metadata, Properties properties) {
-		super(charset);
-		this.metadata = metadata;
-		this.seltor = seltor;
+	public MultiLevelParser(String charset, MultiLevelSelector selector, DataRecordMetadata[] metadata, Properties properties) {
+		this.selector = selector;
+		this.metadataPool = metadata;
 		this.properties = properties;
-	}
-
-	/**
-	 * Create instance for default charset. 
-	 */
-	public MultiLevelParser(TypeSelector seltor, DataRecordMetadata[] metadata, Properties properties) {
-		this(null, seltor, metadata, properties);
-	}
-
-	/**
-	 * Obtains raw data and tries to fill record fields with them.
-	 * @param record Output record, cannot be null.
-	 * @return null when no more data are available, output record otherwise.
-	 * @throws JetelException
-	 */
-	protected DataRecord parseNext(DataRecord unused) throws JetelException {
-		if (unused != null) {	// make it clear that there's no connection between the parameter and return value
-			throw new RuntimeException("Incorrect use of a method (program bug)");
-		}
-
-		showData(seltorDataLen);
-		if (byteBuffer.remaining() == 0 && seltorDataLen != 0) {	// eof
-			return null;
-		}
-
-		metaIdx = seltor.choose(byteBuffer, decoder);
-		if (metaIdx < 0) {
-			throw new BadDataFormatException("Unrecognizable data record type");
-		}
-
-		if (getData(recordLength[metaIdx]) != recordLength[metaIdx]) {
-			if (byteBuffer.remaining() != 0) {
-				throw new BadDataFormatException("Incomplete record data");
-			}
-			return null;
-		}
-
-		int recStart = byteBuffer.position();
-		for (fieldIdx = 0; fieldIdx < fieldCnt[metaIdx]; fieldIdx++) {
-			try {
-				// set buffer scope to next field
-				byteBuffer.position(recStart);	// to avoid exceptions while setting position&limit of the field 
-				byteBuffer.limit(recStart + fieldEnd[metaIdx][fieldIdx]);
-				byteBuffer.position(recStart + fieldStart[metaIdx][fieldIdx]);
-
-				try {
-					record[metaIdx].getField(fieldIdx).fromByteBuffer(byteBuffer, decoder);
-				} catch (CharacterCodingException e) { // convert it to bad-format exception
-					throw new BadDataFormatException(
-							"Invalid characters in data field", byteBuffer.toString());
-				}
-			} catch (BadDataFormatException e) {
-				fillXHandler(record[metaIdx], byteBuffer.toString(), e);
-				return record[metaIdx];
-			}
-		}
-		recordIdx++;
-		seltor.presentRecord(record[metaIdx]);
-		return record[metaIdx];
-	}
-
-	/**
-	 * Skip records.
-	 * @param nRec Number of records to be skipped
-	 * @return Number of successfully skipped records.
-	 * @throws JetelException
-	 */
-	public int skip(int nRec) throws JetelException {
-		int skipped;
-		for (skipped = 0; skipped < nRec; skipped++) {
-			showData(seltorDataLen);
-			metaIdx = seltor.choose(byteBuffer, decoder);
-			if (metaIdx < 0) {
-				throw new BadDataFormatException("Unrecognizable data record type");
-			}
-			if (getData(recordLength[metaIdx]) != recordLength[metaIdx]) {	// end of file reached
-				break;
-			}
-		}
-		recordIdx += skipped;
-		return skipped;
-	}
-		
-	/**
-	 * Sets input buffer scope without consuming the data. 
-	 * @param dataLen
-	 * @return
-	 * @throws JetelException
-	 */
-	private int showData(int dataLen) throws JetelException {
-		// set buffer scope so that it will cover all unprocessed data
-		byteBuffer.limit(dataLim);
-		byteBuffer.position(dataPos);
-
-		if (byteBuffer.remaining() < dataLen) {	// need to get more data from channel
-			byteBuffer.compact();
-			try {
-				inChannel.read(byteBuffer);				// write to buffer
-				byteBuffer.flip();						// prepare buffer for reading
-			} catch (IOException e) {
-				throw new JetelException(e.getMessage());
-			}
-			dataPos = 0;
-			dataLim = byteBuffer.limit();
-		}
-		// set scope for requested piece of data
-		if (byteBuffer.remaining() > dataLen) {
-			byteBuffer.limit(dataPos + dataLen);
-		}
-		return byteBuffer.remaining();
-	}
-
-	/**
-	 * Reads raw data for one record from input and fills specified
-	 * buffer with them. For outBuff==null raw data in input. 
-	 * @param outBuf Output buffer to be filled with raw data.
-	 * @return size of available data
-	 * @throws JetelException
-	 */
-	private int getData(int dataLen) throws JetelException {
-		if (eof) {	// no more data in input channel
-			return 0;
-		}
-		int retval = showData(dataLen);
-		dataPos += retval;
-		if (retval < dataLen) {	// not enough data available
-			eof = true;
-		}
-		return retval;
-	}
-
-	/**
-	 * Fill bad-format exception handler with relevant data.
-	 * @param errorMessage
-	 * @param record
-	 * @param recordNumber
-	 * @param fieldNumber
-	 * @param offendingValue
-	 * @param exception
-	 */
-	protected void fillXHandler(DataRecord record, CharSequence offendingValue,
-        BadDataFormatException exception) {
-		
-		exception.setFieldNumber(fieldIdx);
-		exception.setRecordNumber(recordIdx);
-		
-		if (exceptionHandler == null) { // no handler available
-			throw new RuntimeException(exception.getMessage());			
-		}
-		// set handler
-		exceptionHandler.populateHandler(exception.getMessage(), record, recordIdx - 1,
-				fieldIdx, offendingValue.toString(), exception);
-	}
-		
-	/**
-	 * @throws ComponentNotReadyException
-	 */
-	public void init()	throws ComponentNotReadyException {
-		seltorDataLen = seltor.init(metadata, properties);
-
-		fieldCnt = new int[metadata.length];
-		recordLength = new int[metadata.length];
-		fieldStart = new int[metadata.length][];
-		fieldEnd = new int[metadata.length][];
-		record = new DataRecord[metadata.length];
-
-		recordIdx = 0;
-		fieldIdx = 0;
-
-		for (metaIdx = 0; metaIdx < metadata.length; metaIdx++) {
-			if (metadata[metaIdx].getRecType() != DataRecordMetadata.FIXEDLEN_RECORD) {
-				throw new ComponentNotReadyException("Fixed length data format expected but not encountered");
-			}
-			fieldCnt[metaIdx] = metadata[metaIdx].getNumFields();
-	
-			recordLength[metaIdx] = metadata[metaIdx].getRecordSizeStripAutoFilling();
-			isAutoFilling = new boolean[fieldCnt[metaIdx]];
-			fieldStart[metaIdx] = new int[fieldCnt[metaIdx]];
-			fieldEnd[metaIdx] = new int[fieldCnt[metaIdx]];
-			int prevEnd = 0;
-			for (int fieldIdx = 0; fieldIdx < metadata[metaIdx].getNumFields(); fieldIdx++) {
-				if (isAutoFilling[fieldIdx] = metadata[metaIdx].getField(fieldIdx).getAutoFilling() != null) {
-					fieldStart[metaIdx][fieldIdx] = prevEnd;
-					fieldEnd[metaIdx][fieldIdx] = prevEnd;
-				} else {
-					fieldStart[metaIdx][fieldIdx] = prevEnd + metadata[metaIdx].getField(fieldIdx).getShift();
-					fieldEnd[metaIdx][fieldIdx] = fieldStart[metaIdx][fieldIdx] + metadata[metaIdx].getField(fieldIdx).getSize();
-					prevEnd = fieldEnd[metaIdx][fieldIdx];
-					if (fieldStart[metaIdx][fieldIdx] < 0 || fieldEnd[metaIdx][fieldIdx] > recordLength[metaIdx]) {
-						throw new ComponentNotReadyException("field boundaries cannot be outside record boundaries");
-					}
-				}
-			}
-			record[metaIdx] = new DataRecord(metadata[metaIdx]);
-			record[metaIdx].init();
-		}
-		
-		metaIdx = -1;
+		setCharset(charset);
 	}
 	
-	/**
-	 * Release resources.
-	 */
+	void setCharset(String charset) {
+		this.charset = charset;
+	}
+	
 	public void close() {
-		super.close();
-		seltor.finish();
-	}
-
-	/**
-	 * 
-	 * Returns type (index to array of data record metadata) of last data record. 
-	 * @return
-	 */
-	public int getTypeIdx() {
-		return metaIdx;
+		releaseDataSource();
 	}
 
 	public DataRecord getNext() throws JetelException {
-		return getNext(null);
-	}
-
-	public void init(DataRecordMetadata unused) throws ComponentNotReadyException {
-		/* in comparison with other parser implementations some methods are a little strange
-		** since Parser interface doesn't fit our requirements very well.
-		*/
-		if (unused != null) {	// make it clear that there's no connection between the parameter and return value
-			throw new RuntimeException("Incorrect use of a method (program bug)");
+		DataRecord result = getNext(null);
+		if(exceptionHandler != null ) {  //use handler only if configured
+			while(exceptionHandler.isExceptionThrowed()) {
+                exceptionHandler.handleException();
+				result = getNext(null);
+			}
 		}
-		init();
+		return result; 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#reset()
+	/**
+	 * This method does a few things:
+	 * - takes a look into the file and passes the sample to a TypeSelector
+	 * - the selector tries its best to pick proper metadata (returns an index to this.metadataPool
+	 * - having the right metadata, we can either ensure the whole record in buffer if fixed length, or compact a reload the buffer otherwise
+	 * - then we can parse the data in it according to 
 	 */
-	public void reset() {
-		super.reset();
+	public DataRecord getNext(DataRecord record) throws JetelException {
+		
+		try {
+			int readChars; // helper var
+			
+			selectorLookAheadChars = selector.lookAheadCharacters();
+			
+			// sneak peek
+			// read as many bytes as our typeselector requests
+			if (charBuffer.remaining() < selectorLookAheadChars) {
+				readChars = readChars();
+				if (readChars <= 0) {
+					return null;
+				}
+			}
+
+			int startPosition = charBuffer.position();
+
+			boolean successfulChoice = false;
+			selector.reset();
+			do {
+
+				try {
+					selector.choose(charBuffer);
+					successfulChoice = true;
+				} catch (BufferUnderflowException e1) {
+					// selector claims to have insufficient data
+					// let's read some and try re-choose
+					// note: if we data is re-read more than once there is no chance how to get back to them
+					// we can only operate on single charbuffer!
+					// but this shouldn't be an issue
+					charBuffer.position(startPosition);
+					readChars = readChars();
+					if (readChars <= 0) {
+						return null;
+					}
+					startPosition = charBuffer.position();
+				}
+
+			} while (!successfulChoice);
+
+			lastRecordMetadataIndex = selector.nextRecordMetadataIndex();
+			
+			if (lastRecordMetadataIndex < 0) {
+				// selector claims that it is unable to determine the record type
+				throw new BadDataFormatException("Unable to determine data record type");
+			}
+
+			lastRecordMetadata = this.metadataPool[lastRecordMetadataIndex];
+			lastRecordParser = this.parserPool[lastRecordMetadataIndex];
+			selectorSkipChars = selector.nextRecordOffset();
+
+			// rewind to starting character of the record (and skip some if required)
+			charBuffer.position(startPosition + selectorSkipChars);
+
+			if (record == null) {
+				record = new DataRecord(lastRecordMetadata);
+				record.init();
+			} else if (! record.getMetadata().equals(lastRecordMetadata)) {
+				record.setMetadata(lastRecordMetadata);
+				record.init();
+			}
+
+			// now this is the tricky part... 
+			// use appropriate Parser to parse this data part
+
+			try {
+				return lastRecordParser.getNext(record);
+			} catch (BadDataFormatException e) {
+				// this can mean that a record data is on buffer boundary
+				// we can try to load more data and retry.. if no more data is available or parsing fails anyways, we've got ourselves a problem
+				charBuffer.position(startPosition);
+				readChars = readChars();
+				if (readChars <= 0) {
+					// no more characters so the error is justified
+					throw e;
+				}
+				// retry and don't bother catching the exception again because there's nothing more we can do 
+				return lastRecordParser.getNext(record);
+			}
+
+		} catch (IOException e) {
+			throw new JetelException(e.getMessage(), e);
+		}
+
 	}
 
-	@Override
-	protected void discardBytes(int bytes) {
+	int readChars() throws IOException {
+        CoderResult result;
+        
+        dataBuffer.compact();
+        charBuffer.compact();
+        
+        if (reader.read(dataBuffer) == -1) {
+            isEof = true;
+        }        
+        dataBuffer.flip();
+
+        if (dataBuffer.remaining() == 0) {
+        	return 0;
+        }
+        
+        result = decoder.decode(dataBuffer, charBuffer, isEof);
+        if (result == CoderResult.UNDERFLOW) {
+            // try to load additional data
+            dataBuffer.compact();
+
+            if (reader.read(dataBuffer) == -1) {
+                isEof = true;
+            }
+            dataBuffer.flip();
+            decoder.decode(dataBuffer, charBuffer, isEof);
+        } else if (result.isError()) {
+            throw new IOException(result.toString()+" when converting from "+decoder.charset());
+        }
+        if (isEof) {
+            result = decoder.flush(charBuffer);
+            if (result.isError()) {
+                throw new IOException(result.toString()+" when converting from "+decoder.charset());
+            }
+        }
+        charBuffer.flip();
+        return charBuffer.remaining();
+	}
+	
+	
+
+	public Object getPosition() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void init() throws ComponentNotReadyException {
+		init(null);
+	}
+	
+	/**
+	 * A standard init, but we don't support passing in any metadata
+	 * since metadata is kept in this.metadataPool and picked dynamically by TypeSelector
+	 */
+	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
+		if (_metadata != null) { 
+			throw new IllegalArgumentException("This parser doesn't allow metadata specification");
+		}
+		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		dataBuffer.flip(); // we must do this, first operation on the buffer is a read attempt
+		charBuffer.flip(); // we must do this, first operation on the buffer is a read attempt
+		decoder = Charset.forName(charset != null ? charset : Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
+		selector.init(this.metadataPool, this.properties);
+	}
+
+	public void movePosition(Object position) throws IOException {
 		// TODO Auto-generated method stub
 	}
+
+	public void reset() throws ComponentNotReadyException {
+		if (releaseDataSource) {
+			releaseDataSource();
+		}
+		dataBuffer.reset();
+		charBuffer.reset();
+	}
+
+	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
+		if (this.releaseDataSource) {
+			releaseDataSource();
+		}
+		
+		if (inputDataSource == null) {
+			isEof = true;
+		} else {
+			isEof = false;
+			if (inputDataSource instanceof ReadableByteChannel) {
+				reader = ((ReadableByteChannel)inputDataSource);
+			} else if (inputDataSource instanceof InputStream){
+				reader = Channels.newChannel((InputStream)inputDataSource);
+			} else if (inputDataSource instanceof CharBuffer) {
+				reader = null;
+				charBuffer = (CharBuffer) inputDataSource;
+			}
+			
+			initParsers();
+			
+		}
+		
+	}
+
+	/**
+	 * This method assumes the metadataPool to be set correctly
+	 * and that a charBuffer is available
+	 * For each metadata in the pool it constructs a parser appropriately and puts it to parserPool
+	 */
+	void initParsers() throws ComponentNotReadyException {
+		
+		if (this.metadataPool == null || this.metadataPool.length == 0) {
+			this.parserPool = null;
+			return;
+		}
+		
+		this.parserPool = new Parser[this.metadataPool.length];
+		
+		DataRecordMetadata metadata;
+		
+		for(int i = 0; i < this.metadataPool.length; i++) {
+			metadata = this.metadataPool[i];
+			if (metadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD || metadata.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD) {
+				this.parserPool[i] = new DataParser(this.charset != null ? this.charset : Defaults.DataParser.DEFAULT_CHARSET_DECODER);
+				this.parserPool[i].init(metadata);
+				this.parserPool[i].setDataSource(this.charBuffer);
+
+			} else {
+				// we cannot work with this kind of metadata
+				throw new ComponentNotReadyException("Metadata type '" + metadata.getRecType() + "' is not supported.");
+			}
+		}
+		
+	}
+	
+	
+	void releaseDataSource() {
+		if (this.reader != null) {
+			try {
+				this.reader.close();
+			} catch (IOException e) {
+				logger.debug("Error releasing data source: " +e.getMessage());
+			}
+		}
+	}
+
+	public PolicyType getPolicyType() {
+		if (this.exceptionHandler != null) {
+			return this.exceptionHandler.getType();
+		} else {
+			return null;
+		}
+	}
+	
+
+    public void setExceptionHandler(IParserExceptionHandler handler) {
+        this.exceptionHandler = handler;
+    }
+
+
+    public IParserExceptionHandler getExceptionHandler() {
+        return exceptionHandler;
+    }
+
+	public void setReleaseDataSource(boolean releaseInputSource) {
+		this.releaseDataSource = releaseInputSource;
+	}
+
+	public int skip(int nRec) throws JetelException {
+		int skipped;
+		DataRecord rec = new DataRecord(null);
+		for (skipped = 0; skipped < nRec; skipped++) {
+			if (getNext(rec) == null) {	// end of file reached
+				break;
+			}
+		}
+		return skipped;
+	}
+
+	
+	public int getTypeIdx() {
+		return lastRecordMetadataIndex;
+	}
+	
 }

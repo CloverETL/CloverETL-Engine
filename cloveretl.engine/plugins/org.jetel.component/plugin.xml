@@ -14,8 +14,8 @@
 	</requires>
 
 	<extension point-id="component">
-		<parameter id="className" value="org.jetel.component.RoundRobinGather"/>
-		<parameter id="type" value="ROUND_ROBIN_GATHER"/>
+		<parameter id="className" value="org.jetel.component.MultiLevelReader"/>
+		<parameter id="type" value="MULTI_LEVEL_READER"/>
 	</extension>
 
 	<extension point-id="component">

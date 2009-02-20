@@ -1,0 +1,9 @@
+product,Towel A45,54356
+product,Pillow B-45g,1544
+service,Knitting
+product,Feather 2kg pack,0542
+product,Cloth roll 4x20m,435
+product_range,Towels
+product,Rug 10x20,7539
+product_range,Pillows
+service,Sewing

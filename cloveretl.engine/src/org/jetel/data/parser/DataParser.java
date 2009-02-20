@@ -263,7 +263,10 @@ public class DataParser implements Parser {
 		if (inputDataSource == null) {
 			reader = null;
 		} else {
-			if (inputDataSource instanceof ReadableByteChannel) {
+			if (inputDataSource instanceof CharBuffer) {
+				reader = null;
+				charBuffer = (CharBuffer) inputDataSource;
+			} else if (inputDataSource instanceof ReadableByteChannel) {
 				reader = ((ReadableByteChannel)inputDataSource);
 			} else {
 				reader = Channels.newChannel((InputStream)inputDataSource);
@@ -459,7 +462,8 @@ public class DataParser implements Parser {
 					}
 
 				} catch (Exception ex) {
-					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, fieldCounter));
+//					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, fieldCounter));
+					throw new BadDataFormatException(ex.toString());
 				}
 			}
 
@@ -509,7 +513,7 @@ public class DataParser implements Parser {
 			return character;
 		}
 		
-		if (!charBuffer.hasRemaining()) {
+		if (reader != null && !charBuffer.hasRemaining()) {
 			byteBuffer.clear();
 			size = reader.read(byteBuffer);
 			// if no more data, return -1
