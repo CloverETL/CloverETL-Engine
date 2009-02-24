@@ -935,6 +935,17 @@ public class OracleDataWriter extends BulkLoader {
 				throw new ComponentNotReadyException("Number of fields of " +  StringUtils.quote(outMeta.getName()) +  
 						" isn't equal number of fields of " +  StringUtils.quote(inMeta.getName()) + ".");
 			}
+			
+			// check if other fields' type of inMetadata are equals as outMetadata
+			int count = 0;
+			for (DataFieldMetadata inFieldMetadata : inMeta){
+				if (!inFieldMetadata.equals(outMeta.getField(count++))) {
+					throw new ComponentNotReadyException("Field "
+							+ StringUtils.quote(outMeta.getField(count - 1).getName()) + " in " 
+							+ StringUtils.quote(outMeta.getName()) + " has different type from field " 
+							+ StringUtils.quote(inFieldMetadata.getName()) + " in " + StringUtils.quote(inMeta.getName()) + ".");
+				}
+			}
     	}
 	}
 }
