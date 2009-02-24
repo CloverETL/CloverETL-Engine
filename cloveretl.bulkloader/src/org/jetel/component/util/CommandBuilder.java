@@ -94,6 +94,20 @@ public class CommandBuilder {
 	}
 	
 	/**
+	 *  If attrValue doesn't equal "false" then attrName is added to command.
+	 *  "<i><b>switchMark</b>attrName</i>"<br>
+	 *  for exmaple:  --compress
+	 * 
+	 * @param attrName
+	 * @param attrValue
+	 */
+	public void addBooleanAttribute(String attrName, boolean attrValue) {
+		if (attrValue) {
+			cmdList.add(switchMark + attrName);
+		}
+	}
+	
+	/**
 	 *  Adds param and it's value - value is get from properties:
 	 *  paramKeyword=paramValue or paramKeyword='paramValue'
 	 *  for exmaple:  host=localhost | host='localhost' | -host=localhost
