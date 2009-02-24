@@ -101,5 +101,19 @@ public interface MultiLevelSelector {
 	 * @return
 	 */
 	int nextRecordMetadataIndex(); 
+
+	/**
+	 * This method instruments the selector to find the offset
+	 * of next record which is possibly parseable
+	 * 
+	 * It works similarily as choose(CharBuffer) but instead of setting metadata
+	 * it simply set the position inside "data" of next possible record
+	 * 
+	 * Returns true if it was able to recover, exception if it needs more data or false
+	 * if for any reason the recovery is impossible
+	 * 
+	 * @return
+	 */
+	boolean recoverToNextRecord(CharBuffer data) throws BufferUnderflowException;
 	
 }
