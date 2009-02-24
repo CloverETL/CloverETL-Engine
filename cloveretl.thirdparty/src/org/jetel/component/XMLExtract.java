@@ -207,6 +207,7 @@ public class XMLExtract extends Node {
     private static final String XML_SCHEMA_ATTRIBUTE = "schema";
     private static final String XML_USENESTEDNODES_ATTRIBUTE = "useNestedNodes";
     private static final String XML_MAPPING_ATTRIBUTE = "mapping";
+    private static final String XML_CHARSET_ATTRIBUTE = "charset";
 
     // mapping attributes
     private static final String XML_MAPPING = "Mapping";
@@ -255,6 +256,8 @@ public class XMLExtract extends Node {
 	private String schemaFile;
 
 	private String xmlFeatures;
+
+	private String charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
 
     /**
      * SAX Handler that will dispatch the elements to the different ports.
@@ -1029,13 +1032,17 @@ public class XMLExtract extends Node {
             if (xattribs.exists(XML_XML_FEATURES_ATTRIBUTE)){
             	extract.setXmlFeatures(xattribs.getString(XML_XML_FEATURES_ATTRIBUTE));
             }
+            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
+            	extract.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+            }
+            
             return extract;
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
     }
     
-    /**
+	/**
      * Creates org.w3c.dom.Document object from the given String.
      * 
      * @param inString
@@ -1288,7 +1295,7 @@ public class XMLExtract extends Node {
             		getInputPort(INPUT_PORT), 
             		graph != null ? graph.getProjectURL() : null,
             		inputFile);
-            this.readableChannelIterator.setCharset(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
+            this.readableChannelIterator.setCharset(charset);
             this.readableChannelIterator.setDictionary(graph.getDictionary());
             this.readableChannelIterator.init();
             if (!readableChannelIterator.isGraphDependentSource()) prepareNextSource();
@@ -1424,6 +1431,14 @@ public class XMLExtract extends Node {
      */
     private void setXmlFeatures(String xmlFeatures) {
     	this.xmlFeatures = xmlFeatures;
+	}
+
+    /**
+     * Sets charset for dictionary and input port reading.
+     * @param string
+     */
+    private void setCharset(String charset) {
+    	this.charset = charset;
 	}
 
 //    private void resetRecord(DataRecord record) {
