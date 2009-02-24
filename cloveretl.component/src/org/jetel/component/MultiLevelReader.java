@@ -448,7 +448,6 @@ public class MultiLevelReader extends Node {
 
 	@Override
 	public String getType() {
-		// TODO Auto-generated method stub
 		return COMPONENT_TYPE;
 	}
 

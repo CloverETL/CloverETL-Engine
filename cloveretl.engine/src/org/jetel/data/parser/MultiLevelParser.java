@@ -6,6 +6,7 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -45,6 +46,20 @@ public class MultiLevelParser implements Parser {
 	private CharsetDecoder decoder;
 	private boolean isEof = false;
 	private long readCharsTotal = 0;
+	/*
+	 * This field is a bit tricky
+	 * It keeps track of number of bytes that had been read from data source
+	 * BEFOFE the bytes of current charBuffer have been read
+	 * So we know exactly, that rewinding the file channel to this position
+	 * and then reading some bytes and decoding them will recreate the charBuffer at exact same location
+	 */
+	private long charBufferByteOffset = 0;
+	private long charBufferCharOffset = 0;
+	/*
+	 * A helper variable
+	 */
+	private int _readBytesAddNextTime = 0;
+	private int _readCharsAddNextTime = 0;
 	
 	private ByteBuffer dataBuffer;
 	private CharBuffer charBuffer;
@@ -131,17 +146,13 @@ public class MultiLevelParser implements Parser {
 				// selector claims that it is unable to determine the record type
 				PolicyType policy = getPolicyType();
 				if (policy.equals(PolicyType.STRICT)) {
-					throw new RuntimeException("MultiLevelParser: Unable to parse input at character #" + readCharsTotal);
+					throw new RuntimeException("Unable to parse input at character #" + readCharsTotal);
 				} else {
 					// lets try to recover
 					successfulChoice = false; // abuse
-					boolean recovered = false;
 					do {
 						try {
-							recovered = selector.recoverToNextRecord(charBuffer);
-							if (! recovered) {
-								throw new RuntimeException("MultiLevelParser: Unable to recover from bad input at charackter #" + readCharsTotal);
-							}
+							selector.recoverToNextRecord(charBuffer);
 							successfulChoice = true;
 						} catch (BufferUnderflowException e1) {
 							charBuffer.position(startPosition);
@@ -150,6 +161,8 @@ public class MultiLevelParser implements Parser {
 								return null;
 							}
 							startPosition = charBuffer.position();
+						} catch (BadDataFormatException e2) {
+							throw new RuntimeException("Unable to recover from bad input at character #" + readCharsTotal, e2);
 						}
 
 					} while (!successfulChoice);
@@ -202,7 +215,10 @@ public class MultiLevelParser implements Parser {
         dataBuffer.compact();
         charBuffer.compact();
         
-        if (reader.read(dataBuffer) == -1) {
+        int readBytes = 0;
+        int readChars = -1 * charBuffer.position();
+        
+        if ((readBytes = reader.read(dataBuffer)) == -1) {
             isEof = true;
         }        
         dataBuffer.flip();
@@ -212,6 +228,7 @@ public class MultiLevelParser implements Parser {
         }
         
         result = decoder.decode(dataBuffer, charBuffer, isEof);
+        readBytes -= dataBuffer.remaining(); // these are unused bytes that have not been decoded
         if (result == CoderResult.UNDERFLOW) {
             // try to load additional data
             dataBuffer.compact();
@@ -220,7 +237,10 @@ public class MultiLevelParser implements Parser {
                 isEof = true;
             }
             dataBuffer.flip();
+            readBytes += dataBuffer.remaining(); // more bytes have been read
             decoder.decode(dataBuffer, charBuffer, isEof);
+            readBytes -= dataBuffer.remaining(); // but some have not been decoded
+            
         } else if (result.isError()) {
             throw new IOException(result.toString()+" when converting from "+decoder.charset());
         }
@@ -231,15 +251,30 @@ public class MultiLevelParser implements Parser {
             }
         }
         charBuffer.flip();
+        readChars = Math.max(readChars + charBuffer.remaining(), 0);
         readCharsTotal += charBuffer.remaining();
+        this.charBufferByteOffset += _readBytesAddNextTime;
+        this.charBufferCharOffset += _readCharsAddNextTime;
+        _readBytesAddNextTime = readBytes;
+        _readCharsAddNextTime = readChars;
+        
         return charBuffer.remaining();
 	}
 	
 	
+	static class Char2BytePosition {
+		public long charBufferBase;
+		public long byteBufferBase;
+		public long charOffset;
+	}
+	
 
 	public Object getPosition() {
-		// TODO Auto-generated method stub
-		return null;
+		Char2BytePosition pos = new Char2BytePosition();
+		pos.charBufferBase = charBufferCharOffset;
+		pos.byteBufferBase = charBufferByteOffset;
+		pos.charOffset = charBuffer.position();
+		return pos;
 	}
 
 	public void init() throws ComponentNotReadyException {
@@ -263,9 +298,49 @@ public class MultiLevelParser implements Parser {
 	}
 
 	public void movePosition(Object position) throws IOException {
-		// TODO Auto-generated method stub
+		if (position == null || ! (position instanceof Char2BytePosition)) {
+			throw new IllegalArgumentException("Illegal position specifier");
+		}
+	
+		Char2BytePosition pos = (Char2BytePosition) position;
+		dataBuffer.clear();
+		charBuffer.clear();
+		discardBytes(pos.byteBufferBase);
+		
+		int readChars = readChars();
+		if (readChars < pos.charOffset) {
+			throw new IOException("There are not enough characters!");
+		}
+		charBuffer.position((int)pos.charOffset);
+	
 	}
 
+	
+	/**
+	 * Discard bytes for incremental reading.
+	 * 
+	 * @param bytes
+	 * @throws IOException 
+	 */
+	private void discardBytes(long bytes) throws IOException {
+		if (reader instanceof FileChannel) {
+			((FileChannel)reader).position(bytes);
+			return;
+		}
+		while (bytes > 0) {
+			dataBuffer.clear();
+			if (bytes < Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) dataBuffer.limit((int) bytes);
+			try {
+				reader.read(dataBuffer);
+			} catch (IOException e) {
+				break;
+			}
+			bytes =- Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
+		}
+		dataBuffer.clear();
+		dataBuffer.flip();
+	}
+	
 	public void reset() throws ComponentNotReadyException {
 		if (releaseDataSource) {
 			releaseDataSource();
@@ -363,9 +438,8 @@ public class MultiLevelParser implements Parser {
 
 	public int skip(int nRec) throws JetelException {
 		int skipped;
-		DataRecord rec = new DataRecord(null);
 		for (skipped = 0; skipped < nRec; skipped++) {
-			if (getNext(rec) == null) {	// end of file reached
+			if (getNext() == null) {	// end of file reached
 				break;
 			}
 		}
