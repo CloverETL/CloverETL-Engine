@@ -119,5 +119,11 @@ public class HDTNumberSelector implements MultiLevelSelector {
 		return chosen;
 	}
 
+	public boolean recoverToNextRecord(CharBuffer data)
+			throws BufferUnderflowException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 
 }
