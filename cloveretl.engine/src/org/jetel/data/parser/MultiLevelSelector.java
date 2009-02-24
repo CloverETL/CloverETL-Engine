@@ -23,6 +23,7 @@ import java.nio.BufferUnderflowException;
 import java.nio.CharBuffer;
 import java.util.Properties;
 
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -114,6 +115,6 @@ public interface MultiLevelSelector {
 	 * 
 	 * @return
 	 */
-	boolean recoverToNextRecord(CharBuffer data) throws BufferUnderflowException;
+	void recoverToNextRecord(CharBuffer data) throws BufferUnderflowException, BadDataFormatException;
 	
 }

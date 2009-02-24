@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -25,6 +28,7 @@ public class PrefixMultiLevelSelector implements MultiLevelSelector {
 	int nextOffset;
 	TreeMap<Integer, HashMap<String, Integer>> keys = new TreeMap<Integer, HashMap<String, Integer>>();
 	int nextRecordMetadataIndex = -1;
+	static Log logger = LogFactory.getLog(PrefixMultiLevelSelector.class);
 	
 	public void choose(CharBuffer data) throws BufferUnderflowException {
 		
@@ -142,30 +146,26 @@ public class PrefixMultiLevelSelector implements MultiLevelSelector {
 	 * Recovery is only possible if all metadata are delimited and have identical default record delimiter
 	 * Then we can easily find it and recover at that place 
 	 */
-	public boolean recoverToNextRecord(CharBuffer data) throws BufferUnderflowException {
+	public void recoverToNextRecord(CharBuffer data) throws BufferUnderflowException, BadDataFormatException {
 		
 		// check whether recovery is possible
 		String recordDelimiter = null;
 		for(DataRecordMetadata metadata : this.metadataPool) {
 			if (DataRecordMetadata.DELIMITED_RECORD != metadata.getRecType()) {
-				System.out.println("PMLS: Found non-delimited record");
-				return false;
+				throw new BadDataFormatException("Cannot safely recover - metadata contain non-delimited type");
 			}
 			if (metadata.getRecordDelimiter() == null) {
-				System.out.println("PMLS: No default record delimited");
-				return false; // this metadata has no record delimiter
+				throw new BadDataFormatException("Metadata contain no default record delimiter");
 			}
 			if (recordDelimiter == null) {
 				recordDelimiter = metadata.getRecordDelimiter();
 			} else if (! recordDelimiter.equals(metadata.getRecordDelimiter())) {
-				System.out.println("PMLS: Distinct delimiter");
-				return false; // two distinct record delimiters ... don't know which one to choose - this might change in future
+				throw new BadDataFormatException("Ambiguous records delimiters found");
 			}
 		}
 		if (recordDelimiter == null) {
 			// somehow didn't find any record delimiter
-			
-			return false;
+			throw new BadDataFormatException("Metadata contain no default record delimiter");
 		}
 		
 		// lets find next recordDelimiter
@@ -183,13 +183,10 @@ public class PrefixMultiLevelSelector implements MultiLevelSelector {
 				i = 0;
 			}
 			if (i == what.length) {
-				found = true;
+				return;
 			}
 		}
-		
-		// we ran to end of input
-		return found;
-		
+
 	}
 
 }
