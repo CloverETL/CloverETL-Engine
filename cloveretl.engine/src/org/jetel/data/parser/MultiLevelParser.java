@@ -44,6 +44,7 @@ public class MultiLevelParser implements Parser {
 	private ReadableByteChannel reader;
 	private CharsetDecoder decoder;
 	private boolean isEof = false;
+	private long readCharsTotal = 0;
 	
 	private ByteBuffer dataBuffer;
 	private CharBuffer charBuffer;
@@ -128,6 +129,31 @@ public class MultiLevelParser implements Parser {
 			
 			if (lastRecordMetadataIndex < 0) {
 				// selector claims that it is unable to determine the record type
+				PolicyType policy = getPolicyType();
+				if (policy.equals(PolicyType.STRICT)) {
+					throw new RuntimeException("MultiLevelParser: Unable to parse input at character #" + readCharsTotal);
+				} else {
+					// lets try to recover
+					successfulChoice = false; // abuse
+					boolean recovered = false;
+					do {
+						try {
+							recovered = selector.recoverToNextRecord(charBuffer);
+							if (! recovered) {
+								throw new RuntimeException("MultiLevelParser: Unable to recover from bad input at charackter #" + readCharsTotal);
+							}
+							successfulChoice = true;
+						} catch (BufferUnderflowException e1) {
+							charBuffer.position(startPosition);
+							readChars = readChars();
+							if (readChars <= 0) {
+								return null;
+							}
+							startPosition = charBuffer.position();
+						}
+
+					} while (!successfulChoice);
+				}
 				throw new BadDataFormatException("Unable to determine data record type");
 			}
 
@@ -205,6 +231,7 @@ public class MultiLevelParser implements Parser {
             }
         }
         charBuffer.flip();
+        readCharsTotal += charBuffer.remaining();
         return charBuffer.remaining();
 	}
 	
@@ -293,7 +320,6 @@ public class MultiLevelParser implements Parser {
 				this.parserPool[i] = new DataParser(this.charset != null ? this.charset : Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 				this.parserPool[i].init(metadata);
 				this.parserPool[i].setDataSource(this.charBuffer);
-
 			} else {
 				// we cannot work with this kind of metadata
 				throw new ComponentNotReadyException("Metadata type '" + metadata.getRecType() + "' is not supported.");

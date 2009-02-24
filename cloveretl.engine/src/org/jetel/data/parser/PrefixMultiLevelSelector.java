@@ -138,4 +138,58 @@ public class PrefixMultiLevelSelector implements MultiLevelSelector {
 		return nextRecordMetadataIndex;
 	}
 
+	/**
+	 * Recovery is only possible if all metadata are delimited and have identical default record delimiter
+	 * Then we can easily find it and recover at that place 
+	 */
+	public boolean recoverToNextRecord(CharBuffer data) throws BufferUnderflowException {
+		
+		// check whether recovery is possible
+		String recordDelimiter = null;
+		for(DataRecordMetadata metadata : this.metadataPool) {
+			if (DataRecordMetadata.DELIMITED_RECORD != metadata.getRecType()) {
+				System.out.println("PMLS: Found non-delimited record");
+				return false;
+			}
+			if (metadata.getRecordDelimiter() == null) {
+				System.out.println("PMLS: No default record delimited");
+				return false; // this metadata has no record delimiter
+			}
+			if (recordDelimiter == null) {
+				recordDelimiter = metadata.getRecordDelimiter();
+			} else if (! recordDelimiter.equals(metadata.getRecordDelimiter())) {
+				System.out.println("PMLS: Distinct delimiter");
+				return false; // two distinct record delimiters ... don't know which one to choose - this might change in future
+			}
+		}
+		if (recordDelimiter == null) {
+			// somehow didn't find any record delimiter
+			
+			return false;
+		}
+		
+		// lets find next recordDelimiter
+		int i = 0;
+		boolean found = false;
+		char c;
+		char[] what = new char[recordDelimiter.length()];
+		recordDelimiter.getChars(0, recordDelimiter.length(), what, 0);
+		
+		while(! found) {
+			c = data.get();
+			if (c == what[i]) {
+				i++;
+			} else {
+				i = 0;
+			}
+			if (i == what.length) {
+				found = true;
+			}
+		}
+		
+		// we ran to end of input
+		return found;
+		
+	}
+
 }
