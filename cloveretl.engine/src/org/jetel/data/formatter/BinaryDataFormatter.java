@@ -75,7 +75,7 @@ public class BinaryDataFormatter implements Formatter {
 	 * temporary buffer
 	 */
 	CharBuffer charBuffer;
-	
+	private boolean useDirectBuffers = true;
 	
 	
 	public BinaryDataFormatter() {
@@ -133,7 +133,7 @@ public class BinaryDataFormatter implements Formatter {
 
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		this.metaData = _metadata;
-		buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		buffer = useDirectBuffers ? ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) : ByteBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
  	}
 
 	public void init(DataRecordMetadata _metadata, String charsetName) throws ComponentNotReadyException {
@@ -257,4 +257,14 @@ public class BinaryDataFormatter implements Formatter {
 		return 0;
 	}
 
+	public boolean isUseDirectBuffers() {
+		return useDirectBuffers;
+	}
+
+	public void setUseDirectBuffers(boolean useDirectBuffers) {
+		this.useDirectBuffers = useDirectBuffers;
+	}
+
+	
+	
 }

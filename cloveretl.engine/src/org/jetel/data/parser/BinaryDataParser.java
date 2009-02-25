@@ -89,6 +89,8 @@ public class BinaryDataParser implements Parser {
 	 */
 	File deleteOnClose;
 	
+	boolean useDirectBuffers = true;
+	
 	private final static int LEN_SIZE_SPECIFIER = 4;
 
 	public BinaryDataParser() {
@@ -245,8 +247,7 @@ public class BinaryDataParser implements Parser {
 		}
 		this.metaData = _metadata;
 		int buffSize = bufferLimit > 0 ? Math.min(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE, bufferLimit) : Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
-
-		buffer = ByteBuffer.allocateDirect(buffSize);
+		buffer = useDirectBuffers ? ByteBuffer.allocateDirect(buffSize) : ByteBuffer.allocate(buffSize);
 //		buffer = ByteBuffer.allocate(buffSize); // for memory consumption testing
 	}
 
@@ -317,7 +318,7 @@ public class BinaryDataParser implements Parser {
 		if (stringCharset != null && (! Defaults.Record.USE_FIELDS_NULL_INDICATORS || ! getMetadata().isNullable())) {
 			this.stringCharset = stringCharset;
 			stringDecoder = Charset.forName(stringCharset).newDecoder();
-			charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+			charBuffer = CharBuffer.allocate(Defaults.DataParser.FIELD_BUFFER_LENGTH);
 		} else {
 			this.stringCharset = null;
 			stringDecoder = null;
@@ -335,6 +336,14 @@ public class BinaryDataParser implements Parser {
 
 	public void setDeleteOnClose(File deleteOnClose) {
 		this.deleteOnClose = deleteOnClose;
+	}
+
+	public boolean isUseDirectBuffers() {
+		return useDirectBuffers;
+	}
+
+	public void setUseDirectBuffers(boolean useDirectBuffers) {
+		this.useDirectBuffers = useDirectBuffers;
 	}
 
 	
