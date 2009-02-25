@@ -5,6 +5,7 @@ import java.nio.CharBuffer;
 import java.util.Properties;
 
 import org.jetel.data.parser.MultiLevelSelector;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -119,11 +120,12 @@ public class HDTNumberSelector implements MultiLevelSelector {
 		return chosen;
 	}
 
-	public boolean recoverToNextRecord(CharBuffer data)
-			throws BufferUnderflowException {
+	public void recoverToNextRecord(CharBuffer data)
+			throws BufferUnderflowException, BadDataFormatException {
 		// TODO Auto-generated method stub
-		return false;
+		
 	}
+
 
 
 }
