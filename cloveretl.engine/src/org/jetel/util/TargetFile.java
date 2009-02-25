@@ -279,7 +279,7 @@ public class TargetFile {
     	
         //write footer to the previous destination if it is not first call of this method
         if(byteChannel != null || writeIn != null) {
-        	formatter.writeFooter();
+//        	formatter.writeFooter();	// issue 1503
         	formatter.finish();
         }
         setOutput();
