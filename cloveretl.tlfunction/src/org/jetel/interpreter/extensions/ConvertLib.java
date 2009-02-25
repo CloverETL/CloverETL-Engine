@@ -723,7 +723,8 @@ public class ConvertLib extends TLFunctionLibrary {
                         "bits2str - can't convert \"" + params[0] + "\" to " + TLValueType.STRING.getName());
         	}
         	ByteArray bits=((TLByteArrayValue)params[0]).getByteAraray();
-        	value.setValue(bits.decodeBitString('1', '0', 0, bits.length()<<3));
+        	int length = bits.length();
+        	value.setValue(bits.decodeBitString('1', '0', 0, length == 0 ? 0 : (bits.length()<<3)-1));
 			return value;
 		}
 
