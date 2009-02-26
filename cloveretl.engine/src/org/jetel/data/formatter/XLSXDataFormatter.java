@@ -1,6 +1,6 @@
 /*
  * jETeL/Clover.ETL - Java based ETL application framework.
- * Copyright (C) 2002-2008  David Pavlis <david.pavlis@javlin.cz>
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -54,7 +54,7 @@ import org.openxml4j.opc.Package;
 /**
  * Represents a XLSX data formatter based on the Apache POI library.
  *
- * @author Martin Janik <martin.janik@javlin.cz>
+ * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
  *
  * @version 30th January 2009
  * @since 30th January 2009
@@ -64,7 +64,7 @@ public final class XLSXDataFormatter extends XLSFormatter {
 	/**
 	 * A structure used to save states when multiple sheet writing is enabled.
 	 *
-	 * @author Martin Janik <martin.janik@javlin.cz>
+	 * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
 	 *
 	 * @version 30th January 2009
 	 * @since 30th January 2009

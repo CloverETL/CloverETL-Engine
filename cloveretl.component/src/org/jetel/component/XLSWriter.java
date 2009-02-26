@@ -1,6 +1,6 @@
 /*
  * jETeL/Clover.ETL - Java based ETL application framework.
- * Copyright (C) 2002-2008  David Pavlis <david.pavlis@javlin.cz>
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -107,8 +107,8 @@ import org.w3c.dom.Element;
  * <pre>&lt;Node append="true" fileURL="out.xls" firstDataRow="3" id="XLS_WRITER0" namesRow="1" 
  * sheetName="$Field1;$Field2" type="XLS_WRITER"/&gt;
  *
- * @author avackova <agata.vackova@javlinconsulting.cz>
- * @author Martin Janik <martin.janik@javlin.cz>
+ * @author Agata Vackova, Javlin a.s. <agata.vackova@javlin.eu>
+ * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
  *
  * @version 31st January 2009
  * @since 10th October 2006

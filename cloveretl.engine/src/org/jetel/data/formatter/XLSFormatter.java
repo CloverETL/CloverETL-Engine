@@ -1,6 +1,6 @@
 /*
  * jETeL/Clover.ETL - Java based ETL application framework.
- * Copyright (C) 2002-2008  David Pavlis <david.pavlis@javlin.cz>
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -42,8 +42,8 @@ import org.jetel.metadata.DataRecordMetadata;
  * <li>write(DataRecord)</li>
  * <li>close()</li></ul>
  * 
- * @author avackova (agata.vackova@javlinconsulting.cz) ; 
- * @author Martin Janik <martin.janik@javlin.cz>
+ * @author Agata Vackova, Javlin a.s. <agata.vackova@javlin.eu>
+ * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
  *
  * @version 31st January 2009
  * @since 15th January 2007
@@ -53,7 +53,7 @@ public abstract class XLSFormatter implements Formatter {
     /**
      * The type of a XLS(X) that should be used.
      *
-     * @author Martin Janik <martin.janik@javlin.cz>
+     * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
      *
      * @version 31st January 2009
      * @since 31st January 2009

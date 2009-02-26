@@ -1,6 +1,6 @@
 /*
  * jETeL/Clover.ETL - Java based ETL application framework.
- * Copyright (C) 2002-2008  David Pavlis <david.pavlis@javlin.cz>
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,13 +19,10 @@
 package org.jetel.data.parser;
 
 import java.io.InputStream;
-
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -54,8 +51,8 @@ import org.jetel.util.string.StringUtils;
 /**
  * Parsing data from a XLS file using JExcelAPI.
  * 
- * @author avackova <agata.vackova@javlinconsulting.cz> 
- * @author Martin Janik <martin.janik@javlin.cz>
+ * @author Agata Vackova, Javlin a.s. <agata.vackova@javlin.eu>
+ * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
  *
  * @version 31st January 2009
  * @since 16th January 2007
