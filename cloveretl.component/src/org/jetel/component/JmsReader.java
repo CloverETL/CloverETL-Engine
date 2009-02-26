@@ -20,6 +20,7 @@
 package org.jetel.component;
 
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 
 import javax.jms.JMSException;
@@ -41,6 +42,8 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.AutoFilling;
 import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -125,6 +128,8 @@ public class JmsReader extends Node {
 	private boolean exhausted = false;
 	private Message lastMsg = null;
 	
+    private AutoFilling autoFilling = new AutoFilling();
+	
 	/** Sole ctor.
 	 * @param id Component ID
 	 * @param conId JMS connection ID
@@ -189,6 +194,12 @@ public class JmsReader extends Node {
 					: createProcessor(psorClass);
 		}		
 		psor.init(getOutputPort(0).getMetadata(), psorProperties);
+		
+		List<DataRecordMetadata> lDataRecordMetadata;
+    	if ((lDataRecordMetadata = getOutMetadata()).size() > 0) {
+    		autoFilling.addAutoFillingFields(lDataRecordMetadata.get(0));
+    	}
+		autoFilling.setFilename(conId + ": " + (psorClass != null ? psorClass : psorCode));
 	}
 
 	/*
@@ -202,6 +213,7 @@ public class JmsReader extends Node {
     	msgCounter = 0;
     	exhausted = false;
     	lastMsg = null;
+		autoFilling.reset();
     }
 
     /*
@@ -288,7 +300,7 @@ public class JmsReader extends Node {
 		
 	@Override
 	public Result execute() throws Exception {
-		(new Interruptor()).start();	// run thread taking care about interrupting blocking msg receive calls		
+		(new Interruptor()).start();	// run thread taking care about interrupting blocking msg receive calls
 		try {
 			for (Message msg = getMsg(); msg != null; msg = getMsg()) {
 				DataRecord rec = psor.extractRecord(msg);
@@ -296,6 +308,7 @@ public class JmsReader extends Node {
 					logger.debug("Unable to extract data from JMS message; message skipped");
 					continue;
 				}
+		        autoFilling.setAutoFillingFields(rec);
 				writeRecordBroadcast(rec);
 			}
 		} catch (Exception e) {

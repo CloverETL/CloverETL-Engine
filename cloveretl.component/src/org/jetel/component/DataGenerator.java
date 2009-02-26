@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.AutoFilling;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
@@ -130,6 +131,8 @@ public abstract class DataGenerator extends Node {
 	
 	protected final static int WRITE_TO_PORT = 0;
 
+	protected AutoFilling autoFilling = new AutoFilling();
+	
 	/**
 	 * @param id
 	 */

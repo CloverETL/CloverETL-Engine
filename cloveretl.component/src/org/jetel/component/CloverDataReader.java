@@ -33,6 +33,8 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.AutoFilling;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -109,6 +111,8 @@ public class CloverDataReader extends Node {
 	private int skipRows;
 	private int numRecords = Integer.MAX_VALUE;
 
+    private AutoFilling autoFilling = new AutoFilling();
+
 	/**
 	 * @param id
 	 * @param fileURL
@@ -139,6 +143,7 @@ public class CloverDataReader extends Node {
 	        if(numRecords == recordCount) {
 				break;
 	        }
+	        autoFilling.setAutoFillingFields(record);
 		    writeRecordBroadcast(record);
 			SynchronizeUtils.cloverYield();
 			System.err.println(recordCount);
@@ -241,13 +246,19 @@ public class CloverDataReader extends Node {
 				parser.skip(skipRows);
 			}catch (JetelException ex) {}
 		}
-		parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
+		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
+		parser.init(metadata);
 		parser.setProjectURL(getGraph().getProjectURL());
 		if (indexFileURL != null) {
 			parser.setDataSource(new String[]{fileURL,indexFileURL});
 		}else{
 			parser.setDataSource(fileURL);
 		}
+		
+    	if (metadata != null) {
+    		autoFilling.addAutoFillingFields(metadata);
+    	}
+    	autoFilling.setFilename(fileURL);
 	}
 	
 	@Override
@@ -260,6 +271,7 @@ public class CloverDataReader extends Node {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		parser.reset();
+		autoFilling.reset();
 	}
 	
 	@Deprecated

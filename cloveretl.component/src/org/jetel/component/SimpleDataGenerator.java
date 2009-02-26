@@ -21,6 +21,8 @@
 
 package org.jetel.component;
 
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -154,12 +156,16 @@ public class SimpleDataGenerator extends DataGenerator {
         } catch (Exception e){
 			throw new ComponentNotReadyException(this, "Can't initialize record generator", e);
         }
+        
+   		autoFilling.addAutoFillingFields(metadata);
+   		autoFilling.setFilename(getId());
 	}
 	
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		recordGenerator.reset();
+		autoFilling.reset();
 	}
 
 	/* (non-Javadoc)
@@ -170,7 +176,8 @@ public class SimpleDataGenerator extends DataGenerator {
 		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
 		record.init();
 		for (int i=0;i<recordsNumber && runIt;i++){
-			 record = recordGenerator.getNext();
+			record = recordGenerator.getNext();
+			autoFilling.setAutoFillingFields(record);
 			writeRecordBroadcast(record);
 		}
 		broadcastEOF();
