@@ -1,6 +1,6 @@
 /*
  * jETeL/Clover.ETL - Java based ETL application framework.
- * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.cz>
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,8 +33,8 @@ import org.jetel.util.string.StringUtils;
  * A class that represents meta data describing one particular data field.<br>
  * Handles encoding of characters.
  *
- * @author David Pavlis <david.pavlis@javlin.eu>
- * @author Martin Janik <martin.janik@javlin.eu>
+ * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
+ * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
  * @version 19th February 2009
  * @since 26th March 2002

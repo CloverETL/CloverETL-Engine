@@ -22,18 +22,20 @@ import java.util.Properties;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * Represents an interface of a rollup transform which processes groups of data records. Each group of data records
  * shares an output data record, referred to as a group "accumulator". This group "accumulator" is initialized when
- * a first data record of the group is encountered and updated for each data record in the group. When a last data
- * record of the group is encountered, the processing of the group is finished and the group "accumulator" can be
- * sent to the output. Intermediate states of the group "accumulator" can be publishes as well.
+ * the first data record of the group is encountered and updated for each data record in the group (including the first
+ * and the last data record). When the last data record of the group is encountered, the processing of the group is
+ * finished and the group "accumulator" can be sent to the output. Intermediate states of the group "accumulator" can
+ * be publishes as well.
  *
- * @author Martin Zatopek, Javlin a.s. <martin.zatopek@javlin.eu>
- * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
+ * @author Martin Zatopek, Javlin a.s. &lt;martin.zatopek@javlin.eu&gt;
+ * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
  * @version 24th February 2009
  * @since 24th February 2009
@@ -54,7 +56,7 @@ public interface RecordRollup {
             throws ComponentNotReadyException;
 
     /**
-     * This method is called for a first data record in a group. Any internal group initialization code and/or
+     * This method is called for the first data record in a group. Any internal group initialization code and/or
      * initialization of the output data record should be placed here.
      *
      * @param inputRecord the first input data record in the group
@@ -65,7 +67,8 @@ public interface RecordRollup {
     public void initGroup(DataRecord inputRecord, DataRecord outputRecord) throws TransformException;
 
     /**
-     * This method is called for each data record in a group in order to update the group "accumulator".
+     * This method is called for each data record (including the first one as well as the last one) in a group
+     * in order to update the group "accumulator".
      *
      * @param inputRecord the current input data record
      * @param outputRecord the output data record that serves as a group "accumulator"
@@ -78,7 +81,7 @@ public interface RecordRollup {
     public boolean updateGroup(DataRecord inputRecord, DataRecord outputRecord) throws TransformException;
 
     /**
-     * This method is called for a last data record in a group in order to finish the group processing.
+     * This method is called for the last data record in a group in order to finish the group processing.
      *
      * @param inputRecord the last input data record
      * @param outputRecord the output data record that serves as a group "accumulator"

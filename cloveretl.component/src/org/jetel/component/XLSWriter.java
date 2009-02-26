@@ -107,8 +107,8 @@ import org.w3c.dom.Element;
  * <pre>&lt;Node append="true" fileURL="out.xls" firstDataRow="3" id="XLS_WRITER0" namesRow="1" 
  * sheetName="$Field1;$Field2" type="XLS_WRITER"/&gt;
  *
- * @author Agata Vackova, Javlin a.s. <agata.vackova@javlin.eu>
- * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
+ * @author Agata Vackova, Javlin a.s. &lt;agata.vackova@javlin.eu&gt;
+ * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
  * @version 31st January 2009
  * @since 10th October 2006
