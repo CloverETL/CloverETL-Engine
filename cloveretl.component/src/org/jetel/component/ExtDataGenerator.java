@@ -99,9 +99,11 @@ public class ExtDataGenerator extends DataGenerator {
 
 			if (transformResult == RecordTransform.ALL) {
 				for (int outPort = 0; outPort < numOutputPorts; outPort++) {
+					autoFilling.setAutoFillingFields(outRecord[outPort]);
 					writeRecord(outPort, outRecord[outPort]);
 				}
 			} else if (transformResult >= 0) {
+				autoFilling.setAutoFillingFields(outRecord[transformResult]);
 				writeRecord(transformResult, outRecord[transformResult]);
 			} else if (transformResult < 0) {
 				throw new TransformException("Transformation finished with code: " + transformResult + 
@@ -153,11 +155,18 @@ public class ExtDataGenerator extends DataGenerator {
 		generation = RecordTransformFactory.createGenerator(generate, generateClass, 
 				generateURL, this, outMetadata, generateParameters, 
 				this.getClass().getClassLoader());
+
+		// autofilling
+		if (outMetadata.length > 0) {
+	   		autoFilling.addAutoFillingFields(outMetadata[0]);
+		}
+   		autoFilling.setFilename(getId());
 	}
 	
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
+		autoFilling.reset();
 	}
 
 	/* (non-Javadoc)

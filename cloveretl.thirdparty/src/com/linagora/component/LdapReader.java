@@ -25,6 +25,8 @@
 package com.linagora.component;
 
 
+import java.util.List;
+
 import javax.naming.directory.SearchControls;
 
 import org.apache.commons.logging.Log;
@@ -37,6 +39,8 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.AutoFilling;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -135,6 +139,10 @@ public class LdapReader extends Node {
 	 */
 	private static Log logger = LogFactory.getLog(LdapReader.class);
 
+	/**
+	 * Autofilling
+	 */
+    private AutoFilling autoFilling = new AutoFilling();
 
 	/**
 	 * Default constructor
@@ -195,6 +203,11 @@ public class LdapReader extends Node {
 		/*
 		 * Well... some other things to do ?
 		 */
+		List<DataRecordMetadata> lDataRecordMetadata;
+    	if ((lDataRecordMetadata = getOutMetadata()).size() > 0) {
+    		autoFilling.addAutoFillingFields(lDataRecordMetadata.get(0));
+    	}
+		autoFilling.setFilename(ldapUrl + ": " + base + ": " + filter);
 	}
 	
 	@Override
@@ -205,6 +218,9 @@ public class LdapReader extends Node {
 		try {
 			// till it reaches end of data or it is stopped from outside
 			while ((record = parser.getNext(record)) != null && runIt) {
+				//set autofilling fields
+		        autoFilling.setAutoFillingFields(record);
+		        
 				//broadcast the record to all connected Edges
 				this.writeRecordBroadcast(record);
 			}
@@ -305,6 +321,7 @@ public class LdapReader extends Node {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		parser.reset();
+		autoFilling.reset();
 	}
 
 	/*
