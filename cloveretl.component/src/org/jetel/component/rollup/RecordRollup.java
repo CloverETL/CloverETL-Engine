@@ -1,6 +1,6 @@
 /*
  * jETeL/Clover.ETL - Java based ETL application framework.
- * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.cz>
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,8 @@ import org.jetel.metadata.DataRecordMetadata;
  * record of the group is encountered, the processing of the group is finished and the group "accumulator" can be
  * sent to the output. Intermediate states of the group "accumulator" can be publishes as well.
  *
- * @author Martin Janik <martin.janik@javlin.eu>
+ * @author Martin Zatopek, Javlin a.s. <martin.zatopek@javlin.eu>
+ * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
  *
  * @version 24th February 2009
  * @since 24th February 2009
