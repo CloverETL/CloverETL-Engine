@@ -109,7 +109,7 @@ public class MetadataXsd extends MXAbstract {
 			}
 			
 			dataFieldMetadata.setNullable(minOccurs != null && minOccurs.equals("0") ? true : false);
-			setField(dataFieldMetadata, findFieldTypeNode(node, type));
+			setField(dataFieldMetadata, findFieldTypeNode(node, type), type);
 			metadata.addField(dataFieldMetadata);
 		}
 	}
@@ -140,12 +140,11 @@ public class MetadataXsd extends MXAbstract {
 	 * @param dataFieldMetadata
 	 * @param node
 	 */
-	private void setField(DataFieldMetadata dataFieldMetadata, Node node) {
+	private void setField(DataFieldMetadata dataFieldMetadata, Node node, String sType) {
 		Node restParent;
-		if ((restParent = getNode(node, XSD_RESTRICTION)) == null) return;
-		String sValue;
-		if ((sValue = getAttributeValue(restParent, BASE)) == null) return;
-		char type = namesPrimitive.get(sValue);
+		restParent = getNode(node, XSD_RESTRICTION);
+		String sValue = getAttributeValue(restParent, BASE);
+		char type = namesPrimitive.get(sValue != null ? sValue : sType);
 		
 		Node rest;
 		switch (type) {
@@ -189,6 +188,7 @@ public class MetadataXsd extends MXAbstract {
 	 * @return
 	 */
 	private String getAttributeValue(Node node, String attributeName) {
+		if (node == null) return null;
 		NamedNodeMap namedNodeMap = node.getAttributes();
 		Node attr;
 		if ((attr = namedNodeMap.getNamedItem(attributeName)) == null) return null;
