@@ -1,6 +1,6 @@
 /*
  * jETeL/Clover.ETL - Java based ETL application framework.
- * Copyright (C) 2002-2008  David Pavlis <david.pavlis@javlin.cz>
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,10 +26,10 @@ import org.jetel.data.formatter.XLSXDataFormatter;
 
 /**
  * Provides support for getting the delimited data formatter.
- * 
- * @author Jan Ausperger <jan.ausperger@javlinconsulting.cz>
- * @author Martin Janik <martin.janik@javlin.cz>
- * 
+ *
+ * @author Jan Ausperger, Javlin a.s. <jan.ausperger@javlin.eu>
+ * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
+ *
  * @version 31st January 2009
  */
 public class XLSFormatterProvider implements FormatterProvider {
