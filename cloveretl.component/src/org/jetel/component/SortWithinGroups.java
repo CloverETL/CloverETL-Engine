@@ -1,6 +1,6 @@
 /*
  * jETeL/Clover.ETL - Java based ETL application framework.
- * Copyright (C) 2002-2008  David Pavlis <david.pavlis@javlin.cz>
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,6 @@
 package org.jetel.component;
 
 import java.io.File;
-
 import java.nio.ByteBuffer;
 
 import org.jetel.data.DataRecord;
@@ -43,7 +42,6 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
-
 import org.w3c.dom.Element;
 
 /**
@@ -146,7 +144,7 @@ import org.w3c.dom.Element;
  *       groupKey="id" sortKey="name(a);address(a)"/&gt;
  * </pre>
  *
- * @author Martin Janik <martin.janik@javlin.cz>
+ * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
  *
  * @version 12th November 2008
  * @since 26th September 2008
