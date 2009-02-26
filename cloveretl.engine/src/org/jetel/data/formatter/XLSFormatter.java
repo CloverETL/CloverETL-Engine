@@ -42,8 +42,8 @@ import org.jetel.metadata.DataRecordMetadata;
  * <li>write(DataRecord)</li>
  * <li>close()</li></ul>
  * 
- * @author Agata Vackova, Javlin a.s. <agata.vackova@javlin.eu>
- * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
+ * @author Agata Vackova, Javlin a.s. &lt;agata.vackova@javlin.eu&gt;
+ * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
  * @version 31st January 2009
  * @since 15th January 2007
@@ -53,7 +53,7 @@ public abstract class XLSFormatter implements Formatter {
     /**
      * The type of a XLS(X) that should be used.
      *
-     * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
+     * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
      *
      * @version 31st January 2009
      * @since 31st January 2009

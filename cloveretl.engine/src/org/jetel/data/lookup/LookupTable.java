@@ -1,6 +1,6 @@
 /*
  * jETeL/Clover.ETL - Java based ETL application framework.
- * Copyright (C) 2002-2008  David Pavlis <david.pavlis@javlin.cz>
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,9 +37,9 @@ import org.jetel.metadata.DataRecordMetadata;
  *   <li>call the {@link IGraphElement#free()} method to free the resources used by the lookup table</li>
  * </ol>
  *
- * @author David Pavlis <david.pavlis@javlin.cz>
- * @author Agata Vackova <agata.vackova@javlin.cz>
- * @author Martin Janik <martin.janik@javlin.cz>
+ * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
+ * @author Agata Vackova, Javlin a.s. &lt;agata.vackova@javlin.eu&gt;
+ * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
  * @version 5th February 2009
  * @see Lookup

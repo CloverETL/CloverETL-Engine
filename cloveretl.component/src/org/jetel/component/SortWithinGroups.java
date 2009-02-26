@@ -144,7 +144,7 @@ import org.w3c.dom.Element;
  *       groupKey="id" sortKey="name(a);address(a)"/&gt;
  * </pre>
  *
- * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
+ * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
  * @version 12th November 2008
  * @since 26th September 2008

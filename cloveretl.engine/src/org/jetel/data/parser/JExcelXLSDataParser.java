@@ -51,8 +51,8 @@ import org.jetel.util.string.StringUtils;
 /**
  * Parsing data from a XLS file using JExcelAPI.
  * 
- * @author Agata Vackova, Javlin a.s. <agata.vackova@javlin.eu>
- * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
+ * @author Agata Vackova, Javlin a.s. &lt;agata.vackova@javlin.eu&gt;
+ * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
  * @version 31st January 2009
  * @since 16th January 2007

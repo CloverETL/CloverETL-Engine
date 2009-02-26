@@ -27,8 +27,8 @@ import org.jetel.data.formatter.XLSXDataFormatter;
 /**
  * Provides support for getting the delimited data formatter.
  *
- * @author Jan Ausperger, Javlin a.s. <jan.ausperger@javlin.eu>
- * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
+ * @author Jan Ausperger, Javlin a.s. &lt;jan.ausperger@javlin.eu&gt;
+ * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
  * @version 31st January 2009
  */

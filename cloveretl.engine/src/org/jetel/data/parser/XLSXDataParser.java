@@ -49,7 +49,7 @@ import org.openxml4j.opc.Package;
 /**
  * Represents a XLSX data parser based on the Apache POI library.
  *
- * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
+ * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
  * @version 31st January 2009
  * @since 30th January 2009

@@ -54,7 +54,7 @@ import org.openxml4j.opc.Package;
 /**
  * Represents a XLSX data formatter based on the Apache POI library.
  *
- * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
+ * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
  * @version 30th January 2009
  * @since 30th January 2009
@@ -64,7 +64,7 @@ public final class XLSXDataFormatter extends XLSFormatter {
 	/**
 	 * A structure used to save states when multiple sheet writing is enabled.
 	 *
-	 * @author Martin Janik, Javlin a.s. <martin.janik@javlin.eu>
+	 * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
 	 *
 	 * @version 30th January 2009
 	 * @since 30th January 2009
