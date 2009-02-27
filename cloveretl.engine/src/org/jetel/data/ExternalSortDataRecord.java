@@ -2,10 +2,12 @@ package org.jetel.data;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.RuleBasedCollator;
 
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.data.tape.TapeCarousel;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.SynchronizeUtils;
 
 /**
@@ -50,6 +52,8 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	private ByteBuffer recordBuffer;
 	private boolean[] sourceRecordsFlags;
 	private DataRecord[] sourceRecords;
+	private String localeStr;
+	private RuleBasedCollator collator;
 	int prevIndex;
 	
 	public ExternalSortDataRecord() {
@@ -66,15 +70,22 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	 * @param internalBufferCapacity Internal maximum capacity of a buffer
 	 * @param numberOfTapes	Number of tapes to be used
 	 * @param tmpDirs	List of names of temporary directories to be used for external sorting buffer on disk
+	 * @param localeStr	String name of locale to use for collation. If null, no collator is used
 	 */
 	public ExternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, int internalBufferCapacity,
 			int numberOfTapes, String[] tmpDirs) {
+		this(metadata, keyItems, sortOrderings, internalBufferCapacity, numberOfTapes, tmpDirs, null);
+	}
+	
+	public ExternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, int internalBufferCapacity,
+			int numberOfTapes, String[] tmpDirs, String localeStr) {
 	
 		this.sortKeysNames = keyItems;		
 		this.sortOrderings = sortOrderings;
 		this.numberOfTapes = numberOfTapes;
 		this.tmpDirs = tmpDirs;
 		this.prevIndex = -1;
+		this.localeStr = localeStr;
 		
 		inMetadata = metadata;
 		
@@ -83,6 +94,11 @@ public class ExternalSortDataRecord implements ISortDataRecord {
         } else {
             sorter = new InternalSortDataRecord(metadata, keyItems, sortOrderings, false);
         }
+		if (this.localeStr != null) {
+			sorter.setUseCollator(true);
+			sorter.setCollatorLocale(this.localeStr);
+			this.collator = (RuleBasedCollator) RuleBasedCollator.getInstance(MiscUtils.createLocale(this.localeStr));
+		}
 		
 		recordBuffer = ByteBuffer
         	.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
@@ -241,7 +257,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
         sourceRecordsFlags = new boolean[tapeCarousel.numTapes()];
 
         // initialize sort key which will be used when merging data
-        sortKey = new RecordOrderedKey(sortKeysNames, sortOrderings, inMetadata);
+        sortKey = new RecordOrderedKey(sortKeysNames, sortOrderings, inMetadata, collator);
         sortKey.init();
 
         // initial creation & initialization of source records
