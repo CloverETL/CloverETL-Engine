@@ -528,7 +528,7 @@ public class DataParser implements Parser {
     		return character;
         }
 
-        if (isEof)
+        if (isEof || reader == null)
             return -1;
 
         charBuffer.clear();
