@@ -39,6 +39,7 @@ public class DataRecordMetadataXMLReaderWriterTest extends CloverTestCase {
 	private String testFile1 = null;
 
 	protected void setUp() { 
+		initEngine();
 		DataFieldMetadata aDataFieldMetadata = null;
 
 		aDataRecordMetadataXMLReaderWriter= new DataRecordMetadataXMLReaderWriter();

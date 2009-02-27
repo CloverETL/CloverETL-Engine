@@ -78,7 +78,7 @@ public class testDBLookup{
 			if (i < 5 && arg[i] == null) {
 				System.out.println("Required argument " + ARGS[i] + " not found");
 				System.out.println("Usage: testDBLookup <plugin directory> <engine properties file> <driver properties file> <sql query> <key> <db metadata file>");
-				System.out.println("Eg: testDBLookup ../plugins postgre.cfg \"select * from employee where employee_id = ?\" 10");
+				System.out.println("Eg: testDBLookup ../plugins ../plugins/com.cloveretl.gui_x.x.x/lib/bin/defaultProperties postgre.cfg \"select * from employee where employee_id = ?\" 10");
 				System.exit(1);
 			}
 		}

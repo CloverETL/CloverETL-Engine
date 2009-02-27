@@ -35,6 +35,13 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  */
 public interface RecordDenormalize {
+
+	/** the return value of the transform() method specifying that the record will be sent to output port */
+	public static final int OK = 0;
+	/** the return value of the transform() method specifying that the record will be skipped */
+	public static final int SKIP = -1;
+	
+	
 	/**
 	 *  Initializes normalize class/function. This method is called only once at the
 	 * beginning of normalization process. Any object allocation/initialization should

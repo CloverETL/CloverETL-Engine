@@ -1,13 +1,13 @@
 <plugin
 	id="org.jetel.jdbc"
-	version="2.7.0"
+	version="0.0.0.devel"
 	provider-name="Javlin a.s.">
 
 	<runtime>
 		<library path="cloveretl.jdbc.jar"/>
    	</runtime> 
 
-	<requires engine-version="2.7.0">
+	<requires engine-version="0.0.0.devel">
 		<import plugin-id="org.jetel.connection"/>
 	</requires>
 

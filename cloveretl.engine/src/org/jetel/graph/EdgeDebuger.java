@@ -242,6 +242,7 @@ public class EdgeDebuger {
 		
 		public boolean check(ByteBuffer record) {
 			tmpRecord.deserialize(record);
+			record.rewind();
 			return check(tmpRecord);
 		}
     }

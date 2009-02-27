@@ -52,9 +52,6 @@
 	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file"/>
 
 	<target name="init">
-		<tstamp>
-			<format property="TODAY" pattern="dd/MM/yyyy HH:mm:ss" locale="en" />
-		</tstamp>
 
 		<echo message="Using directory for classes: ${dir.classes}"/>
 		<echo message="Using directory for javadoc: ${dir.doc}"/>
@@ -89,24 +86,10 @@
 		</if>
 	</target>
 
-	<!-- ask user for MAJOR and MINOR release number -->
-	<target name="revision-set">
-		<input message="Plugin ${plugin.name} - Please enter MAJOR release number:"	addproperty="major_version" />
-		<input message="Plugin ${plugin.name} - Please enter MINOR release number:"	addproperty="minor_version" />
-		<input message="Engine - Please enter REVISION release number:"	addproperty="revision_version" />
-		<property name="build.number" value="devel"/>
-	</target>
-
 	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
-	<target name="improve-java-sources" depends="revision-set">
+	<target name="improve-java-sources" depends="">
 		<copy todir="${dir.src.improved}" encoding="UTF-8">
 			<fileset dir="${dir.src}" />
-			<filterset>
-				<filter token="MAJOR_VERSION" value="${major_version}" />
-				<filter token="MINOR_VERSION" value="${minor_version}" />
-				<filter token="BUILD_NUMBER" value="build.number" />
-				<filter token="BUILD_TIME" value="${TODAY}" />
-			</filterset>
 		</copy>
 	</target>
 
@@ -156,8 +139,15 @@
 
 	</target>
 
+	<target name="plugin.xml" depends="init">
+		<copy file="plugin.xml" tofile="${dir.build}/plugin.xml" encoding="UTF-8" />
+		<replace file="${dir.build}/plugin.xml" encoding="UTF-8">
+			<replacefilter token="0.0.0.devel" value="${version.full}"/>
+		</replace>
+	</target>
+	
 	<!-- pack binary result of compile to jar file -->
-	<target name="package" depends="compile">
+	<target name="package" depends="compile,plugin.xml">
 		<!-- Create plugin directory. -->
 		<mkdir dir="${dir.dist}/plugins/${plugin.dir.name}"/>
 
@@ -165,7 +155,7 @@
 			<include name="**/*"/>
 		</jar>
 		<!-- copy plugin manifest -->
-		<copy todir="${dir.dist}/plugins/${plugin.dir.name}" file="plugin.xml"/>
+		<copy file="${dir.build}/plugin.xml" todir="${dir.dist}/plugins/${plugin.dir.name}" />
 		
 		<!-- copy all libraries from lib directory -->
 		<if><available file="${dir.lib}"/>

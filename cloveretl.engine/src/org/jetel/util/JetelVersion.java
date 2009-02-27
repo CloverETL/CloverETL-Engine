@@ -39,21 +39,31 @@ public final class JetelVersion {
     /**
      * <code>MAJOR_VERSION</code> - determines Major version of current library
      */
-    public static final String MAJOR_VERSION = "@MAJOR_VERSION@";
+    public static final String MAJOR_VERSION = "0";
     /**
-     * <code>MINOR_VERSION</code> - determines Major version of current library
+     * <code>MINOR_VERSION</code> - determines Minor version of current library
      */
-    public static final String MINOR_VERSION = "@MINOR_VERSION@";  
+    public static final String MINOR_VERSION = "0";  
+    /**
+     * <code>REVISION_VERSION</code> - determines Revision version of current library
+     */
+    public static final String REVISION_VERSION = "0";  
+    /**
+     * <code>VERSION_SUFFIX</code> - determines detail information about version (build source) of current library
+     */
+    public static final String VERSION_SUFFIX = "devel";  
     /**
      * <code>BUILD_NUMBER</code> - sequential number identifying current library version
      */
-    public static final String BUILD_NUMBER = "@BUILD_NUMBER@"; 
+    public static final String BUILD_NUMBER = "0"; 
     /**
      * <code>JAVA_REQUIRED_VERSION</code> - minimum Java version required by the library
      */
     public static final String JAVA_REQUIRED_VERSION = "1.5";
     
-    public static final String LIBRARY_BUILD_DATETIME ="@BUILD_TIME@";
+    public static final String LIBRARY_BUILD_DATETIME = "";
+    
+    public static final String LIBRARY_BUILD_YEAR = "";
     
     /**
      * @return Major version of current library - e.g. if

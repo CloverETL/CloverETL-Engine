@@ -285,7 +285,7 @@ public class SystemExecute extends Node{
 			logger.info(msg.toString());
 			process = Runtime.getRuntime().exec(cmdArray);
 		} else {
-			msg.append(executeCommand);
+			msg.append(executeCommand + "\"");
 			logger.info(msg.toString());
 			process = Runtime.getRuntime().exec(executeCommand);
 		}
@@ -305,6 +305,8 @@ public class SystemExecute extends Node{
 		SendData sendData=null;
 		SendDataToFile sendDataToFile = null;
 		SendDataToFile sendErrToFile = null;
+		SendDataToConsole sendDataToConsole = null;
+		SendDataToConsole sendErrToConsole = null;
 		if (outPort!=null){
             parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
             parser.setDataSource(process_out);
@@ -318,9 +320,17 @@ public class SystemExecute extends Node{
 			sendErrToFile = new SendDataToFile(Thread.currentThread(),outputFile, process_err);
 			sendDataToFile.start();
 			sendErrToFile.start();
+		// neither output port nor output file is defined then read output
+		// and error from process and send it to the console
+		} else {
+			sendDataToConsole = new SendDataToConsole(Thread.currentThread(),logger,process_out);
+			sendErrToConsole = new SendDataToConsole(Thread.currentThread(),logger, process_err);
+			sendDataToConsole.start();
+			sendErrToConsole.start();
 		}
-		//if output is not sent to file log process error stream
-		if (sendDataToFile==null ){
+
+		//if output is sent to output file log process error stream
+		if (sendData!=null){ 
 			BufferedReader err=new BufferedReader(new InputStreamReader(process_err));
 			String line;
 			StringBuffer errmes=new StringBuffer();
@@ -349,6 +359,10 @@ public class SystemExecute extends Node{
 				sendDataToFile.join(KILL_PROCESS_WAIT_TIME);
 				sendErrToFile.join(KILL_PROCESS_WAIT_TIME);
 			}
+			if (sendDataToConsole!=null){
+				sendDataToConsole.join(KILL_PROCESS_WAIT_TIME);
+				sendErrToConsole.join(KILL_PROCESS_WAIT_TIME);
+			}
 			
 		}catch(InterruptedException ex){
 			logger.error("InterruptedException in "+this.getId(),ex);
@@ -370,6 +384,14 @@ public class SystemExecute extends Node{
 				}
 				if (!kill(sendErrToFile,KILL_PROCESS_WAIT_TIME)){
 					throw new RuntimeException("Can't kill "+sendErrToFile.getName());
+				}
+			}
+			if (sendDataToConsole!=null) {
+				if (!kill(sendDataToConsole,KILL_PROCESS_WAIT_TIME)){
+					throw new RuntimeException("Can't kill "+sendDataToConsole.getName());
+				}
+				if (!kill(sendErrToConsole,KILL_PROCESS_WAIT_TIME)){
+					throw new RuntimeException("Can't kill "+sendErrToConsole.getName());
 				}
 			}
 		}
@@ -412,6 +434,23 @@ public class SystemExecute extends Node{
 			if (sendErrToFile.getResultCode()==Result.ERROR){
 				ok = false;
 				resultMsg = (resultMsg == null ? "" : resultMsg) + sendErrToFile.getResultMsg() + "\n" + sendErrToFile.getResultException();
+			}
+		}
+		
+		if (sendDataToConsole!=null){
+			if (!kill(sendDataToConsole,KILL_PROCESS_WAIT_TIME)){
+				throw new RuntimeException("Can't kill "+sendDataToConsole.getName());
+			}
+			if (sendDataToConsole.getResultCode()==Result.ERROR){
+				ok = false;
+				resultMsg = (resultMsg == null ? "" : resultMsg) + sendDataToConsole.getResultMsg() + "\n" + sendDataToConsole.getResultException();
+			}
+			if (!kill(sendErrToConsole,KILL_PROCESS_WAIT_TIME)){
+				throw new RuntimeException("Can't kill "+sendErrToConsole.getName());
+			}
+			if (sendErrToConsole.getResultCode()==Result.ERROR){
+				ok = false;
+				resultMsg = (resultMsg == null ? "" : resultMsg) + sendErrToConsole.getResultMsg() + "\n" + sendErrToConsole.getResultException();
 			}
 		}
 //		broadcastEOF();
@@ -845,7 +884,94 @@ public class SystemExecute extends Node{
 		}
 	}
 
-	
+	/**
+	 * This is class for reading data from input stream and writing them to console  
+	 * 
+	 * @author Mirek Haupt
+	 *
+	 */
+	private static class SendDataToConsole extends Thread {
+		
+	    BufferedInputStream process_out;
+		Log logger;
+		String resultMsg=null;
+		Result resultCode;
+		volatile boolean runIt;
+		Thread parentThread;
+		Throwable resultException;
+		
+		/**
+		 * Constructor for SendDataToConsole object
+		 * 
+		 * @param parentThread thread which creates this object
+		 * @param logger instance of Log for writing to console
+		 * @param process_out input stream, where are data read from
+		 */
+		SendDataToConsole(Thread parentThread,Log logger,
+				BufferedInputStream process_out){
+			super(parentThread.getName()+".SendDataToConsole");
+			this.logger = logger;
+			this.process_out = process_out;
+			this.runIt=true;
+			this.parentThread = parentThread;
+		}
+		
+		public void stop_it(){
+			runIt=false;	
+		}
+		
+		public void run() {
+            resultCode=Result.RUNNING;
+            BufferedReader out = new BufferedReader(new InputStreamReader(process_out));
+            String line = null;
+  			try{
+ 				while (runIt && ((line=out.readLine())!=null)){
+ 					synchronized (logger) {
+ 						logger.info(line);
+					}
+ 				}
+			}catch(IOException ex){
+				resultMsg = ex.getMessage();
+				resultCode = Result.ERROR;
+				resultException = ex;
+				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
+			}catch(Exception ex){
+				resultMsg = ex.getMessage();
+				resultCode = Result.ERROR;
+				resultException = ex;
+				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
+			}
+			finally{
+				try{
+					out.close();
+				}catch(IOException e){
+					//do nothing, out closed
+				}
+			}
+			if (resultCode==Result.RUNNING){
+		           if (runIt){
+		        	   resultCode=Result.FINISHED_OK;
+		           }else{
+		        	   resultCode = Result.ABORTED;
+		           }
+				}
+		}
+
+        /**
+         * @return Returns the resultCode.
+         */
+        public Result getResultCode() {
+            return resultCode;
+        }
+
+		public String getResultMsg() {
+			return resultMsg;
+		}
+
+		public Throwable getResultException() {
+			return resultException;
+		}
+	}
 }
 
 

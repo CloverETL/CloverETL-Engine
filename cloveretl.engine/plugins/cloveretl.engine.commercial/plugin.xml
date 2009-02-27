@@ -1,5 +1,5 @@
 <plugin id="com.opensys.clover.commercial"
-   version="2.7.0"
+   version="0.0.0.devel"
    provider-name="Javlin a.s.">
 
 	<runtime>
@@ -10,7 +10,7 @@
         <library path="../../../cloveretl.component.commercial/lib/dnsjava-2.0.6.jar"/>
    	</runtime> 
     
-	<requires engine-version="2.7.0">
+	<requires engine-version="0.0.0.devel">
 	</requires>
 
 	<extension point-id="lookup">
