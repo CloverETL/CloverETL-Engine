@@ -115,6 +115,8 @@ public class ExtSort extends Node {
 	private static final String XML_SORTKEY_ATTRIBUTE = "sortKey";
     private static final String XML_BUFFER_CAPACITY_ATTRIBUTE = "bufferCapacity";
     private static final String XML_TEMPORARY_DIRS = "tmpDirs";
+    private static final String XML_LOCALE_ATTRIBUTE = "locale";
+    
     
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "EXT_SORT";
@@ -134,6 +136,7 @@ public class ExtSort extends Node {
 	private String[] tmpDirs;
 	private int numberOfTapes;
 	private ByteBuffer recordBuffer;
+	private String localeStr;
 
 	private final static boolean DEFAULT_ASCENDING_SORT_ORDER = true; 
 	private final static int DEFAULT_NUMBER_OF_TAPES = 6;
@@ -236,7 +239,7 @@ public class ExtSort extends Node {
 		try {
 			// create sorter
 			sorter = new ExternalSortDataRecord(getInputPort(READ_FROM_PORT)
-					.getMetadata(), sortKeysNames, sortOrderings, internalBufferCapacity, DEFAULT_NUMBER_OF_TAPES, tmpDirs);
+					.getMetadata(), sortKeysNames, sortOrderings, internalBufferCapacity, DEFAULT_NUMBER_OF_TAPES, tmpDirs, localeStr);
 		} catch (Exception e) {
             throw new ComponentNotReadyException(e);
 		}
@@ -356,6 +359,11 @@ public class ExtSort extends Node {
             if (xattribs.exists(XML_TEMPORARY_DIRS)){
                 sort.setTmpDirs(xattribs.getString(XML_TEMPORARY_DIRS).split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
             }
+
+            if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {
+                sort.setLocaleStr(xattribs.getString(XML_LOCALE_ATTRIBUTE));
+            }
+
             
         } catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -436,5 +444,15 @@ public class ExtSort extends Node {
         return COMPONENT_TYPE;
     }
 
+	public String getLocaleStr() {
+		return localeStr;
+	}
+
+	public void setLocaleStr(String localeStr) {
+		this.localeStr = localeStr;
+	}
+
+    
+    
 }
 
