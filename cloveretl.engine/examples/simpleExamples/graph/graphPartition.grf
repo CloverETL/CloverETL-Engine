@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of Partition component.&#10;This component can be used to split input data flow into several&#10;output data flows according to specified key or range" guiVersion="0.0" id="1196682624808" licenseType="Evaluation license." modified="Tue Nov 25 09:52:20 CET 2008" modifiedBy="avackova" name="Partition data" revision="1.35">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of Partition component.&#10;This component can be used to split input data flow into several&#10;output data flows according to specified key or range" guiVersion="0.0" id="1196682624808" licenseType="Evaluation license." modified="Wed Feb 11 11:46:17 CET 2009" modifiedBy="avackova" name="Partition data" revision="1.43">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="7" guiY="169" id="INPUT1" quotedStrings="true" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/bigIdYounger.txt" guiHeight="0" guiName="big ID, younger" guiWidth="0" guiX="316" guiY="253" id="DATA_WRITER0" type="DATA_WRITER">
+<attr name="debugPrint"><![CDATA[false]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/smallIdOlder.txt" guiHeight="25" guiName="small ID, older" guiWidth="50" guiX="316" guiY="12" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/bigIdOlder.txt" guiHeight="25" guiName="big ID, older" guiWidth="50" guiX="316" guiY="98" id="DATA_WRITER2" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/smallIdYounger.txt" guiHeight="25" guiName="small ID, younger" guiWidth="50" guiX="316" guiY="169" id="DATA_WRITER3" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/rejectedId.txt" guiHeight="0" guiName="rejected Id" guiWidth="0" guiX="316" guiY="337" id="DATA_WRITER4" type="DATA_WRITER">
+<attr name="debugPrint"><![CDATA[true]]></attr>
+</Node>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="7" guiY="169" id="INPUT1" type="DATA_READER"/>
 <Node enabled="enabled" guiHeight="25" guiName="PARTITION" guiWidth="50" guiX="156" guiY="159" id="PARTITION" partitionKey="EmployeeID;BirthDate" ranges="&lt;1,9)(,31/12/1959&gt;;&lt;9,)(,31/12/1959&gt;;&lt;1,9)(31/12/1959,);&lt;9,)(31/12/1959,)" type="PARTITION"/>
-<Node debugPrint="false" enabled="enabled" guiHeight="0" guiName="big ID, younger" guiWidth="0" guiX="316" guiY="253" id="TRASH0" type="TRASH"/>
-<Node enabled="enabled" guiHeight="25" guiName="small ID, older" guiWidth="50" guiX="316" guiY="12" id="TRASH1" type="TRASH"/>
-<Node enabled="enabled" guiHeight="25" guiName="big ID, older" guiWidth="50" guiX="316" guiY="98" id="TRASH2" type="TRASH"/>
-<Node enabled="enabled" guiHeight="25" guiName="small ID, younger" guiWidth="50" guiX="316" guiY="169" id="TRASH3" type="TRASH"/>
-<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="rejected Id" guiWidth="0" guiX="316" guiY="337" id="TRASH4" type="TRASH"/>
 <Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="PARTITION:0"/>
-<Edge debugMode="true" fromNode="PARTITION:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH1:0"/>
-<Edge debugMode="true" fromNode="PARTITION:1" guiBendpoints="" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="TRASH2:0"/>
-<Edge debugMode="true" fromNode="PARTITION:2" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="TRASH3:0"/>
-<Edge debugMode="true" fromNode="PARTITION:3" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" toNode="TRASH0:0"/>
-<Edge fromNode="PARTITION:4" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 4 (out)" toNode="TRASH4:0"/>
+<Edge debugMode="true" fromNode="PARTITION:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="true" fromNode="PARTITION:1" guiBendpoints="" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="DATA_WRITER2:0"/>
+<Edge debugMode="true" fromNode="PARTITION:2" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="DATA_WRITER3:0"/>
+<Edge debugMode="true" fromNode="PARTITION:3" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="PARTITION:4" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 4 (out)" toNode="DATA_WRITER4:0"/>
 </Phase>
 </Graph>

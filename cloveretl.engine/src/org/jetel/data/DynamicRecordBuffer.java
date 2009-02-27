@@ -110,7 +110,7 @@ public class DynamicRecordBuffer {
         writeDataBuffer = ByteBuffer.allocateDirect(dataBufferSize);
         tmpDataRecord=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
         lastSlot=-1;
-        awaitingData=true;
+        awaitingData=false;
         bufferedRecords=new AtomicInteger(0);
         readDataBuffer.flip();
     }
@@ -185,7 +185,7 @@ public class DynamicRecordBuffer {
         fullFileBuffers.clear();
 		readDataBuffer.clear();
         writeDataBuffer.clear();
-        awaitingData=true;
+        awaitingData=false;
         bufferedRecords.set(0);
         readDataBuffer.flip();
         

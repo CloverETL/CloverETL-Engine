@@ -564,8 +564,32 @@ public class showData {
         System.out.println("Note: <component id> data will be shown over this component");
 	}
 
-	private static void printInfo(){
-	    System.out.println("CloverETL library version "+JetelVersion.MAJOR_VERSION+"."+JetelVersion.MINOR_VERSION+" build#"+JetelVersion.BUILD_NUMBER+" compiled "+JetelVersion.LIBRARY_BUILD_DATETIME);
+	
+	public static String getInfo(){
+		final StringBuilder ret = new StringBuilder();
+		ret.append("CloverETL library version ");
+		ret.append(JetelVersion.MAJOR_VERSION );
+		ret.append(".");
+		ret.append(JetelVersion.MINOR_VERSION);
+		ret.append(".");
+		ret.append(JetelVersion.REVISION_VERSION);
+		if( ! "".equals(JetelVersion.VERSION_SUFFIX) ) {
+			ret.append(".");
+			ret.append(JetelVersion.VERSION_SUFFIX);
+	 	}
+		if( ! "0".equals(JetelVersion.BUILD_NUMBER) ) {
+			ret.append(" build#");
+			ret.append(JetelVersion.BUILD_NUMBER);
+		}
+		if( JetelVersion.LIBRARY_BUILD_DATETIME.length() != 0 ){
+			ret.append(" compiled ");
+			ret.append( JetelVersion.LIBRARY_BUILD_DATETIME );
+		}
+		return ret.toString();
+	}
+	
+	public static void printInfo(){
+	    System.out.println(getInfo());
 	}
 
 	public enum Mode {

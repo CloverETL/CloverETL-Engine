@@ -7,12 +7,23 @@
 	- NYSIIS
 +  DBExecute can read statements from input port
 
+REL 2-6-2
+---------
+Features:
++ the OracleDataWriter component has new output port to which rejected/erroneous records are sent
+
+Fixed:
++ integer number random generator is not allowed to produce the MIN_INT value, since it is recognized
+	in a integer data field as a special flag of null value
++ data record caching on buffered edge has synchronization issue - race-condition deadlock was fixed
++ the UniversalDataReader parses correctly an input file with UTF-8 encoding (and other multi-byte character encodings)
+
 REL 2-6-1
 ---------
-
 Features:
 + extend OracleDataWriter to allows setting of other parameters of sqlldr utility
 + JDBC specific for Sybase database was added
++ buffered edges experience intermittently a deadlock or a bufferunderflow exception
 
 Fixed:
 + second paratemer of split CTL function doesn't need to be constant
@@ -29,7 +40,6 @@ Fixed:
 
 REL 2-6-0
 ---------
-
 Features:
 + changed RecordTransform interface: method transform(DataRecor[],DataRecord[]) returns: 
 	- < -1 -- fatal error / user defined

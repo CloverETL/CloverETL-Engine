@@ -351,7 +351,7 @@ public class RecordTransformFactory {
             System.out.println("Error when parsing expression: " + e.getMessage().split(System.getProperty("line.separator"))[0]);
             return false;
         }
-    	return isSimpleTransformFunctionNode(record, "getOutputRecord", 0);
+    	return isSimpleTransformFunctionNode(record, "transform", 0);
     }
     
     public static boolean isSimpleNormalizer(DataRecordMetadata[] inMeta,

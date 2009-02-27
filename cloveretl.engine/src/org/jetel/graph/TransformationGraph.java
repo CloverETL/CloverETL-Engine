@@ -444,6 +444,16 @@ public final class TransformationGraph extends GraphElement {
 			logger.error(ex.getMessage(),ex);
 			throw new ComponentNotReadyException("Graph topology analyze failed: " + ex.getMessage(), ex);
 		}
+		
+		//initialization of all phases
+		//phases have to be initialized separately and immediately before is run - in runtime after previous phase is finished
+		//temporarily solution
+		//  for(Phase phase : phases.values()) {
+		//phase.init();
+		//}
+		
+		// initialized OK
+		
 	}
 
 	@Override

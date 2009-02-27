@@ -1,4 +1,4 @@
-CloverETL engine version @MAJOR_VERSION@.@MINOR_VERSION@.@REVISION_VERSION@
+CloverETL engine version 0.0.0.devel
 ---------------------------------
 
 Use Apache ANT to build binary - run with

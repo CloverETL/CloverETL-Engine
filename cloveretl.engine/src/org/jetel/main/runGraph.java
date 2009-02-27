@@ -111,8 +111,6 @@ import org.jetel.util.file.FileUtils;
 public class runGraph {
     private static Log logger = LogFactory.getLog(runGraph.class);
 
-    //TODO change run graph version
-	private final static String RUN_GRAPH_VERSION = JetelVersion.MAJOR_VERSION+"."+JetelVersion.MINOR_VERSION;
 	public final static String VERBOSE_SWITCH = "-v";
 	public final static String PROPERTY_FILE_SWITCH = "-cfg";
 	public final static String LOG4J_PROPERTY_FILE_SWITCH = "-logcfg";
@@ -149,13 +147,9 @@ public class runGraph {
         
         List<SerializedDictionaryValue> dictionaryValues = new ArrayList<SerializedDictionaryValue>();
         
-        logger.info("***  CloverETL framework/transformation graph runner ver "
-                        + RUN_GRAPH_VERSION
-                        + ", (c) 2002-06 D.Pavlis, released under GNU Lesser General Public License  ***");
-        logger.info("Running with framework version: "
-                + JetelVersion.MAJOR_VERSION + "." + JetelVersion.MINOR_VERSION
-                + " build#" + JetelVersion.BUILD_NUMBER + " compiled "
-                + JetelVersion.LIBRARY_BUILD_DATETIME);
+        logger.info("***  CloverETL framework/transformation graph"
+                        + ", (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s, released under GNU Lesser General Public License  ***");
+        logger.info("Running with " + showData.getInfo());
 
 		logger.info("Running on " + Runtime.getRuntime().availableProcessors() + " CPU(s), " +
 				"OS " + System.getProperty("os.name") +
@@ -211,7 +205,7 @@ public class runGraph {
                     System.exit(-1);
                 }
             } else if (args[i].startsWith(INFO_SWITCH)) {
-                printInfo();
+                showData.printInfo();
                 System.exit(0);
             } else if (args[i].startsWith(PLUGINS_SWITCH)) {
                 i++;
@@ -448,9 +442,5 @@ public class runGraph {
         
 	}
 
-	private static void printInfo(){
-	    System.out.println("CloverETL library version "+JetelVersion.MAJOR_VERSION+"."+JetelVersion.MINOR_VERSION+" build#"+JetelVersion.BUILD_NUMBER+" compiled "+JetelVersion.LIBRARY_BUILD_DATETIME);
-	}
-	
 }
 

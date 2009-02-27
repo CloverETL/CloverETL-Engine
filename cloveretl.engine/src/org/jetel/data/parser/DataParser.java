@@ -112,6 +112,8 @@ public class DataParser implements Parser {
 	
 	private QuotingDecoder qDecoder = new QuotingDecoder();
 	
+	private boolean isEof;
+
 	private int bytesProcessed;
 	
 	public DataParser() {
@@ -251,6 +253,7 @@ public class DataParser implements Parser {
 
 		decoder.reset();// reset CharsetDecoder
 		byteBuffer.clear();
+		byteBuffer.flip();
 		charBuffer.clear();
 		charBuffer.flip();
 		fieldBuffer.setLength(0);
@@ -262,7 +265,9 @@ public class DataParser implements Parser {
 
 		if (inputDataSource == null) {
 			reader = null;
+			isEof = true;
 		} else {
+			isEof = false;
 			if (inputDataSource instanceof CharBuffer) {
 				reader = null;
 				charBuffer = (CharBuffer) inputDataSource;
@@ -503,44 +508,71 @@ public class DataParser implements Parser {
 	}
 	
 	private int readChar() throws IOException {
-		int size;
 		char character;
-		CoderResult decodingResult;
-		
+        CoderResult result;
+
 		if(tempReadBuffer.length() > 0) {
 			character = tempReadBuffer.charAt(0);
 			tempReadBuffer.deleteCharAt(0);
 			return character;
 		}
-		
-		if (reader != null && !charBuffer.hasRemaining()) {
-			byteBuffer.clear();
-			size = reader.read(byteBuffer);
-			// if no more data, return -1
-			if (size == -1) {
-				return -1;
-			} else {
-            	bytesProcessed += size;
-			}
-			try {
-				byteBuffer.flip();
-				charBuffer.clear();
-				decodingResult = decoder.decode(byteBuffer, charBuffer, true);
-				
-				charBuffer.flip();
-			} catch (Exception ex) {
-				throw new IOException("Exception when decoding characters: " + ex.getMessage());
-			}
-		}
-		
-		character = charBuffer.get();
-		try {
-			recordBuffer.put(character);
-		} catch (BufferOverflowException e) {
-			throw new RuntimeException("Parse error: The size of data buffer for data record is only " + recordBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
-		}
 
-		return character;
+        if (charBuffer.hasRemaining()) {
+    		character = charBuffer.get();
+    		try {
+    			recordBuffer.put(character);
+    		} catch (BufferOverflowException e) {
+    			throw new RuntimeException("Parse error: The size of data buffer for data record is only " + recordBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    		}
+    
+    		return character;
+        }
+
+        if (isEof)
+            return -1;
+
+        charBuffer.clear();
+        if (byteBuffer.hasRemaining())
+        	byteBuffer.compact();
+        else
+        	byteBuffer.clear();
+
+        if (reader.read(byteBuffer) == -1) {
+            isEof = true;
+        }
+        byteBuffer.flip();
+
+        result = decoder.decode(byteBuffer, charBuffer, isEof);
+//        if (result == CoderResult.UNDERFLOW) {
+//            // try to load additional data
+//        	byteBuffer.compact();
+//
+//            if (reader.read(byteBuffer) == -1) {
+//                isEof = true;
+//            }
+//            byteBuffer.flip();
+//            decoder.decode(byteBuffer, charBuffer, isEof);
+//        } else 
+        if (result.isError()) {
+            throw new IOException(result.toString()+" when converting from "+decoder.charset());
+        }
+        if (isEof) {
+            result = decoder.flush(charBuffer);
+            if (result.isError()) {
+                throw new IOException(result.toString()+" when converting from "+decoder.charset());
+            }
+        }
+        charBuffer.flip();
+        int ret = charBuffer.hasRemaining() ? charBuffer.get() : -1;
+        
+        if (ret > -1) {
+			try {
+				recordBuffer.put((char) ret);
+			} catch (BufferOverflowException e) {
+				throw new RuntimeException("Parse error: The size of data buffer for data record is only " + recordBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+			}
+        }
+		return ret;
 	}
 
 	/**
