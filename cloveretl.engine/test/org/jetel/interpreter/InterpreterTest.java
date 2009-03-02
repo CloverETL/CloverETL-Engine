@@ -2504,42 +2504,6 @@ public class InterpreterTest extends CloverTestCase {
 	 * TODO(issue #1433) replace this with a valid test case for wildcard
 	 * mapping when activated (presum v2.7)
 	 */
-	public void test_wildcardMapping(){
-		System.out.println("\nWildcard mapping test:");
-		String expStr = "$out.* := $in1.*;\n";
-
-	    print_code(expStr);
-	    
-	    boolean mappingDeactivated = false;
-	    
-		try {
-		      DataRecordMetadata[] recordMetadata=new DataRecordMetadata[] {metadata,metadata1};
-		      DataRecordMetadata[] outMetadata=new DataRecordMetadata[] {metaOut,metaOut1};
-			  TransformLangParser parser = new TransformLangParser(recordMetadata,
-			  		outMetadata,new ByteArrayInputStream(expStr.getBytes()),"UTF-8");
-		      CLVFStart parseTree = parser.Start();
-
-		      System.out.println("Initializing parse tree..");
-		      parseTree.init();
-		      System.out.println("Parse tree:");
-		      parseTree.dump("");
-		      
-		      System.out.println("Interpreting parse tree..");
-		      TransformLangExecutor executor=new TransformLangExecutor();
-		      executor.setInputRecords(new DataRecord[] {record,record1});
-		      executor.setOutputRecords(new DataRecord[]{out,out1});
-		      SetVal.setString(record1,2,"Prague");
-		      record.getField("Age").setNull(true);
-		      
-		      executor.visit(parseTree,null);
-		      System.out.println("Finished interpreting.");
-		      
-		} catch (ParseException e) {
-			mappingDeactivated = true;
-		}
-		
-		assertTrue(mappingDeactivated);
-	}
     
     public void test_logger(){
         System.out.println("\nLogger test:");
