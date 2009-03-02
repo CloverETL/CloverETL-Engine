@@ -5,6 +5,7 @@
  */
 package org.jetel.database;
 
+import java.sql.SQLException;
 import java.util.Properties;
 
 import org.jetel.graph.IGraphElement;
@@ -33,7 +34,10 @@ public interface IConnection extends IGraphElement {
      * For example - in JDBC connection is expected parameter sqlQuery for definition metadata.
      * @param parameters
      * @return
+     * 
+     * @throws SQLException if creating metadata fails on SQL querying
+     * @throws UnsupportedOperationException if operation is not defined for a given connection
      */
-    public DataRecordMetadata createMetadata(Properties parameters) throws Exception;
+    public DataRecordMetadata createMetadata(Properties parameters) throws SQLException;
 
 }
