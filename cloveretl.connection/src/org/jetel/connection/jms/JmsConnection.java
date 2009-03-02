@@ -358,8 +358,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 		}
 	}
 
-	public DataRecordMetadata createMetadata(Properties parameters)
-			throws Exception {
+	public DataRecordMetadata createMetadata(Properties parameters) {
 		throw new UnsupportedOperationException("JMS connection doesn't support operation 'createMetadata()'");
 	}
 

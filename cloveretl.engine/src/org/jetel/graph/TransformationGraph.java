@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -310,8 +311,10 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				metadata = ((DataRecordMetadataStub)metadata).createMetadata();
 				dataRecordMetadata.put(name, (DataRecordMetadata) metadata);
-			} catch (Exception e) {
-				throw new ComponentNotReadyException("Creating metadata from stubn failed: ", e);
+			} catch (SQLException e) {
+				throw new ComponentNotReadyException("Creating metadata from stub failed: ", e);
+			} catch (UnsupportedOperationException e) {
+				throw new ComponentNotReadyException("Creating metadata from stub not defined for this connection: ", e);
 			}
 		}
 	    return (DataRecordMetadata)metadata;

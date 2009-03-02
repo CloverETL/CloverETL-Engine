@@ -19,9 +19,11 @@
 
 package org.jetel.metadata;
 
+import java.sql.SQLException;
 import java.util.Properties;
 
 import org.jetel.database.IConnection;
+import org.jetel.exception.ComponentNotReadyException;
 
 
 /**
@@ -51,7 +53,7 @@ public class DataRecordMetadataStub {
 		return parameters;
 	}
     
-    public DataRecordMetadata createMetadata() throws Exception {
+    public DataRecordMetadata createMetadata() throws ComponentNotReadyException, SQLException {
         connection.init();
         return connection.createMetadata(parameters);
     }
