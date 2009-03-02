@@ -37,7 +37,7 @@ public class DataParserTest extends CloverTestCase {
 	protected void setUp() throws Exception {
 		initEngine();
 		metadata.setFieldDelimiter("\n");
-		metadata.setRecordDelimiters("\n");
+		metadata.setRecordDelimiter("\n");
 		metadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
 		recordUTF8 = new DataRecord(metadata);
 		recordUTF8.init();
