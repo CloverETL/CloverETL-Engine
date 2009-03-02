@@ -719,12 +719,12 @@ public class DBExecute extends Node {
         String query = null, fileURL = null;
 
         try {
-            if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)) {
+        	if (xattribs.exists(XML_URL_ATTRIBUTE)) {
+                fileURL = xattribs.getString(XML_URL_ATTRIBUTE);
+            } else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)) {
                 query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
             } else if (xattribs.exists(XML_DBSQL_ATTRIBUTE)) {
                 query = xattribs.getString(XML_DBSQL_ATTRIBUTE);
-            } else if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-                fileURL = xattribs.getString(XML_URL_ATTRIBUTE);
             } else if (xattribs.exists(XML_SQLCODE_ELEMENT)) {
                 query = xattribs.getString(XML_SQLCODE_ELEMENT);
             } else {// we try to get it from child text node - slightly obsolete
