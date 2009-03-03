@@ -367,39 +367,6 @@ public class OracleDataWriter extends BulkLoader {
     	return "\\\"-\\\"";
     }
     
-    private static String getFilePath(File file, TransformationGraph graph) throws ComponentNotReadyException {
-    	if (file == null) {
-    		return null;
-    	}
-    	
-    	return getFilePath(file.getPath(), graph);
-    }
-    
-    private static String getFilePath(String fileName, TransformationGraph graph) throws ComponentNotReadyException {
-    	File file = getFile(fileName, graph);
-    	if (file == null) {
-    		return null;
-    	}
-    	
-    	try { // canonical - /xx/xx -- absolute - /xx/./xx
-			return file.getCanonicalPath();
-		} catch (IOException ioe) {
-			return file.getAbsolutePath();
-		}
-    }
-    
-    private static File getFile(String fileName, TransformationGraph graph) throws ComponentNotReadyException {
-    	if (StringUtils.isEmpty(fileName)) {
-    		return null;
-    	}
-    	
-		try {
-			return new File(FileUtils.getFile(graph.getProjectURL(), fileName));
-		} catch (MalformedURLException mue) {
-			throw new ComponentNotReadyException(mue);
-		}
-    }
-
     /**
      *  Description of the Method
      *
