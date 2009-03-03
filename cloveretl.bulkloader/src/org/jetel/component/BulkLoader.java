@@ -47,7 +47,6 @@ public abstract class BulkLoader extends Node {
 	protected final static String SPACE_MARK = " ";
 	protected final static String EQUAL_CHAR = "=";
 	protected final static int UNUSED_INT = -1;
-	protected final static File TMP_DIR = new File(".");
 	protected final static String CONTROL_FILE_NAME_SUFFIX = ".ctl";
 	protected final static String CHARSET_NAME = "UTF-8";
 	
@@ -72,6 +71,8 @@ public abstract class BulkLoader extends Node {
 	protected DataConsumer errConsumer = null; // consume data from err stream of utility - write them to by logger
 	protected Formatter formatter = null; // format data to load utility format and write them to dataFileName
 	protected String[] commandLine; // command line of load utility
+
+	private File tempDir = null;
 	
 	/**
      * true - data is read from in port;
@@ -187,6 +188,8 @@ public abstract class BulkLoader extends Node {
 		if (formatter != null) {
 			formatter.reset();
 		}
+		
+		tempDir = null;
 	}
 	
 	/**
@@ -336,7 +339,7 @@ public abstract class BulkLoader extends Node {
 	
 	protected File createTempFile(String prefix) throws ComponentNotReadyException {
     	try {
-			File file = File.createTempFile(prefix, null, TMP_DIR);
+			File file = File.createTempFile(prefix, null, getTempDir());
 			file.delete();
 			return file;
 		} catch (IOException e) {
@@ -468,5 +471,16 @@ public abstract class BulkLoader extends Node {
 		} else if (!properties.isEmpty()) {
 			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, getPropertiesAsString());
 		}
+	}
+	
+	protected File getTempDir() {
+		if (tempDir == null) {
+			if (getGraph().getProjectURL() != null) {
+				tempDir = new File(getGraph().getProjectURL().getPath());
+			} else {
+				tempDir = new File(".");
+			}
+		}
+		return tempDir;
 	}
 }
