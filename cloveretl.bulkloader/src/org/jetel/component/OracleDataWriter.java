@@ -27,7 +27,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -318,16 +317,17 @@ public class OracleDataWriter extends BulkLoader {
      * Create command line for process, where sqlldr utility is running.
      * Example: c:\Oracle\Client\bin\sqlldr.exe control=loader.ctl userid=user/password@schema log=loader.log bad=loader.bad data=\"=\"
      * @return
+     * @throws ComponentNotReadyException 
      */
-    private String[] createCommandlineForSqlldr() {
+    private String[] createCommandlineForSqlldr() throws ComponentNotReadyException {
     	CommandBuilder cmdBuilder = new CommandBuilder(properties);
     	cmdBuilder.add(loadUtilityPath);
     	cmdBuilder.addAttribute("control", controlFileName, true);
     	cmdBuilder.addAttribute("userid", userId);
     	cmdBuilder.addAttribute("data", getData());
-    	cmdBuilder.addAttribute("log", logFileName, true);
-    	cmdBuilder.addAttribute("bad", badFileName, true);
-    	cmdBuilder.addAttribute("discard", discardFileName, true);
+    	cmdBuilder.addAttribute("log", getFilePath(logFileName, getGraph()), true);
+    	cmdBuilder.addAttribute("bad", getFilePath(badFileName, getGraph()), true);
+    	cmdBuilder.addAttribute("discard", getFilePath(discardFileName, getGraph()), true);
     	
     	cmdBuilder.addAttribute(SQLLDR_MAX_ERRORS_KEYWORD, maxErrors);
     	cmdBuilder.addAttribute(SQLLDR_MAX_DISCARDS_KEYWORD, maxDiscards);
@@ -357,18 +357,47 @@ public class OracleDataWriter extends BulkLoader {
     	return cmdBuilder.getCommand();
     }
     
-    private String getData() {
+    private String getData() throws ComponentNotReadyException {
     	if (dataFile != null) {
-    		try { // canonical - /xx/xx -- absolute - /xx/./xx
-				return "'" + dataFile.getCanonicalPath() + "'";
-			} catch (IOException e) {
-				return "'" + dataFile.getAbsolutePath() + "'";
-			}
+    		return "'" + getFilePath(dataFile, getGraph()) + "'";
     	}
     	
     	// it is used only at windows;
     	// temp file or named pipe is used at unix 
     	return "\\\"-\\\"";
+    }
+    
+    private static String getFilePath(File file, TransformationGraph graph) throws ComponentNotReadyException {
+    	if (file == null) {
+    		return null;
+    	}
+    	
+    	return getFilePath(file.getPath(), graph);
+    }
+    
+    private static String getFilePath(String fileName, TransformationGraph graph) throws ComponentNotReadyException {
+    	File file = getFile(fileName, graph);
+    	if (file == null) {
+    		return null;
+    	}
+    	
+    	try { // canonical - /xx/xx -- absolute - /xx/./xx
+			return file.getCanonicalPath();
+		} catch (IOException ioe) {
+			return file.getAbsolutePath();
+		}
+    }
+    
+    private static File getFile(String fileName, TransformationGraph graph) throws ComponentNotReadyException {
+    	if (StringUtils.isEmpty(fileName)) {
+    		return null;
+    	}
+    	
+		try {
+			return new File(FileUtils.getFile(graph.getProjectURL(), fileName));
+		} catch (MalformedURLException mue) {
+			throw new ComponentNotReadyException(mue);
+		}
     }
 
     /**
@@ -427,23 +456,23 @@ public class OracleDataWriter extends BulkLoader {
     	String name = dataFile.getName();
 		String baseName = name.substring(0, name.lastIndexOf("."));
     	
-		badFile = createFile(getGraph().getProjectURL(), badFileName, baseName, "bad");
-		discardFile = createFile(getGraph().getProjectURL(), discardFileName, baseName, "dis");
+		badFile = createFile(getGraph(), badFileName, baseName, "bad");
+		discardFile = createFile(getGraph(), discardFileName, baseName, "dis");
 
     }
     
-    private static File createFile(URL projectURL, String fileName, String baseName, 
+    private static File createFile(TransformationGraph graph, String fileName, String baseName, 
     		String extension) throws ComponentNotReadyException {
     	
     	if (StringUtils.isEmpty(fileName)) {
     		try {
-				return new File(FileUtils.getFile(projectURL, baseName + "." + extension));
+				return new File(FileUtils.getFile(graph.getProjectURL(), baseName + "." + extension));
 			} catch (MalformedURLException e) {
 				throw new ComponentNotReadyException(e);
 			}
     	}
     	
-    	return new File(fileName);
+    	return getFile(fileName, graph);
     }
     
     /**
@@ -527,7 +556,7 @@ public class OracleDataWriter extends BulkLoader {
      */
     private void createControlFile() throws ComponentNotReadyException {
     	try {
-            controlFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, CONTROL_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
+            controlFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, CONTROL_FILE_NAME_SUFFIX, getTempDir()).getCanonicalPath();
         } catch(IOException e) {
             throw new ComponentNotReadyException(this, "Control file cannot be created.");
         }
