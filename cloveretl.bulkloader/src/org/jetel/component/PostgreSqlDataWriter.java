@@ -332,7 +332,8 @@ public class PostgreSqlDataWriter extends BulkLoader {
 			
 			String nullValue = getNullValue();
 			if (nullValue != null) {
-				cmdBuilder.addAttribute(COPY_NULL_PARAM, nullValue, true);
+				// cmdBuilder.addAttribute() method can't be used because nullValue can be "" (empty string)
+				cmdBuilder.add(COPY_NULL_PARAM + " '" + StringUtils.specCharToString(nullValue) + "'");
 
 				// warning that user defined value is ignored - default nullValue is used
 				if (isDataReadFromPort && properties.containsKey(COPY_NULL_PARAM) &&
