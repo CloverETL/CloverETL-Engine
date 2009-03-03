@@ -101,7 +101,7 @@ public class TLByteArrayValue extends TLContainerValue {
 	@Override
 	public void copyToDataField(DataField field) {
 		if (field instanceof ByteDataField) {
-			field.setValue(value.getValue());
+			field.setValue(value.getValueDuplicate());
 		}else{
 			field.fromString(((ByteArray)value).toString());
 		}
@@ -150,7 +150,7 @@ public class TLByteArrayValue extends TLContainerValue {
 	
 	@Override
 	public TLValue duplicate() {
-		return new TLByteArrayValue(new ByteArray(value.getValue()));
+		return new TLByteArrayValue(new ByteArray(value.getValueDuplicate()));
 	}
 	
 	@Override public String toString(){
@@ -168,8 +168,9 @@ public class TLByteArrayValue extends TLContainerValue {
 	@Override
 	public Collection<TLValue> getCollection() {
 		List<TLValue> list=new ArrayList<TLValue>(value.length());
-		for(byte bval : value.getValue()){
-			numValue.setInt(bval);
+		byte[] bvals = value.getValue();
+		for(int i=0; i<value.length(); i++){
+			numValue.setInt(bvals[i]);
 			list.add(numValue.duplicate());
 		}
 		return list;
