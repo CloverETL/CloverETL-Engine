@@ -14,11 +14,6 @@
 	</requires>
 
 	<extension point-id="component">
-		<parameter id="className" value="org.jetel.component.MultiLevelReader"/>
-		<parameter id="type" value="MULTI_LEVEL_READER"/>
-	</extension>
-
-	<extension point-id="component">
 		<parameter id="className" value="org.jetel.component.DataReader"/>
 		<parameter id="type" value="DATA_READER"/>
 	</extension>
