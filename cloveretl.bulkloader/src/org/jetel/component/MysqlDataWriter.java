@@ -552,7 +552,7 @@ public class MysqlDataWriter extends BulkLoader {
 				}
 			} else {
 				commandFile = File.createTempFile(MYSQL_FILE_NAME_PREFIX, 
-						CONTROL_FILE_NAME_SUFFIX, TMP_DIR);
+						CONTROL_FILE_NAME_SUFFIX, getTempDir());
 			}
 
 			saveCommandFile(commandFile);

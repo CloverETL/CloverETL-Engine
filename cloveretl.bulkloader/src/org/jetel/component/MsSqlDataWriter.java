@@ -834,7 +834,7 @@ public class MsSqlDataWriter extends BulkLoader {
 					dataFile = new File(dataURL);
 				} else {
 					dataFile = File.createTempFile(DATA_FILE_NAME_PREFIX,
-					 DATA_FILE_NAME_SUFFIX, TMP_DIR);
+					 DATA_FILE_NAME_SUFFIX, getTempDir());
 				}
 				dataFile.delete();
 			} else {
@@ -849,7 +849,7 @@ public class MsSqlDataWriter extends BulkLoader {
 				errFileName = properties.getProperty(MS_SQL_ERR_FILE_PARAM);
 			} else if (isDataWrittenToPort) {
 				errFileName = File.createTempFile(ERROR_FILE_NAME_PREFIX, 
-						ERROR_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
+						ERROR_FILE_NAME_SUFFIX, getTempDir()).getCanonicalPath();
 			}
 
 		} catch (IOException e) {
