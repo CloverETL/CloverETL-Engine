@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Map.Entry;
@@ -14,6 +15,7 @@ import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.DataConsumer;
@@ -483,4 +485,58 @@ public abstract class BulkLoader extends Node {
 		}
 		return tempDir;
 	}
+	
+	/**
+     * Creates absolute file path based on file and graph's projectURL. 
+     * @param file file
+     * @param graph it is used for getting projectURL - for converting relative to absolute path
+     * @return
+     * @throws ComponentNotReadyException
+     */
+	protected static String getFilePath(File file, TransformationGraph graph) throws ComponentNotReadyException {
+    	if (file == null) {
+    		return null;
+    	}
+    	
+    	return getFilePath(file.getPath(), graph);
+    }
+    
+	/**
+     * Creates absolute file path based on fileName string and graph's projectURL. 
+     * @param fileName name of the file
+     * @param graph it is used for getting projectURL - for converting relative to absolute path
+     * @return
+     * @throws ComponentNotReadyException
+     */
+	protected static String getFilePath(String fileName, TransformationGraph graph) throws ComponentNotReadyException {
+    	File file = getFile(fileName, graph);
+    	if (file == null) {
+    		return null;
+    	}
+    	
+    	try { // canonical - /xx/xx -- absolute - /xx/./xx
+			return file.getCanonicalPath();
+		} catch (IOException ioe) {
+			return file.getAbsolutePath();
+		}
+    }
+    
+    /**
+     * Creates File object based on fileName string and graph's projectURL. 
+     * @param fileName name of the file
+     * @param graph it is used for getting projectURL - for converting relative to absolute path
+     * @return
+     * @throws ComponentNotReadyException
+     */
+    protected static File getFile(String fileName, TransformationGraph graph) throws ComponentNotReadyException {
+    	if (StringUtils.isEmpty(fileName)) {
+    		return null;
+    	}
+    	
+		try {
+			return new File(FileUtils.getFile(graph.getProjectURL(), fileName));
+		} catch (MalformedURLException mue) {
+			throw new ComponentNotReadyException(mue);
+		}
+    }
 }
