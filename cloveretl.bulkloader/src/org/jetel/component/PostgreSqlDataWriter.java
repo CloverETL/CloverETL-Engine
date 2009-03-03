@@ -259,7 +259,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 				}
 			} else {
 				commandFile = File.createTempFile(POSTGRESQL_FILE_NAME_PREFIX, 
-						CONTROL_FILE_NAME_SUFFIX, TMP_DIR);
+						CONTROL_FILE_NAME_SUFFIX, getTempDir());
 			}
 
 			saveCommandToFile(commandFile, getDefaultCommandFileContent());

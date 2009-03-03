@@ -351,10 +351,10 @@ public class InformixDataWriter extends BulkLoader {
 		try {
 			if (!useLoadUtility) {
 	            commandFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, 
-	            		CONTROL_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
+	            		CONTROL_FILE_NAME_SUFFIX, getTempDir()).getCanonicalPath();
 	            
 	            if (errorLog == null) {
-	            	errorLog = new File(TMP_DIR, DEFAULT_ERROR_FILE).getCanonicalPath();
+	            	errorLog = new File(getTempDir(), DEFAULT_ERROR_FILE).getCanonicalPath();
 	            }
 	            
 	            if (isDataReadFromPort) {
@@ -363,7 +363,7 @@ public class InformixDataWriter extends BulkLoader {
 		        			tmpDataFileName = new File(dataURL).getCanonicalPath();
 		        		} else {
 		        			tmpDataFileName = File.createTempFile(DATA_FILE_NAME_PREFIX, 
-			            			DATA_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
+			            			DATA_FILE_NAME_SUFFIX, getTempDir()).getCanonicalPath();
 		        		}
 		            } else {
 		            	tmpDataFileName = UNIX_STDIN;
