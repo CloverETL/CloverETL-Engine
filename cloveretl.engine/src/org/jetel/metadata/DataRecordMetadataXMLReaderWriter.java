@@ -157,7 +157,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String COMPRESSED_ATTR = "compressed";
 	private static final String SHIFT_ATTR = "shift";
 	private static final String SIZE_ATTR = "size";
-	private static final String SKIP_FIRST_LINE_ATTR = "skipFirstLine";
+	private static final String SKIP_SOURCE_ROW_ATTR = "skipSourceRow";
 	private static final String AUTO_FILLING_ATTR = "auto_filling";
 	public static final String CONNECTION_ATTR = "connection";
 		
@@ -312,6 +312,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
         	metadataElement.setAttribute(FIELD_DELIMITER_ATTR, StringUtils.specCharToString(record.getFieldDelimiter()));
         }
 
+        if (record.getSkipSourceRows() > 0) {
+        	metadataElement.setAttribute(SKIP_SOURCE_ROW_ATTR, String.valueOf(record.getSkipSourceRows()));
+        }
+
 		Properties prop = record.getRecordProperties();
 		if (prop != null) {
 			Enumeration enumeration = prop.propertyNames();
@@ -359,8 +363,6 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				}
 				fieldElement.setAttribute(NULLABLE_ATTR,
 				        String.valueOf(field.isNullable()));
-
-				fieldElement.setAttribute(SKIP_FIRST_LINE_ATTR, String.valueOf(record.isSkipFirstLine()));
 
 				// output field properties - if anything defined
 				prop = field.getFieldProperties();
@@ -434,6 +436,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		String recLocaleStr = null;
 		String itemName;
 		String itemValue;
+		String skipSourceRows = null;
 		Properties recordProperties = null;
 
 		if (topNode.getNodeName() != RECORD_ELEMENT) {
@@ -461,6 +464,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				fieldDelimiter = itemValue;
 			} else if (itemName.equalsIgnoreCase(RECORD_SIZE_ATTR)) {
 				sizeStr = itemValue;
+			} else if (itemName.equalsIgnoreCase(SKIP_SOURCE_ROW_ATTR)) {
+				skipSourceRows = itemValue;
 			} else {
 				if (recordProperties == null) {
 					recordProperties = new Properties();
@@ -499,6 +504,14 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		}
 		recordMetadata.setRecordSize(recSize);
 		
+		int iSkipSourceRows = -1;
+		try {
+			if (skipSourceRows != null)	iSkipSourceRows = Integer.parseInt(skipSourceRows);
+		} catch (NumberFormatException e) {
+			// ignore 
+		}
+		recordMetadata.setRecordSize(iSkipSourceRows);
+
 		/*
 		 * parse metadata of FIELDs
 		 */
@@ -521,7 +534,6 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String localeStr = null;
 			String compressed = null;
 			String autoFilling = null;
-			String skipFirstLine = null;
 			String trim = null;
 			char fieldType = ' ';
 			Properties fieldProperties = new Properties();
@@ -556,8 +568,6 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					compressed = itemValue;
 				} else if (itemName.equalsIgnoreCase(AUTO_FILLING_ATTR)) {
 					autoFilling = itemValue;
-				} else if (itemName.equalsIgnoreCase(SKIP_FIRST_LINE_ATTR)) {
-					skipFirstLine = itemValue;
 				} else {
 					fieldProperties.setProperty(itemName, itemValue);
 				}
@@ -635,9 +645,6 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 
 			if (autoFilling != null) {
 				field.setAutoFilling(autoFilling);
-			}
-			if (skipFirstLine != null) {
-				recordMetadata.setSkipFirstLine(Boolean.valueOf(skipFirstLine));
 			}
 			
 			if (trim != null) {

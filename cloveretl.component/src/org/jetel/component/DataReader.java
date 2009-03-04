@@ -113,6 +113,8 @@ public class DataReader extends Node {
 	private static final String XML_SKIPFIRSTLINE_ATTRIBUTE = "skipFirstLine";
 	private static final String XML_SKIPROWS_ATTRIBUTE = "skipRows";
 	private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
+	private static final String XML_SKIP_SOURCE_ROWS_ATTRIBUTE = "skipSourceRows";
+	private static final String XML_NUM_SOURCE_RECORDS_ATTRIBUTE = "numSourceRecords";
 	private static final String XML_MAXERRORCOUNT_ATTRIBUTE = "maxErrorCount";
 	private static final String XML_QUOTEDSTRINGS_ATTRIBUTE = "quotedStrings";
 	private static final String XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE = "treatMultipleDelimitersAsOne";
@@ -126,9 +128,11 @@ public class DataReader extends Node {
 	private final static int INPUT_PORT = 0;
 	private final static int LOG_PORT = 1;
 	private String fileURL;
-	private boolean skipFirstLine = false;
+	private boolean skipFirstLine = false;	//backward compatibility
 	private int skipRows = -1;
 	private int numRecords = -1;
+	private int skipSourceRows = -1;
+	private int numSourceRecords = -1;
 	private int maxErrorCount = -1;
     private String incrementalFile;
     private String incrementalKey;
@@ -270,8 +274,9 @@ public class DataReader extends Node {
 		TransformationGraph graph = getGraph();
         reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
         reader.setLogger(logger);
-        reader.setFileSkip(skipFirstLine ? 1 : 0);
+        reader.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : (skipFirstLine ? 1 : 0));
         reader.setSkip(skipRows);
+        reader.setNumSourceRecords(numSourceRecords);
         reader.setNumRecords(numRecords);
         reader.setIncrementalFile(incrementalFile);
         reader.setIncrementalKey(incrementalKey);
@@ -369,6 +374,12 @@ public class DataReader extends Node {
 			if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
 				aDataReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_SKIP_SOURCE_ROWS_ATTRIBUTE)){
+				aDataReader.setSkipSourceRows(xattribs.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
+				aDataReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
+			}
 			if (xattribs.exists(XML_MAXERRORCOUNT_ATTRIBUTE)){
 				aDataReader.setMaxErrorCount(xattribs.getInteger(XML_MAXERRORCOUNT_ATTRIBUTE));
 			}
@@ -460,6 +471,20 @@ public class DataReader extends Node {
 		this.numRecords = Math.max(numRecords, 0);
 	}
 
+	/**
+	 * @param how many rows to skip for every source
+	 */
+	public void setSkipSourceRows(int skipSourceRows) {
+		this.skipSourceRows = Math.max(skipSourceRows, 0);
+	}
+	
+	/**
+	 * @param how many rows to process for every source
+	 */
+	public void setNumSourceRecords(int numSourceRecords) {
+		this.numSourceRecords = Math.max(numSourceRecords, 0);
+	}
+	
 	/**
 	 * @param finalRecord The finalRecord to set.
 	 */

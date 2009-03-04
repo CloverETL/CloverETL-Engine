@@ -72,7 +72,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	/** The type of the data record. */
 	private char recType;
 
-	private boolean skipFirstLine;
+	private int skipSourceRows;
 
 	private String recordDelimiter;
 	private String fieldDelimiter;
@@ -183,19 +183,17 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
-	 * Sets the value of the skip-first-line flag.
-	 *
-	 * @param isSkipFirstLine the new value of the skip-first-line flag
+	 * Sets the value of the skipSourceRows.
 	 */
-	public void setSkipFirstLine(boolean isSkipFirstLine) {
-		skipFirstLine = isSkipFirstLine;
+	public void setSkipSourceRows(int skipSourceRows) {
+		this.skipSourceRows = skipSourceRows;
 	}
 
 	/**
-	 * @return the value of the skip-first-line flag
+	 * @return the value of the skipSourceRows
 	 */
-	public boolean isSkipFirstLine() {
-		return skipFirstLine;
+	public int getSkipSourceRows() {
+		return skipSourceRows;
 	}
 
 	/**
@@ -734,7 +732,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		dataRecordMetadata.setName(name);
 		dataRecordMetadata.setDescription(description);
 		dataRecordMetadata.setRecType(recType);
-		dataRecordMetadata.setSkipFirstLine(skipFirstLine);
+		dataRecordMetadata.setSkipSourceRows(skipSourceRows);
 		dataRecordMetadata.setRecordDelimiter(recordDelimiter);
 		dataRecordMetadata.setFieldDelimiter(fieldDelimiter);
 		dataRecordMetadata.setRecordSize(recordSize);
@@ -939,7 +937,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		buffer.append(", name = ").append(name);
 		buffer.append(", recType = ").append(recType);
 		buffer.append(", localeStr = ").append(localeStr);
-		buffer.append(", skipFirstLine = ").append(skipFirstLine);
+		buffer.append(", skipSourceRows = ").append(skipSourceRows);
 		buffer.append(", recordProperties = ").append(recordProperties);
 		buffer.append(", DELIMITED_RECORD = ").append(DELIMITED_RECORD);
 		buffer.append(", FIXEDLEN_RECORD = ").append(FIXEDLEN_RECORD);
