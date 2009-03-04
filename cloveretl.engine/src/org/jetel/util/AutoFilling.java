@@ -165,6 +165,7 @@ public class AutoFilling {
         }
         
         if (autoFillingData.noAutoFillingData) {
+            sourceCounter++;
             globalCounter++;
         	return;
         }
@@ -260,6 +261,14 @@ public class AutoFilling {
 	 */
 	public final int getGlobalCounter() {
 		return globalCounter;
+	}
+
+	/**
+	 * Gets source counter.
+	 * @return
+	 */
+	public final int getSourceCounter() {
+		return sourceCounter;
 	}
 
 	/**

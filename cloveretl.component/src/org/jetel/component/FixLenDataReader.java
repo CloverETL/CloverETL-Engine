@@ -235,7 +235,7 @@ public class FixLenDataReader extends Node {
 		TransformationGraph graph = getGraph();
         reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
         reader.setLogger(logger);
-        reader.setFileSkip(skipFirstLine ? 1 : 0);
+        reader.setSkipSourceRows(skipFirstLine ? 1 : 0);
         reader.setSkip(skipRows);
         reader.setNumRecords(numRecords);
         reader.setIncrementalFile(incrementalFile);

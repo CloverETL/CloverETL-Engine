@@ -64,8 +64,9 @@ public class MultiFileReader {
 	private ReadableChannelIterator channelIterator;
     private int skip;
     private int fSkip;
-	private int fileSkip;
+	private int skipSourceRows;
 	private int numRecords; //max number of returned records
+	private int numSourceRecords;
     private boolean noInputFile = false;
     private String incrementalFile;
     private String incrementalKey;
@@ -170,14 +171,26 @@ public class MultiFileReader {
     
     /**
      * Sets number of skipped records in each file.
-     * @param fileSkip
+     * @param skipSourceRows
      */
-    public void setFileSkip(int fileSkip) {
-        this.fileSkip = fileSkip;
+    public void setSkipSourceRows(int skipSourceRows) {
+        this.skipSourceRows = skipSourceRows;
     }
     
+    /**
+     * How many rows to process.
+     * @param numRecords
+     */
     public void setNumRecords(int numRecords) {
         this.numRecords = numRecords;
+    }
+    
+    /**
+     * How many rows to process for every source.
+     * @param numSourceRecords
+     */
+    public void setNumSourceRecords(int numSourceRecords) {
+        this.numSourceRecords = numSourceRecords;
     }
     
     public void setLogger(Log logger) {
@@ -213,7 +226,7 @@ public class MultiFileReader {
 				if ((sourcePosition = incrementalReading.getSourcePosition(iSource)) != null) {
 					parser.movePosition(sourcePosition);
 				}
-				if(fileSkip > 0) parser.skip(fileSkip);
+				if(skipSourceRows > 0) parser.skip(skipSourceRows);
 				return true;
 			} catch (IOException e) {
 				throw new JetelException("An error occured while skipping records in file " + autoFilling.getFilename() + ", the file will be ignored", e);
@@ -242,20 +255,24 @@ public class MultiFileReader {
     }
     
 	/**
-	 * Tries to obtain one record
-	 * @param record Instance to be filled with obtained data
-	 * @return null on error, the record otherwise
+	 * Checks skip/numRecords. Returns true if the source could return a record.
+	 * @return
 	 * @throws JetelException
 	 */
-	public DataRecord getNext(DataRecord record) throws JetelException {
+	private final boolean checkRowAndPrepareSource() throws JetelException {
         //in case that fileURL doesn't contain valid file url
         if(noInputFile) {
-            return null;
+            return false;
         }
         
         //check for index of last returned record
         if(numRecords > 0 && numRecords == autoFilling.getGlobalCounter()) {
-            return null;
+            return numSourceRecords > 0 && nextSource();
+        }
+        
+        //check for index of last returned record for each source
+        if(numSourceRecords > 0 && numSourceRecords == autoFilling.getSourceCounter()) {
+            return numRecords > autoFilling.getGlobalCounter() || nextSource();
         }
         
         //shall i skip some records?
@@ -263,7 +280,21 @@ public class MultiFileReader {
             skip(skip);
             skip = 0;
         }
-        
+        return true;        
+	}
+	
+	/**
+	 * Tries to obtain one record
+	 * @param record Instance to be filled with obtained data
+	 * @return null on error, the record otherwise
+	 * @throws JetelException
+	 */
+	public DataRecord getNext(DataRecord record) throws JetelException {
+		// checks skip/numRecords
+		if (!checkRowAndPrepareSource()) {
+			return null;
+		}
+		
         //use parser to get next record
         DataRecord rec;
         try {
@@ -288,21 +319,10 @@ public class MultiFileReader {
 	 * @throws JetelException
 	 */
 	public DataRecord getNext() throws JetelException {
-        //in case that fileURL doesn't contain valid file url
-        if(noInputFile) {
-            return null;
-        }
-        
-        //check for index of last returned record
-        if(numRecords > 0 && numRecords == autoFilling.getGlobalCounter()) {
-            return null;
-        }
-        
-        //shall i skip some records?
-        if(skip > 0) {
-            skip(skip);
-            skip = 0;
-        }
+		// checks skip/numRecords
+		if (!checkRowAndPrepareSource()) {
+			return null;
+		}
         
         //use parser to get next record
         DataRecord rec;
