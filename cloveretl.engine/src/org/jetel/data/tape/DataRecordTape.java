@@ -526,7 +526,7 @@ public class DataRecordTape {
 	private static class DataChunk{
 	    //	size of integer variable used to keep record length
         // this is the maximum size, can be between 1 & 4 bytes
-	    private final static int LEN_SIZE_SPECIFIER = 4;
+	    private final static int LEN_SIZE_SPECIFIER = 5;
 	    ByteBuffer dataBuffer;
 	    FileChannel tmpFileChannel;
 	    long offsetStart;
