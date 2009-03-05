@@ -544,7 +544,7 @@ public class MysqlDataWriter extends BulkLoader {
 	String createCommandFile() throws ComponentNotReadyException {
 		try {
 			if (commandURL != null) {
-				commandFile = new File(commandURL);
+				commandFile = getFile(commandURL);
 				if (commandFile.exists()) {
 					return commandFile.getCanonicalPath();
 				} else {
@@ -710,7 +710,7 @@ public class MysqlDataWriter extends BulkLoader {
 	private void createFileForExchange() throws ComponentNotReadyException {
 		if (ProcBox.isWindowsPlatform() || dataURL != null) {
 			if (dataURL != null) {
-				dataFile = new File(dataURL);
+				dataFile = getFile(dataURL);
 				dataFile.delete();
 			} else {
 				dataFile = createTempFile(EXCHANGE_FILE_PREFIX);
