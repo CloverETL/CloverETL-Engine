@@ -329,7 +329,7 @@ public abstract class BulkLoader extends Node {
 		}
 		try {
 			if (!FileUtils.isServerURL(FileUtils.getInnerAddress(getGraph().getProjectURL(), fileURL)) && 
-					!(new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL))).exists()) {
+					!(getFile(fileURL).exists())) {
 				return false;
 			}
 			return true;
@@ -356,7 +356,7 @@ public abstract class BulkLoader extends Node {
 			throw new ComponentNotReadyException(this, 
 					"Data file " + StringUtils.quote(fileURL) + " not exists.");
 		}
-		return new File(fileURL);
+		return getFile(fileURL);
     }
 
 	/**
