@@ -355,6 +355,7 @@ public class runGraph {
 				EngineInitializer.initGraph(graph, runtimeContext);
 			}
 			printDictionary("Initial dictionary content:", graph);
+			printGraphProperties(graph);
 			futureResult = executeGraph(graph, runtimeContext);			
 		} catch (ComponentNotReadyException e) {
             logger.error("Error during graph initialization !");
@@ -432,6 +433,9 @@ public class runGraph {
 		}
 	}
 
+	private static void printGraphProperties(TransformationGraph graph) {
+        logger.debug("Graph properties: " + graph.getGraphProperties());
+	}
     
 	private static void printHelp() {
 		System.out.println("Usage: runGraph [-(v|cfg|logcfg|loglevel|P:|tracking|info|plugins|pass)] <graph definition file>");
