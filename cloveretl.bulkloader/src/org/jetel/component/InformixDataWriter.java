@@ -354,13 +354,13 @@ public class InformixDataWriter extends BulkLoader {
 	            		CONTROL_FILE_NAME_SUFFIX, getTempDir()).getCanonicalPath();
 	            
 	            if (errorLog == null) {
-	            	errorLog = new File(getTempDir(), DEFAULT_ERROR_FILE).getCanonicalPath();
+	            	errorLog = createTempFile(DEFAULT_ERROR_FILE).getCanonicalPath();
 	            }
 	            
 	            if (isDataReadFromPort) {
 		        	if (ProcBox.isWindowsPlatform() || dataURL != null) {
 		        		if (dataURL != null) {
-		        			tmpDataFileName = new File(dataURL).getCanonicalPath();
+		        			tmpDataFileName = getFilePath(dataURL);
 		        		} else {
 		        			tmpDataFileName = File.createTempFile(DATA_FILE_NAME_PREFIX, 
 			            			DATA_FILE_NAME_SUFFIX, getTempDir()).getCanonicalPath();
@@ -369,13 +369,13 @@ public class InformixDataWriter extends BulkLoader {
 		            	tmpDataFileName = UNIX_STDIN;
 		            }
 	            } else { // loadUtility
-	            	tmpDataFileName = new File(dataURL).getCanonicalPath();
+	            	tmpDataFileName = getFilePath(dataURL);
 	            }
 	
 		        createCommandFile();
 			} else {
 				if (dataURL != null || !isDataReadFromPort) {
-	    			tmpDataFileName = new File(dataURL).getCanonicalPath();
+	    			tmpDataFileName = getFilePath(dataURL);
 	    		}
 			}
 		} catch (IOException ioe) {
@@ -568,7 +568,7 @@ public class InformixDataWriter extends BulkLoader {
 		BufferedReader reader = null;
 		String line = null;
 		try {
-			reader = new BufferedReader(new FileReader(new File(dataURL)));
+			reader = new BufferedReader(new FileReader(getFile(dataURL)));
 			if (ignoreRows != UNUSED_INT) {
 				// skip ignore rows
 				for (int i = ignoreRows; i < ignoreRows; i++) {
@@ -625,7 +625,13 @@ public class InformixDataWriter extends BulkLoader {
     	}
     	
     	if (isDataReadFromPort && !UNIX_STDIN.equals(tmpDataFileName) && dataURL == null) {
-    		File dataFile = new File(tmpDataFileName);
+    		File dataFile;
+			try {
+				dataFile = getFile(tmpDataFileName);
+			} catch (ComponentNotReadyException e) {
+				logger.warn("Temp data file was not deleted.");
+				return;
+			}
     		if (!dataFile.delete()) {
     			logger.warn("Temp data file was not deleted.");
     		}
