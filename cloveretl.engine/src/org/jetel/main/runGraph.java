@@ -145,6 +145,16 @@ public class runGraph {
         String graphFileName = null;
         String configFileName = null;
         
+        //the runtime context values parsed from a command line
+        boolean isVerboseMode = GraphRuntimeContext.DEFAULT_VERBOSE_MODE;
+        Properties additionalProperties = new Properties();
+        int trackingInterval = 0;
+        String password = null;
+        boolean waitForJMXClient = GraphRuntimeContext.DEFAULT_WAIT_FOR_JMX_CLIENT;
+        boolean useJMX = GraphRuntimeContext.DEFAULT_USE_JMX;
+        boolean debugMode = GraphRuntimeContext.DEFAULT_DEBUG_MODE;
+        String debugDirectory = null;
+        
         List<SerializedDictionaryValue> dictionaryValues = new ArrayList<SerializedDictionaryValue>();
         
         logger.info("***  CloverETL framework/transformation graph"
@@ -162,10 +172,9 @@ public class runGraph {
         Level logLevel = null;
         
         // process command line arguments
-		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
         for (int i = 0; i < args.length; i++) {
             if (args[i].startsWith(VERBOSE_SWITCH)) {
-                runtimeContext.setVerboseMode(true);
+                isVerboseMode = true;
             } else if (args[i].startsWith(PROPERTY_FILE_SWITCH)) {
                 i++;
                 try {
@@ -173,7 +182,7 @@ public class runGraph {
                             new FileInputStream(args[i]));
                     Properties properties = new Properties();
                     properties.load(inStream);
-                    runtimeContext.addAdditionalProperties(properties);
+                    additionalProperties.putAll(properties);
                 } catch (IOException ex) {
                     logger.error(ex.getMessage(), ex);
                     System.exit(-1);
@@ -195,11 +204,11 @@ public class runGraph {
                 // nameValue=args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"").split("=");
                 // properties.setProperty(nameValue[0],nameValue[1]);
                 String tmp = args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH, "");
-                runtimeContext.addAdditionalProperty(tmp.substring(0, tmp.indexOf("=")), tmp.substring(tmp.indexOf("=") + 1));
+                additionalProperties.put(tmp.substring(0, tmp.indexOf("=")), tmp.substring(tmp.indexOf("=") + 1));
             } else if (args[i].startsWith(TRACKING_INTERVAL_SWITCH)) {
                 i++;
                 try {
-                    runtimeContext.setTrackingInterval(Integer.parseInt(args[i]) * 1000);
+                    trackingInterval = Integer.parseInt(args[i]) * 1000;
                 } catch (NumberFormatException ex) {
                     System.err.println("Invalid tracking parameter: \"" + args[i] + "\"");
                     System.exit(-1);
@@ -212,7 +221,7 @@ public class runGraph {
                 pluginsRootDirectory = args[i];
             } else if (args[i].startsWith(PASSWORD_SWITCH)) {
                 i++;
-                runtimeContext.setPassword(args[i]);
+                password = args[i];
             } else if (args[i].startsWith(LOAD_FROM_STDIN_SWITCH)) {
                 loadFromSTDIN = true;
             } else if (args[i].startsWith(LOG_HOST_SWITCH)) {
@@ -221,21 +230,21 @@ public class runGraph {
             } else if (args[i].startsWith(CHECK_CONFIG_SWITCH)) {
                 onlyCheckConfig = true;
             } else if (args[i].startsWith(WAIT_FOR_JMX_CLIENT_SWITCH)) {
-                runtimeContext.setWaitForJMXClient(true);
+                waitForJMXClient = true;
             } else if (args[i].startsWith(MBEAN_NAME)){
                 i++;
                 //TODO
                 //runtimeContext.set  --> mbeanName = args[i];
             } else if (args[i].startsWith(NO_JMX)){
-                runtimeContext.setUseJMX(false);
+                useJMX = false;
             } else if (args[i].startsWith(CONFIG_SWITCH)) {
                 i++;
                 configFileName = args[i];
             } else if (args[i].startsWith(NO_DEBUG_SWITCH)) {
-                runtimeContext.setDebugMode(true);
+                debugMode = true;
             } else if (args[i].startsWith(DEBUG_DIRECTORY_SWITCH)) {
                 i++;
-                runtimeContext.setDebugDirectory(args[i]);
+                debugDirectory = args[i]; 
             } else if (args[i].startsWith(DICTIONARY_VALUE_DEFINITION_SWITCH)) {
             	String value = args[i].replaceFirst(DICTIONARY_VALUE_DEFINITION_SWITCH, "");
             	try {
@@ -266,11 +275,18 @@ public class runGraph {
 
         // engine initialization - should be called only once
         EngineInitializer.initEngine(pluginsRootDirectory, configFileName, logHost);
-
-        // TODO: tohle je nutne odstranit - runtimeContext je potreba vytvorit az po initiazlizaci enginu!!! Kokon
-        if (runtimeContext.getTrackingInterval() == 0) {
-        	runtimeContext.setTrackingInterval(Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL);
-        }
+        
+        //prepare runtime context
+        int i = Defaults.Record.MAX_RECORD_SIZE;
+        GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+        runtimeContext.setVerboseMode(isVerboseMode);
+        runtimeContext.addAdditionalProperties(additionalProperties);
+        if (trackingInterval > 0) runtimeContext.setTrackingInterval(trackingInterval);
+        runtimeContext.setPassword(password);
+        runtimeContext.setWaitForJMXClient(waitForJMXClient);
+        runtimeContext.setUseJMX(useJMX);
+        runtimeContext.setDebugMode(debugMode);
+        runtimeContext.setDebugDirectory(debugDirectory);
         
         // prepare input stream with XML graph definition
         InputStream in = null;
