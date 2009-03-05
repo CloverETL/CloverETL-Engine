@@ -515,6 +515,7 @@ public class TransformationGraphXMLReaderWriter {
         boolean debugMode = false;
         String debugFilterExpression = null;
         int debugMaxRecords = 0;
+        boolean debugLastRecords = true;
         boolean debugSampleData = false;
         boolean fastPropagate = false;
 		String[] specNodePort;
@@ -544,6 +545,7 @@ public class TransformationGraphXMLReaderWriter {
             } else {
             	debugMaxRecords = graphDebugMaxRecords;
             }
+            debugLastRecords = attributes.getBoolean("debugLastRecords", true);
             debugFilterExpression = attributes.getString("debugFilterExpression", null);
             debugSampleData = attributes.getBoolean("debugSampleData", false);
             
@@ -562,6 +564,7 @@ public class TransformationGraphXMLReaderWriter {
 			}
 			graphEdge.setDebugMode(debugMode);
 			graphEdge.setDebugMaxRecords(debugMaxRecords);
+			graphEdge.setDebugLastRecords(debugLastRecords);
 			graphEdge.setFilterExpression(debugFilterExpression);
 			graphEdge.setDebugSampleData(debugSampleData);
 			// set edge type
