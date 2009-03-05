@@ -48,7 +48,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -311,13 +310,8 @@ public class OracleDataWriter extends BulkLoader {
     	}
     }
 
-    /**
-     * Create command line for process, where sqlldr utility is running.
-     * Example: c:\Oracle\Client\bin\sqlldr.exe control=loader.ctl userid=user/password@schema log=loader.log bad=loader.bad data=\"=\"
-     * @return
-     * @throws ComponentNotReadyException 
-     */
-    private String[] createCommandlineForSqlldr() throws ComponentNotReadyException {
+	@Override
+	protected String[] createCommandLineForLoadUtility() throws ComponentNotReadyException {
     	CommandBuilder cmdBuilder = new CommandBuilder(properties);
     	cmdBuilder.add(loadUtilityPath);
     	cmdBuilder.addAttribute("control", controlFileName, true);
@@ -352,7 +346,9 @@ public class OracleDataWriter extends BulkLoader {
     	cmdBuilder.addParam(SQLLDR_RESUMABLE_TIMEOUT_PARAM, SQLLDR_RESUMABLE_TIMEOUT_KEYWORD);
     	cmdBuilder.addParam(SQLLDR_DATA_CACHE_PARAM, SQLLDR_DATA_CACHE_KEYWORD);
     	
-    	return cmdBuilder.getCommand();
+    	String[] ret = cmdBuilder.getCommand();
+		printCommandLineToLog(ret, logger);
+		return ret;
     }
     
     private String getData() throws ComponentNotReadyException {
@@ -375,49 +371,58 @@ public class OracleDataWriter extends BulkLoader {
         if (isInitialized()) return;
         super.init();
   
-        isDataReadDirectlyFromFile = !isDataReadFromPort && 
-        		!StringUtils.isEmpty(dataURL);
-        
-        // set undefined useFileForExchange when input port is connected
-        if (!isDefinedUseFileForExchange && isDataReadFromPort) {
-        	useFileForExchange = getDefaultUsingFileForExchange();
-        }
-        
-        checkParams();
-        
-        // data is read directly from file -> file isn't used for exchange
-    	if (isDataReadDirectlyFromFile) {
-    		dataFile = openFile(dataURL);
-    		useFileForExchange = false;
-    	}
-        
-        createFileForExchange();
-        createControlFile();
-        
-        //compute userId as sqlldr parameter
-        userId = getUserId();
-        
-        commandLine = createCommandlineForSqlldr();
-        printCommandLineToLog(commandLine, logger);
-        
-        //init of data formatter
-        if (isDataReadFromPort) {
-        	dbMetadata = getInputPort(READ_FROM_PORT).getMetadata();
-        	
-        	formatter = new DataFormatter();
-            formatter.init(dbMetadata);
-		}
-        
-		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
-		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
-
 		if (isDataWrittenToPort) {
 			getRejectedAndDiscardedFile();
 			oracleBadRowReaderWriter = new OracleBadRowReaderWriter();
     	}
     }
 
-    private void getRejectedAndDiscardedFile() throws ComponentNotReadyException {
+	@Override
+	protected void preInit() throws ComponentNotReadyException {
+		isDataReadDirectlyFromFile = !isDataReadFromPort && 
+				!StringUtils.isEmpty(dataURL);
+
+		// set undefined useFileForExchange when input port is connected
+		if (!isDefinedUseFileForExchange && isDataReadFromPort) {
+			useFileForExchange = getDefaultUsingFileForExchange();
+		}
+		
+		createControlFile();
+        
+        //compute userId as sqlldr parameter
+        userId = getUserId();
+	}
+	
+	@Override
+	protected void initDataFile() throws ComponentNotReadyException {
+		// data is read directly from file -> file isn't used for exchange
+    	if (isDataReadDirectlyFromFile) {
+    		dataFile = openFile(dataURL);
+    		useFileForExchange = false;
+    	}
+        
+        createFileForExchange();		
+	}
+
+	@Override
+	protected void initDataFormatter() throws ComponentNotReadyException {
+       	dbMetadata = getInputPort(READ_FROM_PORT).getMetadata();
+        	
+       	formatter = new DataFormatter();
+        formatter.init(dbMetadata);
+	}
+	
+	@Override
+	protected String getColumnDelimiter() {
+		throw new UnsupportedOperationException("Own implementation of initDataFormatter is used.");
+	}
+
+	@Override
+	protected String getRecordDelimiter() {
+		throw new UnsupportedOperationException("Own implementation of initDataFormatter is used.");
+	}
+
+	private void getRejectedAndDiscardedFile() throws ComponentNotReadyException {
     	String name = dataFile.getName();
 		String baseName = name.substring(0, name.lastIndexOf("."));
     	
@@ -436,13 +441,8 @@ public class OracleDataWriter extends BulkLoader {
     	return getFile(fileName);
     }
     
-    /**
-	 * Checks if mandatory attributes are defined.
-	 * And check combination of some parameters.
-	 * 
-	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
-	 */
-	private void checkParams() throws ComponentNotReadyException {
+    @Override
+	protected void checkParams() throws ComponentNotReadyException {
 		if (StringUtils.isEmpty(loadUtilityPath)) {
 			throw new ComponentNotReadyException(this, StringUtils.quote(XML_SQLLDR_ATTRIBUTE)
 					+ " attribute have to be set.");

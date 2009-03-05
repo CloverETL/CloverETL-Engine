@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.util.CommandBuilder;
-import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -39,7 +38,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -208,14 +206,8 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		return "psql utility has failed - " + errorMsg + ".";
 	}
 	
-	/**
-	 * Create command line for process, where psql utility is running. 
-	 * Example: psql --dbname=testdb --file=/tmp/command.ctl 
-	 *  
-	 * @return array, first field is name of psql utility and the others fields are parameters
-	 * @throws ComponentNotReadyException when command file isn't created
-	 */
-	private String[] createCommandLineForDbLoader() throws ComponentNotReadyException {
+	@Override
+	protected String[] createCommandLineForLoadUtility() throws ComponentNotReadyException {
 		if (ProcBox.isWindowsPlatform()) {
 			loadUtilityPath = StringUtils.backslashToSlash(loadUtilityPath);
 		}
@@ -238,7 +230,9 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		cmdBuilder.addBooleanParam(PSQL_NO_PSQLRC_PARAM, PSQL_NO_PSQLRC_SWITCH);
 		cmdBuilder.addBooleanParam(PSQL_SINGLE_TRANSACTION_PARAM, PSQL_SINGLE_TRANSACTION_SWITCH);
 
-		return cmdBuilder.getCommand();
+		String[] ret = cmdBuilder.getCommand();
+		printCommandLineToLog(ret, logger);
+		return ret;
 	}
 	
 	/**
@@ -400,21 +394,14 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		return null;
 	}
 	
-	/**
-	 * Description of the Method
-	 * 
-	 * @exception ComponentNotReadyException Description of the Exception
-	 * @since April 4, 2002
-	 */
-	public void init() throws ComponentNotReadyException {
-		if (isInitialized()) return;
-		super.init();
-
+	@Override
+	protected void preInit() throws ComponentNotReadyException {
 		csvMode = isCsvModeUsed(properties);
 		setDefaultColumnDelimiter(csvMode);
-		checkParams();
+	}
 
-		// prepare (temporary) data file
+	@Override
+	protected void initDataFile() throws ComponentNotReadyException {
 		if (isDataReadFromPort) {
 			if (dataURL != null) {
 				dataFile = getFile(dataURL);
@@ -423,22 +410,18 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		} else {
 			dataFile = openFile(dataURL);
 		}
-		
-		commandLine = createCommandLineForDbLoader();
-		printCommandLineToLog(commandLine, logger);
-
-		if (isDataReadFromPort) {
-			dbMetadata = createLoadUtilityMetadata(columnDelimiter, DEFAULT_RECORD_DELIMITER);
-
-			// init of data formatter
-			formatter = new DelimitedDataFormatter(CHARSET_NAME);
-			formatter.init(dbMetadata);
-		}
-
-		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
-		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
 	}
 	
+	@Override
+	protected String getColumnDelimiter() {
+		return columnDelimiter;
+	}
+
+	@Override
+	protected String getRecordDelimiter() {
+		return DEFAULT_RECORD_DELIMITER;
+	}
+
 	/**
 	 * If no columnDelimiter is set then default column delimiter is set.
 	 * @param csvModeUsed
@@ -466,13 +449,8 @@ public class PostgreSqlDataWriter extends BulkLoader {
 			prop.containsKey(COPY_CSV_FORCE_NOT_NULL_PARAM);
 	}
 
-	/**
-	 * Checks if mandatory attributes are defined.
-	 * And check combination of some parameters.
-	 * 
-	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
-	 */
-	private void checkParams() throws ComponentNotReadyException {
+	@Override
+	protected void checkParams() throws ComponentNotReadyException {
 		if (StringUtils.isEmpty(loadUtilityPath)) {
 			throw new ComponentNotReadyException(this, StringUtils.quote(XML_PSQL_PATH_ATTRIBUTE)
 					+ " attribute have to be set.");

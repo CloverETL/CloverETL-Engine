@@ -40,7 +40,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.util.CommandBuilder;
 import org.jetel.data.DataRecord;
-import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.BadDataFormatException;
@@ -282,14 +281,8 @@ public class InformixDataWriter extends BulkLoader {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
     
-	/**
-     * Create command line for process, where dbload utility is running.
-     * Example: /home/Informix/bin/dbload -d test@pnc -c cmdData.ctl -l data.log
-     * 
-     * @return array first field is name of laod utility and the others fields are parameters
-	 * @throws ComponentNotReadyException when command file isn't created
-     */
-    private String[] createCommandLineForDbLoader() {
+    @Override
+	protected String[] createCommandLineForLoadUtility() {
     	CommandBuilder cmdBuilder = new CommandBuilder(properties, SWITCH_MARK, SPACE_MARK);
     	
 		if (useLoadUtility) {
@@ -318,7 +311,9 @@ public class InformixDataWriter extends BulkLoader {
 			cmdBuilder.addAttribute(INFORMIX_COMMIT_INTERVAL_OPTION, commitInterval);
 		}
 		
-		return cmdBuilder.getCommand();
+		String[] ret = cmdBuilder.getCommand();
+		printCommandLineToLog(ret, logger);
+		return ret;
     }
     
     private String getDbConn() {
@@ -328,25 +323,19 @@ public class InformixDataWriter extends BulkLoader {
 		return database;
     }
 
-    /**
-     *  Description of the Method
-     *
-     * @exception  ComponentNotReadyException  Description of the Exception
-     * @since                                  April 4, 2002
-     */
-    public void init() throws ComponentNotReadyException {
-        if (isInitialized()) return;
-		super.init();
-
-		isDataReadFromPort = !getInPorts().isEmpty() && StringUtils.isEmpty(command);
-
-		try {
-			checkParams();
-		} catch (ComponentNotReadyException cnre) {
-			free();
-			throw new ComponentNotReadyException(cnre);
-		}
-
+    @Override
+	protected void setLoadUtilityDateFormat(DataFieldMetadata field) {
+    	setLoadUtilityDateFormat(field, DEFAULT_TIME_FORMAT, 
+				DEFAULT_DATE_FORMAT, DEFAULT_DATETIME_FORMAT, null);
+	}
+    
+    @Override
+	protected void preInit() throws ComponentNotReadyException {
+    	isDataReadFromPort = !getInPorts().isEmpty() && StringUtils.isEmpty(command);
+	}
+	
+	@Override
+	protected void initDataFile() throws ComponentNotReadyException {
 		// prepare name for temporary file
 		try {
 			if (!useLoadUtility) {
@@ -382,58 +371,40 @@ public class InformixDataWriter extends BulkLoader {
     		free();
             throw new ComponentNotReadyException(this, "Some of the temporary files cannot be created.");
 		}
-		
-		commandLine = createCommandLineForDbLoader();
-		printCommandLineToLog(commandLine, logger);
-		
-        if (isDataReadFromPort) {
-	        dbMetadata = createLoadUtilityMetadata(getColumnDelimiter(), DEFAULT_RECORD_DELIMITER);
-	        
-	        // init of data formatter
-	        formatter = new DelimitedDataFormatter(CHARSET_NAME);
-	        formatter.init(dbMetadata);
-        }
-        
-        try {
-	        if (isDataWrittenToPort) {
-	        	if (useLoadUtility) {
-	        		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
-	        		errConsumer = new InformixPortDataConsumer(getOutputPort(WRITE_TO_PORT), LoggerDataConsumer.LVL_ERROR);
-	        	} else { // dbload
-	        		consumer = new InformixPortDataConsumer(getOutputPort(WRITE_TO_PORT), LoggerDataConsumer.LVL_DEBUG);
-	        		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
-	        	}
-	        } else {
-        		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
-        		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
-	        }
-        } catch (ComponentNotReadyException cnre) {
-        	free();
-        	throw new ComponentNotReadyException(this, "Error during initialization of InformixPortDataConsumer.", cnre);
-        }
-    }
-
-    @Override
-	protected void setLoadUtilityDateFormat(DataFieldMetadata field) {
-    	setLoadUtilityDateFormat(field, DEFAULT_TIME_FORMAT, 
-				DEFAULT_DATE_FORMAT, DEFAULT_DATETIME_FORMAT, null);
 	}
-    
-    private String getColumnDelimiter() {
+
+	@Override
+	protected void createConsumers() throws ComponentNotReadyException {
+		if (isDataWrittenToPort) {
+        	if (useLoadUtility) {
+        		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
+        		errConsumer = new InformixPortDataConsumer(getOutputPort(WRITE_TO_PORT), LoggerDataConsumer.LVL_ERROR);
+        	} else { // dbload
+        		consumer = new InformixPortDataConsumer(getOutputPort(WRITE_TO_PORT), LoggerDataConsumer.LVL_DEBUG);
+        		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
+        	}
+        } else {
+    		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
+    		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
+        }
+	}
+
+	@Override
+	protected String getColumnDelimiter() {
 		if (useLoadUtility) {
 			return DEFAULT_COLUMN_DELIMITER;
 		}
 		
 		return columnDelimiter;
-    }
-    
-    /**
-	 * Checks if mandatory attributes are defined.
-	 * And check combination of some parameters.
-	 * 
-	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
-	 */
-	private void checkParams() throws ComponentNotReadyException {
+	}
+
+	@Override
+	protected String getRecordDelimiter() {
+		return DEFAULT_RECORD_DELIMITER;
+	}
+
+	@Override
+	protected void checkParams() throws ComponentNotReadyException {
 		if (StringUtils.isEmpty(loadUtilityPath)) {
 			throw new ComponentNotReadyException(this, StringUtils.quote(XML_DB_LOADER_PATH_ATTRIBUTE)
 					+ " attribute have to be set.");

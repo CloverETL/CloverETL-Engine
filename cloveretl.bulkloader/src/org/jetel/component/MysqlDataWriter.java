@@ -32,7 +32,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.util.CommandBuilder;
 import org.jetel.data.DataRecord;
-import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -489,15 +488,8 @@ public class MysqlDataWriter extends BulkLoader {
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
-	/**
-	 * Create command line for process, where mysql utility is running. 
-	 * Example: mysql --skip-auto-rehash --database=testdb 
-	 * 		--execute=source /tmp/mysql47459.ctl --local-infile --show-warnings
-	 * 
-	 * @return array first field is name of mysql utility and the others fields are parameters
-	 * @throws ComponentNotReadyException when command file isn't created
-	 */
-	private String[] createCommandLineForDbLoader() throws ComponentNotReadyException {
+	@Override
+	protected String[] createCommandLineForLoadUtility() throws ComponentNotReadyException {
 		if (ProcBox.isWindowsPlatform()) {
 			loadUtilityPath = StringUtils.backslashToSlash(loadUtilityPath);
 		}
@@ -532,7 +524,9 @@ public class MysqlDataWriter extends BulkLoader {
 		cmdBuilder.addParam(MYSQL_SOCKET_PARAM, MYSQL_SOCKET_SWITCH);
 		cmdBuilder.addBooleanParam(MYSQL_SSL_PARAM, MYSQL_SSL_SWITCH);
 
-		return cmdBuilder.getCommand();
+		String[] ret = cmdBuilder.getCommand();
+		printCommandLineToLog(ret, logger);
+		return ret;
 	}
 
 	/**
@@ -659,39 +653,24 @@ public class MysqlDataWriter extends BulkLoader {
 		return dataFile.getCanonicalPath();
 	}
 	
-	/**
-	 * Description of the Method
-	 * 
-	 * @exception ComponentNotReadyException Description of the Exception
-	 * @since April 4, 2002
-	 */
-	public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
-		super.init();
-
+	@Override
+	protected void preInit() throws ComponentNotReadyException {
 		isDataReadDirectlyFromFile = !isDataReadFromPort && 
 				!StringUtils.isEmpty(dataURL);
-
-		checkParams();
-
+	}
+	
+	@Override
+	protected void initDataFile() throws ComponentNotReadyException {
 		// data is read directly from file -> file isn't used for exchange
     	if (isDataReadDirectlyFromFile) {
     		dataFile = openFile(dataURL);
     	} else {
     		createFileForExchange();
     	}
-    	
-		commandLine = createCommandLineForDbLoader();
-		printCommandLineToLog(commandLine, logger);
-
-		if (isDataReadFromPort) {
-			dbMetadata = createLoadUtilityMetadata(columnDelimiter, getRecordDelimiter());
-			
-			// init of data formatter
-			formatter = new DelimitedDataFormatter(CHARSET_NAME);
-			formatter.init(dbMetadata);
-		}
-
+	}
+	
+	@Override
+	protected void createConsumers() throws ComponentNotReadyException {
 		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
 
 		if (isDataWrittenToPort) {
@@ -704,6 +683,20 @@ public class MysqlDataWriter extends BulkLoader {
 			}
 		} else {
 			consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
+		}
+	}
+
+	@Override
+	protected String getColumnDelimiter() {
+		return columnDelimiter;
+	}
+
+	@Override
+	protected String getRecordDelimiter() {
+		if (properties.containsKey(LOAD_RECORD_DELIMITER_PARAM)) {
+			return (String) properties.get(LOAD_RECORD_DELIMITER_PARAM);
+		} else {
+			return DEFAULT_RECORD_DELIMITER;
 		}
 	}
 
@@ -720,13 +713,8 @@ public class MysqlDataWriter extends BulkLoader {
 		}
     }
 	
-	/**
-	 * Checks if mandatory attributes are defined.
-	 * And check combination of some parameters.
-	 * 
-	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
-	 */
-	private void checkParams() throws ComponentNotReadyException {
+	@Override
+	protected void checkParams() throws ComponentNotReadyException {
 		if (StringUtils.isEmpty(loadUtilityPath)) {
 			throw new ComponentNotReadyException(this, StringUtils.quote(XML_MYSQL_PATH_ATTRIBUTE)
 					+ " attribute have to be set.");
@@ -802,14 +790,6 @@ public class MysqlDataWriter extends BulkLoader {
 				DEFAULT_DATETIME_FORMAT, DEFAULT_YEAR_FORMAT);
 	}
 	
-	private String getRecordDelimiter() {
-		if (properties.containsKey(LOAD_RECORD_DELIMITER_PARAM)) {
-			return (String) properties.get(LOAD_RECORD_DELIMITER_PARAM);
-		} else {
-			return DEFAULT_RECORD_DELIMITER;
-		}
-	}
-
 	@Override
 	public synchronized void free() {
         if(!isInitialized()) return;
