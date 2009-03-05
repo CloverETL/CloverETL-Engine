@@ -11,6 +11,7 @@ import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.CyclicRecordBuffer;
 import org.jetel.data.DataRecord;
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.exception.ComponentNotReadyException;
@@ -32,43 +33,50 @@ public class EdgeDebuger {
 
 	private static Log logger = LogFactory.getLog(EdgeDebuger.class);
 
-    private final boolean isReadMode;
+    private final String debugFile;
+    private final boolean readMode;
+
+    private final int debugMaxRecords; // max number of debugged records; 0 -> infinite
+    private final boolean debugLastRecords;
+    private final String filterExpression;
+    private final DataRecordMetadata metadata;
+    private final boolean sampleData;
+
     private DataRecordTape dataTape;
-    private String debugFile;
-    
-    private int debugMaxRecords; // max number of debugged records; 0 -> infinite
-    private int debuggedRecords = 0; // currently number of debugged records
-    private boolean sampleData;
-    
-    private String filterExpression;
-    private DataRecordMetadata metadata;
+    private CyclicRecordBuffer recordBuffer;
     private Filter filter;
     private Sampler sampler;
-    
-    /**
-     * Constructor.
-     * @param debugFile
-     */
-    public EdgeDebuger(String debugFile, boolean isReadMode) {
-        this.isReadMode = isReadMode;
-        this.debugFile = debugFile;
-        dataTape = new DataRecordTape(debugFile, !isReadMode, false);
+
+    private int debuggedRecords = 0; // number of debugged records
+
+    public EdgeDebuger(String debugFile, boolean readMode) {
+    	this(debugFile, readMode, 0, true, null, null, false);
     }
 
-    public EdgeDebuger(String debugFile, boolean isReadMode, int debugMaxRecords, 
+    public EdgeDebuger(String debugFile, boolean readMode, int debugMaxRecords, boolean debugLastRecords, 
     		String filterExpression, DataRecordMetadata metadata, boolean sampleData) {
-        this(debugFile, isReadMode);
+        this.debugFile = debugFile;
+        this.readMode = readMode;
         this.debugMaxRecords = debugMaxRecords;
+        this.debugLastRecords = debugLastRecords;
         this.filterExpression = filterExpression;
         this.metadata = metadata;
         this.sampleData = sampleData;
     }
     
     public void init() throws IOException, InterruptedException {
+        dataTape = new DataRecordTape(debugFile, !readMode, false);
         dataTape.open();
         dataTape.addDataChunk();
-        if(isReadMode) dataTape.rewind();
-        
+
+        if (readMode) {
+        	dataTape.rewind();
+        }
+
+        if (debugMaxRecords > 0 && debugLastRecords) {
+        	recordBuffer = new CyclicRecordBuffer(debugMaxRecords, metadata);
+        }
+
         if (filterExpression != null) {
             try {
             	filter = new Filter(metadata, filterExpression);
@@ -86,108 +94,105 @@ public class EdgeDebuger {
 		//TODO DataRecordTape should be able to reset itself
         try { //TODO dataTape doesn't have reset method?
 			dataTape.close();
-		} catch (IOException e1) {
+		} catch (Exception ex) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			ex.printStackTrace();
 		}
-        dataTape = new DataRecordTape(debugFile, !isReadMode, false);
-        try {
+
+		dataTape = new DataRecordTape(debugFile, !readMode, false);
+
+		try {
 			dataTape.open();
 	        dataTape.addDataChunk();
-	        if(isReadMode) dataTape.rewind();
+	        if(readMode) dataTape.rewind();
 		} catch (Exception e) {
 			throw new ComponentNotReadyException("Edge debugging cannot be reseted, IO exception occured.", e);
 		}
-		
+
+        if (recordBuffer != null) {
+        	recordBuffer.clear();
+        }
+
         if (filter != null) {
         	filter.reset();
         }
-        
+
         if (sampler != null) {
         	sampler.reset();
         }
 	}
 	
     public void writeRecord(DataRecord record) throws IOException, InterruptedException {
-        if (isReadMode){
-            throw new RuntimeException("Error: Mixed read/write operation on DataRecordTape !");
-        }
-        
-        if (checkRecordToWrite(record)) {
+        if (readMode) {
+			throw new IllegalStateException("Error: Mixed read/write operation on DataRecordTape !");
+		}
+
+        if (recordBuffer != null) {
+        	if (checkRecordToWrite(record)) {
+        		recordBuffer.add(record);
+        	}
+        } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(record)) {
         	dataTape.put(record);
         	debuggedRecords++;
         }
     }
 
-    public void writeRecord(ByteBuffer record) throws IOException, InterruptedException {
-        if (isReadMode){
-            throw new RuntimeException("Error: Mixed read/write operation on DataRecordTape !");
-        }
-        
-        if (checkRecordToWrite(record)) {
-        	dataTape.put(record);
-        	debuggedRecords++;
-        }
-    }
-    
-    /**
-     * Decides if record will be debugged.
-     * @param record record
-     * @return true if current record should be debugged; else false
-     */
     private boolean checkRecordToWrite(DataRecord record) {
-    	return checkNoOfDebuggedRecords() && 
-    		(filter == null || filter.check(record)) &&
-    		(!sampleData || sampler.sample());
+    	return ((filter == null || filter.check(record)) && (sampler == null || sampler.sample()));
     }
     
-    /**
-     * Decides if record will be debugged.
-     * @param record record
-     * @return true if current record should be debugged; else false
-     */
-    private boolean checkRecordToWrite(ByteBuffer record) {
-    	return checkNoOfDebuggedRecords() && 
-    		(filter == null || filter.check(record)) &&
-    		(!sampleData || sampler.sample());
+    public void writeRecord(ByteBuffer byteBuffer) throws IOException, InterruptedException {
+        if (readMode) {
+			throw new IllegalStateException("Error: Mixed read/write operation on DataRecordTape !");
+		}
+
+        if (recordBuffer != null) {
+        	if (checkRecordToWrite(byteBuffer)) {
+        		recordBuffer.add(byteBuffer);
+        	}
+        } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(byteBuffer)) {
+        	dataTape.put(byteBuffer);
+        	debuggedRecords++;
+        }
+    }
+    
+    private boolean checkRecordToWrite(ByteBuffer byteBuffer) {
+    	return ((filter == null || filter.check(byteBuffer)) && (sampler == null || sampler.sample()));
     }
 
-    /**
-     * Check if number of debugged records is lower 
-     * than maximum number of debugged records.
-     * @return false when max number of records was debugged; else true
-     */
     private boolean checkNoOfDebuggedRecords() {
-    	if (debugMaxRecords == 0 || debuggedRecords < debugMaxRecords) {
-        	return true;
-        }
-    	return false;
+    	return (debugMaxRecords == 0 || debuggedRecords < debugMaxRecords);
     }
-    
+
     public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
-        if (!isReadMode) {
-            return null;
-        }
-        if (dataTape.get(record)){
-            return record;
-        }else{
-            return null;
-        }
-    }
+		if (!readMode) {
+			return null;
+		}
+
+		if (dataTape.get(record)) {
+			return record;
+		}
+
+		return null;
+	}
 
     public void close() {
-        try {
-            if(!isReadMode) {
-                dataTape.flush(true);
-            }
-            dataTape.close();
-        }catch(Exception ex){
-            logger.warn("Can't flush/rewind DataRecordTape.");
-        }
-    }
+		try {
+			if (recordBuffer != null) {
+				for (DataRecord dataRecord : recordBuffer) {
+					dataTape.put(dataRecord);
+				}
+			}
+
+			if (!readMode) {
+				dataTape.flush(true);
+			}
+
+			dataTape.close();
+		} catch (Exception ex) {
+			logger.warn("Can't flush/rewind DataRecordTape.");
+		}
+	}
     
     /**
 	 * Class for filtering data record.
