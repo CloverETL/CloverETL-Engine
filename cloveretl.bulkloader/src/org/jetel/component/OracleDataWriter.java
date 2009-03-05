@@ -490,7 +490,7 @@ public class OracleDataWriter extends BulkLoader {
 		if (isDataReadFromPort) {
 			if (ProcBox.isWindowsPlatform() || dataURL != null) {
 				if (dataURL != null) {
-					dataFile = new File(dataURL);
+					dataFile = getFile(dataURL);
 					dataFile.delete();
 				} else {
 					dataFile = createTempFile(EXCHANGE_FILE_PREFIX);
