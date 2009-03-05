@@ -26,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,7 +50,6 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -325,9 +323,9 @@ public class OracleDataWriter extends BulkLoader {
     	cmdBuilder.addAttribute("control", controlFileName, true);
     	cmdBuilder.addAttribute("userid", userId);
     	cmdBuilder.addAttribute("data", getData());
-    	cmdBuilder.addAttribute("log", getFilePath(logFileName, getGraph()), true);
-    	cmdBuilder.addAttribute("bad", getFilePath(badFileName, getGraph()), true);
-    	cmdBuilder.addAttribute("discard", getFilePath(discardFileName, getGraph()), true);
+    	cmdBuilder.addAttribute("log", getFilePath(logFileName), true);
+    	cmdBuilder.addAttribute("bad", getFilePath(badFileName), true);
+    	cmdBuilder.addAttribute("discard", getFilePath(discardFileName), true);
     	
     	cmdBuilder.addAttribute(SQLLDR_MAX_ERRORS_KEYWORD, maxErrors);
     	cmdBuilder.addAttribute(SQLLDR_MAX_DISCARDS_KEYWORD, maxDiscards);
@@ -359,7 +357,7 @@ public class OracleDataWriter extends BulkLoader {
     
     private String getData() throws ComponentNotReadyException {
     	if (dataFile != null) {
-    		return "'" + getFilePath(dataFile, getGraph()) + "'";
+    		return "'" + getFilePath(dataFile) + "'";
     	}
     	
     	// it is used only at windows;
@@ -423,23 +421,19 @@ public class OracleDataWriter extends BulkLoader {
     	String name = dataFile.getName();
 		String baseName = name.substring(0, name.lastIndexOf("."));
     	
-		badFile = createFile(getGraph(), badFileName, baseName, "bad");
-		discardFile = createFile(getGraph(), discardFileName, baseName, "dis");
+		badFile = createFile(badFileName, baseName, "bad");
+		discardFile = createFile(discardFileName, baseName, "dis");
 
     }
     
-    private static File createFile(TransformationGraph graph, String fileName, String baseName, 
-    		String extension) throws ComponentNotReadyException {
+    private File createFile(String fileName, String baseName, String extension) 
+    	throws ComponentNotReadyException {
     	
     	if (StringUtils.isEmpty(fileName)) {
-    		try {
-				return new File(FileUtils.getFile(graph.getProjectURL(), baseName + "." + extension));
-			} catch (MalformedURLException e) {
-				throw new ComponentNotReadyException(e);
-			}
+   			return getFile(baseName + "." + extension);
     	}
     	
-    	return getFile(fileName, graph);
+    	return getFile(fileName);
     }
     
     /**
