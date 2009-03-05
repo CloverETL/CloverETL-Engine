@@ -831,7 +831,7 @@ public class MsSqlDataWriter extends BulkLoader {
 		try {
 			if (isDataReadFromPort) {
 				if (dataURL != null) {
-					dataFile = new File(dataURL);
+					dataFile = getFile(dataURL);
 				} else {
 					dataFile = File.createTempFile(DATA_FILE_NAME_PREFIX,
 					 DATA_FILE_NAME_SUFFIX, getTempDir());
