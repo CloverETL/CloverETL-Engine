@@ -48,7 +48,32 @@ public final class Defaults {
 		return p;
 	}
 
-	private static InputStream loadProperties(String resourcename) {
+	private static void initProperties(String configurationFile) {
+		InputStream is;
+		
+		//load defaults from build-in properties file as a java resource - defaultProperties
+		is = openResourceStream("defaultProperties");
+		if (is != null) {
+			appendProperties(loadPropertiesFromStream(is, "defaultPropeties"));
+		}
+
+		//name of a resource file with properties can be also specify via 'cloveretl.properties' system property
+		is = openResourceStream(System.getProperty("cloveretl.properties"));
+		if (is != null) {
+			appendProperties(loadPropertiesFromStream(is, "cloveretl.properties"));
+		}
+		
+		//properties file name can be also passed as method parameter - configurationFile
+		if (!StringUtils.isEmpty(configurationFile)) {
+			try {
+				appendProperties(loadPropertiesFromStream(new FileInputStream(configurationFile), configurationFile));
+			} catch (FileNotFoundException e) {
+				logger.warn("Unable to load properties from '" + configurationFile + "'.", e);
+			}
+		}
+	}
+
+	private static InputStream openResourceStream(String resourcename) {
 		if (resourcename == null || resourcename.length() == 0) {
 			return null;
 		}
@@ -67,60 +92,84 @@ public final class Defaults {
 		return in;
 	}
 
-	/**
-	 * Load clover engine properties.
-	 * 
-	 * @param configurationFile
-	 */
-	private static void initProperties(String configurationFile) {
-		InputStream in = null;
-		properties = new Properties();
-
-		if (!StringUtils.isEmpty(configurationFile)) {
-			// try to use given file name as a source of properties
-			try {
-				in = new FileInputStream(configurationFile);
-			} catch (FileNotFoundException e) {
-				logger.warn("Unable to load default properties from: " + configurationFile);
-			}
-		}
-		if (in == null) {
-			// other way use bundled configuration file inside engine binary package
-			in = loadProperties(System.getProperty("cloveretl.properties"));
-			if (in == null) {
-				in = loadProperties("defaultProperties");
-			}
-		}
-
+	private static Properties loadPropertiesFromStream(InputStream inputStream, String streamName) {
+		Properties prop = new Properties();
 		try {
-			properties.load(in);
+			prop.load(inputStream);
 		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				in.close();
-			} catch (IOException e) {
-				logger.warn("Unable to close properies stream: " + configurationFile);
-			}
+			logger.error("Unable to load properies stream: " + streamName, e);
+			return prop;
 		}
+		try {
+			inputStream.close();
+		} catch (IOException e) {
+			logger.warn("Unable to close properies stream: " + streamName);
+		}
+		return prop;
 	}
-
+	
+	private static void appendProperties(Properties prop) {
+		properties = new Properties(properties);
+		properties.putAll(prop);
+	}
+	
 	private static int getIntProperties(String key, int def) {
-		return Integer.parseInt(properties.getProperty(key, Integer.toString(def)));
+		String ret = getStringProperty(key);
+		
+		if (ret == null) {
+			return def;
+		}
+		
+		return Integer.parseInt(ret);
 	}
 
 	private static short getShortProperties(String key, short def) {
-		return Short.parseShort(properties.getProperty(key, Short.toString(def)));
+		String ret = getStringProperty(key);
+		
+		if (ret == null) {
+			return def;
+		}
+		
+		return Short.parseShort(ret);
 	}
 
 	private static String getStringProperties(String key, String def) {
-		return properties.getProperty(key, def);
+		String ret = getStringProperty(key);
+		
+		if (ret == null) {
+			return def;
+		}
+		
+		return ret;
 	}
 
 	private static boolean getBooleanProperties(String key, boolean def) {
-		return Boolean.parseBoolean(properties.getProperty(key, Boolean.toString(def)));
+		String ret = getStringProperty(key);
+		
+		if (ret == null) {
+			return def;
+		}
+		
+		return Boolean.parseBoolean(ret);
 	}
 
+	/**
+	 * Returns string form of property with the given key.
+	 * A value from the system properties has higher priority then local properties.
+	 */
+	private static String getStringProperty(String key) {
+		String ret = System.getProperty(key);
+		
+		if (ret == null) {
+			ret = properties.getProperty(key);
+		} else {
+			//update local variable - it is neccesary for late invoking of getPropertiesSnapshot()
+			properties.setProperty(key, ret);
+		}
+
+		return ret;
+	}
+	
 	// public static void init() {
 	// init(null);
 	// }
