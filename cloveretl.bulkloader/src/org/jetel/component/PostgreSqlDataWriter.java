@@ -21,7 +21,6 @@ package org.jetel.component;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -162,7 +161,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		if (isDataReadFromPort) {
 			if (dataURL != null) {
 				// dataFile is used for exchange data
-				readFromPortAndWriteByFormatter(new FileOutputStream(dataFile));
+				readFromPortAndWriteByFormatter();
 				box = createProcBox();
 			} else {
 				Process process = Runtime.getRuntime().exec(commandLine);
@@ -251,7 +250,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	String createCommandFile() throws ComponentNotReadyException {
 		try {
 			if (commandURL != null) {
-				commandFile = new File(commandURL);
+				commandFile = getFile(commandURL);
 				if (commandFile.exists()) {
 					return commandFile.getCanonicalPath();
 				} else {
@@ -418,7 +417,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		// prepare (temporary) data file
 		if (isDataReadFromPort) {
 			if (dataURL != null) {
-				dataFile = new File(dataURL);
+				dataFile = getFile(dataURL);
 				dataFile.delete();
 			}
 		} else {
