@@ -38,6 +38,11 @@ import org.jetel.util.string.StringUtils;
  */
 public class GraphRuntimeContext {
 
+	public static final boolean DEFAULT_VERBOSE_MODE = false;
+	public static final boolean DEFAULT_WAIT_FOR_JMX_CLIENT = false;
+	public static final boolean DEFAULT_USE_JMX = true;
+	public static final boolean DEFAULT_DEBUG_MODE = true;
+	
 	private long runId;
 	private String logLocation;
 	private Level logLevel;
@@ -54,12 +59,12 @@ public class GraphRuntimeContext {
 	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
-		useJMX = true;
-		waitForJMXClient = false;
-		verboseMode = false;
+		useJMX = DEFAULT_USE_JMX;
+		waitForJMXClient = DEFAULT_WAIT_FOR_JMX_CLIENT;
+		verboseMode = DEFAULT_VERBOSE_MODE;
 		additionalProperties = new Properties();
 		checkConfig = true;
-		debugMode = true;
+		debugMode = DEFAULT_DEBUG_MODE;
 	}
 	
 	/* (non-Javadoc)
