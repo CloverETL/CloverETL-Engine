@@ -166,6 +166,16 @@ public class CyclicRecordBuffer implements Iterable<DataRecord> {
 	}
 
 	/**
+	 * Clears the contents of the buffer.
+	 */
+	public void clear() {
+		writeIndex = 0;
+		numberOfRecords = 0;
+
+		numberOfModifications++;
+	}
+
+	/**
 	 * Returns an iterator over data records currently stored in the buffer from the first (oldest) one to the last
 	 * (newest) one. The iterator throws an exception if it detects a concurrent modification of the backing buffer.
 	 *
