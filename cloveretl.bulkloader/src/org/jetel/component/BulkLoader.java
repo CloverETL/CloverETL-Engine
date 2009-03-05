@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.jetel.data.DataRecord;
+import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
@@ -18,6 +19,7 @@ import org.jetel.graph.Node;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.DataConsumer;
+import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
@@ -102,6 +104,86 @@ public abstract class BulkLoader extends Node {
         isDataWrittenToPort = !getOutPorts().isEmpty();
 		
 		properties = parseParameters(parameters);
+		
+		preInit();
+		checkParams();
+		initDataFile();
+		commandLine = createCommandLineForLoadUtility();
+		if (isDataReadFromPort) {
+			initDataFormatter();
+		}
+		createConsumers();
+	}
+	
+	/**
+	 * This method can contain extra code executed before other code in init() method. 
+	 * @throws ComponentNotReadyException
+	 */
+	protected void preInit() throws ComponentNotReadyException {
+		// can be empty
+	}
+
+	/**
+	 * Checks if mandatory attributes are defined.
+	 * And check combination of some parameters.
+	 * 
+	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
+	 */
+	protected abstract void checkParams() throws ComponentNotReadyException;
+	
+	/**
+	 * Initialization of data and other temporary files used for loading.
+	 * 
+	 * @throws ComponentNotReadyException
+	 */
+	protected abstract void initDataFile() throws ComponentNotReadyException;
+	
+	/**
+     * Create command line for process, where load utility is running.
+     * 
+     * @return array first field is name of load utility and the others fields are parameters
+	 * @throws ComponentNotReadyException when command file isn't created
+     */
+	protected abstract String[] createCommandLineForLoadUtility() throws ComponentNotReadyException;
+	
+	/**
+	 * Initialization of data formatter used for loading data to the target that is read by load utility.
+	 * If this method isn't overridden then getColumnDelimiter() and getRecordDelimiter() 
+	 * methods must be implemented.
+	 * @throws ComponentNotReadyException
+	 */
+	protected void initDataFormatter() throws ComponentNotReadyException {
+		dbMetadata = createLoadUtilityMetadata(getColumnDelimiter(), getRecordDelimiter());
+
+		// init of data formatter
+		formatter = new DelimitedDataFormatter(CHARSET_NAME);
+		formatter.init(dbMetadata);
+	}
+
+	/**
+	 * Return column delimiter that is used for creating load utility metadata.
+	 * If initDataFormatter() method is overridden then this method couldn't be implemented.
+	 *	 
+	 * @return column delimiter that is used for creating load utility metadata
+	 */
+	protected abstract String getColumnDelimiter();
+	
+	/**
+	 * Return record delimiter that is used for creating load utility metadata.
+	 * If initDataFormatter() method is overridden then this method couldn't be implemented.
+	 *	 
+	 * @return record delimiter that is used for creating load utility metadata
+	 */
+	protected abstract String getRecordDelimiter();
+	
+	/**
+	 * Create consumers for reporting or parsing standard and error output 
+	 * from load utility process.
+	 * @throws ComponentNotReadyException
+	 */
+	protected void createConsumers() throws ComponentNotReadyException {
+		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
+		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
 	}
 
 	@Override

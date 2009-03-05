@@ -35,7 +35,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.util.CommandBuilder;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.BadDataFormatException;
@@ -50,7 +49,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.PortDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -642,14 +640,8 @@ public class MsSqlDataWriter extends BulkLoader {
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
-	/**
-	 * Create command line for process, where bcp utility is running.
-	 * Example: bcp dbName.tableName in data.dat -T -c
-	 * 
-	 * @return
-	 * @throws ComponentNotReadyException
-	 */
-	private String[] createCommandLineForDbLoader() throws ComponentNotReadyException {
+	@Override
+	protected String[] createCommandLineForLoadUtility() throws ComponentNotReadyException {
 		CommandBuilder cmdBuilder =	new CommandBuilder(properties, SWITCH_MARK, "");
 		
 		cmdBuilder.add(loadUtilityPath);
@@ -683,7 +675,9 @@ public class MsSqlDataWriter extends BulkLoader {
 		cmdBuilder.addBooleanParam(MS_SQL_KEEP_IDENTITY_VALUES_PARAM, MS_SQL_KEEP_IDENTITY_VALUES_SWITCH);
 		cmdBuilder.addParam(MS_SQL_LOAD_HINTS_PARAM, MS_SQL_LOAD_HINTS_SWITCH);
 		
-		return cmdBuilder.getCommand();
+		String[] ret = cmdBuilder.getCommand();
+		printCommandLineToLog(ret, logger);
+		return ret;
 	}
 
 	private String getDbTable() {
@@ -710,13 +704,8 @@ public class MsSqlDataWriter extends BulkLoader {
 		}
 	}
 
-	/**
-	 * Checks if mandatory attributes are defined.
-	 * And check combination of some parameters.
-	 * 
-	 * @throws ComponentNotReadyException if any of conditions isn't fulfilled
-	 */
-	private void checkParams() throws ComponentNotReadyException {
+	@Override
+	protected void checkParams() throws ComponentNotReadyException {
 		if (StringUtils.isEmpty(loadUtilityPath)) {
 			throw new ComponentNotReadyException(this, StringUtils.quote(XML_BCP_UTILITY_PATH_ATTRIBUTE)
 					+ " attribute have to be set.");
@@ -822,12 +811,20 @@ public class MsSqlDataWriter extends BulkLoader {
 		if (isInitialized()) return;
 		super.init();
 
-		checkParams();
+		if (isDataWrittenToPort) {
+			badRowReaderWriter = new MsSqlBadRowReaderWriter(getOutputPort(WRITE_TO_PORT));
+		}
+	}
+	
+	@Override
+	protected void preInit() throws ComponentNotReadyException {
 		getUserAndPassword();
 
 		isErrFileFromUser = properties.containsKey(MS_SQL_ERR_FILE_PARAM);
+	}
 
-		// prepare name for temporary data file
+	@Override
+	protected void initDataFile() throws ComponentNotReadyException {
 		try {
 			if (isDataReadFromPort) {
 				if (dataURL != null) {
@@ -855,27 +852,19 @@ public class MsSqlDataWriter extends BulkLoader {
 		} catch (IOException e) {
 			free();
 			throw new ComponentNotReadyException(this, "Some of the temp files can't be created.");
-		}
-
-		commandLine = createCommandLineForDbLoader();
-		printCommandLineToLog(commandLine, logger);
-
-		if (isDataReadFromPort) {
-			dbMetadata = createLoadUtilityMetadata(getColumnDelimiter(false), getRecordDelimiter(false));
-
-			// init of data formatter
-			formatter = new DelimitedDataFormatter(CHARSET_NAME);
-			formatter.init(dbMetadata);
-		}
-
-		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
-		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_INFO, 0);
-
-		if (isDataWrittenToPort) {
-			badRowReaderWriter = new MsSqlBadRowReaderWriter(getOutputPort(WRITE_TO_PORT));
-		}
+		}		
 	}
 	
+	@Override
+	protected String getColumnDelimiter() {
+		return getColumnDelimiter(false);
+	}
+
+	@Override
+	protected String getRecordDelimiter() {
+		return getRecordDelimiter(false);
+	}
+
 	/**
 	 * Get column delimiter.
 	 */
