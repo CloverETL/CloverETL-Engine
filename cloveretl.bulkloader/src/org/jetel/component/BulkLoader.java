@@ -15,7 +15,6 @@ import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.DataConsumer;
@@ -489,27 +488,25 @@ public abstract class BulkLoader extends Node {
 	/**
      * Creates absolute file path based on file and graph's projectURL. 
      * @param file file
-     * @param graph it is used for getting projectURL - for converting relative to absolute path
      * @return
      * @throws ComponentNotReadyException
      */
-	protected static String getFilePath(File file, TransformationGraph graph) throws ComponentNotReadyException {
+	protected String getFilePath(File file) throws ComponentNotReadyException {
     	if (file == null) {
     		return null;
     	}
     	
-    	return getFilePath(file.getPath(), graph);
+    	return getFilePath(file.getPath());
     }
     
 	/**
      * Creates absolute file path based on fileName string and graph's projectURL. 
      * @param fileName name of the file
-     * @param graph it is used for getting projectURL - for converting relative to absolute path
      * @return
      * @throws ComponentNotReadyException
      */
-	protected static String getFilePath(String fileName, TransformationGraph graph) throws ComponentNotReadyException {
-    	File file = getFile(fileName, graph);
+	protected String getFilePath(String fileName) throws ComponentNotReadyException {
+    	File file = getFile(fileName);
     	if (file == null) {
     		return null;
     	}
@@ -524,17 +521,16 @@ public abstract class BulkLoader extends Node {
     /**
      * Creates File object based on fileName string and graph's projectURL. 
      * @param fileName name of the file
-     * @param graph it is used for getting projectURL - for converting relative to absolute path
      * @return
      * @throws ComponentNotReadyException
      */
-    protected static File getFile(String fileName, TransformationGraph graph) throws ComponentNotReadyException {
+    protected File getFile(String fileName) throws ComponentNotReadyException {
     	if (StringUtils.isEmpty(fileName)) {
     		return null;
     	}
     	
 		try {
-			return new File(FileUtils.getFile(graph.getProjectURL(), fileName));
+			return new File(FileUtils.getFile(getGraph().getProjectURL(), fileName));
 		} catch (MalformedURLException mue) {
 			throw new ComponentNotReadyException(mue);
 		}
