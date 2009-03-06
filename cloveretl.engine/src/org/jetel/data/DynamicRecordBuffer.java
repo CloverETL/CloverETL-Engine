@@ -49,8 +49,8 @@ public class DynamicRecordBuffer {
 	private File tmpFile;
 	private String tmpFilePath;
 
-	private ByteBuffer readDataBuffer;
-    private ByteBuffer writeDataBuffer;
+	protected ByteBuffer readDataBuffer;
+    protected ByteBuffer writeDataBuffer;
     private ByteBuffer tmpDataRecord;
 
 	private LinkedList<DiskSlot> emptyFileBuffers;
@@ -453,18 +453,6 @@ public class DynamicRecordBuffer {
      */
     public int getBufferedRecords() {
         return bufferedRecords.get();
-    }
-    
-    
-    /**
-     * Remove data from writeDataBuffer and put it to readDataBuffer.
-     */
-    protected synchronized void swapWriteBufferToReadBuffer() {
-    	writeDataBuffer.flip();
-        readDataBuffer.clear();
-        readDataBuffer.put(writeDataBuffer);
-        readDataBuffer.flip();
-        writeDataBuffer.clear();
     }
     
     private static class DiskSlot {

@@ -21,10 +21,12 @@ package org.jetel.component;
 
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.DynamicRecordBuffer;
 import org.jetel.data.RecordKey;
+import org.jetel.data.RingRecordBuffer;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -34,7 +36,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -82,6 +83,7 @@ import org.w3c.dom.Element;
  * @revision    $Revision$
  */
 public class Dedup extends Node {
+    private static final Log logger = LogFactory.getLog(Dedup.class);
 
 	private static final String XML_KEEP_ATTRIBUTE = "keep";
 	private static final String XML_DEDUPKEY_ATTRIBUTE = "dedupKey";
@@ -118,6 +120,8 @@ public class Dedup extends Node {
     OutputPort rejectedPort;
     DataRecord[] records;
 
+    //'last' dedup operation specific variables
+    private RingRecordBuffer ringBuffer;
     
 	/**
 	 *Constructor for the Dedup object
@@ -207,6 +211,15 @@ public class Dedup extends Node {
 		}
     }
 	
+	/**
+	 * Specific initialization for the 'last' dedup operation.
+	 * @throws ComponentNotReadyException
+	 */
+	private void initLast() throws ComponentNotReadyException {
+    	ringBuffer = new RingRecordBuffer(noDupRecord);
+		ringBuffer.init();
+	}
+	
     /**
      * Execution a de-duplication with last function.
      * 
@@ -214,30 +227,50 @@ public class Dedup extends Node {
      * @throws InterruptedException
      */
     public void executeLast() throws IOException, InterruptedException {
-    	RingRecordBuffer ringBuffer = new RingRecordBuffer(noDupRecord, inPort.getMetadata());
-		ringBuffer.init();
-
     	while (runIt && 
     			(records[current] = inPort.readRecord(records[current])) != null) {
             if (isFirst) {
                 isFirst = false;
             } else {
                 if (isChange(records[current], records[previous])) {
-                	ringBuffer.flushRecords();
-                	ringBuffer.clear();
+                	while (ringBuffer.popRecord(records[previous]) != null) {
+                		writeRecordBroadcast(records[previous]);
+                	}
+                	ringBuffer.reset();
                 }
             }
-            ringBuffer.writeRecord(records[current]);
+            ringBuffer.pushRecord(records[current]);
 
             // swap indexes
             current = current ^ 1;
             previous = previous ^ 1;
         }
     	
-    	ringBuffer.flushRecords();
-        ringBuffer.free();
+    	while (ringBuffer.popRecord(records[previous]) != null) {
+    		writeRecordBroadcast(records[previous]);
+    	}
+    	ringBuffer.reset();
     }
 
+	/**
+	 * Specific reset method for the 'last' dedup operation.
+	 * @throws ComponentNotReadyException
+	 */
+	private void resetLast() throws ComponentNotReadyException {
+		ringBuffer.reset();
+	}
+
+	/**
+	 * Specific release method for the 'last' dedup operation.
+	 */
+	private void freeLast() {
+		try {
+			ringBuffer.free();
+		} catch (IOException e) {
+			logger.warn(e);
+		}
+	}
+	
     /**
      * Execution a de-duplication with unique function.
      * 
@@ -344,15 +377,51 @@ public class Dedup extends Node {
         			StringUtils.quote(XML_NO_DUP_RECORD_ATTRIBUTE) 
         			+ " must be positive number.");
         }
+
+        //operation specific initialization 
+    	switch(keep) {
+        case KEEP_FIRST:
+            break;
+        case KEEP_LAST:
+        	initLast();
+            break;
+        case KEEP_UNIQUE:
+            break;
+        }
 	}
 
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 	
-		//DO NOTHING
+		//operation specific reset
+		switch(keep) {
+        case KEEP_FIRST:
+            break;
+        case KEEP_LAST:
+            resetLast();
+            break;
+        case KEEP_UNIQUE:
+            break;
+        }
 	}
 
+	@Override
+	public synchronized void free() {
+		super.free();
+		
+		//operation specific free
+		switch(keep) {
+        case KEEP_FIRST:
+            break;
+        case KEEP_LAST:
+            freeLast();
+            break;
+        case KEEP_UNIQUE:
+            break;
+        }
+	}
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -467,131 +536,5 @@ public class Dedup extends Node {
 		this.noDupRecord = numberRecord;
 	}
 	
-	
-	/**
-	 * Class containing DynamicRecordBuffer backed by temporary file - i.e. unlimited
-	 * size<br>
-	 * Data is written by writeRecord() method - when buffer is full (user defined 
-	 * number of records) then the oldest record in buffer is removed and pass to 
-	 * writeRejectedRecord() method. 
-	 * At last remaining data from buffer is pass to writeOutRecord() method.
-	 * 
-	 * @author 		Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz)
-	 *		   		(c) Javlin Consulting (www.javlinconsulting.cz)
-	 * @since 		30.11.2007
-	 */
-	private class RingRecordBuffer {
-		private DynamicRecordBufferExt recordBuffer;
-		private DataRecordMetadata metadata;
-		private DataRecord tmpRecord;
-		
-		/**
-		 * Max number of records presented in buffer.
-		 * State (number of records) before or after call any of method.
-		 */
-		private long sizeOfBuffer;
-		
-		/**
-		 * @param sizeOfBuffer max number of records presented in buffer
-		 * @param metadata metadat of records that will be stored in buffer.
-		 */
-		public RingRecordBuffer(long sizeOfBuffer, DataRecordMetadata metadata) {
-			this.sizeOfBuffer = sizeOfBuffer;
-			this.metadata = metadata;
-		}
-
-		
-		/**
-	     * Initializes the buffer and temporary variables.
-	     * Must be called before any write or read operation is performed.
-	     */
-		public void init() {
-			recordBuffer = new DynamicRecordBufferExt();
-			recordBuffer.init();
-			
-			tmpRecord = new DataRecord(metadata);
-			tmpRecord.init();
-		}
-		
-		/**
-		 *  Closes buffer, removes temporary file (is exists).
-		 */
-		public void free() {
-			try {
-	            recordBuffer.close();
-	        } catch (IOException e) {
-	            //do nothing
-	        }
-		}
-		
-		
-		/**
-		 * Adds record to the ring buffer - when buffer is full then the oldest 
-		 * record in buffer is removed and pass to writeRejectedRecord() method. 
-		 * @param record record that will be added to the ring buffer
-		 * @throws IOException
-		 * @throws InterruptedException
-		 */
-		public void writeRecord(DataRecord record) throws IOException, 
-				InterruptedException {
-			recordBuffer.writeRecord(record);
-
-			if (recordBuffer.getBufferedRecords() > sizeOfBuffer) {
-				if (!recordBuffer.hasData()) {
-					recordBuffer.swapBuffers();
-				}
-				
-				tmpRecord = recordBuffer.readRecord(tmpRecord);
-				writeRejectedRecord(tmpRecord);
-			}
-		}
-		
-		/**
-		 * Flush all records from buffer to out port.
-		 * @throws IOException
-		 * @throws InterruptedException
-		 */
-		public void flushRecords() throws IOException, InterruptedException {
-			while (recordBuffer.getBufferedRecords() > 0) {
-				if (!recordBuffer.hasData()) {
-					recordBuffer.swapBuffers();
-				}
-				tmpRecord = recordBuffer.readRecord(tmpRecord);
-				writeOutRecord(tmpRecord);
-			}
-		}
-		
-		/**
-		 * Clears the buffer. Temp file (if it was created) remains
-		 * unchanged size-wise
-		 */
-		public void clear() {
-			recordBuffer.reset();
-		}
-	}
-	
-	/**
-	 * Class extends DynamicRecordBuffer backed by temporary file - i.e. unlimited
-	 * size<br>
-	 * Only extension is that swapBuffers() method is added.
- 	 *  
-	 * 
-	 * @author 		Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz)
-	 *		   		(c) Javlin Consulting (www.javlinconsulting.cz)
-	 * @since 		30.11.2007
-	 */
-	private class DynamicRecordBufferExt extends DynamicRecordBuffer {
-
-		public DynamicRecordBufferExt() {
-			super(Defaults.Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE);
-		}
-		
-		/**
-	     * Remove data from writeDataBuffer and put it to readDataBuffer.
-	     */
-		public void swapBuffers() {
-			swapWriteBufferToReadBuffer();
-		}
-	}
 }
 
