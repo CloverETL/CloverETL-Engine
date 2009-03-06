@@ -8,13 +8,13 @@
 	</FunctionalTest>
 
 	<FunctionalTest ident="PostgreDataWriter" graphFile="graph/graphPostgreSqlDataWriter.grf">
-		  <Wildcard>
-	      	<SQLStatement connection="postgre">DELETE FROM test</SQLStatement>
-	      </Wildcard>
-	      <DBTableComparison>
-	      	 <OutputTable name="test" connection="postgre"/>
-	      	 <SupposedTable name="test_supposed" connection="postgre"/>
-	      </DBTableComparison>
+	      <SQLStatement connection="postgre">DELETE FROM test</SQLStatement>
+	      <DBTableToTable
+	      	 outputTable="test" 
+	      	 outputTableConnection="postgre"
+	      	 supposedTable="test_supposed"
+	      	 supposedTableConnection="postgre"
+	      />
 	</FunctionalTest>
 	
 	<FunctionalTest ident="OracleDataWriter" graphFile="graph/graphOracleDataWriter.grf">
