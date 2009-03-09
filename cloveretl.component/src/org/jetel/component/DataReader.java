@@ -274,7 +274,6 @@ public class DataReader extends Node {
 		TransformationGraph graph = getGraph();
         reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
         reader.setLogger(logger);
-        reader.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : (skipFirstLine ? 1 : 0));
         reader.setSkip(skipRows);
         reader.setNumSourceRecords(numSourceRecords);
         reader.setNumRecords(numRecords);
@@ -283,6 +282,16 @@ public class DataReader extends Node {
         reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
         reader.setCharset(charset);
         reader.setDictionary(graph.getDictionary());
+
+        // skip source rows
+        for (DataRecordMetadata dataRecordMetadata: getOutMetadata()) {
+        	int ssr = dataRecordMetadata.getSkipSourceRows();
+        	if (ssr > 0) {
+                skipSourceRows = ssr;
+                break;
+        	}
+        }
+        reader.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : (skipFirstLine ? 1 : 0));
 	}
 
 	@Override
