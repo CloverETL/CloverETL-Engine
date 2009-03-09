@@ -284,12 +284,14 @@ public class DataReader extends Node {
         reader.setDictionary(graph.getDictionary());
 
         // skip source rows
-        for (DataRecordMetadata dataRecordMetadata: getOutMetadata()) {
-        	int ssr = dataRecordMetadata.getSkipSourceRows();
-        	if (ssr > 0) {
-                skipSourceRows = ssr;
-                break;
-        	}
+        if (skipSourceRows == -1) {
+            for (DataRecordMetadata dataRecordMetadata: getOutMetadata()) {
+            	int ssr = dataRecordMetadata.getSkipSourceRows();
+            	if (ssr > 0) {
+                    skipSourceRows = ssr;
+                    break;
+            	}
+            }
         }
         reader.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : (skipFirstLine ? 1 : 0));
 	}

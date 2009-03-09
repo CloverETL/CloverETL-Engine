@@ -37,6 +37,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -109,6 +110,8 @@ public class DBFDataReader extends Node {
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
     private static final String XML_RECORD_SKIP_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
+	private static final String XML_SKIP_SOURCE_ROWS_ATTRIBUTE = "skipSourceRows";
+	private static final String XML_NUM_SOURCE_RECORDS_ATTRIBUTE = "numSourceRecords";
 	private static final String XML_INCREMENTAL_FILE_ATTRIBUTE = "incrementalFile";
 	private static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
 
@@ -122,8 +125,10 @@ public class DBFDataReader extends Node {
     private MultiFileReader reader;
     private PolicyType policyType;
 	private String fileURL;
-    private int skipRows=0; // do not skip rows by default
+    private int skipRows=-1; // do not skip rows by default
     private int numRecords = -1;
+	private int skipSourceRows = -1;
+	private int numSourceRecords = -1;
     private String incrementalFile;
     private String incrementalKey;
 
@@ -241,6 +246,18 @@ public class DBFDataReader extends Node {
         reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
         reader.setLogger(logger);
         reader.setSkip(skipRows);
+        reader.setNumSourceRecords(numSourceRecords);
+        // skip source rows
+        if (skipSourceRows == -1) {
+            for (DataRecordMetadata dataRecordMetadata: getOutMetadata()) {
+            	int ssr = dataRecordMetadata.getSkipSourceRows();
+            	if (ssr > 0) {
+                    skipSourceRows = ssr;
+                    break;
+            	}
+            }
+        }
+        reader.setSkipSourceRows(skipSourceRows);
         reader.setNumRecords(numRecords);
         reader.setIncrementalFile(incrementalFile);
         reader.setIncrementalKey(incrementalKey);
@@ -313,6 +330,12 @@ public class DBFDataReader extends Node {
 			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
 				dbfDataReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_SKIP_SOURCE_ROWS_ATTRIBUTE)){
+				dbfDataReader.setSkipSourceRows(xattribs.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
+				dbfDataReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
+			}
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
@@ -375,6 +398,19 @@ public class DBFDataReader extends Node {
         this.numRecords = Math.max(numRecords, 0);
     }
 
+	/**
+	 * @param how many rows to skip for every source
+	 */
+	public void setSkipSourceRows(int skipSourceRows) {
+		this.skipSourceRows = Math.max(skipSourceRows, 0);
+	}
+	
+	/**
+	 * @param how many rows to process for every source
+	 */
+	public void setNumSourceRecords(int numSourceRecords) {
+		this.numSourceRecords = Math.max(numSourceRecords, 0);
+	}
     
     public void setPolicyType(String strPolicyType) {
         setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
