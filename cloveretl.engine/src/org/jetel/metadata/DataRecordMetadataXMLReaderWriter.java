@@ -157,7 +157,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String COMPRESSED_ATTR = "compressed";
 	private static final String SHIFT_ATTR = "shift";
 	private static final String SIZE_ATTR = "size";
-	private static final String SKIP_SOURCE_ROW_ATTR = "skipSourceRow";
+	private static final String SKIP_SOURCE_ROW_ATTR = "skipSourceRows";
 	private static final String AUTO_FILLING_ATTR = "auto_filling";
 	public static final String CONNECTION_ATTR = "connection";
 		
@@ -510,7 +510,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		} catch (NumberFormatException e) {
 			// ignore 
 		}
-		recordMetadata.setRecordSize(iSkipSourceRows);
+		recordMetadata.setSkipSourceRows(iSkipSourceRows);
 
 		/*
 		 * parse metadata of FIELDs
