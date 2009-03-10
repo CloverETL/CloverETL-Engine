@@ -221,6 +221,7 @@ public class XMLExtract extends Node {
     private static final String XML_SEQUENCEID = "sequenceId";
     private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
+	private static final String XML_TRIM_ATTRIBUTE = "trim";
     private static final String XML_XML_FEATURES_ATTRIBUTE = "xmlFeatures";
 
     private static final String FEATURES_DELIMETER = ";";
@@ -258,6 +259,8 @@ public class XMLExtract extends Node {
 	private String xmlFeatures;
 
 	private String charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
+
+	private boolean trim = true;
 
     /**
      * SAX Handler that will dispatch the elements to the different ports.
@@ -471,7 +474,7 @@ public class XMLExtract extends Node {
                     // to null
                     if (m_hasCharacters) {
 	                    try {
-	                        field.fromString(m_characters.toString().trim());
+	                        field.fromString(trim ? m_characters.toString().trim() : m_characters.toString());
 	                    } catch (BadDataFormatException ex) {
 	                        // This is a bit hacky here SOOO let me explain...
 	                        if (field.getType() == DataFieldMetadata.DATE_FIELD) {
@@ -490,10 +493,8 @@ public class XMLExtract extends Node {
 	                                        + m_characters
 	                                        .substring(m_characters
 	                                        .lastIndexOf(":") + 1);
-	                                DateFormat format = new SimpleDateFormat(
-	                                        field.getMetadata().getFormatStr());
-	                                field.setValue(format
-	                                        .parse(dateTime.trim()));
+	                                DateFormat format = new SimpleDateFormat(field.getMetadata().getFormatStr());
+	                                field.setValue(format.parse(trim ? dateTime.trim() : dateTime));
 	                            } catch (Exception ex2) {
 	                                // Oh well we tried, throw the originating
 	                                // exception
@@ -1036,12 +1037,23 @@ public class XMLExtract extends Node {
             	extract.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
             }
             
+			if (xattribs.exists(XML_TRIM_ATTRIBUTE)){
+				extract.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
+			}
             return extract;
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
     }
     
+    /**
+     * Sets the trim indicator.
+     * @param trim
+     */
+	private void setTrim(boolean trim) {
+		this.trim = trim;
+	}
+
 	/**
      * Creates org.w3c.dom.Document object from the given String.
      * 
