@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="customer" recordDelimiter="\n" recordSize="212" type="fixed">
+<Field name="customer_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="account_num" nullable="true" shift="0" size="11" type="long"/>
+<Field name="lname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="fname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="mi" nullable="true" shift="0" size="4" type="string"/>
+<Field name="address1" nullable="true" shift="0" size="30" type="string"/>
+<Field name="city" nullable="true" shift="0" size="7" type="string"/>
+<Field name="state_province" nullable="true" shift="0" size="6" type="string"/>
+<Field name="postal_code" nullable="true" shift="0" size="5" type="string"/>
+<Field name="country" nullable="true" shift="0" size="5" type="string"/>
+<Field name="customer_region_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="phone1" nullable="true" shift="0" size="12" type="string"/>
+<Field name="phone2" nullable="true" shift="0" size="12" type="string"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="birthdate" nullable="true" shift="0" size="15" type="date"/>
+<Field name="marital_status" nullable="true" shift="0" size="1" type="string"/>
+<Field name="yearly_income" nullable="true" shift="0" size="13" type="string"/>
+<Field name="gender" nullable="true" shift="0" size="1" type="string"/>
+<Field name="total_children" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="num_children_at_home" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="education" nullable="true" shift="0" size="15" type="string"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="date_accnt_opened" nullable="true" shift="0" size="15" type="date"/>
+<Field name="member_card" nullable="true" shift="0" size="8" type="string"/>
+<Field name="occupation" nullable="true" shift="0" size="20" type="string"/>
+<Field name="houseowner" nullable="true" shift="0" size="1" type="string"/>
+<Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
+</Record>
