@@ -35,6 +35,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
@@ -223,22 +224,25 @@ public class TextTableFormatter implements Formatter {
 		//for each record field which is in mask change its name to value
 		int i = 0;
 		try {
-	        Object o;
+	        DataField dataField;
 			for (i=0;i<maskAnalize.length;i++){
 				if (dataBuffer.remaining() < fieldBuffer.limit()+blank.capacity()){
 					directFlush();
 				}
 				//change field value to bytes
 				fieldBuffer.clear();
-				record.getField(maskAnalize[i].index).toByteBuffer(fieldBuffer, encoder);
+				dataField = record.getField(maskAnalize[i].index);
+				dataField.toByteBuffer(fieldBuffer, encoder);
 				fieldBuffer.flip();
 	            
 				blank.clear();
-				o = record.getField(maskAnalize[i].index);
-				if (o == null) {
+				if (dataField == null) {
 					blank.limit(maskAnalize[i].length);
 				} else {
-					lenght = maskAnalize[i].length - (new String(o.toString().getBytes(charSet)).length()); // fieldBuffer.limit() is wrong - encoding
+					// (new String(dataField.toString().getBytes(charSet)).length()); - right: encodes to charset, another parser decodes from charset. 
+					//                                                                         So you takes the lenght from original string 
+					// fieldBuffer.limit() is wrong too - encoding
+					lenght = maskAnalize[i].length - dataField.toString().length();  
 					blank.limit(lenght > 0 ? lenght : 0); // analyzed just n record -> some rows can be longer  
 				}
 	            mark=dataBuffer.position();

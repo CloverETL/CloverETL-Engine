@@ -176,7 +176,7 @@ public class SimpleDataGenerator extends DataGenerator {
 		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
 		record.init();
 		for (int i=0;i<recordsNumber && runIt;i++){
-			record = recordGenerator.getNext();
+			record = recordGenerator.getNext(record);
 			autoFilling.setAutoFillingFields(record);
 			writeRecordBroadcast(record);
 		}

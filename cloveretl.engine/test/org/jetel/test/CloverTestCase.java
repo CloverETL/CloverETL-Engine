@@ -1,8 +1,8 @@
 package org.jetel.test;
 
-import org.jetel.graph.runtime.EngineInitializer;
-
 import junit.framework.TestCase;
+
+import org.jetel.graph.runtime.EngineInitializer;
 
 public abstract class CloverTestCase extends TestCase {
 
@@ -30,7 +30,7 @@ public abstract class CloverTestCase extends TestCase {
 
 		System.out.println("Cloveretl plugins: " + pluginsDir);
 		EngineInitializer.initEngine(pluginsDir, null, null);
-		EngineInitializer.forceActivateAllPlugins();
+		EngineInitializer.forceActivateAllPlugins(true);
 	}
 
 }

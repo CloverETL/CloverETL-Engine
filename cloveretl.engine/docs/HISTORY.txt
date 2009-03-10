@@ -9,6 +9,15 @@ REL 2-7-0
 	- NYSIIS
 +  DBExecute can read statements from input port
 
+REL 2-6-3
+---------
+Features:
++ the DBInputTable and the DataGenerator use more effective data record allocation during a parsing process
+
+Fixed:
++ incremental reading with the Universal Data Reader is fixed
++ the System Execute component now works even without specified an output file or an output edge
+
 REL 2-6-2
 ---------
 Features:

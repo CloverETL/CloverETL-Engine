@@ -509,6 +509,7 @@ public class DataParser implements Parser {
 	
 	private int readChar() throws IOException {
 		char character;
+		int size;
         CoderResult result;
 
 		if(tempReadBuffer.length() > 0) {
@@ -537,8 +538,10 @@ public class DataParser implements Parser {
         else
         	byteBuffer.clear();
 
-        if (reader.read(byteBuffer) == -1) {
+        if ((size = reader.read(byteBuffer)) == -1) {
             isEof = true;
+        } else {
+        	bytesProcessed += size;
         }
         byteBuffer.flip();
 

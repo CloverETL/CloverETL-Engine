@@ -102,13 +102,14 @@ public class EngineInitializer {
     }
 
     /**
-     * This method force engine to activate all plugins at once.
+     * This method forces engine to activate all plugins at once.
      * For engine initialization it is not necessary to call this method,
      * lazy initialization is perfect for most usage of clover engine.
      * This functionality is now used for example by clover GUI.
+     * @param lazyClassLoading whether the class references are actively loaded by the plugin system
      */
-    public static void forceActivateAllPlugins() {
-    	Plugins.activateAllPlugins();
+    public static void forceActivateAllPlugins(boolean lazyClassLoading) {
+    	Plugins.activateAllPlugins(lazyClassLoading);
     }
 
     private static void initLogging(String logHost) {
