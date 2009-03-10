@@ -51,4 +51,32 @@
        	<SQLStatement connection="postgre">DELETE FROM employee_tmp</SQLStatement>
 	</FunctionalTest>
 
+	<FunctionalTest ident="AproximativeJoin" graphFile="graph/graphAproximativeJoin.grf">
+        <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/conformingKeyGenerator.txt" supposedFile="supposed-out/conforming.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/conformingMetaphone.txt" supposedFile="supposed-out/conforming.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/conformingNYSIIS.txt" supposedFile="supposed-out/conforming.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/conformingSoundex.txt" supposedFile="supposed-out/conforming.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/suspicoiusKeyGenerator.txt" supposedFile="supposed-out/suspicoiusKeyGenerator.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/suspicoiusMetaphone.txt" supposedFile="supposed-out/suspicoiusMetaphone.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/suspicoiusNYSIIS.txt" supposedFile="supposed-out/suspicoiusMetaphone.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/suspicoiusSoundex.txt" supposedFile="supposed-out/suspicoiusMetaphone.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/customersKeyGenerator.txt" supposedFile="supposed-out/empty.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/conformingMetaphone.txt" supposedFile="supposed-out/empty.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/conformingNYSIIS.txt" supposedFile="supposed-out/empty.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/conformingSoundex.txt" supposedFile="supposed-out/empty.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/employeeKeyGenerator.txt" supposedFile="supposed-out/employeeKeyGenerator.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/employeeMetaphone.txt" supposedFile="supposed-out/employeeMetaphone.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/employeeNYSIIS.txt" supposedFile="supposed-out/employeeMetaphone.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/employeeSoundex.txt" supposedFile="supposed-out/employeeMetaphone.AproximativeJoin.txt"/>	                                                                    
+	</FunctionalTest>
+
+	<FunctionalTest ident="CheckForeignKey" graphFile="graph/graphCheckForeignKey.grf">
+        <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/wrongKey.out" supposedFile="supposed-out/wrongKey.CheckForeignKey.out"/>	                                                                    
+	</FunctionalTest>
+
+	<FunctionalTest ident="DBExecuteMsSql" graphFile="graph/graphDBExecuteMsSql.grf">
+        <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
+	</FunctionalTest>
 </TestScenario>
