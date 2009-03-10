@@ -27,17 +27,44 @@ import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Represents an interface of a rollup transform which processes groups of data records. Each group of data records
- * shares an output data record, referred to as a group "accumulator". This group "accumulator" is initialized when
- * the first data record of the group is encountered and updated for each data record in the group (including the first
- * and the last data record). When the last data record of the group is encountered, the processing of the group is
- * finished and the group "accumulator" can be sent to the output. Intermediate states of the group "accumulator" can
- * be publishes as well.
+ * <p>Represents an interface of a rollup transform which processes groups of data records. Each group of data records
+ * shares a data record referred to as a group "accumulator". This group "accumulator" is initialized when the first
+ * data record of the group is encountered and updated for each data record in the group (including the first and
+ * the last data record). When the last data record of the group is encountered, the processing of the group is
+ * finished and the group "accumulator" is disposed.</p>
+ * <p>The lifecycle of a rollup transform is as follows:</p>
+ * <ul>
+ *   <li>The {@link #init(Properties, DataRecordMetadata, DataRecordMetadata, DataRecordMetadata)} method is called
+ *   to initialize the transform.</li>
+ *   <li>For each input data record as a current data record:
+ *     <ul>
+ *       <li>If the current data record belongs to a new group:
+ *         <ul>
+ *           <li>A group "accumulator" is created.</li>
+ *           <li>The {@link #initGroup(DataRecord, DataRecord)} method is called to initialize the group "accumulator".</li>
+ *         </ul>
+ *       </li>
+ *       <li>The {@link #updateGroup(DataRecord, DataRecord)} method is called for the current data record and
+ *       the corresponding group "accumulator".</li>
+ *       <li>If the method returned <code>true</code>, the {@link #transform(DataRecord, DataRecord, DataRecord)}
+ *       method is called repeatedly to generate an output data record until it returns <code>false</code>.</li>
+ *       <li>If the current data record is the last one in its group:
+ *         <ul>
+ *           <li>The {@link #finishGroup(DataRecord, DataRecord)} method is called to finish the group processing.</li>
+ *           <li>If the method returned <code>true</code>, the {@link #transform(DataRecord, DataRecord, DataRecord)}
+ *           method is called repeatedly to generate an output data record until it returns <code>false</code>.</li>
+ *           <li>The contents of the group accumulator is disposed.</li>
+ *         </ul>
+ *       </li>
+ *     </ul>
+ *   </li>
+ *   <li>The {@link #free()} method is called to free any allocated resources.</li>
+ * </ul> 
  *
  * @author Martin Zatopek, Javlin a.s. &lt;martin.zatopek@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 24th February 2009
+ * @version 10th March 2009
  * @since 24th February 2009
  */
 public interface RecordRollup {
@@ -48,50 +75,67 @@ public interface RecordRollup {
      *
      * @param parameters global graph parameters and parameters defined for the component which calls this transformation
      * @param inputMetadata meta data of input data records
+     * @param accumulatorMetadata meta data of a group "accumulator" used to store intermediate results
      * @param outputMetadata meta data of output data records
      *
      * @throws ComponentNotReadyException if an error occurred during the initialization
      */
-    public void init(Properties parameters, DataRecordMetadata inputMetadata, DataRecordMetadata outputMetadata)
-            throws ComponentNotReadyException;
+    public void init(Properties parameters, DataRecordMetadata inputMetadata, DataRecordMetadata accumulatorMetadata,
+            DataRecordMetadata outputMetadata) throws ComponentNotReadyException;
 
     /**
-     * This method is called for the first data record in a group. Any internal group initialization code and/or
-     * initialization of the output data record should be placed here.
+     * This method is called for the first data record in a group. Any initialization of the group "accumulator" should
+     * be placed here.
      *
      * @param inputRecord the first input data record in the group
-     * @param outputRecord the output data record that will be used as an "accumulator" for the group
+     * @param groupAccumulator the data record used as an "accumulator" for the group
      *
      * @throws TransformException if any error occurred during the initialization
      */
-    public void initGroup(DataRecord inputRecord, DataRecord outputRecord) throws TransformException;
+    public void initGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException;
 
     /**
      * This method is called for each data record (including the first one as well as the last one) in a group
      * in order to update the group "accumulator".
      *
      * @param inputRecord the current input data record
-     * @param outputRecord the output data record that serves as a group "accumulator"
+     * @param groupAccumulator the data record used as an "accumulator" for the group
      *
-     * @return <code>true</code> if the intermediate output data record should be sent to the output,
-     * <code>false</code> otherwise
+     * @return <code>true</code> if the {@link #transform(DataRecord, DataRecord, DataRecord)} method should be called
+     * to generate an output data record and send it to the output, <code>false</code> otherwise
      *
      * @throws TransformException if any error occurred during the update
      */
-    public boolean updateGroup(DataRecord inputRecord, DataRecord outputRecord) throws TransformException;
+    public boolean updateGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException;
 
     /**
      * This method is called for the last data record in a group in order to finish the group processing.
      *
      * @param inputRecord the last input data record
-     * @param outputRecord the output data record that serves as a group "accumulator"
+     * @param groupAccumulator the data record used as an "accumulator" for the group
      *
-     * @return <code>true</code> if the complete output data record should be sent to the output,
-     * <code>false</code> otherwise
+     * @return <code>true</code> if the {@link #transform(DataRecord, DataRecord, DataRecord)} method should be called
+     * to generate an output data record and send it to the output, <code>false</code> otherwise
      *
      * @throws TransformException if any error occurred during the final processing
      */
-    public boolean finishGroup(DataRecord inputRecord, DataRecord outputRecord) throws TransformException;
+    public boolean finishGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException;
+
+    /**
+     * This method is used to generate an output data record based on the input data record and the contents of the
+     * group "accumulator". The output data record will be sent the output when this method finishes.
+     *
+     * @param inputRecord the current input data record
+     * @param groupAccumulator the data record used as an "accumulator" for the group
+     * @param outputRecord the output data record to be filled with data
+     *
+     * @return <code>true</code> if this method should be called again to generate another output data record,
+     * <code>false</code> otherwise
+     *
+     * @throws TransformException if any error occurred during the transformation
+     */
+    public boolean transform(DataRecord inputRecord, DataRecord groupAccumulator, DataRecord outputRecord)
+            throws TransformException;
 
     /**
      * Resets the rollup transformation to the initial state (for another execution). This method can be called only
