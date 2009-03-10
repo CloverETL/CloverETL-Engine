@@ -100,6 +100,11 @@ public class BadDataFormatException extends RuntimeException implements Iterable
             ret.append(recordNumber);
         }
         
+        if(offendingValue != null) {
+            ret.append(", value: '");
+            ret.append(offendingValue);
+            ret.append("'");
+        }
         
         return ret.toString();
     }
