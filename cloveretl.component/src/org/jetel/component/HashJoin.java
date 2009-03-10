@@ -561,7 +561,7 @@ public class HashJoin extends Node {
 			// we need to generate all combinations of slaves 
 			int[] cnt = new int[slaveCnt];
 			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
-				cnt[slaveIdx] = slaveDuplicates ? slaveRecords[slaveIdx].records.size() : 1;
+				cnt[slaveIdx] = slaveRecords[slaveIdx].records.size();
 			}
 			for (int recIdx = 0; true; recIdx++) {
 				int q = recIdx;
@@ -973,7 +973,9 @@ public class HashJoin extends Node {
 						// put it into map
 						map.put(key, item);
 					}
-					item.records.add(record);
+					if (item.records.isEmpty() || slaveDuplicates) {
+					    item.records.add(record);
+					}
 				} catch (InterruptedException e) {
 					logger.error(getId() + ": thread forcibly aborted", e);
 					return;
