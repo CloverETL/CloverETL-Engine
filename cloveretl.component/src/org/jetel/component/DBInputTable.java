@@ -248,7 +248,7 @@ public class DBInputTable extends Node {
 		// till it reaches end of data or it is stopped from outside
 		while (record != null && runIt){
 			try{
-				record = parser.getNext();
+				record = parser.getNext(record);
 				if (record != null) {
 			        autoFilling.setAutoFillingFields(record);
 					writeRecordBroadcast(record);

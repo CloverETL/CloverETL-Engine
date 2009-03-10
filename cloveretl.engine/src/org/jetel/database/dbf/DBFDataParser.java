@@ -82,6 +82,8 @@ public class DBFDataParser implements Parser {
 	
 	private int bytesProcessed;
 
+	private int read;
+
     public DBFDataParser() {
     }
 
@@ -278,7 +280,7 @@ public class DBFDataParser implements Parser {
         }
         
         dbfAnalyzer = new DBFAnalyzer();
-        int read = 0;
+        read = 0;
 		bytesProcessed = 0;
         try {
         	read = dbfAnalyzer.analyze(dbfFile, metadata.getName());
@@ -335,12 +337,12 @@ public class DBFDataParser implements Parser {
 	 * @throws IOException 
 	 */
 	private void discardBytes(int bytes) throws IOException {
+		totalRecords -= bytes/dbfAnalyzer.getRecSize();
+		if (dbfFile instanceof FileChannel) {
+			((FileChannel)dbfFile).position(bytes+read);
+			return;
+		}
 		while (bytes > 0) {
-			if (dbfFile instanceof FileChannel) {
-				((FileChannel)dbfFile).position(bytes);
-				return;
-			}
-			totalRecords -= bytes/dbfAnalyzer.getRecSize();
 			buffer.clear();
 			if (bytes < Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) buffer.limit(bytes);
 			try {
@@ -348,7 +350,7 @@ public class DBFDataParser implements Parser {
 			} catch (IOException e) {
 				break;
 			}
-			bytes =- Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
+			bytes -= Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
 		}
 		buffer.clear();
 		buffer.flip();
@@ -463,9 +465,13 @@ public class DBFDataParser implements Parser {
     }
 
 	public int skip(int nRec) throws JetelException {
+        DataRecord record = new DataRecord(metadata);
+        record.init();
+
 		for (int i = 0; i < nRec; i++) {
-			getNext();
+			getNext(record);
 		}
+		
 		return nRec;
 	}
 

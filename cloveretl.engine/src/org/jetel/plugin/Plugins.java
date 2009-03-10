@@ -61,7 +61,12 @@ public class Plugins {
 
     private static URL[] pluginDirectories;
     
-    public static void init() {
+    /**
+     * Whether the class references are actively loaded by the plugin system.
+     */
+    private static boolean lazyClassLoading = true;
+    
+	public static void init() {
         init((String) null);
     }
     
@@ -194,9 +199,12 @@ public class Plugins {
     }
     
     /**
-     * Activate all not yet activated plugins. All already deactivated plugins are skipped. 
+     * Activate all not yet activated plugins. All already deactivated plugins are skipped.
+     * @param lazyClassLoading whether the class references are actively loaded by the plugin system 
      */
-    public static void activateAllPlugins() {
+    public static void activateAllPlugins(boolean lazyClassLoading) {
+    	Plugins.lazyClassLoading = lazyClassLoading;
+    	
     	for(String pluginId : pluginDescriptors.keySet()) {
     		if(!activePlugins.containsKey(pluginId) && !deactivePlugins.containsKey(pluginId)) {
     			activatePlugin(pluginId);
@@ -253,4 +261,12 @@ public class Plugins {
     public static boolean isActive(String pluginId) {
         return getPluginDescriptor(pluginId).isActive();
     }
+    
+    /**
+     * @return whether the class references are actively loaded by the plugin system.
+     */
+    public static boolean isLazyClassLoading() {
+		return lazyClassLoading;
+	}
+
 }

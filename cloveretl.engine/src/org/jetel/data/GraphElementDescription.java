@@ -19,8 +19,11 @@
 */
 package org.jetel.data;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
+import org.jetel.plugin.Plugins;
 
 /**
  * Ascendant of all plugin elements description like ComponentDescription, SequenceDescription,
@@ -31,6 +34,8 @@ import org.jetel.plugin.PluginDescriptor;
  *
  */
 public class GraphElementDescription {
+
+    private final static Log logger = LogFactory.getLog(GraphElementDescription.class);
 
     private final static String TYPE = "type";
     private final static String CLASS = "className";
@@ -60,6 +65,11 @@ public class GraphElementDescription {
         if(type == null || className == null) {
             throw new IllegalArgumentException("Extension hasn't type or className parameter defined.");
         }
+        
+        if (!Plugins.isLazyClassLoading()) {
+            //class references should be preloaded
+        	preloadClass();
+        }
     }
 
     public String getClassName() {
@@ -82,4 +92,16 @@ public class GraphElementDescription {
         return pluginDescriptor;
     }
 
+    /**
+     * Just preloads a class reference of this graph element description.
+     * It is neccesary for the clover server.
+     */
+    private void preloadClass() {
+    	try {
+			Class.forName(getClassName(), true, getPluginDescriptor().getClassLoader());
+		} catch (ClassNotFoundException e) {
+			logger.warn("Unable to preload class '" + getClassName() + "' registred under type '" + getType() + "' in plugin: " + getPluginDescriptor());
+		}
+    }
+    
 }

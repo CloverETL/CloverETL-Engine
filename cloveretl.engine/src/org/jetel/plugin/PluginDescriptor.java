@@ -319,7 +319,7 @@ public class PluginDescriptor {
             } catch (ClassNotFoundException e) {
                 logger.error("Plugin " + getId() + " activation message: Plugin class does not found - " + getPluginClassName());
             } catch (Exception e) {
-                logger.error("Plugin " + getId() + " activation message: Cannot create plugin instance - " + getPluginClassName() + " - class is abstract, interface or its nullary constructor is not accessible.");
+                logger.error("Plugin " + getId() + " activation message: Cannot create plugin instance - " + getPluginClassName() + " - class is abstract, interface or its nullary constructor is not accessible.", e);
             }
         }
     }
