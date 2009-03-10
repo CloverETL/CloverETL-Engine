@@ -389,6 +389,14 @@ public class DateLib extends TLFunctionLibrary {
 	    	value.setValue(date);
 		}
 
+	    /**
+	     * Checks and sets all parameters. Creates fromDate and toDate values.
+	     * @param params
+	     * 		param[0] - String or Date - start date
+	     * 		param[1] - String or Date - start date
+	     * 		param[2] - optional - String - format
+	     * 		param[3] - optional - String - locale
+	     */
 		public void checkAndSetParams(TLValue[] params) {
 			if (params[0].type == TLValueType.DATE) {
 				fromDate = params[0].getDate().getTime();
