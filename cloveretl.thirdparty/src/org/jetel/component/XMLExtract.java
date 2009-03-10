@@ -408,7 +408,7 @@ public class XMLExtract extends Node {
                             }
                         }
                     } catch (Exception ex) {
-                        throw new SAXException(ex);
+                        throw new SAXException(" for output port number '" + m_activeMapping.getOutPort() + "'. Check also parent mapping. ", ex);
                     }
                 } else {
                     throw new SAXException("Stop Signaled");
@@ -1240,7 +1240,7 @@ public class XMLExtract extends Node {
             if (!runIt) {
                 return true; // we were stopped by a stop signal... probably
             }
-            LOG.error("XML Extract: " + getId() + " Parse Exception", ex);
+            LOG.error("XML Extract: " + getId() + " Parse Exception" + ex.getMessage(), ex);
             throw new JetelException("XML Extract: " + getId() + " Parse Exception", ex);
         } catch (Exception ex) {
             LOG.error("XML Extract: " + getId() + " Unexpected Exception", ex);
