@@ -18,6 +18,7 @@
 
 package org.jetel.data.tape;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -34,6 +35,7 @@ public class DataRecordTapeTest  extends CloverTestCase {
 
     private DataRecord testRecordA,testRecordB;
 
+	private final static String TEST_FILE = "tapeTest.tmp";
 	
 
 protected void setUp() { 
@@ -60,6 +62,7 @@ protected void setUp() {
 
 protected void tearDown() {
 	testRecordA=testRecordB = null;
+	(new File(TEST_FILE)).delete();
 }
 
 
@@ -72,7 +75,7 @@ protected void tearDown() {
 public void test_1_DataTape() throws InterruptedException, IOException {
 	ByteBuffer buffer= ByteBuffer.allocateDirect(2048);
     
-    DataRecordTape tape=new DataRecordTape("tapeTest.tmp", true, false);
+    DataRecordTape tape=new DataRecordTape(TEST_FILE, true, false);
     // first chunk of data
     try{
         tape.open();
