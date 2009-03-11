@@ -75,7 +75,7 @@ public class FixLenDataFormatterTest extends CloverTestCase {
 
 		// we are going to write our test data here
 		// testFile1 = "data\\out\\test1.txt";
-		testFile1 = "data/out/test1.txt";
+		testFile1 = "data/test1.txt";
 		File aFile = new File(testFile1);
 		if (!aFile.exists()) {
 			final File parentFile = aFile.getParentFile();
