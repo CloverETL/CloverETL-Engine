@@ -64,8 +64,20 @@ public class Compare {
 		}
 	}
 	
-    final static public int compare(CharSequence a,CharSequence b,RuleBasedCollator col){
-        
+    final static public int compare(CharSequence a,CharSequence b,RuleBasedCollator col) {
+
+    	return col.compare(a.toString(), b.toString());
+
+/*
+ * pnajvar -
+ * The following implementation is deprecated. 
+ * There is no clear historical reason for such implementation.
+ * 
+ * Tests show using Collator.compare() is more efficient even on StringBuilders and works correctly
+ * on characters like 't' and 't wedge', 'l' and 'l acute' etc.	
+ */
+
+/*    	
         CollationElementIterator iterA = col.getCollationElementIterator(
                         new CharSequenceCharacterIterator(a)); 
         CollationElementIterator iterB = col.getCollationElementIterator(
@@ -104,6 +116,8 @@ public class Compare {
         }else{
             return 0; // equal
         }
+--
+end of deprecated code */    
         
     }
 }
