@@ -30,33 +30,27 @@ import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- *  
- *
- * @author      dpavlis
- * @since       June 25, 2006
- * @revision    $Revision: $
- * @created     June 25, 2006
- * @see         org.jetel.component.RecordTransform
+ * @created     March 25, 2009
+ * @see         org.jetel.component.RecordGenerate
  */
-public class RecordTransformTL extends RecordTransformCommonTL implements RecordTransform {
+public class RecordGenerateTL extends RecordTransformCommonTL implements RecordGenerate {
 
-    public static final String TRANSFORM_FUNCTION_NAME = "transform";
+    public static final String GENERATE_FUNCTION_NAME = "generate";
     
     /**Constructor for the DataRecordTransform object */
-    public RecordTransformTL(String srcCode, Log logger) {
+    public RecordGenerateTL(String srcCode, Log logger) {
     	super(srcCode, logger);
     }
 
 	/**
-	 *  Performs any necessary initialization before transform() method is called
+	 *  Performs any necessary initialization before generate() method is called
 	 *
-	 * @param  sourceMetadata  Array of metadata objects describing source data records
 	 * @param  targetMetadata  Array of metadata objects describing source data records
 	 * @return                        True if successfull, otherwise False
 	 */
-	public boolean init(Properties parameters, DataRecordMetadata[] sourceRecordsMetadata, DataRecordMetadata[] targetRecordsMetadata)
+	public boolean init(Properties parameters, DataRecordMetadata[] targetRecordsMetadata)
 			throws ComponentNotReadyException{
-		wrapper.setMetadata(sourceRecordsMetadata, targetRecordsMetadata);
+		wrapper.setMetadata(new DataRecordMetadata[]{}, targetRecordsMetadata);
 		wrapper.setParameters(parameters);
 		if (graph != null){
 	        wrapper.setGraph(graph);
@@ -68,13 +62,16 @@ public class RecordTransformTL extends RecordTransformCommonTL implements Record
 			//do nothing: function init is not necessary
 		}
 		
-		wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
+		wrapper.prepareFunctionExecution(GENERATE_FUNCTION_NAME);
 		
 		return semiResult == null ? true : (semiResult==TLBooleanValue.TRUE);
  	}
-
-	public int transform(DataRecord[] inputRecords, DataRecord[] outputRecords) throws TransformException {
-		semiResult = wrapper.executePreparedFunction(inputRecords, outputRecords, null);
+	
+	/**
+	 * Generate data for output records.
+	 */
+	public int generate(DataRecord[] outputRecords) throws TransformException {
+		semiResult = wrapper.executePreparedFunction(new DataRecord[]{}, outputRecords, null);
 
 		if (semiResult == null || semiResult == TLBooleanValue.TRUE) {
 			return ALL;

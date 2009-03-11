@@ -64,7 +64,7 @@ public class ExtDataGenerator extends DataGenerator {
 	
 	// data generator
 	private Properties generateParameters;
-	private RecordTransform generation;
+	private RecordGenerate generation;
 
 	/**
 	 * @param id
@@ -95,7 +95,7 @@ public class ExtDataGenerator extends DataGenerator {
 
 		for (int i=0;i<recordsNumber && runIt;i++){
 			for (DataRecord oRecord: outRecord)	oRecord.reset();
-			int transformResult = generation.transform(null, outRecord);
+			int transformResult = generation.generate(outRecord);
 
 			if (transformResult == RecordTransform.ALL) {
 				for (int outPort = 0; outPort < numOutputPorts; outPort++) {

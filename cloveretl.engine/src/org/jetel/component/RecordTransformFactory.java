@@ -63,41 +63,6 @@ public class RecordTransformFactory {
     		Properties transformationParameters, ClassLoader classLoader) throws ComponentNotReadyException {
     	
     	// create transformation
-    	RecordTransform transformation = createTransformCommon(transform, transformClass, 
-        		transformURL, charset, node, 
-        		inMetadata, outMetadata, 
-        		transformationParameters, classLoader);
-    	
-        // init transformation
-        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
-            throw new ComponentNotReadyException("Error when initializing tranformation function !");
-        }
-        
-        return transformation;
-    }
-
-    public static RecordTransform createGenerator(String generate, String generateClass, 
-    		String generateURL, Node node, DataRecordMetadata[] outMetadata, 
-    		Properties transformationParameters, ClassLoader classLoader) throws ComponentNotReadyException {
-    	
-    	// create generator
-    	RecordTransform transformation = createTransformCommon(generate, generateClass, generateURL, null, node, 
-    			new DataRecordMetadata[0] , outMetadata, transformationParameters, classLoader);
-    	
-        // init generator
-    	if (transformation instanceof RecordTransformTL) 
-    		((RecordTransformTL)transformation).setFunctionName(RecordTransformTL.GENERATE_FUNCTION_NAME);
-        if (!transformation.init(transformationParameters, new DataRecordMetadata[0], outMetadata)) {
-            throw new ComponentNotReadyException("Error when initializing tranformation function !");
-        }
-        
-        return transformation;
-    }
-    
-    private static RecordTransform createTransformCommon(String transform, String transformClass, 
-    		String transformURL, String charset, Node node, 
-    		DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, 
-    		Properties transformationParameters, ClassLoader classLoader) throws ComponentNotReadyException {
         RecordTransform transformation = null;
         Log logger = LogFactory.getLog(node.getClass());
         
@@ -108,7 +73,7 @@ public class RecordTransformFactory {
         
         if (transformClass != null) {
             //get transformation from link to the compiled class
-            transformation = RecordTransformFactory.loadClass(logger, transformClass);
+            transformation = (RecordTransform)RecordTransformFactory.loadClass(logger, transformClass);
         }else if (transform == null && transformURL != null){
         	transform = FileUtils.getStringFromURL(node.getGraph().getProjectURL(), transformURL, charset);
         }
@@ -118,14 +83,14 @@ public class RecordTransformFactory {
             case TRANSFORM_JAVA_SOURCE:
                 // try compile transform parameter as java code
 				// try preprocessing if applicable
-                transformation = RecordTransformFactory.loadClassDynamic(
+                transformation = (RecordTransform)RecordTransformFactory.loadClassDynamic(
                         logger, null, transform, inMetadata, outMetadata, classLoader, false);
                 break;
             case TRANSFORM_CLOVER_TL:
                 transformation = new RecordTransformTL(transform, logger);
                 break;
             case TRANSFORM_JAVA_PREPROCESS:
-                transformation = RecordTransformFactory.loadClassDynamic(
+                transformation = (RecordTransform)RecordTransformFactory.loadClassDynamic(
                         logger, "Transform" + node.getId(), transform,
                         inMetadata, outMetadata, classLoader, true);
                 break;
@@ -137,11 +102,69 @@ public class RecordTransformFactory {
             }
         }
         transformation.setGraph(node.getGraph());
-
+    	
+        // init transformation
+        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
+            throw new ComponentNotReadyException("Error when initializing tranformation function !");
+        }
+        
         return transformation;
     }
+
+    public static RecordGenerate createGenerator(String generate, String generateClass, 
+    		String generateURL, Node node, DataRecordMetadata[] outMetadata, 
+    		Properties genParameters, ClassLoader classLoader) throws ComponentNotReadyException {
+    	
+    	// create generator
+        RecordGenerate recordGenerate = null;
+        Log logger = LogFactory.getLog(node.getClass());
+        
+        //without these parameters we cannot create transformation
+        if(generate == null && generateClass == null && generateURL == null) {
+            throw new ComponentNotReadyException("Record transformation is not defined.");
+        }
+        
+        if (generateClass != null) {
+            //get transformation from link to the compiled class
+            recordGenerate = (RecordGenerate)RecordTransformFactory.loadClass(logger, generateClass);
+        }else if (generate == null && generateURL != null){
+        	generate = FileUtils.getStringFromURL(node.getGraph().getProjectURL(), generateURL, null);
+        }
+        if (generateClass == null) {
+            
+            switch (guessTransformType(generate)) {
+            case TRANSFORM_JAVA_SOURCE:
+                // try compile transform parameter as java code
+				// try preprocessing if applicable
+                recordGenerate = (RecordGenerate)RecordTransformFactory.loadClassDynamic(
+                        logger, null, generate, new DataRecordMetadata[0], outMetadata, classLoader, false);
+                break;
+            case TRANSFORM_CLOVER_TL:
+                recordGenerate = new RecordGenerateTL(generate, logger);
+                break;
+            case TRANSFORM_JAVA_PREPROCESS:
+                recordGenerate = (RecordGenerate)RecordTransformFactory.loadClassDynamic(
+                        logger, "Transform" + node.getId(), generate,
+                        new DataRecordMetadata[0], outMetadata, classLoader, true);
+                break;
+            default:
+                // logger.error("Can't determine transformation code type at
+                // component ID :"+node.getId());
+                throw new ComponentNotReadyException(
+                        "Can't determine transformation code type at component ID :" + node.getId());
+            }
+        }
+        recordGenerate.setGraph(node.getGraph());
+    	
+        // init generator
+        if (!recordGenerate.init(genParameters, outMetadata)) {
+            throw new ComponentNotReadyException("Error when initializing tranformation function !");
+        }
+        
+        return recordGenerate;
+    }
     
-    public static RecordTransform loadClass(Log logger, String transformClass) throws ComponentNotReadyException {
+    public static Object loadClass(Log logger, String transformClass) throws ComponentNotReadyException {
         //TODO parsing url from transformClass parameter
         return loadClass(logger, transformClass, null, null);
     }
@@ -153,13 +176,13 @@ public class RecordTransformFactory {
      * @return
      * @throws ComponentNotReadyException
      */
-    public static RecordTransform loadClass(Log logger,
+    public static Object loadClass(Log logger,
             String transformClassName, URL contextURL, String[] libraryPaths)
             throws ComponentNotReadyException {
-        RecordTransform transformation = null;
+    	Object transformation = null;
         // try to load in transformation class & instantiate
         try {
-            transformation =  (RecordTransform)Class.forName(transformClassName).newInstance();
+            transformation = Class.forName(transformClassName).newInstance();
         }catch(InstantiationException ex){
             throw new ComponentNotReadyException("Can't instantiate transformation class: "+ex.getMessage());
         }catch(IllegalAccessException ex){
@@ -185,7 +208,7 @@ public class RecordTransformFactory {
             try {
                 URLClassLoader classLoader = new URLClassLoader(myURLs, Thread
                         .currentThread().getContextClassLoader());
-                transformation = (RecordTransform) Class.forName(
+                transformation = Class.forName(
                         transformClassName, true, classLoader).newInstance();
             } catch (ClassNotFoundException ex1) {
                 throw new ComponentNotReadyException("Can not find class: "
@@ -206,7 +229,7 @@ public class RecordTransformFactory {
      * @return
      * @throws ComponentNotReadyException
      */
-    public static RecordTransform loadClassDynamic(Log logger,
+    public static Object loadClassDynamic(Log logger,
             String className, String transformCode,
             DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, ClassLoader classLoader,
             boolean addTransformCodeStub)
@@ -233,7 +256,7 @@ public class RecordTransformFactory {
      * @return
      * @throws ComponentNotReadyException
      */
-    public static RecordTransform loadClassDynamic(Log logger,DynamicJavaCode dynamicTransformCode)
+    public static Object loadClassDynamic(Log logger,DynamicJavaCode dynamicTransformCode)
             throws ComponentNotReadyException {
         logger.info(" (compiling dynamic source) ");
         // use DynamicJavaCode to instantiate transformation class
@@ -247,11 +270,11 @@ public class RecordTransformFactory {
                     "Transformation code is not compilable.\n" + "reason: "
                             + ex.getMessage());
         }
-        if (transObject instanceof RecordTransform) {
-            return (RecordTransform) transObject;
+        if (transObject instanceof RecordTransform || transObject instanceof RecordGenerate) {
+            return transObject;
         } else {
             throw new ComponentNotReadyException(
-                    "Provided transformation class doesn't implement RecordTransform.");
+                    "Provided transformation class doesn't implement RecordTransform or RecordGenerate.");
         }
 
     }
