@@ -20,6 +20,7 @@
 package org.jetel.metadata;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -44,6 +45,8 @@ public class XsdMetadataTest extends CloverTestCase  {
 
 	private DataRecordMetadata metadata;
 	
+	private final static String TEST_FILE = "XsdTest.xsd";
+	
     protected void setUp() throws Exception {
 		initEngine();
 	    
@@ -53,7 +56,7 @@ public class XsdMetadataTest extends CloverTestCase  {
 
     public void test_1(){
     	try {
-			(new XsdMetadata(metadata)).write("XsdTest.xsd");
+			(new XsdMetadata(metadata)).write(TEST_FILE);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -64,6 +67,7 @@ public class XsdMetadataTest extends CloverTestCase  {
     }
     
     protected void tearDown(){
+    	(new File(TEST_FILE)).delete();
     }
     
 } 

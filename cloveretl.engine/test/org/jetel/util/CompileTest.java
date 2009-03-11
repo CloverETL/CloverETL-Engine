@@ -126,6 +126,13 @@ public class CompileTest   extends CloverTestCase  {
 			 final boolean delete = aFile.delete();
 			 assertTrue(delete);
 		 }
+		 
+		aFile=new File(testJavaFile1);
+		File parent = aFile.getParentFile();
+			 if(parent.exists()) {
+				 final boolean delete = parent.delete();
+				 assertTrue(delete);
+			 }
 	}
 
 	public static final int COMPILE_LOOPS = 5; 

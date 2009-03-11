@@ -32,6 +32,10 @@ public class ResetTest extends TestCase{
 	static Log logger = LogFactory.getLog(ResetTest.class);
 	private GraphRuntimeContext runtimeContext;
 
+	private final static String PROJECT_DIR = "examples/simpleExamples/";
+	private final static String GRAPHS_DIR = "graph";
+	private final static String[] OUT_DIRS = {"data-out/", "data-tmp/", "seq/"};
+	
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -44,7 +48,7 @@ public class ResetTest extends TestCase{
 	}
 	
 	public void testAllExamples() throws Exception {
-		File[] graphFile = (new File("examples/simpleExamples/graph")).listFiles(new FileFilter(){
+		File[] graphFile = (new File(PROJECT_DIR + GRAPHS_DIR)).listFiles(new FileFilter(){
 			public boolean accept(File pathname) {
 				return pathname.getName().endsWith(".grf")
 					&& !pathname.getName().endsWith("graphSimpleLookup.grf") // ok, uses lookup free in transform attribute
@@ -139,6 +143,13 @@ public class ResetTest extends TestCase{
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		System.out.println("Graph executor is terminating.");
+		for (String outDir : OUT_DIRS) {
+			File outDirFile = new File(PROJECT_DIR + outDir);
+			File[] file = outDirFile.listFiles();
+			for (int i = 0; i < file.length; i++) {
+				file[i].delete();
+			}
+		}
 	}
 	
 	/**

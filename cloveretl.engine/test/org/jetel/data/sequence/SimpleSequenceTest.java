@@ -24,6 +24,8 @@
 package org.jetel.data.sequence;
 
 
+import java.io.File;
+
 import org.jetel.graph.TransformationGraph;
 import org.jetel.test.CloverTestCase;
 
@@ -41,13 +43,14 @@ public class SimpleSequenceTest extends CloverTestCase {
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
      */
-    protected void setUp() throws Exception {
+	private final static String SEQUENCE_FILE = "sequence4.dat";
+
+	protected void setUp() throws Exception {
 		initEngine();
 	    
         sequence = SequenceFactory.createSequence(null, "SIMPLE_SEQUENCE", 
-        		new Object[]{"",null,"Test","sequence4.dat",0,1,17}, 
+        		new Object[]{"",null,"Test",SEQUENCE_FILE,0,1,17}, 
         		new Class[]{String.class,TransformationGraph.class,String.class,String.class,int.class,int.class,int.class});
-//        sequence=new SimpleSequence("", "Test","c:\\tmp\\sequence4.dat",0,1,17);
         sequence.init();
     }
 
@@ -73,6 +76,7 @@ public class SimpleSequenceTest extends CloverTestCase {
     
     protected void tearDown(){
         sequence.free();
+        (new File(SEQUENCE_FILE)).delete();
     }
     
 }
