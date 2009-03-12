@@ -85,4 +85,9 @@
 	 	  <FlatFile outputFile="data-out/foundClients.txt" supposedFile="supposed-out/foundClients.DBExecuteMySql.txt"/>	                                                                    
 	</FunctionalTest>
 
+	<FunctionalTest ident="DBExecuteOracle" graphFile="graph/graphDBExecuteOracle.grf">
+        <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/countries.txt" supposedFile="supposed-out/countries.DBExecuteOracle.txt"/>	                                                                    
+	</FunctionalTest>
+
 </TestScenario>
