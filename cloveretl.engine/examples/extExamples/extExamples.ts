@@ -80,7 +80,7 @@
         <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
 	</FunctionalTest>
 
-	<FunctionalTest ident="DBExecuteMySql" graphFile="graph/graphDBExecuteMsSql.grf">
+	<FunctionalTest ident="DBExecuteMySql" graphFile="graph/graphDBExecuteMySql.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/foundClients.txt" supposedFile="supposed-out/foundClients.DBExecuteMySql.txt"/>	                                                                    
 	</FunctionalTest>
@@ -88,6 +88,12 @@
 	<FunctionalTest ident="DBExecuteOracle" graphFile="graph/graphDBExecuteOracle.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/countries.txt" supposedFile="supposed-out/countries.DBExecuteOracle.txt"/>	                                                                    
+	</FunctionalTest>
+
+	<FunctionalTest ident="DBExecutePostgre" graphFile="graph/graphDBExecutePostgre.grf">
+        <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/cities.txt" supposedFile="supposed-out/cities.DBExecutePostgre.txt"/>	                                                                    
+	     <DeleteFile file="seq/seq.txt"/>
 	</FunctionalTest>
 
 </TestScenario>
