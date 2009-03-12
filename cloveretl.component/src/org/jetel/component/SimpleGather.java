@@ -19,14 +19,16 @@
 */
 package org.jetel.component;
 
-import org.jetel.data.DataRecord;
+import java.nio.ByteBuffer;
+
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.graph.InputPort;
+import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
-import org.jetel.graph.OutputPort;
+import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.SynchronizeUtils;
@@ -98,8 +100,8 @@ public class SimpleGather extends Node {
 
 	@Override
 	public Result execute() throws Exception {
-		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
-		InputPort inPort;
+		OutputPortDirect outPort = (OutputPortDirect) getOutputPort(WRITE_TO_PORT);
+		InputPortDirect inPort;
 		/*
 		 *  we need to keep track of all input ports - it they contain data or
 		 *  signalized that they are empty.
@@ -115,35 +117,43 @@ public class SimpleGather extends Node {
 		for (int i = 0; i < isEOF.length; i++) {
 			isEOF[i] = false;
 		}
-		InputPort inputPorts[]= (InputPort[])getInPorts().toArray(new
-		        InputPort[0]);
+		InputPortDirect inputPorts[]= (InputPortDirect[])getInPorts().toArray(new InputPortDirect[0]);
 		numActive = inputPorts.length;// counter of still active ports - those without EOF status
 		// the metadata is taken from output port definition
-		DataRecord record = new DataRecord(outPort.getMetadata());
-		DataRecord inRecord;
-		record.init();
+		ByteBuffer recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 		readFromPort = 0;
+		inPort = inputPorts[readFromPort];
+		int lastReadPort = -1;
+		boolean forceReading = false;
 		while (runIt && numActive > 0) {
-			inPort = inputPorts[readFromPort];
-			if (!isEOF[readFromPort] && inPort.hasData()) {
+			if (!isEOF[readFromPort] && (inPort.hasData() || forceReading || numActive == 1)) {
+				forceReading = false;
 				emptyLoopCounter = 0;
-				inRecord = inPort.readRecord(record);
-				if (inRecord != null) {
-					outPort.writeRecord(inRecord);
+				if (inPort.readRecordDirect(recordBuffer)) {
+					outPort.writeRecordDirect(recordBuffer);
+					lastReadPort = readFromPort;
 				} else {
 					isEOF[readFromPort] = true;
 					numActive--;
 				}
 				SynchronizeUtils.cloverYield();
-			}
-			readFromPort = (++readFromPort) % (inputPorts.length);
-			// have we reached the maximum empty loops count ?
-			if (emptyLoopCounter > NUM_EMPTY_LOOPS_TRESHOLD) {
-				Thread.sleep(EMPTY_LOOPS_WAIT);
 			} else {
-				emptyLoopCounter++;
+				readFromPort = (++readFromPort) % (inputPorts.length);
+				inPort = inputPorts[readFromPort];
+				
+				if (lastReadPort == readFromPort) {
+					forceReading = true;
+				}
+				// have we reached the maximum empty loops count ?
+				if (emptyLoopCounter > NUM_EMPTY_LOOPS_TRESHOLD) {
+					System.out.println(outPort.getOutputRecordCounter());
+					Thread.sleep(EMPTY_LOOPS_WAIT);
+				} else {
+					emptyLoopCounter++;
+				}
 			}
 		}
+		
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
