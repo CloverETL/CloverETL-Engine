@@ -79,4 +79,10 @@
 	<FunctionalTest ident="DBExecuteMsSql" graphFile="graph/graphDBExecuteMsSql.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
 	</FunctionalTest>
+
+	<FunctionalTest ident="DBExecuteMySql" graphFile="graph/graphDBExecuteMsSql.grf">
+        <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/foundClients.txt" supposedFile="supposed-out/foundClients.DBExecuteMySql.txt"/>	                                                                    
+	</FunctionalTest>
+
 </TestScenario>
