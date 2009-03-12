@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jan 12 08:41:50 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204545430039" licenseType="Evaluation license." modified="Thu Mar 05 14:22:44 CET 2009" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.19">
+<Graph author="avackova" created="Fri Jan 12 08:41:50 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204545430039" licenseType="Evaluation license." modified="Thu Mar 12 12:02:45 CET 2009" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.24">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
@@ -30,7 +30,7 @@ function clean(){
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="25" guiName="DENORMALIZE" guiWidth="50" guiX="353" guiY="120" id="DENORMALIZE1" key="EmployeeID" order="Asc" type="DENORMALIZER">
+<Node enabled="enabled" guiHeight="25" guiName="DENORMALIZE" guiWidth="50" guiX="353" guiY="104" id="DENORMALIZE1" key="EmployeeID" order="Ignore" type="DENORMALIZER">
 <attr name="denormalize"><![CDATA[
 string customer = "";
 int employee = 0;
