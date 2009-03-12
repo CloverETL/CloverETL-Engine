@@ -588,7 +588,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
             <property name="scenarios" value="simpleExamples.ts;extExamples.ts;advancedExamples.ts;after-commit.ts" />
 			<property name="dir.scenarios" value="../cloveretl.test.environment/scenarios;${dir.examples}/simpleExamples;${dir.examples}/extExamples;${dir.examples}/advancedExamples" />
-			<property name="dir.examples.classes" value="../cloveretl.test.environment/scenarios/trans;${dir.examples}/simpleExamples/trans;${dir.examples}/exteExamples/trans;${dir.examples}/advancedExamples/trans" />
+			<property name="dir.examples.classes" value="../cloveretl.test.environment/scenarios/trans;${dir.examples}/simpleExamples/trans;${dir.examples}/extExamples/trans;${dir.examples}/advancedExamples/trans" />
 			<property name="dir.engine.classes" value="${dir.coverage.bin}:${dir.bin}"/>
 			<property name="dir.plugins" value="${dir.coverage.plugins}/plugins"/>
 			<property name="cobertura.ser" value="${cobertura.ser}"/>
