@@ -1,0 +1,43 @@
+AD;Andorra
+AT;Austria
+BE;Belgium
+BG;Bulgaria
+IC;Canary Islands, The
+CY;Cyprus
+CZ;Czech Republic, The
+DK;Denmark
+- ;Dummy All Countries
+EE;Estonia
+FK;Falkland Islands
+FO;Faroe Islands
+FI;Finland
+FR;France
+DE;Germany
+GI;Gibraltar
+GR;Greece
+GL;Greenland
+GG;Guernsey
+HU;Hungary
+IS;Iceland
+IE;Ireland, Republic Of
+IL;Israel
+IT;Italy
+JE;Jersey
+LV;Latvia
+LI;Liechtenstein
+LT;Lithuania
+LU;Luxembourg
+MT;Malta
+MC;Monaco
+NL;Netherlands, The
+NO;Norway
+PL;Poland
+PT;Portugal
+RO;Romania
+SM;San Marino
+SK;Slovakia
+SI;Slovenia
+ES;Spain
+SE;Sweden
+CH;Switzerland
+GB;United Kingdom
