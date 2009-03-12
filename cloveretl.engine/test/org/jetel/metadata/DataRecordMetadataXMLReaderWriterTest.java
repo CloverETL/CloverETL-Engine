@@ -61,7 +61,7 @@ public class DataRecordMetadataXMLReaderWriterTest extends CloverTestCase {
 // aDataFieldMetadata.setCodeStr("return [record1].[field1]/[record2].[field2];");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 
-		testFile1 = "data/out/test1.txt";	
+		testFile1 = "data/test1.txt";	
 		File aFile=new File(testFile1);
 		if (!aFile.exists()) {
 			if (!aFile.getParentFile().isDirectory()) {
