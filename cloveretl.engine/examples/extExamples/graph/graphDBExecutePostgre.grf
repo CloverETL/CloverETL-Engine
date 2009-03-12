@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" description="This graph illustrates how-to run SQL/DDL/DML commands againts database. Commands&#10;in SQLCode are delimited by semicolon and are executed one by one. If needed, they&#10;may be grouped into single transaction.&#10;&#10;This graph creates two tables (EMPLOYEE and EMPLOYEE_TMP) and populates table EMPLOYEE with sample data.&#10;MySql:&#10;CREATE PROCEDURE p (OUT ver_param VARCHAR(25), INOUT incr_param INT)&#10;BEGIN&#10;  # Set value of OUT parameter&#10;  SELECT VERSION() INTO ver_param;&#10;  # Increment value of INOUT parameter&#10;  SET incr_param = incr_param + 1;&#10;END;" guiVersion="0.0" id="1196767470169" licenseType="Evaluation license." modified="Thu Dec 18 13:24:09 CET 2008" modifiedBy="avackova" name="TestingDB2" revision="1.201">
+<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" description="This graph illustrates how-to run SQL/DDL/DML commands againts database. Commands&#10;in SQLCode are delimited by semicolon and are executed one by one. If needed, they&#10;may be grouped into single transaction.&#10;&#10;This graph creates two tables (EMPLOYEE and EMPLOYEE_TMP) and populates table EMPLOYEE with sample data.&#10;MySql:&#10;CREATE PROCEDURE p (OUT ver_param VARCHAR(25), INOUT incr_param INT)&#10;BEGIN&#10;  # Set value of OUT parameter&#10;  SELECT VERSION() INTO ver_param;&#10;  # Increment value of INOUT parameter&#10;  SET incr_param = incr_param + 1;&#10;END;" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation license." modified="Thu Mar 12 13:30:17 CET 2009" modifiedBy="avackova" name="TestingDB2" revision="1.213">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter=";" name="city" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -29,7 +29,7 @@
 RETURNS SETOF city
 AS
 $$ 
-  SELECT * FROM city WHERE id > $1;
+  SELECT * FROM city WHERE id = $1;
 $$
 LANGUAGE 'sql' VOLATILE;]]></attr>
 </Node>
@@ -37,12 +37,12 @@ LANGUAGE 'sql' VOLATILE;]]></attr>
 <Edge fromNode="DB_EXECUTE1:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (error output)" toNode="TRASH0:0"/>
 </Phase>
 <Phase number="2">
-<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="25" guiY="113" id="DATA_GENERATOR3" pattern=";&#10;" randomFields="$id:=random(&quot;1&quot;,&quot;200&quot;)" recordsNumber="2" type="DATA_GENERATOR"/>
+<Node enabled="enabled" generate="//#TL&#10;&#10;// Generates output record.&#10;function generate() {&#10;&#9;$0.id := sequence(Sequence0).next;&#10;}&#10;&#10;// Called during component initialization.&#10;// function init() {}&#10;&#10;// Called after the component finishes.&#10;// function finished() {}&#10;" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="25" guiY="113" id="DATA_GENERATOR3" recordsNumber="550" type="DATA_GENERATOR"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/cities.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="396" guiY="113" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="214" guiY="113" id="DB_EXECUTE2" inParameters="1:=$id;" outputFields="id;city;country" type="DB_EXECUTE">
 <attr name="sqlQuery"><![CDATA[{call myfunc(?)}]]></attr>
 </Node>
-<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="394" guiY="113" id="TRASH1" type="TRASH"/>
-<Edge debugMode="true" fromNode="DATA_GENERATOR3:0" guiBendpoints="" id="Edge5" inPort="Port 0 (input parameters)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DB_EXECUTE2:0"/>
-<Edge fromNode="DB_EXECUTE2:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (procedure output)" toNode="TRASH1:0"/>
+<Edge fromNode="DATA_GENERATOR3:0" guiBendpoints="" id="Edge5" inPort="Port 0 (input parameters)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DB_EXECUTE2:0"/>
+<Edge fromNode="DB_EXECUTE2:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (procedure output)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
