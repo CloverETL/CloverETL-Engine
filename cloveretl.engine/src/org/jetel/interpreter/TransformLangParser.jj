@@ -478,6 +478,9 @@ TOKEN :
 | < DO: "do" >
 | < TRY: "try" >
 | < CATCH: "catch" >
+| < RETURN_RECORD_SKIP: "SKIP" >
+| < RETURN_RECORD_SEND_ALL: "ALL" >
+| < RETURN_RECORD_OK: "OK" >
 }
 
 TOKEN :  /* date parts */
@@ -1793,6 +1796,75 @@ void LitExp()       :            //
           if (jjtc010) {
             jjtree.closeNodeScope(jjtn010, true);
             jjtreeCloseNodeScope(jjtn010);
+          }
+        }
+/*@egen*/
+ |t=<RETURN_RECORD_SEND_ALL>/*@bgen(jjtree) Literal */
+        {
+          CLVFLiteral jjtn011 = new CLVFLiteral(this, JJTLITERAL);
+          boolean jjtc011 = true;
+          jjtree.openNodeScope(jjtn011);
+          jjtreeOpenNodeScope(jjtn011);
+        }
+        try {
+/*@egen*//*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn011, true);
+          jjtc011 = false;
+          jjtreeCloseNodeScope(jjtn011);
+        }
+/*@egen*/
+ 	{ jjtn011.setConstant(Integer.MAX_VALUE); }/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc011) {
+            jjtree.closeNodeScope(jjtn011, true);
+            jjtreeCloseNodeScope(jjtn011);
+          }
+        }
+/*@egen*/
+ |t=<RETURN_RECORD_SKIP>/*@bgen(jjtree) Literal */
+        {
+          CLVFLiteral jjtn012 = new CLVFLiteral(this, JJTLITERAL);
+          boolean jjtc012 = true;
+          jjtree.openNodeScope(jjtn012);
+          jjtreeOpenNodeScope(jjtn012);
+        }
+        try {
+/*@egen*//*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn012, true);
+          jjtc012 = false;
+          jjtreeCloseNodeScope(jjtn012);
+        }
+/*@egen*/
+ 	{ jjtn012.setConstant(-1); }/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc012) {
+            jjtree.closeNodeScope(jjtn012, true);
+            jjtreeCloseNodeScope(jjtn012);
+          }
+        }
+/*@egen*/
+ |t=<RETURN_RECORD_OK>/*@bgen(jjtree) Literal */
+        {
+          CLVFLiteral jjtn013 = new CLVFLiteral(this, JJTLITERAL);
+          boolean jjtc013 = true;
+          jjtree.openNodeScope(jjtn013);
+          jjtreeOpenNodeScope(jjtn013);
+        }
+        try {
+/*@egen*//*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn013, true);
+          jjtc013 = false;
+          jjtreeCloseNodeScope(jjtn013);
+        }
+/*@egen*/
+ 	{ jjtn013.setConstant(0); }/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc013) {
+            jjtree.closeNodeScope(jjtn013, true);
+            jjtreeCloseNodeScope(jjtn013);
           }
         }
 /*@egen*/

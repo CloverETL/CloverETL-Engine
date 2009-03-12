@@ -482,6 +482,9 @@ TOKEN :
 | < DO: "do" >
 | < TRY: "try" >
 | < CATCH: "catch" >
+| < RETURN_RECORD_SKIP: "SKIP" >
+| < RETURN_RECORD_SEND_ALL: "ALL" >
+| < RETURN_RECORD_OK: "OK" >
 }
 
 TOKEN :  /* date parts */
@@ -879,6 +882,12 @@ void LitExp() #void :            //
   	{ jjtThis.setVal(DATETIME_LITERAL,t.image);}   #Literal
  |t=<NULL_LITERAL>
  	{ jjtThis.setVal(NULL_LITERAL,t.image); } #Literal
+ |t=<RETURN_RECORD_SEND_ALL>
+ 	{ jjtThis.setConstant(Integer.MAX_VALUE); } #Literal
+ |t=<RETURN_RECORD_SKIP>
+ 	{ jjtThis.setConstant(-1); } #Literal
+ |t=<RETURN_RECORD_OK>
+ 	{ jjtThis.setConstant(0); } #Literal
  | ListOfLiterals()
  |t = <UNTERMINATED_STRING_LITERAL>
   {
