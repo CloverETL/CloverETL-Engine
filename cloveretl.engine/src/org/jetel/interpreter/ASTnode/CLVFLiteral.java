@@ -129,6 +129,13 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
         init();
 	}
 
+	public void setConstant(int value) {
+		this.valueImage = String.valueOf(value);
+		this.literalType = INTEGER_LITERAL;
+		this.value = new TLNumericValue(TLValueType.INTEGER,new CloverInteger(value));
+		this.valueObj = this.value.getValue();
+	}
+	
 	public void setNegative(boolean negative) {
 		if (negative) {
 			if (value.type.isNumeric()) {

@@ -89,17 +89,20 @@ public interface TransformLangParserConstants {
   int DO = 91;
   int TRY = 92;
   int CATCH = 93;
-  int YEAR = 94;
-  int MONTH = 95;
-  int WEEK = 96;
-  int DAY = 97;
-  int HOUR = 98;
-  int MINUTE = 99;
-  int SECOND = 100;
-  int MILLISEC = 101;
-  int IDENTIFIER = 102;
-  int DATE_FIELD_LITERAL = 128;
-  int ERROR = 129;
+  int RETURN_RECORD_SKIP = 94;
+  int RETURN_RECORD_SEND_ALL = 95;
+  int RETURN_RECORD_OK = 96;
+  int YEAR = 97;
+  int MONTH = 98;
+  int WEEK = 99;
+  int DAY = 100;
+  int HOUR = 101;
+  int MINUTE = 102;
+  int SECOND = 103;
+  int MILLISEC = 104;
+  int IDENTIFIER = 105;
+  int DATE_FIELD_LITERAL = 131;
+  int ERROR = 132;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -199,6 +202,9 @@ public interface TransformLangParserConstants {
     "\"do\"",
     "\"try\"",
     "\"catch\"",
+    "\"SKIP\"",
+    "\"ALL\"",
+    "\"OK\"",
     "\"year\"",
     "\"month\"",
     "\"week\"",
