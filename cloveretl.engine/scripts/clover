@@ -7,59 +7,9 @@
 # example:
 # clover -noJMX myGraph.grf - -server -classpath /home/name/myTransformation
 
-# this script has to be finished !!!
-
-# Extract clover launch arguments.
-clover_exec_args=
-java_exec_args=
-while [ "$*" != "" ] 
-do
-	if [ "$1" = "-" ] 
-	then
-		parse_java_args="yes"
-		shift
-	fi
-	
-	if [ -z "$parse_java_args" ] 
-	then
-		clover_exec_args="$clover_exec_args \"$1\""
-	else
-		if [ "$1" = "-classpath" ] 
-		then
-			shift
-			user_classpath="$1"
-		else 
-			java_exec_args="$java_exec_args \"$1\""
-		fi
-	fi
-	shift
-done
-
-
-
-if [ -z "$CLOVER_HOME" -o ! -d "$CLOVER_HOME" ] ; then
-	## resolve links - $0 may be a link to clover's home
-	PRG="$0"
-	progname=`basename "$0"`
-
-	# need this for relative symlinks
-	while [ -h "$PRG" ] ; do
-		ls=`ls -ld "$PRG"`
-		link=`expr "$ls" : '.*-> \(.*\)$'`
-		if expr "$link" : '/.*' > /dev/null; then
-			PRG="$link"
-		else
-			PRG=`dirname "$PRG"`"/$link"
-		fi
-	done
-
-	CLOVER_HOME=`dirname "$PRG"`/..
-	# make it fully qualified
-	CLOVER_HOME=`cd "$CLOVER_HOME" && pwd`
-fi
-
-#echo $CLOVER_HOME
-
+#split command-line arguments to two sets - clover and jvm arguments
+#and define CLOVER_HOME variable
+. commonlib $@
 
 # set CLOVER_LIB location
 CLOVER_LIB="${CLOVER_HOME}/lib"
