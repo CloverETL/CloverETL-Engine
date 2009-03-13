@@ -349,7 +349,7 @@ public class DBExecute extends Node {
 					callableStatement = new SQLCloverCallableStatement[dbSQL.length];
 					for (int i = 0; i < callableStatement.length; i++) {
 						callableStatement[i] = new SQLCloverCallableStatement(connectionInstance, dbSQL[i], 
-								inRecord, outRecord);
+								inRecord, outRecord, resultSetType);
 						if (inParams != null) {
 							callableStatement[i].setInParameters(inParams[i]);
 						}
