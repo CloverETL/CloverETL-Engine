@@ -443,7 +443,7 @@ public abstract class BulkLoader extends Node {
 
 	/**
 	 * Delete file if the file is temporary.
-	 * File is temporary when fileURL parameter is defined. 
+	 * File is temporary when fileURL parameter isn't defined. 
 	 * 
 	 * @param commandFile
 	 * @param commandURL
@@ -455,23 +455,23 @@ public abstract class BulkLoader extends Node {
 		}
 
 		if (StringUtils.isEmpty(fileURL) && !file.delete()) {
-			logger.warn("Temp command data file was not deleted.");
+			logger.warn("Temp data file was not deleted.");
 		}
 	}
 	
 	/**
 	 * Delete file and report to log when it isn't possible.
-	 * @param fileName
+	 * @param fileURL
 	 * @param logger
 	 */
-	protected static void deleteFile(String fileName, Log logger) {
-    	if (StringUtils.isEmpty(fileName)) {
+	protected static void deleteFile(String fileURL, Log logger) {
+    	if (StringUtils.isEmpty(fileURL)) {
     		return;
     	}
     	
-    	File file = new File(fileName);
+    	File file = new File(fileURL);
     	if (!file.delete()) {
-        	logger.warn("Temp file " + StringUtils.quote(fileName) + " was not deleted.");        	
+        	logger.warn("Temp file " + StringUtils.quote(fileURL) + " was not deleted.");        	
         }
     }
 	
@@ -582,13 +582,13 @@ public abstract class BulkLoader extends Node {
     }
     
 	/**
-     * Creates absolute file path based on fileName string and graph's projectURL. 
-     * @param fileName name of the file
+     * Creates absolute file path based on fileURL string and graph's projectURL. 
+     * @param fileURL name of the file
      * @return
      * @throws ComponentNotReadyException
      */
-	protected String getFilePath(String fileName) throws ComponentNotReadyException {
-    	File file = getFile(fileName);
+	protected String getFilePath(String fileURL) throws ComponentNotReadyException {
+    	File file = getFile(fileURL);
     	if (file == null) {
     		return null;
     	}
@@ -601,18 +601,18 @@ public abstract class BulkLoader extends Node {
     }
     
     /**
-     * Creates File object based on fileName string and graph's projectURL. 
-     * @param fileName name of the file
+     * Creates File object based on fileURL string and graph's projectURL. 
+     * @param fileURL name of the file
      * @return
      * @throws ComponentNotReadyException
      */
-    protected File getFile(String fileName) throws ComponentNotReadyException {
-    	if (StringUtils.isEmpty(fileName)) {
+    protected File getFile(String fileURL) throws ComponentNotReadyException {
+    	if (StringUtils.isEmpty(fileURL)) {
     		return null;
     	}
     	
 		try {
-			return new File(FileUtils.getFile(getGraph().getProjectURL(), fileName));
+			return new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL));
 		} catch (MalformedURLException mue) {
 			throw new ComponentNotReadyException(mue);
 		}
