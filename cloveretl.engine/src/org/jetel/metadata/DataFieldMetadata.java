@@ -36,7 +36,7 @@ import org.jetel.util.string.StringUtils;
  * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 19th February 2009
+ * @version 13th March 2009
  * @since 26th March 2002
  *
  * @see org.jetel.metadata.DataRecordMetadata
@@ -507,12 +507,14 @@ public class DataFieldMetadata implements Serializable {
 			return formatStr;
 		}
 
-		if (isNumeric()) {
-			return dataRecordMetadata.getNumberFormatStr();
-		}
+		if (dataRecordMetadata != null) {
+			if (isNumeric()) {
+				return dataRecordMetadata.getNumberFormatStr();
+			}
 
-		if (type == DATE_FIELD || type == DATETIME_FIELD) {
-			return dataRecordMetadata.getDateFormatStr();
+			if (type == DATE_FIELD || type == DATETIME_FIELD) {
+				return dataRecordMetadata.getDateFormatStr();
+			}
 		}
 
 		return null;
@@ -821,7 +823,11 @@ public class DataFieldMetadata implements Serializable {
 			return localeStr;
 		}
 
-		return dataRecordMetadata.getLocaleStr();
+		if (dataRecordMetadata != null) {
+			return dataRecordMetadata.getLocaleStr();
+		}
+
+		return null;
 	}
 
 	/**
