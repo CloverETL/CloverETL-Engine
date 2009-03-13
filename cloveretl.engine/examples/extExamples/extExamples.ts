@@ -97,9 +97,13 @@
 	     <DeleteFile file="seq/seq.txt"/>
 	</FunctionalTest>
 
-	<FunctionalTest ident="DBExecutePostgre" graphFile="graph/graphDBExecuteSybase.grf">
+	<FunctionalTest ident="DBExecuteSybase" graphFile="graph/graphDBExecuteSybase.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/sybase.out" supposedFile="supposed-out/sybase.DBExecuteSybase.out"/>	                                                                    
-	     <DeleteFile file="seq/seq.txt"/>
+	</FunctionalTest>
+
+	<FunctionalTest ident="DBEJoin" graphFile="graph/graphDBJoin.grf">
+        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/joined.txt" supposedFile="supposed-out/joined.DBJoin.txt"/>	                                                                    
 	</FunctionalTest>
 </TestScenario>
