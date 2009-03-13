@@ -477,6 +477,17 @@ public class OracleDataWriter extends BulkLoader {
         			" is set to false then " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + 
         			" attribute is omitted.");
         }
+        
+        // report on ignoring some attributes
+        if (!StringUtils.isEmpty(control)) {
+        	logger.info("When attribute " + StringUtils.quote(XML_CONTROL_ATTRIBUTE) + 
+        			" is defined then " + StringUtils.quote(XML_APPEND_ATTRIBUTE) + " attribute is omitted.");
+        }
+        
+        if (dbFields != null && dbFields.length > 0) {
+        	logger.warn("When attribute " + StringUtils.quote(XML_CONTROL_ATTRIBUTE) + 
+        			" is defined then " + StringUtils.quote(XML_DBFIELDS_ATTRIBUTE) + " attribute is omitted.");
+        }
 	}
     
     private void createFileForExchange() throws ComponentNotReadyException {
