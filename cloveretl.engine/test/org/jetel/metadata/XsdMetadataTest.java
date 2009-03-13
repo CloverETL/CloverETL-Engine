@@ -67,7 +67,8 @@ public class XsdMetadataTest extends CloverTestCase  {
     }
     
     protected void tearDown(){
-    	(new File(TEST_FILE)).delete();
+    	boolean deleted = (new File(TEST_FILE)).delete();
+		 assertTrue("can't delete "+ TEST_FILE, deleted );
     }
     
 } 
