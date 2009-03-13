@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter="|" name="date" recordDelimiter="\n" type="delimited">
+<Field format="dd-MM-yyyy hh:mm:ss" name="date" type="date"/>
+</Record>
