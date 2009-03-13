@@ -47,12 +47,12 @@
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBLoad5" graphFile="graph/graphDBLoad5.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
+        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
        	<SQLStatement connection="postgre">DELETE FROM employee_tmp</SQLStatement>
 	</FunctionalTest>
 
 	<FunctionalTest ident="AproximativeJoin" graphFile="graph/graphAproximativeJoin.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
+        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/conformingKeyGenerator.txt" supposedFile="supposed-out/conforming.AproximativeJoin.txt"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/conformingMetaphone.txt" supposedFile="supposed-out/conforming.AproximativeJoin.txt"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/conformingNYSIIS.txt" supposedFile="supposed-out/conforming.AproximativeJoin.txt"/>	                                                                    
@@ -72,28 +72,34 @@
 	</FunctionalTest>
 
 	<FunctionalTest ident="CheckForeignKey" graphFile="graph/graphCheckForeignKey.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
+        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/wrongKey.out" supposedFile="supposed-out/wrongKey.CheckForeignKey.out"/>	                                                                    
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBExecuteMsSql" graphFile="graph/graphDBExecuteMsSql.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
+        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/mssql.out" supposedFile="supposed-out/mssql.DBExecuteMsSql.out"/>	                                                                    
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBExecuteMySql" graphFile="graph/graphDBExecuteMySql.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
+        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/foundClients.txt" supposedFile="supposed-out/foundClients.DBExecuteMySql.txt"/>	                                                                    
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBExecuteOracle" graphFile="graph/graphDBExecuteOracle.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
+        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/countries.txt" supposedFile="supposed-out/countries.DBExecuteOracle.txt"/>	                                                                    
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBExecutePostgre" graphFile="graph/graphDBExecutePostgre.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.environment/scenarios/conn" />
+        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/cities.txt" supposedFile="supposed-out/cities.DBExecutePostgre.txt"/>	                                                                    
 	     <DeleteFile file="seq/seq.txt"/>
 	</FunctionalTest>
 
+	<FunctionalTest ident="DBExecutePostgre" graphFile="graph/graphDBExecuteSybase.grf">
+        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/sybase.out" supposedFile="supposed-out/sybase.DBExecuteSybase.out"/>	                                                                    
+	     <DeleteFile file="seq/seq.txt"/>
+	</FunctionalTest>
 </TestScenario>
