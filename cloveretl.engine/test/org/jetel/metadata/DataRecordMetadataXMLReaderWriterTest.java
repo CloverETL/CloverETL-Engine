@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.jetel.test.CloverTestCase;
 
@@ -99,10 +101,16 @@ public class DataRecordMetadataXMLReaderWriterTest extends CloverTestCase {
 
 	public void test_DataRecordMetadataXMLReaderWriter() {
 		try {
-			DataRecordMetadataXMLReaderWriter.write(aDelimitedDataRecordMetadata,new FileOutputStream(testFile1));
+			OutputStream outputStream = new FileOutputStream(testFile1);
+			DataRecordMetadataXMLReaderWriter.write(aDelimitedDataRecordMetadata, outputStream);
+			outputStream.close();
+
 			aDelimitedDataRecordMetadata = null;
 			
-			aDelimitedDataRecordMetadata = aDataRecordMetadataXMLReaderWriter.read(new FileInputStream(testFile1));
+			InputStream inputStream = new FileInputStream(testFile1);
+			aDelimitedDataRecordMetadata = aDataRecordMetadataXMLReaderWriter.read(inputStream);
+			inputStream.close();
+
 			assertEquals("record2",aDelimitedDataRecordMetadata.getName());
 			assertEquals(DataRecordMetadata.DELIMITED_RECORD,aDelimitedDataRecordMetadata.getRecType());
 			assertEquals(5,aDelimitedDataRecordMetadata.getNumFields());
@@ -143,7 +151,8 @@ public class DataRecordMetadataXMLReaderWriterTest extends CloverTestCase {
 			assertEquals(DataFieldMetadata.NUMERIC_FIELD,aDataFieldMetadata.getType());
 //			assertEquals("return [record1].[field1]/[record2].[field2];",aDataFieldMetadata.getCodeStr().replace('\n',' ').replace('\t',' ').trim());
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
