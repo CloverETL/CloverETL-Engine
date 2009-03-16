@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229612956984" licenseType="Evaluation license." modified="Sun Mar 15 13:21:32 CET 2009" modifiedBy="cloveruser" name="stringIndex_of" revision="1.10">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="index_ofInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="string"/>
+<Field name="Substring" type="string"/>
+<Field name="FromIndex" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="index_ofOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="string"/>
+<Field name="Substring" type="string"/>
+<Field name="FromIndex" type="integer"/>
+<Field name="FunctionArgSubstring" type="string"/>
+<Field name="ResultArgSubstring" type="integer"/>
+<Field name="FunctionArgSubstringFromIndex" type="string"/>
+<Field name="ResultArgSubstringFromIndex" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringIndex_of.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="134" guiY="198" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringIndex_ofOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="539" guiY="198" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="339" guiY="198" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.Arg := $0.Arg;
+	$0.Substring := $0.Substring;
+	$0.FromIndex := $0.FromIndex;
+	$0.FunctionArgSubstring := "index_of($0.Arg,$0.Substring)";
+	$0.ResultArgSubstring := index_of($0.Arg,$0.Substring);
+	$0.FunctionArgSubstringFromIndex := "index_of($0.Arg,$0.Substring,$0.FromIndex)";
+	$0.ResultArgSubstringFromIndex := index_of($0.Arg,$0.Substring,$0.FromIndex);
+}
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

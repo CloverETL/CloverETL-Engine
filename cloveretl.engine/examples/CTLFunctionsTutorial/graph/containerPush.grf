@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Sun Mar 15 17:27:46 CET 2009" modifiedBy="cloveruser" name="container_push" revision="1.72">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="forPushInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ListElement0" type="string"/>
+<Field name="ListElement1" type="string"/>
+<Field name="ListElement2" type="string"/>
+<Field name="ListElement3" type="string"/>
+<Field name="NewElement" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="pushOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="List" type="string"/>
+<Field name="NewElement" type="string"/>
+<Field name="Function" type="string"/>
+<Field name="ReturnValue" type="boolean"/>
+<Field name="NewValueOfList" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerPush.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="48" guiY="118" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerPushOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="440" guiY="118" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="250" guiY="118" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+
+//Declarations.
+list list1;
+list old_list1;
+boolean bool;
+
+// Creates the original list1.
+push(list1,$0.ListElement0);
+push(list1,$0.ListElement1);
+push(list1,$0.ListElement2);
+push(list1,$0.ListElement3);
+
+//Older value of the original list1.
+old_list1=list1;
+
+//Inserts two new elements into the original list. list1 has been changed to its new value.
+bool=push(list1,$0.NewElement);
+
+//Prints the original list, the new element that should be added to the end of the original list, the return value of the function and the new value of the list. 
+$0.List := concat("[",old_list1[0],",",old_list1[1],",",old_list1[2],",",old_list1[3],"]");
+$0.NewElement := $0.NewElement;
+$0.Function := "push(List,$0.NewElement)";
+$0.ReturnValue := bool;
+$0.NewValueOfList := concat("[",list1[0],",",list1[1],",",list1[2],",",list1[3],",",list1[4],"]");
+}
+
+// Called during component initialization.
+//function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

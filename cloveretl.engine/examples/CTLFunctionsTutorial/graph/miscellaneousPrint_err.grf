@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="milos_kovalcik" created="Wed Jan 14 14:13:20 CET 2009" guiVersion="0.0" id="1231951087953" licenseType="Evaluation license." modified="Wed Jan 28 14:11:40 CET 2009" modifiedBy="milos_kovalcik" name="miscellaneousPrint_err" revision="1.37">
+<Global>
+<Metadata fileURL="meta/stringString.fmt" id="Metadata2"/>
+<Metadata fileURL="meta/stringStringStringStringStringString.fmt" id="Metadata1"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/miscellaneousPrint_err.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="164" guiY="228" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/miscellaneousPrint_err.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="569" guiY="228" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="369" guiY="228" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	print_err($0.field1,true);
+	print_err($0.field2,false);
+	
+	$0.field1 := $0.field1;
+	$0.field2 := $0.field2;
+	$0.field3 := 'print_err($0.field1,true)';
+	$0.field4 :=  $0.field1+' thrown to log';
+	$0.field5 := 'print_err($0.field2,false)';	
+	$0.field6 :=  $0.field2+' thrown to log';
+	
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation license." modified="Mon Mar 16 11:49:05 CET 2009" modifiedBy="cloveruser" name="ReadingXMLExtract" revision="1.99">
+<Global>
+<Metadata fileURL="meta/Amounts.fmt" id="Metadata3"/>
+<Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
+<Metadata fileURL="meta/CustomersWithAmountID.fmt" id="Metadata2"/>
+<Metadata fileURL="meta/Employees.fmt" id="Metadata4"/>
+<Metadata fileURL="meta/EmployeesWithAmountID.fmt" id="Metadata0"/>
+<Metadata fileURL="meta/Spouses.fmt" id="Metadata5"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeesXMLXPathWithAmountID.txt" guiHeight="0" guiName="employeesWithAmIDDelimited" guiWidth="0" guiX="757" guiY="18" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/childrenXMLXPath.txt" guiHeight="0" guiName="childrenDelimited" guiWidth="0" guiX="759" guiY="106" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersXMLXPathWithAmID.txt" guiHeight="0" guiName="customersWithAmIDDelimited" guiWidth="0" guiX="757" guiY="266" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/amountsXMLXPath.txt" guiHeight="0" guiName="amountsDelimited" guiWidth="0" guiX="758" guiY="350" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/spousesXMLXPath.txt" guiHeight="0" guiName="spousesDelimited" guiWidth="0" guiX="758" guiY="187" id="DATA_WRITER4" outputFieldNames="true" type="DATA_WRITER"/>
+<Node dedupKey="EmployeeID;SpouseName" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="591" guiY="189" id="DEDUP0" keep="first" type="DEDUP"/>
+<Node dedupKey="ParentID;ChildName" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="614" guiY="107" id="DEDUP2" keep="first" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="181" guiY="352" id="EXT_SORT0" sortKey="AmountID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="437" guiY="18" id="EXT_SORT1" sortKey="EmployeeID(a);AmountID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="368" guiY="266" id="EXT_SORT2" sortKey="CustomerID(a);AmountID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="451" guiY="110" id="EXT_SORT3" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="435" guiY="189" id="EXT_SORT4" sortKey="EmployeeID(a);SpouseName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/AmCustEmplFam.xml" guiHeight="0" guiName="AmCustEmplFam" guiWidth="0" guiX="12" guiY="88" id="XML_XPATH_READER0" type="XML_XPATH_READER">
+<attr name="mapping"><![CDATA[  <Context xpath="/Amounts/transactions" outPort="4">
+      <Context xpath="customers" outPort="3" parentKey="AmountID" generatedKey="AmountID"/>
+      <Context xpath="employees" outPort="0" parentKey="AmountID" generatedKey="AmountID">
+         <Context xpath="children" outPort="1" parentKey="EmployeeID" generatedKey="ParentID"/>
+         <Context xpath="spouse" outPort="2" parentKey="EmployeeID" generatedKey="EmployeeID"/>
+      </Context>
+  </Context>
+
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (unique)" toNode="DATA_WRITER4:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DEDUP2:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (unique)" toNode="DATA_WRITER1:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DATA_WRITER3:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER2:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="EXT_SORT3:0" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DEDUP2:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="EXT_SORT4:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="XML_XPATH_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="XML_XPATH_READER0:1" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="EXT_SORT3:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="XML_XPATH_READER0:2" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 2 (out)" toNode="EXT_SORT4:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="XML_XPATH_READER0:3" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 3 (out)" toNode="EXT_SORT2:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="XML_XPATH_READER0:4" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 4 (out)" toNode="EXT_SORT0:0"/>
+</Phase>
+</Graph>

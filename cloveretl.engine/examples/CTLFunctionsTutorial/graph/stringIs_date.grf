@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229616712953" licenseType="Evaluation license." modified="Sun Mar 15 15:05:28 CET 2009" modifiedBy="cloveruser" name="stringIs_date" revision="1.55">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="is_dateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="string"/>
+<Field name="Pattern" type="string"/>
+<Field name="Locale" type="string"/>
+<Field name="Lenient" type="boolean"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="is_dateOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="string"/>
+<Field name="Pattern" type="string"/>
+<Field name="Locale" type="string"/>
+<Field name="Lenient" nullable="true" type="boolean"/>
+<Field name="DefaultLocaleIsSystemAndDefaultLenientIsTrue" type="string"/>
+<Field name="ResultLocaleAndLenientDefault" type="boolean"/>
+<Field name="DefaultLocaleIsSystemValue" type="string"/>
+<Field name="ResultLocaleDefault" type="boolean"/>
+<Field name="DefaultLenientIsTrue" type="string"/>
+<Field name="ResultLenientDefault" type="boolean"/>
+<Field name="AllArguments" type="string"/>
+<Field name="ResultAllArguments" type="boolean"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringIs_date.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="154" guiY="218" id="DATA_READER0" type="DATA_READER"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringIs_dateOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="559" guiY="218" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="359" guiY="218" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.Arg := $0.Arg;
+	$0.Pattern := $0.Pattern;
+	$0.Locale := $0.Locale;
+	$0.Lenient := $0.Lenient;
+	$0.DefaultLocaleIsSystemAndDefaultLenientIsTrue := "is_date($0.Arg,$0.Pattern)";
+	$0.ResultLocaleAndLenientDefault := is_date($0.Arg,$0.Pattern);
+	$0.DefaultLocaleIsSystemValue := "is_date($0.Arg,$0.Pattern,$0.Lenient)";
+	$0.ResultLocaleDefault := is_date($0.Arg,$0.Pattern,$0.Lenient);
+	$0.DefaultLenientIsTrue := "is_date($0.Arg,$0.Pattern,$0.Locale)";
+	$0.ResultLenientDefault := is_date($0.Arg,$0.Pattern,$0.Locale);
+	$0.AllArguments := "is_date($0.Arg,$0.Pattern,$0.Locale,$0.Lenient)";
+	$0.ResultAllArguments := is_date($0.Arg,$0.Pattern,$0.Locale,$0.Lenient);
+}
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
