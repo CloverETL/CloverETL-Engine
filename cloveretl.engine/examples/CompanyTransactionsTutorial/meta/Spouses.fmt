@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="Spouses" recordDelimiter="\r\n" type="delimited">
+<Field name="EmployeeID" type="integer"/>
+<Field name="SpouseName" type="string"/>
+</Record>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Sun Mar 15 17:12:26 CET 2009" modifiedBy="cloveruser" name="container_push" revision="1.49">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="forLengthInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ListElement0" type="string"/>
+<Field name="ListElement1" type="string"/>
+<Field name="ListElement2" type="string"/>
+<Field name="ListElement3" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="lengthOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="List" type="string"/>
+<Field name="Function" type="string"/>
+<Field name="Result" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerLength.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="48" guiY="118" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerLengthOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="440" guiY="118" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="250" guiY="118" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+
+//Declarations.
+list list1;
+int Len;
+
+// Creates a list.
+push(list1,$0.ListElement0);
+push(list1,$0.ListElement1);
+push(list1,$0.ListElement2);
+push(list1,$0.ListElement3);
+
+//Computes the length of the list. The list1 is not changed after the operation.
+Len=length(list1);
+
+//Prints the elements of the list.
+$0.List := concat("[",list1[0],",",list1[1],",",list1[2],",",list1[3],"]");
+
+//Prints the length of the list.
+$0.Function := "length(List)";
+$0.Result := Len;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

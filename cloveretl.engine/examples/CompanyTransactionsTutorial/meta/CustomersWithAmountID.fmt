@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="CustomersWithAmountID" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="CustomerID" type="integer"/>
+<Field name="CustomerState" type="string"/>
+<Field name="CustomerSurname" type="string"/>
+<Field name="CustomerFirstname" type="string"/>
+<Field name="AmountID" type="integer"/>
+</Record>

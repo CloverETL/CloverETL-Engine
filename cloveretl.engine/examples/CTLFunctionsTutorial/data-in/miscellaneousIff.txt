@@ -1,0 +1,4 @@
+true;East;West
+false;East;West
+false;North;South
+true;North;South

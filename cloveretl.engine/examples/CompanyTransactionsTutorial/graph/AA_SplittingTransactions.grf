@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="2.1" id="1231837143600" licenseType="Commercial License javlinconsulting" modified="Wed Jan 28 14:58:19 CET 2009" modifiedBy="cloveruser" name="Splitting" revision="1.44">
+<Global>
+<Metadata fileURL="meta/Amounts.fmt" id="Metadata2"/>
+<Metadata fileURL="meta/Customers.fmt" id="Metadata3"/>
+<Metadata fileURL="meta/Employees.fmt" id="Metadata4"/>
+<Metadata fileURL="meta/IDs.fmt" id="Metadata1"/>
+<Metadata fileURL="meta/Transactions.fmt" id="Metadata0"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Transactions.dat" guiHeight="0" guiName="TransactionsDelimited" guiWidth="0" guiX="86" guiY="29" id="DATA_READER0" skipFirstLine="true" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Ids.dat" guiHeight="0" guiName="IDsDelimited" guiWidth="0" guiX="832" guiY="28" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Amounts.dat" guiHeight="0" guiName="AmountsDelimited" guiWidth="0" guiX="832" guiY="118" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Customers.dat" guiHeight="0" guiName="CustomersDelimited" guiWidth="0" guiX="832" guiY="202" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Employees.dat" guiHeight="0" guiName="EmployeesDelimited" guiWidth="0" guiX="832" guiY="286" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
+<Node dedupKey="CustomerID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="669" guiY="202" id="DEDUP0" keep="first" type="DEDUP"/>
+<Node dedupKey="EmployeeID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="669" guiY="286" id="DEDUP1" keep="first" type="DEDUP"/>
+<Node dedupKey="AmountID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="669" guiY="118" id="DEDUP2" keep="first" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="669" guiY="30" id="DEDUP3" keep="first" noDupRecord="100000" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="499" guiY="202" id="EXT_SORT0" sortKey="CustomerID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="499" guiY="287" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="499" guiY="118" id="EXT_SORT2" sortKey="AmountID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="499" guiY="29" id="EXT_SORT3" sortKey="AmountID(a);CustomerID(a);EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="286" guiY="28" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.AmountID := $0.AmountID;
+	$0.CustomerID := $0.CustomerID;
+	$0.EmployeeID := $0.EmployeeID;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="334" guiY="118" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.Amount := $0.Amount;
+	$0.AmountID := $0.AmountID;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="334" guiY="202" id="REFORMAT2" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.CustomerID := $0.CustomerID;
+	$0.CustomerSurname := $0.CustomerSurname;
+	$0.CustomerFirstname := $0.CustomerFirstname;
+	$0.CustomerState := $0.CustomerState;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="288" guiY="285" id="REFORMAT3" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.EmployeeID := $0.EmployeeID;
+	$0.EmployeeSurname := $0.EmployeeSurname;
+	$0.EmployeeFirstname := $0.EmployeeFirstname;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="85" guiY="167" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge19" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" id="Edge24" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (unique)" toNode="DATA_WRITER2:0"/>
+<Edge debugMode="true" fromNode="DEDUP1:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (unique)" toNode="DATA_WRITER3:0"/>
+<Edge debugMode="true" fromNode="DEDUP2:0" guiBendpoints="" id="Edge21" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (unique)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="true" fromNode="DEDUP3:0" guiBendpoints="" id="Edge18" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (unique)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge23" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="DEDUP1:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DEDUP2:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT3:0" guiBendpoints="" id="Edge17" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DEDUP3:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT3:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT2:0"/>
+<Edge debugMode="true" fromNode="REFORMAT2:0" guiBendpoints="" id="Edge22" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT3:0" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="REFORMAT1:0"/>
+<Edge fromNode="SIMPLE_COPY0:2" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="REFORMAT2:0"/>
+<Edge fromNode="SIMPLE_COPY0:3" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" toNode="REFORMAT3:0"/>
+</Phase>
+</Graph>

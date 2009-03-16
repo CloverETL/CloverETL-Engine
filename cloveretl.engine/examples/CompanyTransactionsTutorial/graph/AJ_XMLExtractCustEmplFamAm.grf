@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation license." modified="Mon Mar 16 11:43:55 CET 2009" modifiedBy="cloveruser" name="ReadingXMLExtract" revision="1.76">
+<Global>
+<Metadata fileURL="meta/AmountsWithCustIDWithEmplID.fmt" id="Metadata3"/>
+<Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
+<Metadata fileURL="meta/Customers.fmt" id="Metadata2"/>
+<Metadata fileURL="meta/Employees.fmt" id="Metadata4"/>
+<Metadata fileURL="meta/EmployeesWithCustomerID.fmt" id="Metadata0"/>
+<Metadata fileURL="meta/Spouses.fmt" id="Metadata5"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeesXMLExtract.txt" guiHeight="0" guiName="employeesDelimited" guiWidth="0" guiX="820" guiY="-19" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/childrenXMLExtract.txt" guiHeight="0" guiName="childrenDelimited" guiWidth="0" guiX="820" guiY="88" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersXMLExtract.txt" guiHeight="0" guiName="customersDelimited" guiWidth="0" guiX="616" guiY="242" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/amountsXMLExtractWithCustID_WithEmplID.txt" guiHeight="0" guiName="amountsWithCustID_WithEMplIDDelimited" guiWidth="0" guiX="823" guiY="314" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/spousesXMLExtract.txt" guiHeight="0" guiName="spousesDelimited" guiWidth="0" guiX="822" guiY="167" id="DATA_WRITER4" outputFieldNames="true" type="DATA_WRITER"/>
+<Node dedupKey="EmployeeID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="617" guiY="-19" id="DEDUP0" keep="first" type="DEDUP"/>
+<Node dedupKey="ParentID;ChildName" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="617" guiY="88" id="DEDUP1" keep="first" type="DEDUP"/>
+<Node dedupKey="EmployeeID;SpouseName" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="617" guiY="164" id="DEDUP2" keep="first" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="406" guiY="312" id="EXT_SORT0" sortKey="AmountID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="406" guiY="-19" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="406" guiY="88" id="EXT_SORT2" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="406" guiY="160" id="EXT_SORT3" sortKey="EmployeeID(a);SpouseName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="234" guiY="-19" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.EmployeeID := $0.EmployeeID;
+	$0.EmployeeSurname := $0.EmployeeSurname;
+	$0.EmployeeFirstname := $0.EmployeeFirstname;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="CustomersEmployeesAmounts" guiWidth="0" guiX="19" guiY="150" id="XML_EXTRACT0" mapping="&lt;Mappings&gt;&#13;&#10;  &lt;Mapping element=&quot;customers&quot; outPort=&quot;3&quot;&gt;&#13;&#10;    &lt;Mapping element=&quot;employees&quot; outPort=&quot;0&quot; parentKey=&quot;CustomerID&quot; generatedKey=&quot;CustomerID&quot;&gt;&#13;&#10;      &lt;Mapping element=&quot;spouse&quot; outPort=&quot;2&quot; parentKey=&quot;EmployeeID&quot; generatedKey=&quot;EmployeeID&quot;/&gt;&#13;&#10;      &lt;Mapping element=&quot;children&quot; outPort=&quot;1&quot; parentKey=&quot;EmployeeID&quot; generatedKey=&quot;ParentID&quot;/&gt;&#13;&#10;      &lt;Mapping element=&quot;transactions&quot; outPort=&quot;4&quot; parentKey=&quot;EmployeeID;CustomerID&quot; generatedKey=&quot;EmployeeID;CustomerID&quot;/&gt;&#13;&#10;    &lt;/Mapping&gt;&#13;&#10;  &lt;/Mapping&gt;&#13;&#10;&lt;/Mappings&gt;&#13;&#10;" sourceUri="${DATAOUT_DIR}/CustEmplFamAm.xml" type="XML_EXTRACT"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (unique)" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DEDUP1:0" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (unique)" toNode="DATA_WRITER1:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DEDUP2:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (unique)" toNode="DATA_WRITER4:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DATA_WRITER3:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DEDUP1:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="EXT_SORT3:0" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="DEDUP2:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="XML_EXTRACT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="XML_EXTRACT0:1" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="EXT_SORT2:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="XML_EXTRACT0:2" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 2 (out)" toNode="EXT_SORT3:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="XML_EXTRACT0:3" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 3 (out)" toNode="DATA_WRITER2:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="XML_EXTRACT0:4" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 4 (out)" toNode="EXT_SORT0:0"/>
+</Phase>
+</Graph>

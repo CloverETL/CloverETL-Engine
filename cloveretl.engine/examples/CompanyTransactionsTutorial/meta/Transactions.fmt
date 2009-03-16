@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="Transactions" previewAttachment="C:/Users/cloveruser/Desktop/mk-tw/2009-01-26/CompanyTransactions/data-in/Transactions.dat" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" skipFirstLine="false" type="delimited">
+<Field name="AmountID" nullable="true" shift="0" skipFirstLine="false" type="integer"/>
+<Field format="0.00" locale="en" name="Amount" nullable="true" skipFirstLine="false" type="number"/>
+<Field name="CustomerID" nullable="true" shift="0" skipFirstLine="false" type="integer"/>
+<Field name="CustomerState" nullable="true" shift="0" skipFirstLine="false" type="string"/>
+<Field name="CustomerSurname" nullable="true" shift="0" skipFirstLine="false" type="string"/>
+<Field name="CustomerFirstname" nullable="true" shift="0" skipFirstLine="false" type="string"/>
+<Field name="EmployeeID" nullable="true" shift="0" skipFirstLine="false" type="integer"/>
+<Field name="EmployeeSurname" nullable="true" shift="0" skipFirstLine="false" type="string"/>
+<Field name="EmployeeFirstname" nullable="true" shift="0" skipFirstLine="false" type="string"/>
+</Record>

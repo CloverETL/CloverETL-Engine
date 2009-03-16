@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Mon Jan 26 14:04:02 CET 2009" guiVersion="0.0.0.devel" id="1232976450529" licenseType="Evaluation license." modified="Sun Mar 15 14:51:03 CET 2009" modifiedBy="cloveruser" name="stringJoin" revision="1.22">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="joinInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Delimiter" type="string"/>
+<Field name="Arg1" type="string"/>
+<Field name="Arg2" type="integer"/>
+<Field format="yyyy-MM-dd" name="Arg3" type="date"/>
+<Field name="Arg4" type="boolean"/>
+<Field name="Arg5" type="number"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="joinOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Delimiter" type="string"/>
+<Field name="Arg1" type="string"/>
+<Field name="Arg2" type="integer"/>
+<Field name="Arg3" type="date"/>
+<Field name="Arg4" type="boolean"/>
+<Field name="Arg5" type="number"/>
+<Field name="Function" type="string"/>
+<Field name="Result" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringJoin.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="30" guiY="126" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringJoinOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="436" guiY="123" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="232" guiY="124" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.Delimiter := $0.Delimiter;
+	$0.Arg1 := $0.Arg1;
+	$0.Arg2 := $0.Arg2;
+	$0.Arg3 := $0.Arg3;
+	$0.Arg4 := $0.Arg4;
+	$0.Arg5 := $0.Arg5;
+	$0.Function := "join($0.Delimiter,$0.Arg1,$0.Arg2,$0.Arg3,$0.Arg4,$0.Arg5)";
+	$0.Result := join($0.Delimiter,$0.Arg1,$0.Arg2,$0.Arg3,$0.Arg4,$0.Arg5);
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="milos_kovalcik" created="Wed Jan 21 09:06:38 CET 2009" guiVersion="0.0.0.devel" id="1232534199144" licenseType="Evaluation license." modified="Sun Mar 15 16:13:03 CET 2009" modifiedBy="cloveruser" name="miscellaneousPrint_stack" revision="1.14">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="messageForPrint_log" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Message" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="print_logOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Message" type="string"/>
+<Field name="DebugLogLevel" type="string"/>
+<Field name="InfoLogLevel" type="string"/>
+<Field name="WarnLogLevel" type="string"/>
+<Field name="ErrorLogLevel" type="string"/>
+<Field name="FatalLogLevel" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/miscellaneousPrint_log.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="174" guiY="238" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/miscellaneousPrint_log.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="579" guiY="238" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="379" guiY="238" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	print_log(debug,$0.Message);
+	print_log(info,$0.Message);
+	print_log(warn,$0.Message);
+	print_log(error,$0.Message);
+	print_log(fatal,$0.Message);
+			
+	$0.Message := $0.Message;
+	$0.DebugLogLevel := 'print_log(debug,$0.Message)';
+	$0.InfoLogLevel := 'print_log(info,$0.Message)';
+	$0.WarnLogLevel := 'print_log(warn,$0.Message)';
+	$0.ErrorLogLevel := 'print_log(error,$0.Message)';
+	$0.FatalLogLevel := 'print_log(fatal,$0.Message)';
+	
+	
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

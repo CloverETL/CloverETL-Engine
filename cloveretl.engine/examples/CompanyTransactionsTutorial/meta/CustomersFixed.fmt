@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="CustomersFixed" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="fixed">
+<Field name="CustomerID" size="10" type="integer"/>
+<Field name="CustomerState" size="20" type="string"/>
+<Field name="CustomerSurname" size="20" type="string"/>
+<Field name="CustomerFirstname" size="20" type="string"/>
+</Record>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Tue Jan 27 09:23:39 CET 2009" guiVersion="0.0.0.devel" id="1233044619779" licenseType="Evaluation license." modified="Sun Mar 15 15:54:22 CET 2009" modifiedBy="cloveruser" name="stringEdit_distance" revision="1.38">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="edit_distanceInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String1" type="string"/>
+<Field name="String2" type="string"/>
+<Field name="Strength" type="integer"/>
+<Field name="Locale" type="string"/>
+<Field name="MaxDifference" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="edit_distanceOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String1" type="string"/>
+<Field name="String2" type="string"/>
+<Field name="Strength" type="integer"/>
+<Field name="Locale" type="string"/>
+<Field name="MaxDifference" type="integer"/>
+<Field name="AllArguments" type="string"/>
+<Field name="ResultAllArguments" type="integer"/>
+<Field name="DefaultMaxDifferenceIs3" type="string"/>
+<Field name="ResultMaxDiffDefault" type="integer"/>
+<Field name="DefaultLocaleIsSystemValue" type="string"/>
+<Field name="ResultLocaleDefault" type="integer"/>
+<Field name="DefaultStrengthIs4" type="string"/>
+<Field name="ResultStrengthDefault" type="integer"/>
+<Field name="DefaultLocaleIsSystem_DefaultMaxDifferenceIs3" type="string"/>
+<Field name="ResultLocaleMaxDiffDefault" type="integer"/>
+<Field name="DefaultStrengthIs4_DefaultMaxDifferenceIs3" type="string"/>
+<Field name="ResultStrengthMaxDiffDefault" type="integer"/>
+<Field name="DefaultStrengthIs4_DefaultLocaleIsSystem_DefaultMaxDifferenceIs3" type="string"/>
+<Field name="ResultStrengthLocaleMaxDiffDefault" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAIN_DIR}/stringEdit_distancePRIMARY.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="23" guiY="109" id="DATA_READER0" type="DATA_READER"/>
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/stringEdit_distancePRIMARYOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="483" guiY="109" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="245" guiY="109" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.String1 := $0.String1;
+	$0.String2 := $0.String2;
+	$0.Strength := $0.Strength;
+	$0.Locale := $0.Locale;
+	$0.MaxDifference := $0.MaxDifference;
+	$0.AllArguments := "edit_distance($0.String1,$0.String2,$0.Strength,$0.Locale,$0.MaxDifference)";
+	$0.ResultAllArguments := edit_distance($0.String1,$0.String2,$0.Strength,$0.Locale,$0.MaxDifference);
+	$0.DefaultMaxDifferenceIs3 := "edit_distance($0.String1,$0.String2,$0.Strength,$0.Locale)";
+	$0.ResultMaxDiffDefault := edit_distance($0.String1,$0.String2,$0.Strength,$0.Locale);
+	$0.DefaultLocaleIsSystemValue := "edit_distance($0.String1,$0.String2,$0.Strength,$0.MaxDifference)";
+	$0.ResultLocaleDefault := edit_distance($0.String1,$0.String2,$0.Strength,$0.MaxDifference);
+	$0.DefaultStrengthIs4 := "edit_distance($0.String1,$0.String2,$0.Locale,$0.MaxDifference)";
+	$0.ResultStrengthDefault := edit_distance($0.String1,$0.String2,$0.Locale,$0.MaxDifference);
+	$0.DefaultLocaleIsSystem_DefaultMaxDifferenceIs3 := "edit_distance($0.String1,$0.String2,$0.Strength)";
+	$0.ResultLocaleMaxDiffDefault := edit_distance($0.String1,$0.String2,$0.Strength);
+	$0.DefaultStrengthIs4_DefaultMaxDifferenceIs3 := "edit_distance($0.String1,$0.String2,$0.Locale)";
+	$0.ResultStrengthMaxDiffDefault := edit_distance($0.String1,$0.String2,$0.Locale);
+	$0.DefaultStrengthIs4_DefaultLocaleIsSystem_DefaultMaxDifferenceIs3 := "edit_distance($0.String1,$0.String2)";
+	$0.ResultStrengthLocaleMaxDiffDefault := edit_distance($0.String1,$0.String2);
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
