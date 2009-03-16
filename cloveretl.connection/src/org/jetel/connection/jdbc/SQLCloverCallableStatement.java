@@ -46,7 +46,7 @@ import org.jetel.util.string.StringUtils;
 
 public class SQLCloverCallableStatement {
 	
-	public final String RESULT_SET_OUTPARAMETER_NAME = "result_set";
+	public static final String RESULT_SET_OUTPARAMETER_NAME = "result_set";
 	
 	protected int RESULT_SET_OUTPARAMETER_TYPE = Types.OTHER;
 	
