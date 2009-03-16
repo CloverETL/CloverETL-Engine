@@ -23,12 +23,14 @@ package org.jetel.sequence;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.nio.BufferOverflowException;
+import java.net.URL;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,7 +43,9 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -88,11 +92,14 @@ public class SimpleSequence extends GraphElement implements Sequence {
     FileChannel io;
     FileLock lock;
     ByteBuffer buffer;
+
+	private String configFileName;
     private static final String XML_NAME_ATTRIBUTE = "name";
 	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
 	private static final String XML_START_ATTRIBUTE = "start";
 	private static final String XML_STEP_ATTRIBUTE = "step";
 	private static final String XML_CACHED_ATTRIBUTE = "cached";
+	private static final String XML_SEQCONFIG_ATTRIBUTE = "seqConfig";
     
     /**
      * Creates SimpleSequence object.
@@ -114,6 +121,47 @@ public class SimpleSequence extends GraphElement implements Sequence {
         this.step=step;
         this.counter=0;
         this.numCachedValues=numCachedValues;
+    }
+    
+    /**
+     *  Constructor for the SimpleSequence object.
+     *
+     * @param  configFilename  properties filename containing definition of seqeunce (properties file)
+     */
+    public SimpleSequence(String id, String configFilename) {
+        super(id);
+        this.configFileName = configFilename;
+        
+        int start = 0;
+        int step = 0;
+        int cached = 0;
+
+        if(!StringUtils.isEmpty(configFileName)) {
+            try {
+            	URL projectURL = getGraph() != null ? getGraph().getProjectURL() : null;
+                InputStream stream = FileUtils.getFileURL(projectURL, configFileName).openStream();
+
+                Properties tempProperties = new Properties();
+                tempProperties.load(stream);
+        		TypedProperties typedProperties = new TypedProperties(tempProperties, getGraph());
+
+        		this.filename = typedProperties.getStringProperty(XML_FILE_URL_ATTRIBUTE, null);
+        		start = typedProperties.getIntProperty(XML_START_ATTRIBUTE, 0);
+        		step = typedProperties.getIntProperty(XML_STEP_ATTRIBUTE, 0);
+        		cached = typedProperties.getIntProperty(XML_CACHED_ATTRIBUTE, 0);                
+                
+                stream.close();
+            } catch (Exception ex) {
+                this.filename = null;
+            }
+        }
+
+		this.start = start;
+		this.sequenceValue = start;
+		this.step = step;
+		this.numCachedValues = cached;
+		this.counter = 0;
+
     }
     
     synchronized public long currentValueLong(){
@@ -180,7 +228,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
     synchronized public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
-
+		
         buffer = ByteBuffer.allocateDirect(DATA_SIZE);
         try{
             File file = new File(getGraph() != null ? 
@@ -290,19 +338,24 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		}
 		this.filename = filename;
 	}
-
+	
 	static public SimpleSequence fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
         try {
-            return new SimpleSequence(
-                xattribs.getString(XML_ID_ATTRIBUTE),
-                graph,
-				xattribs.getString(XML_NAME_ATTRIBUTE),
-				xattribs.getString(XML_FILE_URL_ATTRIBUTE),
-				xattribs.getInteger(XML_START_ATTRIBUTE),
-                xattribs.getInteger(XML_STEP_ATTRIBUTE),
-                xattribs.getInteger(XML_CACHED_ATTRIBUTE));
+        	String id = xattribs.getString(XML_ID_ATTRIBUTE);
+        	if (xattribs.exists(XML_SEQCONFIG_ATTRIBUTE)) {
+        		return new SimpleSequence(id, xattribs.getString(XML_SEQCONFIG_ATTRIBUTE));
+        	} else {
+        		return new SimpleSequence(
+        				id,
+        				graph,
+        				xattribs.getString(XML_NAME_ATTRIBUTE),
+        				xattribs.getString(XML_FILE_URL_ATTRIBUTE),
+        				xattribs.getInteger(XML_START_ATTRIBUTE),
+        				xattribs.getInteger(XML_STEP_ATTRIBUTE),
+        				xattribs.getInteger(XML_CACHED_ATTRIBUTE));
+        	}
         } catch(Exception ex) {
             throw new XMLConfigurationException(SEQUENCE_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(), ex);
         }
