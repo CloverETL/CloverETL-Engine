@@ -531,7 +531,7 @@ public class DBExecute extends Node {
 					try {
 						if (procedureCall) {
 							callableStatement[0] = new SQLCloverCallableStatement(connectionInstance, 
-									statementRecord.getField(0).toString(), null, outRecord);
+									statementRecord.getField(0).toString(), null, outRecord, dbConnection.getJdbcDriver().getResultSetType());
 							callableStatement[0].prepareCall();
 							executeCall(callableStatement[0], index);
 						}else{
@@ -602,6 +602,19 @@ public class DBExecute extends Node {
 	 */
 	private void executeCall(SQLCloverCallableStatement callableStatement, int i) throws SQLException, IOException, InterruptedException{
 		boolean sendOut = outParams != null && i < outParams.length && outParams[i] != null;
+
+		
+		/*
+		 * pnajvar-
+		 * sendOut only if outParams is different than "result_set"
+		 * This is a workaround which should be reviewed by the one how implemented this method
+		 * as I don't have any knowledge why "send out if any output parameters even when isNext()==false" behavior
+		 */
+		if (outParams[i].get(1).equals(SQLCloverCallableStatement.RESULT_SET_OUTPARAMETER_NAME)){
+			sendOut = false;
+		}
+		
+		
 		callableStatement.executeCall();
 		if (outPort != null) {
 			sendOut = sendOut || callableStatement.isNext();
