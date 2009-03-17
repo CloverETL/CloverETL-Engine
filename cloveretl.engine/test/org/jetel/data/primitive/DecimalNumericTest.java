@@ -411,7 +411,17 @@ public class DecimalNumericTest extends CloverTestCase {
 		}
 		
 	}
-	
+
+	public void testSetValue() {
+		Decimal decimal = new IntegerDecimal(9, 2);
+		double[] doubleValues = {39.8, 9.95, 9.45, 4.35, 16.65, 4.85};
+
+		for (double doubleValue : doubleValues) {
+			decimal.setValue(doubleValue);
+			assertEquals(doubleValue, decimal.getDouble());
+		}
+	}
+
 	public void test_compare(){
 		CloverInteger cint = new CloverInteger(1);
 		CloverDouble cdouble = new CloverDouble(1.5);

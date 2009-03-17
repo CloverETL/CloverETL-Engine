@@ -653,11 +653,11 @@ public final class IntegerDecimal implements Decimal {
         }
     }
 
-    private double convertToInnerForm(double d) {
+    private long convertToInnerForm(double d) {
         if(scale >= 0) {
-            return d * TENPOWERS[scale];
+            return Math.round(d * TENPOWERS[scale]);
         } else {
-            return d / TENPOWERS[-scale];
+            return Math.round(d / TENPOWERS[-scale]);
         }
     }
 
