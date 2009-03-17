@@ -586,7 +586,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 	<target name="runtests-scenario-after-commit" depends="build,coverage-instrument">
 		<echo message="Executing Clover Test Environment environment - after commit"/>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
-			<property name="environmentConfig" value="${cte.environment.config}"/>
+			<property name="environment.config" value="${cte.environment.config}"/>
             <property name="scenarios" value="simpleExamples.ts;extExamples.ts;advancedExamples.ts;after-commit.ts" />
 			<property name="dir.scenarios" value="../cloveretl.test.scenarios;${dir.examples}/simpleExamples;${dir.examples}/extExamples;${dir.examples}/advancedExamples" />
 			<property name="dir.examples.classes" value="../cloveretl.test.scenarios/trans;${dir.examples}/simpleExamples/trans;${dir.examples}/extExamples/trans;${dir.examples}/advancedExamples/trans" />
@@ -600,7 +600,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 	<target name="runtests-scenario-night" depends="build">
 		<echo message="Executing Clover Test Environment environment - night"/>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
-			<property name="environmentConfig" value="${cte.environment.config}"/>
+			<property name="environment.config" value="${cte.environment.config}"/>
             <property name="scenarios" value="night.ts" />
 			<property name="dir.scenarios" value="../cloveretl.test.scenarios"/>
 			<property name="dir.engine.classes" value="${dir.bin}"/>
