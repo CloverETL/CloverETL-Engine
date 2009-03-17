@@ -69,6 +69,7 @@
 	 	  <FlatFile outputFile="data-out/employeeMetaphone.out" supposedFile="supposed-out/employeeMetaphone.AproximativeJoin.out"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/employeeNYSIIS.out" supposedFile="supposed-out/employeeNYSIIS.AproximativeJoin.out"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/employeeSoundex.out" supposedFile="supposed-out/employeeSoundex.AproximativeJoin.out"/>	                                                                    
+	     <DeleteFile file="seq/id.seq"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="CheckForeignKey" graphFile="graph/graphCheckForeignKey.grf">
@@ -82,7 +83,7 @@
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBExecuteMySql" graphFile="graph/graphDBExecuteMySql.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/foundClients.txt" supposedFile="supposed-out/foundClients.DBExecuteMySql.txt"/>	                                                                    
 	</FunctionalTest>
 
