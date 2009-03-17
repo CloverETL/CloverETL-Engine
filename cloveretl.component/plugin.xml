@@ -249,11 +249,6 @@
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="MULTI_LEVEL_READER"/>
-		<parameter id="className" value="org.jetel.component.MultiLevelReader"/>
-	</extension>
-
-	<extension point-id="component">
 		<parameter id="type" value="SEQUENCE_CHECKER"/>
 		<parameter id="className" value="org.jetel.component.SequenceChecker"/>
 	</extension>
