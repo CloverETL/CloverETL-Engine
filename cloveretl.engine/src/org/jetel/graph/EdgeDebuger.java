@@ -11,8 +11,8 @@ import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.CyclicRecordBuffer;
 import org.jetel.data.DataRecord;
+import org.jetel.data.RingRecordBuffer;
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.interpreter.ParseException;
@@ -43,7 +43,7 @@ public class EdgeDebuger {
     private final boolean sampleData;
 
     private DataRecordTape dataTape;
-    private CyclicRecordBuffer recordBuffer;
+    private RingRecordBuffer recordBuffer;
     private Filter filter;
     private Sampler sampler;
 
@@ -64,7 +64,7 @@ public class EdgeDebuger {
         this.sampleData = sampleData;
     }
     
-    public void init() throws IOException, InterruptedException {
+    public void init() throws ComponentNotReadyException, IOException, InterruptedException {
         dataTape = new DataRecordTape(debugFile, !readMode, false);
         dataTape.open();
         dataTape.addDataChunk();
@@ -74,17 +74,14 @@ public class EdgeDebuger {
         }
 
         if (debugMaxRecords > 0 && debugLastRecords) {
-        	recordBuffer = new CyclicRecordBuffer(debugMaxRecords, metadata);
+        	recordBuffer = new RingRecordBuffer(debugMaxRecords);
+        	recordBuffer.init();
         }
 
         if (filterExpression != null) {
-            try {
-            	filter = new Filter(metadata, filterExpression);
-    		} catch (ComponentNotReadyException cnre) {
-    			throw new IOException(cnre.getMessage());
-    		}
+        	filter = new Filter(metadata, filterExpression);
         }
-        
+
         if (sampleData) {
         	sampler = new Sampler();
         }
@@ -110,7 +107,7 @@ public class EdgeDebuger {
 		}
 
         if (recordBuffer != null) {
-        	recordBuffer.clear();
+        	recordBuffer.reset();
         }
 
         if (filter != null) {
@@ -129,7 +126,7 @@ public class EdgeDebuger {
 
         if (recordBuffer != null) {
         	if (checkRecordToWrite(record)) {
-        		recordBuffer.add(record);
+        		recordBuffer.pushRecord(record);
         	}
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(record)) {
         	dataTape.put(record);
@@ -148,7 +145,7 @@ public class EdgeDebuger {
 
         if (recordBuffer != null) {
         	if (checkRecordToWrite(byteBuffer)) {
-        		recordBuffer.add(byteBuffer);
+        		recordBuffer.pushRecord(byteBuffer);
         	}
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(byteBuffer)) {
         	dataTape.put(byteBuffer);
@@ -179,7 +176,10 @@ public class EdgeDebuger {
     public void close() {
 		try {
 			if (recordBuffer != null) {
-				for (DataRecord dataRecord : recordBuffer) {
+				DataRecord dataRecord = new DataRecord(metadata);
+				dataRecord.init();
+
+				while (recordBuffer.popRecord(dataRecord) != null) {
 					dataTape.put(dataRecord);
 				}
 			}
@@ -189,6 +189,8 @@ public class EdgeDebuger {
 			}
 
 			dataTape.close();
+		} catch (IOException exception) {
+			logger.error("Error writing debug records.");
 		} catch (Exception ex) {
 			logger.warn("Can't flush/rewind DataRecordTape.");
 		}
