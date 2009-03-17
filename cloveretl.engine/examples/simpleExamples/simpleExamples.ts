@@ -119,10 +119,8 @@
 
 
 <FunctionalTest ident="ExtFilter2" graphFile="graph/graphExtFilter2.grf">
-	 <FlatFile outputFile="data-out/employees.filtered_1.dat" supposedFile="supposed-out/employees.filtered_1.ExtFilter2.dat"/>
-     
-<DeleteFile file="data-out/employees.filtered_1.dat"/>
-	
+	 <FlatFile outputFile="data-out/employees.filtered.dat" supposedFile="supposed-out/employees.filtered.ExtFilter2.dat"/>
+	<DeleteFile file="data-out/employees.filtered.dat"/>
 </FunctionalTest>
 
 <FunctionalTest ident="GenerateData" graphFile="graph/graphGenerateData.grf">	 
