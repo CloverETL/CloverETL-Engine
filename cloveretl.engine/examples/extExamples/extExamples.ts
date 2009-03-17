@@ -59,16 +59,16 @@
 	 	  <FlatFile outputFile="data-out/conformingSoundex.txt" supposedFile="supposed-out/conforming.AproximativeJoin.txt"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/suspicoiusKeyGenerator.txt" supposedFile="supposed-out/suspicoiusKeyGenerator.AproximativeJoin.txt"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/suspicoiusMetaphone.txt" supposedFile="supposed-out/suspicoiusMetaphone.AproximativeJoin.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/suspicoiusNYSIIS.txt" supposedFile="supposed-out/suspicoiusMetaphone.AproximativeJoin.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/suspicoiusSoundex.txt" supposedFile="supposed-out/suspicoiusMetaphone.AproximativeJoin.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/customersKeyGenerator.txt" supposedFile="supposed-out/empty.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/conformingMetaphone.txt" supposedFile="supposed-out/empty.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/conformingNYSIIS.txt" supposedFile="supposed-out/empty.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/conformingSoundex.txt" supposedFile="supposed-out/empty.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/employeeKeyGenerator.txt" supposedFile="supposed-out/employeeKeyGenerator.AproximativeJoin.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/employeeMetaphone.txt" supposedFile="supposed-out/employeeMetaphone.AproximativeJoin.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/employeeNYSIIS.txt" supposedFile="supposed-out/employeeMetaphone.AproximativeJoin.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/employeeSoundex.txt" supposedFile="supposed-out/employeeMetaphone.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/suspicoiusNYSIIS.txt" supposedFile="supposed-out/suspicoiusNYSIIS.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/suspicoiusSoundex.txt" supposedFile="supposed-out/suspicoiusSoundex.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/customersKeyGenerator.out" supposedFile="supposed-out/empty.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/customersSoundex.out" supposedFile="supposed-out/empty.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/customersMetaphone.out" supposedFile="supposed-out/empty.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/customersNYSIIS.out" supposedFile="supposed-out/empty.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/employeeKeyGenerator.out" supposedFile="supposed-out/employeeKeyGenerator.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/employeeMetaphone.out" supposedFile="supposed-out/employeeMetaphone.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/employeeNYSIIS.out" supposedFile="supposed-out/employeeNYSIIS.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/employeeSoundex.out" supposedFile="supposed-out/employeeSoundex.AproximativeJoin.txt"/>	                                                                    
 	</FunctionalTest>
 
 	<FunctionalTest ident="CheckForeignKey" graphFile="graph/graphCheckForeignKey.grf">
