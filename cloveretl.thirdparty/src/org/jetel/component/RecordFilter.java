@@ -90,7 +90,7 @@ public class RecordFilter {
 		this.metadata = recordMetadata;
 		String[] filterParts = filterExpression.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 		filterSpecs = new FilterItem[filterParts.length];
-		Map fieldNames = recordMetadata.getFieldNames();
+		Map fieldNames = recordMetadata.getFieldNamesMap();
 		int operatorIndex;
 		int cmpOperator;
 		int operatorStrLen;

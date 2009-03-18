@@ -132,7 +132,7 @@ public class AggregateFunctionOld implements Iterator {
         
         
 		aggregateItems = new AggregateItem[functionParts.length];
-		Map fieldNames = inMetadata.getFieldNames();
+		Map fieldNames = inMetadata.getFieldNamesMap();
 
 		for (int i = 0; i < functionParts.length; i++) {
 			functionPart = functionParts[i];

@@ -127,7 +127,7 @@ public class StructureFormatter implements Formatter {
 		String fieldName;
 		int index ;
 		int startIndex = 0;
-		Map fields = metadata.getFieldNames();
+		Map fields = metadata.getFieldNamesMap();
 		do {
 			//find next '$' in mask
 			index = mask.indexOf('$',startIndex);

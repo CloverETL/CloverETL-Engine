@@ -81,7 +81,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	@SuppressWarnings("Se")
 	private List<DataFieldMetadata> fields = new ArrayList<DataFieldMetadata>();
 	@SuppressWarnings("Se")
-	private Map<String, Integer> fieldNames = new HashMap<String, Integer>();
+	private Map<String, Integer> fieldNamesMap = new HashMap<String, Integer>();
 	@SuppressWarnings("Se")
 	private Map<Integer, String> fieldTypes = new HashMap<Integer, String>();
 	@SuppressWarnings("Se")
@@ -415,11 +415,11 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @return the position of the field within the data record or -1 if no such field exists
 	 */
 	public int getFieldPosition(String fieldName) {
-		if (fieldNames.isEmpty()) {
+		if (fieldNamesMap.isEmpty()) {
 			updateFieldNamesMap();
 		}
 
-		Integer position = fieldNames.get(fieldName);
+		Integer position = fieldNamesMap.get(fieldName);
 
 		if (position != null) {
 			return position;
@@ -489,7 +489,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private void structureChanged() {
 		recordSize = -1;
 
-		fieldNames.clear();
+		fieldNamesMap.clear();
 		fieldTypes.clear();
 		fieldOffset.clear();
 
@@ -511,26 +511,39 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
+	 * @return an array of field names sorted by the fields' ordinal numbers
+	 */
+	public String[] getFieldNamesArray() {
+		String[] fieldNamesArray = new String[fields.size()];
+
+		for (int i = 0; i < fields.size(); i++) {
+			fieldNamesArray[i] = fields.get(i).getName();
+		}
+
+		return fieldNamesArray;
+	}
+
+	/**
 	 * @return a map mapping field names to field ordinal numbers
 	 *
 	 * @since 2nd May 2002
 	 */
-	public Map<String, Integer> getFieldNames() {
-		if (fieldNames.isEmpty()) {
+	public Map<String, Integer> getFieldNamesMap() {
+		if (fieldNamesMap.isEmpty()) {
 			updateFieldNamesMap();
 		}
 
-		return new HashMap<String, Integer>(fieldNames);
+		return new HashMap<String, Integer>(fieldNamesMap);
 	}
 
 	/**
-	 * Used to populate the fieldNames map if empty.
+	 * Used to populate the fieldNamesMap map if empty.
 	 */
 	private void updateFieldNamesMap() {
-		assert (fieldNames.isEmpty());
+		assert (fieldNamesMap.isEmpty());
 
 		for (int i = 0; i < fields.size(); i++) {
-			fieldNames.put(fields.get(i).getName(), i);
+			fieldNamesMap.put(fields.get(i).getName(), i);
 		}
 	}
 
@@ -932,7 +945,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("DataRecordMetadata[");
 		buffer.append("fields = ").append(fields);
-		buffer.append(", fieldNames = ").append(getFieldNames());
+		buffer.append(", fieldNamesMap = ").append(getFieldNamesMap());
 		buffer.append(", fieldTypes = ").append(getFieldTypes());
 		buffer.append(", name = ").append(name);
 		buffer.append(", recType = ").append(recType);

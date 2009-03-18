@@ -223,7 +223,7 @@ public class SequenceChecker extends Node {
 		int keyFields[];
         Integer position;
         keyFields = new int[keyFieldNames.length];
-        Map fields = getInputPort(READ_FROM_PORT).getMetadata().getFieldNames();
+        Map fields = getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesMap();
 
         for (int i = 0; i < keyFieldNames.length; i++) {
             if ((position = (Integer) fields.get(keyFieldNames[i])) != null) {

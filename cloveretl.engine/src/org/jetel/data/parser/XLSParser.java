@@ -287,7 +287,7 @@ public abstract class XLSParser implements Parser {
 			fieldNumber[i][CLOVER_NUMBER] = -1;
 		}
 
-		Map fieldNames = metadata.getFieldNames();
+		Map fieldNames = metadata.getFieldNamesMap();
 
 		switch (mappingType) {
 			case ONLY_CLOVER_FIELDS:

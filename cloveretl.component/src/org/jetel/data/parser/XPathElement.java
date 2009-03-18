@@ -84,7 +84,7 @@ public class XPathElement {
 		if (record == null) return null;
 		if (contextNode == null) return record;
 		if (cloverFieldNumber == NO_FIELD && record != null) {
-			Integer i = (Integer)record.getMetadata().getFieldNames().get(cloverField);
+			Integer i = (Integer)record.getMetadata().getFieldNamesMap().get(cloverField);
 			if (i == null) 
 				throw new TransformerException("Clover field name '" + cloverField + "' not found in metadata");
 			cloverFieldNumber = i.intValue();
