@@ -153,10 +153,6 @@
 			<fileset dir="${dir.lib}" />
 		</copy>
 
-		<copy todir="${src.distribution.dir.engine}/plugins">
-			<fileset dir="plugins" />
-		</copy>
-
 		<copy todir="${src.distribution.dir.engine}/test">
 			<fileset dir="test" />
 		</copy>
