@@ -45,7 +45,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  * 
- * @version 17th February 2009
+ * @version 18th March 2009
  * @since 26th March 2002
  * 
  * @see DataFieldMetadata
