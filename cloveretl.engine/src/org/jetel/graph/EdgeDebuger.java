@@ -20,6 +20,7 @@ import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.interpreter.data.TLBooleanValue;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -42,12 +43,17 @@ public class EdgeDebuger {
     private final DataRecordMetadata metadata;
     private final boolean sampleData;
 
+    /** used to store the ordinal of the data record currently processed (read or written) */
+    private DataRecord recordOrdinal;
     private DataRecordTape dataTape;
     private RingRecordBuffer recordBuffer;
     private Filter filter;
     private Sampler sampler;
 
-    private int debuggedRecords = 0; // number of debugged records
+    /** the number of data records processed so far */
+    private int recordsCounter = 0;
+    /** the number of debugged (stored) records */
+    private int debuggedRecords = 0; 
 
     public EdgeDebuger(String debugFile, boolean readMode) {
     	this(debugFile, readMode, 0, true, null, null, false);
@@ -65,7 +71,13 @@ public class EdgeDebuger {
     }
     
     public void init() throws ComponentNotReadyException, IOException, InterruptedException {
-        dataTape = new DataRecordTape(debugFile, !readMode, false);
+    	DataRecordMetadata recordOrdinalMetadata = new DataRecordMetadata("recordOrdinal", DataRecordMetadata.DELIMITED_RECORD);
+    	recordOrdinalMetadata.addField(new DataFieldMetadata("ordinal", DataFieldMetadata.INTEGER_FIELD, ";"));
+
+    	recordOrdinal = new DataRecord(recordOrdinalMetadata);
+    	recordOrdinal.init();
+
+    	dataTape = new DataRecordTape(debugFile, !readMode, false);
         dataTape.open();
         dataTape.addDataChunk();
 
@@ -74,7 +86,8 @@ public class EdgeDebuger {
         }
 
         if (debugMaxRecords > 0 && debugLastRecords) {
-        	recordBuffer = new RingRecordBuffer(debugMaxRecords);
+        	// we need to store the record with its ordinal, so double the size of the buffer
+        	recordBuffer = new RingRecordBuffer(2 * debugMaxRecords);
         	recordBuffer.init();
         }
 
@@ -117,19 +130,28 @@ public class EdgeDebuger {
         if (sampler != null) {
         	sampler.reset();
         }
+
+        recordsCounter = 0;
+        debuggedRecords = 0;
 	}
-	
+
     public void writeRecord(DataRecord record) throws IOException, InterruptedException {
         if (readMode) {
-			throw new IllegalStateException("Error: Mixed read/write operation on DataRecordTape !");
+			throw new IllegalStateException("Error: Mixed read/write operation on DataRecordTape!");
 		}
+
+        recordsCounter++;
+        recordOrdinal.getField(0).setValue(recordsCounter);
 
         if (recordBuffer != null) {
         	if (checkRecordToWrite(record)) {
+        		recordBuffer.pushRecord(recordOrdinal);
         		recordBuffer.pushRecord(record);
         	}
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(record)) {
+        	dataTape.put(recordOrdinal);
         	dataTape.put(record);
+
         	debuggedRecords++;
         }
     }
@@ -140,15 +162,21 @@ public class EdgeDebuger {
     
     public void writeRecord(ByteBuffer byteBuffer) throws IOException, InterruptedException {
         if (readMode) {
-			throw new IllegalStateException("Error: Mixed read/write operation on DataRecordTape !");
+			throw new IllegalStateException("Error: Mixed read/write operation on DataRecordTape!");
 		}
+
+        recordsCounter++;
+        recordOrdinal.getField(0).setValue(recordsCounter);
 
         if (recordBuffer != null) {
         	if (checkRecordToWrite(byteBuffer)) {
+        		recordBuffer.pushRecord(recordOrdinal);
         		recordBuffer.pushRecord(byteBuffer);
         	}
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(byteBuffer)) {
+        	dataTape.put(recordOrdinal);
         	dataTape.put(byteBuffer);
+
         	debuggedRecords++;
         }
     }
@@ -161,16 +189,26 @@ public class EdgeDebuger {
     	return (debugMaxRecords == 0 || debuggedRecords < debugMaxRecords);
     }
 
-    public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
+    /**
+     * Reads previously stored debug record into the given record reference.
+     *
+     * @param record the record that will be filled with data
+     *
+     * @return the (1-based) ordinal of the data record, or -1 if there are no more records
+     *
+     * @throws IOException if any I/O error occurs
+     * @throws InterruptedException
+     */
+    public int readRecord(DataRecord record) throws IOException, InterruptedException {
 		if (!readMode) {
-			return null;
+			return -1;
 		}
 
-		if (dataTape.get(record)) {
-			return record;
+		if (dataTape.get(recordOrdinal) && dataTape.get(record)) {
+			return (Integer) recordOrdinal.getField(0).getValue();
 		}
 
-		return null;
+		return -1;
 	}
 
     public void close() {
@@ -179,7 +217,8 @@ public class EdgeDebuger {
 				DataRecord dataRecord = new DataRecord(metadata);
 				dataRecord.init();
 
-				while (recordBuffer.popRecord(dataRecord) != null) {
+				while (recordBuffer.popRecord(recordOrdinal) != null && recordBuffer.popRecord(dataRecord) != null) {
+					dataTape.put(recordOrdinal);
 					dataTape.put(dataRecord);
 				}
 			}
