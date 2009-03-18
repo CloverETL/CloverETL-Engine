@@ -131,7 +131,7 @@ public class RecordKey {
 	    if (keyFields == null) {
             Integer position;
             keyFields = new int[keyFieldNames.length];
-            Map fields = metadata.getFieldNames();
+            Map fields = metadata.getFieldNamesMap();
 
             for (int i = 0; i < keyFieldNames.length; i++) {
                 if ((position = (Integer) fields.get(keyFieldNames[i])) != null) {
@@ -168,7 +168,7 @@ public class RecordKey {
     
     private int[] getKeyFieldsIndexes(DataRecordMetadata mdata, String[] fieldNames) {
     	int[] indexes = new int[fieldNames.length];
-    	Map<String, Integer> namesMap = mdata.getFieldNames();
+    	Map<String, Integer> namesMap = mdata.getFieldNamesMap();
     	for (int i=0; i<fieldNames.length; i++){
     		indexes[i] = namesMap.get(fieldNames[i]);
     	}

@@ -212,7 +212,7 @@ public class XPathContext {
 	
 	private void initSequences(XPathContext portContext) throws TransformerException {
 		if (portContext.sequenceFieldName == null || portContext.record == null) return;
-		Integer i = (Integer)portContext.record.getMetadata().getFieldNames().get(portContext.sequenceFieldName);
+		Integer i = (Integer)portContext.record.getMetadata().getFieldNamesMap().get(portContext.sequenceFieldName);
 		if (i == null) 
 			throw new TransformerException("Clover field name '" + portContext.sequenceFieldName + "' not found in metadata");
 		portContext.sequenceField = portContext.record.getField(i);
@@ -227,7 +227,7 @@ public class XPathContext {
 				if (xpathContext.generatedKeys != null) {
 					xpathContext.iGeneratedKeys = new int[xpathContext.generatedKeys.length];
 					for (int i=0; i<xpathContext.generatedKeys.length; i++) {
-						Integer fieldPos = (Integer)xpathContext.record.getMetadata().getFieldNames().get(xpathContext.generatedKeys[i]);
+						Integer fieldPos = (Integer)xpathContext.record.getMetadata().getFieldNamesMap().get(xpathContext.generatedKeys[i]);
 						if (fieldPos == null) 
 							throw new TransformerException("Clover field name '" + xpathContext.generatedKeys[i] + "' not found in metadata");
 						xpathContext.iGeneratedKeys[i] = fieldPos.intValue();
@@ -236,7 +236,7 @@ public class XPathContext {
 				if (xpathContext.parentKeys != null) {
 					xpathContext.iParentKeys = new int[xpathContext.parentKeys.length];
 					for (int i=0; i<xpathContext.parentKeys.length; i++) {
-						Integer fieldPos = (Integer)tmp.record.getMetadata().getFieldNames().get(xpathContext.parentKeys[i]);
+						Integer fieldPos = (Integer)tmp.record.getMetadata().getFieldNamesMap().get(xpathContext.parentKeys[i]);
 						if (fieldPos == null) 
 							throw new TransformerException("Clover field name '" + xpathContext.parentKeys[i] + "' not found in metadata");
 						xpathContext.iParentKeys[i] = fieldPos.intValue();
