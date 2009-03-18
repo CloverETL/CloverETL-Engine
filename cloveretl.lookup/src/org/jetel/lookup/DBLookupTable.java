@@ -163,7 +163,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 */
     synchronized public void init() throws ComponentNotReadyException {
         if (isInitialized()) {
-            throw new IllegalStateException("The lookup table has already been initialized!");
+//            throw new IllegalStateException("The lookup table has already been initialized!");
+        	return;
         }
 
 		super.init();

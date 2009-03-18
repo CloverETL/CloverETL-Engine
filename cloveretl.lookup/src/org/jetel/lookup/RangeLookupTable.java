@@ -233,7 +233,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	@Override
 	public synchronized void init() throws ComponentNotReadyException {
         if (isInitialized()) {
-            throw new IllegalStateException("The lookup table has already been initialized!");
+//            throw new IllegalStateException("The lookup table has already been initialized!");
+        	return;
         }
 
 		super.init();
