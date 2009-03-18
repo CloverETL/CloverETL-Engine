@@ -16,7 +16,7 @@ public abstract class CloverTestCase extends TestCase {
 
 	private static final String PLUGINS_KEY = "cloveretl.plugins";
 
-	private static final String PLUGINS_DEFAULT_DIR = "../cloveretl.engine/plugins";
+	private static final String PLUGINS_DEFAULT_DIR = "..";
 
 	protected void initEngine() {
 		final String pluginsDir;

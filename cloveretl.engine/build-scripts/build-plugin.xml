@@ -156,6 +156,7 @@
 		</jar>
 		<!-- copy plugin manifest -->
 		<copy file="${dir.build}/plugin.xml" todir="${dir.dist}/plugins/${plugin.dir.name}" />
+		<replace file="${dir.dist}/plugins/${plugin.dir.name}/plugin.xml" token="&lt;library path=&quot;bin/&quot;/&gt;" value="&lt;library path=&quot;${plugin.name}.jar&quot;/&gt;" encoding="UTF-8"/>
 		
 		<!-- copy all libraries from lib directory -->
 		<if><available file="${dir.lib}"/>

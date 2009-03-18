@@ -4,7 +4,7 @@
    provider-name="Javlin a.s.">
 
 	<runtime>
-		<library path="cloveretl.component.jar"/>
+		<library path="bin/"/>
 		<library path="lib/saxon8.jar"/>
    	</runtime> 
 
