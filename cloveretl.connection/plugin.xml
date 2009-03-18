@@ -5,7 +5,7 @@
    class="org.jetel.connection.Activator">
 
 	<runtime>
-		<library path="cloveretl.connection.jar"/>
+		<library path="bin/"/>
    	</runtime> 
 
 	<extension point-id="connection">

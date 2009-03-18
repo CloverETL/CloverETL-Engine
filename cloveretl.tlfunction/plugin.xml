@@ -4,7 +4,7 @@
    provider-name="Javlin a.s.">
 
 	<runtime>
-		<library path="cloveretl.tlfunction.jar"/>
+		<library path="bin/"/>
    	</runtime> 
 
 	<extension point-id="tlfunction">

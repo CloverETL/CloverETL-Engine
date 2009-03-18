@@ -4,7 +4,7 @@
 	provider-name="Javlin a.s.">
 
 	<runtime>
-		<library path="cloveretl.jdbc.jar"/>
+		<library path="bin/"/>
    	</runtime> 
 
 	<requires engine-version="0.0.0.devel">
