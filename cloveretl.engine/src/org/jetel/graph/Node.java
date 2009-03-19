@@ -135,6 +135,7 @@ public abstract class Node extends GraphElement implements Runnable {
     @Override public void init() throws ComponentNotReadyException{
         super.init();
         runResult=Result.READY;
+        refreshBufferedValues();
     }
     
     
@@ -746,10 +747,6 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since                            April 2, 2002
 	 */
 	public void writeRecordBroadcast(DataRecord record) throws IOException, InterruptedException {
-		if (outPortsArray == null) {
-            refreshBufferedValues();
-		}
-		
         for(int i=0;i<outPortsSize;i++){
 				outPortsArray[i].writeRecord(record);
 		}
@@ -780,10 +777,6 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since                            August 13, 2002
 	 */
     public void writeRecordBroadcastDirect(ByteBuffer recordBuffer) throws IOException, InterruptedException {
-        if (outPortsArray == null) {
-            refreshBufferedValues();
-        }
-
         for(int i=0;i<outPortsSize;i++){
             ((OutputPortDirect) outPortsArray[i]).writeRecordDirect(recordBuffer);
             recordBuffer.rewind();
