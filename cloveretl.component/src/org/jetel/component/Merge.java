@@ -299,7 +299,7 @@ public class Merge extends Node {
                 status.add(new ConfigurationProblem("At least 2 input ports should be defined!", Severity.WARNING, this, Priority.NORMAL));
             }
 
-            checkMetadata(status, getInMetadata());
+            checkMetadata(status, getInMetadata(), getOutMetadata(), false);
 
             try {
                 init();
