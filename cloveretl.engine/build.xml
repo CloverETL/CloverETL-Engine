@@ -175,11 +175,13 @@
 
 		<copy todir="${src.distribution.dir.engine}">
 			<fileset file="build.xml" />
-			<fileset file="build.properties" />
 			<fileset file="version.properties" />
 			<fileset file="plugin.xml" />
 			<fileset file="readme.src.txt" />
 			<fileset file="readme.bin.txt" />
+		</copy>
+		<copy todir="${src.distribution.dir.engine}" overwrite="true">
+			<fileset file="build.properties" />
 		</copy>
 		<echo file="${src.distribution.dir.engine}/build.properties" append="true" >
 
