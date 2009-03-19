@@ -133,6 +133,7 @@ public class CloverDataParser implements Parser {
             }
             //skip idx bytes from record file
             int i=0;
+            recordBuffer.clear();
             do {
                 ByteBufferUtils.reload(recordBuffer,recordFile);
                 recordBuffer.flip();

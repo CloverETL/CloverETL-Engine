@@ -20,9 +20,13 @@
 */
 package org.jetel.component;
 
-import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Iterator;
+import java.util.List;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.parser.CloverDataParser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -37,6 +41,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
@@ -113,6 +118,8 @@ public class CloverDataReader extends Node {
 
     private AutoFilling autoFilling = new AutoFilling();
 
+	private Iterator<String> filenameItor;
+    
 	/**
 	 * @param id
 	 * @param fileURL
@@ -138,17 +145,30 @@ public class CloverDataReader extends Node {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
         record.init();
 		int recordCount = 0;
-		while ((record = parser.getNext(record))!=null && runIt){
-	        //check for index of last returned record
-	        if(numRecords == recordCount) {
-				break;
-	        }
-	        autoFilling.setAutoFillingFields(record);
-		    writeRecordBroadcast(record);
-			SynchronizeUtils.cloverYield();
-			System.err.println(recordCount);
-		    recordCount++;
-		}
+		String fName;
+        DataRecord rec;
+		do {
+			while ((rec = parser.getNext(record))!=null && runIt){
+		        //check for index of last returned record
+		        if(numRecords == recordCount) {
+					break;
+		        }
+		        autoFilling.setAutoFillingFields(rec);
+			    writeRecordBroadcast(rec);
+				SynchronizeUtils.cloverYield();
+			    recordCount++;
+			}
+
+			// prepare next file
+			if (!filenameItor.hasNext()) break;
+			parser.close();
+			fName = filenameItor.next();
+			if (indexFileURL != null) {
+				parser.setDataSource(new String[]{fName,indexFileURL});
+			} else {
+				parser.setDataSource(fName);
+			}
+		} while (true);
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -201,33 +221,29 @@ public class CloverDataReader extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
+        // check ports and metadata
         if(!checkInputPorts(status, 0, 0)
         		|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
         	return status;
         }
-        
         checkMetadata(status, getOutMetadata());
         
+        // check files
     	try {
-			if (!FileUtils.isServerURL(FileUtils.getInnerAddress(getGraph().getProjectURL(), fileURL)) && 
-					!(new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL))).exists()) {
-				status.add(new ConfigurationProblem("File " + fileURL + " does not exist.", Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
-			}
+    		String fName; 
+    		initFileIterator();
+    		while (filenameItor.hasNext()) {
+				fName = filenameItor.next();
+				URL url = FileUtils.getInnerAddress(getGraph().getProjectURL(), fName);
+				if (FileUtils.isServerURL(url)) {
+					//FileUtils.checkServer(url); //this is very long operation
+					continue;
+				}
+				FileUtils.getReadableChannel(getGraph().getProjectURL(), url.toString());
+    		}
 		} catch (Exception e) {
 			status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 		}
-
-//        try {
-//            init();
-//        } catch (ComponentNotReadyException e) {
-//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-//            if(!StringUtils.isEmpty(e.getAttributeName())) {
-//                problem.setAttributeName(e.getAttributeName());
-//            }
-//            status.add(problem);
-//        } finally {
-//        	free();
-//        }
         
         return status;
     }
@@ -239,7 +255,8 @@ public class CloverDataReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
-		
+		initFileIterator();
+
 		//set start record
 		if (skipRows > 0) {
 			try{
@@ -249,10 +266,14 @@ public class CloverDataReader extends Node {
 		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
 		parser.init(metadata);
 		parser.setProjectURL(getGraph().getProjectURL());
-		if (indexFileURL != null) {
-			parser.setDataSource(new String[]{fileURL,indexFileURL});
-		}else{
-			parser.setDataSource(fileURL);
+		
+		if (filenameItor.hasNext()) {
+			String fName = filenameItor.next();
+			if (indexFileURL != null) {
+				parser.setDataSource(new String[]{fName,indexFileURL});
+			}else{
+				parser.setDataSource(fName);
+			}
 		}
 		
     	if (metadata != null) {
@@ -261,6 +282,19 @@ public class CloverDataReader extends Node {
     	autoFilling.setFilename(fileURL);
 	}
 	
+	private void initFileIterator() throws ComponentNotReadyException {
+		WcardPattern pat = new WcardPattern();
+		pat.setParent(getGraph().getProjectURL());
+        pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+        List<String> files;
+        try {
+			files = pat.filenames();
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(e);
+		}
+        this.filenameItor = files.iterator();
+	}
+
 	@Override
 	public synchronized void free() {
 		super.free();
