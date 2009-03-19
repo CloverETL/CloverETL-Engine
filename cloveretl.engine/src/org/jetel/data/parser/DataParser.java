@@ -167,11 +167,11 @@ public class DataParser implements Parser {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
-		byteBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		byteBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		charBuffer = CharBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE);
 		charBuffer.flip(); // initially empty 
-		fieldBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		recordBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		fieldBuffer = new StringBuilder(Defaults.DataParser.FIELD_BUFFER_LENGTH);
+		recordBuffer = CharBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE);
 		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		numFields = metadata.getNumFields();
 		isAutoFilling = new boolean[numFields];
@@ -246,10 +246,6 @@ public class DataParser implements Parser {
 	 */
 	public void setDataSource(Object inputDataSource) {
 		if (releaseInputSource) releaseDataSource();
-
-		fieldBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		recordBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 
 		decoder.reset();// reset CharsetDecoder
 		byteBuffer.clear();
