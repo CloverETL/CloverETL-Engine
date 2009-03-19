@@ -37,9 +37,9 @@ import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-//import org.jetel.graph.dictionary.IDictionaryValue;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileReader;
@@ -285,13 +285,14 @@ public class DataReader extends Node {
 
         // skip source rows
         if (skipSourceRows == -1) {
-            for (DataRecordMetadata dataRecordMetadata: getOutMetadata()) {
-            	int ssr = dataRecordMetadata.getSkipSourceRows();
+        	OutputPort outputPort = getOutputPort(OUTPUT_PORT); //only 1.output port without log port
+        	DataRecordMetadata metadata;
+        	if (outputPort != null && (metadata = outputPort.getMetadata()) != null) {
+            	int ssr = metadata.getSkipSourceRows();
             	if (ssr > 0) {
                     skipSourceRows = ssr;
-                    break;
             	}
-            }
+        	}
         }
         reader.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : (skipFirstLine ? 1 : 0));
 	}
