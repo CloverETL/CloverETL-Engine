@@ -893,7 +893,12 @@ public final class TransformationGraph extends GraphElement {
         for(Sequence sequence : sequences.values()) {
             sequence.checkConfig(status);
         }
-        
+
+        //check metadatas configuration
+        for(DataRecordMetadata metadata : dataRecordMetadata.values()) {
+            metadata.checkConfig(status);
+        }
+
         //check phases configuration
         for(Phase phase : getPhases()) {
             phase.checkConfig(status);
