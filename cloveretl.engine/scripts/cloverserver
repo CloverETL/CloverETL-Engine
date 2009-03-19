@@ -6,8 +6,29 @@
 # example:
 # cloverserver -verbose myGraph.grf - -classpath /home/name/myTransformation
 
+#define CLOVER_HOME variable
+if [ -z "$CLOVER_HOME" -o ! -d "$CLOVER_HOME" ] ; then
+	## resolve links - $0 may be a link to clover's home
+	PRG="$0"
+	progname=`basename "$0"`
+
+	# need this for relative symlinks
+	while [ -h "$PRG" ] ; do
+		ls=`ls -ld "$PRG"`
+		link=`expr "$ls" : '.*-> \(.*\)$'`
+		if expr "$link" : '/.*' > /dev/null; then
+			PRG="$link"
+		else
+			PRG=`dirname "$PRG"`"/$link"
+		fi
+	done
+
+	CLOVER_HOME=`dirname "$PRG"`/..
+	# make it fully qualified
+	CLOVER_HOME=`cd "$CLOVER_HOME" && pwd`
+fi
+
 #split command-line arguments to two sets - clover and jvm arguments
-#and define CLOVER_HOME variable
-. commonlib $@
+. ${CLOVER_HOME}/commonlib $@
 
 ${CLOVER_HOME}/bin/clover -noJMX -config ${CLOVER_HOME}/bin/serverProperties $clover_exec_args - -server -Xmx512M -XX:+UseParallelGC $java_exec_args

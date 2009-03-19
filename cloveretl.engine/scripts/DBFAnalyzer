@@ -6,16 +6,7 @@
 # usage
 # DBFAnalyzer [-v(erbose)] <DBF filename> [<metadata output filename>]
 
-
-cmd_line_arguments=
-
-while [ "$*" != "" ]
-do
-	cmd_line_arguments="$cmd_line_arguments \"$1\""
-	shift
-done
-
-
+#define CLOVER_HOME variable
 if [ -z "$CLOVER_HOME" -o ! -d "$CLOVER_HOME" ] ; then
 	## resolve links - $0 may be a link to clover's home
 	PRG="$0"
@@ -37,6 +28,13 @@ if [ -z "$CLOVER_HOME" -o ! -d "$CLOVER_HOME" ] ; then
 	CLOVER_HOME=`cd "$CLOVER_HOME" && pwd`
 fi
 
+cmd_line_arguments=
+
+while [ "$*" != "" ]
+do
+	cmd_line_arguments="$cmd_line_arguments \"$1\""
+	shift
+done
 
 # set java command
 if [ -z "$JAVACMD" ] ; then
