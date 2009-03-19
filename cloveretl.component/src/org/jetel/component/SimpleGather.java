@@ -216,7 +216,7 @@ public class SimpleGather extends Node {
     			return status;
     		}
     		
-            checkMetadata(status, getInMetadata(), getOutMetadata());
+            checkMetadata(status, getInMetadata(), getOutMetadata(), false);
 
             try {
                 init();

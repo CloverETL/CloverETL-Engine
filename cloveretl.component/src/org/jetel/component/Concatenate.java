@@ -180,7 +180,7 @@ public class Concatenate extends Node {
         	return status;
         }
         
-        checkMetadata(status, getInMetadata());
+        checkMetadata(status, getInMetadata(), getOutMetadata(), false);
 
         try {
             init();
