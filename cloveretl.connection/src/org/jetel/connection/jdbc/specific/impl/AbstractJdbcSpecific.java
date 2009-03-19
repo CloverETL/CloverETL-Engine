@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -187,5 +188,11 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	public String getTypesClassName() {
 		return TYPES_CLASS_NAME;
 	}
+
+	public String sqlType2str(int sqlType) {
+		return SQLUtil.sqlType2str(sqlType);
+	}
+	
+	
 	
 }
