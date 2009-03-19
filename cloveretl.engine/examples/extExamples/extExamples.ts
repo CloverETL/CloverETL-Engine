@@ -69,7 +69,10 @@
 	 	  <FlatFile outputFile="data-out/employeeMetaphone.out" supposedFile="supposed-out/employeeMetaphone.AproximativeJoin.out"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/employeeNYSIIS.out" supposedFile="supposed-out/employeeNYSIIS.AproximativeJoin.out"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/employeeSoundex.out" supposedFile="supposed-out/employeeSoundex.AproximativeJoin.out"/>	                                                                    
-	     <DeleteFile file="seq/id.seq"/>
+	     <DeleteFile file="seq/id0.seq"/>
+	     <DeleteFile file="seq/id1.seq"/>
+	     <DeleteFile file="seq/id2.seq"/>
+	     <DeleteFile file="seq/id3.seq"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="CheckForeignKey" graphFile="graph/graphCheckForeignKey.grf">
