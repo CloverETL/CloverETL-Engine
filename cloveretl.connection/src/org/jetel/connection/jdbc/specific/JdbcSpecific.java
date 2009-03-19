@@ -103,4 +103,10 @@ public interface JdbcSpecific {
 	 */
 	public String getResultSetParameterTypeField();
 
+	/**
+	 * This can be used to convert java sql types into real names of a data type instide the database
+	 * @return Name of database specific data type corresponding to java.sql.Types type
+	 */
+	public String sqlType2str(int sqlType);
+	
 }

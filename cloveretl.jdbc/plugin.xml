@@ -27,9 +27,16 @@
 
 	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="MSSQL"/>
-		<parameter id="name" value="MS SQL"/>
+		<parameter id="name" value="MS SQL Server 2008"/>
 		<!--parameter id="majorVersion" value="x"/-->
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.MSSQLSpecific"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="MSSQL2005"/>
+		<parameter id="name" value="MS SQL Server 2000-2005"/>
+		<!--parameter id="majorVersion" value="x"/-->
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.MSSQLSpecific2005"/>
 	</extension>
 
 	<extension point-id="jdbcSpecific">
