@@ -63,7 +63,7 @@
 			<then>
 				<echo message="Plugin has own libraries in ${dir.engine.lib}"/>
 				<fileset id="plugin-libs" dir="${dir.lib}">
-					<include name="**/*.jar"/>
+					<include name="**"/> <!-- copy not only *jar, in cloveretl.bulkloader are executables -->
 				</fileset>
 			</then>
 			<else>
