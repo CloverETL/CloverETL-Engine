@@ -17,7 +17,8 @@ public class customizedTransformExample extends DataRecordTransform {
 	public boolean init(Properties arg0, DataRecordMetadata[] arg1, DataRecordMetadata[] arg2) throws ComponentNotReadyException {
 		transformation = new CustomizedRecordTransform(LogFactory.getLog(customizedTransformExample.class));
 		transformation.addFieldToFieldRule("*.*", "*.*");
-		Sequence sequence = getGraph().getSequence("Sequence0");
+		String seqName = arg0.containsKey("seq_name") ? arg0.getProperty("seq_name") : "Sequence0";
+		Sequence sequence = getGraph().getSequence(seqName);
 		sequence.reset();
 		transformation.addSequenceToFieldRule("0.no", sequence);
 		transformation.setGraph(this.getGraph());
