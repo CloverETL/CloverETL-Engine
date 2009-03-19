@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Jan 06 10:30:07 CET 2009" guiVersion="0.0.0.devel" id="1231234967225" licenseType="Evaluation license." modified="Thu Mar 12 14:23:31 CET 2009" modifiedBy="avackova" name="graphDBExecuteSybase" revision="1.14">
+<Graph author="avackova" created="Tue Jan 06 10:30:07 CET 2009" guiVersion="0.0.0.devel" id="1231234967225" licenseType="Evaluation license." modified="Thu Mar 19 12:28:17 CET 2009" modifiedBy="avackova" name="graphDBExecuteSybase" revision="1.17">
 <Global>
-<Metadata fileURL="meta/delimited/date.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/delimited/date.fmt" id="Metadata1"/>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
 <Field auto_filling="ErrCode" name="errCode" type="integer"/>
@@ -15,7 +15,7 @@
 <Field format="dd-MM-yyyy hh:mm:ss" name="date" nullable="true" shift="0" type="date"/>
 </Record>
 </Metadata>
-<Connection dbConfig="conn/sybase.cfg" id="Connection0" type="JDBC"/>
+<Connection dbConfig="${CONN_DIR}/sybase.cfg" id="Connection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
