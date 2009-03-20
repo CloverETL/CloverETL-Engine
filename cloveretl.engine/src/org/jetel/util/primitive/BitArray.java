@@ -266,12 +266,12 @@ public class BitArray implements Serializable{
     public final static void set(byte[] bytes,int bit){
         bytes[bit >> 3] |= (byte) (1 << (bit % 8));
     }
-    
-    public final static void set(ByteBuffer bytes,int base,int bit){
-        final int position=bit >> 3 + bytes.position() + base ;
-        bytes.put(position, (byte)( bytes.get(position) | (1 << (bit % 8))));
-    }
-    
+
+    public final static void set(ByteBuffer bytes, int base, int bit) {
+		final int index = base + (bit >> 3);
+		bytes.put(index, (byte) (bytes.get(index) | (1 << (bit % 8))));
+	}
+
     /**
      *  Gets status of specified bit in array of bytes - counting
      * from left.
@@ -285,13 +285,12 @@ public class BitArray implements Serializable{
     public final static boolean isSet(byte[] bytes,int bit){
         return ((bytes[bit >> 3] & ((byte) (1 << (bit % 8)))) != 0 );
     }
-    
-    public final static boolean isSet(ByteBuffer bytes,int base, int bit){
-        final int position=bit >> 3 + bytes.position() + base ;
-        return ((bytes.get(position) & ((byte) (1 << (bit % 8))))!= 0); 
-        
-    }
-    
+
+    public final static boolean isSet(ByteBuffer bytes, int base, int bit) {
+		final int index = base + (bit >> 3);
+		return ((bytes.get(index) & ((byte) (1 << (bit % 8)))) != 0);
+	}
+
     /**
      * Resets specified bit in array of bytes - counting
      * from left.
@@ -304,11 +303,11 @@ public class BitArray implements Serializable{
     public final static void reset(byte[] bytes, int bit){
         bytes[bit >> 3] &= (~((byte) (1 << (bit % 8))));
     }
-  
-    public final static void reset(ByteBuffer bytes, int base, int bit){
-        final int position=bit >> 3 + bytes.position()+base;
-        bytes.put(position, (byte)( bytes.get(position) & (~((1 << (bit % 8))))));
-    }
+
+    public final static void reset(ByteBuffer bytes, int base, int bit) {
+		final int index = base + (bit >> 3);
+		bytes.put(index, (byte) (bytes.get(index) & (~((1 << (bit % 8))))));
+	}
 
     /**
      * How many bytes are used to store the number
