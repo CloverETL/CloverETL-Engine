@@ -291,11 +291,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
             setNull(true);
             return;
         }
-        if(value instanceof BigDecimal) {
-            this.value.setValue((BigDecimal) value);
-        } else {
-            this.value.setValue(value.doubleValue());
-        }
+        this.value.setValue(value);
         setNull(this.value.isNaN());
     }
 
