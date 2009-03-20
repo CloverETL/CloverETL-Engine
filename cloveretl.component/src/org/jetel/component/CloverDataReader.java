@@ -242,7 +242,7 @@ public class CloverDataReader extends Node {
 				FileUtils.getReadableChannel(getGraph().getProjectURL(), url.toString());
     		}
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem(e.getMessage(), Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
 		}
         
         return status;
