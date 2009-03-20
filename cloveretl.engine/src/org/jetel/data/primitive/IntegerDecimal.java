@@ -201,15 +201,19 @@ public final class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
      */
     public void setValue(Numeric _value) {
-        if(_value == null || _value.isNull()) {
+        if (_value == null || _value.isNull()) {
             setNaN(true);
             return;
         }
-        if(_value instanceof Decimal) {
+        if (_value instanceof CloverInteger) {
+        	setValue(_value.getInt());
+        } else if (_value instanceof CloverLong) {
+        	setValue(_value.getLong());
+        } else if (_value instanceof Decimal) {
             setValue((Decimal) _value);
+        } else {
+        	setValue(_value.getBigDecimal());
         }
-        
-        setValue(_value.getBigDecimal());
     }
     
     /**
@@ -228,11 +232,17 @@ public final class IntegerDecimal implements Decimal {
      * @see org.jetel.data.primitive.Numeric#setValue(java.lang.Number)
      */
     public void setValue(Number value) {
-       if (value instanceof Long){
-           setValue(value.longValue());
-       }else if (value instanceof Integer){
-           setValue(value.intValue());
-       }else{
+       if (value instanceof Long) {
+           setValue(((Long) value).longValue());
+       } else if (value instanceof Integer) {
+           setValue(((Integer) value).intValue());
+       } else if (value instanceof BigDecimal) {
+           setValue((BigDecimal) value);
+       } else if (value instanceof Double) {
+           setValue(((Double) value).doubleValue());
+       } else if (value instanceof Numeric) {
+           setValue((Numeric) value);
+       } else {
            setValue(value.doubleValue());
        }
     }
@@ -244,7 +254,7 @@ public final class IntegerDecimal implements Decimal {
         if(isNaN()) {
             return Double.NaN;
         }
-        return convertToOuterForm((double) value);
+        return getBigDecimal().doubleValue();
     }
 
     /**
@@ -400,11 +410,11 @@ public final class IntegerDecimal implements Decimal {
             value *= a.getDouble();
         } else if(a instanceof DecimalDataField || a instanceof Decimal) {
             Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
-            if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
-                value *= convertToOuterForm(((double) ((IntegerDecimal) d).value));
-            } else {
+//            if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
+//                value *= convertToOuterForm(((double) ((IntegerDecimal) d).value));
+//            } else {
                 setValue(getBigDecimal().multiply(d.getBigDecimal()));
-            }
+//            }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'mul' operation (" + a.getClass().getName() + ").");
         }
@@ -424,11 +434,11 @@ public final class IntegerDecimal implements Decimal {
             value /= a.getDouble();
         } else if(a instanceof DecimalDataField || a instanceof Decimal) {
             Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
-            if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
-                value /= convertToOuterForm(((double) ((IntegerDecimal) d).value));
-            } else {
+//            if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
+//                value /= convertToOuterForm(((double) ((IntegerDecimal) d).value));
+//            } else {
                 setValue(getBigDecimal().divide(d.getBigDecimal(), scale, RoundingMode.HALF_UP));
-            }
+//            }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'div' operation (" + a.getClass().getName() + ").");
         }
@@ -654,11 +664,9 @@ public final class IntegerDecimal implements Decimal {
     }
 
     private long convertToInnerForm(double d) {
-        if(scale >= 0) {
-            return Math.round(d * TENPOWERS[scale]);
-        } else {
-            return Math.round(d / TENPOWERS[-scale]);
-        }
+    	BigDecimal bd = BigDecimal.valueOf(d);
+        BigInteger bi = bd.setScale(scale, BigDecimal.ROUND_DOWN).unscaledValue();
+        return bi.longValue();
     }
 
     private long convertToOuterForm(long l) {
@@ -669,12 +677,12 @@ public final class IntegerDecimal implements Decimal {
         }
     }
 
-    private double convertToOuterForm(double d) {
-        if(scale >= 0) {
-            return d / TENPOWERS[scale];
-        } else {
-            return d * TENPOWERS[-scale];
-        }
-    }
+//    private double convertToOuterForm(double d) {
+//        if(scale >= 0) {
+//            return d / TENPOWERS[scale];
+//        } else {
+//            return d * TENPOWERS[-scale];
+//        }
+//    }
 
 }

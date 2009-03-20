@@ -190,7 +190,7 @@ public final class CloverDouble extends Number implements Numeric {
         if(isNull()) 
             return null;
         else 
-            return new BigDecimal(Double.toString(value)); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+            return BigDecimal.valueOf(value);
     }
     
     /**
