@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation license." modified="Mon Mar 16 11:45:01 CET 2009" modifiedBy="cloveruser" name="ReadingXMLExtract" revision="1.93">
+<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation license." modified="Mon Mar 23 14:47:57 CET 2009" modifiedBy="cloveruser" name="ReadingXMLExtract" revision="1.95">
 <Global>
 <Metadata fileURL="meta/Amounts.fmt" id="Metadata3"/>
 <Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
@@ -13,7 +13,7 @@
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeesXMLExtractWithAmountID.txt" guiHeight="0" guiName="employeesWithAmIDDelimited" guiWidth="0" guiX="757" guiY="18" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/childrenXMLExtract.txt" guiHeight="0" guiName="childrenDelimited" guiWidth="0" guiX="756" guiY="116" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersXMLExtractWithAmID.txt" guiHeight="0" guiName="customersWithAmIDDelimited" guiWidth="0" guiX="757" guiY="266" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/amountsXMLExtract.txt" guiHeight="0" guiName="amountsWithCustID_WithEmplIDDelimited" guiWidth="0" guiX="758" guiY="350" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/amountsXMLExtract.txt" guiHeight="0" guiName="amountsDelimited" guiWidth="0" guiX="758" guiY="350" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/spousesXMLExtract.txt" guiHeight="0" guiName="spousesDelimited" guiWidth="0" guiX="758" guiY="187" id="DATA_WRITER4" outputFieldNames="true" type="DATA_WRITER"/>
 <Node dedupKey="EmployeeID;SpouseName" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="591" guiY="189" id="DEDUP0" keep="first" type="DEDUP"/>
 <Node dedupKey="ParentID;ChildName" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="593" guiY="116" id="DEDUP2" keep="first" type="DEDUP"/>
@@ -22,7 +22,18 @@
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="368" guiY="266" id="EXT_SORT2" sortKey="CustomerID(a);AmountID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="435" guiY="116" id="EXT_SORT3" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="435" guiY="189" id="EXT_SORT4" sortKey="EmployeeID(a);SpouseName(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="AmountsCustomersEmployees" guiWidth="0" guiX="18" guiY="107" id="XML_EXTRACT0" mapping="&lt;Mappings&gt;&#13;&#10;  &lt;Mapping element=&quot;transactions&quot; outPort=&quot;4&quot;&gt;&#13;&#10;    &lt;Mapping element=&quot;customers&quot; outPort=&quot;3&quot; parentKey=&quot;AmountID&quot; generatedKey=&quot;AmountID&quot;/&gt;&#13;&#10;    &lt;Mapping element=&quot;employees&quot; outPort=&quot;0&quot; parentKey=&quot;AmountID&quot; generatedKey=&quot;AmountID&quot;&gt;&#13;&#10;      &lt;Mapping element=&quot;spouse&quot; outPort=&quot;2&quot; parentKey=&quot;EmployeeID&quot; generatedKey=&quot;EmployeeID&quot;/&gt;&#13;&#10;      &lt;Mapping element=&quot;children&quot; outPort=&quot;1&quot; parentKey=&quot;EmployeeID&quot; generatedKey=&quot;ParentID&quot;/&gt;&#13;&#10;    &lt;/Mapping&gt;&#13;&#10;  &lt;/Mapping&gt;&#13;&#10;&lt;/Mappings&gt;&#13;&#10;" sourceUri="${DATAOUT_DIR}/AmCustEmplFam.xml" type="XML_EXTRACT"/>
+<Node enabled="enabled" guiHeight="0" guiName="AmountsCustomersEmployees" guiWidth="0" guiX="18" guiY="107" id="XML_EXTRACT0" sourceUri="${DATAOUT_DIR}/AmCustEmplFam.xml" type="XML_EXTRACT">
+<attr name="mapping"><![CDATA[<Mappings>
+  <Mapping element="transactions" outPort="4">
+    <Mapping element="customers" outPort="3" parentKey="AmountID" generatedKey="AmountID"/>
+    <Mapping element="employees" outPort="0" parentKey="AmountID" generatedKey="AmountID">
+      <Mapping element="spouse" outPort="2" parentKey="EmployeeID" generatedKey="EmployeeID"/>
+      <Mapping element="children" outPort="1" parentKey="EmployeeID" generatedKey="ParentID"/>
+    </Mapping>
+  </Mapping>
+</Mappings>
+]]></attr>
+</Node>
 <Edge debugLastRecords="true" debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (unique)" toNode="DATA_WRITER4:0"/>
 <Edge debugLastRecords="true" debugMode="true" fromNode="DEDUP2:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (unique)" toNode="DATA_WRITER1:0"/>
 <Edge debugLastRecords="true" debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DATA_WRITER3:0"/>
