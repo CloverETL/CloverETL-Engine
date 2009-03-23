@@ -19,6 +19,7 @@
 
 package org.jetel.metadata;
 
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.test.CloverTestCase;
 
 /**
@@ -28,16 +29,18 @@ import org.jetel.test.CloverTestCase;
  *
  */
 public class DataRecordMetadataTest extends CloverTestCase {
-//	private DataRecordMetadata aFixedDataRecordMetadata;
+	private DataRecordMetadata aFixedDataRecordMetadata;
 	private DataRecordMetadata aDelimitedDataRecordMetadata;
+	private DataRecordMetadata aMixedDataRecordMetadata;
 	
 	protected void setUp() { 
-//		aFixedDataRecordMetadata = new DataRecordMetadata("record1",DataRecordMetadata.FIXEDLEN_RECORD);
+		initEngine();
+		aFixedDataRecordMetadata = new DataRecordMetadata("record1",DataRecordMetadata.FIXEDLEN_RECORD);
 		aDelimitedDataRecordMetadata = new DataRecordMetadata("record2",DataRecordMetadata.DELIMITED_RECORD);
 	}
 
 	protected void tearDown() {
-//		aFixedDataRecordMetadata = null;
+		aFixedDataRecordMetadata = null;
 		aDelimitedDataRecordMetadata = null;
 	}
 
@@ -148,4 +151,124 @@ public class DataRecordMetadataTest extends CloverTestCase {
 		aDataFieldMetadata  = aDelimitedDataRecordMetadata.getField(3);
 		assertEquals("Field3", aDataFieldMetadata.getName());
 	}
+	
+	public void test_checkConfigDelimited(){
+		
+		ConfigurationStatus status = new ConfigurationStatus();
+		aDelimitedDataRecordMetadata.checkConfig(status);
+		assertEquals(1, status.size());
+		status.clear();
+		
+		DataFieldMetadata aDataFieldMetadata = new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,null);
+		aDataFieldMetadata.setDefaultValueStr("0");
+		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
+		aDataFieldMetadata = new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,";");
+		aDataFieldMetadata.setDefaultValueStr("1");
+		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
+		aDelimitedDataRecordMetadata.checkConfig(status);
+		assertEquals(2, status.size());
+		status.clear();
+		
+		aDelimitedDataRecordMetadata.delField(1);
+		aDataFieldMetadata = new DataFieldMetadata("Field1",DataFieldMetadata.INTEGER_FIELD,";");
+		aDataFieldMetadata.setDefaultValueStr("null");
+		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
+		aDelimitedDataRecordMetadata.checkConfig(status);
+		assertEquals(2, status.size());
+		status.clear();
+		
+		aDelimitedDataRecordMetadata.setFieldDelimiter(";");
+		
+		aDataFieldMetadata.setNullable(false);
+		aDataFieldMetadata.setDefaultValue(Integer.MIN_VALUE);
+		aDelimitedDataRecordMetadata.checkConfig(status);
+		assertEquals(1, status.size());
+		status.clear();
+		
+		aDataFieldMetadata.setDefaultValue(-1);
+		aDelimitedDataRecordMetadata.checkConfig(status);
+		assertEquals(0, status.size());
+	}
+	
+	public void test_checkConfigFixed(){
+		
+		ConfigurationStatus status = new ConfigurationStatus();
+		aFixedDataRecordMetadata.checkConfig(status);
+		assertEquals(1, status.size());
+		status.clear();
+		
+		DataFieldMetadata aDataFieldMetadata = new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,null);
+		aDataFieldMetadata.setDefaultValueStr("0");
+		aFixedDataRecordMetadata.addField(aDataFieldMetadata);
+		aDataFieldMetadata = new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,(short)4);
+		aDataFieldMetadata.setDefaultValueStr("1");
+		aFixedDataRecordMetadata.addField(aDataFieldMetadata);
+		aFixedDataRecordMetadata.checkConfig(status);
+		assertEquals(2, status.size());
+		status.clear();
+		
+		aFixedDataRecordMetadata.delField(1);
+		aDataFieldMetadata = new DataFieldMetadata("Field1",DataFieldMetadata.INTEGER_FIELD,(short)4);
+		aDataFieldMetadata.setDefaultValueStr("null");
+		aFixedDataRecordMetadata.addField(aDataFieldMetadata);
+		aFixedDataRecordMetadata.checkConfig(status);
+		assertEquals(2, status.size());
+		status.clear();
+		
+		aFixedDataRecordMetadata.getField(0).setSize((short)2);
+		
+		aDataFieldMetadata.setNullable(false);
+		aDataFieldMetadata.setDefaultValue(Integer.MIN_VALUE);
+		aDelimitedDataRecordMetadata.checkConfig(status);
+		assertEquals(1, status.size());
+		status.clear();
+		
+		aDataFieldMetadata.setDefaultValue(-1);
+		aDelimitedDataRecordMetadata.checkConfig(status);
+		assertEquals(0, status.size());
+	}
+
+	public void test_checkConfigMixed(){
+		
+		aMixedDataRecordMetadata= new DataRecordMetadata("record3",'u');
+
+		ConfigurationStatus status = new ConfigurationStatus();
+
+		aMixedDataRecordMetadata.checkConfig(status);
+		assertEquals(2, status.size());
+		status.clear();
+		
+		aMixedDataRecordMetadata = new DataRecordMetadata("record3", DataRecordMetadata.MIXED_RECORD);
+		
+		DataFieldMetadata aDataFieldMetadata = new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,null);
+		aDataFieldMetadata.setDefaultValueStr("0");
+		aMixedDataRecordMetadata.addField(aDataFieldMetadata);
+		aDataFieldMetadata = new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,";");
+		aDataFieldMetadata.setDefaultValueStr("1");
+		aMixedDataRecordMetadata.addField(aDataFieldMetadata);
+		aMixedDataRecordMetadata.checkConfig(status);
+		assertEquals(2, status.size());
+		status.clear();
+		
+		aMixedDataRecordMetadata.delField(1);
+		aDataFieldMetadata = new DataFieldMetadata("Field1",DataFieldMetadata.INTEGER_FIELD,";");
+		aDataFieldMetadata.setDefaultValueStr("null");
+		aMixedDataRecordMetadata.addField(aDataFieldMetadata);
+		aMixedDataRecordMetadata.checkConfig(status);
+		assertEquals(2, status.size());
+		status.clear();
+		
+		aDelimitedDataRecordMetadata.getField(0).setSize((short)4);
+		
+		aDataFieldMetadata.setNullable(false);
+		aDataFieldMetadata.setDefaultValue(Integer.MIN_VALUE);
+		aMixedDataRecordMetadata.checkConfig(status);
+		assertEquals(1, status.size());
+		status.clear();
+		
+		aDataFieldMetadata.setDefaultValue(-1);
+		aMixedDataRecordMetadata.checkConfig(status);
+		assertEquals(0, status.size());
+	}
+
 }
