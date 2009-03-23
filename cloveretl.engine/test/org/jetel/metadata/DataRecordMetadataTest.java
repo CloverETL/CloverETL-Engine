@@ -219,12 +219,12 @@ public class DataRecordMetadataTest extends CloverTestCase {
 		
 		aDataFieldMetadata.setNullable(false);
 		aDataFieldMetadata.setDefaultValue(Integer.MIN_VALUE);
-		aDelimitedDataRecordMetadata.checkConfig(status);
+		aFixedDataRecordMetadata.checkConfig(status);
 		assertEquals(1, status.size());
 		status.clear();
 		
 		aDataFieldMetadata.setDefaultValue(-1);
-		aDelimitedDataRecordMetadata.checkConfig(status);
+		aFixedDataRecordMetadata.checkConfig(status);
 		assertEquals(0, status.size());
 	}
 
@@ -258,7 +258,7 @@ public class DataRecordMetadataTest extends CloverTestCase {
 		assertEquals(2, status.size());
 		status.clear();
 		
-		aDelimitedDataRecordMetadata.getField(0).setSize((short)4);
+		aMixedDataRecordMetadata.getField(0).setSize((short)4);
 		
 		aDataFieldMetadata.setNullable(false);
 		aDataFieldMetadata.setDefaultValue(Integer.MIN_VALUE);
