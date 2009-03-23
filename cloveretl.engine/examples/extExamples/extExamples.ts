@@ -21,12 +21,13 @@
 	
 	<FunctionalTest ident="OracleDataWriter" graphFile="graph/graphOracleDataWriter.grf">
 	      	<SQLStatement connection="oracle">DELETE FROM test</SQLStatement>
-	      <DBTableToTable
+<!--	      <DBTableToTable
 	      	 outputTable="test" 
 	      	 outputTableConnection="oracle"
 	      	 supposedTable="test_supposed"
 	      	 supposedTableConnection="oracle"
-	      />
+	      />-->
+      	 <DBTableToXMLFile outputTable="test.test" supposedTable="test" outputTableConnection="oracle" supposedXMLFile="supposed-out/oracle_supposed.xml"/> 
 	 	  <FlatFile outputFile="data-out/bad0Port.bad" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/bad1.kkk" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/bad1Port.bad" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    
@@ -106,8 +107,20 @@
 	 	  <FlatFile outputFile="data-out/sybase.out" supposedFile="supposed-out/sybase.DBExecuteSybase.out"/>	                                                                    
 	</FunctionalTest>
 
-	<FunctionalTest ident="DBEJoin" graphFile="graph/graphDBJoin.grf">
+	<FunctionalTest ident="DBJoin" graphFile="graph/graphDBJoin.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/joined.txt" supposedFile="supposed-out/joined.DBJoin.txt"/>	                                                                    
 	</FunctionalTest>
+
+	<FunctionalTest ident="DBLoad" graphFile="graph/graphDBLoad.grf">
+        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/rejected.txt" supposedFile="supposed-out/rejected.DBLoad.txt"/>	                                                                    
+	</FunctionalTest>
+
+	<FunctionalTest ident="DBLoad5" graphFile="graph/graphDBLoad5.grf">
+        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_tmp" outputTableConnection="oracle" supposedXMLFile="supposed-out/employee.DBLoad5.xml"/> 
+      	<DeleteTable connection="postgre" name="employee_tmp"/>
+	</FunctionalTest>
+
 </TestScenario>
