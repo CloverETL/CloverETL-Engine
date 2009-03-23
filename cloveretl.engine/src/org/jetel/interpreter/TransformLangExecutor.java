@@ -1617,25 +1617,23 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     
     public Object visit(CLVFWildCardMapping node, Object data) {
-    	throw new TransformLangExecutorRuntimeException("This feature is not yet available");
-    	
-//    	if (!node.initialized) {
-//			try {
-//				node.custTrans.setLogger(logger);
-//				node.custTrans.init(null, parser.getInRecordMetadata(), parser
-//						.getOutRecordMetadata());
-//			} catch (ComponentNotReadyException ex) {
-//				throw  new TransformLangExecutorRuntimeException(node,ex.getMessage(),ex);
-//			}
-//			node.initialized = true;
-//		}
-//		try {
-//			node.custTrans.transform(inputRecords, outputRecords);
-//		} catch (Exception ex) {
-//			throw  new TransformLangExecutorRuntimeException(node,ex.getMessage(),ex);
-//		}
-//
-//		return data;
+    	if (!node.initialized) {
+			try {
+				node.custTrans.setLogger(logger);
+				node.custTrans.init(null, parser.getInRecordMetadata(), parser
+						.getOutRecordMetadata());
+			} catch (ComponentNotReadyException ex) {
+				throw  new TransformLangExecutorRuntimeException(node,ex.getMessage(),ex);
+			}
+			node.initialized = true;
+		}
+		try {
+			node.custTrans.transform(inputRecords, outputRecords);
+		} catch (Exception ex) {
+			throw  new TransformLangExecutorRuntimeException(node,ex.getMessage(),ex);
+		}
+
+		return data;
 	}
 
     
