@@ -1864,6 +1864,18 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 				throw new TransformLangExecutorRuntimeException(node,
 						"Can't obtain LookupTable \"" + node.lookupName
 								+ "\" from graph \"" + graph.getName() + "\"");
+			} 
+			else {
+				// we have to initialize the lookup table ourselves, graph is not doing it for us
+				try {
+					if (! node.lookupTable.isInitialized()) {
+						node.lookupTable.init();
+					}
+				} catch (ComponentNotReadyException e) {
+					throw new TransformLangExecutorRuntimeException(node,
+							"Error when initializing lookup table \""
+									+ node.lookupName + "\" :", e);
+				}
 			}
 			if (node.lookup == null && lookups.containsKey(node.lookupTable.getId())) {
 				node.lookup = lookups.get(node.lookupTable.getId());
