@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="trans"/>
-	<classpathentry kind="output" path="trans"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/home/avackova/workspace1/cloveretl.gui/lib/lib/cloveretl.engine.jar"/>
+	<classpathentry kind="lib" path="/home/avackova/workspace1/cloveretl.gui/lib/lib/commons-logging.jar"/>
+	<classpathentry kind="output" path="trans"/>
 </classpath>
