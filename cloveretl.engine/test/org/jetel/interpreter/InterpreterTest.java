@@ -653,7 +653,7 @@ public class InterpreterTest extends CloverTestCase {
 //		      assertEquals("dplusd1",tmp, executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getNumeric());
 		      assertEquals("dplusd1",DecimalFactory.getDecimal(0.09), executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getTLValue().getNumeric());
 		      assertEquals("dplusj",Double.valueOf(-99.9),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getTLValue().getNumeric().getDouble());
-		      assertEquals("dplusn",Double.valueOf(0.0900),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getTLValue().getNumeric().getDouble());
+		      assertEquals("dplusn",Double.valueOf(0.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getTLValue().getNumeric().getDouble());
 		      assertEquals("d1minusm1",Double.valueOf(-0.0009),executor.getGlobalVariable(parser.getGlobalVariableSlot("d1minusm1")).getTLValue().getNumeric().getDouble());
 		      assertEquals("dateplus",new GregorianCalendar(2004,0,20,15,00,30).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("dateplus")).getTLValue().getDate());
 
