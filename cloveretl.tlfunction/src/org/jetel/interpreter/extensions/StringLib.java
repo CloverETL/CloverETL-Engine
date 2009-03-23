@@ -1133,7 +1133,7 @@ public class StringLib extends TLFunctionLibrary {
          public JoinFunction() {
              super("string", "join", "Joins the parameters and separates them by a delimiter",
             		 new TLValueType[] { TLValueType.STRING },
-                     TLValueType.STRING,999,3);
+                     TLValueType.STRING,999,2);
          }
 
          @Override
@@ -1154,15 +1154,19 @@ public class StringLib extends TLFunctionLibrary {
                     		 ((TLMapValue)params[i]).getMap().entrySet();
                     	 for (Iterator iter = list.iterator(); iter.hasNext();) {
 							strBuf.append(iter.next());
-							strBuf.append(delimiter);
+							if (iter.hasNext()) {
+								// append delimiter only if we have more elements
+								strBuf.append(delimiter);
+							}
 						}
-                         if (strBuf.length() > 0) {
-                        	 strBuf.setLength(strBuf.length() - delimiter.length());
-                         }
                      }else {
                          StringUtils.strBuffAppend(strBuf, params[i].toString());
                      }
+                     
+                     if (i<params.length-1) {
+                    	// append delimiter only if we have more elements
 						strBuf.append(delimiter);
+                     }
                  } 
              }
              return val;
