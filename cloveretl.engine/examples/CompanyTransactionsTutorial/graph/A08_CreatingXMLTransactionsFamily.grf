@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation license." modified="Mon Mar 16 10:13:15 CET 2009" modifiedBy="cloveruser" name="CreatingXML" revision="1.168">
+<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation license." modified="Mon Mar 23 14:47:57 CET 2009" modifiedBy="cloveruser" name="CreatingXML" revision="1.170">
 <Global>
 <Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
 <Metadata fileURL="meta/Spouses.fmt" id="Metadata2"/>
@@ -10,7 +10,7 @@
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/Transactions.dat" guiHeight="0" guiName="TransactionsDelimited" guiWidth="0" guiX="30" guiY="-60" id="DATA_READER0" skipFirstLine="true" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/Children.dat" guiHeight="0" guiName="ChildrenDelimited" guiWidth="0" guiX="31" guiY="80" id="DATA_READER1" skipFirstLine="true" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/Spouses.dat" guiHeight="0" guiName="SpousesDelimited" guiWidth="0" guiX="291" guiY="212" id="DATA_READER2" skipFirstLine="true" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="243" guiY="80" id="EXT_SORT0" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="AlphabeticalSorting" guiWidth="0" guiX="243" guiY="80" id="EXT_SORT0" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
 <Node enabled="enabled" fileUrl="${DATAOUT_DIR}/TransactionsFamily.xml" guiHeight="0" guiName="TransactionsFamily" guiWidth="0" guiX="479" guiY="-59" id="XML_WRITER0" omitNewLines="false" rootElement="Transactions" type="XML_WRITER" useRootElement="true">
 <attr name="mapping"><![CDATA[<Mapping element="transactions" inPort="0" key="AmountID">
     <Mapping element="spouse" inPort="2" key="EmployeeID" keyFromParent="EmployeeID" fieldsIgnore="EmployeeID"/>
