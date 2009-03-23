@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.test.CloverTestCase;
@@ -43,7 +44,22 @@ public class DDL2CloverTest extends CloverTestCase {
 			fail("Number of parsed metadata: " + ddlMetadata.size() + ", should be: " +xmlMetadata.size());
 		}
 		for (int i = 0; i < ddlMetadata.size(); i++) {
-			assertEquals("Error on metadata no " +  i, xmlMetadata.get(i), ddlMetadata.get(i));
+			if (!xmlMetadata.get(i).equals(ddlMetadata.get(i))) {
+				DataRecordMetadata xmlMeta = xmlMetadata.get(i);
+				DataRecordMetadata ddlMeta = ddlMetadata.get(i);
+				int j = 0;
+				for (j = 0; j < xmlMeta.getNumFields(); j++) {
+					if (j >= ddlMeta.getNumFields()) {
+						fail("Different number of fields: xml metadata - " + xmlMeta.getNumFields() + ", ddl metadata - "
+								+ ddlMeta.getNumFields());
+					}
+					assertEquals("Error on metadata no " +  i + ", field no " + j, xmlMeta.getField(j), ddlMeta.getField(j));
+				}
+				if (j < ddlMeta.getNumFields()) {
+					fail("Different number of fields: xml metadata - " + xmlMeta.getNumFields() + ", ddl metadata - "
+							+ ddlMeta.getNumFields());
+				}
+			}
 		}
 		DataRecordMetadata meta = ddlMetadata.get(2);
 		assertFalse(meta.getField("OsobniCislo").isNullable());
