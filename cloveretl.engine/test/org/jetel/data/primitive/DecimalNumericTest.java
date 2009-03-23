@@ -505,6 +505,11 @@ public class DecimalNumericTest extends CloverTestCase {
 		anInt=DecimalFactory.getDecimal(0,25,0);
 		aDouble.sub(anInt);
 		assertEquals(Double.valueOf(0),Double.valueOf(aDouble.getDouble()));
+		
+		CloverDouble d= new CloverDouble(0.001);
+		aDouble = DecimalFactory.getDecimal("0.1");
+		aDouble.sub(d);
+		assertEquals(Double.valueOf(0.09),Double.valueOf(aDouble.getDouble()));
 	}
 
 	public void test_fromString(){
