@@ -27,8 +27,11 @@ import java.util.regex.Pattern;
 import org.jetel.data.DataField;
 import org.jetel.data.DataFieldFactory;
 import org.jetel.data.Defaults;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
@@ -1046,7 +1049,12 @@ public class DataFieldMetadata implements Serializable {
 		// verify default value - approved by kokon
 		if (defaultValue != null || defaultValueStr != null) {
 			DataField dataField = DataFieldFactory.createDataField(this, true);
-			dataField.setToDefaultValue();
+			try {
+				dataField.setToDefaultValue();
+			} catch (RuntimeException e) {
+				status.add(new ConfigurationProblem("Wrong default value '" + getDefaultValueStr() + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "'.",
+						Severity.ERROR, null, Priority.NORMAL));
+			}
 		}
 	}
 
