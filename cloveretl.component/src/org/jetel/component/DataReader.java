@@ -446,11 +446,10 @@ public class DataReader extends Node {
         	return status;
         }
         
-        
-
         try {
     		prepareMultiFileReader();
-    		getOutputPort(OUTPUT_PORT).getMetadata().checkConfig(status); //TODO this validation should be moved to metadata.checkConfig() 
+    		if (!getOutputPort(OUTPUT_PORT).getMetadata().hasFieldWithoutAutofilling()) 
+    			throw new ComponentNotReadyException("No field elements without autofilling for '" + getOutputPort(OUTPUT_PORT).getMetadata().getName() + "' have been found!");
     		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);

@@ -21,10 +21,12 @@ package org.jetel.metadata;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
@@ -761,23 +763,111 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
-	 * Checks if the meta data contains at least one field without auto-filling.
+	 * Checks if the meta is valid.
 	 *
 	 * @param status
 	 * @return
 	 */
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-		for (DataFieldMetadata dataFieldMetadata : getFields()) {
-			if (!dataFieldMetadata.isAutoFilled()) {
-				return status;
-			}
+		// verify count of fields
+		if (fields.size() == 0) {
+			status.add(new ConfigurationProblem("No field elements for '" + name + "' have been found!",
+					Severity.ERROR, null, Priority.NORMAL));
+		}
+		
+		// verify recordType
+		if (recType != DELIMITED_RECORD && recType != FIXEDLEN_RECORD && recType != MIXED_RECORD) {
+			status.add(new ConfigurationProblem("Unknown record type '" + recType + "' in the record metadata element '" + name + "'.",
+					Severity.ERROR, null, Priority.NORMAL));
 		}
 
-		// TODO: this
-		status.add(new ConfigurationProblem("No field elements without autofilling for '" + name + "' have been found!",
-				Severity.ERROR, null, Priority.NORMAL));
-
+		// verify delimiters - field delimiters
+		verifyDelimitersAndSizes(status); // cannot move to field metadata yet because of mixed field metadata
+		
+		// verify field names
+		verifyFieldNames(status);
+		
+		// call checkConfig at meta fields
+		for (DataFieldMetadata field: fields) {
+			field.checkConfig(status);
+		}
+		
 		return status;
+	}
+
+	/**
+	 * Verifies field names.
+	 * @param status
+	 */
+	private void verifyFieldNames(ConfigurationStatus status) {
+		// the same names
+		Set<String> setName = new HashSet<String>();
+		String sName;
+		for (DataFieldMetadata field: fields) {
+			sName = field.getName();
+			if (setName.contains(sName)) {
+				status.add(new ConfigurationProblem("Field name '" + field.getName() + "' in the record element '" + name + "' is defined more than once!",
+						Severity.ERROR, null, Priority.NORMAL));
+			} else {
+				setName.add(sName);
+			}
+		}
+	}
+
+	/**
+	 * Verifies field delimiters and sizes.
+	 * @param status
+	 */
+	private void verifyDelimitersAndSizes(ConfigurationStatus status) {
+		switch (recType) {
+		case DELIMITED_RECORD:
+			for (DataFieldMetadata field: fields) {
+				verifyFieldDelimiter(field, status);
+			}
+			break;
+			
+		case FIXEDLEN_RECORD:
+			for (DataFieldMetadata field: fields) {
+				verifyFieldSize(field, status);
+			}
+			break;
+
+		case MIXED_RECORD:
+			for (DataFieldMetadata field: fields) {
+				// delimited field
+				if (field.isDelimited()) verifyFieldDelimiter(field, status);
+				// field size
+				else verifyFieldSize(field, status);
+			}
+			break;
+
+		default:
+			break;
+		}
+	}
+	
+	/**
+	 * Verifies field size.
+	 * @param status
+	 */
+	private void verifyFieldSize(DataFieldMetadata field, ConfigurationStatus status) {
+		if (field.getSize() <= 0) {
+			status.add(new ConfigurationProblem("Field size '" + field.getSize() + "' for the field '" + field.getName() + "' in the record element '" + name + "' has wrong number!",
+					Severity.ERROR, null, Priority.NORMAL));
+		}
+	}
+	
+	/**
+	 * Verifies field delimiter.
+	 * @param field
+	 * @param status
+	 */
+	private void verifyFieldDelimiter(DataFieldMetadata field, ConfigurationStatus status) {
+		String[] fieldDelimiters = field.getDelimiters();
+		if (fieldDelimiters == null || fieldDelimiters.length == 0) {
+			status.add(new ConfigurationProblem("Field delimiter for the field '" + field.getName() + "' in the record element '" + name + "' not found!",
+					Severity.ERROR, null, Priority.NORMAL));
+		}
 	}
 
 	/**
@@ -966,6 +1056,19 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 */
 	public Iterator<DataFieldMetadata> iterator() {
 		return fields.iterator();
+	}
+
+	/**
+	 * Returns true if metadata contains at least one field without auto-filling.
+	 * @return
+	 */
+	public boolean hasFieldWithoutAutofilling() {
+		for (DataFieldMetadata dataFieldMetadata : getFields()) {
+			if (!dataFieldMetadata.isAutoFilled()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

@@ -24,7 +24,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import org.jetel.data.DataField;
+import org.jetel.data.DataFieldFactory;
 import org.jetel.data.Defaults;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
@@ -1031,6 +1034,20 @@ public class DataFieldMetadata implements Serializable {
 	@Override
 	public int hashCode() {
 		return this.type;
+	}
+
+	/**
+	 * Checks if the meta is valid.
+	 *
+	 * @param status
+	 * @return
+	 */
+	public void checkConfig(ConfigurationStatus status) {
+		// verify default value - approved by kokon
+		if (defaultValue != null || defaultValueStr != null) {
+			DataField dataField = DataFieldFactory.createDataField(this, true);
+			dataField.setToDefaultValue();
+		}
 	}
 
 }
