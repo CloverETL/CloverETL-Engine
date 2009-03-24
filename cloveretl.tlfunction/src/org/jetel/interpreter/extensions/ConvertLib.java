@@ -25,6 +25,7 @@ package org.jetel.interpreter.extensions;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.ByteArray;
@@ -299,7 +301,7 @@ public class ConvertLib extends TLFunctionLibrary {
                 if (params.length == 3 && params[2].type == TLValueType.BOOLEAN){
                 	lenient = ((TLBooleanValue)params[2]).getBoolean();
                 }else if (params.length == 4) {
-                	lenient = ((TLBooleanValue)params[2]).getBoolean();
+                	lenient = ((TLBooleanValue)params[3]).getBoolean();
                 }
                 if (c.formatter == null){
                 	c.init(locale, pattern);
@@ -371,32 +373,47 @@ public class ConvertLib extends TLFunctionLibrary {
 
         public Str2NumFunction() {
             super("convert", "str2num", "Converts string to number (from any numeral system)", 
-            		new TLValueType[] { TLValueType.STRING, TLValueType.SYM_CONST, TLValueType.INTEGER }, 
+            		new TLValueType[] { TLValueType.STRING, TLValueType.OBJECT, TLValueType.OBJECT }, 
                     TLValueType.INTEGER,3,1);
         }
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
         	if ((params[0].type!=TLValueType.STRING) || 
-        			(params.length>1 && params[1].type!=TLValueType.SYM_CONST) || 
-        			(params.length>2 && !(params[2].type.isNumeric() || params[2].type == TLValueType.STRING)) ){
+        			(params.length>1 && !(params[1].type==TLValueType.SYM_CONST || params[1].type==TLValueType.STRING)) || 
+        			(params.length>2 && !(params[2].type.isNumeric() || params[2].type == TLValueType.STRING))){
                 throw new TransformLangExecutorRuntimeException(params,
                         "str2num - wrong type of literals");
         	}
-        	TLValueType valType = (params.length>1 ? TLFunctionUtils.astToken2ValueType(params[1]) : TLValueType.INTEGER);
+        	
+        	// 2nd parameter - type/format
+        	TLValueType valType = null;
+        	String numFormat = null;
+        	if (params.length > 1) {
+            	if (params[1].type==TLValueType.SYM_CONST) {
+            		valType = TLFunctionUtils.astToken2ValueType(params[1]);
+            	} else {
+            		numFormat = params[1].toString();
+            		valType = TLValueType.DECIMAL;
+            	}
+        	} else {
+        		valType = TLValueType.INTEGER;
+        	}
+        	
+        	// 3nd parameter - radix/format
         	Str2NumContext con = (Str2NumContext)context.getContext();
         	int radix=DEFAULT_RADIX;
         	NumberFormat format = null;
         	if (params.length>2){
         		if (params[2].type.isNumeric()) {
 					radix = ((TLNumericValue) params[2]).getInt();
-					con.reset(null, valType);
+					con.reset(numFormat, null, valType);
 				}else{
-					con.reset(params[2].toString(), valType);
+					con.reset(numFormat, params[2].toString(), valType);
 					format = con.format;
 				}
         	}else{
-        		con.reset(null, valType);
+        		con.reset(numFormat, null, valType);
         	}
         	TLValue value=(TLValue)con.value;
         	
@@ -1093,17 +1110,23 @@ class Num2StrContext {
 class Str2NumContext{
 	TLValue value;
 	NumberFormat format;
+	String oldLocale;
 	
-	public void init(String pattern, TLValueType type){
+	public void init(String pattern, String locale, TLValueType type){
 		if (pattern != null) {
 			switch (type) {
 			case DECIMAL:
 			case NUMBER:
-				format = new NumericFormat(pattern);
-				break;
+//NumericFormat is not good because of eg str2num("5,46 Kč","0.## ¤","cs.CZ") //Kč
+//				format = locale == null ?
+//					new NumericFormat(pattern):
+//					new NumericFormat(pattern, new DecimalFormatSymbols(getLocale(locale)));
+//				break;
 			case INTEGER:
 			case LONG:
-				format = new DecimalFormat(pattern);
+				format = locale == null ?
+					new DecimalFormat(pattern):
+					new DecimalFormat(pattern, new DecimalFormatSymbols(getLocale(locale)));
 				break;
 			default:
 				throw new IllegalArgumentException(
@@ -1118,6 +1141,21 @@ class Str2NumContext{
 		
 	}
 	
+	private Locale getLocale(String sLocale) {
+        String[] localeLC = sLocale.split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
+        Locale locale;
+        if (localeLC.length > 1) {
+            locale = new Locale(localeLC[0], localeLC[1]);
+        } else {
+            locale = new Locale(localeLC[0]);
+        }
+        // probably wrong locale string defined
+        if (locale == null) {
+            throw new RuntimeException("Can't create Locale based on " + sLocale);
+        }
+		return locale;
+	}
+	
 	public String toPattern(){
 		if (format != null) {
 			if (format instanceof NumericFormat) {
@@ -1128,23 +1166,28 @@ class Str2NumContext{
 		return null;
 	}
 	
-	public void reset(String newPattern, TLValueType newType){
+	public void reset(String newPattern, String newLocale, TLValueType newType){
 		if (newType == TLValueType.DECIMAL || value == null || newType != value.type) {
-			init(newPattern, newType);
+			init(newPattern, newLocale, newType);
+		}else if (newLocale != null && !newLocale.equals(oldLocale) || (oldLocale != null && newLocale == null)) { 
+			init(newPattern, newLocale, newType);
+			oldLocale = newLocale;
 		}else if (newPattern != null && !newPattern.equals(toPattern())) {
 			if (format == null) {
-				init(newPattern, newType);
+				init(newPattern, newLocale, newType);
 			}else if (format instanceof NumericFormat) {
-				((NumericFormat)format).applyPattern(newPattern);
+				if (newLocale == null) ((NumericFormat)format).applyPattern(newPattern);
+				else ((NumericFormat)format).applyLocalizedPattern(newPattern);
 			}else {
-				((DecimalFormat)format).applyPattern(newPattern);
+				if (newLocale == null) ((DecimalFormat)format).applyPattern(newPattern);
+				else ((DecimalFormat)format).applyLocalizedPattern(newPattern);
 			}
 		}
 	}
 
 	static TLContext createContext(){
 		Str2NumContext con=new Str2NumContext();
-        con.init(null, TLValueType.DECIMAL);
+        con.init(null, null, TLValueType.DECIMAL);
 
         TLContext<Str2NumContext> context=new TLContext<Str2NumContext>();
         context.setContext(con);
