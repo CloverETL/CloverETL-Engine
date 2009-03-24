@@ -36,7 +36,6 @@ public class testDataParsing {
 	
 	private final static String PARAMETER_FILE = "params.txt"; 
 	private final static String PLUGINS_PROPERTY = "plugins";
-	private final static String PROPERTIES_FILE_PROPERTY = "propertiesFile";
 
 	public static void main(String args[]){
 		
@@ -55,7 +54,6 @@ public class testDataParsing {
 			}
 		}
 		plugins = arguments.getProperty(PLUGINS_PROPERTY);
-		propertiesFile = arguments.getProperty(PROPERTIES_FILE_PROPERTY);
 	}
 	
 	FileInputStream in=null;

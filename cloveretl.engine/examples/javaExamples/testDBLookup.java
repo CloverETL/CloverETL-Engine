@@ -37,22 +37,20 @@ public class testDBLookup{
 
 	private final static String PARAMETER_FILE = "params.txt"; 
 	private final static String PLUGINS_PROPERTY = "plugins";
-	private final static String PROPERTIES_FILE_PROPERTY = "propertiesFile";
 	private final static String CONNECTION_PROPERTY = "connection";
 	private final static String QUERY_PROPERTY = "query";
 	private final static String KEY_PROPERTY = "key";
 	private final static String METADATA_PROPERTY = "metadataFile"; 
 	
-	private final static String[] ARGS = {PLUGINS_PROPERTY, PROPERTIES_FILE_PROPERTY, CONNECTION_PROPERTY,
+	private final static String[] ARGS = {PLUGINS_PROPERTY, CONNECTION_PROPERTY,
 		QUERY_PROPERTY, KEY_PROPERTY, METADATA_PROPERTY
 	};
 	
 	private final static int PLUGINS_PROPERTY_INDEX = 0;
-	private final static int PROPERTIES_FILE_PROPERTY_INDEX = 1;
-	private final static int CONNECTION_PROPERTY_INDEX = 2;
-	private final static int QUERY_PROPERTY_INDEX = 3;
-	private final static int KEY_PROPERTY_INDEX = 4;
-	private final static int METADATA_PROPERTY_INDEX = 5;
+	private final static int CONNECTION_PROPERTY_INDEX = 1;
+	private final static int QUERY_PROPERTY_INDEX = 2;
+	private final static int KEY_PROPERTY_INDEX = 3;
+	private final static int METADATA_PROPERTY_INDEX = 4;
 
 	public static void main(String args[]){
 	DBConnection dbCon;
@@ -75,7 +73,7 @@ public class testDBLookup{
 			arg[i] = args[i];
 		}else{
 			arg[i] = arguments.getProperty(ARGS[i]);
-			if (i < 5 && arg[i] == null) {
+			if (i < 4 && arg[i] == null) {
 				System.out.println("Required argument " + ARGS[i] + " not found");
 				System.out.println("Usage: testDBLookup <plugin directory> <engine properties file> <driver properties file> <sql query> <key> <db metadata file>");
 				System.out.println("Eg: testDBLookup ../plugins ../plugins/com.cloveretl.gui_x.x.x/lib/bin/defaultProperties postgre.cfg \"select * from employee where employee_id = ?\" 10");
@@ -86,11 +84,10 @@ public class testDBLookup{
 		
 	//initialization; must be present
 	EngineInitializer.initEngine(arg[0], arg[1], null);
-	EngineInitializer.forceActivateAllPlugins();
+	EngineInitializer.forceActivateAllPlugins(true);
 
 	System.out.println("**************** Input parameters: ****************");
 	System.out.println("Plugins directory: "+ arg[PLUGINS_PROPERTY_INDEX]);
-	System.out.println("Properties file: "+ arg[PROPERTIES_FILE_PROPERTY_INDEX]);
 	System.out.println("Driver propeties: "+arg[CONNECTION_PROPERTY_INDEX]);
 	System.out.println("SQL query: "+arg[QUERY_PROPERTY_INDEX]);
 	System.out.println("Key: "+arg[KEY_PROPERTY_INDEX]);
@@ -128,7 +125,7 @@ public class testDBLookup{
 		DataRecordMetadata keyMetadata = lookupTable.getKeyMetadata();
 		DataRecord keyRecord = new DataRecord(keyMetadata);
 		keyRecord.init();
-		RecordKey key = new RecordKey((String[])keyMetadata.getFieldNames().keySet().toArray(new String[keyMetadata.getNumFields()]), keyMetadata);
+		RecordKey key = new RecordKey(keyMetadata.getFieldNamesArray(), keyMetadata);
 		key.init();
 		
 		//create lookup query based on requested key

@@ -23,9 +23,9 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
-import org.jetel.component.DelimitedDataReader;
-import org.jetel.component.DelimitedDataWriter;
-import org.jetel.component.Sort;
+import org.jetel.component.DataReader;
+import org.jetel.component.DataWriter;
+import org.jetel.component.ExtSort;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.Node;
@@ -42,22 +42,18 @@ public class testGraphSort {
 	
 	private final static String PARAMETER_FILE = "params.txt"; 
 	private final static String PLUGINS_PROPERTY = "plugins";
-	private final static String PROPERTIES_FILE_PROPERTY = "propertiesFile";
 	private final static String DATA_FILE_PROPERTY = "dataFile";
 	private final static String OUTPUT_FILE_PROPERTY = "outputFile";
 	private final static String METADATA_PROPERTY = "metadata";
 	private final static String KEY_PROPERTY = "sortKey";
 
-	private final static String[] ARGS = {DATA_FILE_PROPERTY, OUTPUT_FILE_PROPERTY, METADATA_PROPERTY, KEY_PROPERTY, PLUGINS_PROPERTY, 
-		PROPERTIES_FILE_PROPERTY
-	};
+	private final static String[] ARGS = {DATA_FILE_PROPERTY, OUTPUT_FILE_PROPERTY, METADATA_PROPERTY, KEY_PROPERTY, PLUGINS_PROPERTY};
 	
 	private final static int DATA_FILE_PROPERTY_INDEX = 0;
 	private final static int OUTPUT_FILE_PROPERTY_INDEX = 1;
 	private final static int METADATA_PROPERTY_INDEX = 2;
 	private final static int KEY_PROPERTY_INDEX = 3;
 	private final static int PLUGINS_PROPERTY_INDEX = 4;
-	private final static int PROPERTIES_FILE_PROPERTY_INDEX = 5;
 
 	private static final Phase _PHASE_1=new Phase(1);
 	private static final Phase _PHASE_2=new Phase(2);
@@ -83,7 +79,7 @@ public class testGraphSort {
 				arg[i] = args[i];
 			}else{
 				arg[i] = arguments.getProperty(ARGS[i]);
-				if (i < 4 && arg[i] == null) {
+				if (i < 3 && arg[i] == null) {
 					System.out.println("Required argument " + ARGS[i] + " not found");
 					System.out.println("Example graph which sorts input data according to specified key.");
 					System.out.println("The sortKey must be a name of field(or comma delimited fields) from input data.");
@@ -94,7 +90,7 @@ public class testGraphSort {
 		}
 
 	//initialization; must be present
-	EngineInitializer.initEngine(arg[PLUGINS_PROPERTY_INDEX], arg[PROPERTIES_FILE_PROPERTY_INDEX], null);
+	EngineInitializer.initEngine(arg[PLUGINS_PROPERTY_INDEX], null, null);
 
 	System.out.println("**************** Input parameters: ****************");
 	System.out.println("Input file: "+arg[DATA_FILE_PROPERTY_INDEX]);
@@ -102,7 +98,6 @@ public class testGraphSort {
 	System.out.println("Input Metadata: "+arg[METADATA_PROPERTY_INDEX]);
 	System.out.println("Key: "+arg[KEY_PROPERTY_INDEX]);
 	System.out.println("Plugins directory: "+ arg[PLUGINS_PROPERTY_INDEX]);
-	System.out.println("Default properties file: "+ arg[PROPERTIES_FILE_PROPERTY_INDEX]);
 	System.out.println("***************************************************");
 	
 	DataRecordMetadata metadataIn;
@@ -124,10 +119,10 @@ public class testGraphSort {
 	Edge inEdge=new Edge("InEdge",metadataIn);
 	Edge outEdge=new Edge("OutEdge",metadataIn);
 	
-	Node nodeRead=new DelimitedDataReader("DataParser",arg[DATA_FILE_PROPERTY_INDEX]);
+	Node nodeRead=new DataReader("DataParser",arg[DATA_FILE_PROPERTY_INDEX]);
 	String[] sortKeys=arg[KEY_PROPERTY_INDEX].split(",");
-	Node nodeSort=new Sort("Sorter",sortKeys, true);
-	Node nodeWrite=new DelimitedDataWriter("DataWriter",arg[OUTPUT_FILE_PROPERTY_INDEX],false);
+	Node nodeSort=new ExtSort("Sorter",sortKeys, true);
+	Node nodeWrite=new DataWriter("DataWriter",arg[OUTPUT_FILE_PROPERTY_INDEX],"UTF-8",false);
 	
 	// assign ports (input & output)
 	nodeRead.addOutputPort(0,inEdge);

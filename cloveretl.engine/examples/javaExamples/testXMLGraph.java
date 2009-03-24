@@ -35,7 +35,6 @@ public class testXMLGraph{
 
 	private final static String PARAMETER_FILE = "params.txt"; 
 	private final static String PLUGINS_PROPERTY = "plugins";
-	private final static String PROPERTIES_FILE_PROPERTY = "propertiesFile";
 
 	public static void main(String args[]){
 		
@@ -65,8 +64,6 @@ public class testXMLGraph{
 		String propertiesFile = null;
 		if (args.length > 2) {
 			propertiesFile = args[2];
-		}else{
-			propertiesFile = arguments.getProperty(PROPERTIES_FILE_PROPERTY);
 		}
 			
 		FileInputStream in;
