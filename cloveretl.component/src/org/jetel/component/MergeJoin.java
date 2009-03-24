@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.HashJoin.Join;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
@@ -225,6 +224,7 @@ public class MergeJoin extends Node {
 	private RecordKey[] slaveKeys;
 
 	InputReader[] reader;
+	boolean anyInputEmpty;
 	InputReader minReader;
 	boolean[] minIndicator;
 	int minCnt;
@@ -296,7 +296,10 @@ public class MergeJoin extends Node {
 	 * @throws IOException
 	 */
 	private int loadNext() throws InterruptedException, IOException {
-		minCnt = 0;
+	    // assume that each input contains at least one more record
+	    anyInputEmpty = false;
+
+	    minCnt = 0;
 		int minIdx = 0;
 		for (int i = 0; i < inputCnt; i++) {
 			if (minIndicator[i]) {
@@ -310,6 +313,9 @@ public class MergeJoin extends Node {
 				if (!ascendingInputs && reader[i].getOrdering()==InputOrdering.ASCENDING)
 					throw new IllegalStateException("all inputs must be descending, but input "+i+" is "+reader[i].getOrdering()+"; set attribute ascendingInputs=\"true\" or change ordering of input "+i);
 			}
+
+			// change the flag to true if the current reader reached the EOF
+			anyInputEmpty |= (reader[i].getSample() == null);
 		}// for
 
 		for (int i = 0; i < inputCnt; i++) {
@@ -429,8 +435,18 @@ public class MergeJoin extends Node {
 
 	@Override
 	public Result execute() throws Exception {
-		while (loadNext() > 0){
-			if (join == Join.INNER && minCnt != inputCnt) { // not all records for current key available
+	    boolean eofBroadcasted = false;
+
+	    while (loadNext() > 0){
+		    // if any input is empty and the inner join is selected, we don't need to read any more data records
+		    if (anyInputEmpty && join == Join.INNER) {
+		        broadcastEOF();
+		        eofBroadcasted = true;
+
+		        break;
+		    }
+
+		    if (join == Join.INNER && minCnt != inputCnt) { // not all records for current key available
 				continue;
 			}
 			if (join == Join.LEFT_OUTER && !minIndicator[0]) {	// driver record for current key not available
@@ -443,7 +459,8 @@ public class MergeJoin extends Node {
 				throw new JetelException(resultMsg);
 			}
 		}
-		while (areData()){//send incomplete combination or wait for all data
+
+	    while (areData()){//send incomplete combination or wait for all data
 			while (loadNext() > 0) {
 				if ((join == Join.LEFT_OUTER && reader[DRIVER_ON_PORT].hasData()) || join == Join.FULL_OUTER){
 					if (!flushMin()) {
@@ -455,13 +472,19 @@ public class MergeJoin extends Node {
 				}
 			}
 		}
-		transformation.finished();
-		if (errorLog != null){
+
+	    if (!eofBroadcasted) {
+	        broadcastEOF();
+	    }
+
+	    transformation.finished();
+
+	    if (errorLog != null){
 			errorLog.flush();
 			errorLog.close();
 		}
-		broadcastEOF();		
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 	/**
