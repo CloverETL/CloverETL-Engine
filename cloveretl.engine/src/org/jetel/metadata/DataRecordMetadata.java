@@ -863,6 +863,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @param status
 	 */
 	private void verifyFieldDelimiter(DataFieldMetadata field, ConfigurationStatus status) {
+		if (field.isEofAsDelimiter()) return;
 		String[] fieldDelimiters = field.getDelimiters();
 		if (fieldDelimiters == null || fieldDelimiters.length == 0) {
 			status.add(new ConfigurationProblem("Field delimiter for the field '" + field.getName() + "' in the record element '" + name + "' not found!",
