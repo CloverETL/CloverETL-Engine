@@ -47,11 +47,6 @@
 	 	  <FlatFile outputFile="data-out/out.dat" supposedFile="supposed-out/out.MysqlDataWriter.dat"/>	                                                                    
 	</FunctionalTest>
 
-	<FunctionalTest ident="DBLoad5" graphFile="graph/graphDBLoad5.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-       	<SQLStatement connection="postgre">DELETE FROM employee_tmp</SQLStatement>
-	</FunctionalTest>
-
 	<FunctionalTest ident="AproximativeJoin" graphFile="graph/graphAproximativeJoin.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/conformingKeyGenerator.txt" supposedFile="supposed-out/conformingKeyGenerator.AproximativeJoin.txt"/>	                                                                    
