@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph illustrates usage of Approximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator or Reformat creates it) &#10;and be sorted by this key." guiVersion="0.0.0.devel" id="1200561503662" licenseType="Evaluation license." modified="Tue Mar 24 11:01:03 CET 2009" modifiedBy="avackova" name="graphFixedLengthData" revision="1.94">
+<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph illustrates usage of Approximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator or Reformat creates it) &#10;and be sorted by this key." guiVersion="0.0.0.devel" id="1200561503662" licenseType="Evaluation license." modified="Fri Mar 20 11:12:16 CET 2009" modifiedBy="avackova" name="graphFixedLengthData" revision="1.88">
 <Global>
-<Metadata id="Metadata4">
-<Record name="conforming_out" recordDelimiter="\n" recordSize="71" type="fixed">
-<Field name="no" nullable="true" shift="0" size="3" type="integer"/>
+<Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
+<Record name="conforming_out" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="71" type="fixed">
 <Field name="lname" nullable="true" shift="0" size="15" type="string"/>
 <Field name="fname" nullable="true" shift="0" size="15" type="string"/>
 <Field name="last_name" nullable="true" shift="0" size="15" type="string"/>
@@ -40,8 +39,8 @@
 <Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
-<Record name="customer_with_key" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="239" type="fixed">
+<Metadata id="Metadata2">
+<Record name="customer_with_key" recordSize="239" type="fixed">
 <Field name="customer_id" nullable="true" shift="0" size="4" type="integer"/>
 <Field name="account_num" nullable="true" shift="0" size="11" type="long"/>
 <Field name="lname" nullable="true" shift="0" size="10" type="string"/>
@@ -148,8 +147,6 @@
 <Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="449" guiY="1105" id="APROX_MERGE_JOIN4" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
 <attr name="seq_name"><![CDATA[Sequence3]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customers.fullInfo" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="779" guiY="688" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees.fullInfo" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="793" guiY="873" id="DATA_WRITER1" type="DATA_WRITER"/>
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="8" guiY="215" id="DB_INPUT_TABLE1" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="10" guiY="533" id="DB_INPUT_TABLE2" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="12" guiY="856" id="DB_INPUT_TABLE3" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
@@ -428,8 +425,6 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="460" guiY="696" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="453" guiY="872" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
 <Edge debugMode="false" fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
 <Edge fromNode="APROX_MERGE_JOIN1:1" guiBendpoints="" id="Edge18" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" toNode="DELIMITED_DATA_WRITER_NIO0:0"/>
 <Edge fromNode="APROX_MERGE_JOIN1:2" guiBendpoints="" id="Edge19" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" toNode="FIXLEN_DATA_WRITER_NIO1:0"/>
@@ -454,8 +449,8 @@ function transform() {
 <Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge7" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN1:1"/>
 <Edge debugMode="true" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge9" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN2:1"/>
 <Edge debugMode="true" fromNode="EXT_SORT3:0" guiBendpoints="" id="Edge8" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN2:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT4:0" guiBendpoints="" id="Edge24" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT5:0" guiBendpoints="" id="Edge27" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT4:0" guiBendpoints="" id="Edge24" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN3:1"/>
+<Edge debugMode="true" fromNode="EXT_SORT5:0" guiBendpoints="" id="Edge27" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN3:0"/>
 <Edge debugMode="true" fromNode="EXT_SORT6:0" guiBendpoints="" id="Edge39" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN4:0"/>
 <Edge debugMode="true" fromNode="EXT_SORT7:0" guiBendpoints="" id="Edge32" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN4:1"/>
 <Edge fromNode="FIXLEN_DATA_READER_NIO0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="KEY_GEN0:0"/>
@@ -470,9 +465,5 @@ function transform() {
 <Edge debugMode="false" fromNode="REFORMAT3:0" guiBendpoints="" id="Edge21" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT4:0"/>
 <Edge fromNode="REFORMAT4:0" guiBendpoints="" id="Edge38" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT6:0"/>
 <Edge debugMode="false" fromNode="REFORMAT5:0" guiBendpoints="" id="Edge35" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT7:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge40" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN3:0"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge41" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="DATA_WRITER0:0"/>
-<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" id="Edge42" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN3:1"/>
-<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" id="Edge43" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (out)" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>
