@@ -22,12 +22,12 @@
 	<FunctionalTest ident="OracleDataWriter" graphFile="graph/graphOracleDataWriter.grf">
 	      	<SQLStatement connection="oracle">DELETE FROM test</SQLStatement>
 <!--	      <DBTableToTable
-	      	 outputTable="test" 
+	      	 outputTable="writer_test" 
 	      	 outputTableConnection="oracle"
 	      	 supposedTable="test_supposed"
 	      	 supposedTableConnection="oracle"
 	      />-->
-      	 <DBTableToXMLFile outputTable="test.test" supposedTable="test" outputTableConnection="oracle" supposedXMLFile="supposed-out/oracle_supposed.xml"/> 
+      	 <DBTableToXMLFile outputTable="writer_test" supposedTable="test" outputTableConnection="oracle" supposedXMLFile="supposed-out/oracle_supposed.xml"/> 
 	 	  <FlatFile outputFile="data-out/bad0Port.bad" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/bad1.kkk" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/bad1Port.bad" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    
