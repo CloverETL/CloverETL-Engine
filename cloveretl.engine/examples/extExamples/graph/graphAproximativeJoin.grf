@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph illustrates usage of Approximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator or Reformat creates it) &#10;and be sorted by this key." guiVersion="0.0.0.devel" id="1200561503662" licenseType="Evaluation license." modified="Fri Mar 20 11:12:16 CET 2009" modifiedBy="avackova" name="graphFixedLengthData" revision="1.88">
 <Global>
-<Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
-<Record name="conforming_out" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="71" type="fixed">
+<Metadata id="Metadata4">
+<Record name="conforming_out" recordDelimiter="\n" recordSize="71" type="fixed">
+<Field name="no" nullable="true" shift="0" size="3" type="integer"/>
 <Field name="lname" nullable="true" shift="0" size="15" type="string"/>
 <Field name="fname" nullable="true" shift="0" size="15" type="string"/>
 <Field name="last_name" nullable="true" shift="0" size="15" type="string"/>
