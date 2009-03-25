@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.jetel.util.string.StringUtils;
+
 /**
  * This class represents extension point of engine.
  * @author Martin Zatopek
@@ -61,6 +63,21 @@ public class Extension {
         Map<String, ExtensionParameter> ret = new HashMap<String, ExtensionParameter>();
         for(Entry<String, ExtensionParameter> entry : parameters.entrySet()) {
             if(!excludeList.contains(entry.getKey())) {
+                ret.put(entry.getKey(), entry.getValue());
+            }
+        }
+        
+        return ret;
+    }
+
+    public Map<String, ExtensionParameter> getParametersStartWith(String prefix) {
+        if(StringUtils.isEmpty(prefix)) {
+            return getParameters();
+        }
+        
+        Map<String, ExtensionParameter> ret = new HashMap<String, ExtensionParameter>();
+        for(Entry<String, ExtensionParameter> entry : parameters.entrySet()) {
+            if(entry.getKey().startsWith(prefix)) {
                 ret.put(entry.getKey(), entry.getValue());
             }
         }

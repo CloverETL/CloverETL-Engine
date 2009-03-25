@@ -60,8 +60,7 @@ public class JdbcDriverDescription {
 
     private final static String JDBC_SPECIFIC_PARAMETER = "jdbcSpecific";
 
-    public final static String[] EXCLUDE_PARAMETERS = 
-        new String[] { DATABASE_PARAMETER, NAME_PARAMETER, DB_DRIVER_PARAMETER, DRIVER_LIBRARY_PARAMETER, URL_HINT_PARAMETER, JDBC_SPECIFIC_PARAMETER };
+    public final static String CUSTOM_PROPERTIES_PREFIX = "jdbc.";
     
     /**
      * Identifier of the JDBC driver.
@@ -145,9 +144,9 @@ public class JdbcDriverDescription {
 
         //reads other parameters
         properties = new Properties();
-        Map<String, ExtensionParameter> parameters = extension.getParameters(EXCLUDE_PARAMETERS);
+        Map<String, ExtensionParameter> parameters = extension.getParametersStartWith(CUSTOM_PROPERTIES_PREFIX);
         for(Entry<String, ExtensionParameter> entry : parameters.entrySet()) {
-            properties.setProperty(entry.getKey(), entry.getValue().toString());
+            properties.setProperty(entry.getKey().substring(CUSTOM_PROPERTIES_PREFIX.length()), entry.getValue().toString());
         }
     }
     
@@ -176,7 +175,9 @@ public class JdbcDriverDescription {
     }
     
     public Properties getProperties() {
-        return properties;
+    	Properties result = new Properties();
+    	result.putAll(properties);
+    	return result;
     }
     
     /**

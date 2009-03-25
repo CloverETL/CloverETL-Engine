@@ -320,7 +320,7 @@ public class DBConnection extends GraphElement implements IConnection {
             jdbcDriver = jdbcDriverDescription.createJdbcDriver();
         } else {
         	//database connection is full specified by dbDriver and driverLibrary attributes
-            jdbcDriver = new JdbcDriver(null, getDbDriver(), getDbDriver(), getDriverLibraryURLs(), getJdbcSpecific());
+            jdbcDriver = new JdbcDriver(null, getDbDriver(), getDbDriver(), getDriverLibraryURLs(), getJdbcSpecific(), null);
         }
     }
 
