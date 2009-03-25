@@ -143,6 +143,7 @@ public class MultiFileReader {
         
 		String fName; 
 		Iterator<String> fit = channelIterator.getFileIterator();
+		boolean closeLastStream = false;
 		while (fit.hasNext()) {
 			try {
 				fName = fit.next();
@@ -153,12 +154,14 @@ public class MultiFileReader {
 				}
 				parser.setReleaseDataSource(!fName.equals(STD_IN));
 				parser.setDataSource(FileUtils.getReadableChannel(contextURL, url.toString()));
+				closeLastStream = true;
 			} catch (IOException e) {
 				throw new ComponentNotReadyException("File is unreachable: " + autoFilling.getFilename(), e);
 			} catch (ComponentNotReadyException e) {
 				throw new ComponentNotReadyException("File is unreachable: " + autoFilling.getFilename(), e);
 			}
 		}
+		if (closeLastStream) parser.close();
 	}
 	
 	/**

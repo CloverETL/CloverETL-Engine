@@ -249,10 +249,13 @@ public class FileUtils {
 
         //open channel
         URL url = null;
-        boolean isFile = false;
         if (innerStream == null) {
         	url = FileUtils.getFileURL(contextURL, input);
-        	isFile = url.getProtocol().equals("file");
+        	
+        	// creates file input stream for incremental reading (random access file)
+        	if (archiveType == null && url.getProtocol().equals(FILE_PROTOCOL)) {
+            	return new FileInputStream(url.getFile());
+        	}
         	innerStream = getAuthorizedStream(url);
         }
 
@@ -267,10 +270,6 @@ public class FileUtils {
         	return lIs.size() > 0 ? lIs.get(0) : null;
         }
         
-    	// creates file input stream for incremental reading (random access file)
-        if (isFile) {
-        	return new FileInputStream(url.getFile());
-        }
         return innerStream;
     }
 
