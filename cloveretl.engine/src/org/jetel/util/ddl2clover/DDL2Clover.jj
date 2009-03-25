@@ -17,6 +17,7 @@ import java.util.*;
 import java.io.*;
 import org.jetel.metadata.*;
 import java.math.*;
+import org.jetel.data.*;
 
 public class DDL2Clover {
 
@@ -36,7 +37,7 @@ public class DDL2Clover {
 	private static final Long floatLenght = Long.valueOf(String.valueOf(7));
 	private static final Long doubleLenght = Long.valueOf(String.valueOf(15));
 	private static final Long dateLenght = Long.valueOf(10); // "10.10.2007"
-	private static final Long dateTimeLenght = Long.valueOf(24); // "10.10.2007 23:10:10.111"
+	private static final Long dateTimeLenght = Long.valueOf(19); // "10.10.2007 23:10:10"
 	private static final Long textLenght = Long.valueOf(256);
 	
 	public static void main(String args[]) throws ParseException, FileNotFoundException {
@@ -355,6 +356,9 @@ DataFieldMetadata columnDefinition() :
 	  	    ColumnConstraint.PRIMARY_KEY == columnConstraint)
 	  	dataFieldMetadata.setNullable(false);
 	  }
+	  if (type.format != null) {
+	  	dataFieldMetadata.setFormatStr(type.format);
+	  }
 	  return dataFieldMetadata; 
 	}
 }
@@ -390,17 +394,18 @@ DataType dataType() :
 	Long temp = null;
 	Long lenght = null;
 	Long scale = null;
+	String format = null;
 }
 {
 	(	<BIGINT> { type = DataFieldMetadata.INTEGER_FIELD; }	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : longLenght; }
 	|	<BINARY> { type = DataFieldMetadata.BYTE_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })
 	|	<BLOB> { type = DataFieldMetadata.BYTE_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })?
-	|	<BOOLEAN> { type = DataFieldMetadata.INTEGER_FIELD;		lenght = integerLenght;}
+	|	<BOOLEAN> { type = DataFieldMetadata.BOOLEAN_FIELD;		lenght = integerLenght;}
 	|	<CHAR> { type = DataFieldMetadata.STRING_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : charLenght; }
 	|	<CHARACTER> { type = DataFieldMetadata.STRING_FIELD; } 	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : charLenght; }
 	|	<CLOB> { type = DataFieldMetadata.BYTE_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })?
-	|	<DATE> { type = DataFieldMetadata.DATE_FIELD; 			lenght = dateLenght;}
-	|	<DATETIME> { type = DataFieldMetadata.DATE_FIELD;	    lenght = dateTimeLenght;}
+	|	<DATE> { type = DataFieldMetadata.DATE_FIELD; 			lenght = dateLenght; format = Defaults.DEFAULT_DATE_FORMAT;}
+	|	<DATETIME> { type = DataFieldMetadata.DATE_FIELD;	    lenght = dateTimeLenght; format = Defaults.DEFAULT_DATETIME_FORMAT;}
 	|	<DEC> { type = DataFieldMetadata.DECIMAL_FIELD; }		(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
 	|	<DECIMAL> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
 	|	<DOUBLE> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
@@ -411,8 +416,8 @@ DataType dataType() :
 	|	<SMALLINT> { type = DataFieldMetadata.INTEGER_FIELD; }	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : integerLenght; }
 	|	<STRING> { type = DataFieldMetadata.STRING_FIELD; } 	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : textLenght; }
 	|	<TEXT> { type = DataFieldMetadata.STRING_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : textLenght; }
-	|	<TIME> { type = DataFieldMetadata.DATE_FIELD;			lenght = dateTimeLenght;} // ?
-	|	<TIMESTAMP> { type = DataFieldMetadata.DATE_FIELD;		lenght = dateTimeLenght;}
+	|	<TIME> { type = DataFieldMetadata.DATE_FIELD;			lenght = dateTimeLenght; format = Defaults.DEFAULT_TIME_FORMAT;} // ?
+	|	<TIMESTAMP> { type = DataFieldMetadata.DATE_FIELD;		lenght = dateTimeLenght; format = Defaults.DEFAULT_DATETIME_FORMAT;}
 	|	<NUMBER> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
 	|	<NUMERIC> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
 	|	<TINYINT> { type = DataFieldMetadata.INTEGER_FIELD; }	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : integerLenght; }
@@ -420,7 +425,7 @@ DataType dataType() :
 	|	<VARCHAR> { type = DataFieldMetadata.STRING_FIELD; }	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN>)? { lenght = temp; }
 	|	<VARCHAR2> { type = DataFieldMetadata.STRING_FIELD; }	<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; }
 	)
-	{ return new DataType(type, lenght, scale); }
+	{ return new DataType(type, lenght, scale, format); }
 }
 
 //+
