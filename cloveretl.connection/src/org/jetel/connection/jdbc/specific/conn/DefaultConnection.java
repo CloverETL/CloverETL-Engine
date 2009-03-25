@@ -30,6 +30,7 @@ import java.sql.SQLWarning;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -435,9 +436,11 @@ public class DefaultConnection implements Connection {
 		JdbcDriver jdbcDriver = dbConnection.getJdbcDriver();
 		Driver driver = jdbcDriver.getDriver();
 		Connection connection;
+		Properties connectionProperties = new Properties(jdbcDriver.getProperties());
+		connectionProperties.putAll(dbConnection.createConnectionProperties());
 		
         try {
-            connection = driver.connect(dbConnection.getDbUrl(), dbConnection.createConnectionProperties());
+            connection = driver.connect(dbConnection.getDbUrl(), connectionProperties);
         } catch (SQLException ex) {
             throw new JetelException("Can't connect to DB.", ex);
         }

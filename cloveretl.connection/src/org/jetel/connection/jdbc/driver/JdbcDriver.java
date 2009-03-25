@@ -24,6 +24,7 @@ import java.net.URLClassLoader;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -69,11 +70,16 @@ public class JdbcDriver {
     private JdbcSpecific jdbcSpecific;
 
     /**
+     * Custom connection properties.  
+     */
+    private Properties properties;
+
+    /**
      * Class loader used to get instance of java.sql.Driver class.
      */
     private ClassLoader classLoader;
     private Driver driver;
-    
+        
     /**
      * Constructor.
      * @param jdbcDriverDescription
@@ -84,7 +90,8 @@ public class JdbcDriver {
     			jdbcDriverDescription.getName(),
     			jdbcDriverDescription.getDbDriver(),
     			jdbcDriverDescription.getDriverLibraryURLs(),
-    			jdbcDriverDescription.getJdbcSpecific());
+    			jdbcDriverDescription.getJdbcSpecific(),
+    			jdbcDriverDescription.getProperties());
     }
 
     /**
@@ -96,12 +103,13 @@ public class JdbcDriver {
      * @param jdbcSpecific
      * @throws ComponentNotReadyException
      */
-    public JdbcDriver(String database, String name, String dbDriver, URL[] driverLibraries, JdbcSpecific jdbcSpecific) throws ComponentNotReadyException {
+    public JdbcDriver(String database, String name, String dbDriver, URL[] driverLibraries, JdbcSpecific jdbcSpecific, Properties properties) throws ComponentNotReadyException {
     	this.database = database;
     	this.name = name;
     	this.dbDriver = dbDriver;
     	this.driverLibraries = driverLibraries;
     	this.jdbcSpecific = jdbcSpecific;
+    	this.properties = properties;
     	
     	prepareClassLoader();
     	prepareDriver();
@@ -126,6 +134,15 @@ public class JdbcDriver {
      */
     public JdbcSpecific getJdbcSpecific() {
     	return jdbcSpecific;
+    }
+    
+    /**
+     * @return custom connection properties
+     */
+    public Properties getProperties() {
+    	Properties result = new Properties();
+    	result.putAll(properties);
+    	return result;
     }
     
     /**
