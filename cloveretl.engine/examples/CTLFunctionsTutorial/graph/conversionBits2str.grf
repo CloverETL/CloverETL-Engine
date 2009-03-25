@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation license." modified="Sun Mar 15 16:31:14 CET 2009" modifiedBy="cloveruser" name="string2bits" revision="1.19">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation license." modified="Tue Mar 24 11:39:36 CET 2009" modifiedBy="cloveruser" name="string2bits" revision="1.24">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="bits2strInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -14,11 +14,16 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="122" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="str bits2str(byte arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="536" x="93" y="62">
+<attr name="text"><![CDATA[
+The bits2str(byte) function takes an array of bytes and converts it to a string consisting of two characters: "0" or "1". Each byte is represented by eight characters ("0" or "1"). For each byte, the lowest bit is at the beginning of these eigth characters. 
+The counterpart is the str2bits(string) function.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionBits2str.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="57" guiY="105" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionBits2strOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="586" guiY="106" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="300" guiY="105" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionBits2str.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="58" guiY="249" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionBits2strOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="548" guiY="249" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="292" guiY="249" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

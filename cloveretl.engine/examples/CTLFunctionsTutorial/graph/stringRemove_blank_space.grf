@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229621814796" licenseType="Evaluation license." modified="Sun Mar 15 13:48:25 CET 2009" modifiedBy="cloveruser" name="stringRemove_blank_space" revision="1.9">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229621814796" licenseType="Evaluation license." modified="Tue Mar 24 11:09:33 CET 2009" modifiedBy="cloveruser" name="stringRemove_blank_space" revision="1.11">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="remove_blank_spaceInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -14,11 +14,15 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="93" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string remove_blank_space(string arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="458" x="87" y="142">
+<attr name="text"><![CDATA[
+The remove_blank_space(string) function takes one string argument and returns another string with white spaces removed.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringRemove_blank_space.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="134" guiY="198" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringRemove_blank_spaceOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="539" guiY="198" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="339" guiY="198" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringRemove_blank_space.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="62" guiY="278" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringRemove_blank_spaceOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="467" guiY="278" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="267" guiY="278" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

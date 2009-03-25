@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229697305234" licenseType="Evaluation license." modified="Sun Mar 15 12:11:09 CET 2009" modifiedBy="cloveruser" name="dateDateDiff" revision="1.22">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229697305234" licenseType="Evaluation license." modified="Tue Mar 24 16:16:32 CET 2009" modifiedBy="cloveruser" name="dateDateDiff" revision="1.27">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="random_dateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -16,11 +16,16 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="141" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date random_date(date startDate, date endDate)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="393" x="133" y="66">
+<attr name="text"><![CDATA[
+The random_date(date, date) function accepts two date arguments and returns a random date between startDate and endDate. 
+These resulting dates are generated at random for different records and different fields. They can be different for both records and fields. The return value can also be startDate or endDate. However, it cannot be any date before startDate nor after endDate.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/dateRandom_date.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="124" guiY="188" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dateRandom_dateOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="529" guiY="188" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="329" guiY="188" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/dateRandom_dateDateArguments.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="123" guiY="255" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dateRandom_dateDateArgumentsOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="528" guiY="255" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="328" guiY="255" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

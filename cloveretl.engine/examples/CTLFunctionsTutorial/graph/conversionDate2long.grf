@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation license." modified="Sun Mar 15 16:37:01 CET 2009" modifiedBy="cloveruser" name="string2bits" revision="1.34">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation license." modified="Mon Mar 23 16:23:35 CET 2009" modifiedBy="cloveruser" name="string2bits" revision="1.36">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="date2longInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -14,11 +14,16 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="117" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="long date2long(date arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="474" x="128" y="70">
+<attr name="text"><![CDATA[
+The date2long(date) function takes one date argument and converts it to a long type. Its value equals to the number of milliseconds elapsed from January 1, 1970, 00:00:00 000 UTC to the date specified as the argument. Neither 0 date nor 0 result exist.
+Its counterpart is the long2date(long) function.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDate2long.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="57" guiY="105" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDate2longOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="586" guiY="106" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="300" guiY="105" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDate2long.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="56" guiY="228" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDate2longOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="585" guiY="229" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="299" guiY="228" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

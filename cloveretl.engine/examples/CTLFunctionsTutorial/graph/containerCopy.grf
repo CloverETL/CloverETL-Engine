@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Sun Mar 15 16:59:41 CET 2009" modifiedBy="cloveruser" name="container_push" revision="1.52">
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Tue Mar 24 18:59:15 CET 2009" modifiedBy="cloveruser" name="container_push" revision="1.58">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="copyInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -20,11 +20,23 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="152" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="list copy(list List1, list List2)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="69" y="34">
+<attr name="text"><![CDATA[
+The copy(list, list) function accepts two arguments, each of them is list. Elements of all lists must be of the same data type. The function takes the second argument, adds it to the end of the first list and returns it as a new list. Thus, the resulting list is a sum of both lists specified as arguments. Remember that also the list specified as the first argument changes to this new value.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="128" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="68" y="198">
+<attr name="text"><![CDATA[
+Here we use lists consisting of string elements. 
+List1 consists of 3 elements. 
+List2 consists of 2 elements. 
+copy(List1, List2) returns a new list of five string elements. 
+And the new value of List1 is this return value of the function.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerCopy.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="48" guiY="118" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerCopyOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="440" guiY="118" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="250" guiY="118" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerCopy.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="66" guiY="352" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerCopyOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="458" guiY="352" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="268" guiY="352" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

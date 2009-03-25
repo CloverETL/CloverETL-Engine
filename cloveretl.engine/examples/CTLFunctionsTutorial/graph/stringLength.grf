@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229620574531" licenseType="Evaluation license." modified="Sun Mar 15 15:34:33 CET 2009" modifiedBy="cloveruser" name="stringLength" revision="1.16">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229620574531" licenseType="Evaluation license." modified="Tue Mar 24 11:09:32 CET 2009" modifiedBy="cloveruser" name="stringLength" revision="1.19">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="lengthInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -16,11 +16,17 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="112" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="int length(structuredtype arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="461" x="75" y="138">
+<attr name="text"><![CDATA[
+The length(structuredtype) function accepts one argument of structured data type: string, bytearray, list, map or record. 
+It takes this argument and returns the number of elements composing the argument.
+Remember that the function counts white space characters as well.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringLength.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="184" guiY="248" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringLengthOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="589" guiY="248" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="393" guiY="248" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringLength.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="40" guiY="282" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringLengthOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="445" guiY="282" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="249" guiY="282" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

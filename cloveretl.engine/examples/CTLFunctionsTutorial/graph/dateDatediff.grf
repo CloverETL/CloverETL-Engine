@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229697305234" licenseType="Evaluation license." modified="Sun Mar 15 12:06:22 CET 2009" modifiedBy="cloveruser" name="dateDateDiff" revision="1.30">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229697305234" licenseType="Evaluation license." modified="Mon Mar 23 17:12:11 CET 2009" modifiedBy="cloveruser" name="dateDateDiff" revision="1.32">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="datediffInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -28,11 +28,21 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="190" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="int datediff(date FirstDate, date SecondDate, unit timeunit)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="519" x="118" y="39">
+<attr name="text"><![CDATA[
+The datediff(date, date, unit) function accepts three arguments: two dates and one time unit. It takes these arguments and subtracts the second argument from the first argument. 
+The unit can be one of the following: year, month, week, day, hour, minute, second, millisec. 
+The unit must be specified as a symbolic constant in the function. It can neither be received through an edge nor set as variable. 
+The function returns the time difference expressed in time units specified as the third argument. 
+The difference of two dates is expressed in defined time units. The result is expressed as an integer number.
+Thus, date(2008-06-18, 2001-02-03, year) returns 7. 
+But, date(2001-02-03, 2008-06-18, year) returns -7!]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/dateDatediff.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="124" guiY="188" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dateDatediffOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="529" guiY="188" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="329" guiY="188" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/dateDatediff.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="122" guiY="262" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dateDatediffOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="527" guiY="262" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="327" guiY="262" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

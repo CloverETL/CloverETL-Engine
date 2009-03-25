@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229621572984" licenseType="Evaluation license." modified="Sun Mar 15 14:20:23 CET 2009" modifiedBy="cloveruser" name="stringUppercase" revision="1.9">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229621572984" licenseType="Evaluation license." modified="Tue Mar 24 11:29:22 CET 2009" modifiedBy="cloveruser" name="stringUppercase" revision="1.12">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="uppercaseInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -14,11 +14,15 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string uppercase(string arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="483" x="82" y="153">
+<attr name="text"><![CDATA[
+The uppercase(string) function takes one string argument and returns another string with characters converted to upper cases only.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringUppercase.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="139" guiY="189" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringUppercaseOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="556" guiY="189" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="348" guiY="189" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringUppercase.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="52" guiY="281" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringUppercaseOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="469" guiY="281" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="261" guiY="281" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

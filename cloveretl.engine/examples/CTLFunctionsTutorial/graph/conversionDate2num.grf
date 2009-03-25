@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation license." modified="Sun Mar 15 16:37:30 CET 2009" modifiedBy="cloveruser" name="string2bits" revision="1.42">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation license." modified="Mon Mar 23 16:30:14 CET 2009" modifiedBy="cloveruser" name="string2bits" revision="1.45">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="date2numInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -28,11 +28,19 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="186" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="int date2num(date arg,unit timeunit)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="549" x="88" y="78">
+<attr name="text"><![CDATA[
+The date2num(date, unit) function accepts two arguments: the first is date and the other is any time unit. 
+The unit can be one of the following: year, month, week, day, hour, minute, second, millisec. The unit must be specified as a symbolic constant in the function. It can neither be received through an edge nor set as variable. 
+The function takes these two arguments and converts them to an integer. If the time unit is contained in the date, it is returned as an integer number. If it is not contained, the function returns 0. 
+Remember that months are numbered starting from 0. Thus, date2num(2008-06-12, month) returns 5. 
+And date2num(2008-06-12, hour) returns 0.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDate2num.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="57" guiY="105" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDate2numOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="586" guiY="106" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="300" guiY="105" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDate2num.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="56" guiY="337" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDate2numOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="585" guiY="338" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="299" guiY="337" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

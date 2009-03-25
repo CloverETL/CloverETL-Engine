@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229612956984" licenseType="Evaluation license." modified="Sun Mar 15 13:21:32 CET 2009" modifiedBy="cloveruser" name="stringIndex_of" revision="1.10">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229612956984" licenseType="Evaluation license." modified="Tue Mar 24 14:45:46 CET 2009" modifiedBy="cloveruser" name="stringIndex_of" revision="1.16">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="index_ofInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -20,11 +20,22 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="114" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="int index_of(string arg, string substring, int fromIndex)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="518" x="30" y="14">
+<attr name="text"><![CDATA[
+The index_of(string, string, int) function accepts three arguments: two strings and one integer. 
+It takes them and returns the index of the first occurrence of substring as counted from the beginning of the string specified as the first argument while ignoring such occurrences whose index is less than that specified as the third argument.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="114" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="int index_of(string arg, string substring)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="518" x="31" y="165">
+<attr name="text"><![CDATA[
+The index_of(string, string, int) function accepts three arguments: two strings and one integer. 
+It takes them and returns the index of the first occurrence of substring as counted from the beginning of the string specified as the first argument.
+]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringIndex_of.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="134" guiY="198" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringIndex_ofOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="539" guiY="198" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="339" guiY="198" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringIndex_of.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="35" guiY="310" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringIndex_ofOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="440" guiY="310" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="240" guiY="310" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

@@ -1,2 +1,2 @@
-"Nancy Davolio";"Davo";"Beme"
-"Andrew Fuller";"Flr";"Bsc"
+Nancy Davolio;Davo;Beme
+Andrew Fuller;Flr;Bsc

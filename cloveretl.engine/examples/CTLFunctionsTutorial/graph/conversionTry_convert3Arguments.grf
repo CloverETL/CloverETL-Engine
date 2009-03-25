@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Wed Mar 25 09:22:10 CET 2009" guiVersion="0.0.0.devel" id="1237969573261" licenseType="Evaluation license." modified="Wed Mar 25 11:36:50 CET 2009" modifiedBy="cloveruser" name="conversionTry_convert" revision="1.26">
+<Global>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="try_convertFromDateToStringInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field format="MM/dd/yyyy" name="ArgDate" type="date"/>
+<Field name="ArgString" type="string"/>
+<Field name="Format" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="try_convertFromDateToStringOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field format="MM/dd/yyyy" name="FromDate" type="date"/>
+<Field name="ToString" type="string"/>
+<Field name="AccordingFormat" type="string"/>
+<Field name="FunctionFromDateToString" type="string"/>
+<Field format="MM/dd/yyyy" name="NewArgString" type="string"/>
+<Field name="ReturnValueOfTryConvertFromDateToString" type="boolean"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="try_convertFromStringToDateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ArgString" type="string"/>
+<Field format="MM/dd/yyyy" name="ArgDate" type="date"/>
+<Field name="Format" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="try_convertFromStringToDateOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="FromString" type="string"/>
+<Field format="MM/dd/yyyy" name="ToDate" type="date"/>
+<Field name="AccordingFormat" type="string"/>
+<Field name="FunctionFromStringToDate" type="string"/>
+<Field format="MM/dd/yyyy" name="NewArgDate" type="date"/>
+<Field name="ReturnValueOfTryConvertFromStringToDate" type="boolean"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="162" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="boolean try_convert(string From, anytype To, string Format)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="534" x="87" y="-108">
+<attr name="text"><![CDATA[
+The try_convert(string, anytype, string) function accepts three arguments. The first and the third are strings. The second is of any data type. 
+The function takes the first argument and tries convert it to the second according to the third (format). 
+If the conversion is successful, the function returns the boolean true and the second argument gets the value from the first argument converted to the second data type.
+If the conversion is not successful, the function returns the boolean false and the second argument remains its original value.
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="203" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="527" x="84" y="265">
+<attr name="text"><![CDATA[
+Here we try to convert string to date according to specified format. 
+It is possible whenever the structure of Format equals to the structure of the first argument. Then, true is returned and the string gets this new date value of the original string argument.
+It is not possible whenever the structure of Format differs from the structure of the first argument. Then, false is returned and the date still have its original value.
+
+
+Here we try to convert date to string according to specified format. 
+It is always possible, true is returned and the new string gets the new value from the date and its structure equals to the structure of the specified Format.
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="156" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="boolean try_convert(anytype From, string To, string Format)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="534" x="85" y="75">
+<attr name="text"><![CDATA[
+The try_convert(anytype, string, string) function accepts three arguments. The first is of any data type. The second and the third are strings. 
+The function takes these arguments and tries convert the first argument to the second according to the third (format). 
+If the conversion is successful, the function returns the boolean true and the second argument gets the value from the first argument converted to the second data type.
+If the conversion is not successful, the function returns the boolean false and the second argument remains its original value.
+]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionTry_convert3ArgumentsString2Date.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="40" guiY="505" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionTry_convert3ArgumentsDate2String.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="38" guiY="610" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionTry_convertString2DateOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="516" guiY="505" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionTry_convertDate2StringOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="514" guiY="610" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="264" guiY="506" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+ 	date ArgDate;
+	ArgDate = $0.ArgDate;
+	
+	$0.FromString := $0.ArgString;
+	$0.ToDate := $0.ArgDate;
+	$0.AccordingFormat := $0.Format;
+	$0.FunctionFromStringToDate := "try_convert($0.ArgString,ArgDate,$0.Format)";
+	$0.ReturnValueOfTryConvertFromStringToDate := try_convert($0.ArgString,ArgDate,$0.Format);
+	$0.NewArgDate := ArgDate;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="262" guiY="611" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+ 	string ArgString;
+	ArgString = $0.ArgString;
+	
+	$0.FromDate := $0.ArgDate;
+	$0.ToString := $0.ArgString;
+	$0.AccordingFormat := $0.Format;
+	$0.FunctionFromDateToString := "try_convert($0.ArgDate,ArgString,$0.Format)";
+	$0.ReturnValueOfTryConvertFromDateToString := try_convert($0.ArgDate,ArgString,$0.Format);
+	$0.NewArgString := ArgString;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+</Phase>
+</Graph>

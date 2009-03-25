@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Sun Mar 15 17:38:17 CET 2009" modifiedBy="cloveruser" name="container_push" revision="1.62">
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Tue Mar 24 18:56:53 CET 2009" modifiedBy="cloveruser" name="container_push" revision="1.65">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="forReverseInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -19,11 +19,25 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="140" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="43" y="179">
+<attr name="text"><![CDATA[
+Here we use lists consisting of string elements. 
+List consists of 5 elements. 
+reverse(List) reverses the order of the list elements.
+And after the function is executed, List consists of 5 resulting elements in reversed order.
+The function returns this new value of List.
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="119" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="list remove(list arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="44" y="27">
+<attr name="text"><![CDATA[
+The reverse(list) function accepts one argument of list data type. It takes this argument, reverses the order of elements of the list and returns such new list. 
+The list specified as the argument changes to this new value.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerReverse.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="48" guiY="118" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerReverseOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="440" guiY="118" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="250" guiY="118" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerReverse.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="40" guiY="349" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerReverseOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="432" guiY="349" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="242" guiY="349" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
