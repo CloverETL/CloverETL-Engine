@@ -36,6 +36,8 @@ import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.dictionary.StringDictionaryType;
 import org.jetel.interpreter.ASTnode.CLVFAddNode;
 import org.jetel.interpreter.ASTnode.CLVFAnd;
 import org.jetel.interpreter.ASTnode.CLVFAssignment;
@@ -45,6 +47,7 @@ import org.jetel.interpreter.ASTnode.CLVFBreakpointNode;
 import org.jetel.interpreter.ASTnode.CLVFCaseExpression;
 import org.jetel.interpreter.ASTnode.CLVFComparison;
 import org.jetel.interpreter.ASTnode.CLVFContinueStatement;
+import org.jetel.interpreter.ASTnode.CLVFDictionaryNode;
 import org.jetel.interpreter.ASTnode.CLVFDirectMapping;
 import org.jetel.interpreter.ASTnode.CLVFDivNode;
 import org.jetel.interpreter.ASTnode.CLVFDoStatement;
@@ -1947,6 +1950,78 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
 		return data;
 	}
+    
+    public Object visit(CLVFDictionaryNode node, Object data) {
+    	final Dictionary d = graph.getDictionary();
+    	
+    	if (d == null) {
+    		throw new TransformLangExecutorRuntimeException("No dictionary defined on the graph");
+    	}
+    	
+    	TLValue key = null;
+    	TLValue value = null;
+    	switch (node.operation) {
+    	case CLVFDictionaryNode.OP_READ:
+    		// evaluate the key
+    		node.jjtGetChild(0).jjtAccept(this, data);
+    		key = stack.pop();
+    		if (key.getType() != TLValueType.STRING) {
+    			throw new TransformLangExecutorRuntimeException("Dictionary supports only non-null string keys");
+    		}
+    		
+    		final Object dictValue = d.getValue(((StringBuilder)key.getValue()).toString());
+    		stack.push(dictValue == null ? TLNullValue.getInstance() : new TLStringValue(dictValue.toString()));
+    		break;
+    	case CLVFDictionaryNode.OP_WRITE:
+    		node.jjtGetChild(0).jjtAccept(this, data);
+    		key = stack.pop();
+    		if (key.getType() != TLValueType.STRING) {
+    			throw new TransformLangExecutorRuntimeException("Dictionary supports only string keys");
+    		}
+    		final String keyToWrite = ((StringBuilder)key.getValue()).toString();
+    		
+    		node.jjtGetChild(1).jjtAccept(this, data);
+    		value = stack.pop();
+    		
+    		String valueToWrite = null;
+    		if (value == TLNullValue.getInstance()) {
+    			// writing null value
+    			valueToWrite = null;
+    		} else if (value.getType() == TLValueType.STRING) {
+    			// convert string value to string
+    			valueToWrite = ((StringBuilder)value.getValue()).toString();
+    		} else {
+    			// anything non-null, non-string is error
+    			throw new TransformLangExecutorRuntimeException("Dictionary supports only string values");
+    		}
+    		
+    		try {
+    			d.setValue(keyToWrite, StringDictionaryType.TYPE_ID, valueToWrite);
+    		} catch (ComponentNotReadyException e) {
+    			throw new TransformLangExecutorRuntimeException("Cannot set dictionary key '" + keyToWrite + "' to value '" + valueToWrite + "'",e);
+    		}
+    		break;
+    	case CLVFDictionaryNode.OP_DELETE:
+    		// evaluate the key
+    		node.jjtGetChild(0).jjtAccept(this, data);
+    		key = stack.pop();
+    		if (key.getType() != TLValueType.STRING) {
+    			throw new TransformLangExecutorRuntimeException("Dictionary supports only non-null string keys");
+    		}
+    		
+    		final String keyToDelete = ((StringBuilder)key.getValue()).toString();
+    		try {
+				d.setValue(keyToDelete, null);
+			} catch (ComponentNotReadyException e) {
+				throw new TransformLangExecutorRuntimeException("Cannot delete key '" + keyToDelete + "'");
+			}
+    		break;
+    	default:
+    		throw new TransformLangExecutorRuntimeException("Unknown dictionary operation: " + node.operation);
+    	}
+    	
+    	return data;
+    }
     
     public Object visit(CLVFPrintLogNode node, Object data) {
         if (runtimeLogger == null) {

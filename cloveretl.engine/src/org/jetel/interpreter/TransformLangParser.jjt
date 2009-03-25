@@ -498,6 +498,13 @@ TOKEN :  /* date parts */
   |<MILLISEC: "millisec" >
 }
 
+/* DICTIONARY TOKENS */
+TOKEN:
+{
+	<READ_DICT: "read_dict">
+	|<WRITE_DICT: "write_dict">
+	|<DELETE_DICT: "delete_dict">
+}
 
 TOKEN : /* IDENTIFIERS */
 {
@@ -1245,6 +1252,7 @@ void BuildInFunction() #void :
 	|SequenceNode()
 	|LookupNode()
 	|EvalNode()
+	|DictionaryNode()
 
 // 	procedures 
 	|PrintErrNode()
@@ -1345,6 +1353,34 @@ void LookupNode() :
 		")"
 		)
 	)
+}
+
+void DictionaryNode() :
+{
+	Token t,name;
+}
+{
+	(
+		"read_dict" "(" 
+			Expression()
+		")"
+		{ jjtThis.setOperation(0); }
+	)
+	|
+	(
+		"write_dict" "(" 
+			Expression()   "," 
+			Expression() 
+		")"
+		{ jjtThis.setOperation(1);}
+	)
+	|
+	(
+		"delete_dict" "(" 
+			Expression()  
+		")"
+		{ jjtThis.setOperation(2);}
+	)	
 }
 
 TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" | "sec" | "second" | "millisec" | "millisecond" > }
