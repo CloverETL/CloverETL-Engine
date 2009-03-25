@@ -137,6 +137,9 @@ public abstract class DataField implements Serializable, Comparable {
             }
 			if (metadata.getDefaultValueStr() != null) {
 				fromString(StringUtils.stringToSpecChar(metadata.getDefaultValueStr()));
+				if (isNull()) {
+					throw new NullDataFormatException("Null cannot be a default value (field '" + metadata.getName() + "').");
+				}
 				metadata.setDefaultValue(getValueDuplicate());
 				return;
 			}
