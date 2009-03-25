@@ -100,9 +100,12 @@ public interface TransformLangParserConstants {
   int MINUTE = 102;
   int SECOND = 103;
   int MILLISEC = 104;
-  int IDENTIFIER = 105;
-  int DATE_FIELD_LITERAL = 131;
-  int ERROR = 132;
+  int READ_DICT = 105;
+  int WRITE_DICT = 106;
+  int DELETE_DICT = 107;
+  int IDENTIFIER = 108;
+  int DATE_FIELD_LITERAL = 134;
+  int ERROR = 135;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -213,6 +216,9 @@ public interface TransformLangParserConstants {
     "\"minute\"",
     "\"second\"",
     "\"millisec\"",
+    "\"read_dict\"",
+    "\"write_dict\"",
+    "\"delete_dict\"",
     "<IDENTIFIER>",
     "\",\"",
     "\"=\"",

@@ -494,6 +494,13 @@ TOKEN :  /* date parts */
   |<MILLISEC: "millisec" >
 }
 
+/* DICTIONARY TOKENS */
+TOKEN:
+{
+	<READ_DICT: "read_dict">
+	|<WRITE_DICT: "write_dict">
+	|<DELETE_DICT: "delete_dict">
+}
 
 TOKEN : /* IDENTIFIERS */
 {
@@ -2910,6 +2917,7 @@ void BuildInFunction()       :
 	|SequenceNode()
 	|LookupNode()
 	|EvalNode()
+	|DictionaryNode()
 
 // 	procedures 
 	|PrintErrNode()
@@ -3193,6 +3201,80 @@ void LookupNode() :
           }
         }
 /*@egen*/
+}
+
+void DictionaryNode() :
+{/*@bgen(jjtree) DictionaryNode */
+        CLVFDictionaryNode jjtn000 = new CLVFDictionaryNode(this, JJTDICTIONARYNODE);
+        boolean jjtc000 = true;
+        jjtree.openNodeScope(jjtn000);
+        jjtreeOpenNodeScope(jjtn000);
+/*@egen*/
+	Token t,name;
+}
+{/*@bgen(jjtree) DictionaryNode */
+        try {
+/*@egen*/
+	(
+		"read_dict" "(" 
+			Expression()
+		")"/*@bgen(jjtree)*/
+                {
+                  jjtree.closeNodeScope(jjtn000, true);
+                  jjtc000 = false;
+                  jjtreeCloseNodeScope(jjtn000);
+                }
+/*@egen*/
+		{ jjtn000.setOperation(0); }
+	)
+	|
+	(
+		"write_dict" "(" 
+			Expression()   "," 
+			Expression() 
+		")"/*@bgen(jjtree)*/
+                {
+                  jjtree.closeNodeScope(jjtn000, true);
+                  jjtc000 = false;
+                  jjtreeCloseNodeScope(jjtn000);
+                }
+/*@egen*/
+		{ jjtn000.setOperation(1);}
+	)
+	|
+	(
+		"delete_dict" "(" 
+			Expression()  
+		")"/*@bgen(jjtree)*/
+                {
+                  jjtree.closeNodeScope(jjtn000, true);
+                  jjtc000 = false;
+                  jjtreeCloseNodeScope(jjtn000);
+                }
+/*@egen*/
+		{ jjtn000.setOperation(2);}
+	)/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+            jjtreeCloseNodeScope(jjtn000);
+          }
+        }
+/*@egen*/	
 }
 
 TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" | "sec" | "second" | "millisec" | "millisecond" > }

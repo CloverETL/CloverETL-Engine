@@ -11,6 +11,7 @@ import org.jetel.interpreter.ASTnode.CLVFBreakpointNode;
 import org.jetel.interpreter.ASTnode.CLVFCaseExpression;
 import org.jetel.interpreter.ASTnode.CLVFComparison;
 import org.jetel.interpreter.ASTnode.CLVFContinueStatement;
+import org.jetel.interpreter.ASTnode.CLVFDictionaryNode;
 import org.jetel.interpreter.ASTnode.CLVFDirectMapping;
 import org.jetel.interpreter.ASTnode.CLVFDivNode;
 import org.jetel.interpreter.ASTnode.CLVFDoStatement;
@@ -109,4 +110,5 @@ public interface TransformLangParserVisitor
   public Object visit(CLVFPrintLogNode node, Object data);
   public Object visit(CLVFSequenceNode node, Object data);
   public Object visit(CLVFLookupNode node, Object data);
+  public Object visit(CLVFDictionaryNode node, Object data);
 }

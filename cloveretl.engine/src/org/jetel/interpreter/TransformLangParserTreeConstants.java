@@ -56,6 +56,7 @@ public interface TransformLangParserTreeConstants
   public int JJTPRINTLOGNODE = 49;
   public int JJTSEQUENCENODE = 50;
   public int JJTLOOKUPNODE = 51;
+  public int JJTDICTIONARYNODE = 52;
 
 
   public String[] jjtNodeName = {
@@ -111,5 +112,6 @@ public interface TransformLangParserTreeConstants
     "PrintLogNode",
     "SequenceNode",
     "LookupNode",
+    "DictionaryNode",
   };
 }
