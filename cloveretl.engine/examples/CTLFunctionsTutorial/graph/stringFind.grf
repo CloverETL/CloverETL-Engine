@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229622309380" licenseType="Evaluation license." modified="Sun Mar 15 13:12:20 CET 2009" modifiedBy="cloveruser" name="containerCut" revision="1.34">
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229622309380" licenseType="Evaluation license." modified="Tue Mar 24 10:35:34 CET 2009" modifiedBy="cloveruser" name="containerCut" revision="1.36">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="findInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -16,11 +16,15 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="list find(string arg, string regex)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="528" x="51" y="116">
+<attr name="text"><![CDATA[
+The find(string, string) function accepts two string arguments. The second one is a regular expression. The function takes them and returns a list of substrings corresponding to the regex pattern that are found in the string specified as the first argument.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringFind.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="48" guiY="134" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringFindOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="452" guiY="134" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="244" guiY="134" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringFind.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="49" guiY="274" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringFindOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="453" guiY="274" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="245" guiY="274" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

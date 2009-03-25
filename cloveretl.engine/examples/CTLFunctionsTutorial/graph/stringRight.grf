@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229620450578" licenseType="Evaluation license." modified="Sun Mar 15 13:56:23 CET 2009" modifiedBy="cloveruser" name="stringRight" revision="1.9">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229620450578" licenseType="Evaluation license." modified="Tue Mar 24 11:09:33 CET 2009" modifiedBy="cloveruser" name="stringRight" revision="1.11">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="rightInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -16,11 +16,15 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="114" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string right(string arg, numerictype length)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="443" x="90" y="138">
+<attr name="text"><![CDATA[
+The right(string, numerictype) function accepts two arguments: the first is string and the other is of any numeric data type. It takes them and returns the substring of the length equal to the integer part of the second argument counted from the end of the string specified as the first argument.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringRight.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="144" guiY="194" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringRightOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="549" guiY="194" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="353" guiY="194" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringRight.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="70" guiY="271" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringRightOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="475" guiY="271" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="279" guiY="271" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

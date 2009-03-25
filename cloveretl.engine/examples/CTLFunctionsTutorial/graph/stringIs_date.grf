@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229616712953" licenseType="Evaluation license." modified="Sun Mar 15 15:05:28 CET 2009" modifiedBy="cloveruser" name="stringIs_date" revision="1.55">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229616712953" licenseType="Evaluation license." modified="Tue Mar 24 14:27:06 CET 2009" modifiedBy="cloveruser" name="stringIs_date" revision="1.60">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="is_dateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -26,14 +26,24 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="boolean is_date(string arg, string pattern, string locale, boolean lenient)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="579" x="81" y="59">
+<attr name="text"><![CDATA[
+The is_date(string, string, string, boolean) function accepts three string arguments and one boolean. It takes them, compares the first argument with the second as a pattern, use the third (locale) and the fourth (lenient) arguments and, if the first string can be converted to a date which is valid within specified locale, according to the specified pattern, the function returns true independently on the fourth argument.
+If this is not possible, it returns false. However, it is possible to set the fourth argument (lenient) to true and the function will use heuristic to guess whether the string is date. If it is successful, again true is returned.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="129" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="The other is_date functions." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="745" x="79" y="216">
+<attr name="text"><![CDATA[
+The is_date(string arg, string pattern, boolean lenient) function equals to is_date(string arg, string pattern, SystemLocale, boolean lenient).
+
+The is_date(string arg, string pattern, string locale) function equals to is_date(string arg, string pattern, string locale, true).
+
+The is_date(string arg, string pattern) function equals to is_date(string arg, string pattern, SystemLocale, true).]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringIs_date.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="154" guiY="218" id="DATA_READER0" type="DATA_READER"/>
-<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
-</Phase>
-<Phase number="1">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringIs_dateOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="559" guiY="218" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="359" guiY="218" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringIs_date.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="79" guiY="379" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringIs_dateOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="484" guiY="379" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="284" guiY="379" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -58,6 +68,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
 <Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

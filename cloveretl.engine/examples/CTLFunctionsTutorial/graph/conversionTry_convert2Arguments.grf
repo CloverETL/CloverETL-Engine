@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Wed Mar 25 09:22:10 CET 2009" guiVersion="0.0.0.devel" id="1237969573261" licenseType="Evaluation license." modified="Wed Mar 25 10:45:58 CET 2009" modifiedBy="cloveruser" name="conversionTry_convert" revision="1.11">
+<Global>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="try_convertFromDecimalToStringOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="FromDecimal" type="decimal"/>
+<Field name="ToString" type="string"/>
+<Field name="FunctionFromDecimalToString" type="string"/>
+<Field name="ReturnValueOfTryConvertFromDecimalToString" type="boolean"/>
+<Field name="NewArgString" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="try_convertFromStringToDecimalOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="FromString" type="string"/>
+<Field name="ToDecimal" type="decimal"/>
+<Field name="FunctionFromStringToDecimal" type="string"/>
+<Field name="ReturnValueOfTryConvertFromStringToDecimal" type="boolean"/>
+<Field name="NewArgDecimal" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="try_convertInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ArgDecimal" type="decimal"/>
+<Field name="ArgString" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="135" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="boolean try_convert(anytype From, anytype To)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="534" x="90" y="49">
+<attr name="text"><![CDATA[
+The try_convert(anytype, anytype) function accepts two arguments of any data types. The function takes these arguments and tries convert the first argument to the second. 
+If the conversion is successful, the function returns the boolean true and the second argument gets the value from the first argument converted to the second data type.
+If the conversion is not successful, the function returns the boolean false and the second argument remains its original value.
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="133" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="527" x="94" y="216">
+<attr name="text"><![CDATA[
+Here we try to convert decimal to string. It is possible, true is returned and the string gets this new value of the original decimal argument in its string representation.
+
+Here we also try to convert string to decimal. It is not possible, false is returned and the decimal  still have its original value.
+]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionTry_convert2Arguments.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="39" guiY="412" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionTry_convertDecimal2StringOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="633" guiY="368" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionTry_convertString2DecimalOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="633" guiY="464" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="450" guiY="368" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+ 	string ArgString;
+	ArgString = $0.ArgString;
+
+	$0.FromDecimal := $0.ArgDecimal;
+	$0.ToString := $0.ArgString;
+	$0.FunctionFromDecimalToString := "try_convert($0.ArgDecimal,ArgString)";
+	$0.ReturnValueOfTryConvertFromDecimalToString := try_convert($0.ArgDecimal,ArgString);
+	$0.NewArgString := ArgString;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="450" guiY="464" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+ 	decimal ArgDecimal;
+	ArgDecimal = $0.ArgDecimal;
+
+	$0.FromString := $0.ArgString;
+	$0.ToDecimal := $0.ArgDecimal;
+	$0.FunctionFromStringToDecimal := "try_convert($0.ArgString,ArgDecimal)";
+	$0.ReturnValueOfTryConvertFromStringToDecimal := try_convert($0.ArgString,ArgDecimal);
+	$0.NewArgDecimal := ArgDecimal;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="248" guiY="413" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="REFORMAT1:0"/>
+</Phase>
+</Graph>

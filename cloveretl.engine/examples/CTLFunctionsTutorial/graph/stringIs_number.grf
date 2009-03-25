@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229616325484" licenseType="Evaluation license." modified="Sun Mar 15 13:29:53 CET 2009" modifiedBy="cloveruser" name="stringIs_number" revision="1.7">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229616325484" licenseType="Evaluation license." modified="Tue Mar 24 10:35:34 CET 2009" modifiedBy="cloveruser" name="stringIs_number" revision="1.9">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="is_numberInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -14,11 +14,15 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="boolean is_number(string arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="429" x="84" y="145">
+<attr name="text"><![CDATA[
+The is_number(string) function takes one string argument and returns a boolean value depending on whether the string can be converted to a double (true) or not (false).]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringIs_number.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="164" guiY="228" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringIs_numberOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="569" guiY="228" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="369" guiY="228" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringIs_number.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="50" guiY="279" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringIs_numberOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="455" guiY="279" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="255" guiY="279" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

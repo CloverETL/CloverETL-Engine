@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229625408000" licenseType="Evaluation license." modified="Sun Mar 15 14:17:32 CET 2009" modifiedBy="cloveruser" name="stringTranslate" revision="1.7">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229625408000" licenseType="Evaluation license." modified="Tue Mar 24 15:17:03 CET 2009" modifiedBy="cloveruser" name="stringTranslate" revision="1.12">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="translateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -18,11 +18,16 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="141" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string translate(string arg, string srearchingSet, string replaceSet)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="521" x="76" y="99">
+<attr name="text"><![CDATA[
+The translate(string, string, string) function accepts three string arguments. The number of characters must be equal in both the second and the third arguments. If some character from the string specified as the second argument is found in the string specified as the first argument, it is replaced by the character taken from the string specified as the third argument. The character from the third string must be at the same position as the character in the second string. 
+Thus, translate("hello", "leo", "pii") returns "hippi".]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringTranslate.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="134" guiY="198" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringTranslateOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="539" guiY="198" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="339" guiY="198" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringTranslate.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="72" guiY="264" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringTranslateOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="477" guiY="264" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="277" guiY="264" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

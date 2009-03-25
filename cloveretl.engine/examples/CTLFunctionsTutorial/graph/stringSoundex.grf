@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229624026484" licenseType="Evaluation license." modified="Sun Mar 15 15:59:33 CET 2009" modifiedBy="cloveruser" name="stringSondex" revision="1.17">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229624026484" licenseType="Evaluation license." modified="Tue Mar 24 11:17:02 CET 2009" modifiedBy="cloveruser" name="stringSondex" revision="1.19">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="soundexInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -14,11 +14,16 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="142" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string soundex(string arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="468" x="60" y="115">
+<attr name="text"><![CDATA[
+The soundex(string) function takes one string argument and converts the string to another. 
+The resulting string consists of the first letter of the string specified as the argument and three digits. The three digits are based on the consonants contained in the string when similar numbers correspond to similarly sounding consonants. Thus, soundex("word") returns "w600".]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringSoundex.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="144" guiY="208" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringSoundexOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="549" guiY="208" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="349" guiY="208" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringSoundex.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="42" guiY="281" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringSoundexOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="447" guiY="281" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="247" guiY="281" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

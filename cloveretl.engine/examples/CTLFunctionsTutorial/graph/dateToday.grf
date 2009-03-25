@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700397062" licenseType="Evaluation license." modified="Sun Mar 15 12:14:02 CET 2009" modifiedBy="cloveruser" name="dateToday" revision="1.15">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700397062" licenseType="Evaluation license." modified="Mon Mar 23 17:19:55 CET 2009" modifiedBy="cloveruser" name="dateToday" revision="1.17">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="nothing" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -13,11 +13,15 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date today()" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="392" x="148" y="109">
+<attr name="text"><![CDATA[
+The today() function accepts no argument and returns current date and time.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="169" guiY="200" id="DATA_GENERATOR0" recordsNumber="1" type="DATA_GENERATOR"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/data_today.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="561" guiY="200" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="361" guiY="200" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="81" guiY="240" id="DATA_GENERATOR0" recordsNumber="1" type="DATA_GENERATOR"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/data_today.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="473" guiY="240" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="273" guiY="240" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

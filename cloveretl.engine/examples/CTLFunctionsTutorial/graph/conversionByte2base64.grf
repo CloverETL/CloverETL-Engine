@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation license." modified="Sun Mar 15 16:36:11 CET 2009" modifiedBy="cloveruser" name="string2bits" revision="1.18">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation license." modified="Tue Mar 24 11:39:36 CET 2009" modifiedBy="cloveruser" name="string2bits" revision="1.22">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="byte2base64Input" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -14,11 +14,16 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string byte2base64(byte arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="476" x="128" y="81">
+<attr name="text"><![CDATA[
+The byte2base64(byte) function takes an array of bytes and converts it to a string in base64 representation. 
+Its counterpart is the base64byte(string) function.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionByte2base64.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="57" guiY="105" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionByte2base64Overview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="586" guiY="106" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="300" guiY="105" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionByte2base64.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="60" guiY="241" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionByte2base64Overview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="499" guiY="241" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="272" guiY="241" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Sun Mar 15 17:27:46 CET 2009" modifiedBy="cloveruser" name="container_push" revision="1.72">
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Tue Mar 24 18:41:49 CET 2009" modifiedBy="cloveruser" name="container_push" revision="1.77">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="forPushInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -20,11 +20,25 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="129" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="50" y="202">
+<attr name="text"><![CDATA[
+Here we use lists consisting of string elements. 
+List consists of 4 elements. 
+push(List) adds the new element to the end of List. 
+And after the function is executed, List consists of 5 resulting elements.
+The function returns true, if it was successful, or false, if it was not.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="135" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="boolean push(list arg, elementType newElement)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="51" y="38">
+<attr name="text"><![CDATA[
+The push(list, elementType) function accepts two arguments: the first is list and the second is of any data type. However, the second argument must be of the same data type as each element of the list. The function takes the second argument and adds it to the end of the first argument. 
+The list specified as the first argument changes to this new value. 
+The function returns true if it was successful, otherwise, it returns false.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerPush.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="48" guiY="118" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerPushOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="440" guiY="118" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="250" guiY="118" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerPush.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="50" guiY="344" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerPushOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="442" guiY="344" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="252" guiY="344" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
