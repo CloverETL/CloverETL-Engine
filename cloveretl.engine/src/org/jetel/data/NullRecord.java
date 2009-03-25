@@ -191,7 +191,6 @@ final class NullField extends DataField{
 
 	final static DataFieldMetadata NULL_FIELD_METADATA = new DataFieldMetadata("null_field",(short)0);
 	static{
-		NULL_FIELD_METADATA.setDefaultValue(null);
 		NULL_FIELD_METADATA.setDefaultValueStr("");
 		NULL_FIELD_METADATA.setNullable(true);
 	}
