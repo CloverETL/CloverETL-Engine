@@ -528,7 +528,7 @@ public class OracleDataWriter extends BulkLoader {
      */
     private void createControlFile() throws ComponentNotReadyException {
     	try {
-            controlFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, CONTROL_FILE_NAME_SUFFIX, getTempDir()).getCanonicalPath();
+            controlFileName = createTempFile(LOADER_FILE_NAME_PREFIX, CONTROL_FILE_NAME_SUFFIX).getCanonicalPath();
         } catch(IOException e) {
             throw new ComponentNotReadyException(this, "Control file cannot be created.");
         }
@@ -633,7 +633,6 @@ public class OracleDataWriter extends BulkLoader {
             }
             if (xattribs.exists(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE)) {
                 oracleDataWriter.setUseFileForExchange(xattribs.getBoolean(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE));
-                oracleDataWriter.isDefinedUseFileForExchange = true;
             }
             if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
             	oracleDataWriter.setFileUrl(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
@@ -682,6 +681,7 @@ public class OracleDataWriter extends BulkLoader {
     
     private void setUseFileForExchange(boolean useFileForExchange) {
     	this.useFileForExchange = useFileForExchange;
+    	isDefinedUseFileForExchange = true;
     }
     
     private boolean getDefaultUsingFileForExchange() {
