@@ -19,17 +19,14 @@
 
 package org.jetel.component;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +74,7 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>This component loads data to Informix database using the dbload or load2 utility. 
  * There is created temporary file with dbload commands depending on input parameters. Data are read from given input file or from the input port and loaded to database. 
- * On Linux/Unix system data transfer can be processed by stdin.<br>
+ * On Linux/Unix system data transfer can be processed by pipe.<br>
  * Any generated commands/files can be optionally logged to help diagnose problems.<br>
  * CloverETL must run on the same machine as the Informix server with accesed database.
  * Dbload command line tool must be also available (standard part of Informix server).
@@ -208,12 +205,10 @@ public class InformixDataWriter extends BulkLoader {
     private final static String DATA_FILE_NAME_PREFIX = "data";
     private final static String DATA_FILE_NAME_SUFFIX = ".dat";
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
-    private final static String ERROR_FILE_PREFIX = "error";
-    private final static String ERROR_FILE_SUFFIX = ".log";
+    private final static String DEFAULT_ERROR_FILE = "error.log";
     private final static String DEFAULT_COLUMN_DELIMITER = "|";
     private final static String DEFAULT_RECORD_DELIMITER = "\n";
     private final static String LINE_SEPARATOR = System.getProperty("line.separator");
-    private final static String UNIX_STDIN = "/dev/stdin";
     private final static String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private final static String DEFAULT_DATE_FORMAT = "MM/dd/yyyy"; 
     private final static String DEFAULT_TIME_FORMAT = "HH:mm:ss";
@@ -223,7 +218,8 @@ public class InformixDataWriter extends BulkLoader {
     
     // variables for dbload's command
     private String command; //contains user-defined control script fot dbload utility
-    private String errorLog;
+    private String errorLog = null;
+    private boolean isDefinedErrorLog = false;
     private int maxErrors = UNUSED_INT;
     private int ignoreRows = UNUSED_INT;
     private int commitInterval = UNUSED_INT;
@@ -232,7 +228,11 @@ public class InformixDataWriter extends BulkLoader {
     private boolean ignoreUniqueKeyViolation = DEFAULT_IGNORE_UNIQUE_KEY_VIOLATION;
     private boolean useInsertCursor = DEFAULT_USE_INSERT_CURSOR;
 
-    private String tmpDataFileName; // file that is used for exchange data between clover and dbload
+    /**
+	 *  flag that determine if execute() method was already executed;
+	 *  used for deleting temp data file and reporting about it
+	 */
+	private boolean alreadyExecuted = false;
     
 	/**
      * Constructor for the InformixDataWriter object
@@ -251,25 +251,19 @@ public class InformixDataWriter extends BulkLoader {
      * @since    April 4, 2002
      */
     public Result execute() throws Exception {
+    	alreadyExecuted = true;
         ProcBox box;
         int processExitValue = 0;
 
         if (isDataReadFromPort) {
 	        if (!StringUtils.isEmpty(dataURL) || (ProcBox.isWindowsPlatform() && !useLoadUtility)) {
-	        	// temp file is used for exchange data
-	        	readFromPortAndWriteByFormatter(new FileOutputStream(tmpDataFileName));
-	        	
+	        	// dataFile is used for exchange data
+	        	readFromPortAndWriteByFormatter();
 	            box = createProcBox();
-	        } else {
-	        	Process process = Runtime.getRuntime().exec(commandLine);
-	            box = createProcBox(process);
-	            
-	            // stdin is used for exchange data - set data target to stdin of process
-	        	OutputStream processIn = new BufferedOutputStream(process.getOutputStream());
-	        	readFromPortAndWriteByFormatter(processIn);
+	            processExitValue = box.join();
+	        } else { // data is send to process through named pipe
+	        	processExitValue = runWithPipe();
 	        }
-    		
-    		processExitValue = box.join();
         } else {
         	processExitValue = readDataDirectlyFromFile();
         }
@@ -282,7 +276,7 @@ public class InformixDataWriter extends BulkLoader {
     }
     
     @Override
-	protected String[] createCommandLineForLoadUtility() {
+	protected String[] createCommandLineForLoadUtility() throws ComponentNotReadyException {
     	CommandBuilder cmdBuilder = new CommandBuilder(properties, SWITCH_MARK, SPACE_MARK);
     	
 		if (useLoadUtility) {
@@ -299,7 +293,7 @@ public class InformixDataWriter extends BulkLoader {
 			cmdBuilder.addAttribute(LOAD_ERROR_LOG_OPTION, errorLog);
 
 			if (!isDataReadFromPort || !StringUtils.isEmpty(dataURL)) {
-				cmdBuilder.add(tmpDataFileName);
+				cmdBuilder.add(getFilePath(dataFile));
 			} // else - when no file is defined stdio is used
 		} else {
 			cmdBuilder.add(loadUtilityPath);
@@ -342,27 +336,27 @@ public class InformixDataWriter extends BulkLoader {
 	            commandFileName = createTempFile(LOADER_FILE_NAME_PREFIX, CONTROL_FILE_NAME_SUFFIX).getCanonicalPath();
 	            
 	            if (errorLog == null) {
-	            	errorLog = createTempFile(ERROR_FILE_PREFIX, ERROR_FILE_SUFFIX).getCanonicalPath();
+	            	errorLog = getFilePath(DEFAULT_ERROR_FILE);
 	            }
 	            
 	            if (isDataReadFromPort) {
 		        	if (ProcBox.isWindowsPlatform() || dataURL != null) {
 		        		if (dataURL != null) {
-		        			tmpDataFileName = getFilePath(dataURL);
+		        			dataFile = getFile(dataURL);
 		        		} else {
-		        			tmpDataFileName = createTempFile(DATA_FILE_NAME_PREFIX, DATA_FILE_NAME_SUFFIX).getCanonicalPath();
+		        			dataFile = createTempFile(DATA_FILE_NAME_PREFIX, DATA_FILE_NAME_SUFFIX);
 		        		}
 		            } else {
-		            	tmpDataFileName = UNIX_STDIN;
+		            	dataFile = createTempFile(DATA_FILE_NAME_PREFIX, DATA_FILE_NAME_SUFFIX); // for pipe
 		            }
-	            } else { // loadUtility
-	            	tmpDataFileName = getFilePath(dataURL);
+	            } else {
+	            	dataFile = getFile(dataURL);
 	            }
 	
 		        createCommandFile();
-			} else {
+			} else { // loadUtility
 				if (dataURL != null || !isDataReadFromPort) {
-	    			tmpDataFileName = getFilePath(dataURL);
+	    			dataFile = getFile(dataURL);
 	    		}
 			}
 		} catch (IOException ioe) {
@@ -492,6 +486,8 @@ public class InformixDataWriter extends BulkLoader {
 		super.free();
 		deleteFile(commandFileName, logger);
 		deleteDataFile();
+		
+		alreadyExecuted = false;
 	}
 
 	/**
@@ -508,7 +504,7 @@ public class InformixDataWriter extends BulkLoader {
         	if (command == null) {
         		if (isDataReadFromPort) {
         			content = getDefaultControlFileContent(table, getInputPort(READ_FROM_PORT).getMetadata().getNumFields(),
-        						columnDelimiter, tmpDataFileName);
+        						columnDelimiter, getFilePath(dataFile));
         		} else if (isDataWrittenToPort) {
         			content = getDefaultControlFileContent(table, 
         					getOutputPort(READ_FROM_PORT).getMetadata().getNumFields() - InformixPortDataConsumer.NUMBER_OF_ADDED_FIELDS,
@@ -589,22 +585,17 @@ public class InformixDataWriter extends BulkLoader {
      * Deletes data file which was used for exchange data.
      */
     private void deleteDataFile() {
-    	if (StringUtils.isEmpty(tmpDataFileName)) {
-    		return;
-    	}
-    	
-    	if (isDataReadFromPort && !UNIX_STDIN.equals(tmpDataFileName) && dataURL == null) {
-    		File dataFile;
-			try {
-				dataFile = getFile(tmpDataFileName);
-			} catch (ComponentNotReadyException e) {
-				logger.warn("Temp data file was not deleted.");
-				return;
-			}
-    		if (!dataFile.delete()) {
-    			logger.warn("Temp data file was not deleted.");
-    		}
-    	}
+    	if (dataFile == null) {
+			return;
+		}
+		
+		if (!alreadyExecuted) {
+			return;
+		}
+		
+		if (isDataReadFromPort && dataURL == null && !dataFile.delete()) {
+			logger.warn("Temp data file was not deleted.");
+		}
     }
 
     /**
@@ -680,7 +671,7 @@ public class InformixDataWriter extends BulkLoader {
 		if (!StringUtils.isEmpty(command)) {
 			xmlElement.setAttribute(XML_COMMIT_INTERVAL_ATTRIBUTE, command);
 		}
-		if (!StringUtils.isEmpty(errorLog)) {
+		if (isDefinedErrorLog) {
 			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLog);
 		}
 		if (maxErrors != UNUSED_INT) {
@@ -744,6 +735,7 @@ public class InformixDataWriter extends BulkLoader {
     
     private void setErrorLog(String errorLog) {
     	this.errorLog = errorLog;
+    	isDefinedErrorLog = true;
 	}
     
     private void setMaxErrors(int maxErrors) {
