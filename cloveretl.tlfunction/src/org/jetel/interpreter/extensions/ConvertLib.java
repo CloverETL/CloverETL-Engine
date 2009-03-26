@@ -373,14 +373,14 @@ public class ConvertLib extends TLFunctionLibrary {
 
         public Str2NumFunction() {
             super("convert", "str2num", "Converts string to number (from any numeral system)", 
-            		new TLValueType[] { TLValueType.STRING, TLValueType.OBJECT, TLValueType.OBJECT, TLValueType.STRING }, 
+            		new TLValueType[] { TLValueType.STRING, TLValueType.SYM_CONST, TLValueType.OBJECT, TLValueType.STRING }, 
                     TLValueType.INTEGER,4,1);
         }
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
         	if ((params[0].type!=TLValueType.STRING) || 
-        			(params.length>1 && !(params[1].type==TLValueType.SYM_CONST || params[1].type==TLValueType.STRING)) || 
+        			(params.length>1 && params[1].type!=TLValueType.SYM_CONST) || 
         			(params.length>2 && !(params[2].type.isNumeric() || params[2].type == TLValueType.STRING)) ||
         			(params.length>3 && params[3].type != TLValueType.STRING)){
                 throw new TransformLangExecutorRuntimeException(params,
@@ -391,12 +391,7 @@ public class ConvertLib extends TLFunctionLibrary {
         	TLValueType valType = null;
         	String numFormat = null;
         	if (params.length > 1) {
-            	if (params[1].type==TLValueType.SYM_CONST) {
-            		valType = TLFunctionUtils.astToken2ValueType(params[1]);
-            	} else {
-            		numFormat = params[1].toString();
-            		valType = TLValueType.DECIMAL;
-            	}
+           		valType = TLFunctionUtils.astToken2ValueType(params[1]);
         	} else {
         		valType = TLValueType.INTEGER;
         	}
@@ -409,20 +404,13 @@ public class ConvertLib extends TLFunctionLibrary {
         		if (params[2].type.isNumeric()) {
 					radix = ((TLNumericValue) params[2]).getInt();
 					con.reset(numFormat, null, valType);
-				}else if (params[1].type==TLValueType.SYM_CONST) {
-					//format
+				}else {
+					//format and locale
 					con.reset(params[2].toString(), params.length>3 ? params[3].toString() : null, valType);
-					format = con.format;
-				} else {
-					// locale
-					con.reset(numFormat, params[2].toString(), valType);
 					format = con.format;
 				}
         	}else{
-        		con.reset(numFormat, null, valType);
-        		if (params[1].type!=TLValueType.SYM_CONST) {
-					format = con.format;
-        		}
+        		con.reset(null, null, valType);
         	}
         	TLValue value=(TLValue)con.value;
         	
