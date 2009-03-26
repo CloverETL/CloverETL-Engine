@@ -68,8 +68,8 @@ public class CommandBuilder {
 	
 	/**
 	 *  Adds attribute and it's value (no quoted):
-	 *  attrName=attrValue or attrName='attrValue'
-	 *  for exmaple:  host=localhost | host='localhost' | --host=localhost 
+	 *  attrName=attrValue
+	 *  for exmaple:  host=localhost | --host=localhost 
 	 * 
 	 * @param attrName
 	 * @param attrValue
@@ -126,8 +126,8 @@ public class CommandBuilder {
 	
 	/**
 	 *  Adds param and it's value (no quoted) - value is get from properties:
-	 *  paramKeyword=paramValue or paramKeyword='paramValue'
-	 *  for exmaple:  host=localhost | host='localhost' | -host=localhost
+	 *  paramKeyword=paramValue
+	 *  for exmaple:  host=localhost | -host=localhost
 	 * 
 	 * @param paramName name of parameter used in properties
 	 * @param paramKeyword name of parameter used in load utility command
