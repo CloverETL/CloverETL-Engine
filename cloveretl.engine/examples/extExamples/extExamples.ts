@@ -108,7 +108,7 @@
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBLoad" graphFile="graph/graphDBLoad.grf">
-         <Property name="CONN_DIR" value="../cloveretl.test.scenarios/conn" />
+         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/rejected.txt" supposedFile="supposed-out/rejected.DBLoad.txt"/>	                                                                    
 	</FunctionalTest>
 
