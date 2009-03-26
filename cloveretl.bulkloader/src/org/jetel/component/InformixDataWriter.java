@@ -802,8 +802,8 @@ public class InformixDataWriter extends BulkLoader {
 
     	private Matcher badRowMatcher;
     	
-    	private int rowNumberFieldNo; // last field -2
-    	private int errMsgFieldNo; // last field
+    	private int rowNumberFieldIdx; // last field -2
+    	private int errMsgFieldIdx; // last field
     	private final static int NUMBER_OF_ADDED_FIELDS = 2; // number of addded fields in errPortMetadata against dbIn(Out)Metadata
 
     	/**
@@ -823,7 +823,7 @@ public class InformixDataWriter extends BulkLoader {
         		throw new ComponentNotReadyException("Output port hasn't assigned metadata.");
         	}
     		
-    		getNumberOfAddedFields();
+    		getIndexesOfAddedFields();
     		checkErrPortMetadata();
     		
     		dbParser = new DelimitedDataParser(CHARSET_NAME);
@@ -849,10 +849,10 @@ public class InformixDataWriter extends BulkLoader {
     	/**
     	 * Gets index of added fields (rowNumber and errMsg).
     	 */
-    	private void getNumberOfAddedFields() {
+    	private void getIndexesOfAddedFields() {
     		int numFields = errMetadata.getNumFields();
-    		rowNumberFieldNo = numFields - 2;
-        	errMsgFieldNo = numFields - 1;
+    		rowNumberFieldIdx = numFields - 2;
+    		errMsgFieldIdx = numFields - 1;
     	}
     	
     	/**
@@ -1024,8 +1024,8 @@ public class InformixDataWriter extends BulkLoader {
     	 */
     	private DataRecord setErrRecord(DataRecord errRecord, int rowNumber, String errMsg) {
     		errRecord.reset();
-    		errRecord.getField(rowNumberFieldNo).setValue(rowNumber);
-    		errRecord.getField(errMsgFieldNo).setValue(errMsg);
+    		errRecord.getField(rowNumberFieldIdx).setValue(rowNumber);
+    		errRecord.getField(errMsgFieldIdx).setValue(errMsg);
 
     		return errRecord;
     	}
@@ -1047,13 +1047,13 @@ public class InformixDataWriter extends BulkLoader {
     	 */
     	private void checkErrPortMetadata() throws ComponentNotReadyException {
 			// check if last - 1  field of errMetadata is integer - rowNumber
-			if (errMetadata.getFieldType(rowNumberFieldNo) != DataFieldMetadata.INTEGER_FIELD) {
+			if (errMetadata.getFieldType(rowNumberFieldIdx) != DataFieldMetadata.INTEGER_FIELD) {
 				throw new ComponentNotReadyException("Last but one field of " +  StringUtils.quote(errMetadata.getName()) +  
 						" has different type from integer.");
 			}
 			
 			// check if last field of errMetadata is string - errMsg
-			if (errMetadata.getFieldType(errMsgFieldNo) != DataFieldMetadata.STRING_FIELD) {
+			if (errMetadata.getFieldType(errMsgFieldIdx) != DataFieldMetadata.STRING_FIELD) {
 				throw new ComponentNotReadyException("Last field of " +  StringUtils.quote(errMetadata.getName()) +  
 						" has different type from string.");
 			}
