@@ -108,5 +108,14 @@ public interface JdbcSpecific {
 	 * @return Name of database specific data type corresponding to java.sql.Types type
 	 */
 	public String sqlType2str(int sqlType);
-	
+
+	/**
+	 * Quotes (escapes) a given identifier according to the database specifics.
+	 *
+	 * @param identifier the identifier to be quoted
+	 *
+	 * @return the quoted identifier
+	 */
+	public String quoteIdentifier(String identifier);
+
 }
