@@ -373,15 +373,16 @@ public class ConvertLib extends TLFunctionLibrary {
 
         public Str2NumFunction() {
             super("convert", "str2num", "Converts string to number (from any numeral system)", 
-            		new TLValueType[] { TLValueType.STRING, TLValueType.OBJECT, TLValueType.OBJECT }, 
-                    TLValueType.INTEGER,3,1);
+            		new TLValueType[] { TLValueType.STRING, TLValueType.OBJECT, TLValueType.OBJECT, TLValueType.STRING }, 
+                    TLValueType.INTEGER,4,1);
         }
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
         	if ((params[0].type!=TLValueType.STRING) || 
         			(params.length>1 && !(params[1].type==TLValueType.SYM_CONST || params[1].type==TLValueType.STRING)) || 
-        			(params.length>2 && !(params[2].type.isNumeric() || params[2].type == TLValueType.STRING))){
+        			(params.length>2 && !(params[2].type.isNumeric() || params[2].type == TLValueType.STRING)) ||
+        			(params.length>3 && params[3].type != TLValueType.STRING)){
                 throw new TransformLangExecutorRuntimeException(params,
                         "str2num - wrong type of literals");
         	}
@@ -408,19 +409,29 @@ public class ConvertLib extends TLFunctionLibrary {
         		if (params[2].type.isNumeric()) {
 					radix = ((TLNumericValue) params[2]).getInt();
 					con.reset(numFormat, null, valType);
-				}else{
+				}else if (params[1].type==TLValueType.SYM_CONST) {
+					//format
+					con.reset(params[2].toString(), params.length>3 ? params[3].toString() : null, valType);
+					format = con.format;
+				} else {
+					// locale
 					con.reset(numFormat, params[2].toString(), valType);
 					format = con.format;
 				}
         	}else{
         		con.reset(numFormat, null, valType);
+        		if (params[1].type!=TLValueType.SYM_CONST) {
+					format = con.format;
+        		}
         	}
         	TLValue value=(TLValue)con.value;
         	
         	Number result = null;
         	try{
                	if (format != null) {
-            		result = format.parse(params[0].toString());
+            		result = valType == TLValueType.DECIMAL ?
+            				((NumericFormat)format).parse((CharSequence)params[0].toString()) :
+            				format.parse(params[0].toString());
             	}else {
 	                switch (valType) {
 	                case INTEGER:
@@ -1116,12 +1127,12 @@ class Str2NumContext{
 		if (pattern != null) {
 			switch (type) {
 			case DECIMAL:
+				//NumericFormat is not good because of eg str2num("5,46 Kč","0.## ¤","cs.CZ") //Kč
+				format = locale == null ?
+						new NumericFormat(pattern):
+						new NumericFormat(pattern, new DecimalFormatSymbols(getLocale(locale)));
+				break;
 			case NUMBER:
-//NumericFormat is not good because of eg str2num("5,46 Kč","0.## ¤","cs.CZ") //Kč
-//				format = locale == null ?
-//					new NumericFormat(pattern):
-//					new NumericFormat(pattern, new DecimalFormatSymbols(getLocale(locale)));
-//				break;
 			case INTEGER:
 			case LONG:
 				format = locale == null ?
