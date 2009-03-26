@@ -209,7 +209,8 @@ public class InformixDataWriter extends BulkLoader {
     private final static String DATA_FILE_NAME_PREFIX = "data";
     private final static String DATA_FILE_NAME_SUFFIX = ".dat";
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
-    private final static String DEFAULT_ERROR_FILE = "error.log";
+    private final static String ERROR_FILE_PREFIX = "error";
+    private final static String ERROR_FILE_SUFFIX = ".log";
     private final static String DEFAULT_COLUMN_DELIMITER = "|";
     private final static String DEFAULT_RECORD_DELIMITER = "\n";
     private final static String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -303,12 +304,12 @@ public class InformixDataWriter extends BulkLoader {
 			} // else - when no file is defined stdio is used
 		} else {
 			cmdBuilder.add(loadUtilityPath);
-			cmdBuilder.addAttribute(INFORMIX_COMMAND_PATH_OPTION, commandFileName);
-			cmdBuilder.addAttribute(INFORMIX_DATABASE_OPTION, getDbConn());
-			cmdBuilder.addAttribute(INFORMIX_ERROR_LOG_OPTION, errorLog);
-			cmdBuilder.addAttribute(INFORMIX_ERRORS_OPTION, maxErrors);
-			cmdBuilder.addAttribute(INFORMIX_IGNORE_ROWS_OPTION, ignoreRows);
-			cmdBuilder.addAttribute(INFORMIX_COMMIT_INTERVAL_OPTION, commitInterval);
+			cmdBuilder.addAttributeAsTwoAttributes(INFORMIX_COMMAND_PATH_OPTION, commandFileName);
+			cmdBuilder.addAttributeAsTwoAttributes(INFORMIX_DATABASE_OPTION, getDbConn());
+			cmdBuilder.addAttributeAsTwoAttributes(INFORMIX_ERROR_LOG_OPTION, errorLog);
+			cmdBuilder.addAttributeAsTwoAttributes(INFORMIX_ERRORS_OPTION, maxErrors);
+			cmdBuilder.addAttributeAsTwoAttributes(INFORMIX_IGNORE_ROWS_OPTION, ignoreRows);
+			cmdBuilder.addAttributeAsTwoAttributes(INFORMIX_COMMIT_INTERVAL_OPTION, commitInterval);
 		}
 		
 		String[] ret = cmdBuilder.getCommand();
@@ -339,11 +340,10 @@ public class InformixDataWriter extends BulkLoader {
 		// prepare name for temporary file
 		try {
 			if (!useLoadUtility) {
-	            commandFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, 
-	            		CONTROL_FILE_NAME_SUFFIX, getTempDir()).getCanonicalPath();
+	            commandFileName = createTempFile(LOADER_FILE_NAME_PREFIX, CONTROL_FILE_NAME_SUFFIX).getCanonicalPath();
 	            
 	            if (errorLog == null) {
-	            	errorLog = createTempFile(DEFAULT_ERROR_FILE).getCanonicalPath();
+	            	errorLog = createTempFile(ERROR_FILE_PREFIX, ERROR_FILE_SUFFIX).getCanonicalPath();
 	            }
 	            
 	            if (isDataReadFromPort) {
@@ -351,8 +351,7 @@ public class InformixDataWriter extends BulkLoader {
 		        		if (dataURL != null) {
 		        			tmpDataFileName = getFilePath(dataURL);
 		        		} else {
-		        			tmpDataFileName = File.createTempFile(DATA_FILE_NAME_PREFIX, 
-			            			DATA_FILE_NAME_SUFFIX, getTempDir()).getCanonicalPath();
+		        			tmpDataFileName = createTempFile(DATA_FILE_NAME_PREFIX, DATA_FILE_NAME_SUFFIX).getCanonicalPath();
 		        		}
 		            } else {
 		            	tmpDataFileName = UNIX_STDIN;
