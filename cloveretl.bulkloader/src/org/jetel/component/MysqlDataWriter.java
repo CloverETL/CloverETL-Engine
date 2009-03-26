@@ -545,8 +545,7 @@ public class MysqlDataWriter extends BulkLoader {
 					commandFile.createNewFile();
 				}
 			} else {
-				commandFile = File.createTempFile(MYSQL_FILE_NAME_PREFIX, 
-						CONTROL_FILE_NAME_SUFFIX, getTempDir());
+				commandFile = createTempFile(MYSQL_FILE_NAME_PREFIX, CONTROL_FILE_NAME_SUFFIX);
 			}
 
 			saveCommandFile(commandFile);
@@ -559,10 +558,12 @@ public class MysqlDataWriter extends BulkLoader {
 
 	/**
 	 * Save default LOAD DATA INFILE command to the file.
+	 * @throws ComponentNotReadyException 
+	 * @throws IOException 
 	 * 
 	 * @throws IOException when error occured
 	 */
-	private void saveCommandFile(File commandFile) throws IOException {
+	private void saveCommandFile(File commandFile) throws ComponentNotReadyException, IOException {
 		FileWriter commandWriter = new FileWriter(commandFile);
 		String command = getDefaultCommandFileContent();
 		logger.debug("Command file content: " + command);
@@ -574,9 +575,9 @@ public class MysqlDataWriter extends BulkLoader {
 	/**
 	 * Create and return string that contains LOAD DATA INFILE command.
 	 * @return string that contains LOAD DATA INFILE command
-	 * @throws IOException
+	 * @throws ComponentNotReadyException 
 	 */
-	private String getDefaultCommandFileContent() throws IOException {
+	private String getDefaultCommandFileContent() throws ComponentNotReadyException {
 		// LOAD DATA [LOW_PRIORITY | CONCURRENT] [LOCAL] INFILE 'file_name'
 		CommandBuilder cmdBuilder = new CommandBuilder(properties, SPACE_CHAR);
 		cmdBuilder.add("LOAD DATA");
@@ -645,12 +646,12 @@ public class MysqlDataWriter extends BulkLoader {
 		return cmdBuilder.getCommandAsString();
 	}
 	
-	private String getDataFilePath() throws IOException {
+	private String getDataFilePath() throws ComponentNotReadyException {
 		if (ProcBox.isWindowsPlatform()) {
 			// convert "C:\examples\xxx.dat" to "C:/examples/xxx.dat"
-			return StringUtils.backslashToSlash(dataFile.getCanonicalPath());
+			return StringUtils.backslashToSlash(getFilePath(dataFile));
 		}
-		return dataFile.getCanonicalPath();
+		return getFilePath(dataFile);
 	}
 	
 	@Override
