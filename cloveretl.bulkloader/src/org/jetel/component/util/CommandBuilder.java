@@ -94,6 +94,36 @@ public class CommandBuilder {
 	}
 	
 	/**
+	 *  Adds both attribute and it's value (no quoted) separately:
+	 *  --attrName
+	 *  attrValue
+	 *  for exmaple:  -host, localhost | --host, localhost 
+	 * 
+	 * @param attrName
+	 * @param attrValue
+	 */
+	public void addAttributeAsTwoAttributes(String attrName, String attrValue) {
+		cmdList.add(switchMark + attrName);
+		cmdList.add(attrValue);
+	}
+	
+	/**
+	 *  Adds both attribute and it's value (no quoted) separately:
+	 *  --attrName
+	 *  attrValue
+	 *  for exmaple:  -host, localhost | --host, localhost 
+	 * 
+	 * @param attrName
+	 * @param attrValue
+	 */
+	public void addAttributeAsTwoAttributes(String attrName, int attrValue) {
+		if (attrValue == UNUSED_INT) {
+			return;
+		}
+		addAttributeAsTwoAttributes(attrName, String.valueOf(attrValue));
+	}
+	
+	/**
 	 *  If attrValue doesn't equal "false" then attrName is added to command.
 	 *  "<i><b>switchMark</b>attrName</i>"<br>
 	 *  for exmaple:  --compress
