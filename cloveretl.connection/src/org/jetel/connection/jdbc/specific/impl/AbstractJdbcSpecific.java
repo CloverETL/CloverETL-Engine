@@ -192,7 +192,9 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	public String sqlType2str(int sqlType) {
 		return SQLUtil.sqlType2str(sqlType);
 	}
-	
-	
-	
+
+    public String quoteIdentifier(String identifier) {
+        return identifier;
+    }
+
 }

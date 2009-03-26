@@ -125,5 +125,9 @@ public class MSSQLSpecific2005 extends AbstractJdbcSpecific {
 			return super.sqlType2str(sqlType);
 		}
 	}
-	
+
+    public String quoteIdentifier(String identifier) {
+        return ('[' + identifier + ']');
+    }
+
 }

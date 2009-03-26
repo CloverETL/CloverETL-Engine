@@ -98,4 +98,8 @@ public class PostgreSpecific extends AbstractJdbcSpecific {
 		}
 	}
 
+    public String quoteIdentifier(String identifier) {
+        return ('"' + identifier + '"');
+    }
+
 }

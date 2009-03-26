@@ -70,4 +70,8 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 		}
 	}
 
+    public String quoteIdentifier(String identifier) {
+        return ('`' + identifier + '`');
+    }
+
 }

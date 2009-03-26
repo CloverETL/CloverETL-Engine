@@ -106,4 +106,8 @@ public class MSSQLSpecific extends AbstractJdbcSpecific {
 		}
 	}
 
+    public String quoteIdentifier(String identifier) {
+        return ('[' + identifier + ']');
+    }
+
 }
