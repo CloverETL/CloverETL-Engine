@@ -37,6 +37,7 @@
 	</FunctionalTest>
 
 	<FunctionalTest ident="MySqlDataWriter" graphFile="graph/graphMysqlDataWriter.grf">
+        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	      	<SQLStatement connection="mysql">DELETE FROM test</SQLStatement>
 <!--	      <DBTableToTable
 	      	 outputTable="test" 
@@ -115,7 +116,13 @@
 
 	<FunctionalTest ident="DBLoad5" graphFile="graph/graphDBLoad5.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_tmp" outputTableConnection="postgre" supposedXMLFile="supposed-out/employee.DBLoad5.xml"/> 
+<!--      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_tmp" outputTableConnection="postgre" supposedXMLFile="supposed-out/employee.DBLoad5.xml"/>-->
+	      <DBTableToTable
+	      	 outputTable="employee_tmp" 
+	      	 outputTableConnection="postgre"
+	      	 supposedTable="emploee_names"
+	      	 supposedTableConnection="postgre"
+	      /> 
       	<DeleteTable connection="postgre" name="employee_tmp"/>
 	</FunctionalTest>
 
