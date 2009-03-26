@@ -57,7 +57,6 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
-import org.jetel.util.exec.PortDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -792,13 +791,12 @@ public class InformixDataWriter extends BulkLoader {
     	
     	private DataRecordMetadata errMetadata;		// format as output port
     	
-    	private Log logger = LogFactory.getLog(PortDataConsumer.class);
-    	
-    	// pattern for output from dbload utility
-    	private String strBadRowPattern = "Row number (\\d+) is bad";
+    	private Log logger = LogFactory.getLog(InformixPortDataConsumer.class);
     	
     	// pattern for output from load utility
-    	private String loadStrBadRowPattern = "ERROR:Line (\\d+): (.+)";
+    	private String strBadRowPattern = useLoadUtility ? 
+    			"ERROR:Line (\\d+): (.+)" :		// load utility
+    			"Row number (\\d+) is bad";		// dbload utility
 
     	private Matcher badRowMatcher;
     	
@@ -835,12 +833,7 @@ public class InformixDataWriter extends BulkLoader {
 			errRecord = new DataRecord(errMetadata);
 			errRecord.init();
     		
-			Pattern badRowPattern;
-			if (useLoadUtility) {
-				badRowPattern = Pattern.compile(loadStrBadRowPattern);
-			} else {
-				badRowPattern = Pattern.compile(strBadRowPattern);
-			}
+			Pattern badRowPattern = Pattern.compile(strBadRowPattern);
 			badRowMatcher = badRowPattern.matcher("");
 			
    			dbParser.init(dbOutMetadata);
@@ -864,15 +857,18 @@ public class InformixDataWriter extends BulkLoader {
         private DataRecordMetadata createDbOutMetadata() {
         	DataRecordMetadata metadata = errMetadata.duplicate();
         	metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
-        	// delete first and second field
+
+        	// delete last two fields
         	for (int i = 0; i < NUMBER_OF_ADDED_FIELDS; i++) {
         		metadata.delField(metadata.getNumFields() - 1);
         	}
         	
         	for (DataFieldMetadata fieldMetadata: metadata) {
         		fieldMetadata.setDelimiter(columnDelimiter);
+        		fieldMetadata.setSize((short)(0));
         	}
-
+    		metadata.setRecordDelimiter("");
+        	
         	return metadata;
         }
     	
