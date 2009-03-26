@@ -341,7 +341,7 @@ public abstract class BulkLoader extends Node {
 	 * @param recDel recordDelimiter
 	 * @return modified metadata
 	 */
-	protected DataRecordMetadata createLoadUtilityMetadata(String colDel, String recDel) {
+	private DataRecordMetadata createLoadUtilityMetadata(String colDel, String recDel) {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecordMetadata metadata = inPort.getMetadata().duplicate();
 		metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
