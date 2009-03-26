@@ -420,9 +420,19 @@ public abstract class BulkLoader extends Node {
 		}
 	}
 	
-	protected File createTempFile(String prefix) throws ComponentNotReadyException {
-    	try {
-			File file = File.createTempFile(prefix, null, getTempDir());
+	/**
+	 * Creates a new empty file in the temp directory, using the
+     * given prefix and suffix strings to generate its name
+     * and the file is deleted from file system.
+     * 
+	 * @param prefix
+	 * @param suffix
+	 * @return
+	 * @throws ComponentNotReadyException
+	 */
+	protected File createTempFile(String prefix, String suffix) throws ComponentNotReadyException {
+		try {
+			File file = File.createTempFile(prefix, suffix, getTempDir());
 			file.delete();
 			return file;
 		} catch (IOException e) {
@@ -430,6 +440,10 @@ public abstract class BulkLoader extends Node {
 			throw new ComponentNotReadyException(this, 
 					"Temporary data file wasn't created.");
 		}
+	}
+	
+	protected File createTempFile(String prefix) throws ComponentNotReadyException {
+    	return createTempFile(prefix, null);
     }
 	
 	protected File openFile(String fileURL) throws ComponentNotReadyException {
