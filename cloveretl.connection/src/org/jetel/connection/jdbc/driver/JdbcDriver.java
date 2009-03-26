@@ -141,7 +141,9 @@ public class JdbcDriver {
      */
     public Properties getProperties() {
     	Properties result = new Properties();
-    	result.putAll(properties);
+    	if (properties != null) {
+    		result.putAll(properties);
+    	}
     	return result;
     }
     
