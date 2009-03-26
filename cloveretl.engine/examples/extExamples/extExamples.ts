@@ -38,13 +38,14 @@
 
 	<FunctionalTest ident="MySqlDataWriter" graphFile="graph/graphMysqlDataWriter.grf">
 	      	<SQLStatement connection="mysql">DELETE FROM test</SQLStatement>
-	      <DBTableToTable
+<!--	      <DBTableToTable
 	      	 outputTable="test" 
 	      	 outputTableConnection="mysql"
 	      	 supposedTable="test_supposed"
 	      	 supposedTableConnection="mysql"
-	      />
+	      />-->
 	 	  <FlatFile outputFile="data-out/out.dat" supposedFile="supposed-out/out.MysqlDataWriter.dat"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/mysql.out" supposedFile="supposed-out/mysql.MysqlDataWriter.out"/>	                                                                    
 	</FunctionalTest>
 
 	<FunctionalTest ident="AproximativeJoin" graphFile="graph/graphAproximativeJoin.grf">
