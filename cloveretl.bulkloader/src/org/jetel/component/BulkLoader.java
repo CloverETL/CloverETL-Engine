@@ -570,7 +570,7 @@ public abstract class BulkLoader extends Node {
 		}
 	}
 	
-	protected File getTempDir() {
+	private File getTempDir() {
 		if (tempDir == null) {
 			if (getGraph().getProjectURL() != null) {
 				tempDir = new File(getGraph().getProjectURL().getPath());
