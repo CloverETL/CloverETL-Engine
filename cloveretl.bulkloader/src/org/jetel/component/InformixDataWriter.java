@@ -299,9 +299,7 @@ public class InformixDataWriter extends BulkLoader {
 			cmdBuilder.addAttributeAsTwoAttributes(INFORMIX_COMMIT_INTERVAL_OPTION, commitInterval);
 		}
 		
-		String[] ret = cmdBuilder.getCommand();
-		printCommandLineToLog(ret);
-		return ret;
+		return cmdBuilder.getCommand();
     }
     
     private String getDbConn() {

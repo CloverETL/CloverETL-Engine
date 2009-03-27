@@ -672,9 +672,7 @@ public class MsSqlDataWriter extends BulkLoader {
 		cmdBuilder.addBooleanParam(MS_SQL_KEEP_IDENTITY_VALUES_PARAM, MS_SQL_KEEP_IDENTITY_VALUES_SWITCH);
 		cmdBuilder.addParam(MS_SQL_LOAD_HINTS_PARAM, MS_SQL_LOAD_HINTS_SWITCH);
 		
-		String[] ret = cmdBuilder.getCommand();
-		printCommandLineToLog(ret);
-		return ret;
+		return cmdBuilder.getCommand();
 	}
 
 	private String getDbTable() {

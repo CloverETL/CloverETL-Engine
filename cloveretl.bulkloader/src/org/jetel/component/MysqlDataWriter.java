@@ -518,9 +518,7 @@ public class MysqlDataWriter extends BulkLoader {
 		cmdBuilder.addParam(MYSQL_SOCKET_PARAM, MYSQL_SOCKET_SWITCH);
 		cmdBuilder.addBooleanParam(MYSQL_SSL_PARAM, MYSQL_SSL_SWITCH);
 
-		String[] ret = cmdBuilder.getCommand();
-		printCommandLineToLog(ret);
-		return ret;
+		return cmdBuilder.getCommand();
 	}
 
 	/**
