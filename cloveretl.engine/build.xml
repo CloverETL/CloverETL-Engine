@@ -266,11 +266,9 @@ defined.version.suffix=release
 
 	<!-- The "clean" target deletes previously compiled files. -->
 	<target name="clean-engine">
-		<delete dir="${dir.bin}"/>
 		<delete dir="${dir.build}"/>
 		<delete dir="${dir.package}"/>
 		<delete dir="${dir.distribution}"/>
-		<delete dir="${dir.doc}"/>
 	</target>
 	
 	<!-- compile temp copy of source -->
