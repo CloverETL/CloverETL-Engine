@@ -1,17 +1,3 @@
-1|decT|Note (Code 1265): Data truncated
-1|numT|Note (Code 1265): Data truncated
-1|floatT|Note (Code 1265): Data truncated
-1|realT|Note (Code 1265): Data truncated
-1|datetimeT|Warning (Code 1265): Data truncated
-1|yearT|Warning (Code 1265): Data truncated
-2|smallT|Warning (Code 1264): Out of range value adjusted
-2|decT|Note (Code 1265): Data truncated
-2|numT|Note (Code 1265): Data truncated
-2|floatT|Note (Code 1265): Data truncated
-2|realT|Note (Code 1265): Data truncated
-2|yearT|Warning (Code 1265): Data truncated
+1|datetimeT|Warning (Code 1264): Out of range value adjusted
+2|smallT|Warning (Code 1366): Incorrect integer value: 's'
 3|decT|Note (Code 1265): Data truncated
-3|numT|Note (Code 1265): Data truncated
-3|floatT|Note (Code 1265): Data truncated
-3|realT|Note (Code 1265): Data truncated
-3|yearT|Warning (Code 1265): Data truncated
