@@ -463,7 +463,7 @@ public class MysqlDataWriter extends BulkLoader {
 		int processExitValue = 0;
 
 		if (isDataReadFromPort) {
-			if (ProcBox.isWindowsPlatform() || dataURL != null) {
+			if (ProcBox.isWindowsPlatform() || !StringUtils.isEmpty(dataURL)) {
 				// dataFile is used for exchange data
 				readFromPortAndWriteByFormatter();
 				box = createProcBox();

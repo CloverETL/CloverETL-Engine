@@ -158,7 +158,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		int processExitValue = 0;
 
 		if (isDataReadFromPort) {
-			if (dataURL != null) {
+			if (!StringUtils.isEmpty(dataURL)) {
 				// dataFile is used for exchange data
 				readFromPortAndWriteByFormatter();
 				box = createProcBox();
