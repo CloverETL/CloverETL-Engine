@@ -11,7 +11,7 @@
 	</FunctionalTest>
 
 	<FunctionalTest ident="PostgreDataWriter" graphFile="graph/graphPostgreSqlDataWriter.grf">
-	      <SQLStatement connection="postgre">DELETE FROM test</SQLStatement>
+	      <SQLStatement connection="postgre_test">DELETE FROM test</SQLStatement>
 	      <DBTableToTable
 	      	 outputTable="test" 
 	      	 outputTableConnection="postgre_test"
@@ -117,7 +117,7 @@
 
 	<FunctionalTest ident="DBLoad5" graphFile="graph/graphDBLoad5.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-<!--      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_tmp" outputTableConnection="postgre" supposedXMLFile="supposed-out/employee.DBLoad5.xml"/>-->
+<!--      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_tmp" outputTableConnection="postgre_foodmart" supposedXMLFile="supposed-out/employee.DBLoad5.xml"/>-->
 	      <DBTableToTable
 	      	 outputTable="employee_tmp" 
 	      	 outputTableConnection="postgre_foodmart"
