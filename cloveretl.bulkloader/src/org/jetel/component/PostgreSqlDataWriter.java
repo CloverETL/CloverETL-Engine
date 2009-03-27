@@ -496,12 +496,9 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	}
 
 	@Override
-	public synchronized void free() {
-		if(!isInitialized()) return;
-		super.free();
+	protected void deleteTempFiles() {
+		super.deleteTempFiles();
 		deleteTempFile(commandFile, commandURL);
-		
-		alreadyExecuted = false;
 	}
 
 	/**

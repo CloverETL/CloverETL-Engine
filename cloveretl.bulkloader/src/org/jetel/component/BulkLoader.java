@@ -212,6 +212,15 @@ public abstract class BulkLoader extends Node {
 			formatter.close();
 		}
 		
+		deleteTempFiles();
+		
+		alreadyExecuted = false;
+	}
+	
+	/**
+	 * Delete all temporary files created during execution of component.
+	 */
+	protected void deleteTempFiles() {
 		deleteDataFile();
 	}
 	
