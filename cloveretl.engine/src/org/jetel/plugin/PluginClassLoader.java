@@ -29,6 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 /**
  * Plugin class loader is descendant of URLClassLoader and is used for particular plugins.
  * Added value is in loading classes from siblings plugins.
@@ -38,9 +40,9 @@ import java.util.Set;
  *
  */
 public class PluginClassLoader extends URLClassLoader {
+	static final Logger log = Logger.getLogger(PluginClassLoader.class);
 
     private PluginDescriptor pluginDescriptor;
-
     private PluginDescriptor[] importPlugins;
     
     /**
@@ -50,7 +52,8 @@ public class PluginClassLoader extends URLClassLoader {
      */
     public PluginClassLoader(ClassLoader parent, PluginDescriptor pluginDescriptor) {
         super(pluginDescriptor.getLibraryURLs(), parent);
-        
+        if (log.isDebugEnabled())
+        	log.debug("create PluginClassLoader:"+Arrays.asList(pluginDescriptor.getLibraryURLs()));
         this.pluginDescriptor = pluginDescriptor;
         collectImports();
     }
