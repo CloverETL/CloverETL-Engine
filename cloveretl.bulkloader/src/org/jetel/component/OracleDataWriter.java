@@ -200,8 +200,6 @@ public class OracleDataWriter extends BulkLoader {
     private File badFile = null;
     private File discardFile = null;
 
-	private boolean isDataReadDirectlyFromFile;
-    
     /**
      * Constructor for the OracleDataWriter object
      *
@@ -350,9 +348,6 @@ public class OracleDataWriter extends BulkLoader {
 
 	@Override
 	protected void preInit() throws ComponentNotReadyException {
-		isDataReadDirectlyFromFile = !isDataReadFromPort && 
-				!StringUtils.isEmpty(dataURL);
-
 		// set undefined useFileForExchange when input port is connected
 		if (!isDefinedUseFileForExchange && isDataReadFromPort) {
 			useFileForExchange = getDefaultUsingFileForExchange();

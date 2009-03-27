@@ -438,8 +438,6 @@ public class MysqlDataWriter extends BulkLoader {
 	private String commandURL;
 	private File commandFile;
 
-	private boolean isDataReadDirectlyFromFile;
-	
 	/**
 	 * Constructor for the MysqlDataWriter object
 	 * 
@@ -645,13 +643,7 @@ public class MysqlDataWriter extends BulkLoader {
 		}
 		return getFilePath(dataFile);
 	}
-	
-	@Override
-	protected void preInit() throws ComponentNotReadyException {
-		isDataReadDirectlyFromFile = !isDataReadFromPort && 
-				!StringUtils.isEmpty(dataURL);
-	}
-	
+
 	@Override
 	protected void initDataFile() throws ComponentNotReadyException {
 		// data is read directly from file -> file isn't used for exchange

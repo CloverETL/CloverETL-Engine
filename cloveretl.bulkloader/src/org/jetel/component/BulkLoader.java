@@ -98,6 +98,8 @@ public abstract class BulkLoader extends Node {
      * false - bad rows isn't written to anywhere
      */
     protected boolean isDataWrittenToPort;
+    
+    protected boolean isDataReadDirectlyFromFile;
 	
 	public BulkLoader(String id, String loadUtilityPath, String database) {
 		super(id);
@@ -117,6 +119,7 @@ public abstract class BulkLoader extends Node {
 		super.init();
 		
 		isDataReadFromPort = !getInPorts().isEmpty();
+		isDataReadDirectlyFromFile = !isDataReadFromPort && !StringUtils.isEmpty(dataURL);
         isDataWrittenToPort = !getOutPorts().isEmpty();
 		
 		properties = parseParameters(parameters);
