@@ -102,11 +102,11 @@ public class ComponentFactory {
                 return Class.forName(className, true, pluginDescriptor.getClassLoader());
             }
         } catch(ClassNotFoundException ex) {
-            logger.error("Unknown component: " + componentType + " class: " + className);
-            throw new RuntimeException("Unknown component: " + componentType + " class: " + className);
+            logger.error("Unknown component: " + componentType + " class: " + className, ex);
+            throw new RuntimeException("Unknown component: " + componentType + " class: " + className, ex);
         } catch(Exception ex) {
-            logger.error("Unknown component type: " + componentType);
-            throw new RuntimeException("Unknown component type: " + componentType);
+            logger.error("Unknown component type: " + componentType, ex);
+            throw new RuntimeException("Unknown component type: " + componentType, ex);
         }
 
     }
