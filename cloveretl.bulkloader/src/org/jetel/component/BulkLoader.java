@@ -206,6 +206,27 @@ public abstract class BulkLoader extends Node {
 		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
 	}
 
+	/**
+	 * Create file for exchange for default behavior of bulkloaders.
+	 * Default behaviour means: - not support reading from stdin;
+	 *                          - support both windows and unix like systems (uses pipe at unix)
+	 * 
+	 * @param filePrefix
+	 * @throws ComponentNotReadyException
+	 */
+	protected void defaultCreateFileForExchange(String filePrefix) throws ComponentNotReadyException {
+		if (ProcBox.isWindowsPlatform() || !StringUtils.isEmpty(dataURL)) {
+			if (!StringUtils.isEmpty(dataURL)) {
+				dataFile = getFile(dataURL);
+				dataFile.delete();
+			} else {
+				dataFile = createTempFile(filePrefix);
+			}
+		} else { // for named pipe
+			dataFile = createTempFile(filePrefix);
+		}
+    }
+	
 	@Override
 	public synchronized void free() {
 		if(!isInitialized()) return;
