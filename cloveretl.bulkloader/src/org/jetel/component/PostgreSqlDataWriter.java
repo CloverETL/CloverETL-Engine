@@ -153,6 +153,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	 * @since April 4, 2002
 	 */
 	public Result execute() throws Exception {
+		super.execute();
 		ProcBox box;
 		int processExitValue = 0;
 
@@ -501,6 +502,8 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		if(!isInitialized()) return;
 		super.free();
 		deleteTempFile(commandFile, commandURL, logger);
+		
+		alreadyExecuted = false;
 	}
 
 	/**

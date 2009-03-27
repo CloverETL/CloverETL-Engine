@@ -228,12 +228,6 @@ public class InformixDataWriter extends BulkLoader {
     private boolean ignoreUniqueKeyViolation = DEFAULT_IGNORE_UNIQUE_KEY_VIOLATION;
     private boolean useInsertCursor = DEFAULT_USE_INSERT_CURSOR;
 
-    /**
-	 *  flag that determine if execute() method was already executed;
-	 *  used for deleting temp data file and reporting about it
-	 */
-	private boolean alreadyExecuted = false;
-    
 	/**
      * Constructor for the InformixDataWriter object
      *
@@ -251,7 +245,7 @@ public class InformixDataWriter extends BulkLoader {
      * @since    April 4, 2002
      */
     public Result execute() throws Exception {
-    	alreadyExecuted = true;
+    	super.execute();
         ProcBox box;
         int processExitValue = 0;
 
@@ -485,7 +479,6 @@ public class InformixDataWriter extends BulkLoader {
         if(!isInitialized()) return;
 		super.free();
 		deleteFile(commandFileName, logger);
-		deleteDataFile();
 		
 		alreadyExecuted = false;
 	}
@@ -581,23 +574,6 @@ public class InformixDataWriter extends BulkLoader {
         	"INSERT INTO " + tableName + ";";
     }
     
-    /**
-     * Deletes data file which was used for exchange data.
-     */
-    private void deleteDataFile() {
-    	if (dataFile == null) {
-			return;
-		}
-		
-		if (!alreadyExecuted) {
-			return;
-		}
-		
-		if (isDataReadFromPort && dataURL == null && !dataFile.delete()) {
-			logger.warn("Temp data file was not deleted.");
-		}
-    }
-
     /**
      *  Description of the Method
      *

@@ -16,6 +16,7 @@ import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.Result;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.DataConsumer;
@@ -78,6 +79,12 @@ public abstract class BulkLoader extends Node {
 	private File tempDir = null;
 	
 	/**
+	 *  Flag that determine if execute() method was already executed.
+	 *  used for deleting temp data file and reporting about it
+	 */
+	protected boolean alreadyExecuted = false;
+	
+	/**
      * true - data is read from in port;
      * false - data is read from file directly by load utility
      */
@@ -93,6 +100,12 @@ public abstract class BulkLoader extends Node {
 		super(id);
 		this.loadUtilityPath = loadUtilityPath;
 		this.database = database;
+	}
+
+	@Override
+	public Result execute() throws Exception {
+		alreadyExecuted = true;
+		return null;
 	}
 
 	@Override
@@ -194,7 +207,26 @@ public abstract class BulkLoader extends Node {
 		if (formatter != null) {
 			formatter.close();
 		}
+		
+		deleteDataFile();
 	}
+	
+	/**
+     * Deletes data file which was used for exchange data.
+     */
+    private void deleteDataFile() {
+    	if (dataFile == null) {
+			return;
+		}
+		
+		if (!alreadyExecuted) {
+			return;
+		}
+		
+		if (isDataReadFromPort && dataURL == null && !dataFile.delete()) {
+//	TODO		logger.warn("Temp data file was not deleted.");
+		}
+    }
 	
 	/**
 	 * Create instance of Properties from String. 
