@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Jan 06 10:30:07 CET 2009" guiVersion="0.0.0.devel" id="1231234967225" licenseType="Evaluation license." modified="Thu Mar 19 12:28:17 CET 2009" modifiedBy="avackova" name="graphDBExecuteSybase" revision="1.17">
+<Graph author="avackova" created="Tue Jan 06 10:30:07 CET 2009" guiVersion="0.0.0.devel" id="1231234967225" licenseType="Evaluation license." modified="Fri Mar 27 11:47:14 CET 2009" modifiedBy="avackova" name="graphDBExecuteSybase" revision="1.22">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/date.fmt" id="Metadata1"/>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
@@ -31,7 +31,7 @@ AS
 BEGIN
      SELECT id, string, date
        FROM proc_table
-          WHERE date >= @last_dl_ts
+          WHERE date <= @last_dl_ts
 END;]]></attr>
 </Node>
 <Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="225" guiY="27" id="TRASH0" type="TRASH"/>
