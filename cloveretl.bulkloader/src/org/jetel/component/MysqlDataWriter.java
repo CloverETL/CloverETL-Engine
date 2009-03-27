@@ -438,12 +438,6 @@ public class MysqlDataWriter extends BulkLoader {
 	private String commandURL;
 	private File commandFile;
 
-	/**
-	 *  flag that determine if execute() method was already executed;
-	 *  used for deleting temp data file and reporting about it
-	 */
-	private boolean alreadyExecuted = false;
-	
 	private boolean isDataReadDirectlyFromFile;
 	
 	/**
@@ -464,7 +458,7 @@ public class MysqlDataWriter extends BulkLoader {
 	 * @since April 4, 2002
 	 */
 	public Result execute() throws Exception {
-		alreadyExecuted = true;
+		super.execute();
 		ProcBox box;
 		int processExitValue = 0;
 
@@ -796,27 +790,9 @@ public class MysqlDataWriter extends BulkLoader {
         if(!isInitialized()) return;
 		super.free();
 		
-		deleteDataFile();
 		deleteTempFile(commandFile, commandURL, logger);
 		alreadyExecuted = false;
 	}
-
-	/**
-	 * Deletes data file which was used for exchange data.
-	 */
-	private void deleteDataFile() {
-		if (dataFile == null) {
-			return;
-		}
-		
-		if (!alreadyExecuted) {
-			return;
-		}
-		
-		if (isDataReadFromPort && dataURL == null && !dataFile.delete()) {
-			logger.warn("Temp data file was not deleted.");
-		}
-    }
 
 	/**
 	 * Description of the Method

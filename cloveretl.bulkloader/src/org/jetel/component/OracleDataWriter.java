@@ -200,12 +200,6 @@ public class OracleDataWriter extends BulkLoader {
     private File badFile = null;
     private File discardFile = null;
 
-    /**
-	 *  flag that determine if execute() method was already executed;
-	 *  used for deleting temp data file and reporting about it
-	 */
-	private boolean alreadyExecuted = false;
-    
 	private boolean isDataReadDirectlyFromFile;
     
     /**
@@ -228,7 +222,7 @@ public class OracleDataWriter extends BulkLoader {
      * @since    April 4, 2002
      */
     public Result execute() throws Exception {
-    	alreadyExecuted = true;
+    	super.execute();
 		int processExitValue = 0;
 		boolean unstableStdinIsUsed = false;
 
@@ -289,25 +283,7 @@ public class OracleDataWriter extends BulkLoader {
     	super.free();
 
     	deleteFile(controlFileName, logger);
-    	deleteDataFile();
     	alreadyExecuted = false;
-    }
-
-    /**
-	 * Deletes data file which was used for exchange data.
-	 */
-	private void deleteDataFile() {
-		if (dataFile == null) {
-			return;
-		}
-		
-		if (!alreadyExecuted) {
-			return;
-		}
-		
-		if (isDataReadFromPort && dataURL == null && !dataFile.delete()) {
-			logger.warn("Temp data file was not deleted.");
-    	}
     }
 
 	@Override

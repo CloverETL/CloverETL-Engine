@@ -596,9 +596,6 @@ public class MsSqlDataWriter extends BulkLoader {
 
 	private MsSqlBadRowReaderWriter badRowReaderWriter;
 
-											 // flag that determine if execute() method was already executed;
-	private boolean alreadyExecuted = false; // used for deleting temp data file and reporting about it
-
 	/**
 	 * Constructor for the MsSqlDataWriter object
 	 * 
@@ -614,7 +611,7 @@ public class MsSqlDataWriter extends BulkLoader {
 	 * @since April 4, 2002
 	 */
 	public Result execute() throws Exception {
-		alreadyExecuted = true;
+		super.execute();
 		ProcBox box;
 		int processExitValue = 0;
 
@@ -988,21 +985,8 @@ public class MsSqlDataWriter extends BulkLoader {
 		if (!isInitialized()) return;
 		super.free();
 
-		deleteDataFile();
 		deleteErrFile();
 		alreadyExecuted = false;
-	}
-
-	/**
-	 * Deletes data file which was used for exchange data.
-	 */
-	private void deleteDataFile() {
-		if (!alreadyExecuted) {
-			return;
-		}
-		if (isDataReadFromPort && dataURL == null && !dataFile.delete()) {
-			logger.warn("Temp data file was not deleted.");
-		}
 	}
 
 	/**
