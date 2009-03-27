@@ -650,7 +650,7 @@ public class MysqlDataWriter extends BulkLoader {
     	if (isDataReadDirectlyFromFile) {
     		dataFile = openFile(dataURL);
     	} else {
-    		createFileForExchange();
+    		defaultCreateFileForExchange(EXCHANGE_FILE_PREFIX);
     	}
 	}
 	
@@ -684,19 +684,6 @@ public class MysqlDataWriter extends BulkLoader {
 			return DEFAULT_RECORD_DELIMITER;
 		}
 	}
-
-	private void createFileForExchange() throws ComponentNotReadyException {
-		if (ProcBox.isWindowsPlatform() || dataURL != null) {
-			if (dataURL != null) {
-				dataFile = getFile(dataURL);
-				dataFile.delete();
-			} else {
-				dataFile = createTempFile(EXCHANGE_FILE_PREFIX);
-			}
-		} else {
-			dataFile = createTempFile(EXCHANGE_FILE_PREFIX);
-		}
-    }
 	
 	@Override
 	protected void checkParams() throws ComponentNotReadyException {

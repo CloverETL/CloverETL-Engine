@@ -464,18 +464,10 @@ public class OracleDataWriter extends BulkLoader {
    			return;
     	}
     	
-		if (isDataReadFromPort) {
-			if (ProcBox.isWindowsPlatform() || dataURL != null) {
-				if (dataURL != null) {
-					dataFile = getFile(dataURL);
-					dataFile.delete();
-				} else {
-					dataFile = createTempFile(EXCHANGE_FILE_PREFIX);
-				}
-			} else {
-				dataFile = createTempFile(EXCHANGE_FILE_PREFIX);
-				useFileForExchange = false;
-			}
+    	defaultCreateFileForExchange(EXCHANGE_FILE_PREFIX);
+    	
+    	if (isDataReadFromPort && !ProcBox.isWindowsPlatform() && dataURL == null) {
+			useFileForExchange = false;
 		}
     }
 

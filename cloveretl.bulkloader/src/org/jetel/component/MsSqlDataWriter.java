@@ -564,10 +564,8 @@ public class MsSqlDataWriter extends BulkLoader {
 
 	public final static String COMPONENT_TYPE = "MS_SQL_DATA_WRITER";
 
-	private final static String DATA_FILE_NAME_PREFIX = "data";
-	private final static String DATA_FILE_NAME_SUFFIX = ".dat";
+	private final static String EXCHANGE_FILE_PREFIX = "mssqlExchange";
 	private final static String ERROR_FILE_NAME_PREFIX = "error";
-	private final static String ERROR_FILE_NAME_SUFFIX = ".log";
 	private final static String DEFAULT_COLUMN_DELIMITER = "\t"; // according bcp
 	private final static String SWITCH_MARK = "-";
 	
@@ -825,8 +823,7 @@ public class MsSqlDataWriter extends BulkLoader {
 				if (dataURL != null) {
 					dataFile = getFile(dataURL);
 				} else {
-					dataFile = createTempFile(DATA_FILE_NAME_PREFIX,
-					 DATA_FILE_NAME_SUFFIX);
+					dataFile = createTempFile(EXCHANGE_FILE_PREFIX);
 				}
 				dataFile.delete();
 			} else {
@@ -840,8 +837,7 @@ public class MsSqlDataWriter extends BulkLoader {
 			if (isErrFileFromUser) {
 				errFileName = properties.getProperty(MS_SQL_ERR_FILE_PARAM);
 			} else if (isDataWrittenToPort) {
-				errFileName = createTempFile(ERROR_FILE_NAME_PREFIX, 
-						ERROR_FILE_NAME_SUFFIX).getCanonicalPath();
+				errFileName = createTempFile(ERROR_FILE_NAME_PREFIX).getCanonicalPath();
 			}
 
 		} catch (IOException e) {

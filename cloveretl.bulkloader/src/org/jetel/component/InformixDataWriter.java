@@ -202,8 +202,7 @@ public class InformixDataWriter extends BulkLoader {
     private final static String LOAD_USE_INSERT_CURSOR_OPTION = "z";
     
     private final static String SWITCH_MARK = "-";
-    private final static String DATA_FILE_NAME_PREFIX = "data";
-    private final static String DATA_FILE_NAME_SUFFIX = ".dat";
+    private final static String EXCHANGE_FILE_PREFIX = "informixExchange";
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
     private final static String DEFAULT_ERROR_FILE = "error.log";
     private final static String DEFAULT_COLUMN_DELIMITER = "|";
@@ -315,11 +314,6 @@ public class InformixDataWriter extends BulkLoader {
 				DEFAULT_DATE_FORMAT, DEFAULT_DATETIME_FORMAT, null);
 	}
     
-    @Override
-	protected void preInit() throws ComponentNotReadyException {
-    	isDataReadFromPort = !getInPorts().isEmpty() && StringUtils.isEmpty(command);
-	}
-	
 	@Override
 	protected void initDataFile() throws ComponentNotReadyException {
 		// prepare name for temporary file
@@ -331,20 +325,12 @@ public class InformixDataWriter extends BulkLoader {
 	            	errorLog = getFilePath(DEFAULT_ERROR_FILE);
 	            }
 	            
-	            if (isDataReadFromPort) {
-		        	if (ProcBox.isWindowsPlatform() || dataURL != null) {
-		        		if (dataURL != null) {
-		        			dataFile = getFile(dataURL);
-		        		} else {
-		        			dataFile = createTempFile(DATA_FILE_NAME_PREFIX, DATA_FILE_NAME_SUFFIX);
-		        		}
-		            } else {
-		            	dataFile = createTempFile(DATA_FILE_NAME_PREFIX, DATA_FILE_NAME_SUFFIX); // for pipe
-		            }
-	            } else {
-	            	dataFile = getFile(dataURL);
-	            }
-	
+	            if (isDataReadDirectlyFromFile) {
+	        		dataFile = openFile(dataURL);
+	        	} else {
+	        		defaultCreateFileForExchange(EXCHANGE_FILE_PREFIX);
+	        	}
+	            
 		        createCommandFile();
 			} else { // loadUtility
 				if (dataURL != null || !isDataReadFromPort) {
@@ -413,6 +399,13 @@ public class InformixDataWriter extends BulkLoader {
 		}
 		
 		// check if each of mandatory attributes is set
+		if (!isDataReadFromPort && !fileExists(dataURL) && StringUtils.isEmpty(command)) {
+			throw new ComponentNotReadyException(this, "Input port or " + 
+					StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + 
+					" attribute or " + StringUtils.quote(XML_COMMAND_ATTRIBUTE) +
+					" attribute have to be specified and specified file must exist.");
+		}
+		
 		if (StringUtils.isEmpty(command) && StringUtils.isEmpty(table)) {
 			throw new ComponentNotReadyException(this, 
 					StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
