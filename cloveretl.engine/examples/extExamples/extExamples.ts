@@ -2,7 +2,8 @@
 <!DOCTYPE TestScenario SYSTEM "testscenario.dtd">
 <TestScenario ident="ext-examples" description="Engine extended examples" useJMX="true">
 
-	<DBConnection ident="postgre" type="POSTGRE" user="test" password="test" URL="jdbc:postgresql://koule/test" driver="org.postgresql.Driver" />
+	<DBConnection ident="postgre_test" type="POSTGRE" user="test" password="test" URL="jdbc:postgresql://koule/test" driver="org.postgresql.Driver" />
+	<DBConnection ident="postgre_foodmart" type="POSTGRE" user="test" password="test" URL="jdbc:postgresql://koule/foodmart" driver="org.postgresql.Driver" />
 	<DBConnection ident="oracle" type="ORACLE" user="test" password="test" URL="jdbc:oracle:thin:@koule:1521:xe" driver="oracle.jdbc.OracleDriver" />
 	<DBConnection ident="mysql" type="MYSQL" user="test" password="" URL="jdbc:mysql://koule/test" driver="org.gjt.mm.mysql.Driver" />
 
@@ -13,9 +14,9 @@
 	      <SQLStatement connection="postgre">DELETE FROM test</SQLStatement>
 	      <DBTableToTable
 	      	 outputTable="test" 
-	      	 outputTableConnection="postgre"
+	      	 outputTableConnection="postgre_test"
 	      	 supposedTable="test_supposed"
-	      	 supposedTableConnection="postgre"
+	      	 supposedTableConnection="postgre_test"
 	      />
 	</FunctionalTest>
 	
@@ -119,11 +120,11 @@
 <!--      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_tmp" outputTableConnection="postgre" supposedXMLFile="supposed-out/employee.DBLoad5.xml"/>-->
 	      <DBTableToTable
 	      	 outputTable="employee_tmp" 
-	      	 outputTableConnection="postgre"
+	      	 outputTableConnection="postgre_foodmart"
 	      	 supposedTable="employee_names"
-	      	 supposedTableConnection="postgre"
+	      	 supposedTableConnection="postgre_foodmart"
 	      /> 
-      	<DeleteTable connection="postgre" name="employee_tmp"/>
+      	<DeleteTable connection="postgre_foodmart" name="employee_tmp"/>
 	</FunctionalTest>
 
 </TestScenario>
