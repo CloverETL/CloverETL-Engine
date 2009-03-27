@@ -435,6 +435,74 @@ public class SQLCloverStatement {
 	}
 	
 	/**
+	 * Modifies the query so that it won't do anything for selects, updates and deletes,
+	 * only report sql and other possible problems.
+	 * 
+	 * At the moment, insert queries can not be validated (how one does that)
+	 * 
+	 * It would be best to use a parser to parse the query and add where 0=1 appropriately
+	 * At the moment selects are wrapped inside outer select and update/delete statements
+	 * are simply searched for where clause or added if not found
+	 * 
+	 * WARNING ====== READ BEFORE USE =====
+	 * This method will break your query and will not fall back. You have to destroy this instance
+	 * and recreate it if you want to use it normally. You have been warned!
+	 * 
+	 * @author pnajvar
+	 * @since Mar 2009
+	 * @throws SQLException
+	 * @throws ComponentNotReadyException 
+	 */
+	public void executeValidate() throws SQLException, ComponentNotReadyException {
+
+		String q = null;
+        String where = "WHERE";
+        int indx;
+        boolean update = false;
+        
+        switch(queryType) {
+		case INSERT:
+			throw new SQLException("INSERT query cannot be validated");
+		case UPDATE:
+		case DELETE:
+			update = true;
+			
+			q = getQuery().toUpperCase();
+			
+			indx = q.indexOf(where);
+            if (indx >= 0){
+            	q = q.substring(0, indx + where.length()) + " 0=1 and " + q.substring(indx + where.length());
+            }else{
+            	q += " where 0=1";
+            }
+            break;
+            
+		case SELECT:
+			update = false;
+			q = "SELECT * FROM (" + getQuery() + ") as wrapper_table where 1=0";
+			
+            break;
+			
+		}
+        
+        if (q != null) {
+        	this.isInitialized = false;
+        	this.query = q;
+        	init();
+        	if (update) {
+        		if (statement instanceof PreparedStatement) {
+        			executeUpdate(record);
+        		} else {
+        			statement.executeUpdate(q);
+        		}
+        	} else {
+        		executeQuery();
+        	}
+        }
+        
+	}
+	
+	/**
 	 * Initializes fields numbers arrays due to names
 	 * 
 	 * @param outRecord
