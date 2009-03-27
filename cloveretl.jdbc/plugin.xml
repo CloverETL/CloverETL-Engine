@@ -74,6 +74,7 @@
 		<parameter id="driverLibrary" value="lib/mysql/mysql-connector-java-5.1.5-bin.jar"/>
 		<parameter id="urlHint" value="jdbc:mysql://hostname:3306/database"/>
 		<parameter id="jdbcSpecific" value="MYSQL"/>
+		<parameter id="jdbc.zeroDateTimeBehavior" value="convertToNull"/>
 	</extension>
 	
 	<extension point-id="jdbcDriver">
