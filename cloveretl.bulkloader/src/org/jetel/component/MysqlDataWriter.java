@@ -519,7 +519,7 @@ public class MysqlDataWriter extends BulkLoader {
 		cmdBuilder.addBooleanParam(MYSQL_SSL_PARAM, MYSQL_SSL_SWITCH);
 
 		String[] ret = cmdBuilder.getCommand();
-		printCommandLineToLog(ret, logger);
+		printCommandLineToLog(ret);
 		return ret;
 	}
 
@@ -790,7 +790,7 @@ public class MysqlDataWriter extends BulkLoader {
         if(!isInitialized()) return;
 		super.free();
 		
-		deleteTempFile(commandFile, commandURL, logger);
+		deleteTempFile(commandFile, commandURL);
 		alreadyExecuted = false;
 	}
 

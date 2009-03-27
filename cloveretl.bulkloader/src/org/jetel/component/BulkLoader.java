@@ -10,6 +10,7 @@ import java.util.Properties;
 import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.formatter.Formatter;
@@ -39,6 +40,8 @@ import org.w3c.dom.Element;
  */
 public abstract class BulkLoader extends Node {
 
+	private static Log logger = LogFactory.getLog(BulkLoader.class);
+	
 	protected final static String XML_DATABASE_ATTRIBUTE = "database";
 	protected final static String XML_TABLE_ATTRIBUTE = "table";
 	protected final static String XML_USER_ATTRIBUTE = "username";
@@ -224,7 +227,7 @@ public abstract class BulkLoader extends Node {
 		}
 		
 		if (isDataReadFromPort && dataURL == null && !dataFile.delete()) {
-//	TODO		logger.warn("Temp data file was not deleted.");
+			logger.warn("Temp data file was not deleted.");
 		}
     }
 	
@@ -493,9 +496,8 @@ public abstract class BulkLoader extends Node {
 	 * 
 	 * @param commandFile
 	 * @param commandURL
-	 * @param logger
 	 */
-	protected static void deleteTempFile(File file, String fileURL, Log logger) {
+	protected static void deleteTempFile(File file, String fileURL) {
 		if (file == null) {
 			return;
 		}
@@ -508,9 +510,8 @@ public abstract class BulkLoader extends Node {
 	/**
 	 * Delete file and report to log when it isn't possible.
 	 * @param fileURL
-	 * @param logger
 	 */
-	protected static void deleteFile(String fileURL, Log logger) {
+	protected static void deleteFile(String fileURL) {
     	if (StringUtils.isEmpty(fileURL)) {
     		return;
     	}
@@ -539,7 +540,7 @@ public abstract class BulkLoader extends Node {
 	 * Print system command with it's parameters to log. 
 	 * @param command
 	 */
-	protected static void printCommandLineToLog(String[] command, Log logger) {
+	protected static void printCommandLineToLog(String[] command) {
 		StringBuilder msg = new StringBuilder("System command: \"");
 		msg.append(command[0]).append("\" with parameters:\n");
 		for (int idx = 1; idx < command.length; idx++) {

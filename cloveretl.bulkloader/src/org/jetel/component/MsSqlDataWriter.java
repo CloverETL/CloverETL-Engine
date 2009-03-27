@@ -673,7 +673,7 @@ public class MsSqlDataWriter extends BulkLoader {
 		cmdBuilder.addParam(MS_SQL_LOAD_HINTS_PARAM, MS_SQL_LOAD_HINTS_SWITCH);
 		
 		String[] ret = cmdBuilder.getCommand();
-		printCommandLineToLog(ret, logger);
+		printCommandLineToLog(ret);
 		return ret;
 	}
 

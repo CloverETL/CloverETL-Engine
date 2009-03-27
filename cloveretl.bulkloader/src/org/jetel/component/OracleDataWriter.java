@@ -282,7 +282,7 @@ public class OracleDataWriter extends BulkLoader {
     	if(!isInitialized()) return;
     	super.free();
 
-    	deleteFile(controlFileName, logger);
+    	deleteFile(controlFileName);
     	alreadyExecuted = false;
     }
 
@@ -323,7 +323,7 @@ public class OracleDataWriter extends BulkLoader {
     	cmdBuilder.addParam(SQLLDR_DATA_CACHE_PARAM, SQLLDR_DATA_CACHE_KEYWORD);
     	
     	String[] ret = cmdBuilder.getCommand();
-		printCommandLineToLog(ret, logger);
+		printCommandLineToLog(ret);
 		return ret;
     }
     
