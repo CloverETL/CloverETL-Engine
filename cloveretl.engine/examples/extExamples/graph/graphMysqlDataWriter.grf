@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="0.0.0.devel" id="1204803682775" licenseType="Evaluation license." modified="Thu Mar 26 12:55:17 CET 2009" modifiedBy="avackova" name="MysqlDataWriter" revision="1.90">
+<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="0.0.0.devel" id="1204803682775" licenseType="Evaluation license." modified="Fri Mar 27 11:02:48 CET 2009" modifiedBy="avackova" name="MysqlDataWriter" revision="1.98">
 <Global>
 <Metadata id="Metadata1">
 <Record fieldDelimiter="|" name="err" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -26,12 +26,11 @@
 <Field name="textT" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
-<Connection dbConfig="conn/mysql.cfg" id="Connection0" type="JDBC"/>
+<Connection dbConfig="${CONN_DIR}/mysql.cfg" id="Connection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/out.dat" guiHeight="25" guiName="DATA_WRITER0" guiWidth="50" guiX="244" guiY="34" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="JavaExecute" guiWidth="0" guiX="33" guiY="355" id="JAVA_EXECUTE0" runnableURL="${TRANS_DIR}/testJavaRunnable.java" type="JAVA_EXECUTE"/>
 <Node columnDelimiter="," database="test" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/mysqlFlat.dat" guiHeight="25" guiName="MYSQL_DATA_WRITER0" guiWidth="50" guiX="29" guiY="34" host="koule.javlin.cz" id="MYSQL_DATA_WRITER0" mysqlPath="mysql" table="test" type="MYSQL_DATA_WRITER" username="test">
 <attr name="parameters"><![CDATA[port=3306|fieldsEnclosedBy=*|fieldsIsOptionallyEnclosed]]></attr>
 </Node>
@@ -45,7 +44,7 @@
 <Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MYSQL_DATA_WRITER1:0"/>
 </Phase>
 <Phase number="2">
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DBInputTable" guiWidth="0" guiX="33" guiY="258" id="DB_INPUT_TABLE0" sqlQuery="select $intT:=intT, $smallT:=samllT, $decT:=decT, $numT:=numT, $floatT:=floatT, &#10;&#9;$realT:=realT, $datetimeT:=datetimeT, $timestampT:=timestampT, $dateT:=dateT,&#10;&#9;$timeT:=concatenate('',timeT), $yearT:=yearT, $charT:=charT, $varcharT:=varcharT,&#10;&#9;$textT:=textT from test" type="DB_INPUT_TABLE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DBInputTable" guiWidth="0" guiX="33" guiY="258" id="DB_INPUT_TABLE0" sqlQuery="select $intT:=intT, $smallT:=smallT, $decT:=decT, $numT:=numT, $floatT:=floatT, &#10;&#9;$realT:=realT, $datetimeT:=datetimeT, $timestampT:=timestampT, $dateT:=dateT,&#10;&#9;$timeT:=concat('',timeT), $yearT:=yearT, $charT:=charT, $varcharT:=varcharT,&#10;&#9;$textT:=textT from test" type="DB_INPUT_TABLE"/>
 <Node debugFilename="${DATAOUT_DIR}/mysql.out" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="242" guiY="258" id="TRASH0" type="TRASH"/>
 <Edge fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH0:0"/>
 </Phase>
