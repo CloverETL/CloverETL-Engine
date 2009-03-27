@@ -231,9 +231,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		cmdBuilder.addBooleanParam(PSQL_NO_PSQLRC_PARAM, PSQL_NO_PSQLRC_SWITCH);
 		cmdBuilder.addBooleanParam(PSQL_SINGLE_TRANSACTION_PARAM, PSQL_SINGLE_TRANSACTION_SWITCH);
 
-		String[] ret = cmdBuilder.getCommand();
-		printCommandLineToLog(ret);
-		return ret;
+		return cmdBuilder.getCommand();
 	}
 	
 	/**

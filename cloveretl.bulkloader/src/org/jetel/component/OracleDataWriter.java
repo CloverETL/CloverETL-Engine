@@ -322,9 +322,7 @@ public class OracleDataWriter extends BulkLoader {
     	cmdBuilder.addParam(SQLLDR_RESUMABLE_TIMEOUT_PARAM, SQLLDR_RESUMABLE_TIMEOUT_KEYWORD);
     	cmdBuilder.addParam(SQLLDR_DATA_CACHE_PARAM, SQLLDR_DATA_CACHE_KEYWORD);
     	
-    	String[] ret = cmdBuilder.getCommand();
-		printCommandLineToLog(ret);
-		return ret;
+    	return cmdBuilder.getCommand();
     }
     
     private String getData() throws ComponentNotReadyException {
