@@ -232,7 +232,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		cmdBuilder.addBooleanParam(PSQL_SINGLE_TRANSACTION_PARAM, PSQL_SINGLE_TRANSACTION_SWITCH);
 
 		String[] ret = cmdBuilder.getCommand();
-		printCommandLineToLog(ret, logger);
+		printCommandLineToLog(ret);
 		return ret;
 	}
 	
@@ -501,7 +501,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	public synchronized void free() {
 		if(!isInitialized()) return;
 		super.free();
-		deleteTempFile(commandFile, commandURL, logger);
+		deleteTempFile(commandFile, commandURL);
 		
 		alreadyExecuted = false;
 	}

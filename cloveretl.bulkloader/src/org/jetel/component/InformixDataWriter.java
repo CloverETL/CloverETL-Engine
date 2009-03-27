@@ -300,7 +300,7 @@ public class InformixDataWriter extends BulkLoader {
 		}
 		
 		String[] ret = cmdBuilder.getCommand();
-		printCommandLineToLog(ret, logger);
+		printCommandLineToLog(ret);
 		return ret;
     }
     
@@ -478,7 +478,7 @@ public class InformixDataWriter extends BulkLoader {
 	public synchronized void free() {
         if(!isInitialized()) return;
 		super.free();
-		deleteFile(commandFileName, logger);
+		deleteFile(commandFileName);
 		
 		alreadyExecuted = false;
 	}
