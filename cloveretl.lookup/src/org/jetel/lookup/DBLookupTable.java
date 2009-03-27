@@ -260,7 +260,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         
         try {
             lookupTable = new DBLookupTable(id, xattribs.getString(XML_DBCONNECTION),
-                    xattribs.getString(XML_METADATA_ID), xattribs.getString(XML_SQL_QUERY));
+                    xattribs.exists(XML_METADATA_ID) ? xattribs.getString(XML_METADATA_ID) : null, xattribs.getString(XML_SQL_QUERY));
             
             if (xattribs.exists(XML_NAME_ATTRIBUTE)){
             	lookupTable.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
