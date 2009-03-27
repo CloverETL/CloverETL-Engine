@@ -38,7 +38,7 @@
 	</FunctionalTest>
 
 	<FunctionalTest ident="MySqlDataWriter" graphFile="graph/graphMysqlDataWriter.grf">
-        <Property name="CONN_DIR" value="../cloveretl.test.scenarios/conn" />
+        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	      	<SQLStatement connection="mysql">DELETE FROM test</SQLStatement>
 <!--	      <DBTableToTable
 	      	 outputTable="test" 
