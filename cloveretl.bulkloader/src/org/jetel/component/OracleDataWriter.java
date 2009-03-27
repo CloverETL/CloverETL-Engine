@@ -278,15 +278,12 @@ public class OracleDataWriter extends BulkLoader {
     }
 	
     @Override
-    public synchronized void free() {
-    	if(!isInitialized()) return;
-    	super.free();
+	protected void deleteTempFiles() {
+		super.deleteTempFiles();
+		deleteFile(controlFileName);
+	}
 
-    	deleteFile(controlFileName);
-    	alreadyExecuted = false;
-    }
-
-	@Override
+    @Override
 	protected String[] createCommandLineForLoadUtility() throws ComponentNotReadyException {
     	CommandBuilder cmdBuilder = new CommandBuilder(properties);
     	cmdBuilder.add(loadUtilityPath);

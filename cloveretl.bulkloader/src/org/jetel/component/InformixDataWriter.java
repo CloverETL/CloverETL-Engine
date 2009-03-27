@@ -471,14 +471,11 @@ public class InformixDataWriter extends BulkLoader {
 					(useLoadUtility ? "dbload" : "load") + "' utility is used.");
 		}
     }
-    
-    @Override
-	public synchronized void free() {
-        if(!isInitialized()) return;
-		super.free();
+	
+	@Override
+	protected void deleteTempFiles() {
+		super.deleteTempFiles();
 		deleteFile(commandFileName);
-		
-		alreadyExecuted = false;
 	}
 
 	/**
