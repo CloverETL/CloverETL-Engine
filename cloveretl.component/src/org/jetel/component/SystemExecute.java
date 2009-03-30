@@ -48,6 +48,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -517,8 +518,8 @@ public class SystemExecute extends Node{
 		}
 		//prepare output file
 		if (getOutPorts().size()==0 && outputFileName!=null){
-			File outFile= new File(outputFileName);
 			try{
+				File outFile = new File(FileUtils.getFile(getGraph().getProjectURL(), outputFileName));
 				outFile.createNewFile();
 				this.outputFile = new FileWriter(outFile,append);
 			}catch(IOException ex){
