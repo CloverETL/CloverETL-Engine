@@ -20,6 +20,7 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
 import org.jetel.data.DataRecord;
@@ -29,6 +30,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
+import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
@@ -142,30 +144,48 @@ public class Trash extends Node {
 
 	@Override
 	public Result execute() throws Exception {
+		if (writer != null) {
+			return executeWithWriter();
+		} else {
+			return executeWithoutWriter();
+		}
+	}
+
+	private Result executeWithWriter() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
 //		int count = 0;
-		while (record != null && runIt) {
-			record = inPort.readRecord(record);
-			if (writer != null && record != null) {
-		        writer.write(record);
+		while ((record = inPort.readRecord(record)) != null && runIt) {
+			writer.write(record);
 //				if (debugFilename == null) {
 //					if (count >= TextTableFormatter.MAX_ROW_ANALYZED)
 //						formatter.flush(); // if we debug into stdout
 //				}
 //				count++;
-			}
 			SynchronizeUtils.cloverYield();
 		}
-		if (writer != null){
-			writer.finish();
-		}else if (debugFilename != null && debugPrint){
+		writer.finish();
+		if (debugFilename != null && debugPrint){
 			formatter.finish();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
-
+	
+	private Result executeWithoutWriter() throws Exception {
+		InputPortDirect inPort = getInputPortDirect(READ_FROM_PORT);
+		ByteBuffer recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		
+		while (inPort.readRecordDirect(recordBuffer) && runIt) {
+			SynchronizeUtils.cloverYield();
+		}
+		
+		if (debugFilename != null && debugPrint){
+			formatter.finish();
+		}
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#free()
