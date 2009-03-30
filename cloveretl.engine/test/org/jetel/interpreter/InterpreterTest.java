@@ -2949,6 +2949,47 @@ public class InterpreterTest extends CloverTestCase {
 	    }
 	}
     
+    public void test_bitFunctions(){
+		System.out.println("\nBuild-in bits functions test:");
+		String expStr = "int number1=0; int number2; number2=bit_set(number2,7,true); \n" +
+						"print_err(bit_set(number1,4,true)); print_err(bit_is_set(number2,7));\n"+
+						"print_err(bit_xor(0x07,0x070)); print_err(bit_invert(0x0000)); \n";
+	      print_code(expStr);
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
+		      CLVFStart parseTree = parser.Start();
+
+		      if (parser.getParseExceptions().size()>0){
+		    	  //report error
+		    	  for(Iterator it=parser.getParseExceptions().iterator();it.hasNext();){
+			    	  System.out.println(it.next());
+			      }
+		    	  throw new RuntimeException("Parse exception");
+		      }
+
+
+ 		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+		      
+		      //assertEquals("pop",10,executor.getGlobalVariable(parser.getGlobalVariableSlot("pop1")).getTLValue().getNumeric().getInt());
+		      //assertEquals("poll",1,executor.getGlobalVariable(parser.getGlobalVariableSlot("poll1")).getTLValue().getNumeric().getInt());
+		      //assertEquals("isNull",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("isNull")).getTLValue()==TLBooleanValue.TRUE);
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception",e);
+	    }
+	}
+    
     public void print_code(String text){
         String[] lines=text.split("\n");
         System.out.println("\t:         1         2         3         4         5         ");
