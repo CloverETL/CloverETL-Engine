@@ -21,6 +21,11 @@
 			<value>e</value>
 			<value>random</value>
 			<value>abs</value>
+			<value>bit_and</value>
+			<value>bit_or</value>
+			<value>bit_xor</value>
+			<value>bit_set</value>
+			<value>bit_is_set</value>
 		</parameter>
 	</extension>
 
