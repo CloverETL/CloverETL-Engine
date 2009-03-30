@@ -116,6 +116,8 @@ public class DataParser implements Parser {
 
 	private int bytesProcessed;
 	
+	private DataFieldMetadata[] metadataFields;
+	
 	public DataParser() {
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
 		reader = null;
@@ -232,6 +234,8 @@ public class DataParser implements Parser {
 				fieldLengths[i] = metadata.getField(i).getSize();
 			}
 		}
+		
+		metadataFields = metadata.getFields();
 	}
 
 	/* (non-Javadoc)
@@ -340,13 +344,15 @@ public class DataParser implements Parser {
 		recordCounter++;
 		recordBuffer.clear();
 		for (fieldCounter = 0; fieldCounter < numFields; fieldCounter++) {
+			final DataFieldMetadata metadataField = metadataFields[fieldCounter];
+			
 			// skip all fields that are internally filled 
 			if (isAutoFilling[fieldCounter]) {
 				continue;
 			}
 			skipLBlanks = isSkipLeadingBlanks[fieldCounter];
 			skipTBlanks = isSkipTrailingBlanks[fieldCounter];
-			if (metadata.getField(fieldCounter).isDelimited()) { //delimited data field
+			if (metadataField.isDelimited()) { //delimited data field
 				// field
 				// read data till we reach field delimiter, record delimiter,
 				// end of file or exceed buffer size
@@ -368,7 +374,7 @@ public class DataParser implements Parser {
                         }
 
 						//quotedStrings
-						type = metadata.getField(fieldCounter).getType();
+						type = metadataField.getType();
 						if (quotedStrings && type != DataFieldMetadata.BYTE_FIELD
 								&& type != DataFieldMetadata.BYTE_FIELD_COMPRESSED){
 							if (fieldBuffer.length() == 0 && !inQuote) {
@@ -419,7 +425,7 @@ public class DataParser implements Parser {
 						}
 					}
 				} catch (Exception ex) {
-					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, fieldCounter), ex);
+					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, metadataField), ex);
 				}
 			} else { //fixlen data field
 				mark = 0;
@@ -586,13 +592,15 @@ public class DataParser implements Parser {
 	 * @return error message
 	 * @since September 19, 2002
 	 */
-	private String getErrorMessage(String exceptionMessage, CharSequence value, int fieldNo) {
+	private String getErrorMessage(String exceptionMessage, CharSequence value, DataFieldMetadata metadataField) {
 		StringBuffer message = new StringBuffer();
 		message.append(exceptionMessage);
 		message.append(" when parsing record #");
 		message.append(recordCounter);
-		message.append(" field ");
-		message.append(metadata.getField(fieldNo).getName());
+		if (metadataField != null) {
+			message.append(" field ");
+			message.append(metadataField.getName());
+		}
 		if (value != null) {
 			message.append(" value \"").append(value).append("\"");
 		}
@@ -620,7 +628,7 @@ public class DataParser implements Parser {
 	 * @param fieldNum
 	 * @param data
 	 */
-	private void populateField(DataRecord record, int fieldNum,	StringBuilder data) {
+	private final void populateField(DataRecord record, int fieldNum, StringBuilder data) {
 		try {
 			record.getField(fieldNum).fromString(data);
 		} catch(BadDataFormatException bdfe) {
@@ -634,7 +642,7 @@ public class DataParser implements Parser {
                 throw bdfe;
             }
 		} catch(Exception ex) {
-			throw new RuntimeException(getErrorMessage(ex.getMessage(), null, fieldNum));
+			throw new RuntimeException(getErrorMessage(ex.getMessage(), null, metadataFields[fieldNum]));
 		}
 	}
 
@@ -737,7 +745,7 @@ public class DataParser implements Parser {
 				}
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(getErrorMessage(e.getMessage(), null, -1));
+			throw new RuntimeException(getErrorMessage(e.getMessage(), null, null));
 		}
 		//end of file
 		return false;
@@ -759,7 +767,7 @@ public class DataParser implements Parser {
 				count++;
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(getErrorMessage(e.getMessage(), null, -1));
+			throw new RuntimeException(getErrorMessage(e.getMessage(), null, null));
 		}
 		//end of file
 		return false;

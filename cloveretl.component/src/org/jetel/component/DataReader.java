@@ -171,6 +171,7 @@ public class DataReader extends Node {
 
 	@Override
 	public Result execute() throws Exception {
+		OutputPort outPort = getOutputPort(OUTPUT_PORT);
 		boolean logging = false;
 		if (getOutPorts().size() == 2) {
 			if (checkLogPortMetadata()) {
@@ -196,7 +197,7 @@ public class DataReader extends Node {
 					if ((reader.getNext(record)) == null) {
 						break;
 					}
-					writeRecord(OUTPUT_PORT, record);
+					outPort.writeRecord(record);
 				} catch (BadDataFormatException bdfe) {
 					if (policyType == PolicyType.STRICT) {
 						throw bdfe;
