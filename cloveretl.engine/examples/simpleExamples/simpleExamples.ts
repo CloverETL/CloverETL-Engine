@@ -431,5 +431,13 @@
 	
 </FunctionalTest>
 
+<FunctionalTest ident="XMLExtractXsd" graphFile="graph/graphXMLExtractXsd.grf">
+	 <FlatFile outputFile="data-out/persons.txt" supposedFile="supposed-out//persons.XMLExtractXsd.txt"/>
+	 <FlatFile outputFile="data-out/items.txt" supposedFile="supposed-out//items.XMLExtractXsd.txt"/>
+     
+		<DeleteFile file="data-out/persons.txt"/>
+		<DeleteFile file="data-out/items.txt"/>
+	
+</FunctionalTest>
 
 </TestScenario>
