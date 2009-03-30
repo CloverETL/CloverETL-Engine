@@ -80,19 +80,29 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
                 }
 				break;
             case HEX_LITERAL:
+            	 if (valueImage.endsWith(LONG_DISTINCTER_UPPERCASE) || 
+                         valueImage.endsWith(LONG_DISTINCTER_LOWERCASE)) {
+                     value=new TLNumericValue(TLValueType.LONG,new CloverLong(Long.parseLong(valueImage.substring(2,valueImage.length()-1),16)));
+                 } else {
                 // try to parse as INT first, if error then LONG
                 try{
                     value=new TLNumericValue(TLValueType.INTEGER,new CloverInteger(  Integer.parseInt(valueImage.substring(2),16)));
                 }catch(NumberFormatException ex){
                     value=new TLNumericValue(TLValueType.LONG,new CloverLong( Long.parseLong(valueImage.substring(2),16)));
                 }
+                 }
             break;
             case OCTAL_LITERAL:
+            	if (valueImage.endsWith(LONG_DISTINCTER_UPPERCASE) || 
+                        valueImage.endsWith(LONG_DISTINCTER_LOWERCASE)) {
+                    value=new TLNumericValue(TLValueType.LONG,new CloverLong(Long.parseLong(valueImage.substring(0,valueImage.length()-1),8)));
+                } else {
                 // try to parse as INT first, if error then LONG
                 try{
-                    value=new TLNumericValue(TLValueType.INTEGER,new CloverInteger(Integer.parseInt(valueImage.substring(1),8)));
+                    value=new TLNumericValue(TLValueType.INTEGER,new CloverInteger(Integer.parseInt(valueImage,8)));
                 }catch(NumberFormatException ex){
-                    value=new TLNumericValue(TLValueType.LONG,new CloverLong( Long.parseLong(valueImage.substring(1),8)));
+                    value=new TLNumericValue(TLValueType.LONG,new CloverLong( Long.parseLong(valueImage,8)));
+                }
                 }
             break; 
 			case DATE_LITERAL:
