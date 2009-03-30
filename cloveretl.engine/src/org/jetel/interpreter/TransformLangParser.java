@@ -127,7 +127,10 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       }
 
       public final DataRecordMetadata getInRecordMeta(){
+    	  if (inRecordsMetadata.length>0)
              return inRecordsMetadata[0];
+    	  else 
+    		  return null;
       }
 
       public final int getInRecordNum(String name){
