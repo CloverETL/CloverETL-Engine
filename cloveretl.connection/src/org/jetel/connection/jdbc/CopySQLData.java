@@ -267,8 +267,16 @@ public abstract class CopySQLData {
 		
 		CopySQLData[] transMap = new CopySQLData[fieldTypes.size()];
 		int i = 0;
+		Integer type;
 		for (ListIterator iterator = fieldTypes.listIterator(); iterator.hasNext(); ) {
-			transMap[i] = createCopyObject(((Integer) iterator.next()).shortValue(),
+			type = (Integer) iterator.next();
+			/*
+			 * pnajvar
+			 * If target Clover type is string, we'll always use CopyString
+			 * else we use whatever is appropriate
+			 */
+			transMap[i] = createCopyObject(
+					(record.getField(i).getMetadata().getType() == DataFieldMetadata.STRING_FIELD) ? Types.VARCHAR : type.shortValue(),
 					record.getField(i).getMetadata(),
 					record, i, i);
 			i++;
@@ -297,13 +305,16 @@ public abstract class CopySQLData {
 		}
 		CopySQLData[] transMap = new CopySQLData[fieldTypes.size()];
 		int fieldIndex;
+		Integer type;
 		for (int i=0; i < keyFields.length; i++) {
 			fieldIndex = record.getMetadata().getFieldPosition(keyFields[i]);
 			if (fieldIndex == -1) {
 				throw new RuntimeException("Field " + StringUtils.quote(keyFields[i]) + " doesn't exist in metadata " +
 						StringUtils.quote(record.getMetadata().getName()));
 			}
-			transMap[i] = createCopyObject(((Integer) fieldTypes.get(i)).shortValue(),
+			type = (Integer) fieldTypes.get(i);
+			transMap[i] = createCopyObject(
+					(record.getField(fieldIndex).getMetadata().getType() == DataFieldMetadata.STRING_FIELD) ? Types.VARCHAR : type.shortValue(),
 					record.getField(fieldIndex).getMetadata(),
 					record, i, metadata.getFieldPosition(keyFields[i]));
 		}
