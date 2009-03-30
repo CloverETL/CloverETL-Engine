@@ -25,7 +25,10 @@
 			<value>bit_or</value>
 			<value>bit_xor</value>
 			<value>bit_set</value>
+			<value>bit_invert</value>
 			<value>bit_is_set</value>
+			<value>bit_lshift</value>
+			<value>bit_rshift</value>
 		</parameter>
 	</extension>
 
