@@ -60,7 +60,8 @@ public class ResetTest extends TestCase{
 					&& !pathname.getName().equals("graphSystemExecute.grf") // ok, wrong path
 					&& !pathname.getName().equals("graphAspellLookup.grf") // ok, use commercial components
 					&& !pathname.getName().equals("graphPersistentLookup.grf") // ok, use commercial components
-					&& !pathname.getName().equals("graphPersistentLookup2.grf"); // ok, use commercial components
+					&& !pathname.getName().equals("graphPersistentLookup2.grf") // ok, use commercial components
+					&& !pathname.getName().equals("graphSystemExecuteWin.grf"); // ok, graph for Windows
 			}
 		});
 		
