@@ -53,7 +53,10 @@ public class MathLib extends TLFunctionLibrary {
         BIT_OR("bit_or"),
         BIT_XOR("bit_xor"),
         BIT_SET("bit_set"),
-        BIT_IS_SET("bit_is_set");
+        BIT_IS_SET("bit_is_set"),
+        BIT_LSHIFT("bit_lshift"),
+        BIT_RSHIFT("bit_rshift"),
+        BIT_INVERT("bit_invert");
         
         public String name;
         
@@ -103,6 +106,9 @@ public class MathLib extends TLFunctionLibrary {
         case BIT_XOR: return new BitXorFunction();
         case BIT_SET: return new BitSetFunction();
         case BIT_IS_SET: return new BitIsSetFunction();
+        case BIT_LSHIFT: return new BitLShiftFunction();
+        case BIT_RSHIFT: return new BitRShiftFunction();
+        case BIT_INVERT: return new BitInvertFunction();
         default: return null;
         }
     }
@@ -490,5 +496,95 @@ public class MathLib extends TLFunctionLibrary {
             return TLContext.createLongContext();
         }
     }         
+    
+ // BIT_LSHIFT
+    class BitLShiftFunction extends TLFunctionPrototype { 
+        public BitLShiftFunction() {
+            super("math", "bit_lshift", "Shifts 1st argument by 2nd argument bits to the left", new TLValueType[] { TLValueType.NUMBER, TLValueType.NUMBER}, TLValueType.NUMBER);
+        }
+
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            if (params[0].type.isNumeric() && params[1].type.isNumeric() ) {               
+                try {
+                	TLNumericValue retVal=(TLNumericValue)context.getContext();
+                	 
+               		retVal.setValue(((TLNumericValue)params[0]).getLong() >> ((TLNumericValue)params[1]).getLong()); 
+                	return retVal;
+                
+                	
+                } catch (Exception ex) {
+                    throw new TransformLangExecutorRuntimeException(
+                            "Error when executing BIT_LSHIFT function", ex);
+                }
+            }
+            throw new TransformLangExecutorRuntimeException(null,
+                    params, "bit_lshift - wrong type of literal(s)");
+        }
+        @Override
+        public TLContext createContext() {
+            return TLContext.createLongContext();
+        }
+    }       
+    
+ // BIT_RSHIFT
+    class BitRShiftFunction extends TLFunctionPrototype { 
+        public BitRShiftFunction() {
+            super("math", "bit_rshift", "Shifts 1st argument by 2nd argument bits to the right", new TLValueType[] { TLValueType.NUMBER, TLValueType.NUMBER}, TLValueType.NUMBER);
+        }
+
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            if (params[0].type.isNumeric() && params[1].type.isNumeric() ) {               
+                try {
+                	TLNumericValue retVal=(TLNumericValue)context.getContext();
+                	 
+               		retVal.setValue(((TLNumericValue)params[0]).getLong() << ((TLNumericValue)params[1]).getLong()); 
+                	return retVal;
+                
+                	
+                } catch (Exception ex) {
+                    throw new TransformLangExecutorRuntimeException(
+                            "Error when executing BIT_RSHIFT function", ex);
+                }
+            }
+            throw new TransformLangExecutorRuntimeException(null,
+                    params, "bit_rshift - wrong type of literal(s)");
+        }
+        @Override
+        public TLContext createContext() {
+            return TLContext.createLongContext();
+        }
+    }    
+    
+ // BIT_INVERT
+    class BitInvertFunction extends TLFunctionPrototype { 
+        public BitInvertFunction() {
+            super("math", "bit_invert", "Inverts all bits in argument", new TLValueType[] { TLValueType.NUMBER}, TLValueType.NUMBER);
+        }
+
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            if (params[0].type.isNumeric() ) {               
+                try {
+                	TLNumericValue retVal=(TLNumericValue)context.getContext();
+                	 
+               		retVal.setValue(~((TLNumericValue)params[0]).getLong()); 
+                	return retVal;
+                
+                	
+                } catch (Exception ex) {
+                    throw new TransformLangExecutorRuntimeException(
+                            "Error when executing BIT_INVERT function", ex);
+                }
+            }
+            throw new TransformLangExecutorRuntimeException(null,
+                    params, "bit_invert - wrong type of literal(s)");
+        }
+        @Override
+        public TLContext createContext() {
+            return TLContext.createLongContext();
+        }
+    }    
     
 }
