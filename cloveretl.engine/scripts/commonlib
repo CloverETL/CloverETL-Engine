@@ -5,6 +5,7 @@
 #split command-line arguments to two sets - clover and jvm arguments
 clover_exec_args=
 java_exec_args=
+user_classpath=
 while [ "$*" != "" ] 
 do
 	if [ "$1" = "-" ] 
@@ -17,7 +18,13 @@ do
 	then
 		clover_exec_args="$clover_exec_args \"$1\""
 	else
-		java_exec_args="$java_exec_args \"$1\""
+		if [ "$1" = "-classpath" ] 
+		then
+			shift
+			user_classpath="$1"
+		else 
+			java_exec_args="$java_exec_args \"$1\""
+		fi
 	fi
 	shift
 done
