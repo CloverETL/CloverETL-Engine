@@ -348,8 +348,8 @@ public class StringDataField extends DataField implements CharSequence{
 	 */
 	public void fromString(CharSequence seq) {
 		if (!StringUtils.isEmpty(seq) && stringFormat != null && !stringFormat.matches(seq.toString()))
-			throw new BadDataFormatException(getMetadata().getName() + " (" + DataFieldMetadata.type2Str(getType()) 
-					+ ") cannot be set to " + StringUtils.quote(seq) + " - doesn't match with "+stringFormat.getPattern(), seq.toString());
+			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
+					getMetadata().getName(),DataFieldMetadata.type2Str(getType()),seq,stringFormat.getPattern()), seq.toString());
 		setValue(seq);
 	}
 

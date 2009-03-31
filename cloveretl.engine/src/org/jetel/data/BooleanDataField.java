@@ -263,8 +263,9 @@ public class BooleanDataField extends DataField implements Comparable{
 			value = false;
 			setNull(false);
 		}else{
-			throw new BadDataFormatException(getMetadata().getName() + " (" + DataFieldMetadata.type2Str(getType()) 
-					+ ") cannot be set to " + StringUtils.quote(seq), seq.toString());
+			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - - doesn't match defined True/False format \"%s\" / \"%s\"",
+					getMetadata().getName(),DataFieldMetadata.type2Str(getType()),seq,trueStringFormat.getPattern().toString(),falseStringFormat.getPattern().toString()),
+					seq.toString());
 		}
 	}
 

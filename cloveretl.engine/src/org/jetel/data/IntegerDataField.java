@@ -441,8 +441,8 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
             
             setNull(this.value == Integer.MIN_VALUE);
 		} catch (Exception ex) {
-			throw new BadDataFormatException(getMetadata().getName() + " (" + DataFieldMetadata.type2Str(getType()) 
-					+ ") cannot be set to " + StringUtils.quote(seq), seq.toString());
+			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\"",
+					getMetadata().getName(),DataFieldMetadata.type2Str(getType()),seq),seq.toString());
 		}
 	}
 
