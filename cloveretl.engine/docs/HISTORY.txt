@@ -3,11 +3,37 @@
 *******************************************************************************
 REL 2-7-0
 ---------
+Features:
 + new CTL functions
 	- edit_distance
 	- metaphone
 	- NYSIIS
-+  DBExecute can read statements from input port
+	- random_date
+	- random_string
++ DBExecute can read statements from input port
++ str2num ctl function has new pattern and locale parameters
++ CloverDataReader can read multiple files
++ Better checkConfig for data record metadata
++ BadDataFormatException returns also wrong value for parsers
++ XMLExtract has better error handling
++ DataGenerator can use CTL function, etc.
++ Skip and Number Records is implemented also for every source
++ autofilling has new attributes row_timestamp and reader_timestamp
++ XMLExtract has new numRecords and skipRecords in the mapping attribute
++ Autofilling for DBInputTable and XMLExtract
++ xmlFeatures attribute for XMLExtract and XPathReader components
++ tar protocol
++ readers supports wildcards in archives
+
+Fixed:
++ Input stream releasing after reading
++ MultiFileReader created empty "unassigned" file
++ DDL to Clover metadata didn't set the date/datetime format
++ data record wasn't valid for autofilling fields only
++ hex2byte CTL function sometimes returned wrong tail
++ wrong formatting for trash component
++ slow test for archives
++ twice footer created by StructuredDataWriter
 
 REL 2-6-3
 ---------
