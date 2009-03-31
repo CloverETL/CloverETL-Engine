@@ -166,9 +166,6 @@ public class Trash extends Node {
 			SynchronizeUtils.cloverYield();
 		}
 		writer.finish();
-		if (debugFilename != null && debugPrint){
-			formatter.finish();
-		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
