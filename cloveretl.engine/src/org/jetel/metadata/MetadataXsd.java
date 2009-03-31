@@ -53,8 +53,8 @@ public class MetadataXsd extends MXAbstract {
 	 */
 	public DataRecordMetadata createDataRecordMetadata() throws Exception {
 		Node rootElement = doc.getDocumentElement();
-		Node recordNode = getNode(rootElement, XSD_ELEMENT);
-		if (recordNode == null) throw new Exception("Element '" + XSD_ELEMENT + "' not found.");
+		Node recordNode = getNode(rootElement, NAMESPACES, XSD_ELEMENT);
+		if (recordNode == null) throw new Exception("Element '[xs:|xsd:]" + XSD_ELEMENT + "' not found.");
 		String recordName = getAttributeValue(recordNode, NAME);
 		if (recordName == null) throw new Exception("Record name attribute not found.");
 		
@@ -77,10 +77,10 @@ public class MetadataXsd extends MXAbstract {
 	 * @param node
 	 */
 	private void createFields(DataRecordMetadata metadata, Node node) {
-		Node complexNode = getNode(node, XSD_COMPLEX_TYPE);
+		Node complexNode = getNode(node, NAMESPACES, XSD_COMPLEX_TYPE);
 		if (complexNode == null) return;
 		
-		Node seqFields = getNode(complexNode, XSD_SEQUENCE);
+		Node seqFields = getNode(complexNode, NAMESPACES, XSD_SEQUENCE);
 		if (seqFields == null) return;
 		NodeList list = seqFields.getChildNodes();
 		
@@ -90,7 +90,7 @@ public class MetadataXsd extends MXAbstract {
 		String minOccurs;
 		for (int i=0; i<list.getLength(); i++) {
 			field = list.item(i);
-			if (!field.getNodeName().equals(XSD_ELEMENT)) continue;
+			if (!equalsName(field.getNodeName(), XSD_ELEMENT)) continue;
 			name = getAttributeValue(field, NAME);
 			if (name == null) continue;
 			type = getAttributeValue(field, TYPE);
@@ -128,10 +128,27 @@ public class MetadataXsd extends MXAbstract {
 		String nameTypeCur;	
 		for (int i=0; i<list.getLength(); i++) {
 			child = list.item(i);
-			if (!child.getNodeName().equals(XSD_SIMPLE_TYPE)) continue;
+			if (!equalsName(child.getNodeName(), XSD_SIMPLE_TYPE)) continue;
 			if ((nameTypeCur=getAttributeValue(child, NAME)) != null && nameTypeCur.equals(nameType)) return child;
 		}
 		return null;
+	}
+	
+	/**
+	 * If names for namespaces are the same, the method returns true.
+	 * @param name1
+	 * @param name2
+	 * @return
+	 */
+	private boolean equalsName(String name1, String name2) {
+		boolean found = false;
+		for (String nameSpace: NAMESPACES) {
+			if (name1.equals(nameSpace + NAMESPACE_DELIMITER + name2)) {
+				found = true; 
+				break;
+			}
+		}
+		return found;
 	}
 	
 	/**
@@ -142,35 +159,35 @@ public class MetadataXsd extends MXAbstract {
 	 */
 	private void setField(DataFieldMetadata dataFieldMetadata, Node node, String sType) {
 		Node restParent;
-		restParent = getNode(node, XSD_RESTRICTION);
+		restParent = getNode(node, NAMESPACES, XSD_RESTRICTION);
 		String sValue = getAttributeValue(restParent, BASE);
 		char type = namesPrimitive.get(sValue != null ? sValue : sType);
 		
 		Node rest;
 		switch (type) {
 		case DataFieldMetadata.BYTE_FIELD:
-			if ((rest = getNode(restParent, XSD_LENGHT)) != null) {
+			if ((rest = getNode(restParent, NAMESPACES, XSD_LENGHT)) != null) {
 				dataFieldMetadata.setSize(Short.parseShort(getAttributeValue(rest, VALUE)));
 			}
 			break;
 		case DataFieldMetadata.DECIMAL_FIELD:
-			if ((rest = getNode(restParent, XSD_TOTAL_DIGITS)) == null) {
+			if ((rest = getNode(restParent, NAMESPACES, XSD_TOTAL_DIGITS)) == null) {
 				type = DataFieldMetadata.NUMERIC_FIELD;
 			} else {
 				dataFieldMetadata.setProperty(LENGTH, getAttributeValue(rest, VALUE));
 			}
-			if ((rest = getNode(restParent, XSD_FRACTION_DIGITS)) != null) {
+			if ((rest = getNode(restParent, NAMESPACES, XSD_FRACTION_DIGITS)) != null) {
 				dataFieldMetadata.setProperty(SCALE, getAttributeValue(rest, VALUE));
 			}
-			if ((rest = getNode(restParent, XSD_LENGHT)) != null) {
+			if ((rest = getNode(restParent, NAMESPACES, XSD_LENGHT)) != null) {
 				dataFieldMetadata.setSize(Short.parseShort(getAttributeValue(rest, VALUE)));
 			}
 			break;
 		case DataFieldMetadata.STRING_FIELD:
-			if ((rest = getNode(restParent, XSD_LENGHT)) != null) {
+			if ((rest = getNode(restParent, NAMESPACES, XSD_LENGHT)) != null) {
 				dataFieldMetadata.setSize(Short.parseShort(getAttributeValue(rest, VALUE)));
 			}
-			if ((rest = getNode(restParent, XSD_PATTERN)) != null) {
+			if ((rest = getNode(restParent, NAMESPACES, XSD_PATTERN)) != null) {
 				dataFieldMetadata.setFormatStr(getAttributeValue(rest, VALUE));
 			}
 			break;
@@ -202,14 +219,14 @@ public class MetadataXsd extends MXAbstract {
 	 * @param nodeName
 	 * @return
 	 */
-	private Node getNode(Node node, String nodeName) {
+	private Node getNode(Node node, String nameSpaces[], String nodeName) {
 		if (node == null) return null;
-		if (node.getNodeName().equals(nodeName)) return node;
+		if (equalsName(node.getNodeName(), nodeName)) return node;
 		NodeList list = node.getChildNodes();
 		if (list == null) return null;
 		Node tmpNode;
 		for (int i=0; i<list.getLength(); i++) {
-			tmpNode = getNode(list.item(i), nodeName);
+			tmpNode = getNode(list.item(i), nameSpaces, nodeName);
 			if (tmpNode != null) return tmpNode;
 		}
 		return null;
