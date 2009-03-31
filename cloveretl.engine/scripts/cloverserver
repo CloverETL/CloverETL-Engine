@@ -29,6 +29,6 @@ if [ -z "$CLOVER_HOME" -o ! -d "$CLOVER_HOME" ] ; then
 fi
 
 #split command-line arguments to two sets - clover and jvm arguments
-. ${CLOVER_HOME}/commonlib $@
+. ${CLOVER_HOME}/bin/commonlib $@
 
-${CLOVER_HOME}/bin/clover -noJMX -config ${CLOVER_HOME}/bin/serverProperties $clover_exec_args - -server -Xmx512M -XX:+UseParallelGC $java_exec_args
+${CLOVER_HOME}/bin/clover -noJMX -config ${CLOVER_HOME}/bin/serverProperties $clover_exec_args - -server -Xmx512M -XX:+UseParallelGC -classpath "$user_classpath" $java_exec_args
