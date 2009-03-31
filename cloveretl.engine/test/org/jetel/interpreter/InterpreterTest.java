@@ -2952,8 +2952,16 @@ public class InterpreterTest extends CloverTestCase {
     public void test_bitFunctions(){
 		System.out.println("\nBuild-in bits functions test:");
 		String expStr = "int number1=0; int number2; number2=bit_set(number2,7,true); \n" +
-						"print_err(bit_set(number1,4,true)); print_err(bit_is_set(number2,7));\n"+
-						"print_err(bit_xor(0x07,0x070)); print_err(bit_invert(0x0000)); \n";
+						"int number3=bit_set(number1,4,true); print_err(number3); \n" +
+						"int number4=bit_set(31,4,false); print_err(number4); \n" +
+						"boolean isN2 = bit_is_set(number2,7); print_err(isN2);\n" +
+						"int and1 = bit_and(0x07,0x070); print_err(and1);\n" +
+						"int xor1 = bit_xor(0x07,0x070); print_err(xor1);\n" +
+						"int or1 = bit_or(0x07,0x070); print_err(or1);\n" +
+						"int and2 = bit_and(127,87); print_err(and2);\n" +
+						"int xor2 = bit_xor(127,87); print_err(xor2);\n" +
+						"int or2 = bit_or(127,87); print_err(or2);\n" +
+						" print_err(bit_invert(0x0000)); \n";
 	      print_code(expStr);
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
@@ -2979,9 +2987,16 @@ public class InterpreterTest extends CloverTestCase {
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 		      
-		      //assertEquals("pop",10,executor.getGlobalVariable(parser.getGlobalVariableSlot("pop1")).getTLValue().getNumeric().getInt());
-		      //assertEquals("poll",1,executor.getGlobalVariable(parser.getGlobalVariableSlot("poll1")).getTLValue().getNumeric().getInt());
-		      //assertEquals("isNull",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("isNull")).getTLValue()==TLBooleanValue.TRUE);
+		      assertEquals("number3",16,executor.getGlobalVariable(parser.getGlobalVariableSlot("number3")).getTLValue().getNumeric().getInt());
+		      assertEquals("number2",128,executor.getGlobalVariable(parser.getGlobalVariableSlot("number2")).getTLValue().getNumeric().getInt());
+		      assertEquals("number4",15,executor.getGlobalVariable(parser.getGlobalVariableSlot("number4")).getTLValue().getNumeric().getInt());
+		      assertTrue("isN2", (Boolean)executor.getGlobalVariable(parser.getGlobalVariableSlot("isN2")).getTLValue().getValue());
+		      assertEquals("and1",0x07&0x070,executor.getGlobalVariable(parser.getGlobalVariableSlot("and1")).getTLValue().getNumeric().getInt());
+		      assertEquals("and2",127&87,executor.getGlobalVariable(parser.getGlobalVariableSlot("and2")).getTLValue().getNumeric().getInt());
+		      assertEquals("xor1",0x07^0x070,executor.getGlobalVariable(parser.getGlobalVariableSlot("xor1")).getTLValue().getNumeric().getInt());
+		      assertEquals("xor2",127^87,executor.getGlobalVariable(parser.getGlobalVariableSlot("xor2")).getTLValue().getNumeric().getInt());
+		      assertEquals("or1",0x07|0x070,executor.getGlobalVariable(parser.getGlobalVariableSlot("or1")).getTLValue().getNumeric().getInt());
+		      assertEquals("or2",127|87,executor.getGlobalVariable(parser.getGlobalVariableSlot("or2")).getTLValue().getNumeric().getInt());
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
