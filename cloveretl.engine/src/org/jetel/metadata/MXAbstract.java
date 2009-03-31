@@ -4,6 +4,10 @@ import java.util.HashMap;
 
 abstract public class MXAbstract {
 
+	// namespaces
+	protected static final String[] NAMESPACES = new String[] {"xsd", "xs"};
+	protected static final String NAMESPACE_DELIMITER = ":";
+
 	// xsd
 	protected static final String NAMESPACE = "";
 	protected static final String XMLSCHEMA = "http://www.w3.org/2001/XMLSchema";
@@ -11,22 +15,22 @@ abstract public class MXAbstract {
 	protected static final String XMLNS = "xmlns";
 
 	// xsd elements
-	protected static final String XSD_SCHEMA = "xsd:schema";
-	protected static final String XSD_ELEMENT = "xsd:element";
-	protected static final String XSD_COMPLEX_TYPE = "xsd:complexType";
-	protected static final String XSD_SEQUENCE = "xsd:sequence";
-	protected static final String XSD_SIMPLE_TYPE = "xsd:simpleType";
-	protected static final String XSD_RESTRICTION = "xsd:restriction";
+	protected static final String XSD_SCHEMA = "schema";
+	protected static final String XSD_ELEMENT = "element";
+	protected static final String XSD_COMPLEX_TYPE = "complexType";
+	protected static final String XSD_SEQUENCE = "sequence";
+	protected static final String XSD_SIMPLE_TYPE = "simpleType";
+	protected static final String XSD_RESTRICTION = "restriction";
 	
 	// xsd restrictions
-	protected static final String XSD_LENGHT = "xsd:length";
-	protected static final String XSD_PATTERN = "xsd:pattern";
-	protected static final String XSD_FRACTION_DIGITS = "xsd:fractionDigits";
-	protected static final String XSD_TOTAL_DIGITS = "xsd:totalDigits";
+	protected static final String XSD_LENGHT = "length";
+	protected static final String XSD_PATTERN = "pattern";
+	protected static final String XSD_FRACTION_DIGITS = "fractionDigits";
+	protected static final String XSD_TOTAL_DIGITS = "totalDigits";
 	
 	// xsd base data types
-	protected static final String XSD_DECIMAL = "xsd:decimal";
-	protected static final String XSD_BASE64BINARY = "xsd:base64Binary";
+	protected static final String XSD_DECIMAL = "decimal";
+	protected static final String XSD_BASE64BINARY = "base64Binary";
 
 	// xsd attributes
 	protected static final String NAME = "name";
@@ -77,18 +81,20 @@ abstract public class MXAbstract {
 
 		primitiveNames.put(Character.valueOf(DataFieldMetadata.BYTE_FIELD), XSD_BASE64BINARY);
 		primitiveNames.put(Character.valueOf(DataFieldMetadata.BYTE_FIELD_COMPRESSED), XSD_BASE64BINARY);
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.DATE_FIELD), "xsd:date");
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.DATETIME_FIELD), "xsd:dateTime");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.DATE_FIELD), "date");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.DATETIME_FIELD), "dateTime");
 		primitiveNames.put(Character.valueOf(DataFieldMetadata.DECIMAL_FIELD), XSD_DECIMAL);
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.INTEGER_FIELD), "xsd:int");
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.LONG_FIELD), "xsd:long");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.INTEGER_FIELD), "int");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.LONG_FIELD), "long");
 		primitiveNames.put(Character.valueOf(DataFieldMetadata.NUMERIC_FIELD), XSD_DECIMAL);
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.STRING_FIELD), "xsd:string");
-		primitiveNames.put(Character.valueOf(DataFieldMetadata.BOOLEAN_FIELD), "xsd:boolean");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.STRING_FIELD), "string");
+		primitiveNames.put(Character.valueOf(DataFieldMetadata.BOOLEAN_FIELD), "boolean");
 		
 		for (Character ch: primitiveNames.keySet()) {
 			if (ch == DataFieldMetadata.BYTE_FIELD_COMPRESSED || ch == DataFieldMetadata.NUMERIC_FIELD) continue;
-			namesPrimitive.put(primitiveNames.get(ch), ch);
+			namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + primitiveNames.get(ch), ch);
+			namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + primitiveNames.get(ch), ch);
+			primitiveNames.put(ch, NAMESPACES[0] + NAMESPACE_DELIMITER + primitiveNames.get(ch));
 		}
 	}
 	

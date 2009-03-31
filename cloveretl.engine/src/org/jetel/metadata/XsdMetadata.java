@@ -21,7 +21,6 @@ package org.jetel.metadata;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -67,20 +66,20 @@ public class XsdMetadata extends MXAbstract {
 		}
 		DataFieldMetadata[] fields = metadata.getFields();
 		Element rootElement = doc.getDocumentElement();
-		Element recordElement = doc.createElement(XSD_ELEMENT);
+		Element recordElement = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_ELEMENT);
 		recordElement.setAttribute(NAME, metadata.getName());
 		recordElement.setAttribute(TYPE, metadata.getName() + "Type");
 		rootElement.appendChild(recordElement);
 
-		Element typeElement = doc.createElement(XSD_COMPLEX_TYPE);
+		Element typeElement = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_COMPLEX_TYPE);
 		typeElement.setAttribute(NAME, metadata.getName() + "Type");
 		rootElement.appendChild(typeElement);
 		
-		Element seqElement = doc.createElement(XSD_SEQUENCE);
+		Element seqElement = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_SEQUENCE);
 		typeElement.appendChild(seqElement);
 		for (int idx = 0; idx < fields.length; idx++) {
 			String typeName = getXsdType(doc, fields[idx]);
-			Element fieldElement = doc.createElement(XSD_ELEMENT);
+			Element fieldElement = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_ELEMENT);
 			fieldElement.setAttribute(NAME, fields[idx].getName());
 			fieldElement.setAttribute(TYPE, typeName);
 			fieldElement.setAttribute(MIN_OCCURS, fields[idx].isNullable() ? "0" : "1");
@@ -122,7 +121,7 @@ public class XsdMetadata extends MXAbstract {
 	 */
 	private static Document createXsdDocument() throws ParserConfigurationException {
 		Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-		Element preamble = doc.createElement(XSD_SCHEMA);
+		Element preamble = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_SCHEMA);
 		preamble.setAttribute(XMLNS_XSD, XMLSCHEMA);
 		if (NAMESPACE != null) {
 			//preamble.setAttribute("targetNamespace", NAMESPACE);
@@ -139,10 +138,10 @@ public class XsdMetadata extends MXAbstract {
 	 * @param typeName
 	 * @return
 	 */
-	private static Element getXsdType(Document doc, String typeName) {
+	private static Element getXsdType(Document doc, String nameSpace, String typeName) {
 		String[] searchTags = new String[]{XSD_SIMPLE_TYPE, XSD_COMPLEX_TYPE};
 		for (int tagIdx = 0; tagIdx < searchTags.length; tagIdx++) {
-			NodeList xsdTypes = doc.getDocumentElement().getElementsByTagName(searchTags[tagIdx]);
+			NodeList xsdTypes = doc.getDocumentElement().getElementsByTagName(nameSpace + NAMESPACE_DELIMITER + searchTags[tagIdx]);
 			for (int idx = 0; idx < xsdTypes.getLength(); idx++) {
 				Element xsdType = (Element)xsdTypes.item(idx);
 				if (typeName.equals(xsdType.getAttribute(NAME))) {
@@ -162,9 +161,13 @@ public class XsdMetadata extends MXAbstract {
 	 */
 	private static String getXsdType(Document doc, DataFieldMetadata field) {
 		String fieldTypeName = getFieldTypeName(field);
-		if (getXsdType(doc, fieldTypeName) == null) {
-			createXsdType(doc, field, fieldTypeName);
+		boolean found = false;
+		for (String nameSpace: NAMESPACES) {
+			if (getXsdType(doc, nameSpace, fieldTypeName) != null) {
+				found = true;
+			}
 		}
+		if (!found) createXsdType(doc, field, fieldTypeName);
 		return fieldTypeName;
 	}
 
@@ -202,11 +205,11 @@ public class XsdMetadata extends MXAbstract {
 	 */
 	private static void createXsdType(Document doc, DataFieldMetadata field, String fieldTypeName) {
 		// basic properties
-		Element typeElement = doc.createElement(XSD_SIMPLE_TYPE);
+		Element typeElement = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_SIMPLE_TYPE);
 		doc.getDocumentElement().appendChild(typeElement);
 		typeElement.setAttribute(NAME, fieldTypeName);
 
-		Element restr = doc.createElement(XSD_RESTRICTION);
+		Element restr = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_RESTRICTION);
 		typeElement.appendChild(restr);
 		restr.setAttribute(BASE, primitiveNames.get(Character.valueOf(field.getType())));
 		
@@ -214,34 +217,34 @@ public class XsdMetadata extends MXAbstract {
 		Element typeRestr;
 		switch (field.getType()) {
 		case DataFieldMetadata.BOOLEAN_FIELD:
-			typeRestr = doc.createElement(XSD_PATTERN);
+			typeRestr = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_PATTERN);
 			typeRestr.setAttribute(VALUE, "true|false");
 			restr.appendChild(typeRestr);
 			break;
 		case DataFieldMetadata.BYTE_FIELD:
 		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
 			if (field.getSize() > 0) {
-				typeRestr = doc.createElement(XSD_LENGHT);
+				typeRestr = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_LENGHT);
 				typeRestr.setAttribute(VALUE, Short.toString(field.getSize()));
 				restr.appendChild(typeRestr);
 			}
 			break;
 		case DataFieldMetadata.DECIMAL_FIELD:
-			typeRestr = doc.createElement(XSD_TOTAL_DIGITS);
+			typeRestr = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_TOTAL_DIGITS);
 			typeRestr.setAttribute(VALUE, field.getProperty(LENGTH));
 			restr.appendChild(typeRestr);
-			typeRestr = doc.createElement(XSD_FRACTION_DIGITS);
+			typeRestr = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_FRACTION_DIGITS);
 			typeRestr.setAttribute(VALUE, field.getProperty(SCALE));
 			restr.appendChild(typeRestr);
 			break;
 		case DataFieldMetadata.STRING_FIELD:
 			if (field.getSize() > 0) {
-				typeRestr = doc.createElement(XSD_LENGHT);
+				typeRestr = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_LENGHT);
 				typeRestr.setAttribute(VALUE, Short.toString(field.getSize()));
 				restr.appendChild(typeRestr);
 			}
 			if (field.getFormatStr() != null) {
-				typeRestr = doc.createElement(XSD_PATTERN);
+				typeRestr = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_PATTERN);
 				typeRestr.setAttribute(VALUE, field.getFormatStr());
 				restr.appendChild(typeRestr);
 			}
