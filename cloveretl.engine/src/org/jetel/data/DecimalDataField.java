@@ -432,8 +432,8 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 			value.fromString(seq, numericFormat);
 			setNull(value.isNaN());
 		} catch (Exception ex) {
-			throw new BadDataFormatException(getMetadata().getName() + " (" + DataFieldMetadata.type2Str(getType()) 
-					+ ") cannot be set to " + StringUtils.quote(seq), seq.toString());
+			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
+					getMetadata().getName(),DataFieldMetadata.type2Str(getType()),seq,numericFormat.toPattern()), seq.toString());
 		}
 	}
 

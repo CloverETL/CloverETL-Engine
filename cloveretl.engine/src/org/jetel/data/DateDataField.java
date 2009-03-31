@@ -431,7 +431,8 @@ public class DateDataField extends DataField implements Comparable{
 		} catch (IllegalArgumentException exception) {
 			throw new BadDataFormatException("not a Date", seq.toString());
 		} catch (ParseException e) {
-			throw new BadDataFormatException("not a Date", seq.toString());
+			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"", 
+					getMetadata().getName(), DataFieldMetadata.type2Str(getType()),seq ,getMetadata().getFormatStr()  ),seq.toString());
 		}
 	}
 
