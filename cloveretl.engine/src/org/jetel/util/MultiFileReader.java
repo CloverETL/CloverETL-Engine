@@ -79,6 +79,7 @@ public class MultiFileReader {
 	private String charset;
 	private Dictionary dictionary;
 	private boolean initializeDataDependentSource;
+	private boolean isSourceOpen;
     
     /**
 	 * Sole ctor.
@@ -229,14 +230,15 @@ public class MultiFileReader {
 					parser.movePosition(sourcePosition);
 				}
 				if(skipSourceRows > 0) parser.skip(skipSourceRows);
-				return true;
+				return isSourceOpen = true;
 			} catch (IOException e) {
 				throw new JetelException("An error occured while skipping records in file " + autoFilling.getFilename() + ", the file will be ignored", e);
 			} catch (ComponentNotReadyException e) {
 				throw new JetelException("An error occured while switching input file " + autoFilling.getFilename() + ", the file will be ignored" ,e);
 			}
 		}
-		return false;
+		if (isSourceOpen) parser.close();
+		return isSourceOpen = false;
 	}
 
 	/**
