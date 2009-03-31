@@ -854,51 +854,41 @@ public class ConvertLib extends TLFunctionLibrary {
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
-        	TLValueType fromType = params[0].type;
-        	TLValueType toType = params[1].type;
-        	
-        	/*
-        	 * /*
-        	 * NOTE: try_convert function is wrong design as it passes its parameters by REFERENCE
-        	 * while all other functions pass them by VALUE.
-        	 * Additionally, TLBooleanValue is IMMUTABLE thus we cannot modify its internal
-        	 * value by setValue() call, instead we need to modify directly params[1] via assignment.
-        	 * However since parameters in CTL are passed by value, the result of assignment will never
-        	 * be read .... therefore we throw an exception when user tries convert to boolean.
-        	 * 
-        	 * FIXME: try_convert should be probably removed....
-        	 */
-        	if (toType == TLValueType.BOOLEAN) {
-        		throw new IllegalArgumentException("try_convert function is not capable of converting to " +TLValueType.BOOLEAN + " !");
+        	if (params.length < 2 || params[1].type != TLValueType.SYM_CONST) {
+        		throw new TransformLangExecutorRuntimeException("try_convert: second parameter must be a type name");
         	}
+        	
+        	TLValueType fromType = params[0].type;
+        	TLValueType toType = (params.length>1 ? TLFunctionUtils.astToken2ValueType(params[1]) : TLValueType.INTEGER);
+
+        	TLValue ret = TLValue.create(toType);
         	
         	boolean canConvert = false;
         	if (fromType == toType) {
         		if (fromType == TLValueType.DECIMAL) {//check precision
-					TLValue candidate = TLValue.create(toType);
-					candidate.setValue(params[0].getNumeric());
-					canConvert = candidate.compareTo(params[0]) == 0;
+					ret.setValue(params[0].getNumeric());
+					canConvert = ret.compareTo(params[0]) == 0;
 					if (!canConvert) {
-						return TLBooleanValue.FALSE;
+						return TLNullValue.getInstance();
 					}
         		}
-        		params[1].setValue(params[0].getValue());
-        		return TLBooleanValue.TRUE;
+        		ret.setValue(params[0].getValue());
+        		return ret;
         	}
         	
         	TLFunctionPrototype convertFunction = getConvertToFunction(fromType, toType);
         	if (convertFunction == null) {
-        		return TLBooleanValue.FALSE;
+        		return TLNullValue.getInstance();
         	}
         	
         	try{
-        		params[1].setValue(convertFunction.execute(getConvertParams(convertFunction, params), 
+        		ret.setValue(convertFunction.execute(getConvertParams(convertFunction, params), 
         				getConvertContext(convertFunction, context)));
         	}catch (TransformLangExecutorRuntimeException e) {
-				return TLBooleanValue.FALSE;
+				return TLNullValue.getInstance();
 			}
         	
-    		return TLBooleanValue.TRUE;
+    		return ret;
         }
         
         @Override
@@ -935,21 +925,19 @@ public class ConvertLib extends TLFunctionLibrary {
         	if (function instanceof Num2StrFunction){
         		TLValue parameter2 = convertParams.length > FORMAT_INDEX ? convertParams[FORMAT_INDEX] : null;
         		return new TLValue[]{convertParams[FROM_INDEX], 
-        				parameter2 != null ? parameter2 :
+        				parameter2 != TLNullValue.getInstance() ? parameter2 :
         				new TLNumericValue<CloverInteger>(TLValueType.INTEGER, new CloverInteger(DEFAULT_RADIX))};
         	}
         	if (function instanceof Date2StrFunction || function instanceof Str2DateFunction) {
         		return new TLValue[]{convertParams[FROM_INDEX], convertParams[FORMAT_INDEX]};
         	}
         	if (function instanceof Num2NumFunction || function instanceof Bool2NumFunction) {
-        		return new TLValue[]{convertParams[FROM_INDEX], new TLNumericValue(
-        				TLValueType.SYM_CONST,new CloverInteger(TLFunctionUtils.valueType2astToken(convertParams[TO_INDEX].getType())))};
+        		return new TLValue[]{convertParams[FROM_INDEX], convertParams[TO_INDEX]};
         	}
         	if (function instanceof Str2NumFunction ) {
         		TLValue[] result = new TLValue[convertParams.length];
         		result[0] = convertParams[FROM_INDEX];
-        		result[1] = new TLNumericValue(TLValueType.SYM_CONST,
-        				new CloverInteger(TLFunctionUtils.valueType2astToken(convertParams[TO_INDEX].getType())));
+        		result[1] = convertParams[TO_INDEX];
         		if (result.length > 2) {
         			result[2] = convertParams[FORMAT_INDEX];
         		}
