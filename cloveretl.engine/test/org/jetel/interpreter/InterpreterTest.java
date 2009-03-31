@@ -208,6 +208,11 @@ public class InterpreterTest extends CloverTestCase {
 		System.out.println("int test:");
 		String expStr = "int i; i=0; print_err(i); \n"+
 						"int j; j=-1; print_err(j);\n"+
+						"int h1; h1=0x10; print_err(h1);\n"+
+						"int h2; h2=-0x11011; print_err(h2);\n"+
+						"int h3; h3=0x1f1; print_err(h3);\n"+
+						"int o1; o1=010; print_err(o1);\n"+
+						"int o2; o2=-011111; print_err(o2);\n"+
 						"int minInt; minInt="+Integer.MIN_VALUE+"; print_err(minInt, true);\n"+
 						"int maxInt; maxInt="+Integer.MAX_VALUE+"; print_err(maxInt, true);\n"+
 						"int field; field=$Value; print_err(field);";
@@ -231,6 +236,11 @@ public class InterpreterTest extends CloverTestCase {
 		      
 		      assertEquals(0,executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getTLValue().getNumeric().getInt());
 		      assertEquals(-1,executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getTLValue().getNumeric().getInt());
+		      assertEquals(0x10,executor.getGlobalVariable(parser.getGlobalVariableSlot("h1")).getTLValue().getNumeric().getInt());
+		      assertEquals(-0x11011,executor.getGlobalVariable(parser.getGlobalVariableSlot("h2")).getTLValue().getNumeric().getInt());
+		      assertEquals(0x1f1,executor.getGlobalVariable(parser.getGlobalVariableSlot("h3")).getTLValue().getNumeric().getInt());
+		      assertEquals(010,executor.getGlobalVariable(parser.getGlobalVariableSlot("o1")).getTLValue().getNumeric().getInt());
+		      assertEquals(-011111,executor.getGlobalVariable(parser.getGlobalVariableSlot("o2")).getTLValue().getNumeric().getInt());
 		      assertEquals(Integer.MIN_VALUE,executor.getGlobalVariable(parser.getGlobalVariableSlot("minInt")).getTLValue().getNumeric().getInt());
 		      assertEquals(Integer.MAX_VALUE,executor.getGlobalVariable(parser.getGlobalVariableSlot("maxInt")).getTLValue().getNumeric().getInt());
 		      assertEquals(((Integer)record.getField("Value").getValue()).intValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("field")).getTLValue().getNumeric().getInt());
@@ -2955,12 +2965,16 @@ public class InterpreterTest extends CloverTestCase {
 						"int number3=bit_set(number1,4,true); print_err(number3); \n" +
 						"int number4=bit_set(31,4,false); print_err(number4); \n" +
 						"boolean isN2 = bit_is_set(number2,7); print_err(isN2);\n" +
+						"int shiftL = bit_lshift(127,2); print_err(shiftL);\n" +
+						"int shiftR = bit_rshift(shiftL,2); print_err(shiftR);\n" +
 						"int and1 = bit_and(0x07,0x070); print_err(and1);\n" +
 						"int xor1 = bit_xor(0x07,0x070); print_err(xor1);\n" +
 						"int or1 = bit_or(0x07,0x070); print_err(or1);\n" +
 						"int and2 = bit_and(127,87); print_err(and2);\n" +
 						"int xor2 = bit_xor(127,87); print_err(xor2);\n" +
 						"int or2 = bit_or(127,87); print_err(or2);\n" +
+						"int invert1 = bit_invert(127); print_err(invert1);\n" +
+						"int invert2 = bit_invert(-1); print_err(invert2);\n" +
 						" print_err(bit_invert(0x0000)); \n";
 	      print_code(expStr);
 		try {
@@ -2991,6 +3005,10 @@ public class InterpreterTest extends CloverTestCase {
 		      assertEquals("number2",128,executor.getGlobalVariable(parser.getGlobalVariableSlot("number2")).getTLValue().getNumeric().getInt());
 		      assertEquals("number4",15,executor.getGlobalVariable(parser.getGlobalVariableSlot("number4")).getTLValue().getNumeric().getInt());
 		      assertTrue("isN2", (Boolean)executor.getGlobalVariable(parser.getGlobalVariableSlot("isN2")).getTLValue().getValue());
+		      assertEquals("shiftL",127>>2,executor.getGlobalVariable(parser.getGlobalVariableSlot("shiftL")).getTLValue().getNumeric().getInt());
+		      assertEquals("shiftR",(127>>2)<<2,executor.getGlobalVariable(parser.getGlobalVariableSlot("shiftR")).getTLValue().getNumeric().getInt());
+		      assertEquals("invert1",~127,executor.getGlobalVariable(parser.getGlobalVariableSlot("invert1")).getTLValue().getNumeric().getInt());
+		      assertEquals("invert2",~-1,executor.getGlobalVariable(parser.getGlobalVariableSlot("invert2")).getTLValue().getNumeric().getInt());
 		      assertEquals("and1",0x07&0x070,executor.getGlobalVariable(parser.getGlobalVariableSlot("and1")).getTLValue().getNumeric().getInt());
 		      assertEquals("and2",127&87,executor.getGlobalVariable(parser.getGlobalVariableSlot("and2")).getTLValue().getNumeric().getInt());
 		      assertEquals("xor1",0x07^0x070,executor.getGlobalVariable(parser.getGlobalVariableSlot("xor1")).getTLValue().getNumeric().getInt());
