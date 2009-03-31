@@ -24,6 +24,7 @@ Features:
 + xmlFeatures attribute for XMLExtract and XPathReader components
 + tar protocol
 + readers supports wildcards in archives
++ bulkloaders use named pipes for data transfers when possible
 
 Fixed:
 + Input stream releasing after reading
@@ -34,6 +35,8 @@ Fixed:
 + wrong formatting for trash component
 + slow test for archives
 + twice footer created by StructuredDataWriter
++ now bulkloaders can be run outside of the workspace
++ now persistent lookup table checks key identity during initialization; identity between settings of lookup table and persistent lookup table
 
 REL 2-6-3
 ---------
