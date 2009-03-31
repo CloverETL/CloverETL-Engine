@@ -291,9 +291,12 @@ public class DBConnection extends GraphElement implements IConnection {
         prepareJdbcDriver();
         
         //check validity of the given url
+        // but only for jdbc connection
         try {
-            if (!getJdbcDriver().getDriver().acceptsURL(getDbUrl())) {
-                throw new ComponentNotReadyException("Unacceptable connection url: '" + getDbUrl() + "'");
+            if (StringUtils.isEmpty(getJndiName())) {
+            	if (!getJdbcDriver().getDriver().acceptsURL(getDbUrl())) {
+            		throw new ComponentNotReadyException("Unacceptable connection url: '" + getDbUrl() + "'");
+            	}
             }
         } catch (SQLException e) {
             throw new ComponentNotReadyException(e);
