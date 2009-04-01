@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph illustrates usage of Approximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator or Reformat creates it) &#10;and be sorted by this key." guiVersion="0.0.0.devel" id="1200561503662" licenseType="Evaluation license." modified="Wed Apr 01 12:26:41 CEST 2009" modifiedBy="avackova" name="graphFixedLengthData" revision="1.106">
+<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph illustrates usage of Approximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator or Reformat creates it) &#10;and be sorted by this key." guiVersion="0.0.0.devel" id="1200561503662" licenseType="Evaluation license." modified="Wed Apr 01 14:55:14 CEST 2009" modifiedBy="avackova" name="graphFixedLengthData" revision="1.107">
 <Global>
 <Metadata id="Metadata4">
 <Record name="conforming_out" recordDelimiter="\n" recordSize="71" type="fixed">
@@ -130,13 +130,13 @@
 </Metadata>
 <Connection dbConfig="${CONN_DIR}/postgre.cfg" id="Connection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Sequence cached="10" fileURL="${SEQ_DIR}/id3.seq" id="Sequence3" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
-<Sequence cached="10" fileURL="${SEQ_DIR}/id2.seq" id="Sequence2" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
-<Sequence cached="10" fileURL="${SEQ_DIR}/id0.seq" id="Sequence0" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
 <Sequence cached="10" fileURL="${SEQ_DIR}/id1.seq" id="Sequence1" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="10" fileURL="${SEQ_DIR}/id0.seq" id="Sequence0" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="10" fileURL="${SEQ_DIR}/id2.seq" id="Sequence2" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="10" fileURL="${SEQ_DIR}/id3.seq" id="Sequence3" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
 <Phase number="0">
-<Node conformity="0.81" enabled="disabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="445" guiY="132" id="APROX_MERGE_JOIN1" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
+<Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="445" guiY="132" id="APROX_MERGE_JOIN1" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
 <attr name="seq_name"><![CDATA[Sequence0]]></attr>
 </Node>
 <Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="447" guiY="450" id="APROX_MERGE_JOIN2" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
@@ -145,30 +145,30 @@
 <Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="449" guiY="773" id="APROX_MERGE_JOIN3" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
 <attr name="seq_name"><![CDATA[Sequence2]]></attr>
 </Node>
-<Node conformity="0.81" enabled="disabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="449" guiY="1105" id="APROX_MERGE_JOIN4" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
+<Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="449" guiY="1105" id="APROX_MERGE_JOIN4" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
 <attr name="seq_name"><![CDATA[Sequence3]]></attr>
 </Node>
-<Node dbConnection="Connection0" enabled="disabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="8" guiY="215" id="DB_INPUT_TABLE1" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="8" guiY="215" id="DB_INPUT_TABLE1" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="10" guiY="533" id="DB_INPUT_TABLE2" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="12" guiY="856" id="DB_INPUT_TABLE3" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
-<Node dbConnection="Connection0" enabled="disabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="12" guiY="1188" id="DB_INPUT_TABLE4" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
-<Node append="false" enabled="disabled" fileURL="${DATAOUT_DIR}/suspicoiusKeyGenerator.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="599" guiY="91" id="DELIMITED_DATA_WRITER_NIO0" type="DATA_WRITER"/>
-<Node append="false" enabled="disabled" fileURL="${DATAOUT_DIR}/employeeKeyGenerator.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="599" guiY="259" id="DELIMITED_DATA_WRITER_NIO1" type="DATA_WRITER"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="12" guiY="1188" id="DB_INPUT_TABLE4" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/suspicoiusKeyGenerator.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="599" guiY="91" id="DELIMITED_DATA_WRITER_NIO0" type="DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employeeKeyGenerator.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="599" guiY="259" id="DELIMITED_DATA_WRITER_NIO1" type="DATA_WRITER"/>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/suspicoiusSoundex.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="599" guiY="409" id="DELIMITED_DATA_WRITER_NIO2" type="DATA_WRITER"/>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employeeSoundex.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="599" guiY="577" id="DELIMITED_DATA_WRITER_NIO3" type="DATA_WRITER"/>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/suspicoiusMetaphone.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="601" guiY="732" id="DELIMITED_DATA_WRITER_NIO4" type="DATA_WRITER"/>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employeeMetaphone.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="601" guiY="900" id="DELIMITED_DATA_WRITER_NIO5" type="DATA_WRITER"/>
-<Node append="false" enabled="disabled" fileURL="${DATAOUT_DIR}/suspicoiusNYSIIS.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="601" guiY="1064" id="DELIMITED_DATA_WRITER_NIO6" type="DATA_WRITER"/>
-<Node append="false" enabled="disabled" fileURL="${DATAOUT_DIR}/employeeNYSIIS.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="601" guiY="1232" id="DELIMITED_DATA_WRITER_NIO7" type="DATA_WRITER"/>
-<Node enabled="disabled" guiHeight="64" guiName="Ext Sort" guiWidth="95" guiX="297" guiY="48" id="EXT_SORT0" sortKey="key(a)" type="EXT_SORT"/>
-<Node enabled="disabled" guiHeight="64" guiName="Ext Sort" guiWidth="111" guiX="297" guiY="215" id="EXT_SORT1" sortKey="key(a)" type="EXT_SORT"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/suspicoiusNYSIIS.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="601" guiY="1064" id="DELIMITED_DATA_WRITER_NIO6" type="DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employeeNYSIIS.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="601" guiY="1232" id="DELIMITED_DATA_WRITER_NIO7" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="95" guiX="297" guiY="48" id="EXT_SORT0" sortKey="key(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="111" guiX="297" guiY="215" id="EXT_SORT1" sortKey="key(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="111" guiX="299" guiY="533" id="EXT_SORT2" sortKey="key(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="95" guiX="299" guiY="366" id="EXT_SORT3" sortKey="key(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="111" guiX="301" guiY="856" id="EXT_SORT4" sortKey="key(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="95" guiX="301" guiY="689" id="EXT_SORT5" sortKey="key(a)" type="EXT_SORT"/>
-<Node enabled="disabled" guiHeight="64" guiName="Ext Sort" guiWidth="95" guiX="301" guiY="1021" id="EXT_SORT6" sortKey="key(a)" type="EXT_SORT"/>
-<Node enabled="disabled" guiHeight="64" guiName="Ext Sort" guiWidth="111" guiX="301" guiY="1188" id="EXT_SORT7" sortKey="key(a)" type="EXT_SORT"/>
-<Node dataPolicy="controlled" enabled="disabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="8" guiY="48" id="FIXLEN_DATA_READER_NIO0" type="DATA_READER">
+<Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="95" guiX="301" guiY="1021" id="EXT_SORT6" sortKey="key(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="111" guiX="301" guiY="1188" id="EXT_SORT7" sortKey="key(a)" type="EXT_SORT"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="8" guiY="48" id="FIXLEN_DATA_READER_NIO0" type="DATA_READER">
 <attr name="byteMode"><![CDATA[false]]></attr>
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
@@ -180,14 +180,14 @@
 <attr name="byteMode"><![CDATA[false]]></attr>
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node dataPolicy="controlled" enabled="disabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="12" guiY="1021" id="FIXLEN_DATA_READER_NIO3" type="DATA_READER">
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="12" guiY="1021" id="FIXLEN_DATA_READER_NIO3" type="DATA_READER">
 <attr name="byteMode"><![CDATA[false]]></attr>
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node append="false" enabled="disabled" fileURL="${DATAOUT_DIR}/conformingKeyGenerator.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="599" guiY="10" id="FIXLEN_DATA_WRITER_NIO0" type="DATA_WRITER">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/conformingKeyGenerator.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="599" guiY="10" id="FIXLEN_DATA_WRITER_NIO0" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node append="false" enabled="disabled" fileURL="${DATAOUT_DIR}/customersKeyGenerator.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="599" guiY="171" id="FIXLEN_DATA_WRITER_NIO1" type="DATA_WRITER">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/customersKeyGenerator.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="599" guiY="171" id="FIXLEN_DATA_WRITER_NIO1" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/customersSoundex.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="599" guiY="489" id="FIXLEN_DATA_WRITER_NIO2" type="DATA_WRITER">
@@ -202,14 +202,14 @@
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/conformingMetaphone.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="601" guiY="651" id="FIXLEN_DATA_WRITER_NIO5" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node append="false" enabled="disabled" fileURL="${DATAOUT_DIR}/conformingNYSIIS.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="601" guiY="983" id="FIXLEN_DATA_WRITER_NIO6" type="DATA_WRITER">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/conformingNYSIIS.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="601" guiY="983" id="FIXLEN_DATA_WRITER_NIO6" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node append="false" enabled="disabled" fileURL="${DATAOUT_DIR}/customersNYSIIS.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="601" guiY="1144" id="FIXLEN_DATA_WRITER_NIO7" type="DATA_WRITER">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/customersNYSIIS.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="601" guiY="1144" id="FIXLEN_DATA_WRITER_NIO7" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="disabled" guiHeight="70" guiName="Key generator" guiWidth="138" guiX="153" guiY="48" id="KEY_GEN0" keyExpression="lname 4;fname 3" type="KEY_GEN"/>
-<Node enabled="disabled" guiHeight="88" guiName="Key generator" guiWidth="145" guiX="153" guiY="215" id="KEY_GEN1" keyExpression="last_name 4;first_name 3" type="KEY_GEN"/>
+<Node enabled="enabled" guiHeight="70" guiName="Key generator" guiWidth="138" guiX="153" guiY="48" id="KEY_GEN0" keyExpression="lname 4;fname 3" type="KEY_GEN"/>
+<Node enabled="enabled" guiHeight="88" guiName="Key generator" guiWidth="145" guiX="153" guiY="215" id="KEY_GEN1" keyExpression="last_name 4;first_name 3" type="KEY_GEN"/>
 <Node enabled="enabled" guiHeight="0" guiName="Soundex" guiWidth="0" guiX="157" guiY="366" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
@@ -354,7 +354,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="disabled" guiHeight="0" guiName="NYSIIS" guiWidth="0" guiX="159" guiY="1021" id="REFORMAT4" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="NYSIIS" guiWidth="0" guiX="159" guiY="1021" id="REFORMAT4" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -394,7 +394,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="disabled" guiHeight="0" guiName="NYSIIS" guiWidth="0" guiX="156" guiY="1188" id="REFORMAT5" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="NYSIIS" guiWidth="0" guiX="156" guiY="1188" id="REFORMAT5" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
