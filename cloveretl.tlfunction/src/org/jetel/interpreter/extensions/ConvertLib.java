@@ -148,8 +148,8 @@ public class ConvertLib extends TLFunctionLibrary {
 
         public Num2StrFunction() {
             super("convert", "num2str", "Returns string representation of a number in a given numeral system", 
-            		new TLValueType[] { TLValueType.DECIMAL, TLValueType.STRING}, 
-                    TLValueType.STRING, 2,1);
+            		new TLValueType[] { TLValueType.DECIMAL, TLValueType.STRING, TLValueType.STRING}, 
+                    TLValueType.STRING, 3,1);
         }
 
         @Override
@@ -205,11 +205,25 @@ public class ConvertLib extends TLFunctionLibrary {
                     }
                 }
              } else {//radix == null --> formatString != null
-            	 DecimalFormat format =((Num2StrContext)context.getContext()).format;
-            	 if (!format.toPattern().equals(formatString)) {
-            		 format.applyPattern(formatString);
-            	 }
-            	 strBuf.append(format.format(((TLNumericValue)input).getDouble()));
+            	 
+            	 
+            	 String locale = null;
+                 if (params.length>2) {
+                     if (params[2].getType() !=TLValueType.STRING){
+                         throw new TransformLangExecutorRuntimeException(params,
+                             Function.NUM2STR.name()+" - wrong type of literals");
+                     }
+                     locale = params[2].toString();
+                 } else {
+                	 // locale not set - use system default
+                	 locale = Locale.getDefault().getDisplayName();
+                 }
+            	 Num2StrContext c = (Num2StrContext)context.getContext();
+            	 if (c.format == null || !c.locale.equals(locale) || !c.format.toPattern().equals(formatString)) {
+            		 // reinit formatter on first entry, locale or pattern change
+            		 c.init(locale, formatString);
+            	 } 
+            	 strBuf.append(c.format.format(((TLNumericValue)input).getDouble()));
             }
 
             
@@ -846,10 +860,11 @@ public class ConvertLib extends TLFunctionLibrary {
     	private final static int FROM_INDEX = 0;
     	private final static int TO_INDEX = 1;
     	private final static int FORMAT_INDEX = 2;
+		private static final int LOCALE_INDEX = 3;
 
         public TryConvertFunction() {
             super("convert", "try_convert", "Tries to convert variable of one type to another",  new TLValueType[] { TLValueType.OBJECT, TLValueType.OBJECT, TLValueType.STRING }, 
-                    TLValueType.OBJECT,3,2);
+                    TLValueType.OBJECT,4,2);
         }
 
         @Override
@@ -923,10 +938,15 @@ public class ConvertLib extends TLFunctionLibrary {
         
         private TLValue[] getConvertParams(TLFunctionPrototype function, TLValue[] convertParams){
         	if (function instanceof Num2StrFunction){
-        		TLValue parameter2 = convertParams.length > FORMAT_INDEX ? convertParams[FORMAT_INDEX] : null;
-        		return new TLValue[]{convertParams[FROM_INDEX], 
-        				parameter2 != TLNullValue.getInstance() ? parameter2 :
-        				new TLNumericValue<CloverInteger>(TLValueType.INTEGER, new CloverInteger(DEFAULT_RADIX))};
+        		TLValue[] result = null;
+        		if (convertParams.length > 3) {
+        			result = new TLValue[]{convertParams[0],convertParams[2],convertParams[3]};
+        		} else if (convertParams.length > 2) {
+        			result= new TLValue[]{convertParams[0],convertParams[2]};
+        		} else {
+        			result[0] = convertParams[0];
+        		}
+        		return result;
         	}
         	if (function instanceof Date2StrFunction || function instanceof Str2DateFunction) {
         		return new TLValue[]{convertParams[FROM_INDEX], convertParams[FORMAT_INDEX]};
@@ -936,11 +956,7 @@ public class ConvertLib extends TLFunctionLibrary {
         	}
         	if (function instanceof Str2NumFunction ) {
         		TLValue[] result = new TLValue[convertParams.length];
-        		result[0] = convertParams[FROM_INDEX];
-        		result[1] = convertParams[TO_INDEX];
-        		if (result.length > 2) {
-        			result[2] = convertParams[FORMAT_INDEX];
-        		}
+        		System.arraycopy(convertParams, 0, result, 0, convertParams.length);
         		return result;
         	}
          	return new TLValue[]{convertParams[FROM_INDEX]};
@@ -1078,13 +1094,18 @@ class Str2DateContext {
 }
 
 class Num2StrContext {
-    TLValue value;
+    public String locale;
+	TLValue value;
     DecimalFormat format;
     
-    static TLContext createContex(){
+    public void init(String locale, String pattern) {
+    	this.locale = locale;
+    	format = (DecimalFormat)MiscUtils.createFormatter(DataFieldMetadata.NUMERIC_FIELD, locale, pattern);
+    }
+    
+	static TLContext createContex(){
         Num2StrContext con=new Num2StrContext();
         con.value=TLValue.create(TLValueType.STRING);
-        con.format= new DecimalFormat();
 
         TLContext<Num2StrContext> context=new TLContext<Num2StrContext>();
         context.setContext(con);

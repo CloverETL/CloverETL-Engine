@@ -49,6 +49,7 @@ import org.jetel.interpreter.data.TLVariable;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringAproxComparator;
 import org.jetel.util.string.StringUtils;
 
@@ -2162,7 +2163,7 @@ public class InterpreterTest extends CloverTestCase {
 
     public void test_functions4(){
         System.out.println("\nFunctions test:");
-        DecimalFormat format = (DecimalFormat)NumberFormat.getInstance();
+        DecimalFormat format = (DecimalFormat)NumberFormat.getInstance(MiscUtils.createLocale("en.US"));
         String expStr = 
 	    		"string stringNo='12';\n" +
 	    		"int No;\n" +
@@ -2170,9 +2171,9 @@ public class InterpreterTest extends CloverTestCase {
         		"stringNo='128a';\n" +
         		"int intNo;\n" + 
         		"intNo = try_convert(stringNo,int);\n" +
-        		"stringNo='1285,455';\n" +
+        		"stringNo='" + format.format(1285.455) + "';\n" +
         		"double no1=1.34;\n" +
-        		"no1 = try_convert(stringNo,double,'####.###');\n"  +
+        		"no1 = try_convert(stringNo,double,'" + format.toPattern() + "','en.US');\n"  +
         		"decimal(10,3) no21;\n" +
         		"decimal(10,3) no22;\n" +
         		"no21= try_convert(no1,decimal,null);\n" +
@@ -2198,7 +2199,7 @@ public class InterpreterTest extends CloverTestCase {
         		"boolean b=true;\n" +
         		"d2 = try_convert(b, decimal,null);\n" +
         		"string curr;\n" +
-        		"curr = try_convert(1247,string,'¤###,000.00');\n" +
+        		"curr = try_convert(1247,string,'\u00A4###,000.00','en.US');\n" +
         		"string ns;\n" +
         		"ns = try_convert(1247,string,null);";
         print_code(expStr);
@@ -2239,7 +2240,7 @@ public class InterpreterTest extends CloverTestCase {
 		      assertEquals(DecimalFactory.getDecimal(75.32, 6, 4),(executor.getGlobalVariable(parser.getGlobalVariableSlot("d1")).getTLValue().getNumeric()));
 		      assertEquals(DecimalFactory.getDecimal(75.32, 6, 4),(executor.getGlobalVariable(parser.getGlobalVariableSlot("d1")).getTLValue().getNumeric()));
 		      assertEquals(DecimalFactory.getDecimal(1), executor.getGlobalVariable(parser.getGlobalVariableSlot("d2")).getTLValue().getNumeric());
-//		      assertEquals("$1,247.00", executor.getGlobalVariable(parser.getGlobalVariableSlot("curr")).getTLValue().toString());
+		      assertEquals("$1,247.00", executor.getGlobalVariable(parser.getGlobalVariableSlot("curr")).getTLValue().toString());
 		      assertEquals("1247", executor.getGlobalVariable(parser.getGlobalVariableSlot("ns")).getTLValue().toString());
 		      
         } catch (ParseException e) {
