@@ -20,6 +20,10 @@
 			<value>pi</value>
 			<value>e</value>
 			<value>random</value>
+			<value>random_gaussian</value>
+			<value>random_boolean</value>
+			<value>random_int</value>
+			<value>random_long</value>
 			<value>abs</value>
 			<value>bit_and</value>
 			<value>bit_or</value>
