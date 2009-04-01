@@ -566,7 +566,7 @@ public class MathLib extends TLFunctionLibrary {
  // BIT_XOR
     class BitXorFunction extends TLFunctionPrototype { 
         public BitXorFunction() {
-            super("math", "bit_and", "Bit wise AND on parameters ", new TLValueType[] { TLValueType.NUMBER, TLValueType.NUMBER}, TLValueType.LONG);
+            super("math", "bit_xor", "Bit wise AND on parameters ", new TLValueType[] { TLValueType.NUMBER, TLValueType.NUMBER}, TLValueType.LONG);
         }
 
         @Override
