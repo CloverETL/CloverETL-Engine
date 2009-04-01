@@ -615,10 +615,11 @@ public class MathLib extends TLFunctionLibrary {
         }
     }           
     
- // BIT_IS_SET
+ // BIT_SET
     class BitSetFunction extends TLFunctionPrototype { 
         public BitSetFunction() {
-            super("math", "bit_set", "Tests if n-th bit of 1st argument is set", new TLValueType[] { TLValueType.NUMBER, TLValueType.NUMBER, TLValueType.BOOLEAN}, TLValueType.BOOLEAN);
+            super("math", "bit_set", "Sets or resets n-th bit of 1st argument",
+            		new TLValueType[] { TLValueType.NUMBER, TLValueType.NUMBER, TLValueType.BOOLEAN}, TLValueType.NUMBER);
         }
 
         @Override
