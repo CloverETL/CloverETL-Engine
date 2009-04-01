@@ -1887,6 +1887,8 @@ public class InterpreterTest extends CloverTestCase {
 						"int i = str2num('1234');\n" +
 						"string nts;nts=num2str(10,4);\n" +
 						"print_err(nts );\n" +
+						"string currstr; currstr = num2str(1234.56,'\u00A4#,###.##','en.US');\n" +
+						"print_err('currency: ' + currstr);\n" +
 						"date newdate;newdate=2001-12-20 16:30:04;\n" +
 						"decimal dtn;dtn=date2num(newdate,month);\n" +
 						"print_err(dtn );\n" +
@@ -1948,6 +1950,7 @@ public class InterpreterTest extends CloverTestCase {
 		      assertEquals("stn",0.25125,executor.getGlobalVariable(parser.getGlobalVariableSlot("stn")).getTLValue().getNumeric().getDouble());
 		      assertEquals("i",1234,executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getTLValue().getNumeric().getInt());
 		      assertEquals("nts","22",executor.getGlobalVariable(parser.getGlobalVariableSlot("nts")).getTLValue().toString());
+		      assertEquals("currency","$1,234.56",executor.getGlobalVariable(parser.getGlobalVariableSlot("currstr")).getTLValue().toString());
 		      assertEquals("dtn",11.0,executor.getGlobalVariable(parser.getGlobalVariableSlot("dtn")).getTLValue().getNumeric().getDouble());
 		      assertEquals("ii",21,executor.getGlobalVariable(parser.getGlobalVariableSlot("ii")).getTLValue().getNumeric().getInt());
 		      assertEquals("dts","02.12.24",executor.getGlobalVariable(parser.getGlobalVariableSlot("dts")).getTLValue().toString());
@@ -2198,8 +2201,8 @@ public class InterpreterTest extends CloverTestCase {
         		"d1 = try_convert(d2,decimal);\n" +
         		"boolean b=true;\n" +
         		"d2 = try_convert(b, decimal);\n" +
-        		"string curr;\n" +
-        		"curr = try_convert(1247,string,'\u00A4\u00A4###,000.00','en.US');\n" +
+        		"string curr; curr = try_convert(1234.56,string,'\u00A4#,###.##','en.US');\n" +
+        		"print_err(curr);\n" + 
         		"string ns;\n" +
         		"ns = try_convert(1247,string);";
         print_code(expStr);
@@ -2208,8 +2211,7 @@ public class InterpreterTest extends CloverTestCase {
        
         
         try {
-              TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-                    new ByteArrayInputStream(expStr.getBytes()));
+              TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
               CLVFStart parseTree = parser.Start();
 
               System.out.println("Initializing parse tree..");
@@ -2240,7 +2242,7 @@ public class InterpreterTest extends CloverTestCase {
 		      assertEquals(DecimalFactory.getDecimal(75.32, 6, 4),(executor.getGlobalVariable(parser.getGlobalVariableSlot("d1")).getTLValue().getNumeric()));
 		      assertEquals(DecimalFactory.getDecimal(75.32, 6, 4),(executor.getGlobalVariable(parser.getGlobalVariableSlot("d1")).getTLValue().getNumeric()));
 		      assertEquals(DecimalFactory.getDecimal(1), executor.getGlobalVariable(parser.getGlobalVariableSlot("d2")).getTLValue().getNumeric());
-		      assertEquals("$1,247.00", executor.getGlobalVariable(parser.getGlobalVariableSlot("curr")).getTLValue().toString());
+		      assertEquals("$1,234.56", executor.getGlobalVariable(parser.getGlobalVariableSlot("curr")).getTLValue().toString());
 		      assertEquals("1247", executor.getGlobalVariable(parser.getGlobalVariableSlot("ns")).getTLValue().toString());
 		      
         } catch (ParseException e) {
