@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLBooleanValue;
-import org.jetel.interpreter.data.TLListValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
@@ -404,8 +403,11 @@ public class MathLib extends TLFunctionLibrary {
             
             // random_int(min, max)
             } else if (params.length == 2) {
-            	if (params[0].type != TLValueType.INTEGER || params[1].type != TLValueType.INTEGER) {
-    	            throw new TransformLangExecutorRuntimeException(params, "random_int - wrong type of first literal");
+            	if (params[0].type != TLValueType.INTEGER) {
+    	            throw new TransformLangExecutorRuntimeException(params, "random_int - wrong type of the first literal");
+            	}
+            	if (params[1].type != TLValueType.INTEGER) {
+    	            throw new TransformLangExecutorRuntimeException(params, "random_int - wrong type of the second literal");
             	}
                 try {
                 	val.setValue(dataGenerator.nextInt(params[0].getNumeric().getInt(), params[1].getNumeric().getInt()));
@@ -452,9 +454,11 @@ public class MathLib extends TLFunctionLibrary {
             
             // random_long(min, max)
             } else if (params.length == 2) {
-            	if (!(params[0].type == TLValueType.LONG || params[0].type == TLValueType.INTEGER) || 
-            		!(params[1].type == TLValueType.LONG || params[1].type == TLValueType.INTEGER)) {
-    	            throw new TransformLangExecutorRuntimeException(params, "random_long - wrong type of first literal");
+            	if (!(params[0].type == TLValueType.LONG || params[0].type == TLValueType.INTEGER)) {
+    	            throw new TransformLangExecutorRuntimeException(params, "random_long - wrong type of the first literal");
+            	}
+            	if (!(params[1].type == TLValueType.LONG || params[1].type == TLValueType.INTEGER)) {
+    	            throw new TransformLangExecutorRuntimeException(params, "random_long - wrong type of the second literal");
             	}
                 try {
                 	val.setValue(dataGenerator.nextLong(params[0].getNumeric().getLong(), params[1].getNumeric().getLong()));
