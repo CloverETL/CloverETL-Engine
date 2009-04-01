@@ -5,7 +5,7 @@
 	<DBConnection ident="postgre_test" type="POSTGRE" user="test" password="test" URL="jdbc:postgresql://koule/test" driver="org.postgresql.Driver" />
 	<DBConnection ident="postgre_foodmart" type="POSTGRE" user="test" password="test" URL="jdbc:postgresql://koule/foodmart" driver="org.postgresql.Driver" />
 	<DBConnection ident="oracle" type="ORACLE" user="test" password="test" URL="jdbc:oracle:thin:@koule:1521:xe" driver="oracle.jdbc.OracleDriver" >
-	    	 <DBUnitFeature name="http://www.dbunit.org/features/skipOracleRecycleBinTables" enabled="true"/>
+	    	 <DBUnitFeature name="http://www.dbunit.org/features/qualifiedTableNames" enabled="true"/>
 	</DBConnection>
 	<DBConnection ident="mysql" type="MYSQL" user="test" password="" URL="jdbc:mysql://koule/test" driver="org.gjt.mm.mysql.Driver" />
 
@@ -23,14 +23,14 @@
 	</FunctionalTest>
 	
 	<FunctionalTest ident="OracleDataWriter" graphFile="graph/graphOracleDataWriter.grf">
-	      	<SQLStatement connection="oracle">DELETE FROM test</SQLStatement>
-<!--	      <DBTableToTable
-	      	 outputTable="writer_test" 
+	      	<SQLStatement connection="oracle">DELETE FROM test.writer_test</SQLStatement>
+	      <DBTableToTable
+	      	 outputTable="test.writer_test" 
 	      	 outputTableConnection="oracle"
-	      	 supposedTable="test_supposed"
+	      	 supposedTable="test.test_supposed"
 	      	 supposedTableConnection="oracle"
-	      />-->
-      	 <DBTableToXMLFile outputTable="writer_test" supposedTable="test" outputTableConnection="oracle" supposedXMLFile="supposed-out/oracle_supposed.xml"/> 
+	      />
+<!--      	 <DBTableToXMLFile outputTable="writer_test" supposedTable="test" outputTableConnection="oracle" supposedXMLFile="supposed-out/oracle_supposed.xml"/>--> 
 	 	  <FlatFile outputFile="data-out/bad0Port.bad" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/bad1.kkk" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/bad1Port.bad" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    
