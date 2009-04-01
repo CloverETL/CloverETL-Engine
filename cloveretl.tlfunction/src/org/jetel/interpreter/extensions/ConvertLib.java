@@ -944,7 +944,7 @@ public class ConvertLib extends TLFunctionLibrary {
         		} else if (convertParams.length > 2) {
         			result= new TLValue[]{convertParams[0],convertParams[2]};
         		} else {
-        			result[0] = convertParams[0];
+        			result= new TLValue[]{convertParams[0]};
         		}
         		return result;
         	}

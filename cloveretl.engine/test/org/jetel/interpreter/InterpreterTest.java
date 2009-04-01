@@ -2176,14 +2176,14 @@ public class InterpreterTest extends CloverTestCase {
         		"no1 = try_convert(stringNo,double,'" + format.toPattern() + "','en.US');\n"  +
         		"decimal(10,3) no21;\n" +
         		"decimal(10,3) no22;\n" +
-        		"no21= try_convert(no1,decimal,null);\n" +
-        		"no22 = try_convert(34542.3,decimal,null);\n" +
+        		"no21= try_convert(no1,decimal);\n" +
+        		"no22 = try_convert(34542.3,decimal);\n" +
         		"int no31;\n" +
         		"int no32;\n" +
         		"int no33;\n" +
-        		"no31 = try_convert(34542.7,int,null);\n" +
-        		"no32 = try_convert(345427,int,null);\n" +
-        		"no33 = try_convert(3454876434468927,int,null);\n" +
+        		"no31 = try_convert(34542.7,int);\n" +
+        		"no32 = try_convert(345427,int);\n" +
+        		"no33 = try_convert(3454876434468927,int);\n" +
         		"date date1 = $Born;\n" +
         		"long no4;\n" +
         		"no4 = try_convert(date1,long,null);\n" +
@@ -2193,15 +2193,15 @@ public class InterpreterTest extends CloverTestCase {
         		"date2 = try_convert('20.9.2007',date,'dd.MM.yyyy');\n" +
         		"decimal(6,4) d1=73.8474;\n" +
         		"decimal(4,2) d2;\n" +
-        		"d2 = try_convert(d1,decimal,null);\n" +
+        		"d2 = try_convert(d1,decimal);\n" +
         		"d2 = 75.32;\n" +
-        		"d1 = try_convert(d2,decimal,null);\n" +
+        		"d1 = try_convert(d2,decimal);\n" +
         		"boolean b=true;\n" +
-        		"d2 = try_convert(b, decimal,null);\n" +
+        		"d2 = try_convert(b, decimal);\n" +
         		"string curr;\n" +
-        		"curr = try_convert(1247,string,'\u00A4###,000.00','en.US');\n" +
+        		"curr = try_convert(1247,string,'\u00A4\u00A4###,000.00','en.US');\n" +
         		"string ns;\n" +
-        		"ns = try_convert(1247,string,null);";
+        		"ns = try_convert(1247,string);";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
