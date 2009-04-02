@@ -51,7 +51,9 @@ public class JdbcSpecificFactory {
         //register all jdbc specifics
         for(Extension extension : jdbcExtensions) {
             try {
-                registerJdbcSpecific(new JdbcSpecificDescription(extension));
+            	JdbcSpecificDescription description = new JdbcSpecificDescription(extension);
+                description.init();
+                registerJdbcSpecific(description);
             } catch(Exception e) {
                 logger.error("Cannot create JDBC specific descriptor, extension in plugin manifest is not valid.\n"
                         + "pluginId = " + extension.getPlugin().getId() + "\n" + extension + "\nReason: " + e.getMessage());

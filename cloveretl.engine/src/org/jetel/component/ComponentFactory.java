@@ -59,7 +59,9 @@ public class ComponentFactory {
         //register all components
         for(Extension extension : componentExtensions) {
             try {
-                registerComponent(new ComponentDescription(extension));
+            	ComponentDescription description = new ComponentDescription(extension);
+            	description.init();
+                registerComponent(description);
             } catch(Exception e) {
                 logger.error("Cannot create component description, extension in plugin manifest is not valid.\n"
                         + "pluginId = " + extension.getPlugin().getId() + "\n" + extension + "\nReason: " + e.getMessage());

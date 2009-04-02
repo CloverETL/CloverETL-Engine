@@ -20,9 +20,12 @@
 package org.jetel.connection.jdbc.specific;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.PluginableItemDescription;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 
@@ -34,7 +37,7 @@ import org.jetel.plugin.PluginDescriptor;
  *
  * @created May 23, 2008
  */
-public class JdbcSpecificDescription {
+public class JdbcSpecificDescription extends PluginableItemDescription {
 
     private static Log logger = LogFactory.getLog(JdbcSpecificDescription.class);
 
@@ -67,16 +70,11 @@ public class JdbcSpecificDescription {
     private String className;
     
     /**
-     * Extension where was this JDBC specific defined.
-     */
-    private Extension extension;
-    
-    /**
      * The only constructor.
      * @param extension
      */
     public JdbcSpecificDescription(Extension extension) {
-        this.extension = extension;
+    	super(extension);
 
         //reads 'database' parameter
         if(!extension.hasParameter(DATABASE_PARAMETER)) {
@@ -117,10 +115,6 @@ public class JdbcSpecificDescription {
         return className;
     }
 
-    public Extension getExtension() {
-    	return extension;
-    }
-    
     public JdbcSpecific getJdbcSpecific() {
         try {
             PluginDescriptor pluginDescriptor = getExtension().getPlugin();
@@ -140,5 +134,12 @@ public class JdbcSpecificDescription {
             throw new RuntimeException("Unknown jdbc specific type: " + getDatabase());
         }
     }
+
+	@Override
+	protected List<String> getClassNames() {
+		List<String> result = new ArrayList<String>();
+		result.add(getClassName());
+		return result;
+	}
     
 }

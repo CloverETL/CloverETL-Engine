@@ -58,7 +58,9 @@ public class ConnectionFactory {
         //register all connection
         for(Extension extension : connectionExtensions) {
             try {
-                registerConnection(new ConnectionDescription(extension));
+            	ConnectionDescription description = new ConnectionDescription(extension);
+            	description.init();
+                registerConnection(description);
             } catch(Exception e) {
                 logger.error("Cannot create connection description, extension in plugin manifest is not valid.\n"
                         + "pluginId = " + extension.getPlugin().getId() + "\n"

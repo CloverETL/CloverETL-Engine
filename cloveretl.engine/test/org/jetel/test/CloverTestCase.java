@@ -30,7 +30,7 @@ public abstract class CloverTestCase extends TestCase {
 
 		System.out.println("Cloveretl plugins: " + pluginsDir);
 		EngineInitializer.initEngine(pluginsDir, null, null);
-		EngineInitializer.forceActivateAllPlugins(true);
+		EngineInitializer.forceActivateAllPlugins();
 	}
 
 }

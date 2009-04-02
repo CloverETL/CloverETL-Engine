@@ -19,11 +19,13 @@
 */
 package org.jetel.interpreter.extensions;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.PluginableItemDescription;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 
@@ -35,7 +37,7 @@ import org.jetel.plugin.PluginDescriptor;
  *
  * @created 29.5.2007
  */
-public class TLFunctionLibraryDescription {
+public class TLFunctionLibraryDescription extends PluginableItemDescription {
 
     private static Log logger = LogFactory.getLog(TLFunctionLibraryDescription.class);
 
@@ -56,6 +58,8 @@ public class TLFunctionLibraryDescription {
     private ITLFunctionLibrary functionLibrary;
     
     public TLFunctionLibraryDescription(Extension extensionPoint) {
+    	super(extensionPoint);
+    	
         this.libraryName = extensionPoint.getParameter(LIBRARY_NAME).getString();
         this.className = extensionPoint.getParameter(CLASS).getString();
         this.functionNames = extensionPoint.getParameter(FUNCTION).getValues();
@@ -106,4 +110,12 @@ public class TLFunctionLibraryDescription {
 
 		return a.getAllFunctions();
 	}
+
+	@Override
+	protected List<String> getClassNames() {
+		List<String> result = new ArrayList<String>();
+		result.add(className);
+		return result;
+	}
+	
 }

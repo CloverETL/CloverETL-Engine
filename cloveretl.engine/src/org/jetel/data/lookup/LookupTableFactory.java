@@ -61,7 +61,9 @@ public class LookupTableFactory {
         //register all lookup tables
         for(Extension extension : lookupTableExtensions) {
             try {
-                registerLookupTable(new LookupTableDescription(extension));
+            	LookupTableDescription description = new LookupTableDescription(extension);
+            	description.init();
+                registerLookupTable(description);
             } catch(Exception e) {
                 logger.error("Cannot create lookup table description, extension in plugin manifest is not valid.\n"
                         + "pluginId = " + extension.getPlugin().getId() + "\n"

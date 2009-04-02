@@ -21,7 +21,6 @@ package org.jetel.component;
 
 import org.jetel.data.GraphElementDescription;
 import org.jetel.plugin.Extension;
-import org.jetel.plugin.PluginDescriptor;
 
 /**
  * @author Martin Zatopek
@@ -31,10 +30,6 @@ public class ComponentDescription extends GraphElementDescription {
 
     public final static String EXTENSION_POINT_ID = "component";
     
-	public ComponentDescription(String componentType, String className, PluginDescriptor pluginDescriptor) {
-	    super(EXTENSION_POINT_ID, componentType, className, pluginDescriptor);
-    }
-
     public ComponentDescription(Extension componentExtension) {
         super(EXTENSION_POINT_ID, componentExtension);
     }

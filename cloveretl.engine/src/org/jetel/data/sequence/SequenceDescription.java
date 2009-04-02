@@ -21,7 +21,6 @@ package org.jetel.data.sequence;
 
 import org.jetel.data.GraphElementDescription;
 import org.jetel.plugin.Extension;
-import org.jetel.plugin.PluginDescriptor;
 
 /**
  * @author Martin Zatopek
@@ -31,10 +30,6 @@ public class SequenceDescription extends GraphElementDescription {
 
     public final static String EXTENSION_POINT_ID = "sequence";
     
-    public SequenceDescription(String sequenceType, String className, PluginDescriptor pluginDescriptor) {
-        super(EXTENSION_POINT_ID, sequenceType, className, pluginDescriptor);
-    }
-
     public SequenceDescription(Extension sequenceExtension) {
         super(EXTENSION_POINT_ID, sequenceExtension);
     }

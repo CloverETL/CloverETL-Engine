@@ -211,6 +211,7 @@ public class MultiFileReader {
 		
 		// next source
 		ReadableByteChannel stream = null;
+		//TODO close channel
 		while (channelIterator.hasNext()) {
 			autoFilling.resetSourceCounter();
 			autoFilling.resetGlobalSourceCounter();
@@ -265,6 +266,7 @@ public class MultiFileReader {
 	 */
 	private final boolean checkRowAndPrepareSource() throws JetelException {
         //in case that fileURL doesn't contain valid file url
+        initializeDataDependentSource();
         if(noInputFile) {
             return false;
         }
@@ -302,7 +304,6 @@ public class MultiFileReader {
         //use parser to get next record
         DataRecord rec;
         try {
-            initializeDataDependentSource();
             while((rec = parser.getNext(record)) == null && nextSource());
         } catch(JetelException e) {
             autoFilling.incGlobalCounter();
@@ -331,7 +332,6 @@ public class MultiFileReader {
         //use parser to get next record
         DataRecord rec;
         try {
-            initializeDataDependentSource();
             while((rec = parser.getNext()) == null && nextSource());
         } catch(JetelException e) {
             autoFilling.incGlobalCounter();
@@ -346,7 +346,7 @@ public class MultiFileReader {
 
 	private final void initializeDataDependentSource() throws JetelException {
         if (initializeDataDependentSource) {
-        	nextSource();
+        	noInputFile = !nextSource();
         	initializeDataDependentSource = false;
         }
 	}
