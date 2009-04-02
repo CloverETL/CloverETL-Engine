@@ -300,7 +300,7 @@ public abstract class CopySQLData {
 			String[] keyFields){
 
 		if (fieldTypes.size() != keyFields.length){
-			throw new RuntimeException("Number of db fields (" + fieldTypes.size() + ") is diffrent then " +
+			throw new RuntimeException("Number of db fields (" + fieldTypes.size() + ") is different then " +
 					"number of key fields " + keyFields.length + ")." );
 		}
 		CopySQLData[] transMap = new CopySQLData[fieldTypes.size()];
