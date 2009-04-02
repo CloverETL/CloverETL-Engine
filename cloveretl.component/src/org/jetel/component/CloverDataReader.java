@@ -119,6 +119,8 @@ public class CloverDataReader extends Node {
     private AutoFilling autoFilling = new AutoFilling();
 
 	private Iterator<String> filenameItor;
+
+	private boolean inputSource;
     
 	/**
 	 * @param id
@@ -147,28 +149,30 @@ public class CloverDataReader extends Node {
 		int recordCount = 0;
 		String fName;
         DataRecord rec;
-		do {
-			while ((rec = parser.getNext(record))!=null && runIt){
-		        //check for index of last returned record
-		        if(numRecords == recordCount) {
-					break;
-		        }
-		        autoFilling.setAutoFillingFields(rec);
-			    writeRecordBroadcast(rec);
-				SynchronizeUtils.cloverYield();
-			    recordCount++;
-			}
+		if (inputSource) {
+			do {
+				while ((rec = parser.getNext(record))!=null && runIt){
+			        //check for index of last returned record
+			        if(numRecords == recordCount) {
+						break;
+			        }
+			        autoFilling.setAutoFillingFields(rec);
+				    writeRecordBroadcast(rec);
+					SynchronizeUtils.cloverYield();
+				    recordCount++;
+				}
 
-			// prepare next file
-			if (!filenameItor.hasNext()) break;
-			parser.close();
-			fName = filenameItor.next();
-			if (indexFileURL != null) {
-				parser.setDataSource(new String[]{fName,indexFileURL});
-			} else {
-				parser.setDataSource(fName);
-			}
-		} while (true);
+				// prepare next file
+				parser.close();
+				if (!filenameItor.hasNext()) break;
+				fName = filenameItor.next();
+				if (indexFileURL != null) {
+					parser.setDataSource(new String[]{fName,indexFileURL});
+				} else {
+					parser.setDataSource(fName);
+				}
+			} while (true);
+		}
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -266,7 +270,15 @@ public class CloverDataReader extends Node {
 		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
 		parser.init(metadata);
 		parser.setProjectURL(getGraph().getProjectURL());
+		inputSource = setDataSource();
 		
+    	if (metadata != null) {
+    		autoFilling.addAutoFillingFields(metadata);
+    	}
+    	autoFilling.setFilename(fileURL);
+	}
+	
+	private boolean setDataSource() throws ComponentNotReadyException {
 		if (filenameItor.hasNext()) {
 			String fName = filenameItor.next();
 			if (indexFileURL != null) {
@@ -274,12 +286,9 @@ public class CloverDataReader extends Node {
 			}else{
 				parser.setDataSource(fName);
 			}
+			return true;
 		}
-		
-    	if (metadata != null) {
-    		autoFilling.addAutoFillingFields(metadata);
-    	}
-    	autoFilling.setFilename(fileURL);
+		return false;
 	}
 	
 	private void initFileIterator() throws ComponentNotReadyException {
@@ -304,7 +313,9 @@ public class CloverDataReader extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
+		initFileIterator();
 		parser.reset();
+		inputSource = setDataSource();
 		autoFilling.reset();
 	}
 	
