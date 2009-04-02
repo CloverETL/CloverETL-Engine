@@ -80,6 +80,11 @@ public abstract class CopySQLData {
 	 */
 	protected DataField field;
 
+	/*
+	 * SQL type (java.sql.Types) of the corresponding field
+	 */
+	protected int sqlType;
+	
     protected boolean inBatchUpdate = false; // indicates whether batchMode is used when populating target DB
 
 	static Log logger = LogFactory.getLog(CopySQLData.class);
@@ -128,7 +133,16 @@ public abstract class CopySQLData {
         return inBatchUpdate;
     }
 
-    /**
+    
+    public int getSqlType() {
+		return sqlType;
+	}
+
+	void setSqlType(int sqlType) {
+		this.sqlType = sqlType;
+	}
+
+	/**
      * @param inBatchUpdate The inBatchUpdate to set.
      */
     public void setInBatchUpdate(boolean inBatch) {
@@ -146,10 +160,10 @@ public abstract class CopySQLData {
 		try {
 			setJetel(resultSet);
 		} catch (SQLException ex) {
-			throw new SQLException(ex.getMessage() + " with field " + field.getMetadata().getName());
+			throw new SQLException(ex.getMessage() + " with field '" + field.getMetadata().getName() + "'");
 		} catch (ClassCastException ex){
-		    throw new SQLException("Incompatible Clover & JDBC field types - field "+field.getMetadata().getName()+
-		            " Clover type: "+SQLUtil.jetelType2Str(field.getMetadata().getType()));
+		    throw new SQLException("Incompatible Clover & JDBC field types - field '"+field.getMetadata().getName()+
+		            "'; Clover type: "+SQLUtil.jetelType2Str(field.getMetadata().getType()) + "; SQL type: " + SQLUtil.sqlType2str(getSqlType()));
 		}
 	}
 
@@ -166,10 +180,10 @@ public abstract class CopySQLData {
 		try {
 			setSQL(pStatement);
 		} catch (SQLException ex) {
-			throw new SQLException(ex.getMessage() + " with field " + field.getMetadata().getName());
+			throw new SQLException(ex.getMessage() + " with field '" + field.getMetadata().getName() + "'");
 		}catch (ClassCastException ex){
-		    throw new SQLException("Incompatible Clover & JDBC field types - field "+field.getMetadata().getName()+
-		            " Clover type: "+SQLUtil.jetelType2Str(field.getMetadata().getType()));
+		    throw new SQLException("Incompatible Clover & JDBC field types - field '"+field.getMetadata().getName()+
+		            "'; Clover type: "+SQLUtil.jetelType2Str(field.getMetadata().getType()) + "; SQL type: " + SQLUtil.sqlType2str(getSqlType()));
 		}
 	}
 
@@ -521,7 +535,7 @@ public abstract class CopySQLData {
 			if (outMetadata.getFieldType(transMap[i].fieldJetel) != jdbcSpecific.sqlType2jetel(sqlMeta.getColumnType(i + 1))){
 				return "Incompatible Clover & JDBC field types - field "+outMetadata.getField(transMap[i].fieldJetel).getName()+
 	            ". Clover type: "+ SQLUtil.jetelType2Str(outMetadata.getFieldType(transMap[i].fieldJetel)) + 
-	            ", sql type: " + SQLUtil.sqlType2str(sqlMeta.getColumnType(i + 1));
+	            ", SQL type: " + SQLUtil.sqlType2str(sqlMeta.getColumnType(i + 1));
 			}
 		}
 		return null;
@@ -541,16 +555,20 @@ public abstract class CopySQLData {
 			DataRecord record, int fromIndex, int toIndex) {
 		String format = fieldMetadata.getFormatStr();
 		char jetelType = fieldMetadata.getType();
+		CopySQLData obj = null;
 		switch (SQLType) {
 			case Types.CHAR:
 			case Types.LONGVARCHAR:
 			case Types.VARCHAR:
-				return new CopyString(record, fromIndex, toIndex);
+				obj = new CopyString(record, fromIndex, toIndex);
+				break;
 			case Types.INTEGER:
 			case Types.SMALLINT:
-				return new CopyInteger(record, fromIndex, toIndex);
+				obj = new CopyInteger(record, fromIndex, toIndex);
+				break;
 			case Types.BIGINT:
-			    return new CopyLong(record,fromIndex,toIndex);
+			    obj = new CopyLong(record,fromIndex,toIndex);
+			    break;
 			case Types.DECIMAL:
 			case Types.DOUBLE:
 			case Types.FLOAT:
@@ -560,61 +578,75 @@ public abstract class CopySQLData {
 				// clover source is integer - no precision can be
 				// lost so we can use CopyInteger
 				if (jetelType == DataFieldMetadata.INTEGER_FIELD) {
-					return new CopyInteger(record, fromIndex, toIndex);
+					obj = new CopyInteger(record, fromIndex, toIndex);
 				} else if (jetelType == DataFieldMetadata.LONG_FIELD) {
-					return new CopyLong(record, fromIndex, toIndex);
+					obj = new CopyLong(record, fromIndex, toIndex);
 				} else if(jetelType == DataFieldMetadata.NUMERIC_FIELD) {
-				    return new CopyNumeric(record, fromIndex, toIndex);
+				    obj = new CopyNumeric(record, fromIndex, toIndex);
 				} else {
-					return new CopyDecimal(record, fromIndex, toIndex);
+					obj = new CopyDecimal(record, fromIndex, toIndex);
 				}
+				break;
 			case Types.DATE:
 				if (StringUtils.isEmpty(format)) {
-					return new CopyDate(record, fromIndex, toIndex);
+					obj = new CopyDate(record, fromIndex, toIndex);
+					break;
 				}				
 			case Types.TIME:
 				if (StringUtils.isEmpty(format)) {
-					return new CopyTime(record, fromIndex, toIndex);
+					obj = new CopyTime(record, fromIndex, toIndex);
+					break;
 				}				
 			case Types.TIMESTAMP:
 				if (StringUtils.isEmpty(format)) {
-					return new CopyTimestamp(record, fromIndex, toIndex);
+					obj = new CopyTimestamp(record, fromIndex, toIndex);
+					break;
 				}
 				boolean isDate = fieldMetadata.isDateFormat();
 				boolean isTime = fieldMetadata.isTimeFormat();
 				if (isDate && isTime) {
-					return new CopyTimestamp(record, fromIndex, toIndex);
+					obj = new CopyTimestamp(record, fromIndex, toIndex);
 				}else if (isDate) {
-					return new CopyDate(record, fromIndex, toIndex);
+					obj = new CopyDate(record, fromIndex, toIndex);
 				}else{
-					return new CopyTime(record, fromIndex, toIndex);
+					obj = new CopyTime(record, fromIndex, toIndex);
 				}
+				break;
 			case Types.BOOLEAN:
 			case Types.BIT:
 				if (jetelType == DataFieldMetadata.BOOLEAN_FIELD) {
-					return new CopyBoolean(record, fromIndex, toIndex);
+					obj = new CopyBoolean(record, fromIndex, toIndex);
+					break;
 				} 
         		logger.warn("Metadata mismatch; type:" + jetelType + " SQLType:"+SQLType+" - using CopyString object.");
-				return new CopyString(record, fromIndex, toIndex);
+        		obj = new CopyString(record, fromIndex, toIndex);
+        		break;
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
             case Types.BLOB:
             	if (!StringUtils.isEmpty(format) && format.equalsIgnoreCase(SQLUtil.BLOB_FORMAT_STRING)) {
-                	return new CopyBlob(record, fromIndex, toIndex);
+                	obj = new CopyBlob(record, fromIndex, toIndex);
+                	break;
             	}
             	if (!StringUtils.isEmpty(format) && !format.equalsIgnoreCase(SQLUtil.BINARY_FORMAT_STRING)){
             		logger.warn("Unknown format " + StringUtils.quote(format) + " - using CopyByte object.");
             	}
-                return new CopyByte(record, fromIndex, toIndex);
+                obj = new CopyByte(record, fromIndex, toIndex);
+                break;
 			// when Types.OTHER or unknown, try to copy it as STRING
 			// this works for most of the NCHAR/NVARCHAR types on Oracle, MSSQL, etc.
 			default:
 			//case Types.OTHER:// When other, try to copy it as STRING - should work for NCHAR/NVARCHAR
-				return new CopyString(record, fromIndex, toIndex);
+				obj = new CopyString(record, fromIndex, toIndex);
+				break;
 			//default:
 			//	throw new RuntimeException("SQL data type not supported: " + SQLType);
 		}
+		
+		obj.setSqlType(SQLType);
+		return obj;
+		
 	}
 
 
