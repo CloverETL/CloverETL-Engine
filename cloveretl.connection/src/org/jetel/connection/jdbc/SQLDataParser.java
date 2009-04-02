@@ -85,7 +85,6 @@ public class SQLDataParser implements Parser {
 	private String incrementalFile;
 	private Properties incrementalKey;
 	private SQLIncremental incremental;
-	private String[] cloverOutputFields;
 	private SQLCloverStatement sqlCloverStatement;
 	
 	static Log logger = LogFactory.getLog(SQLDataParser.class);
@@ -239,10 +238,11 @@ public class SQLDataParser implements Parser {
 	}
 
 	protected void initSQLMap(DataRecord record) throws SQLException{
-		if (cloverOutputFields == null) {
+		if (sqlCloverStatement.getCloverOutputFields() == null) {
 			transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultSet.getMetaData()) ,metadata, record);
 		}else{
-			transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultSet.getMetaData()) , metadata, record, cloverOutputFields);
+			transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultSet.getMetaData()) , metadata, record, 
+					sqlCloverStatement.getCloverOutputFields());
 		}
 	}
 
