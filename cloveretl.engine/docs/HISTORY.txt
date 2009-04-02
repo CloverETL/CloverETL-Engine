@@ -14,6 +14,14 @@ Features:
 	- random_long
 	- random_date
 	- random_string
+	- bit_and
+	- bit_or
+	- bit_xor
+	- bit_set
+	- bit_invert
+	- bit_is_set
+	- bit_lshift
+	- bit_rshift
 + DBExecute can read statements from input port
 + str2num ctl function has new pattern and locale parameters
 + CloverDataReader can read multiple files
