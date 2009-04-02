@@ -8,6 +8,10 @@ Features:
 	- edit_distance
 	- metaphone
 	- NYSIIS
+	- random_boolean
+	- random_gaussian
+	- random_int
+	- random_long
 	- random_date
 	- random_string
 + DBExecute can read statements from input port
