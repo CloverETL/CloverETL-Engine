@@ -52,7 +52,9 @@ public class TLFunctionPluginRepository {
         //register all function libraries
         for(Extension extension : tlfunctionExtensions) {
             try {
-                registerFunctionLibrary(new TLFunctionLibraryDescription(extension));
+            	TLFunctionLibraryDescription description = new TLFunctionLibraryDescription(extension);
+            	description.init();
+                registerFunctionLibrary(description);
             } catch(Exception e) {
                 logger.error("Cannot create TL function description, extension in plugin manifest is not valid.\n"
                         + "pluginId = " + extension.getPlugin().getId() + "\n" + extension + "\nReason: " + e.getMessage());

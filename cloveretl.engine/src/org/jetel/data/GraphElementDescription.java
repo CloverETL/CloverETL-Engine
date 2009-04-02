@@ -19,11 +19,11 @@
 */
 package org.jetel.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
-import org.jetel.plugin.Plugins;
 
 /**
  * Ascendant of all plugin elements description like ComponentDescription, SequenceDescription,
@@ -33,9 +33,7 @@ import org.jetel.plugin.Plugins;
  * @author Martin Zatopek
  *
  */
-public class GraphElementDescription {
-
-    private final static Log logger = LogFactory.getLog(GraphElementDescription.class);
+public class GraphElementDescription extends PluginableItemDescription {
 
     private final static String TYPE = "type";
     private final static String CLASS = "className";
@@ -48,14 +46,9 @@ public class GraphElementDescription {
     
     private PluginDescriptor pluginDescriptor;
     
-    public GraphElementDescription(String extensionPointId, String type, String className, PluginDescriptor pluginDescriptor) {
-        this.extensionPointId = extensionPointId;
-        this.type = type;
-        this.className = className;
-        this.pluginDescriptor = pluginDescriptor;
-    }
-
     public GraphElementDescription(String extensionPointId, Extension extension) {
+    	super(extension);
+    	
         if(!extension.getPointId().equals(extensionPointId)) {
             throw new IllegalArgumentException("Invalid extension point id (unexpected exception).");
         }
@@ -66,10 +59,6 @@ public class GraphElementDescription {
             throw new IllegalArgumentException("Extension hasn't type or className parameter defined.");
         }
         
-        if (!Plugins.isLazyClassLoading()) {
-            //class references should be preloaded
-        	preloadClass();
-        }
     }
 
     public String getClassName() {
@@ -80,28 +69,15 @@ public class GraphElementDescription {
         return type;
     }
     
-    public void setClassName(String className) {
-        this.className = className;
-    }
-    
-    public void setType(String componentType) {
-        this.type = componentType;
-    }
-
     public PluginDescriptor getPluginDescriptor() {
         return pluginDescriptor;
     }
 
-    /**
-     * Just preloads a class reference of this graph element description.
-     * It is neccesary for the clover server.
-     */
-    private void preloadClass() {
-    	try {
-			Class.forName(getClassName(), true, getPluginDescriptor().getClassLoader());
-		} catch (ClassNotFoundException e) {
-			logger.warn("Unable to preload class '" + getClassName() + "' registred under type '" + getType() + "' in plugin: " + getPluginDescriptor());
-		}
-    }
-    
+	@Override
+	protected List<String> getClassNames() {
+		List<String> result = new ArrayList<String>();
+		result.add(getClassName());
+		return result;
+	}
+
 }

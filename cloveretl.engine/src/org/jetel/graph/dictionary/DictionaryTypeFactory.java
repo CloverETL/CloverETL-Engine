@@ -51,7 +51,9 @@ public class DictionaryTypeFactory {
         //register all dictionary types
         for(Extension extension : dictionaryTypesExtensions) {
             try {
-                registerDictionaryEntry(new DictionaryTypeDescription(extension));
+            	DictionaryTypeDescription description = new DictionaryTypeDescription(extension);
+            	description.init();
+                registerDictionaryEntry(description);
             } catch(Exception e) {
                 logger.error("Cannot create dictionary type description, extension in plugin manifest is not valid.\n"
                         + "pluginId = " + extension.getPlugin().getId() + "\n" + extension + "\nReason: " + e.getMessage());

@@ -21,7 +21,6 @@ package org.jetel.graph.dictionary;
 
 import org.jetel.data.GraphElementDescription;
 import org.jetel.plugin.Extension;
-import org.jetel.plugin.PluginDescriptor;
 
 /**
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
@@ -33,10 +32,6 @@ public class DictionaryTypeDescription extends GraphElementDescription {
 
     public final static String EXTENSION_POINT_ID = "dictionaryType";
     
-	public DictionaryTypeDescription(String dictionaryType, String className, PluginDescriptor pluginDescriptor) {
-	    super(EXTENSION_POINT_ID, dictionaryType, className, pluginDescriptor);
-    }
-
     public DictionaryTypeDescription(Extension dictionaryExtension) {
         super(EXTENSION_POINT_ID, dictionaryExtension);
     }

@@ -202,9 +202,7 @@ public class Plugins {
      * Activate all not yet activated plugins. All already deactivated plugins are skipped.
      * @param lazyClassLoading whether the class references are actively loaded by the plugin system 
      */
-    public static void activateAllPlugins(boolean lazyClassLoading) {
-    	Plugins.lazyClassLoading = lazyClassLoading;
-    	
+    public static void activateAllPlugins() {
     	for(String pluginId : pluginDescriptors.keySet()) {
     		if(!activePlugins.containsKey(pluginId) && !deactivePlugins.containsKey(pluginId)) {
     			activatePlugin(pluginId);
@@ -269,4 +267,12 @@ public class Plugins {
 		return lazyClassLoading;
 	}
 
+    /**
+     * @param lazyClassLoading whether the class references are actively loaded by the plugin system
+     * @note has to be invoked before Plugins initialization
+     */
+    public static void setLazyClassLoading(boolean lazyClassLoading) {
+    	Plugins.lazyClassLoading = lazyClassLoading;
+    }
+    
 }

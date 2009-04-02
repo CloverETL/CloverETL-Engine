@@ -51,7 +51,9 @@ public class JdbcDriverFactory {
         //register all jdbc drivers
         for(Extension extension : jdbcExtensions) {
             try {
-                registerJdbcDriver(new JdbcDriverDescription(extension));
+            	JdbcDriverDescription description = new JdbcDriverDescription(extension);
+            	description.init();
+                registerJdbcDriver(description);
             } catch(Exception e) {
                 logger.error("Cannot create JDBC driver descriptor, extension in plugin manifest is not valid.\n"
                         + "pluginId = " + extension.getPlugin().getId() + "\n" + extension + "\nReason: " + e.getMessage());

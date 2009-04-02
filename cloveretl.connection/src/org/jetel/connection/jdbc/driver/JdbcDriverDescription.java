@@ -21,16 +21,17 @@ package org.jetel.connection.jdbc.driver;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecificDescription;
 import org.jetel.connection.jdbc.specific.JdbcSpecificFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.PluginableItemDescription;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.ExtensionParameter;
@@ -44,10 +45,8 @@ import org.jetel.util.string.StringUtils;
  *
  * @created 14.9.2007
  */
-public class JdbcDriverDescription {
+public class JdbcDriverDescription extends PluginableItemDescription {
     
-    private static Log logger = LogFactory.getLog(JdbcDriverDescription.class);
-
     private final static String DATABASE_PARAMETER = "database";
 
     private final static String NAME_PARAMETER = "name";
@@ -99,16 +98,11 @@ public class JdbcDriverDescription {
     private Properties properties;
     
     /**
-     * Extension where was this JDBC driver defined.
-     */
-    private Extension extension;
-    
-    /**
      * The only constructor.
      * @param extension
      */
     public JdbcDriverDescription(Extension extension) {
-        this.extension = extension;
+    	super(extension);
 
         //reads 'database' parameter
         if(!extension.hasParameter(DATABASE_PARAMETER)) {
@@ -217,7 +211,7 @@ public class JdbcDriverDescription {
     	URL[] urls = new URL[libraryPaths.length];
         for(int i = 0; i < libraryPaths.length; i++) {
             try {
-                urls[i] = extension.getPlugin().getURL(libraryPaths[i]);
+                urls[i] = getExtension().getPlugin().getURL(libraryPaths[i]);
             } catch (MalformedURLException ex1) {
                 throw new ComponentNotReadyException("Cannot create JDBC driver '" + database + "'. Malformed URL: " + ex1.getMessage(), ex1);
             }
@@ -225,5 +219,10 @@ public class JdbcDriverDescription {
         
         return urls;
     }
+
+	@Override
+	protected List<String> getClassNames() {
+		return new ArrayList<String>();
+	}
 
 }

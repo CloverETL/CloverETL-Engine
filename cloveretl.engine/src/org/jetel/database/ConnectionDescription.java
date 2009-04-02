@@ -21,7 +21,6 @@ package org.jetel.database;
 
 import org.jetel.data.GraphElementDescription;
 import org.jetel.plugin.Extension;
-import org.jetel.plugin.PluginDescriptor;
 
 /**
  * @author Martin Zatopek
@@ -31,10 +30,6 @@ public class ConnectionDescription extends GraphElementDescription {
 
     public final static String EXTENSION_POINT_ID = "connection";
     
-    public ConnectionDescription(String connectionType, String className, PluginDescriptor pluginDescriptor) {
-        super(EXTENSION_POINT_ID, connectionType, className, pluginDescriptor);
-    }
-
     public ConnectionDescription(Extension connectionExtension) {
         super(EXTENSION_POINT_ID, connectionExtension);
     }

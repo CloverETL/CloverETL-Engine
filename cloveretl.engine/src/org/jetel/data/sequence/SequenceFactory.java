@@ -58,7 +58,9 @@ public class SequenceFactory {
         //register all sequences
         for(Extension extension : sequenceExtensions) {
             try {
-                registerSequence(new SequenceDescription(extension));
+            	SequenceDescription description = new SequenceDescription(extension);
+            	description.init();
+                registerSequence(description);
             } catch(Exception e) {
                 logger.error("Cannot create component description, extension in plugin manifest is not valid.\n"
                         + "pluginId = " + extension.getPlugin().getId() + "\n"
