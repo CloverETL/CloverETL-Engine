@@ -173,7 +173,9 @@ public class CloverDataParser implements Parser {
 	public void close() {
 		if (recordFile != null) {
 			try {
-				recordFile.close();
+				if (recordFile.isOpen()) {
+					recordFile.close();
+				}
 			} catch (IOException ex) {
 				ex.printStackTrace();
 			}
@@ -238,36 +240,8 @@ public class CloverDataParser implements Parser {
 		return null;
 	}
 
-	private void resetInternal() throws IOException, ComponentNotReadyException{
-		if (recordFile.isOpen()) {
-			recordFile.close();
-		}
-		recordBuffer.clear();
-    	String fileName = new File(FileUtils.getFile(projectURL, inData)).getName();
-    	if (fileName.toLowerCase().endsWith(".zip")) {
-    		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
-    	}
-        recordFile = FileUtils.getReadableChannel(projectURL, !inData.startsWith("zip:") ? inData : 
-        	inData + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName);
-        if (index > 0) {//reading not all records --> find index in record file
-        	setStartIndex(fileName);
-        }
-        //skip idx bytes from record file
-        int i=0;
-        do {
-            ByteBufferUtils.reload(recordBuffer,recordFile);
-            recordBuffer.flip();
-            i++;
-        }while (i*Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE < idx);
-        recordBuffer.position((int)idx%Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-	}
-
 	public void reset() {
-		try{
-			resetInternal();
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
+		close();
 	}
 
 	public Object getPosition() {
