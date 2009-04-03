@@ -343,7 +343,7 @@ public class RunGraph extends Node{
 			result = null;
 		}
 		
-		return result;
+		return StringUtils.backslashToSlash(result);
 	}
 
 	/**
