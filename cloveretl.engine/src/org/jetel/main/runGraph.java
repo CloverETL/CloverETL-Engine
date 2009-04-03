@@ -241,7 +241,7 @@ public class runGraph {
                 i++;
                 configFileName = args[i];
             } else if (args[i].startsWith(NO_DEBUG_SWITCH)) {
-                debugMode = true;
+                debugMode = false;
             } else if (args[i].startsWith(DEBUG_DIRECTORY_SWITCH)) {
                 i++;
                 debugDirectory = args[i]; 
