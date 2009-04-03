@@ -88,7 +88,7 @@ public class TrackingLogger implements NotificationListener {
             + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).
                 format(Calendar.getInstance().getTime()));
         logger.info("Node                   Status     Port      #Records         #KB  Rec/s    KB/s");
-        logger.info("----------------------------------------------------------------------------------");
+        logger.info("---------------------------------------------------------------------------------");
         for (NodeTrackingDetail nodeDetail : cloverJMX.getGraphDetail().getRunningPhaseDetail().getNodesDetails()) {
             Object nodeInfo[] = {nodeDetail.getNodeId(), nodeDetail.getResult().message()};
             int nodeSizes[] = {-23, -15};
