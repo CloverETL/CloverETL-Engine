@@ -380,7 +380,11 @@ public class RunGraph extends Node{
 	}
 	
 	private boolean runGraphSeparateInstance(String graphName, OutputRecordData outputRecordData, String cloverCommandLineArgs) throws IOException {
-		String commandLine = javaCmdLine + " " + quotePartsOfClassPath(classPath) + " " + cloverRunClass + " " + cloverCommandLineArgs + " " + graphName;
+		String commandLine = javaCmdLine + " " + quotePartsOfClassPath(classPath) + " " + cloverRunClass + " " + cloverCommandLineArgs +
+		// TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
+		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed
+		" " + runGraph.NO_DEBUG_SWITCH + 
+		" " + graphName;
 		logger.info("Executing command: " + StringUtils.quote(commandLine));
 
 		DataConsumer consumer = new OutDataConsumer(fileWriter, outputRecordData);
@@ -441,7 +445,11 @@ public class RunGraph extends Node{
         }
         
         GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-        Future<Result> futureResult = null;                
+        Future<Result> futureResult = null;
+        
+        // TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
+		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed
+        runtimeContext.setDebugMode(false);
 
         TransformationGraph graph = null;
 		try {
