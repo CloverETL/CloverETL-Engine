@@ -23,7 +23,6 @@ import java.text.CollationKey;
 import java.text.Collator;
 import java.text.ParseException;
 import java.text.RuleBasedCollator;
-import java.util.HashMap;
 import java.util.Locale;
 
 import org.jetel.exception.JetelException;
@@ -82,27 +81,16 @@ public class StringAproxComparator{
 	Collator col	=Collator.getInstance();
 	private String locale=null;
 	
-	//Comparators factory
-	private static HashMap comparators = new HashMap();
-	
 	public static StringAproxComparator createComparator(String locale,boolean[] strength)
 			throws JetelException{
 		if (!checkStrength(strength[0],strength[1],strength[2],strength[3])){
 			throw new JetelException("Not allowed strength combination");
 		}
-		ComparatorParameters comparatorParameters;
 		if (locale!=null){
-			comparatorParameters = new ComparatorParameters(strength,locale);
-			if (!comparators.containsKey(comparatorParameters)){
-				comparators.put(comparatorParameters,new StringAproxComparator(locale,strength));
-			}
+			return new StringAproxComparator(locale,strength);
 		}else{
-			comparatorParameters = new ComparatorParameters(strength,"");
-			if (!comparators.containsKey(comparatorParameters)){
-				comparators.put(comparatorParameters,new StringAproxComparator(strength));
-			}
+			return new StringAproxComparator(strength);
 		}
-		return (StringAproxComparator)comparators.get(comparatorParameters);
 	}
 
 	public static StringAproxComparator createComparator(String locale,
@@ -118,11 +106,7 @@ public class StringAproxComparator{
 		if (!checkStrength(strength[0],strength[1],strength[2],strength[3])){
 			throw new JetelException("Not allowed strength combination");
 		}
-		ComparatorParameters comparatorParameters = new ComparatorParameters(strength,"");
-		if (!comparators.containsKey(comparatorParameters)){
-			comparators.put(comparatorParameters,new StringAproxComparator(strength));
-		}
-		return (StringAproxComparator)comparators.get(comparatorParameters);
+		return new StringAproxComparator(strength);
 	}
 	
 	public static StringAproxComparator createComparator(boolean identical,
@@ -441,54 +425,6 @@ public class StringAproxComparator{
 
 	public CollationKey getCollationKey(String source){
 		return col.getCollationKey(source);
-	}
-
-	private static class ComparatorParameters{
-		boolean[] strength=new boolean[StringAproxComparator.IDENTICAL];
-		String locale;
-		
-		ComparatorParameters(boolean[] strength,String locale){
-			this.strength=strength;
-			this.locale=locale;
-		}
-		
-		public boolean equals(Object obj) {
-			if (!(obj instanceof ComparatorParameters)) {
-				return false;
-			}
-			boolean[] objStrength = ((ComparatorParameters)obj).getStrength();
-			boolean[] thisStrength = getStrength();
-			boolean eq=true;
-			for (int i=0;i<objStrength.length;i++){
-				eq = eq && (objStrength[i]==thisStrength[i]);
-			}
-			return eq && ((ComparatorParameters)obj).getLocale().equals(locale);
-		}
-
-		public int hashCode() {
-			int hash=0;
-			if (strength[StringAproxComparator.IDENTICAL-1]) {
-				hash+=1;
-			}
-			if (strength[StringAproxComparator.TERTIARY-1]){
-				hash+=2;
-			}
-			if (strength[StringAproxComparator.SECONDARY-1]){
-				hash+=4;
-			}
-			if (strength[StringAproxComparator.PRIMARY-1]){
-				hash+=8;
-			}
-			return 37*hash+locale.hashCode();
-		}
-
-		public boolean[] getStrength() {
-			return strength;
-		}
-
-		public String getLocale() {
-			return locale;
-		}
 	}
 
 }
