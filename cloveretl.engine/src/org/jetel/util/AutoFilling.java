@@ -151,11 +151,11 @@ public class AutoFilling {
     }
 
 	/**
-	 * Sets autofilling fields in data record for the preferred(last used) metadata.
+	 * Sets autofilling fields in data record for the last used metadata. You can set by addAutoFillingFields or setAutoFillingFields method.
 	 * 
 	 * @param rec
 	 */
-	public void setPreferredAutoFillingFields(DataRecord rec) {
+	public void setLastUsedAutoFillingFields(DataRecord rec) {
         if(rec == null) return;
         setAutofilling(rec);
 	}
