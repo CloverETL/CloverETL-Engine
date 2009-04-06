@@ -70,7 +70,7 @@ public class AutoFilling {
 	 */
     public void addAutoFillingFields(DataRecordMetadata metadata) {
     	// create and put new autofilling
-        autoFillingMap.put(metadata, createAutoFillingFields(metadata));
+        autoFillingMap.put(metadata, autoFillingData = createAutoFillingFields(metadata));
     }
 
     /**
@@ -151,19 +151,35 @@ public class AutoFilling {
     }
 
 	/**
+	 * Sets autofilling fields in data record for the preferred(last used) metadata.
+	 * 
+	 * @param rec
+	 */
+	public void setPreferredAutoFillingFields(DataRecord rec) {
+        if(rec == null) return;
+        setAutofilling(rec);
+	}
+
+	/**
 	 * Sets autofilling fields in data record.
 	 * 
 	 * @param rec
 	 */
 	public void setAutoFillingFields(DataRecord rec) {
         if(rec == null) return;
-
         autoFillingData = autoFillingMap.get(rec.getMetadata());
         if (autoFillingData == null) {
         	autoFillingData = createAutoFillingFields(rec.getMetadata());
             autoFillingMap.put(rec.getMetadata(), autoFillingData);
         }
-        
+        setAutofilling(rec);
+	}
+
+	/**
+	 * Fill in the autofilling data.
+	 * @param rec
+	 */
+	private final void setAutofilling(DataRecord rec) {
         if (autoFillingData.noAutoFillingData) {
             sourceCounter++;
             globalCounter++;
