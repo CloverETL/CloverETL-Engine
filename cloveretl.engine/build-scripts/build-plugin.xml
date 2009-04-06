@@ -62,14 +62,22 @@
 		<if><available file="${dir.lib}"/>
 			<then>
 				<echo message="Plugin has own libraries in ${dir.engine.lib}"/>
+				<!-- fileset plugin-libs contains all jar files in plugin lib directory, used while compile plugin -->
 				<fileset id="plugin-libs" dir="${dir.lib}">
-					<include name="**"/> <!-- copy not only *jar, in cloveretl.bulkloader are executables -->
+					<include name="**/*.jar"/>
+				</fileset>
+				<!-- fileset plugin-lib-files contains all files in plugin lib directory, may contain executables (e.g. cloveretl.bulkloader), used while package plugin -->
+				<fileset id="plugin-lib-files" dir="${dir.lib}">
+					<include name="**"/> 
 				</fileset>
 			</then>
 			<else>
 				<echo message="Plugin has no own library"/>
 				<!-- define empty fileset -->
 				<fileset id="plugin-libs" dir="${basedir}">
+					<include name=""/>
+				</fileset>
+				<fileset id="plugin-lib-files" dir="${basedir}">
 					<include name=""/>
 				</fileset>
 			</else>
@@ -177,7 +185,7 @@
 		</copy>
 
 		<copy todir="${dist.src}/${plugin.name}/lib">
-			<fileset refid="plugin-libs"/>
+			<fileset refid="plugin-lib-files"/>
 		</copy>
 
 		<copy todir="${dist.src}/${plugin.name}">
