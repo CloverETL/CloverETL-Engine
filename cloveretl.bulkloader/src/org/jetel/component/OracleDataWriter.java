@@ -205,12 +205,11 @@ public class OracleDataWriter extends BulkLoader {
      *
      * @param  id  Description of the Parameter
      */
-    public OracleDataWriter(String id, String sqlldrPath, String username, String password, String tnsname, String tableName) {
+    public OracleDataWriter(String id, String sqlldrPath, String username, String password, String tnsname) {
         super(id, sqlldrPath, null);
         this.user = username;
         this.password = password;
         this.tnsname = tnsname;
-        this.table = tableName;
     }
 
 
@@ -414,6 +413,13 @@ public class OracleDataWriter extends BulkLoader {
 					+ " attribute have to be set.");
 		}
 		
+		if (StringUtils.isEmpty(table) && StringUtils.isEmpty(control)) {
+			throw new ComponentNotReadyException(this,
+					StringUtils.quote(XML_TABLE_ATTRIBUTE) + 
+					" attribute	or " + StringUtils.quote(XML_CONTROL_ATTRIBUTE) + 
+					" attribute have to be defined.");
+		}
+		
 		if (!isDataReadFromPort && StringUtils.isEmpty(dataURL)) {
 			throw new ComponentNotReadyException(this, "Input port or " + 
 					StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + 
@@ -428,7 +434,8 @@ public class OracleDataWriter extends BulkLoader {
 					StringUtils.quote(XML_CONTROL_ATTRIBUTE) +
 					" attribute have to be defined.");
 		}
-        
+
+		// report on ignoring some attributes
         if ((useFileForExchange && isDefinedUseFileForExchange) 
         		&& !isDataReadFromPort) {
         	logger.warn("When no port is connected" +
@@ -444,10 +451,14 @@ public class OracleDataWriter extends BulkLoader {
         			" attribute is omitted.");
         }
         
-        // report on ignoring some attributes
         if (!StringUtils.isEmpty(control)) {
         	logger.info("When attribute " + StringUtils.quote(XML_CONTROL_ATTRIBUTE) + 
         			" is defined then " + StringUtils.quote(XML_APPEND_ATTRIBUTE) + " attribute is omitted.");
+        	
+        	if (!StringUtils.isEmpty(table)) {
+        		logger.warn("When attribute " + StringUtils.quote(XML_CONTROL_ATTRIBUTE) + 
+            		" is defined then " + StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute is omitted.");
+        	}
         }
         
         if (dbFields != null && dbFields.length > 0) {
@@ -569,8 +580,10 @@ public class OracleDataWriter extends BulkLoader {
                     xattribs.getString(XML_SQLLDR_ATTRIBUTE),
                     xattribs.getString(XML_USER_ATTRIBUTE),
                     xattribs.getString(XML_PASSWORD_ATTRIBUTE),
-                    xattribs.getString(XML_TNSNAME_ATTRIBUTE),
-                    xattribs.getString(XML_TABLE_ATTRIBUTE));
+                    xattribs.getString(XML_TNSNAME_ATTRIBUTE));
+            if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
+                oracleDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
+            }
             if (xattribs.exists(XML_APPEND_ATTRIBUTE)) {
                 oracleDataWriter.setAppend(Append.valueOf(xattribs.getString(XML_APPEND_ATTRIBUTE)));
             }
