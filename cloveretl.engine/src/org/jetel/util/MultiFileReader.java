@@ -310,7 +310,7 @@ public class MultiFileReader {
             autoFilling.incSourceCounter();
             throw e;
         }
-        autoFilling.setAutoFillingFields(rec);
+        autoFilling.setPreferredAutoFillingFields(rec);
         
         if (rec == null) channelIterator.blankRead();
         
