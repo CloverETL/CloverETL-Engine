@@ -13,6 +13,7 @@
 	<property name="dir.lib" value="${basedir}/lib"/>
 	<property name="dir.doc" value="${basedir}/doc"/>
 	<property name="dir.dist" value="${basedir}/dist"/>
+	<property name="dir.plugin.dist" value="${dir.dist}/plugins/${plugin.dir.name}"/>
 
 	<property name="dir.engine" value="${basedir}/../cloveretl.engine"/>
 	<property file="${dir.engine}/build.properties"/>		
@@ -28,11 +29,17 @@
 	<property name="dir.coverage.classes" value="${dir.build}/classes-coverage"/>
 	<property name="dir.src.improved" value="${dir.build}/src-improved"/>
 	<property name="dir.findbugsreport" value="${dir.build}/findbugsreport"/>
+	<property name="dir.manifest" value="${dir.build}/manifest"/>
+	<property name="dir.obfuscate" value="${dir.build}/obfuscate"/>
+	<property name="dir.obfuscate.classes" value="${dir.obfuscate}/classes"/>
+	<property name="dir.obfuscate.manifest" value="${dir.obfuscate}/manifest"/>
 	<property name="required.plugins.file" value="${dir.build}/required-plugins.txt"/>
 	<property name="cobertura.ser" value="${dir.build}/plugin-cobertura.ser"/>
 
-	<!--load external properties-->
 
+	<!-- ProGuard task definition -->
+	<taskdef resource="proguard/ant/task.properties" classpath="${dir.engine.tools}/proguard.jar" />
+		
 	<!-- =========================== LIBRARIES ============================= -->
 	<fileset id="engine-libs" dir="${dir.engine.lib}">
 		<include name="**/*.jar"/>
@@ -92,6 +99,19 @@
 				<echo message="Plugin has no test"/>
 			</else>
 		</if>
+		
+		<if><equals arg1="${plugin.obfuscate}" arg2="true"/>
+			<then>
+				<property name="plugin.obfuscate.run" value="true"/>
+				<property name="dir.package.classes" value="${dir.obfuscate.classes}"/>
+				<property name="dir.package.manifest" value="${dir.obfuscate.manifest}"/>
+			</then>
+			<else>
+				<property name="dir.package.classes" value="${dir.classes}"/>
+				<property name="dir.package.manifest" value="${dir.manifest}"/>
+			</else>
+		</if>
+		
 	</target>
 
 	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
@@ -148,34 +168,112 @@
 	</target>
 
 	<target name="plugin.xml" depends="init">
-		<copy file="plugin.xml" tofile="${dir.build}/plugin.xml" encoding="UTF-8" />
-		<replace file="${dir.build}/plugin.xml" encoding="UTF-8">
+		<mkdir dir="${dir.manifest}"/>
+		<copy file="plugin.xml" tofile="${dir.manifest}/plugin.xml" encoding="UTF-8" />
+		<replace file="${dir.manifest}/plugin.xml" encoding="UTF-8">
 			<replacefilter token="0.0.0.devel" value="${version.full}"/>
+			<replacefilter token="&lt;library path=&quot;bin/&quot;/&gt;" value="&lt;library path=&quot;${plugin.name}.jar&quot;/&gt;"/>
 		</replace>
 	</target>
 	
-	<!-- pack binary result of compile to jar file -->
-	<target name="package" depends="compile,plugin.xml">
-		<!-- Create plugin directory. -->
-		<mkdir dir="${dir.dist}/plugins/${plugin.dir.name}"/>
+	<target name="obfuscate" depends="compile,plugin.xml" if="plugin.obfuscate.run">
+		<mkdir dir="${dir.obfuscate.classes}"/>
+		<mkdir dir="${dir.obfuscate.manifest}"/>
+		
+		<pathconvert property="plugin-libs.classpath" refid="plugin-libs"/>
+		<pathconvert property="engine-libs.classpath" refid="engine-libs"/>
+		
+		<proguard 
+			shrink="false" 
+			verbose="true"
+			optimize="false" 
+			skipnonpubliclibraryclasses="false"
+			skipnonpubliclibraryclassmembers="false"
+			printmapping="${dir.obfuscate}/proGuard-mapping.txt"
+			printseeds="${dir.obfuscate}/proGuard-seeds.txt"
+			dump="${dir.obfuscate}/proGuard-dump.txt"
+			>
+			
+		  	<injar path="${dir.classes}" />
+			<outjar location="${dir.obfuscate.classes}" />
 
-		<jar destfile="${dir.dist}/plugins/${plugin.dir.name}/${plugin.name}.jar" basedir="${dir.classes}">
+		  	<injar path="${dir.manifest}" />
+			<outjar location="${dir.obfuscate.manifest}" />
+			
+			<adaptresourcefilecontents filter="plugin.xml" />
+			
+		  	<libraryjar location="${java.home}/lib/rt.jar" />
+			<libraryjar path="${cp.compile}"/>
+			<libraryjar path="${plugin-libs.classpath}"/>
+			<libraryjar path="${engine-libs.classpath}"/>
+
+			<keepattribute name="InnerClasses" />
+			<keepattribute name="Exceptions" />
+			<keep extends="java.lang.Enum"><field access="public"/><method access="public"/></keep>
+			
+			<!-- list of classes to keep from all plugins except cloveretl.engine (better to place in plugin build script but duplication of proguard tag in each plugin is required; duplication is worse)-->
+			<keep name="org.jetel.component.normalize.RecordNormalize"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.normalize.DataRecordNormalize"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.denormalize.RecordDenormalize"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.denormalize.DataRecordDenormalize"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.jms.DataRecord2JmsMsg"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.jms.DataRecord2JmsMsgBase"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.JavaRunnable"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.BasicJavaRunnable"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.RecordTransform"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.DataRecordTransform"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.jms.JmsMsg2DataRecord"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.jms.JmsMsg2DataRecordBase"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.partition.PartitionFunction"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.partition.PartitionFunction"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="org.jetel.connection.jdbc.CopySQLData"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.DBConnection"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.SQLCloverStatement"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.SQLUtil"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.specific.DBConnectionInstance"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.specific.JdbcSpecific"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.SQLDataParser"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.SQLCloverCallableStatement"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.driver.JdbcDriver"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jms.JmsConnection"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.specific.conn.DefaultConnection"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="org.jetel.lookup.DBLookupTable"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.lookup.RangeLookupTable"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="org.jetel.sequence.PrimitiveSequence"><field access="protected public"/><method access="protected public"/></keep>
+
+			<keep name="com.opensys.cloveretl.data.parser.MultiLevelSelector"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.data.parser.PrefixMultiLevelSelector"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.lookup.PersistentLookupTable"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.lookup.AspellLookupTable"><field access="protected public"/><method access="protected public"/></keep>
+
+			<!-- template to copy&paste
+			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
+			-->
+		</proguard>
+	</target>
+	
+	
+	<!-- pack binary result of compile to jar file -->
+	<target name="package" depends="compile,obfuscate,plugin.xml">
+
+		<!-- Create plugin directory. -->
+		<mkdir dir="${dir.plugin.dist}"/>
+
+		<jar destfile="${dir.plugin.dist}/${plugin.name}.jar" basedir="${dir.package.classes}">
 			<include name="**/*"/>
 		</jar>
 		<!-- copy plugin manifest -->
-		<copy file="${dir.build}/plugin.xml" todir="${dir.dist}/plugins/${plugin.dir.name}" />
-		<replace file="${dir.dist}/plugins/${plugin.dir.name}/plugin.xml" token="&lt;library path=&quot;bin/&quot;/&gt;" value="&lt;library path=&quot;${plugin.name}.jar&quot;/&gt;" encoding="UTF-8"/>
+		<copy file="${dir.package.manifest}/plugin.xml" todir="${dir.plugin.dist}" />
 		
 		<!-- copy all libraries from lib directory -->
-		<if><available file="${dir.lib}"/>
-			<then>
-				<copy todir="${dir.dist}/plugins/${plugin.dir.name}/lib">
-					<fileset dir="${dir.lib}">
-						<include name="**/*"/>
-					</fileset>
-				</copy>
-			</then>
-		</if>
+		<copy todir="${dir.plugin.dist}/lib">
+			<fileset refid="plugin-lib-files"/>
+		</copy>
 	</target>
 
 	<target name="dist.src" depends="init" description="Creates source distribution">
@@ -208,7 +306,7 @@
         </cobertura-instrument>
 		
 		<copy todir="${dir.coverage.dist}/plugins/${plugin.dir.name}/">
-			<fileset dir="${dir.dist}/plugins/${plugin.dir.name}/"/>
+			<fileset dir="${dir.plugin.dist}/"/>
 		</copy>
 		
 		<jar destfile="${dir.coverage.dist}/plugins/${plugin.dir.name}/${plugin.name}.jar" basedir="${dir.coverage.classes}" update="true">
