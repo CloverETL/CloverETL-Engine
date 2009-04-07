@@ -146,7 +146,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 12th November 2008
+ * @version 7th April 2009
  * @since 26th September 2008
  */
 public class SortWithinGroups extends Node {
@@ -194,29 +194,18 @@ public class SortWithinGroups extends Node {
             throws XMLConfigurationException {
         SortWithinGroups sortWithinGroups = null;
 
-        ComponentXMLAttributes componentAttributes =
-                new ComponentXMLAttributes(xmlElement, transformationGraph);
-
-        String type = null;
+        ComponentXMLAttributes componentAttributes = new ComponentXMLAttributes(xmlElement, transformationGraph);
 
         try {
-            type = componentAttributes.getString(XML_TYPE_ATTRIBUTE);
-        } catch (Exception exception) {
-            throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
-                    + " attribute is missing!", exception);
-        }
+            if (!componentAttributes.getString(XML_TYPE_ATTRIBUTE).equalsIgnoreCase(COMPONENT_TYPE)) {
+                throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
+                        + " attribute contains a value incompatible with this component!");
+            }
 
-        if (!type.equalsIgnoreCase(COMPONENT_TYPE)) {
-            throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
-                    + " attribute contains a value incompatible with this component!");
-        }
-
-        try {
             String groupKey = componentAttributes.getString(XML_ATTRIBUTE_GROUP_KEY);
             String sortKey = componentAttributes.getString(XML_ATTRIBUTE_SORT_KEY);
 
-            sortWithinGroups = new SortWithinGroups(
-                    componentAttributes.getString(XML_ID_ATTRIBUTE),
+            sortWithinGroups = new SortWithinGroups(componentAttributes.getString(XML_ID_ATTRIBUTE),
                     groupKey.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
                     sortKey.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
