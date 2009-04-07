@@ -79,52 +79,43 @@ public class RingRecordBuffer {
 	
 	/**
 	 * Push a record into the buffer. It is non-blocking operation. If the record buffer is already
-	 * full, the oldest record is picked up from the buffer and returned as result. Otherwise method
-	 * returns null.
+	 * full, the oldest record is picked up from the buffer.
 	 * @param record
 	 * @return
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public DataRecord pushRecord(DataRecord record) throws IOException, InterruptedException {
+	public void pushRecord(DataRecord record) throws IOException, InterruptedException {
 		recordBuffer.writeRecord(record);
 		numBufferedRecords++;
 
-		if (numBufferedRecords > recordBufferSize) {
-			recordBuffer.ensureSuccessfulReading();
-
-			numBufferedRecords--;
-			return recordBuffer.readRecord(record); 
-		}
-		
-		return null;
+		ensureMaxBufferCapacity();
 	}
 
 	/**
 	 * Push a record into the buffer. It is non-blocking operation. If the record buffer is already
-	 * full, the oldest record is picked up from the buffer and returned as result. Otherwise method
-	 * returns null.
+	 * full, the oldest record is picked up from the buffer.
 	 * @param record
 	 * @return
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public ByteBuffer pushRecord(ByteBuffer record) throws IOException, InterruptedException {
+	public void pushRecord(ByteBuffer record) throws IOException, InterruptedException {
 		recordBuffer.writeRecord(record);
 		numBufferedRecords++;
 
+		ensureMaxBufferCapacity();
+	}
+
+	private void ensureMaxBufferCapacity() throws IOException, InterruptedException {
 		if (numBufferedRecords > recordBufferSize) {
 			recordBuffer.ensureSuccessfulReading();
 
 			numBufferedRecords--;
-			recordBuffer.readRecord(record);
-			return record;
+			recordBuffer.readRecord();
 		}
-		
-		return null;
-		
 	}
-
+	
 	/**
 	 * Pick up the oldest record from the buffer or return null if the buffer is empy.
 	 * @param record

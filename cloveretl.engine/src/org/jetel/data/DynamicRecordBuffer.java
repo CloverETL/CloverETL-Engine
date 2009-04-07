@@ -389,6 +389,34 @@ public class DynamicRecordBuffer {
         
     }
 
+	/**
+	 * Blind record reading. If the stored record is not required, this method shoud be used. 
+	 * @return
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	public boolean readRecord() throws IOException, InterruptedException {
+		if (isClosed) {
+			return false;
+			//throw new IOException("Buffer has been closed !");
+		}
+
+        // test that we have enough data
+        if (readDataBuffer.remaining() == 0) {
+			secureReadBuffer();
+        }
+        //int recordSize = readDataBuffer.getInt();
+        int recordSize = decodeLength(readDataBuffer);
+        if (recordSize == EOF) {
+        	closeTemporarily();
+            return false;
+        }
+        
+        readDataBuffer.position(readDataBuffer.position() + recordSize);
+        bufferedRecords.decrementAndGet();
+        return true;
+	}
+
     private final synchronized void secureReadBuffer() throws IOException, InterruptedException{
         // is there a save data buffer already ?
         if (fullFileBuffers.size()>0){
