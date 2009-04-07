@@ -11,6 +11,9 @@
 	    <pathelement location="${dir.tools}/ant-contrib.jar"/>
 	  </classpath>
 	</taskdef>
+	
+	<!-- ProGuard task definition -->
+	<taskdef resource="proguard/ant/task.properties" classpath="${dir.tools}/proguard.jar" />
 	    	
 	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
 	<property name="dir.build-scripts" value="${basedir}/build-scripts"/>
@@ -35,6 +38,10 @@
 	<property name="dir.testsresult" value="${dir.build}/testsresult"/>
 	<property name="dir.testsreport" value="${dir.build}/testsreport"/>
 	<property name="dir.findbugsreport" value="${dir.build}/findbugsreport"/>
+	<property name="dir.manifest" value="${dir.build}/manifest"/>
+	<property name="dir.obfuscate" value="${dir.build}/obfuscate"/>
+	<property name="dir.obfuscate.classes" value="${dir.obfuscate}/classes"/>
+	<property name="dir.obfuscate.manifest" value="${dir.obfuscate}/manifest"/>
 	<property name="dir.cobertura" value="${dir.tools}/cobertura" />
 	<property name="dir.coverage.bin" value="${dir.build}/classes-coverage" />
 	<property name="dir.coverage.plugins" value="${dir.build}/plugins-coverage" />
@@ -43,6 +50,7 @@
 	<property name="cobertura.ser" value="${dir.build}/cobertura.ser"/>
 
 	<!--load external properties-->
+	<property file="build-local.properties"/>
 	<property file="version.properties"/>
 	<property file="build.properties"/>
 		
@@ -111,9 +119,11 @@
 	
 	<target name="plugin-build">
 		<echo message="Building plugin - ${plugin.dir}"/>
+		<propertyregex property="plugin.obfuscate" input="${plugin.dir}" regexp="${obfuscate.plugin.pattern}" replace="true" defaultvalue="false"/>
 		<ant dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
 			<property name="dir.dist" value="${dir.package}"/>
 			<property name="version.full" value="${version.full}"/>
+			<property name="plugin.obfuscate" value="${plugin.obfuscate}"/>
 		</ant>
 	</target>
 
@@ -297,16 +307,80 @@ defined.version.suffix=release
 		  </copy>
 		
 	</target>
+	
+	<target name="obfuscate" depends="compile,plugin.xml" if="engine.obfuscate.run">
+		<mkdir dir="${dir.obfuscate.classes}"/>
+		<mkdir dir="${dir.obfuscate.manifest}"/>
+		
+		<pathconvert property="engine-libs.classpath" refid="engine-libs"/>
+		
+		<proguard 
+			shrink="false" 
+			verbose="true"
+			optimize="false" 
+			skipnonpubliclibraryclasses="false"
+			skipnonpubliclibraryclassmembers="false"
+			printmapping="${dir.obfuscate}/proGuard-mapping.txt"
+			printseeds="${dir.obfuscate}/proGuard-seeds.txt"
+			dump="${dir.obfuscate}/proGuard-dump.txt"
+			>
+			
+		  	<injar path="${dir.bin}" />
+			<outjar location="${dir.obfuscate.classes}" />
+
+		  	<injar path="${dir.manifest}" />
+			<outjar location="${dir.obfuscate.manifest}" />
+			
+			<adaptresourcefilecontents filter="plugin.xml" />
+			
+		  	<libraryjar location="${java.home}/lib/rt.jar" />
+		  	<libraryjar location="${java.home}/lib/jce.jar" />
+			<libraryjar path="${tools}"/>
+			<libraryjar path="${engine-libs.classpath}"/>
+
+			<keepclassmembernames implements="org.jetel.graph.IGraphElement"><method name="fromXML" /></keepclassmembernames> 
+			<keep name="org.jetel.data.Defaults"></keep>
+			<keep name="org.jetel.plugin.PluginDescriptor"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.Result"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.GraphElement"><field name="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.Node"><field access="public"/><method access="public"/></keep>
+
+			<keep name="org.jetel.graph.runtime.jmx.CloverJMXMBean"></keep>
+			<keep name="org.jetel.graph.runtime.jmx.CloverJMX"></keep>
+			<keep name="org.jetel.graph.runtime.jmx.GraphTrackingDetail"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.PhaseTrackingDetail"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.NodeTrackingDetail"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.PortTrackingDetail"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.InputPortTrackingDetail"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.OutputPortTrackingDetail"><field access="public"/><method access="public"/></keep>			
+			<keep name="org.jetel.graph.runtime.WatchDog"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.IThreadManager"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.graph.dictionary.StringDictionaryEntryProvider"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.parser.TypeSelector"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<!-- keep classes usualy used in trasformation -->
+			<keep name="java.util.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.metadata.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.exception.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.sequence.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.dictionary.*"><field access="public"/><method access="public"/></keep>
+			
+		</proguard>
+	</target>
+	
 
 	<target name="plugin.xml" depends="init">
-		<copy file="plugin.xml" tofile="${dir.build}/plugin.xml" encoding="UTF-8" />
-		<replace file="${dir.build}/plugin.xml" encoding="UTF-8">
+		<mkdir dir="${dir.manifest}"/>
+		<copy file="plugin.xml" tofile="${dir.manifest}/plugin.xml" encoding="UTF-8" />
+		<replace file="${dir.manifest}/plugin.xml" encoding="UTF-8">
 			<replacefilter token="0.0.0.devel" value="${version.full}"/>
 		</replace>
 	</target>
 	
 	<!-- pack binary result of compile to jar file -->
-	<target name="package" depends="compile,plugin.xml">
+	<target name="package" depends="compile,obfuscate,plugin.xml">
 		<!-- Create directory for dist. -->
 		<mkdir dir="${dir.package}/lib"/>
 		
@@ -321,7 +395,7 @@ defined.version.suffix=release
 		</copy>
 
 		<!-- copy engine's plugin.xml to the plugins directory -->
-		<copy file="${dir.build}/plugin.xml" todir="${dir.package}/plugins/org.jetel.engine" encoding="UTF-8"/>
+		<copy file="${dir.manifest}/plugin.xml" todir="${dir.package}/plugins/org.jetel.engine" encoding="UTF-8"/>
 		
 		<!-- copy all documents from docs directory -->
 		<copy todir="${dir.package}/docs">
@@ -462,6 +536,19 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			</else>
 		</if>
 		
+		<propertyregex property="engine.obfuscate" input="cloveretl.engine" regexp="${obfuscate.plugin.pattern}" replace="true" defaultvalue="false"/>
+		<if><equals arg1="${engine.obfuscate}" arg2="true"/>
+			<then>
+				<property name="engine.obfuscate.run" value="true"/>
+				<property name="dir.package.classes" value="${dir.obfuscate.classes}"/>
+				<property name="dir.package.manifest" value="${dir.obfuscate.manifest}"/>
+			</then>
+			<else>
+				<property name="dir.package.classes" value="${dir.bin}"/>
+				<property name="dir.package.manifest" value="${dir.manifest}"/>
+			</else>
+		</if>
+		
 		<echo>
 			version.full=${version.full}
 			
@@ -473,11 +560,12 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			build.time=${build.time}
 			build.year=${build.year}
 		</echo>
-		<mkdir dir="${dir.build}"/>
-
+		
 		<echo message="Using directory for classes: ${dir.bin}"/> 
 		<echo message="Using directory for javadoc: ${dir.doc}"/>
 		<echo message="Using directory for package: ${dir.package}"/>
+		
+		<mkdir dir="${dir.build}"/>
 	</target>
 	
 	<target name="reports" depends="reporttests,findbugs-html,coverage-html">
