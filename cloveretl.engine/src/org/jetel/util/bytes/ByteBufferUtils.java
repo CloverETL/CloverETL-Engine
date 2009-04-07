@@ -136,8 +136,7 @@ public final class ByteBufferUtils {
      * @since 21.11.2006
      */
     
-    public static final int encodeLength(ByteBuffer buffer,int length){
-        int position=buffer.position(); 
+    public static final void encodeLength(ByteBuffer buffer,int length){
         if (length <= Byte.MAX_VALUE) {
             buffer.put((byte) length);
         } else {
@@ -148,7 +147,6 @@ public final class ByteBufferUtils {
             } while ((length >> 7) > 0);
             buffer.put((byte) length);
         }
-        return buffer.position()-position;
     }
     
     /**
