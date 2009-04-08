@@ -229,7 +229,6 @@ public class AutoFilling {
 		globalCounter=0;
 		sourceCounter=0;
 		autoFillingMap.clear();
-		autoFillingData = null;
 	}
 
 	/**
