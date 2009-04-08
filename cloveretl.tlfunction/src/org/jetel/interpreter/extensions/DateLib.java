@@ -434,6 +434,9 @@ public class DateLib extends TLFunctionLibrary {
 	        } else {
 	            throw new TransformLangExecutorRuntimeException(params, "random_date - wrong type of second literal");
 	        }
+			if (toDate < fromDate) {
+	            throw new TransformLangExecutorRuntimeException(params, "random_date - fromDate is greater than toDate");
+			}
 		}
 
 		private final void parseLocale(TLValue[] params) {
@@ -473,6 +476,7 @@ public class DateLib extends TLFunctionLibrary {
 	    		sFormat = null;
 	    		format = new SimpleDateFormat();
 	    	}
+	    	format.setLenient(false);
 	    }
 	}
 }
