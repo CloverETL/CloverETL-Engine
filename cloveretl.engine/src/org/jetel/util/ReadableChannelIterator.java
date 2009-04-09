@@ -15,7 +15,6 @@ import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Matcher;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -436,30 +435,6 @@ public class ReadableChannelIterator {
 		return -1;
 	}
 	
-	private String getMostInnerString(String sUrl) {
-		String innerString = null;
-		try {
-			Matcher matcher = FileUtils.getInnerInput(sUrl);
-			String tmpInner = getInnerSourceString(matcher);
-			while (tmpInner != null) {
-				innerString = tmpInner;
-				matcher = FileUtils.getInnerInput(tmpInner);
-				tmpInner = getInnerSourceString(matcher);
-			}
-		} catch (IOException e) {
-			return null;
-		}
-		return innerString == null ? sUrl : innerString;
-	}
-	
-	private String getInnerSourceString(Matcher matcher) throws IOException {
-		String innerSource;
-		if (matcher != null && (innerSource = matcher.group(5)) != null) {
-			return innerSource;
-		}
-		return null;
-	}
-
 	private List<String> getAndRemoveProtocol(List<String> files, String protocol, int start) {
 		ArrayList<String> result = new ArrayList<String>();
 		if (start < 0) return result;
