@@ -68,7 +68,7 @@ public class TargetFile {
 	private Object fileTag;							// string of marks '#' are replaced by this fileTag 
     private String before;							// string of fileURL before last string of marks '#'
     private String after;							// string of fileURL after last string of marks '#'
-	private String fileBeforeTag;
+	private String fileName;
 
     private WritableByteChannel byteChannel;
 
@@ -175,8 +175,8 @@ public class TargetFile {
     	this.fileTag = fileTag;
     }
     
-    public void setFileBeforeTag(String fileBeforeTag) {
-    	this.fileBeforeTag = fileBeforeTag;
+    public void setFileName(String fileName) {
+    	this.fileName = fileName;
     }
 
     /**
@@ -406,7 +406,7 @@ public class TargetFile {
     		setDataTarget(Channels.newChannel(readOut));
     	} else if (fileNames != null) {
             String fName = fileNames.next();
-            if (fileBeforeTag != null) fName = addUnassignedPrefix(fName);
+            if (fileName != null) fName = addUnassignedName(fName);
         	byteChannel = FileUtils.getWritableChannel(contextURL, fName, appendData, compressLevel );
         	if (useChannel) {
         		setDataTarget(byteChannel);
@@ -419,7 +419,7 @@ public class TargetFile {
         }
     }
     
-    private String addUnassignedPrefix(String fName) throws IOException {
+    private String addUnassignedName(String fName) throws IOException {
     	int k = fName.lastIndexOf('#');
     	String name; 
     	if (k < 0) {
@@ -429,7 +429,7 @@ public class TargetFile {
     	int j = name.lastIndexOf('/');
     	if (j < 0) j = name.lastIndexOf('\\');
     	if (j > 0) k = j;
-    	return fName.substring(0, k+1) + fileBeforeTag + fName.substring(k+1);
+    	return fName.substring(0, k+1) + fileName;
     }
     
     /**

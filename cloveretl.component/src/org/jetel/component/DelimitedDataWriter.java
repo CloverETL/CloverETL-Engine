@@ -107,7 +107,8 @@ public class DelimitedDataWriter extends Node {
 	private static final String XML_PARTITION_ATTRIBUTE = "partition";							// lookup table
 	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";		// field names of lookup table for output file name
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";			// name or number file names
-	
+	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
+
 	private static final boolean APPEND_DATA_AS_DEFAULT = false;
 	
 	private String fileURL;
@@ -126,6 +127,7 @@ public class DelimitedDataWriter extends Node {
 	private LookupTable lookupTable;
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 	private String attrPartitionOutFields;
+	private String partitionUnassignedFileName;
 	
 	static Log logger = LogFactory.getLog(DelimitedDataWriter.class);
 
@@ -215,6 +217,8 @@ public class DelimitedDataWriter extends Node {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             writer.setPartitionFileTag(partitionFileTagType);
+        	writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
+
         	if (attrPartitionOutFields != null) {
         		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
         	}
@@ -356,6 +360,9 @@ public class DelimitedDataWriter extends Node {
 			if(xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
 				aDelimitedDataWriterNIO.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
             }
+			if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
+				aDelimitedDataWriterNIO.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
+            }
 		}catch(Exception ex){
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -494,6 +501,15 @@ public class DelimitedDataWriter extends Node {
 	 */
 	public PartitionFileTagType getPartitionFileTag() {
 		return partitionFileTagType;
+	}
+
+	/**
+	 * Sets partition unassigned file name.
+	 * 
+	 * @param partitionUnassignedFileName
+	 */
+    private void setPartitionUnassignedFileName(String partitionUnassignedFileName) {
+    	this.partitionUnassignedFileName = partitionUnassignedFileName;
 	}
 
 	/*
