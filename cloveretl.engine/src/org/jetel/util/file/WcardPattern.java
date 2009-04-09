@@ -34,6 +34,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
+import org.jetel.util.protocols.proxy.ProxyHandler;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -167,7 +168,7 @@ public class WcardPattern {
         
 		// get inner source
 		String originalFileName = fileName;
-		Matcher matcher = FileUtils.getInnerInput(fileName);
+		Matcher matcher = FileURLParser.getInnerInput(fileName);
 		String innerSource;
 		int iPreName = 0;
 		int iPostName = 0;
@@ -217,13 +218,31 @@ public class WcardPattern {
             
             // return original names
             } else {
-            	return fileStreamNames;
+            	processProxy(fileStreamName, originalFileName, fileStreamNames);
+            	
+               	return fileStreamNames;
             }
         }
         return newFileStreamNames;
     }
 
     /**
+     * Verifies and gets proxy file.
+     * @param fileStreamName
+     * @param originalFileName
+     * @param fileStreamNames 
+     */
+    private void processProxy(FileStreamName fileStreamName, String originalFileName, List<FileStreamName> fileStreamNames) {
+    	try {
+    		new URL(null, fileStreamName.getFileName(), new ProxyHandler());
+    	} catch(MalformedURLException e) {
+    		return;
+    	}
+    	fileStreamNames.clear();
+    	fileStreamNames.add(new FileStreamName(originalFileName));
+	}
+
+	/**
      * Gets list of zip files with full anchor names.
      * @param fileStreamName
      * @param originalFileName
