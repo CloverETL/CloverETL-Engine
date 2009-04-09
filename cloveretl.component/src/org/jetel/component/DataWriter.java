@@ -104,6 +104,8 @@ public class DataWriter extends Node {
 	private static final String XML_PARTITION_ATTRIBUTE = "partition";
 	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
+	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
+	
 	private String fileURL;
 	private boolean appendData;
 	private DataFormatterProvider formatterProvider;
@@ -120,6 +122,7 @@ public class DataWriter extends Node {
 	private LookupTable lookupTable;
 	private String attrPartitionOutFields;
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
+	private String partitionUnassignedFileName;
 
 	static Log logger = LogFactory.getLog(DataWriter.class);
 
@@ -198,6 +201,8 @@ public class DataWriter extends Node {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             writer.setPartitionFileTag(partitionFileTagType);
+        	writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
+        	
         	if (attrPartitionOutFields != null) {
         		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
         	}
@@ -351,6 +356,9 @@ public class DataWriter extends Node {
 			if(xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
 				aDataWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
             }
+			if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
+				aDataWriter.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
+            }
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
@@ -358,8 +366,7 @@ public class DataWriter extends Node {
 		return aDataWriter;
 	}
 
-	
-    @Override
+	@Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
@@ -501,6 +508,15 @@ public class DataWriter extends Node {
 	 */
 	public PartitionFileTagType getPartitionFileTag() {
 		return partitionFileTagType;
+	}
+
+	/**
+	 * Sets partition unassigned file name.
+	 * 
+	 * @param partitionUnassignedFileName
+	 */
+    private void setPartitionUnassignedFileName(String partitionUnassignedFileName) {
+    	this.partitionUnassignedFileName = partitionUnassignedFileName;
 	}
 
 	@Override

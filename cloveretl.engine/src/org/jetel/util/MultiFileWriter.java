@@ -91,6 +91,7 @@ public class MultiFileWriter {
 	private RecordKey partitionKey;
 	private String[] partitionOutFields;
 	private int[] iPartitionOutFields;
+	private String unassignedFileURL;
 	
 	private boolean useNumberFileTag = true;
 	private int numberFileTag;
@@ -353,8 +354,9 @@ public class MultiFileWriter {
     	if (!lookup.hasNext()) {
     		// creates new unassigned target if not exists
 			if (unassignedTarget == null) {
+				if (unassignedFileURL == null) return;
 				unassignedTarget = createNewTarget();
-				unassignedTarget.setFileBeforeTag("unassigned");
+				unassignedTarget.setFileName(unassignedFileURL);
 				unassignedTarget.setDictionary(dictionary);
 				unassignedTarget.init();
 			}
@@ -566,6 +568,20 @@ public class MultiFileWriter {
 		this.partitionOutFields = partitionOutFields;
 	}
 
+	/**
+	 * Sets partition unassigned file name.
+	 * 
+	 * @param partitionUnassignedFileName
+	 */
+	public void setPartitionUnassignedFileName(String partitionUnassignedFileName) {
+		this.unassignedFileURL = partitionUnassignedFileName;
+	}
+
+	/**
+	 * Sets writable byte channel iterator.
+	 * 
+	 * @param channels
+	 */
 	public void setChannels(Iterator<WritableByteChannel> channels) {
 		this.channels = channels;
 	}	
@@ -607,4 +623,5 @@ public class MultiFileWriter {
 	public void setCompressLevel(int compressLevel) {
 		this.compressLevel = compressLevel;
 	}
+	
 }

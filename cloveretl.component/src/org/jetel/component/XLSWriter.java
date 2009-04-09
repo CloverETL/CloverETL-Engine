@@ -133,6 +133,7 @@ public class XLSWriter extends Node {
 	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
 
 	private static final int READ_FROM_PORT = 0;
 	private static final int OUTPUT_PORT = 0;
@@ -183,6 +184,9 @@ public class XLSWriter extends Node {
             if (xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
                 xlsWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
             }
+			if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
+				xlsWriter.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
+            }
 
             return xlsWriter;
         } catch (Exception ex) {
@@ -195,6 +199,7 @@ public class XLSWriter extends Node {
 	private LookupTable lookupTable;
 	private String attrPartitionOutFields;
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
+	private String partitionUnassignedFileName;
 
 	private static Log logger = LogFactory.getLog(XLSWriter.class);
 
@@ -365,6 +370,15 @@ public class XLSWriter extends Node {
         this.recordsPerFile = recordsPerFile;
     }
 
+	/**
+	 * Sets partition unassigned file name.
+	 * 
+	 * @param partitionUnassignedFileName
+	 */
+    private void setPartitionUnassignedFileName(String partitionUnassignedFileName) {
+    	this.partitionUnassignedFileName = partitionUnassignedFileName;
+	}
+
     public void toXML(org.w3c.dom.Element xmlElement) {
         super.toXML(xmlElement);
 
@@ -474,7 +488,8 @@ public class XLSWriter extends Node {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             writer.setPartitionFileTag(partitionFileTagType);
-
+        	writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
+        	
             if (attrPartitionOutFields != null) {
                 writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             }
