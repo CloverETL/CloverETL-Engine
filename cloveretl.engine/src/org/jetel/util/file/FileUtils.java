@@ -28,7 +28,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Proxy;
+import java.net.SocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
@@ -53,10 +56,10 @@ import org.jetel.enums.ArchiveType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.MultiOutFile;
 import org.jetel.util.protocols.ftp.FTPStreamHandler;
+import org.jetel.util.protocols.proxy.ProxyHandler;
+import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
 import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
-
-import sun.misc.BASE64Encoder;
 
 import com.ice.tar.TarEntry;
 import com.ice.tar.TarInputStream;
@@ -84,6 +87,9 @@ public class FileUtils {
 	// ftp protocol handler
 	public static final FTPStreamHandler ftpStreamHandler = new FTPStreamHandler();
 
+	// proxy protocol handler
+	public static final ProxyHandler proxyHandler = new ProxyHandler();
+
 	// file protocol name
 	private static final String FILE_PROTOCOL = "file";
 	
@@ -108,16 +114,24 @@ public class FileUtils {
      * @throws MalformedURLException  
      */
     public static URL getFileURL(URL contextURL, String fileURL) throws MalformedURLException {
+    	// standard url
         try {
             return new URL(contextURL, fileURL);
-        } catch(MalformedURLException ex) {
-        	try {
-            	// ftp connection is connected via sftp handler, 22 port is ok but 21 is somehow blocked for the same connection
-        		return new URL(contextURL, fileURL, sFtpStreamHandler);
-            } catch(Exception e) {
-                return new URL(contextURL, "file:" + fileURL);
-            }
-        }
+        } catch(MalformedURLException ex) {}
+
+        // sftp url
+    	try {
+        	// ftp connection is connected via sftp handler, 22 port is ok but 21 is somehow blocked for the same connection
+    		return new URL(contextURL, fileURL, sFtpStreamHandler);
+        } catch(MalformedURLException e) {}
+
+        // proxy url
+    	try {
+    		return new URL(contextURL, fileURL, proxyHandler);
+        } catch(MalformedURLException e) {}
+
+        // file url
+        return new URL(contextURL, "file:" + fileURL);
     }
 
 	/**
@@ -233,12 +247,14 @@ public class FileUtils {
 		}
 
         // get inner source
-		Matcher matcher = getInnerInput(input);
+		Matcher matcher = FileURLParser.getInnerInput(input);
 		String innerSource;
         InputStream innerStream = null;
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
-			innerStream = getInputStream(null, innerSource);
+			// get and set proxy and go to inner source
+			Proxy proxy = getProxy(innerSource);
 			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
+			innerStream = proxy == null ? getInputStream(null, innerSource) : getAuthorizedProxyStream(getFileURL(contextURL, input), proxy);
 		}
 		
 		// get archive type
@@ -478,26 +494,60 @@ public class FileUtils {
         }
     }
 
-    /**
+	/**
      * Creates an authorized stream.
      * @param url
      * @return
      * @throws IOException
      */
     public static InputStream getAuthorizedStream(URL url) throws IOException {
-        URLConnection uc = url.openConnection();
-        // check autorization
-        if (url.getUserInfo() != null) {
-            uc.setRequestProperty("Authorization", "Basic " + encode(url.getUserInfo()));
-        }
-        return uc.getInputStream();
+        return URLConnectionRequest.getAuthorizedConnection(
+        		url.openConnection(), 
+        		url.getUserInfo(), 
+        		URLConnectionRequest.URL_CONNECTION_AUTHORIZATION).getInputStream();
     }
 
-    private static String encode (String source) {
-    	  BASE64Encoder enc = new sun.misc.BASE64Encoder();
-    	  return enc.encode(source.getBytes());
-   	 }
-    
+    /**
+     * Creates an authorized stream.
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    private static InputStream getAuthorizedProxyStream(URL url, Proxy proxy) throws IOException {
+        return URLConnectionRequest.getAuthorizedConnection(
+        		url.openConnection(proxy),
+        		url.getUserInfo(), 
+        		URLConnectionRequest.URL_CONNECTION_PROXY_AUTHORIZATION).getInputStream();
+    }
+
+    /**
+     * Creates an proxy from the file url string.
+     * @param fileURL
+     * @return
+     */
+    private static Proxy getProxy(String fileURL) {
+    	// create an url
+    	URL url;
+    	try {
+			url = getFileURL(fileURL);
+		} catch (MalformedURLException e) {
+			return null;
+		}
+		// get proxy type
+		ProxyProtocolEnum proxyProtocolEnum;
+    	if ((proxyProtocolEnum = ProxyProtocolEnum.fromString(url.getProtocol())) == null) {
+    		return null;
+    	}
+		// no proxy
+    	if (proxyProtocolEnum == ProxyProtocolEnum.NO_PROXY) {
+    		return Proxy.NO_PROXY;
+    	}
+    	// create a proxy
+    	SocketAddress addr = new InetSocketAddress(url.getHost(), url.getPort() < 0 ? 8080 : url.getPort());
+    	Proxy proxy = new Proxy(Proxy.Type.valueOf(proxyProtocolEnum.toString()), addr);
+		return proxy;
+	}
+
 	/**
      * Creates WritableByteChannel from the url definition.
      * <p>All standard url format are acceptable (including ftp://) plus extended form of url by zip & gzip construction:</p>

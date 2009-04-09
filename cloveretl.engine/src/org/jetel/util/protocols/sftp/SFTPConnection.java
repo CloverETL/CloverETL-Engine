@@ -3,6 +3,8 @@ package org.jetel.util.protocols.sftp;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Vector;
@@ -10,6 +12,10 @@ import java.util.Vector;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Proxy;
+import com.jcraft.jsch.ProxyHTTP;
+import com.jcraft.jsch.ProxySOCKS4;
+import com.jcraft.jsch.ProxySOCKS5;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
@@ -31,14 +37,38 @@ public class SFTPConnection extends URLConnection {
 
 	protected int mode;
 
+	private Proxy proxy;
+	private Proxy proxy4;
+
 	/**
 	 * SFTP constructor.
-	 * 
 	 * @param url
 	 */
 	protected SFTPConnection(URL url) {
+		this(url, null);
+	}
+	
+	/**
+	 * SFTP constructor.
+	 * @param url
+	 * @param proxy
+	 */
+	protected SFTPConnection(URL url, java.net.Proxy proxy) {
 		super(url);
 		mode = ChannelSftp.OVERWRITE;
+		
+		if (proxy == null) return;
+		SocketAddress sa = proxy.address();
+		if (!(sa instanceof InetSocketAddress)) return;
+		String hostName = ((InetSocketAddress) sa).getHostName();
+		int port = ((InetSocketAddress) sa).getPort();
+		if (proxy.type() == java.net.Proxy.Type.HTTP) {
+			this.proxy = port >= 0 ? new ProxyHTTP(hostName, port) : new ProxyHTTP(hostName);
+		} 
+		else if (proxy.type() == java.net.Proxy.Type.SOCKS) {
+			this.proxy = port >= 0 ? new ProxySOCKS5(hostName, port) : new ProxySOCKS5(hostName);
+			this.proxy4 = port >= 0 ? new ProxySOCKS4(hostName, port) : new ProxySOCKS4(hostName);
+		}
 	}
 
 	/**
@@ -80,8 +110,15 @@ public class SFTPConnection extends URLConnection {
 
 			// password will be given via UserInfo interface.
 			session.setUserInfo(aUserInfo);
+			if (proxy != null) session.setProxy(proxy);
 			session.connect();
 		} catch (Exception e) {
+			if (proxy4 != null) {
+				try {
+					session.connect();
+					return;
+				} catch (JSchException e1) {}
+			}
 			throw new IOException(e.getMessage());
 		}
 	}
@@ -307,7 +344,6 @@ public class SFTPConnection extends URLConnection {
 		/*try {
 			FileUtils.getReadableChannel(null, "gzip:(sftp://jausperger:relatko5@linuxweb:/home/jausperger/public_html/employees0.dat.gz)");
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}*/
 		

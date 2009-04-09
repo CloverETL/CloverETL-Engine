@@ -1,34 +1,28 @@
-package org.jetel.util.protocols.sftp;
+package org.jetel.util.protocols.proxy;
 
 import java.io.IOException;
-import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
 /**
- * URLStreamHandler for sftp connection.
+ * URLHandler for proxy.
  * 
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
-public class SFTPStreamHandler extends URLStreamHandler {
+public class ProxyHandler extends URLStreamHandler {
 
 	@Override
 	public URLConnection openConnection(URL url) throws IOException {
-		return new SFTPConnection(url);
+		throw new UnsupportedOperationException("The opentConnection method is not supported for the ProxyHandler!");
 	}
-
-	@Override
-	public URLConnection openConnection(URL url, Proxy proxy) throws IOException {
-		return new SFTPConnection(url, proxy);
-	}
-
+	
     protected void parseURL(URL u, String spec, int start, int limit) {
     	super.parseURL(u, spec, start, limit);
     	String protocol = u.getProtocol();
-    	if (!(protocol.equals("sftp") || protocol.equals("scp"))) {
-    		throw new RuntimeException("Parse error: The URL protocol must be sftp or scp!");
+    	if (ProxyProtocolEnum.fromString(protocol) == null) {
+    		throw new RuntimeException("Parse error: The URL protocol have to be one of " + ProxyProtocolEnum.values());
     	}
     }
 
