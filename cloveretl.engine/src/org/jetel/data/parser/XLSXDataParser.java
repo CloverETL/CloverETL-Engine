@@ -51,10 +51,10 @@ import org.openxml4j.opc.Package;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 31st January 2009
+ * @version 10th April 2009
  * @since 30th January 2009
  */
-public final class XLSXDataParser extends XLSParser {
+public class XLSXDataParser extends XLSParser {
 
 	/** the workbook parsed by this parser */
 	private Workbook workbook;
