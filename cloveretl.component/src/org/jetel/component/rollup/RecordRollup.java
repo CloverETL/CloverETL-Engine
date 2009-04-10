@@ -28,10 +28,10 @@ import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * <p>Represents an interface of a rollup transform which processes groups of data records. Each group of data records
- * shares a data record referred to as a group "accumulator". This group "accumulator" is initialized when the first
- * data record of the group is encountered and updated for each data record in the group (including the first and
- * the last data record). When the last data record of the group is encountered, the processing of the group is
- * finished and the group "accumulator" is disposed.</p>
+ * may share a data record referred to as a group "accumulator". This group "accumulator" is created an initialized
+ * when the first data record of the group is encountered and updated for each data record in the group (including the
+ * first and the last data record). When the last data record of the group is encountered, the processing of the group
+ * is finished and the group "accumulator" is disposed.</p>
  * <p>The lifecycle of a rollup transform is as follows:</p>
  * <ul>
  *   <li>The {@link #init(Properties, DataRecordMetadata, DataRecordMetadata, DataRecordMetadata)} method is called
@@ -40,12 +40,13 @@ import org.jetel.metadata.DataRecordMetadata;
  *     <ul>
  *       <li>If the current data record belongs to a new group:
  *         <ul>
- *           <li>A group "accumulator" is created.</li>
- *           <li>The {@link #initGroup(DataRecord, DataRecord)} method is called to initialize the group "accumulator".</li>
+ *           <li>If requested, a group "accumulator" is created.</li>
+ *           <li>The {@link #initGroup(DataRecord, DataRecord)} method is called to initialize processing of the group
+ *           and to initialize the "accumulator" (if it exists).</li>
  *         </ul>
  *       </li>
  *       <li>The {@link #updateGroup(DataRecord, DataRecord)} method is called for the current data record and
- *       the corresponding group "accumulator".</li>
+ *       the corresponding group "accumulator" (if it was requested).</li>
  *       <li>If the method returned <code>true</code>, the {@link #transform(DataRecord, DataRecord, DataRecord)}
  *       method is called repeatedly to generate an output data record until it returns <code>false</code>.</li>
  *       <li>If the current data record is the last one in its group:
@@ -53,7 +54,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *           <li>The {@link #finishGroup(DataRecord, DataRecord)} method is called to finish the group processing.</li>
  *           <li>If the method returned <code>true</code>, the {@link #transform(DataRecord, DataRecord, DataRecord)}
  *           method is called repeatedly to generate an output data record until it returns <code>false</code>.</li>
- *           <li>The contents of the group accumulator is disposed.</li>
+ *           <li>If the group "accumulator" was requested, its contents is disposed.</li>
  *         </ul>
  *       </li>
  *     </ul>
@@ -71,11 +72,12 @@ public interface RecordRollup {
 
     /**
      * Initializes the rollup transformation. This method is called once at the beginning of the life-cycle of the
-     * rollup transformation. Any allocation/initialization code should be placed here.
+     * rollup transformation. Any internal allocation/initialization code should be placed here.
      *
      * @param parameters global graph parameters and parameters defined for the component which calls this transformation
      * @param inputMetadata meta data of input data records
      * @param accumulatorMetadata meta data of a group "accumulator" used to store intermediate results
+     * or <code>null</code> if no meta data were specified
      * @param outputMetadata meta data of output data records
      *
      * @throws ComponentNotReadyException if an error occurred during the initialization
@@ -88,7 +90,8 @@ public interface RecordRollup {
      * be placed here.
      *
      * @param inputRecord the first input data record in the group
-     * @param groupAccumulator the data record used as an "accumulator" for the group
+     * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
+     * was requested
      *
      * @throws TransformException if any error occurred during the initialization
      */
@@ -99,7 +102,8 @@ public interface RecordRollup {
      * in order to update the group "accumulator".
      *
      * @param inputRecord the current input data record
-     * @param groupAccumulator the data record used as an "accumulator" for the group
+     * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
+     * was requested
      *
      * @return <code>true</code> if the {@link #transform(DataRecord, DataRecord, DataRecord)} method should be called
      * to generate an output data record and send it to the output, <code>false</code> otherwise
@@ -112,7 +116,8 @@ public interface RecordRollup {
      * This method is called for the last data record in a group in order to finish the group processing.
      *
      * @param inputRecord the last input data record
-     * @param groupAccumulator the data record used as an "accumulator" for the group
+     * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
+     * was requested
      *
      * @return <code>true</code> if the {@link #transform(DataRecord, DataRecord, DataRecord)} method should be called
      * to generate an output data record and send it to the output, <code>false</code> otherwise
@@ -123,10 +128,11 @@ public interface RecordRollup {
 
     /**
      * This method is used to generate an output data record based on the input data record and the contents of the
-     * group "accumulator". The output data record will be sent the output when this method finishes.
+     * group "accumulator" (if it was requested). The output data record will be sent the output when this method finishes.
      *
      * @param inputRecord the current input data record
-     * @param groupAccumulator the data record used as an "accumulator" for the group
+     * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
+     * was requested
      * @param outputRecord the output data record to be filled with data
      *
      * @return <code>true</code> if this method should be called again to generate another output data record,
