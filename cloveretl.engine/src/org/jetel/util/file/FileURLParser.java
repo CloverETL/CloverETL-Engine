@@ -19,10 +19,13 @@
 */
 package org.jetel.util.file;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.jetel.enums.ArchiveType;
 /**
  * Helper class with some useful methods regarding file string manipulation
  *
@@ -36,6 +39,16 @@ public class FileURLParser {
 	//      ([^:]*)     (:)     (\\()     (.*)        (\\))   (((#)(.*))|($))
 	private final static Pattern INNER_SOURCE = Pattern.compile("(([^:]*)([:])([\\(]))(.*)(\\))((((#)|(//))(.*))|($))");
 
+	// constants
+	private final static String ARCHIVE_ANCHOR = "#";
+	private final static String DOUBLE_DOT_DEL = ":";
+	private final static String BACK_SLASH = "\\";
+	private final static String FORWARD_SLASH = "/";
+	private final static String FILE = "file";
+	private final static String ZIP_DDOT = ArchiveType.ZIP.getId()+DOUBLE_DOT_DEL;
+	private final static String GZIP_DDOT = ArchiveType.GZIP.getId()+DOUBLE_DOT_DEL;
+	private final static String TAR_DDOT = ArchiveType.TAR.getId()+DOUBLE_DOT_DEL;
+	
 	/**
 	 * Finds embedded source.
 	 * 
@@ -54,49 +67,15 @@ public class FileURLParser {
 	}
 	
 	/**
-	 * Returns file name of input (URL).
-	 * 
-	 * @param input - url file name
-	 * @return file name
-	 * @throws MalformedURLException
-	 * 
-	 * @see java.net.URL#getFile()
-	 */
-	public static String getFile(URL contextURL, String input) throws MalformedURLException {
-		Matcher matcher = getInnerInput(input);
-		String innerSource2, innerSource3;
-		if (matcher != null && (innerSource2 = matcher.group(5)) != null) {
-			if (!(innerSource3 = matcher.group(7)).equals("")) {
-				return innerSource3.substring(1);
-			} else {
-				input = getFile(null, innerSource2);
-			}
-		}
-		URL url = FileUtils.getFileURL(contextURL, input);
-		if (url.getRef() != null) return url.getRef();
-		else {
-			input = url.getFile();
-			if (input.startsWith("zip:") || input.startsWith("tar:")) {
-				input = input.contains("#") ? 
-					input.substring(input.lastIndexOf('#') + 1) : 
-					input.substring(input.indexOf(':') + 1);
-			} else if (input.startsWith("gzip:")) {
-				input = input.substring(input.indexOf(':') + 1);
-			}
-			return input;
-		}
-	}
-
-	/**
 	 * Adds final slash to the directory path, if it is necessary.
 	 * @param directoryPath
 	 * @return
 	 */
 	public static String appendSlash(String directoryPath) {
-		if(directoryPath.length() == 0 || directoryPath.endsWith("/") || directoryPath.endsWith("\\")) {
+		if(directoryPath.length() == 0 || directoryPath.endsWith(FORWARD_SLASH) || directoryPath.endsWith(BACK_SLASH)) {
 			return directoryPath;
 		} else {
-			return directoryPath + "/";
+			return directoryPath + FORWARD_SLASH;
 		}
 	}
 	
@@ -129,20 +108,130 @@ public class FileURLParser {
 			return innerSource;
 		}
 		
-        //resolve url format for zip files
-        if(input.startsWith("zip:") || input.startsWith("tar:")) {
-            if(!input.contains("#")) { //url is given without anchor - later is returned channel from first zip entry 
-            	input = input.substring(input.indexOf(':') + 1);
-            } else {
-                input = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
-            }
-            return input;
-        }
-        else if (input.startsWith("gzip:")) {
-        	return input.substring(input.indexOf(':') + 1);
-        }
-        
-        return null;
+		// get inner source for archive files 
+        StringBuilder innerInput = new StringBuilder();
+        ArchiveType archiveType = getArchiveType(input, innerInput, new StringBuilder());
+		return archiveType == null ? null : stripProtocol(innerInput.toString());
+	}
+
+	/**
+	 * Gets string url without protocol.
+	 * @param sURL
+	 * @return
+	 */
+	private static String stripProtocol(String sURL) {
+		return sURL.substring(sURL.indexOf(DOUBLE_DOT_DEL)+1);
 	}
 	
+	/**
+	 * Returns true if the URL is server URL.
+	 * @param sUrl
+	 * @return
+	 * @throws MalformedURLException 
+	 */
+	public static boolean isServerURL(String sUrl) throws MalformedURLException {
+		URL url = FileUtils.getFileURL(getMostInnerAddress(sUrl));
+		return isServerURL(url);
+	}
+	
+	/**
+	 * Returns true if the URL is server URL.
+	 * @param sUrl
+	 * @return
+	 * @throws MalformedURLException 
+	 */
+	public static boolean isServerURL(URL url) {
+		return !(url.getProtocol().equals(FILE) || ArchiveType.fromString(url.getProtocol()) != null);
+	}
+
+	
+	/**
+	 * Returns true if the URL is archive URL.
+	 * @param sUrl
+	 * @return
+	 */
+	public static boolean isArchiveURL(String sUrl) {
+		return sUrl.startsWith(ZIP_DDOT) || 
+		       sUrl.startsWith(GZIP_DDOT) || 
+		       sUrl.startsWith(TAR_DDOT);
+	}
+	
+	/**
+	 * Returns true if the URL is file URL.
+	 * @param sUrl
+	 * @return
+	 * @throws MalformedURLException
+	 */
+	public static boolean isFileURL(String sUrl) throws MalformedURLException {
+		if (isArchiveURL(sUrl)) return false;
+		URL url = FileUtils.getFileURL(sUrl);
+		return isFileURL(url);
+	}
+
+	/**
+	 * Returns true is the URL is file URL.
+	 * @param url
+	 * @return
+	 * @throws MalformedURLException
+	 */
+	public static boolean isFileURL(URL url) {
+		return url.getProtocol().equals(FILE);
+	}
+
+	/**
+	 * Gets archive anchor.
+	 * @param sURL
+	 * @return
+	 */
+	public static String getAnchor(String sURL) {
+        if(sURL.contains(ARCHIVE_ANCHOR)) { 
+        	return sURL.substring(sURL.lastIndexOf(ARCHIVE_ANCHOR) + 1);
+        }
+    	return null;
+	}
+	
+	/**
+	 * Gets file without archive anchor.
+	 * @param sURL
+	 * @return
+	 */
+	public static String getFileWithoutAnchor(String sURL, boolean verifyAnchor) {
+        if(verifyAnchor && sURL.contains(ARCHIVE_ANCHOR)) { 
+        	return sURL.substring(sURL.indexOf(DOUBLE_DOT_DEL) + 1, sURL.lastIndexOf(ARCHIVE_ANCHOR));
+        }
+    	return sURL.substring(sURL.lastIndexOf(ARCHIVE_ANCHOR) + 1);
+	}
+
+    /**
+     * Gets archive type.
+     * @param input - input file
+     * @param innerInput - output parameter
+     * @param anchor - output parameter
+     * @return
+     */
+    public static ArchiveType getArchiveType(String input, StringBuilder innerInput, StringBuilder anchor) {
+    	// result value
+    	ArchiveType archiveType = null;
+    	
+        //resolve url format for zip files
+    	if (input.startsWith(ZIP_DDOT)) archiveType = ArchiveType.ZIP;
+    	else if (input.startsWith(TAR_DDOT)) archiveType = ArchiveType.TAR;
+    	else if (input.startsWith(GZIP_DDOT)) archiveType = ArchiveType.GZIP;
+    	
+    	// parse the archive
+        if((archiveType == ArchiveType.ZIP) || (archiveType == ArchiveType.TAR)) {
+        	String sTmp;
+        	if ((sTmp = getAnchor(input)) != null) anchor.append(sTmp);
+        	innerInput.append(getFileWithoutAnchor(input, true));
+        }
+        else if (archiveType == ArchiveType.GZIP) {
+        	innerInput.append(getFileWithoutAnchor(input, false));
+        }
+        
+        // if doesn't exist inner input, inner input is input
+        if (innerInput.length() == 0) innerInput.append(input);
+        
+        return archiveType;
+    }
+
 }
