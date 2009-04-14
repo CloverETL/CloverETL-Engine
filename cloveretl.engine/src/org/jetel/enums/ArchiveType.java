@@ -39,4 +39,8 @@ public enum ArchiveType {
         
         return null;
     }
+    
+    public String getId() {
+    	return id;
+    }
 }
