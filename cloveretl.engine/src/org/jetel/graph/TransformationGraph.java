@@ -52,6 +52,7 @@ import org.jetel.graph.runtime.WatchDog;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.util.crypto.Enigma;
+import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
@@ -150,7 +151,7 @@ public final class TransformationGraph extends GraphElement {
             
             if(projectURLStr != null) {
                 try {
-                    projectURL = FileUtils.getFileURL(FileUtils.appendSlash(projectURLStr));
+                    projectURL = FileUtils.getFileURL(FileURLParser.appendSlash(projectURLStr));
                 } catch (MalformedURLException e) {
                     getLogger().warn("Home project dir is not in valid URL format - " + projectURLStr);
                 }

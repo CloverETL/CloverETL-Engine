@@ -61,7 +61,7 @@ public class FileURLParser {
 	 * @param source - input/output source
 	 * @return matcher or null
 	 */
-	public static Matcher getInnerInput(String source) {
+	public static Matcher getURLMatcher(String source) {
 		Matcher matcher = INNER_SOURCE.matcher(source);
 		return matcher.find() ? matcher : null;
 	}
@@ -80,6 +80,20 @@ public class FileURLParser {
 	}
 	
 	/**
+	 * Gets parent directory.
+	 * @param input
+	 * @return
+	 */
+	public static String getParentDirectory(String input) {
+		int i;
+		if((i = input.lastIndexOf(FORWARD_SLASH)) > 0 || (i = input.lastIndexOf(BACK_SLASH)) > 0) {
+			return input.substring(0, i);
+		}
+		return input;
+	}
+
+	
+	/**
 	 * Gets the most inner url address.
 	 * @param contextURL 
 	 * 
@@ -94,6 +108,19 @@ public class FileURLParser {
 	}
 	
 	/**
+	 * Gets server or simple path (no proxy).
+	 * @param input
+	 * @return
+	 */
+	public static String getSimplePathOrServer(String input) {
+		if (!isArchiveURL(input)) return input;
+		
+        // get inner input
+        String innerInput = getInnerAddress(input);
+        return innerInput == null ? input : getSimplePathOrServer(innerInput);
+	}
+
+	/**
 	 * Gets inner url address. 
 	 * @param input
 	 * @return
@@ -102,7 +129,7 @@ public class FileURLParser {
 		if (input == null) return null;
 		
 		// get inner source
-		Matcher matcher = getInnerInput(input);
+		Matcher matcher = getURLMatcher(input);
 		String innerSource;
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
 			return innerSource;
@@ -184,6 +211,12 @@ public class FileURLParser {
 	 * @return
 	 */
 	public static String getAnchor(String sURL) {
+		// get inner source
+		Matcher matcher = getURLMatcher(sURL);
+		if (matcher != null && (matcher.group(5)) != null) {
+			sURL = matcher.group(2) + matcher.group(3) + matcher.group(7);
+		}
+		
         if(sURL.contains(ARCHIVE_ANCHOR)) { 
         	return sURL.substring(sURL.lastIndexOf(ARCHIVE_ANCHOR) + 1);
         }

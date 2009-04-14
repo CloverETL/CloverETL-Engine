@@ -52,6 +52,7 @@ import org.jetel.graph.runtime.IThreadManager;
 import org.jetel.graph.runtime.SimpleThreadManager;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.util.JetelVersion;
+import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 
 /*
@@ -303,7 +304,7 @@ public class runGraph {
 
             	if (projectDir != null) {
                 	logger.info(TransformationGraph.PROJECT_DIR_PROPERTY + " property: " + projectDir);
-            		projectDirURL = FileUtils.getFileURL(FileUtils.appendSlash(projectDir));
+            		projectDirURL = FileUtils.getFileURL(FileURLParser.appendSlash(projectDir));
             	}
 
             	in = Channels.newInputStream(FileUtils.getReadableChannel(projectDirURL, graphFileName));
