@@ -196,7 +196,7 @@ public class WcardPattern {
         	for (String newFileName: newFileNames) {
                 URL url = FileUtils.getFileURL(parent, newFileName);
             	if ((outherPathNeedsInputStream || (anchor.contains("" + WCARD_CHAR[0]) || anchor.contains("" + WCARD_CHAR[1]))))
-            		fileStreamNames.add(new FileStreamName(newFileName, FileUtils.getAuthorizedStream(url)));
+            		fileStreamNames.add(new FileStreamName(newFileName, FileUtils.getAuthorizedConnection(url).getInputStream()));
             	else fileStreamNames.add(new FileStreamName(newFileName));
         	}
         }
