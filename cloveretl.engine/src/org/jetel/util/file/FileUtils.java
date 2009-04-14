@@ -254,7 +254,7 @@ public class FileUtils {
 			// get and set proxy and go to inner source
 			Proxy proxy = getProxy(innerSource);
 			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
-			innerStream = proxy == null ? getInputStream(null, innerSource) : getAuthorizedProxyStream(getFileURL(contextURL, input), proxy);
+			innerStream = proxy == null ? getInputStream(null, innerSource) : getAuthorizedProxyConnection(getFileURL(contextURL, input), proxy).getInputStream();
 		}
 		
 		// get archive type
@@ -272,7 +272,7 @@ public class FileUtils {
         	if (archiveType == null && url.getProtocol().equals(FILE_PROTOCOL)) {
             	return new FileInputStream(url.getFile());
         	}
-        	innerStream = getAuthorizedStream(url);
+        	innerStream = getAuthorizedConnection(url).getInputStream();
         }
 
         // create archive streams
@@ -495,16 +495,16 @@ public class FileUtils {
     }
 
 	/**
-     * Creates an authorized stream.
+     * Creates authorized url connection.
      * @param url
      * @return
      * @throws IOException
      */
-    public static InputStream getAuthorizedStream(URL url) throws IOException {
+    public static URLConnection getAuthorizedConnection(URL url) throws IOException {
         return URLConnectionRequest.getAuthorizedConnection(
         		url.openConnection(), 
         		url.getUserInfo(), 
-        		URLConnectionRequest.URL_CONNECTION_AUTHORIZATION).getInputStream();
+        		URLConnectionRequest.URL_CONNECTION_AUTHORIZATION);
     }
 
     /**
@@ -513,11 +513,11 @@ public class FileUtils {
      * @return
      * @throws IOException
      */
-    private static InputStream getAuthorizedProxyStream(URL url, Proxy proxy) throws IOException {
+    private static URLConnection getAuthorizedProxyConnection(URL url, Proxy proxy) throws IOException {
         return URLConnectionRequest.getAuthorizedConnection(
         		url.openConnection(proxy),
         		url.getUserInfo(), 
-        		URLConnectionRequest.URL_CONNECTION_PROXY_AUTHORIZATION).getInputStream();
+        		URLConnectionRequest.URL_CONNECTION_PROXY_AUTHORIZATION);
     }
 
     /**
@@ -599,8 +599,10 @@ public class FileUtils {
 		String innerSource;
         OutputStream os = null;
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
-			os = getOutputStream(null, innerSource, appendData, compressLevel);
+			// get and set proxy and go to inner source
+			Proxy proxy = getProxy(innerSource);
 			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
+			os = proxy == null ? getOutputStream(null, innerSource, appendData, compressLevel) : getAuthorizedProxyConnection(getFileURL((URL)null, input), proxy).getOutputStream();
 		}
 		
 		// get archive type
