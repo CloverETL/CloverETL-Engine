@@ -168,7 +168,7 @@ public class WcardPattern {
         
 		// get inner source
 		String originalFileName = fileName;
-		Matcher matcher = FileURLParser.getInnerInput(fileName);
+		Matcher matcher = FileURLParser.getURLMatcher(fileName);
 		String innerSource;
 		int iPreName = 0;
 		int iPostName = 0;

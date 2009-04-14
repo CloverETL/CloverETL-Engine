@@ -247,7 +247,7 @@ public class FileUtils {
 		}
 
         // get inner source
-		Matcher matcher = FileURLParser.getInnerInput(input);
+		Matcher matcher = FileURLParser.getURLMatcher(input);
 		String innerSource;
         InputStream innerStream = null;
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
