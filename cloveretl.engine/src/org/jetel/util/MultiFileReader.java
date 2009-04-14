@@ -35,6 +35,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -148,7 +149,7 @@ public class MultiFileReader {
 		while (fit.hasNext()) {
 			try {
 				fName = fit.next();
-				URL url = FileUtils.getInnerAddress(contextURL, fName);
+				URL url = FileUtils.getFileURL(contextURL, FileURLParser.getMostInnerAddress(fName));
 				if (FileUtils.isServerURL(url)) {
 					//FileUtils.checkServer(url); //this is very long operation
 					continue;
