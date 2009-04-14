@@ -5,6 +5,12 @@ import java.net.URLConnection;
 
 import sun.misc.BASE64Encoder;
 
+/**
+ * 
+ * 
+ * @author Jan Ausperger (jan.ausperger@javlin.eu)
+ *         (c) OpenSys (www.opensys.eu)
+ */
 public class URLConnectionRequest {
 
 	// basic property
@@ -24,7 +30,7 @@ public class URLConnectionRequest {
 	 * @return
 	 * @throws IOException
 	 */
-    public static URLConnection getAuthorizedConnection(URLConnection uc, String userInfo, String authorizationType) throws IOException {
+    public static URLConnection getAuthorizedConnection(URLConnection uc, String userInfo, String authorizationType) {
         // check authorization
         if (userInfo != null) {
             uc.setRequestProperty(authorizationType, URL_CONNECTION_BASIC + encode(userInfo));
