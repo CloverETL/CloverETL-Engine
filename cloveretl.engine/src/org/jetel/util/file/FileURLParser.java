@@ -267,4 +267,24 @@ public class FileURLParser {
         return archiveType;
     }
 
+    /**
+     * Gets outer address without inner address.
+     * @param input
+     * @return
+     */
+    public static String getOuterAddress(String input) {
+    	// for out(inner)er
+		Matcher matcher = getURLMatcher(input);
+		if (matcher != null && (matcher.group(5)) != null) {
+			return matcher.group(2) + matcher.group(3) + matcher.group(7);
+		}
+		// only archive may contain inner address
+		if (!isArchiveURL(input)) return input;
+		
+		// parse the archive
+		StringBuilder sb = new StringBuilder();
+		getArchiveType(input, sb, new StringBuilder());
+		return sb.toString();
+    }
+    
 }
