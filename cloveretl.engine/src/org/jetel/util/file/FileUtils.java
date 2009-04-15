@@ -544,7 +544,7 @@ public class FileUtils {
     	}
     	// create a proxy
     	SocketAddress addr = new InetSocketAddress(url.getHost(), url.getPort() < 0 ? 8080 : url.getPort());
-    	Proxy proxy = new Proxy(Proxy.Type.valueOf(proxyProtocolEnum.toString()), addr);
+    	Proxy proxy = new Proxy(Proxy.Type.valueOf(proxyProtocolEnum.getProxyString()), addr);
 		return proxy;
 	}
 

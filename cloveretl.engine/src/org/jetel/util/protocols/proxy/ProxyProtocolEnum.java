@@ -1,5 +1,7 @@
 package org.jetel.util.protocols.proxy;
 
+import java.net.Proxy;
+
 
 /**
  * Proxy protocol enumerator.
@@ -35,6 +37,16 @@ public enum ProxyProtocolEnum {
     
     public String toString() {
         return id;
+    }
+    
+    public String getProxyString() {
+        if (this == PROXY_HTTP) {
+        	return Proxy.Type.HTTP.name();
+        } else if (this == NO_PROXY) {
+    		return Proxy.Type.DIRECT.name();
+    	} else {
+    		return Proxy.Type.SOCKS.name();
+    	}
     }
 } 
 
