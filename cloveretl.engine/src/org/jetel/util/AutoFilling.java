@@ -26,10 +26,11 @@ public class AutoFilling {
     public static final String ERROR_MESSAGE = "ErrText";
     private static final String ROW_TIMESTAMP = "row_timestamp";
     private static final String READER_TIMESTAMP = "reader_timestamp";
+    public static final String SHEET_NAME = "sheet_name";					// is used in XLSParser
     
     // names of functions for gui
     public static final String[] AUTOFILLING = new String[] {DEFAULT_VALUE, GLOBAL_ROW_COUNT, SOURCE_ROW_COUNT, METADATA_ROW_COUNT, 
-    	METADATA_SOURCE_ROW_COUNT, SOURCE_NAME, SOURCE_TIMESTAMP, SOURCE_SIZE, ROW_TIMESTAMP, READER_TIMESTAMP, ERROR_CODE, ERROR_MESSAGE};
+    	METADATA_SOURCE_ROW_COUNT, SOURCE_NAME, SOURCE_TIMESTAMP, SOURCE_SIZE, ROW_TIMESTAMP, READER_TIMESTAMP, ERROR_CODE, ERROR_MESSAGE, SHEET_NAME};
     
     // autofilling for metadata
     private Map<DataRecordMetadata, AutoFillingData> autoFillingMap = new HashMap<DataRecordMetadata, AutoFillingData>();

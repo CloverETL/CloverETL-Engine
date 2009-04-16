@@ -413,7 +413,7 @@ public class JExcelXLSDataParser extends XLSParser {
 			lastRow = lastRowAttribute;
 		}
 		
-		discardBytes(sheet.getName());
+		discardBytes(autoFillingSheetName = sheet.getName());
 
 		return true;
 	}
