@@ -35,6 +35,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.AutoFilling;
 import org.jetel.util.NumberIterator;
 
 /**
@@ -158,6 +159,11 @@ public abstract class XLSParser implements Parser {
 	protected final int XLS_NUMBER = 0;
 	protected final int CLOVER_NUMBER = 1;
 	
+	// autofilling for sheet_name
+	private boolean noAutofillingSheetName;
+	private int[] autofillingFieldPositions;
+	protected String autoFillingSheetName = null;
+
 	public final static int MAX_NAME_LENGTH = 15;
 
 	public void setExceptionHandler(IParserExceptionHandler handler) {
@@ -178,6 +184,8 @@ public abstract class XLSParser implements Parser {
 
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
+		setAutofillingSheetName(record);
+		
 		if(exceptionHandler != null ) {  //use handler only if configured
 			while(exceptionHandler.isExceptionThrowed()) {
                 exceptionHandler.handleException();
@@ -192,6 +200,14 @@ public abstract class XLSParser implements Parser {
 		return record;
 	}
 
+	private void setAutofillingSheetName(DataRecord record) {
+		if (record == null || noAutofillingSheetName) return;
+		if (autoFillingSheetName == null) return;
+		for (int i: autofillingFieldPositions) {
+			record.getField(i).setValue(autoFillingSheetName);
+		}
+	}
+	
 	/**
 	 * An operation that produces next record from Input data or null
 	 * 
@@ -228,8 +244,30 @@ public abstract class XLSParser implements Parser {
 		if (sheetName == null && sheetNumber == null) {
 			setSheetNumber(DEFAULT_SHEET_NUMBER);
 		}
+		
+		// creates autofilling for sheet_name
+		prepareAutofilling();
 	}
 
+	/**
+	 * Creates autofilling for sheet_name.
+	 */
+	private void prepareAutofilling() {
+        int numFields = metadata.getNumFields();
+        int[] sheetNameTmp = new int[numFields];
+        int sheetNameLen = 0;
+        for (int i=0; i<numFields; i++) {
+        	if (metadata.getField(i).getAutoFilling() != null) {
+        		if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(AutoFilling.SHEET_NAME)) sheetNameTmp[sheetNameLen++] = i;
+        	}
+        }
+        autofillingFieldPositions = new int[sheetNameLen];
+        noAutofillingSheetName = sheetNameLen <= 0;
+
+        // reduce arrays' sizes
+        System.arraycopy(sheetNameTmp, 0, autofillingFieldPositions, 0, sheetNameLen);
+	}
+	
 	public abstract void setDataSource(Object inputDataSource) throws ComponentNotReadyException;
 
 	public void setReleaseDataSource(boolean releaseDataSource)  {
