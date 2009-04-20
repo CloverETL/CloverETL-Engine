@@ -516,7 +516,8 @@ public class XmlWriter extends Node {
         }
 
         if (charset == null)
-        	charset = "UTF-8";
+        	charset = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
+        	//charset = "UTF-8";
             //throw new ComponentNotReadyException(getId() + ": Specify charset of out file");
 
         /*
