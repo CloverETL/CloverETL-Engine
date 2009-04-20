@@ -52,6 +52,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.graph.runtime.IAuthorityProxy.RunResult;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -430,88 +431,39 @@ public class RunGraph extends Node{
 		builder.deleteCharAt(builder.length() - 1);
 		return builder.toString();
 	}
-	
+
+	/**
+	 * Use this JVM to execute graph.
+	 * It delegates execution to @link IAuthorityProxy
+	 * 
+	 * @param graphFileName
+	 * @param outputRecordData
+	 * @return
+	 */
 	private boolean runGraphThisInstance(String graphFileName, OutputRecordData outputRecordData) {
-		InputStream in = null;		
+		long runId = this.getGraph().getWatchDog().getGraphRuntimeContext().getRunId();
 
-		outputRecordData.setResult("Error");
-		outputRecordData.setMessage(""); 			
+		RunResult rr = this.getGraph().getAuthorityProxy().executeGraph( runId, graphFileName);
 		
-		try {
-            in = Channels.newInputStream(FileUtils.getReadableChannel(null, graphFileName));
-        } catch (IOException e) {
-        	outputRecordData.setDescription("Error - graph definition file can't be read: " + e.getMessage());	
-			return false;
-        }
-        
-        GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-        Future<Result> futureResult = null;
-        
-        // TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
-		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed
-        runtimeContext.setDebugMode(false);
-
-        TransformationGraph graph = null;
-		try {
-			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext.getAdditionalProperties());
-        } catch (XMLConfigurationException e) {
-        	outputRecordData.setDescription("Error in reading graph from XML !" + e.getMessage());
-            return false;
-        } catch (GraphConfigurationException e) {
-        	outputRecordData.setDescription("Error - graph's configuration invalid !" + e.getMessage());
-            return false;
-		} 
-
-        long startTime = System.currentTimeMillis();
-        Result result = Result.N_A;
-        try {
-    		try {
-    			EngineInitializer.initGraph(graph, runtimeContext);
-    			futureResult = runGraph.executeGraph(graph, runtimeContext);
-
-    		} catch (ComponentNotReadyException e) {
-    			outputRecordData.setDescription("Error during graph initialization: " + e.getMessage());           
-                return false;
-            } catch (RuntimeException e) {
-            	outputRecordData.setDescription("Error during graph initialization: " +  e.getMessage());           
-                return false;
-            }
-            
-    		try {
-    			result = futureResult.get();
-    		} catch (InterruptedException e) {
-    			outputRecordData.setDescription("Graph was unexpectedly interrupted !" + e.getMessage());            
-                return false;
-    		} catch (ExecutionException e) {
-    			outputRecordData.setDescription("Error during graph processing !" + e.getMessage());            
-                return false;
-    		}
-        } finally {
-    		if (graph != null)
-    			graph.free();
-        }
-		
-        long totalTime = System.currentTimeMillis() - startTime;
-		
-        outputRecordData.setDuration(totalTime);
-        outputRecordData.setMessage(result.message());
-        switch (result) {
-	        case FINISHED_OK:        	
-	        	outputRecordData.setResult("Finished successfully");
-	    		outputRecordData.setDescription("");
-	            return true;
-	        case ABORTED:
-	        	outputRecordData.setResult("Aborted");
-	        	outputRecordData.setDescription("Graph execution aborted.");
-	        	System.err.println(graphFileName + ": " + "Execution of graph aborted!");
-	            return false;
-	        default:
-	        	outputRecordData.setResult(Result.ERROR.equals(result) ? "Error" : result.message());
-	        	outputRecordData.setDescription("Execution of graph failed!");
-	            System.err.println(graphFileName + ": " + "Execution of graph failed!");
-	            return false;
-        }
+		outputRecordData.setDescription(rr.description);
+		outputRecordData.setDuration(rr.duration);
+		outputRecordData.setGraphName(graphFileName);
+		outputRecordData.setMessage(rr.result.message());
+		if (rr.result == Result.ABORTED) {
+        	outputRecordData.setResult("Aborted");
+        	outputRecordData.setDescription("Graph execution aborted.");
+        	System.err.println(graphFileName + ": " + "Execution of graph aborted!");
+		} else if (rr.result == Result.FINISHED_OK) {
+        	outputRecordData.setResult("Finished successfully");
+    		outputRecordData.setDescription("");
+		} else {
+        	outputRecordData.setResult(Result.ERROR.equals(rr.result) ? "Error" : rr.result.message());
+        	outputRecordData.setDescription("Execution of graph failed! " + rr.description);
+            System.err.println(graphFileName + ": " + "Execution of graph failed! " + rr.description);
+		}
+		return Result.FINISHED_OK == rr.result;
 	}
+
 		
 	@Override
 	public void free() {
