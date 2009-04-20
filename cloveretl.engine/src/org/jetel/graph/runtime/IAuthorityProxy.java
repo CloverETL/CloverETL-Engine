@@ -20,6 +20,7 @@
 package org.jetel.graph.runtime;
 
 import org.jetel.data.sequence.Sequence;
+import org.jetel.graph.Result;
 
 /**
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
@@ -29,8 +30,23 @@ import org.jetel.data.sequence.Sequence;
  */
 public interface IAuthorityProxy {
 
+	public static class RunResult {
+		public Result result;
+		public String description;
+		public long duration;
+	}
+		
 	public Sequence getSharedSequence(Sequence sequence);
 
 	public void freeSharedSequence(Sequence sequence);
+
+	/**
+	 * Executes specified graph. 
+	 * 
+	 * @param runId - ID of parent run, which calls this method.  
+	 * @param graphFileName - path to graph to execute
+	 * @return
+	 */
+	public RunResult executeGraph(long runId, String graphFileName);
 
 }
