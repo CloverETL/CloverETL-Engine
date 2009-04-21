@@ -659,21 +659,20 @@ public class FileUtils {
 	}
     
 	/**
-	 * This method checks whether is is possible to write to given file
+	 * This method checks whether it is possible to write to given file.
 	 * 
 	 * @param contextURL
 	 * @param fileURL
+	 * @param mkDirs - tries to make directories if it is necessary
 	 * @return true if can write, false otherwise
 	 * @throws ComponentNotReadyException
 	 */
-	public static boolean canWrite(URL contextURL, String fileURL)
-			throws ComponentNotReadyException {
-		
+	public static boolean canWrite(URL contextURL, String fileURL, boolean mkDirs) throws ComponentNotReadyException {
 		// get inner source
 		Matcher matcher = getInnerInput(fileURL);
 		String innerSource;
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
-			return canWrite(contextURL, innerSource);
+			return canWrite(contextURL, innerSource, mkDirs);
 		}
 		
 		String fileName;
@@ -689,7 +688,7 @@ public class FileUtils {
 		MultiOutFile multiOut = new MultiOutFile(fileName);
 		File file;
         URL url;
-		boolean tmp;
+		boolean tmp = false;
 		//create file on given URL
 		try {
 			String filename = multiOut.next();
@@ -702,25 +701,114 @@ public class FileUtils {
 			throw new ComponentNotReadyException(e + ": " + fileURL);
 		}
 		//check if can write to this file
-		if (file.exists()) {
-			tmp = file.canWrite();
-		} else {
-			try {
-				tmp = file.createNewFile();
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(e + ": " + fileURL);
-			}
-			if (tmp) {
-				boolean deleted = file.delete();
-				if (!deleted) {
-					log.error("error delete " + file.getAbsolutePath());
-				}
-			}
-		}
+		tmp = file.exists() ? file.canWrite() : createFile(file, mkDirs);
+		
 		if (!tmp) {
 			throw new ComponentNotReadyException("Can't write to: " + fileURL);
 		}
 		return true;
+	}
+	
+	/**
+	 * Creates directory for fileURL if it is necessary.
+	 * @param contextURL
+	 * @param fileURL
+	 * @return created parent directory
+	 * @throws ComponentNotReadyException 
+	 */
+	public static File makeDirs(URL contextURL, String fileURL) throws ComponentNotReadyException {
+		if (contextURL == null && fileURL == null) return null;
+		URL url;
+		try {
+			url = FileUtils.getFileURL(contextURL, FileURLParser.getMostInnerAddress(fileURL));
+		} catch (MalformedURLException e) {
+			return null;
+		}
+		if (!url.getProtocol().equals(FILE_PROTOCOL)) return null;
+		
+		//find the first non-existing directory
+		File file = new File(url.getPath());
+		File fileTmp = file;
+		File createDir = null;
+		while (fileTmp != null && !fileTmp.exists()) {
+			createDir = fileTmp;
+			fileTmp = fileTmp.getParentFile();
+		}
+		if (createDir != null && !file.mkdirs()) throw new ComponentNotReadyException("Cannot create directory: " + file);
+		return createDir;
+	}
+	
+	/**
+	 * Tries to create file and directories. 
+	 * @param fileURL
+	 * @return
+	 * @throws ComponentNotReadyException 
+	 */
+	private static boolean createFile(File file, boolean mkDirs) throws ComponentNotReadyException {
+		boolean tmp = false;
+		boolean fails = false;
+		try {
+			tmp = file.createNewFile();
+		} catch (IOException e) {
+			if (!mkDirs) throw new ComponentNotReadyException(e + ": " + file);
+			fails = true;
+		}
+		File createdDir = null;
+		if (fails) {
+			createdDir = file.getParentFile();
+			createdDir = makeDirs(null, createdDir.getAbsolutePath());
+			try {
+				tmp = file.createNewFile();
+			} catch (IOException e) {
+				if (createdDir != null) {
+					if (!deleteFile(createdDir)) {
+						log.error("error delete " + createdDir);
+					}
+				}
+				throw new ComponentNotReadyException(e + ": " + file);
+			}
+		}
+		if (tmp) {
+			if (!file.delete()) {
+				log.error("error delete " + file.getAbsolutePath());
+			}
+		}
+		if (createdDir != null) {
+			if (!deleteFile(createdDir)) {
+				log.error("error delete " + createdDir);
+			}
+		}
+		return tmp;
+	}
+	
+	/**
+	 * Deletes file.
+	 * @param file
+	 * @return true if the file is deleted
+	 */
+	private static boolean deleteFile(File file) {
+		if (!file.exists()) return true;
+
+		//list and delete all sub-directories
+		for (File child: file.listFiles()) {
+			if (!deleteFile(child)) {
+				return false;
+			}
+		}
+		return file.delete();
+	}
+	
+	
+	/**
+	 * This method checks whether is is possible to write to given file
+	 * 
+	 * @param contextURL
+	 * @param fileURL
+	 * @return true if can write, false otherwise
+	 * @throws ComponentNotReadyException
+	 */
+	public static boolean canWrite(URL contextURL, String fileURL) throws ComponentNotReadyException {
+		return canWrite(contextURL, fileURL, false);
 	}
 	
 	/**

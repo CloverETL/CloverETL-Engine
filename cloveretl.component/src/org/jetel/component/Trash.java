@@ -19,6 +19,7 @@
 */
 package org.jetel.component;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -38,6 +39,7 @@ import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.bytes.WritableByteChannelIterator;
+import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
@@ -91,7 +93,8 @@ public class Trash extends Node {
 	private static final String XML_DEBUGPRINT_ATTRIBUTE = "debugPrint";
 	private static final String XML_DEBUGAPPEND_ATTRIBUTE = "debugAppend";
 	private static final String XML_COMPRESSLEVEL_ATTRIBUTE = "compressLevel";
-	
+	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
+
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "TRASH";
 	private final static int READ_FROM_PORT = 0;
@@ -106,6 +109,7 @@ public class Trash extends Node {
     private String charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 
 	private int compressLevel = -1;
+	private boolean mkDir;
 
 	/**
 	 *Constructor for the Trash object
@@ -206,6 +210,10 @@ public class Trash extends Node {
 		super.init();
 		TransformationGraph graph = getGraph();
 		
+    	// creates necessary directories
+        if (mkDir) FileUtils.makeDirs(graph != null ? graph.getProjectURL() : null, 
+        		new File(FileURLParser.getMostInnerAddress(debugFilename)).getParent());
+
 		if (debugPrint) {
             if(debugFilename != null) {
         		formatter = new TextTableFormatter(charSet);
@@ -306,6 +314,9 @@ public class Trash extends Node {
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				trash.setCharset( xattribs.getString(XML_CHARSET_ATTRIBUTE) );
 			}
+			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+				trash.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
+            }
 			trash.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
 			
 		} catch (Exception ex) {
@@ -331,8 +342,7 @@ public class Trash extends Node {
 
             if (debugPrint && debugFilename != null) {
                 try {
-                	FileUtils.canWrite(getGraph() != null ? 
-                			getGraph().getProjectURL() : null, debugFilename);
+                	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() : null, debugFilename, mkDir);
                 } catch (ComponentNotReadyException e) {
 	                status.add(e, ConfigurationStatus.Severity.ERROR, this, 
 	                		ConfigurationStatus.Priority.NORMAL, XML_DEBUGFILENAME_ATTRIBUTE);
@@ -370,5 +380,12 @@ public class Trash extends Node {
 		this.compressLevel = compressLevel;
 	}
 	
+	/**
+	 * Sets make directory.
+	 * @param mkDir - true - creates output directories for output file
+	 */
+	private void setMkDirs(boolean mkDir) {
+		this.mkDir = mkDir;
+	}
 }
 

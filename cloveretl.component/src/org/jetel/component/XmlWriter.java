@@ -139,6 +139,7 @@ public class XmlWriter extends Node {
 	private static final String XML_ROOT_DEFAULT_NAMESPACE_ATTRIBUTE = "rootDefaultNamespace";
 	private static final String XML_DEFAULT_NAMESPACE_ATTRIBUTE = "defaultNamespace";
 	private static final String XML_XSD_LOCATION_ATTRIBUTE = "xsdSchemaLocation";
+	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
 	protected int initialCapacity = 50;
 
 	/**
@@ -179,7 +180,8 @@ public class XmlWriter extends Node {
 	private String rootDefaultNamespace;
 	private String xsdSchemaLocation;
 	private int compressLevel;
-	
+	private boolean mkDir;
+
 	/**
 	 * XmlFormatter which methods are called from MultiFileWriter. 
 	 * @author Martin Varecha <martin.varecha@javlinconsulting.cz>
@@ -541,6 +543,7 @@ public class XmlWriter extends Node {
         //writer.setPartitionKeyNames(partitionKey);
         //writer.setPartitionFileTag(partitionFileTagType);
         writer.setDictionary(graph.getDictionary());
+        writer.setMkDir(mkDir);
         writer.init( this.rootPortDefinition.metadata );
         writer.setCompressLevel(compressLevel);
 	}
@@ -880,6 +883,9 @@ public class XmlWriter extends Node {
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE))
 				writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			writer.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
+			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+				writer.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
+            }
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -1062,5 +1068,13 @@ public class XmlWriter extends Node {
 		this.rootPortDefinitionList = rootPortDefinitionList;
 	}
 	*/
+
+	/**
+	 * Sets make directory.
+	 * @param mkDir - true - creates output directories for output file
+	 */
+	private void setMkDirs(boolean mkDir) {
+		this.mkDir = mkDir;
+	}
 
 }

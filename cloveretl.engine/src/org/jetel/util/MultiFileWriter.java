@@ -19,6 +19,7 @@
 */
 package org.jetel.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.WritableByteChannel;
@@ -40,6 +41,8 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileURLParser;
+import org.jetel.util.file.FileUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -103,6 +106,8 @@ public class MultiFileWriter {
 	private Dictionary dictionary;
 
 	private int compressLevel = -1;
+
+	private boolean mkDir;
 	
     /**
      * Constructor.
@@ -168,7 +173,10 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException
      */
     private void prepareTargets() throws ComponentNotReadyException {
-    	// prepare type of targets: lookpup/keyValue
+    	// creates necessary directories
+        if (mkDir) FileUtils.makeDirs(contextURL, new File(FileURLParser.getMostInnerAddress(fileURL)).getParent());
+        
+    	// prepare type of targets: lookup/keyValue
 		try {
 			if (partitionKey != null) {
 				multiTarget = new HashMap<Object, TargetFile>(tableInitialSize);
@@ -622,6 +630,10 @@ public class MultiFileWriter {
 
 	public void setCompressLevel(int compressLevel) {
 		this.compressLevel = compressLevel;
+	}
+
+	public void setMkDir(boolean mkDir) {
+		this.mkDir = mkDir;
 	}
 	
 }

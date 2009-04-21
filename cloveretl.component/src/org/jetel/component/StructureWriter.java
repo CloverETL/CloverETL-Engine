@@ -34,10 +34,7 @@ import org.jetel.data.formatter.provider.StructureFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -149,6 +146,7 @@ public class StructureWriter extends Node {
 	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
+	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
 
 	private String fileURL;
 	private boolean appendData;
@@ -181,6 +179,7 @@ public class StructureWriter extends Node {
 	private final static int OUTPUT_PORT = 0;
 	
 	private String charset;
+	private boolean mkDir;
 
 	/**
 	 * Constructor
@@ -283,8 +282,7 @@ public class StructureWriter extends Node {
 		}
 
         try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 
-        			: null, fileURL);
+        	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() : null, fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
@@ -331,6 +329,7 @@ public class StructureWriter extends Node {
         		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
         	}
         }
+        writer.setMkDir(mkDir);
 		if (headerMask != null) {
 			if (getInPorts().size() > 1) {
 				headerFormatter = new StructureFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
@@ -437,6 +436,9 @@ public class StructureWriter extends Node {
             }
 			if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
 				aDataWriter.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
+            }
+			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+				aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
             }
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
@@ -611,6 +613,14 @@ public class StructureWriter extends Node {
 	 */
     private void setPartitionUnassignedFileName(String partitionUnassignedFileName) {
     	this.partitionUnassignedFileName = partitionUnassignedFileName;
+	}
+
+	/**
+	 * Sets make directory.
+	 * @param mkDir - true - creates output directories for output file
+	 */
+	private void setMkDirs(boolean mkDir) {
+		this.mkDir = mkDir;
 	}
 
 	/**
