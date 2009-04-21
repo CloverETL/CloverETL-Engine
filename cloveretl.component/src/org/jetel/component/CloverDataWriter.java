@@ -32,10 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.CloverDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -43,6 +40,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
@@ -115,6 +113,7 @@ public class CloverDataWriter extends Node {
 	private static final String XML_COMPRESSLEVEL_ATTRIBUTE = "compressLevel";
 	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
 	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
+	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
 
 	public final static String COMPONENT_TYPE = "CLOVER_WRITER";
 	private final static int READ_FROM_PORT = 0;
@@ -130,6 +129,7 @@ public class CloverDataWriter extends Node {
 	String fileName;
     private int skip;
 	private int numRecords = -1;
+	private boolean mkDir;
 	
     static Log logger = LogFactory.getLog(CloverDataWriter.class);
 
@@ -209,8 +209,7 @@ public class CloverDataWriter extends Node {
         }
 
         try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 
-        			: null, fileURL);
+        	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() : null, fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
@@ -227,6 +226,9 @@ public class CloverDataWriter extends Node {
         if(isInitialized()) return;
 		super.init();
 		
+    	// creates necessary directories
+        if (mkDir) FileUtils.makeDirs(getGraph().getProjectURL(), new File(FileURLParser.getMostInnerAddress(fileURL)).getParent());
+
 		inPort = getInputPort(READ_FROM_PORT);
 		metadata = inPort.getMetadata();
 		try{//create output stream and rewrite existing data
@@ -292,6 +294,9 @@ public class CloverDataWriter extends Node {
 			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
 				aDataWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
 			}
+			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+				aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
+            }
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
 			return null;
@@ -349,4 +354,11 @@ public class CloverDataWriter extends Node {
         this.numRecords = numRecords;
     }
 
+	/**
+	 * Sets make directory.
+	 * @param mkDir - true - creates output directories for output file
+	 */
+	private void setMkDirs(boolean mkDir) {
+		this.mkDir = mkDir;
+	}
 }

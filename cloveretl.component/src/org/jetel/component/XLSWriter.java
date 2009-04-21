@@ -134,6 +134,7 @@ public class XLSWriter extends Node {
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
+	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
 
 	private static final int READ_FROM_PORT = 0;
 	private static final int OUTPUT_PORT = 0;
@@ -188,6 +189,10 @@ public class XLSWriter extends Node {
 				xlsWriter.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
             }
 
+			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+				xlsWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
+            }
+
             return xlsWriter;
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -211,6 +216,8 @@ public class XLSWriter extends Node {
     private int numRecords;
     private WritableByteChannel writableByteChannel;
     private int recordsPerFile;
+
+	private boolean mkDir;
 
     /**
      * Constructor
@@ -371,6 +378,14 @@ public class XLSWriter extends Node {
     }
 
 	/**
+	 * Sets make directory.
+	 * @param mkDir - true - creates output directories for output file
+	 */
+	private void setMkDirs(boolean mkDir) {
+		this.mkDir = mkDir;
+	}
+
+	/**
 	 * Sets partition unassigned file name.
 	 * 
 	 * @param partitionUnassignedFileName
@@ -432,7 +447,7 @@ public class XLSWriter extends Node {
         }
 
         try {
-            FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+            FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() : null, fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR,
                     this, ConfigurationStatus.Priority.NORMAL);
@@ -497,6 +512,7 @@ public class XLSWriter extends Node {
 
         writer.setDictionary(getGraph().getDictionary());
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
+        writer.setMkDir(mkDir);
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
     }
 
