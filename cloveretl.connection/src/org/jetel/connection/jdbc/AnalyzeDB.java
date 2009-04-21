@@ -52,18 +52,21 @@ import org.jetel.graph.runtime.EngineInitializer;
  *
  * Command line parameters:<br>
  * <pre>
- * -dbDriver   JDBC driver to use
- * -dbURL      Database name (URL)
- * -config     *Config/Property file containing parameters
- * -user       *User name
- * -password   *User's password
- * -d          *Delimiter to use (standard is [,])
- * -o          *Output file to use (standard is stdout)
- * -f          *Read SQL query from filename"
- * -q          *SQL query on command line
- * -info       *Displays list of driver's properties
- * -cfg        *CloverETL engine property file
- * -plugins    *directory where to look for plugins/components
+ * -dbDriver        JDBC driver to be used
+ * -dbURL           Database name (URL)
+ * -driverLibrary   *Library containing a JDBC driver to be loaded
+ * -jdbcSpecific    *Specific JDBC dialect to be used
+ * -database        *ID of a built-in JDBC library
+ * -config          *Config/Property file containing parameters
+ * -user            *User name
+ * -password        *User's password
+ * -d               *Delimiter to use (standard is [,])
+ * -o               *Output file to use (standard is stdout)
+ * -f               *Read SQL query from filename"
+ * -q               *SQL query on command line
+ * -info            *Displays list of driver's properties
+ * -cfg             *CloverETL engine property file
+ * -plugins         *directory where to look for plugins/components
  *
  * Parameters marked [*] are optional. Either -f or -q parameter must be present.
  * If -config option is specified, mandatory parameters are loaded from property file.
@@ -88,8 +91,8 @@ import org.jetel.graph.runtime.EngineInitializer;
 public class AnalyzeDB {
 
 	private final static int BUFFER_SIZE = 2048;
-	private final static String VERSION = "1.1";
-	private final static String LAST_UPDATED = "2004/05/17";  
+	private final static String VERSION = "1.2";
+	private final static String LAST_UPDATED = "2009/04/21";
 	private final static String DEFAULT_DELIMITER = ",";
 	private final static String DEFAULT_XML_ENCODING="UTF-8";
 
@@ -129,6 +132,12 @@ public class AnalyzeDB {
 			} else if (argv[i].equalsIgnoreCase("-dbURL")) {
 				config.setProperty("dbURL",argv[++i]);
 				optionSwitch |= 0x02;
+			} else if (argv[i].equalsIgnoreCase("-driverLibrary")) {
+			    config.setProperty("driverLibrary", argv[++i]);
+			} else if (argv[i].equalsIgnoreCase("-jdbcSpecific")) {
+			    config.setProperty("jdbcSpecific", argv[++i]);
+			} else if (argv[i].equalsIgnoreCase("-database")) {
+			    config.setProperty("database", argv[++i]);
 			} else if (argv[i].equalsIgnoreCase("-d")) {
 				delimiter = argv[++i];
 			} else if (argv[i].equalsIgnoreCase("-o")) {
@@ -333,17 +342,20 @@ public class AnalyzeDB {
 	private static void printInfo() {
 		System.out.println("*** Jetel AnalyzeDB (" + VERSION + ") created on "+LAST_UPDATED+" (c) 2002-04 D.Pavlis, released under GNU Lesser General Public license ***\n");
 		System.out.println("Usage:");
-		System.out.println("-dbDriver   JDBC driver to use");
-		System.out.println("-dbURL      Database name (URL)");
-		System.out.println("-config     *Config/Property file containing parameters");
-		System.out.println("-user       *User name");
-		System.out.println("-password   *User's password");
-		System.out.println("-d          *Delimiter to use (standard is [,])");
-		System.out.println("-o          *Output file to use (standard is stdout)");
-		System.out.println("-f          *Read SQL query from filename");
-		System.out.println("-q          *SQL query on command line");
-		System.out.println("-info       *Displays list of driver's properties");
-		System.out.println("-plugins    *directory where to look for plugins/components");
+		System.out.println("-dbDriver        JDBC driver to use");
+		System.out.println("-dbURL           Database name (URL)");
+		System.out.println("-driverLibrary   *Library containing a JDBC driver to be loaded");
+        System.out.println("-jdbcSpecific    *Specific JDBC dialect to be used");
+        System.out.println("-database        *ID of a built-in JDBC library");
+		System.out.println("-config          *Config/Property file containing parameters");
+		System.out.println("-user            *User name");
+		System.out.println("-password        *User's password");
+		System.out.println("-d               *Delimiter to use (standard is [,])");
+		System.out.println("-o               *Output file to use (standard is stdout)");
+		System.out.println("-f               *Read SQL query from filename");
+		System.out.println("-q               *SQL query on command line");
+		System.out.println("-info            *Displays list of driver's properties");
+		System.out.println("-plugins         *directory where to look for plugins/components");
 		System.out.println("\nParameters marked [*] are optional. Either -f or -q parameter must be present.");
 		System.out.println("If -config option is specified, mandatory parameters are loaded from property file.");
 		System.out.println("When output is directed to file (-o option used), UTF-8 encoding is used - this should");
