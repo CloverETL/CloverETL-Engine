@@ -91,7 +91,11 @@ public class TLStringValue extends TLValue implements CharSequence {
 	public void setValue(DataField field) {
 		if (!field.isNull()){
 			this.value.setLength(0);
-			this.value.append(field.toString());
+			if (field instanceof StringDataField) {
+				this.value.append(((StringDataField) field).getCharSequence());
+			} else {
+				this.value.append(field.toString());
+			}
 		}else{
 			throw new IllegalArgumentException("Can't assign value of field "+field.getMetadata().getName()+
 					" (type " + field.getMetadata().getTypeAsString()+") to String value");
