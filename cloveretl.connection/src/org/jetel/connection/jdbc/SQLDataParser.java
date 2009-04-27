@@ -280,8 +280,10 @@ public class SQLDataParser implements Parser {
         sqlCloverStatement.setLogger(logger);
         try {
 			if (incrementalKey != null && sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
-				sqlCloverStatement.setIncremental(incremental != null ? incremental : 
-					new SQLIncremental(incrementalKey, sqlQuery, incrementalFile));
+				if (incremental == null) {
+					incremental = new SQLIncremental(incrementalKey, sqlQuery, incrementalFile);
+				}
+				sqlCloverStatement.setIncremental(incremental);
 			}
 			sqlCloverStatement.init();
 	        logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Sending query " + 

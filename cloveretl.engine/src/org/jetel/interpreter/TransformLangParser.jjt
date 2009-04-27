@@ -48,6 +48,8 @@ import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class TransformLangParser extends ExpParser {
 
@@ -62,6 +64,7 @@ public class TransformLangParser extends ExpParser {
        CustomizedRecordTransform custRecordTransform;
        String sourceFilename;       
        boolean hasEvalNode=false;
+       URL projectDirURL = null;
 
        public TransformLangParser(DataRecordMetadata recordMetadata,java.io.InputStream stream){
               this(new DataRecordMetadata[] {recordMetadata}, new DataRecordMetadata[0],stream,SRC_ENCODING);
@@ -153,6 +156,25 @@ public class TransformLangParser extends ExpParser {
       
       public void setTabSize(int size){
       		this.token_source.input_stream.setTabSize(size);
+      }
+      
+      /** 
+      	* Sets project root directory from where relative paths will be resolved
+      	* in import statements. This should be in common cases PROJECT_DIR definition
+      	* from workspace.prm
+      	*
+      	* If set to null or invalid URL, relative paths will be resolved from working directory
+      	* where java is running.
+      	*/
+      public void setProjectDir(String projectDir) {
+      		try {
+      			this.projectDirURL = StringUtils.isEmpty(projectDir) 
+      								? null 
+      								: FileUtils.getFileURL(projectDir);
+      		} catch (MalformedURLException e) {
+      			// nowhere to report unfortunately...
+      			this.projectDirURL = null;
+      		}
       }
 
       public final DataRecordMetadata getInRecordMeta(){
@@ -578,7 +600,7 @@ void ImportSource() :{	Token t;
 		InputStream stream;
 		jjtThis.setSourceToImport(filenameURL);
 		try{
-			stream=Channels.newInputStream(FileUtils. getReadableChannel(null, filenameURL)); 
+			stream=Channels.newInputStream(FileUtils.getReadableChannel(projectDirURL, filenameURL)); 
 			// stream=new BufferedInputStream(new FileInputStream(filenameURL));
 		}catch(Exception ex){
 			throw new ParseException(t,"can't open import file \""+filenameURL+"\"",ex);

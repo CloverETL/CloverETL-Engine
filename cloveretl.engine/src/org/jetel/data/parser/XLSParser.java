@@ -570,6 +570,9 @@ public abstract class XLSParser implements Parser {
 	 */
 	public abstract DataRecordMetadata createMetadata();
 	
+	public abstract String[][] getPreview(int startRow, int length);
+	public abstract String[][] getPreview(int length);
+
 	public int getLastRow() {
 		return lastRow;
 	}

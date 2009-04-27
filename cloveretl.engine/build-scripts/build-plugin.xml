@@ -169,7 +169,7 @@
 
 	<target name="plugin.xml" depends="init">
 		<mkdir dir="${dir.manifest}"/>
-		<copy file="plugin.xml" tofile="${dir.manifest}/plugin.xml" encoding="UTF-8" />
+		<copy file="plugin.xml" tofile="${dir.manifest}/plugin.xml" encoding="UTF-8" overwrite="true"/> <!-- overver=true is required, version number may be changed-->
 		<replace file="${dir.manifest}/plugin.xml" encoding="UTF-8">
 			<replacefilter token="0.0.0.devel" value="${version.full}"/>
 			<replacefilter token="&lt;library path=&quot;bin/&quot;/&gt;" value="&lt;library path=&quot;${plugin.name}.jar&quot;/&gt;"/>
@@ -211,6 +211,15 @@
 			<keepattribute name="Exceptions" />
 			<keep extends="java.lang.Enum"><field access="public"/><method access="public"/></keep>
 			
+			<keep extends="java.io.Serializable">
+				<field name="serialVersionUID"/>
+				<field /> <!-- keep all fields, object may be saved to file, which must be compatible between clover releases -->				
+				<method type="void" name="writeObject" parameters="java.io.ObjectOutputStream"/>
+				<method type="void" name="readObject" parameters="java.io.ObjectInputStream"/>
+				<method type="java.lang.Object" name="writeReplace" parameters=""/>
+				<method type="java.lang.Object" name="readResolve" parameters=""/>
+			</keep>
+			
 			<!-- list of classes to keep from all plugins except cloveretl.engine (better to place in plugin build script but duplication of proguard tag in each plugin is required; duplication is worse)-->
 			<keep name="org.jetel.component.normalize.RecordNormalize"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.component.normalize.DataRecordNormalize"><field access="protected public"/><method access="protected public"/></keep>
@@ -249,6 +258,11 @@
 			<keep name="com.opensys.cloveretl.data.parser.PrefixMultiLevelSelector"><field access="protected public"/><method access="protected public"/></keep>
 			
 			<keep name="com.opensys.cloveretl.lookup.PersistentLookupTable"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.lookup.PersistentLookupTable$SerializableKey"><field access="protected public"/><method access="protected public"/></keep>
+			<keep extends="jdbm.helper.Serializer">
+				<method type="void" name="readObject" parameters="java.io.ObjectInputStream"/>
+				<method type="void" name="writeObject" parameters="java.io.ObjectOutputStream"/>
+			</keep>
 			<keep name="com.opensys.cloveretl.lookup.AspellLookupTable"><field access="protected public"/><method access="protected public"/></keep>
 
 			<!-- template to copy&paste

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation license." modified="Mon Mar 16 11:49:05 CET 2009" modifiedBy="cloveruser" name="ReadingXMLExtract" revision="1.99">
+<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation license." modified="Wed Apr 22 09:27:23 CEST 2009" modifiedBy="cloveruser" name="ReadingXMLExtract" revision="1.104">
 <Global>
 <Metadata fileURL="meta/Amounts.fmt" id="Metadata3"/>
 <Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
@@ -8,21 +8,29 @@
 <Metadata fileURL="meta/EmployeesWithAmountID.fmt" id="Metadata0"/>
 <Metadata fileURL="meta/Spouses.fmt" id="Metadata5"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="143" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Fifteenth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1132" x="45" y="51">
+<attr name="text"><![CDATA[
+In the fifteenth graph, we use XMLXPathReader to read the already created "AmCustEmplFam.xml" file contained in the "data-tmp" directory. The XML file has 100,000 highest level elements. 
+This XML file is read and five output files are created. 
+They are similar to the delimited files, both original ones and those created in previous graphs, except two of them, where AmountID is included in these files together with infomration about employees or customers.
+More detailed information about this graph can be found in the "readme.html" file included in the CompanyTransactionsTutorial directory.
+]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeesXMLXPathWithAmountID.txt" guiHeight="0" guiName="employeesWithAmIDDelimited" guiWidth="0" guiX="757" guiY="18" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/childrenXMLXPath.txt" guiHeight="0" guiName="childrenDelimited" guiWidth="0" guiX="759" guiY="106" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersXMLXPathWithAmID.txt" guiHeight="0" guiName="customersWithAmIDDelimited" guiWidth="0" guiX="757" guiY="266" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/amountsXMLXPath.txt" guiHeight="0" guiName="amountsDelimited" guiWidth="0" guiX="758" guiY="350" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/spousesXMLXPath.txt" guiHeight="0" guiName="spousesDelimited" guiWidth="0" guiX="758" guiY="187" id="DATA_WRITER4" outputFieldNames="true" type="DATA_WRITER"/>
-<Node dedupKey="EmployeeID;SpouseName" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="591" guiY="189" id="DEDUP0" keep="first" type="DEDUP"/>
-<Node dedupKey="ParentID;ChildName" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="614" guiY="107" id="DEDUP2" keep="first" type="DEDUP"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="181" guiY="352" id="EXT_SORT0" sortKey="AmountID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="437" guiY="18" id="EXT_SORT1" sortKey="EmployeeID(a);AmountID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="368" guiY="266" id="EXT_SORT2" sortKey="CustomerID(a);AmountID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="451" guiY="110" id="EXT_SORT3" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="435" guiY="189" id="EXT_SORT4" sortKey="EmployeeID(a);SpouseName(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/AmCustEmplFam.xml" guiHeight="0" guiName="AmCustEmplFam" guiWidth="0" guiX="12" guiY="88" id="XML_XPATH_READER0" type="XML_XPATH_READER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeesXMLXPathWithAmountID.txt" guiHeight="0" guiName="employeesWithAmIDDelimited" guiWidth="0" guiX="795" guiY="228" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/childrenXMLXPath.txt" guiHeight="0" guiName="childrenDelimited" guiWidth="0" guiX="797" guiY="316" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersXMLXPathWithAmID.txt" guiHeight="0" guiName="customersWithAmIDDelimited" guiWidth="0" guiX="795" guiY="476" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/amountsXMLXPath.txt" guiHeight="0" guiName="amountsDelimited" guiWidth="0" guiX="796" guiY="560" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/spousesXMLXPath.txt" guiHeight="0" guiName="spousesDelimited" guiWidth="0" guiX="796" guiY="397" id="DATA_WRITER4" outputFieldNames="true" type="DATA_WRITER"/>
+<Node dedupKey="EmployeeID;SpouseName" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="629" guiY="399" id="DEDUP0" keep="first" type="DEDUP"/>
+<Node dedupKey="ParentID;ChildName" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="652" guiY="317" id="DEDUP2" keep="first" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="219" guiY="562" id="EXT_SORT0" sortKey="AmountID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="475" guiY="228" id="EXT_SORT1" sortKey="EmployeeID(a);AmountID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="406" guiY="476" id="EXT_SORT2" sortKey="CustomerID(a);AmountID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="489" guiY="320" id="EXT_SORT3" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="473" guiY="399" id="EXT_SORT4" sortKey="EmployeeID(a);SpouseName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/AmCustEmplFam.xml" guiHeight="0" guiName="AmCustEmplFam" guiWidth="0" guiX="50" guiY="298" id="XML_XPATH_READER0" type="XML_XPATH_READER">
 <attr name="mapping"><![CDATA[  <Context xpath="/Amounts/transactions" outPort="4">
       <Context xpath="customers" outPort="3" parentKey="AmountID" generatedKey="AmountID"/>
       <Context xpath="employees" outPort="0" parentKey="AmountID" generatedKey="AmountID">

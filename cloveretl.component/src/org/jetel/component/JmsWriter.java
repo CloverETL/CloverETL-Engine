@@ -89,7 +89,7 @@ import org.w3c.dom.Element;
 * @see         org.jetel.data.parser.FixLenDataParser
 */
 public class JmsWriter extends Node {
-	public final static String COMPONENT_TYPE = "JMS_READER";
+	public final static String COMPONENT_TYPE = "JMS_WRITER";
 
 	static Log logger = LogFactory.getLog(JmsWriter.class);
 

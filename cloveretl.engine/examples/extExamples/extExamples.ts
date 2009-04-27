@@ -7,7 +7,7 @@
 	<DBConnection ident="oracle" type="ORACLE" user="test" password="test" URL="jdbc:oracle:thin:@koule:1521:xe" driver="oracle.jdbc.OracleDriver" >
 	    	 <DBUnitFeature name="http://www.dbunit.org/features/qualifiedTableNames" enabled="true"/>
 	</DBConnection>
-	<DBConnection ident="mysql" type="MYSQL" user="test" password="" URL="jdbc:mysql://koule/test" driver="org.gjt.mm.mysql.Driver" />
+	<DBConnection ident="mysql" type="MYSQL" user="test" password="" URL="jdbc:mysql://koule/test?zeroDateTimeBehavior=convertToNull" driver="org.gjt.mm.mysql.Driver" />
 
 	<FunctionalTest ident="LDAPReaderWriter" graphFile="graph/graphLdapReaderWriter.grf">
 	</FunctionalTest>
@@ -127,6 +127,67 @@
 	      	 supposedTableConnection="postgre_foodmart"
 	      /> 
       	<DeleteTable connection="postgre_foodmart" name="employee_tmp"/>
+	</FunctionalTest>
+
+	<FunctionalTest ident="DBLoad6" graphFile="graph/graphDBLoad6.grf">
+        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	      <DBTableToTable
+	      	 outputTable="employee_tmp" 
+	      	 outputTableConnection="postgre_foodmart"
+	      	 supposedTable="employee_names_dates"
+	      	 supposedTableConnection="postgre_foodmart"
+	      /> 
+      	<DeleteTable connection="postgre_foodmart" name="employee_tmp"/>
+	</FunctionalTest>
+
+	<FunctionalTest ident="DBLookup" graphFile="graph/graphDBLookup.grf">
+         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/joined_data.out" supposedFile="supposed-out/joined_data.DBLookup.out"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/log.err" supposedFile="supposed-out/log.DBLookup.err"/>	                                                                    
+	</FunctionalTest>
+
+	<FunctionalTest ident="DBRead" graphFile="graph/graphDBRead.grf">
+         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/customer.out" supposedFile="supposed-out/customer.DBRead.out"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/intersection_customer_employee.txt" supposedFile="supposed-out/intersection_customer_employee.DBRead.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/employee.out" supposedFile="supposed-out/employee.DBRead.out"/>	                                                                    
+	</FunctionalTest>
+
+	<FunctionalTest ident="DBUnload" graphFile="graph/graphDBUnload.grf">
+         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/employees.list.out" supposedFile="supposed-out/employees.list.DBUnload.out"/>	                                                                    
+	</FunctionalTest>
+
+	<FunctionalTest ident="DBUnload2" graphFile="graph/graphDBUnload2.grf">
+         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/employees.txt" supposedFile="supposed-out/employees.DBUnload2.txt"/>	                                                                    
+	</FunctionalTest>
+
+	<FunctionalTest ident="DBUnloadParametrized" graphFile="graph/graphDBUnloadParametrized.grf">
+         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/employees.xls" supposedFile="supposed-out/employees.DBUnloadParametrized.xls"/>	                                                                    
+	     <DeleteFile file="data-out/employees.xls"/>
+	</FunctionalTest>
+
+	<FunctionalTest ident="DBUnloadUniversal" graphFile="graph/graphDBUnloadUniversal.grf">
+         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/employee.output" supposedFile="supposed-out/employee.DBUnloadUniversal.out"/>	                                                                    
+	</FunctionalTest>
+
+	<FunctionalTest ident="JMS" graphFile="graph/graphJms.grf">
+         <Property name="LIB_DIR" value="examples/extExamples/lib" />
+	 	  <FlatFile outputFile="data-out/jms.out" supposedFile="supposed-out/jms.JMS.out"/>	                                                                    
+	</FunctionalTest>
+
+	<FunctionalTest ident="JmsSingleXmlField" graphFile="graph/graphJmsSingleXmlField.grf">
+         <Property name="LIB_DIR" value="examples/extExamples/lib" />
+	 	  <FlatFile outputFile="data-out/customers.out" supposedFile="supposed-out/customers.JmsSingleXmlField.out"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/orders.out" supposedFile="supposed-out/orders.JmsSingleXmlField.out"/>	                                                                    
+	</FunctionalTest>
+
+	<FunctionalTest ident="LookupJoin" graphFile="graph/graphLookupJoin.grf">
+         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/joined_data.out" supposedFile="supposed-out/joined_data.DBLookup.out"/>	                                                                    
 	</FunctionalTest>
 
 </TestScenario>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed May 02 10:25:31 CEST 2007" description="Slowly Changing Dimension (SCD) - should be used when it is necessary &#10;for the data warehouse to track historical changes." guiVersion="2.0" id="1204805969813" licenseType="Evaluation license." modified="Tue Aug 19 13:32:59 CEST 2008" modifiedBy="avackova" name="SCDDataIntersection" revision="1.241">
+<Graph author="avackova" created="Wed May 02 10:25:31 CEST 2007" description="Slowly Changing Dimension (SCD) - should be used when it is necessary &#10;for the data warehouse to track historical changes." guiVersion="0.0.0.devel" id="1204805969813" licenseType="Evaluation license." modified="Mon Apr 20 12:27:45 CEST 2009" modifiedBy="avackova" name="SCDDataIntersection" revision="1.244">
 <Global>
 <Metadata fileURL="${META_DIR}/exchange_rate_DIM.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/exchange_rate.fmt" id="Metadata1"/>
@@ -37,7 +37,9 @@ $0.Valid_from := $1.Valid_from;
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/exchange_rates_matched.txt" guiHeight="0" guiName="Matched records" guiWidth="0" guiX="635" guiY="17" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/exchange_rates_DIM_insert.txt" guiHeight="0" guiName="Insert" guiWidth="0" guiX="1156" guiY="128" id="DATA_WRITER1" type="DATA_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/exchange_rates_DIM_update.txt" guiHeight="0" guiName="Update" guiWidth="0" guiX="1162" guiY="355" id="DATA_WRITER2" type="DATA_WRITER"/>
-<Node enabled="enabled" filterExpression="isnull($Valid_to)" guiHeight="0" guiName="Ext Filter" guiWidth="0" guiX="169" guiY="413" id="EXT_FILTER0" type="EXT_FILTER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Ext Filter" guiWidth="0" guiX="169" guiY="413" id="EXT_FILTER0" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[isnull($Valid_to)]]></attr>
+</Node>
 <Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="174" guiY="34" id="EXT_SORT0" passThroughInputPort="0" sortKey="Code(a);Country(a);Currency(a);Amount(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="341" guiY="370" id="EXT_SORT1" passThroughInputPort="0" sortKey="Code(a);Country(a);Currency(a);Amount(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="346" guiY="83" id="REFORMAT0" type="REFORMAT">
@@ -76,8 +78,8 @@ function transform() {
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="817" guiY="352" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiHeight="0" guiName="Simple Gather" guiWidth="0" guiX="814" guiY="145" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="764" guiY="478" id="TRASH0" type="TRASH"/>
-<Node enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="617" guiY="476" id="TRASH1" type="TRASH"/>
+<Node debugFilename="${DATAOUT_DIR}/onlyInRatesByCode.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="764" guiY="478" id="TRASH0" type="TRASH"/>
+<Node debugFilename="${DATAOUT_DIR}/onlyInRates.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="617" guiY="476" id="TRASH1" type="TRASH"/>
 <Edge debugMode="false" fromNode="DATA_INTERSECTION0:0" guiBendpoints="" id="Edge12" inPort="Port 0 (set A)" metadata="Metadata0" outPort="Port 0 (only in A)" toNode="DATA_INTERSECTION1:0"/>
 <Edge fromNode="DATA_INTERSECTION0:1" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (in A &amp; B)" toNode="DATA_WRITER0:0"/>
 <Edge fromNode="DATA_INTERSECTION0:2" guiBendpoints="" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (only in B)" toNode="TRASH1:0"/>

@@ -20,9 +20,11 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Types;
 
 import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
 import org.jetel.connection.jdbc.specific.conn.MSSQLConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -142,4 +144,23 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 		}
 	}
 
+	public String quoteIdentifier(String identifier) {
+		return "\"" + identifier + "\"";
+	}
+
+	/**
+	 * Informix validation is different because Informix does not support selects in from
+	 * clause
+	 */
+	public String getValidateQuery(String query, QueryType queryType)
+			throws SQLException {
+
+		if (queryType.equals(QueryType.SELECT)) {
+			return "select * from table(multiset(" + query + ")) wrapper_table where 1=0";
+		} else {
+			return super.getValidateQuery(query, queryType);
+		}
+
+	}
+	
 }

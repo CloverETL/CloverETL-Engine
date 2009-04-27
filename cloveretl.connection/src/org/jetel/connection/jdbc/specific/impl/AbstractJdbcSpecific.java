@@ -26,6 +26,7 @@ import java.sql.Types;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLUtil;
+import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -197,4 +198,37 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
         return identifier;
     }
 
+	public String getValidateQuery(String query, QueryType queryType) throws SQLException {
+		
+		String q = null;
+        String where = "WHERE";
+        int indx;
+        
+        switch(queryType) {
+		case INSERT:
+			throw new SQLException("INSERT query cannot be validated");
+		case UPDATE:
+		case DELETE:
+			
+			q = query.toUpperCase();
+			
+			indx = q.indexOf(where);
+            if (indx >= 0){
+            	q = q.substring(0, indx + where.length()) + " 0=1 and " + q.substring(indx + where.length());
+            }else{
+            	q += " where 0=1";
+            }
+            break;
+            
+		case SELECT:
+			q = "SELECT wrapper_table.* FROM (" + query + ") wrapper_table where 1=0";
+            break;
+		}
+	
+        return q;
+        
+	}
+
+    
+    
 }

@@ -90,5 +90,10 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 			throw new IllegalArgumentException("Can't handle Clover's data type :"+field.getTypeAsString());
 		}
 	}
+
+	public String quoteIdentifier(String identifier) {
+		return "\"" + identifier + "\"";
+	}
+	
 	
 }

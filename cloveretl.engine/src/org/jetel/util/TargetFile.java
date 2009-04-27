@@ -1,7 +1,6 @@
 package org.jetel.util;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URL;
@@ -11,7 +10,6 @@ import java.nio.channels.WritableByteChannel;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,6 +27,7 @@ import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.dictionary.IDictionaryType;
 import org.jetel.graph.dictionary.WritableChannelDictionaryType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.PortWriting.DataPreparedListener;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -76,8 +75,6 @@ public class TargetFile {
 	private DataRecord record;
 	private DataField field; 
     private PipedInputStream writeIn;
-	private boolean isFinishing;
-	private boolean isFinished;
 	private boolean isStringDataField;
 
 	private String charset;
@@ -87,7 +84,7 @@ public class TargetFile {
 	private WritableByteChannel dictOutChannel;
 	private ArrayList<byte[]> dictOutArray;
 	private boolean wait4Finishing;
-	private Object monitor;
+	private PortWriting portWriting;
 
 	private int compressLevel = -1;
 
@@ -128,7 +125,7 @@ public class TargetFile {
      */
     public void init() throws IOException, ComponentNotReadyException {
     	if (charset == null) charset = DEFAULT_CHARSET;
-    	monitor = new Object();
+    	portWriting = new PortWriting();
     	if (fileURL != null && fileURL.startsWith(PORT_PROTOCOL)) {
         	initPortFields();
     	} else if (outputPort != null) {
@@ -290,7 +287,6 @@ public class TargetFile {
     }
 
     public void finish() throws IOException{
-    	isFinishing = true;
     	formatter.finish();
     	formatter.close();
     	wait4Finishing();
@@ -298,13 +294,7 @@ public class TargetFile {
     
     private void wait4Finishing() throws IOException {
     	if (wait4Finishing) {
-    		synchronized (monitor) {
-       			try {
-       				if (!isFinished) monitor.wait();
-       			} catch (InterruptedException e) {
-       				throw new RuntimeException(e);
-      			}
-			}
+    		portWriting.wait4Finnishing();
     		try {
     			// there is only one target for port and dictionary protocol
 				if (outputPort != null) outputPort.eof();
@@ -314,16 +304,11 @@ public class TargetFile {
     	}
     }
     
-	public boolean isFinished() {
-		return isFinished;
-	}
-    
     private void write2OutportOrDictionary(ByteArray aBytes) {
     	if (writeIn != null) {
             if (dictProcesstingType != null) {
            		write2Dictionary(aBytes);
             }
-   	    	if (isFinishing) isFinished = true;
             if (field != null) {
        			field.setValue(isStringDataField ? aBytes.toString(charset) : aBytes.getValueDuplicate());
        	        //broadcast the record to all connected Edges
@@ -391,18 +376,13 @@ public class TargetFile {
     	if (wait4Finishing = (field != null || dictProcesstingType != null)) {
             writeIn = new PipedInputStream();
             PipedOutputStream readOut = new PipedOutputStream(writeIn);
-            final ReadThread readThread = new ReadThread(writeIn);
-        	readThread.addDataPreparedListener(new DataPreparedListener() {
+            portWriting.setDataPreparedListener(new DataPreparedListener() {
 				@Override
-				public void dataPrepared() {
-		    		synchronized (monitor) {
-						write2OutportOrDictionary(readThread.getBytes());
-						readThread.interrupt();
-	    				monitor.notifyAll();
-					}
+				public void dataPrepared(ByteArray bytes) {
+					write2OutportOrDictionary(bytes);
 				}
 			});
-        	readThread.start();
+            portWriting.processData(writeIn);
     		setDataTarget(Channels.newChannel(readOut));
     	} else if (fileNames != null) {
             String fName = fileNames.next();
@@ -480,49 +460,6 @@ public class TargetFile {
     
 	public void setUseChannel(boolean useChannel) {
 		this.useChannel = useChannel;
-	}
-
-	private static class ReadThread extends Thread {
-		  private InputStream pi = null;
-		  private ByteArray bytes;
-		  private byte[] buffer;
-		  private int len;
-		  private List<DataPreparedListener> listListener;
-		  
-		  public ReadThread(PipedInputStream pi) {
-			  buffer = new byte[1024];
-			  setName("ReadThread");
-			  listListener = new ArrayList<DataPreparedListener>();
-			  bytes = new ByteArray();
-			  this.pi = pi;
-		  }
-		  
-		  public ByteArray getBytes() {
-			  return bytes;
-		  }
-		  
-		  public synchronized void run() {
-			  try {
-				  while ((len = pi.read(buffer)) != -1) {
-					  bytes.append(buffer, 0, len);
-				  }
-				  for (DataPreparedListener listener: listListener) {
-					  listener.dataPrepared();
-				  }
-			  } catch (Exception e) {
-				  logger.error(e);
-			  }
-		  }
-
-		  public void addDataPreparedListener(DataPreparedListener recordPreparedListener) {
-			  listListener.add(recordPreparedListener);
-		  }
-	}
-
-	public static abstract class DataPreparedListener {
-		public DataPreparedListener() {
-		}
-		public abstract void dataPrepared();
 	}
 
 	public void setCharset(String charset) {

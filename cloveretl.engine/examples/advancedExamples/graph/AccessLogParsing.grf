@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Václav" created="Thu Mar 12 09:07:07 CET 2009" guiVersion="0.0.0.devel" id="1236845275482" licenseType="Evaluation license." modified="Wed Mar 25 20:07:29 CET 2009" modifiedBy="cloveruser" name="AccessLogParsing" revision="1.82">
+<Graph author="Václav" created="Thu Mar 12 09:07:07 CET 2009" guiVersion="0.0.0.devel" id="1236845275482" licenseType="Evaluation license." modified="Tue Apr 21 13:03:26 CEST 2009" modifiedBy="avackova" name="AccessLogParsing" revision="1.87">
 <Global>
 <Metadata id="Metadata0" previewAttachment="C:/Users/Václav/workspace-prezentace/AccessLogParsing/data-in/cloveretl${PROJECT}org-access_log" previewAttachmentCharset="ISO-8859-1">
 <Record name="accessLogData" previewAttachment="C:/Users/Václav/workspace-prezentace/AccessLogParsing/data-in/cloveretl${PROJECT}org-access_log" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" skipFirstLine="false" type="delimited">
@@ -107,7 +107,7 @@ import org.jetel.data.sequence.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class Transform extends DataRecordTransform { 
+public class GetHostName extends DataRecordTransform { 
 
 
 	/**
@@ -145,7 +145,7 @@ public class Transform extends DataRecordTransform {
 
 			// user's code ENDs here !
 		} catch(Exception e) {
-			throw new TransformException("Error in extern transformation class " + Transform.class.getName() + ": " + e.getMessage());
+			throw new TransformException("Error in extern transformation class " + GetHostName.class.getName() + ": " + e.getMessage());
 		}
 		return ALL;
 	}
@@ -163,7 +163,7 @@ public class Transform extends DataRecordTransform {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="516" guiY="83" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="515" guiY="1" id="TRASH0" type="TRASH"/>
+<Node debugFilename="${DATAOUT_DIR}/irrelevant.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="515" guiY="1" id="TRASH0" type="TRASH"/>
 <Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/statistics.xls" firstDataRow="2" guiHeight="0" guiName="IP addresses" guiWidth="0" guiX="1362" guiY="81" id="XLS_WRITER0" namesRow="1" sheetName="IP addresses" type="XLS_WRITER"/>
 <Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT2:0"/>
 <Edge debugMode="true" fromNode="AGGREGATE1:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT3:0"/>

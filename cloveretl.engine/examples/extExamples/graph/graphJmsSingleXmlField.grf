@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Mon Dec 16 11:30:48 CET 2007" description="This graph ilustrates usage of JMS Reader/Writer for transfer one single field containing XML element. It requires ACtiveMQ JMS server and all libraries required by ACtiveMQ connection factory." guiVersion="1.9" id="1204546496818" licenseType="Evaluation license." modified="Thu Apr 03 11:09:14 CEST 2008" name="graphSystemExecute" revision="1.10">
+<Graph author="avackova" created="Mon Dec 16 11:30:48 CET 2007" description="This graph ilustrates usage of JMS Reader/Writer for transfer one single field containing XML element. It requires ACtiveMQ JMS server and all libraries required by ACtiveMQ connection factory." guiVersion="0.0.0.devel" id="1204546496818" licenseType="Evaluation license." modified="Thu Apr 16 12:00:06 CEST 2009" modifiedBy="avackova" name="graphSystemExecute" revision="1.21">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata2"/>
@@ -8,7 +8,7 @@
 <Field eofAsDelimiter="true" name="xml" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
-<Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="file:${WORKSPACE}/../cloveretl.engine/lib/mx4j-tools-2.1.1.jar;file:${WORKSPACE}/../cloveretl.engine/lib/activeio-core-3.0.0-incubator.jar;file:${WORKSPACE}/../cloveretl.engine/lib/backport-util-concurrent-2.1.jar;file:${WORKSPACE}/../cloveretl.engine/lib/jms.jar;file:${WORKSPACE}/../cloveretl.engine/lib/activemq-core-4.1.1.jar;file:${WORKSPACE}/../cloveretl.engine/lib/geronimo-j2ee-management_1.0_spec-1.0.jar;file:${WORKSPACE}/../cloveretl.engine/lib/derby-10.1.1.0.jar" providerUrl="vm://koule:61613?marshal=false&amp;broker.persistent=false" type="JMS"/>
+<Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="file:${LIB_DIR}/activemq-all-5.2.0.jar" name="" password="" providerUrl="vm://localhost" type="JMS" username=""/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
@@ -21,12 +21,12 @@
 <attr name="bodyField"><![CDATA[xml]]></attr>
 <attr name="_processorClass"><![CDATA[org.jetel.component.DataRecord2JmsMsgProperties]]></attr>
 </Node>
-<Edge fromNode="Input:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="JmsWriter:0"/>
+<Edge fromNode="Input:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JmsWriter:0"/>
 <Edge fromNode="JmsReader:0" guiBendpoints="" id="INEDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="XPathTransform:0"/>
 </Phase>
 <Phase number="1">
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/customers.out" guiHeight="25" guiName="OutCustomer" guiWidth="50" guiX="647" guiY="226" id="OutCustomer" type="DATA_WRITER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.out" guiHeight="25" guiName="OutOrder" guiWidth="50" guiX="648" guiY="307" id="OutOrder" type="DATA_WRITER"/>
+<Node append="false" charset="windows-1252" enabled="enabled" fileURL="${DATAOUT_DIR}/customers.out" guiHeight="25" guiName="OutCustomer" guiWidth="50" guiX="647" guiY="226" id="OutCustomer" type="DATA_WRITER"/>
+<Node append="false" charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.out" guiHeight="25" guiName="OutOrder" guiWidth="50" guiX="648" guiY="307" id="OutOrder" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="25" guiName="REF" guiWidth="50" guiX="431" guiY="228" id="XPathTransform" type="REFORMAT">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;

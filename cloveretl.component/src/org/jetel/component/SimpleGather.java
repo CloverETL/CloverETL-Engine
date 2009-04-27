@@ -146,7 +146,6 @@ public class SimpleGather extends Node {
 				}
 				// have we reached the maximum empty loops count ?
 				if (emptyLoopCounter > NUM_EMPTY_LOOPS_TRESHOLD) {
-					System.out.println(outPort.getOutputRecordCounter());
 					Thread.sleep(EMPTY_LOOPS_WAIT);
 				} else {
 					emptyLoopCounter++;

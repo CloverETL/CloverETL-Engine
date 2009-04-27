@@ -455,48 +455,20 @@ public class SQLCloverStatement {
 	 */
 	public void executeValidate() throws SQLException, ComponentNotReadyException {
 
-		String q = null;
-        String where = "WHERE";
-        int indx;
-        boolean update = false;
-        
-        switch(queryType) {
-		case INSERT:
-			throw new SQLException("INSERT query cannot be validated");
-		case UPDATE:
-		case DELETE:
-			update = true;
-			
-			q = getQuery().toUpperCase();
-			
-			indx = q.indexOf(where);
-            if (indx >= 0){
-            	q = q.substring(0, indx + where.length()) + " 0=1 and " + q.substring(indx + where.length());
-            }else{
-            	q += " where 0=1";
-            }
-            break;
-            
-		case SELECT:
-			update = false;
-			q = "SELECT * FROM (" + getQuery() + ") as wrapper_table where 1=0";
-			
-            break;
-			
-		}
+        String q = connection.getJdbcSpecific().getValidateQuery(getQuery(), getQueryType());
         
         if (q != null) {
         	this.isInitialized = false;
         	this.query = q;
         	init();
-        	if (update) {
+        	if (getQueryType().equals(QueryType.SELECT)) {
+        		executeQuery();
+        	} else {
         		if (statement instanceof PreparedStatement) {
         			executeUpdate(record);
         		} else {
         			statement.executeUpdate(q);
         		}
-        	} else {
-        		executeQuery();
         	}
         }
         

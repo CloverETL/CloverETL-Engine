@@ -29,7 +29,6 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.lookup.DBLookupTable;
-import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
@@ -84,7 +83,7 @@ public class testDBLookup{
 		
 	//initialization; must be present
 	EngineInitializer.initEngine(arg[0], arg[1], null);
-	EngineInitializer.forceActivateAllPlugins(true);
+	EngineInitializer.forceActivateAllPlugins();
 
 	System.out.println("**************** Input parameters: ****************");
 	System.out.println("Plugins directory: "+ arg[PLUGINS_PROPERTY_INDEX]);

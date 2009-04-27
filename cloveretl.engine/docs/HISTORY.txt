@@ -4,6 +4,8 @@
 REL 2-7-0
 ---------
 Features:
++ DataGenerator can use CTL function to generate random data, lookup table may be used
++ added support for XLSX format to both XLSReader and XLSWriter
 + new CTL functions
 	- edit_distance
 	- metaphone
@@ -22,33 +24,56 @@ Features:
 	- bit_is_set
 	- bit_lshift
 	- bit_rshift
-+ DBExecute can read statements from input port
 + str2num ctl function has new pattern and locale parameters
++ added support for formatting of date/time fields using the Joda Time syntax
 + CloverDataReader can read multiple files
-+ Better checkConfig for data record metadata
++ Tar protocol support for readers
++ xmlFeatures attribute for XMLExtract and XPathReader components
++ Skip and Number Records is implemented also for every source
++ XMLExtract has new numRecords and skipRecords in the mapping attribute
++ autofilling for DBInputTable and XMLExtract
++ autofilling has new attributes row_timestamp and reader_timestamp
++ better checkConfig for data record metadata
++ readers supports wildcards in archives
++ DBExecute can read statements from input port
++ bulkloaders use named pipes for data transfers when possible
++ new implementation of JdbcSpecific - DefaultConservativeJdbcSpecific
++ OracleSpecific has new attribute rowPrefetch (value can be changed in defaultProperties) 
++ new JDBC specific for MSSQL 2005
++ edge debug can log up last N records
++ graph parameters are printed out by logger on debug level
++ MergeJoin finishes as soon as no slave data records are available (in case of inner join)
++ Merge runs and displays a warning if only a single input is connected
++ locale and date/number formats can be specified for an entire data record
++ "description" property added to both data record and data field meta data
++ "recordKey" property added to data record metadata
++ clover and clover.bat shell scripts now return a value specifying success/failure
++ added shell scripts for AnalyzeDB and DBFAnalyzer
 + BadDataFormatException returns also wrong value for parsers
 + XMLExtract has better error handling
-+ DataGenerator can use CTL function, etc.
-+ Skip and Number Records is implemented also for every source
-+ autofilling has new attributes row_timestamp and reader_timestamp
-+ XMLExtract has new numRecords and skipRecords in the mapping attribute
-+ Autofilling for DBInputTable and XMLExtract
-+ xmlFeatures attribute for XMLExtract and XPathReader components
-+ tar protocol
-+ readers supports wildcards in archives
-+ bulkloaders use named pipes for data transfers when possible
++ New example projects: CompanyTransactionsTutorial and CTLFunctionsTutorial
++ Notes added to some graphs from the advancedExamples project.
 
 Fixed:
-+ Input stream releasing after reading
++ DBLookupTable does not need metadata to be set
++ DBInputTable can convert all database types to String
++ Improved SQL query validation
++ External DB connections with custom drivers
++ InputStream releasing after reading
++ SimpleGather has now better heuristic to choose proper input port - that avoids performance issue caused by undesirable repeated waiting
 + MultiFileReader created empty "unassigned" file
 + DDL to Clover metadata didn't set the date/datetime format
 + data record wasn't valid for autofilling fields only
 + hex2byte CTL function sometimes returned wrong tail
 + wrong formatting for trash component
-+ slow test for archives
 + twice footer created by StructuredDataWriter
 + now bulkloaders can be run outside of the workspace
 + now persistent lookup table checks key identity during initialization; identity between settings of lookup table and persistent lookup table
++ field association in DBInputTable
++ cloverserver execution script update
++ Sheet name now has a higher priority than Sheet number in XLSReader
++ XLSReader now correctly reads decimal values
++ AspellLookupTable now correctly supports letters with diacritical marks in lookup keys
 
 REL 2-6-3
 ---------
