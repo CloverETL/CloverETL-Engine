@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -927,6 +928,7 @@ public class StringLib extends TLFunctionLibrary {
                 }
 
                 formatter.setLenient(lenient);
+                formatter.position.setIndex(0);
                 formatter.formatter.parse(input, formatter.position);
                 if (!lenient) {
                 	// strict: valid input must be non-empty & exact match to pattern
@@ -1594,6 +1596,7 @@ public class StringLib extends TLFunctionLibrary {
 	    public void resetPattern(String regex){
 	    	pattern=Pattern.compile(regex);
 	    	matcher.usePattern(pattern);
+	    	storedRegex=regex;
 	    }
 	    
 	    public void resetMatcher(CharSequence input){

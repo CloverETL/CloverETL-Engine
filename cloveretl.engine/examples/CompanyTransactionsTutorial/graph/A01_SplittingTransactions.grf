@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231837143600" licenseType="Evaluation license." modified="Mon Mar 23 11:33:43 CET 2009" modifiedBy="cloveruser" name="Splitting" revision="1.46">
+<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231837143600" licenseType="Evaluation license." modified="Wed Apr 22 08:54:32 CEST 2009" modifiedBy="cloveruser" name="Splitting" revision="1.51">
 <Global>
 <Metadata fileURL="meta/Amounts.fmt" id="Metadata2"/>
 <Metadata fileURL="meta/Customers.fmt" id="Metadata3"/>
@@ -7,22 +7,33 @@
 <Metadata fileURL="meta/IDs.fmt" id="Metadata1"/>
 <Metadata fileURL="meta/Transactions.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="210" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="First graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="930" x="46" y="44">
+<attr name="text"><![CDATA[
+In the first graph, we start from the "Transactions.dat" file. It contains information about employees of the company, its customers and amount of money paid. Data records from the "Transactions.dat" file are multiplicated using SimpleCopy. Then, each new data flow is parsed by Reformat and only some information is selected for each of them. Thus, each of the resulting output files contains only a part of the whole information. 
+The output files are delimited. In other words, their fields are also separated from each other by semicolon. 
+Note that (for each data flow) we have removed all duplicate data records (since more customers made the orders and more employees served the customers). 
+To duplicate data records, as the first step, we needed to sort them according to some key fields using ExtSort and, as the second step, we removed duplicate fields using Dedup. 
+Thus, the resulting files contain information about 200 employees, 19,955 customers and 100,000 amounts. 
+Each file contain an ID that identifies the records uniquely and will serve to interconnect customers and employees with amounts of money paid.
+More detailed information about this graph can be found in the "readme.html" file included in the CompanyTransactionsTutorial directory.
+]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Transactions.dat" guiHeight="0" guiName="TransactionsDelimited" guiWidth="0" guiX="86" guiY="29" id="DATA_READER0" skipFirstLine="true" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Ids.dat" guiHeight="0" guiName="IDsDelimited" guiWidth="0" guiX="832" guiY="28" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Amounts.dat" guiHeight="0" guiName="AmountsDelimited" guiWidth="0" guiX="832" guiY="118" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Customers.dat" guiHeight="0" guiName="CustomersDelimited" guiWidth="0" guiX="832" guiY="202" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Employees.dat" guiHeight="0" guiName="EmployeesDelimited" guiWidth="0" guiX="832" guiY="286" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
-<Node dedupKey="CustomerID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="669" guiY="202" id="DEDUP0" keep="first" type="DEDUP"/>
-<Node dedupKey="EmployeeID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="669" guiY="286" id="DEDUP1" keep="first" type="DEDUP"/>
-<Node dedupKey="AmountID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="669" guiY="118" id="DEDUP2" keep="first" type="DEDUP"/>
-<Node enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="669" guiY="30" id="DEDUP3" keep="first" noDupRecord="100000" type="DEDUP"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="499" guiY="202" id="EXT_SORT0" sortKey="CustomerID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="499" guiY="287" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="499" guiY="118" id="EXT_SORT2" sortKey="AmountID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="499" guiY="29" id="EXT_SORT3" sortKey="AmountID(a);CustomerID(a);EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="SelectingIDs" guiWidth="0" guiX="286" guiY="28" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Transactions.dat" guiHeight="0" guiName="TransactionsDelimited" guiWidth="0" guiX="31" guiY="431" id="DATA_READER0" skipFirstLine="true" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/Ids.dat" guiHeight="0" guiName="IDsDelimited" guiWidth="0" guiX="852" guiY="300" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/Amounts.dat" guiHeight="0" guiName="AmountsDelimited" guiWidth="0" guiX="852" guiY="390" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/Customers.dat" guiHeight="0" guiName="CustomersDelimited" guiWidth="0" guiX="852" guiY="474" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/Employees.dat" guiHeight="0" guiName="EmployeesDelimited" guiWidth="0" guiX="852" guiY="558" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
+<Node dedupKey="CustomerID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="689" guiY="474" id="DEDUP0" keep="first" type="DEDUP"/>
+<Node dedupKey="EmployeeID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="689" guiY="558" id="DEDUP1" keep="first" type="DEDUP"/>
+<Node dedupKey="AmountID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="689" guiY="390" id="DEDUP2" keep="first" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="689" guiY="302" id="DEDUP3" keep="first" noDupRecord="100000" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="519" guiY="474" id="EXT_SORT0" sortKey="CustomerID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="519" guiY="559" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="519" guiY="390" id="EXT_SORT2" sortKey="AmountID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="519" guiY="301" id="EXT_SORT3" sortKey="AmountID(a);CustomerID(a);EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="SelectingIDs" guiWidth="0" guiX="354" guiY="300" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -39,7 +50,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="SelectingAmounts" guiWidth="0" guiX="334" guiY="118" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="SelectingAmounts" guiWidth="0" guiX="354" guiY="390" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -55,7 +66,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="SelectingCustomers" guiWidth="0" guiX="334" guiY="202" id="REFORMAT2" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="SelectingCustomers" guiWidth="0" guiX="354" guiY="474" id="REFORMAT2" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -73,7 +84,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="SelectingEmployees" guiWidth="0" guiX="288" guiY="285" id="REFORMAT3" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="SelectingEmployees" guiWidth="0" guiX="354" guiY="557" id="REFORMAT3" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -90,7 +101,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="85" guiY="167" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="172" guiY="421" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
 <Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge19" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
 <Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" id="Edge24" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (unique)" toNode="DATA_WRITER2:0"/>
 <Edge debugMode="true" fromNode="DEDUP1:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (unique)" toNode="DATA_WRITER3:0"/>

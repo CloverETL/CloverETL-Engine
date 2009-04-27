@@ -83,6 +83,11 @@ DataFieldMetadata.DECIMAL_LENGTH = 8
 # Example: <Field type="decimal" name="usrid" length="10" <b>scale="2"</b> delimiter=";"  nullable="true" />
 DataFieldMetadata.DECIMAL_SCALE = 2
 
+#The number of rows of data that are fetched each time data is fetched;
+#the extra data is stored in client-side buffers for later access by the client.
+# -1 mean unused row prefetch
+OracleConnection.ROW_PREFETCH = 100
+
 #****************************************************************************
 # !!! DO NOT EDIT BELOW UNLESS YOU ARE ABSOLUTELY SURE WHAT YOU ARE DOING !!!
 #****************************************************************************

@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -263,7 +264,11 @@ public class ExtFilter extends org.jetel.graph.Node {
 			if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)){
 				filter.setFilterExpression(xattribs.getString(XML_FILTEREXPRESSION_ATTRIBUTE, false));
 			}else{
-				filter.setFilterExpression(xattribs.getText(xmlElement, false));
+				try {
+					filter.setFilterExpression(xattribs.getText(xmlElement, false));
+				} catch (AttributeNotFoundException e) {
+					throw new AttributeNotFoundException(XML_FILTEREXPRESSION_ATTRIBUTE);
+				}
 			}
 			return filter;
 		}catch(Exception ex){

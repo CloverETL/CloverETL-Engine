@@ -45,9 +45,9 @@
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DB Input Table" guiWidth="0" guiX="17" guiY="20" id="DB_INPUT_TABLE0" sqlQuery="select customer.customer_id,customer.account_num,customer.lname,customer.fname,customer.mi,customer.address1,customer.city,customer.state_province,customer.postal_code,customer.country,customer.customer_region_id,customer.phone1,customer.phone2,customer.birthdate,customer.marital_status,customer.yearly_income,customer.gender,customer.total_children,customer.num_children_at_home,customer.education,customer.date_accnt_opened,customer.member_card,customer.occupation,customer.houseowner,customer.num_cars_owned&#10;from customer" type="DB_INPUT_TABLE"/>
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DB Input Table" guiWidth="0" guiX="17" guiY="101" id="DB_INPUT_TABLE1" sqlQuery="select $city:=city.city,$country:=city.country&#10;from city" type="DB_INPUT_TABLE"/>
 <Node debugPrint="false" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="343" guiY="20" id="TRASH0" type="TRASH"/>
-<Edge debugLastRecords="true" debugMode="true" fromNode="CHECK_FOREIGN_KEY0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (foreign records)" toNode="TRASH0:0"/>
-<Edge debugLastRecords="true" fromNode="CHECK_FOREIGN_KEY0:1" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (invalid foreign records)" toNode="DATA_WRITER0:0"/>
-<Edge debugLastRecords="true" fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (foreign records)" metadata="Metadata0" outPort="Port 0 (out)" toNode="CHECK_FOREIGN_KEY0:0"/>
-<Edge debugLastRecords="true" fromNode="DB_INPUT_TABLE1:0" guiBendpoints="" id="Edge2" inPort="Port 1 (primary records)" metadata="Metadata2" outPort="Port 0 (out)" toNode="CHECK_FOREIGN_KEY0:1"/>
+<Edge debugMode="true" fromNode="CHECK_FOREIGN_KEY0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (foreign records)" toNode="TRASH0:0"/>
+<Edge fromNode="CHECK_FOREIGN_KEY0:1" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (invalid foreign records)" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (foreign records)" metadata="Metadata0" outPort="Port 0 (out)" toNode="CHECK_FOREIGN_KEY0:0"/>
+<Edge fromNode="DB_INPUT_TABLE1:0" guiBendpoints="" id="Edge2" inPort="Port 1 (primary records)" metadata="Metadata2" outPort="Port 0 (out)" toNode="CHECK_FOREIGN_KEY0:1"/>
 </Phase>
 </Graph>

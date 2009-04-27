@@ -9,7 +9,7 @@ REM clover.bat -noJMX myGraph.grf - -server -classpath c:\myTransformation
 
 REM split command-line arguments to two sets - clover and jvm arguments
 REM and define CLOVER_HOME variable
-call commonlib.bat %*
+call %~p0\commonlib.bat %*
 
 set _JAVACMD=%JAVACMD%
 set TOOLS_JAR=%JAVA_HOME%\lib\tools.jar

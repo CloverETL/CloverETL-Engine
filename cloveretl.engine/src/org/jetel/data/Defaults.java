@@ -212,6 +212,7 @@ public final class Defaults {
 		GraphProperties.init();
 		InternalSortDataRecord.init();
 		Graph.init();
+		OracleConnection.init();
 	}
 
 	/**
@@ -546,5 +547,16 @@ public final class Defaults {
 		 */
 		public static int DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS;
 	}
+	
+	public final static class OracleConnection {
+		public static void init() {
+			ROW_PREFETCH = getIntProperties("OracleConnection.ROW_PREFETCH", -1);
+		}
 
+		/**
+		 * The number of rows of data that are fetched each time data is fetched;
+		 * the extra data is stored in client-side buffers for later access by the client.
+		 */
+		public static int ROW_PREFETCH; // -1
+	}
 }

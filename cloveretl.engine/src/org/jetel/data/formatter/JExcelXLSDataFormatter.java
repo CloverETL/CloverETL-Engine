@@ -244,7 +244,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		Workbook oldWb = null;
         try{
             WorkbookSettings settings = new WorkbookSettings();
-    		settings.setEncoding(charset);
+            if (charset != null) settings.setEncoding(charset);
     		
     		URL url = null;
     		WritableByteChannel writableByteChannel = null;

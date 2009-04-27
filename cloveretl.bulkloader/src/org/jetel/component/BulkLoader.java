@@ -658,8 +658,8 @@ public abstract class BulkLoader extends Node {
     	if (file == null) {
     		return null;
     	}
-    	
-    	return getFilePath(file.getPath());
+
+    	return getFilePath(file.getAbsolutePath());
     }
     
 	/**

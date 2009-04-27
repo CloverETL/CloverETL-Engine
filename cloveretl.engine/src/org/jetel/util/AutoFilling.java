@@ -134,6 +134,8 @@ public class AutoFilling {
         	sourceNameLen <= 0 &&
         	sourceTimestampLen <= 0 &&
         	sourceSizeLen <= 0 &&
+        	rowTimestampLen <= 0 &&
+        	readerTimestampLen <= 0 &&
         	defaultLen <= 0;
 
         // reduce arrays' sizes

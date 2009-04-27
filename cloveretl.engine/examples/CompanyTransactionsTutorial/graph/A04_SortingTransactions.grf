@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Jan 16 13:28:30 CET 2009" guiVersion="2.1.3" id="1232110167500" licenseType="Commercial License javlinconsulting" modified="Sat Mar 14 19:54:54 CET 2009" modifiedBy="cloveruser" name="sorting" revision="1.100">
+<Graph author="milos_kovalcik" created="Fri Jan 16 13:28:30 CET 2009" guiVersion="0.0.0.devel" id="1232110167500" licenseType="Evaluation license." modified="Wed Apr 22 08:59:21 CEST 2009" modifiedBy="cloveruser" name="sorting" revision="1.102">
 <Global>
 <Metadata id="Metadata7" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="CustomersForEmployees" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -83,36 +83,45 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="145" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Fourth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1132" x="32" y="32">
+<attr name="text"><![CDATA[
+In the fourth graph, we calculate much useful statistical information about transactions. 
+In this graph, we use Aggregates to get this information. These components can use a key. For this reason, we had to sort data flows according to the same keys and remove duplicates (if needed) before these data flows could enter these Aggregates. 
+We have calculated many kinds of information in this graph. 
+As the first step, we needed to multiplicate the original data flow to more flow to parse them individualy so as to get individual statistical information.
+More detailed information about this graph can be found in the "readme.html" file included in the CompanyTransactionsTutorial directory.
+]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node aggregateKey="EmployeeSurname;EmployeeFirstname" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="480" guiY="115" id="AGGREGATE0" mapping="$EmployeeFirstname:=$EmployeeFirstname;$EmployeeSurname:=$EmployeeSurname;$NumberOfTransactions:=count();$MinAmount:=min($Amount);$MaxAmount:=max($Amount);$AverageAmount:=avg($Amount);$SumOfAmounts:=sum($Amount);" type="AGGREGATE"/>
-<Node aggregateKey="CustomerState" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="480" guiY="380" id="AGGREGATE1" mapping="$CustomerState:=$CustomerState;$NumberOfCustomers:=count();" type="AGGREGATE"/>
-<Node aggregateKey="CustomerState;CustomerSurname;CustomerFirstname" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="480" guiY="16" id="AGGREGATE2" mapping="$CustomerState:=$CustomerState;$CustomerSurname:=$CustomerSurname;$CustomerFirstname:=$CustomerFirstname;$NumberOfTransactions:=count();$MinAmount:=min($Amount);$MaxAmount:=max($Amount);$AverageAmount:=avg($Amount);$SumOfAmounts:=sum($Amount);" type="AGGREGATE"/>
-<Node aggregateKey="CustomerState" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="480" guiY="284" id="AGGREGATE3" mapping="$CustomerState:=$CustomerState;$NumberOfTransactions:=count();$MinAmount:=min($Amount);$MaxAmount:=max($Amount);$AverageAmount:=avg($Amount);$SumOfAmounts:=sum($Amount);" type="AGGREGATE"/>
-<Node aggregateKey="EmployeeSurname;EmployeeFirstname;CustomerState" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="480" guiY="199" id="AGGREGATE4" mapping="$EmployeeSurname:=$EmployeeSurname;$EmployeeFirstname:=$EmployeeFirstname;$CustomerState:=$CustomerState;$NumberOfTransactions:=count();$MinAmount:=min($Amount);$MaxAmount:=max($Amount);$AverageAmount:=avg($Amount);$SumOfAmounts:=sum($Amount);" type="AGGREGATE"/>
-<Node aggregateKey="CustomerID;CustomerState;CustomerSurname;CustomerFirstname" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="480" guiY="479" id="AGGREGATE5" mapping="$CustomerID:=$CustomerID;$CustomerState:=$CustomerState;$CustomerSurname:=$CustomerSurname;$CustomerFirstname:=$CustomerFirstname;$NumberOfEmployees:=count();" type="AGGREGATE"/>
-<Node aggregateKey="EmployeeID;EmployeeSurname;EmployeeFirstname" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="480" guiY="573" id="AGGREGATE6" mapping="$EmployeeID:=$EmployeeID;$EmployeeSurname:=$EmployeeSurname;$EmployeeFirstname:=$EmployeeFirstname;$NumberOfCustomers:=count();" type="AGGREGATE"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Transactions.dat" guiHeight="0" guiName="TransactionsDelimited" guiWidth="0" guiX="-289" guiY="159" id="DATA_READER0" skipFirstLine="true" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/CustomersForStates.txt" guiHeight="0" guiName="CustomersForStates" guiWidth="0" guiX="816" guiY="380" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/TransactionsForEmployees.txt" guiHeight="0" guiName="TransactionsForEmployees" guiWidth="0" guiX="816" guiY="116" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/CustomersForEmployees.txt" guiHeight="0" guiName="CustomersForEmployees" guiWidth="0" guiX="816" guiY="569" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/TransactionsForCustomers.txt" guiHeight="0" guiName="TransactionsForCustomers" guiWidth="0" guiX="816" guiY="22" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/TransactionsForStates.txt" guiHeight="0" guiName="TransactionsForStates" guiWidth="0" guiX="816" guiY="286" id="DATA_WRITER4" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/TransactionsForStatesWithinEmployees.txt" guiHeight="0" guiName="TransactionsForStatesWithinEmployees" guiWidth="0" guiX="816" guiY="198" id="DATA_WRITER5" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/EmployeesForCustomers.txt" guiHeight="0" guiName="EmployeesForCustomers" guiWidth="0" guiX="816" guiY="475" id="DATA_WRITER6" outputFieldNames="true" type="DATA_WRITER"/>
-<Node dedupKey="CustomerState;CustomerID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="310" guiY="380" id="DEDUP0" keep="first" type="DEDUP"/>
-<Node dedupKey="CustomerID;EmployeeID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="310" guiY="476" id="DEDUP1" keep="first" type="DEDUP"/>
-<Node dedupKey="EmployeeID;CustomerID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="310" guiY="582" id="DEDUP2" keep="first" type="DEDUP"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="135" guiY="379" id="EXT_SORT0" sortKey="CustomerState(a);CustomerID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="224" guiY="111" id="EXT_SORT1" sortKey="EmployeeSurname(a);EmployeeFirstname(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="140" guiY="11" id="EXT_SORT2" sortKey="CustomerState(a);CustomerSurname(a);CustomerFirstname(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="236" guiY="284" id="EXT_SORT3" sortKey="CustomerState(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="273" guiY="198" id="EXT_SORT4" sortKey="EmployeeSurname(a);EmployeeFirstname(a);CustomerState(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="103" guiY="475" id="EXT_SORT5" sortKey="CustomerID(a);EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="648" guiY="480" id="EXT_SORT6" sortKey="CustomerState(a);CustomerSurname(a);CustomerFirstname(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="50" guiY="580" id="EXT_SORT7" sortKey="EmployeeID(a);CustomerID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="648" guiY="572" id="EXT_SORT8" sortKey="EmployeeSurname(a);EmployeeFirstname(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="-105" guiY="170" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node aggregateKey="EmployeeSurname;EmployeeFirstname" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="816" guiY="325" id="AGGREGATE0" mapping="$EmployeeFirstname:=$EmployeeFirstname;$EmployeeSurname:=$EmployeeSurname;$NumberOfTransactions:=count();$MinAmount:=min($Amount);$MaxAmount:=max($Amount);$AverageAmount:=avg($Amount);$SumOfAmounts:=sum($Amount);" type="AGGREGATE"/>
+<Node aggregateKey="CustomerState" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="816" guiY="590" id="AGGREGATE1" mapping="$CustomerState:=$CustomerState;$NumberOfCustomers:=count();" type="AGGREGATE"/>
+<Node aggregateKey="CustomerState;CustomerSurname;CustomerFirstname" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="816" guiY="226" id="AGGREGATE2" mapping="$CustomerState:=$CustomerState;$CustomerSurname:=$CustomerSurname;$CustomerFirstname:=$CustomerFirstname;$NumberOfTransactions:=count();$MinAmount:=min($Amount);$MaxAmount:=max($Amount);$AverageAmount:=avg($Amount);$SumOfAmounts:=sum($Amount);" type="AGGREGATE"/>
+<Node aggregateKey="CustomerState" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="816" guiY="494" id="AGGREGATE3" mapping="$CustomerState:=$CustomerState;$NumberOfTransactions:=count();$MinAmount:=min($Amount);$MaxAmount:=max($Amount);$AverageAmount:=avg($Amount);$SumOfAmounts:=sum($Amount);" type="AGGREGATE"/>
+<Node aggregateKey="EmployeeSurname;EmployeeFirstname;CustomerState" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="816" guiY="409" id="AGGREGATE4" mapping="$EmployeeSurname:=$EmployeeSurname;$EmployeeFirstname:=$EmployeeFirstname;$CustomerState:=$CustomerState;$NumberOfTransactions:=count();$MinAmount:=min($Amount);$MaxAmount:=max($Amount);$AverageAmount:=avg($Amount);$SumOfAmounts:=sum($Amount);" type="AGGREGATE"/>
+<Node aggregateKey="CustomerID;CustomerState;CustomerSurname;CustomerFirstname" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="816" guiY="689" id="AGGREGATE5" mapping="$CustomerID:=$CustomerID;$CustomerState:=$CustomerState;$CustomerSurname:=$CustomerSurname;$CustomerFirstname:=$CustomerFirstname;$NumberOfEmployees:=count();" type="AGGREGATE"/>
+<Node aggregateKey="EmployeeID;EmployeeSurname;EmployeeFirstname" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="816" guiY="783" id="AGGREGATE6" mapping="$EmployeeID:=$EmployeeID;$EmployeeSurname:=$EmployeeSurname;$EmployeeFirstname:=$EmployeeFirstname;$NumberOfCustomers:=count();" type="AGGREGATE"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Transactions.dat" guiHeight="0" guiName="TransactionsDelimited" guiWidth="0" guiX="47" guiY="369" id="DATA_READER0" skipFirstLine="true" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/CustomersForStates.txt" guiHeight="0" guiName="CustomersForStates" guiWidth="0" guiX="1152" guiY="590" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/TransactionsForEmployees.txt" guiHeight="0" guiName="TransactionsForEmployees" guiWidth="0" guiX="1152" guiY="326" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/CustomersForEmployees.txt" guiHeight="0" guiName="CustomersForEmployees" guiWidth="0" guiX="1152" guiY="779" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/TransactionsForCustomers.txt" guiHeight="0" guiName="TransactionsForCustomers" guiWidth="0" guiX="1152" guiY="232" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/TransactionsForStates.txt" guiHeight="0" guiName="TransactionsForStates" guiWidth="0" guiX="1152" guiY="496" id="DATA_WRITER4" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/TransactionsForStatesWithinEmployees.txt" guiHeight="0" guiName="TransactionsForStatesWithinEmployees" guiWidth="0" guiX="1152" guiY="408" id="DATA_WRITER5" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/EmployeesForCustomers.txt" guiHeight="0" guiName="EmployeesForCustomers" guiWidth="0" guiX="1152" guiY="685" id="DATA_WRITER6" outputFieldNames="true" type="DATA_WRITER"/>
+<Node dedupKey="CustomerState;CustomerID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="646" guiY="590" id="DEDUP0" keep="first" type="DEDUP"/>
+<Node dedupKey="CustomerID;EmployeeID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="646" guiY="686" id="DEDUP1" keep="first" type="DEDUP"/>
+<Node dedupKey="EmployeeID;CustomerID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="646" guiY="792" id="DEDUP2" keep="first" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="471" guiY="589" id="EXT_SORT0" sortKey="CustomerState(a);CustomerID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="560" guiY="321" id="EXT_SORT1" sortKey="EmployeeSurname(a);EmployeeFirstname(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="476" guiY="221" id="EXT_SORT2" sortKey="CustomerState(a);CustomerSurname(a);CustomerFirstname(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="572" guiY="494" id="EXT_SORT3" sortKey="CustomerState(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="609" guiY="408" id="EXT_SORT4" sortKey="EmployeeSurname(a);EmployeeFirstname(a);CustomerState(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="439" guiY="685" id="EXT_SORT5" sortKey="CustomerID(a);EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="984" guiY="690" id="EXT_SORT6" sortKey="CustomerState(a);CustomerSurname(a);CustomerFirstname(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="386" guiY="790" id="EXT_SORT7" sortKey="EmployeeID(a);CustomerID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="984" guiY="782" id="EXT_SORT8" sortKey="EmployeeSurname(a);EmployeeFirstname(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="231" guiY="380" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
 <Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 <Edge debugMode="true" fromNode="AGGREGATE1:0" guiBendpoints="" id="Edge21" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 <Edge debugMode="true" fromNode="AGGREGATE2:0" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DATA_WRITER3:0"/>

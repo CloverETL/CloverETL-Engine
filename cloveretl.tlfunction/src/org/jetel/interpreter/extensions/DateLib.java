@@ -465,13 +465,12 @@ public class DateLib extends TLFunctionLibrary {
 				this.sFormat = sFormat;
 				if (format == null) {
 					format = locale == null ? new SimpleDateFormat(sFormat.toString()) : new SimpleDateFormat(sFormat.toString(), locale);
-			    	format.setLenient(false);
 				} else if (locale == null) {
 					format.applyPattern(sFormat.toString());
 				} else {
 					format = new SimpleDateFormat(sFormat.toString(), locale);
-			    	format.setLenient(false);
 				}
+		    	format.setLenient(false);
 	    	} else {
 	    		if (sLocale == null && sFormat == null && format != null) return;
 	    		sLocale = null;

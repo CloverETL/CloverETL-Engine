@@ -603,19 +603,6 @@ public class MultiFileWriter {
     	this.outputPort = outputPort;
     }
 
-	public boolean isFinished() {
-    	if (multiTarget != null) {
-        	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
-        		if (!(entry.getValue().isFinished())) {
-        			return false;
-        		}
-        	}
-    		return true;
-    	} else {
-    		return currentTarget.isFinished();
-    	}
-	}
-
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}

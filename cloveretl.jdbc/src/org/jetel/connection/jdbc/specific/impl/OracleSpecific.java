@@ -23,7 +23,7 @@ import java.sql.Connection;
 import java.sql.Types;
 
 import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
+import org.jetel.connection.jdbc.specific.conn.OracleConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.string.StringUtils;
@@ -57,7 +57,7 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 	 */
 	@Override
 	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new DefaultConnection(dbConnection, operationType, getAutoKeyType());
+		return new OracleConnection(dbConnection, operationType, getAutoKeyType());
 	}
 
 	/* (non-Javadoc)

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Mar 12 09:03:19 CET 2007" description="In this example, the DBInputTable component connects to database and unloads all records from employee table. It then stores the records in employees.list.out file. " guiVersion="0.0" id="1204559079189" licenseType="Evaluation license." modified="Mon Nov 24 12:14:27 CET 2008" modifiedBy="avackova" name="Testing DB Unload" revision="1.135">
+<Graph author="avackova" created="Mon Mar 12 09:03:19 CET 2007" description="In this example, the DBInputTable component connects to database and unloads all records from employee table. It then stores the records in employees.list.out file. " guiVersion="0.0.0.devel" id="1204559079189" licenseType="Evaluation license." modified="Thu Apr 16 10:37:08 CEST 2009" modifiedBy="avackova" name="Testing DB Unload" revision="1.158">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="employee" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -26,8 +26,11 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" incrementalFile="dbInc.txt" incrementalKey="key1=first(hire_date);key2=max(employee_id);key4=last(last_name)" sqlQuery="select *&#10;from employee where hire_date &gt; #key1 or employee_id&gt;#key2" type="DB_INPUT_TABLE"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.list.out" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="JavaExecute" guiWidth="0" guiX="21" guiY="20" id="JAVA_EXECUTE0" properties="key1=1994-01-01 00\:00\:00&#10;key2=0&#10;" runnableURL="${TRANS_DIR}/saveProperties.java" type="JAVA_EXECUTE"/>
+</Phase>
+<Phase number="1">
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="105" id="INPUT" incrementalFile="${PROJECT}/dbInc.txt" incrementalKey="key4=LAST(last_name);key2=MAX(employee_id);key1=LAST(hire_date);" sqlQuery="select *&#10;from employee where hire_date &gt; #key1 and employee_id&gt;#key2" type="DB_INPUT_TABLE"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.list.out" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="105" id="OUTPUT" type="DATA_WRITER"/>
 <Edge debugMode="true" fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

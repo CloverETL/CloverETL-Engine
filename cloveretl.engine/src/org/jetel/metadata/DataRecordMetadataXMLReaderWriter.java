@@ -648,7 +648,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			}
 			
 			if (trim != null) {
-				field.setTrim(nullable.matches("^[tTyY].*"));
+				field.setTrim(trim.matches("^[tTyY].*"));
 			}
 			
 			recordMetadata.addField(field);

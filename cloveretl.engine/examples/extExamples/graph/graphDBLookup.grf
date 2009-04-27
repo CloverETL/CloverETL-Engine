@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="yanas" created="Fri Jan 12 08:41:50 CET 2007" description="This graph illustrates how to join data using reformat component." guiVersion="0.0" id="1204558846009" licenseType="Evaluation license." modified="Mon Nov 24 12:22:38 CET 2008" modifiedBy="avackova" name="Testing Hash Joiner" revision="1.23">
+<Graph author="yanas" created="Fri Jan 12 08:41:50 CET 2007" description="This graph illustrates how to join data using reformat component." guiVersion="0.0.0.devel" id="1204558846009" licenseType="Evaluation license." modified="Fri Apr 17 10:37:22 CEST 2009" modifiedBy="avackova" name="Testing Hash Joiner" revision="1.28">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata2"/>
@@ -24,7 +24,7 @@
 <Field name="management_role" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
-<Connection dbConfig="${CONN_DIR}//postgre.cfg" id="Connection0" type="JDBC"/>
+<Connection dbConfig="${CONN_DIR}/postgre.cfg" id="Connection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <LookupTable dbConnection="Connection0" id="LookupTable0" metadata="Metadata1" name="name" type="dbLookup">
 <attr name="sqlQuery"><![CDATA[select * from employee where employee_id=?]]></attr>
@@ -81,7 +81,7 @@ public class ReformatTestInline extends DataRecordTransform{
 }
 ]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="421" guiY="20" id="WRITER" type="DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="421" guiY="20" id="WRITER" type="DATA_WRITER"/>
 <Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="JOIN:0"/>
 <Edge fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
 </Phase>

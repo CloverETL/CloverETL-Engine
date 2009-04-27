@@ -708,9 +708,12 @@ public class TransformationGraphXMLReaderWriter {
             	try {
                 	lookupProperties.setProperty(IGraphElement.XML_ID_ATTRIBUTE, attributes.getString(IGraphElement.XML_ID_ATTRIBUTE));
 					lookupProperties.load(FileUtils.getInputStream(graph.getProjectURL(), fileURL));
-					DataRecordMetadata lookupMetadata = MetadataFactory.fromFile(graph, lookupProperties.getStringProperty("metadata"));
-					lookupProperties.setProperty(LookupTable.XML_METADATA_ID, 
-							graph.addDataRecordMetadata(TransformationGraph.DEFAULT_METADATA_ID, lookupMetadata));
+					String metadata = lookupProperties.getStringProperty("metadata");
+					if (metadata != null && ! metadata.trim().equals("")) {
+						DataRecordMetadata lookupMetadata = MetadataFactory.fromFile(graph, lookupProperties.getStringProperty("metadata"));
+						lookupProperties.setProperty(LookupTable.XML_METADATA_ID, 
+								graph.addDataRecordMetadata(TransformationGraph.DEFAULT_METADATA_ID, lookupMetadata));
+					}
 					if (lookupProperties.containsKey(LookupTable.XML_DBCONNECTION)) {
 						IConnection connection = ConnectionFactory.createConnection(graph, "JDBC", 
 								new Object[]{graph.getUniqueConnectionId() , lookupProperties.getStringProperty("dbConnection")},

@@ -78,7 +78,7 @@ public class SybaseConnection extends DefaultConnection {
 				connection.setReadOnly(true);
 				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
 			} catch (SQLException ex) {
-				logger.warn("Optimazing connection failed: " + ex.getMessage());
+				logger.warn("Optimizing connection failed: " + ex.getMessage());
 				logger.warn("Try to use another jdbc specific");
 			} 
 			break;
@@ -89,7 +89,7 @@ public class SybaseConnection extends DefaultConnection {
 				connection.setReadOnly(false);
 				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
 			} catch (SQLException ex) {
-				logger.warn("Optimazing connection failed: " + ex.getMessage());
+				logger.warn("Optimizing connection failed: " + ex.getMessage());
 				logger.warn("Try to use another jdbc specific");
 			} 
 			break;
@@ -99,7 +99,7 @@ public class SybaseConnection extends DefaultConnection {
 				connection.setReadOnly(false);
 				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
 			} catch (SQLException ex) {
-				logger.warn("Optimazing connection failed: " + ex.getMessage());
+				logger.warn("Optimizing connection failed: " + ex.getMessage());
 				logger.warn("Try to use another jdbc specific");
 			} 
 			break;

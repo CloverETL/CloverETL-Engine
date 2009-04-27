@@ -115,6 +115,7 @@
 	
 	<target name="build-plugins" depends="build-engine">
 		<foreach list="${plugin.list}" inheritall="true" target="plugin-build" param="plugin.dir"/>
+		<property name="dir.dist" value="${dir.package}"/>
 	</target>
 	
 	<target name="plugin-build">

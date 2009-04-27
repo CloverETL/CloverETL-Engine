@@ -82,7 +82,7 @@ public final class TransformationGraph extends GraphElement {
 
 	private Map <String, LookupTable> lookupTables;
 	
-	private Map <String, DataRecordMetadata> dataRecordMetadata;
+	private Map <String, Object> dataRecordMetadata;
 	
 	final static String DEFAULT_CONNECTION_ID = "Connection0";
 	final static String DEFAULT_SEQUENCE_ID = "Sequence0";
@@ -131,7 +131,7 @@ public final class TransformationGraph extends GraphElement {
 		connections = new HashMap <String,IConnection> ();
 		sequences = new HashMap<String,Sequence> ();
 		lookupTables = new HashMap<String,LookupTable> ();
-		dataRecordMetadata = new HashMap<String,DataRecordMetadata> ();
+		dataRecordMetadata = new HashMap<String,Object> ();
 		graphProperties = new TypedProperties();
 		dictionary = new Dictionary(this);
 		authorityProxy = new PrimitiveAuthorityProxy();
@@ -896,8 +896,8 @@ public final class TransformationGraph extends GraphElement {
         }
 
         //check metadatas configuration
-        for(DataRecordMetadata metadata : dataRecordMetadata.values()) {
-            metadata.checkConfig(status);
+        for(Object oDataRecordMetadata : dataRecordMetadata.values()) {
+            if (oDataRecordMetadata instanceof DataRecordMetadata) ((DataRecordMetadata)oDataRecordMetadata).checkConfig(status);
         }
 
         //check phases configuration

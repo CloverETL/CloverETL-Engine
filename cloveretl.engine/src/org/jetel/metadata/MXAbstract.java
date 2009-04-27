@@ -91,7 +91,10 @@ abstract public class MXAbstract {
 		primitiveNames.put(Character.valueOf(DataFieldMetadata.BOOLEAN_FIELD), "boolean");
 		
 		for (Character ch: primitiveNames.keySet()) {
-			if (ch == DataFieldMetadata.BYTE_FIELD_COMPRESSED || ch == DataFieldMetadata.NUMERIC_FIELD) continue;
+			if (ch == DataFieldMetadata.BYTE_FIELD_COMPRESSED || ch == DataFieldMetadata.NUMERIC_FIELD) {
+				primitiveNames.put(ch, NAMESPACES[0] + NAMESPACE_DELIMITER + primitiveNames.get(ch));
+				continue;
+			}
 			namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + primitiveNames.get(ch), ch);
 			namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + primitiveNames.get(ch), ch);
 			primitiveNames.put(ch, NAMESPACES[0] + NAMESPACE_DELIMITER + primitiveNames.get(ch));

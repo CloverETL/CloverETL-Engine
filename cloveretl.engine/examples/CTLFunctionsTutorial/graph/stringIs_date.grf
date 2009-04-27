@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229616712953" licenseType="Evaluation license." modified="Tue Mar 24 14:27:06 CET 2009" modifiedBy="cloveruser" name="stringIs_date" revision="1.60">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="2.2.0.RC2" id="1229616712953" licenseType="Evaluation license." modified="Tue Apr 21 17:56:21 CEST 2009" modifiedBy="cloveruser" name="stringIs_date" revision="1.64">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="is_dateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -15,11 +15,11 @@
 <Field name="Pattern" type="string"/>
 <Field name="Locale" type="string"/>
 <Field name="Lenient" nullable="true" type="boolean"/>
-<Field name="DefaultLocaleIsSystemAndDefaultLenientIsTrue" type="string"/>
+<Field name="DefaultLocaleIsSystemAndDefaultLenientIsFalse" type="string"/>
 <Field name="ResultLocaleAndLenientDefault" type="boolean"/>
 <Field name="DefaultLocaleIsSystemValue" type="string"/>
 <Field name="ResultLocaleDefault" type="boolean"/>
-<Field name="DefaultLenientIsTrue" type="string"/>
+<Field name="DefaultLenientIsFalse" type="string"/>
 <Field name="ResultLenientDefault" type="boolean"/>
 <Field name="AllArguments" type="string"/>
 <Field name="ResultAllArguments" type="boolean"/>
@@ -35,9 +35,13 @@ If this is not possible, it returns false. However, it is possible to set the fo
 <attr name="text"><![CDATA[
 The is_date(string arg, string pattern, boolean lenient) function equals to is_date(string arg, string pattern, SystemLocale, boolean lenient).
 
-The is_date(string arg, string pattern, string locale) function equals to is_date(string arg, string pattern, string locale, true).
+The is_date(string arg, string pattern, string locale) function equals to is_date(string arg, string pattern, string locale, false).
 
-The is_date(string arg, string pattern) function equals to is_date(string arg, string pattern, SystemLocale, true).]]></attr>
+The is_date(string arg, string pattern) function equals to is_date(string arg, string pattern, SystemLocale, false).]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Function with arguments displayed" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="569" x="78" y="466">
+<attr name="text"><![CDATA[
+For better understanding, below we show the functions in which values of all arguments are displayed.]]></attr>
 </Note>
 </Global>
 <Phase number="0">
@@ -52,11 +56,11 @@ function transform() {
 	$0.Pattern := $0.Pattern;
 	$0.Locale := $0.Locale;
 	$0.Lenient := $0.Lenient;
-	$0.DefaultLocaleIsSystemAndDefaultLenientIsTrue := "is_date($0.Arg,$0.Pattern)";
+	$0.DefaultLocaleIsSystemAndDefaultLenientIsFalse := "is_date($0.Arg,$0.Pattern)";
 	$0.ResultLocaleAndLenientDefault := is_date($0.Arg,$0.Pattern);
 	$0.DefaultLocaleIsSystemValue := "is_date($0.Arg,$0.Pattern,$0.Lenient)";
 	$0.ResultLocaleDefault := is_date($0.Arg,$0.Pattern,$0.Lenient);
-	$0.DefaultLenientIsTrue := "is_date($0.Arg,$0.Pattern,$0.Locale)";
+	$0.DefaultLenientIsFalse := "is_date($0.Arg,$0.Pattern,$0.Locale)";
 	$0.ResultLenientDefault := is_date($0.Arg,$0.Pattern,$0.Locale);
 	$0.AllArguments := "is_date($0.Arg,$0.Pattern,$0.Locale,$0.Lenient)";
 	$0.ResultAllArguments := is_date($0.Arg,$0.Pattern,$0.Locale,$0.Lenient);
@@ -70,5 +74,36 @@ function transform() {
 </Node>
 <Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
 <Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringIs_date.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="79" guiY="579" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringIs_dateOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="484" guiY="579" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="284" guiY="579" id="REFORMAT2" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.Arg := $0.Arg;
+	$0.Pattern := $0.Pattern;
+	$0.Locale := $0.Locale;
+	$0.Lenient := $0.Lenient;
+	$0.DefaultLocaleIsSystemAndDefaultLenientIsFalse := "is_date(" + $0.Arg + "," + $0.Pattern + ")";
+	$0.ResultLocaleAndLenientDefault := is_date($0.Arg,$0.Pattern);
+	$0.DefaultLocaleIsSystemValue := "is_date(" + $0.Arg + "," + $0.Pattern + "," + $0.Lenient + ")";
+	$0.ResultLocaleDefault := is_date($0.Arg,$0.Pattern,$0.Lenient);
+	$0.DefaultLenientIsFalse := "is_date(" + $0.Arg + "," + $0.Pattern +"," + $0.Locale + ")";
+	$0.ResultLenientDefault := is_date($0.Arg,$0.Pattern,$0.Locale);
+	$0.AllArguments := "is_date(" + $0.Arg + "," + $0.Pattern + "," + $0.Locale + "," + $0.Lenient + ")";
+	$0.ResultAllArguments := is_date($0.Arg,$0.Pattern,$0.Locale,$0.Lenient);
+}
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT2:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT2:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>

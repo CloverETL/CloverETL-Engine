@@ -312,7 +312,7 @@ public class XLSXDataParser extends XLSParser {
 						? DataFieldMetadata.DATE_FIELD : DataFieldMetadata.NUMERIC_FIELD, null);
 				String formatString = dataCell.getCellStyle().getDataFormatString();
 
-				if (!formatString.equals(XLSXDataFormatter.GENERAL_FORMAT_STRING)) {
+				if (formatString != null && !formatString.equals(XLSXDataFormatter.GENERAL_FORMAT_STRING)) {
 					dataField.setFormatStr(formatString);
 				}
 			} else {
@@ -323,6 +323,40 @@ public class XLSXDataParser extends XLSParser {
 		}
 
 		return xlsMetadata;
+	}
+
+	public String[][] getPreview(int startRow, int length) {
+		if (sheet == null) {
+			return null;
+		}
+
+		int resultLength = Math.min(length, sheet.getLastRowNum() - startRow + 1);
+		String[][] result = new String[resultLength][];
+
+		for (int i = 0; i < resultLength; i++) {
+			Row row = sheet.getRow(startRow + i);
+			result[i] = new String[row.getLastCellNum()];
+
+			for (int j = 0; j < row.getLastCellNum(); j++) {
+				Cell cell = row.getCell(j);
+
+				if (cell != null) {
+					String cellValue = row.getCell(j).toString();
+
+					if (cellValue.length() > MAX_NAME_LENGTH) {
+						cellValue = cellValue.substring(0, MAX_NAME_LENGTH) + "...";
+					}
+
+					result[i][j] = cellValue;
+				}
+			}
+		}
+
+		return result;
+	}
+	
+	public String[][] getPreview(int length){
+		return getPreview(0, length);
 	}
 
 	@Override

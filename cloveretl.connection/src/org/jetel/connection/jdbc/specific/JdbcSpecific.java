@@ -21,8 +21,10 @@ package org.jetel.connection.jdbc.specific;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -118,4 +120,14 @@ public interface JdbcSpecific {
 	 */
 	public String quoteIdentifier(String identifier);
 
+	/**
+	 * Transforms `query` into another query, which can be used to validate the original `query`
+	 * Typically somehow adds some always failing where clause so that the query is never executed
+	 * @param query Original query to be validated
+	 * @param queryType Type of query
+	 * @return A query that can be executed to validate original `query`
+	 * @throws SQLException In can query cannot be generated or is otherwise invalid
+	 */
+	public String getValidateQuery(String query, QueryType queryType) throws SQLException;
+	
 }
