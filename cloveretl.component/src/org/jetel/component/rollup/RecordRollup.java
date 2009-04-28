@@ -34,7 +34,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * is finished and the group "accumulator" is disposed.</p>
  * <p>The lifecycle of a rollup transform is as follows:</p>
  * <ul>
- *   <li>The {@link #init(Properties, DataRecordMetadata, DataRecordMetadata, DataRecordMetadata)} method is called
+ *   <li>The {@link #init(Properties, DataRecordMetadata, DataRecordMetadata, DataRecordMetadata[])} method is called
  *   to initialize the transform.</li>
  *   <li>For each input data record as a current data record:
  *     <ul>
@@ -47,13 +47,13 @@ import org.jetel.metadata.DataRecordMetadata;
  *       </li>
  *       <li>The {@link #updateGroup(DataRecord, DataRecord)} method is called for the current data record and
  *       the corresponding group "accumulator" (if it was requested).</li>
- *       <li>If the method returned <code>true</code>, the {@link #transform(DataRecord, DataRecord, DataRecord)}
- *       method is called repeatedly to generate an output data record until it returns <code>false</code>.</li>
+ *       <li>If the method returned <code>true</code>, the {@link #transform(DataRecord, DataRecord, DataRecord[])}
+ *       method is called repeatedly to generate an output data record until it returns value < 0.</li>
  *       <li>If the current data record is the last one in its group:
  *         <ul>
  *           <li>The {@link #finishGroup(DataRecord, DataRecord)} method is called to finish the group processing.</li>
- *           <li>If the method returned <code>true</code>, the {@link #transform(DataRecord, DataRecord, DataRecord)}
- *           method is called repeatedly to generate an output data record until it returns <code>false</code>.</li>
+ *           <li>If the method returned <code>true</code>, the {@link #transform(DataRecord, DataRecord, DataRecord[])}
+ *           method is called repeatedly to generate an output data record until it returns value < 0.</li>
  *           <li>If the group "accumulator" was requested, its contents is disposed.</li>
  *         </ul>
  *       </li>
@@ -65,10 +65,15 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Martin Zatopek, Javlin a.s. &lt;martin.zatopek@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 10th March 2009
+ * @version 28th April 2009
  * @since 24th February 2009
  */
 public interface RecordRollup {
+
+    /** the return value of the transform() method specifying that the record will be sent to all the output ports */
+    public static final int ALL = Integer.MAX_VALUE;
+    /** the return value of the transform() method specifying that the record will be skipped */
+    public static final int SKIP = -1;
 
     /**
      * Initializes the rollup transformation. This method is called once at the beginning of the life-cycle of the
@@ -78,12 +83,12 @@ public interface RecordRollup {
      * @param inputMetadata meta data of input data records
      * @param accumulatorMetadata meta data of a group "accumulator" used to store intermediate results
      * or <code>null</code> if no meta data were specified
-     * @param outputMetadata meta data of output data records
+     * @param outputMetadata array of meta data of output data records
      *
      * @throws ComponentNotReadyException if an error occurred during the initialization
      */
     public void init(Properties parameters, DataRecordMetadata inputMetadata, DataRecordMetadata accumulatorMetadata,
-            DataRecordMetadata outputMetadata) throws ComponentNotReadyException;
+            DataRecordMetadata[] outputMetadata) throws ComponentNotReadyException;
 
     /**
      * This method is called for the first data record in a group. Any initialization of the group "accumulator" should
@@ -105,7 +110,7 @@ public interface RecordRollup {
      * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
      * was requested
      *
-     * @return <code>true</code> if the {@link #transform(DataRecord, DataRecord, DataRecord)} method should be called
+     * @return <code>true</code> if the {@link #transform(DataRecord, DataRecord, DataRecord[])} method should be called
      * to generate an output data record and send it to the output, <code>false</code> otherwise
      *
      * @throws TransformException if any error occurred during the update
@@ -119,7 +124,7 @@ public interface RecordRollup {
      * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
      * was requested
      *
-     * @return <code>true</code> if the {@link #transform(DataRecord, DataRecord, DataRecord)} method should be called
+     * @return <code>true</code> if the {@link #transform(DataRecord, DataRecord, DataRecord[])} method should be called
      * to generate an output data record and send it to the output, <code>false</code> otherwise
      *
      * @throws TransformException if any error occurred during the final processing
@@ -133,14 +138,16 @@ public interface RecordRollup {
      * @param inputRecord the current input data record
      * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
      * was requested
-     * @param outputRecord the output data record to be filled with data
+     * @param outputRecords output data records to be filled with data
      *
-     * @return <code>true</code> if this method should be called again to generate another output data record,
-     * <code>false</code> otherwise
+     * @return RecordRollup.ALL -- send the data record(s) to all the output ports<br>
+     *         >= 0 -- send the data record(s) to a specified output port<br>
+     *         RecordRollup.SKIP -- skip the data record(s)<br>
+     *         < RecordRollup.SKIP -- fatal error / user defined
      *
      * @throws TransformException if any error occurred during the transformation
      */
-    public boolean transform(DataRecord inputRecord, DataRecord groupAccumulator, DataRecord outputRecord)
+    public int transform(DataRecord inputRecord, DataRecord groupAccumulator, DataRecord[] outputRecords)
             throws TransformException;
 
     /**
