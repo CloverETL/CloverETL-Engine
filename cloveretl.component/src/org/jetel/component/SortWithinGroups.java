@@ -79,7 +79,7 @@ import org.w3c.dom.Element;
  *   <td>At least one connected output port.</td>
  * </tr>
  * <tr>
- *   <td><b>Comment:></b></td>
+ *   <td><b>Comment:</b></td>
  *   <td>N/A</td>
  * </tr>
  * </table>
