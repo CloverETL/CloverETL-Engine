@@ -1,0 +1,35 @@
+<plugin
+   id="org.jetel.tlfunction"
+   version="2.5.2"
+   provider-name="Javlin a.s.">
+
+	<runtime>
+		<library path="bin/"/>
+   	</runtime> 
+
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="math"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.MathLib"/>
+	</extension>
+
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="date"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.DateLib"/>
+	</extension>
+
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="string"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.StringLib"/>
+	</extension>
+	
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="convert"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.ConvertLib"/>
+	</extension>
+	
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="container"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.ContainerLib"/>
+	</extension>
+	
+</plugin>
