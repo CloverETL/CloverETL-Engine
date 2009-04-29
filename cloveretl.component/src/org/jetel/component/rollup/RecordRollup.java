@@ -48,12 +48,12 @@ import org.jetel.metadata.DataRecordMetadata;
  *       <li>The {@link #updateGroup(DataRecord, DataRecord)} method is called for the current data record and
  *       the corresponding group "accumulator" (if it was requested).</li>
  *       <li>If the method returned <code>true</code>, the {@link #transform(DataRecord, DataRecord, DataRecord[])}
- *       method is called repeatedly to generate an output data record until it returns value < 0.</li>
+ *       method is called repeatedly to generate output data record(s) until it returns RecordRollup.SKIP.</li>
  *       <li>If the current data record is the last one in its group:
  *         <ul>
  *           <li>The {@link #finishGroup(DataRecord, DataRecord)} method is called to finish the group processing.</li>
  *           <li>If the method returned <code>true</code>, the {@link #transform(DataRecord, DataRecord, DataRecord[])}
- *           method is called repeatedly to generate an output data record until it returns value < 0.</li>
+ *           method is called repeatedly to generate output data record(s) until it returns RecordRollup.SKIP.</li>
  *           <li>If the group "accumulator" was requested, its contents is disposed.</li>
  *         </ul>
  *       </li>
@@ -142,8 +142,8 @@ public interface RecordRollup {
      *
      * @return RecordRollup.ALL -- send the data record(s) to all the output ports<br>
      *         >= 0 -- send the data record(s) to a specified output port<br>
-     *         RecordRollup.SKIP -- skip the data record(s)<br>
-     *         < RecordRollup.SKIP -- fatal error / user defined
+     *         RecordRollup.SKIP -- end processing of the current group<br>
+     *         < RecordRollup.SKIP -- fatal error, stop the execution
      *
      * @throws TransformException if any error occurred during the transformation
      */
