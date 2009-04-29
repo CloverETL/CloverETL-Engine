@@ -21,8 +21,8 @@ package org.jetel.component;
 import java.io.File;
 import java.nio.ByteBuffer;
 
-import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.DoubleRecordBuffer;
 import org.jetel.data.ExternalSortDataRecord;
 import org.jetel.data.ISortDataRecord;
 import org.jetel.data.RecordKey;
@@ -146,7 +146,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 7th April 2009
+ * @version 29th April 2009
  * @since 26th September 2008
  */
 public class SortWithinGroups extends Node {
@@ -438,41 +438,36 @@ public class SortWithinGroups extends Node {
         RecordKey groupKey = new RecordKey(groupKeyFields, inputPort.getMetadata());
         groupKey.init();
 
-        int current = 0;
-        int previous = 1;
+        DoubleRecordBuffer inputRecords = new DoubleRecordBuffer(inputPort.getMetadata());
 
-        DataRecord[] dataRecords = new DataRecord[2];
-        dataRecords[current] = new DataRecord(inputPort.getMetadata());
-        dataRecords[current].init();
+        if (inputPort.readRecord(inputRecords.getCurrent()) != null) {
+            inputRecords.swap();
 
-        while (runIt && inputPort.readRecord(dataRecords[current]) != null) {
-            if (dataRecords[previous] == null) {
-                dataRecords[previous] = new DataRecord(inputPort.getMetadata());
-                dataRecords[previous].init();
-            } else if (!groupKey.equals(dataRecords[current], dataRecords[previous])) {
-                dataRecordSorter.sort();
+            while (runIt && inputPort.readRecord(inputRecords.getCurrent()) != null) {
+                if (!groupKey.equals(inputRecords.getCurrent(), inputRecords.getPrevious())) {
+                    dataRecordSorter.sort();
 
-                while (runIt && dataRecordSorter.get(dataRecordBuffer)) {
-                    writeRecordBroadcastDirect(dataRecordBuffer);
-                    dataRecordBuffer.clear();
+                    while (runIt && dataRecordSorter.get(dataRecordBuffer)) {
+                        writeRecordBroadcastDirect(dataRecordBuffer);
+                        dataRecordBuffer.clear();
+                    }
+
+                    dataRecordSorter.reset();
                 }
 
-                dataRecordSorter.reset();
+                dataRecordSorter.put(inputRecords.getCurrent());
+
+                inputRecords.swap();
+
+                SynchronizeUtils.cloverYield();
             }
 
-            dataRecordSorter.put(dataRecords[current]);
+            dataRecordSorter.sort();
 
-            current ^= 1;
-            previous ^= 1;
-
-            SynchronizeUtils.cloverYield();
-        }
-
-        dataRecordSorter.sort();
-
-        while (dataRecordSorter.get(dataRecordBuffer)) {
-            writeRecordBroadcastDirect(dataRecordBuffer);
-            dataRecordBuffer.clear();
+            while (dataRecordSorter.get(dataRecordBuffer)) {
+                writeRecordBroadcastDirect(dataRecordBuffer);
+                dataRecordBuffer.clear();
+            }
         }
 
         broadcastEOF();
