@@ -20,6 +20,11 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,15 +32,19 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.data.RingRecordBuffer;
+import org.jetel.enums.OrderEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -106,7 +115,9 @@ public class Dedup extends Node {
 	
 	private int keep = KEEP_FIRST;
 	private String[] dedupKeys;
-	private RecordKey recordKey;
+	private OrderEnum[] dedupOrderings;
+	private DedupComparator[] orderingComparators;
+	private boolean bAutoExists;
 	private boolean equalNULLs = true;
 	// number of duplicate record to be written to out port
 	private int noDupRecord = DEFAULT_NO_DUP_RECORD;
@@ -123,6 +134,13 @@ public class Dedup extends Node {
     //'last' dedup operation specific variables
     private RingRecordBuffer ringBuffer;
     
+    // input metadata
+	private DataRecordMetadata metadata;
+
+	// error informations
+	private int recordNumber;
+	private int fieldNumber;
+	
 	/**
 	 *Constructor for the Dedup object
 	 *
@@ -132,6 +150,26 @@ public class Dedup extends Node {
 	public Dedup(String id, String[] dedupKeys) {
 		super(id);
 		this.dedupKeys = dedupKeys;
+		
+        this.dedupOrderings = new OrderEnum[dedupKeys.length];
+        Arrays.fill(dedupOrderings, OrderEnum.IGNORE);
+        
+        Pattern pat = Pattern.compile("^(.*)\\((.*)\\)$");
+        
+        for (int i = 0; i < dedupKeys.length; i++) {
+        	Matcher matcher = pat.matcher(dedupKeys[i]);
+        	if (matcher.find()) {
+	        	String keyPart = dedupKeys[i].substring(matcher.start(1), matcher.end(1));
+	        	if (matcher.groupCount() > 1) {
+	        		String orderShort = (dedupKeys[i].substring(matcher.start(2), matcher.end(2)));
+	        		if (orderShort.matches("^[Aa].*")) dedupOrderings[i] = OrderEnum.ASC;
+	        		else if (orderShort.matches("^[Dd].*")) dedupOrderings[i] = OrderEnum.DESC;
+	        		else if (orderShort.matches("^[Ii].*")) dedupOrderings[i] = OrderEnum.IGNORE;
+	        		else dedupOrderings[i] = OrderEnum.AUTO;
+	        	}
+	        	dedupKeys[i] = keyPart;
+        	}
+        }
 	}
 
 
@@ -141,16 +179,55 @@ public class Dedup extends Node {
 	 * @param  a  Description of the Parameter
 	 * @param  b  Description of the Parameter
 	 * @return    The change value
+	 * @throws TransformException - indicates that input is not sorted as expected.
 	 */
-	private final boolean isChange(DataRecord a, DataRecord b) {
-        if(recordKey != null) {
-            return (recordKey.compare(a, b) != 0);
-		} else {
-            return false;
-        }
+	private boolean isChange(DataRecord currentRecord, DataRecord prevRecord) throws TransformException {
+		// compare records
+		boolean result = false;
+		int iLastEquals = -1;
+		for (int i=0; i<orderingComparators.length; i++) {
+			// different records
+			if (!orderingComparators[i].equals(prevRecord, currentRecord)) {
+				// if there is not a change, validate the order
+				if (!result) {
+					fieldNumber = i;
+					orderingComparators[i].validateOrder();
+				}
+				result = true;
+				
+			// equals records
+			} else if (!result) {
+				iLastEquals = i;
+			}
+		}
+		if (bAutoExists && result) resolveAuto(iLastEquals);		
+		return result;
 	}
 
-    
+	/**
+	 * Resolve unknown order comparators.
+	 * @param iLastEquals
+	 */
+	private void resolveAuto(int iLastEquals) {
+		// only if auto verification still exits -> try to decide the auto verification 
+		DedupComparator orderingComparatorNew;
+		bAutoExists = false;
+		for (int i=0; i<orderingComparators.length; i++) {
+			// only for auto comparator
+			if (orderingComparators[i] instanceof DedupAutoComparator) {
+				// get asc or desc comparator (or null)
+				orderingComparatorNew = ((DedupAutoComparator)orderingComparators[i]).getResolvedComparator();
+				
+				// replace comparator if it is possible
+				if (i <= iLastEquals+1 && orderingComparatorNew != null) {
+					orderingComparators[i] = orderingComparatorNew;
+				} else {
+					bAutoExists = true;
+				}
+			}
+		}
+	}
+	
 	@Override
 	public Result execute() throws Exception {
 		records = new DataRecord[2];
@@ -162,16 +239,24 @@ public class Dedup extends Node {
         current = 1;
         previous = 0;
 
-    	switch(keep) {
-        case KEEP_FIRST:
-            executeFirst();
-            break;
-        case KEEP_LAST:
-            executeLast();
-            break;
-        case KEEP_UNIQUE:
-            executeUnique();
-            break;
+        try {
+        	switch(keep) {
+            case KEEP_FIRST:
+                executeFirst();
+                break;
+            case KEEP_LAST:
+                executeLast();
+                break;
+            case KEEP_UNIQUE:
+                executeUnique();
+                break;
+            }
+        	
+        } catch(TransformException e) {
+        	// set detail error informations
+        	e.setRecNo(recordNumber);
+        	e.setFieldNo(getErrorFieldNumber());
+        	throw e;
         }
 		
         broadcastEOF();
@@ -183,8 +268,9 @@ public class Dedup extends Node {
      * 
      * @throws IOException
      * @throws InterruptedException
+     * @throws TransformException 
      */
-	private void executeFirst() throws IOException, InterruptedException {
+	private void executeFirst() throws IOException, InterruptedException, TransformException {
 		int groupItems = 0;
 		while (runIt && 
 				(records[current] = inPort.readRecord(records[current])) != null) {
@@ -208,6 +294,7 @@ public class Dedup extends Node {
 			// swap indexes
 			current = current ^ 1;
           	previous = previous ^ 1;
+          	recordNumber++;
 		}
     }
 	
@@ -225,8 +312,9 @@ public class Dedup extends Node {
      * 
      * @throws IOException
      * @throws InterruptedException
+     * @throws TransformException 
      */
-    public void executeLast() throws IOException, InterruptedException {
+	private void executeLast() throws IOException, InterruptedException, TransformException {
     	while (runIt && 
     			(records[current] = inPort.readRecord(records[current])) != null) {
             if (isFirst) {
@@ -244,6 +332,7 @@ public class Dedup extends Node {
             // swap indexes
             current = current ^ 1;
             previous = previous ^ 1;
+          	recordNumber++;
         }
     	
     	while (ringBuffer.popRecord(records[previous]) != null) {
@@ -276,8 +365,9 @@ public class Dedup extends Node {
      * 
      * @throws IOException
      * @throws InterruptedException
+     * @throws TransformException 
      */
-    public void executeUnique() throws IOException, InterruptedException {
+	private void executeUnique() throws IOException, InterruptedException, TransformException {
         int groupItems = 0;
 
         while (records[current] != null && runIt) {
@@ -310,6 +400,7 @@ public class Dedup extends Node {
                     }
                 }
             }
+          	recordNumber++;
         }
     }
     
@@ -364,12 +455,8 @@ public class Dedup extends Node {
 		rejectedPort = getOutputPort(REJECTED_PORT);
 		
         if (dedupKeys != null) {
-            recordKey = new RecordKey(dedupKeys, 
-            		getInputPort(READ_FROM_PORT).getMetadata());
-            recordKey.init();
-            // for DEDUP component, specify whether two fields with NULL
-            // value indicator set are considered equal
-            recordKey.setEqualNULLs(equalNULLs);
+			metadata = getInputPort(READ_FROM_PORT).getMetadata();
+        	createOrderingComparators();
         }
         
         if (noDupRecord < 1) {
@@ -390,6 +477,34 @@ public class Dedup extends Node {
         }
 	}
 
+	/**
+	 * Creates a record key.
+	 * @param orderEnum
+	 */
+	private void createOrderingComparators() {
+		List<DedupComparator> lOrderingComparators = new ArrayList<DedupComparator>(); 
+		for (int i=0; i<dedupOrderings.length; i++) {
+			RecordKey recordKey = new RecordKey(new String[] {dedupKeys[i]}, metadata);
+			if (dedupOrderings[i] == OrderEnum.ASC) {
+				lOrderingComparators.add(new DedupAscComparator(recordKey));
+			} else if (dedupOrderings[i] == OrderEnum.DESC) {
+				lOrderingComparators.add(new DedupDescComparator(recordKey));
+			} else if (dedupOrderings[i] == OrderEnum.IGNORE) {
+				lOrderingComparators.add(new DedupIgnoreComparator(recordKey));
+			} else if (dedupOrderings[i] == OrderEnum.AUTO) {
+				lOrderingComparators.add(new DedupAutoComparator(recordKey));
+				bAutoExists = true;
+			}  
+			recordKey.init();
+
+		    // for DEDUP component, specify whether two fields with NULL
+		    // value indicator set are considered equal
+		    recordKey.setEqualNULLs(equalNULLs);
+		}
+		orderingComparators = new DedupComparator[lOrderingComparators.size()];
+		lOrderingComparators.toArray(orderingComparators);
+	}
+	
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
@@ -536,5 +651,161 @@ public class Dedup extends Node {
 		this.noDupRecord = numberRecord;
 	}
 	
+	/**
+	 * Abstract dedup comparator.
+	 */
+	private abstract class DedupComparator {
+		// record key
+		protected RecordKey recordKey;
+		
+		// equals result state
+		protected boolean bEquals;
+		
+		// compare result status
+		protected int cmpResult;
+
+		/**
+		 * Constructor.
+		 * @param recordKey
+		 */
+		public DedupComparator(RecordKey recordKey) {
+			this.recordKey = recordKey;
+		}
+
+		/**
+		 * Gets record key.
+		 * @return
+		 */
+		public RecordKey getRecordKey() {
+			return recordKey;
+		}
+		
+		/** 
+		 * Gets an error message.
+		 */
+		protected String getErrorMessage() {
+			return "Input is not sorted as specified by component attributes";
+		}
+
+		/**
+		 * Equals records.
+		 * @param prevRecord
+		 * @param currentRecord
+		 * @return
+		 */
+		public abstract boolean equals(DataRecord prevRecord, DataRecord currentRecord);
+		
+		/**
+		 * Validate record order. Use after equals processing. 
+		 * @throws TransformException
+		 */
+		public abstract void validateOrder() throws TransformException;
+	}
+	
+	/**
+	 * Dedup asc. comparator.
+	 */
+	private class DedupAscComparator extends DedupComparator {
+		public DedupAscComparator(RecordKey recordKey) {
+			super(recordKey);
+		}
+
+		@Override
+		public boolean equals(DataRecord prevRecord, DataRecord currentRecord) {
+			bEquals = (cmpResult = recordKey.compare(prevRecord, currentRecord)) == 0;
+			return bEquals;
+		}
+
+		@Override
+		public void validateOrder() throws TransformException {
+			if (cmpResult == 1) throw new TransformException(getErrorMessage());
+		}
+	}
+
+	/**
+	 * Dedup desc. comparator.
+	 */
+	private class DedupDescComparator extends DedupComparator {
+		public DedupDescComparator(RecordKey recordKey) {
+			super(recordKey);
+		}
+
+		@Override
+		public boolean equals(DataRecord prevRecord, DataRecord currentRecord) {
+			bEquals = (cmpResult = recordKey.compare(prevRecord, currentRecord)) == 0;
+			return bEquals;
+		}
+
+		@Override
+		public void validateOrder() throws TransformException {
+			if (cmpResult == -1) throw new TransformException(getErrorMessage());
+		}
+	}
+
+	/**
+	 * Dedup ignore comparator.
+	 */
+	private class DedupIgnoreComparator extends DedupComparator {
+		public DedupIgnoreComparator(RecordKey recordKey) {
+			super(recordKey);
+		}
+
+		@Override
+		public boolean equals(DataRecord prevRecord, DataRecord currentRecord) {
+			return recordKey.compare(prevRecord, currentRecord) == 0;
+		}
+
+		@Override
+		public void validateOrder() throws TransformException {
+		}
+	}
+
+	/**
+	 * Dedup auto. comparator.
+	 */
+	private class DedupAutoComparator extends DedupComparator {
+		public DedupAutoComparator(RecordKey recordKey) {
+			super(recordKey);
+		}
+
+		@Override
+		public boolean equals(DataRecord prevRecord, DataRecord currentRecord) {
+			return (cmpResult = recordKey.compare(prevRecord, currentRecord)) == 0;
+		}
+		
+		@Override
+		public void validateOrder() throws TransformException {
+		}
+		
+		/**
+		 * Gets resolved comparator - ascending or descending or null.
+		 * @return
+		 */
+		public DedupComparator getResolvedComparator() {
+			if (cmpResult == -1) return new DedupAscComparator(recordKey);
+			else if (cmpResult == 1) return new DedupDescComparator(recordKey);
+			return null;
+		}
+	}
+
+	/**
+	 * Returns error field number.
+	 * @return
+	 */
+	private int getErrorFieldNumber() {
+		if (orderingComparators == null || orderingComparators.length <= fieldNumber) return -1;
+		RecordKey recordKey = orderingComparators[fieldNumber].getRecordKey();
+		if (recordKey == null) return -1;
+		int[] numbers;
+		try {
+			numbers = metadata.fieldsIndices(recordKey.getKeyFieldNames());
+		} catch(RuntimeException e) {
+			return -1;
+		}
+		return numbers.length == 0 ? -1 : numbers[0];
+	}
+	
+
+
 }
 
