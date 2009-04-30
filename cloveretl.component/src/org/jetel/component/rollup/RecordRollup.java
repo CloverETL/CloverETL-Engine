@@ -60,7 +60,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *     </ul>
  *   </li>
  *   <li>The {@link #free()} method is called to free any allocated resources.</li>
- * </ul> 
+ * </ul>
  *
  * @author Martin Zatopek, Javlin a.s. &lt;martin.zatopek@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
