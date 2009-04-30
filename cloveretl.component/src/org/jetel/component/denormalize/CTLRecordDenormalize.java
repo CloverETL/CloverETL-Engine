@@ -162,12 +162,10 @@ public abstract class CTLRecordDenormalize implements RecordDenormalize, CTLComp
 		// does nothing
 	}
 
-	@Override
 	public DataRecord getInputRecord(int index) {
 		return index == 0 ? inputRecord : null;
 	}
 	
-	@Override
 	public DataRecord getOutputRecord(int index) {
 		return index == 0 ? outputRecord : null;
 	}
