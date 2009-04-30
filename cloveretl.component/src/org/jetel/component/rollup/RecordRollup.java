@@ -65,7 +65,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Martin Zatopek, Javlin a.s. &lt;martin.zatopek@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 28th April 2009
+ * @version 30th April 2009
  * @since 24th February 2009
  */
 public interface RecordRollup {
@@ -120,7 +120,7 @@ public interface RecordRollup {
     /**
      * This method is called for the last data record in a group in order to finish the group processing.
      *
-     * @param inputRecord the last input data record
+     * @param inputRecord any input data record from the current group
      * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
      * was requested
      *
@@ -135,7 +135,7 @@ public interface RecordRollup {
      * This method is used to generate an output data record based on the input data record and the contents of the
      * group "accumulator" (if it was requested). The output data record will be sent the output when this method finishes.
      *
-     * @param inputRecord the current input data record
+     * @param inputRecord any input data record from the current group
      * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
      * was requested
      * @param outputRecords output data records to be filled with data
