@@ -24,6 +24,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.RangeLookupTable;
 
 /**
@@ -85,5 +86,9 @@ public class RangePartition implements PartitionFunction{
     	portRecord = lookup.hasNext() ? lookup.next() : null;
     	return portRecord != null ? ((Numeric)portRecord.getField(portField)).getInt() :
     		rejectedPort;
+    }
+    
+    public void setGraph(TransformationGraph graph) {
+    	// not used here
     }
 }

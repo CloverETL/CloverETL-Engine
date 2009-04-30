@@ -2,6 +2,7 @@ package org.jetel.component.partition;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.graph.TransformationGraph;
 
 /**
  * RoundRobin partition algorithm.
@@ -25,6 +26,10 @@ public class RoundRobinPartition implements PartitionFunction{
     public int getOutputPort(DataRecord record){
         last=(last+1)%numPorts;
         return last;
+    }
+    
+    public void setGraph(TransformationGraph graph) {
+    	// not used here
     }
     
 }

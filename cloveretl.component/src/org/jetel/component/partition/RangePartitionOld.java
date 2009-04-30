@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.graph.TransformationGraph;
 
 /**
  * Partition algorithm which compares current key value with set of
@@ -68,5 +69,9 @@ public class RangePartitionOld implements PartitionFunction{
                 return (index*-1)-1;
             }
         }
+    }
+    
+    public void setGraph(TransformationGraph graph) {
+    	// not used here
     }
 }

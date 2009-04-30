@@ -26,11 +26,16 @@ package org.jetel.component;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.ctl.ErrorMessage;
+import org.jetel.ctl.ITLCompiler;
+import org.jetel.ctl.TLCompilerFactory;
+import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.interpreter.ParseException;
@@ -49,6 +54,7 @@ public class RecordTransformFactory {
     public static final int TRANSFORM_JAVA_SOURCE=1;
     public static final int TRANSFORM_CLOVER_TL=2;
     public static final int TRANSFORM_JAVA_PREPROCESS=3;
+    public static final int TRANSFORM_CTL = 4;
     
     public static final Pattern PATTERN_CLASS = Pattern.compile("class\\s+\\w+"); 
     public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+((transform)|(generate))");
@@ -88,6 +94,27 @@ public class RecordTransformFactory {
                 break;
             case TRANSFORM_CLOVER_TL:
                 transformation = new RecordTransformTL(transform, logger);
+                break;
+            case TRANSFORM_CTL:
+            	final ITLCompiler compiler = 
+            		TLCompilerFactory.createCompiler(node.getGraph(),inMetadata,outMetadata,"UTF-8");
+            	List<ErrorMessage> msgs = compiler.compile(transform, CTLRecordTransform.class, node.getId());
+            	if (compiler.errorCount() > 0) {
+            		for (ErrorMessage msg : msgs) {
+            			logger.error(msg.toString());
+            		}
+            		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors");
+            	}
+            	Object ret = compiler.getCompiledCode();
+            	if (ret instanceof TransformLangExecutor) {
+            		// setup interpreted runtime
+            		transformation = new CTLRecordTransformAdapter((TransformLangExecutor)ret, logger);
+            	} else if (ret instanceof RecordTransform){
+            		transformation = (RecordTransform)ret;
+            	} else {
+            		// this should never happen as compiler always generates correct interface
+            		throw new ComponentNotReadyException("Invalid type of record transformation");
+            	}
                 break;
             case TRANSFORM_JAVA_PREPROCESS:
                 transformation = (RecordTransform)RecordTransformFactory.loadClassDynamic(
@@ -292,6 +319,12 @@ public class RecordTransformFactory {
             // clover internal transformation language
             return TRANSFORM_CLOVER_TL;
         }
+        
+        if (transform.indexOf(TransformLangExecutor.CTL_TRANSFORM_CODE_ID) != -1) {
+        	// new CTL implementation
+        	return TRANSFORM_CTL;
+        }
+        
         if (PATTERN_TL_CODE.matcher(transform).find() 
         		|| PATTERN_PARTITION_CODE.matcher(transform).find()){
             // clover internal transformation language

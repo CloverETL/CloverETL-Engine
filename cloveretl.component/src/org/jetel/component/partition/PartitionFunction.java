@@ -24,6 +24,7 @@ package org.jetel.component.partition;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.TransformationGraph;
 
 /**
  * Simple interface for partition functions.
@@ -52,4 +53,9 @@ public interface PartitionFunction {
 	    
 	    void init(int numPartitions,RecordKey partitionKey) throws ComponentNotReadyException;
 	    
+	    /**
+		 *  Passes instance of transformation graph to denormalize transformation
+		 */
+		public void setGraph(TransformationGraph graph);
+
 }

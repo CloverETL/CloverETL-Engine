@@ -3,6 +3,7 @@ package org.jetel.component.partition;
 import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
+import org.jetel.graph.TransformationGraph;
 
 /**
  * Partition algorithm based on calculating hash value of
@@ -30,5 +31,9 @@ public class HashPartition implements PartitionFunction{
         //int hash=hashKey.hashCode(); 
         //int value=(hash)&0x0FF;//// take only last 8 bits
         return hashKey.hashCode()%numPorts;
+    }
+    
+    public void setGraph(TransformationGraph graph) {
+    	// not used here
     }
 }

@@ -21,16 +21,23 @@ package org.jetel.component;
 
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.partition.CTLRecordPartition;
+import org.jetel.component.partition.CTLRecordPartitionAdapter;
 import org.jetel.component.partition.HashPartition;
 import org.jetel.component.partition.PartitionFunction;
 import org.jetel.component.partition.PartitionTL;
 import org.jetel.component.partition.RangePartition;
 import org.jetel.component.partition.RoundRobinPartition;
+import org.jetel.ctl.ErrorMessage;
+import org.jetel.ctl.ITLCompiler;
+import org.jetel.ctl.TLCompilerFactory;
+import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
@@ -450,7 +457,7 @@ public class Partition extends Node {
 	}
 	
 	/**
-	 * Method for creation parttion function from CloverETL language or java source
+	 * Method for creation partition function from CloverETL language or java source
 	 * 
 	 * @param partitionCode source code
 	 * @return Partition function
@@ -464,7 +471,37 @@ public class Partition extends Node {
 					getInputPort(0).getMetadata(), parameters, logger);
 			function.setGraph(getGraph());
 			return function;
-		}else{//get partition function form java code
+		} else if (partitionCode.contains(TransformLangExecutor.CTL_TRANSFORM_CODE_ID)) {
+			// compile the CTL code
+			ITLCompiler compiler = TLCompilerFactory.createCompiler(
+					getGraph(),
+					new DataRecordMetadata[]{getInputPort(0).getMetadata()},
+					new DataRecordMetadata[]{getOutputPort(0).getMetadata()},
+					"UTF-8");
+        	List<ErrorMessage> msgs = compiler.compile(partitionCode, CTLRecordPartition.class, getId());
+        	
+        	if (compiler.errorCount() > 0) {
+        		for (ErrorMessage msg : msgs) {
+        			logger.error(msg.toString());
+        		}
+        		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors");
+        	}
+        	
+        	Object ret = compiler.getCompiledCode();
+        	PartitionFunction function = null;
+        	if (ret instanceof TransformLangExecutor) {
+        		// setup interpreted runtime
+        		function = new CTLRecordPartitionAdapter((TransformLangExecutor)ret, logger);
+        	} else if (ret instanceof CTLRecordPartition){
+        		function = (CTLRecordPartition)ret;
+        	} else {
+        		// this should never happen as compiler always generates correct interface
+        		throw new ComponentNotReadyException("Invalid type of record transformation");
+        	}
+        	// pass graph instance to transformation (if CTL it can use lookups etc.)
+			function.setGraph(getGraph());
+			return function;
+		} else {//get partition function form java code
 			DynamicJavaCode dynCode = new DynamicJavaCode(partitionCode, this.getClass().getClassLoader());
 	        logger.info(" (compiling dynamic source) ");
 	        // use DynamicJavaCode to instantiate transformation class

@@ -24,6 +24,7 @@ import java.util.Properties;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -99,5 +100,10 @@ public interface RecordDenormalize {
 	 * Reset denormalizer for next graph execution.
 	 */
 	public void reset();
+	
+	/**
+	 *  Passes instance of transformation graph to denormalize transformation
+	 */
+	public void setGraph(TransformationGraph graph);
 
 }
