@@ -127,6 +127,7 @@ public class Plugins {
         LookupTableFactory.init();
         ConnectionFactory.init();
         TLFunctionPluginRepository.init();
+        org.jetel.ctl.extensions.TLFunctionPluginRepository.init();
         DictionaryTypeFactory.init();
     }
     

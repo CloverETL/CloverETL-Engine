@@ -41,7 +41,7 @@ public class TLFunctionLibraryDescription extends PluginableItemDescription {
 
     private static Log logger = LogFactory.getLog(TLFunctionLibraryDescription.class);
 
-    public final static String EXTENSION_POINT_ID = "tlfunction";
+    public final static String EXTENSION_POINT_ID = "ctlfunction";
 
     private final static String LIBRARY_NAME = "libraryName";
     private final static String CLASS = "className";
