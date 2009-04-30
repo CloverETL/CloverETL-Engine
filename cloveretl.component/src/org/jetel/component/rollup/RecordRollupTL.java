@@ -28,6 +28,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLBooleanValue;
+import org.jetel.interpreter.data.TLRecordValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -37,7 +38,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 28th April 2009
+ * @version 30th April 2009
  * @since 28th April 2009
  */
 public class RecordRollupTL implements RecordRollup {
@@ -99,13 +100,13 @@ public class RecordRollupTL implements RecordRollup {
     }
 
     public void initGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
-        //TODO: add support for inputRecord and groupAccumulator parameters
-        wrapper.executePreparedFunction(functionInitGroupId);
+        wrapper.executePreparedFunction(functionInitGroupId, inputRecord,
+                new TLValue[] { new TLRecordValue(groupAccumulator) });
     }
 
     public boolean updateGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
-        //TODO: add support for inputRecord and groupAccumulator parameters
-        TLValue result = wrapper.executePreparedFunction(functionUpdateGroupId);
+        TLValue result = wrapper.executePreparedFunction(functionUpdateGroupId, inputRecord,
+                new TLValue[] { new TLRecordValue(groupAccumulator) });
 
         if (result != null) {
             return (result == TLBooleanValue.TRUE);
@@ -115,8 +116,8 @@ public class RecordRollupTL implements RecordRollup {
     }
 
     public boolean finishGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
-        //TODO: add support for inputRecord and groupAccumulator parameters
-        TLValue result = wrapper.executePreparedFunction(functionFinishGroupId);
+        TLValue result = wrapper.executePreparedFunction(functionFinishGroupId, inputRecord,
+                new TLValue[] { new TLRecordValue(groupAccumulator) });
 
         if (result != null) {
             return (result == TLBooleanValue.TRUE);
@@ -127,8 +128,8 @@ public class RecordRollupTL implements RecordRollup {
 
     public int transform(DataRecord inputRecord, DataRecord groupAccumulator, DataRecord[] outputRecords)
             throws TransformException {
-        //TODO: add support for inputRecord, groupAccumulator and outputRecords parameters
-        TLValue result = wrapper.executePreparedFunction(functionTransformId);
+        TLValue result = wrapper.executePreparedFunction(functionTransformId, new DataRecord[] { inputRecord },
+                outputRecords, new TLValue[] { new TLRecordValue(groupAccumulator) });
 
         if (result == null || result == TLBooleanValue.TRUE) {
             return ALL;
