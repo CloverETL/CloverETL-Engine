@@ -131,12 +131,14 @@ public class RecordRollupTL implements RecordRollup {
         TLValue result = wrapper.executePreparedFunction(functionTransformId, new DataRecord[] { inputRecord },
                 outputRecords, new TLValue[] { new TLRecordValue(groupAccumulator) });
 
-        if (result == null || result == TLBooleanValue.TRUE) {
-            return ALL;
-        }
+        if (result != null) {
+            if (result == TLBooleanValue.TRUE) {
+                return ALL;
+            }
 
-        if (result.getType().isNumeric()) {
-            return result.getNumeric().getInt();
+            if (result.getType().isNumeric()) {
+                return result.getNumeric().getInt();
+            }
         }
 
         return SKIP;
