@@ -362,7 +362,7 @@ SPECIAL_TOKEN : {
 
 <WithinSingleLineComment> MORE : { <~[]> }
 
-<WithinSingleLineComment, WithinComment> SPECIAL_TOKEN : {	< TL_SHEBANG : "#TL" > 	|	< TL_COMPILE : "#TL:COMPILE" >}
+<WithinSingleLineComment, WithinComment> SPECIAL_TOKEN : {	< TL_SHEBANG : "#CTL" > 	|	< TL_COMPILE : "#CTL:COMPILE" >}
 
 
 

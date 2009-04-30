@@ -13,7 +13,7 @@
 	Whenever parser is recompiled by javacc, you need to:
 	1. Delete the file org.jetel.ctl.Node.java
 	   Because all AST nodes are using org.jetel.ctl.ASTNode.Node as their parent
-	2. Fix imports in org.jetel.ctl.TransformLangParserVisitor.java
+	2. Fix imports in org.jetel.interpreter.TransformLangParserVisitor.java
 	   Since our AST nodes are located in package org.jetel.ctl.ASTNode
 	   Add TransformLangParserVisitor extends SyntheticNodeVisitor interface
 	3. Modify org.jetel.ctl.TransformLangParser.jj_consume_token():
@@ -41,7 +41,7 @@ options {
    CACHE_TOKENS=true;
                          
                       
-                                        
+                                
    JAVA_UNICODE_ESCAPE = true;
                              // change to true only if new Node has been added 
    DEBUG_PARSER = false;	
@@ -54,7 +54,7 @@ options {
 
 PARSER_BEGIN(TransformLangParser)
 
-org.jetel.ctlerpreter;
+package org.jetel.ctl;
 
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
@@ -366,7 +366,7 @@ SPECIAL_TOKEN : {
 
 <WithinSingleLineComment> MORE : { <~[]> }
 
-<WithinSingleLineComment, WithinComment> SPECIAL_TOKEN : {	< TL_SHEBANG : "#TL" > 	|	< TL_COMPILE : "#TL:COMPILE" >}
+<WithinSingleLineComment, WithinComment> SPECIAL_TOKEN : {	< TL_SHEBANG : "#CTL" > 	|	< TL_COMPILE : "#CTL:COMPILE" >}
 
 
 
