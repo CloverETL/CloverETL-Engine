@@ -174,4 +174,8 @@ public class RecordNormalizeTL implements RecordNormalize {
 		errorMessage = null;
 	}
 
+	public void setGraph(TransformationGraph graph) {
+		// not used here
+	}
+
 }

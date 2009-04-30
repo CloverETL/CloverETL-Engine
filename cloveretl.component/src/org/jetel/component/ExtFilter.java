@@ -21,9 +21,14 @@
 package org.jetel.component;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.normalize.CTLRecordNormalize;
+import org.jetel.ctl.ErrorMessage;
+import org.jetel.ctl.ITLCompiler;
+import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
@@ -41,7 +46,7 @@ import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
-import org.jetel.interpreter.data.TLBooleanValue;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -154,7 +159,8 @@ public class ExtFilter extends org.jetel.graph.Node {
 	private final static int WRITE_TO_PORT=0;
 	private final static int REJECTED_PORT=1;
 	
-	private CLVFStartExpression  recordFilter;
+	
+	private RecordFilter filter = null;
 	private String filterExpression;
 	
     static Log logger = LogFactory.getLog(ExtFilter.class);
@@ -170,12 +176,10 @@ public class ExtFilter extends org.jetel.graph.Node {
 		OutputPortDirect outPort=getOutputPortDirect(WRITE_TO_PORT);
 		OutputPortDirect rejectedPort=getOutputPortDirect(REJECTED_PORT);
 		boolean isData=true;
-		TransformLangExecutor executor=new TransformLangExecutor();
         DataRecord record = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
         record.init();
         ByteBuffer recordBuffer=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
         
-	    executor.setInputRecords(new DataRecord[] {record});  
 		while(isData && runIt){
 			try{
                 recordBuffer.clear();
@@ -184,8 +188,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 					break;
 				}
                 record.deserialize(recordBuffer);
-				executor.visit(recordFilter,null);
-				if (executor.getResult()==TLBooleanValue.TRUE){
+				if (filter.isValid(record)){
                     recordBuffer.rewind();
 					outPort.writeRecordDirect(recordBuffer);
 				}else if (rejectedPort!=null){
@@ -212,22 +215,52 @@ public class ExtFilter extends org.jetel.graph.Node {
         if(isInitialized()) return;
 		super.init();
 		
-		TransformLangParser parser=new TransformLangParser(getInputPort(READ_FROM_PORT).getMetadata(),filterExpression);
-		if (parser!=null){
+		if (filterExpression.contains(org.jetel.ctl.TransformLangExecutor.CTL_TRANSFORM_CODE_ID)) {
+			// new CTL initialization
+			DataRecordMetadata[] inputMetadata = (DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[getInMetadata().size()]);
+			DataRecordMetadata[] outputMetadata = (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[getOutMetadata().size()]);
+			ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),inputMetadata,outputMetadata,"UTF-8");
+	    	
+			List<ErrorMessage> msgs = compiler.compileExpression(filterExpression, CTLRecordFilter.class, getId(),CTLRecordFilterAdapter.ISVALID_FUNCTION_NAME,boolean.class);
+	    	if (compiler.errorCount() > 0) {
+	    		for (ErrorMessage msg : msgs) {
+	    			logger.error(msg.toString());
+	    		}
+	    		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors");
+	    	}
+	    	if (compiler.errorCount() > 0) {
+	    		for (ErrorMessage msg : msgs) {
+	    			logger.error(msg.toString());
+	    		}
+	    		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors");
+	    	}
+	    	Object ret = compiler.getCompiledCode();
+	    	if (ret instanceof org.jetel.ctl.TransformLangExecutor) {
+	    		// setup interpreted runtime
+	    		filter = new CTLRecordFilterAdapter((org.jetel.ctl.TransformLangExecutor)ret, logger);
+	    	} else if (ret instanceof CTLRecordNormalize){
+	    		filter = (CTLRecordFilter)ret;
+	    	} else {
+	    		// this should never happen as compiler always generates correct interface
+	    		throw new ComponentNotReadyException("Invalid type of record transformation");
+	    	}
+	    	// set graph instance to transformation (if CTL it can access lookups etc.)
+	    	filter.setGraph(getGraph());
+	    	
+	    	// initialize transformation
+	    	filter.init();
+		} else {
+			// old TL initialization
+			TransformLangParser parser=new TransformLangParser(getInputPort(READ_FROM_PORT).getMetadata(),filterExpression);
 			try {
-				  recordFilter = parser.StartExpression();
-			}catch (ParseException ex) {
+				  final CLVFStartExpression recordFilter = parser.StartExpression();
+				  filter = new RecordFilterTL(recordFilter);
+				  filter.init();
+			} catch (ParseException ex) {
                 throw new ComponentNotReadyException("Parser error when parsing expression: "+ex.getMessage());
-            }catch (Exception e) {
-				throw new ComponentNotReadyException("Error when parsing expression: "+e.getMessage());
+            } catch (Exception e) {
+				throw new ComponentNotReadyException("Error when initializing expression: "+e.getMessage());
 			}
-            try{
-                recordFilter.init();
-            }catch (Exception e) {
-                throw new ComponentNotReadyException("Error when initializing expression executor: "+e.getMessage());
-            }
-		}else{
-			throw new ComponentNotReadyException("Can't create filter expression parser !"); 
 		}
 	}
 	

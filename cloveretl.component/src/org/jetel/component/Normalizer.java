@@ -23,14 +23,21 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.normalize.CTLRecordNormalize;
+import org.jetel.component.normalize.CTLRecordNormalizeAdapter;
 import org.jetel.component.normalize.RecordNormalize;
 import org.jetel.component.normalize.RecordNormalizeTL;
+import org.jetel.ctl.ErrorMessage;
+import org.jetel.ctl.ITLCompiler;
+import org.jetel.ctl.TLCompilerFactory;
+import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
@@ -117,6 +124,7 @@ public class Normalizer extends Node {
 	
 	private static final int TRANSFORM_JAVA_SOURCE = 1;
 	private static final int TRANSFORM_CLOVER_TL = 2;
+	private static final int TRANSFORM_CTL = 3;
 	
 	private Properties transformationParameters;
 
@@ -236,6 +244,29 @@ public class Normalizer extends Node {
 					break;
 				case TRANSFORM_CLOVER_TL:
 					norm = new RecordNormalizeTL(logger, xform, getGraph());
+					break;
+				case TRANSFORM_CTL:
+					ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),new DataRecordMetadata[]{inMetadata},new DataRecordMetadata[]{outMetadata},"UTF-8");
+	            	List<ErrorMessage> msgs = compiler.compile(xform, CTLRecordNormalize.class, getId());
+	            	if (compiler.errorCount() > 0) {
+	            		for (ErrorMessage msg : msgs) {
+	            			logger.error(msg.toString());
+	            		}
+	            		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors");
+	            	}
+	            	Object ret = compiler.getCompiledCode();
+	            	if (ret instanceof TransformLangExecutor) {
+	            		// setup interpreted runtime
+	            		norm = new CTLRecordNormalizeAdapter((TransformLangExecutor)ret, logger);
+	            	} else if (ret instanceof CTLRecordNormalize){
+	            		norm = (CTLRecordNormalize)ret;
+	            	} else {
+	            		// this should never happen as compiler always generates correct interface
+	            		throw new ComponentNotReadyException("Invalid type of record transformation");
+	            	}
+	            	
+	            	// set graph instance to transformation (if CTL it can access lookups etc.)
+	            	norm.setGraph(getGraph());
 					break;
 				default:
 					throw new ComponentNotReadyException(
@@ -498,6 +529,12 @@ public class Normalizer extends Node {
             // clover internal transformation language
             return TRANSFORM_CLOVER_TL;
         }
+        
+        if (transform.indexOf(TransformLangExecutor.CTL_TRANSFORM_CODE_ID) != -1) {
+        	// new CTL implementation
+        	return TRANSFORM_CTL;
+        }
+        
         if (PATTERN_TL_CODE.matcher(transform).find()){
             // clover internal transformation language
             return TRANSFORM_CLOVER_TL;

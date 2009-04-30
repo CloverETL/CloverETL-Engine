@@ -23,4 +23,9 @@
 		<parameter id="className" value="org.jetel.graph.dictionary.WritableChannelDictionaryType"/>
 	</extension>
 	
+	<extension point-id="tlCompiler">
+		<parameter id="type" value="simple.compiler"/>
+		<parameter id="className" value="org.jetel.ctl.TLCompiler"/>
+	</extension>
+	
 </plugin>

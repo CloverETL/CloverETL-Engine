@@ -30,6 +30,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.ComponentFactory;
+import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.SequenceFactory;
@@ -129,6 +130,7 @@ public class Plugins {
         TLFunctionPluginRepository.init();
         org.jetel.ctl.extensions.TLFunctionPluginRepository.init();
         DictionaryTypeFactory.init();
+        TLCompilerFactory.init();
     }
     
     public static Map<String, PluginDescriptor> getPluginDescriptors(){

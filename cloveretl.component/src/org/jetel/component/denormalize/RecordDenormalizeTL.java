@@ -174,5 +174,9 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 		errorMessage = null;
 		wrapper.reset();
 	}
+	
+	public void setGraph(TransformationGraph graph) {
+		// not needed here
+	}
 
 }

@@ -122,6 +122,11 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 public class TransformLangExecutor implements TransformLangParserVisitor, TransformLangParserConstants {
 
 	/**
+	 * Magic header to recognize CTL code
+	 */
+	public static final String CTL_TRANSFORM_CODE_ID = "//#CTL";
+	
+	/**
 	 *  Limits the precision of result to #DECIMAL_MAX_PRECISION digits
 	 *  This applies in the following cases:
 	 *  <ul>
