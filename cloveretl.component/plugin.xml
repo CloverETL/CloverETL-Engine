@@ -224,6 +224,11 @@
 	</extension>
 
 	<extension point-id="component">
+		<parameter id="type" value="ROLLUP"/>
+		<parameter id="className" value="org.jetel.component.Rollup"/>
+	</extension>
+
+	<extension point-id="component">
 		<parameter id="type" value="JMS_READER"/>
 		<parameter id="className" value="org.jetel.component.JmsReader"/>
 	</extension>
