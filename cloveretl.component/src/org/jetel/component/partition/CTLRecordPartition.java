@@ -102,7 +102,6 @@ public abstract class CTLRecordPartition implements PartitionFunction, CTLCompil
 		// does nothing
 	}
 	
-	@Override
 	public DataRecord getInputRecord(int index) {
 		return index == 0 ? inputRecord : null;
 	}

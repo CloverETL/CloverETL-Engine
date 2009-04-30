@@ -152,12 +152,10 @@ public abstract class CTLRecordNormalize implements RecordNormalize, CTLCompilab
 	public void reset() {
 	}
 	
-	@Override
 	public DataRecord getInputRecord(int index) {
 		return index == 0 ? inputRecord : null;
 	}
 	
-	@Override
 	public DataRecord getOutputRecord(int index) {
 		return index == 0 ? outputRecord : null;
 	}
