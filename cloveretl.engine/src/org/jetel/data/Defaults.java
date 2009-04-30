@@ -213,6 +213,7 @@ public final class Defaults {
 		InternalSortDataRecord.init();
 		Graph.init();
 		OracleConnection.init();
+		TLCompiler.init();
 	}
 
 	/**
@@ -559,4 +560,33 @@ public final class Defaults {
 		 */
 		public static int ROW_PREFETCH; // -1
 	}
+	
+	
+	/**
+	 * Default settings for CTL language compilers.
+	 * 
+	 * @author Michal Tomcanyi <michal.tomcanyi@javlin.cz>
+	 *
+	 */
+	public static final class TLCompiler {
+		public static void init() {
+			TLCOMPILER_SOURCE_DIRECTORY = getStringProperties("TLCompiler.TLCOMPILER_SOURCE_DIRECTORY",
+					"./trans");
+			TLCOMPILER_BINARY_DIRECTORY = getStringProperties("TLCompiler.TLCOMPILER_BINARY_DIRECTORY",
+			"./trans");
+
+		}
+		
+		/**
+		 * Directory where all generated .java source files are stored
+		 */
+		public static String TLCOMPILER_SOURCE_DIRECTORY;
+		
+		/**
+		 * Directory where all generated .class files are stored
+		 */
+		public static String TLCOMPILER_BINARY_DIRECTORY;
+	}
+	
+	
 }

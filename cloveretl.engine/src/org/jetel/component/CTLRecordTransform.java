@@ -7,6 +7,7 @@ import org.jetel.ctl.CTLEntryPoint;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -143,6 +144,11 @@ public abstract class CTLRecordTransform implements RecordTransform, CTLCompilab
 	 */
 	public void reset() {
 		// by default do nothing
+	}
+	
+	public TransformationGraph getGraph() {
+		// not used by transformations
+		return null;
 	}
 	
 	public DataRecord getInputRecord(int index) {

@@ -65,8 +65,7 @@ import org.jetel.ctl.ASTnode.SimpleNode;
  * @author Michal Tomcanyi <michal.tomcanyi@javlin.cz>
  *
  */
-public class NavigatingVisitor 
-	implements TransformLangParserVisitor {
+public class NavigatingVisitor implements TransformLangParserVisitor {
 
 	protected Object visitNode(SimpleNode node, Object data) {
 		if (node != null && node.jjtHasChildren()) {
@@ -334,4 +333,5 @@ public class NavigatingVisitor
 	public Object visit(CastNode node, Object data) {
 		return visitNode(node,data);
 	}
+
 }
