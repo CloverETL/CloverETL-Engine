@@ -202,9 +202,11 @@ public class Rollup extends Node {
 
             rollup = new Rollup(componentAttributes.getString(XML_ID_ATTRIBUTE));
 
-            rollup.setGroupKeyFields(componentAttributes.getString(XML_GROUP_KEY_FIELDS_ATTRIBUTE)
-                    .trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-            rollup.setGroupAccumulatorMetadataId(componentAttributes.getString(XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE));
+            String groupKeyString = componentAttributes.getString(XML_GROUP_KEY_FIELDS_ATTRIBUTE);
+            rollup.setGroupKeyFields(!StringUtils.isEmpty(groupKeyString)
+                    ? groupKeyString.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX) : null);
+            rollup.setGroupAccumulatorMetadataId(
+                    componentAttributes.getString(XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE, null));
 
             rollup.setTransform(componentAttributes.getString(XML_TRANSFORM_ATTRIBUTE, null));
             rollup.setTransformUrl(componentAttributes.getString(XML_TRANSFORM_URL_ATTRIBUTE, null));
@@ -217,6 +219,8 @@ public class Rollup extends Node {
             throw new XMLConfigurationException("Missing a required attribute!", exception);
         } catch (Exception exception) {
             throw new XMLConfigurationException("Error creating the component!", exception);
+        } catch (Throwable tw) {
+            throw new XMLConfigurationException(tw);
         }
 
         return rollup;
@@ -305,23 +309,23 @@ public class Rollup extends Node {
                     StringUtils.stringArraytoString(groupKeyFields, Defaults.Component.KEY_FIELDS_DELIMITER));
         }
 
-        if (groupAccumulatorMetadataId != null) {
+        if (!StringUtils.isEmpty(groupAccumulatorMetadataId)) {
             xmlElement.setAttribute(XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE, groupAccumulatorMetadataId);
         }
 
-        if (transform != null) {
+        if (!StringUtils.isEmpty(transform)) {
             xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE, transform);
         }
 
-        if (transformUrl != null) {
+        if (!StringUtils.isEmpty(transformUrl)) {
             xmlElement.setAttribute(XML_TRANSFORM_URL_ATTRIBUTE, transformUrl);
         }
 
-        if (transformUrlCharset != null) {
+        if (!StringUtils.isEmpty(transformUrlCharset)) {
             xmlElement.setAttribute(XML_TRANSFORM_URL_CHARSET_ATTRIBUTE, transformUrlCharset);
         }
 
-        if (transformClassName != null) {
+        if (!StringUtils.isEmpty(transformClassName)) {
             xmlElement.setAttribute(XML_TRANSFORM_CLASS_NAME_ATTRIBUTE, transformClassName);
         }
 
@@ -338,7 +342,7 @@ public class Rollup extends Node {
         checkOutputPorts(status, 1, Integer.MAX_VALUE);
         checkMetadata(status, getInMetadata(), getOutMetadata());
 
-        if (groupKeyFields == null) {
+        if (groupKeyFields == null || groupKeyFields.length == 0) {
             status.add(new ConfigurationProblem("No group key fields specified!",
                     Severity.ERROR, this, Priority.HIGH, "groupKeyFields"));
         } else {
@@ -357,11 +361,11 @@ public class Rollup extends Node {
                     Severity.ERROR, this, Priority.HIGH, "groupAccumulatorMetadataId"));
         }
 
-        if (transform == null && transformUrl == null && transformClassName == null) {
+        if (StringUtils.isEmpty(transform) && StringUtils.isEmpty(transformUrl) && StringUtils.isEmpty(transformClassName)) {
             status.add(new ConfigurationProblem("No rollup transform specified!", Severity.ERROR, this, Priority.HIGH));
         }
 
-        if (!Charset.isSupported(transformUrlCharset)) {
+        if (transformUrlCharset != null && !Charset.isSupported(transformUrlCharset)) {
             status.add(new ConfigurationProblem("The transform URL character set is not supported!",
                     Severity.ERROR, this, Priority.NORMAL, "transformUrlCharset"));
         }
@@ -542,14 +546,16 @@ public class Rollup extends Node {
         while (runIt && inputPort.readRecord(inputRecord) != null) {
             DataRecord groupAccumulator = groupAccumulators.get(lookupKey);
 
-            if (groupAccumulator == null && groupAccumulatorMetadataId != null) {
-                groupAccumulator = new DataRecord(getGraph().getDataRecordMetadata(groupAccumulatorMetadataId));
-                groupAccumulator.init();
+            if (groupAccumulator == null && !groupAccumulators.containsKey(lookupKey)) {
+                if (groupAccumulatorMetadataId != null) {
+                    groupAccumulator = new DataRecord(getGraph().getDataRecordMetadata(groupAccumulatorMetadataId));
+                    groupAccumulator.init();
+                }
 
                 groupAccumulators.put(new HashKey(groupKey, inputRecord.duplicate()), groupAccumulator);
-
-                recordRollup.initGroup(inputRecord, groupAccumulator);
             }
+
+            recordRollup.initGroup(inputRecord, groupAccumulator);
 
             if (recordRollup.updateGroup(inputRecord, groupAccumulator)) {
                 transform(inputRecord, groupAccumulator);
