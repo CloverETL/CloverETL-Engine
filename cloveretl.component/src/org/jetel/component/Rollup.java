@@ -71,7 +71,7 @@ import org.w3c.dom.Element;
  *   <td><b>Description:</b></td>
  *   <td>
  *     Serves as an executor of rollup transforms written in Java or CTL. See the {@link RecordRollup} interface
- *     for more details on the lifecycle of the rollup transform.
+ *     for more details on the life cycle of the rollup transform.
  *   </td>
  * </tr>
  * <tr>
