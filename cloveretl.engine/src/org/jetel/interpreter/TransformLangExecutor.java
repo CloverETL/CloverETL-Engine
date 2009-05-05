@@ -1409,8 +1409,30 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                     "invalid assignment of null value to variable \"" + varNode.varName+"\"");
         }
         
-        
-        switch (varNode.varType) {
+        int actualType = varNode.varType;
+    	
+        /*
+    	 * Function parameters are of type OBJECT. This is determined in compile time
+    	 * However if the function parameter is passing a value of data record,
+    	 * map or list, it will never by assigned correctly.
+    	 * Therefore we have to determine the type dynamically in runtime.
+    	 */
+        if (actualType == OBJECT_VAR) {
+	    	TLValueType paramType = variableToAssign.getType(); // retrieve actual type
+	    	switch (paramType) {
+	    	case RECORD:
+	    		actualType = RECORD_VAR;
+	    		break;
+	    	case MAP:
+	    		actualType = MAP_VAR;
+	    		break;
+	    	case LIST:
+	    		actualType = LIST_VAR;
+	    		break;
+	    	}
+        }
+
+        switch (actualType) {
         case LIST_VAR:
         	 TLNumericValue index2List = null;
 			if (varNode.scalarContext) {

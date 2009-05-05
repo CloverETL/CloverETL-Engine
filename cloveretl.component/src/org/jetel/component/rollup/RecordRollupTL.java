@@ -30,6 +30,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLRecordValue;
 import org.jetel.interpreter.data.TLValue;
+import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -38,25 +39,27 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 30th April 2009
+ * @version 5th May 2009
  * @since 28th April 2009
  */
 public class RecordRollupTL implements RecordRollup {
 
     /** the name of the init() function in CTL */
-    private static final String FUNCTION_INIT_NAME = "init";
+    public static final String FUNCTION_INIT_NAME = "init";
     /** the name of the initGroup() function in CTL */
-    private static final String FUNCTION_INIT_GROUP_NAME = "initGroup";
+    public static final String FUNCTION_INIT_GROUP_NAME = "initGroup";
     /** the name of the updateGroup() function in CTL */
-    private static final String FUNCTION_UPDATE_GROUP_NAME = "updateGroup";
+    public static final String FUNCTION_UPDATE_GROUP_NAME = "updateGroup";
     /** the name of the finishGroup() function in CTL */
-    private static final String FUNCTION_FINISH_GROUP_NAME = "finishGroup";
-    /** the name of the transformGroup() function in CTL */
-    private static final String FUNCTION_TRANSFORM_NAME = "transform";
+    public static final String FUNCTION_FINISH_GROUP_NAME = "finishGroup";
+    /** the name of the updateTransform() function in CTL */
+    public static final String FUNCTION_UPDATE_TRANSFORM_NAME = "updateTransform";
+    /** the name of the transform() function in CTL */
+    public static final String FUNCTION_TRANSFORM_NAME = "transform";
     /** the name of the reset() function in CTL */
-    private static final String FUNCTION_RESET_NAME = "reset";
+    public static final String FUNCTION_RESET_NAME = "reset";
     /** the name of the free() function in CTL */
-    private static final String FUNCTION_FREE_NAME = "free";
+    public static final String FUNCTION_FREE_NAME = "free";
 
     /** the TL wrapper used to execute all the functions */
     private final WrapperTL wrapper;
@@ -67,6 +70,8 @@ public class RecordRollupTL implements RecordRollup {
     private int functionUpdateGroupId;
     /** the ID of the prepared finishGroup() function */
     private int functionFinishGroupId;
+    /** the ID of the prepared updateTransform() function */
+    private int functionUpdateTransformId;
     /** the ID of the prepared transform() function */
     private int functionTransformId;
 
@@ -96,6 +101,7 @@ public class RecordRollupTL implements RecordRollup {
         functionInitGroupId = wrapper.prepareFunctionExecution(FUNCTION_INIT_GROUP_NAME);
         functionUpdateGroupId = wrapper.prepareFunctionExecution(FUNCTION_UPDATE_GROUP_NAME);
         functionFinishGroupId = wrapper.prepareFunctionExecution(FUNCTION_FINISH_GROUP_NAME);
+        functionUpdateTransformId = wrapper.prepareFunctionExecution(FUNCTION_UPDATE_TRANSFORM_NAME);
         functionTransformId = wrapper.prepareFunctionExecution(FUNCTION_TRANSFORM_NAME);
     }
 
@@ -112,7 +118,7 @@ public class RecordRollupTL implements RecordRollup {
             return (result == TLBooleanValue.TRUE);
         }
 
-        return true;
+        return false;
     }
 
     public boolean finishGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
@@ -126,10 +132,34 @@ public class RecordRollupTL implements RecordRollup {
         return true;
     }
 
-    public int transform(DataRecord inputRecord, DataRecord groupAccumulator, DataRecord[] outputRecords)
+    public int updateTransform(int counter, DataRecord inputRecord, DataRecord groupAccumulator, DataRecord[] outputRecords)
             throws TransformException {
+        TLValue counterTL = TLValue.create(TLValueType.INTEGER);
+        counterTL.setValue(counter);
+
+        TLValue result = wrapper.executePreparedFunction(functionUpdateTransformId, new DataRecord[] { inputRecord },
+                outputRecords, new TLValue[] { counterTL, new TLRecordValue(groupAccumulator) });
+
+        if (result != null) {
+            if (result == TLBooleanValue.TRUE) {
+                return ALL;
+            }
+
+            if (result.getType().isNumeric()) {
+                return result.getNumeric().getInt();
+            }
+        }
+
+        return SKIP;
+    }
+    
+    public int transform(int counter, DataRecord inputRecord, DataRecord groupAccumulator, DataRecord[] outputRecords)
+            throws TransformException {
+        TLValue counterTL = TLValue.create(TLValueType.INTEGER);
+        counterTL.setValue(counter);
+
         TLValue result = wrapper.executePreparedFunction(functionTransformId, new DataRecord[] { inputRecord },
-                outputRecords, new TLValue[] { new TLRecordValue(groupAccumulator) });
+                outputRecords, new TLValue[] { counterTL, new TLRecordValue(groupAccumulator) });
 
         if (result != null) {
             if (result == TLBooleanValue.TRUE) {
