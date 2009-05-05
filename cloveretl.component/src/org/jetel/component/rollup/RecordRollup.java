@@ -28,8 +28,8 @@ import org.jetel.metadata.DataRecordMetadata;
 /**
  * <p>Represents an interface of a rollup transform which processes groups of data records. Each group of data records
  * may share a data record referred to as a group "accumulator". This group "accumulator" is created an initialized
- * when the first data record of the group is encountered and updated for each data record in the group (including the
- * first and the last data record). When the last data record of the group is encountered, the processing of the group
+ * when the first data record of a group is encountered and updated for each data record in this group (including the
+ * first and the last data record). When the last data record of a group is encountered, processing of this group
  * is finished and the group "accumulator" is disposed.</p>
  * <p>The life cycle of a rollup transform is as follows:</p>
  * <ul>
