@@ -89,7 +89,7 @@ import org.w3c.dom.Element;
  * <table border="1">
  * <tr>
  *   <td><b>id</b></td>
- *   <td>An ID of the component.</td>
+ *   <td>ID of the component.</td>
  * </tr>
  * <tr>
  *   <td><b>type</b></td>
@@ -104,15 +104,15 @@ import org.w3c.dom.Element;
  *     <b>groupAccumulatorMetadataId</b><br>
  *     <i>optional</i>
  *   </td>
- *   <td>An ID of data record meta data that should be used to create group "accumulators" (if required).</td>
+ *   <td>ID of data record meta data that should be used to create group "accumulators" (if required).</td>
  * </tr>
  * <tr>
  *   <td><b>transform</b></td>
- *   <td>A rollup transform as a Java or CTL source code.</td>
+ *   <td>Rollup transform as a Java or CTL source code.</td>
  * </tr>
  * <tr>
  *   <td><b>transformUrl</b></td>
- *   <td>A URL of an external Java/CTL source code of the rollup transform.</td>
+ *   <td>URL of an external Java/CTL source code of the rollup transform.</td>
  * </tr>
  * <tr>
  *   <td>
@@ -123,7 +123,7 @@ import org.w3c.dom.Element;
  * </tr>
  * <tr>
  *   <td><b>transformClassName</b></td>
- *   <td>A class name of a Java class implementing the rollup transform.</td>
+ *   <td>Class name of a Java class implementing the rollup transform.</td>
  * </tr>
  * <tr>
  *   <td>
@@ -131,7 +131,7 @@ import org.w3c.dom.Element;
  *     <i>optional</i>
  *   </td>
  *   <td>
- *      A flag specifying whether the input data records are sorted or not. If set to false, the order of output
+ *      Flag specifying whether the input data records are sorted or not. If set to false, the order of output
  *      data records is not specified.
  *   </td>
  * </tr>
