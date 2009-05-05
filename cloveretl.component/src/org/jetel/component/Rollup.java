@@ -35,6 +35,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
@@ -129,13 +130,16 @@ import org.w3c.dom.Element;
  *     <b>inputSorted</b><br>
  *     <i>optional</i>
  *   </td>
- *   <td>A flag specifying whether the input data records are sorted or not.</td>
+ *   <td>
+ *      A flag specifying whether the input data records are sorted or not. If set to false, the order of output
+ *      data records is not specified.
+ *   </td>
  * </tr>
  * </table>
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 30th April 2009
+ * @version 5th May 2009
  * @since 30th April 2009
  *
  * @see RecordRollup
@@ -176,7 +180,7 @@ public class Rollup extends Node {
     /** the regular expression pattern that should be present in a Java source code transformation */
     private static final String REGEX_JAVA_CLASS = "class\\s+\\w+";
     /** the regular expression pattern that should be present in a CTL code transformation */
-    private static final String REGEX_TL_CODE = "function\\s+((init|update|finish)Group|transform)";
+    private static final String REGEX_TL_CODE = "function\\s+((init|update|finish)Group|updateTransform|transform)";
 
     /**
      * Creates an instance of the <code>Rollup</code> component from an XML element.
@@ -479,11 +483,11 @@ public class Rollup extends Node {
     /**
      * Execution code specific for sorted input of data records.
      *
-     * @throws TransformException if an error occurred during the transformation
      * @throws IOException if an error occurred while reading or writing data records
      * @throws InterruptedException if an error occurred while reading or writing data records
+     * @throws JetelException if input data records are not sorted or an error occurred during the transformation
      */
-    private void executeInputSorted() throws TransformException, IOException, InterruptedException {
+    private void executeInputSorted() throws IOException, InterruptedException, JetelException {
         InputPort inputPort = getInputPort(INPUT_PORT_NUMBER);
 
         DoubleRecordBuffer inputRecords = new DoubleRecordBuffer(inputPort.getMetadata());
@@ -492,29 +496,43 @@ public class Rollup extends Node {
         if (groupAccumulatorMetadataId != null) {
             groupAccumulator = new DataRecord(getGraph().getDataRecordMetadata(groupAccumulatorMetadataId));
             groupAccumulator.init();
+            groupAccumulator.reset();
         }
 
         if (inputPort.readRecord(inputRecords.getCurrent()) != null) {
             recordRollup.initGroup(inputRecords.getCurrent(), groupAccumulator);
 
             if (recordRollup.updateGroup(inputRecords.getCurrent(), groupAccumulator)) {
-                transform(inputRecords.getCurrent(), groupAccumulator);
+                updateTransform(inputRecords.getCurrent(), groupAccumulator);
             }
 
             inputRecords.swap();
 
+            int sortDirection = 0;
+
             while (runIt && inputPort.readRecord(inputRecords.getCurrent()) != null) {
-                if (!groupKey.equals(inputRecords.getCurrent(), inputRecords.getPrevious())) {
+                int comparisonResult = groupKey.compare(inputRecords.getCurrent(), inputRecords.getPrevious());
+
+                if (comparisonResult != 0) {
+                    if (sortDirection == 0) {
+                        sortDirection = comparisonResult;
+                    } else if (comparisonResult != sortDirection) {
+                        throw new JetelException("Input data records not sorted!");
+                    }
+
                     if (recordRollup.finishGroup(inputRecords.getPrevious(), groupAccumulator)) {
                         transform(inputRecords.getPrevious(), groupAccumulator);
                     }
 
-                    groupAccumulator.reset();
+                    if (groupAccumulator != null) {
+                        groupAccumulator.reset();
+                    }
+
                     recordRollup.initGroup(inputRecords.getCurrent(), groupAccumulator);
                 }
 
                 if (recordRollup.updateGroup(inputRecords.getCurrent(), groupAccumulator)) {
-                    transform(inputRecords.getCurrent(), groupAccumulator);
+                    updateTransform(inputRecords.getCurrent(), groupAccumulator);
                 }
 
                 inputRecords.swap();
@@ -540,25 +558,28 @@ public class Rollup extends Node {
         DataRecord inputRecord = new DataRecord(inputPort.getMetadata());
         inputRecord.init();
 
+        DataRecordMetadata groupAccumulatorMetadata = (groupAccumulatorMetadataId != null)
+                ? getGraph().getDataRecordMetadata(groupAccumulatorMetadataId) : null;
         Map<HashKey, DataRecord> groupAccumulators = new HashMap<HashKey, DataRecord>();
+
         HashKey lookupKey = new HashKey(groupKey, inputRecord);
 
         while (runIt && inputPort.readRecord(inputRecord) != null) {
             DataRecord groupAccumulator = groupAccumulators.get(lookupKey);
 
             if (groupAccumulator == null && !groupAccumulators.containsKey(lookupKey)) {
-                if (groupAccumulatorMetadataId != null) {
-                    groupAccumulator = new DataRecord(getGraph().getDataRecordMetadata(groupAccumulatorMetadataId));
+                if (groupAccumulatorMetadata != null) {
+                    groupAccumulator = new DataRecord(groupAccumulatorMetadata);
                     groupAccumulator.init();
+                    groupAccumulator.reset();
                 }
 
                 groupAccumulators.put(new HashKey(groupKey, inputRecord.duplicate()), groupAccumulator);
+                recordRollup.initGroup(inputRecord, groupAccumulator);
             }
 
-            recordRollup.initGroup(inputRecord, groupAccumulator);
-
             if (recordRollup.updateGroup(inputRecord, groupAccumulator)) {
-                transform(inputRecord, groupAccumulator);
+                updateTransform(inputRecord, groupAccumulator);
             }
 
             SynchronizeUtils.cloverYield();
@@ -567,6 +588,43 @@ public class Rollup extends Node {
         for (Map.Entry<HashKey, DataRecord> entry : groupAccumulators.entrySet()) {
             if (recordRollup.finishGroup(entry.getKey().getDataRecord(), entry.getValue())) {
                 transform(entry.getKey().getDataRecord(), entry.getValue());
+            }
+        }
+    }
+
+    /**
+     * Calls the updateTransform() method on the rollup transform and performs further processing based on the result.
+     *
+     * @param inputRecord the current input data record
+     * @param groupAccumulator the group "accumulator" for the current group
+     *
+     * @throws TransformException if an error occurred during the transformation
+     * @throws IOException if an error occurred while writing a data record to an output port
+     * @throws InterruptedException if an error occurred while writing a data record to an output port
+     */
+    private void updateTransform(DataRecord inputRecord, DataRecord groupAccumulator)
+            throws TransformException, IOException, InterruptedException {
+        int counter = 0;
+
+        while (true) {
+            for (DataRecord outputRecord : outputRecords) {
+                outputRecord.reset();
+            }
+
+            int transformResult = recordRollup.updateTransform(counter++, inputRecord, groupAccumulator, outputRecords);
+
+            if (transformResult == RecordRollup.SKIP) {
+                break;
+            }
+
+            if (transformResult == RecordRollup.ALL) {
+                for (int i = 0; i < outputRecords.length; i++) {
+                    writeRecord(i, outputRecords[i]);
+                }
+            } else if (transformResult >= 0) {
+                writeRecord(transformResult, outputRecords[transformResult]);
+            } else {
+                throw new TransformException("Transform finished with error " + transformResult + "!");
             }
         }
     }
@@ -583,13 +641,19 @@ public class Rollup extends Node {
      */
     private void transform(DataRecord inputRecord, DataRecord groupAccumulator)
             throws TransformException, IOException, InterruptedException {
-        for (DataRecord outputRecord : outputRecords) {
-            outputRecord.reset();
-        }
+        int counter = 0;
 
-        int transformResult = recordRollup.transform(inputRecord, groupAccumulator, outputRecords);
+        while (true) {
+            for (DataRecord outputRecord : outputRecords) {
+                outputRecord.reset();
+            }
 
-        while (transformResult != RecordRollup.SKIP) {
+            int transformResult = recordRollup.transform(counter++, inputRecord, groupAccumulator, outputRecords);
+
+            if (transformResult == RecordRollup.SKIP) {
+                break;
+            }
+
             if (transformResult == RecordRollup.ALL) {
                 for (int i = 0; i < outputRecords.length; i++) {
                     writeRecord(i, outputRecords[i]);
@@ -601,7 +665,7 @@ public class Rollup extends Node {
             }
         }
     }
-
+    
     @Override
     public synchronized void reset() throws ComponentNotReadyException {
         if (!isInitialized()) {
@@ -609,10 +673,6 @@ public class Rollup extends Node {
         }
 
         recordRollup.reset();
-
-        for (DataRecord outputRecord : outputRecords) {
-            outputRecord.reset();
-        }
 
         super.reset();
     }
