@@ -500,15 +500,24 @@ public class StringDataField extends DataField implements CharSequence{
     }
 
     
+    private int cachedHashCode;
+    private String cachedValue;
+    
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
 	public int hashCode(){
+		// get cached hashCode
+		String currentValue = value.toString();
+		if (currentValue.equals(cachedValue)) return cachedHashCode;
+		
+		// compute hashCode
+		cachedValue = currentValue;
 		int hash=5381;
 		for (int i=0;i<value.length();i++){
 			hash = ((hash << 5) + hash) + value.charAt(i); 
 		}
-		return (hash & 0x7FFFFFFF);
+		return cachedHashCode = (hash & 0x7FFFFFFF);
 	}
 	
 	/**
