@@ -23,6 +23,11 @@
  */
 package org.jetel.component;
 
+import static org.jetel.ctl.TransformLangParserTreeConstants.JJTASSIGNMENT;
+import static org.jetel.ctl.TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION;
+import static org.jetel.ctl.TransformLangParserTreeConstants.JJTFUNCTIONDECLARATION;
+import static org.jetel.ctl.TransformLangParserTreeConstants.JJTIMPORTSOURCE;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -34,10 +39,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.ITLCompiler;
+import org.jetel.ctl.NavigatingVisitor;
+import org.jetel.ctl.TLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TransformLangExecutor;
+import org.jetel.ctl.ASTnode.CLVFBlock;
+import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.ASTnode.CLVFDirectMapping;
@@ -61,7 +71,89 @@ public class RecordTransformFactory {
     public static final Pattern PATTERN_PARTITION_CODE = Pattern.compile("function\\s+getOutputPort"); 
     
     public static final Pattern PATTERN_PREPROCESS_1 = Pattern.compile("\\$\\{out\\."); 
-    public static final Pattern PATTERN_PREPROCESS_2 = Pattern.compile("\\$\\{in\\."); 
+    public static final Pattern PATTERN_PREPROCESS_2 = Pattern.compile("\\$\\{in\\.");
+    
+    /**
+     * Verifier class checking if a CTL function only contains direct mappings.
+     * Direct mapping is an assignment statement where left hand side contains an output field reference.
+     * 
+     * @author Michal Tomcanyi <michal.tomcanyi@javlin.cz>
+     */
+    private static class SimpleTransformVerifier extends NavigatingVisitor {
+    	private final String functionName;
+    	private final org.jetel.ctl.ASTnode.Node ast;
+    	
+    	/**
+    	 * Allocates verifier which will verify that the <code>functionName</code>
+    	 * contains only simple mappings
+    	 * 
+    	 * @param functionName	function to validate
+    	 */
+    	public SimpleTransformVerifier(String functionName, org.jetel.ctl.ASTnode.Node ast) {
+    		this.functionName = functionName;
+    		this.ast = ast;
+    		
+    	}
+    	
+    	/**
+    	 * Scans AST tree for function and checks it only contains direct mappings
+    	 * (i.e. assignments where LHS is an output field reference)
+    	 * 
+    	 * @return	true if function is simple, false otherwise
+    	 */
+    	public boolean check() {
+    		return (Boolean)ast.jjtAccept(this, null);
+    	}
+    	
+    	@Override
+    	public Object visit(org.jetel.ctl.ASTnode.CLVFStart node, Object data) {
+    		// functions can only be declared in start or import nodes
+    		for (int i=0; i<node.jjtGetNumChildren(); i++) {
+    			final SimpleNode child = (SimpleNode)node.jjtGetChild(i); 
+    			final int id = child.getId();
+    			switch (id) {
+    			case JJTIMPORTSOURCE:
+    				// scan imports
+    				child.jjtAccept(this, data);
+    				break;
+    			case JJTFUNCTIONDECLARATION:
+    				if (((org.jetel.ctl.ASTnode.CLVFFunctionDeclaration)child).getName().equals(functionName)) {
+    					// scan statements in function body 
+    					return child.jjtGetChild(2).jjtAccept(this, data);
+    				}
+    				break;
+    			
+    			}
+    		}
+    		
+    		return false;
+    	}
+
+    	@Override
+    	public Object visit(CLVFBlock node, Object data) {
+    		// we must have come here as the block is 'transform' function body
+    		for (int i=0; i<node.jjtGetNumChildren(); i++) {
+    			final SimpleNode child = (SimpleNode)node.jjtGetChild(i);
+
+    			// statement must be an assignment and a direct mapping into output field
+    			if (child.getId() != JJTASSIGNMENT) {
+    				// not an assignment - fail quickly
+    				return false;
+    			}
+    			
+    			// check if direct mapping
+    			final SimpleNode lhs = (SimpleNode)child.jjtGetChild(0);
+    			if (lhs.getId() != JJTFIELDACCESSEXPRESSION) {
+    				// not a mapping
+    				return false;
+    			}
+    		}
+    		
+    		// all statements are direct mappings
+    		return true;
+    	}
+    }
+
     
     public static RecordTransform createTransform(String transform, String transformClass, 
     		String transformURL, String charset, Node node, 
@@ -169,6 +261,9 @@ public class RecordTransformFactory {
             case TRANSFORM_CLOVER_TL:
                 recordGenerate = new RecordGenerateTL(generate, logger);
                 break;
+            case TRANSFORM_CTL:
+                recordGenerate = new CTLRecordGenerateAdapter(generate, logger);
+                break;
             case TRANSFORM_JAVA_PREPROCESS:
                 recordGenerate = (RecordGenerate)RecordTransformFactory.loadClassDynamic(
                         logger, "Transform" + node.getId(), generate,
@@ -191,7 +286,7 @@ public class RecordTransformFactory {
         return recordGenerate;
     }
     
-    public static Object loadClass(Log logger, String transformClass) throws ComponentNotReadyException {
+    public static RecordTransform loadClass(Log logger, String transformClass) throws ComponentNotReadyException {
         //TODO parsing url from transformClass parameter
         return loadClass(logger, transformClass, null, null);
     }
@@ -203,13 +298,13 @@ public class RecordTransformFactory {
      * @return
      * @throws ComponentNotReadyException
      */
-    public static Object loadClass(Log logger,
+    public static RecordTransform loadClass(Log logger,
             String transformClassName, URL contextURL, String[] libraryPaths)
             throws ComponentNotReadyException {
-    	Object transformation = null;
+        RecordTransform transformation = null;
         // try to load in transformation class & instantiate
         try {
-            transformation = Class.forName(transformClassName).newInstance();
+            transformation =  (RecordTransform)Class.forName(transformClassName).newInstance();
         }catch(InstantiationException ex){
             throw new ComponentNotReadyException("Can't instantiate transformation class: "+ex.getMessage());
         }catch(IllegalAccessException ex){
@@ -235,7 +330,7 @@ public class RecordTransformFactory {
             try {
                 URLClassLoader classLoader = new URLClassLoader(myURLs, Thread
                         .currentThread().getContextClassLoader());
-                transformation = Class.forName(
+                transformation = (RecordTransform) Class.forName(
                         transformClassName, true, classLoader).newInstance();
             } catch (ClassNotFoundException ex1) {
                 throw new ComponentNotReadyException("Can not find class: "
@@ -256,7 +351,7 @@ public class RecordTransformFactory {
      * @return
      * @throws ComponentNotReadyException
      */
-    public static Object loadClassDynamic(Log logger,
+    public static RecordTransform loadClassDynamic(Log logger,
             String className, String transformCode,
             DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, ClassLoader classLoader,
             boolean addTransformCodeStub)
@@ -283,7 +378,7 @@ public class RecordTransformFactory {
      * @return
      * @throws ComponentNotReadyException
      */
-    public static Object loadClassDynamic(Log logger,DynamicJavaCode dynamicTransformCode)
+    public static RecordTransform loadClassDynamic(Log logger,DynamicJavaCode dynamicTransformCode)
             throws ComponentNotReadyException {
         logger.info(" (compiling dynamic source) ");
         // use DynamicJavaCode to instantiate transformation class
@@ -297,11 +392,11 @@ public class RecordTransformFactory {
                     "Transformation code is not compilable.\n" + "reason: "
                             + ex.getMessage());
         }
-        if (transObject instanceof RecordTransform || transObject instanceof RecordGenerate) {
-            return transObject;
+        if (transObject instanceof RecordTransform) {
+            return (RecordTransform) transObject;
         } else {
             throw new ComponentNotReadyException(
-                    "Provided transformation class doesn't implement RecordTransform or RecordGenerate.");
+                    "Provided transformation class doesn't implement RecordTransform.");
         }
 
     }
@@ -344,7 +439,9 @@ public class RecordTransformFactory {
         return -1;
     }
 
-	private static boolean isSimpleTransformFunctionNode(CLVFStart record, String functionName, int functionParams) {
+    // Following old TL parser functions are now deprecated 
+    @Deprecated
+	private static boolean isTLSimpleTransformFunctionNode(CLVFStart record, String functionName, int functionParams) {
 		int numTopChildren = record.jjtGetNumChildren();
 		
 		/* Detection of simple mapping inside transform(idx) function */
@@ -372,13 +469,15 @@ public class RecordTransformFactory {
 		return false;
 	}
     
-    public static boolean isSimpleTransform(DataRecordMetadata[] inMeta,
+	@Deprecated
+    public static boolean isTLSimpleTransform(DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String transform) {
     	
-    	return isSimpleFunction(inMeta, outMeta, transform, "transform");
+    	return isTLSimpleFunction(inMeta, outMeta, transform, "transform");
     }
     
-    public static boolean isSimpleFunction(DataRecordMetadata[] inMeta,
+    @Deprecated
+    public static boolean isTLSimpleFunction(DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String transform, String funtionName) {
     	
     	TransformLangParser parser = new TransformLangParser(inMeta, outMeta, transform);
@@ -391,10 +490,11 @@ public class RecordTransformFactory {
             System.out.println("Error when parsing expression: " + e.getMessage().split(System.getProperty("line.separator"))[0]);
             return false;
         }
-    	return isSimpleTransformFunctionNode(record, funtionName, 0);
+    	return isTLSimpleTransformFunctionNode(record, funtionName, 0);
     }
 
-    public static boolean isSimpleDenormalizer(DataRecordMetadata[] inMeta,
+    @Deprecated
+    public static boolean isTLSimpleDenormalizer(DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String transform) {
     	
     	TransformLangParser parser = new TransformLangParser(inMeta, outMeta, transform);
@@ -407,10 +507,11 @@ public class RecordTransformFactory {
             System.out.println("Error when parsing expression: " + e.getMessage().split(System.getProperty("line.separator"))[0]);
             return false;
         }
-    	return isSimpleTransformFunctionNode(record, "transform", 0);
+    	return isTLSimpleTransformFunctionNode(record, "transform", 0);
     }
     
-    public static boolean isSimpleNormalizer(DataRecordMetadata[] inMeta,
+    @Deprecated
+    public static boolean isTLSimpleNormalizer(DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String transform) {
     	
     	TransformLangParser parser = new TransformLangParser(inMeta, outMeta, transform);
@@ -423,7 +524,44 @@ public class RecordTransformFactory {
             System.out.println("Error when parsing expression: " + e.getMessage().split(System.getProperty("line.separator"))[0]);
             return false;
         }
-    	return isSimpleTransformFunctionNode(record, "transform", 1);
+    	return isTLSimpleTransformFunctionNode(record, "transform", 1);
     }
+   
+    
+    public static boolean isSimpleTransform(TransformationGraph graph, DataRecordMetadata[] inMeta,
+    		DataRecordMetadata[] outMeta, String transform) {
+    	
+    	return isSimpleFunction(graph, inMeta, outMeta, transform, "transform");
+    }
+    
+    public static boolean isSimpleDenormalizer(TransformationGraph graph, DataRecordMetadata[] inMeta,
+    		DataRecordMetadata[] outMeta, String code) {
+    	return isSimpleFunction(graph, inMeta, outMeta, code, "transform");
+    }
+    
+    public static boolean isSimpleNormalizer(TransformationGraph graph, DataRecordMetadata[] inMeta,
+    		DataRecordMetadata[] outMeta, String code) {
+    	return isSimpleFunction(graph, inMeta, outMeta, code, "transform");
+    }
+    
+    public static boolean isSimpleFunction(TransformationGraph graph, DataRecordMetadata[] inMeta,
+    		DataRecordMetadata[] outMeta, String code, String functionName) {
+    	
+    	TLCompiler compiler = new TLCompiler(graph,inMeta,outMeta);
+    	List<ErrorMessage> msgs = compiler.validate(code);
+    	if (compiler.errorCount() > 0) {
+    		for (ErrorMessage msg : msgs) {
+    			System.out.println(msg);
+    		}
+    		System.out.println("CTL code compilation finished with " + compiler.errorCount() + " errors");
+    		return false;
+    	}
+
+
+    	final SimpleTransformVerifier verifier = new SimpleTransformVerifier(functionName,compiler.getStart());
+    	return verifier.check();
+    }
+    
 }
+    
     
