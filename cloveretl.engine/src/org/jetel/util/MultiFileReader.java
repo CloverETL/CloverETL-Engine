@@ -149,13 +149,14 @@ public class MultiFileReader {
 		while (fit.hasNext()) {
 			try {
 				fName = fit.next();
+				if (fName.equals(STD_IN)) continue;
 				URL url = FileUtils.getFileURL(contextURL, FileURLParser.getMostInnerAddress(fName));
 				if (FileUtils.isServerURL(url)) {
 					//FileUtils.checkServer(url); //this is very long operation
 					continue;
 				}
-				parser.setReleaseDataSource(closeLastStream = !fName.equals(STD_IN));
 				parser.setDataSource(FileUtils.getReadableChannel(contextURL, url.toString()));
+				parser.setReleaseDataSource(closeLastStream = true);
 			} catch (IOException e) {
 				throw new ComponentNotReadyException("File is unreachable: " + autoFilling.getFilename(), e);
 			} catch (ComponentNotReadyException e) {
@@ -225,8 +226,8 @@ public class MultiFileReader {
 				autoFilling.setFileSize(tmpFile.length());
 				autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));				
 				iSource++;
-				parser.setReleaseDataSource(!autoFilling.getFilename().equals(STD_IN));
 				parser.setDataSource(stream);
+				parser.setReleaseDataSource(!autoFilling.getFilename().equals(STD_IN));
 				Object sourcePosition;
 				if ((sourcePosition = incrementalReading.getSourcePosition(iSource)) != null) {
 					parser.movePosition(sourcePosition);
