@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,6 +54,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.formatter.Formatter;
+import org.jetel.data.parser.XPathParser;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -63,6 +65,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
@@ -111,6 +114,7 @@ public class XmlWriter extends Node {
 	private static final String XML_PARENT_KEYS_ATTRIBUTE = "parentKey";	
 	private static final String XML_INDEX_ATTRIBUTE = "inPort";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+	private final static String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
 	private static final String XML_MAPPING_ATTRIBUTE = "mapping";
 	private static final String XML_MAPPING_ELEMENT = "Mapping";
 	private static final String XML_ELEMENT_ATTRIBUTE = "element";
@@ -838,7 +842,15 @@ public class XmlWriter extends Node {
 		PortDefinition rootPortDefinition = null;
 		Map<Integer, PortDefinition> allPortDefinitionMap = new HashMap<Integer,PortDefinition>();
 		try {
-	        if(xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
+			if (xattribs.exists(XML_MAPPING_URL_ATTRIBUTE)) {
+	            //read mapping from file url
+	            String mappingURL = xattribs.getString(XML_MAPPING_URL_ATTRIBUTE);
+				ReadableByteChannel ch = FileUtils.getReadableChannel(graph != null ? graph.getProjectURL() : null, mappingURL);
+				Document doc = createDocumentFromChannel(ch);
+	            Element mappingRoot = doc.getDocumentElement();
+				PortDefinition portDef = readInPortDef(graph, (PortDefinition)null, allPortDefinitionMap, mappingRoot);
+				rootPortDefinition = portDef;
+			} else if (xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
 	            //read mapping from string in attribute 'mapping'
 	            String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE);
 	            Document doc = createDocumentFromString(mapping);
@@ -851,8 +863,10 @@ public class XmlWriter extends Node {
 	            //mapping xml elements are child nodes of the component
 	        	Element mappingParent = xmlElement; 
 	        	List<PortDefinition> list = readInPortsDefinitionFromXml(graph, mappingParent, (PortDefinition)null, allPortDefinitionMap);
-	        	if (list.size() != 1)
+	        	if (list.size() > 1)
 	 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," more then 1 mapping element") + ":");
+	        	else if (list.size() < 1)
+	        		xattribs.getString(XML_MAPPING_ATTRIBUTE);
 
 	        	rootPortDefinition = list.get(0);
 	        }
@@ -1008,6 +1022,24 @@ public class XmlWriter extends Node {
         Document doc;
         try {
             doc = dbf.newDocumentBuilder().parse(is);
+        } catch (Exception e) {
+            throw new XMLConfigurationException("Mapping parameter parse error occur.", e);
+        }
+        return doc;
+    }
+
+    /**
+     * Creates org.w3c.dom.Document object from the given ReadableByteChannel.
+     * 
+     * @param readableByteChannel
+     * @return
+     * @throws XMLConfigurationException
+     */
+    public static Document createDocumentFromChannel(ReadableByteChannel readableByteChannel) throws XMLConfigurationException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        Document doc;
+        try {
+            doc = dbf.newDocumentBuilder().parse(Channels.newInputStream(readableByteChannel));
         } catch (Exception e) {
             throw new XMLConfigurationException("Mapping parameter parse error occur.", e);
         }
