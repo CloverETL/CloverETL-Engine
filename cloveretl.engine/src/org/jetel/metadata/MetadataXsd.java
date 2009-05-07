@@ -1,7 +1,9 @@
 package org.jetel.metadata;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -233,8 +235,14 @@ public class MetadataXsd extends MXAbstract {
 	}
 	
 	public static void main(String argv[]) {
+		
 		Options options = new Options();
     	options.addOption(new Option("i", "in_file", true, "Input file"));
+    	options.addOption(new Option("o", "out_file", true, "Output file"));
+    	options.addOption(new Option("s", "field_size", true, "Default field size"));
+    	options.addOption(new Option("r", "record_delimiter", true, "Record delimiter"));
+    	options.addOption(new Option("f", "field_delimiter", true, "Field delimiter"));
+    	options.addOption(new Option("h", "help", true, "Help"));
     	PosixParser optParser = new PosixParser();
     	CommandLine cmdLine;
 		try {
@@ -245,11 +253,33 @@ public class MetadataXsd extends MXAbstract {
 		}
 		try {
 			InputStream input;
+        	OutputStream output;
+        	String recordDelimiter = null;
+        	String fieldDelimiter = null;
+        	short defaultFieldSize = 0;
+			if (cmdLine.hasOption("h")) {
+		        System.out.println("MetadataXsd -i in_file -o out_file -s field_size");
+		        System.out.println("MetadataXsd -i in_file -o out_file -r record_delimiter -f field_delimiter");
+			}
 			if (cmdLine.hasOption("i")) {
 				input = new FileInputStream(cmdLine.getOptionValue("i"));
 			} else {
 				input = System.in;
 			}
+    		if (cmdLine.hasOption("o")) {
+        		output = new FileOutputStream(cmdLine.getOptionValue("o"));
+    		} else {
+    			output = System.out;
+    		}
+    		if (cmdLine.hasOption("s")) {
+    			defaultFieldSize = Short.parseShort(cmdLine.getOptionValue("s"));
+    		}
+    		if (cmdLine.hasOption("r")) {
+    			recordDelimiter = cmdLine.getOptionValue("r");
+    		}
+    		if (cmdLine.hasOption("f")) {
+    			fieldDelimiter = cmdLine.getOptionValue("f");
+    		}
 	        InputSource is = new InputSource(input);
 	        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 	        Document doc;
@@ -258,8 +288,17 @@ public class MetadataXsd extends MXAbstract {
 	        } catch (Exception e) {
 	            throw new XMLConfigurationException("Mapping parameter parse error occur.", e);
 	        }
-	        DataRecordMetadata metadata = new MetadataXsd(doc, (short)10).createDataRecordMetadata();
-	        System.out.println(metadata);
+	        
+	        DataRecordMetadata metadata = null;
+	        if (recordDelimiter != null && fieldDelimiter != null) 
+	        	metadata = new MetadataXsd(doc, recordDelimiter, fieldDelimiter).createDataRecordMetadata();
+	        else if (defaultFieldSize > 0)  
+	        	metadata = new MetadataXsd(doc, defaultFieldSize).createDataRecordMetadata();
+	        else {
+	        	throw new Exception("The default field size or field/record delimeters is not specified.");
+	        }
+	        DataRecordMetadataXMLReaderWriter.write(metadata, output);
+	        System.out.println("Metadata file created.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
