@@ -20,6 +20,9 @@
 package org.jetel.component;
 
 import java.io.StringReader;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -39,6 +42,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -152,6 +156,7 @@ public class XmlXPathReader extends Node {
 
 	/** XML attribute names */
 	private final static String XML_FILE_ATTRIBUTE = "fileURL";
+	private final static String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
 	private final static String XML_MAPPING_ATTRIBUTE = "mapping";
 	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
     private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
@@ -162,6 +167,7 @@ public class XmlXPathReader extends Node {
 	private final static int OUTPUT_PORT = 0;
 	private final static int INPUT_PORT = 0;
 	private String fileURL;
+	private String mappingURL;
 
 	private XPathParser parser;
     private MultiFileReader reader;
@@ -174,15 +180,27 @@ public class XmlXPathReader extends Node {
 	private String xmlFeatures;
 
 	/**
-	 *Constructor for the DelimitedDataReaderNIO object
-	 *
-	 * @param  id       Description of the Parameter
-	 * @param  fileURL  Description of the Parameter
+	 * Constructor
+	 * @param  id        Description of the Parameter
+	 * @param  fileURL   Description of the Parameter
+	 * @param mapping    Description of the Parameter
 	 */
 	public XmlXPathReader(String id, String fileURL, Document mapping) {
 		super(id);
 		this.fileURL = fileURL;
 		parser = new XPathParser(mapping);
+	}
+
+	/**
+	 * Constructor
+	 * @param  id        Description of the Parameter
+	 * @param  fileURL   Description of the Parameter
+	 * @param mappingURL Description of the Parameter
+	 */
+	public XmlXPathReader(String id, String fileURL, String mappingURL) {
+		super(id);
+		this.fileURL = fileURL;
+		this.mappingURL = mappingURL;
 	}
 
 	@Override
@@ -236,10 +254,22 @@ public class XmlXPathReader extends Node {
         if(isInitialized()) return;
 		super.init();
 		TransformationGraph graph = getGraph();
+		URL contextURL = graph != null ? graph.getProjectURL() : null;
+		
+		// prepare parser
+		if (mappingURL != null) {
+			try {
+				ReadableByteChannel ch = FileUtils.getReadableChannel(contextURL, mappingURL);
+				parser = new XPathParser(createDocumentFromChannel(ch));
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(e);
+			}
+		}
 		
         // initialize multifile reader based on prepared parser
-        reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
+        reader = new MultiFileReader(parser, contextURL, fileURL);
         reader.setLogger(logger);
+        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
         parser.setSkip(skipRows);
         parser.setNumRecords(numRecords);
         parser.setGraph(getGraph());
@@ -284,12 +314,20 @@ public class XmlXPathReader extends Node {
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		XmlXPathReader aXmlXPathReader = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		xmlElement.getAttributeNode(XML_MAPPING_ATTRIBUTE);
 		try {
-			aXmlXPathReader = new XmlXPathReader(
-					xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_FILE_ATTRIBUTE),
-					createDocumentFromString(xattribs.getString(XML_MAPPING_ATTRIBUTE)));
+			String mappingURL = xattribs.getString(XML_MAPPING_URL_ATTRIBUTE, null);
+			if (mappingURL != null) {
+				aXmlXPathReader = new XmlXPathReader(
+						xattribs.getString(XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_FILE_ATTRIBUTE),
+						mappingURL);
+			} else {
+				aXmlXPathReader = new XmlXPathReader(
+						xattribs.getString(XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_FILE_ATTRIBUTE),
+						createDocumentFromString(xattribs.getString(XML_MAPPING_ATTRIBUTE)));
+			}
+			
 			aXmlXPathReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
             if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
                 aXmlXPathReader.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
@@ -330,28 +368,36 @@ public class XmlXPathReader extends Node {
         return doc;
     }
 
+    /**
+     * Creates org.w3c.dom.Document object from the given ReadableByteChannel.
+     * 
+     * @param readableByteChannel
+     * @return
+     * @throws XMLConfigurationException
+     */
+    public static Document createDocumentFromChannel(ReadableByteChannel readableByteChannel) throws XMLConfigurationException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        Document doc;
+        try {
+            doc = dbf.newDocumentBuilder().parse(Channels.newInputStream(readableByteChannel));
+        } catch (Exception e) {
+            throw new XMLConfigurationException("Mapping parameter parse error occur.", e);
+        }
+        return doc;
+    }
+
+    
     public void setPolicyType(String strPolicyType) {
-        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+        policyType = PolicyType.valueOfIgnoreCase(strPolicyType);
     }
     
-	/**
-	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
-	 *
-	 * @param  handler
-	 */
-	public void setPolicyType(PolicyType policyType) {
-        this.policyType = policyType;
-        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
-	}
-
-
 	/**
 	 * Return data checking policy
 	 * @return User defined data policy, or null if none was specified
 	 * @see org.jetel.exception.BadDataFormatExceptionHandler
 	 */
 	public PolicyType getPolicyType() {
-		return this.parser.getPolicyType();
+		return policyType;
 	}
 	
 	/**

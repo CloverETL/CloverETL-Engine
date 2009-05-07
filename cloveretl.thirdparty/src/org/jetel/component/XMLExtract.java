@@ -3,6 +3,7 @@ package org.jetel.component;
 import java.io.File;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.text.DateFormat;
@@ -39,6 +40,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.sequence.PrimitiveSequence;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ReadableChannelIterator;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
@@ -211,6 +213,7 @@ public class XMLExtract extends Node {
 
     // mapping attributes
     private static final String XML_MAPPING = "Mapping";
+	private final static String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
     private static final String XML_ELEMENT = "element";
     private static final String XML_OUTPORT = "outPort";
     private static final String XML_PARENTKEY = "parentKey";
@@ -261,6 +264,12 @@ public class XMLExtract extends Node {
 	private String charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
 
 	private boolean trim = true;
+
+	private String mappingURL;
+
+	private String mapping;
+
+	private NodeList mappingNodes;
 
     /**
      * SAX Handler that will dispatch the elements to the different ports.
@@ -1000,26 +1009,20 @@ public class XMLExtract extends Node {
                 extract.setUseNestedNodes(xattribs.getBoolean(XML_USENESTEDNODES_ATTRIBUTE));
             }
             
-            // Process the mappings
-            NodeList nodes;
-            if(xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
-                //read mapping from string in attribute 'mapping'
-                String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE);
-                Document doc = createDocumentFromString(mapping);
-                
-                Element rootElement = doc.getDocumentElement();
-                nodes = rootElement.getChildNodes();
-            } else {
+            // set mapping
+            String mappingURL = xattribs.getString(XML_MAPPING_URL_ATTRIBUTE, null);
+            String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
+            NodeList nodes = xmlElement.getChildNodes();
+            if (mappingURL != null) extract.setMappingURL(mappingURL);
+            else if (mapping != null) extract.setMapping(mapping);
+            else if (nodes != null && nodes.getLength() > 0){
                 //old-fashioned version of mapping definition
                 //mapping xml elements are child nodes of the component
-                nodes = xmlElement.getChildNodes();
+            	extract.setNodes(nodes);
+            } else {
+            	xattribs.getString(XML_MAPPING_URL_ATTRIBUTE); // throw configuration exception
             }
-            //iterate over 'Mapping' elements
-            for (int i = 0; i < nodes.getLength(); i++) {
-                org.w3c.dom.Node node = nodes.item(i);
-                processMappings(graph, extract, null, node);
-            }
-            
+
             // set a skip row attribute
             if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
             	extract.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
@@ -1046,7 +1049,22 @@ public class XMLExtract extends Node {
         }
     }
     
-    /**
+    private void setNodes(NodeList nodes) {
+    	this.mappingNodes = nodes;
+	}
+
+
+	private void setMappingURL(String mappingURL) {
+    	this.mappingURL = mappingURL;
+	}
+
+
+	private void setMapping(String mapping) {
+		this.mapping = mapping;
+	}
+
+
+	/**
      * Sets the trim indicator.
      * @param trim
      */
@@ -1063,20 +1081,35 @@ public class XMLExtract extends Node {
      */
     private static Document createDocumentFromString(String inString) throws XMLConfigurationException {
         InputSource is = new InputSource(new StringReader(inString));
-        
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setCoalescing(true);
-
         Document doc;
-        
         try {
             doc = dbf.newDocumentBuilder().parse(is);
         } catch (Exception e) {
             throw new XMLConfigurationException("Mapping parameter parse error occur.", e);
         }
-        
         return doc;
     }
+    
+    /**
+     * Creates org.w3c.dom.Document object from the given ReadableByteChannel.
+     * 
+     * @param readableByteChannel
+     * @return
+     * @throws XMLConfigurationException
+     */
+    public static Document createDocumentFromChannel(ReadableByteChannel readableByteChannel) throws XMLConfigurationException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        Document doc;
+        try {
+            doc = dbf.newDocumentBuilder().parse(Channels.newInputStream(readableByteChannel));
+        } catch (Exception e) {
+            throw new XMLConfigurationException("Mapping parameter parse error occur.", e);
+        }
+        return doc;
+    }
+
     
     /**
      * Creates mappings.
@@ -1086,7 +1119,7 @@ public class XMLExtract extends Node {
      * @param parentMapping
      * @param nodeXML
      */
-    private static void processMappings(TransformationGraph graph, XMLExtract extract, Mapping parentMapping, org.w3c.dom.Node nodeXML) {
+    private void processMappings(TransformationGraph graph, Mapping parentMapping, org.w3c.dom.Node nodeXML) {
         if (XML_MAPPING.equals(nodeXML.getNodeName())) {
             // for a mapping declaration, process all of the attributes
             // element, outPort, parentKeyName, generatedKey
@@ -1097,10 +1130,10 @@ public class XMLExtract extends Node {
             	int outputPort = -1;
             	if (attributes.exists(XML_OUTPORT)) 
             		outputPort = attributes.getInteger(XML_OUTPORT); 
-                mapping = extract.new Mapping(attributes.getString(XML_ELEMENT), outputPort);
+                mapping = new Mapping(attributes.getString(XML_ELEMENT), outputPort);
             } catch(AttributeNotFoundException ex) {
                 LOG
-                        .warn(extract.getId()
+                        .warn(getId()
                         + ": XML Extract : Mapping missing a required attribute - element."
                         + "  Skipping this mapping and all children.");
                 return;
@@ -1111,7 +1144,7 @@ public class XMLExtract extends Node {
                 parentMapping.addChildMapping(mapping);
                 mapping.setParent(parentMapping);
             } else {
-                extract.addMapping(mapping);
+                addMapping(mapping);
             }
 
             boolean parentKeyPresent = false;
@@ -1127,14 +1160,14 @@ public class XMLExtract extends Node {
             }
             
             if (parentKeyPresent != generatedKeyPresent) {
-                LOG.warn(extract.getId() + ": XML Extract Mapping for element: " + 
+                LOG.warn(getId() + ": XML Extract Mapping for element: " + 
                 		mapping.getElement() + " must either have both parentKey and generatedKey attributes or neither.");
                 mapping.setParentKey(null);
                 mapping.setGeneratedKey(null);
             }
 
             if (parentKeyPresent && mapping.getParent() == null) {
-                LOG.warn(extract.getId() + ": XML Extact Mapping for element: "
+                LOG.warn(getId() + ": XML Extact Mapping for element: "
                         + mapping.getElement() + " may only have parentKey or generatedKey attributes if it is a nested mapping.");
                 mapping.setParentKey(null);
                 mapping.setGeneratedKey(null);
@@ -1153,7 +1186,7 @@ public class XMLExtract extends Node {
                     mapping.setXml2CloverFieldsMap(xmlCloverMap);
                 } else {
                     LOG
-                    .warn(extract.getId()
+                    .warn(getId()
                     + ": XML Extact Mapping for element: "
                     + mapping.getElement()
                     + " must have same number of the xml fields and the clover fields attribute.");
@@ -1185,7 +1218,7 @@ public class XMLExtract extends Node {
             NodeList nodes = nodeXML.getChildNodes();
             for (int i = 0; i < nodes.getLength(); i++) {
                 org.w3c.dom.Node node = nodes.item(i);
-                processMappings(graph, extract, mapping, node);
+                processMappings(graph, mapping, node);
             }
             
             // prepare variable reset of skip and numRecords' attributes
@@ -1194,7 +1227,7 @@ public class XMLExtract extends Node {
         } else if (nodeXML.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
             // Ignore text values inside nodes
         } else {
-            LOG.warn(extract.getId() + ": Unknown element: "
+            LOG.warn(getId() + ": Unknown element: "
                     + nodeXML.getLocalName()
                     + " ignoring it and all child elements.");
         }
@@ -1287,6 +1320,35 @@ public class XMLExtract extends Node {
     public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+
+    	TransformationGraph graph = getGraph();
+    	URL projectURL = graph != null ? graph.getProjectURL() : null;
+
+		// prepare mapping
+		if (mappingURL != null) {
+			try {
+				ReadableByteChannel ch = FileUtils.getReadableChannel(projectURL, mappingURL);
+				Document doc = createDocumentFromChannel(ch);
+                Element rootElement = doc.getDocumentElement();
+                mappingNodes = rootElement.getChildNodes();
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(e);
+			}
+		} else if (mapping != null) {
+			Document doc;
+			try {
+				doc = createDocumentFromString(mapping);
+			} catch (XMLConfigurationException e) {
+				throw new ComponentNotReadyException(e);
+			}
+			Element rootElement = doc.getDocumentElement();
+			mappingNodes = rootElement.getChildNodes();
+		}
+        //iterate over 'Mapping' elements
+        for (int i = 0; i < mappingNodes.getLength(); i++) {
+            org.w3c.dom.Node node = mappingNodes.item(i);
+            processMappings(graph, null, node);
+        }
 		
         // test that we have at least one input port and one output
         if (outPorts.size() < 1) {
@@ -1302,10 +1364,9 @@ public class XMLExtract extends Node {
         
         // sets input file to readableChannelIterator and sets its settings (directory, charset, input port,...)
         if (inputFile != null) {
-        	TransformationGraph graph = getGraph();
             this.readableChannelIterator = new ReadableChannelIterator(
             		getInputPort(INPUT_PORT), 
-            		graph != null ? graph.getProjectURL() : null,
+            		projectURL,
             		inputFile);
             this.readableChannelIterator.setCharset(charset);
             this.readableChannelIterator.setDictionary(graph.getDictionary());
