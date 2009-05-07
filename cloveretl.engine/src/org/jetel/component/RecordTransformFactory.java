@@ -27,6 +27,7 @@ import static org.jetel.ctl.TransformLangParserTreeConstants.JJTASSIGNMENT;
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION;
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTFUNCTIONDECLARATION;
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTIMPORTSOURCE;
+import static org.jetel.ctl.TransformLangParserTreeConstants.JJTRETURNSTATEMENT;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -68,7 +69,9 @@ public class RecordTransformFactory {
     
     public static final Pattern PATTERN_CLASS = Pattern.compile("class\\s+\\w+"); 
     public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+((transform)|(generate))");
+    public static final Pattern PATTERN_CTL_CODE = Pattern.compile("function\\s+[a-z]*\\s+((transform)|(generate))");
     public static final Pattern PATTERN_PARTITION_CODE = Pattern.compile("function\\s+getOutputPort"); 
+    public static final Pattern PATTERN_CTL_PARTITION_CODE = Pattern.compile("function\\s+[a-z]*\\s+getOutputPort");
     
     public static final Pattern PATTERN_PREPROCESS_1 = Pattern.compile("\\$\\{out\\."); 
     public static final Pattern PATTERN_PREPROCESS_2 = Pattern.compile("\\$\\{in\\.");
@@ -136,16 +139,18 @@ public class RecordTransformFactory {
     			final SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 
     			// statement must be an assignment and a direct mapping into output field
-    			if (child.getId() != JJTASSIGNMENT) {
+    			if (child.getId() != JJTASSIGNMENT && child.getId() != JJTRETURNSTATEMENT) {
     				// not an assignment - fail quickly
     				return false;
     			}
     			
-    			// check if direct mapping
-    			final SimpleNode lhs = (SimpleNode)child.jjtGetChild(0);
-    			if (lhs.getId() != JJTFIELDACCESSEXPRESSION) {
-    				// not a mapping
-    				return false;
+    			if (child.getId() != JJTRETURNSTATEMENT) {
+	    			// check if direct mapping
+	    			final SimpleNode lhs = (SimpleNode)child.jjtGetChild(0);
+	    			if (lhs.getId() != JJTFIELDACCESSEXPRESSION) {
+	    				// not a mapping
+	    				return false;
+	    			}
     			}
     		}
     		
@@ -418,6 +423,12 @@ public class RecordTransformFactory {
         if (transform.indexOf(TransformLangExecutor.CTL_TRANSFORM_CODE_ID) != -1) {
         	// new CTL implementation
         	return TRANSFORM_CTL;
+        }
+        
+        if (PATTERN_CTL_CODE.matcher(transform).find() 
+        		|| PATTERN_CTL_PARTITION_CODE.matcher(transform).find()){
+            // clover internal transformation language
+            return TRANSFORM_CTL;
         }
         
         if (PATTERN_TL_CODE.matcher(transform).find() 
