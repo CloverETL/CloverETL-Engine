@@ -26,9 +26,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.channels.Channels;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,7 +36,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
@@ -296,11 +292,11 @@ public class RunGraph extends Node{
 		} 
 		broadcastEOF();
 		
-		if (success) { // only when all graphs return successfully
-			return Result.FINISHED_OK;
-		} else {
-			return Result.ERROR;
+		if (!success) {
+			logger.warn("Some graph(s) finished with error.");
 		}
+		// return FINISHED_OK when some graphs finished with error too
+		return Result.FINISHED_OK;
 	}
 
 	private void writeOutRecord(DataRecord record) throws IOException, 
@@ -402,7 +398,7 @@ public class RunGraph extends Node{
 			process.destroy();
 			return false;					
 		}	
-		
+			
 		if (!runIt) {			
 			outputRecordData.setResult("Aborted");
 			outputRecordData.setDescription("\nSTOPPED");

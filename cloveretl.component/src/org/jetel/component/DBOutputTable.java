@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
@@ -292,7 +293,7 @@ public class DBOutputTable extends Node {
 	 */
 	public DBOutputTable(String id, String dbConnectionName, String[] sqlQuery) {
 		this(id,dbConnectionName);
-		this.sqlQuery=sqlQuery;
+		setSqlQuery(sqlQuery);
 	}
 	
 	/**
@@ -360,7 +361,25 @@ public class DBOutputTable extends Node {
 		this.cloverFields = cloverFields;
 	}
 
+	public String[] getSqlQuery() {
+		return sqlQuery;
+	}
 
+	public void setSqlQuery(String[] sqlQuery) {
+		// filter empty queries
+		ArrayList<String> queries = new ArrayList<String>();
+		for(int i = 0; i < sqlQuery.length; i++) {
+			if (! StringUtils.isEmpty(sqlQuery[i])) {
+				queries.add(sqlQuery[i]);
+			}
+		}
+		this.sqlQuery=queries.toArray(new String[queries.size()]);
+	}
+
+	public void setSqlQuery(String sqlQuery) {
+		this.sqlQuery = StringUtils.isEmpty(sqlQuery) ? null : new String[] { sqlQuery };
+	}
+	
 	/**
 	 *  Description of the Method
 	 *

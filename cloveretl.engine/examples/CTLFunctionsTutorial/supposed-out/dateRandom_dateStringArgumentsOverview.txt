@@ -1,0 +1,10 @@
+2000-12-02;2000-12-18;yyyy-MM-dd;en.US;random_date($0.StartDate,$0.EndDate,$0.Pattern,$0.Locale);Dec 17, 2000;random_date($0.StartDate,$0.EndDate,$0.Pattern);Dec 12, 2000
+2005-08-23;2007-03-28;yyyy-MM-dd;en.GB;random_date($0.StartDate,$0.EndDate,$0.Pattern,$0.Locale);Oct 6, 2006;random_date($0.StartDate,$0.EndDate,$0.Pattern);Nov 11, 2006
+1985-05-14;1988-05-14;yyyy-MM-dd;en.US;random_date($0.StartDate,$0.EndDate,$0.Pattern,$0.Locale);Feb 9, 1987;random_date($0.StartDate,$0.EndDate,$0.Pattern);Oct 8, 1985
+1985-05-14;1988-05-14;yyyy-MM-dd;en.GB;random_date($0.StartDate,$0.EndDate,$0.Pattern,$0.Locale);Jul 17, 1985;random_date($0.StartDate,$0.EndDate,$0.Pattern);Apr 15, 1988
+1985-05-14;1988-05-14;yyyy-MM-dd;en.US;random_date($0.StartDate,$0.EndDate,$0.Pattern,$0.Locale);Jul 12, 1985;random_date($0.StartDate,$0.EndDate,$0.Pattern);Apr 1, 1987
+1985-05-14;1988-05-14;yyyy-MM-dd;en.GB;random_date($0.StartDate,$0.EndDate,$0.Pattern,$0.Locale);Jan 24, 1986;random_date($0.StartDate,$0.EndDate,$0.Pattern);May 11, 1987
+1985-05-14;1988-05-14;yyyy-MM-dd;en.US;random_date($0.StartDate,$0.EndDate,$0.Pattern,$0.Locale);Apr 4, 1988;random_date($0.StartDate,$0.EndDate,$0.Pattern);Aug 24, 1987
+1988-05-14;1997-05-14;yyyy-MM-dd;en.GB;random_date($0.StartDate,$0.EndDate,$0.Pattern,$0.Locale);Sep 20, 1992;random_date($0.StartDate,$0.EndDate,$0.Pattern);Apr 10, 1997
+2000-12-02;2000-12-02;yyyy-MM-dd;en.US;random_date($0.StartDate,$0.EndDate,$0.Pattern,$0.Locale);Dec 2, 2000;random_date($0.StartDate,$0.EndDate,$0.Pattern);Dec 2, 2000
+2000-12-02;2000-12-02;yyyy-MM-dd;en.GB;random_date($0.StartDate,$0.EndDate,$0.Pattern,$0.Locale);Dec 2, 2000;random_date($0.StartDate,$0.EndDate,$0.Pattern);Dec 2, 2000

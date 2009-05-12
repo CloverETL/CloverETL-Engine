@@ -957,7 +957,7 @@ public class CodeParser {
         sourceCode.append("\n\t\t\t// user's code ENDs here !\n");
         
 		sourceCode.append("\t\t} catch(Exception e) {\n");
-        sourceCode.append("\t\t\tthrow new TransformException(\"Error in extern transformation class \" + " + className + ".class.getName() + \": \" + e.getMessage());\n");
+        sourceCode.append("\t\t\tthrow new TransformException(\"Error in transformation class \" + " + className + ".class.getName() + \": \" + e.getMessage(), e);\n");
         sourceCode.append("\t\t}\n");
 		sourceCode.append("\t\treturn ALL;\n");
 		sourceCode.append("\t}\n\n");

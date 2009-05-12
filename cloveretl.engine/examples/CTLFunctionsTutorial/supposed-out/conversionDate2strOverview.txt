@@ -1,0 +1,7 @@
+1970-01-01 01:00:00 001 CET;date2str($0.Date,"MM/dd/yyyy");01/01/1970;date2str($0.Date,"dd.MM.yyyy");01.01.1970
+1972-08-28 01:00:01 003 CET;date2str($0.Date,"MM/dd/yyyy");08/28/1972;date2str($0.Date,"dd.MM.yyyy");28.08.1972
+1978-10-21 01:01:00 129 CET;date2str($0.Date,"MM/dd/yyyy");10/21/1978;date2str($0.Date,"dd.MM.yyyy");21.10.1978
+1989-12-30 02:00:00 298 CET;date2str($0.Date,"MM/dd/yyyy");12/30/1989;date2str($0.Date,"dd.MM.yyyy");30.12.1989
+1996-06-09 03:00:00 999 CEST;date2str($0.Date,"MM/dd/yyyy");06/09/1996;date2str($0.Date,"dd.MM.yyyy");09.06.1996
+2001-01-02 01:00:00 999 CET;date2str($0.Date,"MM/dd/yyyy");01/02/2001;date2str($0.Date,"dd.MM.yyyy");02.01.2001
+2000-02-12 13:17:23 000 CET;date2str($0.Date,"MM/dd/yyyy");02/12/2000;date2str($0.Date,"dd.MM.yyyy");12.02.2000

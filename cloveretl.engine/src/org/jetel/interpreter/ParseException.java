@@ -49,24 +49,11 @@ public class ParseException extends Exception {
 		specialConstructor = false;
 	}
 
-	public ParseException(Token token, String message, Throwable ex) {
+	public ParseException(Token token, String message, Exception ex) {
 		super(message, ex);
 		currentToken = token;
 		specialConstructor = false;
 	}
-
-	public ParseException(Token token, String message, String filename, Throwable ex) {
-		super(message, ex);
-		currentToken = token;
-		specialConstructor = false;
-		this.filename = filename;
-	}
-
-	/**
-	 * If exception is result of parsing "import file" then filename is the name of the file
-	 */
-
-	public String filename;
 
 	/**
 	 * This variable determines which constructor was used to create this object and thereby affects the semantics of
@@ -126,10 +113,7 @@ public class ParseException extends Exception {
 				retval += tokenImage[0];
 				break;
 			}
-			retval += " " + tokenImage[tok.kind];
-			retval += " \"";
 			retval += add_escapes(tok.image);
-			retval += " \"";
 			tok = tok.next;
 		}
 		retval += "\" at line " + currentToken.next.beginLine + ", column " + currentToken.next.beginColumn;
@@ -147,6 +131,8 @@ public class ParseException extends Exception {
 	 * The end of line string for this machine.
 	 */
 	protected String eol = System.getProperty("line.separator", "\n");
+
+	private String filename;
 
 	/**
 	 * Used to convert raw characters to their escaped version when these raw version cannot be used as part of an ASCII
@@ -196,25 +182,13 @@ public class ParseException extends Exception {
 		return retval.toString();
 	}
 
-	/**
-	 * @return the filename
-	 * @since 4.6.2007
-	 */
-	public String getFilename() {
-		return filename;
-	}
-
-	/**
-	 * @param filename
-	 *            the filename to set
-	 * @since 4.6.2007
-	 */
 	public void setFilename(String filename) {
-		this.filename = filename;
+		this.filename = filename;		
 	}
 
-	public void setCurrentToken(Token t) {
-		this.currentToken = t;
+	public void setCurrentToken(Token token) {
+		this.currentToken = token;
 	}
+
 }
 /* JavaCC - OriginalChecksum=2f24dabeb0fac6162163526fed5177c9 (do not edit this line) */

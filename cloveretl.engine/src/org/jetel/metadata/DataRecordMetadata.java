@@ -47,7 +47,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  * 
- * @version 18th March 2009
+ * @version 28th April 2009
  * @since 26th March 2002
  * 
  * @see DataFieldMetadata
@@ -777,8 +777,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		
 		// verify recordType
 		if (recType != DELIMITED_RECORD && recType != FIXEDLEN_RECORD && recType != MIXED_RECORD) {
-			status.add(new ConfigurationProblem("Unknown record type '" + recType + "' in the record metadata element '" + name + "'.",
-					Severity.ERROR, null, Priority.NORMAL));
+			status.add(new ConfigurationProblem("Unknown record type '" + recType + "' in the record metadata element '"
+					+ name + "'.", Severity.ERROR, null, Priority.NORMAL));
 		}
 
 		// verify delimiters - field delimiters
@@ -806,8 +806,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		for (DataFieldMetadata field: fields) {
 			sName = field.getName();
 			if (setName.contains(sName)) {
-				status.add(new ConfigurationProblem("Field name '" + field.getName() + "' in the record element '" + name + "' is defined more than once!",
-						Severity.ERROR, null, Priority.NORMAL));
+				status.add(new ConfigurationProblem("Field name '" + field.getName() + "' in the record element '"
+						+ name + "' is defined more than once!", Severity.ERROR, null, Priority.NORMAL));
 			} else {
 				setName.add(sName);
 			}
@@ -852,8 +852,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 */
 	private void verifyFieldSize(DataFieldMetadata field, ConfigurationStatus status) {
 		if (field.getSize() <= 0) {
-			status.add(new ConfigurationProblem("Field size '" + field.getSize() + "' for the field '" + field.getName() + "' in the record element '" + name + "' has wrong number!",
-					Severity.ERROR, null, Priority.NORMAL));
+			status.add(new ConfigurationProblem("Field size '" + field.getSize() + "' for the field '" + field.getName()
+					+ "' in the record element '" + name + "' has wrong number!", Severity.ERROR, null, Priority.NORMAL));
 		}
 	}
 	
@@ -866,8 +866,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		if (field.isEofAsDelimiter()) return;
 		String[] fieldDelimiters = field.getDelimiters();
 		if (fieldDelimiters == null || fieldDelimiters.length == 0) {
-			status.add(new ConfigurationProblem("Field delimiter for the field '" + field.getName() + "' in the record element '" + name + "' not found!",
-					Severity.ERROR, null, Priority.NORMAL));
+			status.add(new ConfigurationProblem("Field delimiter for the field '" + field.getName() +
+					"' in the record element '" + name + "' not found!", Severity.ERROR, null, Priority.NORMAL));
 		}
 	}
 
@@ -903,9 +903,9 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		int[] indices = new int[fieldNames.length];
 
 		for (int i = 0; i < fieldNames.length; i++) {
-			indices[i] = getFieldPosition(name);
+			indices[i] = getFieldPosition(fieldNames[i]);
 
-			if (indices[i] == -1) {
+			if (indices[i] < 0) {
 				throw new RuntimeException("No such field name found for: '" + name + "'");
 			}
 		}

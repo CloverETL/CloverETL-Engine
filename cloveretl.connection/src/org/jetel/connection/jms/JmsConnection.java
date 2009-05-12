@@ -122,6 +122,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 	private Session session = null;
 	private Destination destination = null;
 	private URL[] librariesUrls = null;
+	private URL contextURL;
 
 	public JmsConnection(String id, String iniCtxFtory, String providerUrl, String conFtory,
 			String user, String pwd, String destId, boolean passwordEncrypted, String libraries) {
@@ -203,7 +204,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 		try {
 			
 			if (libraries != null)
-				this.librariesUrls = getLibrariesURL( libraries );
+				this.librariesUrls = getLibrariesURL( contextURL, libraries );
 			Context ctx = null;
 
 			ClassLoader prevCl = null;
@@ -458,22 +459,26 @@ public class JmsConnection extends GraphElement implements IConnection {
 		return sb.toString();
 	}
 	
+	public static URL[] getLibrariesURL(String libraryPath) {
+		return getLibrariesURL(null, libraryPath);
+	}
+	
 	/**
 	 * 
 	 * @param libraryPath
 	 * @return
 	 */
-	public static URL[] getLibrariesURL(String libraryPath) {
+	public static URL[] getLibrariesURL(URL contextURL, String libraryPath) {
 		String[] libs = getLibraries(libraryPath);
 		List<URL> result = new ArrayList<URL>();
 		for (int i=0; i< libs.length; i++) {
 			String libraryURLString = libs[i];
 			try {
-				result.add(new URL(libraryURLString));
+				result.add(new URL(contextURL, libraryURLString));
 			} catch (MalformedURLException e) {
 				// maybe it is ULR created via File class (no protocol)
 				try {
-					result.add( new File(libraryURLString).toURI().toURL() );
+					result.add(new File(new URL(contextURL, "file:" + libraryURLString).getFile()).toURI().toURL());
 				} catch (MalformedURLException e1) {
 				}
 			}
@@ -500,4 +505,8 @@ public class JmsConnection extends GraphElement implements IConnection {
 		return (String[]) newLibraries.toArray(new String[newLibraries.size()]);
 	}
 
+	public void setContextURL(URL contextURL) {
+		this.contextURL = contextURL;
+	}
+	
 }

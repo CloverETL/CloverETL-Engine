@@ -278,6 +278,10 @@ public class OracleDataWriter extends BulkLoader {
 	protected void deleteTempFiles() {
 		super.deleteTempFiles();
 		deleteFile(controlFileName);
+		if (isDataWrittenToPort && alreadyExecuted) {
+			deleteTempFile(badFile, badFileName, false);
+			deleteTempFile(discardFile, discardFileName, false);
+		}
 	}
 
     @Override

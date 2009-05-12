@@ -21,7 +21,6 @@ package org.jetel.component;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -835,7 +834,7 @@ public class MsSqlDataWriter extends BulkLoader {
 			}
 
 			if (isErrFileFromUser) {
-				errFileName = properties.getProperty(MS_SQL_ERR_FILE_PARAM);
+				errFileName = getFilePath(properties.getProperty(MS_SQL_ERR_FILE_PARAM));
 			} else if (isDataWrittenToPort) {
 				errFileName = createTempFile(ERROR_FILE_NAME_PREFIX).getCanonicalPath();
 			}
@@ -988,10 +987,7 @@ public class MsSqlDataWriter extends BulkLoader {
 			return;
 		}
 
-		File dataFile = new File(errFileName);
-		if (!dataFile.delete()) {
-			logger.warn("Temp error file was not deleted.");
-		}
+		deleteFile(errFileName);
 	}
 
 	/**

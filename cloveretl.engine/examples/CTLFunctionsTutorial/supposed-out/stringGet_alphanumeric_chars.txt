@@ -1,0 +1,2 @@
++he llo123;get_alphanumeric_chars($0.Arg);hello123;get_alphanumeric_chars($0.Arg,true,false);hello;get_alphanumeric_chars($0.Arg,false,true);123
+a	hoj32,1;get_alphanumeric_chars($0.Arg);ahoj321;get_alphanumeric_chars($0.Arg,true,false);ahoj;get_alphanumeric_chars($0.Arg,false,true);321

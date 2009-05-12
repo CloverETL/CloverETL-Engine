@@ -163,7 +163,9 @@ public class MetadataXsd extends MXAbstract {
 		Node restParent;
 		restParent = getNode(node, NAMESPACES, XSD_RESTRICTION);
 		String sValue = getAttributeValue(restParent, BASE);
-		char type = namesPrimitive.get(sValue != null ? sValue : sType);
+		
+		Character type = namesPrimitive.get(sValue != null ? sValue : sType);
+		if (type == null) throw new RuntimeException("Unknown primitive data type '" + (sValue != null ? sValue : sType));
 		
 		Node rest;
 		switch (type) {

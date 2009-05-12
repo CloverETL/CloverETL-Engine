@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="windows-1250"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE TestScenario SYSTEM "testscenario.dtd">
 
 <TestScenario ident="simple-examples" description="Engine simple examples" useJMX="true">    

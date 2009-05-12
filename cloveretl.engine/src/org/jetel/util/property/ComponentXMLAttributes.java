@@ -639,6 +639,18 @@ public class ComponentXMLAttributes {
 	}
 
 	/**
+	 * Resolve references with explicit resolveSpecChars
+	 * @param input
+	 * @param resolveSpecChars
+	 * @return
+	 * @throws AttributeNotFoundException
+	 */
+	public String resolveReferences(String input, boolean resolveSpecChars) throws AttributeNotFoundException{
+	    return refResolver.resolveRef(input, resolveSpecChars);
+	}
+	
+	
+	/**
 	 * Determines whether resolving references is enabled/disabled.
 	 * 
 	 * @return	true if resolving references is enables.

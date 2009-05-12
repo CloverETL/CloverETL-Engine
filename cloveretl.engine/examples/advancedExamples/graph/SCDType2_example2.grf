@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed May 02 10:25:31 CEST 2007" guiVersion="0.0.0.devel" id="1204806808449" licenseType="Evaluation license." modified="Tue Apr 21 13:42:10 CEST 2009" modifiedBy="avackova" name="SCDDataIntersection" revision="1.297">
+<Graph author="avackova" created="Wed May 02 10:25:31 CEST 2007" guiVersion="0.0.0.devel" id="1204806808449" licenseType="Evaluation license." modified="Fri Apr 24 13:10:48 CEST 2009" modifiedBy="avackova" name="SCDDataIntersection" revision="1.299">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="MaxKeys" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -46,8 +46,8 @@
 </Metadata>
 <Property id="GraphParameter0" name="VALID_FROM" value="01012009"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
-<Sequence cached="1" fileURL="${SEQ_DIR}/Internal_key_seq.dat" id="Sequence0" name="Internal_key" start="1" step="1" type="SIMPLE_SEQUENCE"/>
 <Sequence cached="1" fileURL="seq/Product_id_seq.dat" id="Sequence1" name="Product_id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="1" fileURL="${SEQ_DIR}/Internal_key_seq.dat" id="Sequence0" name="Internal_key" start="1" step="1" type="SIMPLE_SEQUENCE"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="131" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="What are the maximum values of &quot;Product_id&quot; and &quot;Internal_key&quot;?" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="449" x="148" y="480">
 <attr name="text"><![CDATA[
 Here we count maximum values of "Product_id" and "Incremental_key". 
@@ -262,7 +262,7 @@ function transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="498" guiY="396" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node debugFilename="${DATAOUT_DIR}/new.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="618" guiY="-85" id="TRASH0" type="TRASH"/>
+<Node debugFilename="${DATAOUT_DIR}/invalid.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="618" guiY="-85" id="TRASH0" type="TRASH"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/Product_dim_new.xls" guiHeight="0" guiName="Product dim" guiWidth="0" guiX="-214" guiY="278" id="XLS_READER0" metadataRow="1" type="XLS_READER"/>
 <Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
 <Edge debugMode="true" fromNode="DATA_INTERSECTION0:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (only in A)" toNode="REFORMAT1:0"/>

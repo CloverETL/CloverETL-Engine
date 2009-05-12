@@ -1,8 +1,7 @@
 package org.jetel.util;
 
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -16,10 +15,10 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.StringDataField;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.provider.FormatterProvider;
-import org.jetel.data.primitive.ByteArray;
 import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.OutputPort;
@@ -27,7 +26,7 @@ import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.dictionary.IDictionaryType;
 import org.jetel.graph.dictionary.WritableChannelDictionaryType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.PortWriting.DataPreparedListener;
+import org.jetel.util.bytes.RestrictedByteArrayOutputStream;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -74,7 +73,6 @@ public class TargetFile {
 	private OutputPort outputPort;
 	private DataRecord record;
 	private DataField field; 
-    private PipedInputStream writeIn;
 	private boolean isStringDataField;
 
 	private String charset;
@@ -83,8 +81,8 @@ public class TargetFile {
 	private ProcessingType dictProcesstingType;
 	private WritableByteChannel dictOutChannel;
 	private ArrayList<byte[]> dictOutArray;
-	private boolean wait4Finishing;
-	private PortWriting portWriting;
+	private boolean fieldOrDictOutput;
+	private RestrictedByteArrayOutputStream bbOutputStream;
 
 	private int compressLevel = -1;
 
@@ -125,7 +123,6 @@ public class TargetFile {
      */
     public void init() throws IOException, ComponentNotReadyException {
     	if (charset == null) charset = DEFAULT_CHARSET;
-    	portWriting = new PortWriting();
     	if (fileURL != null && fileURL.startsWith(PORT_PROTOCOL)) {
         	initPortFields();
     	} else if (outputPort != null) {
@@ -275,7 +272,7 @@ public class TargetFile {
     	}
     	
         //write footer to the previous destination if it is not first call of this method
-        if(byteChannel != null || writeIn != null) {
+        if(byteChannel != null || bbOutputStream != null) {
 //        	formatter.writeFooter();	// issue 1503
         	formatter.finish();
         }
@@ -289,12 +286,12 @@ public class TargetFile {
     public void finish() throws IOException{
     	formatter.finish();
     	formatter.close();
-    	wait4Finishing();
+    	write2FieldOrDict();
     }
     
-    private void wait4Finishing() throws IOException {
-    	if (wait4Finishing) {
-    		portWriting.wait4Finnishing();
+    private void write2FieldOrDict() throws IOException {
+    	if (fieldOrDictOutput) {
+        	write2OutportOrDictionary(bbOutputStream.toByteArray());
     		try {
     			// there is only one target for port and dictionary protocol
 				if (outputPort != null) outputPort.eof();
@@ -304,13 +301,14 @@ public class TargetFile {
     	}
     }
     
-    private void write2OutportOrDictionary(ByteArray aBytes) {
-    	if (writeIn != null) {
+    private void write2OutportOrDictionary(byte[] aData) throws UnsupportedEncodingException {
+    	if (bbOutputStream != null) {
             if (dictProcesstingType != null) {
-           		write2Dictionary(aBytes);
+           		write2Dictionary(aData); 
             }
             if (field != null) {
-       			field.setValue(isStringDataField ? aBytes.toString(charset) : aBytes.getValueDuplicate());
+            	if (aData.length == 0) return;
+       			field.setValue(isStringDataField ? new String(aData, charset) : aData);
        	        //broadcast the record to all connected Edges
        	        try {
        	        	outputPort.writeRecord(record.duplicate());
@@ -322,17 +320,19 @@ public class TargetFile {
     	}
     }
     
-    private void write2Dictionary(ByteArray aBytes) {
+    private void write2Dictionary(byte[] aData) {
     	if (dictOutChannel != null) {
     		try {
-    			final ByteBuffer buffer = aBytes.getValueAsBuffer();
-				dictOutChannel.write(buffer);
+    	        ByteBuffer ret = ByteBuffer.allocate(aData.length);
+    	        ret.put(aData, 0, aData.length);
+    	        ret.flip();
+				dictOutChannel.write(ret);
     			dictOutChannel.close();
     		} catch (IOException e) {
     			throw new RuntimeException(e);
     		}
     	} else if (dictOutArray != null) {
-    		dictOutArray.add(aBytes.getValueDuplicate());
+    		dictOutArray.add(aData);
     	}
     }
     
@@ -373,17 +373,16 @@ public class TargetFile {
      * @throws IOException
      */
     private void setOutput() throws IOException {
-    	if (wait4Finishing = (field != null || dictProcesstingType != null)) {
-            writeIn = new PipedInputStream();
-            PipedOutputStream readOut = new PipedOutputStream(writeIn);
-            portWriting.setDataPreparedListener(new DataPreparedListener() {
-				@Override
-				public void dataPrepared(ByteArray bytes) {
-					write2OutportOrDictionary(bytes);
-				}
-			});
-            portWriting.processData(writeIn);
-    		setDataTarget(Channels.newChannel(readOut));
+    	if (fieldOrDictOutput = (field != null || dictProcesstingType != null)) {
+        	if (bbOutputStream != null) {
+        		write2OutportOrDictionary(bbOutputStream.toByteArray());
+            	bbOutputStream.reset();
+        	} else {
+            	bbOutputStream = new RestrictedByteArrayOutputStream();
+            	if (field != null) bbOutputStream.setMaxArrayLength(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
+        	}
+    		setDataTarget(Channels.newChannel(bbOutputStream));
+    		
     	} else if (fileNames != null) {
             String fName = fileNames.next();
             if (fileName != null) fName = addUnassignedName(fName);
@@ -393,6 +392,7 @@ public class TargetFile {
         	} else {
            		setDataTarget(FileUtils.getFileURL(contextURL, fName));
         	}
+        	
         } else {
         	byteChannel = channels.next();
         	setDataTarget(byteChannel);

@@ -1,0 +1,4 @@
+12.00;10;num2str($0.String,$0.Radix);12.00
+2.78;10;num2str($0.String,$0.Radix);2.78
+1.56;10;num2str($0.String,$0.Radix);1.56
+3.13;10;num2str($0.String,$0.Radix);3.13

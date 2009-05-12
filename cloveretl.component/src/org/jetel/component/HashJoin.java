@@ -493,13 +493,20 @@ public class HashJoin extends Node {
 		for (int idx = 0; idx < slaveCnt + 1; idx++) {
 			inRecords[idx] = NullRecord.NULL_RECORD;
 		}
+		if (slaveDuplicates) flushOrphanedMulti();
+		else flushOrphanedSingle();
+	}
+
+	private void flushOrphanedMulti() throws TransformException, IOException, InterruptedException {
+		MapMultiItem mapItem;
 		for (int slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
 			for (Entry<HashKey, MapItem> pair: hashMap[slaveIdx].entrySet()) {
-				if (pair.getValue().indicator && slaveDuplicates) {
+				mapItem = (MapMultiItem)pair.getValue();
+				if (mapItem.indicator && slaveDuplicates) {
 					continue;	// all slave records in collection were already used
 				}
-				Iterator<DataRecord> itor = pair.getValue().records.iterator();
-				if (pair.getValue().indicator) {
+				Iterator<DataRecord> itor = mapItem.records.iterator();
+				if (mapItem.indicator) {
 					itor.next();	// first slave record in collection was already used
 				}
 				// process unused records
@@ -507,21 +514,42 @@ public class HashJoin extends Node {
 					if (!runIt) {
 						return;
 					}
-					DataRecord record = itor.next();
-					inRecords[FIRST_SLAVE_PORT + slaveIdx] = record;
-					int transformResult = transformation.transform(inRecords, outRecords);
-					if (transformResult < 0) {
-						handleException(transformation, transformResult, masterCounter);
-					}else{
-						outPort.writeRecord(outRecords[0]);
-					}
-					outRecords[0].reset();
+					transformAndWriteRecord(itor.next(), slaveIdx);
 				} // for 
 			} // for
 			inRecords[FIRST_SLAVE_PORT + slaveIdx] = null;
 		} // for all slaves
 	}
 
+	private void flushOrphanedSingle() throws TransformException, IOException, InterruptedException {
+		MapSingleItem mapItem;
+		for (int slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
+			for (Entry<HashKey, MapItem> pair: hashMap[slaveIdx].entrySet()) {
+				mapItem = (MapSingleItem)pair.getValue();
+				if (mapItem.indicator || (mapItem.indicator && slaveDuplicates)) {
+					continue;	// all slave records in collection were already used
+				}
+				// process unused records
+				if (!runIt) {
+					return;
+				}
+				transformAndWriteRecord(mapItem.dataRecord, slaveIdx);
+			} // for
+			inRecords[FIRST_SLAVE_PORT + slaveIdx] = null;
+		} // for all slaves
+	}
+
+	private void transformAndWriteRecord(DataRecord record, int slaveIdx) throws TransformException, IOException, InterruptedException {
+		inRecords[FIRST_SLAVE_PORT + slaveIdx] = record;
+		int transformResult = transformation.transform(inRecords, outRecords);
+		if (transformResult < 0) {
+			handleException(transformation, transformResult, masterCounter);
+		}else{
+			outPort.writeRecord(outRecords[0]);
+		}
+		outRecords[0].reset();
+	}
+	
 	/**
 	 * Reads all driver records and performs transformation for them
 	 * @throws TransformException
@@ -538,18 +566,24 @@ public class HashJoin extends Node {
 		}
 
 		masterCounter = 0;
+		if (slaveDuplicates) flushMulti(driverRecord, new MapMultiItem[slaveCnt], hashKey); 
+		else flushSingle(driverRecord,  new MapSingleItem[slaveCnt], hashKey);
+		
+	}
+	
+	private void flushMulti(DataRecord driverRecord, MapMultiItem[] slaveRecords, HashKey[] hashKey) throws TransformException, IOException, InterruptedException {
 		while (runIt) {
 			int slaveIdx;
 			if (driverPort.readRecord(driverRecord) == null) { // no more input data
 				break;
 			}
 			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
-				slaveRecords[slaveIdx] = hashMap[slaveIdx].get(hashKey[slaveIdx]);
+				slaveRecords[slaveIdx] = (MapMultiItem)hashMap[slaveIdx].get(hashKey[slaveIdx]);
 				if (slaveRecords[slaveIdx] == null) {
 					if (join == Join.INNER) {	// missing slave
 						break;
 					}
-					slaveRecords[slaveIdx] = new MapItem();
+					slaveRecords[slaveIdx] = new MapMultiItem();
 					slaveRecords[slaveIdx].records.add(NullRecord.NULL_RECORD);
 				}
 				slaveRecords[slaveIdx].indicator = true;
@@ -563,6 +597,7 @@ public class HashJoin extends Node {
 			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
 				cnt[slaveIdx] = slaveRecords[slaveIdx].records.size();
 			}
+			
 			for (int recIdx = 0; true; recIdx++) {
 				int q = recIdx;
 				for (slaveIdx = 0; slaveIdx < slaveCnt - 1; slaveIdx++) {					
@@ -582,11 +617,64 @@ public class HashJoin extends Node {
 				}
 				outRecords[0].reset();
 	 		}
+
 			SynchronizeUtils.cloverYield();
 			masterCounter++;
 		} // while		
 	}
 
+	private void flushSingle(DataRecord driverRecord, MapSingleItem[] slaveRecords, HashKey[] hashKey) throws TransformException, IOException, InterruptedException {
+		while (runIt) {
+			int slaveIdx;
+			if (driverPort.readRecord(driverRecord) == null) { // no more input data
+				break;
+			}
+			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
+				slaveRecords[slaveIdx] = (MapSingleItem)hashMap[slaveIdx].get(hashKey[slaveIdx]);
+				if (slaveRecords[slaveIdx] == null) {
+					if (join == Join.INNER) {	// missing slave
+						break;
+					}
+					slaveRecords[slaveIdx] = new MapSingleItem();
+					slaveRecords[slaveIdx].dataRecord = NullRecord.NULL_RECORD;
+				}
+				slaveRecords[slaveIdx].indicator = true;
+			}
+			if (slaveIdx < slaveCnt) {	// missing slaves
+				continue;	// read next driver
+			}
+
+			// we need to generate all combinations of slaves 
+			int[] cnt = new int[slaveCnt];
+			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
+				cnt[slaveIdx] = slaveRecords[slaveIdx].dataRecord == null ? 0 : 1;
+			}
+			
+			for (int recIdx = 0; true; recIdx++) {
+				int q = recIdx;
+				for (slaveIdx = 0; slaveIdx < slaveCnt - 1; slaveIdx++) {					
+					inRecords[1 + slaveIdx] = slaveRecords[slaveIdx].dataRecord;
+					q /= cnt[slaveIdx];
+				}
+				if (q >= cnt[slaveCnt - 1]) { // all combinations exhausted
+					break;
+				}
+				inRecords[1 + slaveCnt - 1] = slaveRecords[slaveIdx].dataRecord;
+
+				int transfrormResult = transformation.transform(inRecords, outRecords);
+				if (transfrormResult < 0) {
+					handleException(transformation, transfrormResult, masterCounter);
+				}else{
+					outPort.writeRecord(outRecords[0]);
+				}
+				outRecords[0].reset();
+	 		}
+				
+			SynchronizeUtils.cloverYield();
+			masterCounter++;
+		} // while		
+	}
+	
 	private void handleException(RecordTransform transform, int transformResult, int recNo) throws TransformException, IOException{
 		ErrorAction action = errorActions.get(transformResult);
 		if (action == null) {
@@ -879,17 +967,6 @@ public class HashJoin extends Node {
     			}
     		}
 
-    		// allocate maps		
-    		try {
-    			hashMap = (HashMap<HashKey, MapItem>[])new HashMap[slaveCnt];
-    			for (int idx = 0; idx < slaveCnt; idx++) {
-    				hashMap[idx] = new HashMap<HashKey, MapItem>(hashTableInitialCapacity);
-    			}
-    		} catch (OutOfMemoryError ex) {
-    			logger.fatal(ex);
-    			throw new ComponentNotReadyException("Can't allocate HashMap of size: "	+ hashTableInitialCapacity);
-    		}
-
     		if (errorActionsString != null) {
 				ErrorAction.checkActions(errorActionsString);
 			}
@@ -928,14 +1005,23 @@ public class HashJoin extends Node {
 	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
 	 *
 	 */
-	private static class MapItem {
-		public ArrayList<DataRecord> records;
+	private static interface MapItem {
+	}
+	
+	private static class MapMultiItem implements MapItem {
 		public boolean indicator;
-		public MapItem() {
+		public List<DataRecord> records;
+		
+		public MapMultiItem() {
 			records = new ArrayList<DataRecord>(1);
-			indicator = false;
 		}
 	}
+
+	private static class MapSingleItem implements MapItem {
+		public boolean indicator;
+		public DataRecord dataRecord;
+	}
+
 	
 	/**
 	 * Reads records from one slave input and stores them to appropriate data structures.
@@ -958,33 +1044,54 @@ public class HashJoin extends Node {
 		}
 		
 		public void run() {
+			DataRecord record = new DataRecord(metadata);
+			record.init();
+			
 			while (runIt) {
 				try {
-					DataRecord record = new DataRecord(metadata);
-					record.init();
 					if (inPort.readRecord(record) == null) { // no more input data
 						return;
 					}
 					HashKey key = new HashKey(recKey, record);
-					MapItem item = map.get(key);
-					if (item == null) { // this is first record associated with current key
-						// create map item
-						item = new MapItem();
-						// put it into map
-						map.put(key, item);
-					}
-					if (item.records.isEmpty() || slaveDuplicates) {
-					    item.records.add(record);
-					}
+					if (slaveDuplicates) putMulti2Map(record, key);
+					else putSimple2Map(record, key);
 				} catch (InterruptedException e) {
 					logger.error(getId() + ": thread forcibly aborted", e);
 					return;
 				} catch (IOException e) {
 					logger.error(getId() + ": thread failed", e);
 					return;
-				}					
+				}
+				record = record.duplicate();
 			} // while
 		}
+
+		private void putSimple2Map(DataRecord record, HashKey key) {
+			MapSingleItem item = (MapSingleItem)map.get(key);
+			if (item == null) { // this is first record associated with current key
+				// create map item
+				item = new MapSingleItem();
+				// put it into map
+				map.put(key, item);
+			}
+			if (item.dataRecord == null || slaveDuplicates) {
+				item.dataRecord = record;
+			}
+		}
+		
+		private void putMulti2Map(DataRecord record, HashKey key) {
+			MapMultiItem item = (MapMultiItem)map.get(key);
+			if (item == null) { // this is first record associated with current key
+				// create map item
+				item = new MapMultiItem();
+				// put it into map
+				map.put(key, item);
+			}
+			if (item.records.isEmpty() || slaveDuplicates) {
+				item.records.add(record);
+			}
+		}
+		
 	}
 
 	public String getCharset() {

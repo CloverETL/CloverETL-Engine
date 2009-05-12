@@ -1,0 +1,2 @@
+Nancy Davolio;2;left($0.Arg,$0.AmountOfCharacters);Na
+Andrew Fuller;8;left($0.Arg,$0.AmountOfCharacters);Andrew F

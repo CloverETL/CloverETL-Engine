@@ -1,0 +1,16 @@
+CustomerID;CustomerState;CustomerSurname;CustomerFirstname
+1;Virginia;Driggers;Tauni
+2;Montana;Keane;Wathalee
+3;South Carolina;Barile;Marlowe
+4;Pennsylvania;Dare;Annabelle
+5;Ohio;Mc Guigan;Jeannet
+6;Nevada;Bliss;Marinell
+7;Tennessee;Pumphrey;Mandi
+8;Maine;Ivner;Romeo
+9;Alaska;Hild;Mabel
+10;Missouri;Son;Michele
+11;Oregon;Pennington;Emilo
+12;Wisconsin;Mc Gary;Marliyn
+13;California;Yellman;Noreen
+14;Michigan;Segura;H.
+15;Maryland;Frinton;Karie
