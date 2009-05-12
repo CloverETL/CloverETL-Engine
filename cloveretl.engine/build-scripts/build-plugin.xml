@@ -255,7 +255,10 @@
 			<keep name="org.jetel.sequence.PrimitiveSequence"><field access="protected public"/><method access="protected public"/></keep>
 
 			<keep name="com.opensys.cloveretl.data.parser.MultiLevelSelector"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.data.parser.AbstractMultiLevelSelector"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.opensys.cloveretl.data.parser.PrefixMultiLevelSelector"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.data.parser.ParentChildSelector"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.data.parser.ExampleMultiLevelSelector"><field access="protected public"/><method access="protected public"/></keep>
 			
 			<keep name="com.opensys.cloveretl.lookup.PersistentLookupTable"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.opensys.cloveretl.lookup.PersistentLookupTable$SerializableKey"><field access="protected public"/><method access="protected public"/></keep>
@@ -365,11 +368,11 @@
 				>
     		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
     		<sysproperty key="file.encoding" value="UTF-8" />
-			<env key="cloveretl.plugins" value="${dir.coverage.dist}/plugins"/>
+			<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 			<classpath path="${cp.compile}">
 				<pathelement path="${dir.classestest}"/>
 				<pathelement path="${dir.engine.classestest}"/>
-				<fileset dir="${dir.coverage.dist}/plugins/${plugin.dir.name}/">
+				<fileset dir="${test.cloveretl.plugins}/${plugin.dir.name}/">
 					<include name="**/*.jar"/>
 				</fileset>
 				<fileset dir="${dir.engine.classestest}">

@@ -7,6 +7,22 @@
  
 */
 
+
+/*
+ * Generated ParseException.java must be modified in order to report only one erroneous token.
+ * Update getMessge() method to contain only
+ 		for (int i = 0; i < maxSize; i++) {
+			if (i != 0)
+				retval += " ";
+			if (tok.kind == 0) {
+				retval += tokenImage[0];
+				break;
+			}
+			retval += add_escapes(tok.image);
+			tok = tok.next;
+		}
+ *
+ */
 options {
    MULTI=true;
    STATIC=false; 

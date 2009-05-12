@@ -99,6 +99,35 @@ abstract public class MXAbstract {
 			namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + primitiveNames.get(ch), ch);
 			primitiveNames.put(ch, NAMESPACES[0] + NAMESPACE_DELIMITER + primitiveNames.get(ch));
 		}
+		
+		namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + "precisionDecimal", DataFieldMetadata.DECIMAL_FIELD);
+		namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + "precisionDecimal", DataFieldMetadata.DECIMAL_FIELD);
+		namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + "float", DataFieldMetadata.NUMERIC_FIELD);
+		namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + "float", DataFieldMetadata.NUMERIC_FIELD);
+		namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + "double", DataFieldMetadata.NUMERIC_FIELD);
+		namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + "double", DataFieldMetadata.NUMERIC_FIELD);
+		namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + "duration", DataFieldMetadata.LONG_FIELD);
+		namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + "duration", DataFieldMetadata.LONG_FIELD);
+		namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + "time", DataFieldMetadata.DATE_FIELD);
+		namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + "time", DataFieldMetadata.DATE_FIELD);
+		namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + "hexBinary", DataFieldMetadata.BYTE_FIELD);
+		namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + "hexBinary", DataFieldMetadata.BYTE_FIELD);
+		namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + "anyURI", DataFieldMetadata.STRING_FIELD);
+		namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + "anyURI", DataFieldMetadata.STRING_FIELD);
+		namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + "gYearMonth", DataFieldMetadata.INTEGER_FIELD);
+		namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + "gYearMonth", DataFieldMetadata.INTEGER_FIELD);
+		namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + "gYear", DataFieldMetadata.INTEGER_FIELD);
+		namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + "gYear", DataFieldMetadata.INTEGER_FIELD);
+		namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + "gMonthDay", DataFieldMetadata.INTEGER_FIELD);
+		namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + "gMonthDay", DataFieldMetadata.INTEGER_FIELD);
+		namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + "gDay", DataFieldMetadata.INTEGER_FIELD);
+		namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + "gDay", DataFieldMetadata.INTEGER_FIELD);
+		namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + "gMonth", DataFieldMetadata.INTEGER_FIELD);
+		namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + "gMonth", DataFieldMetadata.INTEGER_FIELD);
+		namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + "QName", DataFieldMetadata.STRING_FIELD);
+		namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + "QName", DataFieldMetadata.STRING_FIELD);
+		namesPrimitive.put(NAMESPACES[0] + NAMESPACE_DELIMITER + "NOTATION", DataFieldMetadata.STRING_FIELD);
+		namesPrimitive.put(NAMESPACES[1] + NAMESPACE_DELIMITER + "NOTATION", DataFieldMetadata.STRING_FIELD);
 	}
 	
 }

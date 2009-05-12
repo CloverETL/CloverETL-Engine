@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation license." modified="Wed Apr 22 09:28:15 CEST 2009" modifiedBy="cloveruser" name="ReadingXMLExtract" revision="1.171">
+<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation license." modified="Thu May 07 11:54:20 CEST 2009" modifiedBy="avackova" name="ReadingXMLExtract" revision="1.175">
 <Global>
 <Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
 <Metadata fileURL="meta/Spouses.fmt" id="Metadata2"/>
@@ -22,8 +22,8 @@ More detailed information about this graph can be found in the "readme.html" fil
 <Node dedupKey="EmployeeID;SpouseName" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="537" guiY="449" id="DEDUP1" keep="first" type="DEDUP"/>
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="371" guiY="317" id="EXT_SORT0" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="337" guiY="450" id="EXT_SORT1" sortKey="EmployeeID(a);SpouseName(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileURL="${DATATMP_DIR}/TransactionsFamily.xml" guiHeight="0" guiName="TransactionsFamily" guiWidth="0" guiX="52" guiY="408" id="XML_XPATH_READER0" type="XML_XPATH_READER">
-<attr name="mapping"><![CDATA[<Context xpath="/Transactions/transactions" outPort="0">
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/TransactionsFamily???.xml" guiHeight="0" guiName="TransactionsFamily" guiWidth="0" guiX="52" guiY="408" id="XML_XPATH_READER0" type="XML_XPATH_READER">
+<attr name="mapping"><![CDATA[<Context xpath="/transactions" outPort="0">
     <Context xpath="children" outPort="1" parentKey="EmployeeID" generatedKey="ParentID"/>
     <Context xpath="spouse" outPort="2" parentKey="EmployeeID" generatedKey="EmployeeID"/>
 </Context>

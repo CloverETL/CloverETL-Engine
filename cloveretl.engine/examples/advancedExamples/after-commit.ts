@@ -31,7 +31,7 @@
     </FunctionalTest>
 	
     <FunctionalTest ident="SCDType2_example2" graphFile="graph/SCDType2_example2.grf">
-        <FlatFile outputFile="data-out/new.txt" supposedFile="supposed-out/empty.txt"/>
+        <FlatFile outputFile="data-out/invalid.txt" supposedFile="supposed-out/empty.txt"/>
         <FlatFile outputFile="data-out/NewProductsWithNewDescription.txt" supposedFile="supposed-out/NewProductsWithNewDescription.txt"/>
         <FlatFile outputFile="data-out/OriginalProductsWithNewDescription.txt" supposedFile="supposed-out/OriginalProductsWithNewDescription.txt"/>
         <FlatFile outputFile="data-out/OriginalProductsWithOriginalDescription.txt" supposedFile="supposed-out/OriginalProductsWithOriginalDescription.txt"/>

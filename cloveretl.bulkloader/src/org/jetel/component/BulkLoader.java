@@ -532,11 +532,22 @@ public abstract class BulkLoader extends Node {
 	 * @param commandURL
 	 */
 	protected static void deleteTempFile(File file, String fileURL) {
+		deleteTempFile(file, fileURL, true);
+	}
+	
+	/**
+	 * Delete file if the file is temporary.
+	 * File is temporary when fileURL parameter isn't defined. 
+	 * 
+	 * @param commandFile
+	 * @param commandURL
+	 */
+	protected static void deleteTempFile(File file, String fileURL, boolean warn) {
 		if (file == null) {
 			return;
 		}
 
-		if (StringUtils.isEmpty(fileURL) && !file.delete()) {
+		if (StringUtils.isEmpty(fileURL) && !file.delete() && warn) {
 			logger.warn("Temp data file was not deleted.");
 		}
 	}

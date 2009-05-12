@@ -1,0 +1,4 @@
+Nancy;NYSIIS($0.Arg);NANCY
+Davolio;NYSIIS($0.Arg);DAVAL
+Andrew;NYSIIS($0.Arg);ANDR
+Fuller;NYSIIS($0.Arg);FALAR

@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700397062" licenseType="Evaluation license." modified="Mon Mar 23 17:19:55 CET 2009" modifiedBy="cloveruser" name="dateToday" revision="1.17">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700397062" licenseType="Evaluation license." modified="Mon May 11 13:56:34 CEST 2009" modifiedBy="avackova" name="dateToday" revision="1.29">
 <Global>
-<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="nothing" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="nothing" type="string"/>
-</Record>
-</Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="todayOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field format="yyyy-MM-dd, hh:mm:ss z" name="Function" type="string"/>
@@ -19,24 +14,18 @@ The today() function accepts no argument and returns current date and time.]]></
 </Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="81" guiY="240" id="DATA_GENERATOR0" recordsNumber="1" type="DATA_GENERATOR"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/data_today.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="473" guiY="240" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="273" guiY="240" id="REFORMAT1" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="81" guiY="240" id="DATA_GENERATOR0" recordsNumber="1" type="DATA_GENERATOR">
+<attr name="generate">
+//#TL
 
-// Transforms input record into output record.
-function transform() {
-	$0.Function := "today()";
+// Generates output record.
+function generate() {
+	$0.Function := 'today()';
 	$0.Today := today();
 }
-// Called during component initialization.
-// function init() {}
-
-// Called after the component finishes.
-// function finished() {}
-]]></attr>
+</attr>
 </Node>
-<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
-<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/data_today.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="473" guiY="240" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Edge fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

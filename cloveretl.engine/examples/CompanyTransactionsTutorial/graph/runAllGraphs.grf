@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Thu May 07 09:41:13 CEST 2009" guiVersion="0.0.0.devel" id="1241683270406" licenseType="Evaluation license." modified="Tue May 12 10:04:17 CEST 2009" modifiedBy="avackova" name="runAllGraphs" revision="1.20">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="graph" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field auto_filling="source_name" name="graphName" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record name="outdata" recordSize="-1" type="delimited">
+<Field delimiter=";" name="graph" nullable="true" type="string"/>
+<Field delimiter=";" name="result" nullable="true" type="string"/>
+<Field delimiter=";" name="description" nullable="true" type="string"/>
+<Field delimiter=";" name="message" nullable="true" type="string"/>
+<Field delimiter="\n" name="duration" nullable="true" type="decimal"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${GRAPH_DIR}/A*.grf" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="59" guiY="34" id="DATA_READER0" numSourceRecords="1" type="DATA_READER"/>
+<Node cloverCmdLineArgs="-plugins ../../.. " enabled="enabled" guiHeight="0" guiName="RunGraph" guiWidth="0" guiX="287" guiY="34" id="RUN_GRAPH0" logAppend="false" logFile="${DATAOUT_DIR}/runAllGraps.log" sameInstance="false" type="RUN_GRAPH"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="546" guiY="34" id="TRASH0" type="TRASH"/>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in regular mode: names of the graphs to be executed, otherwise nothing)" metadata="Metadata0" outPort="Port 0 (output)" toNode="RUN_GRAPH0:0"/>
+<Edge fromNode="RUN_GRAPH0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="TRASH0:0"/>
+</Phase>
+</Graph>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation license." modified="Wed Apr 22 09:26:40 CEST 2009" modifiedBy="cloveruser" name="ReadingXMLExtract" revision="1.101">
+<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation license." modified="Thu May 07 09:59:03 CEST 2009" modifiedBy="avackova" name="ReadingXMLExtract" revision="1.103">
 <Global>
 <Metadata fileURL="meta/Amounts.fmt" id="Metadata3"/>
 <Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
@@ -30,7 +30,7 @@ More detailed information about this graph can be found in the "readme.html" fil
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="402" guiY="486" id="EXT_SORT2" sortKey="CustomerID(a);AmountID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="469" guiY="336" id="EXT_SORT3" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="469" guiY="409" id="EXT_SORT4" sortKey="EmployeeID(a);SpouseName(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="AmountsCustomersEmployees" guiWidth="0" guiX="52" guiY="327" id="XML_EXTRACT0" sourceUri="${DATATMP_DIR}/AmCustEmplFam.xml" type="XML_EXTRACT">
+<Node enabled="enabled" guiHeight="0" guiName="AmountsCustomersEmployees" guiWidth="0" guiX="52" guiY="327" id="XML_EXTRACT0" sourceUri="${DATATMP_DIR}/AmCustEmplFam???.xml" type="XML_EXTRACT">
 <attr name="mapping"><![CDATA[<Mappings>
   <Mapping element="transactions" outPort="4">
     <Mapping element="customers" outPort="3" parentKey="AmountID" generatedKey="AmountID"/>
