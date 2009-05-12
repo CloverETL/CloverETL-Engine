@@ -500,9 +500,6 @@ public class StringDataField extends DataField implements CharSequence{
     }
 
     
-    private int cachedHashCode;
-    private String cachedValue;
-    
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
