@@ -363,7 +363,7 @@ public class WcardPattern {
 		// check a directory
 		File dir;
 		try {
-			dir = parent != null ? new File(FileUtils.getFileURL(parent, dirName.toString()).getPath()) : new File(dirName.toString());
+			dir = new File(FileUtils.getFileURL(parent, dirName.toString()).getPath());
 		} catch (Exception e) {
 			dir = new File(dirName.toString());
 		} 
