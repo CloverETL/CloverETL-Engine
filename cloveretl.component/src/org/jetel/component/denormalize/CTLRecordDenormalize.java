@@ -92,7 +92,7 @@ public abstract class CTLRecordDenormalize implements RecordDenormalize, CTLComp
 	 * @throws TransformException
 	 */
 	@CTLEntryPoint(
-			name = "addInputRecord",
+			name = "append",
 			required = true
 	)
 	public abstract int appendDelegate() throws TransformException;
@@ -112,7 +112,7 @@ public abstract class CTLRecordDenormalize implements RecordDenormalize, CTLComp
 	 * @throws TransformException
 	 */
 	@CTLEntryPoint(
-			name = "getOutputRecord",
+			name = "transform",
 			required = true
 	)
 	public abstract int transformDelegate() throws TransformException;

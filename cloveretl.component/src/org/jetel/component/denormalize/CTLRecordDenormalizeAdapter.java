@@ -53,8 +53,8 @@ public class CTLRecordDenormalizeAdapter implements RecordDenormalize {
     private static final String FINISHED_FUNCTION_NAME="finished";
     private static final String INIT_FUNCTION_NAME="init";
     private static final String CLEAN_FUNCTION_NAME="clean";
-	private static final String ADDINPUT_FUNCTION_NAME="addInputRecord";
-	private static final String GETOUTPUT_FUNCTION_NAME="getOutputRecord";
+	private static final String ADDINPUT_FUNCTION_NAME="append";
+	private static final String GETOUTPUT_FUNCTION_NAME="transform";
 	private static final Object[] EMPTY_ARGUMENTS = new Object[0];
 	
     private String errorMessage;
@@ -142,7 +142,7 @@ public class CTLRecordDenormalizeAdapter implements RecordDenormalize {
 		final CLVFFunctionDeclaration f = append == null ? addInput : append;
 		final Object retVal = executor.executeFunction(f, EMPTY_ARGUMENTS,  inputRecords, null);
 		if (retVal == null || retVal instanceof Integer == false) {
-			throw new TransformLangExecutorRuntimeException("append() or addInputRecord() function must return 'int'");
+			throw new TransformLangExecutorRuntimeException("append() function must return 'int'");
 		}
 		return (Integer)retVal;
 	}
