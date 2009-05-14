@@ -50,8 +50,8 @@ public class RecordDenormalizeTL implements RecordDenormalize {
     private static final String FINISHED_FUNCTION_NAME="finished";
     private static final String INIT_FUNCTION_NAME="init";
     private static final String CLEAN_FUNCTION_NAME="clean";
-	private static final String ADDINPUT_FUNCTION_NAME="addInputRecord";
-	private static final String GETOUTPUT_FUNCTION_NAME="getOutputRecord";
+	private static final String ADDINPUT_FUNCTION_NAME="append";
+	private static final String GETOUTPUT_FUNCTION_NAME="transform";
 
     private int appendFunctionIdentifier;
     private int transformFunctionIdentifier;
