@@ -383,6 +383,7 @@ public class XPathParser implements Parser {
 				xPathEvaluator.getConfiguration().setErrorListener(new ErrorListener() {
 					public void warning(TransformerException exception)
 							throws TransformerException {
+							throw exception;
 					}
 					public void fatalError(TransformerException exception)
 							throws TransformerException {
