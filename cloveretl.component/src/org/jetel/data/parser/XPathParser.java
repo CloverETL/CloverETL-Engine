@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
 
@@ -28,10 +29,12 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
+import org.jetel.exception.StrictParserExceptionHandler;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.w3c.dom.DOMException;
@@ -77,6 +80,7 @@ public class XPathParser implements Parser {
     private static final String FEATURES_DELIMETER = ";";
     private static final String FEATURES_ASSIGN = ":=";
 
+	private DataRecord recordResult;
     private TransformationGraph graph;
     private XPathContext xpathContext;
 	private Document xpathDocument;
@@ -347,7 +351,6 @@ public class XPathParser implements Parser {
 	}
 
 	public DataRecord getNext() throws JetelException {
-		DataRecord recordResult;
 		try {
 			recordResult = xpathContext.getNext();
 	        if(exceptionHandler != null ) {  //use handler only if configured
@@ -374,6 +377,23 @@ public class XPathParser implements Parser {
 
 			// create a xml reader
 		    reader = factory.newSAXParser().getXMLReader();
+		    
+		    // error handler
+		    if (exceptionHandler instanceof StrictParserExceptionHandler) {
+				xPathEvaluator.getConfiguration().setErrorListener(new ErrorListener() {
+					public void warning(TransformerException exception)
+							throws TransformerException {
+					}
+					public void fatalError(TransformerException exception)
+							throws TransformerException {
+						exceptionHandler.populateHandler(exception.getMessage(), recordResult, -1, -1, null, new BadDataFormatException(exception.getMessage()));
+					}
+					public void error(TransformerException exception)
+							throws TransformerException {
+						exceptionHandler.populateHandler(exception.getMessage(), recordResult, -1, -1, null, new BadDataFormatException(exception.getMessage(), exception));
+					}
+				});
+		    }
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e);
 		}

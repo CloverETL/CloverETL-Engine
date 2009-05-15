@@ -181,7 +181,7 @@ public class XPathContext {
 		for (Iterator<XPathContext> it=orderedPortList.iterator(); it.hasNext(); ) {
 			portContext = it.next();
 			if (!portContext.recordLoadedLast && portContext.record != null) 
-				portContext.record.reset(); // test jeste na null
+				portContext.record.reset(); // test if null
 			
 		    try {
 				tmpRecord = portContext.getNextInner();
@@ -342,7 +342,7 @@ public class XPathContext {
 	private void prepareValueInner(XPathContext borderContext) throws TransformerException {
 		if (contextIterator == null || !contextIterator.hasNext()) {
 			if (borderContext != this) {
-				if (port == NO_PORT)  //TODO: je potreba otestovat
+				if (port == NO_PORT)  //TODO: test is necessary
 					lastPortNode = false;
 				if (nextXPathContext != null) {
 					nextXPathContext.prepareValueInner(borderContext);
@@ -409,9 +409,9 @@ public class XPathContext {
 	 * Resets context subtree for some node.
 	 */
 	private void reset(Source contextNode) throws TransformerException {
-		lastPortNode = false; //TODO: je potreba otestovat
+		lastPortNode = false; //TODO: test is necessary
 		contextIterator = exp.evaluate(contextNode).iterator();
-		// TODO udelat test, kolikrat a jak se zavola evaluate
+		// TODO a test how many times the evaluate function is called
 		
         //shall i skip some records?
         if(skipRows > 0) {
