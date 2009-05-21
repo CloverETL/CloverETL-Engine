@@ -20,7 +20,7 @@ public class SlaveReaderDup implements InputReader {
 	private static final int NEXT = 1;
 
 	private InputPort inPort;
-	private RecordKey key;
+	protected RecordKey key;
 	private DataRecord[] rec = new DataRecord[2];
 	private FileRecordBuffer recBuf;
 	private ByteBuffer rawRec = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);

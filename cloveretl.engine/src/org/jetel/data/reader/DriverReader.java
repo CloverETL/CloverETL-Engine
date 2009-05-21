@@ -17,12 +17,13 @@ public class DriverReader implements InputReader {
 	private static final int NEXT = 1;
 
 	private InputPort inPort;
-	private RecordKey key;
+	protected RecordKey key;
 	private DataRecord[] rec = new DataRecord[2];
 	private int recCounter;
 	private boolean blocked;
 	
 	private InputOrdering inputOrdering = InputOrdering.UNDEFINED;
+	protected int lastCompare;
 	
 	public DriverReader(InputPort inPort, RecordKey key) {
 		this.inPort = inPort;
@@ -74,9 +75,9 @@ public class DriverReader implements InputReader {
 				return false;
 			}
 			recCounter++;
-			int comparison = key.compare(rec[CURRENT], rec[NEXT]);
-			if (comparison != 0){
-				inputOrdering = SlaveReader.updateOrdering(comparison, inputOrdering);
+			lastCompare = key.compare(rec[CURRENT], rec[NEXT]);
+			if (lastCompare != 0){
+				inputOrdering = SlaveReader.updateOrdering(lastCompare, inputOrdering);
 				break;
 			}
 		}
@@ -101,7 +102,7 @@ public class DriverReader implements InputReader {
 			blocked = false;
 		} else {
 			recCounter++;
-			blocked = key.compare(rec[CURRENT], rec[NEXT]) != 0;
+			blocked = (lastCompare = key.compare(rec[CURRENT], rec[NEXT])) != 0;
 		}
 		return rec[CURRENT];
 	}
@@ -124,7 +125,7 @@ public class DriverReader implements InputReader {
 	public RecordKey getKey() {
 		return key;
 	}
-	
+
 	public int compare(InputReader other) {
 		DataRecord rec1 = getSample();
 		DataRecord rec2 = other.getSample();
@@ -134,7 +135,7 @@ public class DriverReader implements InputReader {
 		} else if (rec2 == null) {
 			return -1;
 		}
-		return key.compare(other.getKey(), rec1, rec2);
+		return lastCompare = key.compare(other.getKey(), rec1, rec2);
 	}
 
 	public boolean hasData() {
