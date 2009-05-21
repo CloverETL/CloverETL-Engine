@@ -19,7 +19,7 @@ public class SlaveReader implements InputReader {
 	private static final int NEXT = 1;
 
 	private InputPort inPort;
-	private RecordKey key;
+	protected RecordKey key;
 	private DataRecord[] rec = new DataRecord[2];
 	private boolean firstRun;
 	private boolean needsRewind;

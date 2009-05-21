@@ -21,6 +21,9 @@ package org.jetel.component;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.Collator;
+import java.text.RuleBasedCollator;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -33,10 +36,11 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
-import org.jetel.data.reader.DriverReader;
+import org.jetel.data.RecordOrderedKey;
+import org.jetel.data.reader.DriverOrderedReader;
 import org.jetel.data.reader.InputReader;
-import org.jetel.data.reader.SlaveReader;
-import org.jetel.data.reader.SlaveReaderDup;
+import org.jetel.data.reader.SlaveOrderedReader;
+import org.jetel.data.reader.SlaveOrderedReaderDup;
 import org.jetel.data.reader.InputReader.InputOrdering;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -49,6 +53,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -177,6 +182,8 @@ public class MergeJoin extends Node {
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	private static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
+	private static final String XML_LOCALE_ATTRIBUTE = "locale";
+	private static final String XML_CASE_SENSITIVE_ATTRIBUTE = "caseSensitive";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE ="slaveDuplicates";
 	// legacy attributes
@@ -197,6 +204,8 @@ public class MergeJoin extends Node {
 	private String transformClassName;
 	private String transformSource = null;
 	private String transformURL = null;
+	private String locale = null;
+	private boolean caseSensitive;
 	private String charset = null;
 
 	private RecordTransform transformation = null;
@@ -220,8 +229,8 @@ public class MergeJoin extends Node {
 	private int inputCnt;
 	private int slaveCnt;
 	
-	private RecordKey driverKey;
-	private RecordKey[] slaveKeys;
+	private RecordOrderedKey driverKey;
+	private RecordOrderedKey[] slaveKeys;
 
 	InputReader[] reader;
 	boolean anyInputEmpty;
@@ -535,22 +544,22 @@ public class MergeJoin extends Node {
     			joiners = replJoiners;
 			}
 		}
-		driverKey = new RecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
+		driverKey = buildRecordOrderedKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
 		driverKey.init();
-		slaveKeys = new RecordKey[slaveCnt];
+		slaveKeys = new RecordOrderedKey[slaveCnt];
 		for (int idx = 0; idx < slaveCnt; idx++) {
-			slaveKeys[idx] = new RecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
+			slaveKeys[idx] = buildRecordOrderedKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
 			slaveKeys[idx].init();
 		}		
 		reader = new InputReader[inputCnt];
-		reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
+		reader[0] = new DriverOrderedReader(getInputPort(DRIVER_ON_PORT), driverKey);
 		if (slaveDuplicates) {
 			for (int i = 0; i < slaveCnt; i++) {
-				reader[i + 1] = new SlaveReaderDup(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
+				reader[i + 1] = new SlaveOrderedReaderDup(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
 			}
 		} else {
 			for (int i = 0; i < slaveCnt; i++) {
-				reader[i + 1] = new SlaveReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i], true);
+				reader[i + 1] = new SlaveOrderedReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i], true);
 			}			
 		}
 		minReader = reader[0];
@@ -586,6 +595,32 @@ public class MergeJoin extends Node {
 			}
        }
 	}
+	
+	/**
+	 * Constructs a RecordComparator based on particular metadata and settings
+	 * 
+	 * @param metaData
+	 * @return
+	 */
+	private RecordOrderedKey buildRecordOrderedKey(String joiners[], DataRecordMetadata metaData) {
+		boolean[] ordering = new boolean[joiners.length];
+		Arrays.fill(ordering, ascendingInputs);
+
+		int[] fields = new int[joiners.length];
+		for (int i = 0; i < fields.length; i++) {
+			fields[i] = metaData.getFieldPosition(joiners[i]);
+		}
+		
+		if (locale != null) {
+			RuleBasedCollator col = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(locale));
+			col.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
+			col.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+			return new RecordOrderedKey(fields, ordering, metaData, col);
+		} else {
+			return new RecordOrderedKey(fields, ordering, metaData);
+		}
+	}
+
 	
 	public void reset() throws ComponentNotReadyException {
 		super.reset();
@@ -737,6 +772,12 @@ public class MergeJoin extends Node {
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
+			if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {
+				join.setLocale(xattribs.getString(XML_LOCALE_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_CASE_SENSITIVE_ATTRIBUTE)) {
+				join.setCaseSensitive(xattribs.getBoolean(XML_CASE_SENSITIVE_ATTRIBUTE));
+			}
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
@@ -776,85 +817,85 @@ public class MergeJoin extends Node {
 		joiners[1] = slaveOverrideKey;
 	}
 	
-	/**  Description of the Method */
-        @Override
-    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-            super.checkConfig(status);
-            
-            if(!checkInputPorts(status, 2, Integer.MAX_VALUE)
-            		|| !checkOutputPorts(status, 1, 1)) {
-            	return status;
-            }
-            
-            try {
-        		inputCnt = inPorts.size();
-        		slaveCnt = inputCnt - 1;
-            	
-        		if (joiners == null || joiners[0] == null) {
-        			List<DataRecordMetadata> inMetadata = getInMetadata();
-        			String[][] tmp = JoinKeyUtils.parseMergeJoinKey(joinKeys, inMetadata);
-        			if (joiners == null) {
-        				joiners = tmp;
-        			}else{//slave ovveride key was set by setSlaveOverrideKey(String[]) method
-        				joiners[0] = tmp[0];
-        			}
-        			if (joiners.length < inputCnt) {
-        				logger.warn("Join keys aren't specified for all slave inputs - deducing missing keys");
-            			String[][] replJoiners = new String[inputCnt][];
-            			for (int i = 0; i < joiners.length; i++) {
-            				replJoiners[i] = joiners[i];
-            			}
-            			// use driver key list for all missing slave key specifications
-            			for (int i = joiners.length; i < inputCnt; i++) {
-            				replJoiners[i] = joiners[0];
-            			}
-            			joiners = replJoiners;
-        			}
-        		}
-        		driverKey = new RecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
-        		slaveKeys = new RecordKey[slaveCnt];
-        		for (int idx = 0; idx < slaveCnt; idx++) {
-        			slaveKeys[idx] = new RecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
-    				RecordKey.checkKeys(driverKey, XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
-					XML_JOINKEY_ATTRIBUTE, status, this);
-         		}		
-        		reader = new InputReader[inputCnt];
-        		reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
-        		if (slaveDuplicates) {
-        			for (int i = 0; i < slaveCnt; i++) {
-        				reader[i + 1] = new SlaveReaderDup(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
-        			}
-        		} else {
-        			for (int i = 0; i < slaveCnt; i++) {
-        				reader[i + 1] = new SlaveReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i], true);
-        			}			
-        		}
-        		minReader = reader[0];
-        		minIndicator = new boolean[inputCnt];
-        		for (int i = 0; i < inputCnt; i++) {
-        			minIndicator[i] = true;
-        		}
-            	
-        		if (errorActionsString != null) {
-    				ErrorAction.checkActions(errorActionsString);
-    			}
-        		
-                if (errorLog != null){
-     				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
-               	}        	
-            	
-//                init();
-//                free();
-            } catch (ComponentNotReadyException e) {
-                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-                if(!StringUtils.isEmpty(e.getAttributeName())) {
-                    problem.setAttributeName(e.getAttributeName());
-                }
-                status.add(problem);
-            }
-            
-            return status;
-	}
+		/**  Description of the Method */
+	        @Override
+	    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+	            super.checkConfig(status);
+	            
+	            if(!checkInputPorts(status, 2, Integer.MAX_VALUE)
+	            		|| !checkOutputPorts(status, 1, 1)) {
+	            	return status;
+	            }
+	            
+	            try {
+	        		inputCnt = inPorts.size();
+	        		slaveCnt = inputCnt - 1;
+	            	
+	        		if (joiners == null || joiners[0] == null) {
+	        			List<DataRecordMetadata> inMetadata = getInMetadata();
+	        			String[][] tmp = JoinKeyUtils.parseMergeJoinKey(joinKeys, inMetadata);
+	        			if (joiners == null) {
+	        				joiners = tmp;
+	        			}else{//slave ovveride key was set by setSlaveOverrideKey(String[]) method
+	        				joiners[0] = tmp[0];
+	        			}
+	        			if (joiners.length < inputCnt) {
+	        				logger.warn("Join keys aren't specified for all slave inputs - deducing missing keys");
+	            			String[][] replJoiners = new String[inputCnt][];
+	            			for (int i = 0; i < joiners.length; i++) {
+	            				replJoiners[i] = joiners[i];
+	            			}
+	            			// use driver key list for all missing slave key specifications
+	            			for (int i = joiners.length; i < inputCnt; i++) {
+	            				replJoiners[i] = joiners[0];
+	            			}
+	            			joiners = replJoiners;
+	        			}
+	        		}
+	        		driverKey = buildRecordOrderedKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
+	        		slaveKeys = new RecordOrderedKey[slaveCnt];
+	        		for (int idx = 0; idx < slaveCnt; idx++) {
+	        			slaveKeys[idx] = buildRecordOrderedKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
+	    				RecordKey.checkKeys(driverKey, XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
+						XML_JOINKEY_ATTRIBUTE, status, this);
+	         		}
+	        		reader = new InputReader[inputCnt];
+	        		reader[0] = new DriverOrderedReader(getInputPort(DRIVER_ON_PORT), driverKey);
+	        		if (slaveDuplicates) {
+	        			for (int i = 0; i < slaveCnt; i++) {
+	        				reader[i + 1] = new SlaveOrderedReaderDup(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
+	        			}
+	        		} else {
+	        			for (int i = 0; i < slaveCnt; i++) {
+	        				reader[i + 1] = new SlaveOrderedReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i], true);
+	        			}			
+	        		}
+	        		minReader = reader[0];
+	        		minIndicator = new boolean[inputCnt];
+	        		for (int i = 0; i < inputCnt; i++) {
+	        			minIndicator[i] = true;
+	        		}
+	            	
+	        		if (errorActionsString != null) {
+	    				ErrorAction.checkActions(errorActionsString);
+	    			}
+	        		
+	                if (errorLog != null){
+	     				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+	               	}        	
+	            	
+	//                init();
+	//                free();
+	            } catch (ComponentNotReadyException e) {
+	                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+	                if(!StringUtils.isEmpty(e.getAttributeName())) {
+	                    problem.setAttributeName(e.getAttributeName());
+	                }
+	                status.add(problem);
+	            }
+	            
+	            return status;
+		}
 	
 	public String getType(){
 		return COMPONENT_TYPE;
@@ -864,6 +905,14 @@ public class MergeJoin extends Node {
 		return charset;
 	}
 
+	public void setLocale(String locale) {
+		this.locale = locale;
+	}
+
+	public void setCaseSensitive(boolean caseSensitive) {
+		this.caseSensitive = caseSensitive;
+	}
+	
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}

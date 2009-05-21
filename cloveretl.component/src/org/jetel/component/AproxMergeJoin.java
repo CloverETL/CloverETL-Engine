@@ -22,6 +22,9 @@ package org.jetel.component;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.Collator;
+import java.text.RuleBasedCollator;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +36,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.FileRecordBuffer;
 import org.jetel.data.RecordKey;
+import org.jetel.data.RecordOrderedKey;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -47,6 +51,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.AproximativeJoinKey;
@@ -192,6 +197,8 @@ public class AproxMergeJoin extends Node {
 	private static final String XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE = "transformForSuspicious";
 	private static final String XML_TRANSFORM_URL_ATTRIBUTE = "transformURL";
 	private static final String XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE = "transformURLForSuspicious";
+	private static final String XML_LOCALE_ATTRIBUTE = "locale";
+	private static final String XML_CASE_SENSITIVE_ATTRIBUTE = "caseSensitive";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_CONFORMITY_ATTRIBUTE = "conformity";
 	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
@@ -219,6 +226,8 @@ public class AproxMergeJoin extends Node {
 	private String transformSourceForSuspicious = null;
 	private String transformURL = null;
 	private String transformURLForsuspicious = null;
+	private String locale = null;
+	private boolean caseSensitive;
 	private String charset = null;
 
 	private RecordTransform transformation = null;
@@ -229,7 +238,7 @@ public class AproxMergeJoin extends Node {
 	private String[] slaveOverrideKeys = null;
 	private String[] matchingKey=new String[1];
 	private String[] slaveMatchingKey=null;
-	private RecordKey[] recordKey;
+	private RecordOrderedKey[] recordKey;
 	private int[] conformityFieldsForConforming;
 	private int[] conformityFieldsForSuspicious;
 	private int[][] fieldsToCompare=new int[2][];
@@ -319,7 +328,7 @@ public class AproxMergeJoin extends Node {
 	 * @exception  InterruptedException  Description of the Exception
 	 * @exception  JetelException        Description of the Exception
 	 */
-	private void fillRecordBuffer(InputPort inPort, DataRecord[] records, RecordKey key)
+	private void fillRecordBuffer(InputPort inPort, DataRecord[] records, RecordOrderedKey key)
 			 throws IOException, InterruptedException, JetelException {
 
 		recordBuffer.clear();
@@ -361,7 +370,7 @@ public class AproxMergeJoin extends Node {
 	 * @exception  InterruptedException  Description of the Exception
 	 */
 	private int getCorrespondingRecord(DataRecord driver, DataRecord[] slave, 
-			InputPort slavePort, OutputPort outSlave, RecordKey[] key)
+			InputPort slavePort, OutputPort outSlave, RecordOrderedKey[] key)
 			 throws IOException, InterruptedException {
 
 		while (slave[CURRENT] != null) {
@@ -725,9 +734,9 @@ public class AproxMergeJoin extends Node {
 		for (int i=0;i<weights.length;i++){
 			weights[i]=weights[i]/sumOfWeights;
 		}
-		RecordKey[] recKey = new RecordKey[2];
-		recKey[DRIVER_ON_PORT] = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
-		recKey[SLAVE_ON_PORT] = new RecordKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
+		RecordOrderedKey[] recKey = new RecordOrderedKey[2];
+		recKey[DRIVER_ON_PORT] = buildRecordOrderedKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
+		recKey[SLAVE_ON_PORT] = buildRecordOrderedKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
 		recKey[DRIVER_ON_PORT].init();
 		recKey[SLAVE_ON_PORT].init();
 		fieldsToCompare[DRIVER_ON_PORT]=recKey[DRIVER_ON_PORT].getKeyFields();
@@ -746,14 +755,39 @@ public class AproxMergeJoin extends Node {
 		if (slaveMatchingKey == null){
 			slaveMatchingKey= tmp[1][0];
 		}
-		recordKey = new RecordKey[2];
-		recordKey[DRIVER_ON_PORT] = new RecordKey(matchingKey, getInputPort(DRIVER_ON_PORT).getMetadata());
-		recordKey[SLAVE_ON_PORT] = new RecordKey(slaveMatchingKey, getInputPort(SLAVE_ON_PORT).getMetadata());
+		recordKey = new RecordOrderedKey[2];
+		recordKey[DRIVER_ON_PORT] = buildRecordOrderedKey(matchingKey, getInputPort(DRIVER_ON_PORT).getMetadata());
+		recordKey[SLAVE_ON_PORT] = buildRecordOrderedKey(slaveMatchingKey, getInputPort(SLAVE_ON_PORT).getMetadata());
 		recordKey[DRIVER_ON_PORT].init();
 		recordKey[SLAVE_ON_PORT].init();
 		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
 		conformityFieldsForSuspicious = findOutFields(slaveOverrideKeys,getOutputPort(SUSPICIOUS_OUT).getMetadata());
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+	}
+	
+	/**
+	 * Constructs a RecordComparator based on particular metadata and settings
+	 * 
+	 * @param metaData
+	 * @return
+	 */
+	private RecordOrderedKey buildRecordOrderedKey(String joiners[], DataRecordMetadata metaData) {
+		boolean[] ordering = new boolean[joiners.length]; 
+		Arrays.fill(ordering, true);//TODO change the key dialog
+
+		int[] fields = new int[joiners.length];
+		for (int i = 0; i < fields.length; i++) {
+			fields[i] = metaData.getFieldPosition(joiners[i]);
+		}
+		
+		if (locale != null) {
+			RuleBasedCollator col = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(locale));
+			col.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
+			col.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+			return new RecordOrderedKey(fields, ordering, metaData, col);
+		} else {
+			return new RecordOrderedKey(fields, ordering, metaData);
+		}
 	}
 	
 	public static AproximativeJoinKey[] initOldJoinKey(String[] joinParameters){
@@ -893,6 +927,12 @@ public class AproxMergeJoin extends Node {
 			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
 				join.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {
+				join.setLocale(xattribs.getString(XML_LOCALE_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_CASE_SENSITIVE_ATTRIBUTE)) {
+				join.setCaseSensitive(xattribs.getBoolean(XML_CASE_SENSITIVE_ATTRIBUTE));
+			}
 			return join;
         }catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -1027,9 +1067,10 @@ public class AproxMergeJoin extends Node {
     		for (int i=0;i<weights.length;i++){
     			weights[i]=weights[i]/sumOfWeights;
     		}
-    		RecordKey[] recKey = new RecordKey[2];
-    		recKey[DRIVER_ON_PORT] = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
-    		recKey[SLAVE_ON_PORT] = new RecordKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
+
+    		RecordOrderedKey[] recKey = new RecordOrderedKey[2];
+    		recKey[DRIVER_ON_PORT] = buildRecordOrderedKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
+    		recKey[SLAVE_ON_PORT] = buildRecordOrderedKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
     		RecordKey.checkKeys(recKey[DRIVER_ON_PORT], XML_JOIN_KEY_ATTRIBUTE, 
     				recKey[SLAVE_ON_PORT], XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE, status, this);
     		
@@ -1050,10 +1091,10 @@ public class AproxMergeJoin extends Node {
     		if (slaveMatchingKey == null){
     			slaveMatchingKey= tmp[1][0];
     		}
-    		recordKey = new RecordKey[2];
-    		recordKey[DRIVER_ON_PORT] = new RecordKey(matchingKey, getInputPort(DRIVER_ON_PORT).getMetadata());
-    		recordKey[SLAVE_ON_PORT] = new RecordKey(slaveMatchingKey, getInputPort(SLAVE_ON_PORT).getMetadata());
-       		RecordKey.checkKeys(recordKey[DRIVER_ON_PORT], XML_MATCHING_KEY_ATTRIBUTE, 
+    		recordKey = new RecordOrderedKey[2];
+    		recordKey[DRIVER_ON_PORT] = buildRecordOrderedKey(matchingKey, getInputPort(DRIVER_ON_PORT).getMetadata());
+    		recordKey[SLAVE_ON_PORT] = buildRecordOrderedKey(slaveMatchingKey, getInputPort(SLAVE_ON_PORT).getMetadata());
+       		RecordOrderedKey.checkKeys(recordKey[DRIVER_ON_PORT], XML_MATCHING_KEY_ATTRIBUTE, 
     				recordKey[SLAVE_ON_PORT], XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE, status, this);
      		
     		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
@@ -1097,6 +1138,14 @@ public class AproxMergeJoin extends Node {
 	}
 	public void setErrorLog(String errorLog) {
 		this.errorLogURL = errorLog;
+	}
+
+	public void setLocale(String locale) {
+		this.locale = locale;
+	}
+
+	public void setCaseSensitive(boolean caseSensitive) {
+		this.caseSensitive = caseSensitive;
 	}
 
 	public void setErrorActions(String string) {

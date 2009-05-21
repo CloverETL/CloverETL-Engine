@@ -91,6 +91,7 @@ public class RecordOrderedKey extends RecordKey {
 	public RecordOrderedKey(String keyFieldNames[], boolean keyOrderings[], DataRecordMetadata metadata, RuleBasedCollator collator) {
 		super(keyFieldNames, metadata);
 		this.keyOrderings = keyOrderings;
+		this.collator = collator;
 	}
 
 	/**
