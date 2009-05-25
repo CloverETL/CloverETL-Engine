@@ -100,8 +100,10 @@ public class ASTBuilder extends NavigatingVisitor {
 			i = 0;
 			if (outputMetadata != null) {
 				for (DataRecordMetadata m : outputMetadata) {
-					if ((prevPos = outputRecordsMap.put(m.getName(), i++)) != null) {
-						warn("Output record name '" + m.getName() + "' is ambiguous", "Use positional access or rename output metadata on port '" + prevPos + "' or '" + (i - 1) + "'");
+					if (m != null) {
+						if ((prevPos = outputRecordsMap.put(m.getName(), i++)) != null) {
+							warn("Output record name '" + m.getName() + "' is ambiguous", "Use positional access or rename output metadata on port '" + prevPos + "' or '" + (i - 1) + "'");
+						}
 					}
 				}
 			}
