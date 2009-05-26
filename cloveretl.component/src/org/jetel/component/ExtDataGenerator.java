@@ -53,7 +53,7 @@ public class ExtDataGenerator extends DataGenerator {
 
 	// XML attribute names
 	private static final String XML_GENERATECLASS_ATTRIBUTE = "generateClass";
-	public static final String XML_GENERATE_ATTRIBUTE = "generate";
+	private static final String XML_GENERATE_ATTRIBUTE = "generate";
 	private static final String XML_GENERATEURL_ATTRIBUTE = "generateURL";
 
 	// Input parameters
@@ -79,6 +79,10 @@ public class ExtDataGenerator extends DataGenerator {
 		this.recordsNumber = recordsNumber;
 	}
 
+	public static String getTransformAttributeName() {
+		return XML_GENERATE_ATTRIBUTE;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#execute()
 	 */
