@@ -539,22 +539,6 @@ public class RecordTransformFactory {
     }
    
     
-    public static boolean isSimpleTransform(TransformationGraph graph, DataRecordMetadata[] inMeta,
-    		DataRecordMetadata[] outMeta, String transform) {
-    	
-    	return isSimpleFunction(graph, inMeta, outMeta, transform, "transform");
-    }
-    
-    public static boolean isSimpleDenormalizer(TransformationGraph graph, DataRecordMetadata[] inMeta,
-    		DataRecordMetadata[] outMeta, String code) {
-    	return isSimpleFunction(graph, inMeta, outMeta, code, "transform");
-    }
-    
-    public static boolean isSimpleNormalizer(TransformationGraph graph, DataRecordMetadata[] inMeta,
-    		DataRecordMetadata[] outMeta, String code) {
-    	return isSimpleFunction(graph, inMeta, outMeta, code, "transform");
-    }
-    
     public static boolean isSimpleFunction(TransformationGraph graph, DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String code, String functionName) {
     	

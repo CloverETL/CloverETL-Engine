@@ -203,6 +203,15 @@ public class Reformat extends Node {
         super(id);
         this.transformation = transformation;
     }
+    
+	/**
+	 * Returns the name of the attribute which contains transformation
+	 * 
+	 * @return the name
+	 */
+	public static String getTransformAttributeName() {
+		return XML_TRANSFORM_ATTRIBUTE;
+	}
 
 	@Override
 	public Result execute() throws Exception {
