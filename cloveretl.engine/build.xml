@@ -84,6 +84,7 @@
 		<pathelement path="../cloveretl.thirdparty/src" />
 		<pathelement path="../cloveretl.bulkloader/src" />
 		<pathelement path="../cloveretl.tlfunction/src" />
+		<pathelement path="../cloveretl.ctlfunction/src" />
 	</path>
 	
 	<!-- =========================== LIBRARIES ============================= -->
