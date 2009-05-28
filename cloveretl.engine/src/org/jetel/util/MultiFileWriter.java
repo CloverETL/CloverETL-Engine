@@ -100,14 +100,11 @@ public class MultiFileWriter {
 	private int numberFileTag;
 	
 	private OutputPort outputPort;
-
 	private String charset;
-
 	private Dictionary dictionary;
-
 	private int compressLevel = -1;
-
 	private boolean mkDir;
+	private boolean outputClosed;
 	
     /**
      * Constructor.
@@ -154,7 +151,6 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException 
      */
 	public void reset() throws ComponentNotReadyException {
-
 		if (multiTarget != null){
 			multiTarget.clear();
 		}else{
@@ -163,6 +159,7 @@ public class MultiFileWriter {
 		counter = 0;
 		numberFileTag = 0;
 		skip = skipRecords;
+		outputClosed = false;
     	preparePatitionKey();	// initialize partition key - if defined
     	prepareTargets();		// prepare output targets
 	}
@@ -424,6 +421,7 @@ public class MultiFileWriter {
      * Closes underlying formatter.
      */
     public void close() {
+    	if (outputClosed) return;
     	if (multiTarget != null) {
         	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
         		entry.getValue().close();
@@ -432,6 +430,7 @@ public class MultiFileWriter {
     		currentTarget.close();
     	}
     	if (unassignedTarget != null) unassignedTarget.close();
+    	outputClosed = true;
     }
     
     public void finish() throws IOException{

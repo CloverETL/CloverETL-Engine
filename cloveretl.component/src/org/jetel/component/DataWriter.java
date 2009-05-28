@@ -129,7 +129,6 @@ public class DataWriter extends Node {
 	private final static int READ_FROM_PORT = 0;
 	private final static int OUTPUT_PORT = 0;
 	
-
 	/**
 	 *Constructor for the DataWriter object
 	 *
@@ -164,6 +163,7 @@ public class DataWriter extends Node {
 			SynchronizeUtils.cloverYield();
 		}
 		writer.finish();
+		writer.close();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
@@ -533,10 +533,8 @@ public class DataWriter extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		
-		if(writer != null) {
+		if (writer != null)
 			writer.close();
-		}
 	}
 	
 }

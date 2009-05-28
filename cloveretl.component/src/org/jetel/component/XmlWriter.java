@@ -594,6 +594,7 @@ public class XmlWriter extends Node {
 			throw e;
 		} finally {
 			writer.finish();
+			writer.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}

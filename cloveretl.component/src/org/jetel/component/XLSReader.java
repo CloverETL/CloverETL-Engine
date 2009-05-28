@@ -558,7 +558,7 @@ public class XLSReader extends Node {
         }
 
         broadcastEOF();
-
+        reader.close();
         return (runIt ? Result.FINISHED_OK : Result.ABORTED);
     }
 

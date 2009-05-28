@@ -173,6 +173,7 @@ public class DelimitedDataReader extends Node {
 		    SynchronizeUtils.cloverYield();
 		}
 		broadcastEOF();
+    	reader.close();
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 

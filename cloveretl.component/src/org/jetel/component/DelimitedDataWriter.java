@@ -182,6 +182,7 @@ public class DelimitedDataWriter extends Node {
 			SynchronizeUtils.cloverYield();
 		}
 		writer.finish();
+		writer.close();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
@@ -529,7 +530,7 @@ public class DelimitedDataWriter extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		if (writer !=null)
+		if (writer != null)
 			writer.close();
 	}
 }

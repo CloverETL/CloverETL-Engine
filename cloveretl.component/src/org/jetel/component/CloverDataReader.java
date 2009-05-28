@@ -40,6 +40,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -172,6 +173,8 @@ public class CloverDataReader extends Node {
 					parser.setDataSource(fName);
 				}
 			} while (true);
+			
+			parser.close();
 		}
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -238,7 +241,7 @@ public class CloverDataReader extends Node {
     		initFileIterator();
     		while (filenameItor.hasNext()) {
 				fName = filenameItor.next();
-				URL url = FileUtils.getInnerAddress(getGraph().getProjectURL(), fName);
+				URL url = FileUtils.getFileURL(getGraph().getProjectURL(), FileURLParser.getMostInnerAddress(fName));
 				if (FileUtils.isServerURL(url)) {
 					//FileUtils.checkServer(url); //this is very long operation
 					continue;

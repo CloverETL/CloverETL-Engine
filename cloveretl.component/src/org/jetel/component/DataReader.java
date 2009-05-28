@@ -229,6 +229,7 @@ public class DataReader extends Node {
 			throw e;
 		}finally{
 			broadcastEOF();
+			reader.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
