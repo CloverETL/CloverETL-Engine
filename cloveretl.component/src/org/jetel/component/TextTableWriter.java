@@ -193,6 +193,7 @@ public class TextTableWriter extends Node {
 			SynchronizeUtils.cloverYield();
 		}
 		writer.finish();
+		writer.close();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 

@@ -366,7 +366,8 @@ public class MultiFileReader {
 	 *
 	 */
 	public void close() {
-		parser.close();
+		if (isSourceOpen) 
+			parser.close();
 	}
 	
     /**
