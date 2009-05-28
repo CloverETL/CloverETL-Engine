@@ -158,11 +158,11 @@ public abstract class DataGenerator extends Node {
 						xattribs.getString(XML_GENERATE_ATTRIBUTE, null), 
 						xattribs.getString(XML_GENERATECLASS_ATTRIBUTE, null), 
 						xattribs.getString(XML_GENERATEURL_ATTRIBUTE, null),
-						xattribs.getInteger(XML_RECORDS_NUMBER_ATTRIBUTE));
+						xattribs.getInteger(XML_RECORDS_NUMBER_ATTRIBUTE, 0)); //0-because of Kubos hack in GUI
 			} else {
 				dataGenerator = new SimpleDataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 
 						xattribs.getString(XML_PATTERN_ATTRIBUTE,""), 
-						xattribs.getInteger(XML_RECORDS_NUMBER_ATTRIBUTE));
+						xattribs.getInteger(XML_RECORDS_NUMBER_ATTRIBUTE, 0)); //0-because of Kubos hack in GUI
 				if (xattribs.exists(XML_RANDOM_FIELDS_ATTRIBUTE)){
 					((SimpleDataGenerator)dataGenerator).setRandomFields(xattribs.getString(XML_RANDOM_FIELDS_ATTRIBUTE));
 				}
