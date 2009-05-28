@@ -47,7 +47,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  * 
- * @version 28th April 2009
+ * @version 28th May 2009
  * @since 26th March 2002
  * 
  * @see DataFieldMetadata
@@ -733,7 +733,11 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @return the date format pattern as a default format string for date/time data fields
 	 */
 	public String getDateFormatStr() {
-		return dateFormatStr;
+		if (dateFormatStr != null) {
+			return dateFormatStr;
+		}
+
+		return Defaults.DEFAULT_DATE_FORMAT;
 	}
 
 	/**
