@@ -38,7 +38,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
@@ -278,7 +277,6 @@ public class runGraph {
         EngineInitializer.initEngine(pluginsRootDirectory, configFileName, logHost);
         
         //prepare runtime context
-        int i = Defaults.Record.MAX_RECORD_SIZE;
         GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
         runtimeContext.setVerboseMode(isVerboseMode);
         runtimeContext.addAdditionalProperties(additionalProperties);
@@ -315,7 +313,6 @@ public class runGraph {
         }
 
         TransformationGraph graph = null;
-        Future<Result> futureResult = null;;
 		try {
 			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext.getAdditionalProperties());
 			initializeDictionary(dictionaryValues, graph);
