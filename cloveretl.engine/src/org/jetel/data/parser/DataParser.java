@@ -118,16 +118,30 @@ public class DataParser implements Parser {
 	
 	private DataFieldMetadata[] metadataFields;
 	
+	private final boolean verbose;
+	
+	/**
+	 * We are in the middle of process of record parsing.
+	 */
+	private boolean recordIsParsed;
+	
 	public DataParser() {
-		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
-		reader = null;
+		this(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 	}
 	
 	public DataParser(String charset) {
+		this(charset, true);
+	}
+
+	public DataParser(String charset, boolean verbose) {
+		if (charset == null) {
+			charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
+		}
 		decoder = Charset.forName(charset).newDecoder();
 		reader = null;
+		this.verbose = verbose;
 	}
-	
+
 	/**
 	 * @see org.jetel.data.parser.Parser#getNext()
 	 */
@@ -342,7 +356,10 @@ public class DataParser implements Parser {
 		char type;
 		
 		recordCounter++;
-		recordBuffer.clear();
+		if (verbose) {
+			recordBuffer.clear();
+		}
+		recordIsParsed = false;
 		for (fieldCounter = 0; fieldCounter < numFields; fieldCounter++) {
 			final DataFieldMetadata metadataField = metadataFields[fieldCounter];
 			
@@ -364,6 +381,8 @@ public class DataParser implements Parser {
 						//end of file
 						if (character == -1) {
 							break;
+						} else {
+							recordIsParsed = true;
 						}
 						//delimiter update
 						delimiterSearcher.update((char) character);
@@ -477,7 +496,7 @@ public class DataParser implements Parser {
 			// did we have EOF situation ?
 			if (character == -1) {
 				try {
-    				if(recordBuffer.position() == 0) {
+    				if (!recordIsParsed) {
                         reader.close();
     				    return null;
                     } else {
@@ -510,11 +529,11 @@ public class DataParser implements Parser {
 	}
 	
 	private int readChar() throws IOException {
-		char character;
-		int size;
+		final char character;
+		final int size;
         CoderResult result;
 
-		if(tempReadBuffer.length() > 0) {
+		if(treatMultipleDelimitersAsOne && tempReadBuffer.length() > 0) { // the tempReadBuffer is used just in case treatMultipleDelimitersAsOne is true
 			character = tempReadBuffer.charAt(0);
 			tempReadBuffer.deleteCharAt(0);
 			return character;
@@ -522,12 +541,13 @@ public class DataParser implements Parser {
 
         if (charBuffer.hasRemaining()) {
     		character = charBuffer.get();
-    		try {
-    			recordBuffer.put(character);
-    		} catch (BufferOverflowException e) {
-    			throw new RuntimeException("Parse error: The size of data buffer for data record is only " + recordBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    		if (verbose) {
+	    		try {
+	    			recordBuffer.put(character);
+	    		} catch (BufferOverflowException e) {
+	    			throw new RuntimeException("Parse error: The size of data buffer for data record is only " + recordBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+	    		}
     		}
-    
     		return character;
         }
 
@@ -568,16 +588,20 @@ public class DataParser implements Parser {
             }
         }
         charBuffer.flip();
-        int ret = charBuffer.hasRemaining() ? charBuffer.get() : -1;
-        
-        if (ret > -1) {
-			try {
-				recordBuffer.put((char) ret);
-			} catch (BufferOverflowException e) {
-				throw new RuntimeException("Parse error: The size of data buffer for data record is only " + recordBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+		
+		if (charBuffer.hasRemaining()) {
+			final int ret = charBuffer.get();
+			if (verbose) {
+				try {
+					recordBuffer.put((char) ret);
+				} catch (BufferOverflowException e) {
+					throw new RuntimeException("Parse error: The size of data buffer for data record is only " + recordBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+				}
 			}
-        }
-		return ret;
+			return ret;
+		} else {
+			return -1;
+		}
 	}
 
 	/**
@@ -807,8 +831,12 @@ public class DataParser implements Parser {
 	}
 	
 	public String getLastRawRecord() {
-        recordBuffer.flip();
-		return recordBuffer.toString();
+		if (verbose) {
+			recordBuffer.flip();
+			return recordBuffer.toString();
+		} else {
+			return "<Raw record data is not available, please turn on verbose mode.>";
+		}
 	}
 	
 	public void setQuotedStrings(boolean quotedStrings) {
@@ -921,6 +949,10 @@ public class DataParser implements Parser {
 
 	public Boolean getSkipTrailingBlanks() {
 		return skipTrailingBlanks;
+	}
+
+	public boolean isVerbose() {
+		return verbose;
 	}
 
 }
