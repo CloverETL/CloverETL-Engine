@@ -146,7 +146,7 @@ public class SQLDataParser implements Parser {
 			message.append(" when parsing record #");
 			message.append(recordCounter);
 			message.append(" field ");
-			message.append(metadata.getField(fieldNo).getName());
+			message.append(metadata.getField(fieldNo-1).getName());
 			return message.toString();
 		}
 
