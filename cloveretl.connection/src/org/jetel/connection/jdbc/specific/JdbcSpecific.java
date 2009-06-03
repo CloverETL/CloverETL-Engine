@@ -96,6 +96,17 @@ public interface JdbcSpecific {
 	public int jetelType2sql(DataFieldMetadata field);
 	
 	/**
+	 * Converts field Clover metadata into SQL DDL type...
+	 * e.g. for a fixed length string Clover field it returns "CHAR(15)", etc.
+	 * 
+	 * Similar to sqlType2str but this one is more precise as it knows more about the particular clover field
+	 * 
+	 * @param field
+	 * @return
+	 */
+	public String jetelType2sqlDDL(DataFieldMetadata field);
+	
+	/**
 	 * @return class name where are constants with sql types
 	 */
 	public String getTypesClassName();

@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation license." modified="Thu May 07 10:47:48 CEST 2009" modifiedBy="avackova" name="CreatingXML" revision="1.180">
+<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation license." modified="Mon Jun 01 14:18:02 CEST 2009" modifiedBy="avackova" name="CreatingXML" revision="1.188">
 <Global>
 <Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
 <Metadata fileURL="meta/Spouses.fmt" id="Metadata2"/>
 <Metadata fileURL="meta/Transactions.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="145" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Eighth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="828" x="52" y="64">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="199" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Eighth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="828" x="52" y="32">
 <attr name="text"><![CDATA[
 In the eighth graph, we have created an XML structure based on different mapping hierarchy. 
-In this graph, unlike in the three previous graphs, we use the original files ("Transactions.dat", "Children.dat" and "Spouses.dat") to create this XML file. 
+In this graph, unlike in the three previous graphs, we use the original files ("Transactions.dat", "Children.dat" and "Spouses.dat") to create these XML files. 
 The hierarchy is transactions (the highest element), family. 
-Output file is written to the "data-tmp" directory as the "TransactionsFamily.xml" file since we will need to read it again in the next graphs of the project. 
-The XML file has 100,000 highest level elements. 
+Each record is written to different output file to the "data-tmp" directory (since we will need to read them again in the next graphs of the project), named with mask "TransactionsFamily$$$.xml", where dollars are substituted by record's number. We narrow down the number of files to 15 while we don't want to clutter the directories, but without this limitation, there would be created 100,000 highest level elements. 
 More detailed information about this graph can be found in the "readme.html" file included in the CompanyTransactionsTutorial directory.
 ]]></attr>
 </Note>
@@ -21,7 +20,7 @@ More detailed information about this graph can be found in the "readme.html" fil
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/Children.dat" guiHeight="0" guiName="ChildrenDelimited" guiWidth="0" guiX="62" guiY="386" id="DATA_READER1" skipFirstLine="true" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/Spouses.dat" guiHeight="0" guiName="SpousesDelimited" guiWidth="0" guiX="322" guiY="518" id="DATA_READER2" skipFirstLine="true" type="DATA_READER"/>
 <Node enabled="enabled" guiHeight="0" guiName="AlphabeticalSorting" guiWidth="0" guiX="274" guiY="386" id="EXT_SORT0" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileUrl="${DATATMP_DIR}/TransactionsFamily$$$.xml" guiHeight="0" guiName="TransactionsFamily" guiWidth="0" guiX="510" guiY="247" id="XML_WRITER0" omitNewLines="false" recordCount="10" recordsPerFile="1" rootElement="Transactions" type="XML_WRITER" useRootElement="false">
+<Node enabled="enabled" fileUrl="${DATATMP_DIR}/TransactionsFamily$$$.xml" guiHeight="0" guiName="TransactionsFamily" guiWidth="0" guiX="510" guiY="247" id="XML_WRITER0" omitNewLines="false" recordCount="${MAPPINGS}" recordsPerFile="1" rootElement="Transactions" rootInfoAttributes="true" type="XML_WRITER" useRootElement="false">
 <attr name="mapping"><![CDATA[<Mapping element="transactions" inPort="0" key="AmountID">
     <Mapping element="spouse" inPort="2" key="EmployeeID" keyFromParent="EmployeeID" fieldsIgnore="EmployeeID"/>
     <Mapping element="children" inPort="1" key="ParentID" keyFromParent="EmployeeID" fieldsIgnore="ParentID"/>

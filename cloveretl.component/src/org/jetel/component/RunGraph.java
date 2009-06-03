@@ -26,6 +26,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -377,16 +378,28 @@ public class RunGraph extends Node{
 	}
 	
 	private boolean runGraphSeparateInstance(String graphName, OutputRecordData outputRecordData, String cloverCommandLineArgs) throws IOException {
-		String commandLine = javaCmdLine + " " + quotePartsOfClassPath(classPath) + " " + cloverRunClass + " " + cloverCommandLineArgs +
+		String[] javaCmd = javaCmdLine.split(" ");
+		String[] cloverCommandArgs = cloverCommandLineArgs.split(" "); 
+		int commandLength = javaCmd.length + cloverCommandArgs.length + 4;
+		String[] command = new String[commandLength];
+		int i;
+		for (i = 0; i < javaCmd.length; i++) {
+			command[i] = javaCmd[i];
+		}
+		command[i++] = classPath;
+		command[i++] = cloverRunClass;
+		for (int j = 0; j < cloverCommandArgs.length; j++) {
+			command[i++] = cloverCommandArgs[j];
+		}
 		// TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
 		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed
-		" " + runGraph.NO_DEBUG_SWITCH + 
-		" " + graphName;
-		logger.info("Executing command: " + StringUtils.quote(commandLine));
+		command[i++] = runGraph.NO_DEBUG_SWITCH;
+		command[i] = graphName;
+		logger.info("Executing command: " + StringUtils.quote(Arrays.toString(command)));
 
 		DataConsumer consumer = new OutDataConsumer(fileWriter, outputRecordData);
 		DataConsumer errConsumer = new ErrorDataConsumer(fileWriter, logger, graphName);
-		Process process = Runtime.getRuntime().exec(commandLine);
+		Process process = Runtime.getRuntime().exec(command);
 		ProcBox procBox = new ProcBox(process, null, consumer, errConsumer);
 		
 		// wait for executed process to finish
@@ -418,16 +431,6 @@ public class RunGraph extends Node{
 		return true;
 	}
 	
-	private static String quotePartsOfClassPath(String classPath) {
-		StringBuilder builder = new StringBuilder();
-		String[] parts = classPath.split(";");
-		for (String part : parts) {
-			builder.append(StringUtils.quote(part)+ ";");
-		}
-		builder.deleteCharAt(builder.length() - 1);
-		return builder.toString();
-	}
-
 	/**
 	 * Use this JVM to execute graph.
 	 * It delegates execution to @link IAuthorityProxy

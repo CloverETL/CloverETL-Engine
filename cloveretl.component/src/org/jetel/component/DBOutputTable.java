@@ -369,7 +369,7 @@ public class DBOutputTable extends Node {
 		// filter empty queries
 		ArrayList<String> queries = new ArrayList<String>();
 		for(int i = 0; i < sqlQuery.length; i++) {
-			if (! StringUtils.isEmpty(sqlQuery[i])) {
+			if (sqlQuery[i] != null && sqlQuery[i].trim().length() > 0) {
 				queries.add(sqlQuery[i]);
 			}
 		}

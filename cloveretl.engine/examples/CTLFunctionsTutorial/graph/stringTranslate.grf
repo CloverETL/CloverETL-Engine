@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229625408000" licenseType="Evaluation license." modified="Tue Mar 24 15:17:03 CET 2009" modifiedBy="cloveruser" name="stringTranslate" revision="1.12">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229625408000" licenseType="Evaluation license." modified="Fri May 15 14:37:23 CEST 2009" modifiedBy="cloveruser" name="stringTranslate" revision="1.14">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="translateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -18,7 +18,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="141" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string translate(string arg, string srearchingSet, string replaceSet)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="521" x="76" y="99">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="170" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string translate(string arg, string srearchingSet, string replaceSet)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="521" x="76" y="58">
 <attr name="text"><![CDATA[
 The translate(string, string, string) function accepts three string arguments. The number of characters must be equal in both the second and the third arguments. If some character from the string specified as the second argument is found in the string specified as the first argument, it is replaced by the character taken from the string specified as the third argument. The character from the third string must be at the same position as the character in the second string. 
 Thus, translate("hello", "leo", "pii") returns "hippi".]]></attr>

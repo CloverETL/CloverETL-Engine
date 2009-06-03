@@ -95,7 +95,7 @@ public class XPathParser implements Parser {
 	private XMLReader reader;
 	private String xmlFeatures;
 
-	private static XPathEvaluator xPathEvaluator = new XPathEvaluator();
+	private XPathEvaluator xPathEvaluator = new XPathEvaluator();
 
 	public XPathParser(Document document) {
 		this.xpathDocument = document;
@@ -149,6 +149,7 @@ public class XPathParser implements Parser {
 	    sDefaultNamespaces.addAll(getDefaultNamespaces(aNamespacePaths));
        	setNamespacesToEvaluator(mNamespaces, sDefaultNamespaces);
 	    
+       	if (aNodeSet == null) throw new ComponentNotReadyException("Attribute '" + ATTRIBUTE_XPATH + "' not found for the context element.");
        	String sXpath = aNodeSet.getNodeValue();
 		if (sXpath == null)	throw new ComponentNotReadyException("The 'xpath' attribute is null.");
 		

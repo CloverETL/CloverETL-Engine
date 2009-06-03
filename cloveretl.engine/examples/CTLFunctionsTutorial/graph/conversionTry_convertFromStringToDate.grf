@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Mar 25 09:22:10 CET 2009" guiVersion="2.2.0.RC2" id="1237969573261" licenseType="Evaluation license." modified="Mon Apr 20 16:14:26 CEST 2009" modifiedBy="cloveruser" name="conversionTry_convert" revision="1.46">
+<Graph author="cloveruser" created="Wed Mar 25 09:22:10 CET 2009" guiVersion="0.0.0.devel" id="1237969573261" licenseType="Evaluation license." modified="Fri May 15 14:16:49 CEST 2009" modifiedBy="cloveruser" name="conversionTry_convert" revision="1.48">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="try_convertFromDecimalToStringOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -25,7 +25,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="180" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date try_convert(string From, nameofdatedatatype date, string Format)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="534" x="39" y="56">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="206" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date try_convert(string From, nameofdatedatatype date, string Format)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="534" x="39" y="56">
 <attr name="text"><![CDATA[
 The try_convert(string, nameofdatedatatype, string) function accepts three arguments: the first is of string data type, the second is the name of date data type and the third is a format of the first argument. 
 The date word specified as the second argument can neither be received through the edge nor be defined as variable. 

@@ -150,8 +150,17 @@
 	 	<FlatFile outputFile="data-out/spousesXMLXPath.txt" supposedFile="supposed-out/A16.spousesXMLXPath.txt"/>
         <DeleteFile file="data-tmp/EmployeesWithFamily.xls"/>
 	</FunctionalTest>
-	
+	<!-- 
+		When I modify runAllGraphs.grf and set cloverCmdLineArgs="-plugins ${PROJECT_DIR}/${PLUGINS_DIR} -P:PROJECT_DIR=${PROJECT_DIR}" 
+		all graphs are successuly executed.
+	-->
+	<!--
 	<FunctionalTest ident="allGraphs" graphFile="graph/runAllGraphs.grf">
+		<RegEx expression="Some graph\(s\) finished with error" occurences="0"/>
+		<RegEx expression="Processing finished successfully" occurences="16"/>
+		
+		This file is changing - different absolute paths of executed graphs and diferent exexution times
+	 	<FlatFile outputFile="data-out/allGraphs.txt" supposedFile="supposed-out/allGraphs.txt"/>
 	</FunctionalTest>
-
+	-->
 </TestScenario>

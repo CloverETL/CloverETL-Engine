@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation license." modified="Thu May 07 11:43:39 CEST 2009" modifiedBy="avackova" name="CreatingXML" revision="1.202">
+<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation license." modified="Mon Jun 01 14:15:28 CEST 2009" modifiedBy="avackova" name="CreatingXML" revision="1.212">
 <Global>
 <Metadata fileURL="meta/Amounts.fmt" id="Metadata4"/>
 <Metadata fileURL="meta/AmountsWithEmplID_WithCustID.fmt" id="Metadata6"/>
@@ -10,11 +10,11 @@
 <Metadata fileURL="meta/IDs.fmt" id="Metadata3"/>
 <Metadata fileURL="meta/Spouses.fmt" id="Metadata7"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="145" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Fifth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1132" x="34" y="42">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="167" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Fifth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1132" x="34" y="42">
 <attr name="text"><![CDATA[
 In the fifth graph, we have created an XML structure based on different mapping hierarchy. 
-In this graph, the hierarchy is employee (the highest element), family, customer, amount of money paid. Output file is written to the "data-tmp" directory as the "EmplFamCustAm.xml" file since we will need to read it again in the next graphs of the project. 
-The XML file has 200 highest level elements. 
+In this graph, the hierarchy is employee (the highest element), family, customer, amount of money paid. Each record is written to different output file to the "data-tmp" directory (since we will need to read them again in the next graphs of the project), named with mask "EmplFamCustAm$$$.xml", where dollars are substituted by record's number. 
+We narrow down the number of files to 15 while we don't want to clutter the directories, but without this limitation, there would be created 200 highest level elements. 
 More detailed information about this graph can be found in the "readme.html" file included in the CompanyTransactionsTutorial directory.
 ]]></attr>
 </Note>
@@ -67,7 +67,7 @@ function transform() {
 <Node enabled="enabled" fieldMap="$EmployeeSurname:=EmployeeSurname;$EmployeeID:=EmployeeID;$EmployeeFirstname:=EmployeeFirstname;" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="0" guiName="EmployeesXLS" guiWidth="0" guiX="43" guiY="247" id="XLS_READER0" metadataRow="1" sheetName="Employees" type="XLS_READER"/>
 <Node enabled="enabled" fieldMap="$ChildName:=ChildName;$ParentID:=ParentID;" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="0" guiName="ChildrenXLS" guiWidth="0" guiX="43" guiY="335" id="XLS_READER1" metadataRow="1" sheetName="Children" type="XLS_READER"/>
 <Node enabled="enabled" fieldMap="$SpouseName:=SpouseName;$EmployeeID:=EmployeeID;" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="0" guiName="SpousesXLS" guiWidth="0" guiX="636" guiY="319" id="XLS_READER2" metadataRow="1" sheetName="Spouses" type="XLS_READER"/>
-<Node enabled="enabled" fileUrl="${DATATMP_DIR}/EmplFamCustAm$$$.xml" guiHeight="0" guiName="EmployeesCustomersAmounts" guiWidth="0" guiX="1020" guiY="252" id="XML_WRITER0" omitNewLines="false" recordCount="15" recordsPerFile="1" rootElement="Employees" type="XML_WRITER" useRootElement="false">
+<Node enabled="enabled" fileUrl="${DATATMP_DIR}/EmplFamCustAm$$$.xml" guiHeight="0" guiName="EmployeesCustomersAmounts" guiWidth="0" guiX="1020" guiY="252" id="XML_WRITER0" omitNewLines="false" recordCount="${MAPPINGS}" recordsPerFile="1" rootElement="Employees" rootInfoAttributes="true" type="XML_WRITER" useRootElement="false">
 <attr name="mapping"><![CDATA[<Mapping element="employee" inPort="0" key="EmployeeID">
   <Mapping element="spouse" inPort="2" keyToParent="EmployeeID" fieldsIgnore="EmployeeID"/>
   <Mapping element="children" inPort="1" keyToParent="ParentID" fieldsIgnore="ParentID"/>

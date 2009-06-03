@@ -1,6 +1,27 @@
 *******************************************************************************
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
+REL 2-7-1
+---------
+Features:
++ added CTL functions: bit_and bit_or, bit_xor
++ StringAproxComparatorLocaleRules for more languages
++ Clover-to-SQL conversions have been revised for all supported dbms, some data types changed 
++ performace improvement in HashJoin 
+
+Fixed:
++ multiple XPathReaders in one graph with different namespaces
++ writing data to port doesn't use unnecessary threads
++ updated our built-in mysql driver to version 5.1.17
++ DBExecute - NPE when executing stored procedure in Oracle, which have output parameter as not the first paramete
++ when query in DBInputTable finishes with ;<new line> strange error is thrown
++ OracleDataWriter leaves junk after execution
++ randomSeed doesn't work in DataGenerator
++ edit_distance function with strength 2
++ ExtSort with a locale
++ other fixes
+
+ 
 REL 2-7-0
 ---------
 Features:

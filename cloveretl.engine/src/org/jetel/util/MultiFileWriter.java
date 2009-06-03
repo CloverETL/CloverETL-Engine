@@ -426,7 +426,7 @@ public class MultiFileWriter {
         	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
         		entry.getValue().close();
         	}
-    	} else {
+    	} else if (currentTarget != null) {
     		currentTarget.close();
     	}
     	if (unassignedTarget != null) unassignedTarget.close();

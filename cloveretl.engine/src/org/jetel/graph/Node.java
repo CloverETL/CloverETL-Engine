@@ -373,7 +373,10 @@ public abstract class Node extends GraphElement implements Runnable {
 	 */
 	public void run() {
 		//store the current thread like a node executor
-		setNodeThread(Thread.currentThread());
+		synchronized (this) {
+			setNodeThread(Thread.currentThread());
+			notifyAll(); //we have to notify the executor (watchdog) that the component is already running and the thread is preset
+		}
 		
         runResult=Result.RUNNING; // set running result, so we know run() method was started
         try {

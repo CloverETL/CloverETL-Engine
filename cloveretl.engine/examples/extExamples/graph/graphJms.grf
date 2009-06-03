@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Nov 22 11:30:48 CET 2006" description="This graph ilustrates usage of JMS Reader/Writer Components. It reuires ACtiveMQ JMS server to be running on localhost!" guiVersion="0.0.0.devel" id="1204546356214" licenseType="Evaluation license." modified="Thu Apr 16 11:46:52 CEST 2009" modifiedBy="avackova" name="graphSystemExecute" revision="1.29">
+<Graph author="avackova" created="Wed Nov 22 11:30:48 CET 2006" description="This graph ilustrates usage of JMS Reader/Writer Components. It reuires ACtiveMQ JMS server to be running on localhost!" guiVersion="0.0.0.devel" id="1204546356214" licenseType="Evaluation license." modified="Mon May 18 09:34:32 CEST 2009" modifiedBy="avackova" name="graphSystemExecute" revision="1.52">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
-<Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="file:${LIB_DIR}/activemq-all-5.2.0.jar" name="" password="" providerUrl="vm://localhost" type="JMS" username=""/>
+<Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="${PROJECT}/lib/activemq-all-5.2.0.jar" name="" password="" providerUrl="vm://localhost" type="JMS" username=""/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Tue Mar 24 18:11:16 CET 2009" modifiedBy="cloveruser" name="container_push" revision="1.49">
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Fri May 15 14:00:15 CEST 2009" modifiedBy="cloveruser" name="container_push" revision="1.51">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="forPollInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -18,14 +18,14 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="117" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="30" y="182">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="136" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="30" y="182">
 <attr name="text"><![CDATA[
 Here we use lists consisting of string elements. 
 List consists of 4 elements. 
 poll(List) returns the first element of List. 
 And after the function is executed, List consists of 3 resulting elements.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="119" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="elementType poll(list arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="31" y="18">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="136" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="elementType poll(list arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="31" y="18">
 <attr name="text"><![CDATA[
 The poll(list) function accepts one argument of list data type. It takes this argument, removes the first element from the list and returns this element. 
 The list specified as the argument changes to this new value (with the first element removed).]]></attr>

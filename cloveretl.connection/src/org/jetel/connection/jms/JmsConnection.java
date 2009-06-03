@@ -201,6 +201,11 @@ public class JmsConnection extends GraphElement implements IConnection {
         if(isInitialized()) return;
 		super.init();
 		
+		// prepare context URL
+		if (contextURL == null) {
+			contextURL = getGraph() == null ? null : getGraph().getProjectURL();
+		}
+		
 		try {
 			
 			if (libraries != null)

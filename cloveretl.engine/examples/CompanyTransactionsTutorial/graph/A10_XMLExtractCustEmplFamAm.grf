@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation license." modified="Thu May 07 09:58:44 CEST 2009" modifiedBy="avackova" name="ReadingXMLExtract" revision="1.83">
+<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation license." modified="Fri May 15 13:53:55 CEST 2009" modifiedBy="cloveruser" name="ReadingXMLExtract" revision="1.87">
 <Global>
 <Metadata fileURL="meta/AmountsWithCustIDWithEmplID.fmt" id="Metadata3"/>
 <Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
@@ -8,10 +8,10 @@
 <Metadata fileURL="meta/EmployeesWithCustomerID.fmt" id="Metadata0"/>
 <Metadata fileURL="meta/Spouses.fmt" id="Metadata5"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="143" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Tenth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1058" x="48" y="54">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="172" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Tenth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1058" x="48" y="54">
 <attr name="text"><![CDATA[
-In the tenth graph, we use XMLExtract to read the already created "CustEmplFamAm.xml" file contained in the "data-tmp" directory. The XML file has 19,955 highest level elements. 
-This XML file is read and five output files are created. 
+In the tenth graph, we use XMLExtract to read the already created "CustEmplFamAm*.xml" files contained in the "data-tmp" directory. 
+These XML files are read and five output files are created. 
 They are similar to the delimited files, both original ones and those created in previous graphs, except the last one, where EmployeeID and CustomerID are included in one file together with infomration about money paid.
 More detailed information about this graph can be found in the "readme.html" file included in the CompanyTransactionsTutorial directory.
 ]]></attr>

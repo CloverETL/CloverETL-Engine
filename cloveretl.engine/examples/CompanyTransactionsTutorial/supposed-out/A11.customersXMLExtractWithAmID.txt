@@ -9,3 +9,8 @@ CustomerID;CustomerState;CustomerSurname;CustomerFirstname;AmountID
 8;Maine;Ivner;Romeo;8
 9;Alaska;Hild;Mabel;9
 10;Missouri;Son;Michele;10
+11;Oregon;Pennington;Emilo;11
+12;Wisconsin;Mc Gary;Marliyn;12
+13;California;Yellman;Noreen;13
+14;Michigan;Segura;H.;14
+15;Maryland;Frinton;Karie;15

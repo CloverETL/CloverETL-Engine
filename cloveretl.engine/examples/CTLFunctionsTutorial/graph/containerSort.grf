@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Tue Mar 24 18:56:53 CET 2009" modifiedBy="cloveruser" name="container_push" revision="1.65">
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Fri May 15 14:01:31 CEST 2009" modifiedBy="cloveruser" name="container_push" revision="1.67">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="forSortInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -19,7 +19,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="140" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="39" y="170">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="158" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="39" y="170">
 <attr name="text"><![CDATA[
 Here we use lists consisting of string elements. 
 List consists of 5 elements. 
@@ -28,7 +28,7 @@ And after the function is executed, List consists of the same sorted 5 elements.
 The function returns this new value of List.
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="119" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="list sort(list arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="40" y="18">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="138" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="list sort(list arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="40" y="18">
 <attr name="text"><![CDATA[
 The sort(list) function accepts one argument of list data type. It takes this argument, sorts the elements of the list in ascending order according to their values and returns such new list. 
 The list specified as the argument changes to this new value.]]></attr>

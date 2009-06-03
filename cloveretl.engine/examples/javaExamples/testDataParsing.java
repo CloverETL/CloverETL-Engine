@@ -25,7 +25,7 @@ import java.io.PrintStream;
 import java.util.Properties;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.parser.DelimitedDataParser;
+import org.jetel.data.parser.DataParser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.runtime.EngineInitializer;
@@ -82,7 +82,7 @@ public class testDataParsing {
 	metadata.addField(numericField);
 	metadata.addField(new DataFieldMetadata("Contract_nr",DataFieldMetadata.INTEGER_FIELD, "\r\n"));
 	
-	DelimitedDataParser parser=new DelimitedDataParser();
+	DataParser parser=new DataParser();
 	try{
 		parser.init(metadata);
 		parser.setDataSource(in);

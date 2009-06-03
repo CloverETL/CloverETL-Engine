@@ -31,6 +31,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.Result;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.string.StringUtils;
@@ -96,18 +97,30 @@ public class ExtDataGenerator extends DataGenerator {
 			outRecord[i].init();
 			outRecord[i].reset();
 		}
+		if (generation != null) executeGenerate(outRecord);
+		else executeAutoFilling(outRecord);
 
+		broadcastEOF();
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+	
+	/**
+	 * Generate all.
+	 * @param outRecord
+	 * @throws Exception
+	 */
+	private void executeGenerate(DataRecord[] outRecord) throws Exception {
 		for (int i=0;i<recordsNumber && runIt;i++){
 			for (DataRecord oRecord: outRecord)	oRecord.reset();
 			int transformResult = generation.generate(outRecord);
 
 			if (transformResult == RecordTransform.ALL) {
-				for (int outPort = 0; outPort < numOutputPorts; outPort++) {
-					autoFilling.setAutoFillingFields(outRecord[outPort]);
+				for (int outPort = 0; outPort < outRecord.length; outPort++) {
+					autoFilling.setLastUsedAutoFillingFields(outRecord[outPort]);
 					writeRecord(outPort, outRecord[outPort]);
 				}
 			} else if (transformResult >= 0) {
-				autoFilling.setAutoFillingFields(outRecord[transformResult]);
+				autoFilling.setLastUsedAutoFillingFields(outRecord[transformResult]);
 				writeRecord(transformResult, outRecord[transformResult]);
 			} else if (transformResult < 0) {
 				throw new TransformException("Transformation finished with code: " + transformResult + 
@@ -120,9 +133,21 @@ public class ExtDataGenerator extends DataGenerator {
 		if (generation != null) {
 			generation.finished();
 		}
-
-		broadcastEOF();
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+	
+	/**
+	 * Generate only autofilling.
+	 * @param outRecord
+	 * @throws Exception
+	 */
+	private void executeAutoFilling(DataRecord[] outRecord) throws Exception {
+		for (int i=0;i<recordsNumber && runIt;i++){
+			for (int outPort = 0; outPort < outRecord.length; outPort++) {
+				autoFilling.setLastUsedAutoFillingFields(outRecord[outPort]);
+				writeRecord(outPort, outRecord[outPort]);
+			}
+			SynchronizeUtils.cloverYield();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -155,16 +180,29 @@ public class ExtDataGenerator extends DataGenerator {
             outMetadata[i] = getOutputPort(i).getMetadata();
         }
 
-		// create instance of the record generator
-		generation = RecordTransformFactory.createGenerator(generate, generateClass, 
-				generateURL, this, outMetadata, generateParameters, 
-				this.getClass().getClassLoader());
-
+        // if no generator then verify and prepare autofilling
+        if (generate == null && generateClass == null && generateURL == null) {
+        	boolean isAutoFilling = false;
+        	for (DataFieldMetadata fMetadata: outMetadata[0].getFields()) {
+        		if (fMetadata.isAutoFilled()) {
+        			isAutoFilling = true;
+        		}
+        	}
+        	if (!isAutoFilling) throw new ComponentNotReadyException("Attribute/property not found: " + XML_GENERATE_ATTRIBUTE);
+        	
+   		// create instance of the record generator
+        } else {
+    		generation = RecordTransformFactory.createGenerator(generate, generateClass, 
+    				generateURL, this, outMetadata, generateParameters, 
+    				this.getClass().getClassLoader());
+        }
+		
 		// autofilling
 		if (outMetadata.length > 0) {
 	   		autoFilling.addAutoFillingFields(outMetadata[0]);
 		}
    		autoFilling.setFilename(getId());
+   		autoFilling.addAutoFillingFields(outMetadata[0]);
 	}
 	
 	@Override

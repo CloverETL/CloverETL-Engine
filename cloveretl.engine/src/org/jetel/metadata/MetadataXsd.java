@@ -166,10 +166,13 @@ public class MetadataXsd extends MXAbstract {
 		
 		Character type = namesPrimitive.get(sValue != null ? sValue : sType);
 		if (type == null) throw new RuntimeException("Unknown primitive data type '" + (sValue != null ? sValue : sType));
+		if (type == DataFieldMetadata.BYTE_FIELD && sType.contains(CLOVER_BYTE_COMPRESSED)) 
+			type = Character.valueOf(DataFieldMetadata.BYTE_FIELD_COMPRESSED);
 		
 		Node rest;
 		switch (type) {
 		case DataFieldMetadata.BYTE_FIELD:
+		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
 			if ((rest = getNode(restParent, NAMESPACES, XSD_LENGHT)) != null) {
 				dataFieldMetadata.setSize(Short.parseShort(getAttributeValue(rest, VALUE)));
 			}

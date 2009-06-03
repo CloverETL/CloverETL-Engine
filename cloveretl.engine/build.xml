@@ -256,14 +256,49 @@ defined.version.suffix=release
 		</zip>
 		
 	</target>
-		
+	
+	<import file="${dir.build-scripts}/examples-exclude.xml"/>
+	
 	<target name="dist.examples" depends="init" description="Creates examples distribution">
 		
 		<!-- binary distribution -->
-		<mkdir dir="${dir.distprepare.exa}/cloverETL"/>
+		<mkdir dir="${dir.distprepare.exa}/cloverETL/examples"/>
 
-		<copy todir="${dir.distprepare.exa}/cloverETL/examples">
-			<fileset dir="${dir.examples}" />
+		<copy todir="${dir.distprepare.exa}/cloverETL/examples/">
+			<fileset dir="${dir.examples}" >
+				<include name="*html"/>
+				<include name="img/**"/>
+			</fileset>
+		</copy>
+		<copy todir="${dir.distprepare.exa}/cloverETL/examples/AdvancedExamples">
+			<fileset dir="${dir.examples}/advancedExamples" >
+				<patternset refid="example.files"/>
+			</fileset>
+		</copy>
+		<copy todir="${dir.distprepare.exa}/cloverETL/examples/CompanyTransactionsTutorial">
+			<fileset dir="${dir.examples}/CompanyTransactionsTutorial" >
+				<patternset refid="example.files"/>
+			</fileset>
+		</copy>
+		<copy todir="${dir.distprepare.exa}/cloverETL/examples/CTLFunctionsTutorial">
+			<fileset dir="${dir.examples}/CTLFunctionsTutorial" >
+				<patternset refid="example.files"/>
+			</fileset>
+		</copy>
+		<copy todir="${dir.distprepare.exa}/cloverETL/examples/ExtExamples">
+			<fileset dir="${dir.examples}/extExamples" >
+				<patternset refid="example.files"/>
+			</fileset>
+		</copy>
+		<copy todir="${dir.distprepare.exa}/cloverETL/examples/JavaExamples">
+			<fileset dir="${dir.examples}/javaExamples" >
+				<patternset refid="example.files"/>
+			</fileset>
+		</copy>
+		<copy todir="${dir.distprepare.exa}/cloverETL/examples/SimpleExamples">
+			<fileset dir="${dir.examples}/simpleExamples" >
+				<patternset refid="example.files"/>
+			</fileset>
 		</copy>
 
 		<!-- create zip distribution package -->
@@ -699,33 +734,15 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		</ant>
 	</target>
 	
-	<target name="dir.examples.paths">
-		<makeurl property="dir.examples.scenarios" separator=";" validate="true">
-			<path>
-				<dirset dir="${dir.examples}">
-					<depth min="0" max="0"/>	
-				</dirset>
-			</path>
-		</makeurl>
-		<makeurl property="dir.examples.classes" separator=":" validate="true">
-			<path>
-				<dirset dir="${dir.examples}" includes="*/trans">
-					<depth min="1" max="1"/>	
-				</dirset>
-			</path>
-		</makeurl>
-	</target>
-	
-	<target name="runtests-scenario-after-commit" depends="build,dir.examples.paths">
+	<target name="runtests-scenario-after-commit" depends="build">
 		<echo message="Executing Clover Test Environment environment - after commit"/>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
 			<property name="environment.config" value="${cte.environment.config}"/>
-			<property name="dir.scenarios" value="../cloveretl.test.scenarios;${dir.examples.scenarios}" />
 			<property name="scenarios" value="after-commit.ts" />
-			<property name="dir.scenarios.classes" value="../cloveretl.test.scenarios/trans:${dir.examples.classes}"/>
 			<property name="dir.engine.classes" value="${dir.bin}"/>
 			<property name="dir.plugins" value="${dir.dist}/plugins"/>
 			<property name="version.full" value="${version.full}"/> 
+			<property name="hudson.link" value="${cte.hudson.link}"/>
 		</ant>
 	</target>
 	
@@ -733,25 +750,24 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		<echo message="Executing Clover Test Environment environment - night"/>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
 			<property name="environment.config" value="${cte.environment.config}"/>
-			<property name="dir.scenarios" value="../cloveretl.test.scenarios"/>
 			<property name="scenarios" value="night.ts" />
 			<property name="dir.engine.classes" value="${dir.bin}"/>
 			<property name="dir.plugins" value="${dir.dist}/plugins"/>
 			<property name="version.full" value="${version.full}"/>
+			<property name="hudson.link" value="${cte.hudson.link}"/>
 		</ant>
 	</target>
 	
-	<target name="runtests-scenario-coverage" depends="build,coverage-instrument, dir.examples.paths">
+	<target name="runtests-scenario-coverage" depends="build,coverage-instrument">
 		<echo message="Executing Clover Test Environment environment - coverage"/>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
 			<property name="environment.config" value="${cte.environment.config}"/>
-			<property name="dir.scenarios" value="../cloveretl.test.scenarios;${dir.examples.scenarios}" />
 			<property name="scenarios" value="after-commit.ts" />
-			<property name="dir.scenarios.classes" value="../cloveretl.test.scenarios/trans:${dir.examples.classes}"/>
 			<property name="dir.engine.classes" value="${dir.coverage.bin}:${dir.bin}"/>
 			<property name="dir.plugins" value="${dir.coverage.plugins}/plugins"/>
 			<property name="cobertura.ser" value="${cobertura.ser}"/>
 			<property name="version.full" value="${version.full}"/>
+			<property name="hudson.link" value="${cte.hudson.link}"/>
 		</ant>
 	</target>
 	

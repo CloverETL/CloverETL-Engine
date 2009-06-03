@@ -324,14 +324,18 @@ public class DateLib extends TLFunctionLibrary {
         
         public RandomDateFunction() {
             super("date", "random_date", "Generates a random date", 
-           		 new TLValueType[] { TLValueType.OBJECT, TLValueType.OBJECT, TLValueType.STRING, TLValueType.STRING}, 
-           		 TLValueType.DATE, 4, 2);
+           		 new TLValueType[] { TLValueType.OBJECT, TLValueType.OBJECT, TLValueType.OBJECT, TLValueType.OBJECT, TLValueType.LONG}, 
+           		 TLValueType.DATE, 5, 2);
         }
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
         	RandomDateContext randomDateContext=(RandomDateContext)context.getContext();
         	randomDateContext.checkAndSetParams(params);
+        	if (randomDateContext.dirtyRandomSeed) {
+        		dataGenerator.setSeed(randomDateContext.randomSeed);
+        		randomDateContext.dirtyRandomSeed = false;
+        	}
 			
 			// generate date
 			randomDateContext.setValue(new Date(dataGenerator.nextLong(randomDateContext.fromDate, randomDateContext.toDate)));
@@ -375,6 +379,9 @@ public class DateLib extends TLFunctionLibrary {
 		private CharSequence sLocale;
 		private Locale locale;
 	    
+		private long randomSeed = Long.MIN_VALUE;
+		private boolean dirtyRandomSeed;
+		
 	    public static TLContext createContex(){
 	    	RandomDateContext con=new RandomDateContext();
 	        con.value=TLValue.create(TLValueType.DATE);
@@ -394,18 +401,19 @@ public class DateLib extends TLFunctionLibrary {
 	     * @param params
 	     * 		param[0] - String or Date - start date
 	     * 		param[1] - String or Date - start date
-	     * 		param[2] - optional - String - format
-	     * 		param[3] - optional - String - locale
+	     * 		param[2] - optional - String - format || optional - int - randomSeed
+	     * 		param[3] - optional - String - locale || optional - int - randomSeed
+	     *  	param[4] - optional - int - randomSeed
 	     */
 		public void checkAndSetParams(TLValue[] params) {
 			if (params[0].type == TLValueType.DATE) {
 				fromDate = params[0].getDate().getTime();
 			} else if (params[0].type == TLValueType.STRING) {
 	        	// prepare the locale
-	        	parseLocale(params);
+				parseLocaleOrRandomSeed(params);
 
 	        	// prepare the date formatter
-	        	parseDataFormater(params);
+	        	parseDataFormaterOrRandomSeed(params);
 				
 	    		try {
 					fromDate = format.parse(((TLStringValue)params[0]).getCharSequence().toString()).getTime();
@@ -418,13 +426,17 @@ public class DateLib extends TLFunctionLibrary {
 			
 			if (params[1].type == TLValueType.DATE) {
 				toDate = params[1].getDate().getTime();
+				if (params.length == 3) {
+					// parse random seed
+					parseRandomSeed(params[2], params);
+				}
 			} else if (params[1].type == TLValueType.STRING) {
 				if (params[0].type != TLValueType.STRING) {
 		        	// prepare the locale
-		        	parseLocale(params);
+					parseLocaleOrRandomSeed(params);
 
 		        	// prepare the date formatter
-		        	parseDataFormater(params);
+		        	parseDataFormaterOrRandomSeed(params);
 				}
 	    		try {
 					toDate = format.parse(((TLStringValue)params[1]).getCharSequence().toString()).getTime();
@@ -439,11 +451,13 @@ public class DateLib extends TLFunctionLibrary {
 			}
 		}
 
-		private final void parseLocale(TLValue[] params) {
+		private final void parseLocaleOrRandomSeed(TLValue[] params) {
 	    	// prepare the locale
-			if (params.length == 4) {
+			if (params.length >= 4) {
 				if (params[3].type != TLValueType.STRING) {
-		            throw new TransformLangExecutorRuntimeException(params, "random_date - wrong locale type");
+					// parse random seed
+					parseRandomSeed(params[3], params);
+					return;
 				}
 				CharSequence sLocale = ((TLStringValue)params[3]).getCharSequence();
 				if (sLocale.equals(this.sLocale)) return;
@@ -452,13 +466,22 @@ public class DateLib extends TLFunctionLibrary {
 				if (aLocale.length < 2) locale = new Locale(aLocale[0]);
 				else locale = new Locale(aLocale[0], aLocale[1]);
 			}
+			if (params.length == 5) {
+				if (params[4].type != TLValueType.INTEGER) {
+		            throw new TransformLangExecutorRuntimeException(params, "random_date - wrong locale type");
+				}
+				// parse random seed
+				parseRandomSeed(params[4], params);
+			}
 	    }
 	    
-	    private final void parseDataFormater(TLValue[] params) {
+	    private final void parseDataFormaterOrRandomSeed(TLValue[] params) {
 	    	// prepare the date formatter
 	    	if (params.length > 2) {
 				if (params[2].type != TLValueType.STRING) {
-		            throw new TransformLangExecutorRuntimeException(params, "random_date - wrong format type");
+					// parse random seed
+					parseRandomSeed(params[2], params);
+					return;
 				}
 				CharSequence sFormat = ((TLStringValue)params[2]).getCharSequence();
 				if (sFormat.equals(this.sFormat)) return;
@@ -479,6 +502,17 @@ public class DateLib extends TLFunctionLibrary {
 		    	format.setLenient(false);
 	    	}
 	    }
+
+		private void parseRandomSeed(TLValue param, TLValue[] params) {
+			if (param.type != TLValueType.INTEGER && param.type != TLValueType.LONG) {
+	            throw new TransformLangExecutorRuntimeException(params, "random_date - wrong locale type");
+			}
+			// parse random seed
+			if (randomSeed != ((TLNumericValue<?>)param).getLong()) {
+				randomSeed = ((TLNumericValue<?>)param).getLong();
+				dirtyRandomSeed = true;
+			}
+		}
 	}
 }
 

@@ -190,7 +190,11 @@ public class PluginDescriptor {
 //            return null;
         }
         if(classLoader == null) {
-            classLoader = new PluginClassLoader(PluginDescriptor.class.getClassLoader(), this);
+        	if (Plugins.isSimpleClassLoading()) {
+        		classLoader = PluginDescriptor.class.getClassLoader();
+        	} else {
+        		classLoader = new PluginClassLoader(PluginDescriptor.class.getClassLoader(), this);
+        	}
         }
         return classLoader;
     }

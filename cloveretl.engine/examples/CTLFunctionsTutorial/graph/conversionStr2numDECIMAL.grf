@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Mar 19 14:24:06 CET 2009" guiVersion="0.0.0.devel" id="1237480457206" licenseType="Evaluation license." modified="Wed Mar 25 14:39:26 CET 2009" modifiedBy="cloveruser" name="str2num" revision="1.24">
+<Graph author="cloveruser" created="Thu Mar 19 14:24:06 CET 2009" guiVersion="0.0.0.devel" id="1237480457206" licenseType="Evaluation license." modified="Fri May 15 14:16:48 CEST 2009" modifiedBy="cloveruser" name="str2num" revision="1.26">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="str2numDECIMALInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -16,13 +16,13 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example - decimal data type" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="558" x="45" y="183">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="125" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example - decimal data type" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="558" x="45" y="153">
 <attr name="text"><![CDATA[
 When working with decimal data type, only 10 can be used as radix.
 
 If radix is not specified, 10 is used by default.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="130" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="numerictype str2num(string Arg, typename Numerictype, int Radix)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="561" x="44" y="10">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="158" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="numerictype str2num(string Arg, typename Numerictype, int Radix)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="561" x="44" y="-17">
 <attr name="text"><![CDATA[
 The str2num(string, typename, int) function accepts three arguments: the first is string, the second is the name of any numeric data type and the third is integer number (radix). 
 The name of the second argument can neither be received through the edge nor be defined as variable.

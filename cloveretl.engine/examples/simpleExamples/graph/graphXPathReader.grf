@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="In this example data are read from employees.xml file. “Mapping” attribute describes dependencies between xml nodes and metadata fields. " guiVersion="0.0.0.devel" id="1204551969115" licenseType="Evaluation license." modified="Tue Mar 17 11:35:48 CET 2009" modifiedBy="avackova" name="XXX" revision="1.21">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="In this example data are read from employees.xml file. 'Mapping' attribute describes dependencies between xml nodes and metadata fields. " guiVersion="0.0.0.devel" id="1204551969115" licenseType="Commercial - Multilicense CLGXDINITI279458BY" modified="Tue May 19 11:13:05 CEST 2009" modifiedBy="admin" name="XXX" revision="1.22">
 <Global>
 <Metadata id="Metadata2">
 <Record fieldDelimiter=";" name="BenefitsOthers" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -17,13 +17,6 @@
 <Field name="seqKey" nullable="true" shift="0" type="integer"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata1">
-<Record fieldDelimiter=";" name="Children" recordDelimiter="\r\n" recordSize="-1" type="delimited">
-<Field name="chname" nullable="true" shift="0" type="string"/>
-<Field name="age" nullable="true" shift="0" type="integer"/>
-<Field name="parentID" nullable="false" shift="0" type="integer"/>
-</Record>
-</Metadata>
 <Metadata id="Metadata4">
 <Record fieldDelimiter=";" name="customers" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field name="name" nullable="true" shift="0" type="string"/>
@@ -37,6 +30,13 @@
 <Field name="basic_salary" nullable="true" shift="0" type="integer"/>
 <Field name="firstname" nullable="true" shift="0" type="string"/>
 <Field name="surname" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record fieldDelimiter=";" name="Children" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field name="chname" nullable="true" shift="0" type="string"/>
+<Field name="age" nullable="true" shift="0" type="integer"/>
+<Field name="parentID" nullable="false" shift="0" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata6">

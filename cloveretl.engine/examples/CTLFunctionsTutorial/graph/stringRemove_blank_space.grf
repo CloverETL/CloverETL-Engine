@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229621814796" licenseType="Evaluation license." modified="Tue Mar 24 11:09:33 CET 2009" modifiedBy="cloveruser" name="stringRemove_blank_space" revision="1.11">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229621814796" licenseType="Evaluation license." modified="Fri May 15 14:35:48 CEST 2009" modifiedBy="cloveruser" name="stringRemove_blank_space" revision="1.13">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="remove_blank_spaceInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -14,7 +14,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="93" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string remove_blank_space(string arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="458" x="87" y="142">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="120" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string remove_blank_space(string arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="458" x="87" y="110">
 <attr name="text"><![CDATA[
 The remove_blank_space(string) function takes one string argument and returns another string with white spaces removed.]]></attr>
 </Note>

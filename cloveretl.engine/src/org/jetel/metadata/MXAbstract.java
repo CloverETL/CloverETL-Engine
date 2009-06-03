@@ -67,9 +67,10 @@ abstract public class MXAbstract {
 	protected static final HashMap<String, Character> namesPrimitive = new HashMap<String, Character>();
 
 	// initialize mappings
+	protected static final String CLOVER_BYTE_COMPRESSED = "CloverByteCompressed";
 	static {
 		typeNames.put(Character.valueOf(DataFieldMetadata.BYTE_FIELD), "CloverByte");
-		typeNames.put(Character.valueOf(DataFieldMetadata.BYTE_FIELD_COMPRESSED), "CloverByteCompressed");
+		typeNames.put(Character.valueOf(DataFieldMetadata.BYTE_FIELD_COMPRESSED), CLOVER_BYTE_COMPRESSED);
 		typeNames.put(Character.valueOf(DataFieldMetadata.DATE_FIELD), "CloverDate");
 		typeNames.put(Character.valueOf(DataFieldMetadata.DATETIME_FIELD), "CloverDatetime");
 		typeNames.put(Character.valueOf(DataFieldMetadata.DECIMAL_FIELD), "CloverDecimal");

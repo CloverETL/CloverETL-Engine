@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Mar 25 09:22:10 CET 2009" guiVersion="0.0.0.devel" id="1237969331155" licenseType="Evaluation license." modified="Wed Mar 25 12:37:30 CET 2009" modifiedBy="cloveruser" name="conversionNum2num" revision="1.10">
+<Graph author="cloveruser" created="Wed Mar 25 09:22:10 CET 2009" guiVersion="0.0.0.devel" id="1237969331155" licenseType="Evaluation license." modified="Fri May 15 14:16:47 CEST 2009" modifiedBy="cloveruser" name="conversionNum2num" revision="1.12">
 <Global>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="conversionNum2numDecimalToIntegerInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -26,14 +26,14 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="166" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="numerictype num2num(numerictype Arg, typename numerictype)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="618" x="68" y="45">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="188" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="numerictype num2num(numerictype Arg, typename numerictype)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="618" x="63" y="23">
 <attr name="text"><![CDATA[
 The num2num(numerictype, typename) function accepts two arguments: the first is of any numeric data type and the second is the name of any numeric data type. 
 The second argument can neither be received through the edge nor be defined as variable, it must be specified in the function.
 The function takes these two arguments and converts the first argument value to that of the numeric type whose name is specified as the second argument. The return type of the function is the same as the second argument. 
 The conversion is successful only if the conversion is possible without any loss of information, otherwise the function throws exception. ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="107" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="619" x="64" y="235">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="124" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="619" x="64" y="225">
 <attr name="text"><![CDATA[
 Phase 0: We have tried to convert integer numbers to decimals. It can be done and the phase 0 ends successfully.
 

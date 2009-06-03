@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Jan 16 13:28:30 CET 2009" guiVersion="0.0.0.devel" id="1232110167500" licenseType="Evaluation license." modified="Wed Apr 22 08:59:21 CEST 2009" modifiedBy="cloveruser" name="sorting" revision="1.102">
+<Graph author="milos_kovalcik" created="Fri Jan 16 13:28:30 CET 2009" guiVersion="0.0.0.devel" id="1232110167500" licenseType="Evaluation license." modified="Fri May 15 13:53:56 CEST 2009" modifiedBy="cloveruser" name="sorting" revision="1.104">
 <Global>
 <Metadata id="Metadata7" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="CustomersForEmployees" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -83,7 +83,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="145" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Fourth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1132" x="32" y="32">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="171" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Fourth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1132" x="32" y="32">
 <attr name="text"><![CDATA[
 In the fourth graph, we calculate much useful statistical information about transactions. 
 In this graph, we use Aggregates to get this information. These components can use a key. For this reason, we had to sort data flows according to the same keys and remove duplicates (if needed) before these data flows could enter these Aggregates. 

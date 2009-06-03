@@ -59,55 +59,33 @@ public class MSSQLSpecific extends AbstractJdbcSpecific {
 		return new MSSQLConnection(connection, operationType);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#sqlType2jetel(int)
-	 */
-	public char sqlType2jetel(int sqlType) {
-		switch (sqlType) {
-			case Types.INTEGER:
-			case Types.SMALLINT:
-			case Types.TINYINT:
-			    return DataFieldMetadata.INTEGER_FIELD;
-			//-------------------
-			case Types.BIGINT:
-			    return DataFieldMetadata.LONG_FIELD;
-			//-------------------
-			case Types.DECIMAL:
-			case Types.NUMERIC:
-				return DataFieldMetadata.DECIMAL_FIELD;
-			case Types.DOUBLE:
-			case Types.FLOAT:
-			case Types.REAL:
-				return DataFieldMetadata.NUMERIC_FIELD;
-			//------------------
-			case Types.CHAR:
-			case Types.LONGVARCHAR:
-			case Types.VARCHAR:
-			case Types.CLOB:
-				return DataFieldMetadata.STRING_FIELD;
-			//------------------
-			case Types.DATE:
-			case Types.TIME:
-			case Types.TIMESTAMP:
-				return DataFieldMetadata.DATE_FIELD;
-            //-----------------
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-            case Types.BLOB:
-			case Types.OTHER:
-               return DataFieldMetadata.BYTE_FIELD;
-			//-----------------
-			case Types.BOOLEAN:
-			case Types.BIT:
-				return DataFieldMetadata.BOOLEAN_FIELD;
-			default:
-				throw new IllegalArgumentException("Can't handle JDBC.Type :" + sqlType);
-		}
-	}
-
     public String quoteIdentifier(String identifier) {
         return ('[' + identifier + ']');
     }
 
+	public String sqlType2str(int sqlType) {
+		switch(sqlType) {
+		case Types.TIMESTAMP :
+			return "DATETIME";
+		case Types.BOOLEAN :
+			return "TINYINT";
+		case Types.INTEGER :
+			return "INT";
+		case Types.NUMERIC :
+			return "FLOAT";
+		}
+		return super.sqlType2str(sqlType);
+	}
+
+	@Override
+	public String jetelType2sqlDDL(DataFieldMetadata field) {
+		switch(jetelType2sql(field)) {
+		case Types.BOOLEAN :
+			return "TINYINT(1)";
+		}
+		return super.jetelType2sqlDDL(field);
+	}
+    
+    
+    
 }

@@ -1,0 +1,5 @@
+221;1;bit_lshift($0.Arg,$0.Shift);110;11011101;1101110
+221;2;bit_lshift($0.Arg,$0.Shift);55;11011101;110111
+221;3;bit_lshift($0.Arg,$0.Shift);27;11011101;11011
+221;4;bit_lshift($0.Arg,$0.Shift);13;11011101;1101
+221;5;bit_lshift($0.Arg,$0.Shift);6;11011101;110

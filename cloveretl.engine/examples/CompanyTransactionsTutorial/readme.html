@@ -88,9 +88,7 @@ customers and these customers were served by 200 employees.</P>
 	<P CLASS="western" STYLE="margin-bottom: 0cm"></P>
 	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the first graph
 	(<I>A01_SplittingTransactions.grf</I>), data records from the
-	<I>Transactions.dat</I> file are multiplicated using <B>SimpleCopy</B>.
-	Then, each new data flow is parsed by <B>Reformat</B> and only some
-	information is selected for each of them. Thus, each of the resulting output
+	<I>Transactions.dat</I> file are splitted and parsed by <b>Reformat</b> and only some information is selected for each output port. Thus, each of the resulting output
 	files contains only a part of the whole information: <I>IDs.dat</I> file contains
 	the following fields: &ldquo;AmountID&rdquo;, &ldquo;CustomerID&rdquo;
 	and &ldquo;EmployeeID&rdquo;. <I>Amounts.dat</I> file contains
@@ -194,8 +192,9 @@ customers and these customers were served by 200 employees.</P>
 	(<I>A05_CreatingXMLEmplFamCustAm.grf</I>), we have created XML
 	structures based on different mapping hierarchy. In this graph, the
 	hierarchy is employee (the highest element), family, customer,
-	amount. (Output file is written to the <I>data-tmp</I> directory as the <I>EmplFamCustAm.xml</I> file since we will need to parse it in the next graphs of the project.)
-	The XML file has 200 highest level elements. This XML file is
+	amount. Each record is written to different output file to the <i>data-tmp</i> directory since we will need to read them again in the next graphs of the project, named with mask <i>EmplFamCustAm$$$.xml</i>, where dollars are substituted by record's number. 
+We have narrowed down the number of files to 15 while we didn't want to clutter the directories, but without this limitation, there would be created 200 highest level elements.
+	These XML files are
 	created using delimited files (<I>IDs.dat</I>, <I>Employees.dat</I>),
 	fixed file (<I>CustomersFixed.txt</I>) and XLS file
 	(<I>EmployeesWithFamily.xls</I>).</P>
@@ -203,17 +202,18 @@ customers and these customers were served by 200 employees.</P>
 	(<I>A06_CreatingXMLCustEmplFamAm.grf</I>), we have created XML
 	structures based on different mapping hierarchy. In this graph, the
 	hierarchy is customer (the highest element), employee, family,
-	amount. (Output file is written to the <I>data-tmp</I> directory as the <I>CustEmpFamAm.xml</I> file since we will need to parse it in the next graphs of the project.)
-	The XML file has 19,955 highest level elements. This XML file is
-	created using delimited files (<I>IDs.dat</I>, <I>Employees.dat</I>),
+	amount. Each record is written to different output file to the <i>data-tmp</i> directory since we will need to read them again in the next graphs of the project, named with mask <i>CustEmpFamAm$$$.xml</i>, where dollars are substituted by record's number. 
+We have narrowed down the number of files to 15 while we didn't want to clutter the directories, but without this limitation, there would be created 19,955 highest level elements.
+	These XML files are created using delimited files (<I>IDs.dat</I>, <I>Employees.dat</I>),
 	fixed file (<I>CustomersFixed.txt</I>) and XLS file
 	(<I>EmployeesWithFamily.xls</I>).</P>
 	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the seventh
 	graph (<I>A07_CreatingXMLAmCustEmplFam.grf</I>), we have created XML
 	structures based on different mapping hierarchy. In this graph, the
 	hierarchy is amount (the highest element), customer, employee,
-	family. (Output file is written to the <I>data-tmp</I> directory as the <I>AmCustEmpFam.xml</I> file since we will need to parse it in the next graphs of the project.)
-	The XML file has 100,000 highest level elements. This XML file is
+	family. Each record is written to different output file to the <i>data-tmp</i> directory since we will need to read them again in the next graphs of the project, named with mask <i>AmCustEmpFam$$$.xml</i>, where dollars are substituted by record's number. 
+We have narrowed down the number of files to 10 while we didn't want to clutter the directories, but without this limitation, there would be created 100,000 highest level elements.
+	These XML files are 
 	created using delimited files (<I>IDs.dat</I>, <I>Employees.dat</I>),
 	fixed file (<I>CustomersFixed.txt</I>) and XLS file
 	(<I>EmployeesWithFamily.xls</I>).</P>
@@ -221,9 +221,9 @@ customers and these customers were served by 200 employees.</P>
 	graph (<I>A08_CreatingXMLTransactionsFamily.grf</I>), we have
 	created XML structures based on different mapping hierarchy. In this
 	graph, the hierarchy is amount (the highest element), customer,
-	employee, family. (Output file is written to the <I>data-tmp</I> directory
-	as the <I>TransactionsFamily.xml</I> file since we will need to parse it in the next graphs of the project.) The XML file has 100,000 highest
-	level elements. This XML file is created using the original
+	employee, family. Each record is written to different output file to the <i>data-tmp</i> directory since we will need to read them again in the next graphs of the project, named with mask <i>TransactionsFamily$$$.xml</i>, where dollars are substituted by record's number. 
+We have narrowed down the number of files to 10 while we didn't want to clutter the directories, but without this limitation, there would be created 100,000 highest level elements.
+	These XML files are created using the original
 	delimited files (<I>Transactions.dat</I>, <I>Children.dat</I> and
 	<I>Spouses.dat</I>).</P>
 </OL>
@@ -240,33 +240,29 @@ different hierarchy and note also the difference between <B>XMLExtract</B> and
 <OL START=9>
 	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the ninth graph
 	(<I>A09_XMLExtractEmplFamCustAm.grf</I>), we read the already
-	created <I>EmplFamCustAm.xml</I> file contained in the <I>data-tmp</I>
-	directory. The XML file has 200 highest level elements. This XML
-	file is read and five output files are created. They are similar to
+	created <I>EmplFamCustAm???.xml</I> files contained in the <I>data-tmp</I>
+	directory. These XML files are read and five output files are created. They are similar to
 	the original delimited files except the last one, where &ldquo;EmployeeID&rdquo;
 	and &ldquo;CustomerID&rdquo; are included in one file together with
 	&ldquo;AmountID&rdquo; and &ldquo;Amount&rdquo;.</P>
 	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the tenth graph
 	(<I>A10_XMLExtractCustEmplFamAm.grf</I>), we read the already
-	created <I>CustEmplFamAm.xml</I> file contained in the <I>data-tmp</I>
-	directory. The XML file has 19,955 highest level elements. This XML
-	file is read and five output files are created. They are similar to
+	created <I>CustEmplFamAm???.xml</I> files contained in the <I>data-tmp</I>
+	directory. These XML files are read and five output files are created. They are similar to
 	the original delimited files except the last one, where &ldquo;EmployeeID&rdquo;
 	and &ldquo;CustomerID&rdquo; are included in one file together with
 	&ldquo;AmountID&rdquo; and &ldquo;Amount&rdquo;.</P>
 	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the eleventh
 	graph (<I>A11_XMLExtractAmCustEmplFam.grf</I>), we read the already
-	created <I>AmCustEmplFam.xml</I> file contained in the <I>data-tmp</I>
-	directory. The XML file has 100,000 highest level elements. This XML
-	file is read and five output files are created. They are similar to
+	created <I>AmCustEmplFam???.xml</I> files contained in the <I>data-tmp</I>
+	directory. These XML files are read and five output files are created. They are similar to
 	the original delimited files except two of them (for employees and
 	customers), where &ldquo;AmountID&rdquo; is included in these files
 	together with the other employee or customer fields.</P>
 	<LI><P CLASS="western" STYLE="margin-bottom: 0cm"><A NAME="DDE_LINK"></A>
 	In the twelfth graph (<I>A12_XMLExtractTransactionsFamily.grf</I>),
-	we read the already created <I>TransactionsFamily.xml</I> file
-	contained in the <I>data-tmp</I> directory. The XML file has 100,000
-	highest level elements. This XML file is read and three output files
+	we read the already created <I>TransactionsFamily???.xml</I> files
+	contained in the <I>data-tmp</I> directory. These XML files are read and three output files
 	are created. They are similar to the original delimited files:
 	<I>Transactions.dat</I>, <I>Children.dat</I> and <I>Spouses.dat</I>.</P>
 </OL>
@@ -283,33 +279,29 @@ depends on the hierarchy of XML structure. All output files are written to the <
 <OL START=13>
 	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the thirteenth
 	graph (<I>A13_XMLXPathEmplFamCustAm.grf</I>), we read the already
-	created <I>EmplFamCustAm.xml</I> file contained in the <I>data-tmp</I>
-	directory. The XML file has 200 highest level elements. This XML
-	file is read and five output files are created. They are similar to
+	created <I>EmplFamCustAm???.xml</I> files contained in the <I>data-tmp</I>
+	directory. These XML files are read and five output files are created. They are similar to
 	the original delimited files except the last one, where &ldquo;EmployeeID&rdquo;
 	and &ldquo;CustomerID&rdquo; are included in one file together with
 	&ldquo;AmountID&rdquo; and &ldquo;Amount&rdquo;.</P>
 	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the fourteenth
 	graph (<I>A14_XMLXPathCustEmplFamAm.grf</I>), we read the already
-	created <I>CustEmplFamAm.xml</I> file contained in the <I>data-tmp</I>
-	directory. The XML file has 19,955 highest level elements. This XML
-	file is read and five output files are created. They are similar to
+	created <I>CustEmplFamAm???.xml</I> files contained in the <I>data-tmp</I>
+	directory.These XML files are read and five output files are created. They are similar to
 	the original delimited files except the last one, where &ldquo;EmployeeID&rdquo;
 	and &ldquo;CustomerID&rdquo; are included in one file together with
 	&ldquo;AmountID&rdquo; and &ldquo;Amount&rdquo;.</P>
 	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the fifteenth
 	graph (<I>A15_XMLXPathAmCustEmplFam.grf</I>), we read the already
-	created <I>AmCustEmplFam.xml</I> file contained in the <I>data-tmp</I>
-	directory. The XML file has 100,000 highest level elements. This XML
-	file is read and five output files are created. They are similar to
+	created <I>AmCustEmplFam???.xml</I> files contained in the <I>data-tmp</I>
+	directory. These XML files are read and five output files are created. They are similar to
 	the original delimited files except two of them (for employees and
 	customers), where &ldquo;AmountID&rdquo; is included in these files
 	together with the other employee or customer fields.</P>
 	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the sixteenth
 	graph (<I>A16_XMLXPathTransactionsFamily.grf</I>), we read the
-	already created <I>TransactionsFamily.xml</I> file contained in the
-	<I>data-tmp</I> directory. The XML file has 100,000 highest level
-	elements. This XML file is read and three output files are created.
+	already created <I>TransactionsFamily???.xml</I> file contained in the
+	<I>data-tmp</I> directory. These XML files are read and three output files are created.
 	They are similar to the original delimited files: <I>Transactions.dat</I>,
 	<I>Children.dat</I> and <I>Spouses.dat</I>.</P>
 </OL>

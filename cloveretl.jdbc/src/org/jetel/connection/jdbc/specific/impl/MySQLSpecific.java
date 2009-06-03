@@ -22,10 +22,12 @@ package org.jetel.connection.jdbc.specific.impl;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.conn.MySQLConnection;
 import org.jetel.exception.JetelException;
+import org.jetel.metadata.DataFieldMetadata;
 
 /**
  * My SQL specific behaviour.
@@ -74,4 +76,31 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
         return ('`' + identifier + '`');
     }
 
+    
+    
+	public String sqlType2str(int sqlType) {
+		switch(sqlType) {
+		case Types.TIMESTAMP :
+			return "DATETIME";
+		case Types.BOOLEAN :
+			return "TINYINT";
+		case Types.INTEGER :
+			return "INT";
+		case Types.NUMERIC :
+			return "DOUBLE";
+		}
+		return super.sqlType2str(sqlType);
+	}
+
+	@Override
+	public String jetelType2sqlDDL(DataFieldMetadata field) {
+		switch(jetelType2sql(field)) {
+		case Types.BOOLEAN :
+			return "TINYINT(1)";
+		}
+		return super.jetelType2sqlDDL(field);
+	}
+    
+	
+	
 }

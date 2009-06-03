@@ -42,7 +42,7 @@
 </FunctionalTest>
 
 <FunctionalTest ident="conversionBase64byte" graphFile="graph/conversionBase64byte.grf">
-	 <FlatFile outputFile="data-out/conversionBits2strOverview.txt" supposedFile="supposed-out/conversionBits2strOverview.txt"/>
+	 <FlatFile outputFile="data-out/conversionBase64byteOverview.txt" supposedFile="supposed-out/conversionBase64byteOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="conversionBool2num1Argument" graphFile="graph/conversionBool2num1Argument.grf">
@@ -66,7 +66,7 @@
 </FunctionalTest>
 
 <FunctionalTest ident="conversionDate2str" graphFile="graph/conversionDate2str.grf">	 
-	 <FlatFile outputFile="data-out/onversionDate2strOverview..txt" supposedFile="supposed-out/onversionDate2strOverview..txt"/>
+	 <FlatFile outputFile="data-out/conversionDate2strOverview.txt" supposedFile="supposed-out/conversionDate2strOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="conversionHex2byte" graphFile="graph/conversionHex2byte.grf">
@@ -237,7 +237,7 @@
 </FunctionalTest>
 
 <FunctionalTest ident="stringEdit_distanceTERTIARY" graphFile="graph/stringEdit_distanceTERTIARY.grf">
-	 <FlatFile outputFile="data-out/stringEdit_distanceTERTIARYOverview..txt" supposedFile="supposed-out/stringEdit_distanceTERTIARYOverview.txt"/>
+	 <FlatFile outputFile="data-out/stringEdit_distanceTERTIARYOverview.txt" supposedFile="supposed-out/stringEdit_distanceTERTIARYOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="stringFind" graphFile="graph/stringFind.grf">
@@ -329,7 +329,7 @@
 </FunctionalTest>
 
 <FunctionalTest ident="stringSoundex" graphFile="graph/stringSoundex.grf">
-	 <FlatFile outputFile="data-out/stringRightOverview.txt" supposedFile="supposed-out/stringSoundexOverview.txt"/>
+	 <FlatFile outputFile="data-out/stringSoundexOverview.txt" supposedFile="supposed-out/stringSoundexOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="stringSplit" graphFile="graph/stringSplit.grf">
@@ -350,6 +350,67 @@
 
 <FunctionalTest ident="stringUppercase" graphFile="graph/stringUppercase.grf">
 	 <FlatFile outputFile="data-out/stringUppercaseOverview.txt" supposedFile="supposed-out/stringUppercaseOverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="mathBit_and" graphFile="graph/mathBit_and.grf">
+	 <FlatFile outputFile="data-out/mathBit_andOverview.txt" supposedFile="supposed-out/mathBit_andOverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="mathBit_invert" graphFile="graph/mathBit_invert.grf">
+	 <FlatFile outputFile="data-out/mathBit_invertOverview.txt" supposedFile="supposed-out/mathBit_invertOverview.txt"/>	                                                                    
+</FunctionalTest>
+
+
+<FunctionalTest ident="mathBit_is_set" graphFile="graph/mathBit_is_set.grf">
+	 <FlatFile outputFile="data-out/mathBit_is_setOverview.txt" supposedFile="supposed-out/mathBit_is_setOverview.txt"/>
+</FunctionalTest>
+
+
+<FunctionalTest ident="mathBit_lshift" graphFile="graph/mathBit_lshift.grf">
+	 <FlatFile outputFile="data-out/mathBit_lshiftOverview.txt" supposedFile="supposed-out/mathBit_lshiftOverview.txt"/>
+</FunctionalTest>
+
+
+<FunctionalTest ident="mathBit_or" graphFile="graph/mathBit_or.grf">
+	 <FlatFile outputFile="data-out/mathBit_orOverview.txt" supposedFile="supposed-out/mathBit_orOverview.txt"/>
+</FunctionalTest>
+
+
+<FunctionalTest ident="mathBit_rshift" graphFile="graph/mathBit_rshift.grf">
+	 <FlatFile outputFile="data-out/mathBit_rshiftOverview.txt" supposedFile="supposed-out/mathBit_rshiftOverview.txt"/>
+</FunctionalTest>
+
+
+<FunctionalTest ident="mathBit_set" graphFile="graph/mathBit_set.grf">
+	<FlatFile outputFile="data-out/mathBit_setOverview.txt" supposedFile="supposed-out/mathBit_setOverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="mathBit_xor" graphFile="graph/mathBit_xor.grf">
+	 <FlatFile outputFile="data-out/mathBit_xorOverview.txt" supposedFile="supposed-out/mathBit_xorOverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="mathRandom_boolean" graphFile="graph/mathRandom_boolean.grf">
+	 <FlatFile outputFile="data-out/mathRandom_booleanOverview.txt" supposedFile="supposed-out/mathRandom_booleanOverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="mathRandom_gaussian" graphFile="graph/mathRandom_gaussian.grf">
+	 <FlatFile outputFile="data-out/mathRandom_gaussianOverview.txt" supposedFile="supposed-out/mathRandom_gaussianOverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="mathRandom_intWithoutRange" graphFile="graph/mathRandom_intWithoutRange.grf">
+	 <FlatFile outputFile="data-out/mathRandom_intWithoutRange.txt" supposedFile="supposed-out/mathRandom_intWithoutRange.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="mathRandom_intWithRange" graphFile="graph/mathRandom_intWithRange.grf">
+	 <FlatFile outputFile="data-out/mathRandom_intWithRangeOverview.txt" supposedFile="supposed-out/mathRandom_intWithRangeOverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="mathRandom_longWithoutRange" graphFile="graph/mathRandom_longWithoutRange.grf">
+	 <FlatFile outputFile="data-out/mathRandom_longWithoutRange.txt" supposedFile="supposed-out/mathRandom_longWithoutRange.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="mathRandom" graphFile="graph/mathRandom.grf">
+	 <FlatFile outputFile="data-out/mathRandom.txt" supposedFile="supposed-out/mathRandom.txt"/>
 </FunctionalTest>
 
 </TestScenario>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation license." modified="Thu May 07 10:47:37 CEST 2009" modifiedBy="avackova" name="CreatingXML" revision="1.164">
+<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation license." modified="Mon Jun 01 14:17:13 CEST 2009" modifiedBy="avackova" name="CreatingXML" revision="1.172">
 <Global>
 <Metadata fileURL="meta/Amounts.fmt" id="Metadata0"/>
 <Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
@@ -10,12 +10,12 @@
 <Metadata fileURL="meta/IDs.fmt" id="Metadata4"/>
 <Metadata fileURL="meta/Spouses.fmt" id="Metadata6"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="145" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Seventh graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="944" x="48" y="46">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="169" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Seventh graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="944" x="48" y="46">
 <attr name="text"><![CDATA[
 In the seventh graph, we have created an XML structure based on different mapping hierarchy. 
 In this graph, the hierarchy is amount of money paid (the highest element), customer, employee, family. 
-Output file is written to the "data-tmp" directory as the "AmCustEmplFam.xml" file since we will need to read it again in the next graphs of the project. 
-The XML file has 100,000 highest level elements. 
+Each record is written to different output file to the "data-tmp" directory (since we will need to read them again in the next graphs of the project), named with mask "AmCustEmplFam$$$.xml", where dollars are substituted by record's number. 
+We narrow down the number of files to 15 while we don't want to clutter the directories, but without this limitation, there would be created 100,000 highest level elements. 
 More detailed information about this graph can be found in the "readme.html" file included in the CompanyTransactionsTutorial directory.
 ]]></attr>
 </Note>
@@ -65,7 +65,7 @@ function transform() {
 <Node enabled="enabled" fieldMap="$ChildName:=ChildName;$ParentID:=ParentID;" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="0" guiName="ChildrenXLS" guiWidth="0" guiX="56" guiY="325" id="XLS_READER0" metadataRow="1" sheetName="Children" type="XLS_READER"/>
 <Node enabled="enabled" fieldMap="$EmployeeSurname:=EmployeeSurname;$EmployeeID:=EmployeeID;$EmployeeFirstname:=EmployeeFirstname;" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="0" guiName="EmployeesXLS" guiWidth="0" guiX="56" guiY="414" id="XLS_READER1" metadataRow="1" sheetName="Employees" type="XLS_READER"/>
 <Node enabled="enabled" fieldMap="$SpouseName:=SpouseName;$EmployeeID:=EmployeeID;" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="0" guiName="SpousesXLS" guiWidth="0" guiX="552" guiY="301" id="XLS_READER2" metadataRow="1" sheetName="Spouses" type="XLS_READER"/>
-<Node enabled="enabled" fileUrl="${DATATMP_DIR}/AmCustEmplFam$$$.xml" guiHeight="0" guiName="AmountsCustomersChildren" guiWidth="0" guiX="858" guiY="246" id="XML_WRITER0" omitNewLines="false" recordCount="10" recordsPerFile="1" rootElement="Amounts" type="XML_WRITER" useRootElement="false">
+<Node enabled="enabled" fileUrl="${DATATMP_DIR}/AmCustEmplFam$$$.xml" guiHeight="0" guiName="AmountsCustomersChildren" guiWidth="0" guiX="858" guiY="246" id="XML_WRITER0" omitNewLines="false" recordCount="${MAPPINGS}" recordsPerFile="1" rootElement="Amounts" rootInfoAttributes="true" type="XML_WRITER" useRootElement="false">
 <attr name="mapping"><![CDATA[<Mapping element="transactions" inPort="0" key="AmountID">
   <Mapping element="customers" inPort="4" keyToParent="AmountID" fieldsIgnore="AmountID"/>
   <Mapping element="employees" inPort="3" keyToParent="AmountID" fieldsIgnore="AmountID">

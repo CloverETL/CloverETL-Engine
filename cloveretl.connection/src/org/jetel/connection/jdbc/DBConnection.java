@@ -27,6 +27,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -406,7 +407,8 @@ public class DBConnection extends GraphElement implements IConnection {
             	connectionInstance = null;
         	}
         }
-        jdbcDriver.free();
+        if (jdbcDriver!=null)
+        	jdbcDriver.free();
     }
 
     private void closeConnection(Connection connection) {
@@ -452,13 +454,22 @@ public class DBConnection extends GraphElement implements IConnection {
             		+ xattribs.getString(XML_ID_ATTRIBUTE, "unknown ID") + ":" + e.getMessage(), e);
 		}
     }
-    
+
     /**
      * Saves to the given output stream all DBConnection properties.
      * @param outStream
      * @throws IOException
      */
     public void saveConfiguration(OutputStream outStream) throws IOException {
+    	saveConfiguration(outStream, null);
+    }
+    
+    /**
+     * Saves to the given output stream all DBConnection properties.
+     * @param outStream
+     * @throws IOException
+     */
+    public void saveConfiguration(OutputStream outStream, Properties moreProperties) throws IOException {
         Properties propsToStore = new Properties();
 
         TypedProperties extraProperties = getExtraProperties();
@@ -468,6 +479,14 @@ public class DBConnection extends GraphElement implements IConnection {
 			propsToStore.setProperty(XML_JDBC_PROPERTIES_PREFIX + propName, extraProperties.getProperty(propName));
 		}
 
+        if (moreProperties != null) {
+        	for(Enumeration enu = moreProperties.propertyNames(); enu.hasMoreElements(); ) {
+        		String key = (String) enu.nextElement();
+        		propsToStore.setProperty(key, moreProperties.getProperty(key));
+        	}
+        }
+        
+        
         if(getUser() != null) {
         	propsToStore.setProperty(XML_USER_ATTRIBUTE, getUser());
         }

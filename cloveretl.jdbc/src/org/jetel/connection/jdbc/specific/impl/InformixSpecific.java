@@ -59,91 +59,6 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 		return new MSSQLConnection(connection, operationType);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#jetelType2sql(org.jetel.metadata.DataFieldMetadata)
-	 */
-	public int jetelType2sql(DataFieldMetadata field){
-		switch (field.getType()) {
-		case DataFieldMetadata.INTEGER_FIELD:
-			return Types.INTEGER;
-		case DataFieldMetadata.NUMERIC_FIELD:
-			return Types.NUMERIC;
-		case DataFieldMetadata.STRING_FIELD:
-			return Types.VARCHAR;
-		case DataFieldMetadata.DATE_FIELD:
-			boolean isDate = field.isDateFormat();
-			boolean isTime = field.isTimeFormat();
-			if (isDate && isTime || StringUtils.isEmpty(field.getFormatStr())) 
-				return Types.TIMESTAMP;
-			if (isDate)
-				return Types.DATE;
-			if (isTime)
-				return Types.TIME;
-			return Types.TIMESTAMP;
-        case DataFieldMetadata.LONG_FIELD:
-            return Types.BIGINT;
-        case DataFieldMetadata.DECIMAL_FIELD:
-            return Types.DECIMAL;
-        case DataFieldMetadata.BYTE_FIELD:
-        case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-        	if (!StringUtils.isEmpty(field.getFormatStr())
-					&& field.getFormatStr().equalsIgnoreCase(DataFieldMetadata.BLOB_FORMAT_STRING)) {
-        		return Types.LONGVARBINARY;
-        	}
-            return Types.BINARY;
-        case DataFieldMetadata.BOOLEAN_FIELD:
-        	return Types.BOOLEAN;
-		default:
-			throw new IllegalArgumentException("Can't handle Clover's data type :"+field.getTypeAsString());
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#sqlType2jetel(int)
-	 */
-	public char sqlType2jetel(int sqlType) {
-		switch (sqlType) {
-			case Types.INTEGER:
-			case Types.SMALLINT:
-			case Types.TINYINT:
-			    return DataFieldMetadata.INTEGER_FIELD;
-			//-------------------
-			case Types.BIGINT:
-			    return DataFieldMetadata.LONG_FIELD;
-			//-------------------
-			case Types.DECIMAL:
-				return DataFieldMetadata.DECIMAL_FIELD;
-			case Types.DOUBLE:
-			case Types.FLOAT:
-			case Types.NUMERIC:
-			case Types.REAL:
-				return DataFieldMetadata.NUMERIC_FIELD;
-			//------------------
-			case Types.CHAR:
-			case Types.LONGVARCHAR:
-			case Types.VARCHAR:
-			case Types.OTHER:
-				return DataFieldMetadata.STRING_FIELD;
-			//------------------
-			case Types.DATE:
-			case Types.TIME:
-			case Types.TIMESTAMP:
-				return DataFieldMetadata.DATE_FIELD;
-            //-----------------
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-            case Types.BLOB:
-                return DataFieldMetadata.BYTE_FIELD;
-			//-----------------
-			case Types.BOOLEAN:
-			case Types.BIT:
-				return DataFieldMetadata.BOOLEAN_FIELD;
-			default:
-				throw new IllegalArgumentException("Can't handle JDBC.Type :"+sqlType);
-		}
-	}
-
 	public String quoteIdentifier(String identifier) {
 		return "\"" + identifier + "\"";
 	}
@@ -161,6 +76,33 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 			return super.getValidateQuery(query, queryType);
 		}
 
+	}
+
+	public String sqlType2str(int sqlType) {
+		switch(sqlType) {
+		case Types.TIMESTAMP :
+		case Types.TIME :
+			return "DATETIME";
+		case Types.NUMERIC :
+			return "FLOAT";
+		case Types.BINARY :
+		case Types.VARBINARY :
+			return "BYTE";
+		case Types.BIGINT :
+			return "INT8";
+		}
+		return super.sqlType2str(sqlType);
+	}
+
+	@Override
+	public String jetelType2sqlDDL(DataFieldMetadata field) {
+		int type = jetelType2sql(field);
+		switch(type) {
+		case Types.BINARY :
+		case Types.VARBINARY :
+			return sqlType2str(type);
+		}
+		return super.jetelType2sqlDDL(field);
 	}
 	
 }

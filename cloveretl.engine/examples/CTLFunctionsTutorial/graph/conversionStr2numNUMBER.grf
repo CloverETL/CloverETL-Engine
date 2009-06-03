@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Mar 19 14:24:06 CET 2009" guiVersion="0.0.0.devel" id="1237480457206" licenseType="Evaluation license." modified="Wed Mar 25 14:41:39 CET 2009" modifiedBy="cloveruser" name="str2num" revision="1.24">
+<Graph author="cloveruser" created="Thu Mar 19 14:24:06 CET 2009" guiVersion="0.0.0.devel" id="1237480457206" licenseType="Evaluation license." modified="Fri May 15 14:16:48 CEST 2009" modifiedBy="cloveruser" name="str2num" revision="1.32">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="str2numNUMBERInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -16,13 +16,15 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example - number data type" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="558" x="55" y="193">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="150" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example - number data type" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="558" x="54" y="169">
 <attr name="text"><![CDATA[
-When working with number data type, 10 or 16 can be used as radix.
+When working with number data type, 10 or 16 are used as radix according to the form of the string.
 
-If radix is not specified, 10 or 16 are used by default.]]></attr>
+If radix is not specified or does not correspond to the form of the string, either 10 or 16 are used according to the form of the string. 
+
+However, other radix than 10 or 16 causes a fail of the graph.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="130" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="numerictype str2num(string Arg, typename Numerictype, int Radix)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="561" x="54" y="20">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="171" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="numerictype str2num(string Arg, typename Numerictype, int Radix)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="561" x="52" y="-13">
 <attr name="text"><![CDATA[
 The str2num(string, typename, int) function accepts three arguments: the first is string, the second is the name of any numeric data type and the third is integer number (radix). 
 The name of the second argument can neither be received through the edge nor be defined as variable.
@@ -31,7 +33,7 @@ The return type of the function is the same as the second argument.]]></attr>
 </Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/pokus.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="53" guiY="336" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionStr2numNUMBER.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="53" guiY="336" id="DATA_READER1" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionStr2numNUMBEROverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="556" guiY="336" id="DATA_WRITER1" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="297" guiY="336" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
@@ -41,7 +43,7 @@ function transform() {
 	$0.String := $0.String;
 	$0.Radix := $0.Radix;
 	$0.Function := "str2num($0.String,number,$0.Radix)";
-	$0.Result := str2num($0.String,number);
+	$0.Result := str2num($0.String,number,$0.Radix);
 }
 
 // Called during component initialization.

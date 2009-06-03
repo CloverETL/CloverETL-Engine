@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Wed Jan 21 09:06:38 CET 2009" guiVersion="0.0.0.devel" id="1232534199144" licenseType="Evaluation license." modified="Tue Mar 24 20:40:30 CET 2009" modifiedBy="cloveruser" name="miscellaneousPrint_stack" revision="1.21">
+<Graph author="milos_kovalcik" created="Wed Jan 21 09:06:38 CET 2009" guiVersion="0.0.0.devel" id="1232534199144" licenseType="Evaluation license." modified="Fri May 15 14:27:13 CEST 2009" modifiedBy="cloveruser" name="miscellaneousPrint_stack" revision="1.23">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="messageForPrint_log" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -17,13 +17,13 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="157" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="void print_log(logLevel arg, anytype message)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="514" x="41" y="-2">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="172" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="void print_log(logLevel arg, anytype message)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="514" x="41" y="-2">
 <attr name="text"><![CDATA[
 The print_log(level, anytype) function accepts two arguments: the first is a log level and the second is a message of any data type.
 The first argument is one of the following: debug, info, warn, error, fatal. The log level must be specified as a constant in the function. It can be neither received through an edge nor defined as variable. 
 The function takes the arguments and prints the message to stdout.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="517" x="42" y="189">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="118" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="517" x="42" y="189">
 <attr name="text"><![CDATA[
 Here we have used messages of string data type. 
 However, we could also print a message of any other data type: integer, boolean, number, etc.]]></attr>

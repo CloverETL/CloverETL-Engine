@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229697305234" licenseType="Evaluation license." modified="Tue Mar 24 19:12:30 CET 2009" modifiedBy="cloveruser" name="dateDateDiff" revision="1.52">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229697305234" licenseType="Evaluation license." modified="Fri May 15 14:19:30 CEST 2009" modifiedBy="cloveruser" name="dateDateDiff" revision="1.54">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="random_dateInput" recordDelimiter="\r\n" type="delimited">
@@ -22,7 +22,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="157" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date random_date(string startDate, string endDate, string pattern, string locale)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="540" x="229" y="63">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="196" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date random_date(string startDate, string endDate, string pattern, string locale)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="540" x="81" y="63">
 <attr name="text"><![CDATA[
 The random_date(string, string, string, string) function accepts four string arguments and returns a random date between the dates corresponding to the first and the second arguments. 
 These resulting dates are generated at random for different records and different fields. They can be different for both records and fields. The return value can also be equal to the date equivalent to the startDate and/or endDate strings. However, it cannot be any date before startDate nor after endDate.

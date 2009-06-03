@@ -151,9 +151,12 @@ public abstract class DataGenerator extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		try {
-			if (xattribs.exists(XML_GENERATE_ATTRIBUTE) || 
+			if ((xattribs.exists(XML_GENERATE_ATTRIBUTE) || 
 				xattribs.exists(XML_GENERATECLASS_ATTRIBUTE) ||
-				xattribs.exists(XML_GENERATEURL_ATTRIBUTE)){
+				xattribs.exists(XML_GENERATEURL_ATTRIBUTE)) ||
+				!(xattribs.exists(XML_PATTERN_ATTRIBUTE) || 
+				xattribs.exists(XML_RANDOM_FIELDS_ATTRIBUTE) ||
+				xattribs.exists(XML_SEQUENCE_FIELDS_ATTRIBUTE))) {
 				dataGenerator = new ExtDataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 
 						xattribs.getString(XML_GENERATE_ATTRIBUTE, null), 
 						xattribs.getString(XML_GENERATECLASS_ATTRIBUTE, null), 
