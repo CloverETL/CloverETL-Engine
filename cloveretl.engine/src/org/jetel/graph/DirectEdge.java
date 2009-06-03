@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.util.bytes.ByteBufferUtils;
 
 /**
  * A class that represents DirectEdge - data connection between two NODEs.<br>
@@ -154,7 +155,7 @@ public class DirectEdge extends EdgeBase {
 	    }
 	    try{
 	        // create the record/read it from buffer
-	        if (readBuffer.getInt()==EOF){
+	        if (ByteBufferUtils.decodeLength(readBuffer) == EOF) {
 	            isClosed=true;
 	            return null; // EOF
 	        }
@@ -186,7 +187,7 @@ public class DirectEdge extends EdgeBase {
 	    }
 	    try{
 	        // create the record/read it from buffer
-	        int length=readBuffer.getInt();
+	        int length = ByteBufferUtils.decodeLength(readBuffer);
 	        if (length==EOF){
 	            isClosed=true;
 	            return false;
@@ -248,7 +249,7 @@ public class DirectEdge extends EdgeBase {
             flushWriteBuffer();
         }
         try {
-            writeBuffer.putInt(length);
+        	ByteBufferUtils.encodeLength(writeBuffer, length);
             writeBuffer.put(tmpDataRecord);
         } catch (BufferOverflowException ex) {
             throw new IOException(
@@ -280,7 +281,7 @@ public class DirectEdge extends EdgeBase {
         }
 
         try {
-            writeBuffer.putInt(dataLength);
+        	ByteBufferUtils.encodeLength(writeBuffer, dataLength);
             writeBuffer.put(record);
         } catch (BufferOverflowException ex) {
             throw new IOException(
@@ -343,7 +344,7 @@ public class DirectEdge extends EdgeBase {
         if (writeBuffer.remaining()<SIZEOF_INT){
             flushWriteBuffer();
         }
-        writeBuffer.putInt(EOF); // send EOF
+        ByteBufferUtils.encodeLength(writeBuffer, EOF); // send EOF
         
         flushWriteBuffer();
 	}
