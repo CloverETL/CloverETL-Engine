@@ -88,6 +88,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>maxErrorCount</b></td><td>count of tolerated error records in input file</td>
  *  <tr><td><b>quotedStrings</b></td><td>string field can be quoted by '' or ""</td>
  *  <tr><td><b>treatMultipleDelimitersAsOne</b></td><td>if this option is true, then multiple delimiters are recognise as one delimiter</td>
+ *  <tr><td><b>verbose</b></td><td>verbose mode provides more comprehensive error notification; default is true</td>
  *  </tr>
  *  </table>
  *
@@ -123,6 +124,7 @@ public class DataReader extends Node {
 	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	private static final String XML_INCREMENTAL_FILE_ATTRIBUTE = "incrementalFile";
 	private static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
+	private static final String XML_VERBOSE_ATTRIBUTE = "verbose";
 
 	private final static int OUTPUT_PORT = 0;
 	private final static int INPUT_PORT = 0;
@@ -150,9 +152,7 @@ public class DataReader extends Node {
 	 * @param  fileURL  Description of the Parameter
 	 */
 	public DataReader(String id, String fileURL) {
-		super(id);
-		this.fileURL = fileURL;
-		parser = new DataParser();
+		this(id, fileURL, null, true);
 	}
 
 
@@ -164,9 +164,20 @@ public class DataReader extends Node {
 	 * @param  charset  Description of the Parameter
 	 */
 	public DataReader(String id, String fileURL, String charset) {
+		this(id, fileURL, charset, true);
+	}
+
+	/**
+	 * @param id
+	 * @param fileURL
+	 * @param charset
+	 * @param verbose
+	 */
+	public DataReader(String id, String fileURL, String charset, boolean verbose) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new DataParser(this.charset = charset);
+		this.charset = charset;
+		parser = new DataParser(charset, verbose);
 	}
 
 	@Override
@@ -361,14 +372,10 @@ public class DataReader extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		try {
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				aDataReader = new DataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILE_ATTRIBUTE),
-						xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			} else {
-				aDataReader = new DataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILE_ATTRIBUTE));
-			}
+			aDataReader = new DataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_FILE_ATTRIBUTE),
+					xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
+					xattribs.getBoolean(XML_VERBOSE_ATTRIBUTE, true));
 			aDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
 			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
 				aDataReader.parser.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
