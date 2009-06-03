@@ -435,13 +435,29 @@ public class DBInputTable extends Node {
     		if (incrementalFile != null) {
 				try {
 					parser.setIncrementalFile(FileUtils.getFile(getGraph().getProjectURL(), incrementalFile));
-				} catch (MalformedURLException e) {
-					throw new ComponentNotReadyException(this, XML_INCREMENTAL_FILE_ATTRIBUTE, e.getMessage());
+					parser.checkIncremental();
+				} catch (MalformedURLException e1) {
+					// -pnajvar
+					// Throwing and exception halts the entire graph which might not be correct as inc file
+					// can be created at graph runtime. Instead just log it
+					// issue #2127
+		            ConfigurationProblem problem = new ConfigurationProblem(e1.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+		            problem.setAttributeName(XML_INCREMENTAL_FILE_ATTRIBUTE);
+		            status.add(problem);
+				} catch (ComponentNotReadyException e2) {
+					// -pnajvar
+					// Throwing and exception halts the entire graph which might not be correct as inc file
+					// can be created at graph runtime. Instead just log it
+					// issue #2127
+		            ConfigurationProblem problem = new ConfigurationProblem(e2.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+		            if(!StringUtils.isEmpty(e2.getAttributeName())) {
+		                problem.setAttributeName(e2.getAttributeName());
+		            }
+		            status.add(problem);
 				}
-				parser.checkIncremental();
 			}
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

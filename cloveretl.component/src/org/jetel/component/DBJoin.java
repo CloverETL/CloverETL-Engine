@@ -315,7 +315,8 @@ public class DBJoin extends Node {
         if(!isInitialized()) return;
 		super.free();
 		
-		lookup.getLookupTable().free();
+		if (lookup != null)
+			lookup.getLookupTable().free();
 	}
 
 	/* (non-Javadoc)

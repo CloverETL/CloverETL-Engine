@@ -1,8 +1,6 @@
 package org.jetel.util.bytes;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 
 import org.jetel.data.Defaults;
 
@@ -37,7 +35,7 @@ public class RestrictedByteArrayOutputStream extends ByteArrayOutputStream {
 	 */
 	protected void validateBufferSize(int newSize) {
 		if (newSize > maxArrayLength) {
-			throw new RuntimeException("Byte buffer length was exceeded. Max byte buffer length is " + maxArrayLength);
+    		throw new RuntimeException("The size of data buffer is only " + maxArrayLength + ". Set appropriate parameter in defautProperties file.");
 		}
 	}
 

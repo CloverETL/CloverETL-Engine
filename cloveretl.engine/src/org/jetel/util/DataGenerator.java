@@ -77,7 +77,7 @@ public class DataGenerator extends Random {
 	 * @param max
 	 * @return random integer
 	 */
-	public long nextInt(int min, int max) {
+	public int nextInt(int min, int max) {
 		// raw random number
 		int r = Math.abs(nextInt());
 		

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229611406468" licenseType="Evaluation license." modified="Tue Mar 24 10:35:33 CET 2009" modifiedBy="cloveruser" name="stringConcat" revision="1.17">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229611406468" licenseType="Evaluation license." modified="Fri May 15 14:35:45 CEST 2009" modifiedBy="cloveruser" name="stringConcat" revision="1.19">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="concatInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -22,7 +22,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="138" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string concat(anytype1 arg1, ... ..., anytypeN argN)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="552" x="95" y="78">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="165" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string concat(anytype1 arg1, ... ..., anytypeN argN)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="552" x="94" y="51">
 <attr name="text"><![CDATA[
 The concat(anytype1, ..., anytypeN) function accepts unlimited number of arguments of any data type. But they do not need to be the same. 
 It takes these arguments and returns their concatenation. If some arguments are not strings, they are converted to their string representation before the concatenation is done. You can also concatenate these arguments using plus signs, but this function is faster for more than two arguments.]]></attr>

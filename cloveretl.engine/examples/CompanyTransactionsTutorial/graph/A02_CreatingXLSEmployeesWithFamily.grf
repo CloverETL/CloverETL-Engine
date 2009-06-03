@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Jan 15 12:18:29 CET 2009" guiVersion="0.0.0.devel" id="1232020084671" licenseType="Evaluation license." modified="Wed Apr 22 09:19:55 CEST 2009" modifiedBy="cloveruser" name="CreatingXLSEmplChild" revision="1.40">
+<Graph author="milos_kovalcik" created="Thu Jan 15 12:18:29 CET 2009" guiVersion="0.0.0.devel" id="1232020084671" licenseType="Evaluation license." modified="Fri May 15 13:53:55 CEST 2009" modifiedBy="cloveruser" name="CreatingXLSEmplChild" revision="1.42">
 <Global>
 <Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
 <Metadata fileURL="meta/Employees.fmt" id="Metadata0"/>
 <Metadata fileURL="meta/Spouses.fmt" id="Metadata2"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="178" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Second graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="876" x="56" y="52">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="197" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Second graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="876" x="56" y="52">
 <attr name="text"><![CDATA[
 In the second graph, we take all employees from the "Employees.dat"file created in the previous graph, all children from the original "Children.dat" file and their wives and husbands from the original "Spouses.dat" file and write them all to a single XLS file describing the whole families of the company employees ("EmployeesWithFamily.xls"). 
 Employees, their children and spouses will be written to "Employees", "Children" and "Spouses" sheets of the single output "EmployeesWithFamily.xls" file, respectively. Note that we have sorted all children according to their names. There are 390 children.

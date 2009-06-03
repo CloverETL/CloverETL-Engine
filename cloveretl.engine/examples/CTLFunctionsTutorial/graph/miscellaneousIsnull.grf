@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Wed Jan 14 14:13:20 CET 2009" guiVersion="0.0.0.devel" id="1231947061328" licenseType="Evaluation license." modified="Mon Mar 23 17:35:45 CET 2009" modifiedBy="cloveruser" name="miscellaneousIsNULL" revision="1.23">
+<Graph author="milos_kovalcik" created="Wed Jan 14 14:13:20 CET 2009" guiVersion="0.0.0.devel" id="1231947061328" licenseType="Evaluation license." modified="Fri May 15 14:27:19 CEST 2009" modifiedBy="cloveruser" name="miscellaneousIsNULL" revision="1.25">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="isnullInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -18,7 +18,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="boolean isnull(anytype arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="478" x="79" y="114">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="140" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="boolean isnull(anytype arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="478" x="79" y="114">
 <attr name="text"><![CDATA[
 The isnull(anytype) function takes one argument and returns a boolean value depending on whether the argument is null (true) or not (false). 
 The argument may be of any data type.]]></attr>

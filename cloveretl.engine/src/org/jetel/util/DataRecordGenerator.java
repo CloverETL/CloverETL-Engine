@@ -227,29 +227,30 @@ public class DataRecordGenerator implements Parser {
 					}
 					break;
 				case DataFieldMetadata.INTEGER_FIELD:
+					// prepare min and max from integer, prepare multiplier and move
+					if (!StringUtils.isBlank(randomRanges[randomIndex][MIN])) {
+						specialValue[i][MIN] = new Integer(randomRanges[randomIndex][MIN]);
+					} else {
+						specialValue[i][MIN] = Integer.MIN_VALUE;
+					}
+					if (!StringUtils.isBlank(randomRanges[randomIndex][MAX])) {
+						specialValue[i][MAX] = new Integer(randomRanges[randomIndex][MAX]);
+					} else {
+						specialValue[i][MAX] = Integer.MAX_VALUE;
+					}
+					break;
 				case DataFieldMetadata.LONG_FIELD:
 					// prepare min and max from integer, prepare multiplier and move
 					if (!StringUtils.isBlank(randomRanges[randomIndex][MIN])) {
 						specialValue[i][MIN] = new Long(randomRanges[randomIndex][MIN]);
 					} else {
-						specialValue[i][MIN] = fieldType == DataFieldMetadata.LONG_FIELD ? Long.MIN_VALUE
-								: Integer.MIN_VALUE;
+						specialValue[i][MIN] = Long.MIN_VALUE;
 					}
 					if (!StringUtils.isBlank(randomRanges[randomIndex][MAX])) {
 						specialValue[i][MAX] = new Long(randomRanges[randomIndex][MAX]);
 					} else {
-						specialValue[i][MAX] = fieldType == DataFieldMetadata.LONG_FIELD ? Long.MAX_VALUE
-								: Integer.MAX_VALUE;
+						specialValue[i][MAX] = Long.MAX_VALUE;
 					}
-					// multiplier = (max - min) / (Long.Max - Long.Min)
-					specialValue[i][MULTIPLIER] = (((Long) specialValue[i][MAX]).doubleValue() - ((Long) specialValue[i][MIN])
-							.doubleValue())
-							/ ((double) Long.MAX_VALUE - (double) Long.MIN_VALUE);
-					// move = (min*Long.Max - max*Long.Min)/(Long.Max-Long.Min)
-					specialValue[i][MOVE] = (((Long) specialValue[i][MIN]).doubleValue() * Long.MAX_VALUE - ((Long) specialValue[i][MAX])
-							.doubleValue()
-							* Long.MIN_VALUE)
-							/ ((double) Long.MAX_VALUE - (double) Long.MIN_VALUE);
 					break;
 				default:
 					throw new ComponentNotReadyException("Unknown data field type " + metadata.getField(i).getName()
@@ -378,10 +379,10 @@ public class DataRecordGenerator implements Parser {
 					case DataFieldMetadata.DATE_FIELD:
 					case DataFieldMetadata.DATETIME_FIELD:
 					case DataFieldMetadata.LONG_FIELD:
-						value = getRandomDouble((Double) specialValue[j][MULTIPLIER], (Double) specialValue[j][MOVE]);
+						value = random.nextLong((Long) specialValue[j][MIN], (Long) specialValue[j][MAX]);
 						break;
 					case DataFieldMetadata.INTEGER_FIELD:
-						value = getRandomInt((Double) specialValue[j][MULTIPLIER], (Double) specialValue[j][MOVE]).intValue();
+						value = random.nextInt((Integer) specialValue[j][MIN], (Integer) specialValue[j][MAX]);
 						break;
 					case DataFieldMetadata.BOOLEAN_FIELD:
 						value = Boolean.valueOf(Math.random() > 0.5);
@@ -429,18 +430,6 @@ public class DataRecordGenerator implements Parser {
 		}
 		return record;
 	}
-
-	private final Integer getRandomInt(double multiplier, double move) {
-		int result;
-		while ((result = getRandomDouble(multiplier, move).intValue()) == Integer.MIN_VALUE) {}
-		return Integer.valueOf(result);
-	}
-	
-	private final Double getRandomDouble(double multiplier, double move) {
-		// get random long from given interval
-		return Double.valueOf(Math.floor(random.nextLong() * multiplier + move));
-	}
-
 
 	/**
 	 * Reads names of random fields with ranges from parameter and sets them to global variables randomFields and
@@ -613,6 +602,11 @@ public class DataRecordGenerator implements Parser {
 	 */
 	public void reset() {
 		counter = 0;
+		
+		// set random seed
+		if (randomSeed > Long.MIN_VALUE) {
+			random.setSeed(randomSeed);
+		}
 	}
 
 	public Object getPosition() {
@@ -624,5 +618,4 @@ public class DataRecordGenerator implements Parser {
 		// TODO Auto-generated method stub
 
 	}
-
 }

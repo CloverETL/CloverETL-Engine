@@ -66,7 +66,9 @@ public class Plugins {
      * Whether the class references are actively loaded by the plugin system.
      */
     private static boolean lazyClassLoading = true;
-    
+
+    private static boolean simpleClassLoading = false;
+
 	public static void init() {
         init((String) null);
     }
@@ -276,6 +278,14 @@ public class Plugins {
      */
     public static void setLazyClassLoading(boolean lazyClassLoading) {
     	Plugins.lazyClassLoading = lazyClassLoading;
+    }
+    
+    public static boolean isSimpleClassLoading() {
+    	return simpleClassLoading;
+    }
+    
+    public static void setSimpleClassLoading(boolean simpleClassLoading) {
+    	Plugins.simpleClassLoading = simpleClassLoading;
     }
     
 }

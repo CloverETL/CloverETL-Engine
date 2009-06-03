@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231837143600" licenseType="Evaluation license." modified="Wed Apr 22 08:54:32 CEST 2009" modifiedBy="cloveruser" name="Splitting" revision="1.51">
+<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231837143600" licenseType="Evaluation license." modified="Fri May 15 13:53:55 CEST 2009" modifiedBy="cloveruser" name="Splitting" revision="1.59">
 <Global>
 <Metadata fileURL="meta/Amounts.fmt" id="Metadata2"/>
 <Metadata fileURL="meta/Customers.fmt" id="Metadata3"/>
@@ -7,9 +7,9 @@
 <Metadata fileURL="meta/IDs.fmt" id="Metadata1"/>
 <Metadata fileURL="meta/Transactions.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="210" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="First graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="930" x="46" y="44">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="228" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="First graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="930" x="46" y="44">
 <attr name="text"><![CDATA[
-In the first graph, we start from the "Transactions.dat" file. It contains information about employees of the company, its customers and amount of money paid. Data records from the "Transactions.dat" file are multiplicated using SimpleCopy. Then, each new data flow is parsed by Reformat and only some information is selected for each of them. Thus, each of the resulting output files contains only a part of the whole information. 
+In the first graph, we start from the "Transactions.dat" file. It contains information about employees of the company, its customers and amount of money paid. Data records from the "Transactions.dat" file are splitted and parsed by Reformat and only some information is selected for each output port. Thus, each of the resulting output files contains only a part of the whole information. 
 The output files are delimited. In other words, their fields are also separated from each other by semicolon. 
 Note that (for each data flow) we have removed all duplicate data records (since more customers made the orders and more employees served the customers). 
 To duplicate data records, as the first step, we needed to sort them according to some key fields using ExtSort and, as the second step, we removed duplicate fields using Dedup. 
@@ -20,27 +20,36 @@ More detailed information about this graph can be found in the "readme.html" fil
 </Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Transactions.dat" guiHeight="0" guiName="TransactionsDelimited" guiWidth="0" guiX="31" guiY="431" id="DATA_READER0" skipFirstLine="true" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATATMP_DIR}/Ids.dat" guiHeight="0" guiName="IDsDelimited" guiWidth="0" guiX="852" guiY="300" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATATMP_DIR}/Amounts.dat" guiHeight="0" guiName="AmountsDelimited" guiWidth="0" guiX="852" guiY="390" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATATMP_DIR}/Customers.dat" guiHeight="0" guiName="CustomersDelimited" guiWidth="0" guiX="852" guiY="474" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATATMP_DIR}/Employees.dat" guiHeight="0" guiName="EmployeesDelimited" guiWidth="0" guiX="852" guiY="558" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
-<Node dedupKey="CustomerID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="689" guiY="474" id="DEDUP0" keep="first" type="DEDUP"/>
-<Node dedupKey="EmployeeID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="689" guiY="558" id="DEDUP1" keep="first" type="DEDUP"/>
-<Node dedupKey="AmountID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="689" guiY="390" id="DEDUP2" keep="first" type="DEDUP"/>
-<Node enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="689" guiY="302" id="DEDUP3" keep="first" noDupRecord="100000" type="DEDUP"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="519" guiY="474" id="EXT_SORT0" sortKey="CustomerID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="519" guiY="559" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="519" guiY="390" id="EXT_SORT2" sortKey="AmountID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="519" guiY="301" id="EXT_SORT3" sortKey="AmountID(a);CustomerID(a);EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="SelectingIDs" guiWidth="0" guiX="354" guiY="300" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Transactions.dat" guiHeight="0" guiName="TransactionsDelimited" guiWidth="0" guiX="31" guiY="420" id="DATA_READER0" skipFirstLine="true" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/Ids.dat" guiHeight="0" guiName="IDsDelimited" guiWidth="0" guiX="731" guiY="299" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/Amounts.dat" guiHeight="0" guiName="AmountsDelimited" guiWidth="0" guiX="731" guiY="389" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/Customers.dat" guiHeight="0" guiName="CustomersDelimited" guiWidth="0" guiX="731" guiY="473" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/Employees.dat" guiHeight="0" guiName="EmployeesDelimited" guiWidth="0" guiX="731" guiY="557" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
+<Node dedupKey="CustomerID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="568" guiY="473" id="DEDUP0" keep="first" type="DEDUP"/>
+<Node dedupKey="EmployeeID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="568" guiY="557" id="DEDUP1" keep="first" type="DEDUP"/>
+<Node dedupKey="AmountID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="568" guiY="389" id="DEDUP2" keep="first" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="568" guiY="301" id="DEDUP3" keep="first" noDupRecord="100000" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="398" guiY="473" id="EXT_SORT0" sortKey="CustomerID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="398" guiY="558" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="398" guiY="389" id="EXT_SORT2" sortKey="AmountID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="398" guiY="300" id="EXT_SORT3" sortKey="AmountID(a);CustomerID(a);EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Splitting data" guiWidth="0" guiX="186" guiY="420" id="REFORMAT4" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
 function transform() {
 	$0.AmountID := $0.AmountID;
+	$1.Amount := $0.Amount;
 	$0.CustomerID := $0.CustomerID;
+	$2.CustomerState := $0.CustomerState;
+	$2.CustomerSurname := $0.CustomerSurname;
+	$2.CustomerFirstname := $0.CustomerFirstname;
 	$0.EmployeeID := $0.EmployeeID;
+	$3.EmployeeSurname := $0.EmployeeSurname;
+	$3.EmployeeFirstname := $0.EmployeeFirstname;
+	$1.AmountID := $0.AmountID;
+	$2.CustomerID := $0.CustomerID;
+	$3.EmployeeID := $0.EmployeeID;
 }
 
 // Called during component initialization.
@@ -50,59 +59,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="SelectingAmounts" guiWidth="0" guiX="354" guiY="390" id="REFORMAT1" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
-
-// Transforms input record into output record.
-function transform() {
-	$0.Amount := $0.Amount;
-	$0.AmountID := $0.AmountID;
-}
-
-// Called during component initialization.
-// function init() {}
-
-// Called after the component finishes.
-// function finished() {}
-]]></attr>
-</Node>
-<Node enabled="enabled" guiHeight="0" guiName="SelectingCustomers" guiWidth="0" guiX="354" guiY="474" id="REFORMAT2" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
-
-// Transforms input record into output record.
-function transform() {
-	$0.CustomerID := $0.CustomerID;
-	$0.CustomerSurname := $0.CustomerSurname;
-	$0.CustomerFirstname := $0.CustomerFirstname;
-	$0.CustomerState := $0.CustomerState;
-}
-
-// Called during component initialization.
-// function init() {}
-
-// Called after the component finishes.
-// function finished() {}
-]]></attr>
-</Node>
-<Node enabled="enabled" guiHeight="0" guiName="SelectingEmployees" guiWidth="0" guiX="354" guiY="557" id="REFORMAT3" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
-
-// Transforms input record into output record.
-function transform() {
-	$0.EmployeeID := $0.EmployeeID;
-	$0.EmployeeSurname := $0.EmployeeSurname;
-	$0.EmployeeFirstname := $0.EmployeeFirstname;
-}
-
-// Called during component initialization.
-// function init() {}
-
-// Called after the component finishes.
-// function finished() {}
-]]></attr>
-</Node>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="172" guiY="421" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge19" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge19" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT4:0"/>
 <Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" id="Edge24" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (unique)" toNode="DATA_WRITER2:0"/>
 <Edge debugMode="true" fromNode="DEDUP1:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (unique)" toNode="DATA_WRITER3:0"/>
 <Edge debugMode="true" fromNode="DEDUP2:0" guiBendpoints="" id="Edge21" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (unique)" toNode="DATA_WRITER1:0"/>
@@ -111,13 +68,9 @@ function transform() {
 <Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="DEDUP1:0"/>
 <Edge debugMode="true" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DEDUP2:0"/>
 <Edge debugMode="true" fromNode="EXT_SORT3:0" guiBendpoints="" id="Edge17" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DEDUP3:0"/>
-<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT3:0"/>
-<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT2:0"/>
-<Edge debugMode="true" fromNode="REFORMAT2:0" guiBendpoints="" id="Edge22" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
-<Edge debugMode="true" fromNode="REFORMAT3:0" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="REFORMAT1:0"/>
-<Edge fromNode="SIMPLE_COPY0:2" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="REFORMAT2:0"/>
-<Edge fromNode="SIMPLE_COPY0:3" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" toNode="REFORMAT3:0"/>
+<Edge debugMode="true" fromNode="REFORMAT4:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT3:0"/>
+<Edge debugMode="true" fromNode="REFORMAT4:1" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="EXT_SORT2:0"/>
+<Edge debugMode="true" fromNode="REFORMAT4:2" guiBendpoints="" id="Edge22" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 2 (out)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT4:3" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 3 (out)" toNode="EXT_SORT1:0"/>
 </Phase>
 </Graph>

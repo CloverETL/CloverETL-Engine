@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Wed Jan 14 14:13:20 CET 2009" guiVersion="0.0.0.devel" id="1231945408500" licenseType="Evaluation license." modified="Mon Mar 23 17:33:32 CET 2009" modifiedBy="cloveruser" name="miscellaneousIFF" revision="1.16">
+<Graph author="milos_kovalcik" created="Wed Jan 14 14:13:20 CET 2009" guiVersion="0.0.0.devel" id="1231945408500" licenseType="Evaluation license." modified="Fri May 15 14:27:19 CEST 2009" modifiedBy="cloveruser" name="miscellaneousIFF" revision="1.18">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="iifInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -18,7 +18,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="140" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="anytype iif(boolean con, anytype ifcontrue, anytype ifconfalse)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="478" x="138" y="66">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="156" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="anytype iif(boolean con, anytype ifcontrue, anytype ifconfalse)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="478" x="138" y="66">
 <attr name="text"><![CDATA[
 The iif(boolean, anytype, anytype) function accepts three arguments: one is boolean and two are of any data type. 
 Both argument data types and return type are the same.

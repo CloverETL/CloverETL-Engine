@@ -131,6 +131,7 @@ public class XmlWriter extends Node {
 	private static final String XML_SINGLE_ROW_ATTRIBUTE = "singleRow"; // alias for XML_OMIT_NEW_LINES_ATTRIBUTE
 	private static final String XML_OMIT_NEW_LINES_ATTRIBUTE = "omitNewLines"; 
 	private static final String XML_USE_ROOT_ELEMENT_ATTRIBUTE = "useRootElement";
+	private static final String XML_ROOT_INFO_ATTRIBUTES = "rootInfoAttributes";
 	private static final String DEFAULT_ROOT_ELEMENT = "root";
 	private static final String DEFAULT_RECORD_ELEMENT = "record";
 	private static final String ATTRIBUTE_COMPONENT_ID = "component";
@@ -178,6 +179,8 @@ public class XmlWriter extends Node {
 	private boolean omitNewLines = false;
 	/** If set to false, XML without root element is produced, which is invalid XML. */
 	private boolean useRootElement = true;
+	/** If set to true (default) root element will contain couple of info attributes (nodeId, graphId, created). */
+	private boolean rootInfoAttributes = true;
 	private Map<String, String> namespaces;
 	private String dtdPublicId;
 	private String dtdSystemId;
@@ -488,7 +491,8 @@ public class XmlWriter extends Node {
 	public XmlWriter(String id, String fileUrl, String rootElement, 
 			Map<Integer, PortDefinition> allPortDefinitionMap, PortDefinition rootPortDefinition, 
 			int recordsSkip, int recordsCount, int recordsPerFile, boolean omitNewLines, 
-			boolean useRootElement, String rootDefaultNamespace, Map<String, String> namespaces, String dtdPublicId, String dtdSystemId, String xsdSchemaLocation) {
+			boolean useRootElement, String rootDefaultNamespace, Map<String, String> namespaces, String dtdPublicId, String dtdSystemId, String xsdSchemaLocation,
+			boolean rootInfoAttributes) {
 		super(id);
 		this.fileUrl = fileUrl;
 		this.rootElement = rootElement;
@@ -499,6 +503,7 @@ public class XmlWriter extends Node {
 		this.recordsPerFile = recordsPerFile;
 		this.omitNewLines = omitNewLines;
 		this.useRootElement = useRootElement;
+		this.rootInfoAttributes = rootInfoAttributes;
 		this.namespaces = namespaces;
 		this.dtdPublicId = dtdPublicId;
 		this.dtdSystemId = dtdSystemId;
@@ -651,9 +656,11 @@ public class XmlWriter extends Node {
 		//if (recordsPerFile!=1){
 		if (this.useRootElement){
 			 AttributesImpl atts = new AttributesImpl();
-			 atts.addAttribute( "", "", ATTRIBUTE_COMPONENT_ID, "CDATA", getId());
-			 atts.addAttribute( "", "", ATTRIBUTE_GRAPH_NAME, "CDATA",this.getGraph().getName());
-			 atts.addAttribute( "", "", ATTRIBUTE_CREATED, "CDATA", (new Date()).toString());
+			 if (rootInfoAttributes){
+				 atts.addAttribute( "", "", ATTRIBUTE_COMPONENT_ID, "CDATA", getId());
+				 atts.addAttribute( "", "", ATTRIBUTE_GRAPH_NAME, "CDATA",this.getGraph().getName());
+				 atts.addAttribute( "", "", ATTRIBUTE_CREATED, "CDATA", (new Date()).toString());
+			 }
 			 if (!StringUtils.isEmpty(xsdSchemaLocation)) {
 				 atts.addAttribute( "", "", "xsi:schemaLocation", "CDATA", this.xsdSchemaLocation);
 			 }
@@ -880,6 +887,8 @@ public class XmlWriter extends Node {
 			boolean omitNewLines = xattribs.getBoolean(XML_SINGLE_ROW_ATTRIBUTE, false); // singleRow is deprecated attribute, but still possible ... 
 			omitNewLines = xattribs.getBoolean(XML_OMIT_NEW_LINES_ATTRIBUTE, omitNewLines); // ... thus omitNewLines takes precedence over singleRow
 			boolean useRootElement = xattribs.getBoolean(XML_USE_ROOT_ELEMENT_ATTRIBUTE, true);
+			boolean rootInfoAttributes = xattribs.getBoolean(XML_ROOT_INFO_ATTRIBUTES, true);
+			
 			String dtdPublicId = xattribs.getString(XML_DTD_PUBLIC_ID_ATTRIBUTE, null);
 			String dtdSystemId = xattribs.getString(XML_DTD_SYSTEM_ID_ATTRIBUTE, null);
 			String fileUrl = xattribs.getString(XML_FILE_URL_ATTRIBUTE);
@@ -894,7 +903,7 @@ public class XmlWriter extends Node {
 			writer = new XmlWriter(xattribs.getString(XML_ID_ATTRIBUTE), fileUrl, 
 					xattribs.getString(XML_ROOT_ELEMENT_ATTRIBUTE, DEFAULT_ROOT_ELEMENT), allPortDefinitionMap, rootPortDefinition, 
 					recordsSkip, recordsCount, recordsPerFile, omitNewLines, 
-					useRootElement, rootDefaultNamespace, namespaces, dtdPublicId, dtdSystemId, xsdSchemaLocation);
+					useRootElement, rootDefaultNamespace, namespaces, dtdPublicId, dtdSystemId, xsdSchemaLocation, rootInfoAttributes);
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE))
 				writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			writer.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
@@ -996,12 +1005,16 @@ public class XmlWriter extends Node {
 			portData.parentKeys = portData.parentKeysAttr.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 
 		if (portData.keysAttr != null){
-			portData.relationKeysStrings.add(portData.keysAttr);
-			portData.relationKeysArrays.add(portData.keys);
+			if (!portData.relationKeysStrings.contains(portData.keysAttr)){
+				portData.relationKeysStrings.add(portData.keysAttr);
+				portData.relationKeysArrays.add(portData.keys);
+			}
 		}
 		if (portData.parentKeysAttr != null){
-			parentPort.relationKeysStrings.add(portData.parentKeysAttr);
-			parentPort.relationKeysArrays.add(portData.parentKeys);
+			if (!parentPort.relationKeysStrings.contains(portData.parentKeysAttr)){
+				parentPort.relationKeysStrings.add(portData.parentKeysAttr);
+				parentPort.relationKeysArrays.add(portData.parentKeys);
+			}
 		}
 		
 		portData.children = readInPortsDefinitionFromXml(graph, portDesc, portData, allPortDefinitionMap);
@@ -1085,7 +1098,11 @@ public class XmlWriter extends Node {
 	public synchronized void free() {
 		super.free();
 		if (writer != null)
-			writer.close();
+			try {
+				writer.close();
+			} catch(Throwable t) {
+				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+			}
 	}
 
 	/**

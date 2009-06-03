@@ -1,0 +1,8 @@
+12;10;str2num($0.String,number,$0.Radix);12.0
+2.78;16;str2num($0.String,number,$0.Radix);2.78
+1.5678;10;str2num($0.String,number,$0.Radix);1.5678
+3.134;16;str2num($0.String,number,$0.Radix);3.134
+0x1.8p3;16;str2num($0.String,number,$0.Radix);12.0
+0x1.6p3;16;str2num($0.String,number,$0.Radix);11.0
+0x1.fep7;16;str2num($0.String,number,$0.Radix);255.0
+0x1.2p3;10;str2num($0.String,number,$0.Radix);9.0

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229624844609" licenseType="Evaluation license." modified="Tue Mar 24 11:09:32 CET 2009" modifiedBy="cloveruser" name="stringSubstring" revision="1.15">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229624844609" licenseType="Evaluation license." modified="Fri May 15 14:35:47 CEST 2009" modifiedBy="cloveruser" name="stringSubstring" revision="1.17">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="random_stringInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -16,7 +16,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="149" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string random_string(int minLength, int maxLength)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="442" x="86" y="98">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="184" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string random_string(int minLength, int maxLength)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="442" x="86" y="67">
 <attr name="text"><![CDATA[
 The random_string(int, int) function takes two integer arguments and returns strings composed of lowercase letters whose length varies between minLength and maxLength.
 These resulting strings are generated at random for records and fields. They can be different for both different records and different fields. 

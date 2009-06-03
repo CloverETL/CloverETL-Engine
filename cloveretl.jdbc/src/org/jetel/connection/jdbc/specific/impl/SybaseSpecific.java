@@ -54,46 +54,68 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new SybaseConnection(dbConnection, operationType);
 	}
-
-	@Override
-	public int jetelType2sql(DataFieldMetadata field) {
-		switch (field.getType()) {
-		case DataFieldMetadata.INTEGER_FIELD:
-        case DataFieldMetadata.LONG_FIELD:
-			return Types.INTEGER;
-		case DataFieldMetadata.NUMERIC_FIELD:
-			return Types.DOUBLE;
-		case DataFieldMetadata.STRING_FIELD:
-			return Types.VARCHAR;
-		case DataFieldMetadata.DATE_FIELD:
-			boolean isDate = field.isDateFormat();
-			boolean isTime = field.isTimeFormat();
-			if (isDate && isTime || StringUtils.isEmpty(field.getFormatStr())) 
-				return Types.TIMESTAMP;
-			if (isDate)
-				return Types.DATE;
-			if (isTime)
-				return Types.TIME;
-			return Types.TIMESTAMP;
-        case DataFieldMetadata.DECIMAL_FIELD:
-            return Types.DECIMAL;
-        case DataFieldMetadata.BYTE_FIELD:
-        case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-        	if (!StringUtils.isEmpty(field.getFormatStr())
-					&& field.getFormatStr().equalsIgnoreCase(DataFieldMetadata.BLOB_FORMAT_STRING)) {
-        		return Types.BLOB;
-        	}
-            return Types.VARBINARY;
-        case DataFieldMetadata.BOOLEAN_FIELD:
-        	return Types.BIT;
-		default:
-			throw new IllegalArgumentException("Can't handle Clover's data type :"+field.getTypeAsString());
-		}
-	}
+//
+//	@Override
+//	public int jetelType2sql(DataFieldMetadata field) {
+//		switch (field.getType()) {
+//		case DataFieldMetadata.INTEGER_FIELD:
+//        case DataFieldMetadata.LONG_FIELD:
+//			return Types.INTEGER;
+//		case DataFieldMetadata.NUMERIC_FIELD:
+//			return Types.DOUBLE;
+//		case DataFieldMetadata.STRING_FIELD:
+//			return Types.VARCHAR;
+//		case DataFieldMetadata.DATE_FIELD:
+//			boolean isDate = field.isDateFormat();
+//			boolean isTime = field.isTimeFormat();
+//			if (isDate && isTime || StringUtils.isEmpty(field.getFormatStr())) 
+//				return Types.TIMESTAMP;
+//			if (isDate)
+//				return Types.DATE;
+//			if (isTime)
+//				return Types.TIME;
+//			return Types.TIMESTAMP;
+//        case DataFieldMetadata.DECIMAL_FIELD:
+//            return Types.DECIMAL;
+//        case DataFieldMetadata.BYTE_FIELD:
+//        case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+//        	if (!StringUtils.isEmpty(field.getFormatStr())
+//					&& field.getFormatStr().equalsIgnoreCase(DataFieldMetadata.BLOB_FORMAT_STRING)) {
+//        		return Types.BLOB;
+//        	}
+//            return Types.VARBINARY;
+//        case DataFieldMetadata.BOOLEAN_FIELD:
+//        	//return Types.BIT;
+//        	return Types.BOOLEAN;
+//		default:
+//			throw new IllegalArgumentException("Can't handle Clover's data type :"+field.getTypeAsString());
+//		}
+//	}
 
 	public String quoteIdentifier(String identifier) {
 		return "\"" + identifier + "\"";
 	}
+	
+	public String sqlType2str(int sqlType) {
+		switch(sqlType) {
+		case Types.BOOLEAN :
+			return "TINYINT";
+		case Types.INTEGER :
+			return "INT";
+		case Types.NUMERIC :
+		case Types.DOUBLE :
+			return "FLOAT";
+		case Types.TIMESTAMP :
+			return "DATETIME";
+		}
+		return super.sqlType2str(sqlType);
+	}
+
+	@Override
+	public String jetelType2sqlDDL(DataFieldMetadata field) {
+		return super.jetelType2sqlDDL(field);
+	}
+    
 	
 	
 }

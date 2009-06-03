@@ -98,7 +98,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		case DataFieldMetadata.NUMERIC_FIELD:
 			return Types.NUMERIC;
 		case DataFieldMetadata.STRING_FIELD:
-			return Types.VARCHAR;
+			return field.isFixed() ? Types.CHAR : Types.VARCHAR;
 		case DataFieldMetadata.DATE_FIELD:
 			boolean isDate = field.isDateFormat();
 			boolean isTime = field.isTimeFormat();
@@ -119,7 +119,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 					&& field.getFormatStr().equalsIgnoreCase(DataFieldMetadata.BLOB_FORMAT_STRING)) {
         		return Types.BLOB;
         	}
-            return Types.BINARY;
+            return field.isFixed() ? Types.BINARY : Types.VARBINARY;
         case DataFieldMetadata.BOOLEAN_FIELD:
         	return Types.BOOLEAN;
 		default:
@@ -127,6 +127,33 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		}
 	}
 	
+	
+	public String jetelType2sqlDDL(DataFieldMetadata field) {
+		int sqlType = jetelType2sql(field);
+		
+		switch(sqlType) {
+		case Types.BINARY :
+		case Types.VARBINARY :
+		case Types.VARCHAR :
+		case Types.CHAR :
+			return sqlType2str(sqlType) + "(" + (field.isFixed() ? String.valueOf(field.getSize()) : "80") + ")";
+		case Types.DECIMAL :
+			String base = sqlType2str(sqlType);
+			String prec = "";
+			if (field.getProperty("length") != null) {
+				if (field.getProperty("scale") != null) {
+					prec = "(" + field.getProperty("length") + "," + field.getProperty("scale") + ")";
+				} else {
+					prec = "(" + field.getProperty("length") + ",0)";
+				}
+			}
+			return base + prec;
+		default :
+			return sqlType2str(sqlType);
+		}
+		
+	}
+
 	/* (non-Javadoc)
 	 * @see org.jetel.connection.jdbc.specific.JdbcSpecific#sqlType2jetel(int)
 	 */

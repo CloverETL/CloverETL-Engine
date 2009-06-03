@@ -9,3 +9,8 @@ AmountID;Amount;CustomerID;CustomerState;CustomerSurname;CustomerFirstname;Emplo
 8;929.85;8;Maine;Ivner;Romeo;8;Deskus;Frederick
 9;855.71;9;Alaska;Hild;Mabel;9;Barrilleaux;Rosemary
 10;407.58;10;Missouri;Son;Michele;10;Cole;Rowan
+11;927.05;11;Oregon;Pennington;Emilo;11;Weinzimmer;Ashley
+12;291.93;12;Wisconsin;Mc Gary;Marliyn;12;Schmidt;Daniel
+13;30.81;13;California;Yellman;Noreen;13;Lovett;Richard
+14;672.45;14;Michigan;Segura;H.;14;Mcculloch;Richard
+15;860.62;15;Maryland;Frinton;Karie;15;Primavera;Annabel

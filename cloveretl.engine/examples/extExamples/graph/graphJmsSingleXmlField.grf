@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Dec 16 11:30:48 CET 2007" description="This graph ilustrates usage of JMS Reader/Writer for transfer one single field containing XML element. It requires ACtiveMQ JMS server and all libraries required by ACtiveMQ connection factory." guiVersion="0.0.0.devel" id="1204546496818" licenseType="Evaluation license." modified="Thu Apr 16 12:00:06 CEST 2009" modifiedBy="avackova" name="graphSystemExecute" revision="1.21">
+<Graph author="avackova" created="Mon Dec 16 11:30:48 CET 2007" description="This graph ilustrates usage of JMS Reader/Writer for transfer one single field containing XML element. It requires ACtiveMQ JMS server and all libraries required by ACtiveMQ connection factory." guiVersion="0.0.0.devel" id="1204546496818" licenseType="Evaluation license." modified="Mon May 18 09:34:45 CEST 2009" modifiedBy="avackova" name="graphSystemExecute" revision="1.38">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata2"/>
@@ -8,23 +8,22 @@
 <Field eofAsDelimiter="true" name="xml" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
-<Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="file:${LIB_DIR}/activemq-all-5.2.0.jar" name="" password="" providerUrl="vm://localhost" type="JMS" username=""/>
+<Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="${PROJECT}/lib/activemq-all-5.2.0.jar" name="" password="" providerUrl="vm://localhost" type="JMS" username=""/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/other/customers.xml" guiHeight="25" guiName="Input" guiWidth="50" guiX="13" guiY="28" id="Input" type="DATA_READER"/>
-<Node connection="dest" enabled="enabled" guiHeight="25" guiName="JmsReader" guiWidth="50" guiX="223" guiY="111" id="JmsReader" maxMsgCount="0" timeout="4000" type="JMS_READER">
-<attr name="bodyField"><![CDATA[xml]]></attr>
-<attr name="_processorClass"><![CDATA[org.jetel.component.JmsMsg2DataRecordProperties]]></attr>
-</Node>
 <Node connection="dest" enabled="enabled" guiHeight="25" guiName="JmsWriter" guiWidth="50" guiX="223" guiY="28" id="JmsWriter" type="JMS_WRITER">
 <attr name="bodyField"><![CDATA[xml]]></attr>
 <attr name="_processorClass"><![CDATA[org.jetel.component.DataRecord2JmsMsgProperties]]></attr>
 </Node>
 <Edge fromNode="Input:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JmsWriter:0"/>
-<Edge fromNode="JmsReader:0" guiBendpoints="" id="INEDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="XPathTransform:0"/>
 </Phase>
 <Phase number="1">
+<Node connection="dest" enabled="enabled" guiHeight="25" guiName="JmsReader" guiWidth="50" guiX="223" guiY="111" id="JmsReader" maxMsgCount="0" timeout="4000" type="JMS_READER">
+<attr name="bodyField"><![CDATA[xml]]></attr>
+<attr name="_processorClass"><![CDATA[org.jetel.component.JmsMsg2DataRecordProperties]]></attr>
+</Node>
 <Node append="false" charset="windows-1252" enabled="enabled" fileURL="${DATAOUT_DIR}/customers.out" guiHeight="25" guiName="OutCustomer" guiWidth="50" guiX="647" guiY="226" id="OutCustomer" type="DATA_WRITER"/>
 <Node append="false" charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.out" guiHeight="25" guiName="OutOrder" guiWidth="50" guiX="648" guiY="307" id="OutOrder" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="25" guiName="REF" guiWidth="50" guiX="431" guiY="228" id="XPathTransform" type="REFORMAT">
@@ -103,6 +102,7 @@ public class ReformatOrdersInline extends DataRecordTransform{
 
 ]]></attr>
 </Node>
+<Edge fromNode="JmsReader:0" guiBendpoints="" id="INEDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="XPathTransform:0"/>
 <Edge fromNode="XPathTransform:0" guiBendpoints="" id="INEDGE4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OutCustomer:0"/>
 <Edge fromNode="XPathTransform:1" guiBendpoints="" id="INEDGE5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="OutOrder:0"/>
 </Phase>

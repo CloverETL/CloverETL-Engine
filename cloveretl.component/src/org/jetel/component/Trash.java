@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.TextTableFormatter;
@@ -87,6 +89,8 @@ import org.w3c.dom.Element;
  * @see         org.jetel.graph.Edge
  */
 public class Trash extends Node {
+
+	private static Log logger = LogFactory.getLog(Trash.class);
 
 	private static final String XML_DEBUGFILENAME_ATTRIBUTE = "debugFilename";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
@@ -196,7 +200,11 @@ public class Trash extends Node {
 	public synchronized void free() {
 		super.free();
 		if (writer != null) 
-			writer.close();
+			try {
+				writer.close();
+			} catch(Throwable t) {
+				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+			}
 	}
 
 

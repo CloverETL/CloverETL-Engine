@@ -65,82 +65,44 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 	 */
 	public int jetelType2sql(DataFieldMetadata field){
 		switch (field.getType()) {
-		case DataFieldMetadata.INTEGER_FIELD:
-			return Types.INTEGER;
-		case DataFieldMetadata.NUMERIC_FIELD:
-			return Types.NUMERIC;
-		case DataFieldMetadata.STRING_FIELD:
-			return Types.VARCHAR;
 		case DataFieldMetadata.DATE_FIELD:
 			boolean isDate = field.isDateFormat();
 			boolean isTime = field.isTimeFormat();
 			if (isDate && !isTime)
 				return Types.DATE;
 			return Types.TIMESTAMP;
-        case DataFieldMetadata.LONG_FIELD:
-            return Types.BIGINT;
-        case DataFieldMetadata.DECIMAL_FIELD:
-            return Types.DECIMAL;
-        case DataFieldMetadata.BYTE_FIELD:
-        case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-        	if (!StringUtils.isEmpty(field.getFormatStr())
-					&& field.getFormatStr().equalsIgnoreCase(DataFieldMetadata.BLOB_FORMAT_STRING)) {
-        		return Types.BLOB;
-        	}
-            return Types.BINARY;
-        case DataFieldMetadata.BOOLEAN_FIELD:
-        	return Types.BOOLEAN;
-		default:
-			throw new IllegalArgumentException("Can't handle Clover's data type :"+field.getTypeAsString());
 		}
+		return super.jetelType2sql(field);
+	}
+    
+	public String sqlType2str(int sqlType) {
+		switch(sqlType) {
+		case Types.BOOLEAN :
+			return "SMALLINT";
+		case Types.VARCHAR :
+			return "VARCHAR2";
+		case Types.NUMERIC :
+		case Types.BIGINT :
+			return "NUMBER";
+		case Types.VARBINARY :
+		case Types.BINARY :
+			return "RAW";
+		}
+		return super.sqlType2str(sqlType);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#sqlType2jetel(int)
-	 */
-	public char sqlType2jetel(int sqlType) {
-		switch (sqlType) {
-			case Types.INTEGER:
-			case Types.SMALLINT:
-			case Types.TINYINT:
-			    return DataFieldMetadata.INTEGER_FIELD;
-			//-------------------
-			case Types.BIGINT:
-			    return DataFieldMetadata.LONG_FIELD;
-			//-------------------
-			case Types.DECIMAL:
-			case Types.NUMERIC:
-				return DataFieldMetadata.DECIMAL_FIELD;
-			case Types.DOUBLE:
-			case Types.FLOAT:
-			case Types.REAL:
-				return DataFieldMetadata.NUMERIC_FIELD;
-			//------------------
-			case Types.CHAR:
-			case Types.LONGVARCHAR:
-			case Types.VARCHAR:
-			case Types.CLOB:
-				return DataFieldMetadata.STRING_FIELD;
-			//------------------
-			case Types.DATE:
-			case Types.TIME:
-			case Types.TIMESTAMP:
-				return DataFieldMetadata.DATE_FIELD;
-            //-----------------
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-            case Types.BLOB:
-			case Types.OTHER:
-                return DataFieldMetadata.BYTE_FIELD;
-			//-----------------
-			case Types.BOOLEAN:
-			case Types.BIT:
-				return DataFieldMetadata.BOOLEAN_FIELD;
-			default:
-				throw new IllegalArgumentException("Can't handle JDBC.Type :"+sqlType);
+	@Override
+	public String jetelType2sqlDDL(DataFieldMetadata field) {
+		int type = jetelType2sql(field); 
+		switch(type) {
+		case Types.BOOLEAN :
+			return sqlType2str(type);
+		case Types.BIGINT :
+			return sqlType2str(type) + "(11,0)";
 		}
+		return super.jetelType2sqlDDL(field);
 	}
+    
 
 	/* (non-Javadoc)
 	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#getResultSetParameterTypeField()

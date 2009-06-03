@@ -176,6 +176,7 @@ public class StringAproxComparator{
 				boolean secondary,boolean primary){
 		this( identical, tertiary, secondary, primary);
 		setLocale(locale);
+		if (secondary) col.setStrength(Collator.SECONDARY);
 	}
 
 	public StringAproxComparator() throws JetelException{

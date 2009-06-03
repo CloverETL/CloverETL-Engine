@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Tue Mar 24 18:46:30 CET 2009" modifiedBy="cloveruser" name="container_push" revision="1.67">
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Fri May 15 14:01:04 CEST 2009" modifiedBy="cloveruser" name="container_push" revision="1.69">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="forRemoveInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -21,7 +21,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="129" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="60" y="212">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="141" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="60" y="212">
 <attr name="text"><![CDATA[
 Here we use lists consisting of string elements. 
 List consists of 5 elements. 
@@ -29,7 +29,7 @@ remove(List, Index) removes the element from the specified index of List.
 And after the function is executed, List consists of 4 remaining elements.
 The function returns the removed element.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="166" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="elementType remove(list arg, numerictype index)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="60" y="24">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="182" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="elementType remove(list arg, numerictype index)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="60" y="24">
 <attr name="text"><![CDATA[
 The remove(list, numerictype) function accepts two arguments: the first is list and the second is of any numeric data type. The function takes the integer part of the second argument and removes the list element at the specified index. 
 The list specified as the first argument changes to this new value (with the specified element removed). 
@@ -38,9 +38,9 @@ Remember that the list elements are indexed starting from 0.]]></attr>
 </Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerRemove.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="61" guiY="356" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerRemoveOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="453" guiY="356" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="263" guiY="356" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerRemove.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="61" guiY="373" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerRemoveOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="453" guiY="373" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="263" guiY="373" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.

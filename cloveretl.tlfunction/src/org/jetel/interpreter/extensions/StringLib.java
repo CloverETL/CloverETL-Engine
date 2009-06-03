@@ -28,10 +28,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1554,26 +1552,35 @@ public class StringLib extends TLFunctionLibrary {
     	 
          public RandomStringFunction() {
              super("string", "random_string", "Generates a random string", 
-            		 new TLValueType[] { TLValueType.INTEGER, TLValueType.INTEGER }, 
-            		 TLValueType.STRING);
+            		 new TLValueType[] { TLValueType.INTEGER, TLValueType.INTEGER, TLValueType.LONG }, 
+            		 TLValueType.STRING, 3, 2);
          }
 
          @Override
          public TLValue execute(TLValue[] params, TLContext context) {
-             TLValue val = (TLValue)context.getContext();
+        	 RandomContext val = (RandomContext)context.getContext();
 
-             if (!(params[0].type == TLValueType.INTEGER)){
-                 throw new TransformLangExecutorRuntimeException(params,
-                 "randomString - wrong integer type");
-             }else{
-                 val.setValue(dataGenerator.nextString(params[0].getNumeric().getInt(), params[1].getNumeric().getInt()));
+             if (params[0].type != TLValueType.INTEGER || params[1].type != TLValueType.INTEGER){
+                 throw new TransformLangExecutorRuntimeException(params, "randomString - wrong integer type");
              }
-             return val;
+
+             if (params.length == 3) {
+            	 if (params[2].type != TLValueType.LONG && params[2].type != TLValueType.INTEGER) {
+            		 throw new TransformLangExecutorRuntimeException(params, "randomString - wrong type of the third literal");
+            	 }
+            	 if (val.randomSeed != params[2].getNumeric().getLong()) {
+            		 val.randomSeed = params[2].getNumeric().getLong();
+            		 dataGenerator.setSeed(val.randomSeed);
+            	 }
+             }
+             
+             val.value.setValue(dataGenerator.nextString(params[0].getNumeric().getInt(), params[1].getNumeric().getInt()));
+             return val.value;
          }
 
          @Override
          public TLContext createContext() {
-             return TLContext.createStringContext();
+             return RandomContext.createStringContext();
          }
      }
      
@@ -1655,4 +1662,25 @@ public class StringLib extends TLFunctionLibrary {
     	 }
     	 
      }
+     
+     /**
+      * Context for random values. 
+      */
+ 	private static class RandomContext {
+ 		// random seed
+ 		private long randomSeed = Long.MIN_VALUE;
+
+ 		// random value
+ 		private TLValue value;
+ 		
+ 		public static TLContext createStringContext() {
+ 	    	RandomContext con = new RandomContext();
+ 	    	con.value = TLValue.create(TLValueType.STRING);
+ 	    	
+ 	        TLContext<RandomContext> context=new TLContext<RandomContext>();
+ 	        context.setContext(con);
+ 	        return context;        	
+		}
+ 	}
+
 }

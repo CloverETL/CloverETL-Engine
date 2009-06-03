@@ -223,7 +223,7 @@ public class JmsReader extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		psor.finished();
+		if (psor != null) psor.finished();
         closeConnection();
 	}
 
@@ -326,7 +326,7 @@ public class JmsReader extends Node {
 	 */
 	synchronized private void closeConnection() {
 		try {
-			consumer.close();
+			if (consumer != null) consumer.close();
 		} catch (JMSException e) {
 			// ignore it, the connection is probably already closed
 		}

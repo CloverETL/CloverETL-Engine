@@ -21,14 +21,6 @@
 </FunctionalTest>
 
 
-<FunctionalTest ident="AspellLookup" graphFile="graph/graphAspellLookup.grf">
-	 <FlatFile outputFile="data-out/street-lookup.dat" supposedFile="supposed-out/street-lookup.AspellLookup.dat"/>
-     
-<DeleteFile file="data-out/street-lookup.dat"/>
-
-</FunctionalTest>
-
-
 <FunctionalTest ident="CloverData" graphFile="graph/graphCloverData.grf">
 	 <FlatFile outputFile="data-out/strucured_customers.txt" supposedFile="supposed-out/strucured_customers.CloverData.txt"/>
      
@@ -124,10 +116,8 @@
 </FunctionalTest>
 
 <FunctionalTest ident="GenerateData" graphFile="graph/graphGenerateData.grf">	 
-      
-<DeleteFile file="data-out/orders.fix"/>
-<DeleteFile file="seq/seq.seq"/>
-
+	 <FlatFile outputFile="data-out/orders.mix" supposedFile="supposed-out/orders.GenerateData.mix"/>
+	<DeleteFile file="seq/seq.seq"/>
 </FunctionalTest>
 
 
@@ -273,27 +263,6 @@
 
 </FunctionalTest>
 
-
-<FunctionalTest ident="PersistentLookup" graphFile="graph/graphPersistentLookup.grf">
-	 <FlatFile outputFile="data-out/joined_data_hash2.out" supposedFile="supposed-out/joined_data_hash2.PersistentLookup.out"/>
-	 <FlatFile outputFile="data-out/joined_data_hash3.out" supposedFile="supposed-out/joined_data_hash3.PersistentLookup.out"/>
-     
-<DeleteFile file="data-out/joined_data_hash2.out"/>
-<DeleteFile file="data-out/joined_data_hash3.out"/>
-
-</FunctionalTest>
-
-
-<FunctionalTest ident="PersistentLookup2" graphFile="graph/graphPersistentLookup2.grf">
-	 <FlatFile outputFile="data-out/employees.in" supposedFile="supposed-out/employees.PersistentLookup2.in"/>
-	 <FlatFile outputFile="data-out/employees.out" supposedFile="supposed-out/employees.PersistentLookup2.out"/>	 
-     
-<DeleteFile file="data-out/employees.in"/>
-<DeleteFile file="data-out/employees.out"/>
-
-</FunctionalTest>
-
-
 <FunctionalTest ident="PhasesDemo" graphFile="graph/graphPhasesDemo.grf">
 	 <FlatFile outputFile="data-out/orders.phases.merged" supposedFile="supposed-out//orders.phases.merged.PhasesDemo"/>
      
@@ -395,11 +364,6 @@
 	 <FlatFile outputFile="data-out/XMLoutputPROJ.txt" supposedFile="supposed-out//XMLoutputPROJ.XPathReader.txt"/>	 
 	 <FlatFile outputFile="data-out/XMLoutputBENEF.txt" supposedFile="supposed-out//XMLoutputBENEF.XPathReader.txt"/>	 
      
-		<DeleteFile file="data-out/XMLoutputCHILD.txt"/>
-		<DeleteFile file="data-out/XMLoutputCUSTOM.txt"/>
-		<DeleteFile file="data-out/XMLoutputEMPL.txt"/>
-		<DeleteFile file="data-out/XMLoutputPROJ.txt"/>
-		<DeleteFile file="data-out/XMLoutputBENEF.txt"/>
 		<DeleteFile file="seq/xpathsequence.seq"/>
 	
 </FunctionalTest>
@@ -439,5 +403,10 @@
 		<DeleteFile file="data-out/items.txt"/>
 	
 </FunctionalTest>
+
+<FunctionalTest ident="DataGeneratorExt" graphFile="graph/graphDataGeneratorExt.grf">
+<!--	 <FlatFile outputFile="data-out/random.txt" supposedFile="supposed-out/random.DataGeneratorExt.txt"/>
+	 <FlatFile outputFile="data-out/random1.txt" supposedFile="supposed-out/random1.DataGeneratorExt.txt"/>-->
+ </FunctionalTest>
 
 </TestScenario>

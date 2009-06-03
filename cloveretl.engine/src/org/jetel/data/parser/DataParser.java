@@ -676,12 +676,21 @@ public class DataParser implements Parser {
 	private boolean findEndOfRecord(int fieldNum) throws JetelException {
 		int character = 0;
 		try {
-			for(int i = fieldNum + 1; i < numFields; i++) {
+			for(int i = fieldNum; i < numFields; i++) {
 				if (isAutoFilling[i]) continue;
-				while((character = readChar()) != -1) {
-					delimiterSearcher.update((char) character);
-					if(delimiterSearcher.isPattern(i)) {
-						break;
+				if (metadataFields[i].isDelimited()) {
+					while((character = readChar()) != -1) {
+						delimiterSearcher.update((char) character);
+						if(delimiterSearcher.isPattern(i)) {
+							break;
+						}
+					}
+				} else { //data field is fixlen
+					for (int j = 0; j < fieldLengths[i]; j++) {
+						//end of file
+						if ((character = readChar()) == -1) {
+							break;
+						}
 					}
 				}
 			}

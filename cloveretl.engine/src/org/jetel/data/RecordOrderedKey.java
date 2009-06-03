@@ -87,6 +87,7 @@ public class RecordOrderedKey extends RecordKey {
 	 * @param  keyFieldNames  names of individual fields composing the key
 	 * @param keyOrderings ordering of columns for each key (true=ascending)
 	 * @param  metadata       metadata describing structure of DataRecord for which the key is built
+     * @param  collator       language collator
 	 */
 	public RecordOrderedKey(String keyFieldNames[], boolean keyOrderings[], DataRecordMetadata metadata, RuleBasedCollator collator) {
 		super(keyFieldNames, metadata);

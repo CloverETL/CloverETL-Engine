@@ -548,7 +548,11 @@ public class XLSWriter extends Node {
     public synchronized void free() {
         super.free();
         if (writer != null)
-            writer.close();
+			try {
+				writer.close();
+			} catch(Throwable t) {
+				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+			}
     }
     
 }

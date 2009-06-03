@@ -610,20 +610,27 @@ public class DBExecute extends Node {
 		 * This is a workaround which should be reviewed by the one who implemented this method
 		 * as I don't have any knowledge why "send out if any output parameters even when isNext()==false" behavior
 		 */
-		if (sendOut && outParams[i].get(1).equals(SQLCloverCallableStatement.RESULT_SET_OUTPARAMETER_NAME)){
+		if (sendOut && outParams[i].containsValue(SQLCloverCallableStatement.RESULT_SET_OUTPARAMETER_NAME)){
 			sendOut = false;
 		}
 		
 		
 		callableStatement.executeCall();
 		if (outPort != null) {
-			sendOut = sendOut || callableStatement.isNext();
-			do {
-				if (sendOut) {
-					outPort.writeRecord(callableStatement.getOutRecord());
-				}
-				sendOut = callableStatement.isNext();
-			}while (sendOut);
+			
+//			do {
+//				if (sendOut) {
+//					outPort.writeRecord(callableStatement.getOutRecord());
+//				}
+//				sendOut = callableStatement.isNext();
+//			} while (sendOut);
+			
+			// order in this is important - isNext() THEN sendOut
+			while(callableStatement.isNext() || sendOut) {
+				outPort.writeRecord(callableStatement.getOutRecord());
+				sendOut = false;
+			}
+			
 		}
 	}
 	
@@ -632,11 +639,14 @@ public class DBExecute extends Node {
 		super.free();
 		try {
 			if (procedureCall) {
-				for (SQLCloverCallableStatement statement : callableStatement) {
-					statement.close();
+				if (callableStatement != null){
+					for (SQLCloverCallableStatement statement : callableStatement) {
+						statement.close();
+					}
 				}
 			}else{
-				sqlStatement.close();
+				if (sqlStatement != null)
+					sqlStatement.close();
 			}
 		} catch (SQLException e) {
 			 logger.warn("SQLException when closing statement",e);
