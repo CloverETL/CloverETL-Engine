@@ -139,7 +139,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 5th May 2009
+ * @version 4th June 2009
  * @since 30th April 2009
  *
  * @see RecordRollup
@@ -223,8 +223,6 @@ public class Rollup extends Node {
             throw new XMLConfigurationException("Missing a required attribute!", exception);
         } catch (Exception exception) {
             throw new XMLConfigurationException("Error creating the component!", exception);
-        } catch (Throwable tw) {
-            throw new XMLConfigurationException(tw);
         }
 
         return rollup;
