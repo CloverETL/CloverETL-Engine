@@ -206,6 +206,12 @@ public class DataWriter extends Node {
         		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
         	}
         }
+        
+        ConfigurationStatus status; //TODO remove when the DataRecordMetadata have an interface, see checkConfig, Clover 3?
+        if (checkPorts(status = new ConfigurationStatus())) {
+        	throw new ComponentNotReadyException(status.getFirst().getMessage());
+        }
+        
         if(outputFieldNames) {
         	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
@@ -370,12 +376,15 @@ public class DataWriter extends Node {
 		return aDataWriter;
 	}
 
+	private boolean checkPorts(ConfigurationStatus status) {
+        return !checkInputPorts(status, 1, 1) || !checkOutputPorts(status, 0, 1);
+	}
+
 	@Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        if(!checkInputPorts(status, 1, 1)
-        		|| !checkOutputPorts(status, 0, 1)) {
+        if(checkPorts(status)) {
         	return status;
         }
 
