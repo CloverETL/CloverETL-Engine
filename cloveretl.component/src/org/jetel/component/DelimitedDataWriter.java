@@ -228,6 +228,12 @@ public class DelimitedDataWriter extends Node {
         	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
         writer.setDictionary(graph.getDictionary());
+        
+        ConfigurationStatus status; //TODO remove when the DataRecordMetadata have an interface, see checkConfig, Clover 3?
+        if (checkPorts(status = new ConfigurationStatus())) {
+        	throw new ComponentNotReadyException(status.getFirst().getMessage());
+        }
+
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data 
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
@@ -250,7 +256,10 @@ public class DelimitedDataWriter extends Node {
 		}
 	}
 
-	
+	private boolean checkPorts(ConfigurationStatus status) {
+        return !checkInputPorts(status, 1, 1) || !checkOutputPorts(status, 0, 1);
+	}
+
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
@@ -259,8 +268,7 @@ public class DelimitedDataWriter extends Node {
         		"Component is of type DELIMITED_DATA_WRITER, which is deprecated",
         		Severity.WARNING, this, Priority.NORMAL));
 
-		if(!checkInputPorts(status, 1, 1)
-				|| !checkOutputPorts(status, 0, 1)) {
+		if(checkPorts(status)) {
 			return status;
 		}
 

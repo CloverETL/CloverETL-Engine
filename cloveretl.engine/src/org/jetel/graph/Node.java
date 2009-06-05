@@ -960,7 +960,7 @@ public abstract class Node extends GraphElement implements Runnable {
 
         int index = 0;
         for (InputPort inputPort : inPorts) {
-			if (inputPort.getMetadata() == null){
+			if (inputPort.getMetadata() == null){ //TODO interface for matadata
                 status.add(new ConfigurationProblem("Metadata on input port " + inputPort.getInputPortNumber() + 
                 		" are not defined!", Severity.WARNING, this, Priority.NORMAL));
                 retValue = false;
