@@ -876,6 +876,45 @@ public class MysqlDataWriter extends BulkLoader {
 	public void setCommandURL(String commandURL) {
 		this.commandURL = commandURL;
 	}
+	
+	/**
+	 * Return list of all adding parameters (parameters attribute).
+	 * Deprecated parameters mustn't be used.
+	 * It is intended for use in GUI in parameter editor.
+	 * @return list of parameters that is viewed in parameters editor
+	 */
+	public static String[] getAddingParameters() {
+		return new String[] {
+			// params for mysql client
+			MYSQL_SKIP_AUTO_REHASH_PARAM,
+			MYSQL_CHARACTER_SETS_DIR_PARAM,
+			MYSQL_COMPRESS_PARAM,
+			MYSQL_DEFAULT_CHARACTER_SET_PARAM,
+			MYSQL_FORCE_PARAM,
+			MYSQL_NO_BEEP_PARAM,
+			MYSQL_PORT_PARAM,
+			MYSQL_PROTOCOL_PARAM,
+			MYSQL_RECONNECT_PARAM,
+			MYSQL_SECURE_AUTH_PARAM,
+			MYSQL_SHOW_WARNINGS_PARAM,
+			MYSQL_SILENT_PARAM,
+			MYSQL_SOCKET_PARAM,
+			MYSQL_SSL_PARAM,
+	
+			// params for LOAD DATA INFILE statement
+			LOAD_LOCAL_PARAM,
+			LOAD_LOW_PRIORITY_PARAM,
+			LOAD_CONCURRENT_PARAM,
+			LOAD_REPLACE_PARAM,
+			LOAD_IGNORE_PARAM,
+			LOAD_FIELDS_ENCLOSED_BY_PARAM,
+			LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM,
+			LOAD_FIELDS_ESCAPED_BY_PARAM,
+			LOAD_LINES_STARTING_BY_PARAM,
+			LOAD_RECORD_DELIMITER_PARAM,
+			LOAD_COLUMNS_PARAM
+		};
+	}
 
 	/**
 	 * Class for reading and parsing data from input stream, which is supposed 

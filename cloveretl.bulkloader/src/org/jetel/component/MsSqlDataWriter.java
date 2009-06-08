@@ -1104,6 +1104,44 @@ public class MsSqlDataWriter extends BulkLoader {
 	}
 
 	/**
+	 * Return list of all adding parameters (parameters attribute).
+	 * Deprecated parameters mustn't be used.
+	 * It is intended for use in GUI in parameter editor.
+	 * @return list of parameters that is viewed in parameters editor
+	 */
+	public static String[] getAddingParameters() {
+		return new String[] {
+			MS_SQL_MAX_ERRORS_PARAM,
+			MS_SQL_FORMAT_FILE_PARAM,
+			MS_SQL_ERR_FILE_PARAM,
+			MS_SQL_FIRST_ROW_PARAM,
+			MS_SQL_LAST_ROW_PARAM,
+			MS_SQL_BATCH_SIZE_PARAM,
+			MS_SQL_NATIVE_TYPE_PARAM,
+			MS_SQL_CHARACTER_TYPE_PARAM,
+			MS_SQL_WIDE_CHARACTER_TYPE_PARAM,
+			MS_SQL_KEEP_NON_TEXT_NATIVE_PARAM,
+			MS_SQL_FILE_FORMAT_VERSION_PARAM,
+			MS_SQL_QUOTED_IDENTIFIER_PARAM,
+			MS_SQL_CODE_PAGE_SPECIFIER_PARAM,
+			// MS_SQL_COLUMN_DELIMITER_PARAM, // deprecated
+			// MS_SQL_RECORD_DELIMITER_ALIAS_PARAM, // deprecated
+			MS_SQL_RECORD_DELIMITER_PARAM,
+			MS_SQL_INPUT_FILE_PARAM,
+			MS_SQL_OUTPUT_FILE_PARAM,
+			MS_SQL_PACKET_SIZE_PARAM,
+			MS_SQL_SERVER_NAME_PARAM, // deprecated
+			// MS_SQL_USER_NAME_PARAM, // deprecated
+			// MS_SQL_PASSWORD_PARAM, // deprecated
+			MS_SQL_TRUSTED_CONNECTION_PARAM,
+			MS_SQL_REGIONAL_ENABLE_PARAM,
+			MS_SQL_KEEP_NULL_VALUES_PARAM,
+			MS_SQL_KEEP_IDENTITY_VALUES_PARAM,
+			MS_SQL_LOAD_HINTS_PARAM
+		};
+	}
+	
+	/**
 	 * Class for reading and parsing data from input file, 
 	 * and sends them to specified output port.
 	 * 

@@ -599,4 +599,37 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	public void setCommandURL(String commandURL) {
 		this.commandURL = commandURL;
 	}
+	
+	/**
+	 * Return list of all adding parameters (parameters attribute).
+	 * Deprecated parameters mustn't be used.
+	 * It is intended for use in GUI in parameter editor.
+	 * @return list of parameters that is viewed in parameters editor
+	 */
+	public static String[] getAddingParameters() {
+		return new String[] {
+			// params for psql client
+			PSQL_ECHO_ALL_PARAM,
+			PSQL_ECHO_QUERIES_PARAM,
+			PSQL_ECHO_HIDDEN_PARAM,
+			PSQL_LOG_FILE_PARAM,
+			PSQL_OUTPUT_PARAM,
+			PSQL_PORT_PARAM,
+			PSQL_PSET_PARAM,
+			PSQL_QUIET_PARAM,
+			PSQL_NO_PSQLRC_PARAM,
+			PSQL_SINGLE_TRANSACTION_PARAM,
+
+			// params for copy statement
+			COPY_COLUMNS_PARAM,
+			COPY_BINARY_PARAM,
+			COPY_OIDS_PARAM,
+			COPY_NULL_PARAM,
+			COPY_CSV_PARAM,
+			COPY_CSV_HEADER_PARAM,
+			COPY_CSV_QUOTE_PARAM,
+			COPY_CSV_ESCAPE_PARAM,
+			COPY_CSV_FORCE_NOT_NULL_PARAM
+		};
+	}
 }
