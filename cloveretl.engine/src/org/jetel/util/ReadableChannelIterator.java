@@ -307,7 +307,6 @@ public class ReadableChannelIterator {
 			else if (value instanceof InputStream) rch = Channels.newChannel((InputStream)value);
 			else if (value instanceof ByteArrayOutputStream) rch = createReadableByteChannel(((ByteArrayOutputStream)value).toByteArray());
 			else if (value instanceof ReadableByteChannel) rch = (ReadableByteChannel)value;
-			else if (value instanceof CharSequence) rch = createReadableByteChannel(value.toString());
 			else rch = createReadableByteChannel(value);
 		} catch (UnsupportedEncodingException e) {
 			throw new JetelException(e.getMessage(), e);
