@@ -36,7 +36,6 @@ import org.jetel.enums.OrderEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -151,25 +150,27 @@ public class Dedup extends Node {
 		super(id);
 		this.dedupKeys = dedupKeys;
 		
-        this.dedupOrderings = new OrderEnum[dedupKeys.length];
-        Arrays.fill(dedupOrderings, OrderEnum.IGNORE);
-        
-        Pattern pat = Pattern.compile("^(.*)\\((.*)\\)$");
-        
-        for (int i = 0; i < dedupKeys.length; i++) {
-        	Matcher matcher = pat.matcher(dedupKeys[i]);
-        	if (matcher.find()) {
-	        	String keyPart = dedupKeys[i].substring(matcher.start(1), matcher.end(1));
-	        	if (matcher.groupCount() > 1) {
-	        		String orderShort = (dedupKeys[i].substring(matcher.start(2), matcher.end(2)));
-	        		if (orderShort.matches("^[Aa].*")) dedupOrderings[i] = OrderEnum.ASC;
-	        		else if (orderShort.matches("^[Dd].*")) dedupOrderings[i] = OrderEnum.DESC;
-	        		else if (orderShort.matches("^[Ii].*")) dedupOrderings[i] = OrderEnum.IGNORE;
-	        		else dedupOrderings[i] = OrderEnum.AUTO;
-	        	}
-	        	dedupKeys[i] = keyPart;
-        	}
-        }
+		if (dedupKeys != null) {
+			this.dedupOrderings = new OrderEnum[dedupKeys.length];
+			Arrays.fill(dedupOrderings, OrderEnum.IGNORE);
+			
+			Pattern pat = Pattern.compile("^(.*)\\((.*)\\)$");
+			
+			for (int i = 0; i < dedupKeys.length; i++) {
+				Matcher matcher = pat.matcher(dedupKeys[i]);
+				if (matcher.find()) {
+			    	String keyPart = dedupKeys[i].substring(matcher.start(1), matcher.end(1));
+			    	if (matcher.groupCount() > 1) {
+			    		String orderShort = (dedupKeys[i].substring(matcher.start(2), matcher.end(2)));
+			    		if (orderShort.matches("^[Aa].*")) dedupOrderings[i] = OrderEnum.ASC;
+			    		else if (orderShort.matches("^[Dd].*")) dedupOrderings[i] = OrderEnum.DESC;
+			    		else if (orderShort.matches("^[Ii].*")) dedupOrderings[i] = OrderEnum.IGNORE;
+			    		else dedupOrderings[i] = OrderEnum.AUTO;
+			    	}
+			    	dedupKeys[i] = keyPart;
+				}
+			}
+		}
 	}
 
 
@@ -182,6 +183,9 @@ public class Dedup extends Node {
 	 * @throws TransformException - indicates that input is not sorted as expected.
 	 */
 	private boolean isChange(DataRecord currentRecord, DataRecord prevRecord) throws TransformException {
+		if (orderingComparators == null) {
+			return false;
+		}
 		// compare records
 		boolean result = false;
 		int iLastEquals = -1;
