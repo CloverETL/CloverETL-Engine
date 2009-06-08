@@ -19,8 +19,7 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node columnDelimiter="," database="test" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/postgreSqlFlat.dat" guiHeight="25" guiName="PostgreSql Data Writer" guiWidth="50" guiX="22" guiY="121" host="koule.javlin.cz" id="POSTGRESQL_DATA_WRITER0" psqlPath="psql" table="test" type="POSTGRESQL_DATA_WRITER" username="test">
-<attr name="parameters"><![CDATA[null=""]]></attr>
+<Node columnDelimiter="," database="test" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/postgreSqlFlat.dat" guiHeight="25" guiName="PostgreSql Data Writer" guiWidth="50" guiX="22" guiY="121" host="koule.javlin.cz" id="POSTGRESQL_DATA_WRITER0" psqlPath="psql" table="test" type="POSTGRESQL_DATA_WRITER" username="test" parameters="null=&quot;&quot;">
 </Node>
 </Phase>
 <Phase number="1">
