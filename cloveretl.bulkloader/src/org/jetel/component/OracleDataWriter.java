@@ -818,6 +818,35 @@ public class OracleDataWriter extends BulkLoader {
         return ret.toString();
     }
     
+    /**
+	 * Return list of all adding parameters (parameters attribute).
+	 * Deprecated parameters mustn't be used.
+	 * It is intended for use in GUI in parameter editor.
+	 * @return list of parameters that is viewed in parameters editor
+	 */
+    public static String[] getAddingParameters() {
+		return new String[] {
+			SQLLDR_RECORD_COUNT_PARAM,
+			SQLLDR_BIND_SIZE_PARAM,
+			SQLLDR_SILENT_PARAM,
+			SQLLDR_DIRECT_PARAM,
+			SQLLDR_PARALLEL_PARAM,
+			SQLLDR_FILE_PARAM,
+			SQLLDR_SKIP_UNUSABLE_INDEX_PARAM,
+			SQLLDR_SKIP_INDEX_MAINTEANCE_PARAM,
+			SQLLDR_COMMIT_DISCONTINUED_PARAM,
+			SQLLDR_READ_SIZE_PARAM,
+			SQLLDR_EXTERNAL_TABLE_PARAM,
+			SQLLDR_COLUMNARRAYROWS_PARAM,
+			SQLLDR_STREAM_SIZE_PARAM,
+			SQLLDR_MULTITHREADING_PARAM,  
+			SQLLDR_RESUMABLE_PARAM,
+			SQLLDR_RESUMABLE_NAME_PARAM,
+			SQLLDR_RESUMABLE_TIMEOUT_PARAM,
+			SQLLDR_DATA_CACHE_PARAM
+		};
+    }
+    
 	/**
 	 * Class for reading and parsing data from input files, 
 	 * and sends them to output port.
