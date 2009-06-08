@@ -266,26 +266,6 @@ public abstract class BulkLoader extends Node {
     }
 	
 	/**
-	 * Create instance of Properties from String. 
-	 * Parse parameters from string "parameters" and fill properties by them.
-	 * 
-	 * @param parameters string that contains parameters
-	 * @return instance of Properties created by parsing string
-	 */
-	private static Properties parseParameters(String parameters) {
-		Properties properties = new Properties();
-
-		if (parameters != null) {
-			for (String param : StringUtils.split(parameters)) {
-				String[] par = param.split(EQUAL_CHAR);
-				properties.setProperty(par[0], par.length > 1 ? StringUtils.unquote(par[1]) : "true");
-			}
-		}
-
-		return properties;
-	}
-
-	/**
 	 * This method reads incoming data from port and sends them by formatter to load utility process.
 	 *
 	 * @param dataTarget OutputStream where data will be sent
@@ -567,18 +547,61 @@ public abstract class BulkLoader extends Node {
         }
     }
 	
+	/**
+	 * Create instance of Properties from String. 
+	 * Parse parameters from string "parameters" and fill properties by them.
+	 * 
+	 * @param parameters string that contains parameters
+	 * @return instance of Properties created by parsing string
+	 */
+	public static Properties parseParameters(String parameters) {
+		Properties properties = new Properties();
+
+		if (parameters != null) {
+			for (String param : StringUtils.split(parameters)) {
+				String[] par = param.split(EQUAL_CHAR);
+				properties.setProperty(par[0], par.length > 1 ? StringUtils.unquote(par[1]) : "true");
+			}
+		}
+
+		return properties;
+	}
+	
 	@SuppressWarnings("unchecked")
-	private String getPropertiesAsString() {
+	public static String getPropertiesAsString(Properties properties) {
 		StringBuilder props = new StringBuilder();
+		boolean firstProp = true;
 		for (Iterator iter = properties.entrySet().iterator(); iter.hasNext();) {
+			if (!firstProp) {
+				props.append('|');
+			}
 			Entry<String, String> element = (Entry<String, String>) iter.next();
 			props.append(element.getKey());
-			props.append('=');
-			props.append(StringUtils.isQuoted(element.getValue()) ? element.getValue() : StringUtils
-					.quote(element.getValue()));
-			props.append(';');
+			if (!equalsTrue(element.getValue())) {
+				props.append('=');
+				props.append(quote(element.getValue()));
+			}
+			
+			firstProp = false;
 		}
 		return props.toString();
+	}
+	
+	/** 
+	 * Return quoted 'value'. In case quotes are present doesn't do anything.
+	 * @param value
+	 * @return quoted 'value'
+	 */
+	private static String quote(String value) {
+		return StringUtils.isQuoted(value) ? value : StringUtils.quote(value);
+	}
+	
+	/**
+	 * @param value
+	 * @return true if 'value' equals true with ignoring case sensitive
+	 */
+	private static boolean equalsTrue(String value) {
+		return StringUtils.unquote(value).equalsIgnoreCase("true");
 	}
 	
 	/**
@@ -644,7 +667,7 @@ public abstract class BulkLoader extends Node {
 		if (!StringUtils.isEmpty(parameters)) {
 			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, parameters);
 		} else if (!properties.isEmpty()) {
-			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, getPropertiesAsString());
+			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, getPropertiesAsString(properties));
 		}
 	}
 	
