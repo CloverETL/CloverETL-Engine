@@ -214,8 +214,7 @@ public class Rollup extends Node {
 
             rollup.setTransform(componentAttributes.getString(XML_TRANSFORM_ATTRIBUTE, null));
             rollup.setTransformUrl(componentAttributes.getString(XML_TRANSFORM_URL_ATTRIBUTE, null));
-            rollup.setTransformUrlCharset(componentAttributes.getString(XML_TRANSFORM_URL_CHARSET_ATTRIBUTE,
-                    Defaults.DataParser.DEFAULT_CHARSET_DECODER));
+            rollup.setTransformUrlCharset(componentAttributes.getString(XML_TRANSFORM_URL_CHARSET_ATTRIBUTE, null));
             rollup.setTransformClassName(componentAttributes.getString(XML_TRANSFORM_CLASS_NAME_ATTRIBUTE, null));
 
             rollup.setInputSorted(componentAttributes.getBoolean(XML_INPUT_SORTED_ATTRIBUTE, false));
@@ -342,25 +341,24 @@ public class Rollup extends Node {
 
         checkInputPorts(status, 1, 1);
         checkOutputPorts(status, 1, Integer.MAX_VALUE);
-        checkMetadata(status, getInMetadata(), getOutMetadata());
 
         if (groupKeyFields == null || groupKeyFields.length == 0) {
             status.add(new ConfigurationProblem("No group key fields specified!",
-                    Severity.ERROR, this, Priority.HIGH, "groupKeyFields"));
+                    Severity.ERROR, this, Priority.HIGH, XML_GROUP_KEY_FIELDS_ATTRIBUTE));
         } else {
             DataRecordMetadata metadata = getInputPort(INPUT_PORT_NUMBER).getMetadata();
 
             for (String groupKeyField : groupKeyFields) {
                 if (metadata.getField(groupKeyField) == null) {
                     status.add(new ConfigurationProblem("The group key field " + StringUtils.quote(groupKeyField)
-                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH, "groupKeyFields"));
+                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH, XML_GROUP_KEY_FIELDS_ATTRIBUTE));
                 }
             }
         }
 
         if (groupAccumulatorMetadataId != null && getGraph().getDataRecordMetadata(groupAccumulatorMetadataId) == null) {
             status.add(new ConfigurationProblem("The group \"accumulator\" meta data ID is not valid!",
-                    Severity.ERROR, this, Priority.HIGH, "groupAccumulatorMetadataId"));
+                    Severity.ERROR, this, Priority.HIGH, XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE));
         }
 
         if (StringUtils.isEmpty(transform) && StringUtils.isEmpty(transformUrl) && StringUtils.isEmpty(transformClassName)) {
@@ -369,7 +367,7 @@ public class Rollup extends Node {
 
         if (transformUrlCharset != null && !Charset.isSupported(transformUrlCharset)) {
             status.add(new ConfigurationProblem("The transform URL character set is not supported!",
-                    Severity.ERROR, this, Priority.NORMAL, "transformUrlCharset"));
+                    Severity.ERROR, this, Priority.NORMAL, XML_TRANSFORM_URL_CHARSET_ATTRIBUTE));
         }
 
         return status;
