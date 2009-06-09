@@ -3,7 +3,6 @@ package org.jetel.util;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.text.DecimalFormat;
@@ -291,7 +290,7 @@ public class TargetFile {
     
     private void write2FieldOrDict() throws IOException {
     	if (fieldOrDictOutput) {
-        	write2OutportOrDictionary(bbOutputStream.toByteArray());
+        	if (bbOutputStream != null) write2OutportOrDictionary(bbOutputStream.toByteArray());
     		try {
     			// there is only one target for port and dictionary protocol
 				if (outputPort != null) outputPort.eof();
@@ -304,7 +303,9 @@ public class TargetFile {
     private void write2OutportOrDictionary(byte[] aData) throws UnsupportedEncodingException {
     	if (bbOutputStream != null) {
             if (dictProcesstingType != null) {
-           		write2Dictionary(aData); 
+            	if (dictOutArray != null) {
+            		dictOutArray.add(aData);
+            	}
             }
             if (field != null) {
             	if (aData.length == 0) return;
@@ -317,22 +318,6 @@ public class TargetFile {
        			}
        	        SynchronizeUtils.cloverYield();
             }
-    	}
-    }
-    
-    private void write2Dictionary(byte[] aData) {
-    	if (dictOutChannel != null) {
-    		try {
-    	        ByteBuffer ret = ByteBuffer.allocate(aData.length);
-    	        ret.put(aData, 0, aData.length);
-    	        ret.flip();
-				dictOutChannel.write(ret);
-    			dictOutChannel.close();
-    		} catch (IOException e) {
-    			throw new RuntimeException(e);
-    		}
-    	} else if (dictOutArray != null) {
-    		dictOutArray.add(aData);
     	}
     }
     
@@ -374,14 +359,19 @@ public class TargetFile {
      */
     private void setOutput() throws IOException {
     	if (fieldOrDictOutput = (field != null || dictProcesstingType != null)) {
-        	if (bbOutputStream != null) {
-        		write2OutportOrDictionary(bbOutputStream.toByteArray());
-            	bbOutputStream.reset();
-        	} else {
-            	bbOutputStream = new RestrictedByteArrayOutputStream();
-            	if (field != null) bbOutputStream.setMaxArrayLength(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
-        	}
-    		setDataTarget(Channels.newChannel(bbOutputStream));
+    		if (dictOutChannel != null) {
+        		setDataTarget(dictOutChannel);
+    		}
+    		else {
+    			if (bbOutputStream != null) {
+            		write2OutportOrDictionary(bbOutputStream.toByteArray());
+                	bbOutputStream.reset();
+            	} else {
+                   	bbOutputStream = new RestrictedByteArrayOutputStream();
+                   	if (field != null) bbOutputStream.setMaxArrayLength(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
+            	}
+        		setDataTarget(Channels.newChannel(bbOutputStream));
+    		}
     		
     	} else if (fileNames != null) {
             String fName = fileNames.next();
