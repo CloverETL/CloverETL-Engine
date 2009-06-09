@@ -179,7 +179,6 @@ public class DataRecordTape {
         }
 	}
 
-	
 	/**
 	 * Flushes tape content to disk.
 	 * 
@@ -225,6 +224,27 @@ public class DataRecordTape {
 	    }
 	}
 
+	/**
+	 * Clears the internal buffer.
+	 * <p>
+	 * This method should be used before storing additional data records after all data
+	 * records stored on the tape were read.
+	 * <p>
+	 * <b>Code fragment:</b>
+	 * <pre>
+	 *   tape.addDataChunk();
+	 *   REPEAT tape.put(record);
+	 *
+	 *   tape.rewind();
+	 *   REPEAT tape.get(record);
+	 *
+	 *   tape.clearBuffer();
+	 *   REPEAT tape.put(record);
+	 * </pre>
+	 */
+	public void clearBuffer() {
+		dataBuffer.clear();
+	}
 
 	/**
 	 *  Clears the tape. All DataChunks are destroyed. Underlying 
