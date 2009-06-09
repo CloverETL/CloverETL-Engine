@@ -62,7 +62,7 @@ public class RecordOrderedKey extends RecordKey {
 	 * @param  metadata       metadata describing structure of DataRecord for which the key is built
 	 * @since                 May 2, 2002
 	 */
-	private RecordOrderedKey(String keyFieldNames[], DataRecordMetadata metadata) {
+	public RecordOrderedKey(String keyFieldNames[], DataRecordMetadata metadata) {
 		super(keyFieldNames, metadata);
 		this.keyOrderings = new boolean[keyFieldNames.length];
 		Arrays.fill(this.keyOrderings, true);		
