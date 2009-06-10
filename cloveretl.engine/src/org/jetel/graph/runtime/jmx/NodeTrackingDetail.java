@@ -19,9 +19,6 @@
 */
 package org.jetel.graph.runtime.jmx;
 
-import java.io.Serializable;
-import java.util.concurrent.TimeUnit;
-
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -35,7 +32,7 @@ import org.jetel.graph.Result;
  *
  * @created Jun 6, 2008
  */
-public class NodeTrackingDetail implements Serializable {
+public class NodeTrackingDetail implements NodeTracking {
 
 	private static final long serialVersionUID = 3570320889692545386L;
 	
@@ -44,10 +41,10 @@ public class NodeTrackingDetail implements Serializable {
 	
     private Result result;
 
-    private final InputPortTrackingDetail[] inputPortsDetails;
-    private final OutputPortTrackingDetail[] outputPortsDetails;
+    private InputPortTrackingDetail[] inputPortsDetails;
+    private OutputPortTrackingDetail[] outputPortsDetails;
     
-    private final String nodeId;
+    private String nodeId;
     private long totalCPUTime;
     private long totalUserTime;
     private float usageCPU;
@@ -76,6 +73,11 @@ public class NodeTrackingDetail implements Serializable {
 			i++;
 		}
 	}
+	
+	public NodeTrackingDetail(PhaseTrackingDetail parentPhaseDetail) {
+		this.parentPhaseDetail = parentPhaseDetail;
+		this.node = null;
+	}
 
 	public void copyFrom(NodeTrackingDetail nodeDetail) {
 		this.result = nodeDetail.result;
@@ -101,14 +103,16 @@ public class NodeTrackingDetail implements Serializable {
 		return node;
 	}
 
-	public String getNodeId() {
-		return nodeId;
-	}
-	
-	public PhaseTrackingDetail getParentPhaseDetail() {
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getParentPhaseTracking()
+	 */
+	public PhaseTracking getParentPhaseTracking() {
 		return parentPhaseDetail;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getResult()
+	 */
 	public Result getResult() {
 		return result;
 	}
@@ -117,7 +121,10 @@ public class NodeTrackingDetail implements Serializable {
 		return inputPortsDetails;
 	}
 
-	public InputPortTrackingDetail getInputPortsDetail(int portNumber) {
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getInputPortTracking(int)
+	 */
+	public PortTracking getInputPortTracking(int portNumber) {
 		for (InputPortTrackingDetail inputPortDetail : inputPortsDetails) {
 			if (inputPortDetail.getIndex() == portNumber) {
 				return inputPortDetail;
@@ -130,7 +137,10 @@ public class NodeTrackingDetail implements Serializable {
 		return outputPortsDetails;
 	}
 
-	public OutputPortTrackingDetail getOutputPortsDetail(int portNumber) {
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getOutputPortTracking(int)
+	 */
+	public PortTracking getOutputPortTracking(int portNumber) {
 		for (OutputPortTrackingDetail outputPortDetail : outputPortsDetails) {
 			if (outputPortDetail.getIndex() == portNumber) {
 				return outputPortDetail;
@@ -139,42 +149,68 @@ public class NodeTrackingDetail implements Serializable {
 		return null;
 	}
 
-	/**
-	 * @return total CPU time in nanoseconds
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getTotalCPUTime()
 	 */
 	public long getTotalCPUTime() {
 		return totalCPUTime;
 	}
 
-	public long getTotalCPUTime(TimeUnit timeUnit) {
-		return timeUnit.convert(getTotalCPUTime(), TimeUnit.NANOSECONDS);
-	}
-
-	/**
-	 * @return total user time in nanoseconds
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getTotalUserTime()
 	 */
 	public long getTotalUserTime() {
 		return totalUserTime;
 	}
 
-	public long getTotalUserTime(TimeUnit timeUnit) {
-		return timeUnit.convert(getTotalUserTime(), TimeUnit.NANOSECONDS);
-	}
-
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getUsageCPU()
+	 */
 	public float getUsageCPU() {
 		return usageCPU;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getPeakUsageCPU()
+	 */
 	public float getPeakUsageCPU() {
 		return peakUsageCPU;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getPeakUsageUser()
+	 */
 	public float getPeakUsageUser() {
 		return peakUsageUser;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getUsageUser()
+	 */
 	public float getUsageUser() {
 		return usageUser;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getNodeID()
+	 */
+	public String getNodeID() {
+		return nodeId;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getInputPortTracking()
+	 */
+	public PortTracking[] getInputPortTracking() {
+		return inputPortsDetails;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getOutputPortTracking()
+	 */
+	public PortTracking[] getOutputPortTracking() {
+		return outputPortsDetails;
 	}
 
 	public PortTrackingDetail[] getPortsDetails() {
@@ -186,10 +222,55 @@ public class NodeTrackingDetail implements Serializable {
 		return ret;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#hasPorts()
+	 */
 	public boolean hasPorts() {
 		return inputPortsDetails.length > 0 || outputPortsDetails.length > 0;
 	}
 	
+	//******************* SETTERS *******************/
+	
+	public void setResult(Result result) {
+		this.result = result;
+	}
+
+	public void setInputPortsDetails(InputPortTrackingDetail[] inputPortsDetails) {
+		this.inputPortsDetails = inputPortsDetails;
+	}
+
+	public void setOutputPortsDetails(OutputPortTrackingDetail[] outputPortsDetails) {
+		this.outputPortsDetails = outputPortsDetails;
+	}
+
+	public void setNodeId(String nodeId) {
+		this.nodeId = nodeId;
+	}
+
+	public void setTotalCPUTime(long totalCPUTime) {
+		this.totalCPUTime = totalCPUTime;
+	}
+
+	public void setTotalUserTime(long totalUserTime) {
+		this.totalUserTime = totalUserTime;
+	}
+
+	public void setUsageCPU(float usageCPU) {
+		this.usageCPU = usageCPU;
+	}
+
+	public void setPeakUsageCPU(float peakUsageCPU) {
+		this.peakUsageCPU = peakUsageCPU;
+	}
+
+	public void setUsageUser(float usageUser) {
+		this.usageUser = usageUser;
+	}
+
+	public void setPeakUsageUser(float peakUsageUser) {
+		this.peakUsageUser = peakUsageUser;
+	}
+
 	//******************* EVENTS ********************/
 	public void gatherTrackingDetails() {
 		//result
@@ -198,7 +279,7 @@ public class NodeTrackingDetail implements Serializable {
 			return;
 		}
 
-		long phaseExecutionTime = getParentPhaseDetail().getExecutionTime();
+		long phaseExecutionTime = getParentPhaseTracking().getExecutionTime();
 		
 		//totalCPUTime
 		final long tempTotalCPUTime = CloverJMX.isThreadCpuTimeSupported() ? 
@@ -248,5 +329,4 @@ public class NodeTrackingDetail implements Serializable {
 			outputPortDetail.phaseFinished();
 		}
 	}
-	
 }

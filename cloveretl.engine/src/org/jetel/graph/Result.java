@@ -66,4 +66,16 @@ public enum Result{
     
     public boolean isStop(){return stop;}
     
+    /**
+     * Converts string representation to the enum.
+     * @param result
+     * @return the enum.
+     */
+    public static Result fromString(String result) {
+    	if (result.equals(N_A.message())) {
+    		return N_A;
+    	}
+    	return Result.valueOf(result);
+    }
+    
 }

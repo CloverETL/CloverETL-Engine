@@ -25,8 +25,10 @@ import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
 import org.jetel.data.DataRecord;
@@ -47,7 +49,11 @@ import org.jetel.util.file.FileUtils;
  * INDEX/dataFile.idx
  * If data are not in zip file, indexes (if needed) have to be in the same location
  * 
- * @author avackova <agata.vackova@javlinconsulting.cz> ; 
+ * <p><b>NOTE:</b>Supports also deserialization of {@link DataRecord}s from an input stream.
+ * In such scenario it does not support index file. Generally the storage level should be
+ * more generic (like other parsers) so that this class would not depend on specific data sources.</p> 
+ * 
+ * @author avackova <agata.vackova@javlinconsulting.cz> ;
  * (c) JavlinConsulting s.r.o.
  *  www.javlinconsulting.cz
  *
@@ -64,6 +70,7 @@ public class CloverDataParser implements Parser {
 	private int recordSize;
 	private String indexFileURL;
 	private String inData;
+	private InputStream inStream;
 	private URL projectURL;
 	
 	private final static int LONG_SIZE_BYTES = 8;
@@ -113,35 +120,49 @@ public class CloverDataParser implements Parser {
         if (in instanceof String[]) {
         	inData = ((String[])in)[0];
         	indexFileURL = ((String[])in)[1];
-        }else{
+        }else if (in instanceof String){
         	inData = (String)in;
         	indexFileURL = null;
+        } else if (in instanceof InputStream) {
+        	inStream = (InputStream) in;
+        	indexFileURL = null;
         }
-        try{
-        	String fileName = new File(FileUtils.getFile(projectURL, inData)).getName();
-        	if (fileName.toLowerCase().endsWith(".zip")) {
-        		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
-        	}
-            recordFile = FileUtils.getReadableChannel(projectURL, !inData.startsWith("zip:") ? inData : 
-            	inData + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName);
-            if (index > 0) {//reading not all records --> find index in record file
-            	try {
-					setStartIndex(fileName);
-				} catch (Exception e) {
-					throw new ComponentNotReadyException("Can't set starting index", e);
-				}
+        
+        if (inData != null) {
+            try{
+            	String fileName = new File(FileUtils.getFile(projectURL, inData)).getName();
+            	if (fileName.toLowerCase().endsWith(".zip")) {
+            		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
+            	}
+                recordFile = FileUtils.getReadableChannel(projectURL, !inData.startsWith("zip:") ? inData : 
+                	inData + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName);
+                if (index > 0) {//reading not all records --> find index in record file
+                	try {
+    					setStartIndex(fileName);
+    				} catch (Exception e) {
+    					throw new ComponentNotReadyException("Can't set starting index", e);
+    				}
+                }
+                //skip idx bytes from record file
+                int i=0;
+                recordBuffer.clear();
+                do {
+                    ByteBufferUtils.reload(recordBuffer,recordFile);
+                    recordBuffer.flip();
+                    i++;
+                }while (i*Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE < idx);
+                recordBuffer.position((int)idx%Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+            } catch (IOException ex) {
+                throw new ComponentNotReadyException(ex);
             }
-            //skip idx bytes from record file
-            int i=0;
-            recordBuffer.clear();
-            do {
-                ByteBufferUtils.reload(recordBuffer,recordFile);
-                recordBuffer.flip();
-                i++;
-            }while (i*Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE < idx);
-            recordBuffer.position((int)idx%Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-        } catch (IOException ex) {
-            throw new ComponentNotReadyException(ex);
+        } else if (inStream != null) {
+        	recordFile = Channels.newChannel(inStream);
+			try {
+				ByteBufferUtils.reload(recordBuffer,recordFile);
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(e);			
+			}
+			recordBuffer.flip();
         }
     }
 

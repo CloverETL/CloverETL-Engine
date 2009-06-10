@@ -19,7 +19,6 @@
 */
 package org.jetel.graph.runtime.jmx;
 
-import java.io.Serializable;
 
 /**
  * This abstract class represents common tracking information on an port.
@@ -32,7 +31,7 @@ import java.io.Serializable;
  *
  * @created Jun 6, 2008
  */
-abstract public class PortTrackingDetail implements Serializable {
+public abstract class PortTrackingDetail implements PortTracking {
 
 	private static final long serialVersionUID = -8999440507780259714L;
 	
@@ -73,37 +72,104 @@ abstract public class PortTrackingDetail implements Serializable {
     	this.averageWaitingRecords = portDetail.averageWaitingRecords;
     }
     
-	public NodeTrackingDetail getParentNodeDetail() {
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PortTracking#getParentNodeTracking()
+	 */
+	public NodeTracking getParentNodeTracking() {
 		return parentNodeDetail;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PortTracking#getIndex()
+	 */
 	public int getIndex() {
 		return index;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PortTracking#getTotalRecords()
+	 */
 	public int getTotalRecords() {
 		return totalRecords;
 	}
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PortTracking#getTotalBytes()
+	 */
 	public long getTotalBytes() {
 		return totalBytes;
 	}
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PortTracking#getRecordFlow()
+	 */
 	public int getRecordFlow() {
 		return recordFlow;
 	}
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PortTracking#getRecordPeak()
+	 */
 	public int getRecordPeak() {
 		return recordPeak;
 	}
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PortTracking#getByteFlow()
+	 */
 	public int getByteFlow() {
 		return byteFlow;
 	}
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PortTracking#getBytePeak()
+	 */
 	public int getBytePeak() {
 		return bytePeak;
 	}
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PortTracking#getWaitingRecords()
+	 */
 	public int getWaitingRecords() {
 		return waitingRecords;
 	}
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PortTracking#getAverageWaitingRecords()
+	 */
 	public int getAverageWaitingRecords() {
 		return averageWaitingRecords;
+	}
+
+	
+	public void setLastGatherTime(long lastGatherTime) {
+		this.lastGatherTime = lastGatherTime;
+	}
+
+	public void setTotalRecords(int totalRecords) {
+		this.totalRecords = totalRecords;
+	}
+
+	public void setTotalBytes(long totalBytes) {
+		this.totalBytes = totalBytes;
+	}
+
+	public void setRecordFlow(int recordFlow) {
+		this.recordFlow = recordFlow;
+	}
+
+	public void setRecordPeak(int recordPeak) {
+		this.recordPeak = recordPeak;
+	}
+
+	public void setByteFlow(int byteFlow) {
+		this.byteFlow = byteFlow;
+	}
+
+	public void setBytePeak(int bytePeak) {
+		this.bytePeak = bytePeak;
+	}
+
+	public void setWaitingRecords(int waitingRecords) {
+		this.waitingRecords = waitingRecords;
+	}
+
+	public void setAverageWaitingRecords(int averageWaitingRecords) {
+		this.averageWaitingRecords = averageWaitingRecords;
 	}
 
 	abstract public String getType();

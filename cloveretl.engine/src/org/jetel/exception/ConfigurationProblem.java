@@ -46,6 +46,8 @@ public class ConfigurationProblem {
     
     private String attributeName;
     
+    private String graphElementID;
+    
     public ConfigurationProblem(String message, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
         this.message = message;
         this.severity = severity;
@@ -104,7 +106,28 @@ public class ConfigurationProblem {
         this.attributeName = attributeName;
     }
     
-    @Override
+    
+    /**
+     * @return ID of the associated graph element. It uses the associated graph element. When
+     * the graph element is not specified, it uses the element ID specified via {@link #setGraphElementID(String)}.
+     */
+    public String getGraphElementID() {
+    	if (graphElement != null) {
+    		return graphElement.getId();
+    	} else {
+    		return graphElementID;
+    	}
+	}
+
+	/**
+	 * @param graphElementID ID of the associated graph element. Set this when you don't want to store
+	 * the element here by itself (i.e. the graph is remote).
+	 */
+	public void setGraphElementID(String graphElementID) {
+		this.graphElementID = graphElementID;
+	}
+
+	@Override
     public String toString() {
     	return (getGraphElement() != null ? 
     			(getGraphElement() + (getAttributeName() != null ? ("." + getAttributeName()) : "") + " - ") : "") + message;

@@ -27,6 +27,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
@@ -291,12 +292,13 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      * @return absolute path to debug file
      */
     private String getDebugFileName() {
-        String tmpFile = getGraph().getWatchDog().getGraphRuntimeContext().getDebugDirectory();
+        GraphRuntimeContext runtimeContext = getGraph().getWatchDog().getGraphRuntimeContext();
+		String tmpFile = runtimeContext.getDebugDirectory();
         
         if(!tmpFile.endsWith(System.getProperty("file.separator"))) {
             tmpFile += System.getProperty("file.separator");
         }
-        tmpFile += getId() + ".dbg";
+        tmpFile += runtimeContext.getRunId() + "-" + getId() + ".dbg";
 
         return tmpFile;
     }

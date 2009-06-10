@@ -31,10 +31,10 @@ import javax.management.NotificationListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.runtime.jmx.CloverJMX;
-import org.jetel.graph.runtime.jmx.InputPortTrackingDetail;
-import org.jetel.graph.runtime.jmx.NodeTrackingDetail;
-import org.jetel.graph.runtime.jmx.OutputPortTrackingDetail;
-import org.jetel.graph.runtime.jmx.PhaseTrackingDetail;
+import org.jetel.graph.runtime.jmx.NodeTracking;
+import org.jetel.graph.runtime.jmx.PhaseTracking;
+import org.jetel.graph.runtime.jmx.PortTracking;
+import org.jetel.graph.runtime.jmx.TrackingUtils;
 import org.jetel.util.string.StringUtils;
 
 
@@ -80,24 +80,24 @@ public class TrackingLogger implements NotificationListener {
     private void printProcessingStatus(boolean finalTracking) {
         //StringBuilder strBuf=new StringBuilder(120);
         if (finalTracking)
-            logger.info("----------------------** Final tracking Log for phase [" + cloverJMX.getGraphDetail().getRunningPhaseDetail().getPhaseNum() + "] **---------------------");
+            logger.info("----------------------** Final tracking Log for phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum() + "] **---------------------");
         else 
-            logger.info("---------------------** Start of tracking Log for phase [" + cloverJMX.getGraphDetail().getRunningPhaseDetail().getPhaseNum() + "] **-------------------");
+            logger.info("---------------------** Start of tracking Log for phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum() + "] **-------------------");
         // France is here just to get 24hour time format
         logger.info("Time: "
             + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).
                 format(Calendar.getInstance().getTime()));
         logger.info("Node                   Status     Port      #Records         #KB  Rec/s    KB/s");
         logger.info("---------------------------------------------------------------------------------");
-        for (NodeTrackingDetail nodeDetail : cloverJMX.getGraphDetail().getRunningPhaseDetail().getNodesDetails()) {
-            Object nodeInfo[] = {nodeDetail.getNodeId(), nodeDetail.getResult().message()};
+        for (NodeTracking nodeDetail : cloverJMX.getGraphTracking().getRunningPhaseTracking().getNodeTracking()) {
+            Object nodeInfo[] = {nodeDetail.getNodeID(), nodeDetail.getResult().message()};
             int nodeSizes[] = {-23, -15};
             logger.info(StringUtils.formatString(nodeInfo, nodeSizes));
             //in ports
             Object portInfo[];
             boolean cpuPrinted = false;
             int i = 0;
-            for (InputPortTrackingDetail inputPortDetail : nodeDetail.getInputPortsDetails()) {
+            for (PortTracking inputPortDetail : nodeDetail.getInputPortTracking()) {
                 if (i == 0) {
                     cpuPrinted = true;
                     final float cpuUsage = (finalTracking ? nodeDetail.getPeakUsageCPU()  : nodeDetail.getUsageCPU());
@@ -120,7 +120,7 @@ public class TrackingLogger implements NotificationListener {
             }
             //out ports
             i = 0;
-            for (OutputPortTrackingDetail outputPortDetail : nodeDetail.getOutputPortsDetails()) {
+            for (PortTracking outputPortDetail : nodeDetail.getOutputPortTracking()) {
                 if (i == 0 && !cpuPrinted) {
                     final float cpuUsage = (finalTracking ? nodeDetail.getPeakUsageCPU() : nodeDetail.getUsageCPU());
                     portInfo = new Object[] {" %cpu:", cpuUsage > 0.01f ? Float.toString(cpuUsage) : "..",
@@ -148,11 +148,11 @@ public class TrackingLogger implements NotificationListener {
 	private void printPhasesSummary() {
 		logger.info("-----------------------** Summary of Phases execution **---------------------");
 		logger.info("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
-		for (PhaseTrackingDetail phaseDetail : cloverJMX.getGraphDetail().getPhasesDetails()) {
+		for (PhaseTracking phaseDetail : cloverJMX.getGraphTracking().getPhaseTracking()) {
 			if(phaseDetail != null) {
     			Object nodeInfo[] = { Integer.valueOf(phaseDetail.getPhaseNum()), 
     					phaseDetail.getResult().message(),
-                        phaseDetail.getExecutionTime(TimeUnit.SECONDS),
+    					TrackingUtils.converTime(phaseDetail.getExecutionTime(), TimeUnit.SECONDS),
                         phaseDetail.getMemoryUtilization() >> 10};
     			int nodeSizes[] = {-18, -24, 12, 18};
     			logger.info(StringUtils.formatString(nodeInfo, nodeSizes));
@@ -168,9 +168,9 @@ public class TrackingLogger implements NotificationListener {
 			printProcessingStatus(false);
 		} else if(notification.getType().equals(CloverJMX.PHASE_FINISHED)) {
 			printProcessingStatus(true);
-			logger.info("Execution of phase [" + cloverJMX.getGraphDetail().getRunningPhaseDetail().getPhaseNum()
+			logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
 					+ "] successfully finished - elapsed time(sec): "
-					+ cloverJMX.getGraphDetail().getExecutionTime(TimeUnit.SECONDS));
+					+ TrackingUtils.converTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
 		} else if(notification.getType().equals(CloverJMX.GRAPH_FINISHED)
 				|| notification.getType().equals(CloverJMX.GRAPH_ABORTED)
 				|| notification.getType().equals(CloverJMX.GRAPH_ERROR)) {

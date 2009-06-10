@@ -44,18 +44,28 @@ public class OutputPortTrackingDetail extends PortTrackingDetail implements Seri
 		
 	}
 
+	public OutputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, int portNumber) {
+		super(parentNodeDetail, portNumber);
+		this.outputPort = null;
+		
+	}
+
 	OutputPort getOutputPort() {
 		return outputPort;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PortTrackingDetail#getType()
+	 */
 	@Override
 	public String getType() {
+		// TODO we should have a constant for this
 		return "Output";
 	}
 
 	//******************* EVENTS ********************/
 	@Override
-	void gatherTrackingDetails() {
+	public void gatherTrackingDetails() {
 		gatherTrackingDetails0(
 				outputPort.getOutputRecordCounter(), 
 				outputPort.getOutputByteCounter(),

@@ -59,11 +59,11 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
     
     /**
 	 * Constructor.
-	 * @param graph
+     * @param watchDog 
 	 */
 	public CloverJMX(WatchDog watchDog) {
 		this.watchDog = watchDog;
-		this.graphDetail = new GraphTrackingDetail(this, watchDog.getGraph());
+		this.graphDetail = new GraphTrackingDetail(watchDog.getGraph());
 	}
 	
 	/* (non-Javadoc)
@@ -75,9 +75,9 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#getGraphDetail()
+	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#getGraphTracking()
 	 */
-	public GraphTrackingDetail getGraphDetail() {
+	public GraphTracking getGraphTracking() {
 		return graphDetail;
 	}
 
@@ -109,48 +109,33 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	
 	//******************* EVENTS ********************/
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#graphStarted()
-	 */
 	synchronized public void graphStarted() {
-		getGraphDetail().graphStarted();
+		graphDetail.graphStarted();
 
         sendNotification(new Notification(GRAPH_STARTED, this/*getGraphDetail()*/, notificationSequence++)); 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#phaseStarted(org.jetel.graph.Phase)
-	 */
 	synchronized public void phaseStarted(Phase phase) {
-		getGraphDetail().phaseStarted(phase);
+		graphDetail.phaseStarted(phase);
 		
 		sendNotification(new Notification(PHASE_STARTED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++)); 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#gatherTrackingDetails()
-	 */
 	synchronized public void gatherTrackingDetails() {
-		getGraphDetail().gatherTrackingDetails();
+		graphDetail.gatherTrackingDetails();
 		
 		sendNotification(new Notification(TRACKING_UPDATED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++)); 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#phaseFinished(org.jetel.graph.Phase)
-	 */
 	synchronized public void phaseFinished() {
-		getGraphDetail().phaseFinished();
+		graphDetail.phaseFinished();
 		
 		sendNotification(new Notification(PHASE_FINISHED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++)); 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#graphFinished()
-	 */
 	synchronized public void graphFinished() {
 		if(!graphFinished) { // if graph was already finished, we'll send only a notification
-			getGraphDetail().graphFinished();
+			graphDetail.graphFinished();
 			graphFinished = true;
 		}
 
@@ -162,8 +147,8 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	 */
 	synchronized public void graphAborted() {
 		if(!graphFinished) { // if graph was already finished, we'll send only a notification
-			getGraphDetail().gatherTrackingDetails();
-			getGraphDetail().graphFinished();
+			graphDetail.gatherTrackingDetails();
+			graphDetail.graphFinished();
 			graphFinished = true;
 		}
 
@@ -175,8 +160,8 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	 */
 	synchronized public void graphError(String message) {
 		if(!graphFinished) { // if graph was already finished, we'll send only a notification
-			getGraphDetail().gatherTrackingDetails();
-			getGraphDetail().graphFinished();
+			graphDetail.gatherTrackingDetails();
+			graphDetail.graphFinished();
 			graphFinished = true;
 		}
 

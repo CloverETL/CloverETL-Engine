@@ -44,18 +44,27 @@ public class InputPortTrackingDetail extends PortTrackingDetail implements Seria
 		
 	}
 
+	public InputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, int portNumber) {
+		super(parentNodeDetail, portNumber);
+		inputPort = null;
+	}
+
 	InputPort getInputPort() {
 		return inputPort;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PortTrackingDetail#getType()
+	 */
 	@Override
 	public String getType() {
+		// TODO we should have a constant for this
 		return "Input";
 	}
 	
 	//******************* EVENTS ********************/
 	@Override
-	void gatherTrackingDetails() {
+	public void gatherTrackingDetails() {
 		gatherTrackingDetails0(
 				inputPort.getInputRecordCounter(), 
 				inputPort.getInputByteCounter(),
