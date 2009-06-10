@@ -55,6 +55,7 @@ import org.jetel.util.bytes.ByteBufferUtils;
  *
  */
 public class TextTableFormatter implements Formatter {
+	
 	private DataRecordMetadata metadata;
 	private WritableByteChannel writerChannel;
 	private ByteBuffer fieldBuffer; 
@@ -79,6 +80,13 @@ public class TextTableFormatter implements Formatter {
 	private int counterLenght;
 	private int prefixOffset; 
 	private int headerOffset;
+	
+	private byte[] trashIDHeader;
+	private byte[] trashID;
+	private int trashIDLenght;
+	private int trashIDHeaderOffset;
+	private int trashIDOffset;
+	private boolean showTrashID;
 	
 	/** this switch indicates, that header has been written already for current set of records; 
 	 * it has to be reset to false just after footer is written */
@@ -195,6 +203,27 @@ public class TextTableFormatter implements Formatter {
         
         sentBytes += writeString(TABLE_VERTICAL);
 
+        if (showTrashID) {
+			if (dataBuffer.remaining() < fieldBuffer.limit()+blank.capacity()){
+				directFlush();
+			}
+			fieldBuffer.clear();
+			fieldBuffer.put(trashID);
+			fieldBuffer.flip();
+
+			blank.clear();
+			lenght = trashIDOffset - fieldBuffer.limit();
+			blank.limit(lenght > 0 ? lenght : 0);
+            mark=dataBuffer.position();
+
+			//put field value to data buffer
+			dataBuffer.put(fieldBuffer);
+			dataBuffer.put(encoder.encode(blank));
+
+            sentBytes += dataBuffer.position()-mark;
+            sentBytes += writeString(TABLE_VERTICAL);
+        }
+
         if (showCounter) {
             counter++;
             sCounter = Integer.toString(counter);
@@ -268,6 +297,10 @@ public class TextTableFormatter implements Formatter {
 		}
         int sentBytes=0;
         sentBytes += writeString(TABLE_CORNER);
+        if (showTrashID) {
+        	sentBytes += writeString(horizontal, trashIDLenght);
+            sentBytes += writeString(TABLE_CORNER);
+        }
         if (showCounter) {
         	sentBytes += writeString(horizontal, counterLenght);
             sentBytes += writeString(TABLE_CORNER);
@@ -281,6 +314,11 @@ public class TextTableFormatter implements Formatter {
 		DataFieldMetadata[] fMetadata = metadata.getFields();
 		String fName;
         sentBytes += writeString(TABLE_VERTICAL);
+        if (showTrashID) {
+        	sentBytes += writeString(trashIDHeader);
+        	sentBytes += writeString(blank, trashIDHeaderOffset-trashIDHeader.length);
+            sentBytes += writeString(TABLE_VERTICAL);
+        }
         if (showCounter) {
         	sentBytes += writeString(header);
         	sentBytes += writeString(blank, headerOffset-header.length);
@@ -295,6 +333,10 @@ public class TextTableFormatter implements Formatter {
         sentBytes += writeString(NL);
         
         sentBytes += writeString(TABLE_CORNER);
+        if (showTrashID) {
+        	sentBytes += writeString(horizontal, trashIDLenght);
+            sentBytes += writeString(TABLE_CORNER);
+        }
         if (showCounter) {
         	sentBytes += writeString(horizontal, counterLenght);
             sentBytes += writeString(TABLE_CORNER);
@@ -320,6 +362,10 @@ public class TextTableFormatter implements Formatter {
 		}
         int sentBytes=0;
         sentBytes += writeString(TABLE_CORNER);
+        if (showTrashID) {
+        	sentBytes += writeString(horizontal, trashIDLenght);
+            sentBytes += writeString(TABLE_CORNER);
+        }
         if (showCounter) {
         	sentBytes += writeString(horizontal, counterLenght);
             sentBytes += writeString(TABLE_CORNER);
@@ -516,5 +562,24 @@ public class TextTableFormatter implements Formatter {
 		}
 	}
 
+	/**
+	 * Sets trashID that for printing.
+	 * @param trashIDHeader
+	 * @param trashID
+	 */
+	public void showTrashID(String trashIDHeader, String trashID) {
+		showTrashID = true;
+		try {
+			this.trashIDHeader = trashIDHeader.getBytes(encoder.charset().name());
+			this.trashID = trashID.getBytes(encoder.charset().name());
+		} catch (UnsupportedEncodingException e) {
+			throw new UnsupportedCharsetException(encoder.charset().name());
+		}
+		int iTrashIDHeader = trashIDHeader.length();
+		int iTrashID = trashID.length();
+		trashIDLenght = iTrashID + 1 > iTrashIDHeader ? iTrashID + 1 : iTrashIDHeader;
+		trashIDOffset = trashIDLenght + this.trashID.length - iTrashID;
+		trashIDHeaderOffset = trashIDLenght + this.trashIDHeader.length - iTrashIDHeader;
+	}
 }
 
