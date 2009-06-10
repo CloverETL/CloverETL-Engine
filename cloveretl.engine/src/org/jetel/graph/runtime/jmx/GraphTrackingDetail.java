@@ -19,9 +19,6 @@
 */
 package org.jetel.graph.runtime.jmx;
 
-import java.io.Serializable;
-import java.util.concurrent.TimeUnit;
-
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
@@ -34,19 +31,17 @@ import org.jetel.graph.TransformationGraph;
  *
  * @created Jun 6, 2008
  */
-public class GraphTrackingDetail implements Serializable {
+public class GraphTrackingDetail implements GraphTracking {
 
 	private static final long serialVersionUID = 7586330827349162718L;
 
 	private transient final TransformationGraph graph;
 	
-	private final CloverJMX parentCloverJMX;
-	
 	private PhaseTrackingDetail runningPhaseDetail;
 	
-	private final PhaseTrackingDetail[] phasesDetails;
+	private PhaseTrackingDetail[] phasesDetails;
 	
-	private final String graphName;
+	private String graphName;
 	
 	private long startTime = -1;
 	
@@ -60,8 +55,7 @@ public class GraphTrackingDetail implements Serializable {
 	 * Constructor.
 	 * @param graph
 	 */
-	public GraphTrackingDetail(CloverJMX parentCloverJMX, TransformationGraph graph) {
-		this.parentCloverJMX = parentCloverJMX;
+	public GraphTrackingDetail(TransformationGraph graph) {
 		this.graph = graph;
 		this.graphName = graph.getName();
 		this.result = Result.N_A;
@@ -73,8 +67,18 @@ public class GraphTrackingDetail implements Serializable {
 		}
 	}
 	
+	/**
+	 * Allocates a new <tt>GraphTrackingDetail</tt> object.
+	 *
+	 */
+	public GraphTrackingDetail() {
+		graph = null;
+	}
+	
+	
+	
 	public void copyFrom(GraphTrackingDetail graphDetail) {
-		this.runningPhaseDetail = getPhaseDetail(graphDetail.getRunningPhaseDetail().getPhaseNum());
+		this.runningPhaseDetail = getPhaseDetail(graphDetail.getRunningPhaseTracking().getPhaseNum());
 		this.startTime = graphDetail.startTime;
 		this.endTime = graphDetail.endTime;
 		this.result = graphDetail.result;
@@ -89,19 +93,14 @@ public class GraphTrackingDetail implements Serializable {
 		return graph;
 	}
 
-	public CloverJMX getParentCloverJMX() {
-		return parentCloverJMX;
-	}
-	
-	public PhaseTrackingDetail getRunningPhaseDetail() {
-		return runningPhaseDetail;
-	}
-	
 	public void setRunningPhaseDetail(PhaseTrackingDetail runningphaseDetail) {
 		this.runningPhaseDetail = runningphaseDetail; 
 	}
 	
-	public PhaseTrackingDetail getPhaseDetail(int phaseNum) {
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getPhaseTracking(int)
+	 */
+	public PhaseTracking getPhaseTracking(int phaseNum) {
 		for (PhaseTrackingDetail phaseDetail : phasesDetails) {
 			if (phaseDetail.getPhaseNum() == phaseNum) {
 				return phaseDetail;
@@ -110,30 +109,44 @@ public class GraphTrackingDetail implements Serializable {
 		return null;
 	}
 	
-	public PhaseTrackingDetail[] getPhasesDetails() {
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getPhaseTracking()
+	 */
+	public PhaseTracking[] getPhaseTracking() {
 		return phasesDetails;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getRunningPhaseTracking()
+	 */
+	public PhaseTracking getRunningPhaseTracking() {
+		return runningPhaseDetail;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getGraphName()
+	 */
 	public String getGraphName() {
 		return graphName;
 	}
 
-	/**
-	 * @return graph start time in nanoseconds
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getStartTime()
 	 */
 	public long getStartTime() {
 		return startTime;
 	}
 
-	/**
-	 * @return graph end time in nanoseconds
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getEndTime()
 	 */
 	public long getEndTime() {
 		return endTime;
 	}
 
-	/**
-	 * @return graph execution time in nanoseconds
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getExecutionTime()
 	 */
 	public long getExecutionTime() {
 		if (startTime == -1) {
@@ -145,35 +158,50 @@ public class GraphTrackingDetail implements Serializable {
 		}
 	}
 
-	public long getExecutionTime(TimeUnit timeUnit) {
-		return timeUnit.convert(getExecutionTime(), TimeUnit.NANOSECONDS);
-	}
-
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getResult()
+	 */
 	public Result getResult() {
 		return result;
 	}
 
-	private PhaseTrackingDetail getPhaseDetail(Phase phase) {
-		for(PhaseTrackingDetail phaseTrackingDetail : phasesDetails) {
-			if(phaseTrackingDetail.getPhase() == phase) {
-				return phaseTrackingDetail;
+	private PhaseTrackingDetail getPhaseDetail(int phaseNum) {
+		for(PhaseTrackingDetail phaseTracking : phasesDetails) {
+			if(phaseTracking.getPhaseNum() == phaseNum) {
+				return phaseTracking;
 			}
 		}
 		
-		throw new IllegalArgumentException("Phase " + phase.getPhaseNum() + " is not tracked.");
+		throw new IllegalArgumentException("Phase " + phaseNum + " is not tracked.");
 	}
 
-	public NodeTrackingDetail getNodeTrackingDetail(String nodeId) {
-		for(PhaseTrackingDetail phaseDetail : phasesDetails) {
-			NodeTrackingDetail nodeDetail = phaseDetail.getNodeTrackingDetail(nodeId);
-			if(nodeDetail != null) {
-				return nodeDetail;
-			}
-		}
-		
-		return null;
-	}
 	
+	//******************* SETTERS *******************/
+	
+	public void setPhasesDetails(PhaseTrackingDetail[] phasesDetails) {
+		this.phasesDetails = phasesDetails;
+	}
+
+	public void setGraphName(String graphName) {
+		this.graphName = graphName;
+	}
+
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
+	}
+
+	public void setEndTime(long endTime) {
+		this.endTime = endTime;
+	}
+
+	public void setResult(Result result) {
+		this.result = result;
+	}
+
+	public void setLastPhaseResult(Result lastPhaseResult) {
+		this.lastPhaseResult = lastPhaseResult;
+	}
+
 	//******************* EVENTS ********************/
 	void graphStarted() {
 		startTime = System.nanoTime();
@@ -181,21 +209,22 @@ public class GraphTrackingDetail implements Serializable {
 		result = Result.RUNNING;
 	}
 
+
 	void phaseStarted(Phase phase) {
-		setRunningPhaseDetail(getPhaseDetail(phase));
+		setRunningPhaseDetail(getPhaseDetail(phase.getPhaseNum()));
 		
-		getRunningPhaseDetail().phaseStarted();
+		runningPhaseDetail.phaseStarted();
 	}
 
 	void gatherTrackingDetails() {
-		getRunningPhaseDetail().gatherTrackingDetails();
+		runningPhaseDetail.gatherTrackingDetails();
 	}
 
 	void phaseFinished() {
 		gatherTrackingDetails();
-		getRunningPhaseDetail().phaseFinished();
+		runningPhaseDetail.phaseFinished();
 		
-		lastPhaseResult = getRunningPhaseDetail().getResult();
+		lastPhaseResult = runningPhaseDetail.getResult();
 	}
 
 	void graphFinished() {
@@ -203,5 +232,6 @@ public class GraphTrackingDetail implements Serializable {
 		
 		endTime = System.nanoTime();
 	}
+
 
 }

@@ -76,7 +76,7 @@ public interface CloverJMXMBean {
     /**
      * @return comprehensive graph tracking information
      */
-    public GraphTrackingDetail getGraphDetail();
+    public GraphTracking getGraphTracking();
 
     /**
      * Event for clients to stop graph processing.

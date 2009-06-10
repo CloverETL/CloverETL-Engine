@@ -66,6 +66,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	private final Lock CURRENT_PHASE_LOCK = new ReentrantLock();
 
+	private final Object abortMonitor = new Object();
+	
     public final static String MBEAN_NAME_PREFIX = "CLOVERJMX_";
     public final static long WAITTIME_FOR_STOP_SIGNAL = 5000000000L; //nanoseconds
     private int[] _MSG_LOCK=new int[0];
@@ -235,6 +237,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			cloverJMX.graphError(getErrorMessage());
 			break;
 		}
+		//if the graph was aborted, now the aborting thread is waiting for final notification
+		synchronized (abortMonitor) {
+			abortMonitor.notifyAll();
+		}
 	}
 
     /**
@@ -375,7 +381,15 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			}
 	        watchDogStatus = Result.ABORTED;
 		} finally {
-			CURRENT_PHASE_LOCK.unlock();
+			synchronized (abortMonitor) {
+				CURRENT_PHASE_LOCK.unlock();
+		        try {
+		        	//the aborting thread try to wait for end of graph run
+					abortMonitor.wait();
+				} catch (InterruptedException e) {
+					//the aborting thread was interupted, so don't wait for the graph abort completation
+				}
+			}
 		}
 	}
 

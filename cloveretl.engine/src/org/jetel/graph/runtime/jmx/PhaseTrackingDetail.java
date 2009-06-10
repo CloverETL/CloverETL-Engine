@@ -19,9 +19,6 @@
 */
 package org.jetel.graph.runtime.jmx;
 
-import java.io.Serializable;
-import java.util.concurrent.TimeUnit;
-
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
@@ -34,7 +31,7 @@ import org.jetel.graph.Result;
  *
  * @created Jun 6, 2008
  */
-public class PhaseTrackingDetail implements Serializable {
+public class PhaseTrackingDetail implements PhaseTracking {
 
 	private static final long serialVersionUID = 929691539023786046L;
 
@@ -42,9 +39,9 @@ public class PhaseTrackingDetail implements Serializable {
 
 	private final GraphTrackingDetail parentGraphDetail;
 	
-	private final NodeTrackingDetail[] nodesDetails;
+	private NodeTrackingDetail[] nodesDetails;
 	
-	private final int phaseNum;
+	private int phaseNum;
 	
     private long startTime = -1;
 
@@ -71,6 +68,12 @@ public class PhaseTrackingDetail implements Serializable {
 		}
 	}
 	
+	public PhaseTrackingDetail(GraphTrackingDetail parentGraphDetail) {
+		phase = null;
+		this.parentGraphDetail = parentGraphDetail;
+		
+	}
+	
 	public void copyFrom(PhaseTrackingDetail phaseDetail) {
 		this.startTime = phaseDetail.startTime;
 		this.endTime = phaseDetail.endTime;
@@ -87,45 +90,50 @@ public class PhaseTrackingDetail implements Serializable {
 		return phase;
 	}
 
-	public GraphTrackingDetail getParentGraphDetail() {
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getParentGraphTracking()
+	 */
+	public GraphTracking getParentGraphTracking() {
 		return parentGraphDetail;
 	}
 
-	public NodeTrackingDetail[] getNodesDetails() {
-		return nodesDetails;
-	}
-
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getPhaseNum()
+	 */
 	public int getPhaseNum() {
 		return phaseNum;
 	}
 	
-	/**
-	 * @return phase start time in nanoseconds
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getStartTime()
 	 */
 	public long getStartTime() {
 		return startTime;
 	}
 
-	/**
-	 * @return phase end time in nanoseconds
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getEndTime()
 	 */
 	public long getEndTime() {
 		return endTime;
 	}
 
-	/**
-	 * @return phase memory utilization in bytes
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getMemoryUtilization()
 	 */
 	public long getMemoryUtilization() {
 		return memoryUtilization;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getResult()
+	 */
 	public Result getResult() {
 		return result;
 	}
 
-	/**
-	 * @return phase execution time in nanoseconds
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getExecutionTime()
 	 */
 	public long getExecutionTime() {
 		if (startTime == -1) {
@@ -137,18 +145,50 @@ public class PhaseTrackingDetail implements Serializable {
 		}
 	}
 
-	public long getExecutionTime(TimeUnit timeUnit) {
-		return timeUnit.convert(getExecutionTime(), TimeUnit.NANOSECONDS);
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getNodeTracking()
+	 */
+	public NodeTracking[] getNodeTracking() {
+		return nodesDetails;
 	}
 
-	public NodeTrackingDetail getNodeTrackingDetail(String nodeId) {
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getNodeTracking(java.lang.String)
+	 */
+	public NodeTracking getNodeTracking(String nodeID) {
 		for (NodeTrackingDetail nodeDetail : nodesDetails) {
-			if(nodeId.equals(nodeDetail.getNodeId())) {
+			if(nodeID.equals(nodeDetail.getNodeID())) {
 				return nodeDetail;
 			}
 		}
 		
 		return null;
+	}
+	
+	//******************* SETTERS *******************/
+	
+	public void setNodesDetails(NodeTrackingDetail[] nodesDetails) {
+		this.nodesDetails = nodesDetails;
+	}
+
+	public void setPhaseNum(int phaseNum) {
+		this.phaseNum = phaseNum;
+	}
+
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
+	}
+
+	public void setEndTime(long endTime) {
+		this.endTime = endTime;
+	}
+
+	public void setMemoryUtilization(long memoryUtilization) {
+		this.memoryUtilization = memoryUtilization;
+	}
+
+	public void setResult(Result result) {
+		this.result = result;
 	}
 	
 	//******************* EVENTS ********************/
@@ -175,5 +215,6 @@ public class PhaseTrackingDetail implements Serializable {
 		result = phase.getResult();
 		endTime = System.nanoTime();
 	}
+
 
 }
