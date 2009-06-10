@@ -98,6 +98,7 @@ public class Trash extends Node {
 	private static final String XML_DEBUGAPPEND_ATTRIBUTE = "debugAppend";
 	private static final String XML_COMPRESSLEVEL_ATTRIBUTE = "compressLevel";
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
+	private static final String XML_PRINT_TRASH_ID_ATTRIBUTE = "printTrashID";
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "TRASH";
@@ -105,6 +106,7 @@ public class Trash extends Node {
 	private final static int OUTPUT_PORT = 0;
 	private boolean debugPrint;
 	private String debugFilename;
+	private boolean printTrashID;
 
 	private TextTableFormatter formatter;
 	private MultiFileWriter writer;
@@ -247,6 +249,7 @@ public class Trash extends Node {
     	        writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
                 writer.init(getInputPort(READ_FROM_PORT).getMetadata());
             	formatter.showCounter("Record", "# ");
+            	if (printTrashID) formatter.showTrashID("Trash ID ", getId());
             }
 		}
 	}
@@ -326,6 +329,9 @@ public class Trash extends Node {
 			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
 				trash.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
             }
+			if(xattribs.exists(XML_PRINT_TRASH_ID_ATTRIBUTE)) {
+				trash.setPrintTrashID(xattribs.getBoolean(XML_PRINT_TRASH_ID_ATTRIBUTE));
+            }
 			trash.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
 			
 		} catch (Exception ex) {
@@ -395,6 +401,14 @@ public class Trash extends Node {
 	 */
 	private void setMkDirs(boolean mkDir) {
 		this.mkDir = mkDir;
+	}
+	
+	/**
+	 * Sets whether print trash ID.
+	 * @param printTrashID
+	 */
+	private void setPrintTrashID(boolean printTrashID) {
+		this.printTrashID = printTrashID;
 	}
 }
 
