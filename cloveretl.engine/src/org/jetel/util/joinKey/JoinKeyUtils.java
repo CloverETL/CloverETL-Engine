@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jetel.data.Defaults;
+import org.jetel.enums.OrderEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
@@ -45,6 +46,9 @@ public class JoinKeyUtils {
 
 	private final static Pattern TAIL_PATTERN = Pattern.compile("\\s*[;|:#]+\\s*$");
 	
+	//                                                                  keyName      [(    order    )]? 
+	private final static Pattern ORDERED_KEY_PATTERN = Pattern.compile("([^\\(]+)(([\\(]([^\\)]+)[\\)])|$)");
+
 	private final static int MASTER = 0;
 	private final static int SLAVE = 1;
 	
@@ -200,9 +204,8 @@ public class JoinKeyUtils {
 	 * 	length of join key must be the same for each slave.
 	 * @throws ComponentNotReadyException
 	 */
-	public static String[][] parseMergeJoinKey(String joinBy, List<DataRecordMetadata> inMetadata)
-			throws ComponentNotReadyException{
-		if (StringUtils.isEmpty(joinBy)) return new String[0][0];
+	public static OrderedKey[][] parseMergeJoinOrderedKey(String joinBy, List<DataRecordMetadata> inMetadata) throws ComponentNotReadyException {
+		if (StringUtils.isEmpty(joinBy)) return new OrderedKey[0][0];
 		Iterator<DataRecordMetadata> itor = inMetadata != null ? inMetadata.iterator() : null;
 		DataRecordMetadata masterMetadata = itor != null ? itor.next() : null;
 		Map<String, Object[]> slaveMetadata = new LinkedHashMap<String, Object[]>(itor != null && inMetadata.size() > 1 ? 
@@ -214,7 +217,7 @@ public class JoinKeyUtils {
 			DataRecordMetadata metadata;
 			for (int i = 0; i < inMetadata.size() - 1; i++) {
 				metadata = itor.next();
-    			if (metadata == null) {
+    		if (metadata == null) {
     				throw new ComponentNotReadyException("Input metadata on port number " + (i + 1) + " are null!!!");
     			}
 				slaveMetadata.put(metadata.getName(), new Object[]{metadata, i});
@@ -299,26 +302,56 @@ public class JoinKeyUtils {
 		}
 		
 		//set proper order in result
-		String[][] res = new String[result.size()][];
+		OrderedKey[][] keyOrdered = new OrderedKey[result.size()][];
 		DataRecordMetadata metadata = null;
-		for (int i = 0; i < res.length; i++) {
-			res[i] = result.get(i);
+		String aTmp[];
+		for (int i = 0; i < keyOrdered.length; i++) {
+			aTmp = result.get(i);
+			keyOrdered[i] = new OrderedKey[aTmp.length];
 			if (itor != null) {
 				if (i >= inMetadata.size()) {
-					throw new ComponentNotReadyException("Key size (" + res.length + ") is greater then number of input metadata ("
+					throw new ComponentNotReadyException("Key size (" + keyOrdered.length + ") is greater then number of input metadata ("
 							+ inMetadata.size() + ").");
 				}
 				metadata = inMetadata.get(i);
-				for (int k = 0; k < res[i].length; k++) {
-					if (metadata.getFieldPosition(res[i][k]) == -1) {
-						throw new ComponentNotReadyException("Field " + StringUtils.quote(res[i][k]) +
+				for (int k = 0; k < aTmp.length; k++) {
+					keyOrdered[i][k] = parseOrderedKey(aTmp[k]);
+					if (metadata.getFieldPosition(keyOrdered[i][k].getKeyName()) == -1) {
+						throw new ComponentNotReadyException("Field " + StringUtils.quote(keyOrdered[i][k].getKeyName()) +
 								" specified as key field, doesn't exist in " + StringUtils.quote(metadata.getName()) + " metadata.");
 					}
 				}
 			}
 		}
-		
-		return res;
+		return keyOrdered;
+	}
+
+	/**
+	 * Parses a field string with optional order notation.
+	 * @param orderedKey
+	 * @return
+	 */
+	private static OrderedKey parseOrderedKey(String orderedKey) {
+		Matcher matcher = ORDERED_KEY_PATTERN.matcher(orderedKey);
+		String sOrder;
+		if (!matcher.find() || (sOrder = matcher.group(4)) == null) {
+			return new OrderedKey(orderedKey, null);			
+		}
+		return new OrderedKey(matcher.group(1), OrderEnum.fromString(sOrder));			
+	}
+	
+	public static String[][] parseMergeJoinKey(String joinBy, List<DataRecordMetadata> inMetadata)
+			throws ComponentNotReadyException{
+		OrderedKey[][] keyOrdered = parseMergeJoinOrderedKey(joinBy, inMetadata);
+		if (keyOrdered.length == 0) return new String[0][0];
+		String[][] sKeyOrdered;
+		sKeyOrdered = new String[keyOrdered.length][keyOrdered[0].length];
+		for (int i=0; i<keyOrdered.length; i++) {
+			for (int j=0; j<keyOrdered[0].length; j++) {
+				sKeyOrdered[i][j] = keyOrdered[i][j].getKeyName();
+			}
+		}
+		return sKeyOrdered;
 	}
 	
 	/**
