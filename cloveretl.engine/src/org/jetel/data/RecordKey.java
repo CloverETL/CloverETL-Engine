@@ -20,6 +20,7 @@
 package org.jetel.data;
 
 import java.nio.ByteBuffer;
+import java.text.RuleBasedCollator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -61,6 +62,7 @@ public class RecordKey {
 	private final static char KEY_ITEMS_DELIMITER = ':';
 	private final static int DEFAULT_STRING_KEY_LENGTH = 32;
 	private boolean isInitialized = false;
+    protected RuleBasedCollator collator;
 
 	private StringBuffer keyStr;
 
@@ -218,7 +220,12 @@ public class RecordKey {
 		}
 		if (equalNULLs){
 		    for (int i = 0; i < keyFields.length; i++) {
-		        compResult = record1.getField(keyFields[i]).compareTo(record2.getField(keyFields[i]));
+		    	DataField field = record1.getField(keyFields[i]);
+				if (collator != null && (field instanceof StringDataField)) {
+			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collator);
+				} else {
+					compResult = field.compareTo(record2.getField(keyFields[i]));
+				}
 		        if (compResult != 0) {
 		            if (!(record1.getField(keyFields[i]).isNull&&record2.getField(keyFields[i]).isNull)){
 		                return compResult;
@@ -227,7 +234,12 @@ public class RecordKey {
 		    }
 		}else {
 		    for (int i = 0; i < keyFields.length; i++) {
-		        compResult = record1.getField(keyFields[i]).compareTo(record2.getField(keyFields[i]));
+		    	DataField field = record1.getField(keyFields[i]);
+				if (collator != null && (field instanceof StringDataField)) {
+			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collator);
+				} else {
+					compResult = field.compareTo(record2.getField(keyFields[i]));
+				}
 		        if (compResult != 0) {
 		            return compResult;
 		        }
@@ -520,6 +532,11 @@ public class RecordKey {
 	public String[] getKeyFieldNames() {
 		return keyFieldNames;
 	}
+	
+    public void setCollator(RuleBasedCollator collator) {
+        this.collator = collator;
+    }
+
 }
 // end RecordKey
 
