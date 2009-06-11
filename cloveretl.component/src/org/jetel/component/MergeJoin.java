@@ -36,11 +36,10 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
-import org.jetel.data.RecordOrderedKey;
-import org.jetel.data.reader.DriverOrderedReader;
+import org.jetel.data.reader.DriverReader;
 import org.jetel.data.reader.InputReader;
-import org.jetel.data.reader.SlaveOrderedReader;
-import org.jetel.data.reader.SlaveOrderedReaderDup;
+import org.jetel.data.reader.SlaveReader;
+import org.jetel.data.reader.SlaveReaderDup;
 import org.jetel.data.reader.InputReader.InputOrdering;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -229,8 +228,8 @@ public class MergeJoin extends Node {
 	private int inputCnt;
 	private int slaveCnt;
 	
-	private RecordOrderedKey driverKey;
-	private RecordOrderedKey[] slaveKeys;
+	private RecordKey driverKey;
+	private RecordKey[] slaveKeys;
 
 	InputReader[] reader;
 	boolean anyInputEmpty;
@@ -544,22 +543,22 @@ public class MergeJoin extends Node {
     			joiners = replJoiners;
 			}
 		}
-		driverKey = buildRecordOrderedKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
+		driverKey = buildRecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
 		driverKey.init();
-		slaveKeys = new RecordOrderedKey[slaveCnt];
+		slaveKeys = new RecordKey[slaveCnt];
 		for (int idx = 0; idx < slaveCnt; idx++) {
-			slaveKeys[idx] = buildRecordOrderedKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
+			slaveKeys[idx] = buildRecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
 			slaveKeys[idx].init();
 		}		
 		reader = new InputReader[inputCnt];
-		reader[0] = new DriverOrderedReader(getInputPort(DRIVER_ON_PORT), driverKey);
+		reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
 		if (slaveDuplicates) {
 			for (int i = 0; i < slaveCnt; i++) {
-				reader[i + 1] = new SlaveOrderedReaderDup(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
+				reader[i + 1] = new SlaveReaderDup(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
 			}
 		} else {
 			for (int i = 0; i < slaveCnt; i++) {
-				reader[i + 1] = new SlaveOrderedReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i], true);
+				reader[i + 1] = new SlaveReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i], true);
 			}			
 		}
 		minReader = reader[0];
@@ -602,7 +601,7 @@ public class MergeJoin extends Node {
 	 * @param metaData
 	 * @return
 	 */
-	private RecordOrderedKey buildRecordOrderedKey(String joiners[], DataRecordMetadata metaData) {
+	private RecordKey buildRecordKey(String joiners[], DataRecordMetadata metaData) {
 		boolean[] ordering = new boolean[joiners.length];
 		Arrays.fill(ordering, ascendingInputs);
 
@@ -615,9 +614,11 @@ public class MergeJoin extends Node {
 			RuleBasedCollator col = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(locale));
 			col.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
 			col.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
-			return new RecordOrderedKey(fields, ordering, metaData, col);
+			RecordKey recordKey = new RecordKey(fields, metaData);
+			recordKey.setCollator(col);
+			return recordKey;
 		} else {
-			return new RecordOrderedKey(fields, ordering, metaData);
+			return new RecordKey(fields, metaData);
 		}
 	}
 
@@ -852,22 +853,22 @@ public class MergeJoin extends Node {
 	            			joiners = replJoiners;
 	        			}
 	        		}
-	        		driverKey = buildRecordOrderedKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
-	        		slaveKeys = new RecordOrderedKey[slaveCnt];
+	        		driverKey = buildRecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
+	        		slaveKeys = new RecordKey[slaveCnt];
 	        		for (int idx = 0; idx < slaveCnt; idx++) {
-	        			slaveKeys[idx] = buildRecordOrderedKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
+	        			slaveKeys[idx] = buildRecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
 	    				RecordKey.checkKeys(driverKey, XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
 						XML_JOINKEY_ATTRIBUTE, status, this);
 	         		}
 	        		reader = new InputReader[inputCnt];
-	        		reader[0] = new DriverOrderedReader(getInputPort(DRIVER_ON_PORT), driverKey);
+	        		reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
 	        		if (slaveDuplicates) {
 	        			for (int i = 0; i < slaveCnt; i++) {
-	        				reader[i + 1] = new SlaveOrderedReaderDup(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
+	        				reader[i + 1] = new SlaveReaderDup(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
 	        			}
 	        		} else {
 	        			for (int i = 0; i < slaveCnt; i++) {
-	        				reader[i + 1] = new SlaveOrderedReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i], true);
+	        				reader[i + 1] = new SlaveReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i], true);
 	        			}			
 	        		}
 	        		minReader = reader[0];
