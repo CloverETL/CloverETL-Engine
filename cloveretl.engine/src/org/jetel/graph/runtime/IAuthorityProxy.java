@@ -19,6 +19,8 @@
 */
 package org.jetel.graph.runtime;
 
+import java.util.Properties;
+
 import org.jetel.data.sequence.Sequence;
 import org.jetel.graph.Result;
 
@@ -47,6 +49,6 @@ public interface IAuthorityProxy {
 	 * @param graphFileName - path to graph to execute
 	 * @return
 	 */
-	public RunResult executeGraph(long runId, String graphFileName);
+	public RunResult executeGraph(long runId, String graphFileName, Properties props);
 
 }
