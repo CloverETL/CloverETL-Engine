@@ -46,9 +46,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.TransformationGraphXMLReaderWriter;
-import org.jetel.graph.runtime.EngineInitializer;
-import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IAuthorityProxy.RunResult;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
@@ -442,7 +439,7 @@ public class RunGraph extends Node{
 	private boolean runGraphThisInstance(String graphFileName, OutputRecordData outputRecordData) {
 		long runId = this.getGraph().getWatchDog().getGraphRuntimeContext().getRunId();
 
-		RunResult rr = this.getGraph().getAuthorityProxy().executeGraph( runId, graphFileName);
+		RunResult rr = this.getGraph().getAuthorityProxy().executeGraph( runId, graphFileName, this.getGraph().getGraphProperties());
 		
 		outputRecordData.setDescription(rr.description);
 		outputRecordData.setDuration(rr.duration);
