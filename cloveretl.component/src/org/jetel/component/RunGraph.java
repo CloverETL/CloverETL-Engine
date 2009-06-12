@@ -439,7 +439,7 @@ public class RunGraph extends Node{
 	private boolean runGraphThisInstance(String graphFileName, OutputRecordData outputRecordData) {
 		long runId = this.getGraph().getWatchDog().getGraphRuntimeContext().getRunId();
 
-		RunResult rr = this.getGraph().getAuthorityProxy().executeGraph( runId, graphFileName, this.getGraph().getGraphProperties());
+		RunResult rr = this.getGraph().getAuthorityProxy().executeGraph( runId, graphFileName, this.getGraph().getGraphProperties(), outputFileName);
 		
 		outputRecordData.setDescription(rr.description);
 		outputRecordData.setDuration(rr.duration);
