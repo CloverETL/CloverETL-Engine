@@ -204,7 +204,7 @@ public class ExProperties extends HashMap<String, ArrayList<String>> {
 	}
 	
 	static String escape(String s) {
-		return s == null ? null : s.replaceAll("\\|", "\\\\|").replaceAll("\r\n", "\\r\\n");
+		return s == null ? null : s.replaceAll("\\|", "\\\\|").replaceAll("\r\n", "\\\\r\\\\n");
 	}
 
 	static String deEscape(String s) {
