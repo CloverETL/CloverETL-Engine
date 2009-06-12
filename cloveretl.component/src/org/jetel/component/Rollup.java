@@ -139,7 +139,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 4th June 2009
+ * @version 12th June 2009
  * @since 30th April 2009
  *
  * @see RecordRollup
@@ -217,7 +217,7 @@ public class Rollup extends Node {
             rollup.setTransformUrlCharset(componentAttributes.getString(XML_TRANSFORM_URL_CHARSET_ATTRIBUTE, null));
             rollup.setTransformClassName(componentAttributes.getString(XML_TRANSFORM_CLASS_NAME_ATTRIBUTE, null));
 
-            rollup.setInputSorted(componentAttributes.getBoolean(XML_INPUT_SORTED_ATTRIBUTE, false));
+            rollup.setInputSorted(componentAttributes.getBoolean(XML_INPUT_SORTED_ATTRIBUTE, true));
         } catch (AttributeNotFoundException exception) {
             throw new XMLConfigurationException("Missing a required attribute!", exception);
         } catch (Exception exception) {
@@ -246,7 +246,7 @@ public class Rollup extends Node {
     private String transformClassName;
 
     /** the flag specifying whether the input data records are sorted or not */
-    private boolean inputSorted;
+    private boolean inputSorted = true;
 
     //
     // runtime attributes initialized in the init() method
@@ -330,7 +330,7 @@ public class Rollup extends Node {
             xmlElement.setAttribute(XML_TRANSFORM_CLASS_NAME_ATTRIBUTE, transformClassName);
         }
 
-        if (inputSorted) {
+        if (!inputSorted) {
             xmlElement.setAttribute(XML_INPUT_SORTED_ATTRIBUTE, Boolean.toString(inputSorted));
         }
     }
