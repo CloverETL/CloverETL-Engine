@@ -1,6 +1,11 @@
 *******************************************************************************
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
+REL 2-8-0
+---------
++ Method DataRecord2JmsMsg.createLastMsg(DataRecord) is deprecated. Use the same method without parameters instead.  
+
+
 REL 2-7-1
 ---------
 Features:
