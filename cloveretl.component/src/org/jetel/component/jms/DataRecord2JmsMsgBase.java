@@ -57,10 +57,19 @@ public abstract class DataRecord2JmsMsgBase implements DataRecord2JmsMsg {
 	/* (non-Javadoc)
 	 * @see org.jetel.component.DataRecord2JmsMsg#createLastMsg(org.jetel.data.DataRecord)
 	 */
+	@Deprecated
 	public Message createLastMsg(DataRecord record) throws JMSException {
-		return record == null ? null : createMsg(record);
+		return createLastMsg();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.component.jms.DataRecord2JmsMsg#createLastMsg()
+	 */
+	public Message createLastMsg() throws JMSException {
+		return null;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.component.DataRecord2JmsMsg#getErrorMsg()
 	 */
@@ -69,7 +78,7 @@ public abstract class DataRecord2JmsMsgBase implements DataRecord2JmsMsg {
 	}
 
 	/**
-	 * Sets error message. Suppposed to be used in subclasses.
+	 * Sets error message. Supposed to be used in subclasses.
 	 * @param errMsg
 	 */
 	protected void setErrorMsg(String errMsg) {

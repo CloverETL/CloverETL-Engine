@@ -47,7 +47,7 @@ public interface DataRecord2JmsMsg {
 	public void init(DataRecordMetadata metadata, Session session, Properties props) throws ComponentNotReadyException;
 
 	/**
-	 * Transforms data record to JMS message. Is called for all data records except the last one. 
+	 * Transforms data record to JMS message. Is called for all data records. 
 	 * @param record Data record to be transformed to JMS message
 	 * @return JMS message
 	 * @throws JMSException
@@ -55,13 +55,23 @@ public interface DataRecord2JmsMsg {
 	public Message createMsg(DataRecord record) throws JMSException;
 	
 	/**
-	 * Transforms data record to JMS message. It is called for the last record. After last record it is called
-	 * one more time with null parameter and is supposed to return message terminating JMS output. 
-	 * @param record Data record to be transformed to JMS message or null.
-	 * @return JMS message, null for missing terminating message. 
+	 * This method isn't called explicitly since 2.8. Use {@link #createLastMsg()} instead.
+	 * @param 
+	 * @return  
+	 * @throws JMSException
+	 * @deprecated since 2.8 - parameter has no meaning any longer - use {@link #createLastMsg()} instead
+	 */
+	@Deprecated
+	public Message createLastMsg(DataRecord record) throws JMSException;
+	
+	/**
+	 * This method is called after last record and is supposed to return message terminating JMS output.
+	 * If it returns null, no terminating message is sent.
+	 * @since 2.8
+	 * @return JMS message or null.
 	 * @throws JMSException
 	 */
-	public Message createLastMsg(DataRecord record) throws JMSException;
+	public Message createLastMsg() throws JMSException;
 	
 	/**
 	 * Releases resources.  

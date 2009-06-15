@@ -238,30 +238,24 @@ public class JmsWriter extends Node {
 
 	@Override
 	public Result execute() throws Exception {
-		DataRecord currentRecord = new DataRecord(inPort.getMetadata());
-		currentRecord.init();
 		DataRecord nextRecord = new DataRecord(inPort.getMetadata());
 		nextRecord.init();
 		try {
-			nextRecord = inPort.readRecord(nextRecord);
-			while (runIt && nextRecord != null) {
-				// move next to current; read new next
-				DataRecord rec = currentRecord;
-				currentRecord = nextRecord;
-				nextRecord = inPort.readRecord(rec);
-				// last message may differ from the other ones
-				Message msg = nextRecord != null ? psor.createMsg(currentRecord) : psor.createLastMsg(currentRecord);
-				if (msg == null) {
+			while (runIt) {
+				// read next
+				nextRecord = inPort.readRecord(nextRecord);
+				if (nextRecord == null)
+					break;
+				Message msg = psor.createMsg(nextRecord);
+				if (msg == null)
 					throw new JetelException(psor.getErrorMsg());
-				}
 				producer.send(msg);
 			}
-			// send terminating message
 			if (runIt) {
-				Message termMsg = psor.createLastMsg(null);
-				if (termMsg != null) {
+				// send terminating message
+				Message termMsg = psor.createLastMsg();
+				if (termMsg != null)
 					producer.send(termMsg);
-				}
 			}
 		} catch (Exception e) {
 			logger.error("JmxWriter execute", e);
