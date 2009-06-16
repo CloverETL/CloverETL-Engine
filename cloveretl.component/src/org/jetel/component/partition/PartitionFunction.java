@@ -24,6 +24,7 @@ package org.jetel.component.partition;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 
 /**
@@ -41,8 +42,9 @@ public interface PartitionFunction {
 	     * number
 	     * @return port number which should be used for sending
 	     * data out.
+	     * @throws TransformException 
 	     */
-	    int getOutputPort(DataRecord record);
+	    int getOutputPort(DataRecord record) throws TransformException;
 	    
 	    /**
 	     * Called befor partiton function is first used (getOutputPort is used).

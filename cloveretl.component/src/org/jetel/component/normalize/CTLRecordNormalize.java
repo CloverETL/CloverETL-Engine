@@ -99,16 +99,21 @@ public abstract class CTLRecordNormalize implements RecordNormalize, CTLCompilab
 			name = "count",
 			required = true
 	)
-	public abstract int countDelegate();	
+	public abstract int countDelegate() throws ComponentNotReadyException, TransformException;	
 	
 	
 	/**
 	 * Implementation of interface method {@link RecordNormalize#count}.
 	 * Delegates call to {@link #count(DataRecord[])} used by generated CTL.
 	 */
-	public int count(DataRecord source) {
+	public int count(DataRecord source) throws TransformException {
 		inputRecord = source;
-		return countDelegate();
+		try {
+			return countDelegate();
+		} catch (ComponentNotReadyException e) {
+			// the exception may be thrown by lookups etc...
+			throw new TransformException("Generated transformation class threw an exception",e);
+		}
 	}
 	
 	
@@ -117,7 +122,7 @@ public abstract class CTLRecordNormalize implements RecordNormalize, CTLCompilab
 			parameterNames = {"idx" },
 			required = true
 	)
-	public abstract int transformDelegate(int idx) throws TransformException;
+	public abstract int transformDelegate(Integer idx) throws TransformException, ComponentNotReadyException;
 	
 	
 	/**
@@ -126,7 +131,12 @@ public abstract class CTLRecordNormalize implements RecordNormalize, CTLCompilab
 	public int transform(DataRecord source, DataRecord target, int idx) throws TransformException {
 		inputRecord = source;
 		outputRecord = target;
-		return transformDelegate(idx);
+		try {
+			return transformDelegate(idx);
+		} catch (ComponentNotReadyException e) {
+			// the exception may be thrown by lookups etc...
+			throw new TransformException("Generated transformation class threw an exception",e);
+		}
 	}
 	
 	

@@ -4,6 +4,7 @@ import org.jetel.ctl.CTLCompilable;
 import org.jetel.ctl.CTLEntryPoint;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 
 public abstract class CTLRecordFilter implements RecordFilter, CTLCompilable {
 
@@ -22,12 +23,17 @@ public abstract class CTLRecordFilter implements RecordFilter, CTLCompilable {
 			name = CTLRecordFilterAdapter.ISVALID_FUNCTION_NAME,
 			required = true
 	)
-	public abstract boolean validDelegate();
+	public abstract boolean validDelegate() throws ComponentNotReadyException, TransformException;
 	
 	
-	public boolean isValid(DataRecord record) {
+	public boolean isValid(DataRecord record) throws TransformException {
 		inputRecord = record;
-		return validDelegate();
+		try {
+			return validDelegate();
+		} catch (ComponentNotReadyException e) {
+			// the exception may be thrown by lookups etc...
+			throw new TransformException("Generated transformation class threw an exception",e);
+		}
 	}
 
 	

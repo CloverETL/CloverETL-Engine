@@ -85,7 +85,7 @@ public abstract class CTLRecordTransform implements RecordTransform, CTLCompilab
 			required = true,
 			name = "transform"
 	)
-	public abstract int transformDelegate() throws TransformException;
+	public abstract int transformDelegate() throws TransformException, ComponentNotReadyException;
 
 	/**
 	 * Implementation of interface function {@link #transform(DataRecord[], DataRecord[])}
@@ -93,7 +93,12 @@ public abstract class CTLRecordTransform implements RecordTransform, CTLCompilab
 	public int transform(DataRecord[] sources, DataRecord[] targets) throws TransformException {
 		inputRecords = sources;
 		outputRecord = targets;
-		return transformDelegate();
+		try {
+			return transformDelegate();
+		} catch (ComponentNotReadyException e) {
+			// the exception may be thrown by lookups etc...
+			throw new TransformException("Generated transformation class threw an exception",e);
+		}
 	}
 	
 	/**
