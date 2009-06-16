@@ -61,7 +61,7 @@ public interface RecordNormalize {
 	 * @param source Input record
 	 * @return Number of output records which will be create from specified input record 
 	 */
-	public int count(DataRecord source);
+	public int count(DataRecord source) throws TransformException;
 	
 	/**
 	 * 

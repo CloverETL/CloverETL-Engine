@@ -23,6 +23,7 @@ package org.jetel.component;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 
 /**
@@ -39,7 +40,7 @@ public interface RecordFilter {
 	     * @param record data 
 	     * @return true if valid record, false otherwise
 	     */
-	    boolean isValid(DataRecord record);
+	    boolean isValid(DataRecord record) throws TransformException;
 	    
 	    /**
 	     * Called before partition function is first used (getOutputPort is used).

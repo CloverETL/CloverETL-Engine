@@ -95,12 +95,17 @@ public abstract class CTLRecordDenormalize implements RecordDenormalize, CTLComp
 			name = "append",
 			required = true
 	)
-	public abstract int appendDelegate() throws TransformException;
+	public abstract int appendDelegate() throws TransformException, ComponentNotReadyException;
 	
 	
 	public int append(DataRecord inRecord) throws TransformException {
 		inputRecord = inRecord;
-		return appendDelegate();
+		try {
+			return appendDelegate();
+		} catch (ComponentNotReadyException e) {
+			// the exception may be thrown by lookups etc...
+			throw new TransformException("Generated transformation class threw an exception",e);
+		}
 	}
 
 	/**
@@ -115,12 +120,17 @@ public abstract class CTLRecordDenormalize implements RecordDenormalize, CTLComp
 			name = "transform",
 			required = true
 	)
-	public abstract int transformDelegate() throws TransformException;
+	public abstract int transformDelegate() throws TransformException, ComponentNotReadyException;
 	
 	
 	public int transform(DataRecord outRecord) throws TransformException {
 		outputRecord = outRecord;
-		return transformDelegate();
+		try {
+			return transformDelegate();
+		} catch (ComponentNotReadyException e) {
+			// the exception may be thrown by lookups etc...
+			throw new TransformException("Generated transformation class threw an exception",e);
+		}
 	}
 
 

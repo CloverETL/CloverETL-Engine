@@ -26,6 +26,7 @@ import org.jetel.ctl.CTLEntryPoint;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 
 /**
  * Simple interface for partition functions.
@@ -47,15 +48,20 @@ public abstract class CTLRecordPartition implements PartitionFunction, CTLCompil
 			name = "getOutputPort", 
 			required = true
 	)
-	public abstract int getOutputPortDelegate();
+	public abstract int getOutputPortDelegate() throws ComponentNotReadyException, TransformException;
 	
 	/**
 	 * Implementation of interface method {@link PartitionFunction#getOutputPort(DataRecord)}.
 	 * Delegates the call to CTL universal method {@link #getOutputPort(DataRecord[])}
 	 */
-	public int getOutputPort(DataRecord record) {
+	public int getOutputPort(DataRecord record) throws TransformException {
 		inputRecord = record;
-		return getOutputPortDelegate();
+		try {
+			return getOutputPortDelegate();
+		} catch (ComponentNotReadyException e) {
+			// the exception may be thrown by lookups etc...
+			throw new TransformException("Generated transformation class threw an exception",e);
+		}
 	}
 
 	/**
@@ -81,7 +87,7 @@ public abstract class CTLRecordPartition implements PartitionFunction, CTLCompil
 			name = "init",
 			parameterNames = { "partitionCount" }
 	)
-	public void init(int partitionCount) throws ComponentNotReadyException {
+	public void init(Integer partitionCount) throws ComponentNotReadyException {
 		// does nothing
 	}
 	
