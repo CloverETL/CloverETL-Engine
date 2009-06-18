@@ -1,0 +1,1 @@
+int otherImportVar = 1;
