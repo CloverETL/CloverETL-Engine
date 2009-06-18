@@ -28,7 +28,9 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutor;
@@ -49,12 +51,6 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	public static final int DEFAULT_RADIX = 10;
 
-	private static StringFormat trueFormat = StringFormat
-			.create(Defaults.DEFAULT_REGEXP_TRUE_STRING);
-	private static StringFormat falseFormat = StringFormat
-			.create(Defaults.DEFAULT_REGEXP_FALSE_STRING);
-
-
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
 		TLFunctionPrototype ret = 
@@ -66,6 +62,18 @@ public class ConvertLib extends TLFunctionLibrary {
 			"str2long".equals(functionName) ? new Str2LongFunction() :
 			"str2double".equals(functionName) ? new Str2DoubleFunction() :
 			"str2decimal".equals(functionName) ? new Str2DecimalFunction() :
+			"long2int".equals(functionName) ? new Long2IntFunction() :
+			"double2int".equals(functionName) ? new Double2IntFunction() :
+			"decimal2int".equals(functionName) ? new Decimal2IntFunction() :
+			"double2long".equals(functionName) ? new Double2LongFunction() :
+			"decimal2long".equals(functionName) ? new Decimal2LongFunction() :
+			"decimal2double".equals(functionName) ? new Decimal2DoubleFunction() : 
+			"num2bool".equals(functionName) ? new Num2BoolFunction() :
+			"bool2num".equals(functionName) ? new Bool2NumFunction() : 
+			"str2bool".equals(functionName) ? new Str2BoolFunction() :
+			"to_string".equals(functionName) ? new ToStringFunction() :
+			"long2date".equals(functionName) ? new Long2DateFunction() :
+			"date2long".equals(functionName) ? new Date2LongFunction() : 
 			null;
 		
 		if (ret == null) {
@@ -101,7 +109,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		case 16: 
 			return Double.toHexString(num);
 		default:
-			throw new TransformLangExecutorRuntimeException("num2str only support radix 10 and 16");
+			throw new TransformLangExecutorRuntimeException("num2str for double type only supports radix 10 and 16");
 		} 
 	}
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -132,15 +140,9 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 
-	@TLFunctionAnnotation("Converts date to string according to the specified pattern.")
-	public static final String date2str(Date date, String pattern) {
-		final SimpleDateFormat format = new SimpleDateFormat();
-		format.applyPattern(pattern);
-		return format.format(date);
-	}
 	// DATE2STR
 	class Date2StrFunction implements TLFunctionPrototype {
-
+	
 		public void execute(Stack stack, TLType[] actualParams) {
 			final String pattern = stack.popString();
 			final Date date = stack.popDate();
@@ -148,6 +150,12 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 
+	@TLFunctionAnnotation("Converts date to string according to the specified pattern.")
+	public static final String date2str(Date date, String pattern) {
+		final SimpleDateFormat format = new SimpleDateFormat();
+		format.applyPattern(pattern);
+		return format.format(date);
+	}
 	// STR2DATE
 	@TLFunctionAnnotation("Converts string to date based on a pattern")
 	public static final Date str2date(String input, String pattern, String locale, boolean lenient) {
@@ -288,349 +296,224 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 
-	// NUM2NUM
-//	class Num2NumFunction implements TLFunctionPrototype {
-//
-//		public Num2NumFunction() {
-//			super("convert", "num2num", "Converts numbers of different types",
-//					new TLType[][] {
-//							{ TLTypePrimitive.INTEGER, TLTypePrimitive.LONG,
-//									TLTypePrimitive.DOUBLE, TLTypePrimitive.DECIMAL },
-//							{ TLType.createTypeSymbol(TransformLangParserConstants.INT_VAR) } }, TLType.OBJECT, 2, 1);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			TLValueType valType = (params.length > 1 ? TLFunctionUtils
-//					.astToken2ValueType(params[1]) : TLValueType.INTEGER);
-//			TLValue value = (TLValue) context.getContext();
-//			if (value == null && !(valType == TLValueType.DECIMAL)) {
-//				// initialize
-//				value = TLValue.create(valType);
-//				context.setContext(value);
-//			}
-//
-//			if (valType != TLValueType.DECIMAL) {
-//				value.setValue(params[0]);
-//			} else {
-//				value = new TLNumericValue<Numeric>(TLValueType.DECIMAL,
-//						params[0].getNumeric());
-//			}
-//			if (value.compareTo(params[0]) != 0
-//					|| params[0].compareTo(value) != 0) {
-//				throw new TransformLangExecutorRuntimeException(params,
-//						"num2num - can't convert \"" + params[0] + "\" to "
-//								+ valType.getName());
-//			}
-//
-//			return value;
-//		}
-//
-//		@Override
-//		public TLContext createContext() {
-//			TLContext<TLNumericValue<Numeric>> context = new TLContext<TLNumericValue<Numeric>>();
-//			context.setContext(null);
-//			return context;
-//		}
-//
-//		@Override
-//		public TLType checkParameters(TLType[] parameters) {
-//			if (parameters.length < minParams || parameters.length > maxParams) {
-//				return TLType.ERROR;
-//			}
-//
-//			if (!parameters[0].isNumeric()) {
-//				return TLType.ERROR;
-//			}
-//
-//			TLType retType = TLTypePrimitive.INTEGER;
-//			if (parameters.length > 1) {
-//				if (!parameters[1].isTypeSymbol()) {
-//					return TLType.ERROR;
-//				}
-//
-//				TLTypeSymbol typeSym = (TLTypeSymbol) parameters[1];
-//				if (!typeSym.representsType()) {
-//					return TLType.ERROR;
-//				}
-//
-//				retType = typeSym.getRepresentedType();
-//
-//				if (!retType.isNumeric()) {
-//					return TLType.ERROR;
-//				}
-//
-//			}
-//
-//			return retType;
-//		}
-//	}
-//
-//	// NUM2BOOL
-//	class Num2BoolFunction implements TLFunctionPrototype {
-//
-//		public Num2BoolFunction() {
-//			super("convert", "num2bool", "Converts 1 to true and 0 to false",
-//					new TLType[][] { { TLTypePrimitive.INTEGER,
-//							TLTypePrimitive.LONG, 
-//							TLTypePrimitive.DOUBLE, TLTypePrimitive.DECIMAL } },
-//					TLTypePrimitive.BOOLEAN);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			if (params[0].compareTo(TLNumericValue.ONE) == 0) {
-//				return TLBooleanValue.TRUE;
-//			}
-//			if (params[0].compareTo(TLNumericValue.ZERO) == 0) {
-//				return TLBooleanValue.FALSE;
-//			}
-//			throw new TransformLangExecutorRuntimeException(params,
-//					"num2bool - can't convert \"" + params[0] + "\" to "
-//							+ TLValueType.BOOLEAN.getName());
-//		}
-//
-//		@Override
-//		public TLType checkParameters(TLType[] parameters) {
-//			if (parameters.length < minParams || parameters.length > maxParams) {
-//				return TLType.ERROR;
-//			}
-//
-//			if (!parameters[0].isNumeric()) {
-//				return TLType.ERROR;
-//			}
-//
-//			return TLTypePrimitive.BOOLEAN;
-//		}
-//	}
-//
-//	// BOOL2NUM
-//	class Bool2NumFunction implements TLFunctionPrototype {
-//
-//		public Bool2NumFunction() {
-//			super("convert", "bool2num", "Converts true to 1 and false to 0",
-//					new TLType[][] { { TLTypePrimitive.BOOLEAN },
-//							{ TLType.createTypeSymbol(TransformLangParserConstants.INT_VAR) } }, TLType.OBJECT, 2, 1);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			TLValueType valType = (params.length > 1 ? TLFunctionUtils
-//					.astToken2ValueType(params[1]) : TLValueType.INTEGER);
-//			TLValue value = (TLValue) context.getContext();
-//			if (value == null) {
-//				// initialize
-//				value = TLValue.create(valType);
-//				context.setContext(value);
-//			}
-//			value
-//					.setValue(((TLBooleanValue) params[0]).getBoolean() ? TLNumericValue.ONE
-//							: TLNumericValue.ZERO);
-//
-//			return value;
-//		}
-//
-//		@Override
-//		public TLContext createContext() {
-//			TLContext<TLValue> context = new TLContext<TLValue>();
-//			context.setContext(null);
-//			return context;
-//		}
-//
-//		@Override
-//		public TLType checkParameters(TLType[] parameters) {
-//
-//			TLType returnType = TLTypePrimitive.INTEGER;
-//
-//			if (parameters.length < minParams || parameters.length > maxParams) {
-//				return TLType.ERROR;
-//			}
-//
-//			if (!TLTypePrimitive.BOOLEAN.canAssign(parameters[0])) {
-//				return TLType.ERROR;
-//			}
-//
-//			if (parameters.length > 1) {
-//
-//				if (!parameters[1].isTypeSymbol()) {
-//					return TLType.ERROR;
-//				}
-//
-//				TLTypeSymbol typeSym = (TLTypeSymbol) parameters[1];
-//				if (! typeSym.representsType()) {
-//					return TLType.ERROR;
-//				}
-//				
-//				returnType = typeSym.getRepresentedType();
-//
-//				if (!returnType.isNumeric()) {
-//					return TLType.ERROR;
-//				}
-//			}
-//
-//			return TLType.OBJECT;
-//		}
-//	}
-//
-//	// STR2BOOL
-//	public class Str2BoolFunction implements TLFunctionPrototype {
-//
-//		public Str2BoolFunction() {
-//			super(
-//					"convert",
-//					"str2bool",
-//					"Converts string to a boolean based on a pattern (i.e. \"true\")",
-//					new TLType[][] { { TLTypePrimitive.STRING } },
-//					TLTypePrimitive.BOOLEAN);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//
-//			if (trueFormat.matches(params[0].toString()))
-//				return TLBooleanValue.TRUE;
-//
-//			if (falseFormat.matches(params[0].toString()))
-//				return TLBooleanValue.FALSE;
-//
-//			throw new TransformLangExecutorRuntimeException(params,
-//					"str2bool - can't convert \"" + params[0] + "\" to "
-//							+ TLValueType.BOOLEAN.getName());
-//		}
-//
-//		// @Override
-//		// public TLType checkParameters(TLType[] parameters) {
-//		// if (parameters.length < minParams || parameters.length > maxParams) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// if (parameters[0] != TLTypePrimitive.STRING) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// return TLTypePrimitive.BOOLEAN;
-//		// }
-//	}
-//
-//	// toString
-//	public class ToStringFunction implements TLFunctionPrototype {
-//
-//		public ToStringFunction() {
-//			super("convert", "to_string",
-//					"Returns string representation of its argument",
-//					new TLType[][] { { TLType.OBJECT } },
-//					TLTypePrimitive.STRING);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			TLStringValue val = (TLStringValue) context.context;
-//			val.setValue(params[0].toString());
-//			return val;
-//		}
-//
-//		@Override
-//		public TLContext createContext() {
-//			return TLContext.createStringContext();
-//		}
-//
-//		// @Override
-//		// public TLType checkParameters(TLType[] parameters) {
-//		// if (parameters.length != 1) {
-//		// return TLType.ERROR;
-//		// }
-//		//
-//		// return TLTypePrimitive.STRING;
-//		// }
-//	}
-//
-//	// Long2Date
-//	public class Long2DateFunction implements TLFunctionPrototype {
-//
-//		public Long2DateFunction() {
-//			super(
-//					"convert",
-//					"long2date",
-//					"Returns date from long that represents milliseconds from epoch",
-//					new TLType[][] { { TLTypePrimitive.LONG } },
-//					TLTypePrimitive.DATETIME);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			TLValue val = (TLValue) context.getContext();
-//			if (!(val instanceof TLDateValue)) {
-//				val = TLValue.create(TLValueType.DATE);
-//				context.setContext(val);
-//			}
-//			val.setValue(new Date(((TLNumericValue<CloverLong>) params[0])
-//					.getLong()));
-//			return val;
-//		}
-//
-//		@Override
-//		public TLContext createContext() {
-//			return TLContext.createDateContext();
-//		}
-//
-//		// @Override
-//		// public TLType checkParameters(TLType[] parameters) {
-//		// if (parameters.length != 1) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// if (parameters[0] != TLTypePrimitive.LONG) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// return TLTypePrimitive.DATETIME;
-//		// }
-//	}
-//
-//	// DATE2LONG
-//	public class Date2LongFunction implements TLFunctionPrototype {
-//
-//		public Date2LongFunction() {
-//			super(
-//					"convert",
-//					"date2long",
-//					"Returns long that represents milliseconds from epoch to a date",
-//					new TLType[][] { { TLTypePrimitive.DATETIME } },
-//					TLTypePrimitive.LONG);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			TLNumericValue value = (TLNumericValue) context.getContext();
-//			if (value == null || !(value.type == TLValueType.LONG)) {
-//				// initialize
-//				value = (TLNumericValue) TLValue.create(TLValueType.LONG);
-//				context.setContext(value);
-//			}
-//			value.setValue(((TLDateValue) params[0]).getDate().getTime());
-//			return value;
-//		}
-//
-//		@Override
-//		public TLContext createContext() {
-//			return TLContext.createLongContext();
-//		}
-//
-//		// @Override
-//		// public TLType checkParameters(TLType[] parameters) {
-//		// if (parameters.length != 1) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// if (parameters[0] != TLTypePrimitive.DATETIME) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// return TLTypePrimitive.LONG;
-//		// }
-//	}
-//
-//	// BASE64BYTE
+	// TODO: add test case
+	@TLFunctionAnnotation("Narrowing conversion from long to integer value.")
+	public static final Integer long2int(Long l) {
+		return l.intValue();
+	}
+	
+	class Long2IntFunction implements TLFunctionPrototype {
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(long2int(stack.popLong()));
+		}
+	}
+	
+	// TODO: add test case
+	@TLFunctionAnnotation("Narrowing conversion from double to integer value.")
+	public static final Integer double2int(Double l) {
+		return l.intValue();
+	}
+	class Double2IntFunction implements TLFunctionPrototype {
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(double2int(stack.popDouble()));
+		}
+	}
+	
+	// TODO: add test case
+	@TLFunctionAnnotation("Narrowing conversion from decimal to integer value.")
+	public static final Integer decimal2int(BigDecimal l) {
+		return l.intValue();
+	}
+	class Decimal2IntFunction implements TLFunctionPrototype {
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(decimal2int(stack.popDecimal()));
+		}
+	}
+	
+	// TODO: add test case
+	@TLFunctionAnnotation("Narrowing conversion from double to long value.")
+	public static final Long double2long(Double d) {
+		return d.longValue();
+	}
+	
+	class Double2LongFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(double2long(stack.popDouble()));
+		}
+	}
+	
+	// TODO: add test case
+	@TLFunctionAnnotation("Narrowing conversion from decimal to long value.")
+	public static final Long decimal2long(BigDecimal d) {
+		return d.longValue();
+	}
+
+	class Decimal2LongFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(decimal2long(stack.popDecimal()));
+		}
+	}
+
+	// TODO: add test case
+	@TLFunctionAnnotation("Narrowing conversion from decimal to double value.")
+	public static final Double decimal2double(BigDecimal d) {
+		return d.doubleValue();
+	}
+
+	class Decimal2DoubleFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(decimal2double(stack.popDecimal()));
+		}
+	}
+
+	
+
+	// NUM2BOOL
+	@TLFunctionAnnotation("Converts 0 to false and any other numeric value to true.")
+	public static final Boolean num2bool(int b) {
+		return b != 0;
+	}
+	
+	@TLFunctionAnnotation("Converts 0 to false and any other numeric value to true.")
+	public static final Boolean num2bool(long b) {
+		return b != 0;
+	}
+	
+	@TLFunctionAnnotation("Converts 0 to false and any other numeric value to true.")
+	public static final Boolean num2bool(double b) {
+		return b != 0;
+	}
+	
+	@TLFunctionAnnotation("Converts 0 to false and any other numeric value to true.")
+	public static final Boolean num2bool(BigDecimal b) {
+		return BigDecimal.ZERO.compareTo(b) != 0;
+	}
+
+	class Num2BoolFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			if (actualParams[0].isInteger()) {
+				stack.push(num2bool(stack.popInt()));
+			} else if (actualParams[0].isLong()) {
+				stack.push(num2bool(stack.popLong()));
+			} else if (actualParams[0].isDouble()) {
+				stack.push(num2bool(stack.popDouble()));
+			} else if (actualParams[0].isDecimal()) {
+				stack.push(num2bool(stack.popDecimal()));
+			}
+		}
+		
+	}
+
+	
+	@TLFunctionAnnotation("Converts true to 1 and false to 0.")
+	public static final Integer bool2num(boolean b) {
+		return b ? 1 : 0;
+	}
+	
+	// BOOL2NUM
+	class Bool2NumFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(bool2num(stack.popBoolean()));
+		}
+
+	}
+
+	@TLFunctionAnnotation("Converts string to true if and onle if it is identical to string 'true'. False otherwise")
+	public static final Boolean str2bool(String s) {
+		return "true".equals(s);
+	}
+	
+	// TODO: add test case
+	// STR2BOOL
+	class Str2BoolFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(str2bool(stack.popString()));
+		}
+	}
+
+	
+	// this method should is not annotated as it should not be directly visible in CTL
+	private static final String to_string_internal(Object o) {
+		return o != null ? o.toString() : "null";
+	}
+	
+	@TLFunctionAnnotation("Returns string representation of its argument")
+	public static final String to_string(int i) {
+		return to_string_internal(i);
+	}
+	
+	@TLFunctionAnnotation("Returns string representation of its argument")
+	public static final String to_string(long l) {
+		return to_string_internal(l);
+	}
+	
+	@TLFunctionAnnotation("Returns string representation of its argument")
+	public static final String to_string(double d) {
+		return to_string_internal(d);
+	}
+	
+	@TLFunctionAnnotation("Returns string representation of its argument")
+	public static final String to_string(BigDecimal d) {
+		return to_string_internal(d);
+	}
+	
+	@TLFunctionAnnotation("Returns string representation of its argument")
+	public static final <E> String to_string(List<E> list) {
+		return to_string_internal(list);
+	}
+	
+	@TLFunctionAnnotation("Returns string representation of its argument")
+	public static final <K,V> String to_string(Map<K,V> map) {
+		return to_string_internal(map);
+	}
+	
+	// TODO: add test case
+	// to_string
+	class ToStringFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(to_string_internal(stack.pop()));
+		}
+
+	}
+
+	
+	@TLFunctionAnnotation("Returns date from long that represents milliseconds from epoch")
+	public static final Date long2date(Long l) {
+		return new Date(l);
+	}
+	// TODO: add test case
+	// Long2Date
+	class Long2DateFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(long2date(stack.popLong()));
+		}
+
+	}
+
+	
+	@TLFunctionAnnotation("Returns long that represents milliseconds from epoch to a date")
+	public static final Long date2long(Date d) {
+		return d.getTime();
+	}
+	// TODO: add test case
+	// DATE2LONG
+	class Date2LongFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(date2long(stack.popDate()));
+		}
+
+	}
+
+	// BASE64BYTE
 //	public class Base64ByteFunction implements TLFunctionPrototype {
 //
 //		public Base64ByteFunction() {

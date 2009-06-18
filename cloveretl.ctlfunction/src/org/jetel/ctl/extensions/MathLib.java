@@ -23,344 +23,231 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.math.BigDecimal;
+
+import org.jetel.ctl.Stack;
+import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.extensions.TLFunctionLibrary;
 import org.jetel.ctl.extensions.TLFunctionPrototype;
+import org.jetel.ctl.extensions.StringLib.CharAtFunction;
+import org.jetel.ctl.extensions.StringLib.ChopFunction;
+import org.jetel.ctl.extensions.StringLib.ConcatFunction;
+import org.jetel.ctl.extensions.StringLib.CountCharFunction;
+import org.jetel.ctl.extensions.StringLib.CutFunction;
+import org.jetel.ctl.extensions.StringLib.FindFunction;
+import org.jetel.ctl.extensions.StringLib.GetAlphanumericCharsFunction;
+import org.jetel.ctl.extensions.StringLib.IndexOfFunction;
+import org.jetel.ctl.extensions.StringLib.IsAsciiFunction;
+import org.jetel.ctl.extensions.StringLib.IsBlankFunction;
+import org.jetel.ctl.extensions.StringLib.IsDateFunction;
+import org.jetel.ctl.extensions.StringLib.IsIntegerFunction;
+import org.jetel.ctl.extensions.StringLib.IsLongFunction;
+import org.jetel.ctl.extensions.StringLib.IsNumberFunction;
+import org.jetel.ctl.extensions.StringLib.JoinFunction;
+import org.jetel.ctl.extensions.StringLib.LeftFunction;
+import org.jetel.ctl.extensions.StringLib.LengthFunction;
+import org.jetel.ctl.extensions.StringLib.LowerCaseFunction;
+import org.jetel.ctl.extensions.StringLib.RemoveBlankSpaceFunction;
+import org.jetel.ctl.extensions.StringLib.RemoveDiacriticFunction;
+import org.jetel.ctl.extensions.StringLib.RemoveNonAsciiFunction;
+import org.jetel.ctl.extensions.StringLib.RemoveNonPrintableFunction;
+import org.jetel.ctl.extensions.StringLib.ReplaceFunction;
+import org.jetel.ctl.extensions.StringLib.RightFunction;
+import org.jetel.ctl.extensions.StringLib.SoundexFunction;
+import org.jetel.ctl.extensions.StringLib.SplitFunction;
+import org.jetel.ctl.extensions.StringLib.SubstringFunction;
+import org.jetel.ctl.extensions.StringLib.TranslateFunction;
+import org.jetel.ctl.extensions.StringLib.TrimFunction;
+import org.jetel.ctl.extensions.StringLib.UpperCaseFunction;
 
 
 public class MathLib extends TLFunctionLibrary {
     
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
-		return null;
+		TLFunctionPrototype ret = 
+			"sqrt".equals(functionName) ? new SqrtFunction() :
+			"log".equals(functionName) ? new LogFunction() :
+			"log10".equals(functionName) ? new Log10Function() :
+			"round".equals(functionName) ? new RoundFunction() :
+			"pow".equals(functionName) ? new PowFunction() : 
+			null;
+			
+		if (ret == null) {
+    		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
+    	}
+
+		return ret;
 	}
 	
-//    private static final String LIBRARY_NAME = "Math";
-//    
-//    enum Function {
-//        SQRT("sqrt"),
-//        LOG("log"),
-//        LOG10("log10"),
-//        EXP("exp"),
-//        ROUND("round"),
-//        POW("pow"),
-//        PI("pi"),
-//        E("e"),
-//        RANDOM("random"),
-//        ABS("abs");
-//        
-//        public String name;
-//        
-//        private Function(String name) {
-//            this.name = name;
-//        }
-//        
-//        public static Function fromString(String s) {
-//            for(Function function : Function.values()) {
-//                if(s.equalsIgnoreCase(function.name) || s.equalsIgnoreCase(LIBRARY_NAME + "." + function.name)) {
-//                    return function;
-//                }
-//            }
-//            return null;
-//        }
-//    }
-//    
-//    public  Collection<TLFunctionPrototype> getAllFunctions() {
-//    	List<TLFunctionPrototype> ret = new ArrayList<TLFunctionPrototype>();
-//    	Function[] fun = Function.values();
-//    	for (Function function : fun) {
-//    		ret.add(getFunction(function.name));
-//		}
-//    	
-//    	return ret;
-//    }
-//    
-//    public MathLib() {
-//        super();
-//        
-//    }
-//
-//    public TLFunctionPrototype getFunction(String functionName) {
-//        switch(Function.fromString(functionName)) {
-//        case SQRT: return new SqrtFunction();
-//        case LOG: return new LogFunction();
-//        case LOG10: return new Log10Function();
-//        case EXP: return new ExpFunction();
-//        case ROUND: return new RoundFunction();
-//        case POW: return new PowFunction();
-//        case PI: return new PiFunction();
-//        case E: return new EFunction();
-//        case RANDOM: return new RandomFunction();
-//        case ABS: return new AbsFunction();
-//        default: return null;
-//        }
-//    }
-//    
-//    
-//    // SQRT
-//    class SqrtFunction extends TLFunctionPrototype {
-//        public SqrtFunction() {
-//            super("math", "sqrt", "Square root", 
-//            		new TLType[][] { 
-//            		{ TLTypePrimitive.INTEGER, TLTypePrimitive.LONG, 
-//            		  TLTypePrimitive.DOUBLE, TLTypePrimitive.DECIMAL } }
-//            	, TLTypePrimitive.DOUBLE);
-//        }
-//
-//        @Override
-//        public TLValue execute(TLValue[] params, TLContext context) {
-//            if (params[0].type.isNumeric()) {
-//                TLNumericValue retVal=(TLNumericValue)context.getContext();
-//                try {
-//                    retVal.setValue(Math.sqrt(((TLNumericValue)params[0]).getDouble()));
-//                    return retVal;
-//                } catch (Exception ex) {
-//                    throw new TransformLangExecutorRuntimeException(
-//                            "Error when executing SQRT function", ex);
-//                }
-//            }
-//            throw new TransformLangExecutorRuntimeException(null,
-//                    params, "sqrt - wrong type of literal(s)");
-//        }
-//        
-//        @Override
-//        public TLContext createContext() {
-//            return TLContext.createDoubleContext();
-//        }
-//        
-////        @Override
-////        public TLType checkParameters(TLType[] parameters) {
-////        	if (parameters.length < minParams || parameters.length > maxParams) {
-////				return TLType.ERROR;
-////			}
-////        	
-////        	if (! parameters[0].isNumeric()) {
-////        		return TLType.ERROR;
-////        	}
-////
-////        	return TLTypePrimitive.DOUBLE;
-////        }
-//    }
-//    
-//    // LOG
-//    class LogFunction extends TLFunctionPrototype {
-//        public LogFunction() {
-//            super("math", "log", "Natural logarithm", 
-//            		new TLType[][] { { TLTypePrimitive.INTEGER, TLTypePrimitive.LONG,  
-//          		  TLTypePrimitive.DOUBLE, TLTypePrimitive.DECIMAL} }, TLTypePrimitive.DOUBLE);
-//        }
-//        
-//        @Override
-//        public TLValue execute(TLValue[] params, TLContext context) {
-//            if (params[0].type.isNumeric()) {
-//                TLNumericValue retVal=(TLNumericValue)context.getContext();
-//                try {
-//                    retVal.setValue(Math.log(((TLNumericValue)params[0]).getDouble()));
-//                    return retVal;
-//                } catch (Exception ex) {
-//                    throw new TransformLangExecutorRuntimeException(
-//                            "Error when executing LOG function", ex);
-//                }
-//            }
-//            throw new TransformLangExecutorRuntimeException(null,
-//                    params, "log - wrong type of literal(s)");
-//        }
-//        @Override
-//        public TLContext createContext() {
-//            return TLContext.createDoubleContext();
-//        }
-//        
-////        @Override
-////        public TLType checkParameters(TLType[] parameters) {
-////        	if (parameters.length < minParams || parameters.length > maxParams) {
-////				return TLType.ERROR;
-////			}
-////        	
-////        	if (!parameters[0].isNumeric()) {
-////        		return TLType.ERROR;
-////        	}
-////        	
-////        	return TLTypePrimitive.DOUBLE;
-////        }
-//    }
-//    
-//    // LOG10
-//    class Log10Function extends TLFunctionPrototype {
-//        public Log10Function() {
-//            super("math", "log10", "Base 10 logarithm", 
-//            		new TLType[][] {{ TLTypePrimitive.INTEGER, TLTypePrimitive.LONG,  
-//              		  TLTypePrimitive.DOUBLE, TLTypePrimitive.DECIMAL } }, TLTypePrimitive.DOUBLE);
-//        }
-//        
-//        @Override
-//        public TLValue execute(TLValue[] params, TLContext context) {
-//            if (params[0].type.isNumeric()) {
-//                TLNumericValue retVal=(TLNumericValue)context.getContext();
-//                try {
-//                    retVal.setValue(Math.log10(((TLNumericValue)params[0]).getDouble()));
-//                    return retVal;
-//                } catch (Exception ex) {
-//                    throw new TransformLangExecutorRuntimeException(
-//                            "Error when executing LOG10 function", ex);
-//                }
-//            }
-//            throw new TransformLangExecutorRuntimeException(null,
-//                    params, "log10 - wrong type of literal(s)");
-//        }
-//        @Override
-//        public TLContext createContext() {
-//            return TLContext.createDoubleContext();
-//        }
-//        
-////        @Override
-////        public TLType checkParameters(TLType[] parameters) {
-////        	if (parameters.length != 1) {
-////        		return TLType.ERROR;
-////        	}
-////        	
-////        	if (!parameters[0].isNumeric()) {
-////        		return TLType.ERROR;
-////        	}
-////        	
-////        	return TLTypePrimitive.DOUBLE;
-////        }
-//    }
-// 
-//    // EXP
-//    class ExpFunction extends TLFunctionPrototype {
-//        public ExpFunction() {
-//            super("math", "exp", "Returns exponent", new TLType[][] {
-//            		{ TLTypePrimitive.INTEGER, TLTypePrimitive.LONG,  
-//        		  TLTypePrimitive.DOUBLE, TLTypePrimitive.DECIMAL } }, TLTypePrimitive.DOUBLE);
-//        }
-//
-//        @Override
-//        public TLValue execute(TLValue[] params, TLContext context) {
-//            if (params[0].type.isNumeric()) {
-//                TLNumericValue retVal=(TLNumericValue)context.getContext();
-//                try {
-//                    retVal.setValue(Math.exp(((TLNumericValue)params[0])
-//                                    .getDouble()));
-//                    return retVal;
-//                } catch (Exception ex) {
-//                    throw new TransformLangExecutorRuntimeException(
-//                            "Error when executing EXP function", ex);
-//                }
-//            }
-//            throw new TransformLangExecutorRuntimeException(null,
-//                    params, "exp - wrong type of literal(s)");
-//        }
-//        @Override
-//        public TLContext createContext() {
-//            return TLContext.createDoubleContext();
-//        }
-//        
-////        @Override
-////        public TLType checkParameters(TLType[] parameters) {
-////        	if (parameters.length != 1) {
-////        		return TLType.ERROR;
-////        	}
-////        	
-////        	if (!parameters[0].isNumeric()) {
-////        		return TLType.ERROR;
-////        	}
-////        	
-////        	return TLTypePrimitive.DOUBLE;
-////        }
-//        
-//    }                        
-//
-//    // ROUND
-//    class RoundFunction extends TLFunctionPrototype { 
-//        public RoundFunction() {
-//            super("math", "round", "Returns rounded value", 
-//            		new TLType[][] {{ TLTypePrimitive.INTEGER, TLTypePrimitive.LONG,  
-//              		  TLTypePrimitive.DOUBLE, TLTypePrimitive.DECIMAL } }, TLTypePrimitive.DOUBLE);
-//        }
-//
-//        @Override
-//        public TLValue execute(TLValue[] params, TLContext context) {
-//            if (params[0].type.isNumeric()) {
-//                TLNumericValue retVal=(TLNumericValue)context.getContext();
-//                try {
-//                   retVal.setValue(Math.round(((TLNumericValue)params[0])
-//                                    .getDouble()));
-//                    return retVal;
-//                } catch (Exception ex) {
-//                    throw new TransformLangExecutorRuntimeException(
-//                            "Error when executing ROUND function", ex);
-//                }
-//            }
-//            throw new TransformLangExecutorRuntimeException(null,
-//                    params, "round - wrong type of literal(s)");
-//        }
-//        @Override
-//        public TLContext createContext() {
-//            return TLContext.createDoubleContext();
-//        }
-//        
-////        @Override
-////        public TLType checkParameters(TLType[] parameters) {
-////        	if (parameters.length != 1) {
-////        		return TLType.ERROR;
-////        	}
-////        	
-////        	if (!parameters[0].isNumeric()) {
-////        		return TLType.ERROR;
-////        	}
-////        	
-////        	return TLTypePrimitive.DOUBLE;
-////        }
-//    }                        
-//    
-//    // POW
-//    class PowFunction extends TLFunctionPrototype { 
-//        public PowFunction() {
-//            super("math", "pow", "Calculates power", 
-//            		new TLType[][] {{ TLTypePrimitive.INTEGER, TLTypePrimitive.LONG,  
-//              		  TLTypePrimitive.DOUBLE, TLTypePrimitive.DECIMAL },
-//              		{ TLTypePrimitive.INTEGER, TLTypePrimitive.LONG, 
-//                  		  TLTypePrimitive.DOUBLE, TLTypePrimitive.DECIMAL }
-//              		}, TLTypePrimitive.DOUBLE);
-//        }
-//
-//        @Override
-//        public TLValue execute(TLValue[] params, TLContext context) {
-//            if (params[0].type.isNumeric()) {
-//                TLNumericValue retVal=(TLNumericValue)context.getContext();
-//                try {
-//                    retVal.setValue(Math.pow(((TLNumericValue)params[0]).getDouble(),((TLNumericValue)params[1]).getDouble()));
-//                    return retVal;
-//                } catch (Exception ex) {
-//                    throw new TransformLangExecutorRuntimeException(
-//                            "Error when executing POW function", ex);
-//                }
-//            }
-//            throw new TransformLangExecutorRuntimeException(null,
-//                    params, "pow - wrong type of literal(s)");
-//        }
-//        @Override
-//        public TLContext createContext() {
-//            return TLContext.createDoubleContext();
-//        }
-//        
-////        @Override
-////        public TLType checkParameters(TLType[] parameters) {
-////        	if (parameters.length != 2) { 
-////        		return TLType.ERROR;
-////        	}
-////        	
-////        	if (! parameters[0].isNumeric()) {
-////        		return TLType.ERROR;
-////        	}
-////        	
-////        	if (! parameters[1].isNumeric()) {
-////        		return TLType.ERROR;
-////        	}
-////        	
-////        	return TLTypePrimitive.DOUBLE;
-////        }
-//    }                        
-//    
+    
+	@TLFunctionAnnotation("Square root.")
+	public static final Double sqrt(double i) {
+		return Math.sqrt(i);
+	}
+	
+	@TLFunctionAnnotation("Square root. Decimal is converted into double prior to the operation.")
+	public static final Double sqrt(BigDecimal b) {
+		return sqrt(b.doubleValue());
+	}
+	
+    // SQRT
+    class SqrtFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			
+			if (actualParams[0].isInteger()) {
+				stack.push(sqrt(stack.popInt()));
+				return;
+			} 
+			
+			if (actualParams[0].isLong()) {
+				stack.push(sqrt(stack.popLong()));
+				return;
+			} 
+			
+			if (actualParams[0].isDouble()) {
+				stack.push(sqrt(stack.popDouble()));
+				return;
+			} 
+			
+			if (actualParams[0].isDecimal()) {
+				stack.push(sqrt(stack.popDecimal()));
+				return;
+			}
+			
+		}
+    	
+    }
+
+    
+    @TLFunctionAnnotation("Natural algorithm.")
+    public static final Double log(double d) {
+    	return Math.log(d);
+    }
+    
+    @TLFunctionAnnotation("Natural algorithm. Decimal is converted into double prior to the operation.")
+    public static final Double log(BigDecimal d) {
+    	return log(d.doubleValue());
+    }
+    	
+    // LOG
+    class LogFunction implements TLFunctionPrototype {
+    	public void execute(Stack stack, TLType[] actualParams) {
+			
+			if (actualParams[0].isInteger()) {
+				stack.push(log(stack.popInt()));
+				return;
+			} 
+			
+			if (actualParams[0].isLong()) {
+				stack.push(log(stack.popLong()));
+				return;
+			} 
+			
+			if (actualParams[0].isDouble()) {
+				stack.push(log(stack.popDouble()));
+				return;
+			} 
+			
+			if (actualParams[0].isDecimal()) {
+				stack.push(log(stack.popDecimal()));
+				return;
+			}
+			
+		}
+    }
+    
+    
+    @TLFunctionAnnotation("Base 10 logarithm.")
+    public static final Double log10(double d) {
+    	return Math.log10(d);
+    }
+    
+    @TLFunctionAnnotation("Base 10 logarithm. Decimal is converted into double prior to the operation.")
+    public static final Double log10(BigDecimal d) {
+    	return log10(d.doubleValue());
+    }
+    	
+    // LOG
+    class Log10Function implements TLFunctionPrototype {
+    	public void execute(Stack stack, TLType[] actualParams) {
+			
+			if (actualParams[0].isInteger()) {
+				stack.push(log10(stack.popInt()));
+				return;
+			} 
+			
+			if (actualParams[0].isLong()) {
+				stack.push(log10(stack.popLong()));
+				return;
+			} 
+			
+			if (actualParams[0].isDouble()) {
+				stack.push(log10(stack.popDouble()));
+				return;
+			} 
+			
+			if (actualParams[0].isDecimal()) {
+				stack.push(log10(stack.popDecimal()));
+				return;
+			}
+			
+		}
+    }
+    
+
+    @TLFunctionAnnotation("Returns long value closest to the argument.")
+    public static final Long round(double d) {
+    	return Math.round(d);
+    }
+    
+    @TLFunctionAnnotation("Returns long value closest to the argument. Decimal is converted into double prior to the operation.")
+    public static final Long round(BigDecimal d) {
+    	return round(d.doubleValue()); 
+    }
+    
+    // ROUND
+    class RoundFunction implements TLFunctionPrototype { 
+    	public void execute(Stack stack, TLType[] actualParams) {
+			
+			if (actualParams[0].isDecimal()) {
+				stack.push(round(stack.popDecimal()));
+				return;
+			}
+			
+			stack.push(round(stack.popDouble()));
+		}
+    }                        
+    
+    @TLFunctionAnnotation("Returns the value of the first argument raised to the power of the second argument.")
+    public static final Double pow(double argument, double power) {
+    	return Math.pow(argument, power);
+    }
+    
+    @TLFunctionAnnotation("Returns the value of the first argument raised to the power of the second argument.")
+    public static final Double pow(BigDecimal argument, BigDecimal power) {
+    	return Math.pow(argument.doubleValue(), power.doubleValue());
+    }
+    
+    // POW
+    class PowFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			if (actualParams[0].isDecimal() || actualParams[1].isDecimal()) {
+				final BigDecimal pow = stack.popDecimal();
+				final BigDecimal arg = stack.popDecimal();
+				stack.push(pow(arg,pow));
+				return;
+			}
+			
+			final Double pow = stack.popDouble();
+			final Double arg = stack.popDouble();
+			stack.push(pow(arg,pow));
+		} 
+    	
+    }                        
+    
 //    // PI
 //    class PiFunction extends TLFunctionPrototype { 
 //        public PiFunction() {
