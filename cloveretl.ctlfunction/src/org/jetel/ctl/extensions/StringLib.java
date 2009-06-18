@@ -607,8 +607,7 @@ public class StringLib extends TLFunctionLibrary {
 				final boolean takeNumeric = stack.popBoolean();
 				final boolean takeAlpha = stack.popBoolean();
 				final String input = stack.popString();
-				stack
-						.push(get_alphanumeric_chars(input, takeAlpha,
+				stack.push(get_alphanumeric_chars(input, takeAlpha,
 								takeNumeric));
 			}
 		}

@@ -44,7 +44,12 @@ public class DateLib extends TLFunctionLibrary {
     public TLFunctionPrototype getExecutable(String functionName) {
     	final TLFunctionPrototype ret = 
     		"datediff".equals(functionName) ? new DateDiffFunction() : 
-    		"dateadd".equals(functionName) ? new DateAddFunction() : null;
+    		"dateadd".equals(functionName) ? new DateAddFunction() :
+    		"today".equals(functionName) ? new TodayFunction() :
+    		"zero_date".equals(functionName) ? new ZeroDateFunction() :
+    		"extract_date".equals(functionName) ? new ExtractDateFunction() :
+    		"extract_time".equals(functionName) ? new ExtractTimeFunction() : 
+    		null;
     				
     		
 		if (ret == null) {
@@ -55,82 +60,20 @@ public class DateLib extends TLFunctionLibrary {
 			
     }
     
-//    enum Function {
-//        TODAY("today"), DATEADD("dateadd"), DATEDIFF("datediff"), 
-//        TRUNC("trunc"), TRUNC_DATE("trunc_date");
-//        
-//        public String name;
-//        
-//        private Function(String name) {
-//            this.name = name;
-//        }
-//        
-//        public static Function fromString(String s) {
-//            for(Function function : Function.values()) {
-//                if(s.equalsIgnoreCase(function.name) || s.equalsIgnoreCase(LIBRARY_NAME + "." + function.name)) {
-//                    return function;
-//                }
-//            }
-//            return null;
-//        }
-//    }
-//
-//    public DateLib() {
-//        super();
-//     }
-//
-//    public TLFunctionPrototype getFunction(String functionName) {
-//        switch(Function.fromString(functionName)) {
-//        case TODAY: return new TodayFunction();
-//        case DATEADD: return new DateaddFunction();
-//        case DATEDIFF: return new DatediffFunction();
-//        case TRUNC: return new TruncFunction();
-//        case TRUNC_DATE:return new TruncDateFunction();
-//        default: return null;
-//       }
-//    }
-//    
-//    public  Collection<TLFunctionPrototype> getAllFunctions() {
-//    	List<TLFunctionPrototype> ret = new ArrayList<TLFunctionPrototype>();
-//    	Function[] fun = Function.values();
-//    	for (Function function : fun) {
-//    		ret.add(getFunction(function.name));
-//		}
-//    	
-//    	return ret;
-//    }
-//
-//    // TODAY
-//    class TodayFunction extends TLFunctionPrototype {
-//    	
-//    	public TodayFunction(){
-//    		super("date", "today", "Returns current date and time",
-//    				new TLType[][] { }, TLTypePrimitive.DATETIME, 0, 0);
-//    	}
-//    
-//        @Override
-//        public TLValue execute(TLValue[] params, TLContext context) {
-//            TLDateValue val=(TLDateValue)context.getContext();
-//            val.getDate().setTime(Calendar.getInstance().getTimeInMillis()); 
-//            return  val;
-//        }
-//        
-//        @Override
-//        public TLContext createContext() {
-//            return TLContext.createDateContext();
-//        }
-//        
-////        @Override
-////        public TLType checkParameters(TLType[] parameters) {
-////        	if (parameters.length > 0) {
-////        		return TLType.ERROR;
-////        	}
-////        	
-////        	return TLTypePrimitive.DATETIME;
-////        }
-//    }
-//    
-//    
+
+    @TLFunctionAnnotation("Returns current date and time.")
+    public static final Date today() {
+    	return new Date();
+    }
+
+    // TODAY
+    class TodayFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(today());
+		}
+    	
+    }
     
     @TLFunctionAnnotation("Adds to a component of a date (i.e. month)")
     public static final Date dateadd(Date lhs, Integer shift, DateFieldEnum unit) {
@@ -141,6 +84,7 @@ public class DateLib extends TLFunctionLibrary {
         return c.getTime();
 
     }
+    
     // DATEADD
 	class DateAddFunction implements TLFunctionPrototype {
 		
@@ -217,159 +161,63 @@ public class DateLib extends TLFunctionLibrary {
 
 	}
 	
-	
-//	// TRUNC
-//	
-//	class TruncFunction extends TLFunctionPrototype {
-//
-//		public TruncFunction() {
-//			super("date", "trunc", "Truncates numeric types, dates or list variables", 
-//					new TLType[][] { { TLTypePrimitive.LONG, TLTypePrimitive.DATETIME, TLType.createList(TLType.OBJECT), TLType.createMap(TLType.OBJECT,TLType.OBJECT) } 
-//					}, TLType.OBJECT);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			TruncStore store=(TruncStore)context.getContext();
-//			TLValueType type=params[0].type;
-//			if (store.value==null){
-//				if (type==TLValueType.DATE) {
-//					store.cal=Calendar.getInstance();
-//					store.value=TLValue.create(TLValueType.DATE);
-//				}else if (type.isNumeric()) {
-//					store.value=TLValue.create(TLValueType.LONG);
-//				}else if (type.isArray()){
-//					store.value=TLNullValue.getInstance();
-//				}
-//			}
-//
-//			if (type==TLValueType.DATE ) {
-//	            store.cal.setTime(((TLDateValue)params[0]).getDate());
-//	            store.cal.set(Calendar.HOUR_OF_DAY, 0);
-//	            store.cal.set(Calendar.MINUTE , 0);
-//	            store.cal.set(Calendar.SECOND , 0);
-//	            store.cal.set(Calendar.MILLISECOND , 0);
-//	            
-//	            ((TLDateValue)store.value).getDate().setTime(store.cal.getTimeInMillis());
-//	        }else if (type.isNumeric()){
-//	        	store.value.setValue(params[0]);
-//	        }else if (type.isArray()) {
-//	        	((TLContainerValue)params[0]).clear();
-//	        }else {
-//	            throw new TransformLangExecutorRuntimeException(params,
-//	                    "trunc - wrong type of literal");
-//	        }
-//
-//	        return store.value;
-//	    }
-//	
-//			@Override
-//			public TLContext createContext() {
-//				 TLContext<TruncStore> context = new TLContext<TruncStore>();
-//			        context.setContext(new TruncStore());
-//			        return context;
-//			}
-//			
-//			@Override
-//			public TLType checkParameters(TLType[] parameters) {
-//				if (parameters.length < minParams || parameters.length > maxParams) {
-//					return TLType.ERROR;
-//				}
-//				
-//				if (parameters[0].isNumeric()) {
-//					return TLTypePrimitive.LONG;
-//				}
-//				
-//				if (TLTypePrimitive.DATETIME.canAssign(parameters[0])) {
-//					return TLTypePrimitive.DATETIME;
-//				}
-//				
-//				if (parameters[0].isList()) {
-//					return parameters[0];
-//				}
-//				
-//				if (parameters[0].isMap()) {
-//					return parameters[0];
-//				}
-//				
-//				return TLType.ERROR;
-//			}
-//		}
-//	
-//// TRUNC
-//	
-//	class TruncDateFunction extends TLFunctionPrototype {
-//
-//		public TruncDateFunction() {
-//			super("date", "trunc_date", "Truncates date portion of datetime", 
-//					new TLType[][] { { TLTypePrimitive.DATETIME } }, TLTypePrimitive.DATETIME);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			TruncStore store=(TruncStore)context.getContext();
-//			if (store.value==null){
-//					store.cal=Calendar.getInstance();
-//					store.value=TLValue.create(TLValueType.DATE);
-//			}
-//
-//			if (params[0].type==TLValueType.DATE ) {
-//	            store.cal.setTime(((TLDateValue)params[0]).getDate());
-//	            store.cal.set(Calendar.YEAR,0);
-//	            store.cal.set(Calendar.MONTH,0);
-//	            store.cal.set(Calendar.DAY_OF_MONTH,1);
-//	            
-//	            ((TLDateValue)store.value).getDate().setTime(store.cal.getTimeInMillis());
-//	        }else {
-//	            throw new TransformLangExecutorRuntimeException(params,
-//	                    "trunc - wrong type of literal");
-//	        }
-//
-//	        return store.value;
-//	    }
-//	
-//			@Override
-//			public TLContext createContext() {
-//				 TLContext<TruncStore> context = new TLContext<TruncStore>();
-//			        context.setContext(new TruncStore());
-//			        return context;
-//			}
-//			
-////			@Override
-////			public TLType checkParameters(TLType[] parameters) {
-////				if (parameters.length < minParams || parameters.length > maxParams) {
-////					return TLType.ERROR;
-////				}
-////				
-////				if (parameters[0] != TLTypePrimitive.DATETIME) {
-////					return TLType.ERROR;
-////				}
-////				
-////				return TLTypePrimitive.DATETIME;
-////			}
-//		}
-//	
-//	
-//	
-//	
-//	/*General data structures*/
-//	
-//	public static class CalendarStore {
-//		Calendar calStart;
-//		Calendar calEnd;
-//		TLValue value;
-//
-//		public CalendarStore(TLValueType valType) {
-//			calStart = Calendar.getInstance();
-//			calEnd = Calendar.getInstance();
-//			value = TLValue.create(valType);
-//		}
-//	
-//	}
-//	
-//	public static class TruncStore {
-//		Calendar cal;
-//		TLValue value;
-//	}
+    public static final Date zero_date() {
+    	return new Date(0L);
+    }
+    
+    class ZeroDateFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(zero_date());
+		}
+    }
+    
+
+    
+    // extract_date
+    @TLFunctionAnnotation("Extracts only date portion from date-time value, setting all time fields to zero.")
+	public static final Date extract_date(Date d) {
+    	// this hardcore code is necessary, subtracting milliseconds 
+    	// or using Calendar.clear() does not seem to handle light-saving correctly
+    	Calendar orig = Calendar.getInstance();
+    	orig.setTime(d);
+    	Calendar ret = Calendar.getInstance();
+    	ret.clear();
+    	for (int field  : new int[]{Calendar.DAY_OF_MONTH,Calendar.MONTH, Calendar.YEAR}) {
+    		ret.set(field, orig.get(field));
+    	}
+    	return ret.getTime();
+    }
+    
+    // TODO: add test case
+    class ExtractDateFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(extract_date(stack.popDate()));
+		}
+	}
+
+    // extract_time
+    @TLFunctionAnnotation("Extracts only time portion from date-time value, clearing all date fields.")
+	public static final Date extract_time(Date d) {
+    	// this hardcore code is necessary, subtracting milliseconds 
+    	// or using Calendar.clear() does not seem to handle light-saving correctly
+    	Calendar orig = Calendar.getInstance();
+    	orig.setTime(d);
+    	Calendar ret = Calendar.getInstance();
+    	ret.clear();
+    	for (int field  : new int[]{Calendar.HOUR_OF_DAY,Calendar.MINUTE, Calendar.SECOND, Calendar.MILLISECOND}) {
+    		ret.set(field, orig.get(field));
+    	}
+    	return ret.getTime();
+    }
+    
+    // TODO: add test case
+    class ExtractTimeFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(extract_time(stack.popDate()));
+		}
+	}
 
 }
