@@ -8,6 +8,7 @@
 <Node enabled="enabled" guiHeight="25" guiName="Denormalize" guiWidth="50" guiX="366" guiY="17" id="DENORMALIZE" key="EmployeeID" order="Asc" type="DENORMALIZER">
 <attr name="denormalize">
 import org.jetel.component.denormalize.DataRecordDenormalize;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.data.*;
 
 public class DenormalizeTestInline extends DataRecordDenormalize {
@@ -16,6 +17,9 @@ public class DenormalizeTestInline extends DataRecordDenormalize {
 	private int employeeID;
 
 	public DenormalizeTestInline() {
+	}
+
+	public void setGraph(TransformationGraph graph) {
 	}
 
 	public int append(DataRecord inRecord) {
