@@ -2,7 +2,8 @@ package org.jetel.graph;
 
 import java.util.List;
 
-import org.jetel.graph.XmlCtlDataUtil.XmlData;
+import org.jetel.util.XmlCtlDataUtil;
+import org.jetel.util.XmlCtlDataUtil.XmlData;
 
 import junit.framework.TestCase;
 
