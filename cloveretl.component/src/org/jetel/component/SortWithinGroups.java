@@ -146,7 +146,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 29th April 2009
+ * @version 24th June 2009
  * @since 26th September 2008
  */
 public class SortWithinGroups extends Node {
@@ -441,6 +441,7 @@ public class SortWithinGroups extends Node {
         DoubleRecordBuffer inputRecords = new DoubleRecordBuffer(inputPort.getMetadata());
 
         if (inputPort.readRecord(inputRecords.getCurrent()) != null) {
+            dataRecordSorter.put(inputRecords.getCurrent());
             inputRecords.swap();
 
             while (runIt && inputPort.readRecord(inputRecords.getCurrent()) != null) {
@@ -456,7 +457,6 @@ public class SortWithinGroups extends Node {
                 }
 
                 dataRecordSorter.put(inputRecords.getCurrent());
-
                 inputRecords.swap();
 
                 SynchronizeUtils.cloverYield();
@@ -464,7 +464,7 @@ public class SortWithinGroups extends Node {
 
             dataRecordSorter.sort();
 
-            while (dataRecordSorter.get(dataRecordBuffer)) {
+            while (runIt && dataRecordSorter.get(dataRecordBuffer)) {
                 writeRecordBroadcastDirect(dataRecordBuffer);
                 dataRecordBuffer.clear();
             }

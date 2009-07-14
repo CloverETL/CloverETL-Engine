@@ -39,9 +39,9 @@ public class DoubleRecordBuffer {
     private int previousIndex = 1;
 
     /**
-     * Constructs an instance of the <code>DoubleRecordBuffer</code> for the given data record meta data.
+     * Constructs an instance of the <code>DoubleRecordBuffer</code> for the given data record metadata.
      *
-     * @param metadata meta data of data records that will be stored
+     * @param metadata metadata of data records that will be stored
      */
     public DoubleRecordBuffer(DataRecordMetadata metadata) {
         for (int i = 0; i < dataRecords.length; i++) {

@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -51,6 +50,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -217,7 +217,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 				if (libraries != null){
 					prevCl = Thread.currentThread().getContextClassLoader();
 					// Create the class loader by using the given URL
-					URLClassLoader loader = new URLClassLoader( librariesUrls, prevCl );
+					GreedyURLClassLoader loader = new GreedyURLClassLoader( librariesUrls, prevCl );
 				    // Save the class loader so that you can restore it later
 				    Thread.currentThread().setContextClassLoader(loader);
 				}
@@ -359,6 +359,7 @@ public class JmsConnection extends GraphElement implements IConnection {
         try {
         	if (connection != null)
         		connection.close();
+        	connection = null;
 		} catch (JMSException e1) {
 			// ignore it, the connection is probably already closed
 		}

@@ -42,9 +42,10 @@ public class TypedProperties extends Properties {
 	private static final long serialVersionUID = -3251111555515215464L;
 	
 	private PropertyRefResolver propertyRefResolver;
+	private PropertyRefResolver localPropertyRefResolver;
 	
     public TypedProperties() {
-        super();
+        this(null, (Properties) null);
     }
     
     /**
@@ -80,6 +81,8 @@ public class TypedProperties extends Properties {
         if(refProperties != null) {
         	propertyRefResolver = new PropertyRefResolver(refProperties);
         }
+        
+        localPropertyRefResolver = new PropertyRefResolver(this); 
     }
 
     /**
@@ -182,6 +185,10 @@ public class TypedProperties extends Properties {
     }
     
     private String resolvePropertyReferences(String s) {
+    	if (s != null) {
+    		s = localPropertyRefResolver.resolveRef(s);
+    	}
+    	
     	if(propertyRefResolver != null && s != null) {
     		return propertyRefResolver.resolveRef(s);
     	} else {

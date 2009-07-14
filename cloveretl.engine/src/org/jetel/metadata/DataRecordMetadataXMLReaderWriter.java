@@ -337,15 +337,17 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			if (field != null) {
 
 			    Element fieldElement = doc.createElement(FIELD_ELEMENT);
+			    String delimiterStr = StringUtils.specCharToString(field.getDelimiter());
+			    
 				metadataElement.appendChild(fieldElement);
 
 				fieldElement.setAttribute(NAME_ATTR, field.getName());
 			    fieldElement.setAttribute(TYPE_ATTR, DataFieldMetadata.type2Str(field.getType()));
 
 				fieldElement.setAttribute(SHIFT_ATTR, String.valueOf(field.getShift()));
-				if (record.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
-					fieldElement.setAttribute(DELIMITER_ATTR,
-					        StringUtils.specCharToString(field.getDelimiter()));
+				if (record.getRecType() == DataRecordMetadata.DELIMITED_RECORD 
+						&& !StringUtils.isEmpty(delimiterStr)) {
+					fieldElement.setAttribute(DELIMITER_ATTR, delimiterStr);
 				} else {
 					fieldElement.setAttribute(SIZE_ATTR, String.valueOf(field.getSize()));
 				}
@@ -480,9 +482,11 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		}
 
 		char rt;
-		if(recordType.equalsIgnoreCase("delimited")) rt = DataRecordMetadata.DELIMITED_RECORD;
-		else if(recordType.equalsIgnoreCase("fixed")) rt = DataRecordMetadata.FIXEDLEN_RECORD;
-		else rt = DataRecordMetadata.MIXED_RECORD;
+		if (recordType.equalsIgnoreCase("delimited")) rt = DataRecordMetadata.DELIMITED_RECORD;
+		else if (recordType.equalsIgnoreCase("fixed")) rt = DataRecordMetadata.FIXEDLEN_RECORD;
+		else if (recordType.equalsIgnoreCase("mixed")) rt = DataRecordMetadata.MIXED_RECORD;
+		else throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
+				"Unknown record type '" + recordType + "'. One of these options is supported delimited|fixed|mixed.");
 
 		recordMetadata = new DataRecordMetadata(recordName, rt);
 		if (recLocaleStr != null) {

@@ -21,6 +21,7 @@ package org.jetel.component.jms;
 
 import java.util.Properties;
 
+import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
@@ -33,7 +34,9 @@ import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * Class transforming data records to JMS messages (TextMessage). Message body may be filled with textual
- * representation of one field of the record. All the other fields are saved using string properties in
+ * representation of one field of the record. You can specify name of such field by component attribute "bodyField". 
+ * 
+ * All the other fields are saved using string properties in
  * the msg header. Property names are same as field names. Values contain textual representation of field values.
  * Last message has same format as all the others. Terminating message is not used.
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
@@ -41,6 +44,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @see javax.jms.TextMessage
  */
 public class DataRecord2JmsMsgProperties extends DataRecord2JmsMsgBase {
+	private static final String DEFAULT_BODYFIELD_VALUE = "bodyField";
 	private final String PROPNAME_BODYFIELD = "bodyField";
 	// index of field to be represented by message body.
 	protected int bodyField;
@@ -52,11 +56,16 @@ public class DataRecord2JmsMsgProperties extends DataRecord2JmsMsgBase {
 		super.init(metadata, session, props);
 		String bodyFieldName = props.getProperty(PROPNAME_BODYFIELD);
 		if (bodyFieldName == null) {
-			bodyField = -1;
+			// no bodyField specified - try default
+			int bodyFieldDefault = metadata.getFieldPosition(DEFAULT_BODYFIELD_VALUE);
+			if (bodyFieldDefault >= 0)
+				bodyField = bodyFieldDefault;
+			else
+				bodyField = -1;
 		} else {
 			bodyField = metadata.getFieldPosition(bodyFieldName);
 			if (bodyField < 0) {
-				throw new ComponentNotReadyException("Invalid field name");
+				throw new ComponentNotReadyException("Invalid body field name");
 			}
 		}
 	}

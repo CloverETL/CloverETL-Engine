@@ -38,6 +38,7 @@ public class RecordTransformCommonTL {
     public static final String FINISHED_FUNCTION_NAME="finished";
     public static final String INIT_FUNCTION_NAME="init";
     public static final String RESET_FUNCTION_NAME="reset";
+    public static final String GET_MESSAGE_FUNCTION_NAME="getMessage";
     
     protected TransformationGraph graph;
     protected Log logger;
@@ -54,13 +55,22 @@ public class RecordTransformCommonTL {
     }
 
 	/**
-	 *  Returns description of error if one of the methods failed
-	 *
-	 * @return    Error message
-	 * @since     April 18, 2002
+	 * @return an error message if one of the methods failed or if the corresponding CTL function returned one
 	 */
 	public String getMessage() {
-		return errorMessage;
+		if (errorMessage != null) {
+			return errorMessage;
+		}
+
+		TLValue result = null;
+
+		try {
+			result = wrapper.execute(GET_MESSAGE_FUNCTION_NAME, null);
+        } catch (JetelException exception) {
+            // OK, don't do anything, function getMessage() is not necessary
+        }
+
+        return ((result != null) ? result.toString() : null);
 	}
 	
 	/* (non-Javadoc)

@@ -74,6 +74,9 @@ public class RecordTransformTL extends RecordTransformCommonTL implements Record
  	}
 
 	public int transform(DataRecord[] inputRecords, DataRecord[] outputRecords) throws TransformException {
+		// set the error message to null so that the inherited getMessage() method works correctly if no error occurs
+		errorMessage = null;
+
 		semiResult = wrapper.executePreparedFunction(inputRecords, outputRecords, null);
 
 		if (semiResult == null || semiResult == TLBooleanValue.TRUE) {

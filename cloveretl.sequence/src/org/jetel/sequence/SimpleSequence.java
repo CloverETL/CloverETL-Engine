@@ -128,8 +128,8 @@ public class SimpleSequence extends GraphElement implements Sequence {
      *
      * @param  configFilename  properties filename containing definition of seqeunce (properties file)
      */
-    public SimpleSequence(String id, String configFilename) {
-        super(id);
+    public SimpleSequence(String id, TransformationGraph graph, String configFilename) {
+        super(id, graph);
         this.configFileName = configFilename;
         
         int start = 0;
@@ -345,7 +345,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
         try {
         	String id = xattribs.getString(XML_ID_ATTRIBUTE);
         	if (xattribs.exists(XML_SEQCONFIG_ATTRIBUTE)) {
-        		return new SimpleSequence(id, xattribs.getString(XML_SEQCONFIG_ATTRIBUTE));
+        		return new SimpleSequence(id, graph, xattribs.getString(XML_SEQCONFIG_ATTRIBUTE));
         	} else {
         		return new SimpleSequence(
         				id,

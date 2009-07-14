@@ -12,6 +12,12 @@
 	  </classpath>
 	</taskdef>
 	
+	<taskdef resource="cz/mathan/ant/contrib/taskdef.properties">
+	  <classpath>
+	    <pathelement location="${dir.tools}/mathan-ant-contrib.jar"/>
+	  </classpath>
+	</taskdef>
+	
 	<!-- ProGuard task definition -->
 	<taskdef resource="proguard/ant/task.properties" classpath="${dir.tools}/proguard.jar" />
 	    	
@@ -92,6 +98,10 @@
 		<include name="**/*.jar"/>
 	</fileset>
 
+	<fileset id="engine-tools" dir="${dir.tools}">
+		<include name="**/*.jar"/>
+	</fileset>
+	
 	<path id="cp.cobertura">
 	    <fileset dir="${dir.cobertura}">
 	        <include name="*.jar" />
@@ -126,6 +136,9 @@
 			<property name="dir.dist" value="${dir.package}"/>
 			<property name="version.full" value="${version.full}"/>
 			<property name="plugin.obfuscate" value="${plugin.obfuscate}"/>
+			<property name="java.src.header.file" value="${java.src.header.file}"/>
+			<property name="java.src.exclude" value="${java.src.exclude}"/>
+			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
 		</ant>
 	</target>
 
@@ -156,6 +169,14 @@
 		<copy todir="${src.distribution.dir.engine}/src">
 			<fileset dir="${dir.src}" />
 		</copy>
+		<if><not><equals arg1="${java.src.header.file}" arg2="" trim="true"/></not>
+			<then>
+				<echo>Changing license of all files - license file ${java.src.header.file}</echo> 
+				<fileheading heading="${java.src.header.file}">
+					<fileset dir="${src.distribution.dir.engine}/src" includes="**/*.java"/>
+				</fileheading>
+			</then>
+		</if>
 
 		<copy todir="${src.distribution.dir.engine}/docs">
 			<fileset dir="${dir.docs}" />
@@ -192,9 +213,11 @@
 			<fileset file="readme.src.txt" />
 			<fileset file="readme.bin.txt" />
 		</copy>
-		<copy todir="${src.distribution.dir.engine}" overwrite="true">
-			<fileset file="build.properties" />
-		</copy>
+		
+		<copy file="build.properties" tofile="${src.distribution.dir.engine}/build.properties" overwrite="true"/>
+		<replace file="${src.distribution.dir.engine}/build.properties">
+			<replacefilter token="additional.plugin.list=" value="additional.plugin.list=${additional.plugin.list}"/>
+		</replace>
 		<echo file="${src.distribution.dir.engine}/build.properties" append="true" >
 
 defined.version.suffix=release
@@ -224,6 +247,9 @@ defined.version.suffix=release
 		<ant dir="../${plugin.dir}" target="dist.src" inheritAll="false">
 			<property name="dist.src" value="${dir.distprepare.src}/cloverETL"/>
 			<property name="version.full" value="${version.full}"/>
+			<property name="java.src.header.file" value="${java.src.header.file}"/>
+			<property name="java.src.exclude" value="${java.src.exclude}"/>
+			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
 		</ant>
 	</target>
 
@@ -509,6 +535,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<classpath>
 				<fileset refid="engine-libs"/>
 			</classpath>
+			<excludepackage name="${java.src.exclude}"/>
 			<doclet name="com.sun.tools.doclets.standard.Standard">
 				<param name="-breakiterator" value="on" />
 				<!-- Following tag definition is here to get rid of complains produced by standard doclet-->
@@ -608,16 +635,16 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 	<target name="reports" depends="reporttests,findbugs-html,coverage-html">
 	</target>
 	
-	<target name="reports-hudson" depends="runtests-scenario-after-commit,reporttests,findbugs-xml,findbugs-html,javadoc">		
+	<target name="reports-hudson" depends="runtests,runtests-scenario-after-commit,javadoc">
 	</target>
 
-	<target name="reports-hudson-coverage" depends="runtests-scenario-coverage,runtests-coverage,coverage-html,coverage-xml">		
+	<target name="reports-hudson-detail" depends="runtests-scenario-coverage,runtests-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins">		
 	</target>
 
 	<target name="night-hudson" depends="runtests-scenario-night">		
 	</target>
 
-	<target name="compile-tests" depends="init">
+	<target name="compile-tests" depends="compile">
 		<mkdir dir="${dir.classestest}"/>
 		<javac debug="true" destdir="${dir.classestest}" target="1.5" source="1.5" encoding="UTF-8">
 			<classpath>
@@ -653,6 +680,9 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
 			<property name="cobertura.ser" value="${cobertura.ser}"/>
 			<property name="version.full" value="${version.full}"/>
+			<property name="java.src.header.file" value="${java.src.header.file}"/>
+			<property name="java.src.exclude" value="${java.src.exclude}"/>
+			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
 		</ant>
 	</target>
 
@@ -702,7 +732,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		</junit>
 	</target>
 	
-	<target name="runtests-plugins" depends="compile-tests">
+	<target name="runtests-plugins" depends="compile-tests,build-plugins">
 		<mkdir dir="${dir.coverage.plugins}"/>
 		<foreach list="${plugin.list}" inheritall="true" target="runtests-plugin" param="plugin.dir"/>
 	</target>
@@ -714,6 +744,9 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<property name="dir.engine.classestest" value="${dir.classestest}"/>
 			<property name="version.full" value="${version.full}"/>
 			<property name="test.cloveretl.plugins" value="${test.cloveretl.plugins}"/>
+			<property name="java.src.header.file" value="${java.src.header.file}"/>
+			<property name="java.src.exclude" value="${java.src.exclude}"/>
+			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>			
 		</ant>
 	</target>
 	
@@ -731,6 +764,9 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<property name="cobertura.ser" value="${cobertura.ser}"/>
 			<property name="version.full" value="${version.full}"/>
 			<property name="test.cloveretl.plugins" value="${test.cloveretl.plugins}"/>
+			<property name="java.src.header.file" value="${java.src.header.file}"/>
+			<property name="java.src.exclude" value="${java.src.exclude}"/>
+			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
 		</ant>
 	</target>
 	
@@ -804,6 +840,11 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<class location="${dir.classestest}"/>
 			<sourcePath path="${dir.src}" />
 			<sourcePath path="${dir.src.test}" />
+			<auxclasspath path="${tools}"/>
+			<auxClasspath>
+				<fileset refid="engine-libs"/>
+				<fileset refid="engine-tools"/>
+			</auxClasspath>
 		</findbugs>
 	</target>
 	
@@ -821,6 +862,11 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<class location="${dir.classestest}"/>
 			<sourcePath path="${dir.src}" />
 			<sourcePath path="${dir.src.test}" />
+			<auxclasspath path="${tools}"/>
+			<auxClasspath>
+				<fileset refid="engine-libs"/>
+				<fileset refid="engine-tools"/>
+			</auxClasspath>
 		</findbugs>
 	</target>
 	

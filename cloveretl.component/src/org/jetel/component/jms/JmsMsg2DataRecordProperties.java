@@ -19,20 +19,30 @@
 */
 package org.jetel.component.jms;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Class transforming JMS messages (TextMessage) to data records. Message body may be filled with textual
- * representation of one field of the record. All the other fields are saved using string properties in
+ * Class transforming JMS messages (TextMessage or BytesMessage) to data records. One field of the record may be filled by body of the message. 
+ * You can specify name of this field by component attribute "bodyField". 
+ * If message is of type BytesMessage, use attribute "msgCharset" to specify encoding of characters in the message.  
+ * 
+ * All the other fields are saved using string properties in
  * the msg header. Property names are same as respective field names. Values contain textual representation of field values.
  * Last message has same format as all the others. Terminating message is not supported.
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
@@ -40,12 +50,20 @@ import org.jetel.metadata.DataRecordMetadata;
  * @see javax.jms.TextMessage
  */
 public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
+	private static final String DEFAULT_BODYFIELD_VALUE = "bodyField";
 	private final String PROPNAME_BODYFIELD = "bodyField";
+	private final String PROPNAME_CHARSET = "msgCharset";
 	
 	// index of field to be represented by message body.
 	protected int bodyField;
 
 	protected DataRecord record;
+
+	/**
+	 * Used for conversion to character data.
+	 */
+	protected CharsetDecoder decoder = null;
+	protected Charset usedByteMsgCharset = null;
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.component.JmsMsg2DataRecordBase#init(org.jetel.metadata.DataRecordMetadata, java.util.Properties)
@@ -54,13 +72,25 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 		super.init(metadata, props);
 		String bodyFieldName = props.getProperty(PROPNAME_BODYFIELD);
 		if (bodyFieldName == null) {
-			bodyField = -1;
+			// no bodyField specified - try default
+			int bodyFieldDefault = metadata.getFieldPosition(DEFAULT_BODYFIELD_VALUE);
+			if (bodyFieldDefault >= 0)
+				bodyField = bodyFieldDefault;
+			else
+				bodyField = -1;
 		} else {
 			bodyField = metadata.getFieldPosition(bodyFieldName);
 			if (bodyField < 0) {
-				throw new ComponentNotReadyException("Invalid field name");
+				throw new ComponentNotReadyException("Invalid bodyField name");
 			}
 		}
+		
+		String byteMsgCharset = props.getProperty(PROPNAME_CHARSET);
+		if (byteMsgCharset == null)  
+			usedByteMsgCharset = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER); 
+		else
+			usedByteMsgCharset = Charset.forName(byteMsgCharset);
+		decoder = usedByteMsgCharset.newDecoder();
 
 		record = new DataRecord(metadata);
 		record.init();
@@ -85,10 +115,26 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 			}
 		}
 		if (bodyField != -1) {
-			if (!(msg instanceof TextMessage)) {
-				throw new JMSException("Incoming message is supposed to be TextMessage but it isn't");
-			}
-			record.getField(bodyField).fromString(((TextMessage)msg).getText());
+			if (msg instanceof TextMessage) {
+				record.getField(bodyField).fromString(((TextMessage)msg).getText());
+			} else if (msg instanceof BytesMessage) {
+				//BytesMessage bmsg = session.createBytesMessage();
+				//bmsg.writeBytes( record.getField(bodyField).toString().getBytes() );
+				
+				BytesMessage bmsg = (BytesMessage)msg;
+				byte[] buffer = new byte[(int)bmsg.getBodyLength()];
+				int readBytes = bmsg.readBytes(buffer);
+				if (readBytes != (int)bmsg.getBodyLength())
+					throw new JMSException("Difference in read byte array. Expected lenght:"+bmsg.getBodyLength()+" read:"+readBytes);
+				ByteBuffer dataBuffer = ByteBuffer.wrap(buffer);
+				try {
+					record.getField(bodyField).fromByteBuffer(dataBuffer, decoder);
+				} catch (CharacterCodingException e) { // convert it to bad-format exception
+					throw new BadDataFormatException( "Invalid encoding of characters in message body. Used charset:"+usedByteMsgCharset);
+				}
+			} else
+				throw new JMSException("Incoming message is supposed to be TextMessage or BytesMessage, but it is "+msg.getClass().getCanonicalName());
+
 		}
 		return record;
 	}

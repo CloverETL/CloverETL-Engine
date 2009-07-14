@@ -30,6 +30,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -573,5 +576,68 @@ public class SQLUtil {
 		}
 	}
 
+	/**
+	 * Searches select clause for function calls or other unnamed fields and generates
+	 * names for them
+	 * @param select
+	 * @return
+	 */
+	static String SELECT_KW = "select";
+	static Pattern FROM_KW = Pattern.compile("\\s+from\\s+");
+	static String selectDelim = ",";
+	public static String removeUnnamedFields(String select, JdbcSpecific specific) {
+		if (select == null) {
+			return null;
+		}
+		
+		String selectlc = select.toLowerCase();
+		int selectKwOffset = 0;
+		
+		int fromOffset;
+		int contentOffset;
+		String selectPart;
+		String parts[];
+		int starti = 0;
+		
+		StringBuilder newQuery = new StringBuilder();
+		
+		while((selectKwOffset = selectlc.indexOf(SELECT_KW, selectKwOffset)) >= 0) {
+			contentOffset = selectKwOffset + SELECT_KW.length();
+			newQuery.append(select.substring(starti, contentOffset));
+			selectPart = select.substring(contentOffset);
+			Matcher m = FROM_KW.matcher(selectPart);
+			if (m.find()) {
+				selectPart = selectPart.substring(0, m.start());
+			}
+
+			parts = selectPart.split(selectDelim);
+			StringBuilder newSelectPart = new StringBuilder();
+			for(int i = 0; parts != null && i < parts.length; i++) {
+				
+				if (
+						parts[i].trim().endsWith(")")
+						||
+						(specific != null && specific.isLiteral(parts[i]))
+					) {
+					parts[i] += " as AUTOCOLUMN" + String.valueOf(Math.round(Math.random() * 100000));
+				}
+				
+				if (i > 0) {
+					newSelectPart.append(selectDelim);
+				}
+				newSelectPart.append(parts[i]);
+				
+			}
+
+			newQuery.append(newSelectPart);
+			
+			selectKwOffset++;
+			starti = contentOffset + selectPart.length();
+		}
+		newQuery.append(select.substring(starti));
+		
+		return newQuery.toString();
+	}
+	
 }
 

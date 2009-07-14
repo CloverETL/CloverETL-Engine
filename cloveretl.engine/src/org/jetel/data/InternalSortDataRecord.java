@@ -93,6 +93,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
 		// allocate buffer for storing values
 		//dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 		key = new RecordOrderedKey(keyItems, sortOrderings, metadata);
+		key.setEqualNULLs(true);
 		key.init();
 //		sortOrderAscending = sortAscending;
 		recCounter=lastFound=currentColIndex= 0;
@@ -224,6 +225,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
         }else{
             comparator=new RecordOrderedComparator(key.getKeyFields(), this.sortOrderings);
         }
+        comparator.setEqualNULLs(true);
 	    DataRecordCol recordArray;
 	    for (Iterator iterator=recordColList.iterator();iterator.hasNext();){
 	        recordArray=((DataRecordCol)iterator.next());

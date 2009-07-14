@@ -375,7 +375,7 @@ public class DataReader extends Node {
 			aDataReader = new DataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_FILE_ATTRIBUTE),
 					xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
-					xattribs.getBoolean(XML_VERBOSE_ATTRIBUTE, true));
+					xattribs.getBoolean(XML_VERBOSE_ATTRIBUTE, false));
 			aDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
 			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
 				aDataReader.parser.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
@@ -528,7 +528,9 @@ public class DataReader extends Node {
 	public synchronized void free() {
 		super.free();
     	storeValues();
-		reader.close();
+    	if (reader != null) {
+    		reader.close();
+    	}
 	}
 	
     /**

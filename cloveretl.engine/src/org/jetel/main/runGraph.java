@@ -38,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
@@ -97,6 +98,7 @@ import org.jetel.util.file.FileUtils;
  *  <tr><td nowrap>-stdin</td><td>load graph layout from STDIN</td></tr>
  *  <tr><td nowrap>-loghost</td><td>define host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445</td></tr>
  *  <tr><td nowrap>-checkconfig</td><td>only check graph configuration</td></tr>
+ *  <tr><td nowrap>-skipcheckconfig</td><td>skip checking of graph configuration</td></tr>
  *  <tr><td nowrap>-noJMX</td><td>this switch turns off sending graph tracking information; this switch is recommended if the tracking information are not necessary</td></tr>
  *  <tr><td nowrap>-config <i>filename</i></td><td>load default engine properties from specified file</td></tr>
  *  <tr><td nowrap>-nodebug</td><td>turns off all runtime debugging e.g edge debugging</td></tr>
@@ -123,6 +125,7 @@ public class runGraph {
     public final static String LOAD_FROM_STDIN_SWITCH = "-stdin";
     public final static String LOG_HOST_SWITCH = "-loghost";
     public final static String CHECK_CONFIG_SWITCH = "-checkconfig";
+    public final static String SKIP_CHECK_CONFIG_SWITCH = "-skipcheckconfig";
     public final static String NO_JMX = "-noJMX";
     public final static String CONFIG_SWITCH = "-config";
     public final static String NO_DEBUG_SWITCH = "-nodebug";
@@ -131,6 +134,7 @@ public class runGraph {
     public final static String WAIT_FOR_JMX_CLIENT_SWITCH = "-waitForJMXClient";
     public final static String MBEAN_NAME = "-mbean";
     public final static String DICTIONARY_VALUE_DEFINITION_SWITCH = "-V:";
+    public final static String CLOVER_CLASS_PATH = "-classpath";
 	
 	/**
 	 *  Description of the Method
@@ -153,7 +157,9 @@ public class runGraph {
         boolean waitForJMXClient = GraphRuntimeContext.DEFAULT_WAIT_FOR_JMX_CLIENT;
         boolean useJMX = GraphRuntimeContext.DEFAULT_USE_JMX;
         boolean debugMode = GraphRuntimeContext.DEFAULT_DEBUG_MODE;
+        boolean skipCheckConfig = GraphRuntimeContext.DEFAULT_SKIP_CHECK_CONFIG;
         String debugDirectory = null;
+        String classPathsString = null;
         
         List<SerializedDictionaryValue> dictionaryValues = new ArrayList<SerializedDictionaryValue>();
         
@@ -199,6 +205,10 @@ public class runGraph {
                 i++;
                 String logLevelString = args[i];
                 logLevel = Level.toLevel(logLevelString, Level.DEBUG);
+                
+            } else if (args[i].startsWith(CLOVER_CLASS_PATH)){
+                i++;
+                classPathsString = args[i];
             } else if (args[i].startsWith(PROPERTY_DEFINITION_SWITCH)) {
                 // String[]
                 // nameValue=args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"").split("=");
@@ -229,6 +239,8 @@ public class runGraph {
                 logHost = args[i];
             } else if (args[i].startsWith(CHECK_CONFIG_SWITCH)) {
                 onlyCheckConfig = true;
+            } else if (args[i].startsWith(SKIP_CHECK_CONFIG_SWITCH)) {
+                skipCheckConfig = true;
             } else if (args[i].startsWith(WAIT_FOR_JMX_CLIENT_SWITCH)) {
                 waitForJMXClient = true;
             } else if (args[i].startsWith(MBEAN_NAME)){
@@ -283,9 +295,14 @@ public class runGraph {
         if (trackingInterval > 0) runtimeContext.setTrackingInterval(trackingInterval);
         runtimeContext.setPassword(password);
         runtimeContext.setWaitForJMXClient(waitForJMXClient);
+        runtimeContext.setSkipCheckConfig(skipCheckConfig);
         runtimeContext.setUseJMX(useJMX);
         runtimeContext.setDebugMode(debugMode);
         runtimeContext.setDebugDirectory(debugDirectory);
+    	String[] paths = null;
+    	if (classPathsString != null)
+            paths = classPathsString.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+        runtimeContext.setClassPaths(paths);
         
         // prepare input stream with XML graph definition
         InputStream in = null;
@@ -450,6 +467,7 @@ public class runGraph {
         System.out.println("-stdin\t\t\tload graph definition from STDIN");
         System.out.println("-loghost\t\tdefine host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445");
         System.out.println("-checkconfig\t\tonly check graph configuration");
+        System.out.println("-skipcheckconfig\t\tskip checking of graph configuration");
         System.out.println("-noJMX\t\t\tturns off sending graph tracking information");
         System.out.println("-config <filename>\t\tload default engine properties from specified file");
         System.out.println("-nodebug\t\tturns off all runtime debugging e.g edge debugging");

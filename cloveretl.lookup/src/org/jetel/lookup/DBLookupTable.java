@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.CopySQLData;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement;
@@ -502,6 +503,7 @@ class DBLookup implements Lookup{
 
 	private SimpleCache resultCache;
 	private List<DataRecord> result;
+	private List<DataRecord> resultList = new ArrayList<DataRecord>();
 	private DataRecord currentResult;
 	private int no;
 	private boolean hasNext;
@@ -564,7 +566,6 @@ class DBLookup implements Lookup{
 		try {
 			if (resultCache != null) {
 				seekInCache();
-				result = resultCache.getAll(key);
 			}else {
 				seekInDB();
 				hasNext = fetch();
@@ -606,21 +607,34 @@ class DBLookup implements Lookup{
 	private void seekInCache() throws SQLException {
 		if (!resultCache.containsKey(key)) {
 			if (inRecord == null) throw new IllegalStateException("No key data for performing lookup");
+            result = resultList;
+            result.clear();
+
 			seekInDB();
 		    HashKey hashKey = new HashKey(recordKey, inRecord.duplicate());
-		    if (fetch()) {
-				do {
-					DataRecord storeRecord = currentResult.duplicate();
-					resultCache.put(hashKey, storeRecord);
-				} while (fetch());		    	
-		    }else{
-				if (storeNulls) {
-					resultCache.put(hashKey, NullRecord.NULL_RECORD);
-				}		    	
-		    }
-		}else{
-			cacheNumber++;
-		}
+
+            if (fetch()) {
+		        boolean resultCached = true;
+
+		        do {
+		            DataRecord dataRecord = currentResult.duplicate();
+					resultCached &= resultCache.put(hashKey, dataRecord);
+                    result.add(dataRecord);
+				} while (fetch());
+
+	            if (!resultCached) {
+                    LogFactory.getLog(getClass()).warn("Too many data records for a single key! Enlarge the cache " +
+                    		"size to accomodate more data records...");
+                    resultCache.clear();
+		        } 
+		    } else if (storeNulls) {
+                resultCache.put(hashKey, NullRecord.NULL_RECORD);
+                result.add(NullRecord.NULL_RECORD);
+            }
+		} else {
+            result = resultCache.getAll(key);
+            cacheNumber++;
+        }
 	}
 	
 	private boolean fetch() throws SQLException {

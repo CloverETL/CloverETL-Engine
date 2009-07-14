@@ -327,9 +327,10 @@ public class Reformat extends Node {
 			transformation.init(transformationParameters, inMetadata,
 					outMetadata);
 		} else {
+			String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
 			transformation = RecordTransformFactory.createTransform(transform, transformClass, 
 					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
-					this.getClass().getClassLoader());
+					this.getClass().getClassLoader(), classPaths);
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
          if (errorLogURL != null) {

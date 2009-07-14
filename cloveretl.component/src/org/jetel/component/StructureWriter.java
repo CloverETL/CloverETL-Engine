@@ -24,6 +24,7 @@ package org.jetel.component;
 import java.io.ByteArrayOutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,7 +35,10 @@ import org.jetel.data.formatter.provider.StructureFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -276,9 +280,20 @@ public class StructureWriter extends Node {
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
-		 
-		if(!checkInputPorts(status, 1, 3)
-				|| !checkOutputPorts(status, 0, 1)) {
+
+		//this is just a copy of checkInputPorts() method without test of connected edges - second port can be in fact non-assigned
+    	Collection<InputPort> inPorts = getInPorts();
+        if(inPorts.size() < 1) {
+            status.add(new ConfigurationProblem("At least 1 input port must be defined!", Severity.ERROR, this, Priority.NORMAL));
+            return status;
+        }
+        if(inPorts.size() > 3) {
+            status.add(new ConfigurationProblem("At most 3 input ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
+            return status;
+        }
+        //////////////
+
+		if(!checkOutputPorts(status, 0, 1)) {
 			return status;
 		}
 
@@ -332,7 +347,7 @@ public class StructureWriter extends Node {
         }
         writer.setMkDir(mkDir);
 		if (headerMask != null) {
-			if (getInPorts().size() > 1) {
+			if (getInputPort(HEADER_PORT) != null) {
 				headerFormatter = new StructureFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 				headerFormatter.setMask(headerMask);
 			}else{
@@ -340,7 +355,7 @@ public class StructureWriter extends Node {
 			}
 		}
 		if (footerMask != null){
-			if (getInPorts().size() > 1) {
+			if (getInputPort(FOOTER_PORT) != null) {
 				footerFormatter = new StructureFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 				footerFormatter.setMask(footerMask);
 			}else{

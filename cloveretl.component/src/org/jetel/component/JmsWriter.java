@@ -19,6 +19,7 @@
 */
 package org.jetel.component;
 
+import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -33,16 +34,14 @@ import org.jetel.connection.jms.JmsConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -145,7 +144,7 @@ public class JmsWriter extends Node {
 		super.init();
 		
 		if (psor == null && psorClass == null && psorCode == null && psorURL == null) {
-			throw new ComponentNotReadyException("Message processor not specified");
+			psorClass = "org.jetel.component.jms.DataRecord2JmsMsgProperties";
 		}
 		IConnection c = getGraph().getConnection(conId);
 		if (c == null || !(c instanceof JmsConnection)) {
@@ -158,7 +157,8 @@ public class JmsWriter extends Node {
 			if (psorClass == null && psorCode == null) {
 				psorCode = FileUtils.getStringFromURL(getGraph().getProjectURL(), psorURL, charset);
 			}
-			psor = psorClass == null ? createProcessorDynamic(psorCode) : createProcessor(psorClass);
+			String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
+			psor = psorClass == null ? createProcessorDynamic(psorCode) : createProcessor(psorClass, classPaths);
 		}
 		try {
 			connection.init();
@@ -197,16 +197,27 @@ public class JmsWriter extends Node {
 	 * @return
 	 * @throws ComponentNotReadyException
 	 */
-	private static DataRecord2JmsMsg createProcessor(String psorClass) throws ComponentNotReadyException {
+	private static DataRecord2JmsMsg createProcessor(String psorClass, String[] classPaths) throws ComponentNotReadyException {
 		DataRecord2JmsMsg psor;
         try {
-            psor =  (DataRecord2JmsMsg)Class.forName(psorClass).newInstance();
+            psor =  (DataRecord2JmsMsg)Class.forName(psorClass, true, JmsWriter.class.getClassLoader()).newInstance();
         }catch (InstantiationException ex){
             throw new ComponentNotReadyException("Can't instantiate msg processor class: "+ex.getMessage());
         }catch (IllegalAccessException ex){
             throw new ComponentNotReadyException("Can't instantiate msg processor class: "+ex.getMessage());
         }catch (ClassNotFoundException ex) {
-            throw new ComponentNotReadyException("Can't find specified msg processor class: " + psorClass);
+            if (classPaths == null)
+                throw new ComponentNotReadyException( "Can't find specified transformation class: " + psorClass);
+            try {
+                URLClassLoader classLoader = ClassLoaderUtils.createClassLoader(Thread.currentThread().getContextClassLoader(), null, classPaths);
+                psor =  (DataRecord2JmsMsg)Class.forName(psorClass, true, classLoader).newInstance();
+            } catch (ClassNotFoundException ex1) {
+                throw new ComponentNotReadyException("Can not find class: "+ ex1);
+            } catch (Exception ex3) {
+                throw new ComponentNotReadyException(ex3.getMessage());
+            }
+        }catch (Exception ex) {
+            throw new ComponentNotReadyException("Can't create instance of msg processor class: " + psorClass + " "+ ex.getMessage(), ex);
         }
 		return psor;
 	}
@@ -326,7 +337,7 @@ public class JmsWriter extends Node {
 		try {
 			jmsReader = new JmsWriter(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_CONNECTION_ATTRIBUTE, null),
-					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, "org.jetel.component.jms.DataRecord2JmsMsgProperties"),
+					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, null),
 					xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
 					xattribs.getString(XML_PSORURL_ATTRIBUTE, null),
 					xattribs.attributes2Properties(new String[]{	// all unknown attributes will be passed to the processor

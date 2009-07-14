@@ -33,6 +33,7 @@ import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverCallableStatement;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
+import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.DataParser;
@@ -371,7 +372,9 @@ public class DBExecute extends Node {
 			}
 			// this does not work for some drivers
 			try {
-				connectionInstance.getSqlConnection().setAutoCommit(false);
+				if (DefaultConnection.isTransactionsSupported(connectionInstance.getSqlConnection())) {
+					connectionInstance.getSqlConnection().setAutoCommit(false);
+				}
 			} catch (SQLException ex) {
 				if (transaction == InTransaction.ONE) {
 					throw new ComponentNotReadyException("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
@@ -554,7 +557,7 @@ public class DBExecute extends Node {
 			if (inPort != null) {
 				inRecord = inPort.readRecord(inRecord);
 			}
-			do {
+			if (inPort == null || inRecord != null) do {
 				for (int i = 0; i < dbSQL.length; i++){
 					try {
 						if (procedureCall) {

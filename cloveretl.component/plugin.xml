@@ -11,6 +11,7 @@
 	<requires engine-version="0.0.0.devel">
 		<import plugin-id="org.jetel.connection"/>
 		<import plugin-id="org.jetel.lookup"/>
+		<import plugin-id="org.jetel.sequence"/>
 	</requires>
 
 	<extension point-id="component">
@@ -268,6 +269,11 @@
 		<parameter id="className" value="org.jetel.component.XmlXPathReader"/>
 	</extension>
 
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.XMLExtract"/>
+	    <parameter id="type" value="XML_EXTRACT"/>
+	</extension>
+	
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.Pacemaker"/>
 	    <parameter id="type" value="PACEMAKER"/>

@@ -113,6 +113,10 @@
         <value>long2date</value>
         <value>date2long</value>
         <value>to_string</value>
+        <value>md5</value>
+        <value>sha</value>
+        <value>long2pacdecimal</value>
+        <value>pacdecimal2long</value>
 		</parameter>
 	</extension>
 	

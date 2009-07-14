@@ -40,7 +40,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @since       9. prosinec 2003
  * @revision    $Revision$
  */
-public class RecordFilter {
+public class RecordFilterOld {
 
 	private final static int CMP_EQ = 0;// equal
 	private final static int CMP_LT = -1;// less than
@@ -74,7 +74,7 @@ public class RecordFilter {
 	 *
 	 * @param  filterExpression  Description of the Parameter
 	 */
-	public RecordFilter(String filterExpression) {
+	public RecordFilterOld(String filterExpression) {
 		this.filterExpression = filterExpression;
 	}
 

@@ -36,7 +36,7 @@ import java.util.Arrays;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -55,14 +55,17 @@ public class DataFormatter implements Formatter {
 	private CharsetEncoder encoder;
     private byte[][] delimiters;
     private byte[] recordDelimiter;
-	private int delimiterLength[];
-	private int fieldLengths[];
+	private int[] delimiterLength;
+	private int[] fieldLengths;
 	private ByteBuffer dataBuffer;
 	private String sFooter; 
 	private String sHeader; 
 	private ByteBuffer footer; 
 	private ByteBuffer header; 
-	
+
+	private String[] excludedFieldNames;
+	private int[] includedFieldIndices;
+
 	// use space (' ') to fill/pad field
 	private final static char DEFAULT_FILLER_CHAR = ' ';
 
@@ -82,6 +85,10 @@ public class DataFormatter implements Formatter {
 		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
 		charSet = charEncoder;
 		metadata = null;
+	}
+	
+	public void setExcludedFieldNames(String[] excludedFieldNames) {
+		this.excludedFieldNames = excludedFieldNames;
 	}
 	
 	/* (non-Javadoc)
@@ -118,6 +125,17 @@ public class DataFormatter implements Formatter {
 			}
 		} catch (UnsupportedEncodingException e) {
 			// can't happen if we have encoder
+		}
+
+		includedFieldIndices = metadata.fieldsIndicesComplement(excludedFieldNames);
+
+		int lastFieldIndex = metadata.getNumFields() - 1;
+		int lastIncludedFieldIndex = includedFieldIndices[includedFieldIndices.length - 1];
+
+		if (lastIncludedFieldIndex < lastFieldIndex) {
+			delimiters[lastIncludedFieldIndex] = delimiters[lastFieldIndex];
+			delimiterLength[lastIncludedFieldIndex] = delimiterLength[lastFieldIndex];
+			fieldLengths[lastIncludedFieldIndex] = fieldLengths[lastFieldIndex];
 		}
 	}
 
@@ -196,7 +214,8 @@ public class DataFormatter implements Formatter {
 		int encLen = 0;
 		int i = 0;
 		try {
-			for (i = 0; i < metadata.getNumFields(); i++) {
+			for (int index : includedFieldIndices) {
+				i = index;
 				if(metadata.getField(i).isDelimited()) {
 					fieldBuffer.clear();
 					record.getField(i).toByteBuffer(fieldBuffer, encoder);
@@ -230,7 +249,9 @@ public class DataFormatter implements Formatter {
 				}
 			}
 		} catch (CharacterCodingException e) {
-            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ". (original cause: " + e.getMessage() + ") \n\nRecord: " +record.toString(), e);
+            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue()
+            		+ " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset()
+            		+ ". (original cause: " + e.getMessage() + ") \n\nRecord: " +record.toString(), e);
 		}
         return encLen;
 	}

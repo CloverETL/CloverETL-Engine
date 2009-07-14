@@ -14,7 +14,9 @@ public class DataFormatterProvider implements FormatterProvider {
 	private String charEncoder;
 	private String header;
 	private String charSet;
-	
+
+	private String[] excludedFieldNames;
+
 	/**
 	 * Contructors.
 	 */
@@ -38,6 +40,7 @@ public class DataFormatterProvider implements FormatterProvider {
 		}
 		formatter.setHeader(header);
 		charSet = formatter.getCharsetName();
+		formatter.setExcludedFieldNames(excludedFieldNames);
 		return formatter;
 	}
 
@@ -52,6 +55,10 @@ public class DataFormatterProvider implements FormatterProvider {
 	
 	public String getCharsetName() {
 		return charSet ;
+	}
+
+	public void setExcludedFieldNames(String[] excludedFieldNames) {
+		this.excludedFieldNames = excludedFieldNames;
 	}
 
 }

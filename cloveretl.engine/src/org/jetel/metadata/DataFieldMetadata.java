@@ -36,7 +36,7 @@ import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
 /**
- * A class that represents meta data describing one particular data field.<br>
+ * A class that represents metadata describing one particular data field.<br>
  * Handles encoding of characters.
  *
  * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
@@ -185,10 +185,10 @@ public class DataFieldMetadata implements Serializable {
 		return DataFieldMetadata.UNKNOWN_FIELD;
 	}
 
-	/** Parent data record meta data. */
+	/** Parent data record metadata. */
 	private DataRecordMetadata dataRecordMetadata;
 
-	/** Ordinal number of the field within data record meta data. */
+	/** Ordinal number of the field within data record metadata. */
 	private int number;
 	/** Name of the field. */
 	protected String name;
@@ -306,16 +306,16 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Sets the parent data record meta data.
+	 * Sets the parent data record metadata.
 	 *
-	 * @param dataRecordMetadata the new parent data record meta data
+	 * @param dataRecordMetadata the new parent data record metadata
 	 */
 	public void setDataRecordMetadata(DataRecordMetadata dataRecordMetadata) {
 		this.dataRecordMetadata = dataRecordMetadata;
 	}
 
 	/**
-	 * @return the parent data record meta data
+	 * @return the parent data record metadata
 	 */
 	public DataRecordMetadata getDataRecordMetadata() {
 		return dataRecordMetadata;
@@ -434,7 +434,7 @@ public class DataFieldMetadata implements Serializable {
 
 	/**
 	 * Returns an array of all field delimiters assigned to this field. In case no field delimiters are defined, default
-	 * field delimiters from parent meta data are returned. Delimiters for last field are extended by a record delimiter.
+	 * field delimiters from parent metadata are returned. Delimiters for last field are extended by a record delimiter.
 	 * 
 	 * @return the array of all field delimiters
 	 */
@@ -729,7 +729,7 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * @return <code>true</code> if this data field is the last non-autofilled field within the data record meta data,
+	 * @return <code>true</code> if this data field is the last non-autofilled field within the data record metadata,
 	 * <code>false</code> otherwise.
 	 */
 	private boolean isLastNonAutoFilledField() {
@@ -970,9 +970,9 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Creates a deep copy of this data field meta data object.
+	 * Creates a deep copy of this data field metadata object.
 	 *
-	 * @return an exact copy of current data field meta data object
+	 * @return an exact copy of current data field metadata object
 	 */
 	public DataFieldMetadata duplicate() {
 		DataFieldMetadata dataFieldMetadata = new DataFieldMetadata();

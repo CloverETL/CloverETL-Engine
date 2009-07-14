@@ -396,6 +396,7 @@ public class SQLCloverStatement {
 		int updatedRecords = ((PreparedStatement)statement).executeUpdate();
 		//fill output record
 		switch (queryType) {
+		case SELECT:
 		case INSERT:
 			fillKeyRecord(outRecord);
 			break;
@@ -453,6 +454,9 @@ public class SQLCloverStatement {
 	 * @throws SQLException
 	 * @throws ComponentNotReadyException 
 	 */
+	
+    Pattern preparedPattern = Pattern.compile("\\?");
+
 	public void executeValidate() throws SQLException, ComponentNotReadyException {
 
         String q = connection.getJdbcSpecific().getValidateQuery(getQuery(), getQueryType());
@@ -462,7 +466,29 @@ public class SQLCloverStatement {
         	this.query = q;
         	init();
         	if (getQueryType().equals(QueryType.SELECT)) {
-        		executeQuery();
+        		
+        		PreparedStatement ps = null;
+        		// for prepared statements use null values and construct simple prepared statement
+    			int wherePos = query.toLowerCase().indexOf("where");
+        		if (wherePos > -1) {
+        			Matcher m = preparedPattern.matcher(query); 
+        			int paramCntr = 1;
+        			if (m.find(wherePos)) {
+        				ps = connection.getSqlConnection().prepareStatement(q);
+        				
+        				setObjectValue(paramCntr, ps);
+        				while(m.find()) {
+        					setObjectValue(++paramCntr, ps);
+        				}
+        			}
+        		}
+        		if (ps != null) {
+        			ps.execute();
+        		} else {
+        			// not a prepared statement
+        			executeQuery();
+        		}
+        		
         	} else {
         		if (statement instanceof PreparedStatement) {
         			executeUpdate(record);
@@ -472,6 +498,13 @@ public class SQLCloverStatement {
         	}
         }
         
+	}
+	
+	void setObjectValue(int paramIndex, PreparedStatement ps) {
+		try {
+			ps.setNull(paramIndex, ps.getParameterMetaData().getParameterType(paramIndex));
+		} catch (SQLException e) {
+		}
 	}
 	
 	/**
