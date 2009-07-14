@@ -122,7 +122,9 @@ public class ExtDataGenerator extends DataGenerator {
 			} else if (transformResult >= 0) {
 				autoFilling.setLastUsedAutoFillingFields(outRecord[transformResult]);
 				writeRecord(transformResult, outRecord[transformResult]);
-			} else if (transformResult < 0) {
+			} else if (transformResult == -1) {
+				//DO NOTHING - skip the record
+			} else {
 				throw new TransformException("Transformation finished with code: " + transformResult + 
 						". Error message: " + generation.getMessage());
 			}
@@ -192,9 +194,9 @@ public class ExtDataGenerator extends DataGenerator {
         	
    		// create instance of the record generator
         } else {
-    		generation = RecordTransformFactory.createGenerator(generate, generateClass, 
+        	generation = RecordTransformFactory.createGenerator(generate, generateClass, 
     				generateURL, this, outMetadata, generateParameters, 
-    				this.getClass().getClassLoader());
+    				this.getClass().getClassLoader(), this.getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths());
         }
 		
 		// autofilling
@@ -223,6 +225,7 @@ public class ExtDataGenerator extends DataGenerator {
 		}
         checkMetadata(status, getOutMetadata());
         
+        /*
         try {
             init();
         } catch (ComponentNotReadyException e) {
@@ -233,7 +236,7 @@ public class ExtDataGenerator extends DataGenerator {
             status.add(problem);
         } finally {
         	free();
-        }
+        }*/
         
         return status;
 	}

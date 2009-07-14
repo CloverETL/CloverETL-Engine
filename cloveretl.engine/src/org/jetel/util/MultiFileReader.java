@@ -150,6 +150,7 @@ public class MultiFileReader {
 			try {
 				fName = fit.next();
 				if (fName.equals(STD_IN)) continue;
+				if (fName.startsWith("dict:")) continue; //this test has to be here, since an involuntary warning is caused
 				URL url = FileUtils.getFileURL(contextURL, FileURLParser.getMostInnerAddress(fName));
 				if (FileUtils.isServerURL(url)) {
 					//FileUtils.checkServer(url); //this is very long operation

@@ -71,6 +71,9 @@ public class RecordGenerateTL extends RecordTransformCommonTL implements RecordG
 	 * Generate data for output records.
 	 */
 	public int generate(DataRecord[] outputRecords) throws TransformException {
+		// set the error message to null so that the inherited getMessage() method works correctly if no error occurs
+		errorMessage = null;
+
 		semiResult = wrapper.executePreparedFunction(new DataRecord[]{}, outputRecords, null);
 
 		if (semiResult == null || semiResult == TLBooleanValue.TRUE) {

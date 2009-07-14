@@ -154,13 +154,15 @@
 		When I modify runAllGraphs.grf and set cloverCmdLineArgs="-plugins ${PROJECT_DIR}/${PLUGINS_DIR} -P:PROJECT_DIR=${PROJECT_DIR}" 
 		all graphs are successuly executed.
 	-->
-	<!--
 	<FunctionalTest ident="allGraphs" graphFile="graph/runAllGraphs.grf">
+		<Property name="PLUGINS_DIR" value="../cloveretl.engine/build/plugins -P:PROJECT_DIR=../cloveretl.engine/examples/CompanyTransactionsTutorial"/>
 		<RegEx expression="Some graph\(s\) finished with error" occurences="0"/>
 		<RegEx expression="Processing finished successfully" occurences="16"/>
+        <DeleteFile file="data-tmp/EmployeesWithFamily.xls"/>
 		
+		<!--
 		This file is changing - different absolute paths of executed graphs and diferent exexution times
 	 	<FlatFile outputFile="data-out/allGraphs.txt" supposedFile="supposed-out/allGraphs.txt"/>
+		-->
 	</FunctionalTest>
-	-->
 </TestScenario>

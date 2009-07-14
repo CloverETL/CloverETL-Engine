@@ -66,6 +66,7 @@ public final class Defaults {
 		//properties file name can be also passed as method parameter - configurationFile
 		if (!StringUtils.isEmpty(configurationFile)) {
 			try {
+				logger.info("Loading Clover properties from file:"+configurationFile);
 				appendProperties(loadPropertiesFromStream(new FileInputStream(configurationFile), configurationFile));
 			} catch (FileNotFoundException e) {
 				logger.warn("Unable to load properties from '" + configurationFile + "'.", e);

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of NORMALIZER component with normalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204549060147" licenseType="Evaluation license." modified="Wed Jul 01 12:10:50 CEST 2009" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.16">
+<Global>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="customers" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="cust_no" nullable="true" shift="0" size="0" type="integer"/>
+<Field name="customers" nullable="true" shift="0" size="0" type="string"/>
+<Field name="EmployeeID" nullable="true" shift="0" size="0" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER">
+<attr name="DataPolicy"><![CDATA[Strict]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="25" guiName="NORMALIZER" guiWidth="50" guiX="195" guiY="20" id="NORMALIZE" type="NORMALIZER">
+<attr name="normalize"><![CDATA[//#CTL
+string[] customers;
+
+function int transform(int idx) {
+	customers = split($customers,"\\s*-\\s*");
+	$customers = customers[idx];
+	$EmployeeID = $EmployeeID;
+	return 0;
+}
+
+function int count() {
+	return $cust_no;
+}
+]]></attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DATA_WRITER"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="NORMALIZE:0"/>
+<Edge debugMode="true" fromNode="NORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
+</Phase>
+</Graph>

@@ -643,6 +643,11 @@ public class AproxMergeJoin extends Node {
 			driverRecords[TEMPORARY] = tmpRec;
 			SynchronizeUtils.cloverYield();
 		}
+
+		while (slavePort.readRecord(slaveRecords[CURRENT]) != null) {
+            //Wait for eof on slave
+        }
+
 		// signal end of records stream to transformation function
 		transformation.finished();
 		transformationForSuspicious.finished();
@@ -681,18 +686,20 @@ public class AproxMergeJoin extends Node {
 		if (transformation != null) {
 			transformation.init(transformationParameters, inMetadata, outMetadata);
 		} else {
+			String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
 			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
 					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
-					this.getClass().getClassLoader());
+					this.getClass().getClassLoader(), classPaths);
 		}
 		outMetadata = new DataRecordMetadata[] { getOutputPort(SUSPICIOUS_OUT).getMetadata() };
 		if (transformationForSuspicious != null) {
 			transformationForSuspicious.init(transformationParametersForSuspicious, 
 					inMetadata,	outMetadata);
 		} else {
+			String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
 			transformationForSuspicious = RecordTransformFactory.createTransform(transformSourceForSuspicious, 
 					transformClassNameForSuspicious, transformURLForsuspicious, charset, this, 
-					inMetadata, outMetadata, transformationParametersForSuspicious, this.getClass().getClassLoader());
+					inMetadata, outMetadata, transformationParametersForSuspicious, this.getClass().getClassLoader(), classPaths);
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
          if (errorLogURL != null) {

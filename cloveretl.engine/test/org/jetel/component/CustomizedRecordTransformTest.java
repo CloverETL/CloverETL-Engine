@@ -294,7 +294,7 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 		transform.addConstantToFieldRule("${out*.Valu?}", 100);
 		transform.addConstantToFieldRule(1, "Age", DecimalFactory.getDecimal(new BigDecimal("36474.738393")));
 		transform.addConstantToFieldRule("${out.*.2}", "Prague");
-		transform.addConstantToFieldRule(0, 3, "Nov 28, 2006");
+		transform.addConstantToFieldRule(0, 3, "2006-11-28");
 		transform.addConstantToFieldRule(4, "1.111111111");
 		transform.addRule("0.Name", "test");
 		transform.deleteRule("0.?a*");

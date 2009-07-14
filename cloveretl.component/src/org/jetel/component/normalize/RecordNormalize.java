@@ -98,8 +98,14 @@ public interface RecordNormalize {
 	public void reset();
 
 	/**
-	 *  Passes instance of transformation graph to denormalize transformation
+	 *  Passes instance of transformation graph to normalize transformation
 	 */
 	public void setGraph(TransformationGraph graph);
+	
+	/**
+	 *  Returns the instance of graph actually set for normalize transformation
+	 */
+	public TransformationGraph getGraph();
+
 
 }

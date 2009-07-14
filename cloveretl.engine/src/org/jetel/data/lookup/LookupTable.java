@@ -70,7 +70,7 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
     public boolean isRemoveSupported();
 
     /**
-     * <p>Returns the meta data associated with the data records stored in this lookup table.</p>
+     * <p>Returns the metadata associated with the data records stored in this lookup table.</p>
      *
      * @return an instance of the <code>DataRecordMetadata</code> class
      */
@@ -102,11 +102,13 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      * @throws UnsupportedOperationException if this method is not supported
      * @throws NotInitializedException if the lookup table has not yet been initialized
      * @throws NullPointerException if the given data record is <code>null</code>
-     * @throws IllegalArgumentException if the given data record is not compatible with the lookup table meta data
+     * @throws IllegalArgumentException if the given data record is not compatible with the lookup table metadata
      *
      * @since 23rd October 2008
      */
     public boolean put(DataRecord dataRecord);
+
+//    public boolean put(RecordKey key, DataRecord recordKey, DataRecord dataRecord);
 
     /**
      * <p>Removes the given data record from the lookup table. This method will work properly iff
@@ -119,7 +121,7 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      * @throws UnsupportedOperationException if this method is not supported
      * @throws NotInitializedException if the lookup table has not yet been initialized
      * @throws NullPointerException if the given data record is <code>null</code>
-     * @throws IllegalArgumentException if the given data record is not compatible with the lookup table meta data
+     * @throws IllegalArgumentException if the given data record is not compatible with the lookup table metadata
      *
      * @since 23rd October 2008
      */
@@ -140,6 +142,8 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      * @since 23rd October 2008
      */
     public boolean remove(HashKey key); 
+
+//    public boolean removeKey(RecordKey recKey, DataRecord record);
 
     /**
      * <p>Creates a lookup proxy object for the given lookup key. Returned proxy object can be used to retrieve data

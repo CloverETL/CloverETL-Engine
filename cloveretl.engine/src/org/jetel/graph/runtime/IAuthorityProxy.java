@@ -47,8 +47,9 @@ public interface IAuthorityProxy {
 	 * 
 	 * @param runId - ID of parent run, which calls this method.  
 	 * @param graphFileName - path to graph to execute
+	 * @param properties - null or instance of properties which can be applied as place-holders in graph XML 
 	 * @param logFile - path to file where log output of graph will be saved;
 	 * @return
 	 */
-	public RunResult executeGraph(long runId, String graphFileName, Properties props, String logFile);
+	public RunResult executeGraph(long runId, String graphFileName, Properties properties, String logFile);
 }

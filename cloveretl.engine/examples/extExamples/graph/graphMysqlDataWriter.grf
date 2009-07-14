@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="0.0.0.devel" id="1204803682775" licenseType="Evaluation license." modified="Fri Mar 27 11:02:48 CET 2009" modifiedBy="avackova" name="MysqlDataWriter" revision="1.98">
+<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="0.0.0.devel" id="1204803682775" licenseType="Evaluation license." modified="Fri Jun 19 12:22:59 CEST 2009" modifiedBy="avackova" name="MysqlDataWriter" revision="1.100">
 <Global>
 <Metadata id="Metadata1">
 <Record fieldDelimiter="|" name="err" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -31,16 +31,12 @@
 </Global>
 <Phase number="0">
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/out.dat" guiHeight="25" guiName="DATA_WRITER0" guiWidth="50" guiX="244" guiY="34" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node columnDelimiter="," database="test" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/mysqlFlat.dat" guiHeight="25" guiName="MYSQL_DATA_WRITER0" guiWidth="50" guiX="29" guiY="34" host="koule.javlin.cz" id="MYSQL_DATA_WRITER0" mysqlPath="mysql" table="test" type="MYSQL_DATA_WRITER" username="test">
-<attr name="parameters"><![CDATA[port=3306|fieldsEnclosedBy=*|fieldsIsOptionallyEnclosed]]></attr>
-</Node>
+<Node columnDelimiter="," database="test" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/mysqlFlat.dat" guiHeight="25" guiName="MYSQL_DATA_WRITER0" guiWidth="50" guiX="29" guiY="34" host="koule.javlin.eu" id="MYSQL_DATA_WRITER0" mysqlPath="mysql" parameters="port=3306|fieldsEnclosedBy=*|fieldsIsOptionallyEnclosed" table="test" type="MYSQL_DATA_WRITER" username="test"/>
 <Edge debugMode="true" fromNode="MYSQL_DATA_WRITER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/mysql.dat" guiHeight="25" guiName="DATA_READER0" guiWidth="50" guiX="29" guiY="139" id="DATA_READER0" type="DATA_READER"/>
-<Node database="test" enabled="enabled" guiHeight="25" guiName="MYSQL_DATA_WRITER1" guiWidth="50" guiX="241" guiY="139" host="koule.javlin.cz" id="MYSQL_DATA_WRITER1" mysqlPath="mysql" table="test" type="MYSQL_DATA_WRITER" username="test">
-<attr name="parameters"><![CDATA[port=3306]]></attr>
-</Node>
+<Node database="test" enabled="enabled" guiHeight="25" guiName="MYSQL_DATA_WRITER1" guiWidth="50" guiX="241" guiY="139" host="koule.javlin.eu" id="MYSQL_DATA_WRITER1" mysqlPath="mysql" parameters="port=3306" table="test" type="MYSQL_DATA_WRITER" username="test"/>
 <Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MYSQL_DATA_WRITER1:0"/>
 </Phase>
 <Phase number="2">

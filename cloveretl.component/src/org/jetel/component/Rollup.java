@@ -21,6 +21,7 @@ package org.jetel.component;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -104,7 +105,7 @@ import org.w3c.dom.Element;
  *     <b>groupAccumulatorMetadataId</b><br>
  *     <i>optional</i>
  *   </td>
- *   <td>ID of data record meta data that should be used to create group "accumulators" (if required).</td>
+ *   <td>ID of data record metadata that should be used to create group "accumulators" (if required).</td>
  * </tr>
  * <tr>
  *   <td><b>transform</b></td>
@@ -139,7 +140,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 12th June 2009
+ * @version 24th June 2009
  * @since 30th April 2009
  *
  * @see RecordRollup
@@ -155,7 +156,7 @@ public class Rollup extends Node {
 
     /** the name of an XML attribute used to store the group key fields */
     private static final String XML_GROUP_KEY_FIELDS_ATTRIBUTE = "groupKeyFields";
-    /** the name of an XML attribute used to store the ID of the group "accumulator" meta data */
+    /** the name of an XML attribute used to store the ID of the group "accumulator" metadata */
     private static final String XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE = "groupAccumulatorMetadataId";
 
     /** the name of an XML attribute used to store the source code of a Java/CTL transform */
@@ -339,8 +340,9 @@ public class Rollup extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
 
-        checkInputPorts(status, 1, 1);
-        checkOutputPorts(status, 1, Integer.MAX_VALUE);
+        if (!checkInputPorts(status, 1, 1) || !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+            return status;
+        }
 
         if (groupKeyFields == null || groupKeyFields.length == 0) {
             status.add(new ConfigurationProblem("No group key fields specified!",
@@ -357,7 +359,7 @@ public class Rollup extends Node {
         }
 
         if (groupAccumulatorMetadataId != null && getGraph().getDataRecordMetadata(groupAccumulatorMetadataId) == null) {
-            status.add(new ConfigurationProblem("The group \"accumulator\" meta data ID is not valid!",
+            status.add(new ConfigurationProblem("The group \"accumulator\" metadata ID is not valid!",
                     Severity.ERROR, this, Priority.HIGH, XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE));
         }
 
@@ -581,7 +583,11 @@ public class Rollup extends Node {
             SynchronizeUtils.cloverYield();
         }
 
-        for (Map.Entry<HashKey, DataRecord> entry : groupAccumulators.entrySet()) {
+        Iterator<Map.Entry<HashKey, DataRecord>> groupAccumulatorsIterator = groupAccumulators.entrySet().iterator();
+
+        while (runIt && groupAccumulatorsIterator.hasNext()) {
+            Map.Entry<HashKey, DataRecord> entry = groupAccumulatorsIterator.next();
+
             if (recordRollup.finishGroup(entry.getKey().getDataRecord(), entry.getValue())) {
                 transform(entry.getKey().getDataRecord(), entry.getValue());
             }

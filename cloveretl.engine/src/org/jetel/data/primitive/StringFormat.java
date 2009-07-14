@@ -25,7 +25,7 @@ public class StringFormat {
 	 * @param string
 	 * @return
 	 */
-	public boolean matches(String string) {
+	public boolean matches(CharSequence string) {
 		boolean retval = regExpPattern.matcher(string).matches();
 		return retval;
 	}
@@ -50,7 +50,7 @@ public class StringFormat {
 	 *            may be null as described above
 	 * @return
 	 */
-	public String format(String text, String outputFormat) {
+	public String format(CharSequence text, String outputFormat) {
 		StringBuilder result = new StringBuilder();
 		Matcher m = regExpPattern.matcher(text);
 		if (m.find()) {

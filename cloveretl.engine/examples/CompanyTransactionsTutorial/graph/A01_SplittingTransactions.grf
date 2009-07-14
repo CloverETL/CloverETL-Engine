@@ -28,7 +28,7 @@ More detailed information about this graph can be found in the "readme.html" fil
 <Node dedupKey="CustomerID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="568" guiY="473" id="DEDUP0" keep="first" type="DEDUP"/>
 <Node dedupKey="EmployeeID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="568" guiY="557" id="DEDUP1" keep="first" type="DEDUP"/>
 <Node dedupKey="AmountID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="568" guiY="389" id="DEDUP2" keep="first" type="DEDUP"/>
-<Node enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="568" guiY="301" id="DEDUP3" keep="first" noDupRecord="100000" type="DEDUP"/>
+<Node dedupKey="AmountID;CustomerID;EmployeeID" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="568" guiY="301" id="DEDUP3" keep="first" type="DEDUP"/>
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="398" guiY="473" id="EXT_SORT0" sortKey="CustomerID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="398" guiY="558" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="398" guiY="389" id="EXT_SORT2" sortKey="AmountID(a)" type="EXT_SORT"/>

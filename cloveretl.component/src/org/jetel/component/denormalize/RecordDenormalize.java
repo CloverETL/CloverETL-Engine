@@ -105,5 +105,10 @@ public interface RecordDenormalize {
 	 *  Passes instance of transformation graph to denormalize transformation
 	 */
 	public void setGraph(TransformationGraph graph);
+	
+	/**
+	 *  Returns the instance of graph actually set for denormalize transformation
+	 */
+	public TransformationGraph getGraph();
 
 }

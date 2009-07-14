@@ -60,6 +60,14 @@
 
 </FunctionalTest>
 
+<FunctionalTest ident="DBFJoinTLNew" graphFile="graph/graphDBFJoinTLNew.grf">
+	 <FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoinTL.out"/>
+	 <FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoinTL.out"/>
+     
+<DeleteFile file="data-out/joinedDBForders.out"/>
+<DeleteFile file="data-out/joinedDBFordersNA.out"/>
+
+</FunctionalTest>
 
 <FunctionalTest ident="DBFLoad" graphFile="graph/graphDBFLoad.grf">
 	 <FlatFile outputFile="data-out/Trash1_output.txt" supposedFile="supposed-out/Trash1_output.DBFLoad.txt"/>
@@ -91,8 +99,10 @@
 <FunctionalTest ident="DenormalizeTL" graphFile="graph/graphDenormalizeTL.grf">
 	 <FlatFile outputFile="data-out/denormalizedTL.out" supposedFile="supposed-out/denormalizedTL.DenormalizeTL.out"/>
 	 <FlatFile outputFile="data-out/denormalizedTLwithoutOrder.out" supposedFile="supposed-out/denormalizedTLwithoutOrder.DenormalizeTL.out"/>
+	 <FlatFile outputFile="data-out/denormalizedTLnew.out" supposedFile="supposed-out/denormalizedTL.DenormalizeTL.out"/>
 	<DeleteFile file="data-out/denormalizedTL.out"/>
 	<DeleteFile file="data-out/denormalizedTLwithoutOrder.out"/>
+	<DeleteFile file="data-out/denormalizedTLnew.out"/>
 </FunctionalTest>
 
 
@@ -168,6 +178,12 @@
 
 </FunctionalTest>
 
+<FunctionalTest ident="JoinHashUsingTransformLanguageNew" graphFile="graph/graphJoinHashUsingTransformLanguageNew.grf">
+	 <FlatFile outputFile="data-out/joined_data_hash.out" supposedFile="supposed-out/joined_data_hash.JoinHashUsingTransformLanguage.out"/>
+     
+<DeleteFile file="data-out/joined_data_hash.out"/>
+
+</FunctionalTest>
 
 <FunctionalTest ident="JoinMergeInline" graphFile="graph/graphJoinMergeInline.grf">
 	 <FlatFile outputFile="data-out/joined_data_hash.out" supposedFile="supposed-out//joined_data_hash.JoinMergeInline.out"/>
@@ -208,6 +224,12 @@
 
 </FunctionalTest>
 
+<FunctionalTest ident="NormalizeTLNew" graphFile="graph/graphNormalizeTLNew.grf">
+	 <FlatFile outputFile="data-out/normalized.out" supposedFile="supposed-out//normalized.NormalizeTL.out"/>
+     
+<DeleteFile file="data-out/normalized.out"/>
+
+</FunctionalTest>
 
 <FunctionalTest ident="OrdersReformat" graphFile="graph/graphOrdersReformat.grf">
 	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersReformat.out"/>
@@ -232,6 +254,12 @@
 
 </FunctionalTest>
 
+<FunctionalTest ident="OrdersTLNewReformat" graphFile="graph/graphOrdersTLNewReformat.grf">
+	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersTLReformat.out"/>
+     
+<DeleteFile file="data-out/orders.dat.out"/>
+
+</FunctionalTest>
 
 <FunctionalTest ident="OrdersTLReformat" graphFile="graph/graphOrdersTLReformat.grf">
 	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersTLReformat.out"/>

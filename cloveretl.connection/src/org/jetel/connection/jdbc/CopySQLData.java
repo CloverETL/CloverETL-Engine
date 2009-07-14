@@ -608,8 +608,10 @@ public abstract class CopySQLData {
 					obj = new CopyTimestamp(record, fromIndex, toIndex);
 				}else if (isDate) {
 					obj = new CopyDate(record, fromIndex, toIndex);
-				}else{
+				}else if (isTime){
 					obj = new CopyTime(record, fromIndex, toIndex);
+				}else {
+					obj = new CopyTimestamp(record, fromIndex, toIndex);
 				}
 				break;
 			case Types.BOOLEAN:

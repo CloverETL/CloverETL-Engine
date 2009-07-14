@@ -101,7 +101,7 @@ public class Filter extends Node {
 	private final static int WRITE_TO_PORT=0;
 	private final static int REJECTED_PORT=1;
 	
-	private RecordFilter recordFilter;
+	private RecordFilterOld recordFilter;
 	
 	public Filter(String id){
 		super(id);
@@ -171,7 +171,7 @@ public class Filter extends Node {
 		xmlElement.setAttribute(XML_FILTEREXPRESSION_ATTRIBUTE,this.recordFilter.getFilterExpression());
 	}
 
-	public void setRecordFilter(RecordFilter rf)
+	public void setRecordFilter(RecordFilterOld rf)
 	{
 		recordFilter = rf;
 	}
@@ -193,7 +193,7 @@ public class Filter extends Node {
 			filter = new Filter(xattribs.getString(XML_ID_ATTRIBUTE));
 			if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)){
 				filterExpression=xattribs.getString(XML_FILTEREXPRESSION_ATTRIBUTE);
-				filter.setRecordFilter(new RecordFilter(filterExpression));
+				filter.setRecordFilter(new RecordFilterOld(filterExpression));
 			}
 			return filter;
 		}catch(Exception ex){

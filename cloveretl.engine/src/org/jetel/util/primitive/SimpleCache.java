@@ -64,11 +64,11 @@ public class SimpleCache {
      * Creates cache with initial size of 16 entries.
      * Maximum size is defaulted to 100.
      */
-    public SimpleCache(){
-    	StoreMap tmp = new StoreMap();
-    	map = Collections.synchronizedMap(tmp);
-    	maxSize = tmp.getMaxEntries();
-    }
+    public SimpleCache() {
+		StoreMap tmp = new StoreMap();
+		map = Collections.synchronizedMap(tmp);
+		maxSize = tmp.getMaxEntries();
+	}
     
     /**
      * Creates cache with initial size equal to parameter.
@@ -76,11 +76,11 @@ public class SimpleCache {
      * 
      * @param initialCapacity
      */
-    public SimpleCache(int initialCapacity){
-    	StoreMap tmp = new StoreMap(initialCapacity);
-    	map = Collections.synchronizedMap(new StoreMap(initialCapacity));
-       	maxSize = tmp.getMaxEntries();
-    }
+    public SimpleCache(int initialCapacity) {
+		StoreMap tmp = new StoreMap(initialCapacity);
+		map = Collections.synchronizedMap(tmp);
+		maxSize = tmp.getMaxEntries();
+	}
     
     /**
      * Creates cache with initial capacity and maximum capacity
@@ -89,11 +89,11 @@ public class SimpleCache {
      * @param initialCapacity
      * @param maxCapacity		
      */
-    public SimpleCache(int initialCapacity,int maxCapacity){
-    	StoreMap tmp = new StoreMap(initialCapacity, maxCapacity);
-    	map = Collections.synchronizedMap(new StoreMap(initialCapacity,maxCapacity));
-       	maxSize = tmp.getMaxEntries();
-   }
+    public SimpleCache(int initialCapacity, int maxCapacity) {
+		StoreMap tmp = new StoreMap(initialCapacity, maxCapacity);
+		map = Collections.synchronizedMap(tmp);
+		maxSize = tmp.getMaxEntries();
+	}
     
     /**
      * This method turns on duplicity entries upon the same key
@@ -139,34 +139,52 @@ public class SimpleCache {
     }
     
     /**
-     * This method puts the value upon the given key. When there is reached 
-     * maximal capacity eldest object (when duplicity are enabled it is the
-     * eldest ArrayList) is removed. In present implementation method 
-     * StoreMap.removeEldestEntry always returns false
-     * 
-     * @param key
-     * @param value
-     * @return
+     * Stores the given value under the given key in the cache. If the cache is full, the eldest entry or entries
+     * (in case when duplicity is enabled) are removed so that storing of the new value succeeds.
+     *
+     * @param key the key under which the value should be stored
+     * @param value the value to be stored
+     *
+     * @return <code>true</code> if the value was successfully stored in the cache, <code>false</code> otherwise 
      */
-    public Object put(Object key, Object value){
-    	savedKey = key;
-		totalSize++;
-      	if (totalSize<=maxSize){
-    		return (keyMap == null ? 
-    				map.put(key,value) : keyMap.put(key,value) );
-    	}else if (keyMap==null){
-     		return map.put(key,value);
-    	}
-      	Iterator iterator = map.entrySet().iterator();
-      	Entry eldest = (Entry)iterator.next();
-      	map.remove(eldest.getKey());
-    	totalSize = totalSize - ((ArrayList)eldest.getValue()).size();
-    	return keyMap.put(key,value);
+    public boolean put(Object key, Object value) {
+		if (keyMap != null) {
+			if (totalSize >= maxSize) {
+				// Check if there is a mapping for the current key and if it is the only mapping present.
+				// The call to the get() method here ensures that the order of entries is updated properly
+				// in the underlying linked hash map and thus the LRU algorithm works properly.
+				if (keyMap.get(key) != null && keyMap.size() == 1) {
+					// If there is only a single mapping, all data records share a single key. Adding another
+					// entry would require the size of the cache to be grown and that is not supported.
+					return false;
+				}
 
-//    	totalSize++;
-//		return (keyMap == null ? map.put(key,value) : keyMap.put(key,value) );
-   }
-    
+				// Remove the eldest entry now. If the get() method was not called earlier, we could remove
+				// previously stored data records for the current key.
+				Iterator iterator = map.entrySet().iterator();
+				Entry eldestEntry = (Entry) iterator.next();
+				iterator.remove();
+
+				totalSize -= ((List) eldestEntry.getValue()).size();
+			}
+
+			keyMap.put(key, value);
+			totalSize++;
+		} else {
+			map.put(key, value);
+
+			if (map.size() > maxSize) {
+				Iterator iterator = map.entrySet().iterator();
+				iterator.next();
+				iterator.remove();
+	    	}
+		}
+
+		savedKey = key;
+
+		return true;
+    }
+
     /**
      * @return number of records found for last used key
      */
@@ -193,6 +211,7 @@ public class SimpleCache {
     public void clear(){
     	map.clear();
     	savedKey = null;
+    	totalSize = 0;
     }
     
     /**

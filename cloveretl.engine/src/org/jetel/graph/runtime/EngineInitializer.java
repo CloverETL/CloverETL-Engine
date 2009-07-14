@@ -27,7 +27,9 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.net.SocketAppender;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.string.StringUtils;
@@ -139,16 +141,24 @@ public class EngineInitializer {
 	 * @throws ComponentNotReadyException
 	 */
 	public static void initGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
-		logger.info("Checking graph configuration...");
 		graph.setPassword(runtimeContext.getPassword());
-		ConfigurationStatus status = graph.checkConfig(null);
-		if(status.isError()) {
-			logger.error("Graph configuration is invalid.");
-			status.log();
-			throw new ComponentNotReadyException(graph, "Graph configuration is invalid (" + status.getFirst().toString() + ").");
+		if (!runtimeContext.isSkipCheckConfig()) {
+			logger.info("Checking graph configuration...");
+			ConfigurationStatus status = graph.checkConfig(null);
+			if(status.isError()) {
+				logger.error("Graph configuration is invalid.");
+				status.log();
+				for (ConfigurationProblem s : status){
+					// throw exception with the first error in the list
+					if (s.getSeverity() == Severity.ERROR)
+						throw new ComponentNotReadyException(graph, "Graph configuration is invalid (" + s + ").");
+				} // for
+			} else {
+				logger.info("Graph configuration is valid.");
+				status.log();
+			}
 		} else {
-			logger.info("Graph configuration is valid.");
-			status.log();
+			logger.info("Graph configuration checking is skipped.");
 		}
 		logger.info("Graph initialization (" + graph.getName() + ")");
         graph.init();

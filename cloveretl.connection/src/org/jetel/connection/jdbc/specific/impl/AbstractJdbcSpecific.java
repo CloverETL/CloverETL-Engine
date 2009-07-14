@@ -197,6 +197,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 				return DataFieldMetadata.BOOLEAN_FIELD;
 			// proximity assignment
 			case Types.BIT:
+			case Types.NULL:
 				return DataFieldMetadata.STRING_FIELD;
 			default:
 				throw new IllegalArgumentException("Can't handle JDBC.Type :"+sqlType);
@@ -248,12 +249,41 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
             break;
             
 		case SELECT:
+			
+			query = SQLUtil.removeUnnamedFields(query, this);
 			q = "SELECT wrapper_table.* FROM (" + query + ") wrapper_table where 1=0";
             break;
 		}
 	
         return q;
         
+	}
+
+	/**
+	 * Default behavior for literal detection
+	 */
+	public boolean isLiteral(String s) {
+		
+		if (s == null) {
+			return true;
+		}
+		
+		s = s.trim();
+
+		// numbers are literals
+		try {
+			Integer.parseInt(s);
+			return true;
+		} catch (NumberFormatException e) {
+		}
+		try {
+			Double.parseDouble(s);
+			return true;
+		} catch (NumberFormatException e) {
+		}
+		
+		return s.startsWith("'");
+		
 	}
 
     

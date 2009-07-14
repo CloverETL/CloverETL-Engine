@@ -428,9 +428,10 @@ public class DBJoin extends Node {
 				transformation.init(transformationParameters, inMetadata, outMetadata);
 			}
 			if (transformSource != null || transformClassName != null) {
+				String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
 				transformation = RecordTransformFactory.createTransform(
 						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
-						outMetadata, transformationParameters, this.getClass().getClassLoader());
+						outMetadata, transformationParameters, this.getClass().getClassLoader(), classPaths);
 			}			
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);

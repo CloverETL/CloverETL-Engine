@@ -22,6 +22,7 @@ package org.jetel.component.normalize;
 import java.util.Properties;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -37,6 +38,7 @@ public abstract class DataRecordNormalize implements RecordNormalize {
 	protected DataRecordMetadata targetMetadata;
 		
 	protected String errorMessage;
+	private TransformationGraph graph;
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordNormalize#finished()
@@ -78,5 +80,14 @@ public abstract class DataRecordNormalize implements RecordNormalize {
 	public void reset() {
 		errorMessage = null;
 	}
+	
+	public void setGraph(TransformationGraph graph) {
+		this.graph = graph;
+	}
 
+	public TransformationGraph getGraph() {
+		return graph;
+	}
+
+	
 }

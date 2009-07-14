@@ -8,14 +8,8 @@
    	</runtime> 
 
 	<requires engine-version="0.0.0.devel">
-		<import plugin-id="org.jetel.sequence"/>
 	</requires>
 
-	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.XMLExtract"/>
-	    <parameter id="type" value="XML_EXTRACT"/>
-	</extension>
-	
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.Filter"/>
 	    <parameter id="type" value="FILTER"/>

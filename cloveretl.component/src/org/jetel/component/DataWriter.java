@@ -29,18 +29,23 @@ import org.jetel.data.formatter.provider.DataFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.bytes.WritableByteChannelIterator;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -103,6 +108,7 @@ public class DataWriter extends Node {
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
+    private static final String XML_EXCLUDE_FIELDS_ATTRIBUTE = "excludeFields";
 	
 	private String fileURL;
 	private boolean appendData;
@@ -123,7 +129,9 @@ public class DataWriter extends Node {
 	private String partitionUnassignedFileName;
 	private boolean mkDir;
 
-	static Log logger = LogFactory.getLog(DataWriter.class);
+    private String excludeFields;
+
+    static Log logger = LogFactory.getLog(DataWriter.class);
 
 	public final static String COMPONENT_TYPE = "DATA_WRITER";
 	private final static int READ_FROM_PORT = 0;
@@ -211,14 +219,24 @@ public class DataWriter extends Node {
         if (checkPorts(status = new ConfigurationStatus())) {
         	throw new ComponentNotReadyException(status.getFirst().getMessage());
         }
-        
-        if(outputFieldNames) {
-        	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+
+        String[] excludedFieldNames = null;
+
+        if (!StringUtils.isEmpty(excludeFields)) {
+            excludedFieldNames = excludeFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+            formatterProvider.setExcludedFieldNames(excludedFieldNames);
         }
+
+        DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
+
+        if(outputFieldNames) {
+        	formatterProvider.setHeader(metadata.getFieldNamesHeader(excludedFieldNames));
+        }
+
         writer.setDictionary(graph.getDictionary());
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         writer.setMkDir(mkDir);
-        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+        writer.init(metadata);
 	}
 
 	@Override
@@ -313,6 +331,9 @@ public class DataWriter extends Node {
 		if (attrPartitionOutFields != null) {
 			xmlElement.setAttribute(XML_PARTITION_OUTFIELDS_ATTRIBUTE, attrPartitionOutFields);
 		}
+        if (!StringUtils.isEmpty(excludeFields)) {
+            xmlElement.setAttribute(XML_EXCLUDE_FIELDS_ATTRIBUTE, excludeFields);
+        }
 		xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
 	}
@@ -368,7 +389,9 @@ public class DataWriter extends Node {
 			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
 				aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
             }
-			
+            if(xattribs.exists(XML_EXCLUDE_FIELDS_ATTRIBUTE)) {
+                aDataWriter.setExcludeFields(xattribs.getString(XML_EXCLUDE_FIELDS_ATTRIBUTE));
+            }
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
@@ -376,7 +399,7 @@ public class DataWriter extends Node {
 		return aDataWriter;
 	}
 
-	private boolean checkPorts(ConfigurationStatus status) {
+    private boolean checkPorts(ConfigurationStatus status) {
         return !checkInputPorts(status, 1, 1) || !checkOutputPorts(status, 0, 1);
 	}
 
@@ -394,9 +417,18 @@ public class DataWriter extends Node {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
         }
-        
+
+        if (!StringUtils.isEmpty(excludeFields)) {
+            DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
+            String[] excludedFieldNames = excludeFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+
+            if (excludedFieldNames.length >= metadata.getNumFields()) {
+                status.add(new ConfigurationProblem("All data fields excluded!", Severity.ERROR, this,
+                        Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
+            }
+        }
+
         return status;
-        
     }
 	
 	public String getType(){
@@ -538,6 +570,10 @@ public class DataWriter extends Node {
 	private void setMkDirs(boolean mkDir) {
 		this.mkDir = mkDir;
 	}
+
+    private void setExcludeFields(String excludeFields) {
+        this.excludeFields = excludeFields;
+    }
 
 	@Override
 	public synchronized void free() {

@@ -44,6 +44,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.IGraphElement;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -1236,7 +1237,7 @@ public class DBOutputTable extends Node {
 					try {
 						statement.init();
 					} catch (SQLException e) {
-						throw new ComponentNotReadyException(this, e);
+						throw new ComponentAlmostNotReadyException(this, e);
 					}
 					try{
 						keysPort = getOutputPort(WRITE_AUTO_KEY_TO_PORT);
@@ -1247,6 +1248,12 @@ public class DBOutputTable extends Node {
 				}
 			}
              
+         } catch (ComponentAlmostNotReadyException e1) {
+             ConfigurationProblem problem = new ConfigurationProblem(e1.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+             if(!StringUtils.isEmpty(e1.getAttributeName())) {
+                 problem.setAttributeName(e1.getAttributeName());
+             }
+             status.add(problem);
         } catch (ComponentNotReadyException e) {
              ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
              if(!StringUtils.isEmpty(e.getAttributeName())) {
@@ -1290,5 +1297,15 @@ public class DBOutputTable extends Node {
 		this.errorAction = ConnectionAction.valueOf(errorAction);
 	}
 
+	static class ComponentAlmostNotReadyException extends ComponentNotReadyException {
+
+		public ComponentAlmostNotReadyException(IGraphElement element,
+				Exception ex) {
+			super(element, ex);
+		}
+		
+	}
+	
+	
 }
 	

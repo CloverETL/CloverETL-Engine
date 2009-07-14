@@ -117,7 +117,7 @@ public class JavaExecute extends Node {
 	 * @return		Instance of JavaRunnable class
 	 * @throws ComponentNotReadyException
 	 */
-	private static JavaRunnable createRunnable(String runnable,
+	private JavaRunnable createRunnable(String runnable,
 			String runnableClass, String runnableURL, String charset,
 			Node node, Properties runnableParameters, ClassLoader classLoader, boolean doInit) throws ComponentNotReadyException {
 		
@@ -129,8 +129,9 @@ public class JavaExecute extends Node {
         }
 		
         if (runnableClass != null) {
+        	String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
             //get runnable from link to the compiled class
-            codeToRun = JavaExecute.loadClass(logger, runnableClass, null, null);
+            codeToRun = JavaExecute.loadClass(logger, runnableClass, null, classPaths);
         } else if (runnable == null && runnableURL != null) {
         	runnable = FileUtils.getStringFromURL(node.getGraph().getProjectURL(), runnableURL, charset);
         }
@@ -293,7 +294,7 @@ public class JavaExecute extends Node {
 		} else { 
 		
 		/* Create JavaRunnable instance to be executed by code */
-		codeToRun = JavaExecute.createRunnable(runnable, runnableClass, 
+		codeToRun = createRunnable(runnable, runnableClass, 
 				runnableURL, charset, this,	runnableParameters, this.getClass().getClassLoader(), true);
 		}
 		
@@ -309,7 +310,7 @@ public class JavaExecute extends Node {
 		try {
 
 			/* Create JavaRunnable instance to be executed by code */
-			testCodeToRun = JavaExecute.createRunnable(runnable, runnableClass, 
+			testCodeToRun = createRunnable(runnable, runnableClass, 
 					runnableURL, charset, this,	runnableParameters, this.getClass().getClassLoader(), false);
 			
         } catch (ComponentNotReadyException e) {

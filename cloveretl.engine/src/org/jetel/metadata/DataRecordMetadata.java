@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
@@ -42,7 +44,7 @@ import org.jetel.util.string.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
- * A class that represents meta data describing a data record.
+ * A class that represents metadata describing a data record.
  * 
  * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
@@ -104,7 +106,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private String dateFormatStr = null;
 
 	/**
-	 * Constructs data record meta data with given name.
+	 * Constructs data record metadata with given name.
 	 *
 	 * @param name the name of the data record
 	 *
@@ -115,7 +117,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
-	 * Constructs data record meta data with given name and type.
+	 * Constructs data record metadata with given name and type.
 	 *
 	 * @param name the name of the data record
 	 * @param recType the type of the data record
@@ -313,7 +315,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
-	 * @return an array of data field meta data objects
+	 * @return an array of data field metadata objects
 	 */
 	public DataFieldMetadata[] getFields() {
 		return fields.toArray(new DataFieldMetadata[fields.size()]);
@@ -478,7 +480,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
-	 * Deletes all fields in this data field meta data.
+	 * Deletes all fields in this data field metadata.
 	 */
 	public void delAllFields() {
 		fields.clear();
@@ -486,7 +488,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
-	 * Call if the structure of the meta data changes (a field was added/removed).
+	 * Call if the structure of the metadata changes (a field was added/removed).
 	 */
 	private void structureChanged() {
 		recordSize = -1;
@@ -647,7 +649,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
-	 * @return <code>true</code> if a data record described by this meta data contains at least one field which may
+	 * @return <code>true</code> if a data record described by this metadata contains at least one field which may
 	 * contain a NULL value, <code>false</code> otherwise
 	 *
 	 * @since 18th January 2007
@@ -741,9 +743,9 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
-	 * Creates a deep copy of this data record meta data object.
+	 * Creates a deep copy of this data record metadata object.
 	 *
-	 * @return an exact copy of current data record meta data object
+	 * @return an exact copy of current data record metadata object
 	 */
 	public DataRecordMetadata duplicate() {
 		DataRecordMetadata dataRecordMetadata = new DataRecordMetadata(name, recType);
@@ -917,21 +919,59 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		return indices;
 	}
 
+	public int[] fieldsIndicesComplement(String... excludedFieldNames) {
+		int numberOfFieldIndices = getNumFields();
+		BitArray excludeFieldFlags = new BitArray(numberOfFieldIndices);
+
+		if (excludedFieldNames != null) {
+			numberOfFieldIndices -= excludedFieldNames.length;
+
+			for (String fieldName : excludedFieldNames) {
+				int fieldIndex = getFieldPosition(fieldName);
+
+				if (fieldIndex < 0) {
+					throw new IllegalArgumentException("Invalid field name: " + fieldName);
+				}
+
+				excludeFieldFlags.set(fieldIndex);
+			}
+		}
+
+		int[] fieldIndices = new int[numberOfFieldIndices];
+
+		for (int i = 0, index = 0; i < excludeFieldFlags.length(); i++) {
+			if (!excludeFieldFlags.isSet(i)) {
+				fieldIndices[index] = i;
+				index++;
+			}
+		}
+
+		return fieldIndices;
+	}
+
 	/**
 	 * @return header with field names ended by field delimiters; used by flat file writers for file header describing data
 	 */
-	public String getFieldNamesHeader() {
+	public String getFieldNamesHeader(String... excludedFieldNames) {
 		StringBuilder ret = new StringBuilder();
 		DataFieldMetadata dataFieldMetadata;
 		short fieldSize;
 		int headerSize;
 		char blank = ' ';
 
-		for (int i = 0; i < getNumFields(); i++) {
+		int[] includedFieldIndices = fieldsIndicesComplement(excludedFieldNames);
+		int lastIncludedFieldIndex = includedFieldIndices[includedFieldIndices.length - 1];
+
+		for (int i : includedFieldIndices) {
 			dataFieldMetadata = getField(i);
 			if (dataFieldMetadata.isDelimited()) {
 				// delim: add field name and delimiter
 				ret.append(dataFieldMetadata.getName());
+
+				if (i == lastIncludedFieldIndex) {
+					dataFieldMetadata = getField(getNumFields() - 1);
+				}
+
 				ret.append(dataFieldMetadata.getDelimiters()[0]);
 			} else {
 				// fixlen: strip header name or add blank spaces
@@ -946,6 +986,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 				}
 			}
 		}
+
 		// add record delimiter for fixlen
 		if (getField(getNumFields() - 1).isFixed()) {
 			String[] delimiters = getRecordDelimiters();
@@ -959,6 +1000,13 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		}
 
 		return ret.toString();
+	}
+
+	/**
+	 * @return header with field names ended by field delimiters; used by flat file writers for file header describing data
+	 */
+	public String getFieldNamesHeader() {
+		return getFieldNamesHeader(null);
 	}
 
 	/**
@@ -1055,7 +1103,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
-	 * Iterator for contained field meta data.
+	 * Iterator for contained field metadata.
 	 *
 	 * @see java.lang.Iterable#iterator()
 	 */

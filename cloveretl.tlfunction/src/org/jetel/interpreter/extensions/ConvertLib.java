@@ -56,6 +56,8 @@ import org.jetel.interpreter.data.TLValueType;
 import org.jetel.interpreter.extensions.DateLib.CalendarStore;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.bytes.PackedDecimal;
+import org.jetel.util.crypto.Digest;
 
 public class ConvertLib extends TLFunctionLibrary {
 
@@ -85,7 +87,11 @@ public class ConvertLib extends TLFunctionLibrary {
         BITS2STR("bits2str"),
         STR2BITS("str2bits"),
         HEX2BYTE("hex2byte"),
-        BYTE2HEX("byte2hex");
+        BYTE2HEX("byte2hex"),
+        LONG2PACKEDDECIMAL("long2pacdecimal"),
+        PACKEDDECIMAL2LONG("pacdecimal2long"),
+        MD5("md5"),
+        SHA("sha");
         
         
         public String name;
@@ -129,6 +135,10 @@ public class ConvertLib extends TLFunctionLibrary {
         case STR2BITS: return new Str2BitsFunction();
         case HEX2BYTE: return new Hex2ByteFunction();
         case BYTE2HEX: return new Byte2HexFunction();
+        case LONG2PACKEDDECIMAL: return new Long2PackedDecimalFunction();
+        case PACKEDDECIMAL2LONG: return new PackedDecimal2LongFunction();
+        case MD5: return new MD5Function();
+        case SHA: return new SHAFunction();
         default: return null;
        }
     }
@@ -1033,6 +1043,139 @@ public class ConvertLib extends TLFunctionLibrary {
 
 }
 
+		// LONG2PACKEDDECIMAL
+		class Long2PackedDecimalFunction extends TLFunctionPrototype {
+		
+			public Long2PackedDecimalFunction() {
+				super("convert", "long2pacdecimal",
+					"Converts long into packed decimal representation (bytes)",
+					new TLValueType[] { TLValueType.LONG }, TLValueType.BYTE);
+		}
+		
+		@Override
+		public TLValue execute(TLValue[] params, TLContext context) {
+			TLByteArrayValue value = (TLByteArrayValue) context.getContext();
+			if (!params[0].getType().isNumeric()) {
+				throw new TransformLangExecutorRuntimeException(params,
+						"long2pacdecimal - can't convert \"" + params[0] + "\" to "
+									+ TLValueType.BYTE.getName());
+				}
+				ByteArray bytes = value.getByteAraray();
+				bytes.ensureCapacity(16);
+				int length = PackedDecimal.format(params[0].getNumeric().getLong(),
+						bytes.getValue());
+				bytes.setLength(length);
+		
+				return value;
+			}
+		
+			@Override
+			public TLContext createContext() {
+				return TLContext.createByteContext();
+			}
+		}
+		
+		// PACKEDDECIMAL2LONG
+		class PackedDecimal2LongFunction extends TLFunctionPrototype {
+		
+			public PackedDecimal2LongFunction() {
+				super("convert", "pacdecimal2long",
+					"Converts packed decimal(bytes) into long value",
+					new TLValueType[] { TLValueType.BYTE }, TLValueType.LONG);
+		}
+		
+		@Override
+		public TLValue execute(TLValue[] params, TLContext context) {
+			TLNumericValue value = (TLNumericValue) context.getContext();
+			if (params[0].getType() != TLValueType.BYTE) {
+				throw new TransformLangExecutorRuntimeException(params,
+						"pacdecimal2long - can't convert \"" + params[0] + "\" to "
+									+ TLValueType.LONG.getName());
+				}
+				value.setLong(PackedDecimal.parse(((TLByteArrayValue) params[0])
+						.getByteAraray().getValue()));
+				return value;
+			}
+		
+			@Override
+			public TLContext createContext() {
+				return TLContext.createLongContext();
+			}
+		}
+		
+		// MD5
+		class MD5Function extends TLFunctionPrototype {
+		
+			public MD5Function() {
+				super("convert", "md5", "Calculates MD5 hash of input bytes or string",
+					new TLValueType[] { TLValueType.OBJECT }, TLValueType.BYTE);
+		}
+		
+		@Override
+		public TLValue execute(TLValue[] params, TLContext context) {
+			TLByteArrayValue value = (TLByteArrayValue) context.getContext();
+			byte[] resultMD5;
+			if (params[0].getType() == TLValueType.STRING) {
+				resultMD5 = Digest.digest(Digest.DigestType.MD5, params[0]
+						.toString());
+			} else if (params[0].getType() == TLValueType.BYTE) {
+				resultMD5 = Digest.digest(Digest.DigestType.MD5,
+						((TLByteArrayValue) params[0]).getByteAraray().getValue());
+			} else {
+				throw new TransformLangExecutorRuntimeException(params,
+						"md5 - can't convert \"" + params[0] + "\" to "
+									+ TLValueType.BYTE.getName());
+				}
+		
+				ByteArray bytes = value.getByteAraray();
+				bytes.reset();
+				bytes.append(resultMD5);
+				return value;
+			}
+		
+			@Override
+			public TLContext createContext() {
+				return TLContext.createByteContext();
+			}
+		}
+		
+		// SHA
+		class SHAFunction extends TLFunctionPrototype {
+		
+			public SHAFunction() {
+				super("convert", "sha", "Calculates SHA hash of input bytes or string",
+					new TLValueType[] { TLValueType.OBJECT }, TLValueType.BYTE);
+		}
+		
+		@Override
+		public TLValue execute(TLValue[] params, TLContext context) {
+			TLByteArrayValue value = (TLByteArrayValue) context.getContext();
+			byte[] resultSHA;
+			if (params[0].getType() == TLValueType.STRING) {
+				resultSHA = Digest.digest(Digest.DigestType.SHA, params[0]
+						.toString());
+			} else if (params[0].getType() == TLValueType.BYTE) {
+				resultSHA = Digest.digest(Digest.DigestType.SHA,
+						((TLByteArrayValue) params[0]).getByteAraray().getValue());
+			} else {
+				throw new TransformLangExecutorRuntimeException(params,
+						"sha - can't convert \"" + params[0] + "\" to "
+								+ TLValueType.BYTE.getName());
+			}
+		
+			ByteArray bytes = value.getByteAraray();
+			bytes.reset();
+			bytes.append(resultSHA);
+			return value;
+		}
+		
+		@Override
+		public TLContext createContext() {
+			return TLContext.createByteContext();
+		}
+}
+
+
 class Date2StrContext {
     TLValue value;
     SimpleDateFormat format;
@@ -1202,4 +1345,6 @@ class Str2NumContext{
         
         return context;
 	}
+ 
+  
 }

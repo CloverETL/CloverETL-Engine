@@ -141,4 +141,18 @@ public interface JdbcSpecific {
 	 */
 	public String getValidateQuery(String query, QueryType queryType) throws SQLException;
 	
+	/**
+	 * Returns whether given string is a literal in gived db engine
+	 * Examples:
+	 * 'string' - true
+	 * fieldName - false
+	 * 123 - true
+	 * SELECT - false
+	 * , - false
+	 * `name` - false
+	 * etc.
+	 * @return
+	 */
+	public boolean isLiteral(String s);
+	
 }

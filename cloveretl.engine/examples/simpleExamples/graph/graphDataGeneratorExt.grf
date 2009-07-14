@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="admin" created="Fri Feb 06 11:01:53 CET 2009" guiVersion="0.0.0.devel" id="1233914556451" licenseType="Evaluation license." modified="Tue May 19 12:53:29 CEST 2009" modifiedBy="avackova" name="graphDataGeneratorExt" revision="1.266">
+<Graph author="admin" created="Fri Feb 06 11:01:53 CET 2009" guiVersion="0.0.0.devel" id="1233914556451" licenseType="Evaluation license." modified="Tue Jun 30 13:28:18 CEST 2009" modifiedBy="avackova" name="graphDataGeneratorExt" revision="1.286">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="GenerateRecord" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
-<Field name="RandomName" nullable="true" shift="0" skipFirstLine="false" type="string"/>
-<Field format="dd.MM.yyyy" name="RandomDate" nullable="true" shift="0" skipFirstLine="false" type="date"/>
-<Field name="Random" nullable="true" shift="0" skipFirstLine="false" type="number"/>
-<Field name="RandomInt" nullable="true" shift="0" skipFirstLine="false" type="integer"/>
-<Field name="Sequence" nullable="true" shift="0" skipFirstLine="false" type="integer"/>
-<Field name="LookupTableV1" nullable="true" shift="0" skipFirstLine="false" type="string"/>
-<Field name="LookupTableV2" nullable="true" shift="0" skipFirstLine="false" type="integer"/>
-<Field name="Composite" nullable="true" shift="0" skipFirstLine="false" type="string"/>
+<Field name="RandomName" nullable="true" shift="0" size="0" skipFirstLine="false" type="string"/>
+<Field format="dd.MM.yyyy" name="RandomDate" nullable="true" shift="0" size="0" skipFirstLine="false" type="date"/>
+<Field name="Random" nullable="true" shift="0" size="0" skipFirstLine="false" type="number"/>
+<Field name="RandomInt" nullable="true" shift="0" size="0" skipFirstLine="false" type="integer"/>
+<Field name="Sequence" nullable="true" shift="0" size="0" skipFirstLine="false" type="integer"/>
+<Field name="LookupTableV1" nullable="true" shift="0" size="0" skipFirstLine="false" type="string"/>
+<Field name="LookupTableV2" nullable="true" shift="0" size="0" skipFirstLine="false" type="integer"/>
+<Field name="Composite" nullable="true" shift="0" size="0" skipFirstLine="false" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -26,11 +26,14 @@
 1|ahoj1
 2|ahoj2
 3|ahoj3
+5|ahoj5
+7|ahoj7
+10|ahoj10
 ]]></attr>
 </LookupTable>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" generate="//#TL&#10;int i = str2num(char_at(&quot;&quot; + random()*4,0),int);&#10;&#10;// Generates output record.&#10;function generate() {&#10;&#9;$0.RandomName := random_string(0,5)+random_string(5,5);&#10;&#9;$0.RandomDate := random_date(&quot;2009.01.01&quot;,&quot;2009.12.31&quot;,&quot;yyyy.MM.dd&quot;);&#10;&#9;$0.Random := random();&#10;&#9;$0.RandomInt := random()*100;&#10;&#9;$0.Composite := random_string(3,5)+&quot; - &quot; + round(random()*100);&#10;&#9;$0.Sequence := sequence(Sequence0).next;&#10;&#9;$0.LookupTableV1 := lookup(LookupTable0,i).field2;&#10;&#9;$0.LookupTableV2 := lookup(LookupTable0,i).field1;&#10;}&#10;&#10;// Called during component initialization.&#10;function init() {&#10;&#9;lookup_admin(LookupTable0, init);&#10;}&#10;&#10;// Called after the component finishes.&#10;// function finished() {}&#10;" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="20" guiY="20" id="DATA_GENERATOR0" randomSeed="0" recordsNumber="10" type="DATA_GENERATOR">
+<Node enabled="enabled" generate="//#TL&#10;int i;&#10;int f1;&#10;string f2;&#10;&#10;// Generates output record.&#10;function generate() {&#10;&#9;i = random_int(0,10,1);&#10;&#9;f1 = lookup(LookupTable0,i).field1;&#10;&#9;f2 = lookup(LookupTable0,i).field2;&#10;&#9;if (isnull(f1)) return SKIP;&#10;&#9;$0.RandomName := random_string(0,5)+random_string(5,5);&#10;&#9;$0.RandomDate := random_date(&quot;2009.01.01&quot;,&quot;2009.12.31&quot;,&quot;yyyy.MM.dd&quot;);&#10;&#9;$0.Random := random();&#10;&#9;$0.RandomInt := random()*100;&#10;&#9;$0.Composite := random_string(3,5)+&quot; - &quot; + round(random()*100);&#10;&#9;$0.Sequence := sequence(Sequence0).next;&#10;&#9;$0.LookupTableV1 := f2;&#10;&#9;$0.LookupTableV2 := f1;&#10;}&#10;&#10;// Called during component initialization.&#10;function init() {&#10;&#9;lookup_admin(LookupTable0, init);&#10;}&#10;&#10;function getMessage(){&#10;&#9;return &quot;Lookup value doesn't exist for key: &quot; + i;&#10;}&#10;// Called after the component finishes.&#10;function finished() {&#10;&#9;sequence(Sequence0).reset;&#10;}&#10;" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="20" guiY="20" id="DATA_GENERATOR0" randomSeed="0" recordsNumber="10" type="DATA_GENERATOR">
 <attr name="guiPassMetadata"><![CDATA[false]]></attr>
 </Node>
 <Node charset="ISO-8859-1" debugFilename="${DATAOUT_DIR}/random.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="245" guiY="20" id="TRASH1" type="TRASH">

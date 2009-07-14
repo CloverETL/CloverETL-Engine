@@ -58,6 +58,8 @@ import org.jetel.metadata.DataRecordMetadata;
  *       </li>
  *     </ul>
  *   </li>
+ *   <li>The {@link #reset()} method may optionally be called to reset the transformation and the previous step
+ *   can be executed again.</li>
  *   <li>The {@link #free()} method is called to free any allocated resources.</li>
  * </ul>
  *
@@ -79,10 +81,10 @@ public interface RecordRollup {
      * rollup transformation. Any internal allocation/initialization code should be placed here.
      *
      * @param parameters global graph parameters and parameters defined for the component which calls this transformation
-     * @param inputMetadata meta data of input data records
-     * @param accumulatorMetadata meta data of a group "accumulator" used to store intermediate results
-     * or <code>null</code> if no meta data were specified
-     * @param outputMetadata array of meta data of output data records
+     * @param inputMetadata metadata of input data records
+     * @param accumulatorMetadata metadata of a group "accumulator" used to store intermediate results
+     * or <code>null</code> if no metadata were specified
+     * @param outputMetadata array of metadata of output data records
      *
      * @throws ComponentNotReadyException if an error occurred during the initialization
      */

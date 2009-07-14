@@ -347,7 +347,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
 	 */
 	public void fromString(CharSequence seq) {
-		if (!StringUtils.isEmpty(seq) && stringFormat != null && !stringFormat.matches(seq.toString()))
+		if (!StringUtils.isEmpty(seq) && stringFormat != null && !stringFormat.matches(seq))
 			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
 					getMetadata().getName(),DataFieldMetadata.type2Str(getType()),seq,stringFormat.getPattern()), seq.toString());
 		setValue(seq);
@@ -364,15 +364,7 @@ public class StringDataField extends DataField implements CharSequence{
 	    
 		try {
 			ByteBufferUtils.encodeLength(buffer, length);
-        
-			/* old code
-	    	do {
-	    		buffer.put((byte)(0x80 | (byte) length));
-            	length = length >> 7;
-	    	} while((length >> 7) > 0);
-    		buffer.put((byte) length);
-			 */
-	   
+	
 			for(int counter = 0; counter < length; counter++) {
 				buffer.putChar(value.charAt(counter));
 			}
@@ -390,13 +382,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 */
 	public void deserialize(ByteBuffer buffer) {
         final int length=ByteBufferUtils.decodeLength(buffer);
-	    
-	    /*OLD CODE
-         * do {
-	       size = buffer.get();
-	       length = length | ((size & 0x7F) << (7 * count++));
-	    } while(size < 0);
-	   */
+	 
 		// empty value - so we can store new string
 		value.setLength(0);
 
@@ -523,14 +509,6 @@ public class StringDataField extends DataField implements CharSequence{
 		// size of length indicator (basically int variable)
 	    final int length=value.length();
 	    
-	   /*
-        * OLD CODE
-        *  do {
-	    	count++;
-            length = length >> 7;
-	    } while((length >> 7) > 0);
-    	count++;*/
-
 		return length*SIZE_OF_CHAR+ByteBufferUtils.lengthEncoded(length);
 	}
 	

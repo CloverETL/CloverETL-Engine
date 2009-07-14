@@ -54,6 +54,7 @@ public class RecordNormalizeTL implements RecordNormalize {
     private static final String FINISHED_FUNCTION_NAME="finished";
     private static final String INIT_FUNCTION_NAME="init";
     private static final String CLEAN_FUNCTION_NAME="clean";
+    private static final String GET_MESSAGE_FUNCTION_NAME="getMessage";
     
     private int lenghtFunctionIdentifier;
     private int transformFunctionIdentifier;
@@ -72,7 +73,6 @@ public class RecordNormalizeTL implements RecordNormalize {
          counterTL = new TLValue[]{new TLNumericValue<CloverInteger>(TLValueType.INTEGER,new CloverInteger(0))};
          sourceRec=new DataRecord[1];
          targetRec=new DataRecord[1];
-
     }
 
 	/* (non-Javadoc)
@@ -121,12 +121,14 @@ public class RecordNormalizeTL implements RecordNormalize {
 	 * @see org.jetel.component.RecordNormalize#transform(org.jetel.data.DataRecord, org.jetel.data.DataRecord, int)
 	 */
 	public int transform(DataRecord source, DataRecord target, int idx) throws TransformException {
+        // set the error message to null so that the getMessage() method works correctly if no error occurs
+        errorMessage = null;
+
 		counterTL[0].getNumeric().setValue(idx);
 		sourceRec[0]=source;
 		targetRec[0]=target;
 
-		TLValue result = wrapper.executePreparedFunction(transformFunctionIdentifier, 
-				sourceRec, targetRec, counterTL);
+		TLValue result = wrapper.executePreparedFunction(transformFunctionIdentifier, sourceRec, targetRec, counterTL);
 
 		if (result == null || result == TLBooleanValue.TRUE) {
 			return 0;
@@ -158,12 +160,24 @@ public class RecordNormalizeTL implements RecordNormalize {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordNormalize#getMessage()
-	 */
-	public String getMessage() {
-		return errorMessage;
-	}
+    /**
+     * @return an error message if one of the methods failed or if the corresponding CTL function returned one
+     */
+    public String getMessage() {
+        if (errorMessage != null) {
+            return errorMessage;
+        }
+
+        TLValue result = null;
+
+        try {
+            result = wrapper.execute(GET_MESSAGE_FUNCTION_NAME, null);
+        } catch (JetelException exception) {
+            // OK, don't do anything, function getMessage() is not necessary
+        }
+
+        return ((result != null) ? result.toString() : null);
+    }
 
 	/*
 	 * (non-Javadoc)
@@ -174,8 +188,21 @@ public class RecordNormalizeTL implements RecordNormalize {
 		errorMessage = null;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.jetel.component.RecordTransform#setGraph(org.jetel.graph.TransformationGraph)
+	 */
 	public void setGraph(TransformationGraph graph) {
-		// not used here
+		wrapper.setGraph(graph);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.jetel.component.RecordTransform#getGraph()
+	 */
+	public TransformationGraph getGraph() {
+		return wrapper.getGraph();
+	}
 }

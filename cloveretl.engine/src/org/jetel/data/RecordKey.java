@@ -270,7 +270,12 @@ public class RecordKey {
 
 		if (equalNULLs){
 		    for (int i = 0; i < keyFields.length; i++) {
-		        compResult = record1.getField(keyFields[i]).compareTo(record2.getField(record2KeyFields[i]));
+		    	DataField field = record1.getField(keyFields[i]);
+				if (collator != null && (field instanceof StringDataField)) {
+			        compResult = ((StringDataField)field).compareTo(record2.getField(record2KeyFields[i]), collator);
+				} else {
+					compResult = field.compareTo(record2.getField(record2KeyFields[i]));
+				}
 		        if (compResult != 0) {
 		            if (!(record1.getField(keyFields[i]).isNull&&record2.getField(record2KeyFields[i]).isNull)){
 		                return compResult;
@@ -278,9 +283,13 @@ public class RecordKey {
 		        }
 		    }
 		}else{
-		    
 		    for (int i = 0; i < keyFields.length; i++) {
-		        compResult = record1.getField(keyFields[i]).compareTo(record2.getField(record2KeyFields[i]));
+		    	DataField field = record1.getField(keyFields[i]);
+				if (collator != null && (field instanceof StringDataField)) {
+			        compResult = ((StringDataField)field).compareTo(record2.getField(record2KeyFields[i]), collator);
+				} else {
+					compResult = field.compareTo(record2.getField(record2KeyFields[i]));
+				}
 		        if (compResult != 0) {
 		            return compResult;
 		        }

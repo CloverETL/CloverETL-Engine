@@ -581,9 +581,10 @@ public class MergeJoin extends Node {
 		if (transformation != null){
 			transformation.init(transformationParameters, inMetadata, outMetadata);
 		}else{
+			String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
 			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
 					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
-					this.getClass().getClassLoader());
+					this.getClass().getClassLoader(), classPaths);
         }
         errorActions = ErrorAction.createMap(errorActionsString);
         if (errorLogURL != null) {
@@ -605,13 +606,16 @@ public class MergeJoin extends Node {
 		boolean[] ordering = new boolean[joiners.length];
 		Arrays.fill(ordering, ascendingInputs);
 
+		String metadataLocale = metaData.getLocaleStr();
 		int[] fields = new int[joiners.length];
 		for (int i = 0; i < fields.length; i++) {
 			fields[i] = metaData.getFieldPosition(joiners[i]);
+			if (metadataLocale == null)	metadataLocale = metaData.getField(fields[i]).getLocaleStr();
 		}
 		
-		if (locale != null) {
-			RuleBasedCollator col = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(locale));
+		if (metadataLocale != null || locale != null) {
+			metadataLocale = metadataLocale != null ? metadataLocale : locale;
+			RuleBasedCollator col = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(metadataLocale));
 			col.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
 			col.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
 			RecordKey recordKey = new RecordKey(fields, metaData);

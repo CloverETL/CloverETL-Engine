@@ -26,6 +26,8 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -234,6 +236,10 @@ public class Pacemaker extends Node {
 
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        status.add(new ConfigurationProblem(
+        		"Component is of type PACEMAKER, which is deprecated",
+        		Severity.WARNING, this, Priority.NORMAL));
+        
 		super.checkConfig(status);
 
 		if(!checkInputPorts(status, 1, 1)

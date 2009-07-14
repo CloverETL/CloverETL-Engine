@@ -26,11 +26,16 @@ package org.jetel.util.compile;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.URLDecoder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.file.FileUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -126,5 +131,29 @@ public class ClassLoaderUtils {
         }
         return false;
     }
+    
+    /**
+     * Returns instance of GreedyURLClassLoader able to load classes from specified locations.
+     * @see GreedyURLClassLoader
+     * @param contextURL
+     * @param libraryPaths
+     * @return
+     * @throws ComponentNotReadyException
+     */
+	public static GreedyURLClassLoader createClassLoader(ClassLoader parentCl, URL contextURL, String[] libraryPaths)	throws ComponentNotReadyException {
+		URL[] myURLs = new URL[libraryPaths.length];
+		// try to create URL directly, if failed probably the protocol is
+		// missing, so use File.toURL
+		for (int i = 0; i < libraryPaths.length; i++) {
+		    try {
+		        // valid url
+		        myURLs[i] = FileUtils.getFileURL(contextURL, libraryPaths[i]);
+		    } catch (MalformedURLException e) {
+		        throw new ComponentNotReadyException("Malformed URL: " + e.getMessage());
+		    }
+		}
+		GreedyURLClassLoader classLoader = new GreedyURLClassLoader(myURLs, parentCl);
+		return classLoader;
+	}
     
 }

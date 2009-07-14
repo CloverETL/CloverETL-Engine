@@ -52,6 +52,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
     private static final String CLEAN_FUNCTION_NAME="clean";
 	private static final String ADDINPUT_FUNCTION_NAME="append";
 	private static final String GETOUTPUT_FUNCTION_NAME="transform";
+    private static final String GET_MESSAGE_FUNCTION_NAME="getMessage";
 
     private int appendFunctionIdentifier;
     private int transformFunctionIdentifier;
@@ -133,6 +134,9 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	}
 
 	private int transformResult(TLValue result) {
+        // set the error message to null so that the getMessage() method works correctly if no error occurs
+        errorMessage = null;
+
 		if (result == null || result == TLBooleanValue.TRUE) {
 			return 0;
 		}
@@ -163,20 +167,46 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordDenormalize#getMessage()
-	 */
-	public String getMessage() {
-		return errorMessage;
-	}
+    /**
+     * @return an error message if one of the methods failed or if the corresponding CTL function returned one
+     */
+    public String getMessage() {
+        if (errorMessage != null) {
+            return errorMessage;
+        }
+
+        TLValue result = null;
+
+        try {
+            result = wrapper.execute(GET_MESSAGE_FUNCTION_NAME, null);
+        } catch (JetelException exception) {
+            // OK, don't do anything, function getMessage() is not necessary
+        }
+
+        return ((result != null) ? result.toString() : null);
+    }
 
 	public void reset() {
 		errorMessage = null;
 		wrapper.reset();
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.jetel.component.RecordTransform#setGraph(org.jetel.graph.TransformationGraph)
+	 */
 	public void setGraph(TransformationGraph graph) {
-		// not needed here
+		wrapper.setGraph(graph);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.jetel.component.RecordTransform#getGraph()
+	 */
+	public TransformationGraph getGraph() {
+		return wrapper.getGraph();
 	}
 
 }

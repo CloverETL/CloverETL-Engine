@@ -453,9 +453,10 @@ public class LookupJoin extends Node {
 			if (transformation != null){
 				transformation.init(transformationParameters, inMetadata, outMetadata);
 			}else{
+				String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
 				transformation = RecordTransformFactory.createTransform(
 						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
-						outMetadata, transformationParameters, this.getClass().getClassLoader());
+						outMetadata, transformationParameters, this.getClass().getClassLoader(), classPaths);
 			}
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);

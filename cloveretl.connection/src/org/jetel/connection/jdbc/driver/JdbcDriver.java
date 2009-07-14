@@ -20,7 +20,6 @@
 package org.jetel.connection.jdbc.driver;
 
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -30,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -181,7 +181,7 @@ public class JdbcDriver {
 
     private void prepareClassLoader() throws ComponentNotReadyException {
         if(driverLibraries != null && driverLibraries.length > 0) {
-            classLoader = new URLClassLoader(driverLibraries, Thread.currentThread().getContextClassLoader());
+            classLoader = new GreedyURLClassLoader(driverLibraries, Thread.currentThread().getContextClassLoader());
         } else {
             classLoader = Thread.currentThread().getContextClassLoader();
         }

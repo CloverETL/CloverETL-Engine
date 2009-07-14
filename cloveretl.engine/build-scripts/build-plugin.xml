@@ -40,6 +40,12 @@
 	<!-- ProGuard task definition -->
 	<taskdef resource="proguard/ant/task.properties" classpath="${dir.engine.tools}/proguard.jar" />
 		
+	<taskdef resource="cz/mathan/ant/contrib/taskdef.properties">
+	  <classpath>
+	    <pathelement location="${dir.engine.tools}/mathan-ant-contrib.jar"/>
+	  </classpath>
+	</taskdef>
+		
 	<!-- =========================== LIBRARIES ============================= -->
 	<fileset id="engine-libs" dir="${dir.engine.lib}">
 		<include name="**/*.jar"/>
@@ -117,7 +123,7 @@
 	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
 	<target name="improve-java-sources" depends="">
 		<copy todir="${dir.src.improved}" encoding="UTF-8">
-			<fileset dir="${dir.src}" />
+			<fileset dir="${dir.src}" excludes="${java.src.exclude}"/>
 		</copy>
 	</target>
 
@@ -168,8 +174,24 @@
 	</target>
 
 	<target name="plugin.xml" depends="init">
+		<if><equals arg1="${plugin.xml.xslt}" arg2="" trim="true"/>
+			<then>
+				<copy file="plugin.xml" tofile="${dir.build}/plugin.xml" encoding="UTF-8" overwrite="true"/> <!-- overver=true is required, version number may be changed-->
+			</then>
+			<else>
+				<echo>Transforming plugin.xml - ${plugin.xml.xslt}</echo>
+				<xslt 
+					style="${plugin.xml.xslt}"
+					in="plugin.xml"
+					out="${dir.build}/plugin.xml"
+					force="true"
+					>
+				</xslt>
+			</else>
+		</if>
+		
 		<mkdir dir="${dir.manifest}"/>
-		<copy file="plugin.xml" tofile="${dir.manifest}/plugin.xml" encoding="UTF-8" overwrite="true"/> <!-- overver=true is required, version number may be changed-->
+		<copy file="${dir.build}/plugin.xml" tofile="${dir.manifest}/plugin.xml" encoding="UTF-8" overwrite="true"/> <!-- overver=true is required, version number may be changed-->
 		<replace file="${dir.manifest}/plugin.xml" encoding="UTF-8">
 			<replacefilter token="0.0.0.devel" value="${version.full}"/>
 			<replacefilter token="&lt;library path=&quot;bin/&quot;/&gt;" value="&lt;library path=&quot;${plugin.name}.jar&quot;/&gt;"/>
@@ -231,6 +253,7 @@
 			
 
 			<!-- list of classes to keep from all plugins except cloveretl.engine (better to place in plugin build script but duplication of proguard tag in each plugin is required; duplication is worse)-->
+			<keep name="org.jetel.component.RecordFilterTL"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.component.normalize.RecordNormalize"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.component.normalize.DataRecordNormalize"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.component.denormalize.RecordDenormalize"><field access="protected public"/><method access="protected public"/></keep>
@@ -300,20 +323,27 @@
 		</copy>
 	</target>
 
-	<target name="dist.src" depends="init" description="Creates source distribution">
+	<target name="dist.src" depends="plugin.xml" description="Creates source distribution">
 
 		<copy todir="${dist.src}/${plugin.name}/src">
-			<fileset dir="${dir.src}" />
+			<fileset dir="${dir.src}" excludes="${java.src.exclude}"/>
 		</copy>
+		<if><not><equals arg1="${java.src.header.file}" arg2="" trim="true"/></not>
+			<then>
+				<echo>Changing license of all files - license file ${java.src.header.file}</echo> 
+				<fileheading heading="${java.src.header.file}">
+					<fileset dir="${dist.src}/${plugin.name}/src" includes="**/*.java"/>
+				</fileheading>
+			</then>
+		</if>
 
 		<copy todir="${dist.src}/${plugin.name}/lib">
 			<fileset refid="plugin-lib-files"/>
 		</copy>
 
-		<copy todir="${dist.src}/${plugin.name}">
-			<fileset file="build.xml" />
-			<fileset file="plugin.xml" />
-		</copy>
+		<copy todir="${dist.src}/${plugin.name}" file="build.xml"/>
+		<copy todir="${dist.src}/${plugin.name}" file="${dir.build}/plugin.xml"/>
+			
 	</target>
 
 	<target name="clean" depends="init" description="Delete previously build files">
@@ -340,7 +370,7 @@
 	</target>
 
 	
-	<target name="compile-tests" depends="find-required-plugins">
+	<target name="compile-tests" depends="find-required-plugins,compile" if="tests-available">
 		<mkdir dir="${dir.classestest}"/>
 		<if><isset property="tests-available"/><then>
 			<echo>fileset dir="${dir.engine.classestest}"</echo>

@@ -42,6 +42,7 @@ public class GraphRuntimeContext {
 	public static final boolean DEFAULT_WAIT_FOR_JMX_CLIENT = false;
 	public static final boolean DEFAULT_USE_JMX = true;
 	public static final boolean DEFAULT_DEBUG_MODE = true;
+	public static final boolean DEFAULT_SKIP_CHECK_CONFIG = false;
 	
 	private long runId;
 	private String logLocation;
@@ -52,10 +53,11 @@ public class GraphRuntimeContext {
 	private boolean waitForJMXClient;
 	private boolean verboseMode;
 	private Properties additionalProperties;
-	private boolean checkConfig;
+	private boolean skipCheckConfig;
 	private String password;
 	private boolean debugMode;
 	private String debugDirectory;
+	private String[] classPaths;
 	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
@@ -63,7 +65,7 @@ public class GraphRuntimeContext {
 		waitForJMXClient = DEFAULT_WAIT_FOR_JMX_CLIENT;
 		verboseMode = DEFAULT_VERBOSE_MODE;
 		additionalProperties = new Properties();
-		checkConfig = true;
+		skipCheckConfig = DEFAULT_SKIP_CHECK_CONFIG;
 		debugMode = DEFAULT_DEBUG_MODE;
 	}
 	
@@ -76,7 +78,7 @@ public class GraphRuntimeContext {
 		ret.additionalProperties = new Properties();
 		ret.additionalProperties.putAll(getAdditionalProperties());
 		ret.trackingInterval = getTrackingInterval();
-		ret.checkConfig = isCheckConfig();
+		ret.skipCheckConfig = isSkipCheckConfig();
 		ret.verboseMode = isVerboseMode();
 		ret.useJMX = useJMX();
 		ret.waitForJMXClient = isWaitForJMXClient();
@@ -178,18 +180,18 @@ public class GraphRuntimeContext {
     }
     
     /**
-     * Sets whether should be done only checkConfiguration().
+     * Sets whether should be checked graph configuration. (TransformationGraph.checkConfig())
      * @param checkConfig
      */
-    public void setCheckConfig(boolean checkConfig) {
-    	this.checkConfig = checkConfig;
+    public void setSkipCheckConfig(boolean skipCheckConfig) {
+    	this.skipCheckConfig = skipCheckConfig;
     }
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IGraphRuntimeContext#isCheckConfig()
 	 */
-	public boolean isCheckConfig() {
-		return checkConfig;
+	public boolean isSkipCheckConfig() {
+		return skipCheckConfig;
 	}
 
 	/**
@@ -289,6 +291,24 @@ public class GraphRuntimeContext {
 		this.logLevel = logLevel;
 	}
 
+	/** 
+	 * Class-path of external classes. 
+	 * Array of jars and paths. 
+	 * Each component with transformation class specified (attribute transformClass or generatorClass etc.) will use this class-paths to find it.
+	 * */
+	public String[] getClassPaths() {
+		return classPaths;
+	}
+
+	/**
+	 * @link {@link #getClassPaths()}
+	 * @param transformPath
+	 */
+	public void setClassPaths(String[] classPaths) {
+		this.classPaths = classPaths;
+	}
+
+	
 //	/**
 //	 * @return trackingFlushInterval
 //	 */

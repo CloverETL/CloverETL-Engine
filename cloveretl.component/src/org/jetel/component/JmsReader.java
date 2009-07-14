@@ -19,6 +19,7 @@
 */
 package org.jetel.component;
 
+import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
@@ -34,16 +35,14 @@ import org.jetel.connection.jms.JmsConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
+import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -172,7 +171,7 @@ public class JmsReader extends Node {
 		super.init();
 		
 		if (psorClass == null && psorCode == null && psorURL == null) {
-			throw new ComponentNotReadyException("Message processor not specified");
+			psorClass = "org.jetel.component.jms.JmsMsg2DataRecordProperties";
 		}
 		IConnection c = getGraph().getConnection(conId);
 		if (c == null || !(c instanceof JmsConnection)) {
@@ -190,8 +189,9 @@ public class JmsReader extends Node {
 			if (psorClass == null && psorCode == null) {
 				psorCode = FileUtils.getStringFromURL(getGraph().getProjectURL(), psorURL, charset);
 			}
+			String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
 			psor = psorClass == null ? createProcessorDynamic(psorCode)
-					: createProcessor(psorClass);
+					: createProcessor(psorClass, classPaths);
 		}		
 		psor.init(getOutputPort(0).getMetadata(), psorProperties);
 		
@@ -232,16 +232,27 @@ public class JmsReader extends Node {
 	 * @return
 	 * @throws ComponentNotReadyException
 	 */
-	private static JmsMsg2DataRecord createProcessor(String psorClass) throws ComponentNotReadyException {
+	private static JmsMsg2DataRecord createProcessor(String psorClass, String[] classPaths) throws ComponentNotReadyException {
 		JmsMsg2DataRecord psor;
-        try {
-            psor =  (JmsMsg2DataRecord)Class.forName(psorClass).newInstance();
+    	try {
+            psor =  (JmsMsg2DataRecord)Class.forName(psorClass, true, JmsWriter.class.getClassLoader()).newInstance();
         }catch (InstantiationException ex){
             throw new ComponentNotReadyException("Can't instantiate msg processor class: "+ex.getMessage());
         }catch (IllegalAccessException ex){
             throw new ComponentNotReadyException("Can't instantiate msg processor class: "+ex.getMessage());
         }catch (ClassNotFoundException ex) {
-            throw new ComponentNotReadyException("Can't find specified msg processor class: " + psorClass);
+            if (classPaths == null)
+                throw new ComponentNotReadyException( "Can't find specified transformation class: " + psorClass);
+            try {
+                URLClassLoader classLoader = ClassLoaderUtils.createClassLoader(Thread.currentThread().getContextClassLoader(), null, classPaths);
+                psor =  (JmsMsg2DataRecord)Class.forName(psorClass, true, classLoader).newInstance();
+            } catch (ClassNotFoundException ex1) {
+                throw new ComponentNotReadyException("Can not find class: "+ ex1);
+            } catch (Exception ex3) {
+                throw new ComponentNotReadyException(ex3.getMessage());
+            }
+        }catch (Exception ex) {
+            throw new ComponentNotReadyException("Can't create instance of msg processor class: " + psorClass + " "+ ex.getMessage(), ex);
         }
 		return psor;
 	}
@@ -311,6 +322,11 @@ public class JmsReader extends Node {
 		        autoFilling.setAutoFillingFields(rec);
 				writeRecordBroadcast(rec);
 			}
+		} catch (javax.jms.JMSException e) {
+			if (e.getCause() instanceof InterruptedException)
+				throw (InterruptedException)e.getCause();
+			else
+				throw e;
 		} catch (Exception e) {
 			throw e;
 		}finally{
@@ -389,7 +405,7 @@ public class JmsReader extends Node {
 			jmsReader = new JmsReader(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_CONNECTION_ATTRIBUTE, null),
 					xattribs.getString(XML_SELECTOR_ATTRIBUTE, null),
-					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, "org.jetel.component.jms.JmsMsg2DataRecordProperties"),
+					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, null),
 					xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
 					xattribs.getString(XML_PSORURL_ATTRIBUTE, null),
 					xattribs.getInteger(XML_MAXMSGCNT_ATTRIBUTE, 0),

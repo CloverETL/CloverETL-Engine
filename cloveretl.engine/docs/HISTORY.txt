@@ -4,7 +4,12 @@
 REL 2-8-0
 ---------
 + Method DataRecord2JmsMsg.createLastMsg(DataRecord) is deprecated. Use the same method without parameters instead.  
++ org.jetel.component.jms.JmsMsg2DataRecordProperties can process javax.jms.BytesMessage
++ bodyField attribute of JmsReader/JmsWriter have default value 
 
+REL 2-7-2
+---------
++ simplified JMSWriter - method DataRecord2JmsMsg.createMsg(r) is called for all records (event for last record) and DataRecord2JmsMsg.createLastMsg(r) is called just once after last record. 
 
 REL 2-7-1
 ---------
