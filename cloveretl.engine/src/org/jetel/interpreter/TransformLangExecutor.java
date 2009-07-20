@@ -1479,6 +1479,13 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 							varNode.arrayIndex = ((DataRecord) variableToAssign
 									.getTLValue().getValue()).getMetadata()
 									.getFieldPosition(varNode.fieldID);
+							
+							// check if the referenced field exists and we were able to resolve it
+							if (varNode.arrayIndex == -1) {
+								final String fieldName = varNode.fieldID == null ? "null" : varNode.fieldID; 
+								throw new TransformLangExecutorRuntimeException(node,
+										"referenced field \"" + fieldName + "\" does not exist");
+							}
 						}
 						((TLContainerValue) variableToAssign.getTLValue())
 								.setStoredValue(varNode.arrayIndex,
