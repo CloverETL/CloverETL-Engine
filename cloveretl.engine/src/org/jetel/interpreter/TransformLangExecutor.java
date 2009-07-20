@@ -1833,6 +1833,17 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                         "Can't obtain Sequence \""+node.sequenceName+
                         "\" from graph \""+graph.getName()+"\"");
             }
+            
+            // initialize the sequence if necessary
+            if (!node.sequence.isInitialized()) {
+            	try {
+					node.sequence.init();
+				} catch (ComponentNotReadyException e) {
+					throw new TransformLangExecutorRuntimeException(
+							node,"Unable to initialize sequence " 
+							+ "\"" + node.sequenceName + "\"",e);
+				}
+            }
         }
         if (node.value==null){
         	switch(node.retType){
