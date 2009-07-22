@@ -1576,7 +1576,13 @@ public class TypeChecker extends NavigatingVisitor {
 	private void castIfNeeded(SimpleNode parent, int index, TLType toType) {
 		final SimpleNode child = (SimpleNode)parent.jjtGetChild(index);
 		
+		// do not generate type case for identical types or null literal 
 		if (child.getType().equals(toType) || child.getType().isNull()) {
+			return;
+		}
+		
+		// do not generate type case if the target type is generic record (coming from CTL function)
+		if (toType.isRecord() && ((TLTypeRecord)toType).getMetadata() == null) {
 			return;
 		}
 		

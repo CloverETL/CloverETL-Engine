@@ -217,12 +217,13 @@ public class InterpreterTest extends CloverTestCase {
 						"int o2; o2=-011111; print_err(o2);\n"+
 						"int minInt; minInt="+Integer.MIN_VALUE+"; print_err(minInt, true);\n"+
 						"int maxInt; maxInt="+Integer.MAX_VALUE+"; print_err(maxInt, true);\n"+
-						"int field; field=$Value; print_err(field);";
+						"int field; field=$Value; print_err(field);\n" +
+						"$Value := 1234;\n";
 
 		try {
 		      print_code(expStr);
 
-		      TransformLangParser parser = new TransformLangParser(record.getMetadata(), expStr);
+		      TransformLangParser parser = new TransformLangParser(new DataRecordMetadata[]{record.getMetadata()},new DataRecordMetadata[]{record.getMetadata()}, expStr);
 		      CLVFStart parseTree = parser.Start();
 
 		      System.out.println("Initializing parse tree..");
@@ -233,6 +234,7 @@ public class InterpreterTest extends CloverTestCase {
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.setOutputRecords(new DataRecord[]{record1});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 		      

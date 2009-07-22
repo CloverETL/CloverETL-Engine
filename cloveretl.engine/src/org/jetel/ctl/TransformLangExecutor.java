@@ -2143,6 +2143,17 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		);
 	}
 	
+	public void setAst(CLVFStart ast) {
+		setASTInternal(ast);
+	}
+	
+	public void setAst(CLVFStartExpression ast) {
+		setASTInternal(ast);
+	}
+
+	private void setASTInternal(SimpleNode ast) {
+		this.ast = ast;
+	}
 	
 	public void executeFunction(CLVFFunctionDeclaration node, Object[] data) {
 		final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
@@ -2166,18 +2177,19 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		stack.exitedBlock();
 	}
 
-	public void setAst(CLVFStart ast) {
-		setASTInternal(ast);
-	}
-	
-	public void setAst(CLVFStartExpression ast) {
-		setASTInternal(ast);
-	}
-
-	private void setASTInternal(SimpleNode ast) {
-		this.ast = ast;
-	}
-	
+	/**
+	 * Executes function with specified name declared within CTL code.
+	 * First performs a lookup to retrieve function declaration.
+	 * If function is overloaded in CTL, first declared function with such name is executed.
+	 * Therefore this method should be used only with functions that are not overloaded.
+	 * 
+	 * @param functionName	name of function to execute
+	 * @param arguments	arguments to pass to the executed function
+	 * @param inputRecords	global array of input records
+	 * @param outputRecords	global array of output records
+	 * @return	return value of executed function
+	 * @throws TransformLangExecutorRuntimeException	if function with such a name does not exist
+	 */
 	public Object executeFunction(String functionName, Object[] arguments, DataRecord[] inputRecords, DataRecord[] outputRecords) 
 	throws TransformLangExecutorRuntimeException {
 		CLVFFunctionDeclaration d = getFunction(functionName);
@@ -2191,6 +2203,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 	
 	
+	/**
+	 * Executes AST node containing a function declaration
+	 * @param node	function declaration
+	 * @param arguments	arguments to be passed to the function
+	 * @param inputRecords	global array of input records
+	 * @param outputRecords global array of output records
+	 * @return return value of executed function or <code>null</code> if <code>void</code>
+	 */
 	public Object executeFunction(CLVFFunctionDeclaration node, Object[] arguments, DataRecord[] inputRecords, DataRecord[] outputRecords) {
 		
 		
@@ -2198,6 +2218,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		this.inputRecords = inputRecords;
 		this.outputRecords = outputRecords;
 
+		//clean previous return value
+		this.lastReturnValue = null;
+		
 		//execute function
 		executeFunction(node,arguments);
 

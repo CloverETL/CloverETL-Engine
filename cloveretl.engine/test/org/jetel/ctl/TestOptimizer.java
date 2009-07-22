@@ -1,51 +1,19 @@
 package org.jetel.ctl;
 
-import static org.jetel.ctl.TransformLangExecutor.MAX_PRECISION;
-
-import java.math.BigDecimal;
 import java.net.URL;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import junit.framework.AssertionFailedError;
 
 import org.jetel.component.CTLRecordTransform;
-import org.jetel.component.DataRecordTransform;
-import org.jetel.component.RecordTransform;
 import org.jetel.component.CTLRecordTransformAdapter;
-import org.jetel.ctl.ErrorMessage;
-import org.jetel.ctl.ITLCompiler;
-import org.jetel.ctl.TLCompiler;
-import org.jetel.ctl.TLCompilerFactory;
-import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.ctl.ASTnode.CLVFStart;
 import org.jetel.data.DataRecord;
-import org.jetel.data.DateDataField;
-import org.jetel.data.NumericDataField;
-import org.jetel.data.SetVal;
-import org.jetel.data.StringDataField;
-import org.jetel.data.lookup.LookupTable;
-import org.jetel.data.lookup.LookupTableFactory;
-import org.jetel.data.sequence.Sequence;
-import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.test.CloverTestCase;
-import org.jetel.util.primitive.TypedProperties;
-import org.jetel.util.string.StringUtils;
 
 public class TestOptimizer extends CompilerTestCase {
 
@@ -76,6 +44,10 @@ public class TestOptimizer extends CompilerTestCase {
 		}
 		
 		executor.executeFunction(transform, new Object[0]);
+	}
+	
+	protected void check(String varName, Object value) {
+		assertEquals(varName,executor.getVariableValue(varName),value);
 	}
 	
 	
@@ -3801,11 +3773,18 @@ public class TestOptimizer extends CompilerTestCase {
 	public void test_num2str_function(){
 		System.out.println("num2str() test:");
 		doCompile("test_num2str_function");
+		
+		check("intOutput", createList("16","10000","20","10"));
+		check("longOutput", createList("16","10000","20","10"));
+		check("doubleOutput", createList("16.16","0x1.028f5c28f5c29p4"));
+		check("decimalOutput", createList("16.16"));
 	}
 
 	public void test_pow_function(){
 		System.out.println("pow() test:");
 		doCompile("test_pow_function");
+	
+		
 	}
     
 	public void test_round_function() {
@@ -3813,5 +3792,12 @@ public class TestOptimizer extends CompilerTestCase {
 		doCompile("test_round_function");
 	}
 	
+	public void test_length_function() {
+		System.out.println("length() test:");
+		doCompile("test_length_function");
+	}
+	
 
+	
+	
 }
