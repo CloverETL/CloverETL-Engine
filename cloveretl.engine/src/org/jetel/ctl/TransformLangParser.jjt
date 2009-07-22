@@ -65,7 +65,7 @@ import org.jetel.ctl.data.Scope;
 import org.jetel.util.string.StringUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.CharSequenceReader;
-import org.jetel.component.CustomizedRecordTransform;
+import org.jetel.component.RecordTransform;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -594,6 +594,15 @@ TOKEN :
 | < MINUTE: "minute" >
 | < SECOND: "second" >
 | < MILLISEC: "millisec" >
+}
+
+
+/* Transformation return value constants */
+TOKEN : 
+{
+  < RETURN_OK: "OK" >
+| < RETURN_SKIP: "SKIP" >
+| < RETURN_ALL: "ALL" >
 }
 
 /*
@@ -1715,8 +1724,26 @@ void DoStatement() #DoStatement(2) :{}{  <DO>
 		jjtThis.end(token.endLine,token.endColumn); 
 	}}
 void ReturnStatement() : {}{    <RETURN> { jjtThis.begin(token.beginLine,token.beginColumn); }
-    [ Expression() ]
-    { jjtThis.end(token.endLine,token.endColumn); }}//void EvalNode() ://{}//{//   "eval(" AdditiveExpression() ["," AdditiveExpression() ] ")" { hasEvalNode=true;  jjtThis.setExpMode(false); }//   | "eval_exp(" AdditiveExpression() ")" { jjtThis.setExpMode(true); }//}void SequenceNode() :{	Token t;}{	"sequence"
+    [ 
+    	Expression() 
+    	|
+    	ControlConstant()
+    ]
+    { jjtThis.end(token.endLine,token.endColumn); }}
+void ControlConstant() #Literal : {}
+{
+	{ jjtThis.begin(token.beginLine,token.beginColumn); }
+	(
+	"OK" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(0); }
+	|
+	"SKIP" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(RecordTransform.SKIP); }
+	|
+	"ALL" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(RecordTransform.ALL); }
+	)
+	{ jjtThis.end(token.endLine, token.endColumn); }
+}
+	
+//void EvalNode() ://{}//{//   "eval(" AdditiveExpression() ["," AdditiveExpression() ] ")" { hasEvalNode=true;  jjtThis.setExpMode(false); }//   | "eval_exp(" AdditiveExpression() ")" { jjtThis.setExpMode(true); }//}void SequenceNode() :{	Token t;}{	"sequence"
 	{
 		jjtThis.begin(token.beginLine,token.beginColumn);
 	} 

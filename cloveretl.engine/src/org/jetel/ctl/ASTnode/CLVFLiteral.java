@@ -57,6 +57,10 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 		this.valueImage = valueImage;
 	}
 	
+	public void setValueDirect(Object value) {
+		this.valueObj = value;
+	}
+	
 	public int getTokenKind() {
 		return tokenKind;
 	}
