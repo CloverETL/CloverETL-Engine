@@ -10,11 +10,15 @@
 
 /* *********** !!!!!!!!!!!!!!! Compilation note !!!!!!!!!!!!!! *****************
 	Whenever parser is recompiled by javacc, you need to:
+	
 	1. Delete the file org.jetel.ctl.Node.java
+	   Delete the file org.jetel.ctl.SimpleNode.java
 	   Because all AST nodes are using org.jetel.ctl.ASTNode.Node as their parent
+	   
 	2. Fix imports in org.jetel.interpreter.TransformLangParserVisitor.java
 	   Since our AST nodes are located in package org.jetel.ctl.ASTNode
 	   Add TransformLangParserVisitor extends SyntheticNodeVisitor interface
+	   
 	3. Modify org.jetel.ctl.TransformLangParser.jj_consume_token():
 	 	
 	 	...
@@ -26,6 +30,7 @@
 	    
 	    If not done, most of the syntactic errors will not be correctly reported by the parser
 	    and javacc does not provide token_error() method mentioned in documentation anymore.
+	    
 	4. Before making a commit of production parser be sure to set the 
 		DEBUG_PARSER = false;
    		DEBUG_TOKEN_MANAGER = false;
