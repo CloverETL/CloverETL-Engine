@@ -1,0 +1,67 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package org.jetel.data.xsd;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import javax.xml.bind.DatatypeConverter;
+import org.apache.log4j.Logger;
+import org.jetel.exception.DataConversionException;
+
+/**
+ *
+ * @author Pavel Pospichal
+ */
+public class CloverDateConvertor implements IGenericConvertor {
+
+    private static Logger logger = Logger.getLogger(CloverDateConvertor.class);
+    
+    public static Date parseXsdDateToDate(String value) throws DataConversionException {
+        Date result = null;
+        String valueType = Date.class.getName();
+        
+        try {
+            Calendar calendar = DatatypeConverter.parseDate(value);
+            result = calendar.getTime();    
+        } catch(Exception e) {
+            if (result != null) valueType = result.getClass().getName();
+            logger.fatal("Unable to parse xsd:date to "+valueType+".",e);
+            throw new DataConversionException("Unable to parse xsd:date to "+valueType+".", e);
+        }
+        
+        return result;
+    }
+    
+    public static String printDateToXsdDate(Date value) throws DataConversionException {
+        String result = null;
+        String valueType = Date.class.getName();
+        
+        try {
+            GregorianCalendar calendar = new GregorianCalendar();
+            calendar.setTime(value);
+            result = DatatypeConverter.printDate(calendar);
+        } catch(Exception e) {
+            if (value != null) valueType = value.getClass().getName();
+            logger.fatal("Unable to print "+valueType+" to xsd:date.",e);
+            throw new DataConversionException("Unable to print "+valueType+" to xsd:date.", e);
+        }
+        
+        return result;
+    }
+
+    public Object parse(String input) throws DataConversionException {
+        return parseXsdDateToDate(input);
+    }
+
+    public String print(Object obj) throws DataConversionException {
+        if (!(obj instanceof Date)) {
+            throw new DataConversionException("Unsupported type by convertion: " + obj.getClass().getName());
+        }
+
+        return printDateToXsdDate((Date) obj);
+    }
+}

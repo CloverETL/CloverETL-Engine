@@ -18,6 +18,8 @@
 *
 */
 package org.jetel.util.property;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -27,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import javax.xml.namespace.QName;
 
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.graph.TransformationGraph;
@@ -669,6 +673,119 @@ public class ComponentXMLAttributes {
 	    this.refResolver.setResolve(resolve);
 	}
 	
+	/**
+	 * Returns the qualified name value of specified XML attribute
+	 * 
+	 * @param key
+	 *            name of the attribute
+	 * @return The qualified name value
+	 * @throws AttributeNotFoundException
+	 *             if attribute does not exist or if can not resolve reference to global parameter/property included in
+	 *             atribute's textual/string value
+	 */
+	public QName getQName(String key) throws AttributeNotFoundException {
+		String value = nodeXML.getAttribute(key);
+		if (value.length() == 0) {
+			throw new AttributeNotFoundException(key);
+		}
+
+		value = refResolver.resolveRef(value);
+
+		return new QName(value);
+	}
+
+	/**
+	 * Returns the qualified name value of specified XML attribute
+	 * 
+	 * @param key
+	 *            name of the attribute
+	 * @param defaultValue
+	 *            default value to be returned when attribute can't be found
+	 * @return The qualified name value
+	 */
+	public QName getQName(String key, QName defaultValue) {
+		String value = nodeXML.getAttribute(key);
+		if (value.length() == 0) {
+			return defaultValue;
+		}
+
+		value = refResolver.resolveRef(value);
+
+		return new QName(value);
+	}
+
+	/**
+	 * Sets the qualified name as value of specified attribute
+	 * 
+	 * @param key
+	 *            attribute name
+	 * @param value
+	 *            attribute value
+	 */
+	public void setQName(String key, QName value) throws AttributeNotFoundException {
+		nodeXML.setAttribute(key, value.toString());
+	}
+	
+	/**
+	 * Returns the URL location value of specified XML attribute
+	 * 
+	 * @param key
+	 *            name of the attribute
+	 * @return The qualified name value
+	 * @throws AttributeNotFoundException
+	 *             if attribute does not exist or if can not resolve reference to global parameter/property included in
+	 *             atribute's textual/string value
+	 */
+	public URL getURL(String key) throws AttributeNotFoundException {
+		String value = nodeXML.getAttribute(key);
+		if (value.length() == 0) {
+			throw new AttributeNotFoundException(key);
+		}
+
+		value = refResolver.resolveRef(value);
+
+		try {
+			return new URL(value);
+		} catch (MalformedURLException urle) {
+			throw new AttributeNotFoundException(key, urle.getMessage());
+		}
+	}
+
+	/**
+	 * Returns the URL location value of specified XML attribute
+	 * 
+	 * @param key
+	 *            name of the attribute
+	 * @param defaultValue
+	 *            default value to be returned when attribute can't be found
+	 * @return The URL location value
+	 */
+	public URL getURL(String key, URL defaultValue) {
+		String value = nodeXML.getAttribute(key);
+		if (value.length() == 0) {
+			return defaultValue;
+		}
+
+		value = refResolver.resolveRef(value);
+
+		try {
+			return new URL(value);
+		} catch (MalformedURLException urle) {
+			return defaultValue;
+		}
+	}
+	
+	/**
+	 * Sets the URL location as value of specified attribute
+	 * 
+	 * @param key
+	 *            attribute name
+	 * @param value
+	 *            attribute value
+	 */
+	public void setURL(String key, URL value) throws AttributeNotFoundException {
+		nodeXML.setAttribute(key, value.toString());
+	}
 }
 /*
  *  End class StringUtils
