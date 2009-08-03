@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -153,11 +154,17 @@ public class ReadableChannelIterator {
 		List<ProcessingType> lProcessing4SourceAndDiscreteType = new ArrayList<ProcessingType>();
 		for (int i=0; i<fields.length; i++) {
 			portStatement = portProtocolFields.get(i);
-			String fName = getFieldName(portStatement);
+			PortHandler portHandler = null;
+			try {
+				portHandler = new PortHandler(portStatement, ProcessingType.DISCRETE);
+			} catch (MalformedURLException e) {
+				throw new ComponentNotReadyException("The source string '" + e.getMessage() + "' is not valid.");
+			}
+			String fName = portHandler.getFieldName();
 			if (!record.hasField(fName)) throw new ComponentNotReadyException("The field not found for the statement: '" + portStatement + "'");
 			fields[i] = record.getField(fName);
 			if (fields[i] == null) throw new ComponentNotReadyException("The field not found for the statement: '" + portStatement + "'");
-			processingType[i] = getProcessingType(portStatement);
+			processingType[i] = portHandler.getProcessingType();
 			if (processingType[i] != ProcessingType.STREAM) {
 				lProcessing4SourceAndDiscrete.add(fields[i]);
 				lProcessing4SourceAndDiscreteType.add(processingType[i]);
@@ -189,20 +196,6 @@ public class ReadableChannelIterator {
 		}
 	}
 
-	private String getFieldName(String source) throws ComponentNotReadyException {
-		String[] param = source.split(PARAM_DELIMITER); // port:$port.field[:processingType]
-		if (param.length < 2) throw new ComponentNotReadyException("The source string '" + source + "' is not valid.");
-		param = param[1].split(PORT_DELIMITER);
-		if (param.length < 2) throw new ComponentNotReadyException("The source string '" + source + "' is not valid.");
-		return param[1];
-	}
-	
-	private ProcessingType getProcessingType(String source) {
-		String[] param = source.split(PARAM_DELIMITER); // port:$port.field[:processingType]
-		if (param.length < 3) return ProcessingType.DISCRETE;
-		return ProcessingType.fromString(param[2], ProcessingType.DISCRETE);
-	}
-	
 	/**
 	 * !!!returns!!! 
 	 * 		true  - if the source contains data OR if the input port is NOT eof, 
@@ -519,6 +512,50 @@ public class ReadableChannelIterator {
 		}
 		public void remove() {
 		}
+	}
+
+	public static class PortHandler {
+
+		public static final String PORT = "port";
+		
+		private String portName;
+		private String fieldName;
+		private ProcessingType processingType;
+
+		public PortHandler(String resource, ProcessingType defaultProcessingType) throws MalformedURLException {
+			if (resource == null) {
+				throw new MalformedURLException(resource);
+			}
+			String[] elements = resource.split(PARAM_DELIMITER);
+			if (elements.length < 2) {
+				throw new MalformedURLException(resource);
+			}
+			if (!elements[0].equals(PORT)) {
+				throw new MalformedURLException(resource);
+			}
+			String[] fieldNamePort = elements[1].split(PORT_DELIMITER);
+			if (fieldNamePort.length < 2) {
+				throw new MalformedURLException(resource);
+			}
+			portName = fieldNamePort[0].replace("$", "");
+			fieldName = fieldNamePort[1];
+			processingType = ProcessingType.DISCRETE;
+			if (elements.length > 2) {
+				processingType = ProcessingType.fromString(elements[2], defaultProcessingType);
+			}
+		}
+		
+	    public String getFieldName() {
+	    	return fieldName;
+	    }
+
+	    public String getPort() {
+	    	return portName;
+	    }
+
+	    public ProcessingType getProcessingType() {
+	    	return processingType;
+	    }
 	}
 
 }
