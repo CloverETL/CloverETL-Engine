@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.log4j.Logger;
 import org.jetel.exception.DataConversionException;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 
@@ -15,6 +16,10 @@ import org.jetel.data.primitive.Numeric;
 public class CloverDecimalConvertor implements IGenericConvertor {
 
     private static Logger logger = Logger.getLogger(CloverDecimalConvertor.class);
+    
+    static {
+    	ConvertorRegistry.registerConvertor(new CloverDecimalConvertor());
+    }
     
     public static Numeric parseXsdDecimalToNumeric(String value) throws DataConversionException {
         Numeric result = null;
@@ -59,4 +64,8 @@ public class CloverDecimalConvertor implements IGenericConvertor {
 
         return printNumericToXsdDecimal((Numeric) obj);
     }
+
+	public boolean supportsCloverType(String cloverDataTypeCriteria) {
+		return DataFieldMetadata.DECIMAL_TYPE.equals(cloverDataTypeCriteria);
+	}
 }

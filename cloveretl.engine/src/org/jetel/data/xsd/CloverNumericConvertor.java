@@ -4,6 +4,7 @@ package org.jetel.data.xsd;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.log4j.Logger;
 import org.jetel.exception.DataConversionException;
+import org.jetel.metadata.DataFieldMetadata;
 
 /**
  *
@@ -12,6 +13,10 @@ import org.jetel.exception.DataConversionException;
 public class CloverNumericConvertor implements IGenericConvertor {
 
     private static Logger logger = Logger.getLogger(CloverNumericConvertor.class);
+    
+    static {
+    	ConvertorRegistry.registerConvertor(new CloverNumericConvertor());
+    }
     
     public static Double parseXsdDoubleToDouble(String value) throws DataConversionException {
         Double result = null;
@@ -50,4 +55,8 @@ public class CloverNumericConvertor implements IGenericConvertor {
 
         return printDoubleToXsdDouble((Double) obj);
     }
+
+	public boolean supportsCloverType(String cloverDataTypeCriteria) {
+		return DataFieldMetadata.NUMERIC_TYPE.equals(cloverDataTypeCriteria);
+	}
 }

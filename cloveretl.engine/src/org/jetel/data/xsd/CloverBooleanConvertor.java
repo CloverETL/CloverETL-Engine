@@ -4,6 +4,7 @@ package org.jetel.data.xsd;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.log4j.Logger;
 import org.jetel.exception.DataConversionException;
+import org.jetel.metadata.DataFieldMetadata;
 
 /**
  *
@@ -12,6 +13,10 @@ import org.jetel.exception.DataConversionException;
 public class CloverBooleanConvertor implements IGenericConvertor {
 
     private static Logger logger = Logger.getLogger(CloverBooleanConvertor.class);
+    
+    static {
+    	ConvertorRegistry.registerConvertor(new CloverBooleanConvertor());
+    }
     
     public static Boolean parseXsdBooleanToBoolean(String value) throws DataConversionException {
         Boolean result = null;
@@ -48,4 +53,8 @@ public class CloverBooleanConvertor implements IGenericConvertor {
 
         return printBooleanToXsdBoolean((Boolean) obj);
     }
+
+	public boolean supportsCloverType(String cloverDataTypeCriteria) {
+		return DataFieldMetadata.BOOLEAN_TYPE.equals(cloverDataTypeCriteria);
+	}
 }
