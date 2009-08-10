@@ -1,0 +1,3 @@
+
+<Mapping element="ns2:payload" fieldsNamespacePrefix="ns3" namespaces="ns2=&quot;http://cloverWS.org/ns/types/cloverWSProtocol/&quot;;ns3=&quot;http://cloverWS.org/ns/types/cloverMetadata/&quot;" inPort="0" key="CUSTOMERID" fieldsAs="elements" >
+</Mapping>

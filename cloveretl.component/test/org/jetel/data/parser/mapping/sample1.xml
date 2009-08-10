@@ -1,0 +1,11 @@
+<Context xpath="/ns3:typeMix" outPort="0" namespacePaths="ns3=&quot;http://cloverWS.org/ns/types/cloverMetadata/&quot;">
+    <Mapping nodeName="ns3:BOOLEANTYPE" cloverField="BOOLEANTYPE"/>
+    <Mapping nodeName="ns3:BYTETYPE" cloverField="BYTETYPE"/>
+    <Mapping nodeName="ns3:BYTECOMPRESSEDTYPE" cloverField="BYTECOMPRESSEDTYPE"/>
+    <Mapping nodeName="ns3:DATETYPE" cloverField="DATETYPE"/>
+    <Mapping nodeName="ns3:DECIMALTYPE" cloverField="DECIMALTYPE"/>
+    <Mapping nodeName="ns3:INTEGERTYPE" cloverField="INTEGERTYPE"/>
+    <Mapping nodeName="ns3:LONGTYPE" cloverField="LONGTYPE"/>
+    <Mapping nodeName="ns3:NUMERICTYPE" cloverField="NUMERICTYPE"/>
+    <Mapping nodeName="ns3:STRINGTYPE" cloverField="STRINGTYPE"/>
+</Context>
