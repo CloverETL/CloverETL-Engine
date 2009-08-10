@@ -390,6 +390,12 @@
 				</classpath>
 				<src path="${dir.src.test}"/>
 			</javac>
+			<copy todir="${dir.classestest}">
+				<fileset dir="${dir.src.test}">
+					<include name="**/*.xml"/>
+					<include name="**/*.xsd"/>
+				</fileset>
+			</copy>
 		</then></if>
 	</target>
 	
@@ -412,8 +418,10 @@
 				<fileset dir="${test.cloveretl.plugins}/${plugin.dir.name}/">
 					<include name="**/*.jar"/>
 				</fileset>
+				<!--
+				// bring about difficulties with class files on classpath
 				<fileset dir="${dir.engine.classestest}">
-				</fileset>
+				</fileset>-->
 				<fileset refid="plugin-libs"/>
 				<fileset refid="engine-libs"/>
 				<fileset refid="engine-tools"/>
