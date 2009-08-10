@@ -21,16 +21,10 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
-import org.jetel.data.xsd.CloverBooleanConvertor;
-import org.jetel.data.xsd.CloverDateConvertor;
-import org.jetel.data.xsd.CloverDateTimeConvertor;
-import org.jetel.data.xsd.CloverDecimalConvertor;
-import org.jetel.data.xsd.CloverNumericConvertor;
-import org.jetel.data.xsd.CloverStringConvertor;
+import org.jetel.data.xsd.ConvertorRegistry;
 import org.jetel.data.xsd.IGenericConvertor;
 import org.jetel.graph.extension.PortDefinition;
 import org.jetel.jelly.CloverTagLibrary;
-import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -76,8 +70,6 @@ public class MappingTag extends TagSupport {
 
     private DataRecord currentlyProcessedRecord = null;
 
-    private Map<Character, IGenericConvertor> cloverConvertors = new HashMap<Character, IGenericConvertor>();
-
     private enum FieldAsType {
 
         ELEMENTS("elements"), ATTRIBUTES("attributes");
@@ -119,7 +111,6 @@ public class MappingTag extends TagSupport {
         portDefinition = (PortDefinition) cloverObject;
         
         prepareEnvironment();
-        registerConvertors();
         
         try {
             serializeRecords(output);
@@ -127,15 +118,6 @@ public class MappingTag extends TagSupport {
             throw new JellyTagException(e);
         }
 
-    }
-
-    private void registerConvertors() {
-        cloverConvertors.put(DataFieldMetadata.BOOLEAN_FIELD, new CloverBooleanConvertor());
-        cloverConvertors.put(DataFieldMetadata.DATE_FIELD, new CloverDateConvertor());
-        cloverConvertors.put(DataFieldMetadata.DATETIME_FIELD, new CloverDateTimeConvertor());
-        cloverConvertors.put(DataFieldMetadata.DECIMAL_FIELD, new CloverDecimalConvertor());
-        cloverConvertors.put(DataFieldMetadata.NUMERIC_FIELD, new CloverNumericConvertor());
-        cloverConvertors.put(DataFieldMetadata.STRING_FIELD, new CloverStringConvertor());
     }
 
     private void prepareEnvironment() throws MissingAttributeException, JellyTagException {
@@ -345,7 +327,7 @@ public class MappingTag extends TagSupport {
                     String value = null;
 
                     // value conversion
-                    IGenericConvertor convertor = cloverConvertors.get(field.getType());
+                    IGenericConvertor convertor = ConvertorRegistry.getConvertor(field.getMetadata().getTypeAsString());
                     if (convertor != null && field.getValue() != null) {
                         try {
                             value = convertor.print(field.getValue());

@@ -4,6 +4,7 @@ package org.jetel.data.xsd;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.log4j.Logger;
 import org.jetel.exception.DataConversionException;
+import org.jetel.metadata.DataFieldMetadata;
 
 /**
  *
@@ -12,6 +13,10 @@ import org.jetel.exception.DataConversionException;
 public class CloverStringConvertor implements IGenericConvertor {
 
     private static Logger logger = Logger.getLogger(CloverStringConvertor.class);
+    
+    static {
+    	ConvertorRegistry.registerConvertor(new CloverStringConvertor());
+    }
     
     public static String parseXsdStringToString(String value) throws DataConversionException {
         String result = null;
@@ -53,4 +58,8 @@ public class CloverStringConvertor implements IGenericConvertor {
 
         return printStringToXsdString((CharSequence) obj);
     }
+    
+	public boolean supportsCloverType(String cloverDataTypeCriteria) {
+		return DataFieldMetadata.STRING_TYPE.equals(cloverDataTypeCriteria);
+	}
 }

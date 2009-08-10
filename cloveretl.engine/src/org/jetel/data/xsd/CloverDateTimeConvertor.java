@@ -7,6 +7,7 @@ import java.util.GregorianCalendar;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.log4j.Logger;
 import org.jetel.exception.DataConversionException;
+import org.jetel.metadata.DataFieldMetadata;
 
 /**
  *
@@ -15,6 +16,10 @@ import org.jetel.exception.DataConversionException;
 public class CloverDateTimeConvertor implements IGenericConvertor {
 
     private static Logger logger = Logger.getLogger(CloverDateTimeConvertor.class);
+    
+    static {
+    	ConvertorRegistry.registerConvertor(new CloverDateTimeConvertor());
+    }
     
     public static Date parseXsdDateTimeToDate(String value) throws DataConversionException {
         Date result = null;
@@ -60,4 +65,8 @@ public class CloverDateTimeConvertor implements IGenericConvertor {
 
         return printDateToXsdDateTime((Date) obj);
     }
+
+	public boolean supportsCloverType(String cloverDataTypeCriteria) {
+		return DataFieldMetadata.DATETIME_TYPE.equals(cloverDataTypeCriteria);
+	}
 }
