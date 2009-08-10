@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ns3:typeMix xmlns:ns3="http://cloverWS.org/ns/types/cloverMetadata/">
+	<ns3:BOOLEANTYPE>true</ns3:BOOLEANTYPE>
+	<ns3:BYTETYPE>EBM=</ns3:BYTETYPE>
+	<ns3:BYTECOMPRESSEDTYPE>EBM=</ns3:BYTECOMPRESSEDTYPE>
+	<ns3:DATETYPE>2009-09-04+02:00</ns3:DATETYPE>
+	<ns3:DECIMALTYPE>1234.00</ns3:DECIMALTYPE>
+	<ns3:INTEGERTYPE>1234</ns3:INTEGERTYPE>
+	<ns3:LONGTYPE>-1234</ns3:LONGTYPE>
+	<ns3:NUMERICTYPE>9.223372036854776E18</ns3:NUMERICTYPE>
+	<ns3:STRINGTYPE>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam iaculis lorem at dolor tempus vel vehicula erat scelerisque.</ns3:STRINGTYPE>
+</ns3:typeMix>
+

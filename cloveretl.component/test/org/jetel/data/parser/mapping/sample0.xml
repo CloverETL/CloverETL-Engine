@@ -1,0 +1,13 @@
+<Context xpath="/ns1:payload" outPort="0" namespacePaths="ns1=&quot;http://cloverWS.org/ns/types/cloverWSProtocol/&quot;;ns2=&quot;http://cloverWS.org/ns/types/cloverMetadata/&quot;">
+    <Mapping nodeName="ns2:Address" cloverField="Address"/>
+    <Mapping nodeName="ns2:City" cloverField="City"/>
+    <Mapping nodeName="ns2:CompanyName" cloverField="CompanyName"/>
+    <Mapping nodeName="ns2:Country" cloverField="Country"/>
+    <Mapping nodeName="ns2:CUSTOMERID" cloverField="CUSTOMERID"/>
+    <Mapping nodeName="ns2:Fax" cloverField="Fax"/>
+    <Mapping nodeName="ns2:JobTitle" cloverField="JobTitle"/>
+    <Mapping nodeName="ns2:Phone" cloverField="Phone"/>
+    <Mapping nodeName="ns2:PostCode" cloverField="PostCode"/>
+    <Mapping nodeName="ns2:Representative" cloverField="Representative"/>
+    <Mapping nodeName="ns2:State" cloverField="State"/>
+</Context>

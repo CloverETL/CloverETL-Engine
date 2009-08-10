@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/cloveretl.connection"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/cloveretl.engine"/>
@@ -18,5 +19,6 @@
 	<classpathentry kind="lib" path="lib/axis2-transport-http-1.5.jar"/>
 	<classpathentry kind="lib" path="lib/axis2-modules/sandesha2-client-constants-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/axis2-modules/sandesha2-core-1.3.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
