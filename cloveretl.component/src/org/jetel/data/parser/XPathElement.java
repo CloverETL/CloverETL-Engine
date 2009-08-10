@@ -11,6 +11,7 @@ import net.sf.saxon.sxpath.XPathExpression;
 import net.sf.saxon.tinytree.TinyNodeImpl;
 import net.sf.saxon.trans.XPathException;
 
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 
 public class XPathElement {
@@ -96,7 +97,7 @@ public class XPathElement {
 				if (defaultValue) {
 					record.getField(cloverFieldNumber).setToDefaultValue();
 				} else if (previousValue != null)	{
-					record.getField(cloverFieldNumber).fromString(previousValue);
+					assignValue(record.getField(cloverFieldNumber), previousValue);
 				}
 			}
 			return record;
@@ -120,7 +121,7 @@ public class XPathElement {
 				} else {
 					previousValue = trim ? value.toString().trim() : value.toString();
 				}
-				record.getField(cloverFieldNumber).fromString(previousValue);
+				assignValue(record.getField(cloverFieldNumber), previousValue);
 				break;
 			default:
 				throw new TransformerException("XPath for clover field'" + cloverField + "' contains two or more values!");
@@ -139,9 +140,19 @@ public class XPathElement {
 				record.getField(cloverFieldNumber).setToDefaultValue();
 			} else {
 				defaultValue = false;
-				record.getField(cloverFieldNumber).fromString(previousValue);
+				assignValue(record.getField(cloverFieldNumber), previousValue);
 			}
 		}
 		return record;
+	}
+	
+	/**
+	 * The value of the current data field is assigned with the usage of data model specific conversions.  
+	 * @param currentField
+	 * @param value
+	 * @throws TransformerException
+	 */
+	protected void assignValue(DataField currentField, String value) throws TransformerException {
+		currentField.fromString(value);
 	}
 }

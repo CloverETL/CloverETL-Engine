@@ -80,6 +80,8 @@ public class XPathParser implements Parser {
     private static final String FEATURES_DELIMETER = ";";
     private static final String FEATURES_ASSIGN = ":=";
 
+    public static enum SupportedDataModels {CLOVER_ETL, W3C_XSD};
+    
 	private DataRecord recordResult;
     private TransformationGraph graph;
     private XPathContext xpathContext;
@@ -97,6 +99,8 @@ public class XPathParser implements Parser {
 
 	private XPathEvaluator xPathEvaluator = new XPathEvaluator();
 
+	private SupportedDataModels dataModel = SupportedDataModels.CLOVER_ETL;
+	
 	public XPathParser(Document document) {
 		this.xpathDocument = document;
 	}
@@ -262,13 +266,31 @@ public class XPathParser implements Parser {
 	    
 	    XPathElement xpathElement;
 	    if (xpathAttribute == null) {
-	    	xpathElement = new XPathElement(
-		    		nodeNameAttribute.getNodeValue(), 
-		    		cloverFieldAttribute.getNodeValue());
+	    	switch(dataModel) {
+	    		case W3C_XSD:
+	    			xpathElement = new XPathElementOfXSDType(
+	    		    		nodeNameAttribute.getNodeValue(), 
+	    		    		cloverFieldAttribute.getNodeValue());
+	    			break;
+	    		default:
+	    			xpathElement = new XPathElement(
+	    		    		nodeNameAttribute.getNodeValue(), 
+	    		    		cloverFieldAttribute.getNodeValue());
+	    			break;
+	    	}
 	    } else {
-	    	xpathElement = new XPathElement(
-		    		xPathEvaluator.createExpression(xpathAttribute.getNodeValue()), 
-		    		cloverFieldAttribute.getNodeValue());
+	    	switch(dataModel) {
+    		case W3C_XSD:
+    			xpathElement = new XPathElementOfXSDType(
+    		    		xPathEvaluator.createExpression(xpathAttribute.getNodeValue()), 
+    		    		cloverFieldAttribute.getNodeValue());
+    			break;
+    		default:
+    			xpathElement = new XPathElement(
+    		    		xPathEvaluator.createExpression(xpathAttribute.getNodeValue()), 
+    		    		cloverFieldAttribute.getNodeValue());
+    			break;
+	    	}
 	    }
 	    
 	    if (trimAttribute != null)
@@ -538,6 +560,20 @@ public class XPathParser implements Parser {
 	
 	public void setXmlFeatures(String xmlFeatures) {
 		this.xmlFeatures = xmlFeatures;
+	}
+
+	/**
+	 * @return the dataModel
+	 */
+	public SupportedDataModels getDataModel() {
+		return dataModel;
+	}
+
+	/**
+	 * @param dataModel the dataModel to set
+	 */
+	public void setDataModel(SupportedDataModels dataModel) {
+		this.dataModel = dataModel;
 	}
 	
 }
