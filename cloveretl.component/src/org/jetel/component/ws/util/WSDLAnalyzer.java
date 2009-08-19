@@ -103,7 +103,7 @@ public class WSDLAnalyzer {
 
             lookUpLocalPolicyDefinitions();
             if (logger.isInfoEnabled()) {
-                logger.info("Policy exressions at WSDL definitions element " + wsdlDefinition.getQName() + " located.");
+                logger.info("Policy expressions at WSDL definitions element " + wsdlDefinition.getQName() + " located.");
             }
 
 
@@ -838,32 +838,5 @@ public class WSDLAnalyzer {
 
     public Definition getWsdlDefinition() {
         return wsdlDefinition;
-    }
-
-    public static void main(String[] args) {
-        try {
-            //URL wsdlLocation = new URL("file:WebServiceGateway.wsdl");
-            //URL wsdlLocation = new URL("http://soap.amazon.com/schemas2/AmazonWebServices.wsdl");
-            //String operationName = "KeywordSearchRequest";
-
-            URL wsdlLocation = new URL("http://localhost:8080/CloverETLWSExamples/CloverETLDataProviderService?wsdl");
-            String operationName = "getCustomers";
-
-            WSDLAnalyzer analyzer = new WSDLAnalyzer(wsdlLocation);
-            analyzer.setPreferedSOAPVersion(SOAPVersion.SOAP12);
-            SOAPVersion prefSoapVersion = analyzer.getPreferedSOAPVersion();
-            System.out.print("Prefered SOAP version is: ");
-            if (prefSoapVersion == SOAPVersion.SOAP11) {
-                System.out.println("SOAP11");
-            } else if (prefSoapVersion == SOAPVersion.SOAP12) {
-                System.out.println("SOAP12");
-            }
-
-            URL endpointReference = analyzer.getEndpointReference(operationName);
-            System.out.println("For operation '" + operationName + "' is endpoint reference " + endpointReference);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 }

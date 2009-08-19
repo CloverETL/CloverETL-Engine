@@ -147,12 +147,17 @@ public class WSDataReader extends Node {
         if (isInitialized()) {
             return;
         }
+        super.init();
 
+        // test that we have at least one output port
+        if (outPorts.size() < 1) {
+            throw new ComponentNotReadyException(getId() + ": At least one output port has to be defined!");
+        }
+        
         if (requestMessageURL != null && requestMessageURL.length() != 0) {
             reqMessageSource = new StreamSource(new File(requestMessageURL));
         }
 
-        super.init();
         TransformationGraph graph = getGraph();
         reader = new WSPureXMLReader(parser, wsdlLocation, operationQName);
         switch (validateMessages) {
@@ -205,6 +210,7 @@ public class WSDataReader extends Node {
 
 		try {
             reader.prepareDataSource(reqMessageSource);
+            reader.invokeRemoteService();
 
 			Object record;
 			while (runIt) {
@@ -228,7 +234,7 @@ public class WSDataReader extends Node {
 		}finally{
 			//reader.close();
 			broadcastEOF();
-            reader.releaseDataSource();
+            reader.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }

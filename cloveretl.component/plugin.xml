@@ -326,5 +326,10 @@
 	    <parameter id="className" value="org.jetel.component.WSTemplateDataWriter"/>
 	    <parameter id="type" value="WS_TEMPLATE_DATA_WRITER"/>
 	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.WSDataDelegator"/>
+	    <parameter id="type" value="WS_DATA_DELEGATOR"/>
+	</extension>
 
 </plugin>
