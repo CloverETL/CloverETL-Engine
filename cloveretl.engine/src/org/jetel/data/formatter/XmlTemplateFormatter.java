@@ -1,7 +1,6 @@
 
 package org.jetel.data.formatter;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,7 +30,6 @@ import org.dom4j.Namespace;
 import org.dom4j.Node;
 import org.dom4j.QName;
 import org.dom4j.io.DocumentSource;
-import org.dom4j.io.SAXReader;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.extension.PortDefinition;
 import org.jetel.jelly.CloverTagLibrary;
@@ -52,6 +50,7 @@ public class XmlTemplateFormatter implements BatchPortDefinitionFormatter {
     public static final String DEFAULT_ROOT_ELEMENT = "root";
     public static final String DEFAULT_RECORD_ELEMENT = "record";
     private static final String XML_MAPPING_ELEMENT = "Mapping";
+    private static final String XML_FIELD_MAPPING_ELEMENT = "fieldMapping";
     public static final String ATTRIBUTE_COMPONENT_ID = "component";
     public static final String ATTRIBUTE_GRAPH_NAME = "graph";
     public static final String ATTRIBUTE_CREATED = "created";
@@ -68,7 +67,7 @@ public class XmlTemplateFormatter implements BatchPortDefinitionFormatter {
     private String dtdPublicId;
 	private String dtdSystemId;
     private boolean useRootElement = true;
-	private Map<String, String> namespaces;
+	private Map<String, String> namespaces = new HashMap<String, String>();
     private String xsdSchemaLocation;
     private String rootDefaultNamespace;
     private String graphName;
@@ -110,7 +109,20 @@ public class XmlTemplateFormatter implements BatchPortDefinitionFormatter {
             Element mappingElement = (Element) mappingNode;
             mappingElement.setQName(new QName(XML_MAPPING_ELEMENT, cloverNS));
         }
-
+        
+        // select all fieldMapping elements (without NS) and associate with jelly namespace
+        List<Node> fieldMappingElements = jellyScript.selectNodes("//" + XML_FIELD_MAPPING_ELEMENT);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Found " + fieldMappingElements.size() + " " + XML_FIELD_MAPPING_ELEMENT + " definitions.");
+        }
+        for (Node fieldMappingNode : fieldMappingElements) {
+            if (fieldMappingNode.getNodeType() != Node.ELEMENT_NODE) {
+                continue;
+            }
+            Element fieldMappingElement = (Element) fieldMappingNode;
+            fieldMappingElement.setQName(new QName(XML_FIELD_MAPPING_ELEMENT, cloverNS));
+        }
+        
         xmlTemplate = jellyScript;
 
     }
@@ -169,16 +181,16 @@ public class XmlTemplateFormatter implements BatchPortDefinitionFormatter {
             XMLOutput xmlOutput = XMLOutput.createDummyXMLOutput();
             xmlOutput.setContentHandler(th);
             xmlOutput.setLexicalHandler(th);
-
+            
             DocumentSource dSource = new DocumentSource(xmlTemplate);
             InputSource templateSource = DocumentSource.sourceToInputSource(dSource);
 
             jContext.runScript(templateSource, xmlOutput);
             xmlOutput.flush();
         } catch (JellyException je) {
-            throw new IOException("Unable to precess XML template with Clover mapping defintions: " + je.getMessage());
+            throw new IOException("Unable to process XML template with Clover mapping defintions: " + je.getMessage());
         } catch (Exception e) {
-            throw new IOException("Unable to precess XML template with Clover mapping defintions: " + e.getMessage());
+            throw new IOException("Unable to process XML template with Clover mapping defintions: " + e.getMessage());
         }
 
         return 0;
@@ -319,31 +331,4 @@ public class XmlTemplateFormatter implements BatchPortDefinitionFormatter {
     public void setXsdSchemaLocation(String xsdSchemaLocation) {
         this.xsdSchemaLocation = xsdSchemaLocation;
     }
-
-    public static void main(String[] args) throws Exception {
-        SAXReader reader = new SAXReader();
-        Document mappingDef = reader.read(new File("/home/moorix/NetBeans65Projects/JellyChallenge/src/cloverMapping.xml"));
-        
-        XmlTemplateFormatter formatter = new XmlTemplateFormatter(mappingDef);
-        formatter.setDataTarget(System.out);
-        formatter.setUseRootElement(true);
-        formatter.setRootElement("root");
-        formatter.setComponentId("ID");
-        formatter.setCharset("utf8");
-        Map<String, String> ns = new HashMap<String, String>();
-        ns.put("xsi", "http://hsi");
-        formatter.setNamespaces(ns);
-        formatter.init(null);
-        formatter.writeHeader();
-        formatter.write(null);
-        formatter.writeFooter();
-        formatter.close();
-        
-        //XMLWriter writer = new XMLWriter(System.out);
-        //writer.write(mappingDef);
-        //mappingDef.write(new OutputStreamWriter(System.out));
-
-        System.out.println("Processing done");
-    }
-
 }

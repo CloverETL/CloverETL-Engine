@@ -15,14 +15,11 @@ import org.apache.commons.jelly.TagSupport;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.exception.DataConversionException;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
-import org.jetel.data.xsd.ConvertorRegistry;
-import org.jetel.data.xsd.IGenericConvertor;
 import org.jetel.graph.extension.PortDefinition;
 import org.jetel.jelly.CloverTagLibrary;
 import org.jetel.metadata.DataRecordMetadata;
@@ -311,38 +308,6 @@ public class MappingTag extends TagSupport {
                     localName = qNameMatcher.group(2);
                 }
                 output.startElement(portDefinition.defaultNamespace, "", portDefinition.element, atts);
-
-                // serialize fields mapped as elements
-                for (int x = 0; x < portDefinition.fieldsAsElementsIndexes.length; x++) {
-                    int i = portDefinition.fieldsAsElementsIndexes[x];
-                    DataField field = processedRecord.getField(i);
-                    atts.clear();
-                    String name = processedRecord.getMetadata().getField(i).getName();
-                    if (portDefinition.fieldsNamespacePrefix != null) {
-                        name = portDefinition.fieldsNamespacePrefix + ":" + name;
-                    }
-                    output.startElement("", "", name, atts);
-
-                    // there should be specific serializers for each regietered data type
-                    String value = null;
-
-                    // value conversion
-                    IGenericConvertor convertor = ConvertorRegistry.getConvertor(field.getMetadata().getTypeAsString());
-                    if (convertor != null && field.getValue() != null) {
-                        try {
-                            value = convertor.print(field.getValue());
-                        } catch(DataConversionException dce) {
-                            throw new JellyTagException("Unable to convert value '" + field.getValue() + "' to " + convertor.getClass().getName(), dce);
-                        }
-                        
-                    } else {
-                        value = field.toString();
-                    }
-                    
-                    output.characters(value.toCharArray(), 0, value.length());
-                    
-                    output.endElement("", "", name);
-                }
                 
                 // process the content of the mapping to be append as the next child
                 // recursivelly render related children ports and add it to document
