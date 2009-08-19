@@ -150,9 +150,9 @@ public class WSTemplateDataWriter extends Node {
 
 		portsCnt = inPorts.size();
 
-        // test that we have at least one input port and one output
+        // test that we have at least one input port
         if (portsCnt < 1) {
-            throw new ComponentNotReadyException(getId() + ": At least one output port has to be defined!");
+            throw new ComponentNotReadyException(getId() + ": At least one input port has to be defined!");
         }
 
         allPortDefinitionMap = new HashMap<Integer, PortDefinition>();
