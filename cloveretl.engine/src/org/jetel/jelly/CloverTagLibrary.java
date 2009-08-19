@@ -2,6 +2,7 @@
 package org.jetel.jelly;
 
 import org.apache.commons.jelly.TagLibrary;
+import org.jetel.jelly.tags.FieldMappingTag;
 import org.jetel.jelly.tags.MappingTag;
 
 /**
@@ -14,5 +15,6 @@ public class CloverTagLibrary extends TagLibrary {
     
     public CloverTagLibrary() {
         registerTag("Mapping", MappingTag.class);
+        registerTag("fieldMapping", FieldMappingTag.class);
     }
 }
