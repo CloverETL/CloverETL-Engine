@@ -59,4 +59,8 @@ public class CloverNumericConvertor implements IGenericConvertor {
 	public boolean supportsCloverType(String cloverDataTypeCriteria) {
 		return DataFieldMetadata.NUMERIC_TYPE.equals(cloverDataTypeCriteria);
 	}
+	
+	public boolean supportsExternalSystemType(String externalTypeCriteria) {
+		return true;
+	}
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Class ConvertorRegistry serves as the registry component for convertors between cloverETL data types
@@ -49,9 +50,22 @@ public class ConvertorRegistry {
 		
 		// TODO: should be replaced by some hash access
 		for (IGenericConvertor convertor : convertors) {
+			boolean selected = false;
 			if (convertor.supportsCloverType(cloverDataTypeCriteria)) {
-				return convertor;
+				selected = true;
 			}
+
+			if (!StringUtils.isEmpty(externalDataTypeCriteria)) {
+				if (convertor.supportsExternalSystemType(externalDataTypeCriteria)) {
+					selected = selected && true;
+				} else {
+					selected = false;
+				}
+				
+			}
+
+			if (selected)
+				return convertor;
 		}
 		
 		return null;

@@ -40,6 +40,8 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -49,18 +51,22 @@ import org.jetel.graph.extension.PortDefinition;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.jetel.util.xml.DOM4jUtils;
 import org.jetel.component.ws.WSPureXMLReader;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
 /**
- *
+ * The component "WS_DATA_DELEGATOR" is part of the cloverETL graph structure responsible for
+ * communication with external system based on Web Services standards. Data records received
+ * on input ports are passed on to specified external service provider and the result of service
+ * processing is sent further through output ports to other components of defined ETL process. 
  * @author Pavel Pospichal
  */
 public class WSDataDelegator extends Node {
 
-    static Log logger = LogFactory.getLog(WSDataDelegator.class);
+    private static final Log logger = LogFactory.getLog(WSDataDelegator.class);
 
     /**  Description of the Field */
     public final static String COMPONENT_TYPE = "WS_DATA_DELEGATOR";
@@ -70,7 +76,10 @@ public class WSDataDelegator extends Node {
 	private static final String XML_REQUEST_TEMPLATE_URL_ATTRIBUTE = "requestTemplateURL";
 	private static final String XML_RESPONSE_MAPPING_ATTRIBUTE = "responseMapping";
     private static final String XML_RESPONSE_MAPPING_URL_ATTRIBUTE = "responseMappingURL";
-	
+	// TODO: Fault message parsing and sending error records through output ports
+    private static final String XML_FAULT_MAPPING_ATTRIBUTE = "faultMapping";
+    private static final String XML_FAULT_MAPPING_URL_ATTRIBUTE = "faultMappingURL";
+    
 	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
     private static final String XML_SKIP_PARSED_ENTITIES_ATTRIBUTE = "skipParsedEntities";
     private static final String XML_OUTPUT_RECORDS_COUNT_ATTRIBUTE = "outputRecordsCount";
@@ -88,28 +97,43 @@ public class WSDataDelegator extends Node {
     private final static int OUTPUT_PORT = 0;
     private final static int INPUT_PORT = 0;
 
+    /**
+     * The WSDL location information and specification of performed service operation
+     */
     private URL wsdlLocation;
     private QName operationQName;
     private QName portTypeQName;
     private QName serviceQName;
 
+    /**
+     * The definition of mapping data elements from service provider response message (SOAP body payload)
+     * into output port specific data records.
+     */
     private Document responseMappingDocument;
     /**
-	 * The message (SOAP body payload) template with port data mapping definitions.
+	 * The template message (SOAP body payload) with hooks for mapping input port
+	 * specific data records into suitable data source for remote service provider.
 	 */
     private Document requestTemplateDocument;
 
-    private XPathParser parser;
     private WSPureXMLReader reader;
-    private PolicyType policyType;
     private ValidationType validateMessages = ValidationType.NONE;
+    private XPathParser parser;
+    private PolicyType policyType;
 
+    /**
+     * Component processing statistics
+     */
     private int skipParsedEntities = 0; // do not skip rows by default
     private int outputRecordsCount = -1;
-    private Object[] outputPorts;
 
+    /**
+     * Proxy information
+     */
     private String proxyHostLocation = null;
     private int proxyHostPort;
+    
+    private Object[] outputPorts;
     
     /**
 	 * Map of portIndex => PortDefinition
@@ -137,22 +161,29 @@ public class WSDataDelegator extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
 
-        if (!checkInputPorts(status, 0, 1) || !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
-            return status;
+        checkInputPorts(status, 1, Integer.MAX_VALUE);
+        checkOutputPorts(status, 1, Integer.MAX_VALUE);
+
+        if (wsdlLocation == null || StringUtils.isEmpty(wsdlLocation.getHost())) {
+        	status.add("Invalid URL location of WSDL document.", Severity.ERROR, this, Priority.NORMAL, "wsdlLocation");
         }
-
-//        try {
-//            init();
-//        } catch (ComponentNotReadyException e) {
-//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-//            if(!StringUtils.isEmpty(e.getAttributeName())) {
-//                problem.setAttributeName(e.getAttributeName());
-//            }
-//            status.add(problem);
-//        } finally {
-//        	free();
-//        }
-
+        // for rigours control validate received document against supported WSDL specifications
+        // and ensure that enough information is known for the unambiguous operation determination
+        
+        if (operationQName == null || StringUtils.isEmpty(operationQName.getLocalPart())) {
+        	status.add("Invalid qualified name of service operation defined by WSDL document.", Severity.ERROR, this, Priority.NORMAL, "operationQName");
+        }
+        
+        if (responseMappingDocument == null || responseMappingDocument.nodeCount() == 0) {
+        	status.add("The definition of mapping the response XML document into output port specific data records is not specified.", Severity.ERROR, this, Priority.NORMAL, "responseMappingDocument");
+        }
+        
+        if (requestTemplateDocument == null || requestTemplateDocument.nodeCount() == 0) {
+        	status.add("The definition of formatting the input port specific data records into the request XML document is not specified.", Severity.ERROR, this, Priority.NORMAL, "requestTemplateDocument");
+        }
+        
+        // the rigours control is performed in init phase
+        
         return status;
     }
 
@@ -200,6 +231,7 @@ public class WSDataDelegator extends Node {
             parser.setSkip(skipParsedEntities);
             parser.setNumRecords(outputRecordsCount);
             parser.setGraph(getGraph());
+            parser.setDataModel(XPathParser.SupportedDataModels.W3C_XSD);
         } catch(Exception e) {
         	throw new ComponentNotReadyException(getId()
 					+ ": Unable to initialize parser: " + e.getMessage());

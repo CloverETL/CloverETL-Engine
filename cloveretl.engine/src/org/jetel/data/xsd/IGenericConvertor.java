@@ -12,4 +12,5 @@ public interface IGenericConvertor {
     public Object parse(String input) throws DataConversionException;
     public String print(Object obj) throws DataConversionException;
     public boolean supportsCloverType(String cloverDataTypeCriteria);
+    public boolean supportsExternalSystemType(String externalTypeCriteria);
 }
