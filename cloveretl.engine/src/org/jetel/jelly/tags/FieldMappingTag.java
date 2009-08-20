@@ -27,6 +27,7 @@ public class FieldMappingTag extends AttributeResolverTagSupport {
 	private String fieldName;
 	private String elementName;
 	private String prefix;
+	private String xsdType;
 	private DataRecord currentRecord;
 	
 	public void doTag(XMLOutput output) throws MissingAttributeException, JellyTagException {
@@ -114,7 +115,7 @@ public class FieldMappingTag extends AttributeResolverTagSupport {
             String value = null;
 
             // value conversion
-            IGenericConvertor convertor = ConvertorRegistry.getConvertor(field.getMetadata().getTypeAsString());
+            IGenericConvertor convertor = ConvertorRegistry.getConvertor(field.getMetadata().getTypeAsString(), xsdType);
             if (convertor == null) {
 				throw new JellyTagException("No converter found for the cloverETL data type " + field.getMetadata().getTypeAsString());
             }
@@ -156,6 +157,14 @@ public class FieldMappingTag extends AttributeResolverTagSupport {
 
 	public void setPrefix(String prefix) {
 		this.prefix = prefix;
+	}
+
+	public String getXsdType() {
+		return xsdType;
+	}
+
+	public void setXsdType(String xsdType) {
+		this.xsdType = xsdType;
 	}
 
 }

@@ -62,4 +62,8 @@ public class CloverStringConvertor implements IGenericConvertor {
 	public boolean supportsCloverType(String cloverDataTypeCriteria) {
 		return DataFieldMetadata.STRING_TYPE.equals(cloverDataTypeCriteria);
 	}
+	
+	public boolean supportsExternalSystemType(String externalTypeCriteria) {
+		return true;
+	}
 }

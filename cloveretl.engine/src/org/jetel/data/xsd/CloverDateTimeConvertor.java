@@ -67,6 +67,11 @@ public class CloverDateTimeConvertor implements IGenericConvertor {
     }
 
 	public boolean supportsCloverType(String cloverDataTypeCriteria) {
-		return DataFieldMetadata.DATETIME_TYPE.equals(cloverDataTypeCriteria);
+		return DataFieldMetadata.DATETIME_TYPE.equals(cloverDataTypeCriteria) ||
+			DataFieldMetadata.DATE_TYPE.equals(cloverDataTypeCriteria) ;
+	}
+
+	public boolean supportsExternalSystemType(String externalTypeCriteria) {
+		return XSDDataTypes.valueOf(externalTypeCriteria).equals(XSDDataTypes.dateTime);
 	}
 }

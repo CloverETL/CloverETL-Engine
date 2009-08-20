@@ -184,7 +184,13 @@ public class XmlTemplateFormatter implements BatchPortDefinitionFormatter {
             
             DocumentSource dSource = new DocumentSource(xmlTemplate);
             InputSource templateSource = DocumentSource.sourceToInputSource(dSource);
-
+            
+            /* HACK: no sense reason forced by the Jelly project implementation to define systemID
+             * otherwise MalformedURLException is thrown
+             * SystemID may be used to specify DTD, but there is no XML validation
+             * java/org/apache/commons/jelly/parser/XMLParser.java:253
+             */ 
+            templateSource.setSystemId("http://www.cloveretl.com");
             jContext.runScript(templateSource, xmlOutput);
             xmlOutput.flush();
         } catch (JellyException je) {

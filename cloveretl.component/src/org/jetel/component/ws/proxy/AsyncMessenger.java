@@ -707,8 +707,6 @@ class PureXMLCallbackHandler implements AxisCallback {
         synchronized (PureXMLCallbackHandler.this) {
             completed = true;
         }
-
-        System.out.println("onComplete");
     }
 
     public void onError(Exception e) {
@@ -730,8 +728,6 @@ class PureXMLCallbackHandler implements AxisCallback {
             completed = true;
 
         }
-
-        System.out.println("onMessage");
     }
 
     public synchronized boolean isCompleted() {

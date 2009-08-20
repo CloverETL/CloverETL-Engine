@@ -58,4 +58,8 @@ public class CloverByteArrayConvertor implements IGenericConvertor {
 		return DataFieldMetadata.BYTE_TYPE.equals(cloverDataTypeCriteria) || 
 		DataFieldMetadata.BYTE_COMPRESSED_TYPE.equals(cloverDataTypeCriteria);
 	}
+	
+	public boolean supportsExternalSystemType(String externalTypeCriteria) {
+		return true;
+	}
 }
