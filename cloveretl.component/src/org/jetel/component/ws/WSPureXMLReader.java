@@ -97,6 +97,18 @@ public class WSPureXMLReader {
     
     private String proxyHostLocation = null;
     private int proxyHostPort;
+    
+    // HTTP Authentication
+    String httpAuthUsername = null;
+    String httpAuthPassword = null;
+    String httpAuthDomain = null;
+    String httpAuthRealm = null;
+    
+    // JKS
+    File trustJKSLocation = null;
+    String trustJKSPassword = null;
+    File JKSLocation = null;
+    String JKSPassword = null;
 
     public WSPureXMLReader(Parser parser, URL wsdlLocation, QName operationQName) {
         this.parser = parser;
@@ -155,6 +167,21 @@ public class WSPureXMLReader {
             messenger.setOperationQName(operationQName);
             messenger.setValidateMessageOnRequest(validateMessageOnRequest);
             messenger.setValidateMessageOnResponse(validateMessageOnResponse);
+            
+            messenger.setHttpUsername(httpAuthUsername);
+            messenger.setHttpPassword(httpAuthPassword);
+            messenger.setAuthRealm(httpAuthRealm);
+            messenger.setAuthDomain(httpAuthDomain);
+            
+            if (trustJKSLocation != null) {
+            	messenger.setTrustJKSLocation(trustJKSLocation.getAbsolutePath());
+            }
+            messenger.setTrustJKSPassword(trustJKSPassword);
+            if (JKSLocation != null) {
+            	messenger.setJKSLocation(JKSLocation.getAbsolutePath());
+            }
+            messenger.setJKSPassword(JKSPassword);
+            
             messenger.init();
         } catch(WSMessengerConfigurationException cce) {
             throw new ComponentNotReadyException("Unable to establish Web Service proxy.", cce);
@@ -473,6 +500,70 @@ public class WSPureXMLReader {
 	 */
 	public void setLogger(Log logger) {
 		this.logger = logger;
+	}
+
+	public String getHttpAuthUsername() {
+		return httpAuthUsername;
+	}
+
+	public void setHttpAuthUsername(String httpAuthUsername) {
+		this.httpAuthUsername = httpAuthUsername;
+	}
+
+	public String getHttpAuthPassword() {
+		return httpAuthPassword;
+	}
+
+	public void setHttpAuthPassword(String httpAuthPassword) {
+		this.httpAuthPassword = httpAuthPassword;
+	}
+
+	public String getHttpAuthDomain() {
+		return httpAuthDomain;
+	}
+
+	public void setHttpAuthDomain(String httpAuthDomain) {
+		this.httpAuthDomain = httpAuthDomain;
+	}
+
+	public String getHttpAuthRealm() {
+		return httpAuthRealm;
+	}
+
+	public void setHttpAuthRealm(String httpAuthRealm) {
+		this.httpAuthRealm = httpAuthRealm;
+	}
+
+	public File getTrustJKSLocation() {
+		return trustJKSLocation;
+	}
+
+	public void setTrustJKSLocation(File trustJKSLocation) {
+		this.trustJKSLocation = trustJKSLocation;
+	}
+
+	public String getTrustJKSPassword() {
+		return trustJKSPassword;
+	}
+
+	public void setTrustJKSPassword(String trustJKSPassword) {
+		this.trustJKSPassword = trustJKSPassword;
+	}
+
+	public File getJKSLocation() {
+		return JKSLocation;
+	}
+
+	public void setJKSLocation(File jKSLocation) {
+		JKSLocation = jKSLocation;
+	}
+
+	public String getJKSPassword() {
+		return JKSPassword;
+	}
+
+	public void setJKSPassword(String jKSPassword) {
+		JKSPassword = jKSPassword;
 	}
  
 }

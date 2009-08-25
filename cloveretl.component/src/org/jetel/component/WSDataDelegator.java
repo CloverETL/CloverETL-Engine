@@ -20,7 +20,9 @@
 package org.jetel.component;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.StringReader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -92,6 +94,16 @@ public class WSDataDelegator extends Node {
     private static final String XML_PROXY_LOCATION_ATTRIBUTE = "proxyLocation";
     private static final String XML_PROXY_PORT_ATTRIBUTE = "proxyPort";
 
+    private static final String XML_HTTP_AUTH_USERNAME_ATTRIBUTE = "authUsername";
+    private static final String XML_HTTP_AUTH_PASSWORD_ATTRIBUTE = "authPassword";
+    private static final String XML_HTTP_AUTH_DOMAIN_ATTRIBUTE = "authDomain";
+    private static final String XML_HTTP_AUTH_REALM_ATTRIBUTE = "httpRealm";
+    
+    private static final String XML_TRUST_JKS_LOCATION_ATTRIBUTE = "trustJKSLocation";
+    private static final String XML_TRUST_JKS_PASSWORD_ATTRIBUTE = "trustJKSPassword";
+    private static final String XML_CLIENT_JKS_LOCATION_ATTRIBUTE = "clientJKSLocation";
+    private static final String XML_CLIENT_JKS_PASSWORD_ATTRIBUTE = "clientJKSPassword";
+    
     private static final int PROXY_PORT_DEFAULT = 8080;
 
     private final static int OUTPUT_PORT = 0;
@@ -141,6 +153,18 @@ public class WSDataDelegator extends Node {
 	 */
 	private Map<Integer, PortDefinition> allPortDefinitionMap;
 	
+	// HTTP Authentication
+    String httpAuthUsername = null;
+    String httpAuthPassword = null;
+    String httpAuthDomain = null;
+    String httpAuthRealm = null;
+    
+    // JKS
+    URL trustJKSLocation = null;
+    String trustJKSPassword = null;
+    URL clientJKSLocation = null;
+    String clientJKSPassword = null;
+    
     /**
      * Constructor for the WSDataReader object
      * 
@@ -256,7 +280,25 @@ public class WSDataDelegator extends Node {
             reader.setProxyHostLocation(proxyHostLocation);
             reader.setProxyHostPort(proxyHostPort);
         }
-
+        
+        reader.setHttpAuthUsername(httpAuthUsername);
+        reader.setHttpAuthPassword(httpAuthPassword);
+        reader.setHttpAuthRealm(httpAuthRealm);
+        reader.setHttpAuthDomain(httpAuthDomain);
+        
+        try {
+        	if (trustJKSLocation != null) {
+            	reader.setTrustJKSLocation(new File(trustJKSLocation.toURI()));
+            }
+            reader.setTrustJKSPassword(trustJKSPassword);
+            if (clientJKSLocation != null) {
+            	reader.setJKSLocation(new File(clientJKSLocation.toURI()));
+            }
+            reader.setJKSPassword(clientJKSPassword);
+        } catch(URISyntaxException e) {
+        	throw new ComponentNotReadyException("The URL of java key store is invalid.", e);
+        }
+        
         reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
         
         outputPorts = parser.getPorts().toArray();
@@ -469,6 +511,32 @@ public class WSDataDelegator extends Node {
             if (xattribs.exists(XML_PROXY_PORT_ATTRIBUTE)){
                 wsDataDelegator.setProxyHostPort(xattribs.getInteger(XML_PROXY_PORT_ATTRIBUTE, PROXY_PORT_DEFAULT));
             }
+            
+            if (xattribs.exists(XML_HTTP_AUTH_USERNAME_ATTRIBUTE)){
+                wsDataDelegator.setHttpAuthUsername(xattribs.getString(XML_HTTP_AUTH_USERNAME_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_HTTP_AUTH_PASSWORD_ATTRIBUTE)){
+                wsDataDelegator.setHttpAuthPassword(xattribs.getString(XML_HTTP_AUTH_PASSWORD_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_HTTP_AUTH_DOMAIN_ATTRIBUTE)){
+                wsDataDelegator.setHttpAuthDomain(xattribs.getString(XML_HTTP_AUTH_DOMAIN_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_HTTP_AUTH_REALM_ATTRIBUTE)){
+                wsDataDelegator.setHttpAuthRealm(xattribs.getString(XML_HTTP_AUTH_REALM_ATTRIBUTE));
+            }
+            
+            if (xattribs.exists(XML_TRUST_JKS_LOCATION_ATTRIBUTE)){
+                wsDataDelegator.setTrustJKSLocation(xattribs.getURL(XML_TRUST_JKS_LOCATION_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_TRUST_JKS_PASSWORD_ATTRIBUTE)){
+                wsDataDelegator.setTrustJKSPassword(xattribs.getString(XML_TRUST_JKS_PASSWORD_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_CLIENT_JKS_LOCATION_ATTRIBUTE)){
+                wsDataDelegator.setClientJKSLocation(xattribs.getURL(XML_CLIENT_JKS_LOCATION_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_CLIENT_JKS_PASSWORD_ATTRIBUTE)){
+                wsDataDelegator.setClientJKSPassword(xattribs.getString(XML_CLIENT_JKS_PASSWORD_ATTRIBUTE));
+            }
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -586,6 +654,38 @@ public class WSDataDelegator extends Node {
 
 	public void setOutputRecordsCount(int outputRecordsCount) {
 		this.outputRecordsCount = outputRecordsCount;
+	}
+
+	public void setHttpAuthUsername(String httpAuthUsername) {
+		this.httpAuthUsername = httpAuthUsername;
+	}
+
+	public void setHttpAuthPassword(String httpAuthPassword) {
+		this.httpAuthPassword = httpAuthPassword;
+	}
+
+	public void setHttpAuthDomain(String httpAuthDomain) {
+		this.httpAuthDomain = httpAuthDomain;
+	}
+
+	public void setHttpAuthRealm(String httpAuthRealm) {
+		this.httpAuthRealm = httpAuthRealm;
+	}
+
+	public void setTrustJKSLocation(URL trustJKSLocation) {
+		this.trustJKSLocation = trustJKSLocation;
+	}
+
+	public void setTrustJKSPassword(String trustJKSPassword) {
+		this.trustJKSPassword = trustJKSPassword;
+	}
+
+	public void setClientJKSLocation(URL clientJKSLocation) {
+		this.clientJKSLocation = clientJKSLocation;
+	}
+
+	public void setClientJKSPassword(String clientJKSPassword) {
+		this.clientJKSPassword = clientJKSPassword;
 	}
 
 	/**
