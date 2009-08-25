@@ -49,13 +49,11 @@ import org.apache.axis2.context.ConfigurationContextFactory;
 import org.apache.axis2.context.MessageContext;
 import org.apache.axis2.description.AxisEndpoint;
 import org.apache.axis2.description.AxisModule;
-import org.apache.axis2.description.AxisOperation;
-import org.apache.axis2.description.AxisService;
-import org.apache.axis2.description.OutInAxisOperation;
 import org.apache.axis2.description.PolicySubject;
 import org.apache.axis2.engine.AxisConfiguration;
 import org.apache.axis2.engine.ListenerManager;
 import org.apache.axis2.transport.http.HTTPConstants;
+import org.apache.axis2.transport.http.HttpTransportProperties;
 import org.apache.axis2.transport.http.HttpTransportProperties.ProxyProperties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -64,6 +62,7 @@ import org.apache.sandesha2.client.SandeshaClientConstants;
 import org.apache.sandesha2.util.SandeshaUtil;
 import org.apache.ws.commons.schema.XmlSchema;
 import org.jetel.component.ws.exception.MessageValidationException;
+import org.jetel.component.ws.exception.ResourceException;
 import org.jetel.component.ws.exception.SendingMessegeException;
 import org.jetel.component.ws.exception.WSMessengerConfigurationException;
 import org.jetel.component.ws.exception.WSDLAnalyzeException;
@@ -74,11 +73,10 @@ import org.jetel.component.ws.util.axis2.Axis2Utils;
 import org.jetel.component.ws.util.nsmap.WSDLExtensionNamespace;
 import org.jetel.plugin.Plugins;
 
-
 /**
  * AsyncMessenger provides support for communication based on SOAP protocol
- * with remote SOAP message consumer. It supports one-way and InOut messege
- * exchange pattern (MEP). To ensure reliable and secure message delivery it
+ * with remote endpoint. It supports one-way and InOut message exchange 
+ * pattern (MEP). To ensure reliable and secure message delivery it
  * implements WS-ReliableMessaging and WS-Security specifications. Transport
  * and messaging issues are comprehensively configured based on used WSDL
  * document.
@@ -86,7 +84,7 @@ import org.jetel.plugin.Plugins;
  */
 public class AsyncMessenger extends Stub {
 
-    private static Log defaultLogger = LogFactory.getLog(AsyncMessenger.class);
+    private static final Log defaultLogger = LogFactory.getLog(AsyncMessenger.class);
 
     public static final long DEFAULT_TIME_OUT_IN_MILLISECONDS = 10*60*1000;
     public static final long DEFAULT_RESPONSE_CHECK_UP_TIME_IN_MILLISECONDS = 500;
@@ -129,6 +127,18 @@ public class AsyncMessenger extends Stub {
     // asynchronous communication on transport level; separate protocol transports will be created
     private boolean asynchronousTransport = false;
 
+    // HTTP authentication credentials
+    String httpUsername = null;
+    String httpPassword = null;
+    String authDomain = null;
+    String authRealm = null;
+    
+    // java keystorage information
+    String trustJKSLocation = null;
+    String trustJKSPassword = null;
+    String JKSLocation = null;
+    String JKSPassword = null;
+    
     /**
      * Each messenger is associated with the WSDL document specifying format
      * of messages, communication restrictions and transport configuration.
@@ -136,27 +146,47 @@ public class AsyncMessenger extends Stub {
      * @throws org.jetel.ws.exception.WSMessengerConfigurationException
      */
     public AsyncMessenger(URL wsdlLocation) throws WSMessengerConfigurationException {
-        try {
-            this.wsdlLocation = wsdlLocation;
-            wsdlAnalyzer = new WSDLAnalyzer(wsdlLocation);
-
-            //proxyHostLocation = "localhost";
-            //proxyHostPort = 8081;
-        } catch (WSDLAnalyzeException ae) {
-            throw new WSMessengerConfigurationException("Unable to establish WSDL analyzer.", ae);
-        } catch (Exception e) {
-            throw new WSMessengerConfigurationException("Unable to establish WSDL analyzer.", e);
-        }
+    	 this.wsdlLocation = wsdlLocation;
     }
 
     /**
      * Initializes all necessary resources for successful processing. Self-acting
-     * messanger configuration with user-specific preferences is performed based
+     * messenger configuration with user-specific preferences is performed based
      * on specified WSDL document.
      * @throws org.jetel.ws.exception.WSMessengerConfigurationException
      */
     public void init() throws WSMessengerConfigurationException {
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        
+        try {
+            // configure key storage for certificates and keys security artifacts
+            // for SSLSocketFactory
+            if (trustJKSLocation != null) {
+            	System.setProperty("javax.net.ssl.trustStore", trustJKSLocation);
+            	logger.debug("The location of JKS with trusted security artifacts: " + trustJKSLocation);
+            }
+            if (trustJKSPassword != null) {
+        		System.setProperty("javax.net.ssl.trustStorePassword", trustJKSPassword);
+        		logger.debug("The password for JKS with trusted security artifacts applied.");
+        	}
+        	// for SSL mutual authentication
+        	if (JKSLocation != null) {
+        		System.setProperty("javax.net.ssl.keyStore", JKSLocation);
+        		logger.debug("The location of JKS with client security artifacts: " + JKSLocation);
+        	}
+        	if (JKSPassword != null) {
+        		System.setProperty("javax.net.ssl.keyStorePassword", JKSPassword);
+        		logger.debug("The password for JKS with client security artifacts applied.");
+        	}
+        	
+            wsdlAnalyzer = new WSDLAnalyzer(wsdlLocation);
+            
+        } catch (WSDLAnalyzeException ae) {
+            throw new WSMessengerConfigurationException("Unable to establish WSDL analyzer.", ae);
+        } catch (Exception e) {
+            throw new WSMessengerConfigurationException("Unable to establish WSDL analyzer.", e);
+        }
+        
     	try {
         	ClassLoader pluginClassLoader = Plugins.getPluginDescriptor("org.jetel.component").getClassLoader();
         	Thread.currentThread().setContextClassLoader(pluginClassLoader);
@@ -183,7 +213,7 @@ public class AsyncMessenger extends Stub {
             operationMEP = wsdlAnalyzer.getMEPType(operationQName.getLocalPart());
 
             configurationContext = getConfigurationContext();
-            logger.info("Client configuration context loaded.");
+            logger.info("Messenger configuration context loaded.");
 
             /* This is WSDL4J based constructor to configure the Service Client;
              * It's not yet policy-aware.
@@ -238,58 +268,45 @@ public class AsyncMessenger extends Stub {
     /**
      * Establish Axis2-specific configuration context. As an baseline the Xml
      * configuration file is used. It's assumed the basic configuration without
-     * any module engagement in outside configuration or the additional step
+     * any module engagement in outside configuration or the additional steps
      * are necessary.
      * @return
      * @throws java.lang.Exception
      */
-    private ConfigurationContext getConfigurationContext() throws Exception {
+    private ConfigurationContext getConfigurationContext() throws ResourceException {
         ConfigurationContext cc = null;
 
-        //String repositoryLocation = "/home/moorix/axis_server/axis2-1.4.1/repository";
-		// String clientBaselineConf =
-		// "/home/moorix/NetBeans65Projects/cloveretl.engine_new/src/client_axis2.xml";
 		String clientAxis2XmlLocation = AsyncMessenger.class.getPackage()
 				.getName().replaceAll("\\.", File.separator);
-		//URL axis2URL = ClassLoader.getSystemResource(clientAxis2XmlLocation
-		//		+ File.separator + CLIENT_AXIS2_XML_RESOURCE);
+		
 		URL axis2URL = AsyncMessenger.class.getClassLoader().getResource(clientAxis2XmlLocation
 				+ File.separator + CLIENT_AXIS2_XML_RESOURCE);
 		
         if (axis2URL == null) {
-            throw new RuntimeException("Unable to locate axis.xml configuration for client.");
+            throw new ResourceException("Unable to locate axis.xml configuration for client.");
         }
 
         String axis2Home = System.getenv(AXIS2_HOME_SYSTEM_PROPERTY);
         if (axis2Home == null || axis2Home.length() == 0) {
-            throw new RuntimeException("Unable to locate AXIS2 home directory with system property '" + AXIS2_HOME_SYSTEM_PROPERTY + "'.");
+            throw new ResourceException("Unable to locate AXIS2 home directory with system property '" + AXIS2_HOME_SYSTEM_PROPERTY + "'.");
         }
 
         // loaded modules have to be written in the modules.list file
         String repositoryLocation = axis2Home + File.separator + AXIS2_REPOSITORY_NAME;
-        cc = ConfigurationContextFactory.createConfigurationContextFromURIs(axis2URL, new URL("file", "localhost", repositoryLocation));
-
+		try {
+			cc = ConfigurationContextFactory
+					.createConfigurationContextFromURIs(axis2URL, new URL(
+							"file", "localhost", repositoryLocation));
+		} catch (Exception e) {
+			throw new ResourceException(
+					"Unable to locate additional modules from repository directory.");
+		}
+        
         logger.debug("The baseline of configuration context is loaded from '" + axis2URL + "'.");
         logger.debug("The location of module repository '" + repositoryLocation + "'.");
         //cc.setProperty(SandeshaClientConstants.RM_SPEC_VERSION, Sandesha2Constants.SPEC_VERSIONS.v1_1);
         
         return cc;
-    }
-
-    /**
-     * Establish the representation of service hierarchy used by WSDL document.
-     * The same process is performed by ServiceClient Axis2-specific object.
-     * @throws org.apache.axis2.AxisFault
-     * @throws org.jetel.ws.exception.WSDLAnalyzeException
-     */
-    @Deprecated
-    private void populateAxisService() throws org.apache.axis2.AxisFault, WSDLAnalyzeException {
-        String serviceName = wsdlAnalyzer.getServiceQName(operationQName.getLocalPart()).getLocalPart();
-        _service = new AxisService(serviceName);
-
-        // kotrola z WSDL zda operace je OutIn MEP
-        AxisOperation _operation = new OutInAxisOperation(operationQName);
-        _service.addOperation(_operation);
     }
 
     /**
@@ -303,15 +320,37 @@ public class AsyncMessenger extends Stub {
             options = new Options();
         }
 
+        // configure PROXY settings
         if (proxyHostLocation != null) {
             ProxyProperties pp = new ProxyProperties();
             pp.setProxyName(proxyHostLocation);
             pp.setProxyPort(proxyHostPort);
             options.setProperty(HTTPConstants.PROXY, pp);
+            
+            if (logger.isDebugEnabled()) {
+                logger.debug("Using proxy host " + proxyHostLocation + ":" + proxyHostPort + " for message transmission.");
+            }
         }
 
-        if (logger.isDebugEnabled() && proxyHostLocation != null) {
-            logger.debug("Using proxy host " + proxyHostLocation + ":" + proxyHostPort + " for message transmission.");
+        // configure HTTP authentication access
+        if (httpUsername != null && httpPassword != null) {
+            HttpTransportProperties.Authenticator httpProperties = new HttpTransportProperties.Authenticator();
+            // set realm, domain
+            httpProperties.setUsername(httpUsername);
+            httpProperties.setPassword(httpPassword);
+            if (authDomain != null) httpProperties.setDomain(authDomain);
+            if (authRealm != null) httpProperties.setRealm(authRealm);
+            // use default authentication schema priority
+            //httpProperties.setPreemptiveAuthentication(false);
+            //httpProperties.setAuthSchemes(Collections.singletonList(HttpTransportProperties.Authenticator.DIGEST));
+            
+            options.setProperty(HTTPConstants.AUTHENTICATE, httpProperties);
+            
+            if (logger.isDebugEnabled()) {
+				logger.debug("Setting the credentials username=\"" + httpUsername
+						+ "\";password=\"" + httpPassword
+						+ "\" for HTTP authentication schemas.");
+            }
         }
 
         try {
@@ -367,7 +406,7 @@ public class AsyncMessenger extends Stub {
 
             String[] supportedPolicyNamespaces = module.getSupportedPolicyNamespaces();
             if (supportedPolicyNamespaces == null || supportedPolicyNamespaces.length == 0) {
-                extraPolicyNamespaces = new ArrayList();
+                extraPolicyNamespaces = new ArrayList<String>();
             } else {
                 List<String> policyNamespaces = Arrays.asList(module.getSupportedPolicyNamespaces());
                 extraPolicyNamespaces = new ArrayList<String>(policyNamespaces.size());
@@ -379,6 +418,7 @@ public class AsyncMessenger extends Stub {
                 extraPolicyNamespaces.add(WSDLExtensionNamespace.NS_URI_SUN_RM);
             } else if (WS_ADRESSING_AXIS2_MODULE_NAME.equals(module.getName())) {
                 extraPolicyNamespaces.add(WSDLExtensionNamespace.NS_URI_WS_ADDRESSING_v1_0_WSDL_BINDING);
+                extraPolicyNamespaces.add(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5);
             }
             
             module.setSupportedPolicyNamespaces(extraPolicyNamespaces.toArray(new String[extraPolicyNamespaces.size()]));
@@ -609,13 +649,13 @@ public class AsyncMessenger extends Stub {
         assert (qName != null);
         assert (wsdlAnalyzer != null);
 
-        QName corretedQName = qName;
+        QName correctedQName = qName;
         if (qName.getNamespaceURI() == null || qName.getNamespaceURI().length() == 0) {
             String targetNamespace = wsdlAnalyzer.getTargetNamespace();
-            corretedQName = new QName(targetNamespace, qName.getLocalPart());
+            correctedQName = new QName(targetNamespace, qName.getLocalPart());
         }
 
-        return corretedQName;
+        return correctedQName;
     }
 
     public QName getOperationQName() {
@@ -636,16 +676,6 @@ public class AsyncMessenger extends Stub {
 
     public boolean isReliableMessagingEnabled() {
         return reliableMessagingEnabled;
-    }
-
-    private static org.apache.neethi.Policy getPolicy(java.lang.String policyString) {
-        java.io.ByteArrayInputStream bais = new java.io.ByteArrayInputStream(policyString.getBytes());
-        return org.apache.neethi.PolicyEngine.getPolicy(bais);
-    }
-
-    private static org.apache.neethi.PolicyReference getPolicyReference(java.lang.String policyReference) {
-        java.io.ByteArrayInputStream bais = new java.io.ByteArrayInputStream(policyReference.getBytes());
-        return org.apache.neethi.PolicyEngine.getPolicyReferene(bais);
     }
 
     public boolean isValidateMessageOnRequest() {
@@ -691,6 +721,70 @@ public class AsyncMessenger extends Stub {
     public void setAsynchronousTransport(boolean asynchronousTransport) {
         this.asynchronousTransport = asynchronousTransport;
     }
+
+    public String getHttpUsername() {
+		return httpUsername;
+	}
+
+	public void setHttpUsername(String httpUsername) {
+		this.httpUsername = httpUsername;
+	}
+
+	public String getHttpPassword() {
+		return httpPassword;
+	}
+
+	public void setHttpPassword(String httpPassword) {
+		this.httpPassword = httpPassword;
+	}
+
+	public String getAuthDomain() {
+		return authDomain;
+	}
+
+	public void setAuthDomain(String authDomain) {
+		this.authDomain = authDomain;
+	}
+
+	public String getAuthRealm() {
+		return authRealm;
+	}
+
+	public void setAuthRealm(String authRealm) {
+		this.authRealm = authRealm;
+	}
+
+	public String getTrustJKSLocation() {
+		return trustJKSLocation;
+	}
+
+	public void setTrustJKSLocation(String trustJKSLocation) {
+		this.trustJKSLocation = trustJKSLocation;
+	}
+
+	public String getTrustJKSPassword() {
+		return trustJKSPassword;
+	}
+
+	public void setTrustJKSPassword(String trustJKSPassword) {
+		this.trustJKSPassword = trustJKSPassword;
+	}
+
+	public String getJKSLocation() {
+		return JKSLocation;
+	}
+
+	public void setJKSLocation(String jKSLocation) {
+		JKSLocation = jKSLocation;
+	}
+
+	public String getJKSPassword() {
+		return JKSPassword;
+	}
+
+	public void setJKSPassword(String jKSPassword) {
+		JKSPassword = jKSPassword;
+	}
 }
 
 class PureXMLCallbackHandler implements AxisCallback {
