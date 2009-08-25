@@ -22,7 +22,6 @@ import javax.wsdl.PortType;
 import javax.wsdl.Service;
 import javax.wsdl.Types;
 import javax.wsdl.WSDLException;
-import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.ExtensionRegistry;
 import javax.wsdl.extensions.schema.Schema;
 import javax.wsdl.extensions.soap.SOAPAddress;
@@ -45,13 +44,15 @@ import org.apache.ws.commons.schema.XmlSchemaElement;
 import org.jetel.component.ws.exception.AmbiguousOperationException;
 import org.jetel.component.ws.exception.AmbiguousPortException;
 import org.jetel.component.ws.exception.WSDLAnalyzeException;
+import org.jetel.component.ws.util.extensions.Policy12ExtensionImpl;
+import org.jetel.component.ws.util.extensions.Policy12ReferenceExtensionImpl;
+import org.jetel.component.ws.util.extensions.Policy15ExtensionImpl;
+import org.jetel.component.ws.util.extensions.Policy15ReferenceExtensionImpl;
 import org.jetel.component.ws.util.extensions.PolicyExtension;
 import org.jetel.component.ws.util.extensions.PolicyExtensionDeserializer;
-import org.jetel.component.ws.util.extensions.PolicyExtensionImpl;
 import org.jetel.component.ws.util.extensions.PolicyExtensionSerializer;
 import org.jetel.component.ws.util.extensions.PolicyReferenceExtension;
 import org.jetel.component.ws.util.extensions.PolicyReferenceExtensionDeserializer;
-import org.jetel.component.ws.util.extensions.PolicyReferenceExtensionImpl;
 import org.jetel.component.ws.util.extensions.PolicyReferenceExtensionSerializer;
 import org.jetel.component.ws.util.nsmap.WSDLExtensionNamespace;
 import org.w3c.dom.Element;
@@ -122,74 +123,131 @@ public class WSDLAnalyzer {
         ExtensionRegistry registry = wsdlReader.getExtensionRegistry();
 
         // QName to represent top level Policy Element.of WS-Policy
-        //QName policyType = new QName(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_2, "Policy");
-        QName policyType = new QName(Constants.URI_POLICY_NS, Constants.ELEM_POLICY);
+        List<QName> policyTypes = new ArrayList<QName>();
+        policyTypes.add(new QName(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_2, Constants.ELEM_POLICY));
+        policyTypes.add(new QName(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5, Constants.ELEM_POLICY));
+        
+        for (QName policyType : policyTypes) {
+        	// register the ExtensionSerializer for WS-Policy
+            registry.registerSerializer(Definition.class, policyType, new PolicyExtensionSerializer());
+            // register the ExtensionDeserializer for WS-Policy
+            registry.registerDeserializer(Definition.class, policyType, new PolicyExtensionDeserializer());
+            // register the ExtElementType for WS-Policy
+            if (policyType.getNamespaceURI().equals(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5)) {
+            	registry.mapExtensionTypes(Definition.class, policyType, Policy15ExtensionImpl.class);
+            } else {
+            	registry.mapExtensionTypes(Definition.class, policyType, Policy12ExtensionImpl.class);
+            }
 
-        // register the ExtensionSerializer for WS-Policy
-        registry.registerSerializer(Definition.class, policyType, new PolicyExtensionSerializer());
-        // register the ExtensionDeserializer for WS-Policy
-        registry.registerDeserializer(Definition.class, policyType, new PolicyExtensionDeserializer());
-        // register the ExtElementType for WS-Policy
-        registry.mapExtensionTypes(Definition.class, policyType, PolicyExtensionImpl.class);
-
-        logger.debug("WSDL extension support for " + policyType + " of WS-Policy registered.");
+            logger.debug("WSDL extension support for " + policyType + " of WS-Policy registered.");
+        }
+        policyTypes.clear();
+        
         // QName to represent top level Policy Reference Element.of WS-Policy
-        QName policyRefType = new QName(Constants.URI_POLICY_NS, Constants.ELEM_POLICY_REF);
+        List<QName> policyRefTypes = new ArrayList<QName>();
+        policyRefTypes.add(new QName(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_2, Constants.ELEM_POLICY_REF));
+        policyRefTypes.add(new QName(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5, Constants.ELEM_POLICY_REF));
 
         PolicyReferenceExtensionSerializer policyRefExtSerial = new PolicyReferenceExtensionSerializer();
         PolicyReferenceExtensionDeserializer policyRefExtDeserial = new PolicyReferenceExtensionDeserializer();
 
-        // register the WS-Policy Policy Reference for Service Policy Subject
-        registry.registerSerializer(Service.class, policyRefType, policyRefExtSerial);
-        registry.registerDeserializer(Service.class, policyRefType, policyRefExtDeserial);
-        registry.mapExtensionTypes(Service.class, policyRefType, PolicyReferenceExtensionImpl.class);
+        for (QName policyRefType : policyRefTypes) {
+        	// register the WS-Policy Policy Reference for Service Policy Subject
+            registry.registerSerializer(Service.class, policyRefType, policyRefExtSerial);
+            registry.registerDeserializer(Service.class, policyRefType, policyRefExtDeserial);
+            if (policyRefType.getNamespaceURI().equals(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5)) {
+            	registry.mapExtensionTypes(Service.class, policyRefType, Policy15ReferenceExtensionImpl.class);
+            } else {
+            	registry.mapExtensionTypes(Service.class, policyRefType, Policy12ReferenceExtensionImpl.class);
+            }
 
-        // register the WS-Policy Policy Reference for Endpoint Policy Subject
-        registry.registerSerializer(Port.class, policyRefType, policyRefExtSerial);
-        registry.registerDeserializer(Port.class, policyRefType, policyRefExtDeserial);
-        registry.mapExtensionTypes(Port.class, policyRefType, PolicyReferenceExtensionImpl.class);
+            // register the WS-Policy Policy Reference for Endpoint Policy Subject
+            registry.registerSerializer(Port.class, policyRefType, policyRefExtSerial);
+            registry.registerDeserializer(Port.class, policyRefType, policyRefExtDeserial);
+            if (policyRefType.getNamespaceURI().equals(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5)) {
+            	registry.mapExtensionTypes(Port.class, policyRefType, Policy15ReferenceExtensionImpl.class);
+            } else {
+            	registry.mapExtensionTypes(Port.class, policyRefType, Policy12ReferenceExtensionImpl.class);
+            }
 
-        registry.registerSerializer(Binding.class, policyRefType, policyRefExtSerial);
-        registry.registerDeserializer(Binding.class, policyRefType, policyRefExtDeserial);
-        registry.mapExtensionTypes(Binding.class, policyRefType, PolicyReferenceExtensionImpl.class);
+            registry.registerSerializer(Binding.class, policyRefType, policyRefExtSerial);
+            registry.registerDeserializer(Binding.class, policyRefType, policyRefExtDeserial);
+            if (policyRefType.getNamespaceURI().equals(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5)) {
+            	registry.mapExtensionTypes(Binding.class, policyRefType, Policy15ReferenceExtensionImpl.class);
+            } else {
+            	registry.mapExtensionTypes(Binding.class, policyRefType, Policy12ReferenceExtensionImpl.class);
+            }
 
-        registry.registerSerializer(PortType.class, policyRefType, policyRefExtSerial);
-        registry.registerDeserializer(PortType.class, policyRefType, policyRefExtDeserial);
-        registry.mapExtensionTypes(PortType.class, policyRefType, PolicyReferenceExtensionImpl.class);
+            registry.registerSerializer(PortType.class, policyRefType, policyRefExtSerial);
+            registry.registerDeserializer(PortType.class, policyRefType, policyRefExtDeserial);
+            if (policyRefType.getNamespaceURI().equals(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5)) {
+            	registry.mapExtensionTypes(PortType.class, policyRefType, Policy15ReferenceExtensionImpl.class);
+            } else {
+            	registry.mapExtensionTypes(PortType.class, policyRefType, Policy12ReferenceExtensionImpl.class);
+            }
 
-        // register the WS-Policy Policy Reference for Operation Policy Subject
-        registry.registerSerializer(BindingOperation.class, policyRefType, policyRefExtSerial);
-        registry.registerDeserializer(BindingOperation.class, policyRefType, policyRefExtDeserial);
-        registry.mapExtensionTypes(BindingOperation.class, policyRefType, PolicyReferenceExtensionImpl.class);
+            // register the WS-Policy Policy Reference for Operation Policy Subject
+            registry.registerSerializer(BindingOperation.class, policyRefType, policyRefExtSerial);
+            registry.registerDeserializer(BindingOperation.class, policyRefType, policyRefExtDeserial);
+            if (policyRefType.getNamespaceURI().equals(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5)) {
+            	registry.mapExtensionTypes(BindingOperation.class, policyRefType, Policy15ReferenceExtensionImpl.class);
+            } else {
+            	registry.mapExtensionTypes(BindingOperation.class, policyRefType, Policy12ReferenceExtensionImpl.class);
+            }
 
-        registry.registerSerializer(Operation.class, policyRefType, policyRefExtSerial);
-        registry.registerDeserializer(Operation.class, policyRefType, policyRefExtDeserial);
-        registry.mapExtensionTypes(Operation.class, policyRefType, PolicyReferenceExtensionImpl.class);
+            registry.registerSerializer(Operation.class, policyRefType, policyRefExtSerial);
+            registry.registerDeserializer(Operation.class, policyRefType, policyRefExtDeserial);
+            if (policyRefType.getNamespaceURI().equals(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5)) {
+            	registry.mapExtensionTypes(Operation.class, policyRefType, Policy15ReferenceExtensionImpl.class);
+            } else {
+            	registry.mapExtensionTypes(Operation.class, policyRefType, Policy12ReferenceExtensionImpl.class);
+            }
 
-        // register the WS-Policy Policy Reference for Message Policy Subject
-        registry.registerSerializer(BindingInput.class, policyRefType, policyRefExtSerial);
-        registry.registerDeserializer(BindingInput.class, policyRefType, policyRefExtDeserial);
-        registry.mapExtensionTypes(BindingInput.class, policyRefType, PolicyReferenceExtensionImpl.class);
+            // register the WS-Policy Policy Reference for Message Policy Subject
+            registry.registerSerializer(BindingInput.class, policyRefType, policyRefExtSerial);
+            registry.registerDeserializer(BindingInput.class, policyRefType, policyRefExtDeserial);
+            if (policyRefType.getNamespaceURI().equals(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5)) {
+            	registry.mapExtensionTypes(BindingInput.class, policyRefType, Policy15ReferenceExtensionImpl.class);
+            } else {
+            	registry.mapExtensionTypes(BindingInput.class, policyRefType, Policy12ReferenceExtensionImpl.class);
+            }
 
-        registry.registerSerializer(Input.class, policyRefType, policyRefExtSerial);
-        registry.registerDeserializer(Input.class, policyRefType, policyRefExtDeserial);
-        registry.mapExtensionTypes(Input.class, policyRefType, PolicyReferenceExtensionImpl.class);
+            registry.registerSerializer(Input.class, policyRefType, policyRefExtSerial);
+            registry.registerDeserializer(Input.class, policyRefType, policyRefExtDeserial);
+            if (policyRefType.getNamespaceURI().equals(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5)) {
+            	registry.mapExtensionTypes(Input.class, policyRefType, Policy15ReferenceExtensionImpl.class);
+            } else {
+            	registry.mapExtensionTypes(Input.class, policyRefType, Policy12ReferenceExtensionImpl.class);
+            }
 
-        registry.registerSerializer(BindingOutput.class, policyRefType, policyRefExtSerial);
-        registry.registerDeserializer(BindingOutput.class, policyRefType, policyRefExtDeserial);
-        registry.mapExtensionTypes(BindingOutput.class, policyRefType, PolicyReferenceExtensionImpl.class);
+            registry.registerSerializer(BindingOutput.class, policyRefType, policyRefExtSerial);
+            registry.registerDeserializer(BindingOutput.class, policyRefType, policyRefExtDeserial);
+            if (policyRefType.getNamespaceURI().equals(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5)) {
+            	registry.mapExtensionTypes(BindingOutput.class, policyRefType, Policy15ReferenceExtensionImpl.class);
+            } else {
+            	registry.mapExtensionTypes(BindingOutput.class, policyRefType, Policy12ReferenceExtensionImpl.class);
+            }
 
-        registry.registerSerializer(Output.class, policyRefType, policyRefExtSerial);
-        registry.registerDeserializer(Output.class, policyRefType, policyRefExtDeserial);
-        registry.mapExtensionTypes(Output.class, policyRefType, PolicyReferenceExtensionImpl.class);
+            registry.registerSerializer(Output.class, policyRefType, policyRefExtSerial);
+            registry.registerDeserializer(Output.class, policyRefType, policyRefExtDeserial);
+            if (policyRefType.getNamespaceURI().equals(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5)) {
+            	registry.mapExtensionTypes(Output.class, policyRefType, Policy15ReferenceExtensionImpl.class);
+            } else {
+            	registry.mapExtensionTypes(Output.class, policyRefType, Policy12ReferenceExtensionImpl.class);
+            }
 
-        registry.registerSerializer(Message.class, policyRefType, policyRefExtSerial);
-        registry.registerDeserializer(Message.class, policyRefType, policyRefExtDeserial);
-        registry.mapExtensionTypes(Message.class, policyRefType, PolicyReferenceExtensionImpl.class);
+            registry.registerSerializer(Message.class, policyRefType, policyRefExtSerial);
+            registry.registerDeserializer(Message.class, policyRefType, policyRefExtDeserial);
+            if (policyRefType.getNamespaceURI().equals(WSDLExtensionNamespace.NS_URI_WS_POLICY_v1_5)) {
+            	registry.mapExtensionTypes(Message.class, policyRefType, Policy15ReferenceExtensionImpl.class);
+            } else {
+            	registry.mapExtensionTypes(Message.class, policyRefType, Policy12ReferenceExtensionImpl.class);
+            }
 
-        // support for wsdl11:Fault is not considered
+            // support for wsdl11:Fault is not considered
 
-        logger.debug("WSDL extension support for " + policyRefType + " of WS-Policy registered.");
+            logger.debug("WSDL extension support for " + policyRefType + " of WS-Policy registered.");
+        }        
     }
 
     /**
@@ -507,7 +565,7 @@ public class WSDLAnalyzer {
             // retrieve Service References from wsdl:Service
             QName serviceQName = new QName(targetNamespace, serviceName);
             Service service = wsdlDefinition.getService(serviceQName);
-            List extensibilityElements = service.getExtensibilityElements();
+            List<?> extensibilityElements = service.getExtensibilityElements();
             List<Policy> servicePolicies = getPolicies(extensibilityElements, serviceQName);
             serviceEffectivePolicies.addAll(servicePolicies);
 
@@ -525,7 +583,7 @@ public class WSDLAnalyzer {
         try {
             // retrieve Policy References from wsdl:Port
             Port port = getPort(portQName.getLocalPart());
-            List extensibilityElements = port.getExtensibilityElements();
+            List<?> extensibilityElements = port.getExtensibilityElements();
             List<Policy> portPolicies = getPolicies(extensibilityElements, new QName(port.getName()));
             endpointEffectivePolicies.addAll(portPolicies);
 
@@ -556,7 +614,7 @@ public class WSDLAnalyzer {
             QName bindingQName = new QName(targetNamespace, bindingName);
             Binding binding = wsdlDefinition.getBinding(bindingQName);
             BindingOperation bindingOperation = binding.getBindingOperation(operationName, null, null);
-            List extensibilityElements = bindingOperation.getExtensibilityElements();
+            List<?> extensibilityElements = bindingOperation.getExtensibilityElements();
             List<Policy> bindingOperationPolicies = getPolicies(extensibilityElements, new QName(bindingOperation.getName()));
             operationEffectivePolicies.addAll(bindingOperationPolicies);
 
@@ -788,13 +846,14 @@ public class WSDLAnalyzer {
         return servicePort;
     }
 
-    private List<Policy> getPolicies(List<ExtensibilityElement> extensibilityElements, QName parentName) throws Exception {
+    private List<Policy> getPolicies(List<?> extensibilityElements, QName parentName) throws Exception {
         List<Policy> pickOutPolicies = new ArrayList<Policy>();
-
+        
         for (Object extensibilityElementsItem : extensibilityElements) {
             if (!(extensibilityElementsItem instanceof PolicyReferenceExtension)) {
                 continue;
-            }
+            } 
+            
             PolicyReferenceExtension policyRefExtension = (PolicyReferenceExtension) extensibilityElementsItem;
             PolicyReference policyRef = policyRefExtension.getPolicyReference();
 
@@ -807,7 +866,7 @@ public class WSDLAnalyzer {
                 throw new WSDLAnalyzeException("Policy Reference at '" + parentName + "' has invalid URI value of Policy reference.");
             }
             Policy policy = null;
-
+            
             if (policyLocation.startsWith("#")) {
                 String policyId = policyLocation.substring(1);
                 if (!localPolicyDefinitions.containsKey(policyId)) {

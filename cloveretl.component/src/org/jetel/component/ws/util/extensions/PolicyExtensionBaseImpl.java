@@ -25,12 +25,12 @@ import org.w3c.dom.Element;
  *
  * @author Pavel Pospichal
  */
-public class PolicyExtensionImpl implements PolicyExtension {
+public class PolicyExtensionBaseImpl implements PolicyExtension {
 
     private static final int INITIAL_TEMPORARY_BUFFER_SIZE = 100;
     private Transformer xmlTransformer = null;
 
-    public PolicyExtensionImpl() throws Exception {
+    public PolicyExtensionBaseImpl() throws Exception {
         TransformerFactory tf = TransformerFactory.newInstance();
         xmlTransformer = tf.newTransformer();
     }
@@ -41,10 +41,16 @@ public class PolicyExtensionImpl implements PolicyExtension {
     /** The required. */
     private Boolean required = Boolean.FALSE;
 
+    private String policyVersion = null;
+    
     private Policy policy;
 
     public Policy getPolicy() throws Exception {
-        if (Constants.URI_POLICY_NS.equals(policyEl.getNamespaceURI())) {
+    	if (policyVersion == null) {
+    		throw new IllegalArgumentException("The WS-Policy standard version is not specified.");
+    	}
+    	
+        if (policyVersion.equals(policyEl.getNamespaceURI())) {
 
             Source policySource = new DOMSource(policyEl);
             ByteArrayOutputStream outputBufferStream = new ByteArrayOutputStream(INITIAL_TEMPORARY_BUFFER_SIZE);
@@ -59,22 +65,23 @@ public class PolicyExtensionImpl implements PolicyExtension {
             }
         }
 
-        throw new IllegalArgumentException("Element " + new QName(Constants.URI_POLICY_NS, Constants.ELEM_POLICY) + " not found.");
+        throw new IllegalArgumentException("Element " + new QName(policyVersion, Constants.ELEM_POLICY) + " not found.");
     }
 
     public void serialize(Writer os) throws Exception {
 
         if (policy == null) return;
-
+        if (policyVersion == null) return;
+        
         XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(os);
         policy = (Policy) policy.normalize(false);
 
         // declare the necessary namespaces
-        String wspPrefix = writer.getPrefix(Constants.URI_POLICY_NS);
+        String wspPrefix = writer.getPrefix(policyVersion);
 
         if (wspPrefix == null) {
             wspPrefix = Constants.ATTR_WSP;
-            writer.setPrefix(wspPrefix, Constants.URI_POLICY_NS);
+            writer.setPrefix(wspPrefix, policyVersion);
         }
 
         String wsuPrefix = writer.getPrefix(Constants.URI_WSU_NS);
@@ -84,7 +91,7 @@ public class PolicyExtensionImpl implements PolicyExtension {
         }
 
         writer.writeStartElement(wspPrefix, Constants.ELEM_POLICY,
-                Constants.URI_POLICY_NS);
+                policyVersion);
 
         QName key;
 
@@ -134,7 +141,7 @@ public class PolicyExtensionImpl implements PolicyExtension {
         }
 
         // writes xmlns:wsp=".."
-        writer.writeNamespace(wspPrefix, Constants.URI_POLICY_NS);
+        writer.writeNamespace(wspPrefix, policyVersion);
 
         String prefiX;
 
@@ -144,7 +151,7 @@ public class PolicyExtensionImpl implements PolicyExtension {
         }
 
         writer.writeStartElement(Constants.ATTR_WSP,
-                Constants.ELEM_EXACTLYONE, Constants.URI_POLICY_NS);
+                Constants.ELEM_EXACTLYONE, policyVersion);
         // write <wsp:ExactlyOne>
 
         List assertionList;
@@ -155,7 +162,7 @@ public class PolicyExtensionImpl implements PolicyExtension {
 
             // write <wsp:All>
             writer.writeStartElement(Constants.ATTR_WSP, Constants.ELEM_ALL,
-                    Constants.URI_POLICY_NS);
+                    policyVersion);
 
             Assertion assertion;
 
@@ -205,4 +212,12 @@ public class PolicyExtensionImpl implements PolicyExtension {
     public Boolean getRequired() {
         return required;
     }
+
+    protected String getPolicyVersion() {
+		return policyVersion;
+	}
+
+	protected void setPolicyVersion(String policyVersion) {
+		this.policyVersion = policyVersion;
+	}
 }
