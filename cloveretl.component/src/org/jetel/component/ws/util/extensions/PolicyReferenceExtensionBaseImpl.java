@@ -22,12 +22,12 @@ import org.w3c.dom.Element;
  *
  * @author Pavel Pospichal
  */
-public class PolicyReferenceExtensionImpl implements PolicyReferenceExtension {
+public class PolicyReferenceExtensionBaseImpl implements PolicyReferenceExtension {
 
     private static final int INITIAL_TEMPORARY_BUFFER_SIZE = 100;
     private Transformer xmlTransformer = null;
 
-    public PolicyReferenceExtensionImpl() throws Exception {
+    public PolicyReferenceExtensionBaseImpl() throws Exception {
         TransformerFactory tf = TransformerFactory.newInstance();
         xmlTransformer = tf.newTransformer();
     }
@@ -38,10 +38,16 @@ public class PolicyReferenceExtensionImpl implements PolicyReferenceExtension {
     /** The required. */
     private Boolean required = Boolean.FALSE;
 
+    private String policyVersion = null;
+    
     private Policy policy;
 
     public PolicyReference getPolicyReference() throws Exception {
-        if (Constants.URI_POLICY_NS.equals(policyReferenceEl.getNamespaceURI())) {
+    	if (policyVersion == null) {
+    		throw new IllegalArgumentException("The WS-Policy standard version is not specified.");
+    	}
+    	
+        if (policyVersion.equals(policyReferenceEl.getNamespaceURI())) {
 
             Source policyRefSource = new DOMSource(policyReferenceEl);
             ByteArrayOutputStream outputBufferStream = new ByteArrayOutputStream(INITIAL_TEMPORARY_BUFFER_SIZE);
@@ -56,7 +62,7 @@ public class PolicyReferenceExtensionImpl implements PolicyReferenceExtension {
             }
         }
 
-        throw new IllegalArgumentException("Element " + new QName(Constants.URI_POLICY_NS, Constants.ELEM_POLICY_REF) + " not found.");
+        throw new IllegalArgumentException("Element " + new QName(policyVersion, Constants.ELEM_POLICY_REF) + " not found.");
     }
 
     public void serialize(Writer writer) throws Exception {
@@ -99,4 +105,12 @@ public class PolicyReferenceExtensionImpl implements PolicyReferenceExtension {
     public Boolean getRequired() {
         return required;
     }
+
+	protected String getPolicyVersion() {
+		return policyVersion;
+	}
+
+	protected void setPolicyVersion(String policyVersion) {
+		this.policyVersion = policyVersion;
+	}
 }
