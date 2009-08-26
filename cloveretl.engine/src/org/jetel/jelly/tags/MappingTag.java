@@ -23,6 +23,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.graph.extension.PortDefinition;
 import org.jetel.jelly.CloverTagLibrary;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -105,7 +106,13 @@ public class MappingTag extends TagSupport {
         if (!(cloverObject instanceof PortDefinition)) {
             throw new JellyTagException("Found unrecognised content in Clover namespace defined for Jelly context.");
         }
-        portDefinition = (PortDefinition) cloverObject;
+        /* create a local instance with data records shared between mapping elements 
+         * for the same input port
+         */
+        portDefinition = new PortDefinition(); 
+        portDefinition.dataRecords = ((PortDefinition) cloverObject).dataRecords;
+        portDefinition.portIndex = ((PortDefinition) cloverObject).portIndex;
+        portDefinition.metadata = ((PortDefinition) cloverObject).metadata;
         
         prepareEnvironment();
         
@@ -141,18 +148,18 @@ public class MappingTag extends TagSupport {
             portDefinition.fieldsIgnore = parseFields(fieldsIgnore);
             portDefinition.fieldsAsExcept = parseFields(fieldsAsExcept);
 
-            if (portDefinition.keysAttr != null) {
+            if (!StringUtils.isEmpty(portDefinition.keysAttr)) {
                 portDefinition.keys = portDefinition.keysAttr.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
             }
-            if (portDefinition.parentKeysAttr != null) {
+            if (!StringUtils.isEmpty(portDefinition.parentKeysAttr)) {
                 portDefinition.parentKeys = portDefinition.parentKeysAttr.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
             }
 
-            if (portDefinition.keysAttr != null) {
+            if (!StringUtils.isEmpty(portDefinition.keysAttr)) {
                 portDefinition.relationKeysStrings.add(portDefinition.keysAttr);
                 portDefinition.relationKeysArrays.add(portDefinition.keys);
             }
-            if (portDefinition.parentKeysAttr != null) {
+            if (!StringUtils.isEmpty(portDefinition.parentKeysAttr)) {
                 portDefinition.relationKeysStrings.add(portDefinition.parentKeysAttr);
                 portDefinition.relationKeysArrays.add(portDefinition.parentKeys);
             }
@@ -200,7 +207,13 @@ public class MappingTag extends TagSupport {
             portDefinition.fieldsAsElementsIndexes = fieldsAsElementsIndexes.toArray(
                     new Integer[fieldsAsElementsIndexes.size()]);
 
-            // TODO: pridat klice datovych entit -> PortDefinition
+			for (DataRecord record : portDefinition.dataRecords) {
+				for (int i = 0; i < portDefinition.relationKeysStrings.size(); i++) {
+					String relationKeysString = portDefinition.relationKeysStrings.get(i);
+					String[] relationKeysArray = portDefinition.relationKeysArrays.get(i);
+					portDefinition.addDataRecord(relationKeysString, relationKeysArray, record);
+				}// for relationKeys
+			}
 
             if (logger.isDebugEnabled()) {
                 logger.debug("portDefinition.element:'" + portDefinition.element + "'");
@@ -219,6 +232,7 @@ public class MappingTag extends TagSupport {
                 logger.debug("portDefinition.fieldsAsAttributesIndexes:'" + portDefinition.fieldsAsAttributesIndexes + "'");
                 logger.debug("portDefinition.fieldsAsElementsIndexes:'" + portDefinition.fieldsAsElementsIndexes + "'");
             }
+            
         } catch(MissingAttributeException me) {
             throw me;
         } catch (Exception e) {
@@ -236,28 +250,28 @@ public class MappingTag extends TagSupport {
         
         if (ancestorMappingTag != null) {
             // only records compliant with ancestor's key value are allowed to
-            // be part of its content
-            if (portDefinition.parentKeysAttr != null) {
-                DataRecordMetadata ancestorMetadata = ancestorMappingTag.getMetadata();
-                DataRecord ancestorRecord = ancestorMappingTag.getCurrentlyProcessedRecord();
+			// be part of its content
+			if (portDefinition.parentKeysAttr != null) {
+				DataRecordMetadata ancestorMetadata = ancestorMappingTag.getMetadata();
+				DataRecord ancestorRecord = ancestorMappingTag.getCurrentlyProcessedRecord();
 
-                if (ancestorMetadata == null) {
-                    throw new JellyTagException("Unable to retrieve metadata definition of mapping ancestor.");
-                }
-                if (ancestorRecord == null) {
-                    throw new JellyTagException("Unable to retrieve currently processed record by mapping ancestor.");
-                }
-
-                RecordKey recKey = new RecordKey(portDefinition.parentKeys, ancestorMetadata);
-                HashKey key = new HashKey(recKey, ancestorRecord);
-                PortDefinition.TreeRecord tr = portDefinition.getTreeRecord(portDefinition.keysAttr, key);
-                if (tr != null && tr.records != null) {
-                   recordsToSerialization = tr.records;
-                } else {
-                    // no records will be processed
-                    recordsToSerialization = new ArrayList<DataRecord>();
-                }
-            } else {
+				if (ancestorMetadata == null) {
+					throw new JellyTagException("Unable to retrieve metadata definition of mapping ancestor.");
+				}
+				if (ancestorRecord == null) {
+					throw new JellyTagException("Unable to retrieve currently processed record by mapping ancestor.");
+				}
+				
+				RecordKey recKey = new RecordKey(portDefinition.parentKeys, ancestorMetadata);
+				HashKey key = new HashKey(recKey, ancestorRecord);
+				PortDefinition.TreeRecord tr = portDefinition.getTreeRecord(portDefinition.keysAttr, key);
+				if (tr != null && tr.records != null) {
+					recordsToSerialization = tr.records;
+				} else {
+					// no records will be processed
+					recordsToSerialization = new ArrayList<DataRecord>();
+				}
+			} else {
                 // current mapping has no references to its ancestor,
                 // no records will be part of the ancestor's content
                 recordsToSerialization = new ArrayList<DataRecord>();
