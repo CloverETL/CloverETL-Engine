@@ -156,14 +156,19 @@ public class MappingTag extends TagSupport {
             }
 
             if (!StringUtils.isEmpty(portDefinition.keysAttr)) {
-                portDefinition.relationKeysStrings.add(portDefinition.keysAttr);
-                portDefinition.relationKeysArrays.add(portDefinition.keys);
+            	if (!portDefinition.relationKeysStrings.contains(portDefinition.keysAttr)){
+		        	portDefinition.relationKeysStrings.add(portDefinition.keysAttr);
+		            portDefinition.relationKeysArrays.add(portDefinition.keys);
+            	}
             }
+            
+            // parent port definition is already adjusted and can't be modified
+            /*
             if (!StringUtils.isEmpty(portDefinition.parentKeysAttr)) {
                 portDefinition.relationKeysStrings.add(portDefinition.parentKeysAttr);
                 portDefinition.relationKeysArrays.add(portDefinition.parentKeys);
             }
-
+			*/
             // Actual mapping is not conscious about nested mappings. Nested
             // mappings have to contact its ancestor.
             //portData.children

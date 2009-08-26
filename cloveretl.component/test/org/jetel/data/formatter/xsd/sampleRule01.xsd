@@ -10,7 +10,7 @@
             <xsd:element minOccurs="1" name="JobTitle" type="CloverString"/>
             <xsd:element minOccurs="1" name="Address" type="CloverString"/>
             <xsd:element minOccurs="1" name="City" type="CloverString"/>
-            <xsd:element minOccurs="1" name="State" type="CloverString"/>
+            <xsd:element minOccurs="0" name="State" type="CloverString"/>
             <xsd:element minOccurs="1" name="PostCode" type="CloverString"/>
             <xsd:element minOccurs="1" name="Country" type="CloverString"/>
             <xsd:element minOccurs="1" name="Phone" type="CloverString"/>
