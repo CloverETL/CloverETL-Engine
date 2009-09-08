@@ -386,14 +386,17 @@ public abstract class Node extends GraphElement implements Runnable {
                                 resultMessage != null ? resultMessage : runResult.message(), null));
                 getCloverPost().sendMessage(msg);
             }
-            //check whether all input ports are already closed
-            for (InputPort inputPort : getInPorts()) {
-            	if (!inputPort.isEOF()) {
-                    runResult = Result.ERROR;
-                    Message msg = Message.createErrorMessage(this,
-                            new ErrorMsgBody(runResult.code(), "Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records.", null));
-                    getCloverPost().sendMessage(msg);
-                    return;
+            
+            if (runResult == Result.FINISHED_OK) {
+            	//check whether all input ports are already closed
+            	for (InputPort inputPort : getInPorts()) {
+            		if (!inputPort.isEOF()) {
+            			runResult = Result.ERROR;
+            			Message msg = Message.createErrorMessage(this,
+            					new ErrorMsgBody(runResult.code(), "Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records.", null));
+            			getCloverPost().sendMessage(msg);
+            			return;
+            		}
             	}
             }
         } catch (InterruptedException ex) {

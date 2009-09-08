@@ -182,7 +182,7 @@ public class DynamicJavaCode {
 			if (classLoader != null)
 				compiler.setParentClassLoader( classLoader );
 			else
-				compiler.setParentClassLoader( Thread.currentThread().getContextClassLoader() );
+				compiler.setParentClassLoader( DynamicJavaCode.class.getClassLoader() );
 
 			compiler.cook(srcCode);
 			

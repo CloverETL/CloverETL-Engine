@@ -288,9 +288,8 @@ public class Reformat extends Node {
 			SynchronizeUtils.cloverYield();
 		}
 
-		if (transformation != null) {
-			transformation.finished();
-		}
+		transformation.finished();
+
 		if (errorLog != null){
 			errorLog.flush();
 			errorLog.close();
@@ -480,10 +479,6 @@ public class Reformat extends Node {
 		this.charset = charset;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#reset()
-	 */
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
@@ -497,13 +492,10 @@ public class Reformat extends Node {
         }
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#free()
-	 */
 	@Override
-	public synchronized void free() {
-		super.free();
-	}
+    public synchronized void free() {
+        super.free();
+    }
+
 }
 

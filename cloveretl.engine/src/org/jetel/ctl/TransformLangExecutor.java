@@ -379,14 +379,23 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		this.parser = parser;
 	}
 	
+	/**
+	 * Contract: {@link #init()} method must be called prior to calling any of the {@link #execute()} methods
+	 */
 	public void init() {
 		initInternal(this.ast);
 	}
 	
+	/**
+	 * Contract: {@link #init()} method must be called prior to calling any of the {@link #execute()} methods
+	 */
 	public void init(CLVFStart ast) {
 		initInternal(ast);
 	}
 	
+	/**
+	 * Contract: {@link #init()} method must be called prior to calling any of the {@link #execute()} methods
+	 */
 	public void init(CLVFStartExpression ast) {
 		initInternal(ast);
 	}
@@ -410,15 +419,23 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		this.keepGlobalScope = true;
 	}
 	
-	
+	/**
+	 * Contract: {@link #init()} method must be called prior to calling any of the {@link #execute()} methods
+	 */
 	public void execute() {
 		executeInternal(this.ast);
 	}
 	
+	/**
+	 * Contract: {@link #init()} method must be called prior to calling any of the {@link #execute()} methods
+	 */
 	public void execute(CLVFStart ast) {
 		executeInternal(ast);
 	}
 	
+	/**
+	 * Contract: {@link #init()} method must be called prior to calling any of the {@link #execute()} methods
+	 */
 	public void execute(CLVFStartExpression ast) {
 		executeInternal(ast);
 	}

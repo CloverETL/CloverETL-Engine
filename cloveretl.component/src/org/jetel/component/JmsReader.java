@@ -163,9 +163,6 @@ public class JmsReader extends Node {
 		this.psorProperties = psorProperties;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#init()
-	 */
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -193,6 +190,7 @@ public class JmsReader extends Node {
 			psor = psorClass == null ? createProcessorDynamic(psorCode)
 					: createProcessor(psorClass, classPaths);
 		}		
+		psor.setGraph(this.getGraph());
 		psor.init(getOutputPort(0).getMetadata(), psorProperties);
 		
 		List<DataRecordMetadata> lDataRecordMetadata;
@@ -202,10 +200,6 @@ public class JmsReader extends Node {
 		autoFilling.setFilename(conId + ": " + (psorClass != null ? psorClass : psorCode));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#reset()
-	 */
     synchronized public void reset() throws ComponentNotReadyException {
     	super.reset();
     	connection.reset();
@@ -216,14 +210,9 @@ public class JmsReader extends Node {
 		autoFilling.reset();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.jetel.graph.GraphElement#free()
-     */
 	@Override
 	public synchronized void free() {
 		super.free();
-		if (psor != null) psor.finished();
         closeConnection();
 	}
 
@@ -244,7 +233,7 @@ public class JmsReader extends Node {
             if (classPaths == null)
                 throw new ComponentNotReadyException( "Can't find specified transformation class: " + psorClass);
             try {
-                URLClassLoader classLoader = ClassLoaderUtils.createClassLoader(Thread.currentThread().getContextClassLoader(), null, classPaths);
+                URLClassLoader classLoader = ClassLoaderUtils.createClassLoader(JmsReader.class.getClassLoader(), null, classPaths);
                 psor =  (JmsMsg2DataRecord)Class.forName(psorClass, true, classLoader).newInstance();
             } catch (ClassNotFoundException ex1) {
                 throw new ComponentNotReadyException("Can not find class: "+ ex1);
@@ -332,6 +321,7 @@ public class JmsReader extends Node {
 		}finally{
 	        broadcastEOF();
 		}
+        if (psor != null) psor.finished();
 		Result r = runIt ? Result.FINISHED_OK : Result.ABORTED;
 		runIt = false;	// for interruptor
 		return r;
@@ -348,16 +338,10 @@ public class JmsReader extends Node {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 	
@@ -424,9 +408,6 @@ public class JmsReader extends Node {
 		return jmsReader; 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception.ConfigurationStatus)
-	 */
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         

@@ -1,19 +1,43 @@
 #!/bin/sh
 
+if [ "$#" -lt 1 ] ; then
+	echo invalid paramenters count
+	exit 1;
+fi 
+
 CONFIG=$1
+if [ "$#" -gt 1 ] ; then
+	SCENARIOS=$2
+else
+	SCENARIOS=night.ts
+fi
  
 export ANT_OPTS="-Xmx500m"
+
 set
-wget http://klara.javlin.eu:8081/hudson/job/cloveretl.engine-2.6/lastSuccessfulBuild/artifact/cloveretl.engine/dist/cloverETL.rel-2-6-4.zip
-unzip -u -o cloverETL.rel-2-6-4.zip
-rm cloverETL.rel-2-6-4.zip
+
+# remove files from previous build
+rm -rf version.properties* cloverETL* 
+# there may be many files in tmp -> use find instead rm
+find /data/bigfiles/tmp -mindepth 1 -delete
+
+CLOVER_VERSION_J=`echo $JOB_NAME |sed 's/^cloveretl.engine-tests-night-\(functional-\)\?\([^-]*\).*$/\2/'`
+wget http://klara.javlin.eu:8081/hudson/job/cloveretl.engine-${CLOVER_VERSION_J}/lastSuccessfulBuild/artifact/cloveretl.engine/version.properties
+CLOVER_VERSION_D=`cat version.properties | sed 's/\./-/g'|sed 's/version=//'`
+
+wget http://klara.javlin.eu:8081/hudson/job/cloveretl.engine-${CLOVER_VERSION_J}/lastSuccessfulBuild/artifact/cloveretl.engine/dist/cloverETL.rel-${CLOVER_VERSION_D}.zip
+unzip -u -o cloverETL.rel-${CLOVER_VERSION_D}.zip
+rm cloverETL.rel-${CLOVER_VERSION_D}.zip
+
 cd cloveretl.test.environment
-/opt/apache-ant-1.7.0/bin/ant run-scenarios-with-engine-build \
+/opt/apache-ant/bin/ant run-scenarios-with-engine-build \
 	-Ddir.engine.build=../cloverETL/lib \
 	-Ddir.plugins=../cloverETL/plugins \
-	-Dscenarios=night.ts \
-	-Dcte.environment.config=${CONFIG} \
-	-Ddir.scenarios=../cloveretl.test.scenarios \
+	-Dscenarios=${SCENARIOS} \
+	-Denvironment.config=${CONFIG} \
 	-Dlogpath=/data/cte-logs \
-	-Dcte.hudson.link=$JOB_NAME/$BUILD_NUMBER
-scp -r /data/cte-logs klara:/data && cd /data/cte-logs && rm -r -f *
+	-Dhudson.link=job/$JOB_NAME/$BUILD_NUMBER
+	
+if  [ "$(hostname)" != "klara" ] ; then
+	rsync -rv --remove-source-files /data/cte-logs/ klara:/data/cte-logs
+fi

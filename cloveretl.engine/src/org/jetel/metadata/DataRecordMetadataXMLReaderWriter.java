@@ -363,6 +363,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				if (field.getAutoFilling() != null) {
 					fieldElement.setAttribute(AUTO_FILLING_ATTR, field.getAutoFilling());
 				}
+				fieldElement.setAttribute(EOF_AS_DELIMITER_ATTR,
+						String.valueOf(field.isEofAsDelimiter()));
 				fieldElement.setAttribute(NULLABLE_ATTR,
 				        String.valueOf(field.isNullable()));
 

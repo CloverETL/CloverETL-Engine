@@ -447,6 +447,7 @@ public class DataIntersection extends Node {
 		flush(slaveReader, outPortB) ; 
 
 		transformation.finished();
+
 		if (errorLog != null){
 			errorLog.flush();
 			errorLog.close();
@@ -456,10 +457,6 @@ public class DataIntersection extends Node {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
      }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#reset()
-	 */
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
@@ -475,10 +472,6 @@ public class DataIntersection extends Node {
         }
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#free()
-	 */
 	@Override
 	public synchronized void free() {
 		super.free();

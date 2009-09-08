@@ -255,6 +255,9 @@ public class ExtFilter extends org.jetel.graph.Node {
 			try {
 				  final CLVFStartExpression recordFilter = parser.StartExpression();
 				  filter = new RecordFilterTL(recordFilter);
+				  if( getGraph() != null ){
+					  filter.setGraph(getGraph());
+				  }
 				  filter.init();
 			} catch (ParseException ex) {
                 throw new ComponentNotReadyException("Parser error when parsing expression: "+ex.getMessage());

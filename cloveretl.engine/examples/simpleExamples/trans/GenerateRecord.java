@@ -45,7 +45,12 @@ public class GenerateRecord extends DataRecordGenerate{
 		return ALL;
 	}
 		
-
+	@Override
+	public void finished() {
+		sequence.resetValue();
+		super.finished();
+	}
+	
 	public String getMessage() {
 		return "Lookup value doesn't exist for key: " + keyRecord.getField(0);
 	}

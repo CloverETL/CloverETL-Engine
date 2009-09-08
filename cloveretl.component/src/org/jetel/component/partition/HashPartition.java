@@ -1,5 +1,7 @@
 package org.jetel.component.partition;
 
+import java.nio.ByteBuffer;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
@@ -36,4 +38,12 @@ public class HashPartition implements PartitionFunction{
     public void setGraph(TransformationGraph graph) {
     	// not used here
     }
+
+	public int getOutputPort(ByteBuffer directRecord) {
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean supportsDirectRecord() {
+		return false;
+	}
 }

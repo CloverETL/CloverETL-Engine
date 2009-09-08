@@ -779,6 +779,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<property name="dir.plugins" value="${dir.dist}/plugins"/>
 			<property name="version.full" value="${version.full}"/> 
 			<property name="hudson.link" value="${cte.hudson.link}"/>
+			<property name="logpath" value="${cte.logpath}"/>
 		</ant>
 	</target>
 	
@@ -791,6 +792,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<property name="dir.plugins" value="${dir.dist}/plugins"/>
 			<property name="version.full" value="${version.full}"/>
 			<property name="hudson.link" value="${cte.hudson.link}"/>
+			<property name="logpath" value="${cte.logpath}"/>
 		</ant>
 	</target>
 	
@@ -804,6 +806,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<property name="cobertura.ser" value="${cobertura.ser}"/>
 			<property name="version.full" value="${version.full}"/>
 			<property name="hudson.link" value="${cte.hudson.link}"/>
+			<property name="logpath" value="${cte.logpath}"/>
 		</ant>
 	</target>
 	

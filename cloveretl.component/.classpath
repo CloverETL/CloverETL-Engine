@@ -19,6 +19,7 @@
 	<classpathentry kind="lib" path="lib/axis2-transport-http-1.5.jar"/>
 	<classpathentry kind="lib" path="lib/axis2-modules/sandesha2-client-constants-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/axis2-modules/sandesha2-core-1.3.jar"/>
+	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

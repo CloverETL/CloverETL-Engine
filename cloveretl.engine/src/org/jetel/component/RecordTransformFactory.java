@@ -191,7 +191,7 @@ public class RecordTransformFactory {
         
         if (transformClass != null) {
             //get transformation from link to the compiled class
-            transformation = (RecordTransform)RecordTransformFactory.loadClass(logger, transformClass, null, classPaths);
+            transformation = (RecordTransform)RecordTransformFactory.loadClass(classLoader, logger, transformClass, null, classPaths);
         }else if (transform == null && transformURL != null){
         	transform = FileUtils.getStringFromURL(node.getGraph().getProjectURL(), transformURL, charset);
         }
@@ -251,83 +251,14 @@ public class RecordTransformFactory {
     }
 
     /**
-     * 
-     * @param generate
-     * @param generateClass
-     * @param generateURL
-     * @param node
-     * @param outMetadata
-     * @param genParameters
-     * @param classLoader
-     * @param libs
-     * @return
-     * @throws ComponentNotReadyException
-     */
-    public static RecordGenerate createGenerator(String generate, String generateClass, 
-    		String generateURL, Node node, DataRecordMetadata[] outMetadata, 
-    		Properties genParameters, ClassLoader classLoader, String[] libs) throws ComponentNotReadyException {
-    	
-    	// create generator
-        RecordGenerate recordGenerate = null;
-        Log logger = LogFactory.getLog(node.getClass());
-        
-        //without these parameters we cannot create transformation
-        if(generate == null && generateClass == null && generateURL == null) {
-            throw new ComponentNotReadyException("Record transformation is not defined.");
-        }
-        
-        if (generateClass != null) {
-            //get transformation from link to the compiled class
-            recordGenerate = (RecordGenerate)RecordTransformFactory.loadClass(logger, generateClass, null, libs);
-        }else if (generate == null && generateURL != null){
-        	generate = FileUtils.getStringFromURL(node.getGraph().getProjectURL(), generateURL, null);
-        }
-        if (generateClass == null) {
-            
-            switch (guessTransformType(generate)) {
-            case TRANSFORM_JAVA_SOURCE:
-                // try compile transform parameter as java code
-				// try preprocessing if applicable
-                recordGenerate = (RecordGenerate)RecordTransformFactory.loadClassDynamic(
-                        logger, null, generate, new DataRecordMetadata[0], outMetadata, classLoader, false);
-                break;
-            case TRANSFORM_CLOVER_TL:
-                recordGenerate = new RecordGenerateTL(generate, logger);
-                break;
-            case TRANSFORM_CTL:
-                recordGenerate = new CTLRecordGenerateAdapter(generate, logger);
-                break;
-            case TRANSFORM_JAVA_PREPROCESS:
-                recordGenerate = (RecordGenerate)RecordTransformFactory.loadClassDynamic(
-                        logger, "Transform" + node.getId(), generate,
-                        new DataRecordMetadata[0], outMetadata, classLoader, true);
-                break;
-            default:
-                // logger.error("Can't determine transformation code type at
-                // component ID :"+node.getId());
-                throw new ComponentNotReadyException(
-                        "Can't determine transformation code type at component ID :" + node.getId());
-            }
-        }
-        recordGenerate.setGraph(node.getGraph());
-    	
-        // init generator
-        if (!recordGenerate.init(genParameters, outMetadata)) {
-            throw new ComponentNotReadyException("Error when initializing tranformation function !");
-        }
-        
-        return recordGenerate;
-    }
-    
-    
-    /**
+     * @param parentClassLoader
      * @param logger
      * @param transformClassName
      * @param libraryPaths
      * @return
      * @throws ComponentNotReadyException
      */
-    public static Object loadClass(Log logger,
+    public static Object loadClass(ClassLoader parentClassLoader, Log logger,
             String transformClassName, URL contextURL, String[] libraryPaths)
             throws ComponentNotReadyException {
         Object instance = null;
@@ -346,12 +277,14 @@ public class RecordTransformFactory {
                                 + transformClassName);
             }
             try {
-                URLClassLoader classLoader = ClassLoaderUtils.createClassLoader(Thread.currentThread().getContextClassLoader(), contextURL, libraryPaths);
+                URLClassLoader classLoader = ClassLoaderUtils.createClassLoader( parentClassLoader, contextURL, libraryPaths);
                 instance = Class.forName(transformClassName, true, classLoader).newInstance();
             } catch (ClassNotFoundException ex1) {
                 throw new ComponentNotReadyException("Can not find class: " + ex1);
             } catch (Exception ex3) {
                 throw new ComponentNotReadyException(ex3.getMessage(), ex3);
+            } catch (NoClassDefFoundError err) {
+                throw new ComponentNotReadyException(err.getMessage(), new RuntimeException(err));
             }
         }
         return instance;

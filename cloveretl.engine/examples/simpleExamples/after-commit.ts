@@ -45,19 +45,11 @@
 <FunctionalTest ident="DBFJoin" graphFile="graph/graphDBFJoin.grf">
 	<FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.out"/>
 	<FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.out"/>
-     
-<DeleteFile file="data-out/joinedDBForders.out"/>
-<DeleteFile file="data-out/joinedDBFordersNA.out"/>
-
 </FunctionalTest>
 
 <FunctionalTest ident="DBFJoinTL" graphFile="graph/graphDBFJoinTL.grf">
-	 <FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoinTL.out"/>
-	 <FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoinTL.out"/>
-     
-<DeleteFile file="data-out/joinedDBForders.out"/>
-<DeleteFile file="data-out/joinedDBFordersNA.out"/>
-
+	 <FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.out"/>
+	 <FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.out"/>
 </FunctionalTest>
 
 <FunctionalTest ident="DBFJoinTLNew" graphFile="graph/graphDBFJoinTLNew.grf">
@@ -71,12 +63,7 @@
 
 <FunctionalTest ident="DBFLoad" graphFile="graph/graphDBFLoad.grf">
 	 <FlatFile outputFile="data-out/Trash1_output.txt" supposedFile="supposed-out/Trash1_output.DBFLoad.txt"/>
-     
-<DeleteFile file="data-out/Trash1_output.txt"/>
-
 </FunctionalTest>
-
-
 
 <FunctionalTest ident="Dedup" graphFile="graph/graphDedup.grf">
 	 <FlatFile outputFile="data-out/out.txt" supposedFile="supposed-out/out.Dedup.txt"/>
@@ -99,10 +86,8 @@
 <FunctionalTest ident="DenormalizeTL" graphFile="graph/graphDenormalizeTL.grf">
 	 <FlatFile outputFile="data-out/denormalizedTL.out" supposedFile="supposed-out/denormalizedTL.DenormalizeTL.out"/>
 	 <FlatFile outputFile="data-out/denormalizedTLwithoutOrder.out" supposedFile="supposed-out/denormalizedTLwithoutOrder.DenormalizeTL.out"/>
-	 <FlatFile outputFile="data-out/denormalizedTLnew.out" supposedFile="supposed-out/denormalizedTL.DenormalizeTL.out"/>
 	<DeleteFile file="data-out/denormalizedTL.out"/>
 	<DeleteFile file="data-out/denormalizedTLwithoutOrder.out"/>
-	<DeleteFile file="data-out/denormalizedTLnew.out"/>
 </FunctionalTest>
 
 
@@ -130,6 +115,13 @@
 	<DeleteFile file="seq/seq.seq"/>
 </FunctionalTest>
 
+<FunctionalTest ident="HttpConnector" graphFile="graph/graphHTTPConnector.grf">	 
+	 <FlatFile outputFile="data-out/city_overview.txt" supposedFile="supposed-out/city_overview.HttpConnector.txt"/>
+	 <FlatFile outputFile="data-out/hello.html" supposedFile="supposed-out/hello.HttpConnector.html"/>
+	 <FlatFile outputFile="data-out/hello1.html" supposedFile="supposed-out/hello.HttpConnector.html"/>
+	 <FlatFile outputFile="data-out/hello.txt" supposedFile="supposed-out/hello.HttpConnector.txt"/>
+	 <FlatFile outputFile="data-out/hello1.txt" supposedFile="supposed-out/hello.HttpConnector.txt"/>
+</FunctionalTest>
 
 <FunctionalTest ident="IntersectData" graphFile="graph/graphIntersectData.grf">
 	 <FlatFile outputFile="data-out/intersect_1_2_data.out" supposedFile="supposed-out/intersect_1_2_data.IntersectData.out"/>
@@ -172,13 +164,6 @@
 </FunctionalTest>
 
 <FunctionalTest ident="JoinHashUsingTransformLanguage" graphFile="graph/graphJoinHashUsingTransformLanguage.grf">
-	 <FlatFile outputFile="data-out/joined_data_hash.out" supposedFile="supposed-out/joined_data_hash.JoinHashUsingTransformLanguage.out"/>
-     
-<DeleteFile file="data-out/joined_data_hash.out"/>
-
-</FunctionalTest>
-
-<FunctionalTest ident="JoinHashUsingTransformLanguageNew" graphFile="graph/graphJoinHashUsingTransformLanguageNew.grf">
 	 <FlatFile outputFile="data-out/joined_data_hash.out" supposedFile="supposed-out/joined_data_hash.JoinHashUsingTransformLanguage.out"/>
      
 <DeleteFile file="data-out/joined_data_hash.out"/>
@@ -380,7 +365,7 @@
 
 <FunctionalTest ident="XLSReadWrite" graphFile="graph/graphXLSReadWrite.grf">
 	 <FlatFile outputFile="data-out/ordersByCountry.xls" supposedFile="supposed-out//ordersByCountry.XLSReadWrite.xls"/>
-     
+	 <FlatFile outputFile="data-out/orders_delimited.txt" supposedFile="supposed-out/orders_delimited.XLSReadWrite.txt"/>
 <DeleteFile file="data-out/ordersByCountry.xls"/>
 
 </FunctionalTest>

@@ -64,7 +64,15 @@ public class RingRecordBuffer {
 		this.recordBufferSize = recordBufferSize;
 		this.recordBuffer = new RecordBuffer(internalBufferSize);
 	}
-		
+
+	/**
+	 * @return <code>true</code> if the buffer is full, i.e. pushing another data record is going to result in
+	 * the oldest data record to be removed from the buffer, <code>false</code> otherwise
+	 */
+	public boolean isFull() {
+		return (numBufferedRecords >= recordBufferSize);
+	}
+
 	/**
 	 * Basic record buffer initialization. It is necessary to invoke this method right once before first usage.
 	 * @throws ComponentNotReadyException

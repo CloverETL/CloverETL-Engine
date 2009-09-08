@@ -69,9 +69,6 @@ public class RecordDenormalizeTL implements RecordDenormalize {
     	outRec=new DataRecord[1];
     }
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordDenormalize#init(java.util.Properties, org.jetel.metadata.DataRecordMetadata, org.jetel.metadata.DataRecordMetadata)
-	 */
 	public boolean init(Properties parameters,
 			DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
 			throws ComponentNotReadyException {
@@ -115,17 +112,11 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 		return result == null ? true : result==TLBooleanValue.TRUE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordDenormalize#append(org.jetel.data.DataRecord)
-	 */
 	public int append(DataRecord inRecord) {
 		return transformResult(wrapper.executePreparedFunction(
 				appendFunctionIdentifier, inRecord, null));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordDenormalize#transform(org.jetel.data.DataRecord)
-	 */
 	public int transform(DataRecord outRecord) {
 		this.outRec[0]=outRecord;
 
@@ -156,9 +147,6 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordDenormalize#finished()
-	 */
 	public void finished() {
 		try {
 			wrapper.execute(FINISHED_FUNCTION_NAME, null);
@@ -191,20 +179,10 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 		wrapper.reset();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#setGraph(org.jetel.graph.TransformationGraph)
-	 */
 	public void setGraph(TransformationGraph graph) {
 		wrapper.setGraph(graph);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#getGraph()
-	 */
 	public TransformationGraph getGraph() {
 		return wrapper.getGraph();
 	}

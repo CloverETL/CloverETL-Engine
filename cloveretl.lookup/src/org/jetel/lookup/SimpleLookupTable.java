@@ -220,6 +220,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 				} else if (data != null) {
 					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes(charset)));
 				}
+            	dataParser.skip(metadata.getSkipSourceRows());
 				while (dataParser.getNext(record) != null) {
 	                    DataRecord storeRecord = record.duplicate();
 	                    lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
@@ -536,10 +537,13 @@ class SimpleLookup implements Lookup{
 			numFound = curentResult != null ? curentResult.size() : 0;
 		}else{
 			curentResult.clear();
-			if (data.containsKey(key)) {
-				curentResult.add((DataRecord) data.get(key));
+			final DataRecord found = (DataRecord) data.get(key);
+			if (found!=null) {
+				curentResult.add(found);
+				numFound=1;
+			}else{
+				numFound = 0;
 			}
-			numFound = curentResult.size();
 		}
 		no = 0;
 	}

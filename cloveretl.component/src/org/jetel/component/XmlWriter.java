@@ -54,7 +54,6 @@ import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.formatter.Formatter;
-import org.jetel.data.parser.XPathParser;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -79,8 +78,6 @@ import org.xml.sax.helpers.AttributesImpl;
  * This writer component reads data records from any number of input ports 
  * and according to ports mapping definition of relations among records, creates structured XML file.
  *
- * TODO
- * 
  * example of mapping definition:
           <Mapping element="customer" inPort="2" key="CUSTOMERID" fieldsAs="elements" fieldsAsExcept="CUSTOMERID;CompanyName" >
               <Mapping element="order" inPort="0" key="OrderID" relationKeysToParent="CustomerID" fieldsAs="elements" fieldsAsExcept="OrderID">
@@ -101,52 +98,104 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class XmlWriter extends Node {
 	static Log logger = LogFactory.getLog(XmlWriter.class);
-	public final static String COMPONENT_TYPE = "XML_WRITER";
 	private final static int OUTPUT_PORT = 0;
 	
 	private final static Pattern NAMESPACE = Pattern.compile("(.+)[=]([\"]|['])(.+)([\"]|['])$");
 
-	private static final String XML_RELATION_KEYS_TO_PARENT_ATTRIBUTE = "keyToParent";
-	private static final String XML_RELATION_KEYS_FROM_PARENT_ATTRIBUTE = "keyFromParent";
-	private static final String XML_FILE_URL_ATTRIBUTE = "fileUrl";
-	private static final String XML_COMPRESSLEVEL_ATTRIBUTE = "compressLevel";
-	private static final String XML_KEYS_ATTRIBUTE = "key";
-	private static final String XML_PARENT_KEYS_ATTRIBUTE = "parentKey";	
-	private static final String XML_INDEX_ATTRIBUTE = "inPort";
-	private static final String XML_CHARSET_ATTRIBUTE = "charset";
-	private final static String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
-	private static final String XML_MAPPING_ATTRIBUTE = "mapping";
-	private static final String XML_MAPPING_ELEMENT = "Mapping";
-	private static final String XML_ELEMENT_ATTRIBUTE = "element";
-	private static final String XML_FIELDS_AS_ATTRIBUTE = "fieldsAs";
-	private static final String XML_FIELDS_AS_EXCEPT_ATTRIBUTE = "fieldsAsExcept";
-	private static final String XML_FIELDS_IGNORE_ATTRIBUTE = "fieldsIgnore";
-	private static final String XML_NAMESPACES_ATTRIBUTE = "namespaces";
-	private static final String XML_ROOT_NAMESPACES_ATTRIBUTE = "rootNamespaces";
-	
-	private static final String XML_RECORDS_PER_FILE_ATTRIBUTE = "recordsPerFile";
-	private static final String XML_RECORDS_SKIP_ATTRIBUTE = "recordSkip";
-	private static final String XML_RECORDS_COUNT_ATTRIBUTE = "recordCount";
-	
-	private static final String XML_SINGLE_ROW_ATTRIBUTE = "singleRow"; // alias for XML_OMIT_NEW_LINES_ATTRIBUTE
-	private static final String XML_OMIT_NEW_LINES_ATTRIBUTE = "omitNewLines"; 
-	private static final String XML_USE_ROOT_ELEMENT_ATTRIBUTE = "useRootElement";
-	private static final String XML_ROOT_INFO_ATTRIBUTES = "rootInfoAttributes";
-	private static final String DEFAULT_ROOT_ELEMENT = "root";
-	private static final String DEFAULT_RECORD_ELEMENT = "record";
-	private static final String ATTRIBUTE_COMPONENT_ID = "component";
-	private static final String ATTRIBUTE_GRAPH_NAME = "graph";
-	private static final String XML_ROOT_ELEMENT_ATTRIBUTE = "rootElement";
-	private static final String ATTRIBUTE_CREATED = "created";
-	private static final String XML_NAMESPACE_PREFIX_ATTRIBUTE = "fieldsNamespacePrefix";
-	private static final String XML_DTD_PUBLIC_ID_ATTRIBUTE = "dtdPublicId";
-	private static final String XML_DTD_SYSTEM_ID_ATTRIBUTE = "dtdSystemId";
-	private static final String XML_ROOT_DEFAULT_NAMESPACE_ATTRIBUTE = "rootDefaultNamespace";
-	private static final String XML_DEFAULT_NAMESPACE_ATTRIBUTE = "defaultNamespace";
-	private static final String XML_XSD_LOCATION_ATTRIBUTE = "xsdSchemaLocation";
-	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
-	protected int initialCapacity = 50;
+	/*
+	 * node element attributes
+	 * */
+	/** component attribute: component type */
+	public final static String COMPONENT_TYPE = "XML_WRITER";
+	/** component attribute: URL for mapping file */
+	public static final String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
+	/** component attribute: mapping */
+	public static final String XML_MAPPING_ATTRIBUTE = "mapping";
+	/** component attribute: output file(s) */
+	public static final String XML_FILE_URL_ATTRIBUTE = "fileUrl";
+	/** component attribute: charset */
+	public static final String XML_CHARSET_ATTRIBUTE = "charset";
+	/** component attribute: records per file */
+	public static final String XML_RECORDS_PER_FILE_ATTRIBUTE = "recordsPerFile";
+	/** component attribute: records skipped */
+	public static final String XML_RECORDS_SKIP_ATTRIBUTE = "recordSkip";
+	/** component attribute: total records count */
+	public static final String XML_RECORDS_COUNT_ATTRIBUTE = "recordCount";
+	/** component attribute: output XML root element */
+	public static final String XML_ROOT_ELEMENT_ATTRIBUTE = "rootElement";
+	/** component attribute: use root element switch */
+	public static final String XML_USE_ROOT_ELEMENT_ATTRIBUTE = "useRootElement";
+	/** component attribute: use root info attributes switch */
+	public static final String XML_ROOT_INFO_ATTRIBUTES = "rootInfoAttributes";
+	/** component attribute: single row stitch */
+	public static final String XML_SINGLE_ROW_ATTRIBUTE = "singleRow"; // alias for XML_OMIT_NEW_LINES_ATTRIBUTE
+	/** component attribute: root default namespace */
+	public static final String XML_ROOT_DEFAULT_NAMESPACE_ATTRIBUTE = "rootDefaultNamespace";
+	/** component attribute: root namespaces */
+	public static final String XML_ROOT_NAMESPACES_ATTRIBUTE = "rootNamespaces";
+	/** component attribute: DTD publicId */
+	public static final String XML_DTD_PUBLIC_ID_ATTRIBUTE = "dtdPublicId";
+	/** component attribute: DTD systemId */
+	public static final String XML_DTD_SYSTEM_ID_ATTRIBUTE = "dtdSystemId";
+	/** component attribute: XSD schema locator */
+	public static final String XML_XSD_LOCATION_ATTRIBUTE = "xsdSchemaLocation";
+	/** component attribute: make dirs */
+	public static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
+	/** component attribute: compress level */
+	public static final String XML_COMPRESSLEVEL_ATTRIBUTE = "compressLevel";
+	/** component attribute: omit new lines 
+	 * @deprecated use {@link #XML_SINGLE_ROW_ATTRIBUTE} instead */
+	public static final String XML_OMIT_NEW_LINES_ATTRIBUTE = "omitNewLines";
 
+	/*
+	 * attributed of mapping element
+	 * */
+	public static final String XML_MAPPING_ELEMENT = "Mapping";
+	/** mapping attribute: index of input port */
+	public static final String XML_INDEX_ATTRIBUTE = "inPort";
+	/** mapping attribute: key columns on this input port */
+	public static final String XML_KEYS_ATTRIBUTE = "key";
+	/** mapping attribute: key columns on the parent port (if any) */
+	public static final String XML_PARENT_KEYS_ATTRIBUTE = "parentKey";
+	/** mapping attribute 
+	 * @deprecated use {@link #XML_PARENT_KEYS_ATTRIBUTE} and {@link #XML_KEYS_ATTRIBUTE} instead */
+	public static final String XML_RELATION_KEYS_TO_PARENT_ATTRIBUTE = "keyToParent";
+	/** mapping attribute 
+	 * @deprecated use {@link #XML_PARENT_KEYS_ATTRIBUTE} and {@link #XML_KEYS_ATTRIBUTE} instead */
+	public static final String XML_RELATION_KEYS_FROM_PARENT_ATTRIBUTE = "keyFromParent";
+	/** mapping attribute: element name in output XML */
+	public static final String XML_ELEMENT_ATTRIBUTE = "element";
+	/** mapping attribute: values are created as attributes or element in output XML */
+	public static final String XML_FIELDS_AS_ATTRIBUTE = "fieldsAs";
+	/** mapping attribute: columns created in different way as specified by "fieldsAs" attribute */
+	public static final String XML_FIELDS_AS_EXCEPT_ATTRIBUTE = "fieldsAsExcept";
+	/** mapping attribute: columns excluded from output XML */
+	public static final String XML_FIELDS_IGNORE_ATTRIBUTE = "fieldsIgnore";
+	/** mapping attribute: namespaces */
+	public static final String XML_NAMESPACES_ATTRIBUTE = "namespaces";
+	/** mapping attribute: default namespace */
+	public static final String XML_DEFAULT_NAMESPACE_ATTRIBUTE = "defaultNamespace";
+	/** mapping attribute: namespace prefix */
+	public static final String XML_NAMESPACE_PREFIX_ATTRIBUTE = "fieldsNamespacePrefix";
+	
+	/*
+	 * defaults for output XML
+	 * */
+	/** default root element for output XML */
+	public static final String DEFAULT_ROOT_ELEMENT = "root";
+	/** default record element for output XML */
+	public static final String DEFAULT_RECORD_ELEMENT = "record";
+	
+	/*
+	 * output XML root element attributes
+	 * */
+	/** output XML root element attribute */
+	public static final String ATTRIBUTE_COMPONENT_ID = "component";
+	/** output XML root element attribute */
+	public static final String ATTRIBUTE_GRAPH_NAME = "graph";
+	/** output XML root element attribute */
+	public static final String ATTRIBUTE_CREATED = "created";
+	
 	/**
 	 * Map of portIndex => PortDefinition
 	 * It's read from XML during initialization.
@@ -188,6 +237,10 @@ public class XmlWriter extends Node {
 	private String xsdSchemaLocation;
 	private int compressLevel;
 	private boolean mkDir;
+	private String namespacesString;
+	private NodeList mappingNodes;
+	private String mappingString;
+	private String mappingURL;
 
 	/**
 	 * XmlFormatter which methods are called from MultiFileWriter. 
@@ -370,6 +423,7 @@ public class XmlWriter extends Node {
 		
 		private void addDataRecord(String relationKeysString, String[] relationKeysArray, DataRecord record) {
 			RecordKey recKey = new RecordKey( relationKeysArray, metadata);
+			recKey.init();
 			HashKey key = new HashKey(recKey, record);
 			TreeRecord tr = getTreeRecord(relationKeysString, key);
 			if (tr == null)
@@ -487,8 +541,9 @@ public class XmlWriter extends Node {
 	 * @param dtdPublicId 
 	 * @param xsdSchemaLocation 
 	 * @param rootPortDefinitionList
+	 * @deprecated Use simple constructor and setters instead of this.
 	 */
-	public XmlWriter(String id, String fileUrl, String rootElement, 
+	protected XmlWriter(String id, String fileUrl, String rootElement, 
 			Map<Integer, PortDefinition> allPortDefinitionMap, PortDefinition rootPortDefinition, 
 			int recordsSkip, int recordsCount, int recordsPerFile, boolean omitNewLines, 
 			boolean useRootElement, String rootDefaultNamespace, Map<String, String> namespaces, String dtdPublicId, String dtdSystemId, String xsdSchemaLocation,
@@ -511,6 +566,10 @@ public class XmlWriter extends Node {
 		this.xsdSchemaLocation = xsdSchemaLocation;
 	}
 
+	public XmlWriter(String id) {
+		super(id);
+	}
+
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
@@ -528,16 +587,44 @@ public class XmlWriter extends Node {
 
         if (charset == null)
         	charset = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
-        	//charset = "UTF-8";
-            //throw new ComponentNotReadyException(getId() + ": Specify charset of out file");
 
-        /*
-        if (rootPortDefinition.size() < 1) {
-            throw new ComponentNotReadyException(
-                    getId()
-                    + ": At least one mapping has to be defined.  <Mapping element=\"elementToCreate\" inPort=\"123\" ... />");
-        }*/
+        if (namespaces == null)
+        	namespaces = XmlWriter.getNamespaces(this.namespacesString);
 
+        if (rootPortDefinition == null){
+    		PortDefinition rootPortDefinition = null;
+    		Map<Integer, PortDefinition> allPortDefinitionMap = new HashMap<Integer,PortDefinition>();
+    		try {
+    			if (this.mappingURL != null) {
+    				ReadableByteChannel ch = FileUtils.getReadableChannel(graph != null ? graph.getProjectURL() : null, mappingURL);
+    				Document doc = createDocumentFromChannel(ch);
+    	            Element mappingRoot = doc.getDocumentElement();
+    				PortDefinition portDef = createInputPortDefinitionStructure(graph, allPortDefinitionMap, mappingRoot);
+    				rootPortDefinition = portDef;
+    			} else if (this.mappingString != null) {
+    	            Document doc = createDocumentFromString(mappingString);
+    	            Element mappingRoot = doc.getDocumentElement();
+    				PortDefinition portDef = createInputPortDefinitionStructure(graph, allPortDefinitionMap, mappingRoot);
+    				rootPortDefinition = portDef;
+    	        } else {
+    	            //old-fashioned version of mapping definition
+    	            //mapping xml elements are child nodes of the component
+    	        	List<PortDefinition> list = readInPortsDefinitionFromXml(graph, this.mappingNodes, (PortDefinition)null, allPortDefinitionMap);
+    	        	if (list.size() > 1)
+    	 	           throw new ComponentNotReadyException(COMPONENT_TYPE + ":" + this.getId() +" more then 1 root mapping element" );
+    	        	else if (list.size() < 1)
+    	 	           throw new ComponentNotReadyException(COMPONENT_TYPE + ":" + this.getId() +" no mapping element" );
+
+    	        	rootPortDefinition = list.get(0);
+    	        }
+    		} catch (Exception e) {
+    			logger.error("cannot instantiate node from XML", e);
+    			throw new ComponentNotReadyException(e.getMessage(), e);
+    		}
+    		this.allPortDefinitionMap = allPortDefinitionMap;
+    		this.rootPortDefinition = rootPortDefinition;
+        }
+		
         XmlFormatter formatter = new XmlFormatter(); 
         writer = new MultiFileWriter(formatter, graph != null ? graph.getProjectURL() : null, this.fileUrl);
         writer.setLogger(logger);
@@ -696,7 +783,8 @@ public class XmlWriter extends Node {
 		String path;
 		for (String namespacePath: namespacePaths.split(";")) {
 			Matcher matcher = NAMESPACE.matcher(namespacePath);
-			if (!matcher.find()) throw new ComponentNotReadyException("The namespace expression '"+ namespacePath +"' is not valid.");
+			if (!matcher.find()) 
+				throw new ComponentNotReadyException("The namespace expression '"+ namespacePath +"' is not valid.");
 			if ((ns = matcher.group(1)) != null && (path = matcher.group(3)) != null) {
 				namespaces.put(ns, path);
 			}
@@ -847,78 +935,77 @@ public class XmlWriter extends Node {
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		XmlWriter writer = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		PortDefinition rootPortDefinition = null;
-		Map<Integer, PortDefinition> allPortDefinitionMap = new HashMap<Integer,PortDefinition>();
-		try {
-			if (xattribs.exists(XML_MAPPING_URL_ATTRIBUTE)) {
-	            //read mapping from file url
-	            String mappingURL = xattribs.getString(XML_MAPPING_URL_ATTRIBUTE);
-				ReadableByteChannel ch = FileUtils.getReadableChannel(graph != null ? graph.getProjectURL() : null, mappingURL);
-				Document doc = createDocumentFromChannel(ch);
-	            Element mappingRoot = doc.getDocumentElement();
-				PortDefinition portDef = readInPortDef(graph, (PortDefinition)null, allPortDefinitionMap, mappingRoot);
-				rootPortDefinition = portDef;
-			} else if (xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
-	            //read mapping from string in attribute 'mapping'
-	            String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE);
-	            Document doc = createDocumentFromString(mapping);
-	            
-	            Element mappingRoot = doc.getDocumentElement();
-				PortDefinition portDef = readInPortDef(graph, (PortDefinition)null, allPortDefinitionMap, mappingRoot);
-				rootPortDefinition = portDef;
-	        } else {
-	            //old-fashioned version of mapping definition
-	            //mapping xml elements are child nodes of the component
-	        	Element mappingParent = xmlElement; 
-	        	List<PortDefinition> list = readInPortsDefinitionFromXml(graph, mappingParent, (PortDefinition)null, allPortDefinitionMap);
-	        	if (list.size() > 1)
-	 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," more then 1 mapping element") + ":");
-	        	else if (list.size() < 1)
-	        		xattribs.getString(XML_MAPPING_ATTRIBUTE);
-
-	        	rootPortDefinition = list.get(0);
-	        }
-		} catch (Exception e) {
-			logger.error("cannot instantiate node from XML", e);
-			throw new XMLConfigurationException(e.getMessage(), e);
-		}
 		
 		try {
+			writer = new XmlWriter(xattribs.getString(XML_ID_ATTRIBUTE));
+			
+	        // set mapping
+	        String mappingURL = xattribs.getString(XML_MAPPING_URL_ATTRIBUTE, null);
+	        String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
+	        NodeList nodes = xmlElement.getChildNodes();
+	        if (mappingURL != null) 
+	        	writer.setMappingURL(mappingURL);
+	        else if (mapping != null) 
+	        	writer.setMapping(mapping);
+	        else if (nodes != null && nodes.getLength() > 0){
+	            //old-fashioned version of mapping definition
+	            //mapping xml elements are child nodes of the component
+	        	writer.setMappingNodes(nodes);
+	        } else {
+	        	xattribs.getString(XML_MAPPING_URL_ATTRIBUTE); // throw configuration exception
+	        }
+
 			boolean omitNewLines = xattribs.getBoolean(XML_SINGLE_ROW_ATTRIBUTE, false); // singleRow is deprecated attribute, but still possible ... 
 			omitNewLines = xattribs.getBoolean(XML_OMIT_NEW_LINES_ATTRIBUTE, omitNewLines); // ... thus omitNewLines takes precedence over singleRow
+			writer.setOmitNewLines(omitNewLines);
+			
 			boolean useRootElement = xattribs.getBoolean(XML_USE_ROOT_ELEMENT_ATTRIBUTE, true);
+			writer.setUseRootElement(useRootElement);
+			
 			boolean rootInfoAttributes = xattribs.getBoolean(XML_ROOT_INFO_ATTRIBUTES, true);
+			writer.setRootInfoAttributes(rootInfoAttributes);
 			
 			String dtdPublicId = xattribs.getString(XML_DTD_PUBLIC_ID_ATTRIBUTE, null);
-			String dtdSystemId = xattribs.getString(XML_DTD_SYSTEM_ID_ATTRIBUTE, null);
-			String fileUrl = xattribs.getString(XML_FILE_URL_ATTRIBUTE);
-			String rootDefaultNamespace = xattribs.getString(XML_ROOT_DEFAULT_NAMESPACE_ATTRIBUTE, null);
-			String xsdSchemaLocation = xattribs.getString(XML_XSD_LOCATION_ATTRIBUTE, null);
+			writer.setDtdPublicId(dtdPublicId);
 			
-			Map<String, String> namespaces = XmlWriter.getNamespaces(xattribs.getString(XML_ROOT_NAMESPACES_ATTRIBUTE, null));
-
+			String dtdSystemId = xattribs.getString(XML_DTD_SYSTEM_ID_ATTRIBUTE, null);
+			writer.setDtdSystemId(dtdSystemId);
+			
+			String fileUrl = xattribs.getString(XML_FILE_URL_ATTRIBUTE);
+			writer.setFileUrl(fileUrl);
+			
+			String rootDefaultNamespace = xattribs.getString(XML_ROOT_DEFAULT_NAMESPACE_ATTRIBUTE, null);
+			writer.setRootDefaultNamespace(rootDefaultNamespace);
+			
+			String xsdSchemaLocation = xattribs.getString(XML_XSD_LOCATION_ATTRIBUTE, null);
+			writer.setXsdSchemaLocation(xsdSchemaLocation);
+			
+			String rootNamespaces = xattribs.getString(XML_ROOT_NAMESPACES_ATTRIBUTE, null);
+			writer.setRootNamespaces(rootNamespaces);
+			
 			int recordsSkip = xattribs.getInteger(XML_RECORDS_SKIP_ATTRIBUTE, 0);
+			writer.setRecordsSkip(recordsSkip);
+			
 			int recordsCount = xattribs.getInteger(XML_RECORDS_COUNT_ATTRIBUTE, 0);
+			writer.setRecordsCount(recordsCount);
+			
 			int recordsPerFile = xattribs.getInteger(XML_RECORDS_PER_FILE_ATTRIBUTE, 0);
-			writer = new XmlWriter(xattribs.getString(XML_ID_ATTRIBUTE), fileUrl, 
-					xattribs.getString(XML_ROOT_ELEMENT_ATTRIBUTE, DEFAULT_ROOT_ELEMENT), allPortDefinitionMap, rootPortDefinition, 
-					recordsSkip, recordsCount, recordsPerFile, omitNewLines, 
-					useRootElement, rootDefaultNamespace, namespaces, dtdPublicId, dtdSystemId, xsdSchemaLocation, rootInfoAttributes);
+			writer.setRecordsPerFile(recordsPerFile);
+			
+			String rootElement = xattribs.getString(XML_ROOT_ELEMENT_ATTRIBUTE, DEFAULT_ROOT_ELEMENT);
+			writer.setRootElement(rootElement);
+			
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE))
 				writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			writer.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
 			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
 				writer.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
             }
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
-		}
+        } catch (Exception ex) {
+            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        }
+		
 		return writer; 
-	}
-
-
-	public void setCompressLevel(int integer) {
-		this.compressLevel = integer;
 	}
 
 	/**
@@ -931,14 +1018,14 @@ public class XmlWriter extends Node {
 	 * @throws AttributeNotFoundException
 	 * @throws ComponentNotReadyException 
 	 */
-	private static List<PortDefinition> readInPortsDefinitionFromXml(TransformationGraph graph, Element xmlElement, PortDefinition parentPort, Map<Integer, PortDefinition> allPortDefinitionMap ) throws AttributeNotFoundException, ComponentNotReadyException {
+	private static List<PortDefinition> readInPortsDefinitionFromXml(TransformationGraph graph, NodeList mappingElements, PortDefinition parentPort, Map<Integer, PortDefinition> allPortDefinitionMap ) 
+			throws AttributeNotFoundException, ComponentNotReadyException {
 		List<PortDefinition> portDataList = new ArrayList<PortDefinition>();
-		NodeList ports = xmlElement.getChildNodes();//.getElementsByTagName(XML_INPORT_ELEMENT);
-		for (int i=0; i<ports.getLength(); i++){
-			org.w3c.dom.Node portDescNode = ports.item(i);
+		for (int i=0; i<mappingElements.getLength(); i++){
+			org.w3c.dom.Node portDescNode = mappingElements.item(i);
 			if ( !XML_MAPPING_ELEMENT.equals( portDescNode.getNodeName() ) )
 				continue;
-			org.w3c.dom.Element portDesc = (org.w3c.dom.Element)ports.item(i);
+			org.w3c.dom.Element portDesc = (org.w3c.dom.Element)mappingElements.item(i);
 			PortDefinition portData = readInPortDef(graph, parentPort, allPortDefinitionMap, portDesc);
 			portDataList.add(portData);
 		}// for
@@ -946,20 +1033,35 @@ public class XmlWriter extends Node {
 	}
 
 	/**
+	 * Creates whole input port definition structure from specified DOM element.
+	 *   
+	 * @param graph
+	 * @param allPortDefinitionMap - instance of Map, which will be filled with all created PortDefinition instances
+	 * @param portDesc - DOM element "Mapping", containing XML mapping structure
+	 * @return
+	 * @throws AttributeNotFoundException
+	 * @throws ComponentNotReadyException
+	 */
+	private static PortDefinition createInputPortDefinitionStructure(TransformationGraph graph, Map<Integer,PortDefinition> allPortDefinitionMap, org.w3c.dom.Element portDesc) 
+			throws AttributeNotFoundException, ComponentNotReadyException {
+		return readInPortDef(graph, null, allPortDefinitionMap, portDesc);
+	}
+	
+	/**
 	 * Reads one single PortDefinitions during initialization this component from XML. 
 	 * @param graph
 	 * @param parentPort
 	 * @param allPortDefinitionMap
-	 * @param portDesc
+	 * @param mappingElement
 	 * @return
 	 * @throws AttributeNotFoundException
 	 * @throws ComponentNotReadyException 
 	 */
 	private static PortDefinition readInPortDef(TransformationGraph graph, PortDefinition parentPort, 
-			Map<Integer,PortDefinition> allPortDefinitionMap, org.w3c.dom.Element portDesc
+			Map<Integer,PortDefinition> allPortDefinitionMap, org.w3c.dom.Element mappingElement
 			) throws AttributeNotFoundException, ComponentNotReadyException {
 		PortDefinition portData = new PortDefinition();
-		ComponentXMLAttributes portAttribs = new ComponentXMLAttributes(portDesc, graph);
+		ComponentXMLAttributes portAttribs = new ComponentXMLAttributes(mappingElement, graph);
 		portData.parent = parentPort;
 		portData.portIndex = portAttribs.getInteger(XML_INDEX_ATTRIBUTE);
 		portData.element = portAttribs.getString(XML_ELEMENT_ATTRIBUTE);
@@ -1017,7 +1119,7 @@ public class XmlWriter extends Node {
 			}
 		}
 		
-		portData.children = readInPortsDefinitionFromXml(graph, portDesc, portData, allPortDefinitionMap);
+		portData.children = readInPortsDefinitionFromXml(graph, mappingElement.getChildNodes(), portData, allPortDefinitionMap);
 		allPortDefinitionMap.put(portData.portIndex, portData);
 		return portData;
 	}
@@ -1077,7 +1179,7 @@ public class XmlWriter extends Node {
         return status;
 	}
 
-	private void setCharset(String charset) {
+	public void setCharset(String charset) {
 		this.charset = charset;
 	}
 
@@ -1106,25 +1208,79 @@ public class XmlWriter extends Node {
 	}
 
 	/**
-	 * This attribute has to be set just oncafter 
-	 * @param allPortDefinitionMap
-	 */
-	/*
-	private void setAllPortDefinitionMap(Map<Integer,PortDefinition> allPortDefinitionMap) {
-		this.allPortDefinitionMap = allPortDefinitionMap;
-	}
-
-	private void setRootPortDefinitionList(List<PortDefinition> rootPortDefinitionList) {
-		this.rootPortDefinitionList = rootPortDefinitionList;
-	}
-	*/
-
-	/**
 	 * Sets make directory.
 	 * @param mkDir - true - creates output directories for output file
 	 */
-	private void setMkDirs(boolean mkDir) {
+	public void setMkDirs(boolean mkDir) {
 		this.mkDir = mkDir;
 	}
 
+	public void setRootElement(String rootElement) {
+		this.rootElement = rootElement;
+	}
+
+	public void setRecordsPerFile(int recordsPerFile) {
+		this.recordsPerFile = recordsPerFile;
+	}
+
+	public void setRecordsCount(int recordsCount) {
+		this.recordsCount = recordsCount;
+	}
+
+	public void setRecordsSkip(int recordsSkip) {
+		this.recordsSkip = recordsSkip;
+	}
+
+	public void setRootNamespaces(String rootNamespaces) {
+		this.namespacesString = rootNamespaces;
+	}
+
+	public void setXsdSchemaLocation(String xsdSchemaLocation) {
+		this.xsdSchemaLocation = xsdSchemaLocation;
+	}
+
+	public void setRootDefaultNamespace(String rootDefaultNamespace) {
+		this.rootDefaultNamespace = rootDefaultNamespace;
+	}
+
+	public void setFileUrl(String fileUrl) {
+		this.fileUrl = fileUrl;
+	}
+
+	public void setDtdSystemId(String dtdSystemId) {
+		this.dtdSystemId = dtdSystemId;
+	}
+
+	public void setDtdPublicId(String dtdPublicId) {
+		this.dtdPublicId = dtdPublicId;
+	}
+
+	public void setRootInfoAttributes(boolean rootInfoAttributes) {
+		this.rootInfoAttributes = rootInfoAttributes;
+	}
+
+	public void setUseRootElement(boolean useRootElement) {
+		this.useRootElement = useRootElement;
+	}
+
+	public void setOmitNewLines(boolean omitNewLines) {
+		this.omitNewLines = omitNewLines;
+	}
+
+	public void setMappingNodes(NodeList mappingNodes) {
+		this.mappingNodes = mappingNodes;
+	}
+
+	public void setMapping(String mappingString) {
+		this.mappingString = mappingString;
+	}
+
+	public void setMappingURL(String mappingURL) {
+		this.mappingURL = mappingURL;
+	}
+
+	public void setCompressLevel(int integer) {
+		this.compressLevel = integer;
+	}
+	
 }

@@ -18,6 +18,8 @@
 *
 */
 package org.jetel.connection.jdbc;
+
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -290,7 +292,8 @@ public abstract class CopySQLData {
 			 * else we use whatever is appropriate
 			 */
 			transMap[i] = createCopyObject(
-					(record.getField(i).getMetadata().getType() == DataFieldMetadata.STRING_FIELD) ? Types.VARCHAR : type.shortValue(),
+					(record.getField(i).getMetadata().getType() == DataFieldMetadata.STRING_FIELD
+					        && type != CopyOracleXml.XML_TYPE) ? Types.VARCHAR : type.shortValue(),
 					record.getField(i).getMetadata(),
 					record, i, i);
 			i++;
@@ -328,7 +331,8 @@ public abstract class CopySQLData {
 			}
 			type = (Integer) fieldTypes.get(i);
 			transMap[i] = createCopyObject(
-					(record.getField(fieldIndex).getMetadata().getType() == DataFieldMetadata.STRING_FIELD) ? Types.VARCHAR : type.shortValue(),
+					(type != CopyOracleXml.XML_TYPE && record.getField(fieldIndex).getMetadata().getType()
+					        == DataFieldMetadata.STRING_FIELD) ? Types.VARCHAR : type.shortValue(),
 					record.getField(fieldIndex).getMetadata(),
 					record, i, metadata.getFieldPosition(keyFields[i]));
 		}
@@ -635,6 +639,9 @@ public abstract class CopySQLData {
             		logger.warn("Unknown format " + StringUtils.quote(format) + " - using CopyByte object.");
             	}
                 obj = new CopyByte(record, fromIndex, toIndex);
+                break;
+            case CopyOracleXml.XML_TYPE:
+                obj = new CopyOracleXml(record, fromIndex, toIndex);
                 break;
 			// when Types.OTHER or unknown, try to copy it as STRING
 			// this works for most of the NCHAR/NVARCHAR types on Oracle, MSSQL, etc.
@@ -1290,8 +1297,12 @@ public abstract class CopySQLData {
 			    if (inBatchUpdate){
                     pStatement.setTimestamp(fieldSQL, new Timestamp(((DateDataField) field).getDate().getTime()));
 			    }else{
-			        timeValue.setTime(((DateDataField) field).getDate().getTime());
-			        pStatement.setTimestamp(fieldSQL, timeValue);
+			        if (((DateDataField) field).getDate() != null) {
+			        	timeValue.setTime(((DateDataField) field).getDate().getTime());
+				        pStatement.setTimestamp(fieldSQL, timeValue);
+			        } else {
+			        	pStatement.setNull(fieldSQL, java.sql.Types.TIMESTAMP);
+			        }
 			    }
 			} else {
 				pStatement.setNull(fieldSQL, java.sql.Types.TIMESTAMP);
@@ -1567,6 +1578,97 @@ public abstract class CopySQLData {
 
     }
 
+    //
+    // TODO: The following class is kind of messy. There might be no need for this class since JDBC 4, check on that.
+    //
+
+    /**
+     * This class is used SOLELY for conversion of Oracle's XML columns into string data fields. Implementation of this
+     * conversion might be slow and buggy as it uses reflection. However, this class should serve its purpose.
+     * <p>
+     * For this class to work properly, xdb.jar (Oracle XML DB) and xmlparsev2.jar (XML parser used by XML DB) have to
+     * be on class path and loaded by the same class loader as the Oracle's JDBC driver.
+     *
+     * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
+     *
+     * @version 19th August 2009
+     * @since 19th August 2009
+     */
+    static class CopyOracleXml extends CopySQLData {
+
+        // TODO: We cannot access the oracle.jdbc.OracleTypes class from this place, don't know why. The XML_TYPE
+        // constant is therefore set statically to the correct value. However, this might be a problem. If there
+        // is a cleaner way to do this, we should fix that.
+
+        /** the ID of XMLType used by Oracle (oracle.jdbc.OracleTypes.OPAQUE) */
+        public static final int XML_TYPE = 2007;
+
+        /** the name of the method declared in the oracle.xdb.XMLType class used to get XML documents as strings */
+        private static final String GET_STRING_VAL_METHOD_NAME = "getStringVal";
+
+        CopyOracleXml(DataRecord record, int fieldSQL, int fieldJetel) {
+            super(record, fieldSQL, fieldJetel);
+        }
+
+        @Override
+        void setJetel(ResultSet resultSet) throws SQLException {
+            try {
+                setJetel(resultSet.getObject(fieldSQL), resultSet.wasNull());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        @Override
+        void setJetel(CallableStatement statement) throws SQLException {
+            try {
+                setJetel(statement.getObject(fieldSQL), statement.wasNull());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        /**
+         * Sets the encapsulated data field to a string value represented by the given field value object. The given
+         * field value object is expected to be an instance of the oracle.xdb.XMLType class, otherwise this method fails.
+         *
+         * @param fieldValue an object to be converted to string, an instance of the oracle.xdb.XMLType class is expected
+         * @param wasNull a flag specifying whether a null was encountered or not
+         *
+         * @throws SQLException if the conversion to a string value failed
+         */
+        private void setJetel(Object fieldValue, boolean wasNull) throws SQLException {
+            if (!wasNull) {
+                try {
+                    Method getStringValMethod = fieldValue.getClass().getDeclaredMethod(GET_STRING_VAL_METHOD_NAME);
+                    field.fromString(getStringValMethod.invoke(fieldValue).toString());
+                } catch (Exception exception) {
+                    throw new SQLException("Cannot convert the field to string!");
+                }
+            } else {
+                field.fromString(null);
+            }
+        }
+
+        @Override
+        void setSQL(PreparedStatement statement) throws SQLException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object getDbValue(ResultSet resultSet) throws SQLException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object getDbValue(CallableStatement statement) throws SQLException {
+            throw new UnsupportedOperationException();
+        }
+
+    }
+
+    //
+    // End of the messy class.
+    //
+
 }
-
-

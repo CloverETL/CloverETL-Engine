@@ -146,7 +146,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 		} catch (Exception ex) {
 			throw new RuntimeException("Config file for JMS connection not found (" + cfgFile +")", ex);
 		}
-		(new PropertyRefResolver(graph)).resolveAll(config);
+		(new PropertyRefResolver(graph.getGraphProperties())).resolveAll(config);
 		return config;
 	}
 
@@ -215,10 +215,11 @@ public class JmsConnection extends GraphElement implements IConnection {
 			ClassLoader prevCl = null;
 			try {
 				if (libraries != null){
+				    // Save the class loader so that you can restore it later
 					prevCl = Thread.currentThread().getContextClassLoader();
 					// Create the class loader by using the given URL
-					GreedyURLClassLoader loader = new GreedyURLClassLoader( librariesUrls, prevCl );
-				    // Save the class loader so that you can restore it later
+					GreedyURLClassLoader loader = new GreedyURLClassLoader( librariesUrls, this.getClass().getClassLoader() );
+					// InitialContext uses thread Class-Loader
 				    Thread.currentThread().setContextClassLoader(loader);
 				}
 
@@ -245,7 +246,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 			    	if (o instanceof ConnectionFactory)
 			    		ftory = (ConnectionFactory)o;
 			    	else
-						throw new ComponentNotReadyException("Cannot find connection factory "+ConnectionFactory.class + " with jndiName:"+conFtory + " found:"+o + " "+ (o != null ? (""+o.getClass()) : ""));
+						throw new ComponentNotReadyException("Cannot find connection factory "+ConnectionFactory.class + " loaded by:"+ConnectionFactory.class.getClassLoader() + " with jndiName:"+conFtory + " found:"+o + " "+ (o != null ? ((""+o.getClass()+" loaded by:"+o.getClass().getClassLoader())) : ""));
 			    		
 			    } catch (ComponentNotReadyException e) {
 			    	throw e;
@@ -287,7 +288,10 @@ public class JmsConnection extends GraphElement implements IConnection {
 			    if (session == null) 
 			    	throw new ComponentNotReadyException("Cannot create JMS session");
 			    try {
-					destination = (Destination)ctx.lookup(destId);
+			    	Object o = ctx.lookup(destId);
+			    	if (!(o instanceof Destination))
+			    		throw new ComponentNotReadyException(this, "Specified destination "+destId+" doesn't contain instance of "+Destination.class+", but:"+o);
+					destination = (Destination)o;
 				} catch (NamingException e) {
 			    	throw new ComponentNotReadyException("Cannot find destination \""+destId+"\" in initial context");
 				}
@@ -299,7 +303,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 					Thread.currentThread().setContextClassLoader(prevCl);
 			}
 		} catch (NoClassDefFoundError e) {
-	    		throw new ComponentNotReadyException("No class definition found for:" + e.getMessage() + " (add to classpath)");
+	    		throw new ComponentNotReadyException("No class definition found for:" + e.getMessage() + " (add to classpath)");//e.printStackTrace();
 		} catch (NamingException e) {
 	    	if (e.getRootCause() instanceof NoClassDefFoundError)
 	    		throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)");
@@ -307,6 +311,8 @@ public class JmsConnection extends GraphElement implements IConnection {
 	    		throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)");
 	    	else
 				throw new ComponentNotReadyException("Cannot create initial context; "+e.getMessage(), e);
+		} catch (IllegalStateException e) {
+			throw new ComponentNotReadyException(e);
 		} catch (JMSException e) {
 			throw new ComponentNotReadyException(e);
 		} 
@@ -484,7 +490,10 @@ public class JmsConnection extends GraphElement implements IConnection {
 			} catch (MalformedURLException e) {
 				// maybe it is ULR created via File class (no protocol)
 				try {
-					result.add(new File(new URL(contextURL, "file:" + libraryURLString).getFile()).toURI().toURL());
+					File f = new File(new URL(contextURL, "file:" + libraryURLString).getFile());
+					if (!f.exists())
+						throw new IllegalStateException("Library "+f+" doesn't exist");
+					result.add(f.toURI().toURL());
 				} catch (MalformedURLException e1) {
 				}
 			}

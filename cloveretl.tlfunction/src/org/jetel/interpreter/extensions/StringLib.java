@@ -23,8 +23,6 @@
  */
 package org.jetel.interpreter.extensions;
 
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,9 +43,9 @@ import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
-import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.DataGenerator;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.date.DateFormatter;
+import org.jetel.util.date.DateFormatterFactory;
 import org.jetel.util.string.Compare;
 import org.jetel.util.string.StringAproxComparator;
 import org.jetel.util.string.StringUtils;
@@ -867,84 +865,59 @@ public class StringLib extends TLFunctionLibrary {
 
             @Override
             public TLValue execute(TLValue[] params, TLContext context) {
-      
-                if (params[0]==TLNullValue.getInstance() || params[1]==TLNullValue.getInstance()) {
-                    throw new TransformLangExecutorRuntimeException(params,
-                            Function.IS_DATE.name()+" - NULL value not allowed");
-                }
-                if (!(params[0].type == TLValueType.STRING && params[1].type == TLValueType.STRING)){
-                    throw new TransformLangExecutorRuntimeException(params,
-                    "is_date - wrong type of literal");
-                }
-                if (params.length == 3 && !(params[2].type == TLValueType.STRING || params[2].type == TLValueType.BOOLEAN)){
-                    throw new TransformLangExecutorRuntimeException(params,
-                    "is_date - wrong type of literal");
-               }
-                if (params.length == 4 && !(params[3].type == TLValueType.BOOLEAN)){
-                    throw new TransformLangExecutorRuntimeException(params,
-                    "is_date - wrong type of literal");
-                }
-                DateFormatStore formatter = (DateFormatStore) context.getContext();
-                String pattern = params[1].toString();
-                String locale = params.length > 2 && params[2].type == TLValueType.STRING ? 
-                		params[2].toString() : null;
-                
-        		/*
-				 * When parsing in lenient mode the parser is allowed to
-				 * skip part of input string or accept illegal values
-				 * for days in month (@see java.util.Calendar.setLenient())
-				 * 
-				 * In lenient mode we additionally allow an empty string to be treated 
-				 * as a valid date.
-				 * 
-				 * Therefore we will use strict validation
-				 * (lenient=false) by default and additionally check that whole input 
-				 * was consumed in parsing (parsePostion = input.length).
-				 * Empty string will be treated as an illegal date.
-				 */		
-                boolean lenient = false;
-                if (params.length == 3 && params[2].type == TLValueType.BOOLEAN){
-                	lenient = ((TLBooleanValue)params[2]).getBoolean();
-                }else if (params.length == 4) {
-                	lenient = ((TLBooleanValue)params[3]).getBoolean();
-                }
-                
-                // empty string handling in lenient mode
-                final String input = params[0].toString();
-                if (lenient) {
-                	if (input.length() == 0) {
-                		return TLBooleanValue.TRUE;
-                	}
-                }
-                
-                if (formatter.formatter == null){
-                	formatter.init(locale, pattern);
-                }else if (locale != null) {
-                	formatter.reset(locale, pattern);
-                }else{
-                	formatter.resetPattern(pattern);
-                }
-
-                formatter.setLenient(lenient);
-                formatter.position.setIndex(0);
-                formatter.formatter.parse(input, formatter.position);
-                if (!lenient) {
-                	// strict: valid input must be non-empty & exact match to pattern
-                	return TLBooleanValue.getInstance(
-                			input.length() > 0 
-                			&&
-                			formatter.position.getIndex() == input.length()
-                	);
-                } else {
-                	// lenient: return true if something was parsed
-                	return TLBooleanValue.getInstance(formatter.position.getIndex() != 0); 
-                }
+            	DateFormatStore c = (DateFormatStore) context.getContext();
+            	String locale = null;
+    			String pattern = null;
+            	
+            	if (!c.parameterCache.isInitialized()) {
+    				if ((params[0].type != TLValueType.STRING)
+    						|| (params[1].type != TLValueType.STRING)) {
+    					throw new TransformLangExecutorRuntimeException(params,
+    							Function.IS_DATE.name()
+    									+ " - wrong type of literal");
+    				}
+    				if (params.length >= 3) {
+    					if (params[2].type == TLValueType.STRING) {
+    						locale = params[2].toString();
+    					}else if (params[2].type == TLValueType.BOOLEAN){ 
+    					// do nothing - we ignore lenient parameter
+    					}else {
+    						throw new TransformLangExecutorRuntimeException(params,
+    								Function.IS_DATE.name()
+    										+ " - wrong type of literal");
+    					}
+    					c.parameterCache.cache(params[1],params[2]);
+    				}else{
+    					c.parameterCache.cache(params[1]);
+    				}
+    				c.init(locale, 	pattern=params[1].toString());
+    			}else{
+    				if (params.length>=3){
+    					if (c.parameterCache.hasChanged(params[1],params[2])){
+    						c.reset(params[2].toString(), params[1].toString());
+    						c.parameterCache.cache(params[1],params[2]);
+    					}
+    				}else{
+    					if (c.parameterCache.hasChanged(params[1])){
+    							c.resetPattern(params[1].toString());
+    							c.parameterCache.cache(params[1]);
+    					}
+    				}
+    			
+    			}
+            	if (params[0]==TLNullValue.getInstance()){
+            		throw new TransformLangExecutorRuntimeException(params,
+							Function.IS_DATE.name()
+									+ " - wrong type of literal");
+            	}
+            	return c.formatter.tryParse(params[0].toString()) ? TLBooleanValue.TRUE : TLBooleanValue.FALSE;
             }
 
             @Override
             public TLContext createContext() {
                 TLContext<DateFormatStore> context = new TLContext<DateFormatStore>();
                 context.setContext(new DateFormatStore());
+                context.context.parameterCache=new TLParameterCache();
                 return context;
             }
             
@@ -1548,8 +1521,6 @@ public class StringLib extends TLFunctionLibrary {
      
      class RandomStringFunction extends TLFunctionPrototype {
 
-    	 private DataGenerator dataGenerator = new DataGenerator();
-    	 
          public RandomStringFunction() {
              super("string", "random_string", "Generates a random string", 
             		 new TLValueType[] { TLValueType.INTEGER, TLValueType.INTEGER, TLValueType.LONG }, 
@@ -1559,7 +1530,8 @@ public class StringLib extends TLFunctionLibrary {
          @Override
          public TLValue execute(TLValue[] params, TLContext context) {
         	 RandomContext val = (RandomContext)context.getContext();
-
+        	 DataGenerator dataGenerator = val.getDataGenerator();
+        	 
              if (params[0].type != TLValueType.INTEGER || params[1].type != TLValueType.INTEGER){
                  throw new TransformLangExecutorRuntimeException(params, "randomString - wrong integer type");
              }
@@ -1612,36 +1584,22 @@ public class StringLib extends TLFunctionLibrary {
 	}
 
      class DateFormatStore{
-    	 
-    	 SimpleDateFormat formatter;
-    	 ParsePosition position;
-    	 String locale;
+    	 TLParameterCache parameterCache;
+    	 DateFormatter formatter;
     	 
     	 public void init(String locale, String pattern){
-    		 formatter = (SimpleDateFormat)MiscUtils.createFormatter(DataFieldMetadata.DATE_FIELD, 
-    				 locale, pattern);
-    		 this.locale = locale;
-    		 position = new ParsePosition(0);
+    		 formatter = DateFormatterFactory.createFormatter(pattern, locale);
     	 }
     	 
     	 public void reset(String newLocale, String newPattern) {
-			if (!newLocale.equals(locale)) {
-				formatter = (SimpleDateFormat) MiscUtils.createFormatter(
-						DataFieldMetadata.DATE_FIELD, newLocale, newPattern);
-				this.locale = newLocale;
-			}
-			resetPattern(newPattern);
-		}
+    		 formatter = DateFormatterFactory.createFormatter(newPattern, newLocale);		}
     	 
     	 public void resetPattern(String newPattern) {
-			if (!newPattern.equals(formatter.toPattern())) {
-				formatter.applyPattern(newPattern);
-			}
-			position.setIndex(0);
+    		 formatter = DateFormatterFactory.createFormatter(newPattern);
 		}
     	 
     	 public void setLenient(boolean lenient){
-    		 formatter.setLenient(lenient);
+    		 // do nothing
     	 }
      }
      
@@ -1667,12 +1625,19 @@ public class StringLib extends TLFunctionLibrary {
       * Context for random values. 
       */
  	private static class RandomContext {
+ 		// data generator
+ 		private DataGenerator dataGenerator = new DataGenerator();
+	 
  		// random seed
  		private long randomSeed = Long.MIN_VALUE;
 
  		// random value
  		private TLValue value;
  		
+		public DataGenerator getDataGenerator() {
+			return dataGenerator;
+		}
+
  		public static TLContext createStringContext() {
  	    	RandomContext con = new RandomContext();
  	    	con.value = TLValue.create(TLValueType.STRING);

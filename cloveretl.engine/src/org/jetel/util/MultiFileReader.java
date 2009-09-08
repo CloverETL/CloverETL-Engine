@@ -37,6 +37,7 @@ import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.property.PropertyRefResolver;
 
 /**
  * A class for transparent reading of clover data records from multiple input files.
@@ -81,6 +82,7 @@ public class MultiFileReader {
 	private Dictionary dictionary;
 	private boolean initializeDataDependentSource;
 	private boolean isSourceOpen;
+	private PropertyRefResolver propertyRefResolve;
     
     /**
 	 * Sole ctor.
@@ -115,7 +117,7 @@ public class MultiFileReader {
             }
         } catch (JetelException e) {
             noInputFile = true;
-            throw new ComponentNotReadyException("FileURL attribute (" + fileURL + ") doesn't contain valid file url.", e);
+            throw new ComponentNotReadyException(e.getMessage()/*"FileURL attribute (" + fileURL + ") doesn't contain valid file url."*/, e);
         }
     }
 
@@ -123,6 +125,7 @@ public class MultiFileReader {
     	channelIterator = new ReadableChannelIterator(inputPort, contextURL, fileURL);
     	channelIterator.setCharset(charset);
     	channelIterator.setDictionary(dictionary);
+    	channelIterator.setPropertyRefResolver(propertyRefResolve);
     	channelIterator.init();
     }
     
@@ -143,7 +146,7 @@ public class MultiFileReader {
         parser.init(metadata);
         initChannelIterator();
         
-		String fName; 
+		String fName = null; 
 		Iterator<String> fit = channelIterator.getFileIterator();
 		boolean closeLastStream = false;
 		while (fit.hasNext()) {
@@ -159,9 +162,9 @@ public class MultiFileReader {
 				parser.setDataSource(FileUtils.getReadableChannel(contextURL, url.toString()));
 				parser.setReleaseDataSource(closeLastStream = true);
 			} catch (IOException e) {
-				throw new ComponentNotReadyException("File is unreachable: " + autoFilling.getFilename(), e);
+				throw new ComponentNotReadyException("File is unreachable: " + fName, e);
 			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException("File is unreachable: " + autoFilling.getFilename(), e);
+				throw new ComponentNotReadyException("File is unreachable: " + fName, e);
 			}
 		}
 		if (closeLastStream) parser.close();
@@ -410,4 +413,7 @@ public class MultiFileReader {
     	this.incrementalKey = incrementalKey;
     }
 
+    public void setPropertyRefResolver(PropertyRefResolver propertyRefResolve) {
+    	this.propertyRefResolve = propertyRefResolve;
+    }
 }

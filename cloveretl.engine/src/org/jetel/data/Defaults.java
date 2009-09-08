@@ -193,7 +193,7 @@ public final class Defaults {
 		CLOVER_FIELD_REGEX = getStringProperties("CLOVER_FIELD_REGEX", "\\$[\\w]+");
 		ASSIGN_SIGN = getStringProperties("ASSIGN_SIGN", ":=");
 		INCREMENTAL_STORE_KEY = getStringProperties("INCREMENTAL_STORE_KEY", "incremental_store");
-		
+		PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING = getStringProperties("PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING", "java.;javax.;sun.misc.");
 
 		String compiler = getStringProperties("DEFAULT_JAVA_COMPILER", DynamicJavaCode.CompilerType.internal.name());
 		try {
@@ -281,6 +281,11 @@ public final class Defaults {
 	 */
 	public static String INCREMENTAL_STORE_KEY;// = "incremental_action"
 
+	/**
+	 * List of package prefixes which are excluded from greedy class loading. i.e. "java." "javax." "sun.misc." etc.
+	 * Prevents GreedyClassLoader from loading interfaces and common classes from external libs.
+	 * */
+	public static String PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING;
 	
 	/**
 	 * Defaults regarding DataRecord structure/manipulation
@@ -498,12 +503,25 @@ public final class Defaults {
 	}
 
 	public final static class GraphProperties {
+
 		public static void init() {
-			PROPERTY_PLACEHOLDER_REGEX = getStringProperties("GraphProperties.PROPERTY_PLACEHOLDER_REGEX",
-					"\\$\\{(\\w+)\\}");
+			EXPRESSION_EVALUATION_ENABLED = getBooleanProperties(
+					"GraphProperties.EXPRESSION_EVALUATION_ENABLED", true);
+
+			EXPRESSION_PLACEHOLDER_REGEX = getStringProperties(
+					"GraphProperties.EXPRESSION_PLACEHOLDER_REGEX", "`([^`]*(``[^`]+)*)`");
+			PROPERTY_PLACEHOLDER_REGEX = getStringProperties(
+					"GraphProperties.PROPERTY_PLACEHOLDER_REGEX", "\\$\\{(\\w+)\\}");
 		}
 
+		/** determines whether the CTL expressions within properties should be evaluated or not */
+		public static boolean EXPRESSION_EVALUATION_ENABLED;// = true
+
+		/** a regular expression describing the format of CTL expressions */
+		public static String EXPRESSION_PLACEHOLDER_REGEX;// = "`([^`]*(``[^`]+)*)`";
+		/** a regular expression describing the format of property references */
 		public static String PROPERTY_PLACEHOLDER_REGEX;// = "\\$\\{(\\w+)\\}";
+
 	}
 
 	public final static class InternalSortDataRecord {

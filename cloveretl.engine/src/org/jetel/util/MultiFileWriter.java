@@ -171,7 +171,12 @@ public class MultiFileWriter {
      */
     private void prepareTargets() throws ComponentNotReadyException {
     	// creates necessary directories
-        if (mkDir) FileUtils.makeDirs(contextURL, new File(FileURLParser.getMostInnerAddress(fileURL)).getParent());
+        if (mkDir) {
+        	boolean isFile = !fileURL.endsWith("/") && !fileURL.endsWith("\\");
+        	File file = new File(FileURLParser.getMostInnerAddress(fileURL));
+        	String sFile = isFile ? file.getParent() : file.getPath();
+        	FileUtils.makeDirs(contextURL, sFile);
+        }
         
     	// prepare type of targets: lookup/keyValue
 		try {
@@ -318,7 +323,7 @@ public class MultiFileWriter {
     	if (iPartitionOutFields == null) preparePartitionOutFields();    	
     	StringBuffer sb = new StringBuffer();
     	for (int pos: iPartitionOutFields) {
-    		sb.append(record.getField(pos).getValue());    		
+    		sb.append(record.getField(pos).toString());    		
     	}
     	return sb.toString();
     }

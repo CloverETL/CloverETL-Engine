@@ -29,14 +29,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.TimeZone;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;

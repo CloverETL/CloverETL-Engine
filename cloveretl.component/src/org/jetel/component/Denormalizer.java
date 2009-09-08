@@ -130,6 +130,8 @@ public class Denormalizer extends Node {
 	private static final String XML_ORDER_ATTRIBUTE = "order";
 	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
     private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
+    /** the name of an XML attribute used to store the "equal NULL" flag */
+    private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
 	
 	private static final int IN_PORT = 0;
 	private static final int OUT_PORT = 0;
@@ -168,7 +170,10 @@ public class Denormalizer extends Node {
 	private String errorLogURL;
 	private FileWriter errorLog;
 
-	/**
+    /** the flag specifying whether the null values are considered equal or not */
+    private boolean equalNULL = true;
+
+    /**
 	 * Sole ctor.
 	 * @param id Component ID.
 	 * @param xform Denormalization implementation source code (either Java or TransformLang).
@@ -190,6 +195,10 @@ public class Denormalizer extends Node {
 		this(id, null, null, null, key, order);
 		this.denorm = xform;
 	}
+
+    public void setEqualNULL(boolean equalNULL) {
+        this.equalNULL = equalNULL;
+    }
 
 	/**
 	 * Returns the name of the attribute which contains transformation
@@ -245,9 +254,6 @@ public class Denormalizer extends Node {
         }
     }
 		
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#init()
-	 */
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -257,6 +263,7 @@ public class Denormalizer extends Node {
 		inMetadata = inPort.getMetadata();
 		outMetadata = outPort.getMetadata();
 		recordKey = new RecordKey(key, inMetadata);
+		recordKey.setEqualNULLs(equalNULL);
 		recordKey.init();
 
 		if (denorm == null) {
@@ -433,30 +440,27 @@ public class Denormalizer extends Node {
 	@Override
 	public Result execute() throws Exception {
 		try {
-			processInput();
-		} catch (Exception e) {
-			throw e;
-		}finally{
+            processInput();
+        } catch (Exception e) {
+            throw e;
+        } finally {
 			denorm.finished();
-			if (errorLog != null){
+
+		    if (errorLog != null){
 				errorLog.flush();
 				errorLog.close();
 			}
-			setEOF(OUT_PORT);
+
+		    setEOF(OUT_PORT);
 		}
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#checkConfig()
-	 */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
@@ -557,6 +561,9 @@ public class Denormalizer extends Node {
 			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
 				denorm.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
 			}
+
+			denorm.setEqualNULL(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE, true));
+
 			return denorm;
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -630,6 +637,10 @@ public class Denormalizer extends Node {
 			String attName = (String)propertyAtts.nextElement();
 			xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
 		}
+
+        if (!equalNULL) {
+            xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, Boolean.toString(equalNULL));
+        }
 	}
 
     /**
@@ -672,10 +683,6 @@ public class Denormalizer extends Node {
 		this.charset = charset;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#reset()
-	 */
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
@@ -687,16 +694,6 @@ public class Denormalizer extends Node {
 				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
 			}
         }
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#free()
-	 */
-	@Override
-	public synchronized void free() {
-		// TODO Auto-generated method stub
-		super.free();
 	}
 
 }

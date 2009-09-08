@@ -57,6 +57,7 @@ import org.jetel.data.primitive.Decimal;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.date.DateUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -66,8 +67,8 @@ import org.jetel.util.string.StringUtils;
  * (c) JavlinConsulting s.r.o.
  *  www.javlinconsulting.cz
  *
+ * @version 17th July 2009
  * @since Jan 16, 2007
- *
  */
 public class JExcelXLSDataFormatter extends XLSFormatter {
 	
@@ -186,18 +187,21 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 			currentRow = firstRow;
 		}
 		//creating cell formats from metadata formats
-		cellStyle = new WritableCellFormat[metadata.getNumFields()];
+		cellStyle = new WritableCellFormat[includedFieldIndices.length];
 		CellView view = new CellView();
 		view.setHidden(false);
 		if (metadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
 			view.setAutosize(true);
 		}
-		for (short i=0;i<metadata.getNumFields();i++){
-			if (metadata.getField(i).getSize() > 0){
-				view.setSize(metadata.getField(i).getSize() * FIELD_SIZE_MULTIPLIER);
+		for (int i = 0; i < includedFieldIndices.length; i++) {
+			DataFieldMetadata fieldMetadata = metadata.getField(includedFieldIndices[i]);
+
+			if (fieldMetadata.getSize() > 0) {
+				view.setSize(fieldMetadata.getSize() * FIELD_SIZE_MULTIPLIER);
 			}
+
 			sheet.setColumnView(firstColumn + i, view);
-			cellStyle[i] = getCellFormat(metadata.getField(i));
+			cellStyle[i] = getCellFormat(fieldMetadata);
 		}
 		//Remember current sheet
 		if (multiSheetWriting) {
@@ -224,7 +228,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		}
 		//DateDataField
 		if (format != null) {
-			return new WritableCellFormat(new DateFormat(format));
+			return new WritableCellFormat(new DateFormat(DateUtils.stripFormatPrefix(format)));
 		}
 		//format is null
 		if (field.getLocaleStr() != null) {
@@ -323,8 +327,8 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		WritableFont font = new WritableFont(WritableFont.ARIAL, WritableFont.DEFAULT_POINT_SIZE, WritableFont.BOLD);
 		WritableCellFormat format = new WritableCellFormat(font);
 		Label name;
-		for (short i=0;i<metadata.getNumFields();i++){
-			name = new Label(firstColumn + i, currentRow, metadata.getField(i).getName(), format);
+		for (int i = 0; i < includedFieldIndices.length; i++) {
+			name = new Label(firstColumn + i, currentRow, metadata.getField(includedFieldIndices[i]).getName(), format);
 			try {
 				sheet.addCell(name);
 			} catch (Exception e) {
@@ -347,10 +351,10 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		Object value;//field value
 		Object valueXls = null;//value to set
 		short colNum;
-		for (short i=0;i<metadata.getNumFields();i++){
-			metaType = metadata.getField(i).getType();
+		for (int i = 0; i < includedFieldIndices.length; i++) {
+			metaType = metadata.getField(includedFieldIndices[i]).getType();
 			colNum = (short)(firstColumn + i);
-			value = record.getField(i).getValue();
+			value = record.getField(includedFieldIndices[i]).getValue();
 			if (value == null) continue;
 			if (metaType == DataFieldMetadata.BYTE_FIELD || metaType == DataFieldMetadata.BYTE_FIELD_COMPRESSED
 					|| metaType == DataFieldMetadata.STRING_FIELD){

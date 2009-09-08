@@ -23,6 +23,7 @@
  */
 package org.jetel.interpreter.extensions;
 
+import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.interpreter.data.TLByteArrayValue;
@@ -30,8 +31,17 @@ import org.jetel.interpreter.data.TLByteArrayValue;
 public class TLContext<T> {
 
     public T context;
+    public TransformationGraph graph;
 
-    public void setContext(T ctx) {
+    public TransformationGraph getGraph() {
+		return graph;
+	}
+
+	public void setGraph(TransformationGraph graph) {
+		this.graph = graph;
+	}
+
+	public void setContext(T ctx) {
         this.context = ctx;
     }
 

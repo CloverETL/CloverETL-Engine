@@ -271,19 +271,11 @@ public class LookupJoin extends Node {
 		this.transformation = transform;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.graph.Node#getType()
-	 */
 	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#execute()
-	 */
 	@Override
 	public Result execute() throws Exception {
 		// initialize in and out records
@@ -362,7 +354,9 @@ public class LookupJoin extends Node {
 			}
 			counter++;
 		}
-		transformation.finished();
+
+        transformation.finished();
+
 		if (freeLookupTable) {
 			lookup.getLookupTable().free();
 		}
@@ -376,24 +370,25 @@ public class LookupJoin extends Node {
 
 	@Override
 	public void free() {
-        if(!isInitialized()) return;
-		super.free();
-		
+        if (!isInitialized()) {
+            return;
+        }
+
+        super.free();
 	}
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.graph.GraphElement#checkConfig()
-	 */
+
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        if(!checkInputPorts(status, 1, 1)
-        		|| !checkOutputPorts(status, 1, 2)) {
+        if(!checkInputPorts(status, 1, 1) || !checkOutputPorts(status, 1, 2)) {
         	return status;
         }
-        
+
+        if (getOutputPort(REJECTED_PORT) != null) {
+            checkMetadata(status, getInputPort(READ_FROM_PORT).getMetadata(), getOutputPort(REJECTED_PORT).getMetadata());
+        }
+
         if (errorActionsString != null){
         	try {
 				ErrorAction.checkActions(errorActionsString);
@@ -424,11 +419,6 @@ public class LookupJoin extends Node {
         return status;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.graph.GraphElement#init()
-	 */
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -539,11 +529,6 @@ public class LookupJoin extends Node {
 		this.errorActionsString = string;		
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 

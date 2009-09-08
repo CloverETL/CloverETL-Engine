@@ -20,8 +20,8 @@ package org.jetel.component;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -72,8 +72,8 @@ import org.w3c.dom.Element;
  * <tr>
  *   <td><b>Description:</b></td>
  *   <td>
- *     Serves as an executor of rollup transforms written in Java or CTL. See the {@link RecordRollup} interface
- *     for more details on the life cycle of the rollup transform.
+ *     A general transformation component that serves as an executor of rollup transforms written in Java or CTL.
+ *     See the {@link RecordRollup} interface for more details on the life cycle of the rollup transform.
  *   </td>
  * </tr>
  * <tr>
@@ -97,7 +97,10 @@ import org.w3c.dom.Element;
  *   <td>ROLLUP</td>
  * </tr>
  * <tr>
- *   <td><b>groupKeyFields</b></td>
+ *   <td>
+ *     <b>groupKeyFields</b>
+ *     <i>optional</i>
+ *   </td>
  *   <td>Field names that form the group key separated by ':', ';' or '|'.</td>
  * </tr>
  * <tr>
@@ -136,11 +139,18 @@ import org.w3c.dom.Element;
  *      data records is not specified.
  *   </td>
  * </tr>
+ * <tr>
+ *   <td>
+ *     <b>equalNULL</b><br>
+ *     <i>optional</i>
+ *   </td>
+ *   <td>Flag specifying whether the null values are considered equal or not.</td>
+ * </tr>
  * </table>
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 24th June 2009
+ * @version 22nd July 2009
  * @since 30th April 2009
  *
  * @see RecordRollup
@@ -170,6 +180,8 @@ public class Rollup extends Node {
 
     /** the name of an XML attribute used to store the "input sorted" flag */
     private static final String XML_INPUT_SORTED_ATTRIBUTE = "inputSorted";
+    /** the name of an XML attribute used to store the "equal NULL" flag */
+    private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
 
     //
     // constants used during execution
@@ -207,7 +219,7 @@ public class Rollup extends Node {
 
             rollup = new Rollup(componentAttributes.getString(XML_ID_ATTRIBUTE));
 
-            String groupKeyString = componentAttributes.getString(XML_GROUP_KEY_FIELDS_ATTRIBUTE);
+            String groupKeyString = componentAttributes.getString(XML_GROUP_KEY_FIELDS_ATTRIBUTE, null);
             rollup.setGroupKeyFields(!StringUtils.isEmpty(groupKeyString)
                     ? groupKeyString.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX) : null);
             rollup.setGroupAccumulatorMetadataId(
@@ -219,6 +231,7 @@ public class Rollup extends Node {
             rollup.setTransformClassName(componentAttributes.getString(XML_TRANSFORM_CLASS_NAME_ATTRIBUTE, null));
 
             rollup.setInputSorted(componentAttributes.getBoolean(XML_INPUT_SORTED_ATTRIBUTE, true));
+            rollup.setEqualNULL(componentAttributes.getBoolean(XML_EQUAL_NULL_ATTRIBUTE, true));
         } catch (AttributeNotFoundException exception) {
             throw new XMLConfigurationException("Missing a required attribute!", exception);
         } catch (Exception exception) {
@@ -248,6 +261,8 @@ public class Rollup extends Node {
 
     /** the flag specifying whether the input data records are sorted or not */
     private boolean inputSorted = true;
+    /** the flag specifying whether the null values are considered equal or not */
+    private boolean equalNULL = true;
 
     //
     // runtime attributes initialized in the init() method
@@ -302,11 +317,15 @@ public class Rollup extends Node {
         this.inputSorted = inputSorted;
     }
 
+    public void setEqualNULL(boolean equalNULL) {
+        this.equalNULL = equalNULL;
+    }
+
     @Override
     public void toXML(Element xmlElement) {
         super.toXML(xmlElement);
 
-        if (groupKeyFields != null) {
+        if (groupKeyFields != null && groupKeyFields.length != 0) {
             xmlElement.setAttribute(XML_GROUP_KEY_FIELDS_ATTRIBUTE,
                     StringUtils.stringArraytoString(groupKeyFields, Defaults.Component.KEY_FIELDS_DELIMITER));
         }
@@ -334,6 +353,10 @@ public class Rollup extends Node {
         if (!inputSorted) {
             xmlElement.setAttribute(XML_INPUT_SORTED_ATTRIBUTE, Boolean.toString(inputSorted));
         }
+
+        if (!equalNULL) {
+            xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, Boolean.toString(equalNULL));
+        }
     }
 
     @Override
@@ -344,10 +367,7 @@ public class Rollup extends Node {
             return status;
         }
 
-        if (groupKeyFields == null || groupKeyFields.length == 0) {
-            status.add(new ConfigurationProblem("No group key fields specified!",
-                    Severity.ERROR, this, Priority.HIGH, XML_GROUP_KEY_FIELDS_ATTRIBUTE));
-        } else {
+        if (groupKeyFields != null && groupKeyFields.length != 0) {
             DataRecordMetadata metadata = getInputPort(INPUT_PORT_NUMBER).getMetadata();
 
             for (String groupKeyField : groupKeyFields) {
@@ -383,8 +403,11 @@ public class Rollup extends Node {
 
         super.init();
 
-        groupKey = new RecordKey(groupKeyFields, getInputPort(INPUT_PORT_NUMBER).getMetadata());
-        groupKey.init();
+        if (groupKeyFields != null && groupKeyFields.length != 0) {
+            groupKey = new RecordKey(groupKeyFields, getInputPort(INPUT_PORT_NUMBER).getMetadata());
+            groupKey.setEqualNULLs(equalNULL);
+            groupKey.init();
+        }
 
         if (transform != null) {
             recordRollup = createTransformFromSourceCode(transform);
@@ -415,7 +438,7 @@ public class Rollup extends Node {
      * @return an instance of the <code>RecordRollup</code> transform
      *
      * @throws ComponentNotReadyException if an error occurred during the instantiation of the transform
-     * or if the type of the transformation could not be determined
+     * or if the type of the transformation code could not be determined
      */
     private RecordRollup createTransformFromSourceCode(String sourceCode) throws ComponentNotReadyException {
         if (sourceCode.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID) >= 0
@@ -467,12 +490,13 @@ public class Rollup extends Node {
             throw new NotInitializedException(this);
         }
 
-        if (inputSorted) {
+        if (inputSorted || groupKey == null) {
             executeInputSorted();
         } else {
             executeInputUnsorted();
         }
 
+        recordRollup.finished();
         broadcastEOF();
 
         return (runIt ? Result.FINISHED_OK : Result.ABORTED);
@@ -509,7 +533,8 @@ public class Rollup extends Node {
             int sortDirection = 0;
 
             while (runIt && inputPort.readRecord(inputRecords.getCurrent()) != null) {
-                int comparisonResult = groupKey.compare(inputRecords.getCurrent(), inputRecords.getPrevious());
+                int comparisonResult = (groupKey != null) ? groupKey.compare(
+                        inputRecords.getCurrent(), inputRecords.getPrevious()) : 0;
 
                 if (comparisonResult != 0) {
                     if (sortDirection == 0) {
@@ -558,7 +583,7 @@ public class Rollup extends Node {
 
         DataRecordMetadata groupAccumulatorMetadata = (groupAccumulatorMetadataId != null)
                 ? getGraph().getDataRecordMetadata(groupAccumulatorMetadataId) : null;
-        Map<HashKey, DataRecord> groupAccumulators = new HashMap<HashKey, DataRecord>();
+        Map<HashKey, DataRecord> groupAccumulators = new LinkedHashMap<HashKey, DataRecord>();
 
         HashKey lookupKey = new HashKey(groupKey, inputRecord);
 
@@ -626,7 +651,8 @@ public class Rollup extends Node {
             } else if (transformResult >= 0) {
                 writeRecord(transformResult, outputRecords[transformResult]);
             } else {
-                throw new TransformException("Transform finished with error " + transformResult + "!");
+                throw new TransformException("Transformation finished with error " + transformResult + ": "
+                        + recordRollup.getMessage());
             }
         }
     }
@@ -663,7 +689,8 @@ public class Rollup extends Node {
             } else if (transformResult >= 0) {
                 writeRecord(transformResult, outputRecords[transformResult]);
             } else {
-                throw new TransformException("Transform finished with error " + transformResult + "!");
+                throw new TransformException("Transformation finished with error " + transformResult + ": "
+                        + recordRollup.getMessage());
             }
         }
     }
@@ -686,10 +713,7 @@ public class Rollup extends Node {
         }
 
         groupKey = null;
-
-        recordRollup.free();
         recordRollup = null;
-
         outputRecords = null;
 
         super.free();

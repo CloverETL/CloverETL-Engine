@@ -125,6 +125,7 @@ public class TLDateValue extends TLValue {
 	}
 	
 	@Override public boolean equals(Object val){
+		if (this==val) return true;
 		if (val instanceof TLDateValue){
 			return value.equals(((TLDateValue)val).value);
 		}

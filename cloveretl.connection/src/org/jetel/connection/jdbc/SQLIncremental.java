@@ -1,5 +1,6 @@
 package org.jetel.connection.jdbc;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -9,9 +10,11 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,9 +41,12 @@ public class SQLIncremental {
 	public final static String INCREMENTAL_KEY_INDICATOR = "#";
 	
     private final static Pattern KEY_FIELD_PATTERN = Pattern.compile(
-    		"(" + IncrementalKeyType.getKeyTypePattern() + ")" + "\\(" + SQLUtil.DB_FIELD_PATTERN + "\\)", Pattern.CASE_INSENSITIVE);//eg. max(dbField)
+    		"(" + IncrementalKeyType.getKeyTypePattern() + ")" + "\\((" + SQLUtil.DB_FIELD_PATTERN + ")\\)" + "(\\!.+)?", 
+    			Pattern.CASE_INSENSITIVE);//eg. max(dbField)!0
+
     private final static Pattern KEY_VALUE_PATTERN = Pattern.compile(INCREMENTAL_KEY_INDICATOR + "\\w+");
 
+    
     private Properties keyDefinition;
     private Object[][] keyDef;//each key is in form {name, db_name, type} - type is one of IncrementalKeyType
 	private Properties keyValue;
@@ -73,9 +79,53 @@ public class SQLIncremental {
 		}
 		this.sqlQuery = query;
 		keyValue = new Properties();
+		
+		File file = new File(incrementalFile);
+		if (!file.exists() && existAllInitialValues(key)) {
+			file.createNewFile();
+		}
 		keyValue.load(new FileInputStream(incrementalFile));
+		setInitialValues(keyValue, key);
+		
 		firstUpdate = new boolean[keyDefinition.size()];
 		Arrays.fill(firstUpdate, true);
+	}
+	
+	private boolean existAllInitialValues(Properties key) {
+		Set<String> keys = new HashSet<String>(); 
+		Matcher keyValueMatcher = KEY_VALUE_PATTERN.matcher(sqlQuery);
+		while (keyValueMatcher.find()) {
+			String keyName = keyValueMatcher.group().substring(INCREMENTAL_KEY_INDICATOR.length());
+			if (keyName != null && !keyName.equals("")) keys.add(keyName);
+		}
+
+		for (Iterator<?> it = key.entrySet().iterator();it.hasNext();) {
+			Entry<String, String> e = (Entry<String, String>) it.next();
+			Matcher keyDefMatcher = KEY_FIELD_PATTERN.matcher(e.getValue());
+			keyDefMatcher.find();
+			if (keyDefMatcher.groupCount() >= 5) {
+				String sInitialValue;
+				if ((sInitialValue = keyDefMatcher.group(5)) == null || sInitialValue.length() <= 1) {
+					if (keys.contains(e.getKey())) return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	private void setInitialValues(Properties prop, Properties key) {
+		for (Iterator<?> it = key.entrySet().iterator();it.hasNext();) {
+			Entry<String, String> e = (Entry<String, String>) it.next();
+			Matcher keyDefMatcher = KEY_FIELD_PATTERN.matcher(e.getValue());
+			keyDefMatcher.find();
+			String sInitialValue;
+			Object oKey = prop.get(e.getKey());
+			if (oKey != null) continue;
+			if (keyDefMatcher.groupCount() >= 5 && (sInitialValue = keyDefMatcher.group(5)) != null) {
+				if (sInitialValue.length() <= 1) continue;
+				prop.put(e.getKey(), sInitialValue.substring(1));
+			}
+		}
 	}
 	
 	public SQLIncremental(Properties key, String query, Properties keyValue) throws ComponentNotReadyException{

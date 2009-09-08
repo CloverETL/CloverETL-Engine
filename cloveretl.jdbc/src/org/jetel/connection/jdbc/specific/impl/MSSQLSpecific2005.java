@@ -20,7 +20,10 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.conn.MSSQLConnection;
@@ -98,4 +101,10 @@ public class MSSQLSpecific2005 extends AbstractJdbcSpecific {
         return ('[' + identifier + ']');
     }
 
+	@Override
+	public ArrayList<String> getSchemas(DatabaseMetaData dbMeta)
+			throws SQLException {
+		return AbstractJdbcSpecific.getMetaCatalogs(dbMeta);
+	}
+    
 }

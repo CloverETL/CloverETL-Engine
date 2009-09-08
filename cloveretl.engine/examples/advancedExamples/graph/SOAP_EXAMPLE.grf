@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Feb 29 16:16:12 CET 2008" guiVersion="0.0.0.devel" id="1204298432250" licenseType="Evaluation license." modified="Fri Apr 24 11:48:07 CEST 2009" modifiedBy="avackova" name="SOAP_EXAMPLE" revision="1.332">
+<Graph author="avackova" created="Fri Feb 29 16:16:12 CET 2008" guiVersion="0.0.0.devel" id="1204298432250" licenseType="Evaluation license." modified="Fri Aug 07 15:50:37 CEST 2009" modifiedBy="avackova" name="SOAP_EXAMPLE" revision="1.351">
 <Global>
 <Metadata fileURL="${META_DIR}/extract.fmt" id="Metadata10"/>
-<Metadata fileURL="${META_DIR}/extractAgg.fmt" id="Metadata11"/>
 <Metadata fileURL="${META_DIR}/link.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/location_full.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/location_temp_header.fmt" id="Metadata5"/>
@@ -13,10 +12,11 @@
 <Metadata fileURL="${META_DIR}/time_dim.fmt" id="Metadata7"/>
 <Metadata fileURL="${META_DIR}/time_layout.fmt" id="Metadata3"/>
 <Metadata fileURL="${META_DIR}/time_pairs.fmt" id="Metadata4"/>
+<Metadata fileURL="${META_DIR}/extractAgg.fmt" id="Metadata11"/>
 <Property fileURL="parameters.prm" id="GraphParameter0"/>
 <Property fileURL="workspace.prm" id="GraphParameter4"/>
-<Sequence cached="0" fileURL="${SEQ_DIR}/temp_seq.seq" id="Sequence0" name="temp_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 <Sequence cached="0" fileURL="${SEQ_DIR}/time_seq.seq" id="Sequence1" name="time_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="0" fileURL="${SEQ_DIR}/temp_seq.seq" id="Sequence0" name="temp_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="87" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Joining geographical information" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="391" x="174" y="-103">
 <attr name="text"><![CDATA[
 Information about 193 cities is joined with information about their latitude and longitude. 
@@ -62,7 +62,7 @@ To the "aggregated" sheet.
 </Note>
 </Global>
 <Phase number="0">
-<Node aggregateKey="city;state" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="1210" guiY="130" id="AGGREGATE0" mapping="$city:=$city;$state:=$state;$name:=first($name);$units:=first($units);$avg:=avg($value);$min:=min($value);$max:=max($value);$startDate:=min($startDateUTC);$endDate:=max($endDateUTC);$moreWeatherInformation:=first($moreWeatherInformation);" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="city;state" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="1210" guiY="130" id="AGGREGATE0" mapping="$city:=$city;$state:=$state;$name:=first($name);$units:=first($units);$avg:=avg($value);$min:=min($value);$max:=max($value);$startDate:=min($start_valid_time);$endDate:=max($end_valid_time);$moreWeatherInformation:=first($moreWeatherInformation);" sorted="false" type="AGGREGATE"/>
 <Node dedupKey="applicable_location" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="576" guiY="472" id="DEDUP0" keep="first" type="DEDUP"/>
 <Node dedupKey="layout_key" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="576" guiY="240" id="DEDUP1" keep="first" type="DEDUP"/>
 <Node enabled="enabled" guiHeight="0" guiName="Join Location with additional info" guiWidth="0" guiX="174" guiY="-4" id="EXT_HASH_JOIN0" joinKey="$location_key=$applicable_location;#" type="EXT_HASH_JOIN">
@@ -91,9 +91,14 @@ function transform() {
 <Node enabled="enabled" guiHeight="0" guiName="Join time with layout key" guiWidth="0" guiX="126" guiY="199" id="EXT_HASH_JOIN2" joinKey="$parent_id=$id;#" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[sequence(Sequence1).reset;
 
+string start_time;
+string end_time;
+
 function transform() {
-	$0.start_valid_time := $0.start_valid_time;
-	$0.end_valid_time := $0.end_valid_time;
+	start_time = concat(substring($0.start_valid_time,0,22), substring($0.start_valid_time,23,2));
+	end_time = concat(substring($0.end_valid_time,0,22), substring($0.end_valid_time,23,2));
+	$0.start_valid_time := str2date(start_time, "yyyy-MM-dd'T'HH:mm:ssZ");
+	$0.end_valid_time := str2date(end_time, "yyyy-MM-dd'T'HH:mm:ssZ");
 	$0.layout_key := $1.layout_key;
 	$0.time_dim_id := sequence(Sequence1).next;
 }
@@ -134,51 +139,6 @@ $0.end_valid_time := $1.end_valid_time;
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Join Location" guiWidth="0" guiX="779" guiY="-19" id="EXT_HASH_JOIN7" joinKey="$applicable_location=$location_key;#" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#TL
-//Return index of sign of time offset
-//Return index of plus sign if any or index of the last minus sign in parameter
-function getIndexOfOffsetStart(encodedDate){
-	int offsetStart;
-	int actualLastMinus;
-	int lastMinus = -1;
-	
-	if ( index_of(encodedDate, '+') != -1 )
-		return index_of(encodedDate, '+');
-	
-	do {
-		actualLastMinus = index_of(encodedDate, '-', lastMinus+1);
-		if ( actualLastMinus != -1 )
-			lastMinus = actualLastMinus;
-	} while ( actualLastMinus != -1 )
-	return lastMinus;
-}
-
-//Decode string to date and convert it to UTC
-//Date format http://www.w3.org/TR/NOTE-datetime
-function decodeDate (encodedDate){
-	string dateString;
-	string offsetString;
-	date decodedDate;
-	date offsetDate;
-	int multiplicator;
-	int offsetStart = getIndexOfOffsetStart(encodedDate);
-	dateString = left(encodedDate, offsetStart);
-	offsetString = right(encodedDate, length(encodedDate) - offsetStart -1);
-	
-	decodedDate = str2date(dateString, "yyyy-MM-dd'T'HH:mm:ss");
-	offsetDate = str2date(offsetString, "HH:mm");
-	
-	if ( char_at(encodedDate, offsetStart) == '+' ){
-  		multiplicator = -1;
-	} else {
-		multiplicator = 1;
-	}
-
-	//convert to UTC
-	decodedDate = dateadd(decodedDate, multiplicator*date2num(offsetDate, hour), hour);
-	decodedDate = dateadd(decodedDate, multiplicator*date2num(offsetDate, minute), minute);
-	
-	return decodedDate;
-}
 
 //Convert temperature value from Fahrenheit to Celsius
 function convertFahrenheitToCelsius(value){
@@ -188,7 +148,7 @@ function convertFahrenheitToCelsius(value){
 }
 
 
-function transform (){
+function transform() {
 	$0.city := $1.city;
 	$0.state := $1.state;
 	$0.name := $0.name;
@@ -197,9 +157,8 @@ function transform (){
 	$0.start_valid_time := $0.start_valid_time;
 	$0.end_valid_time := $0.end_valid_time;
 	$0.moreWeatherInformation := $1.moreWeatherInformation;
-	$0.startDateUTC := decodeDate($0.start_valid_time);
-	$0.endDateUTC := decodeDate($0.end_valid_time);
-}]]></attr>
+}
+]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="SortingOnCities" guiWidth="0" guiX="954" guiY="-21" id="EXT_SORT0" sortKey="city(a);state(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="358" guiY="419" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>

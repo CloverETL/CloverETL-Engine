@@ -319,10 +319,6 @@ public class HashJoin extends Node {
 		}
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#init()
-	 */
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -494,8 +490,12 @@ public class HashJoin extends Node {
 		for (int idx = 0; idx < slaveCnt + 1; idx++) {
 			inRecords[idx] = NullRecord.NULL_RECORD;
 		}
-		if (slaveDuplicates) flushOrphanedMulti();
-		else flushOrphanedSingle();
+
+		if (slaveDuplicates) {
+		    flushOrphanedMulti();
+		} else {
+		    flushOrphanedSingle();
+		}
 	}
 
 	private void flushOrphanedMulti() throws TransformException, IOException, InterruptedException {
@@ -558,26 +558,26 @@ public class HashJoin extends Node {
 	 * @throws IOException 
 	 */
 	private void flush() throws TransformException, IOException, InterruptedException {
+        DataRecord driverRecord = inRecords[0];
 		HashKey[] hashKey = new HashKey[slaveCnt];
-		MapItem[] slaveRecords = new MapItem[slaveCnt];
-		DataRecord driverRecord = inRecords[0];
 
 		for (int idx = 0; idx < slaveCnt; idx++) {
 			hashKey[idx] = new HashKey(driverKeys[idx], driverRecord);
 		}
 
 		masterCounter = 0;
-		if (slaveDuplicates) flushMulti(driverRecord, new MapMultiItem[slaveCnt], hashKey); 
-		else flushSingle(driverRecord,  new MapSingleItem[slaveCnt], hashKey);
-		
+
+		if (slaveDuplicates) {
+		    flushMulti(driverRecord, new MapMultiItem[slaveCnt], hashKey); 
+		} else {
+		    flushSingle(driverRecord, new MapSingleItem[slaveCnt], hashKey);
+		}
 	}
 	
 	private void flushMulti(DataRecord driverRecord, MapMultiItem[] slaveRecords, HashKey[] hashKey) throws TransformException, IOException, InterruptedException {
-		while (runIt) {
+		while (runIt && driverPort.readRecord(driverRecord) != null) {
 			int slaveIdx;
-			if (driverPort.readRecord(driverRecord) == null) { // no more input data
-				break;
-			}
+
 			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
 				slaveRecords[slaveIdx] = (MapMultiItem)hashMap[slaveIdx].get(hashKey[slaveIdx]);
 				if (slaveRecords[slaveIdx] == null) {
@@ -621,15 +621,13 @@ public class HashJoin extends Node {
 
 			SynchronizeUtils.cloverYield();
 			masterCounter++;
-		} // while		
+		} // while
 	}
 
 	private void flushSingle(DataRecord driverRecord, MapSingleItem[] slaveRecords, HashKey[] hashKey) throws TransformException, IOException, InterruptedException {
-		while (runIt) {
+		while (runIt && driverPort.readRecord(driverRecord) != null) {
 			int slaveIdx;
-			if (driverPort.readRecord(driverRecord) == null) { // no more input data
-				break;
-			}
+
 			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
 				slaveRecords[slaveIdx] = (MapSingleItem)hashMap[slaveIdx].get(hashKey[slaveIdx]);
 				if (slaveRecords[slaveIdx] == null) {
@@ -673,7 +671,7 @@ public class HashJoin extends Node {
 				
 			SynchronizeUtils.cloverYield();
 			masterCounter++;
-		} // while		
+		} // while
 	}
 	
 	private void handleException(RecordTransform transform, int transformResult, int recNo) throws TransformException, IOException{
@@ -717,18 +715,22 @@ public class HashJoin extends Node {
 	@Override
 	public Result execute() throws Exception {
 		loadSlaveData();
-		flush();
-		if (join == Join.FULL_OUTER) {
-			flushOrphaned();
-		}
-		transformation.finished();
-		if (errorLog != null){
-			errorLog.flush();
-			errorLog.close();
-		}
+        flush();
 
-		setEOF(WRITE_TO_PORT);
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+        if (join == Join.FULL_OUTER) {
+            flushOrphaned();
+        }
+
+        transformation.finished();
+
+        if (errorLog != null) {
+            errorLog.flush();
+            errorLog.close();
+        }
+
+        setEOF(WRITE_TO_PORT);
+
+        return (runIt ? Result.FINISHED_OK : Result.ABORTED);
 	}
 
 	/**
@@ -902,7 +904,7 @@ public class HashJoin extends Node {
     		driverPort = getInputPort(DRIVER_ON_PORT);
     		outPort = getOutputPort(WRITE_TO_PORT);
 
-    		slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
+    		int slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
     		if (driverJoiners == null) {
     			List<DataRecordMetadata> inMetadata = getInMetadata();
     			String[][][] joiners = JoinKeyUtils.parseHashJoinKey(joinKey, inMetadata);

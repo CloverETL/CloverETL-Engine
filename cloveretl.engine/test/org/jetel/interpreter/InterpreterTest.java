@@ -1992,11 +1992,11 @@ public class InterpreterTest extends CloverTestCase {
         		"boolean isDate3=is_date('4:42','HH:mm');print_err(str2date('4:42','HH:mm'));\n" +
         		"boolean isDate=is_date('20.11.2007','dd.MM.yyyy');print_err(str2date('20.11.2007','dd.MM.yyyy'));\n" +
         		"boolean isDate1=is_date('20.11.2007','dd-MM-yyyy');\n" +
-        		"boolean isDate2=is_date('24:00 20.11.2007','kk:mm dd.MM.yyyy');print_err(str2date('24:00 20.11.2007','HH:mm dd.MM.yyyy'));\n" +
+        		"boolean isDate2=is_date('24:00 20.11.2007','kk:mm dd.MM.yyyy');print_err(str2date('24:00 20.11.2007','kk:mm dd.MM.yyyy'));\n" +
         		"boolean isDate4=is_date('test 20.11.2007','hhmm dd.MM.yyyy');\n" +
         		"boolean isDate7=is_date('                ','HH:mm dd.MM.yyyy',true);\n"+
         		"boolean isDate8=is_date('                ','HH:mm dd.MM.yyyy');\n"+
-        		"boolean isDate9=is_date('20-15-2007','dd-MM-yyyy');print_err(str2date('20-15-2007','dd-MM-yyyy'));\n" +
+        		"boolean isDate9=is_date('joda:20-15-2007','dd-MM-yyyy');print_err(str2date('20-15-2007','joda:dd-MM-yyyy'));\n" +
         		"boolean isDate10=is_date('20-15-2007','dd-MM-yyyy',false);\n" +
         		"boolean isDate11=is_date('20-15-2007','dd-MM-yyyy',true);\n" + 
         		"boolean isDate12=is_date('942-12-1996','dd-MM-yyyy','en.US',true);\n" +
@@ -3026,6 +3026,53 @@ public class InterpreterTest extends CloverTestCase {
 		    	e.printStackTrace();
 		    	throw new RuntimeException("Parse exception",e);
 	    }
+	}
+    
+    public void test_dictionaryFunctions(){
+		System.out.println("\nBuild-in dictionary functions test:");
+		String expStr = "dict_put_str('mykey','Hello string');\n" +
+						"print_err(dict_get_str('mykey')); print_err(dict_get_str('non-existent-key')); print_err(dict_get_str('outside_key')); \n";
+	      print_code(expStr);
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),expStr);
+		      CLVFStart parseTree = parser.Start();
+
+		      if (parser.getParseExceptions().size()>0){
+		    	  //report error
+		    	  for(Iterator it=parser.getParseExceptions().iterator();it.hasNext();){
+			    	  System.out.println(it.next());
+			      }
+		    	  throw new RuntimeException("Parse exception");
+		      }
+
+
+ 		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setGraph(graph);
+		      try{
+		    	  graph.getDictionary().init();
+		      }catch(Exception ex){
+		    	  //DO nothing
+		      }
+		      graph.getDictionary().setValue("outside_key", "Outside value");
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+		      
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception",e);
+	    } catch (ComponentNotReadyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
     
     public void print_code(String text){

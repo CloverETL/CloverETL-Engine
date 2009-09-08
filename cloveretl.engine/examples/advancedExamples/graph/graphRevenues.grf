@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This is practical ilustration of usage CloverETL.&#10;This graph tranforms data for branch bank. On inputs &#10;are clients, month interests and chargets and &#10;half-year bonus. On outputs we have aggregated &#10;revenues by clients, clients without revenues and &#10;clients from database, who are not in input file." guiVersion="0.0.0.devel" id="1204553576084" licenseType="Evaluation license." modified="Tue Apr 21 13:06:26 CEST 2009" modifiedBy="avackova" name="Revenues of one half-year" revision="1.27">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This is practical ilustration of usage CloverETL.&#10;This graph tranforms data for branch bank. On inputs &#10;are clients, month interests and chargets and &#10;half-year bonus. On outputs we have aggregated &#10;revenues by clients, clients without revenues and &#10;clients from database, who are not in input file." guiVersion="0.0.0.devel" id="1204553576084" licenseType="Evaluation" modified="Tue Sep 08 13:43:49 CEST 2009" modifiedBy="avackova" name="Revenues of one half-year" revision="1.39">
 <Global>
 <Metadata id="Metadata2">
 <Record fieldDelimiter=";" name="Aggr_revenues" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -58,9 +58,9 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Clients" guiWidth="0" guiX="8" guiY="111" id="DB_INPUT_TABLE1" sqlQuery="select $Client_id:=klient_id from p_zakaznik" type="DB_INPUT_TABLE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Clients" guiWidth="0" guiX="8" guiY="111" id="DB_INPUT_TABLE1" sqlQuery="select $Client_id:=client_id from p_customer" type="DB_INPUT_TABLE"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/bonus.csv" guiHeight="0" guiName="Bonus" guiWidth="0" guiX="8" guiY="28" id="DELIMITED_DATA_READER0" type="DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/not_found_clientst.xt" guiHeight="0" guiName="Not found clients" guiWidth="0" guiX="774" guiY="28" id="DELIMITED_DATA_WRITER2" type="DATA_WRITER"/>
+<Node append="false" enabled="enabled" excludeFields="Client_id_n" fileURL="${DATAOUT_DIR}/not_found_clientst.xt" guiHeight="0" guiName="Not found clients" guiWidth="0" guiX="774" guiY="28" id="DELIMITED_DATA_WRITER2" type="DATA_WRITER"/>
 <Node ascendingInputs="true" enabled="enabled" guiHeight="0" guiName="Merge Join" guiWidth="0" guiX="314" guiY="28" id="EXT_MERGE_JOIN0" joinKey="$Client_id;#$Client_id;#" leftOuterJoin="true" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[function transform() {
 $0.Client_id_n := nvl($1.Client_id, -1);
@@ -85,14 +85,6 @@ $0.Revenue := $0.Revenue;
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="626" guiY="28" id="REFORMAT1" type="REFORMAT">
-<attr name="transform"><![CDATA[function transform() {
-$0.Client_id := $0.Client_id;
-$0.Revenue := $0.Revenue;
-$0.Contract_nr := $0.Contract_nr;
-}
-]]></attr>
-</Node>
 <Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="316" guiY="111" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
 <Edge fromNode="DB_INPUT_TABLE1:0" guiBendpoints="" id="Edge14" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
 <Edge fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
@@ -100,20 +92,19 @@ $0.Contract_nr := $0.Contract_nr;
 <Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge16" inPort="Port 0 (driver)" metadata="Metadata5" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN0:0"/>
 <Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge17" inPort="Port 1 (slave)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN0:1"/>
 <Edge fromNode="FILTER0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="REFORMAT0:0"/>
-<Edge fromNode="FILTER1:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="REFORMAT1:0"/>
+<Edge fromNode="FILTER1:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="DELIMITED_DATA_WRITER2:0"/>
 <Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="CONCATENATE1:0"/>
-<Edge fromNode="REFORMAT1:0" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata9" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER2:0"/>
 <Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="FILTER0:0"/>
 <Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (out)" toNode="FILTER1:0"/>
 </Phase>
 <Phase number="1">
 <Node aggregateKey="client_id" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="480" guiY="221" id="AGGREGATE0" mapping="$Client_id:=$client_id;$Aggr_revenue:=sum($revenue);" sorted="true" type="AGGREGATE"/>
 <Node enabled="enabled" guiHeight="0" guiName="Concatenate" guiWidth="0" guiX="164" guiY="221" id="CONCATENATE0" type="CONCATENATE"/>
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Interests" guiWidth="0" guiX="10" guiY="191" id="DB_INPUT_TABLE0" sqlQuery="select*from pololeti_uroky" type="DB_INPUT_TABLE">
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Interests" guiWidth="0" guiX="10" guiY="191" id="DB_INPUT_TABLE0" sqlQuery="select*from interests" type="DB_INPUT_TABLE">
 <attr name="SQLCode"><![CDATA[
 ]]></attr>
 </Node>
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Charges" guiWidth="0" guiX="10" guiY="270" id="DB_INPUT_TABLE2" sqlQuery="select*from pololeti_poplatky" type="DB_INPUT_TABLE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Charges" guiWidth="0" guiX="10" guiY="270" id="DB_INPUT_TABLE2" sqlQuery="select*from charges" type="DB_INPUT_TABLE"/>
 <Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="315" guiY="221" id="SORT0" sortKey="client_id" sortOrder="Ascending" type="EXT_SORT"/>
 <Edge fromNode="AGGREGATE0:0" guiBendpoints="" id="Edge9" inPort="Port 1 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="CONCATENATE1:1"/>
 <Edge fromNode="CONCATENATE0:0" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="SORT0:0"/>
@@ -124,9 +115,9 @@ $0.Contract_nr := $0.Contract_nr;
 <Phase number="2">
 <Node aggregateKey="Client_id" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="480" guiY="306" id="AGGREGATE1" mapping="$Client_id:=$Client_id;$Revenue:=sum($Revenue);" sorted="true" type="AGGREGATE"/>
 <Node enabled="enabled" guiHeight="0" guiName="Concatenate" guiWidth="0" guiX="626" guiY="221" id="CONCATENATE1" type="CONCATENATE"/>
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="26" guiName="Clients" guiWidth="84" guiX="10" guiY="468" id="DB_INPUT_TABLE3" sqlQuery="select $Client_id:=klient_id from p_zakaznik" type="DB_INPUT_TABLE"/>
-<Node dbConnection="Connection0" dbTable="pololeti_agr_vynosy" enabled="enabled" guiHeight="74" guiName="Aggregated revenues" guiWidth="127" guiX="774" guiY="306" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE"/>
-<Node dbConnection="Connection0" dbTable="Pololeti_zakaznici_bez_vynosu" enabled="enabled" guiHeight="46" guiName="Clients without revenues" guiWidth="81" guiX="774" guiY="468" id="DB_OUTPUT_TABLE1" type="DB_OUTPUT_TABLE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="26" guiName="Clients" guiWidth="84" guiX="10" guiY="468" id="DB_INPUT_TABLE3" sqlQuery="select $Client_id:=client_id from p_customer" type="DB_INPUT_TABLE"/>
+<Node dbConnection="Connection0" dbTable="halfyear_aggr_revenues" enabled="enabled" guiHeight="74" guiName="Aggregated revenues" guiWidth="127" guiX="774" guiY="306" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="46" guiName="Clients without revenues" guiWidth="81" guiX="774" guiY="468" id="DB_OUTPUT_TABLE1" sqlQuery="insert into Clients_without_revenues values($Client_id)" type="DB_OUTPUT_TABLE"/>
 <Node ascendingInputs="true" enabled="enabled" guiHeight="0" guiName="Merge Join" guiWidth="0" guiX="314" guiY="468" id="EXT_MERGE_JOIN1" joinKey="$Client_id;#$Client_id;#" leftOuterJoin="true" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[function transform() {
 $0.Client_id_n := nvl($1.Client_id,-1);
@@ -138,12 +129,6 @@ $0.Aggr_revenue := nvl($1.Aggr_revenue,-1);
 <Node enabled="enabled" guiHeight="0" guiName="Filter" guiWidth="0" guiX="480" guiY="468" id="FILTER2" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[$Client_id_n<0]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="626" guiY="468" id="REFORMAT2" type="REFORMAT">
-<attr name="transform"><![CDATA[function transform() {
-$0.Client_id := $0.Client_id;
-}
-]]></attr>
-</Node>
 <Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="626" guiY="306" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="316" guiY="306" id="SORT1" sortKey="Client_id" sortOrder="Ascending" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="164" guiY="468" id="SORT2" sortKey="Client_id" type="EXT_SORT"/>
@@ -152,8 +137,7 @@ $0.Client_id := $0.Client_id;
 <Edge fromNode="CONCATENATE1:0" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="SORT1:0"/>
 <Edge fromNode="DB_INPUT_TABLE3:0" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SORT2:0"/>
 <Edge fromNode="EXT_MERGE_JOIN1:0" guiBendpoints="" id="Edge21" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="FILTER2:0"/>
-<Edge fromNode="FILTER2:0" guiBendpoints="" id="Edge23" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" toNode="REFORMAT2:0"/>
-<Edge debugMode="true" fromNode="REFORMAT2:0" guiBendpoints="" id="Edge24" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="DB_OUTPUT_TABLE1:0"/>
+<Edge fromNode="FILTER2:0" guiBendpoints="" id="Edge23" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" toNode="DB_OUTPUT_TABLE1:0"/>
 <Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" id="Edge18" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DB_OUTPUT_TABLE0:0"/>
 <Edge debugMode="true" fromNode="SIMPLE_COPY1:1" guiBendpoints="" id="Edge25" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="SORT3:0"/>
 <Edge fromNode="SORT1:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="AGGREGATE1:0"/>

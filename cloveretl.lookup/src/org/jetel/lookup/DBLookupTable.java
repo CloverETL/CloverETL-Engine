@@ -457,7 +457,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
             return SQLUtil.dbMetadata2jetel(sqlMetadata, "_dbLookupTable_" + getName(), dbConnection.getJdbcSpecific());
         } catch (SQLException e) {
-            throw new RuntimeException("Can't get metadata from database");
+            throw new RuntimeException("Can't get metadata from database", e);
         }
 	}
 	

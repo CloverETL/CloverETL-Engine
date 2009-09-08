@@ -45,7 +45,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Agata Vackova, Javlin a.s. &lt;agata.vackova@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 31st January 2009
+ * @version 17th July 2009
  * @since 15th January 2007
  */
 public abstract class XLSFormatter implements Formatter {
@@ -100,6 +100,9 @@ public abstract class XLSFormatter implements Formatter {
 	protected int firstColumn;
 	protected RecordKey sheetNameKeyRecord;
 
+	private String[] excludedFieldNames;
+	protected int[] includedFieldIndices;
+
 	/**
 	 * Constructor
 	 * 
@@ -110,8 +113,9 @@ public abstract class XLSFormatter implements Formatter {
 		this.append = append;
 	}
 
-	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException{
-		this.metadata = _metadata;
+	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException{
+		this.metadata = metadata;
+		this.includedFieldIndices = metadata.fieldsIndicesComplement(excludedFieldNames);
 	}
 
 	/**
@@ -234,6 +238,10 @@ public abstract class XLSFormatter implements Formatter {
 	 */
 	public int getSheetNumber() {
 		return sheetNumber;
+	}
+
+	public void setExcludedFieldNames(String[] excludedFieldNames) {
+		this.excludedFieldNames = excludedFieldNames;
 	}
 
 	/**

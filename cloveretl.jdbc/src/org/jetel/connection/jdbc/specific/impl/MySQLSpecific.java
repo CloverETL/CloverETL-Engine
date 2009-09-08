@@ -20,6 +20,7 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -101,6 +102,13 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 		return super.jetelType2sqlDDL(field);
 	}
     
-	
+	/**
+	 * for MySQL a database is a catalog AND a schema
+	 */
+	public ResultSet getTables(DatabaseMetaData dbMeta, String dbName) throws SQLException {
+		return dbMeta.getTables(dbName, dbName, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/); //fix by kokon - show only tables and views
+	}
+
+
 	
 }

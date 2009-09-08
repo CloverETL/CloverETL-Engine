@@ -1,56 +1,73 @@
-
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2005-06  Javlin Consulting <info@javlinconsulting.cz>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
+ *    jETeL/Clover - Java based ETL application framework.
+ *    Copyright (C) 2005-06  Javlin Consulting <info@javlinconsulting.cz>
+ *    
+ *    This library is free software; you can redistribute it and/or
+ *    modify it under the terms of the GNU Lesser General Public
+ *    License as published by the Free Software Foundation; either
+ *    version 2.1 of the License, or (at your option) any later version.
+ *    
+ *    This library is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ *    Lesser General Public License for more details.
+ *    
+ *    You should have received a copy of the GNU Lesser General Public
+ *    License along with this library; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
 
 package org.jetel.component;
 
+import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.ctl.ErrorMessage;
+import org.jetel.ctl.ITLCompiler;
+import org.jetel.ctl.TLCompilerFactory;
+import org.jetel.ctl.TransformLangExecutor;
+import org.jetel.ctl.ErrorMessage.ErrorLevel;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.Result;
+import org.jetel.graph.runtime.WatchDog;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.compile.DynamicJavaCode;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- *  <h3>Data Generator Component</h3> <!-- Generates new records.  -->
- *
- *  
- *  @author Jan Ausperger (jan.ausperger@javlin.eu)
- *         (c) OpenSys (www.opensys.eu) 
- *
+ * <h3>Data Generator Component</h3> <!-- Generates new records. -->
+ * 
+ * 
+ * @author Jan Ausperger (jan.ausperger@javlin.eu) (c) OpenSys (www.opensys.eu)
+ * 
  */
 public class ExtDataGenerator extends DataGenerator {
-	
-    static Log logger = LogFactory.getLog(ExtDataGenerator.class);
+
+	static Log logger = LogFactory.getLog(ExtDataGenerator.class);
 
 	// Description of the Field
 	public final static String COMPONENT_TYPE = "EXT_DATA_GENERATOR";
+
+	private static final Pattern PATTERN_CLASS = Pattern
+			.compile("class\\s+\\w+");
+	private static final Pattern PATTERN_TL_CODE = Pattern
+			.compile("function\\s+generate");
+
+	private static final int TRANSFORM_JAVA_SOURCE = 1;
+	private static final int TRANSFORM_CLOVER_TL = 2;
+	private static final int TRANSFORM_CTL = 3;
 
 	// XML attribute names
 	private static final String XML_GENERATECLASS_ATTRIBUTE = "generateClass";
@@ -58,92 +75,98 @@ public class ExtDataGenerator extends DataGenerator {
 	private static final String XML_GENERATEURL_ATTRIBUTE = "generateURL";
 
 	// Input parameters
-	private String generate;
-	private String generateClass;
-	private String generateURL;
+	private String generatorSource;
+	private String generatorClassName;
+	private String generatorURL;
 	private int recordsNumber;
-	
+
 	// data generator
 	private Properties generateParameters;
-	private RecordGenerate generation;
+	private RecordGenerate generatorClass;
 
 	/**
 	 * @param id
 	 * @param pattern
 	 * @param recordsNumber
 	 */
-	public ExtDataGenerator(String id, String generate, String generateClass, String generateURL, int recordsNumber) {
+	public ExtDataGenerator(String id, String generate, String generateClass,
+			String generateURL, int recordsNumber) {
 		super(id);
-		this.generate = generate;
-		this.generateClass = generateClass;
-		this.generateURL = generateURL;
+		this.generatorSource = generate;
+		this.generatorClassName = generateClass;
+		this.generatorURL = generateURL;
 		this.recordsNumber = recordsNumber;
 	}
 
 	public static String getTransformAttributeName() {
 		return XML_GENERATE_ATTRIBUTE;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#execute()
-	 */
+
 	@Override
 	public Result execute() throws Exception {
 		// initialize output ports
-		int numOutputPorts=getOutPorts().size();
-		DataRecord outRecord[] = new DataRecord[numOutputPorts]; 
+		int numOutputPorts = getOutPorts().size();
+		DataRecord outRecord[] = new DataRecord[numOutputPorts];
 		for (int i = 0; i < numOutputPorts; i++) {
 			outRecord[i] = new DataRecord(getOutputPort(i).getMetadata());
 			outRecord[i].init();
 			outRecord[i].reset();
 		}
-		if (generation != null) executeGenerate(outRecord);
-		else executeAutoFilling(outRecord);
+		if (generatorClass != null)
+			executeGenerate(outRecord);
+		else
+			executeAutoFilling(outRecord);
 
 		broadcastEOF();
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
-	
+
 	/**
 	 * Generate all.
+	 * 
 	 * @param outRecord
 	 * @throws Exception
 	 */
 	private void executeGenerate(DataRecord[] outRecord) throws Exception {
-		for (int i=0;i<recordsNumber && runIt;i++){
-			for (DataRecord oRecord: outRecord)	oRecord.reset();
-			int transformResult = generation.generate(outRecord);
+		for (int i = 0; i < recordsNumber && runIt; i++) {
+			for (DataRecord oRecord : outRecord)
+				oRecord.reset();
+			int transformResult = generatorClass.generate(outRecord);
 
 			if (transformResult == RecordTransform.ALL) {
 				for (int outPort = 0; outPort < outRecord.length; outPort++) {
-					autoFilling.setLastUsedAutoFillingFields(outRecord[outPort]);
+					autoFilling
+							.setLastUsedAutoFillingFields(outRecord[outPort]);
 					writeRecord(outPort, outRecord[outPort]);
 				}
 			} else if (transformResult >= 0) {
-				autoFilling.setLastUsedAutoFillingFields(outRecord[transformResult]);
+				autoFilling
+						.setLastUsedAutoFillingFields(outRecord[transformResult]);
 				writeRecord(transformResult, outRecord[transformResult]);
 			} else if (transformResult == -1) {
-				//DO NOTHING - skip the record
+				// DO NOTHING - skip the record
 			} else {
-				throw new TransformException("Transformation finished with code: " + transformResult + 
-						". Error message: " + generation.getMessage());
+				throw new TransformException(
+						"Transformation finished with code: " + transformResult
+								+ ". Error message: " + generatorClass.getMessage());
 			}
-			
+
 			SynchronizeUtils.cloverYield();
 		}
-		
-		if (generation != null) {
-			generation.finished();
+
+		if (generatorClass != null) {
+			generatorClass.finished();
 		}
 	}
-	
+
 	/**
 	 * Generate only autofilling.
+	 * 
 	 * @param outRecord
 	 * @throws Exception
 	 */
 	private void executeAutoFilling(DataRecord[] outRecord) throws Exception {
-		for (int i=0;i<recordsNumber && runIt;i++){
+		for (int i = 0; i < recordsNumber && runIt; i++) {
 			for (int outPort = 0; outPort < outRecord.length; outPort++) {
 				autoFilling.setLastUsedAutoFillingFields(outRecord[outPort]);
 				writeRecord(outPort, outRecord[outPort]);
@@ -152,101 +175,225 @@ public class ExtDataGenerator extends DataGenerator {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
-		if (generate != null) {
-			xmlElement.setAttribute(XML_GENERATE_ATTRIBUTE, generate);
+		if (generatorSource != null) {
+			xmlElement.setAttribute(XML_GENERATE_ATTRIBUTE, generatorSource);
 		}
-		if (generateClass != null) {
-			xmlElement.setAttribute(XML_GENERATECLASS_ATTRIBUTE, generateClass);
+		if (generatorClassName != null) {
+			xmlElement.setAttribute(XML_GENERATECLASS_ATTRIBUTE, generatorClassName);
 		}
-		if (generateURL != null) {
-			xmlElement.setAttribute(XML_GENERATEURL_ATTRIBUTE, generateURL);
+		if (generatorURL != null) {
+			xmlElement.setAttribute(XML_GENERATEURL_ATTRIBUTE, generatorURL);
 		}
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#init()
-	 */
-	public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
-        super.init();
-        
-        // create output metadata
-        int outPortsNum = getOutPorts().size();
-        DataRecordMetadata outMetadata[] = new DataRecordMetadata[outPortsNum];
-        for(int i = 0; i < outPortsNum; i++) {
-            outMetadata[i] = getOutputPort(i).getMetadata();
-        }
 
-        // if no generator then verify and prepare autofilling
-        if (generate == null && generateClass == null && generateURL == null) {
-        	boolean isAutoFilling = false;
-        	for (DataFieldMetadata fMetadata: outMetadata[0].getFields()) {
-        		if (fMetadata.isAutoFilled()) {
-        			isAutoFilling = true;
-        		}
-        	}
-        	if (!isAutoFilling) throw new ComponentNotReadyException("Attribute/property not found: " + XML_GENERATE_ATTRIBUTE);
-        	
-   		// create instance of the record generator
-        } else {
-        	generation = RecordTransformFactory.createGenerator(generate, generateClass, 
-    				generateURL, this, outMetadata, generateParameters, 
-    				this.getClass().getClassLoader(), this.getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths());
-        }
+	public void init() throws ComponentNotReadyException {
+		if (isInitialized())
+			return;
+		super.init();
+
+		DataRecordMetadata[] outMetadata = getOutMetadata().toArray(new DataRecordMetadata[getOutMetadata().size()]);
+		verifyAutofilling(outMetadata[0]);
+		createGeneratorClass(getGraph().getWatchDog(), outMetadata);
+
+		// set graph instance to transformation (if CTL it can access lookups etc.)
+        generatorClass.setGraph(getGraph());
 		
-		// autofilling
-		if (outMetadata.length > 0) {
-	   		autoFilling.addAutoFillingFields(outMetadata[0]);
+		if (!generatorClass.init(generateParameters, outMetadata)) {
+			throw new ComponentNotReadyException("Generator failed to initialize: " + generatorClass.getMessage());
 		}
-   		autoFilling.setFilename(getId());
-   		autoFilling.addAutoFillingFields(outMetadata[0]);
+
+		// autofilling
+		autoFilling.setFilename(getId());
+		autoFilling.addAutoFillingFields(outMetadata[0]);
+	}
+
+	/**
+	 * Verifies autofilling.
+	 * @throws ComponentNotReadyException
+	 */
+	private void verifyAutofilling(DataRecordMetadata outMetadata) throws ComponentNotReadyException {
+
+		// if no generator then verify and prepare autofilling
+		if (generatorSource == null && generatorClassName == null && generatorURL == null) {
+			boolean isAutoFilling = false;
+			for (DataFieldMetadata fMetadata : outMetadata.getFields()) {
+				if (fMetadata.isAutoFilled()) {
+					isAutoFilling = true;
+				}
+			}
+			if (!isAutoFilling)
+				throw new ComponentNotReadyException("Attribute/property not found: " + XML_GENERATE_ATTRIBUTE);
+		}
 	}
 	
+	/**
+	 * Creates generate class (and verifies generator language).
+	 * @param watchDog
+	 * @throws ComponentNotReadyException
+	 */
+	private void createGeneratorClass(WatchDog watchDog, DataRecordMetadata outMetadata[]) throws ComponentNotReadyException {
+		if (generatorSource != null || generatorClassName != null || generatorURL != null) {
+			// create instance of the record generator
+			if (generatorClass == null) {
+				
+				if (generatorClassName != null) {
+					// load class base on its class name
+					if (watchDog == null) return;
+					generatorClass = (RecordGenerate) RecordTransformFactory.loadClass(this.getClass().getClassLoader(), logger, generatorClassName, 
+							getGraph().getProjectURL(),
+							watchDog.getGraphRuntimeContext().getClassPaths());
+				} else if (generatorSource == null) {
+					// read source code from URL
+					generatorSource = FileUtils.getStringFromURL(getGraph().getProjectURL(), generatorURL, "UTF-8");
+				}
+				
+				if (generatorClassName == null) {
+					switch (guessTransformType(generatorSource)) {
+					case TRANSFORM_JAVA_SOURCE:
+						generatorClass = createGeneratorDynamic(generatorSource);
+						break;
+					case TRANSFORM_CLOVER_TL:
+						generatorClass = new RecordGenerateTL(generatorSource,logger);
+						break;
+					case TRANSFORM_CTL:
+						ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),null,outMetadata,"UTF-8");
+						List<ErrorMessage> msgs = compiler.compile(generatorSource,CTLRecordGenerate.class, getId());
+						if (compiler.errorCount() > 0) {
+							StringBuilder sb = new StringBuilder();
+							for (ErrorMessage msg : msgs) {
+								logger.error(msg.toString());
+								if (msg.getErrorLevel() == ErrorLevel.ERROR) {
+									sb.append("\n  Line ").append(msg.getBeginLine()).append(": ").append(msg.toString());
+								}
+							}
+							throw new ComponentNotReadyException(
+									"CTL code compilation finished with "
+											+ compiler.errorCount() + " errors" + sb);
+						}
+						Object ret = compiler.getCompiledCode();
+						if (ret instanceof TransformLangExecutor) {
+							// setup interpreted runtime
+							generatorClass = new CTLRecordGenerateAdapter(
+									(TransformLangExecutor) ret, logger);
+						} else if (ret instanceof CTLRecordGenerate) {
+							generatorClass = (CTLRecordGenerate)ret;
+						} else {
+							// this should never happen as compiler always
+							// generates correct interface
+							throw new ComponentNotReadyException("Invalid type of record transformation");
+						}
+
+						break;
+					default:
+						throw new ComponentNotReadyException(
+								"Can't determine transformation code type at component ID :" + getId());
+					}
+				}
+			}
+		}
+	}
+
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		autoFilling.reset();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception.ConfigurationStatus)
-	 */
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
-  		 
-		if(!checkInputPorts(status, 0, 0) || !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+
+		if (!checkInputPorts(status, 0, 0)
+				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
 			return status;
 		}
-        checkMetadata(status, getOutMetadata());
-        
-        /*
-        try {
-            init();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        } finally {
-        	free();
-        }*/
-        
-        return status;
+		
+		 try {
+			 DataRecordMetadata[] outMetadata = getOutMetadata().toArray(new DataRecordMetadata[getOutMetadata().size()]);
+			 verifyAutofilling(getOutMetadata().get(0));
+			 createGeneratorClass(getGraph().getWatchDog(), outMetadata);
+		 } catch (ComponentNotReadyException e) {
+			 ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(),
+					 ConfigurationStatus.Severity.ERROR, this,
+					 ConfigurationStatus.Priority.NORMAL);
+			 
+			 if(!StringUtils.isEmpty(e.getAttributeName())) {
+				 problem.setAttributeName(e.getAttributeName()); 
+			 }
+			 status.add(problem); 
+		 } finally { 
+			 free(); 
+		 }
+		return status;
 	}
 
-    /**
+	/**
 	 * @param generateParameters
 	 *            The generationParameters to set.
 	 */
-    public void setTransformationParameters(Properties generateParameters) {
-        this.generateParameters = generateParameters;
+	public void setTransformationParameters(Properties generateParameters) {
+		this.generateParameters = generateParameters;
+	}
+
+	/**
+	 * Guesses type of transformation code based on code itself - looks for
+	 * certain patterns within the code
+	 * 
+	 * @param transform
+	 * @return guessed transformation type or -1 if can't determine
+	 */
+	public static int guessTransformType(String transform) {
+
+		if (transform.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID) != -1) {
+			// clover internal transformation language
+			return TRANSFORM_CLOVER_TL;
+		}
+
+		if (transform.indexOf(TransformLangExecutor.CTL_TRANSFORM_CODE_ID) != -1) {
+			// new CTL implementation
+			return TRANSFORM_CTL;
+		}
+
+		if (PATTERN_TL_CODE.matcher(transform).find()) {
+			// clover internal transformation language
+			return TRANSFORM_CLOVER_TL;
+		}
+
+		if (PATTERN_CLASS.matcher(transform).find()) {
+			// full java source code
+			return TRANSFORM_JAVA_SOURCE;
+		}
+
+		return -1;
+	}
+	
+	
+	/**
+	 * Creates generator instance using given Java source.
+	 * @param generatorCode
+	 * @return
+	 * @throws ComponentNotReadyException
+	 */
+	private RecordGenerate createGeneratorDynamic(String generatorCode) throws ComponentNotReadyException {
+		DynamicJavaCode dynCode = new DynamicJavaCode(generatorCode, this.getClass().getClassLoader());
+        logger.info(" (compiling dynamic source) ");
+        // use DynamicJavaCode to instantiate transformation class
+        Object transObject = null;
+        try {
+            transObject = dynCode.instantiate();
+        } catch (RuntimeException ex) {
+            logger.debug(dynCode.getCompilerOutput());
+            logger.debug(dynCode.getSourceCode());
+            throw new ComponentNotReadyException("Transformation code is not compilable.\n" + "Reason: " + ex.getMessage());
+        }
+        if (transObject instanceof RecordGenerate) {
+            return (RecordGenerate)transObject;
+        } else {
+            throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordGenerate.");
+        }
     }
+	
 
 }

@@ -23,6 +23,7 @@ import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
@@ -136,9 +137,6 @@ public class JmsWriter extends Node {
 		this.psorProperties = psorProperties;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#init()
-	 */
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -166,28 +164,19 @@ public class JmsWriter extends Node {
 		} catch (Exception e) {
 			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage());
 		}
+		psor.setGraph(this.getGraph());
 		psor.init(inPort.getMetadata(), connection.getSession(), psorProperties);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#reset()
-	 */
     synchronized public void reset() throws ComponentNotReadyException {
     	super.reset();
     	connection.reset();
     	psor.reset();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.jetel.graph.GraphElement#free()
-     */
 	@Override
 	public synchronized void free() {
 		super.free();
-		if (psor != null)
-			psor.finished();
         closeConnection();
 	}
     
@@ -209,7 +198,7 @@ public class JmsWriter extends Node {
             if (classPaths == null)
                 throw new ComponentNotReadyException( "Can't find specified transformation class: " + psorClass);
             try {
-                URLClassLoader classLoader = ClassLoaderUtils.createClassLoader(Thread.currentThread().getContextClassLoader(), null, classPaths);
+                URLClassLoader classLoader = ClassLoaderUtils.createClassLoader( JmsWriter.class.getClassLoader(), null, classPaths);
                 psor =  (DataRecord2JmsMsg)Class.forName(psorClass, true, classLoader).newInstance();
             } catch (ClassNotFoundException ex1) {
                 throw new ComponentNotReadyException("Can not find class: "+ ex1);
@@ -260,17 +249,27 @@ public class JmsWriter extends Node {
 				Message msg = psor.createMsg(nextRecord);
 				if (msg == null)
 					throw new JetelException(psor.getErrorMsg());
-				producer.send(msg);
+
+				int deliveryMode = msg.getJMSDeliveryMode();
+		        if (deliveryMode != DeliveryMode.PERSISTENT && deliveryMode != DeliveryMode.NON_PERSISTENT)
+		        	deliveryMode = Message.DEFAULT_DELIVERY_MODE;
+				producer.send(msg, deliveryMode, msg.getJMSPriority(), Message.DEFAULT_TIME_TO_LIVE );
 			}
 			if (runIt) {
 				// send terminating message
 				Message termMsg = psor.createLastMsg();
-				if (termMsg != null)
-					producer.send(termMsg);
+				if (termMsg != null) {
+					int deliveryMode = termMsg.getJMSDeliveryMode();
+			        if (deliveryMode != DeliveryMode.PERSISTENT && deliveryMode != DeliveryMode.NON_PERSISTENT)
+			        	deliveryMode = Message.DEFAULT_DELIVERY_MODE;
+					producer.send(termMsg, deliveryMode, termMsg.getJMSPriority(), Message.DEFAULT_TIME_TO_LIVE );
+				}
 			}
 		} catch (Exception e) {
 			logger.error("JmxWriter execute", e);
 		}
+        if (psor != null)
+            psor.finished();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
@@ -286,16 +285,10 @@ public class JmsWriter extends Node {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 	
@@ -353,9 +346,6 @@ public class JmsWriter extends Node {
 		return jmsReader; 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception.ConfigurationStatus)
-	 */
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 		 

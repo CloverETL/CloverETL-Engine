@@ -27,6 +27,7 @@ import javax.jms.Session;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -38,7 +39,8 @@ public abstract class DataRecord2JmsMsgBase implements DataRecord2JmsMsg {
 	protected String errMsg;
 	protected DataRecordMetadata metadata; 
 	protected Session session;
-
+	protected TransformationGraph graph;
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.component.DataRecord2JmsMsg#init(org.jetel.metadata.DataRecordMetadata, javax.jms.Session, java.util.Properties)
 	 */
@@ -85,8 +87,28 @@ public abstract class DataRecord2JmsMsgBase implements DataRecord2JmsMsg {
 		this.errMsg = errMsg;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.component.jms.DataRecord2JmsMsg#reset()
+	 */
 	public void reset() throws ComponentNotReadyException {
 		setErrorMsg(null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.component.jms.DataRecord2JmsMsg#getGraph()
+	 */
+	public TransformationGraph getGraph() {
+		return graph;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.component.jms.DataRecord2JmsMsg#setGraph(org.jetel.graph.TransformationGraph)
+	 */
+	public void setGraph(TransformationGraph graph) {
+		this.graph = graph;
 	}
 		
 }

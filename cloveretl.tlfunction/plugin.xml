@@ -133,6 +133,8 @@
         <value>sort</value>
         <value>copy</value>
         <value>reverse</value>
+        <value>dict_put_str</value>
+        <value>dict_get_str</value>
 		</parameter>
 	</extension>
 	

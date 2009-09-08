@@ -33,6 +33,24 @@ import java.util.Random;
 public class DataGenerator extends Random {
 
 	private static final long serialVersionUID = 1L;
+
+	public DataGenerator() {
+		super();
+	}
+	
+	public DataGenerator(long arg0) {
+		super(arg0);
+		nextInt();
+	}
+	
+	/**
+	 * Set seed.
+	 * @param paramLong
+	 */
+	public void setSeed(long paramLong) {
+		super.setSeed(paramLong);
+		nextInt();
+	}
 	
 	/**
 	 * This method creates random string from chars 'a' till 'z'
@@ -42,18 +60,22 @@ public class DataGenerator extends Random {
 	 * @return string created from random characters. Length of this string is between minLenght and maxLenght inclusive
 	 */
 	public String nextString(int minLenght, int maxLenght) {
-		StringBuilder result;
-		if (maxLenght != minLenght) {
-			result = new StringBuilder(nextInt(maxLenght - minLenght + 1) + minLenght);
-		} else {// minLenght == maxLenght
-			result = new StringBuilder(minLenght);
-		}
-		for (int i = 0; i < result.capacity(); i++) {
-			result.append((char) (nextInt('z' - 'a' + 1) + 'a'));
-		}
-		return result.toString();
+		return new String(nextChars(minLenght,maxLenght));
 	}
 
+	public char[] nextChars(int minLenght, int maxLenght) {
+		char[] result;
+		if (maxLenght != minLenght) {
+			result = new char[(nextInt(maxLenght - minLenght + 1) + minLenght)];
+		} else {// minLenght == maxLenght
+			result = new char[minLenght];
+		}
+		for (int i = 0; i < result.length; i++) {
+			result[i]=(char)(nextInt('z' - 'a' + 1) + 'a');
+		}
+		return result;
+	}
+	
 	/**
 	 * This method creates random long
 	 * @param min

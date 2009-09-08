@@ -470,6 +470,14 @@ public class RecordKey {
     	boolean isNull = false;
     	Integer[] incomparable = null;
     	ConfigurationProblem problem;
+    	
+    	//slave key is null
+    	if (slaveKey == null) {
+    		problem = new ConfigurationProblem("Slave key does not exist.", Severity.ERROR, component, Priority.NORMAL, masterAttribute );
+    		status.add(problem);
+    		return status;
+    	}
+    	
     	//init master key
     	try{
     		masterKey.init();

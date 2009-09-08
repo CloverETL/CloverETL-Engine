@@ -20,8 +20,10 @@
 package org.jetel.connection.jdbc.specific;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
@@ -154,5 +156,23 @@ public interface JdbcSpecific {
 	 * @return
 	 */
 	public boolean isLiteral(String s);
+	
+	/**
+	 * Returns a ResultSet representing schemas
+	 * @param dbMeta
+	 * @return ArrayList<String[]> Returns arraylist of rows, each contains a pair of strings CATALOG, SCHEMA
+	 * @throws SQLException
+	 */
+	public ArrayList<String> getSchemas(DatabaseMetaData dbMeta) throws SQLException;
+	
+	/**
+	 * Returns a ResultSet representing tables in given database
+	 * It has to extract it from dbMeta object
+	 * 
+	 * @param dbMeta
+	 * @param dbName
+	 * @return
+	 */
+	public ResultSet getTables(DatabaseMetaData dbMeta, String dbName) throws SQLException;
 	
 }

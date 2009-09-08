@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="yanas" created="Thu Sep 25 11:48:52 CEST 2008" guiVersion="0.0" id="1222336215500" licenseType="Evaluation license." modified="Fri Jan 23 11:19:45 CET 2009" modifiedBy="avackova" name="sortWithinGroups" revision="1.36">
+<Graph author="yanas" created="Thu Sep 25 11:48:52 CEST 2008" guiVersion="0.0.0.devel" id="1222336215500" licenseType="Evaluation license." modified="Wed Jul 29 14:04:35 CEST 2009" modifiedBy="avackova" name="sortWithinGroups" revision="1.38">
 <Global>
-<Metadata id="Metadata0" previewAttachmentCharset="UTF-8">
-<Record fieldDelimiter=";" name="record" previewAttachmentCharset="UTF-8" recordDelimiter="\n" type="delimited">
-<Field name="country" type="string"/>
-<Field name="town" type="string"/>
-<Field name="name" type="string"/>
-<Field name="age" type="byte"/>
-</Record>
-</Metadata>
+<Metadata fileURL="${META_DIR}/delimited/friends.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">

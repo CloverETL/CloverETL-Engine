@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.metadata.DataRecordMetadata;
 
 public class TLRecordValue extends TLContainerValue {
@@ -89,10 +90,20 @@ public class TLRecordValue extends TLContainerValue {
 
 	@Override
 	public void setStoredValue(TLValue key, TLValue _value) {
-		if (key.type.isNumeric()){
-			_value.copyToDataField(record.getField(key.getNumeric().getInt()));
+		if (key.type.isNumeric()) {
+			int fieldIndex = key.getNumeric().getInt();
+			if (fieldIndex >= 0 && fieldIndex < record.getNumFields()) {
+				_value.copyToDataField(record.getField(fieldIndex));
+			} else {
+				throw new TransformLangExecutorRuntimeException("referenced field \"" + fieldIndex + "\" does not exist");
+			}
 		}else{
-			_value.copyToDataField(record.getField(key.toString()));
+			int fieldIndex = record.getMetadata().getFieldPosition(key.toString());
+			if (fieldIndex != -1) {
+				_value.copyToDataField(record.getField(fieldIndex));
+			} else {
+				throw new TransformLangExecutorRuntimeException("referenced field \"" + key.toString() + "\" does not exist");
+			}
 		}
 	}
 

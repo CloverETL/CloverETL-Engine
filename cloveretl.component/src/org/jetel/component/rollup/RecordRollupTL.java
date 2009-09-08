@@ -39,7 +39,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 5th May 2009
+ * @version 23rd July 2009
  * @since 28th April 2009
  */
 public class RecordRollupTL implements RecordRollup {
@@ -56,10 +56,10 @@ public class RecordRollupTL implements RecordRollup {
     public static final String FUNCTION_UPDATE_TRANSFORM_NAME = "updateTransform";
     /** the name of the transform() function in CTL */
     public static final String FUNCTION_TRANSFORM_NAME = "transform";
-    /** the name of the reset() function in CTL */
-    public static final String FUNCTION_RESET_NAME = "reset";
-    /** the name of the free() function in CTL */
-    public static final String FUNCTION_FREE_NAME = "free";
+    /** the name of the getMessage() function in CTL */
+    public static final String FUNCTION_GET_MESSAGE_NAME = "getMessage";
+    /** the name of the finished() function in CTL */
+    public static final String FUNCTION_FINISHED_NAME = "finished";
 
     /** the TL wrapper used to execute all the functions */
     private final WrapperTL wrapper;
@@ -74,6 +74,9 @@ public class RecordRollupTL implements RecordRollup {
     private int functionUpdateTransformId;
     /** the ID of the prepared transform() function */
     private int functionTransformId;
+
+    /** temporary data record, which is used instead of null group accumulator */
+    private DataRecord emptyRecord;
 
     /**
      * Creates an instance of the <code>RecordRollupTL</code> class.
@@ -97,99 +100,114 @@ public class RecordRollupTL implements RecordRollup {
         } catch (JetelException exception) {
             // OK, don't do anything, function init() is not necessary
         }
-
+        
         functionInitGroupId = wrapper.prepareFunctionExecution(FUNCTION_INIT_GROUP_NAME);
         functionUpdateGroupId = wrapper.prepareFunctionExecution(FUNCTION_UPDATE_GROUP_NAME);
         functionFinishGroupId = wrapper.prepareFunctionExecution(FUNCTION_FINISH_GROUP_NAME);
         functionUpdateTransformId = wrapper.prepareFunctionExecution(FUNCTION_UPDATE_TRANSFORM_NAME);
         functionTransformId = wrapper.prepareFunctionExecution(FUNCTION_TRANSFORM_NAME);
+
+        // prepare empty group accumulator - it is used in case no group accumulator is required
+        emptyRecord = new DataRecord(new DataRecordMetadata("emptyGroupAccumulator"));
+        emptyRecord.init();
+        emptyRecord.reset();
     }
 
     public void initGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
+        // if group accumulator is empty we use an empty record for better error reporting in scope of CTL
+        if (groupAccumulator == null) {
+        	groupAccumulator = emptyRecord;
+        }
+
         wrapper.executePreparedFunction(functionInitGroupId, inputRecord,
                 new TLValue[] { new TLRecordValue(groupAccumulator) });
     }
 
     public boolean updateGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
-        TLValue result = wrapper.executePreparedFunction(functionUpdateGroupId, inputRecord,
-                new TLValue[] { new TLRecordValue(groupAccumulator) });
-
-        if (result != null) {
-            return (result == TLBooleanValue.TRUE);
-        }
-
-        return false;
+        return executeGroupFunction(functionUpdateGroupId, inputRecord, groupAccumulator, false);
     }
 
     public boolean finishGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
-        TLValue result = wrapper.executePreparedFunction(functionFinishGroupId, inputRecord,
+        return executeGroupFunction(functionFinishGroupId, inputRecord, groupAccumulator, true);
+    }
+
+    private boolean executeGroupFunction(int functionId, DataRecord inputRecord, DataRecord groupAccumulator,
+            boolean defaultReturnValue) {
+        // if group accumulator is empty we use an empty record for better error reporting in scope of CTL
+        if (groupAccumulator == null) {
+            groupAccumulator = emptyRecord;
+        }
+
+        TLValue result = wrapper.executePreparedFunction(functionId, inputRecord,
                 new TLValue[] { new TLRecordValue(groupAccumulator) });
 
         if (result != null) {
-            return (result == TLBooleanValue.TRUE);
+            if (result.getType() == TLValueType.BOOLEAN) {
+                return (result == TLBooleanValue.TRUE);
+            }
+
+            LogFactory.getLog(getClass()).warn("Unexpected return result: " + result + " (" + result.getType() + ")");
         }
 
-        return true;
+        return defaultReturnValue;
     }
 
     public int updateTransform(int counter, DataRecord inputRecord, DataRecord groupAccumulator, DataRecord[] outputRecords)
             throws TransformException {
-        TLValue counterTL = TLValue.create(TLValueType.INTEGER);
-        counterTL.setValue(counter);
-
-        TLValue result = wrapper.executePreparedFunction(functionUpdateTransformId, new DataRecord[] { inputRecord },
-                outputRecords, new TLValue[] { counterTL, new TLRecordValue(groupAccumulator) });
-
-        if (result != null) {
-            if (result == TLBooleanValue.TRUE) {
-                return ALL;
-            }
-
-            if (result.getType().isNumeric()) {
-                return result.getNumeric().getInt();
-            }
-        }
-
-        return SKIP;
+        return executeTransformFunction(functionUpdateTransformId, counter, inputRecord, groupAccumulator, outputRecords);
     }
-    
+
     public int transform(int counter, DataRecord inputRecord, DataRecord groupAccumulator, DataRecord[] outputRecords)
             throws TransformException {
+        return executeTransformFunction(functionTransformId, counter, inputRecord, groupAccumulator, outputRecords);
+    }
+
+    private int executeTransformFunction(int functionId, int counter, DataRecord inputRecord, DataRecord groupAccumulator,
+            DataRecord[] outputRecords) {
         TLValue counterTL = TLValue.create(TLValueType.INTEGER);
         counterTL.setValue(counter);
 
-        TLValue result = wrapper.executePreparedFunction(functionTransformId, new DataRecord[] { inputRecord },
+        // if group accumulator is empty we use an empty record for better error reporting in scope of CTL
+        if (groupAccumulator == null) {
+            groupAccumulator = emptyRecord;
+        }
+
+        TLValue result = wrapper.executePreparedFunction(functionId, new DataRecord[] { inputRecord },
                 outputRecords, new TLValue[] { counterTL, new TLRecordValue(groupAccumulator) });
 
         if (result != null) {
-            if (result == TLBooleanValue.TRUE) {
-                return ALL;
-            }
-
             if (result.getType().isNumeric()) {
                 return result.getNumeric().getInt();
             }
+
+            LogFactory.getLog(getClass()).warn("Unexpected return result: " + result + " (" + result.getType() + ")");
         }
 
         return SKIP;
     }
 
-    public void reset() throws ComponentNotReadyException {
-        try {
-            wrapper.execute(FUNCTION_RESET_NAME, null);
-        } catch (JetelException exception) {
-            // OK, don't do anything, function reset() is not necessary
-        }
+    public String getMessage() {
+        TLValue result = null;
 
-        wrapper.reset();
-    }
-
-    public void free() {
         try {
-            wrapper.execute(FUNCTION_FREE_NAME, null);
+            result = wrapper.execute(FUNCTION_GET_MESSAGE_NAME, null);
         } catch (JetelException exception) {
             // OK, don't do anything, function free() is not necessary
         }
+
+        return ((result != null) ? result.toString() : null);
+    }
+
+    public void finished() {
+        try {
+            wrapper.execute(FUNCTION_FINISHED_NAME, null);
+        } catch (JetelException exception) {
+            // OK, don't do anything, function free() is not necessary
+        }
+    }
+
+    public void reset() throws ComponentNotReadyException {
+        wrapper.reset();
     }
 
 }

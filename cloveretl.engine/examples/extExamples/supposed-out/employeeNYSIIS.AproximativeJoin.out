@@ -1,43 +1,3 @@
-618791;;bvho;;;;;;;;;;;;;;;
-778187;;fvcc;;;;;;;;;;;;;;;
-793002;;iomm;;;;;;;;;;;;;;;
-4640;;rsqc;;;;;;;;;;;;;;;
-711817;;lqxx;;;;;;;;;;;;;;;
-884774;;zmzv;;;;;;;;;;;;;;;
-14297;;ykkw;;;;;;;;;;;;;;;
-990412;;bzvf;;;;;;;;;;;;;;;
-645304;;cwyl;;;;;;;;;;;;;;;
-295502;;mmhp;;;;;;;;;;;;;;;
-65902;;ltzu;;;;;;;;;;;;;;;
-989324;;uqbu;;;;;;;;;;;;;;;
-349533;;nomq;;;;;;;;;;;;;;;
-762530;;jmtf;;;;;;;;;;;;;;;
-417016;;cfir;;;;;;;;;;;;;;;
-362401;;npwy;;;;;;;;;;;;;;;
-833055;;pvye;;;;;;;;;;;;;;;
-984941;;ajnx;;;;;;;;;;;;;;;
-480815;;ihei;;;;;;;;;;;;;;;
-700331;;swro;;;;;;;;;;;;;;;
-986018;;tcnf;;;;;;;;;;;;;;;
-86404;;ndzs;;;;;;;;;;;;;;;
-794612;;jojj;;;;;;;;;;;;;;;
-593850;;znbq;;;;;;;;;;;;;;;
-553985;;goqg;;;;;;;;;;;;;;;
-155046;;anpq;;;;;;;;;;;;;;;
-170129;;mazs;;;;;;;;;;;;;;;
-605920;;zezc;;;;;;;;;;;;;;;
-634126;;dvdf;;;;;;;;;;;;;;;
-898926;;wpxr;;;;;;;;;;;;;;;
-203032;;gdqh;;;;;;;;;;;;;;;
-506800;;kagc;;;;;;;;;;;;;;;
-582221;;yrgj;;;;;;;;;;;;;;;
-870721;;lnom;;;;;;;;;;;;;;;
-420999;;mcup;;;;;;;;;;;;;;;
-743232;;aczk;;;;;;;;;;;;;;;
-442463;;vwmm;;;;;;;;;;;;;;;
-982079;;uuaj;;;;;;;;;;;;;;;
-362644;;vulp;;;;;;;;;;;;;;;
-882190;;cwak;;;;;;;;;;;;;;;
 845;Parker Abo;Parker;Abo;16;Store Temporary Checker;1;16;Mon Feb 02 1914;Thu Jan 01 1998;;20.0;823;Bachelors Degree;M;M;Store Full Time Staf;AB
 643;Catherine Abel;Catherine;Abel;19;Store Permanent Butcher;19;19;Sat Dec 10 1960;Thu Jan 01 1998;;8500.0;639;Partial College;M;F;Store Full Time Staf;ABAL
 278;Eric Abbott;Eric;Abbott;18;Store Temporary Stocker;11;18;Mon Feb 02 1914;Mon Jan 01 1996;;20.0;227;Partial College;M;F;Store Temp Staff;ABAT
@@ -585,7 +545,6 @@
 259;Sarah Jimenez;Sarah;Jimenez;17;Store Permanent Stocker;11;17;Mon Feb 02 1914;Mon Jan 01 1996;;4400.0;226;High School Degree;M;M;Store Full Time Staf;JANANA
 289;Bertha Jameson;Bertha;Jameson;13;Store Shift Supervisor;13;11;Sun Sep 24 1961;Wed Jan 01 1997;;7000.0;286;Partial High School;M;F;Store Management;JANASAN
 310;Samuel Johnson;Samuel;Johnson;16;Store Temporary Checker;13;16;Mon Feb 02 1914;Mon Jan 01 1996;;20.0;287;Bachelors Degree;S;F;Store Full Time Staf;JANSAN
-359;Danielle Johnson;Danielle;Johnson;12;Store Assistant Manager;2;11;Fri May 12 1972;Sat May 01 1993;;8000.0;29;Partial College;M;F;Store Management;JANSAN
 603;Greg Johnson;Greg;Johnson;18;Store Temporary Stocker;17;18;Mon Feb 02 1914;Mon Jan 01 1996;;20.0;546;Partial High School;S;M;Store Temp Staff;JANSAN
 1066;David Johnson;David;Johnson;12;Store Assistant Manager;12;11;Sat Dec 24 1932;Thu Jan 01 1998;;13000.0;16;Bachelors Degree;M;M;Store Management;JANSAN
 1048;Brian Johnston;Brian;Johnston;17;Store Permanent Stocker;4;17;Thu Apr 18 1946;Thu Jan 01 1998;;3700.0;1020;High School Degree;S;M;Store Full Time Staf;JANSTAN
@@ -707,7 +666,6 @@
 931;Susan Mc Nair;Susan;Mc Nair;18;Store Temporary Stocker;10;18;Mon Feb 02 1914;Thu Jan 01 1998;;20.0;886;Bachelors Degree;M;F;Store Temp Staff;MC NAR
 233;Harvey McCollum;Harvey;McCollum;15;Store Permanent Checker;11;15;Mon Feb 02 1914;Mon Jan 01 1996;;6800.0;226;High School Degree;S;M;Store Full Time Staf;MCALAN
 27;Charles Macaluso;Charles;Macaluso;11;Store Manager;14;11;Sat Mar 17 1934;Thu Dec 01 1994;;16000.0;21;Bachelors Degree;M;M;Store Management;MCALAS
-222;Bunny McCown;Bunny;McCown;12;Store Assistant Manager;14;11;Fri May 12 1972;Sat May 01 1993;;8000.0;23;Bachelors Degree;M;F;Store Management;MCAN
 684;Stacie Mcanich;Stacie;Mcanich;17;Store Permanent Stocker;19;17;Mon Feb 02 1914;Thu Jan 01 1998;;5200.0;641;Bachelors Degree;S;M;Store Full Time Staf;MCANAC
 150;Mary McCormick;Mary;McCormick;18;Store Temporary Stocker;7;18;Mon Feb 02 1914;Mon Jan 01 1996;;20.0;101;Partial College;M;F;Store Temp Staff;MCARNAC
 306;Jane McCarty;Jane;McCarty;15;Store Permanent Checker;13;15;Mon Feb 02 1914;Mon Jan 01 1996;;8200.0;289;Graduate Degree;S;M;Store Full Time Staf;MCARTY
@@ -882,7 +840,6 @@
 396;Barbara Sipsy;Barbara;Sipsy;17;Store Permanent Stocker;3;17;Mon Feb 02 1914;Mon Jan 01 1996;;4400.0;363;Graduate Degree;S;F;Store Full Time Staf;SAPSY
 1078;Beulah Sowards;Beulah;Sowards;15;Store Permanent Checker;12;15;Mon Feb 02 1914;Thu Jan 01 1998;;7000.0;1068;Bachelors Degree;S;F;Store Full Time Staf;SARD
 808;John Sherfy;John;Sherfy;18;Store Temporary Stocker;21;18;Mon Feb 02 1914;Thu Jan 01 1998;;20.0;749;High School Degree;S;M;Store Temp Staff;SARFY
-43;Juanita Sharp;Juanita;Sharp;8;HQ Human Resources;0;4;Mon May 16 1977;Sat Jan 01 1994;;6700.0;7;Partial College;S;F;Middle Management;SARP
 517;Alice Serventi;Alice;Serventi;16;Store Temporary Checker;16;16;Mon Feb 02 1914;Mon Jan 01 1996;;20.0;487;High School Degree;M;M;Store Full Time Staf;SARVANT
 490;Irma Sherwood;Irma;Sherwood;14;Store Information Systems;16;14;Mon Jun 01 1942;Wed Jan 01 1997;;9000.0;484;High School Degree;M;F;Store Full Time Staf;SARWAD
 195;Loni Sosa;Loni;Sosa;17;Store Permanent Stocker;24;17;Mon Feb 02 1914;Mon Jan 01 1996;;4400.0;162;Bachelors Degree;S;F;Store Full Time Staf;SAS

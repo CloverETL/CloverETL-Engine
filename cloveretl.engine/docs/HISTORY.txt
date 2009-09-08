@@ -6,10 +6,22 @@ REL 2-8-0
 + Method DataRecord2JmsMsg.createLastMsg(DataRecord) is deprecated. Use the same method without parameters instead.  
 + org.jetel.component.jms.JmsMsg2DataRecordProperties can process javax.jms.BytesMessage
 + bodyField attribute of JmsReader/JmsWriter have default value 
++ interfaces DataRecord2JmsMsg and JmsMsg2DataRecord now have 2 new methods: setGraph(TransformationGraph) and getGraph()
++ context(thread) class-loader changed to current(class) class-loader
 
 REL 2-7-2
 ---------
-+ simplified JMSWriter - method DataRecord2JmsMsg.createMsg(r) is called for all records (event for last record) and DataRecord2JmsMsg.createLastMsg(r) is called just once after last record. 
+Features:
++ simplified JMSWriter - method DataRecord2JmsMsg.createMsg(r) is called for all records (event for last record) and DataRecord2JmsMsg.createLastMsg(r) is called just once after last record.
++ DBOutputTable converts to string all values with unknown data type 
+
+Fixed:
++ ExtSort does not sort correctly with Null values in key
++ SimpleCache used in DBJoin caches many records with same key in a wrong way
++ JMSReader/Writer: attributes processorCode and processorURL are ignored
++ DBExecute - if input port with parameters is connected but no record come, procedure should not execute
++ classpath resolving problems in RunGraph component
++ input file is not closed when graph fails (http://forum.cloveretl.org/viewtopic.php?f=4&t=810&sid=57ac7cf7f854d09b590535717dc0efb6)
 
 REL 2-7-1
 ---------

@@ -56,10 +56,10 @@ import org.openxml4j.opc.Package;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 30th January 2009
+ * @version 17th July 2009
  * @since 30th January 2009
  */
-public final class XLSXDataFormatter extends XLSFormatter {
+public class XLSXDataFormatter extends XLSFormatter {
 
 	/**
 	 * A structure used to save states when multiple sheet writing is enabled.
@@ -206,11 +206,11 @@ public final class XLSXDataFormatter extends XLSFormatter {
 		// prepare cell styles
 		//
 
-		cellStyles = new CellStyle[metadata.getNumFields()];
+		cellStyles = new CellStyle[includedFieldIndices.length];
 		DataFormat dataFormat = workbook.createDataFormat();
 
-		for (int i = 0; i < metadata.getNumFields(); i++) {
-			DataFieldMetadata fieldMetadata = metadata.getField(i);
+		for (int i = 0; i < includedFieldIndices.length; i++) {
+			DataFieldMetadata fieldMetadata = metadata.getField(includedFieldIndices[i]);
 
 			CellStyle cellStyle = workbook.createCellStyle();
 			cellStyle.setDataFormat(dataFormat.getFormat((fieldMetadata.getFormatStr() != null)
@@ -250,9 +250,9 @@ public final class XLSXDataFormatter extends XLSFormatter {
 
 				cellStyle.setFont(boldFont);
 
-				for (int i = 0; i < metadata.getNumFields(); i++) {
+				for (int i = 0; i < includedFieldIndices.length; i++) {
 					Cell newCell = row.createCell(firstColumn + i);
-					newCell.setCellValue(metadata.getField(i).getName());
+					newCell.setCellValue(metadata.getField(includedFieldIndices[i]).getName());
 					newCell.setCellStyle(cellStyle);
 				}
 
@@ -304,8 +304,8 @@ public final class XLSXDataFormatter extends XLSFormatter {
 
 		Row newRow = sheet.createRow(currentRowIndex);
 
-		for (int i = 0; i < metadata.getNumFields(); i++) {
-			Object fieldValue = dataRecord.getField(i).getValue();
+		for (int i = 0; i < includedFieldIndices.length; i++) {
+			Object fieldValue = dataRecord.getField(includedFieldIndices[i]).getValue();
 
 			if (fieldValue == null) {
 				continue;
@@ -314,7 +314,7 @@ public final class XLSXDataFormatter extends XLSFormatter {
 			Cell newCell = newRow.createCell(firstColumn + i);
 			newCell.setCellStyle(cellStyles[i]);
 
-			switch (metadata.getField(i).getType()) {
+			switch (metadata.getField(includedFieldIndices[i]).getType()) {
 				case DataFieldMetadata.BYTE_FIELD:
 				case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
 				case DataFieldMetadata.STRING_FIELD:
@@ -359,7 +359,7 @@ public final class XLSXDataFormatter extends XLSFormatter {
 		if (workbook != null) {
 			if (metadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
 				for (SheetData aSheetData : sheetData.values()) {
-					for (int i = 0; i < metadata.getNumFields(); i++) {
+					for (int i = 0; i < includedFieldIndices.length; i++) {
 						aSheetData.sheet.autoSizeColumn(firstColumn + i);
 					}
 				}

@@ -73,26 +73,13 @@ public class RecordTransformCommonTL {
         return ((result != null) ? result.toString() : null);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordTransform#signal()
-	 * In this implementation does nothing.
-	 */
 	public void signal(Object signalObject){
-		
 	}
-	
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordTransform#getSemiResult()
-	 */
+
 	public Object getSemiResult(){
 		return semiResult;
 	}
 	
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordTransform#finished()
-	 */
 	public void finished(){
         // execute finished transformFunction
 		semiResult = null;
@@ -102,25 +89,15 @@ public class RecordTransformCommonTL {
 			//do nothing: function finished is not necessary
 		}
 	}
-	
-    /* (non-Javadoc)
-     * @see org.jetel.component.RecordTransform#setGraph(org.jetel.graph.TransformationGraph)
-     */
+
     public void setGraph(TransformationGraph graph) {
         this.graph = graph;
     }
 
-    /* (non-Javadoc)
-     * @see org.jetel.component.RecordTransform#getGraph()
-     */
     public TransformationGraph getGraph() {
         return graph;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.jetel.component.RecordTransform#reset()
-     */
 	public void reset() {
         // execute reset transformFunction
 		semiResult = null;

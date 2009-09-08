@@ -27,10 +27,11 @@ import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * <p>Represents an interface of a rollup transform which processes groups of data records. Each group of data records
- * may share a data record referred to as a group "accumulator". This group "accumulator" is created an initialized
- * when the first data record of a group is encountered and updated for each data record in this group (including the
- * first and the last data record). When the last data record of a group is encountered, processing of this group
- * is finished and the group "accumulator" is disposed.</p>
+ * may share a data record referred to as a group "accumulator". It may be used to store intermediate results. The group
+ * "accumulator" is created an initialized when the first data record of a group is encountered and updated for each
+ * data record in this group (including the first and the last data record). When the last data record of a group is
+ * encountered, processing of this group is finished and the group "accumulator" is disposed. If the input data records
+ * are not sorted, each group is finished as soon as all input data records are read and processed.</p>
  * <p>The life cycle of a rollup transform is as follows:</p>
  * <ul>
  *   <li>The {@link #init(Properties, DataRecordMetadata, DataRecordMetadata, DataRecordMetadata[])} method is called
@@ -47,26 +48,28 @@ import org.jetel.metadata.DataRecordMetadata;
  *       <li>The {@link #updateGroup(DataRecord, DataRecord)} method is called for the current data record and
  *       the corresponding group "accumulator" (if it was requested).</li>
  *       <li>If the method returned <code>true</code>, the {@link #updateTransform(int, DataRecord, DataRecord, DataRecord[])}
- *       method is called repeatedly to generate output data record(s) until it returns RecordRollup.SKIP.</li>
+ *       method is called repeatedly to generate output data record(s) until it returns RecordRollup.SKIP. If it returns
+ *       value < RecordRollup.SKIP, the {@link #getMessage()} method is called.</li>
  *       <li>If the current data record is the last one in its group:
  *         <ul>
  *           <li>The {@link #finishGroup(DataRecord, DataRecord)} method is called to finish the group processing.</li>
  *           <li>If the method returned <code>true</code>, the {@link #transform(int, DataRecord, DataRecord, DataRecord[])}
- *           method is called repeatedly to generate output data record(s) until it returns RecordRollup.SKIP.</li>
+ *           method is called repeatedly to generate output data record(s) until it returns RecordRollup.SKIP. If it
+ *           returns value < RecordRollup.SKIP, the {@link #getMessage()} method is called.</li>
  *           <li>If the group "accumulator" was requested, its contents is disposed.</li>
  *         </ul>
  *       </li>
  *     </ul>
  *   </li>
- *   <li>The {@link #reset()} method may optionally be called to reset the transformation and the previous step
- *   can be executed again.</li>
- *   <li>The {@link #free()} method is called to free any allocated resources.</li>
+ *   <li>The {@link #finished()} method is called to notify that the rollup transform finished.</li>
+ *   <li>The {@link #reset()} method may optionally be called to reset the transformation and so that the previous
+ *   two steps may be executed again.</li>
  * </ul>
  *
  * @author Martin Zatopek, Javlin a.s. &lt;martin.zatopek@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 5th May 2009
+ * @version 30th July 2009
  * @since 24th February 2009
  */
 public interface RecordRollup {
@@ -77,8 +80,8 @@ public interface RecordRollup {
     public static final int SKIP = -1;
 
     /**
-     * Initializes the rollup transformation. This method is called once at the beginning of the life-cycle of the
-     * rollup transformation. Any internal allocation/initialization code should be placed here.
+     * Initializes the rollup transform. This method is called once at the beginning of the life-cycle of the rollup
+     * transform. Any internal allocation/initialization code should be placed here.
      *
      * @param parameters global graph parameters and parameters defined for the component which calls this transformation
      * @param inputMetadata metadata of input data records
@@ -138,7 +141,7 @@ public interface RecordRollup {
      * This method is called whenever the {@link #updateGroup(DataRecord, DataRecord)} method returns true.
      *
      * @param counter the number of previous calls to this method for the current group update
-     * @param inputRecord any input data record from the current group
+     * @param inputRecord the current input data record
      * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
      * was requested
      * @param outputRecords output data records to be filled with data
@@ -175,17 +178,24 @@ public interface RecordRollup {
             throws TransformException;
 
     /**
-     * Resets the rollup transformation to the initial state (for another execution). This method can be called only
+     * This method is called if the {@link #updateTransform(int, DataRecord, DataRecord, DataRecord[])} or
+     * {@link #transform(int, DataRecord, DataRecord, DataRecord[])} method returns value < RecordRollup.SKIP.
+     *
+     * @return a user-defined error message when an error occurs
+     */
+    public String getMessage();
+
+    /**
+     * Called at the end of the rollup transform after all input data records were processed.
+     */
+    public void finished();
+
+    /**
+     * Resets the rollup transform to the initial state (for another execution). This method can be called only
      * if the {@link #init(Properties, DataRecordMetadata, DataRecordMetadata)} method has already been called.
      *
      * @throws ComponentNotReadyException if an error occurred during the reset
      */
     public void reset() throws ComponentNotReadyException;
-
-    /**
-     * Frees any resources allocated in the {@link #init(Properties, DataRecordMetadata, DataRecordMetadata)} method.
-     * If the rollup transformation is not initialized, a call to this method has no effect.
-     */
-    public void free();
 
 }

@@ -314,8 +314,6 @@ public class MathLib extends TLFunctionLibrary {
     // RANDOM
     class RandomFunction extends TLFunctionPrototype {
     	
-    	private DataGenerator dataGenerator = new DataGenerator();
-
         public RandomFunction() {
             super("math", "random", "Random number (>=0, <1)", new TLValueType[] { TLValueType.LONG }, TLValueType.NUMBER, 1, 0);
         }
@@ -323,6 +321,8 @@ public class MathLib extends TLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
         	RandomContext retVal=(RandomContext)context.getContext();
+        	DataGenerator dataGenerator = retVal.getDataGenerator();
+
         	if (params.length == 1) {
             	if (params[0].type != TLValueType.LONG && params[0].type != TLValueType.INTEGER) {
     	            throw new TransformLangExecutorRuntimeException(params, "random - wrong type of the third literal");
@@ -351,8 +351,6 @@ public class MathLib extends TLFunctionLibrary {
     // RANDOM Gaussian
     class RandomGaussianFunction extends TLFunctionPrototype {
 
-    	private DataGenerator dataGenerator = new DataGenerator();
-
     	public RandomGaussianFunction() {
             super("math", "random_gaussian", "Random Gaussian number", new TLValueType[] { TLValueType.LONG }, TLValueType.NUMBER, 1, 0);
         }
@@ -360,23 +358,25 @@ public class MathLib extends TLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
         	RandomContext retVal=(RandomContext)context.getContext();
-            	if (params.length == 1) {
-                	if (params[0].type != TLValueType.LONG && params[0].type != TLValueType.INTEGER) {
-        	            throw new TransformLangExecutorRuntimeException(params, "random_gaussian - wrong type of the third literal");
-                	}
-            		if (retVal.randomSeed != params[0].getNumeric().getLong()) {
-            			retVal.randomSeed = params[0].getNumeric().getLong();
-            			dataGenerator.setSeed(retVal.randomSeed);
-            		}
+        	DataGenerator dataGenerator = retVal.getDataGenerator();
+        	
+        	if (params.length == 1) {
+            	if (params[0].type != TLValueType.LONG && params[0].type != TLValueType.INTEGER) {
+    	            throw new TransformLangExecutorRuntimeException(params, "random_gaussian - wrong type of the third literal");
             	}
-                try {
-                    retVal.setValue(dataGenerator.nextGaussian());
-                } catch (Exception ex) {
-                    throw new TransformLangExecutorRuntimeException(
-                            "Error when executing RANDOM Gaussian function", ex);
-                }
-                
-                return retVal.value;
+        		if (retVal.randomSeed != params[0].getNumeric().getLong()) {
+        			retVal.randomSeed = params[0].getNumeric().getLong();
+        			dataGenerator.setSeed(retVal.randomSeed);
+        		}
+        	}
+            try {
+                retVal.setValue(dataGenerator.nextGaussian());
+            } catch (Exception ex) {
+                throw new TransformLangExecutorRuntimeException(
+                        "Error when executing RANDOM Gaussian function", ex);
+            }
+            
+            return retVal.value;
         }
         
         @Override
@@ -388,32 +388,35 @@ public class MathLib extends TLFunctionLibrary {
     // RANDOM Boolean
     class RandomBooleanFunction extends TLFunctionPrototype {
 
-    	private DataGenerator dataGenerator = new DataGenerator();
-    	private long randomSeed = Integer.MIN_VALUE;
-
     	public RandomBooleanFunction() {
             super("math", "random_boolean", "Random boolean", new TLValueType[] { TLValueType.LONG }, TLValueType.BOOLEAN, 1, 0);
         }
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
+        	RandomContext retVal=(RandomContext)context.getContext();
+        	DataGenerator dataGenerator = retVal.getDataGenerator();
+
         	if (params.length == 1) {
             	if (params[0].type != TLValueType.LONG && params[0].type != TLValueType.INTEGER) {
     	            throw new TransformLangExecutorRuntimeException(params, "random_boolean - wrong type of the third literal");
             	}
-        		if (randomSeed != params[0].getNumeric().getLong()) {
-        			randomSeed = params[0].getNumeric().getLong();
-        			dataGenerator.setSeed(randomSeed);
+        		if (retVal.randomSeed != params[0].getNumeric().getLong()) {
+        			retVal.randomSeed = params[0].getNumeric().getLong();
+        			dataGenerator.setSeed(retVal.randomSeed);
         		}
         	}
         	return dataGenerator.nextBoolean() ? TLBooleanValue.TRUE : TLBooleanValue.FALSE;
+        }
+        
+        @Override
+        public TLContext createContext() {
+            return RandomContext.createBooleanContext();
         }
     }
     
     // RANDOM_INT
     class RandomIntFunction extends TLFunctionPrototype {
-    	
-    	private DataGenerator dataGenerator = new DataGenerator();
     	
         public RandomIntFunction() {
             super("math", "random_int", "Random integer", 
@@ -423,6 +426,7 @@ public class MathLib extends TLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
         	RandomContext val = (RandomContext)context.getContext();
+        	DataGenerator dataGenerator = val.getDataGenerator();
             
             // random_int()
             if (params.length == 0) {
@@ -490,8 +494,6 @@ public class MathLib extends TLFunctionLibrary {
     // RANDOM_LONG
     class RandomLongFunction extends TLFunctionPrototype {
     	
-    	private DataGenerator dataGenerator = new DataGenerator();
-    	
         public RandomLongFunction() {
             super("math", "random_long", "Random long", 
             		new TLValueType[] { TLValueType.LONG, TLValueType.LONG, TLValueType.LONG }, TLValueType.LONG, 3, 0);
@@ -500,7 +502,8 @@ public class MathLib extends TLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
         	RandomContext val = (RandomContext)context.getContext();
-            
+        	DataGenerator dataGenerator = val.getDataGenerator();
+
             // random_long()
             if (params.length == 0) {
                 try {
@@ -828,6 +831,9 @@ public class MathLib extends TLFunctionLibrary {
      * Context for random values. 
      */
 	private static class RandomContext {
+		
+    	private DataGenerator dataGenerator = new DataGenerator();
+		
 		// random seed
 		private long randomSeed = Long.MIN_VALUE;
 
@@ -847,6 +853,10 @@ public class MathLib extends TLFunctionLibrary {
 			value.setValue(Long.valueOf(nextLong));
 		}
 
+		public DataGenerator getDataGenerator() {
+			return dataGenerator;
+		}
+		
 	    public static TLContext createDoubleContext() {
 	    	RandomContext con = new RandomContext();
 	    	con.value = TLValue.create(TLValueType.NUMBER);
@@ -874,6 +884,14 @@ public class MathLib extends TLFunctionLibrary {
 	        return context;        	
 	    }
 
+		public static TLContext<RandomContext> createBooleanContext() {
+	    	RandomContext con = new RandomContext();
+	    	con.value = TLValue.create(TLValueType.BOOLEAN);
+	    	
+	        TLContext<RandomContext> context=new TLContext<RandomContext>();
+	        context.setContext(con);
+	        return context;
+		}
 	}
 	
 }

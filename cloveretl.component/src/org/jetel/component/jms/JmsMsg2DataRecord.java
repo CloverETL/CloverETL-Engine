@@ -26,6 +26,7 @@ import javax.jms.Message;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -69,6 +70,15 @@ public interface JmsMsg2DataRecord {
 	 */
 	public String getErrorMsg();
 
+    /**
+     * Method which passes graph instance into processor implementation. 
+     * It's called just before {@link #init(DataRecordMetadata, Properties)} 
+     * @param graph
+     */
+    public void setGraph(TransformationGraph graph);
+	
+    public TransformationGraph getGraph();
+	
 	/**
 	 * Reset processor for next graph execution. 
 	 */

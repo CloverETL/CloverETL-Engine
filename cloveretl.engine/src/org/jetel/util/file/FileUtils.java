@@ -55,6 +55,7 @@ import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.MultiOutFile;
+import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.protocols.ftp.FTPStreamHandler;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
@@ -92,6 +93,7 @@ public class FileUtils {
 
 	// file protocol name
 	private static final String FILE_PROTOCOL = "file";
+	private static final String FILE_PROTOCOL_ABSOLUTE_MARK = "file:./";
 	
 	private static final Log log = LogFactory.getLog(FileUtils.class);
 	
@@ -114,6 +116,11 @@ public class FileUtils {
      * @throws MalformedURLException  
      */
     public static URL getFileURL(URL contextURL, String fileURL) throws MalformedURLException {
+    	// remove mark for absolute path
+    	if (contextURL != null && fileURL.startsWith(FILE_PROTOCOL_ABSOLUTE_MARK)) {
+    		fileURL = fileURL.substring((FILE_PROTOCOL+":").length());
+    	}
+    	
     	// standard url
         try {
             return new URL(contextURL, fileURL);
@@ -254,7 +261,8 @@ public class FileUtils {
 			// get and set proxy and go to inner source
 			Proxy proxy = getProxy(innerSource);
 			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
-			innerStream = proxy == null ? getInputStream(null, innerSource) : getAuthorizedProxyConnection(getFileURL(contextURL, input), proxy).getInputStream();
+			innerStream = proxy == null ? getInputStream(contextURL, innerSource) 
+					: getAuthorizedProxyConnection(getFileURL(contextURL, input), proxy).getInputStream();
 		}
 		
 		// get archive type
@@ -525,7 +533,7 @@ public class FileUtils {
      * @param fileURL
      * @return
      */
-    private static Proxy getProxy(String fileURL) {
+    public static Proxy getProxy(String fileURL) {
     	// create an url
     	URL url;
     	try {
@@ -591,7 +599,7 @@ public class FileUtils {
 		
 		// std input (console)
 		if (input.equals(STD_SOURCE)) {
-			return System.out;
+			return Channels.newOutputStream(new SystemOutByteChannel());
 		}
 		
 		// get inner source
@@ -696,7 +704,12 @@ public class FileUtils {
 			if(filename.startsWith("dict:")) return true;
 			url = getFileURL(contextURL, filename);
             if(!url.getProtocol().equalsIgnoreCase("file")) return true;
-			file = new File(url.getPath());
+            
+            // if the url is a path, make a fake file
+            String sUrl = url.getPath();
+            boolean isFile = !sUrl.endsWith("/") && !sUrl.endsWith("\\");
+            if (!isFile) sUrl =  sUrl + "tmpfile" + Math.abs(sUrl.hashCode());
+			file = new File(sUrl);
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e + ": " + fileURL);
 		}

@@ -49,9 +49,9 @@ import org.jetel.metadata.DataRecordMetadata;
 public class ASTBuilder extends NavigatingVisitor {
 
 	/** Metadata for component's input ports */
-	private final DataRecordMetadata[] inputMetadata;
+	private final DataRecordMetadata[] inputMetadata; // may be null
 	/** Metadata for component's output ports */
-	private final DataRecordMetadata[] outputMetadata;
+	private final DataRecordMetadata[] outputMetadata; // may be null
 	/** Name -> position mapping for input ports */
 	private final TreeMap<String, Integer> inputRecordsMap;
 	/** Name -> position mapping for output ports */
@@ -63,12 +63,14 @@ public class ASTBuilder extends NavigatingVisitor {
 	/** Name/ID -> lookup mapping for sequences */
 	private final TreeMap<String, Sequence> sequenceMap;
 	/** Current transformation graph */
-	private final TransformationGraph graph;
+	private final TransformationGraph graph; // may be null
 	/** Function declarations */
 	private final Map<String, List<CLVFFunctionDeclaration>> declaredFunctions;
 	/** Problem collector */
 	private ProblemReporter problemReporter;
 
+	
+	
 	public ASTBuilder(TransformationGraph graph, DataRecordMetadata[] inputMetadata,
 			DataRecordMetadata[] outputMetadata, Map<String, List<CLVFFunctionDeclaration>> declaredFunctions, ProblemReporter problemReporter) {
 		super();
@@ -146,10 +148,6 @@ public class ASTBuilder extends NavigatingVisitor {
 	 *            AST to resolve
 	 */
 	public void resolveAST(CLVFStart tree) {
-		if (!checkGraph()) {
-			return;
-		}
-		
 		visit(tree, null);
 		checkLocalFunctionsDuplicities();
 	}
@@ -159,9 +157,6 @@ public class ASTBuilder extends NavigatingVisitor {
 	 * @param tree
 	 */
 	public void resolveAST(CLVFStartExpression tree) {
-		if (!checkGraph()) {
-			return;
-		}
 		visit(tree,null);
 	}
 
@@ -661,6 +656,7 @@ public class ASTBuilder extends NavigatingVisitor {
 		return true;
 	}
 	
+	/* Not used now, as compiler can run in standalone (GUI,PropertyRefResolver) mode, where no graph is available */
 	private boolean checkGraph() {
 		if (this.graph == null) {
 			problemReporter.error(1, 1, 1, 1, "Performing only syntactic validation because graph configuration is invalid.", 

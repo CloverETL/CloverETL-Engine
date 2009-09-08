@@ -10,14 +10,10 @@ Creek;Jewel;Mon Oct 18 1971;F;Clare;Janine;Mon Feb 02 1914;M;0.19999999999999996
 Creek;Jewel;Mon Oct 18 1971;F;Clark;Mike;Mon Feb 02 1914;F;0.4;0.0;0.08000000000000002
 Creek;Jewel;Mon Oct 18 1971;F;Case;Stacey;Mon Feb 02 1914;F;0.4;0.0;0.08000000000000002
 Creek;Jewel;Mon Oct 18 1971;F;Coy;Hazel;Mon Feb 02 1914;M;0.19999999999999996;0.25;0.24
-Creek;Jewel;Mon Oct 18 1971;F;;cwyl;;;0.19999999999999996;0.25;0.24
-Creek;Jewel;Mon Oct 18 1971;F;;cfir;;;0.19999999999999996;0.0;0.039999999999999994
-Creek;Jewel;Mon Oct 18 1971;F;;cwak;;;0.19999999999999996;0.0;0.039999999999999994
 Damstra;Robert;Thu Oct 08 1942;F;Damstra;Roberta;Thu Oct 08 1942;F;1.0;0.75;0.8
 Kanagaki;Rebecca;Sun Mar 27 1949;F;King;Chris;Mon Feb 02 1914;M;0.0;0.0;0.0
 Murraiin;Jonathan;Tue Jun 20 1967;M;Martensen;Lillian;Mon Feb 02 1914;F;0.0;0.0;0.0
 Murraiin;Jonathan;Tue Jun 20 1967;M;Mondragon;William;Mon Feb 02 1914;M;0.0;0.0;0.0
-Nowmer;Sheri;Sat Aug 26 1961;F;;ndzs;;;0.19999999999999996;0.0;0.039999999999999994
 Spence;Michael;Fri Jun 20 1969;M;Sanders;Daniel;Mon Feb 02 1914;M;0.19999999999999996;0.0;0.039999999999999994
 Spence;Michael;Fri Jun 20 1969;M;Schimanski;Arlene;Mon Feb 02 1914;M;0.19999999999999996;0.0;0.039999999999999994
 Stanz;Darren;Fri Aug 26 1949;M;Strain;Ramon;Mon Feb 02 1914;M;0.4;0.0;0.08000000000000002

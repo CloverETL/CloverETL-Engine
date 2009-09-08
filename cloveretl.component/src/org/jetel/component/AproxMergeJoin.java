@@ -648,9 +648,9 @@ public class AproxMergeJoin extends Node {
             //Wait for eof on slave
         }
 
-		// signal end of records stream to transformation function
 		transformation.finished();
 		transformationForSuspicious.finished();
+
 		if (errorLog != null){
 			errorLog.flush();
 			errorLog.close();
@@ -1127,8 +1127,8 @@ public class AproxMergeJoin extends Node {
         
         return status;
     }
-	
-	public String getType(){
+
+    public String getType(){
 		return COMPONENT_TYPE;
 	}
 

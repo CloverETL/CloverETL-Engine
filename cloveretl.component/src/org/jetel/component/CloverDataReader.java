@@ -157,7 +157,7 @@ public class CloverDataReader extends Node {
 			        if(numRecords == recordCount) {
 						break;
 			        }
-			        autoFilling.setAutoFillingFields(rec);
+			        autoFilling.setLastUsedAutoFillingFields(rec);
 				    writeRecordBroadcast(rec);
 					SynchronizeUtils.cloverYield();
 				    recordCount++;

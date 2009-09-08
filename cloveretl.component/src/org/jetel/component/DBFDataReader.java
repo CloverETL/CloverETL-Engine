@@ -41,6 +41,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertyRefResolver;
 import org.w3c.dom.Element;
 
 /**
@@ -264,6 +265,7 @@ public class DBFDataReader extends Node {
         reader.setIncrementalKey(incrementalKey);
         reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
         reader.setCharset(charset);
+        reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
         reader.setDictionary(graph.getDictionary());
 		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}

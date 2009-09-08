@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu May 07 09:41:13 CEST 2009" guiVersion="0.0.0.devel" id="1241683270406" licenseType="Evaluation license." modified="Thu Jun 04 10:18:48 CEST 2009" modifiedBy="cloveruser" name="runAllGraphs" revision="1.31">
+<Graph author="avackova" created="Thu May 07 09:41:13 CEST 2009" guiVersion="0.0.0.devel" id="1241683270406" licenseType="Evaluation" modified="Wed Sep 02 10:50:30 CEST 2009" modifiedBy="avackova" name="runAllGraphs" revision="1.40">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="graph" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
-<Field auto_filling="source_name" name="graphName" type="string"/>
+<Field name="graphName" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata1">
@@ -15,16 +15,15 @@
 <Field delimiter="\n" name="duration" nullable="true" type="decimal"/>
 </Record>
 </Metadata>
-<Property id="GraphParameter0" name="PLUGINS_DIR" value="../../.. "/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
-<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="178" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Running all graphs at once" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="475" x="58" y="122">
-<attr name="text"><![CDATA[This graph runs all the graphs from this project. For proper execution you have  to set PLUGINS_DIR parameter to correct value. 
-Data Reader finds files in graph directory, which names starts with A (our tutorial graphs), fullfils the output metadata field with this name and sends such created graphs to RunGraph component. Then each graph is executed and the result is sent to Trash. Graphs execution log and results are saved in data-out directory (runAllGraps.log and allGraphs.txt respectively). ]]></attr>
+<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="86" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Running all requested graphs at once" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="484" x="58" y="122">
+<attr name="text"><![CDATA[This graph runs all the graphs that are listed in ${DATAIN_DIR}/example_etl_process.txt. 
+Data Reader reads names of graphs to execute and sends them to RunGraph component. Then each graph is executed and the result is sent to Trash. Graphs execution log and results are saved in ${DATAOUT_DIR} directory (runAllGraps.log and allGraphs.txt respectively). ]]></attr>
 </Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${GRAPH_DIR}/A*.grf" guiHeight="0" guiName="Read graphs" guiWidth="0" guiX="59" guiY="34" id="DATA_READER0" numSourceRecords="1" type="DATA_READER"/>
-<Node alternativeJavaCmdLine="java -Xmx1g -cp" cloverCmdLineArgs="-plugins ${PLUGINS_DIR}" enabled="enabled" guiHeight="0" guiName="RunGraph" guiWidth="0" guiX="287" guiY="34" id="RUN_GRAPH0" ignoreGraphFail="true" logAppend="false" logFile="${DATAOUT_DIR}/runAllGraps.log" sameInstance="false" type="RUN_GRAPH"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/example_etl_process.txt" guiHeight="0" guiName="Read graphs" guiWidth="0" guiX="59" guiY="34" id="DATA_READER0" type="DATA_READER"/>
+<Node alternativeJavaCmdLine="java -Xmx1g -cp" enabled="enabled" guiHeight="0" guiName="RunGraph" guiWidth="0" guiX="287" guiY="34" id="RUN_GRAPH0" ignoreGraphFail="true" logAppend="false" logFile="${DATAOUT_DIR}/runAllGraps.log" sameInstance="false" type="RUN_GRAPH"/>
 <Node debugFilename="${DATAOUT_DIR}/allGraphs.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="546" guiY="34" id="TRASH0" type="TRASH"/>
 <Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in regular mode: names of the graphs to be executed, otherwise nothing)" metadata="Metadata0" outPort="Port 0 (output)" toNode="RUN_GRAPH0:0"/>
 <Edge debugMode="true" fromNode="RUN_GRAPH0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="TRASH0:0"/>

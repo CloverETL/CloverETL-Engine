@@ -33,10 +33,13 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.SystemOutByteChannel;
@@ -110,7 +113,7 @@ import org.w3c.dom.Element;
  * @author Agata Vackova, Javlin a.s. &lt;agata.vackova@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 31st January 2009
+ * @version 17th July 2009
  * @since 10th October 2006
  */
 public class XLSWriter extends Node {
@@ -135,6 +138,7 @@ public class XLSWriter extends Node {
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
+    private static final String XML_EXCLUDE_FIELDS_ATTRIBUTE = "excludeFields";
 
 	private static final int READ_FROM_PORT = 0;
 	private static final int OUTPUT_PORT = 0;
@@ -193,6 +197,10 @@ public class XLSWriter extends Node {
 				xlsWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
             }
 
+            if(xattribs.exists(XML_EXCLUDE_FIELDS_ATTRIBUTE)) {
+                xlsWriter.setExcludeFields(xattribs.getString(XML_EXCLUDE_FIELDS_ATTRIBUTE));
+            }
+
             return xlsWriter;
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -218,6 +226,8 @@ public class XLSWriter extends Node {
     private int recordsPerFile;
 
 	private boolean mkDir;
+
+    private String excludeFields;
 
     /**
      * Constructor
@@ -394,6 +404,10 @@ public class XLSWriter extends Node {
     	this.partitionUnassignedFileName = partitionUnassignedFileName;
 	}
 
+    private void setExcludeFields(String excludeFields) {
+        this.excludeFields = excludeFields;
+    }
+
     public void toXML(org.w3c.dom.Element xmlElement) {
         super.toXML(xmlElement);
 
@@ -436,6 +450,10 @@ public class XLSWriter extends Node {
         }
 
         xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
+
+        if (!StringUtils.isEmpty(excludeFields)) {
+            xmlElement.setAttribute(XML_EXCLUDE_FIELDS_ATTRIBUTE, excludeFields);
+        }
     }
 
 	@Override
@@ -459,6 +477,24 @@ public class XLSWriter extends Node {
             status.add(problem);
         }
 
+        if (!StringUtils.isEmpty(excludeFields)) {
+            DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
+            int[] includedFieldIndices = null;
+
+            try {
+                includedFieldIndices = metadata.fieldsIndicesComplement(
+                        excludeFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+
+                if (includedFieldIndices.length == 0) {
+                    status.add(new ConfigurationProblem("All data fields excluded!", Severity.ERROR, this,
+                            Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
+                }
+            } catch (IllegalArgumentException exception) {
+                status.add(new ConfigurationProblem(exception.getMessage(), Severity.ERROR, this,
+                        Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
+            }
+        }
+
         return status;
     }
 
@@ -480,6 +516,10 @@ public class XLSWriter extends Node {
             if (!lookupTable.isInitialized()) {
                 lookupTable.init();
             }
+        }
+
+        if (!StringUtils.isEmpty(excludeFields)) {
+            formatterProvider.setExcludedFieldNames(excludeFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
         }
 
         if (fileURL != null) {

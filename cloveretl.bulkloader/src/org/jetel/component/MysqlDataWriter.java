@@ -163,6 +163,10 @@ import org.w3c.dom.Element;
  * <td>The password to use when connecting to the server.</td>
  * </tr>
  * <tr>
+ * <td>lockTable</td>
+ * <td>A flag specifying whether to lock the table in order to ensure exclusive access and possibly faster loading.</td>
+ * </tr>
+ * <tr>
  * <td>ignoreRows</td>
  * <td>Ignore the first N lines of the data file.</td>
  * </tr>
@@ -243,6 +247,18 @@ import org.w3c.dom.Element;
  * </table>
  * <b><i>Parameters for LOAD DATA INFILE statement</i></b><br>
  * <table>
+ * <tr>
+ * <td>uniqueChecks</td>
+ * <td>Used to set the unique_checks session variable before the LOAD DATA INFILE statement is executed. If set to 0 (default is 1), it may speed up the execution.</td>
+ * </tr>
+ * <tr>
+ * <td>foreignKeyChecks</td>
+ * <td>Used to set foreign_key_checks session variable before the LOAD DATA INFILE statement is executed. If set to 0 (default is 1), it may speed up the execution.</td>
+ * </tr>
+ * <tr>
+ * <td>sqlLogBin</td>
+ * <td>Used to set the sql_log_bin session variable before the LOAD DATA INFILE statement is executed. If set to 0 (default is 1), it may speed up the execution.</td>
+ * </tr>
  * <tr>
  * <td>local</td>
  * <td>Read input files locally from the client host.<br>
@@ -353,6 +369,7 @@ public class MysqlDataWriter extends BulkLoader {
 	private static final String XML_MYSQL_PATH_ATTRIBUTE = "mysqlPath";
 	private static final String XML_HOST_ATTRIBUTE = "host";
 	private static final String XML_COMMAND_URL_ATTRIBUTE = "commandURL";
+	private static final String XML_LOCK_TABLE_ATTRIBUTE = "lockTable";
 	private static final String XML_IGNORE_ROWS_ATTRIBUTE = "ignoreRows";
 
 	// params for mysql client
@@ -370,6 +387,11 @@ public class MysqlDataWriter extends BulkLoader {
 	private static final String MYSQL_SILENT_PARAM = "silent";
 	private static final String MYSQL_SOCKET_PARAM = "socket";
 	private static final String MYSQL_SSL_PARAM = "ssl";
+
+    // params (in fact session variables) for LOAD DATA INFILE statement
+    private static final String LOAD_UNIQUE_CHECKS_PARAM = "uniqueChecks";
+    private static final String LOAD_FOREIGN_KEY_CHECKS_PARAM = "foreignKeyChecks";
+    private static final String LOAD_SQL_LOG_BIN_PARAM = "sqlLogBin";
 
 	// params for LOAD DATA INFILE statement
 	private static final String LOAD_LOCAL_PARAM = "local";
@@ -408,6 +430,11 @@ public class MysqlDataWriter extends BulkLoader {
 	private static final String MYSQL_SOCKET_SWITCH = "socket";
 	private static final String MYSQL_SSL_SWITCH = "ssl*";
 
+    // names of session variables that affect the LOAD DATA INFILE statement
+    private static final String LOAD_UNIQUE_CHECKS_VAR = "unique_checks";
+    private static final String LOAD_FOREIGN_KEY_CHECKS_VAR = "foreign_key_checks";
+    private static final String LOAD_SQL_LOG_BIN_VAR = "sql_log_bin";
+
 	// keywords for LOAD DATA INFILE statement
 	private static final String LOAD_LOCAL_KEYWORD = "LOCAL";
 	private static final String LOAD_LOW_PRIORITY_KEYWORD = "LOW_PRIORITY";
@@ -421,7 +448,9 @@ public class MysqlDataWriter extends BulkLoader {
 	private static final String LOAD_RECORD_DELIMITER_KEYWORD = "TERMINATED BY";
 
 	public final static String COMPONENT_TYPE = "MYSQL_DATA_WRITER";
+
 	private final static String LINE_SEPARATOR = System.getProperty("line.separator");
+    private final static String COMMAND_SEPARATOR = ";" + LINE_SEPARATOR;
 	private final static String SWITCH_MARK = "--";
 
 	private final static String EXCHANGE_FILE_PREFIX = "mysqlExchange";
@@ -434,6 +463,7 @@ public class MysqlDataWriter extends BulkLoader {
 	private final static String DEFAULT_YEAR_FORMAT = "yyyy";
 
 	// variables for dbload's command
+	private boolean lockTable = false;
 	private int ignoreRows = UNUSED_INT;
 	private String commandURL;
 	private File commandFile;
@@ -568,8 +598,23 @@ public class MysqlDataWriter extends BulkLoader {
 	 * @throws ComponentNotReadyException 
 	 */
 	private String getDefaultCommandFileContent() throws ComponentNotReadyException {
-		// LOAD DATA [LOW_PRIORITY | CONCURRENT] [LOCAL] INFILE 'file_name'
 		CommandBuilder cmdBuilder = new CommandBuilder(properties, SPACE_CHAR);
+
+		// set session variables before the LOAD DATA INFILE statement is executed
+		if (properties.containsKey(LOAD_UNIQUE_CHECKS_PARAM)) {
+	        cmdBuilder.add("SET SESSION " + LOAD_UNIQUE_CHECKS_VAR + " = "
+	                + properties.getProperty(LOAD_UNIQUE_CHECKS_PARAM) + COMMAND_SEPARATOR);
+		}
+		if (properties.containsKey(LOAD_FOREIGN_KEY_CHECKS_PARAM)) {
+            cmdBuilder.add("SET SESSION " + LOAD_FOREIGN_KEY_CHECKS_VAR + " = "
+                    + properties.getProperty(LOAD_FOREIGN_KEY_CHECKS_PARAM) + COMMAND_SEPARATOR);
+		}
+		if (properties.containsKey(LOAD_SQL_LOG_BIN_PARAM)) {
+            cmdBuilder.add("SET SESSION " + LOAD_SQL_LOG_BIN_VAR + " = "
+                    + properties.getProperty(LOAD_SQL_LOG_BIN_PARAM) + COMMAND_SEPARATOR);
+		}
+
+		// LOAD DATA [LOW_PRIORITY | CONCURRENT] [LOCAL] INFILE 'file_name'
 		cmdBuilder.add("LOAD DATA");
 		cmdBuilder.addBooleanParam(LOAD_LOW_PRIORITY_PARAM, LOAD_LOW_PRIORITY_KEYWORD);
 		cmdBuilder.addBooleanParam(LOAD_CONCURRENT_PARAM, LOAD_CONCURRENT_KEYWORD);
@@ -632,12 +677,27 @@ public class MysqlDataWriter extends BulkLoader {
 		if (properties.containsKey(LOAD_COLUMNS_PARAM)) {
 			cmdBuilder.add("'" + properties.getProperty(LOAD_COLUMNS_PARAM) + "'");
 		}
-		
-		return cmdBuilder.getCommandAsString();
+
+		if (!lockTable) {
+		    return cmdBuilder.getCommandAsString();
+		}
+
+		// wrap the command(s) constructed so far between LOCK TABLES and UNLOCK TABLES commands
+		StringBuilder commandWithLock = new StringBuilder();
+		commandWithLock.append("LOCK TABLES ").append(table).append(" WRITE").append(COMMAND_SEPARATOR);
+		commandWithLock.append(cmdBuilder.getCommandAsString().trim()).append(COMMAND_SEPARATOR);
+        commandWithLock.append("UNLOCK TABLES").append(COMMAND_SEPARATOR);
+
+		return commandWithLock.toString();
 	}
 	
 	private String getDataFilePath() throws ComponentNotReadyException {
-		if (ProcBox.isWindowsPlatform()) {
+	    // if the data file is located on server, return its URL to prevent any normalization (change of slashes)
+	    if ("false".equalsIgnoreCase(properties.getProperty(LOAD_LOCAL_PARAM))) {
+	        return dataURL;
+	    }
+
+	    if (ProcBox.isWindowsPlatform()) {
 			// convert "C:\examples\xxx.dat" to "C:/examples/xxx.dat"
 			return StringUtils.backslashToSlash(getFilePath(dataFile));
 		}
@@ -648,7 +708,12 @@ public class MysqlDataWriter extends BulkLoader {
 	protected void initDataFile() throws ComponentNotReadyException {
 		// data is read directly from file -> file isn't used for exchange
     	if (isDataReadDirectlyFromFile) {
-    		dataFile = openFile(dataURL);
+            if (!fileUrlExists(dataURL)) {
+                free();
+                throw new ComponentNotReadyException(this, "Data file " + StringUtils.quote(dataURL) + " not exists.");
+            }
+
+            dataFile = getFile(dataURL);
     	} else {
     		defaultCreateFileForExchange(EXCHANGE_FILE_PREFIX);
     	}
@@ -704,11 +769,18 @@ public class MysqlDataWriter extends BulkLoader {
 					" attribute has to be specified and file at the URL must exists.");
 		}
 		
-		if (!isDataReadFromPort && !fileExists(dataURL) && !fileExists(commandURL)) {
+		if (!isDataReadFromPort && !fileUrlExists(dataURL) && !fileExists(commandURL)) {
 			throw new ComponentNotReadyException(this, "Input port or " + 
 					StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + 
 					" attribute or " + StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) +
 					" attribute have to be specified and specified file must exist.");
+		}
+
+		// If commandURL points to a file that does not exist and dataURL is empty, the component won't run correctly
+		// because it doesn't know what data file is specified in the command script
+		if (commandURL != null && !fileExists(commandURL) && StringUtils.isEmpty(dataURL)) {
+            throw new ComponentNotReadyException(this, "The " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute "
+                    + "has to be set because the " + StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) + " attribute is set!");
 		}
 
 		if (ignoreRows != UNUSED_INT && ignoreRows < 0) {
@@ -754,6 +826,16 @@ public class MysqlDataWriter extends BulkLoader {
 						+ " is ignored because it is used only when data is read directly from file.");
 			}
 		}
+	}
+
+	private boolean fileUrlExists(String fileUrl) throws ComponentNotReadyException {
+	    // If the data file is located on server, just check if its URL is not empty. Proper checking is made during
+	    // the execution of the component. If desired, it should also be placed here.
+	    if ("false".equalsIgnoreCase(properties.getProperty(LOAD_LOCAL_PARAM))) {
+	        return !StringUtils.isEmpty(fileUrl);
+	    }
+
+	    return fileExists(fileUrl);
 	}
 
 	@Override
@@ -804,6 +886,9 @@ public class MysqlDataWriter extends BulkLoader {
 			if (xattribs.exists(XML_COMMAND_URL_ATTRIBUTE)) {
 				mysqlDataWriter.setCommandURL((xattribs.getString(XML_COMMAND_URL_ATTRIBUTE)));
 			}
+			if (xattribs.exists(XML_LOCK_TABLE_ATTRIBUTE)) {
+			    mysqlDataWriter.setLockTable(xattribs.getBoolean(XML_LOCK_TABLE_ATTRIBUTE));
+			}
 			if (xattribs.exists(XML_IGNORE_ROWS_ATTRIBUTE)) {
 				mysqlDataWriter.setIgnoreRows(xattribs.getInteger(XML_IGNORE_ROWS_ATTRIBUTE));
 			}
@@ -834,6 +919,9 @@ public class MysqlDataWriter extends BulkLoader {
 		if (!StringUtils.isEmpty(commandURL)) {
 			xmlElement.setAttribute(XML_COMMAND_URL_ATTRIBUTE, commandURL);
 		}
+		if (lockTable) {
+		    xmlElement.setAttribute(XML_LOCK_TABLE_ATTRIBUTE, Boolean.toString(lockTable));
+		}
 		if (ignoreRows != UNUSED_INT) {
 			xmlElement.setAttribute(XML_IGNORE_ROWS_ATTRIBUTE, String.valueOf(ignoreRows));
 		}
@@ -844,10 +932,9 @@ public class MysqlDataWriter extends BulkLoader {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
-		if(!checkInputPorts(status, 0, 1)
-				|| !checkOutputPorts(status, 0, 1)) {
-			return status;
-		}
+		if (!checkInputPorts(status, 0, 1) || !checkOutputPorts(status, 0, 1)) {
+            return status;
+        }
 
 		try {
 			init();
@@ -869,7 +956,11 @@ public class MysqlDataWriter extends BulkLoader {
 		return COMPONENT_TYPE;
 	}
 
-	private void setIgnoreRows(int ignoreRows) {
+    public void setLockTable(boolean lockTable) {
+        this.lockTable = lockTable;
+    }
+
+    public void setIgnoreRows(int ignoreRows) {
 		this.ignoreRows = ignoreRows;
 	}
 
@@ -901,7 +992,12 @@ public class MysqlDataWriter extends BulkLoader {
 			MYSQL_SOCKET_PARAM,
 			MYSQL_SSL_PARAM,
 	
-			// params for LOAD DATA INFILE statement
+            // params (in fact session variables) for LOAD DATA INFILE statement
+            LOAD_UNIQUE_CHECKS_PARAM,
+            LOAD_FOREIGN_KEY_CHECKS_PARAM,
+            LOAD_SQL_LOG_BIN_PARAM,
+
+            // params for LOAD DATA INFILE statement
 			LOAD_LOCAL_PARAM,
 			LOAD_LOW_PRIORITY_PARAM,
 			LOAD_CONCURRENT_PARAM,

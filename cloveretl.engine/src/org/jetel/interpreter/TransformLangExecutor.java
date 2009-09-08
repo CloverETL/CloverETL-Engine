@@ -1679,6 +1679,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             node.childrenAccept(this, data);
             // convert stack content into values
             try {
+            	node.context.setGraph(this.graph);
                 TLValue returnVal = node.externalFunction.execute(stack.pop(
                         node.externalFunctionParams, node.jjtGetNumChildren()),
                         node.context);
@@ -1708,7 +1709,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             // execute function body
             // loop execution
             TLValue returnData;
-            int numChildren = executionNode.jjtGetNumChildren();
+            final int numChildren = executionNode.jjtGetNumChildren();
             for (int i = 0; i < numChildren; i++) {
                 executionNode.jjtGetChild(i).jjtAccept(this, data);
                 returnData = stack.pop(); // in case there is anything on top
@@ -1754,7 +1755,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         // execute function body
         // loop execution
         TLValue returnData;
-        int numChildren=executionNode.jjtGetNumChildren();
+        final int numChildren=executionNode.jjtGetNumChildren();
         for (int i=0;i<numChildren;i++){
             executionNode.jjtGetChild(i).jjtAccept(this,data);
             returnData=stack.pop(); // in case there is anything on top of stack
@@ -1952,22 +1953,18 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 					node.lookup.getNumFound())));
 			return data;
 		case CLVFLookupNode.OP_GET:
-			TLValue keys[] = new TLValue[node.jjtGetNumChildren()];
-			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-				node.jjtGetChild(i).jjtAccept(this, data);
-				keys[i] = stack.pop();
-			}
-			if (node.lookup == null) {
-				try {
-					node.createLookup(keys);
-				} catch (ComponentNotReadyException ex) {
-					throw new TransformLangExecutorRuntimeException(node,
-							"Error when initializing lookup table \""
-									+ node.lookupName + "\" :", ex);
-				}
-				lookups.put(node.lookupTable.getId(), node.lookup);
-			}
-			node.seek(keys);
+            node.childrenAccept(this, data);
+            if (node.lookup == null) {
+    			try {
+    				node.createLookup(stack);
+    			} catch (ComponentNotReadyException ex) {
+    				throw new TransformLangExecutorRuntimeException(node,
+    						"Error when initializing lookup table \""
+    								+ node.lookupName + "\" :", ex);
+    			}
+    			lookups.put(node.lookupTable.getId(), node.lookup);
+    		}  
+			node.seek(stack);
 			if (node.lookup.hasNext()) {
 				record = node.lookup.next();
 			}else{

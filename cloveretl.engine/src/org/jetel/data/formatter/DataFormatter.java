@@ -24,6 +24,7 @@ package org.jetel.data.formatter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
@@ -248,6 +249,9 @@ public class DataFormatter implements Formatter {
 					}
 				}
 			}
+		} catch (BufferOverflowException exception) {
+    		throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit()
+    				+ ". Set appropriate parameter in defautProperties file.", exception);
 		} catch (CharacterCodingException e) {
             throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue()
             		+ " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset()

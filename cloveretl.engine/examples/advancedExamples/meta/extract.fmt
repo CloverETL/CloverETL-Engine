@@ -5,9 +5,7 @@
 <Field name="name" type="string"/>
 <Field name="units" type="string"/>
 <Field name="value" scale="1" type="decimal"/>
-<Field name="start_valid_time" type="string"/>
-<Field name="end_valid_time" type="string"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="start_valid_time" type="date"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="end_valid_time" type="date"/>
 <Field name="moreWeatherInformation" type="string"/>
-<Field name="startDateUTC" type="date"/>
-<Field name="endDateUTC" type="date"/>
 </Record>

@@ -30,6 +30,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.WcardPattern;
+import org.jetel.util.property.PropertyRefResolver;
 
 /***
  * Supports a field reading and reading from urls.
@@ -57,6 +58,7 @@ public class ReadableChannelIterator {
 	
 	private DataField[] fields4SourceAndDiscrete;
 	private ProcessingType[] processing4SourceAndDiscreteType;
+	private PropertyRefResolver propertyRefResolve;
 	
 	private DataRecord record;
 	private int fieldIndex = Integer.MAX_VALUE;
@@ -241,6 +243,7 @@ public class ReadableChannelIterator {
 					} else {
 						// urls processing
 						currentFileName = fields4SourceAndDiscrete[fieldIndex].getValue().toString();
+						if (propertyRefResolve != null)	currentFileName = propertyRefResolve.resolveRef(currentFileName, false);
 						channel = createReadableByteChannel(currentFileName);
 					}
 					return channel;
@@ -449,7 +452,10 @@ public class ReadableChannelIterator {
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
-	
+
+	public void setPropertyRefResolver(PropertyRefResolver propertyRefResolve) {
+		this.propertyRefResolve = propertyRefResolve;
+	}
 	
 	private static abstract class ObjectValueArray implements Iterator<ReadableByteChannel> {
 		protected int counter = 0;

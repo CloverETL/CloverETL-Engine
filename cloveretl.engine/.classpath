@@ -21,7 +21,7 @@
 	<classpathentry kind="lib" path="lib/commons-net-1.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/jakarta-oro-2.0.8.jar"/>
 	<classpathentry kind="lib" path="lib/tar.jar"/>
-	<classpathentry kind="lib" path="lib/joda-time-1.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/joda-time-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/poi-3.5-beta4-20081128.jar"/>
 	<classpathentry kind="lib" path="lib/poi-ooxml-3.5-beta4-20081128.jar"/>
 	<classpathentry kind="lib" path="lib/openxml4j-1.0-beta.jar"/>

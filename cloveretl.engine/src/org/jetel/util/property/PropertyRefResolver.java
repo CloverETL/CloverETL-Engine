@@ -1,23 +1,23 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.util.property;
+
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
@@ -27,244 +27,334 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
-import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.interpreter.CTLExpressionEvaluator;
+import org.jetel.interpreter.ParseException;
 import org.jetel.util.string.StringUtils;
 
 /**
- *  Helper class for resolving references within string values to Properties.<br>
- *  The reference is expected in form: ${..property_name..} <br> If property
- *  name is found in properties, then the whole ${...} substring is replaced by the property value.
+ * Helper class for evaluation of CTL expressions and resolving of property references within string values. The CTL
+ * expressions present in a string value are evaluated first. Property references present in these CTL expressions are
+ * resolved before evaluation. Then the property references are resolved. CTL expressions present in the referenced
+ * properties are evaluated after resolving. This mechanism enables arbitrary nesting of CTL expressions and property
+ * references within the properties.
+ * <p>
+ * By default, CTL expressions have to be enclosed within back quotes, i.e. <code>`&lt;ctl_expression&gt;`</code>, and
+ * property references use the <code>${}</code> notation, i.e. <code>${property_reference}</code>. Two consecutive back
+ * quotes, i.e. <code>``</code>, produce a single back quote in the result.
+ * This behaviour might be altered by modifying the <code>Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX</code>
+ * and <code>Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX</code> configuration properties. Expression evaluation
+ * might be disabled by setting the <code>Defaults.GraphProperties.EXPRESSION_EVALUATION_ENABLED</code> configuration
+ * property to <code>false</code>.
  *
- * @author      dpavlis
- * @since       12. May 2004
- * @revision    $Revision$
- */
-/**
- * @author dpavlis
- * @since  3.8.2004
+ * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
+ * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Generation - Code and Comments
+ * @version 17th August 2009
+ * @since 12th May 2004
  */
 public class PropertyRefResolver {
-	private Matcher regexMatcher;
-    //unused private Matcher regexEscapeMatcher;
-	private Properties properties;
 
-	// unused private static final int MAX_RECURSION_DEPTH=10;
-    public static final boolean DEFAULT_RESOLVE_SPEC_CHAR = true;  // default behaviour is to resolve special characters
+	/** the character used to quote CTL expressions */
+	private static final String EXPRESSION_QUOTE = Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX.substring(0, 1);
+	/** the default value related to resolving of special characters within string values */
+	public static final boolean DEFAULT_RESOLVE_SPEC_CHAR = true;
 
-	Log logger = LogFactory.getLog(PropertyRefResolver.class);
-	
-	private boolean resolve=true; //default behaviour is to resolve references
-    
-	
-	public PropertyRefResolver(){
-		Pattern pattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
-		regexMatcher = pattern.matcher("");
-       // Pattern pattern2 = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_ESCAPE_REGEX);
-       // regexEscapeMatcher = pattern2.matcher("");
-		properties = new Properties();
-	}
-	
-	/**Constructor for the PropertyRefResolver object */
-	public PropertyRefResolver(TransformationGraph graph) {
-		this();
-		if (graph != null) {
-			properties = graph.getGraphProperties();
-		}
-	}
+	/** the logger for this class */
+	private static final Log logger = LogFactory.getLog(PropertyRefResolver.class);
 
+	/** properties used for resolving property references */
+	private final Properties properties;
+
+	/** the regex pattern used to find CTL expressions */
+	private final Pattern expressionPattern = Pattern.compile(Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX);
+	/** the regex pattern used to find property references */
+	private final Pattern propertyPattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
+
+	/** the CTL expression evaluator used to evaluate CTL expressions */
+	private final CTLExpressionEvaluator expressionEvaluator = new CTLExpressionEvaluator();
+
+	/** the flag specifying whether the CTL expressions should be evaluated and the property references resolved */
+	private boolean resolve = true;
 
 	/**
-	 *Constructor for the PropertyRefResolver object
+	 * Constructs a <code>PropertyRefResolver</code> with empty properties. By default, the CTL expressions will
+	 * be evaluated and the property references will be resolved. This may be changed by setting the resolve flag
+	 * to <code>false</code>.
+	 */
+	public PropertyRefResolver() {
+		this.properties = new Properties();
+	}
+
+	/**
+	 * Constructs a <code>PropertyRefResolver</code> for the given properties. By default, the CTL expressions will
+	 * be evaluated and the property references will be resolved. This may be changed by setting the resolve flag
+	 * to <code>false</code>.
 	 *
-	 * @param  properties  Description of the Parameter
+	 * @param properties properties to be used for resolving references
 	 */
 	public PropertyRefResolver(Properties properties) {
-		this();
-		if (properties != null) {
-			this.properties = properties;
-		}
+		this.properties = (properties != null) ? properties : new Properties();
 	}
 
+	/**
+	 * Constructs a <code>PropertyRefResolver</code> for properties of the given graph. By default, the CTL expressions
+	 * will be evaluated and the property references will be resolved. This may be changed by setting the resolve flag
+	 * to <code>false</code>.
+	 *
+	 * @param graph a graph with properties to be used for resolving references
+	 */
+	public PropertyRefResolver(TransformationGraph graph) {
+		this.properties = (graph != null) ? graph.getGraphProperties() : new Properties();
+	}
+	
+	/**
+	 * @return properties used for resolving property references
+	 */
+	public Properties getProperties() {
+		return properties;
+	}
 
 	/**
-	 * Add all properties (key=value pairs) to existing/internal set
-     * of properties
+	 * Adds the given properties (key=value pairs) to the internal set of properties.
 	 *
-	 * @param  properties  Properties set to be added
+	 * @param properties properties to be added
 	 */
 	public void addProperties(Properties properties) {
 		this.properties.putAll(properties);
 	}
-    
-    /**
-     * Add all key=value pairs to existing/internal set
-     * of properties
-     * 
-     * @param properties Map with properties definitions
-     */
-    public void addProperties(Map properties){
-        this.properties.putAll(properties);
-        
-    }
 
-    public Properties getProperties() {
-    	return properties;
+    /**
+	 * Adds the given map of properties (key=value pairs) to the internal set of properties.
+	 *
+	 * @param properties a map of properties to be added
+     */
+    public void addProperties(Map<Object, Object> properties){
+        this.properties.putAll(properties);
     }
 
 	/**
-	 *  Looks for reference to global graph properties within string and
-	 *  tries to resolve them - replace by the property's value.<br>
-	 *  The format of reference 'call' is denoted by Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX -
-	 *  usually in the form ${<i>_property_name_</i>}.
-	 *  It can handle nested reference - when global property is referencing another property 
+	 * Sets the flag specifying whether the CTL expressions should be evaluated and the property references resolved.
 	 *
-	 * @param  value  String potentially containing one or more references to property
-	 * @param resolveSpecChars <b>true</b> if special characters should be resolved; {@link StringUtils.StringToSpecChar}
-	 * @return        String with all references resolved
-	 * @see           org.jetel.data.Defaults
-     * @throws AttributeNotFoundException if referenced property does not exist
+	 * @param resolve new flag value
 	 */
-	
+	public void setResolve(boolean resolve) {
+		this.resolve = resolve;
+	}
+
+	/**
+	 * @return <code>true</code> if the CTL expressions will be evaluated and the property references will be resolved,
+	 * <code>false</code> otherwise
+	 */
+	public boolean isResolve() {
+		return resolve;
+	}
+
+	/**
+	 * If resolving is enabled, evaluates CTL expressions and resolves property references in the given string. After
+	 * that, special characters are resolved. Does nothing if resolving is disabled.
+	 *
+	 * @param value a string containing CTL expressions and property references
+	 *
+	 * @return the value with CTL expressions evaluated and property references resolved or the same value if resolving
+	 * is disabled
+	 */
+	public String resolveRef(String value) {
+		return resolveRef(value, DEFAULT_RESOLVE_SPEC_CHAR);
+	}
+
+	/**
+	 * If resolving is enabled, evaluates CTL expressions and resolves property references present in the given string
+	 * buffer. After that, special characters are resolved. The result is then stored back into the given string buffer.
+	 * Does nothing if resolving is disabled.
+	 *
+	 * @param value a string buffer containing CTL expressions and property references
+	 *
+	 * @return <code>true</code> if resolving is enabled and at least one CTL expression or property reference was found
+	 * and evaluated/resolved, <code>false</code> otherwise
+	 */
+	public boolean resolveRef(StringBuffer value) {
+		return resolveRef(value, DEFAULT_RESOLVE_SPEC_CHAR);
+	}
+
+	/**
+	 * If resolving is enabled, evaluates CTL expressions and resolves property references in the given string. After
+	 * that, special characters are resolved only if requested. Does nothing if resolving is disabled.
+	 *
+	 * @param value a string containing CTL expressions and property references
+	 * @param resolveSpecChars flag specifying whether special characters within string values should be resolved and
+	 * CTL expressions within the global scope should be evaluated
+	 *
+	 * @return the value with CTL expressions evaluated and property references resolved or the same value if resolving
+	 * is disabled
+	 */
 	public String resolveRef(String value, boolean resolveSpecChars) {
-		if(!resolve) {
+		if (value == null || !resolve) {
 			return value;
 		}
-		
-	    StringBuffer strBuf = new StringBuffer(value);
-	    resolveRef2(strBuf);
-	    if(resolveSpecChars) {
-	    	return StringUtils.stringToSpecChar(strBuf);
-	    } else {
-	    	return strBuf.toString();
-	    }
+
+		StringBuffer valueBuffer = new StringBuffer(value);
+		resolveRef(valueBuffer, resolveSpecChars);
+
+		return valueBuffer.toString();
 	}
-    
-    public String resolveRef(String value) {
-        return resolveRef(value, DEFAULT_RESOLVE_SPEC_CHAR);
-    }
-	
-    
+
 	/**
-     * Looks for reference to global graph properties within string and
-     *  tries to resolve them - replace by the property's value.<br>
-     *  The format of reference 'call' is denoted by Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX -
-     *  usually in the form ${<i>_property_name_</i>}.
-     *  It can handle nested reference - when global property is referencing another property 
-     * 
-	 * @param value
-	 * @param resolveSpecChars <b>true</b> if special characters should be resolved; {@link StringUtils.StringToSpecChar}
-	 * @return value with all references resolved
-	 * @throws AttributeNotFoundException @throws AttributeNotFoundException if referenced property does not exist
+	 * If resolving is enabled, evaluates CTL expressions and resolves property references present in the given string
+	 * buffer. After that, special characters are resolved. The result is then stored back into the given string buffer.
+	 * Does nothing if resolving is disabled.
+	 *
+	 * @param value a string buffer containing CTL expressions and property references
+	 * @param resolveSpecChars flag specifying whether special characters within string values should be resolved and
+	 * CTL expressions within the global scope should be evaluated
+	 *
+	 * @return <code>true</code> if resolving is enabled and at least one CTL expression or property reference was found
+	 * and evaluated/resolved, <code>false</code> otherwise
 	 */
 	public boolean resolveRef(StringBuffer value, boolean resolveSpecChars) {
-	    if (!resolve) {
-            return false;
-	    }
-        boolean result = true;
-	    result =  resolveRef2(value);
-	    
-	    if(resolveSpecChars) {
-		    String tmp = StringUtils.stringToSpecChar(value);
-		    value.setLength(0);
-		    value.append(tmp);
-	    }
-        
-	    return result;
-	}
-	
-    public boolean resolveRef(StringBuffer value) {
-        return resolveRef(value, DEFAULT_RESOLVE_SPEC_CHAR);
-    }
-    
-    
-	/**
-	 * Method which Looks for reference to global graph properties within string -
-	 * this is the actual implementation. The public version is only a wrapper.
-	 * 
-	 * @param value	String buffer containing plain text mixed with references to 
-	 * global properties - > reference is in form ${<i>..property_name..</i>}
-	 * @return true if at least one reference to global property was found and resolved
-	 */
-	private boolean resolveRef2(StringBuffer value)  {
-		String reference;
-		String resolvedReference;
-		boolean found=false;
-		if ((value != null) && (properties != null)) {
-			// process references
-            regexMatcher.reset(value);
-			while (regexMatcher.find()) {
-				found=true;
-				reference = regexMatcher.group(1);
-//				if (logger.isDebugEnabled()) {
-//					logger.debug("Reference: "+reference);
-//				}
-				resolvedReference = properties.getProperty(reference);
-				if (resolvedReference == null){
-					resolvedReference = System.getenv(reference);
-				}
-				if (resolvedReference == null){
-					reference = reference.replace('_','.');
-					resolvedReference = System.getProperty(reference);
-				}
-				if (resolvedReference == null) {
-				    logger.warn("Can't resolve reference to graph property: " + reference);
-                   // if (strict)
-                   //     throw new AttributeNotFoundException(reference,"can't resolve reference to graph property: " + reference);
-				}else{
-				    value.replace(regexMatcher.start(),regexMatcher.end(),resolvedReference);
-                    regexMatcher.reset(value);
-                }
-			}
-//            // process escape 
-//           regexEscapeMatcher.reset(value);
-//            while (regexEscapeMatcher.find()) {
-//                reference = regexEscapeMatcher.group(1);
-//               if (logger.isDebugEnabled()) {
-//                    logger.debug("Reference: "+reference);
-//                }
-//                value.replace(regexEscapeMatcher.start(),regexEscapeMatcher.end(),
-//                        value.substring(regexEscapeMatcher.start()+2,regexEscapeMatcher.end()-1));
-//                regexEscapeMatcher.reset(value);
-//            }
-//          
-			return found;
-		} else {
+		if (value == null || !resolve) {
 			return false;
 		}
+
+		//
+		// evaluate CTL expressions and resolve remaining property references
+		//
+
+		boolean valueModified = false;
+
+		if (resolveSpecChars) {
+			valueModified |= evaluateExpressions(value);
+		}
+
+		valueModified |= resolveReferences(value);
+
+		//
+		// convert escaped CTL expression quotes to ordinary quotes
+		//
+
+		if (Defaults.GraphProperties.EXPRESSION_EVALUATION_ENABLED) {
+			int index = value.indexOf(EXPRESSION_QUOTE, 1);
+
+			while (index >= 0) {
+				if (value.charAt(index) == value.charAt(index - 1)) {
+					value.deleteCharAt(index);
+				}
+
+				index = value.indexOf(EXPRESSION_QUOTE, index + 1);
+			}
+		}
+
+		//
+		// resolve special characters if desired
+		//
+
+		if (resolveSpecChars) {
+			String resolvedValue = StringUtils.stringToSpecChar(value);
+
+			value.setLength(0);
+			value.append(resolvedValue);
+		}
+
+		return valueModified;
 	}
-	
+
 	/**
-	 * This method replaces all parameters by their values
-	 * 
-	 * @param properties
+	 * Finds and evaluates CTL expressions present in the given string buffer. Property references present in the CTL
+	 * expressions are resolved before evaluation. The result is stored back in the given string buffer.
+	 *
+	 * @param value a string buffer containing CTL expressions
+	 *
+	 * @return <code>true</code> if at least one CTL expression was found and evaluated, <code>false</code> otherwise
 	 */
-	public void resolveAll(Properties properties){
+	private boolean evaluateExpressions(StringBuffer value) {
+		if (!Defaults.GraphProperties.EXPRESSION_EVALUATION_ENABLED) {
+			return false;
+		}
+
+		boolean anyExpressionEvaluated = false;
+		Matcher expressionMatcher = expressionPattern.matcher(value);
+
+		while (expressionMatcher.find()) {
+			String expression = expressionMatcher.group(1);
+
+			// don't process empty expressions, they actually correspond to escaped CTL expression quote
+			if (0 == expression.length()) {
+				continue;
+			}
+
+			// resolve property references that might be present in the CTL expression
+			StringBuffer resolvedExpression = new StringBuffer(expression);
+			resolveReferences(resolvedExpression);
+
+			try {
+				// evaluate the CTL expression
+				String evaluatedExpression = expressionEvaluator.evaluate(resolvedExpression.toString());
+				value.replace(expressionMatcher.start(), expressionMatcher.end(), evaluatedExpression);
+				expressionMatcher.reset(value);
+
+				anyExpressionEvaluated = true;
+			} catch (ParseException exception) {
+				logger.warn("Cannot evaluate expression: " + resolvedExpression, exception);
+			}
+		}
+
+		return anyExpressionEvaluated;
+	}
+
+	/**
+	 * Finds and resolves property references present in the given string buffer. CTL expressions present in the
+	 * referenced properties are evaluated after resolving. The result is stored back in the given string buffer.
+	 *
+	 * @param value a string buffer containing property references
+	 *
+	 * @return <code>true</code> if at least one property reference was found and resolved, <code>false</code> otherwise
+	 */
+	private boolean resolveReferences(StringBuffer value) {
+		boolean anyReferenceResolved = false;
+		Matcher propertyMatcher = propertyPattern.matcher(value);
+
+		while (propertyMatcher.find()) {
+			// resolve the property reference
+			String reference = propertyMatcher.group(1);
+			String resolvedReference = properties.getProperty(reference);
+
+			if (resolvedReference == null) {
+				resolvedReference = System.getenv(reference);
+			}
+
+			if (resolvedReference == null) {
+				reference = reference.replace('_', '.');
+				resolvedReference = System.getProperty(reference);
+			}
+
+			if (resolvedReference != null) {
+				// evaluate the CTL expression that might be present in the property
+				StringBuffer evaluatedReference = new StringBuffer(resolvedReference);
+				evaluateExpressions(evaluatedReference);
+
+				value.replace(propertyMatcher.start(), propertyMatcher.end(), evaluatedReference.toString());
+				propertyMatcher.reset(value);
+
+				anyReferenceResolved = true;
+			} else {
+				logger.warn("Cannot resolve reference to property: " + reference);
+			}
+		}
+
+		return anyReferenceResolved;
+	}
+
+	/**
+	 * Evaluates CTL expressions and resolves property references present in each property in the given properties.
+	 * The result is then stored back into the given properties.
+	 *
+	 * @param properties properties to be resolved
+	 */
+	public void resolveAll(Properties properties) {
 		for (Entry<Object, Object> property : properties.entrySet()) {
-			properties.setProperty((String)property.getKey(), resolveRef((String)property.getValue()));
+			properties.setProperty((String) property.getKey(), resolveRef((String) property.getValue()));
 		}
 	}
 
-	 
-    /**
-     * Determines whether resolving references is enabled/disabled
-     * 
-     * @return Returns the resolve value.
-     */
-    public boolean isResolve() {
-        return resolve;
-    }
-    /**
-     * Enables/disables resolving references within string values to Properties
-     * 
-     * @param resolve true to resolve references
-     */
-    public void setResolve(boolean resolve) {
-        this.resolve = resolve;
-    }
-    
 }
 

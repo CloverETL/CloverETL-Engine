@@ -29,12 +29,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.jetel.graph.dictionary.StringDictionaryType;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLContainerValue;
 import org.jetel.interpreter.data.TLListValue;
 import org.jetel.interpreter.data.TLMapValue;
 import org.jetel.interpreter.data.TLNullValue;
+import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 
@@ -44,7 +46,7 @@ public class ContainerLib extends TLFunctionLibrary {
 
     enum Function {
         REMOVEALL("remove_all"), PUSH("push"), POP("pop"), POLL("poll"), INSERT("insert"), REMOVE("remove"), SORT("sort") ,
-        COPY("copy"), REVERSE("reverse");
+        COPY("copy"), REVERSE("reverse"), DICTIONARY_GET_STRING("dict_get_str"), DICTIONARY_PUT_STRING("dict_put_str");
         
         public String name;
         
@@ -77,6 +79,8 @@ public class ContainerLib extends TLFunctionLibrary {
         case SORT: return new SortFunction();
         case COPY: return new CopyFunction();
         case REVERSE: return new ReverseFunction();
+        case DICTIONARY_GET_STRING: return new DictGetStrFunction();
+        case DICTIONARY_PUT_STRING: return new DictPutStrFunction();
         default: return null;
        }
     }
@@ -332,4 +336,61 @@ public class ContainerLib extends TLFunctionLibrary {
 
 	}
 	
+	class DictGetStrFunction extends TLFunctionPrototype {
+		
+		public DictGetStrFunction(){
+			super("container", "dict_get_str", "Returns string representation of dictionary object under specified name/key.",
+					new TLValueType[] { TLValueType.STRING }, TLValueType.STRING);
+		}
+		
+		@Override
+		public TLValue execute(TLValue[] params, TLContext context) {
+			if (params[0].type!= TLValueType.STRING){
+				throw new TransformLangExecutorRuntimeException(params,
+				this.name+"- wrong type of literal(s)");
+			}
+			TLStringValue value=(TLStringValue)context.getContext();
+			Object content=context.graph.getDictionary().getValue(params[0].toString());
+			if (content instanceof String){
+				value.setValue(content);
+				return value;
+			}else{
+				return TLNullValue.getInstance();
+			}
+		}
+		
+		@Override
+		public TLContext createContext() {
+			return TLContext.createStringContext();
+		}
+	}
+	
+
+	class DictPutStrFunction extends TLFunctionPrototype {
+		
+		public DictPutStrFunction(){
+			super("container", "dict_put_str", "Stores value passed as 2nd parameter under key (1st parameter) into graph dictionary.",
+					new TLValueType[] { TLValueType.STRING , TLValueType.STRING }, TLValueType.BOOLEAN);
+		}
+		
+		@Override
+		public TLValue execute(TLValue[] params, TLContext context) {
+			if (params[0].type!= TLValueType.STRING || params[1].type!= TLValueType.STRING){
+				throw new TransformLangExecutorRuntimeException(params,
+				this.name+"- wrong type of literal(s)");
+			}
+		
+			try{
+				context.graph.getDictionary().setValue(params[0].toString(),StringDictionaryType.TYPE_ID,params[1].toString());
+				return TLBooleanValue.TRUE;
+			}catch(Exception ex){
+				return TLBooleanValue.FALSE;
+			}
+		}
+		
+		@Override
+		public TLContext createContext() {
+			return TLContext.createStringContext();
+		}
+	}
 }

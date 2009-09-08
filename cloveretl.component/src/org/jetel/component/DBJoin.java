@@ -215,9 +215,6 @@ public class DBJoin extends Node {
 		this.transformation = transform;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
@@ -298,9 +295,11 @@ public class DBJoin extends Node {
 				}
 				counter++;
 		}
+
 		if (transformation != null) {
-			transformation.finished();
-		}		
+		    transformation.finished();
+		}
+
 		if (errorLog != null){
 			errorLog.flush();
 			errorLog.close();
@@ -312,16 +311,17 @@ public class DBJoin extends Node {
 	
 	@Override
 	public void free() {
-        if(!isInitialized()) return;
-		super.free();
-		
-		if (lookup != null)
-			lookup.getLookupTable().free();
+        if (!isInitialized()) {
+            return;
+        }
+
+        super.free();
+
+        if (lookup != null) {
+            lookup.getLookupTable().free();
+        }
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#checkConfig()
-	 */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
@@ -390,9 +390,6 @@ public class DBJoin extends Node {
         return status;
     }
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#init()
-	 */
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -519,9 +516,6 @@ public class DBJoin extends Node {
 		this.errorActionsString = string;		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 

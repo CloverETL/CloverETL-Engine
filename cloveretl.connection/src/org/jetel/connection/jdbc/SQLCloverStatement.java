@@ -80,6 +80,9 @@ public class SQLCloverStatement {
 	private final static Pattern CLOVER_OUTPUT_FIELD = Pattern.compile("\\$(\\w+)\\s*" + Defaults.ASSIGN_SIGN);
 	private final static Pattern CLOVER_INPUT_FIELD = Pattern.compile("(?<!\\$)\\$(\\w++)(?!:)");
 	
+    final static Pattern PREPARED_STMT_PATTERN = Pattern.compile("\\?");
+
+	
 	private String query;//query as set in constructor
 	private String sqlQuery;//query as send to database
 	private DBConnectionInstance connection;
@@ -455,8 +458,6 @@ public class SQLCloverStatement {
 	 * @throws ComponentNotReadyException 
 	 */
 	
-    Pattern preparedPattern = Pattern.compile("\\?");
-
 	public void executeValidate() throws SQLException, ComponentNotReadyException {
 
         String q = connection.getJdbcSpecific().getValidateQuery(getQuery(), getQueryType());
@@ -471,7 +472,7 @@ public class SQLCloverStatement {
         		// for prepared statements use null values and construct simple prepared statement
     			int wherePos = query.toLowerCase().indexOf("where");
         		if (wherePos > -1) {
-        			Matcher m = preparedPattern.matcher(query); 
+        			Matcher m = PREPARED_STMT_PATTERN.matcher(query); 
         			int paramCntr = 1;
         			if (m.find(wherePos)) {
         				ps = connection.getSqlConnection().prepareStatement(q);
@@ -504,6 +505,11 @@ public class SQLCloverStatement {
 		try {
 			ps.setNull(paramIndex, ps.getParameterMetaData().getParameterType(paramIndex));
 		} catch (SQLException e) {
+			try {
+				ps.setObject(paramIndex, null);
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
 	

@@ -9,6 +9,7 @@
 	    	 <DBUnitFeature name="http://www.dbunit.org/features/skipOracleRecycleBinTables" enabled="true"/>
 	</DBConnection>
 	<DBConnection ident="mysql" type="MYSQL" user="test" password="" URL="jdbc:mysql://koule/test?zeroDateTimeBehavior=convertToNull" driver="org.gjt.mm.mysql.Driver" />
+
 <!--
 	<FunctionalTest ident="LDAPReaderWriter" graphFile="graph/graphLdapReaderWriter.grf">
 	</FunctionalTest>
@@ -50,7 +51,9 @@
 	      	 supposedTableConnection="mysql"
 	      />-->
 	 	  <FlatFile outputFile="data-out/out.dat" supposedFile="supposed-out/out.MysqlDataWriter.dat"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/out_remote.dat" supposedFile="supposed-out/out.MysqlDataWriter.dat"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/mysql.out" supposedFile="supposed-out/mysql.MysqlDataWriter.out"/>	                                                                    
+	 	  <FlatFile outputFile="data-tmp/mysql_load.cmd" supposedFile="supposed-out/mysql_load.MysqlDataWriter.cmd"/>	                                                                    
 	</FunctionalTest>
 
 	<FunctionalTest ident="ApproximativeJoin" graphFile="graph/graphApproximativeJoin.grf">
@@ -90,6 +93,7 @@
 	<FunctionalTest ident="DBExecuteMySql" graphFile="graph/graphDBExecuteMySql.grf">
          <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/foundClients.txt" supposedFile="supposed-out/foundClients.DBExecuteMySql.txt"/>	                                                                    
+	     <DeleteFile file="seq/id.seq"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBExecuteOracle" graphFile="graph/graphDBExecuteOracle.grf">
@@ -157,6 +161,7 @@
 	<FunctionalTest ident="DBUnload" graphFile="graph/graphDBUnload.grf">
          <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/employees.list.out" supposedFile="supposed-out/employees.list.DBUnload.out"/>	                                                                    
+	     <DeleteFile file="dbInc.txt"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBUnload2" graphFile="graph/graphDBUnload2.grf">
