@@ -141,6 +141,7 @@ public abstract class XLSParser implements Parser {
 	protected String sheetName = null;
 	protected String sheetNumber = null;
 	protected Incremental incremental;
+	protected boolean useIncrementalReading;
 	protected NumberIterator sheetNumberIterator = null;
 	protected short sheetCounter = -1;
 	protected int recordCounter = 1;
@@ -597,6 +598,7 @@ public abstract class XLSParser implements Parser {
 	}
 
 	public void movePosition(Object position) {
+		if (!useIncrementalReading) return;
 		incremental = new Incremental(position.toString());
 		discardBytes(getSheetName(sheetCounter));
 	}
@@ -626,5 +628,9 @@ public abstract class XLSParser implements Parser {
 	}
 
 	public abstract void close();
+
+	public void useIncrementalReading(boolean useIncrementalReading) {
+		this.useIncrementalReading = useIncrementalReading;
+	}
 
 }

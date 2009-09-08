@@ -420,10 +420,18 @@ public class DataWriter extends Node {
 
         if (!StringUtils.isEmpty(excludeFields)) {
             DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
-            String[] excludedFieldNames = excludeFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+            int[] includedFieldIndices = null;
 
-            if (excludedFieldNames.length >= metadata.getNumFields()) {
-                status.add(new ConfigurationProblem("All data fields excluded!", Severity.ERROR, this,
+            try {
+                includedFieldIndices = metadata.fieldsIndicesComplement(
+                        excludeFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+
+                if (includedFieldIndices.length == 0) {
+                    status.add(new ConfigurationProblem("All data fields excluded!", Severity.ERROR, this,
+                            Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
+                }
+            } catch (IllegalArgumentException exception) {
+                status.add(new ConfigurationProblem(exception.getMessage(), Severity.ERROR, this,
                         Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
             }
         }

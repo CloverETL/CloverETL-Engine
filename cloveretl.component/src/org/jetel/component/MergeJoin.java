@@ -462,7 +462,7 @@ public class MergeJoin extends Node {
 			}
 			if (!flushMin()) {
 				String resultMsg = transformation.getMessage();
-				transformation.finished();
+		        transformation.finished();
 				broadcastEOF();
 				throw new JetelException(resultMsg);
 			}
@@ -473,7 +473,7 @@ public class MergeJoin extends Node {
 				if ((join == Join.LEFT_OUTER && reader[DRIVER_ON_PORT].hasData()) || join == Join.FULL_OUTER){
 					if (!flushMin()) {
 						String resultMsg = transformation.getMessage();
-						transformation.finished();
+				        transformation.finished();
 						broadcastEOF();
 						throw new JetelException(resultMsg);
 					}
@@ -481,11 +481,11 @@ public class MergeJoin extends Node {
 			}
 		}
 
+        transformation.finished();
+
 	    if (!eofBroadcasted) {
 	        broadcastEOF();
 	    }
-
-	    transformation.finished();
 
 	    if (errorLog != null){
 			errorLog.flush();

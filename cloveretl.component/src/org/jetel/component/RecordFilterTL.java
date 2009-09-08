@@ -36,7 +36,7 @@ public class RecordFilterTL implements RecordFilter {
 	}
 
 	public void setGraph(TransformationGraph graph) {
-		// not used
+		executor.setGraph(graph);
 	}
 
 }

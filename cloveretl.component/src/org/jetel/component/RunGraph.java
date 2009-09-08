@@ -26,7 +26,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,10 +52,12 @@ import org.jetel.graph.runtime.IAuthorityProxy.RunResult;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.plugin.Plugins;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.Concatenate;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -262,15 +266,12 @@ public class RunGraph extends Node{
 			if (graphNameFromPort == null) {
 				continue;
 			}
-			String cloverCommandLineArgs = null;
-			if (!sameInstance && 
-					(cloverCommandLineArgs = getCloverCommandLineArgs(inRecord)) == null) {
-				broadcastEOF();
-				logger.error("Clover command line argument was supply " +
-						"neither by attribute nor by input port.");
-				return Result.ERROR;
+			String cloverCommandLineArgs = "";
+
+			if (!sameInstance) {
+			    cloverCommandLineArgs = getCloverCommandLineArgs(inRecord);
 			}
-						
+
 			try {
 				success &= runSingleGraph(graphNameFromPort, outRec, cloverCommandLineArgs);
 			} catch (IOException e) {					
@@ -321,21 +322,15 @@ public class RunGraph extends Node{
 	}
 	
 	/**
-	 * Return clover command line arguments or null. Read from input port, 
+	 * Return clover command line arguments . Read from input port, 
 	 * if reading from port isn't success then cloverCmdLineArgs is used.
-	 * Empty string is never returned.  
 	 * @param inRecord
-	 * @return clover command line arguments or null, empty string is never returned
+	 * @return clover command line arguments
 	 */
 	private String getCloverCommandLineArgs(DataRecord inRecord) {
 		String result = readCloverCommandLineArgs(inRecord);
 		if (StringUtils.isEmpty(result)) {
 			result = cloverCmdLineArgs;
-		}
-		
-		// ensure that empty string is never returned
-		if (result.length() == 0) {
-			result = null;
 		}
 		
 		return StringUtils.backslashToSlash(result);
@@ -375,27 +370,39 @@ public class RunGraph extends Node{
 	}
 	
 	private boolean runGraphSeparateInstance(String graphName, OutputRecordData outputRecordData, String cloverCommandLineArgs) throws IOException {
-		String[] javaCmd = javaCmdLine.split(" ");
-		String[] cloverCommandArgs = cloverCommandLineArgs.split(" "); 
-		int commandLength = javaCmd.length + cloverCommandArgs.length + 4;
-		String[] command = new String[commandLength];
-		int i;
-		for (i = 0; i < javaCmd.length; i++) {
-			command[i] = javaCmd[i];
+		List<String> commandList = new ArrayList<String>();
+
+		for (String javaCommand : javaCmdLine.split(" ")) {
+			commandList.add(javaCommand);
 		}
-		command[i++] = classPath;
-		command[i++] = cloverRunClass;
-		for (int j = 0; j < cloverCommandArgs.length; j++) {
-			command[i++] = cloverCommandArgs[j];
+		commandList.add(classPath);
+		commandList.add(cloverRunClass);
+
+		if (!cloverCommandLineArgs.contains(runGraph.PLUGINS_SWITCH)) {
+            Concatenate pluginsDir = new Concatenate(";");
+            for (URL pluginUrl : Plugins.getPluginDirectories()) {
+                pluginsDir.append(pluginUrl.getPath());
+            }
+            commandList.add(runGraph.PLUGINS_SWITCH);
+            commandList.add(pluginsDir.toString());
+        }
+
+		for (String cloverCommandArg : cloverCommandLineArgs.split(" ")) {
+			commandList.add(cloverCommandArg);
 		}
+
 		// TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
 		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed
-		command[i++] = runGraph.NO_DEBUG_SWITCH;
-		command[i] = graphName;
-		logger.info("Executing command: " + StringUtils.quote(Arrays.toString(command)));
+		commandList.add(runGraph.NO_DEBUG_SWITCH);
+
+		commandList.add(graphName);
+
+		logger.info("Executing command: " + StringUtils.quote(commandList.toString()));
 
 		DataConsumer consumer = new OutDataConsumer(fileWriter, outputRecordData);
 		DataConsumer errConsumer = new ErrorDataConsumer(fileWriter, logger, graphName);
+
+		String[] command = commandList.toArray(new String[commandList.size()]);
 		Process process = Runtime.getRuntime().exec(command);
 		ProcBox procBox = new ProcBox(process, null, consumer, errConsumer);
 		

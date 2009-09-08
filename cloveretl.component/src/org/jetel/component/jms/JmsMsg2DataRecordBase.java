@@ -22,6 +22,7 @@ package org.jetel.component.jms;
 import java.util.Properties;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -31,6 +32,7 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public abstract class JmsMsg2DataRecordBase implements JmsMsg2DataRecord {
 	protected String errMsg;
+	protected TransformationGraph graph;
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.JmsMsg2DataRecord#init(org.jetel.metadata.DataRecordMetadata, java.util.Properties)
@@ -72,6 +74,22 @@ public abstract class JmsMsg2DataRecordBase implements JmsMsg2DataRecord {
 	 */
 	public void reset() {
 		setErrorMsg(null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.component.jms.JmsMsg2DataRecord#getGraph()
+	 */
+	public TransformationGraph getGraph() {
+		return graph;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.component.jms.JmsMsg2DataRecord#setGraph(org.jetel.graph.TransformationGraph)
+	 */
+	public void setGraph(TransformationGraph graph) {
+		this.graph = graph;
 	}
 	
 }

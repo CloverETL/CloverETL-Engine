@@ -25,6 +25,7 @@ package org.jetel.interpreter.data;
 import org.jetel.data.DataField;
 import org.jetel.data.StringDataField;
 import org.jetel.util.string.Compare;
+import org.jetel.util.string.StringUtils;
 
 public class TLStringValue extends TLValue implements CharSequence {
 
@@ -50,6 +51,12 @@ public class TLStringValue extends TLValue implements CharSequence {
 	}
 	
 	public void setValue(TLValue value){
+		// this is fix for s=s assignment - if the value is actually us, we don't do anything
+		if (this == value) {
+			return;
+		}
+
+		// otherwise we set the value :)
 		this.value.setLength(0);
 		if (value instanceof TLStringValue){
 			this.value.append(((TLStringValue)value).value);
@@ -81,6 +88,8 @@ public class TLStringValue extends TLValue implements CharSequence {
 		this.value.setLength(0);
 		if (_value instanceof CharSequence){
 			this.value.append((CharSequence)_value);
+		}else if (_value instanceof char[]){
+			this.value.append((char[])_value);
 		}else{
 			this.value.append(_value.toString());
 		}
@@ -134,5 +143,16 @@ public class TLStringValue extends TLValue implements CharSequence {
 	public CharSequence subSequence(int arg0, int arg1) {
 		return value.subSequence(arg0, arg1);
 	}
+	
+	@Override public int hashCode(){
+		return StringUtils.hashCode(value);
+	}
 
+	@Override public boolean equals(Object obj){
+		if (this==obj) return true;
+		if (obj instanceof TLStringValue){
+			return org.jetel.util.string.Compare.equals(value, ((TLStringValue)obj).value);
+		}
+		return false;
+	}
 }

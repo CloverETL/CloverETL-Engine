@@ -30,7 +30,7 @@ import org.jetel.data.formatter.XLSXDataFormatter;
  * @author Jan Ausperger, Javlin a.s. &lt;jan.ausperger@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 31st January 2009
+ * @version 17th July 2009
  */
 public class XLSFormatterProvider implements FormatterProvider {
 
@@ -42,6 +42,8 @@ public class XLSFormatterProvider implements FormatterProvider {
 	private int sheetNumber = -1;
 	private String firstColumnIndex = "A";
 	private String charset;
+
+	private String[] excludedFieldNames;
 
 	public XLSFormatterProvider(boolean append) {
 		this(append, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
@@ -64,6 +66,7 @@ public class XLSFormatterProvider implements FormatterProvider {
 		formatter.setFirstColumn(firstColumnIndex);
 		formatter.setFirstRow(firstRow);
 		formatter.setNamesRow(namesRow);
+		formatter.setExcludedFieldNames(excludedFieldNames);
 		return formatter;
 	}
 
@@ -159,6 +162,10 @@ public class XLSFormatterProvider implements FormatterProvider {
 
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	public void setExcludedFieldNames(String[] excludedFieldNames) {
+		this.excludedFieldNames = excludedFieldNames;
 	}
 
 }

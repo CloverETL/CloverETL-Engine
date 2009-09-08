@@ -19,9 +19,12 @@
 */
 package org.jetel.plugin;
 
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -76,7 +79,12 @@ public class PluginDescriptor {
      * List of all class path. Definition for plugin class loader. 
      */
     private List<String> libraries;
-    
+
+    /**
+     * List of all native library directories. It is used to extend system property java.library.path variable. 
+     */
+    private List<String> nativeLibraries;
+
     /**
      * List of all imlemented extensions points by this plugin.
      */
@@ -91,7 +99,7 @@ public class PluginDescriptor {
      * Instance of plugin described by this desriptor.
      * If the plugin is not active, is <b>null</b>.
      */
-    private PluginActivator plugin;
+    private PluginActivator pluginActivator;
     
     /**
      * Link to manifest file (plugin.xml).
@@ -109,6 +117,7 @@ public class PluginDescriptor {
         
         prerequisites = new ArrayList<PluginPrerequisite>();
         libraries = new ArrayList<String>();
+        nativeLibraries = new ArrayList<String>();
         extensions = new ArrayList<Extension>();
     }
 
@@ -243,7 +252,11 @@ public class PluginDescriptor {
     public void addLibrary(String library) {
         libraries.add(library);
     }
-    
+
+    public void addNativeLibrary(String nativeLibrary) {
+        nativeLibraries.add(nativeLibrary);
+    }
+
     public void addPrerequisites(String pluginId, String pluginVersion, String match) {
         prerequisites.add(new PluginPrerequisite(pluginId, pluginVersion, match));
     }
@@ -285,11 +298,15 @@ public class PluginDescriptor {
                 Plugins.activatePlugin(prerequisite.pluginId);
             }
         }
-        isActive = true;
-        instantiatePlugin();
-        if(plugin != null) {
-            plugin.activate();
+        //invoke plugin activator
+        pluginActivator = instantiatePlugin();
+        if(pluginActivator != null) {
+            pluginActivator.activate();
         }
+        //update java.library.path according native libraries
+        applyNativeLibraries();
+
+        isActive = true;
     }
 
     /**
@@ -297,8 +314,8 @@ public class PluginDescriptor {
      */
     protected void deactivate() {
         isActive = false;
-        if(plugin != null) {
-            plugin.deactivate();
+        if(pluginActivator != null) {
+            pluginActivator.deactivate();
         }
     }
 
@@ -309,23 +326,25 @@ public class PluginDescriptor {
     /**
      * Create instance of plugin class.
      */
-    private void instantiatePlugin() {
+    private PluginActivator instantiatePlugin() {
         if(!StringUtils.isEmpty(getPluginClassName())) {
             try {
                 Class pluginClass = Class.forName(getPluginClassName(), true, getClassLoader());
                 Object plugin = pluginClass.newInstance();
                 if(!(plugin instanceof PluginActivator)) {
                     logger.error("Plugin " + getId() + " activation message: Plugin class is not instance of Plugin ascendant - " + getPluginClassName());
-                    return;
+                    return null;
                 }
                 //i have got plugin instance
-                this.plugin = (PluginActivator) plugin;
+                return (PluginActivator) plugin;
             } catch (ClassNotFoundException e) {
                 logger.error("Plugin " + getId() + " activation message: Plugin class does not found - " + getPluginClassName());
             } catch (Exception e) {
                 logger.error("Plugin " + getId() + " activation message: Cannot create plugin instance - " + getPluginClassName() + " - class is abstract, interface or its nullary constructor is not accessible.", e);
             }
         }
+        
+        return null;
     }
     
     public String toString() {
@@ -343,5 +362,42 @@ public class PluginDescriptor {
         return ret.toString();
     }
 
+    /**
+     * This is attempt to change 'java.library.path' system property in runtime.
+     * Success of this attempt is not guaranteed. We are trying to administer
+     * loading of dlls in runtime.
+     * This method should be externalized to a seperated utils class.
+     */
+    private void applyNativeLibraries() {
+    	if (nativeLibraries.size() > 0) {
+			// Reset the "sys_paths" field of the ClassLoader to null.
+			try {
+				Class clazz = ClassLoader.class;
+				Field field = clazz.getDeclaredField("sys_paths");
+				boolean accessible = field.isAccessible();
+				if (!accessible)
+					field.setAccessible(true);
+				field.set(clazz, null);
+				field.setAccessible(accessible);
+	
+				// Change the value of system property java.library.path
+				String pathSepartor = System.getProperty("path.separator");
+				StringBuilder additionalLibraryPathes = new StringBuilder();
+				for (String nativeLibrary : nativeLibraries) {
+					additionalLibraryPathes.append(pathSepartor);
+					nativeLibrary = URLDecoder.decode((new File(FileUtils.getFile(manifest, nativeLibrary))).getAbsolutePath(), "UTF-8");
+					additionalLibraryPathes.append(nativeLibrary);
+				}
+				if (additionalLibraryPathes.length() > 0) {
+					System.setProperty("java.library.path", 
+							System.getProperty("java.library.path") 
+							+ additionalLibraryPathes);
+				}
+			} catch (Throwable e) {
+				logger.warn("Probably non-standard jvm is used. The native libraries in '" + getId() + "' plugin are ignored.");
+			}
+    	}
+    }
+    
 }
 

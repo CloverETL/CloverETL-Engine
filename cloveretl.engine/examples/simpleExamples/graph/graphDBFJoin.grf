@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Nov 22 10:24:41 CET 2006" description="This graph illustrates complex transformation. It reads data about orders made and&#10;combines them (joins) with data about which items were purchased. It then adds&#10;information about which company made particular order/bought particular item.&#10;It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.&#10;&#10;It also shows how to embed data transformation routine directly into transformation&#10;graph layou file (both joins have the transformations embedded - see below).&#10;&#10;Note: It is faster to reference record's fields by index as opposite to names - used&#10;in this example.&#10;" guiVersion="0.0" id="1204544305665" licenseType="Evaluation license." modified="Mon Nov 10 10:37:25 CET 2008" modifiedBy="avackova" name="ComplexTransformation" revision="1.32">
+<Graph author="avackova" created="Wed Nov 22 10:24:41 CET 2006" description="This graph illustrates complex transformation. It reads data about orders made and&#10;combines them (joins) with data about which items were purchased. It then adds&#10;information about which company made particular order/bought particular item.&#10;It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.&#10;&#10;It also shows how to embed data transformation routine directly into transformation&#10;graph layou file (both joins have the transformations embedded - see below).&#10;&#10;Note: It is faster to reference record's fields by index as opposite to names - used&#10;in this example.&#10;" guiVersion="0.0.0.devel" id="1204544305665" licenseType="Evaluation license." modified="Tue Aug 04 13:40:25 CEST 2009" modifiedBy="avackova" name="ComplexTransformation" revision="1.65">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata3"/>
@@ -10,26 +10,59 @@
 <Phase number="0">
 <Node enabled="enabled" guiHeight="25" guiName="EXT_SORT_DETAILS" guiWidth="50" guiX="196" guiY="194" id="EXT_SORT_DETAILS" sortKey="ORDERID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="25" guiName="EXT_SORT_ORDERS" guiWidth="50" guiX="196" guiY="281" id="EXT_SORT_ORDERS" sortKey="ORDERID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" filterExpression="$CUSTOMER!=&quot;N/A&quot;" guiHeight="25" guiName="FILTER" guiWidth="50" guiX="716" guiY="235" id="FILTER" type="EXT_FILTER"/>
+<Node enabled="enabled" guiHeight="25" guiName="FILTER" guiWidth="50" guiX="716" guiY="235" id="FILTER" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[$CUSTOMER!="N/A"]]></attr>
+</Node>
 <Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="25" guiName="IN_CUSTOMERS" guiWidth="50" guiX="389" guiY="102" id="IN_CUSTOMERS" quotedStrings="true" type="DATA_READER"/>
-<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/other/ODETAILS.DBF" guiHeight="25" guiName="IN_DETAILS" guiWidth="50" guiX="20" guiY="194" id="IN_DETAILS" type="DBF_DATA_READER"/>
-<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/other/ORDERS.DBF" guiHeight="25" guiName="IN_ORDERS" guiWidth="50" guiX="20" guiY="281" id="IN_ORDERS" type="DBF_DATA_READER"/>
+<Node charset="IBM850" enabled="enabled" fileURL="${DATAIN_DIR}/other/ODETAILS.DBF" guiHeight="25" guiName="IN_DETAILS" guiWidth="50" guiX="20" guiY="194" id="IN_DETAILS" type="DBF_DATA_READER"/>
+<Node charset="IBM850" enabled="enabled" fileURL="${DATAIN_DIR}/other/ORDERS.DBF" guiHeight="25" guiName="IN_ORDERS" guiWidth="50" guiX="20" guiY="281" id="IN_ORDERS" type="DBF_DATA_READER"/>
 <Node ascendingInputs="true" enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="389" guiY="235" id="JOIN" joinKey="$ORDERID;#$ORDERID;#" joinType="leftOuter" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
+import org.jetel.exception.TransformException;
 
 public class JoinOrdersDetailsInline extends  DataRecordTransform{
 
-	public int transform(DataRecord[] source, DataRecord[] target){
-		target[0].getField("ORDERID").setValue(source[0].getField("ORDERID").getValue());
-		target[0].getField("CUSTOMERID").setValue(source[0].getField("CUSTOMERID").getValue());
-		target[0].getField("PRODUCTID").setValue(source[1].getField("PRODUCTID").getValue());
-		target[0].getField("UNITPRICE").setValue(source[1].getField("UNITPRICE").getValue());		
-		target[0].getField("QUANTITY").setValue(source[1].getField("QUANTITY").getValue());		
-		target[0].getField("DISCOUNT").setValue(source[1].getField("DISCOUNT").getValue());		
-		return ALL;
+	long shiptime;
+	SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+
+	private double price_per_unit(double unit_price,double quantity,double discount){
+	return (unit_price*quantity - discount)/quantity;
+}
+private long ship_time(Date ordered,Date shipped) throws TransformException{
+	if (shipped.compareTo(ordered) < 1) throw new TransformException("Ship time can't be lower than order date");
+	else return (shipped.getTime() - ordered.getTime())/(1000 * 60 * 60 * 24);
+}
+
+public int transform(DataRecord[] arg0, DataRecord[] arg1)
+		throws TransformException {
+	if (!arg0[0].getField("SHIPPEDDAT").isNull()) {
+		try {
+			shiptime = ship_time((Date)arg0[0].getField("ORDERDATE").getValue(), df.parse(arg0[0].getField("SHIPPEDDAT").toString()));
+		} catch (ParseException e) {
+			throw new TransformException(e.getMessage());
+		}
+	}else{
+		shiptime = -1;
 	}
+	arg1[0].getField("ORDERID").setValue(arg0[0].getField("ORDERID"));
+	arg1[0].getField("CUSTOMERID").setValue(arg0[0].getField("CUSTOMERID"));
+	arg1[0].getField("PRODUCTID").setValue(arg0[1].getField("PRODUCTID"));
+	arg1[0].getField("UNITPRICE").setValue(arg0[1].getField("UNITPRICE"));
+	arg1[0].getField("QUANTITY").setValue(arg0[1].getField("QUANTITY"));
+	arg1[0].getField("DISCOUNT").setValue(arg0[1].getField("DISCOUNT"));
+	arg1[0].getField("PRICE_PER_UNIT").setValue(price_per_unit(
+			(Double)arg0[1].getField("UNITPRICE").getValue(), 
+			(Double)arg0[1].getField("QUANTITY").getValue(), 
+			(Double)arg0[1].getField("DISCOUNT").getValue()));
+	arg1[0].getField("SHIPTIME").setValue(shiptime);
+	return ALL;
+}
 }
 ]]></attr>
 </Node>
@@ -53,12 +86,12 @@ public class JoinCustomersInline extends  DataRecordTransform{
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBFordersNA.out" guiHeight="25" guiName="WRITER2" guiWidth="50" guiX="882" guiY="285" id="WRITER2" type="DATA_WRITER"/>
 <Edge fromNode="EXT_SORT_DETAILS:0" guiBendpoints="" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" toNode="JOIN:1"/>
 <Edge fromNode="EXT_SORT_ORDERS:0" guiBendpoints="" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="JOIN:0"/>
-<Edge fromNode="FILTER:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="WRITER1:0"/>
+<Edge debugMode="true" fromNode="FILTER:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="WRITER1:0"/>
 <Edge fromNode="FILTER:1" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (rejected)" toNode="WRITER2:0"/>
-<Edge debugMode="false" fromNode="IN_CUSTOMERS:0" guiBendpoints="" id="Edge15" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JOIN_CUSTOMER:1"/>
-<Edge fromNode="IN_DETAILS:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT_DETAILS:0"/>
-<Edge fromNode="IN_ORDERS:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT_ORDERS:0"/>
-<Edge fromNode="JOIN:0" guiBendpoints="" id="Edge11" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 0 (out)" toNode="JOIN_CUSTOMER:0"/>
+<Edge debugMode="true" fromNode="IN_CUSTOMERS:0" guiBendpoints="" id="Edge15" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JOIN_CUSTOMER:1"/>
+<Edge debugMode="true" fromNode="IN_DETAILS:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT_DETAILS:0"/>
+<Edge debugMode="true" fromNode="IN_ORDERS:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT_ORDERS:0"/>
+<Edge debugMode="true" fromNode="JOIN:0" guiBendpoints="" id="Edge11" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 0 (out)" toNode="JOIN_CUSTOMER:0"/>
 <Edge debugMode="false" fromNode="JOIN_CUSTOMER:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="FILTER:0"/>
 </Phase>
 </Graph>

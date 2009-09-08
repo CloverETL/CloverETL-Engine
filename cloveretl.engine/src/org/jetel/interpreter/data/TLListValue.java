@@ -67,6 +67,11 @@ public class TLListValue extends TLContainerValue {
     }
     
     public void setStoredValue(TLValue value) {
+    	// this is fix for s=s assignment - if the value is actually us, we don't do anything
+		if (this == value) {
+			return;
+		}
+		
     	if (value instanceof TLContainerValue){
     		for(TLValue val : ((TLContainerValue)value).getCollection()){
     			valueList.add(val.duplicate());

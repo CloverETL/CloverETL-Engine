@@ -152,7 +152,7 @@ public class CTLRecordNormalizeAdapter implements RecordNormalize {
 		// pass source as function parameter, but also as a global record
 		final Object retVal = executor.executeFunction(count, EMPTY_ARGUMENTS, new DataRecord[]{source}, null);
 		if (retVal == null || retVal instanceof Integer == false) {
-			throw new TransformLangExecutorRuntimeException("count() function must return 'int'");
+			throw new TransformLangExecutorRuntimeException(COUNT_FUNCTION_NAME + "() function must return 'int'");
 		}
 		return (Integer)retVal;
 	}
@@ -170,7 +170,7 @@ public class CTLRecordNormalizeAdapter implements RecordNormalize {
 		targetRec[0] = target;
 		final Object retVal = executor.executeFunction(transform, new Object[]{idx}, sourceRec, targetRec);
 		if (retVal == null || retVal instanceof Integer == false) {
-			throw new TransformLangExecutorRuntimeException("transform() function must return 'int'");
+			throw new TransformLangExecutorRuntimeException(TRANSFORM_FUNCTION_NAME + "() function must return 'int'");
 		}
 		return (Integer)retVal;
 	}

@@ -222,7 +222,7 @@ public class TargetFile {
 					// predpoklada se, ze pred spustenim grafu je do dictionary dan OutputStream, kam se vystup nasype
 					// zatim neni moznost spustit graf a az pote se zajimat o vystup, aby to bylo mozne, je potreba upravit
 					// interface dictionary a pridat tam moznost ziskani dat
-					throw new IllegalStateException("Dictionary don't contains value for the key '" + aDict[0] + "'.");
+					throw new IllegalStateException("Dictionary doesn't contain value for the key '" + aDict[0] + "'.");
 				}
 				if( !(dictType instanceof WritableChannelDictionaryType)){
 					throw new IllegalStateException("Dictionary contains invalid type '"+dictType+"' for the key '" + aDict[0] + "'."); 

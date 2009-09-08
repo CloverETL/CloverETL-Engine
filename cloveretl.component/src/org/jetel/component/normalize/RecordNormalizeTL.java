@@ -75,9 +75,6 @@ public class RecordNormalizeTL implements RecordNormalize {
          targetRec=new DataRecord[1];
     }
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordNormalize#init(java.util.Properties, org.jetel.metadata.DataRecordMetadata, org.jetel.metadata.DataRecordMetadata)
-	 */
 	public boolean init(Properties parameters,
 			DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
 			throws ComponentNotReadyException {
@@ -104,9 +101,6 @@ public class RecordNormalizeTL implements RecordNormalize {
 		return result == null ? true : result==TLBooleanValue.TRUE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordNormalize#count(org.jetel.data.DataRecord)
-	 */
 	public int count(DataRecord source) {
 		TLValue value;
 		value=wrapper.executePreparedFunction(lenghtFunctionIdentifier,source,null);
@@ -117,9 +111,6 @@ public class RecordNormalizeTL implements RecordNormalize {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordNormalize#transform(org.jetel.data.DataRecord, org.jetel.data.DataRecord, int)
-	 */
 	public int transform(DataRecord source, DataRecord target, int idx) throws TransformException {
         // set the error message to null so that the getMessage() method works correctly if no error occurs
         errorMessage = null;
@@ -149,9 +140,6 @@ public class RecordNormalizeTL implements RecordNormalize {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordNormalize#finished()
-	 */
 	public void finished() {
 		try {
 			wrapper.execute(FINISHED_FUNCTION_NAME,null);
@@ -179,30 +167,17 @@ public class RecordNormalizeTL implements RecordNormalize {
         return ((result != null) ? result.toString() : null);
     }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.component.normalize.RecordNormalize#reset()
-	 */
 	public void reset() {
 		wrapper.reset();
 		errorMessage = null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#setGraph(org.jetel.graph.TransformationGraph)
-	 */
 	public void setGraph(TransformationGraph graph) {
 		wrapper.setGraph(graph);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#getGraph()
-	 */
 	public TransformationGraph getGraph() {
 		return wrapper.getGraph();
 	}
+
 }

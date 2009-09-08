@@ -45,6 +45,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -102,7 +103,7 @@ import org.w3c.dom.Element;
  */
 public class DataReader extends Node {
 
-    static Log logger = LogFactory.getLog(DataReader.class);
+    private final static Log logger = LogFactory.getLog(DataReader.class);
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DATA_READER";
@@ -144,7 +145,16 @@ public class DataReader extends Node {
     private PolicyType policyType = PolicyType.STRICT;
 
 	private String charset;
-
+	private boolean verbose;
+	private boolean treatMultipleDelimitersAsOne;
+	private boolean quotedStrings;
+	private Boolean skipLeadingBlanks;
+	private Boolean skipTrailingBlanks;
+	private Boolean trim;
+	
+	//is the second port attached? - logging is enabled
+	boolean logging = false;
+	
 	/**
 	 *Constructor for the DelimitedDataReaderNIO object
 	 *
@@ -177,18 +187,12 @@ public class DataReader extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.charset = charset;
-		parser = new DataParser(charset, verbose);
+		this.verbose = verbose;
 	}
 
 	@Override
 	public Result execute() throws Exception {
 		OutputPort outPort = getOutputPort(OUTPUT_PORT);
-		boolean logging = false;
-		if (getOutPorts().size() == 2) {
-			if (checkLogPortMetadata()) {
-				logging = true;
-			}
-		}
 		// we need to create data record - take the metadata from first output
 		// port
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
@@ -220,7 +224,7 @@ public class DataReader extends Node {
 							((IntegerDataField) logRecord.getField(1))
 									.setValue(bdfe.getFieldNumber() + 1);
 							((StringDataField) logRecord.getField(2)).setValue(bdfe
-									.getOffendingValue());
+									.getRawRecord());
 							((StringDataField) logRecord.getField(3)).setValue(bdfe
 									.getMessage());
 							writeRecord(LOG_PORT, logRecord);
@@ -272,6 +276,22 @@ public class DataReader extends Node {
         if(isInitialized()) return;
         super.init();
 
+		//is the logging port attached?
+		if (getOutPorts().size() == 2) {
+			if (checkLogPortMetadata()) {
+				logging = true;
+			}
+		}
+		
+		//create data parser
+		parser = new DataParser(charset, logging ? true : verbose); //verbose mode is true by default in case the logging port is used
+        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
+        parser.setTreatMultipleDelimitersAsOne(treatMultipleDelimitersAsOne);
+        parser.setQuotedStrings(quotedStrings);
+        parser.setSkipLeadingBlanks(skipLeadingBlanks);
+        parser.setSkipTrailingBlanks(skipTrailingBlanks);
+        parser.setTrim(trim);
+        
         prepareMultiFileReader();
         
         try {
@@ -294,6 +314,7 @@ public class DataReader extends Node {
         reader.setIncrementalKey(incrementalKey);
         reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
         reader.setCharset(charset);
+        reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
         reader.setDictionary(graph.getDictionary());
 
         // skip source rows
@@ -378,13 +399,13 @@ public class DataReader extends Node {
 					xattribs.getBoolean(XML_VERBOSE_ATTRIBUTE, false));
 			aDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
 			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
-				aDataReader.parser.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
+				aDataReader.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SKIPTRAILINGBLANKS_ATTRIBUTE)){
-				aDataReader.parser.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
+				aDataReader.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_TRIM_ATTRIBUTE)){
-				aDataReader.parser.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
+				aDataReader.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)){
 				aDataReader.setSkipFirstLine(xattribs.getBoolean(XML_SKIPFIRSTLINE_ATTRIBUTE));
@@ -423,13 +444,13 @@ public class DataReader extends Node {
 		return aDataReader;
 	}
 	
-	public void setTreatMultipleDelimitersAsOne(boolean boolean1) {
-		parser.setTreatMultipleDelimitersAsOne(boolean1);
+	public void setTreatMultipleDelimitersAsOne(boolean treatMultipleDelimitersAsOne) {
+		this.treatMultipleDelimitersAsOne = treatMultipleDelimitersAsOne;
 	}
 
 
-	public void setQuotedStrings(boolean boolean1) {
-		parser.setQuotedStrings(boolean1);		
+	public void setQuotedStrings(boolean quotedStrings) {
+		this.quotedStrings = quotedStrings;		
 	}
 
 
@@ -456,9 +477,20 @@ public class DataReader extends Node {
         }
         
         try {
+    		parser = new DataParser(charset, logging ? true : verbose); //verbose mode is true by default in case the logging port is used
+            parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
+            parser.setTreatMultipleDelimitersAsOne(treatMultipleDelimitersAsOne);
+            parser.setQuotedStrings(quotedStrings);
+            parser.setSkipLeadingBlanks(skipLeadingBlanks);
+            parser.setSkipTrailingBlanks(skipTrailingBlanks);
+            parser.setTrim(trim);
+            
     		prepareMultiFileReader();
-    		if (!getOutputPort(OUTPUT_PORT).getMetadata().hasFieldWithoutAutofilling()) 
-    			throw new ComponentNotReadyException("No field elements without autofilling for '" + getOutputPort(OUTPUT_PORT).getMetadata().getName() + "' have been found!");
+    		if (!getOutputPort(OUTPUT_PORT).getMetadata().hasFieldWithoutAutofilling()) {
+    			status.add(new ConfigurationProblem(
+                		"No field elements without autofilling for '" + getOutputPort(OUTPUT_PORT).getMetadata().getName() + "' have been found!", 
+                		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+    		}
     		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
@@ -521,13 +553,16 @@ public class DataReader extends Node {
     
     public void setPolicyType(PolicyType policyType) {
         this.policyType = policyType;
-        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
     }
 
 	@Override
 	public synchronized void free() {
 		super.free();
-    	storeValues();
+		try {
+	    	storeValues();
+		} catch (Exception e){
+			logger.error(e.getMessage(), e);
+		}
     	if (reader != null) {
     		reader.close();
     	}
@@ -557,4 +592,17 @@ public class DataReader extends Node {
     public void setIncrementalKey(String incrementalKey) {
     	this.incrementalKey = incrementalKey;
     }
+
+    public void setSkipLeadingBlanks(Boolean skipLeadingBlanks) {
+		this.skipLeadingBlanks = skipLeadingBlanks;
+	}
+
+	public void setSkipTrailingBlanks(Boolean skipTrailingBlanks) {
+		this.skipTrailingBlanks = skipTrailingBlanks;
+	}
+
+	public void setTrim(Boolean trim) {
+		this.trim = trim;
+	}
+
 }

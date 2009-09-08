@@ -61,40 +61,35 @@ public class HashKey {
 		return hash;
 	}
 
-
 	/**
-	 *  Description of the Method
+	 * Checks whether this <code>HashKey</code> equals to the given object. This happens only if the given object
+	 * is also a <code>HashKey</code>, it has the same number of key fields and these are all equal. The
+	 * {@link RecordKey#compare(RecordKey, DataRecord, DataRecord)} method is used for comparison of the key fields.
 	 *
-	 * @param  otherObject  Description of the Parameter
-	 * @return      Description of the Return Value
+	 * @param object an object to be compared to this instance
+	 *
+	 * @return <code>true</code> if the given object is equal to this instance, <code>false</code> otherwise
+	 *
+	 * @see Object#equals(Object)
 	 */
-	public boolean equals(Object otherObject) {
-		if( otherObject == null || !(otherObject.getClass().equals(this.getClass()))){
-			return false;
-		}
-		final HashKey other = (HashKey) otherObject;
-		
-		int[] keyFields = recKey.getKeyFields();
-		DataRecord record2 = other.getDataRecord();
-		int key2Fields[] = other.getKeyFields();
-		
-		if (keyFields.length != key2Fields.length) {
-			return false;
-			//throw RuntimeException();
-			// we should throw exception as we are going to compare
-			// keys with different number of fields
-		}
-		// if field types are different for two key fields, we evaluate it as FALSE - not equal
-		// however it should probably raise an exception ...
-		
-		for (int i = 0; i < keyFields.length; i++) {
-			if (!record.getField(keyFields[i]).equals(record2.getField(key2Fields[i]))) {
-				return false;
-			}
-		}
-		return true;
-	}
+	public boolean equals(Object object) {
+        if (object == this) {
+            return true;
+        }
 
+        if (!(object instanceof HashKey)) {
+            return false;
+        }
+
+        HashKey hashKey = (HashKey) object;
+
+        // compare the key lengths here to prevent an exception to be thrown in the following comparison
+        if (recKey.getLength() != hashKey.getRecordKey().getLength()) {
+        	return false;
+        }
+
+        return (recKey.compare(hashKey.getRecordKey(), record, hashKey.getDataRecord()) == 0);
+	}
 
 	/**
 	 *  Gets the recordKey attribute of the HashKey object

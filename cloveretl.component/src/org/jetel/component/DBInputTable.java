@@ -501,7 +501,11 @@ public class DBInputTable extends Node {
 		String[] def;
 		for (int i = 0; i < key.length; i++) {
 			def = JoinKeyUtils.getMappingItemsFromMappingString(key[i], "=");
-			keyDef.setProperty(def[0].trim(), def[1].trim());
+			String value = def[1].trim();
+			if (value.startsWith("\"") && value.endsWith("\"")) {
+				value = value.substring(1, value.length()-1);
+			}
+			keyDef.setProperty(def[0].trim(), value);
 		}
 		parser.setIncrementalKey(keyDef);
 	}

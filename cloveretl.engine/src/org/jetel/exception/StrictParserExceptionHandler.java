@@ -45,6 +45,7 @@ public class StrictParserExceptionHandler extends AbstractParserExceptionHandler
     	if(ex.getOffendingValue() == null && getRawRecord() != null) {
     		ex.setOffendingValue(getRawRecord());
     	}
+    	ex.setRawRecord(getRawRecord());
         throw ex;
     }
 

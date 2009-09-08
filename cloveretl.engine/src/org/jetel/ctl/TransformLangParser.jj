@@ -56,6 +56,7 @@ PARSER_BEGIN(TransformLangParser)
 
 package org.jetel.ctl;
 
+import org.jetel.graph.TransformationGraph;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.ctl.ASTnode.*;
@@ -80,6 +81,8 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
+import java.net.URL;
+
 
 public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements TransformLangParserTreeConstants/*@egen*/ {/*@bgen(jjtree)*/
   protected JJTTransformLangParserState jjtree = new JJTTransformLangParserState();
@@ -90,12 +93,14 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
        private boolean hasEvalNode;
 	   private HashSet<String> parsedImports;
 	   private ProblemReporter problemReporter;
+	   private TransformationGraph graph;
 
 	/**
 	 * Creates the main parser
 	 */
-	public TransformLangParser(ProblemReporter problemReporter, java.io.InputStream stream, String encoding) {
+	public TransformLangParser(TransformationGraph graph, ProblemReporter problemReporter, java.io.InputStream stream, String encoding) {
 		this(stream,encoding);
+		this.graph = graph;
 		this.parserHelper = new ParserHelper();
 		this.hasEvalNode = false;
 		this.parsedImports = new HashSet<String>();
@@ -105,7 +110,8 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       /**
        * Used by main parser to create import parsers
        */
-      public TransformLangParser(TransformLangParser parent,String filename,java.io.InputStream stream){			  this(stream);			  this.parserHelper=parent.parserHelper;
+      public TransformLangParser(TransformLangParser parent, String filename, java.io.InputStream stream){			  this(stream);
+			  this.graph = parent.graph;			  this.parserHelper=parent.parserHelper;
 			  this.hasEvalNode = false;              this.problemReporter = parent.problemReporter;
               this.parsedImports = parent.parsedImports;      }
       
@@ -824,7 +830,11 @@ void ImportSource() :{/*@bgen(jjtree) ImportSource */
 		// to prevent parsing of an existing import
 		if (!isParsedImport(filenameURL)) {
 			InputStream stream;
-			jjtn000.setSourceToImport(filenameURL);			CLVFStart parseTree = null;			try {				stream=Channels.newInputStream(FileUtils.getReadableChannel(null, filenameURL)); 				addParsedImport(filenameURL); // the above will handle invalid URL etc.				problemReporter.setImport(filenameURL); // problem reporter is singleton so the new parser will get the same
+			
+			// we need to resolve the filename to project path (if it is relative)
+			final URL projectURL = graph != null ? graph.getProjectURL() : null;
+			
+			jjtn000.setSourceToImport(filenameURL);			CLVFStart parseTree = null;			try {				stream=Channels.newInputStream(FileUtils.getReadableChannel(projectURL, filenameURL)); 				addParsedImport(filenameURL); // the above will handle invalid URL etc.				problemReporter.setImport(filenameURL); // problem reporter is singleton so the new parser will get the same
 				TransformLangParser parser = new TransformLangParser(this,filenameURL,stream);				
 				parser.addParsedImports(getParsedImports());
 			 	parseTree = parser.Start();				jjtn000.jjtAddChild(parseTree,0);

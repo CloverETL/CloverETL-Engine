@@ -1,4 +1,3 @@
-0;100;random_int($0.MinimumValue,$0.MaximumValue, randomSeed);96
 0;100;random_int($0.MinimumValue,$0.MaximumValue, randomSeed);28
 0;100;random_int($0.MinimumValue,$0.MaximumValue, randomSeed);86
 0;100;random_int($0.MinimumValue,$0.MaximumValue, randomSeed);50
@@ -8,3 +7,4 @@
 0;100;random_int($0.MinimumValue,$0.MaximumValue, randomSeed);42
 0;100;random_int($0.MinimumValue,$0.MaximumValue, randomSeed);71
 0;100;random_int($0.MinimumValue,$0.MaximumValue, randomSeed);50
+0;100;random_int($0.MinimumValue,$0.MaximumValue, randomSeed);25

@@ -1,32 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu Dec 11 15:46:21 CET 2007" description="This graph demonstrates functionality of XML writer components." guiVersion="0.0.0.devel" id="1198081350738" licenseType="Evaluation license." modified="Mon Feb 16 09:35:54 CET 2009" modifiedBy="avackova" name="Testing XML writer" revision="1.12">
+<Graph author="avackova" created="Thu Dec 11 15:46:21 CET 2007" description="This graph demonstrates functionality of XML writer components." guiVersion="2.8.0" id="1198081350738" licenseType="commercial pro javlinconsulting" modified="Fri Sep 04 11:38:38 CEST 2009" modifiedBy="cloveruser" name="Testing XML writer" revision="1.56">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/addresses.fmt" id="Metadata3"/>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="302" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Creating an XML file." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="488" x="269" y="195">
+<attr name="text"><![CDATA[
+Four input flows are received by XMLWriter. Data records from different flows are interconnected using pairs of the key and the parentKey attributes as specified in the Mapping attribute of XMLWriter. 
+The same values of key and parentKey are used to create the output XML file. All values are compared as strings. For this reason the second and the third readers remove quotes by setting Quoted strings to true. Otherwise, string with quotes and without them would be considered as different strings and would not be interconnected. 
+Data policy of these two readers is also set to less strict (Controlled instead of Strict).
+The Mapping attribute in XMLWriter defines the structure of output file. It specifies whether the fields will be written as elements (default) or attributes. fieldsAs and fieldsAsExcept should be specified.
+Also fields that serve to interconnect data flows are hidden in child elements and also duplicate fields are hidden also in children (fieldsIgnore).
+In this example, customers are used as the highest level element, the orders made by these customers are nested in them, the address ID is added to some of the orders and also the employee who had the responsibility for individual order is nested in the order.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="23" guiY="21" id="INPUT1" type="DATA_READER"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="23" guiY="103" id="INPUT2" type="DATA_READER"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="25" guiName="INPUT3" guiWidth="50" guiX="24" guiY="182" id="INPUT3" type="DATA_READER"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/addresses.dat" guiHeight="25" guiName="INPUT4" guiWidth="50" guiX="25" guiY="263" id="INPUT4" type="DATA_READER"/>
-<Node charset="UTF-8" enabled="enabled" fileUrl="zip:${DATAOUT_DIR}/xmlOut_$$.zip" guiHeight="25" guiName="XML_OUT" guiWidth="50" guiX="266" guiY="117" id="XML_OUT" omitNewLines="false" recordCount="10" recordSkip="5" recordsPerFile="2" rootElement="root" type="XML_WRITER" useRootElement="false">
-<attr name="mapping"><![CDATA[
-          <Mapping element="customer" inPort="2" key="CUSTOMERID" fieldsAs="elements" fieldsAsExcept="CUSTOMERID;CompanyName" fieldsIgnore="CompanyName;State" >
-              <Mapping element="order" inPort="0" key="OrderID" keyToParent="CustomerID" fieldsAs="elements" fieldsAsExcept="OrderID">
-				<Mapping element="address" inPort="3" key="AddressID" keyToParent="OrderID" fieldsAs="attributes" >
-				</Mapping>
-				<Mapping element="employee" inPort="1" key="EmployeeID" keyFromParent="EmployeeID" fieldsAs="elements" >
-				</Mapping>
-              </Mapping>
-          </Mapping>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="23" guiY="21" id="INPUT1" type="DATA_READER"/>
+<Node dataPolicy="Controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="23" guiY="103" id="INPUT2" quotedStrings="true" type="DATA_READER"/>
+<Node dataPolicy="Controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="25" guiName="Customers" guiWidth="50" guiX="24" guiY="182" id="INPUT3" quotedStrings="true" type="DATA_READER"/>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/addresses.dat" guiHeight="25" guiName="Addresses" guiWidth="50" guiX="50" guiY="264" id="INPUT4" type="DATA_READER"/>
+<Node charset="UTF-8" enabled="enabled" fileUrl="${DATAOUT_DIR}/xmlOut.xml" guiHeight="25" guiName="XML_OUT" guiWidth="50" guiX="296" guiY="95" id="XML_OUT" omitNewLines="false" rootElement="root" rootInfoAttributes="true" type="XML_WRITER" useRootElement="false">
+<attr name="mapping"><![CDATA[<Mapping element="customer" inPort="2" fieldsAsExcept="CUSTOMERID" fieldsIgnore="CompanyName;State" >
+   <Mapping element="order" inPort="0" key="CustomerID" parentKey="CUSTOMERID" fieldsAsExcept="OrderID" >
+      <Mapping element="address" inPort="3" key="OrderID" parentKey="OrderID" fieldsAs="attributes" fieldsIgnore="OrderID;ShipName;ShipAddress;ShipCity;ShipRegion;ShipPostalCode;ShipCountry" />
+	  <Mapping element="employee" inPort="1" key="EmployeeID" parentKey="EmployeeID" />
+   </Mapping>
+</Mapping>
 ]]></attr>
 </Node>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="XML_OUT:0"/>
-<Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="XML_OUT:1"/>
-<Edge fromNode="INPUT3:0" guiBendpoints="" id="INEDGE3" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="XML_OUT:2"/>
-<Edge fromNode="INPUT4:0" guiBendpoints="" id="INEDGE4" inPort="Port 3 (in)" metadata="Metadata3" outPort="Port 0 (output)" toNode="XML_OUT:3"/>
+<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="XML_OUT:0"/>
+<Edge debugMode="true" fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="XML_OUT:1"/>
+<Edge debugMode="true" fromNode="INPUT3:0" guiBendpoints="" id="INEDGE3" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="XML_OUT:2"/>
+<Edge debugMode="true" fromNode="INPUT4:0" guiBendpoints="" id="INEDGE4" inPort="Port 3 (in)" metadata="Metadata3" outPort="Port 0 (output)" toNode="XML_OUT:3"/>
 </Phase>
 </Graph>

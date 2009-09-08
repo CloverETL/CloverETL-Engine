@@ -39,12 +39,15 @@ import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.NumberIterator;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -148,6 +151,8 @@ public class XLSReader extends Node {
     public static final String XML_CHARSET_ATTRIBUTE = "charset";
     public static final String XML_INCREMENTAL_FILE_ATTRIBUTE = "incrementalFile";
     public static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
+	private static final String XML_SKIP_SOURCE_ROWS_ATTRIBUTE = "skipSourceRows";
+	private static final String XML_NUM_SOURCE_RECORDS_ATTRIBUTE = "numSourceRecords";
 
     public static final String XLS_CELL_CODE_INDICATOR = "#";
 
@@ -217,6 +222,12 @@ public class XLSReader extends Node {
             if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
                 aXLSReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
             }
+			if (xattribs.exists(XML_SKIP_SOURCE_ROWS_ATTRIBUTE)){
+				aXLSReader.setSkipSourceRows(xattribs.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
+				aXLSReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
+			}
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":"
                     + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
@@ -232,6 +243,8 @@ public class XLSReader extends Node {
     private int maxErrorCount = -1;
     private String incrementalFile;
     private String incrementalKey;
+	private int skipSourceRows = -1;
+	private int numSourceRecords = -1;
 
     private XLSParser parser;
     private MultiFileReader reader;
@@ -351,6 +364,21 @@ public class XLSReader extends Node {
     public void setIncrementalKey(String incrementalKey) {
         this.incrementalKey = incrementalKey;
     }
+
+	/**
+	 * @param how many rows to skip for every source
+	 */
+	public void setSkipSourceRows(int skipSourceRows) {
+		this.skipSourceRows = Math.max(skipSourceRows, 0);
+	}
+	
+	/**
+	 * @param how many rows to process for every source
+	 */
+	public void setNumSourceRecords(int numSourceRecords) {
+		this.numSourceRecords = Math.max(numSourceRecords, 0);
+	}
+	
 
     public void toXML(Element xmlElement) {
         super.toXML(xmlElement);
@@ -510,6 +538,7 @@ public class XLSReader extends Node {
         }else{
             parser.setMappingType(XLSParser.NO_METADATA_INFO);
         }
+        parser.useIncrementalReading(incrementalFile != null && incrementalKey != null);
 
         TransformationGraph graph = getGraph();
         reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
@@ -518,7 +547,23 @@ public class XLSReader extends Node {
         reader.setIncrementalKey(incrementalKey);
         reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
         reader.setCharset(charset);
+        reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
         reader.setDictionary(graph.getDictionary());
+        reader.setNumSourceRecords(numSourceRecords);
+        
+        // skip source rows
+        if (skipSourceRows == -1) {
+        	OutputPort outputPort = getOutputPort(OUTPUT_PORT);
+        	DataRecordMetadata metadata;
+        	if (outputPort != null && (metadata = outputPort.getMetadata()) != null) {
+            	int ssr = metadata.getSkipSourceRows();
+            	if (ssr > 0) {
+                    skipSourceRows = ssr;
+            	}
+        	}
+        }
+        reader.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : 0);
+        
         reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
     }
 

@@ -298,6 +298,11 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	private String getDefaultCommandFileContent() throws IOException {
 		CommandBuilder cmdBuilder = new CommandBuilder(properties, SPACE_CHAR);
 
+		// The following command ensures that the entire graph fails if the psql utility failed.
+		// Otherwise the graph would succeed even though an error occurred.
+		cmdBuilder.add("\\set ON_ERROR_STOP");
+		cmdBuilder.add(System.getProperty("line.separator"));
+
 		cmdBuilder.add("\\copy");
 		// \copy table [ ( column_list ) ]
 		cmdBuilder.add(table);

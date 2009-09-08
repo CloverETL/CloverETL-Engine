@@ -20,6 +20,7 @@
 package org.jetel.plugin;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -49,7 +50,9 @@ import org.jetel.util.file.FileUtils;
  */
 public class Plugins {
 
-    static Log logger = LogFactory.getLog(Plugins.class);
+	private static final String PLUGIN_MANIFEST_FILE_NAME = "plugin.xml";
+
+	static Log logger = LogFactory.getLog(Plugins.class);
 
     /**
      * Collection of PluginDescriptor(s).
@@ -82,21 +85,38 @@ public class Plugins {
         //check plugin directories
         List<URL> pluginDirectories = new ArrayList<URL>();
         String[] dirs = directory.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-        for(String dir : dirs) {
+        
+        FilenameFilter pluginManifestFilter = new FilenameFilter() {
+			public boolean accept(File dir, String name) {
+				return name.equals(PLUGIN_MANIFEST_FILE_NAME);
+			}
+		};
+
+		for (String dir : dirs) {
     		File pluginRepositoryPath = new File(dir);
-    		File[] pd = pluginRepositoryPath.listFiles();
-    		if(pd == null) {
-    			logger.error("Plugins repository '" + pluginRepositoryPath + "' is not available (skipped).");
-    			continue;
-    		}
-    		for(int i = 0; i < pd.length; i++) {
-    			if(pd[i].isDirectory()) {
-    				try {
-    					pluginDirectories.add(pd[i].toURI().toURL());
-	    			} catch (MalformedURLException e) {
-	                    logger.error("Plugin directory does not exists. (" + pd[i] + ")");
-	    			}
+    		File[] pluginManifestFiles = pluginRepositoryPath.listFiles(pluginManifestFilter);
+
+    		if (pluginManifestFiles != null && pluginManifestFiles.length != 0) {
+				try {
+					pluginDirectories.add(pluginRepositoryPath.toURI().toURL());
+    			} catch (MalformedURLException e) {
+                    logger.error("Plugin directory does not exist. (" + pluginRepositoryPath + ")");
     			}
+    		} else {
+    			File[] pd = pluginRepositoryPath.listFiles();
+				if (pd == null) {
+					logger.error("Plugins repository '" + pluginRepositoryPath + "' is not available (skipped).");
+					continue;
+				}
+				for (int i = 0; i < pd.length; i++) {
+					if (pd[i].isDirectory()) {
+						try {
+							pluginDirectories.add(pd[i].toURI().toURL());
+						} catch (MalformedURLException e) {
+							logger.error("Plugin directory does not exist. (" + pd[i] + ")");
+						}
+					}
+				}
     		}
         }
 
@@ -157,7 +177,7 @@ public class Plugins {
     		URL pluginManifestUrl;
     		try {
     			//find a plugin manifest "plugin.xml"
-    			pluginManifestUrl = FileUtils.getFileURL(pluginUrl, "plugin.xml");
+    			pluginManifestUrl = FileUtils.getFileURL(pluginUrl, PLUGIN_MANIFEST_FILE_NAME);
 			} catch (MalformedURLException e) {
 				logger.error("Plugin '" + pluginUrl + "' is not available (skipped).", e);
 				continue;

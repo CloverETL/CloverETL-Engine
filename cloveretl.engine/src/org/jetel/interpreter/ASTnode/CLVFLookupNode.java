@@ -7,6 +7,8 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.interpreter.Stack;
+import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
 import org.jetel.interpreter.data.TLValue;
@@ -25,8 +27,8 @@ public class CLVFLookupNode extends SimpleNode {
     public String lookupName;
     public String fieldName;
     public int opType=0; //default is get
-    public LookupTable lookupTable;
-    public Lookup lookup;
+    public  LookupTable lookupTable;
+    public  Lookup lookup;
     private DataRecord lookupRecord;
     public int fieldNum=-1; //lazy initialization
     
@@ -63,12 +65,13 @@ public class CLVFLookupNode extends SimpleNode {
 	 * @param keys keys for lookup
 	 * @throws ComponentNotReadyException 
 	 */
-	public void createLookup(TLValue[] keys) throws ComponentNotReadyException{
+	public void createLookup(Stack stack) throws ComponentNotReadyException{
 	  //create lookup key and lookup record based on requested keys: record contains only key fields
 	  DataRecordMetadata lookupMetadata = new DataRecordMetadata("_metadata_ctl_" + lookupTable.getName());
-	  int[] keyFields = new int[keys.length];
-	  for (int i = 0; i < keys.length; i++) {
-		lookupMetadata.addField(new DataFieldMetadata("_field" + i, TLValueType.convertType(keys[i].getType()), null));
+	  final int numKeys=jjtGetNumChildren();
+	  int[] keyFields = new int[numKeys];
+	  for (int i = numKeys-1; i >=0; i--) {
+		lookupMetadata.addField(new DataFieldMetadata("_field" + i, TLValueType.convertType(stack.get(i).getType()), null));
 		keyFields[i] = i;
 	  }
 	  RecordKey lookupKey = new RecordKey(keyFields, lookupMetadata);
@@ -91,12 +94,13 @@ public class CLVFLookupNode extends SimpleNode {
 	   * 
 	 * @param keys keys for lookup
 	 */
-	public void seek(TLValue[] keys){
-		  if (lookupRecord == null) {
+	public void seek(Stack stack){
+		
+		if (lookupRecord == null) {
 			  prepareLookupRecord();
 		  }
-		  for (int i = 0; i < keys.length; i++) {
-				keys[i].copyToDataField(lookupRecord.getField(i));
+		  for (int i = jjtGetNumChildren()-1; i>=0; i--) {
+			    stack.pop().copyToDataField(lookupRecord.getField(i));
 			}
 		  lookup.seek(lookupRecord);
 	  }

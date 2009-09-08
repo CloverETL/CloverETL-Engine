@@ -44,9 +44,9 @@ public class Compare {
 	 * @return     -1;0;1 if (a>b); (a==b); (a<b)
 	 */
 	final static public int compare(CharSequence a,CharSequence b){
-		int aLength = a.length();
-		int bLength = b.length();
-		int compLength = (aLength< bLength  ? aLength : bLength );
+		final int aLength = a.length();
+		final int bLength = b.length();
+		final int compLength = (aLength< bLength  ? aLength : bLength );
 		for (int i = 0; i < compLength; i++) {
 			if (a.charAt(i) > b.charAt(i)) {
 				return 1;
@@ -120,4 +120,39 @@ public class Compare {
 end of deprecated code */    
         
     }
+    
+	/**
+	 * Compares two CharSequences for equality
+	 * 
+	 * @param a
+	 * @param b
+	 * @return true if equal, false otherwise
+	 */
+	public static boolean equals(CharSequence a, CharSequence b){
+    	final int length=a.length();
+    	if (length!=b.length()) return false;
+    	for (int i = 0; i < length; i++) {
+			if (a.charAt(i) != b.charAt(i))
+				return false;
+		}
+    	return true;
+    }
+	
+	/**
+	 * Compares two CharSequences for equality ignoring letters' case
+	 * 
+	 * @param a
+	 * @param b
+	 * @return true if equal, false otherwise
+	 */
+	public static boolean equalsIgnoreCase(CharSequence a, CharSequence b){
+    	final int length=a.length();
+    	if (length!=b.length()) return false;
+    	for (int i = 0; i < length; i++) {
+			if (Character.toUpperCase(a.charAt(i)) != Character.toUpperCase(b.charAt(i)))
+				return false;
+		}
+    	return true;
+    }
+    
 }

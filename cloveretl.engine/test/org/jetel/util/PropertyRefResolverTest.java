@@ -1,62 +1,63 @@
 /*
- *    jETeL/Clover - Java based ETL application framework.
- *    Copyright (C) 2002-05  David Pavlis <david_pavlis@hotmail.com> and others.
- *    
- *    This library is free software; you can redistribute it and/or
- *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation; either
- *    version 2.1 of the License, or (at your option) any later version.
- *    
- *    This library is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
- *    Lesser General Public License for more details.
- *    
- *    You should have received a copy of the GNU Lesser General Public
- *    License along with this library; if not, write to the Free Software
- *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
  *
- * Created on 15.5.2006
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.jetel.util;
 
 import java.util.Properties;
 
-import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.property.PropertyRefResolver;
 
 public class PropertyRefResolverTest extends CloverTestCase {
 
-    protected void setUp() throws Exception {
+	private PropertyRefResolver resolver;
+
+	protected void setUp() throws Exception {
 		initEngine();
-    }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
+		Properties properties = new Properties();
+		properties.put("dbDriver", "org.mysql.test");
+		properties.put("user", "myself");
+		properties.put("password", "xxxyyyzzz");
+		properties.put("pwd", "${password}");
+		properties.put("ctl", "'${eval}'");
+		properties.put("eval", "`'do' + 'ne'`");
 
-    public void test() throws AttributeNotFoundException {
-        //Test/Debug code
-       Properties prop=new Properties();
-       prop.put("dbDriver","org.mysql.test");
-       prop.put("user","myself");
-       prop.put("password","xxxyyyzzz");
-       prop.put("pwd","${password}");
-       
-       PropertyRefResolver attr=new PropertyRefResolver(prop);
-       System.out.println("DB driver is: '{${dbDriver}}' ...");
-       System.out.println(attr.resolveRef("DB driver is: '{${dbDriver}}' ..."));
-       System.out.println("${user} is user");
-       System.out.println(attr.resolveRef("${user} is user"));
-       System.out.println("${user}/${password}/${pwd} is user/password");
-       System.out.println(attr.resolveRef("${user}/${password}/${pwd} is user/password"));
-       System.out.println("\\${user}/\\${password} is user/password");
-       System.out.println(attr.resolveRef("${user1}/${password1}/${pwd} is user/password",false));
-    
-    }
+		resolver = new PropertyRefResolver(properties);
+	}
+
+	public void testResolve() {
+		assertEquals("DB driver is: '{org.mysql.test}' ...",
+				resolver.resolveRef("DB driver is: '{${dbDriver}}' ..."));
+		assertEquals("myself is user",
+				resolver.resolveRef("${user} is user"));
+		assertEquals("myself/xxxyyyzzz/xxxyyyzzz is user/password",
+				resolver.resolveRef("${user}/${password}/${pwd} is user/password"));
+		assertEquals("${user1}/${password1}/xxxyyyzzz is user/password",
+				resolver.resolveRef("${user1}/${password1}/${pwd} is user/password", false));
+	}
+
+	public void testEvaluate() {
+		assertEquals("<null>", resolver.resolveRef("`null`"));
+		assertEquals("1 + 1 = 2", resolver.resolveRef("1 + 1 = `1 + 1`"));
+		assertEquals("Hello, World!", resolver.resolveRef("`'H' + 'e' + 'll' + 'o'`, World!"));
+		assertEquals("CTL expression: done", resolver.resolveRef("CTL expression: `${ctl}`"));
+		assertEquals("`back quoted CTL expression`", resolver.resolveRef("``back quoted `'CTL expression'```"));
+	}
 
 }

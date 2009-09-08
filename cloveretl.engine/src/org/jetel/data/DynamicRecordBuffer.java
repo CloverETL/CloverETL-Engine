@@ -94,7 +94,15 @@ public class DynamicRecordBuffer {
         this.dataBufferSize=dataBufferSize;
     }
 
-    /**
+	/**
+	 * @return <code>true</code> if the buffer is closed and further read/write operations are going to fail,
+	 * <code>false</code> otherwise
+	 */
+	public boolean isClosed() {
+		return isClosed;
+	}
+
+	/**
      * Initializes the buffer. Must be called before any write or read operation
      * is performed.
      * 

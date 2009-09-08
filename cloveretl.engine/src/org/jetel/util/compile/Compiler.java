@@ -219,7 +219,6 @@ public class Compiler {
 
     public ClassLoader getClassLoader() {
         if(classLoader == null) {
-            //return Thread.currentThread().getContextClassLoader();
             return getClass().getClassLoader();
         }
         return classLoader;

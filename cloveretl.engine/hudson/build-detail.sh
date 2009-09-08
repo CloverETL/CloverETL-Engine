@@ -1,9 +1,17 @@
 #!/bin/sh
 
+export ANT_OPTS="-Xmx500m"
+
 set
+
 cd cloveretl.engine
-/opt/apache-ant-1.7.0/bin/ant clean build reports-hudson-coverage \
-	-Dadditional.plugin.list=cloveretl.lookup.commercial \
-	-Dcte.usedb=false \
-	-Dlogpath=/data/cte-logs \
-	-Dcte.hudson.link=$JOB_NAME/$BUILD_NUMBER
+
+/opt/apache-ant/bin/ant clean reports-hudson-detail \
+	-Dadditional.plugin.list=cloveretl.component.commercial,cloveretl.lookup.commercial \
+	-Dcte.environment.config=2.8_detail \
+	-Dcte.logpath=/data/cte-logs \
+	-Dcte.hudson.link=job/$JOB_NAME/$BUILD_NUMBER
+	
+if  [ "$(hostname)" != "klara" ] ; then
+	rsync -rv --remove-source-files /data/cte-logs/ klara:/data/cte-logs
+fi

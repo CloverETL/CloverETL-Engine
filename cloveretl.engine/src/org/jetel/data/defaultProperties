@@ -102,9 +102,10 @@ WatchDog.WATCHDOG_SLEEP_INTERVAL = 1000
 WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL = 5000
 WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = 1
 			
+GraphProperties.EXPRESSION_PLACEHOLDER_REGEX = `([^`]*(``[^`]+)*)`
 GraphProperties.PROPERTY_PLACEHOLDER_REGEX = \\$\\{(\\w+)\\}
 
-InternalSortDataRecord.DEFAULT_INTERNAL_SORT_BUFFER_CAPACITY = 2000
+InternalSortDataRecord.DEFAULT_INTERNAL_SORT_BUFFER_CAPACITY = 8000
 
 #Size of internal buffer of DirectEdge for storing
 #data records when transmitted between two components.
@@ -146,3 +147,7 @@ ASSIGN_SIGN = :=
 #in example for view data with grid mode
 INCREMENTAL_STORE_KEY = incremental_store
 
+# List of package prefixes which are excluded from greedy class loading
+# Prevents GreedyClassLoader from loading interfaces and common classes from external libs, which would probably result in ClassCastExceptions
+# GreedyClassLoader is used for JMS implementations, JDBC drivers, transformation classes etc.
+PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING=java.;javax.;sun.misc.

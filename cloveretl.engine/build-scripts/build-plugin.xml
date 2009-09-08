@@ -13,6 +13,7 @@
 	<property name="dir.lib" value="${basedir}/lib"/>
 	<property name="dir.doc" value="${basedir}/doc"/>
 	<property name="dir.dist" value="${basedir}/dist"/>
+	<property name="dir.dist.other.plugins" value="${dir.dist}"/>
 	<property name="dir.plugin.dist" value="${dir.dist}/plugins/${plugin.dir.name}"/>
 
 	<property name="dir.engine" value="${basedir}/../cloveretl.engine"/>
@@ -117,14 +118,23 @@
 				<property name="dir.package.manifest" value="${dir.manifest}"/>
 			</else>
 		</if>
+
+		<available property="jdbc4.present" classname="java.sql.Wrapper"/>
 		
 	</target>
 
 	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
-	<target name="improve-java-sources" depends="">
+	<target name="improve-java-sources" depends="copy-java-sources,improve-nojdbc4"/>
+	
+	<target name="copy-java-sources" depends="init">
 		<copy todir="${dir.src.improved}" encoding="UTF-8">
 			<fileset dir="${dir.src}" excludes="${java.src.exclude}"/>
 		</copy>
+	</target>
+	
+	<target name="improve-nojdbc4" unless="jdbc4.present">
+		<replace dir="${dir.src.improved}" token="/* JDBC_4_ANT_KEY_BEGIN */" value="/* THIS FRAGMENT IS ONLY FOR JDBC 4"/>
+		<replace dir="${dir.src.improved}" token="/* JDBC_4_ANT_KEY_END */" value="*/"/>
 	</target>
 
 	<target name="find-required-plugins" depends="init">
@@ -134,11 +144,11 @@
 			out="${required.plugins.file}"
 			>
 			<param name="separator" expression=","/>
-			<param name="dist" expression="${dir.dist}"/>
+			<param name="dist" expression="${dir.dist.other.plugins}"/>
 		</xslt>
 		<property file="${required.plugins.file}"/>
 		
-		<property name="cp.compile" value="${dir.dist}${engine.dist}${required.plugins.dist}" />
+		<property name="cp.compile" value="${dir.dist.other.plugins}${engine.dist}${required.plugins.dist}" />
 		
 		<echo>required.plugins=${required.plugins}</echo>
 	</target>
@@ -225,6 +235,7 @@
 			<adaptresourcefilecontents filter="plugin.xml" />
 			
 		  	<libraryjar location="${java.home}/lib/rt.jar" />
+		  	<libraryjar location="${java.home}/lib/jsse.jar" />
 			<libraryjar path="${cp.compile}"/>
 			<libraryjar path="${plugin-libs.classpath}"/>
 			<libraryjar path="${engine-libs.classpath}"/>
@@ -298,6 +309,8 @@
 			</keep>
 			<keep name="com.opensys.cloveretl.lookup.AspellLookupTable"><field access="protected public"/><method access="protected public"/></keep>
 
+			<keep name="org.jetel.ctl.CTLDefaultImport"><field access="protected public"/><method access="protected public"/></keep>
+			
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
 			-->

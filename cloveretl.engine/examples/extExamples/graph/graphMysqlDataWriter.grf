@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="0.0.0.devel" id="1204803682775" licenseType="Evaluation license." modified="Fri Jun 19 12:22:59 CEST 2009" modifiedBy="avackova" name="MysqlDataWriter" revision="1.100">
+<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="0.0.0.devel" id="1204803682775" licenseType="Evaluation license." modified="Fri Jul 31 15:00:01 CEST 2009" modifiedBy="avackova" name="MysqlDataWriter" revision="1.125">
 <Global>
 <Metadata id="Metadata1">
 <Record fieldDelimiter="|" name="err" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -40,8 +40,13 @@
 <Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MYSQL_DATA_WRITER1:0"/>
 </Phase>
 <Phase number="2">
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DBInputTable" guiWidth="0" guiX="33" guiY="258" id="DB_INPUT_TABLE0" sqlQuery="select $intT:=intT, $smallT:=smallT, $decT:=decT, $numT:=numT, $floatT:=floatT, &#10;&#9;$realT:=realT, $datetimeT:=datetimeT, $timestampT:=timestampT, $dateT:=dateT,&#10;&#9;$timeT:=concat('',timeT), $yearT:=yearT, $charT:=charT, $varcharT:=varcharT,&#10;&#9;$textT:=textT from test" type="DB_INPUT_TABLE"/>
-<Node debugFilename="${DATAOUT_DIR}/mysql.out" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="242" guiY="258" id="TRASH0" type="TRASH"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/out_remote.dat" guiHeight="25" guiName="DATA_WRITER0" guiWidth="50" guiX="243" guiY="217" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node columnDelimiter="," commandURL="${DATATMP_DIR}/mysql_load.cmd" database="test" enabled="enabled" fileURL="/data/hudson/tests/data/mysqlFlat.dat" guiHeight="25" guiName="MYSQL_DATA_WRITER0" guiWidth="50" guiX="28" guiY="217" host="koule.javlin.eu" id="MYSQL_DATA_WRITER2" mysqlPath="mysql" parameters="port=&quot;3306&quot;|local=&quot;false&quot;|fieldsEnclosedBy=&quot;*&quot;|fieldsIsOptionallyEnclosed" table="test" type="MYSQL_DATA_WRITER" username="test"/>
+<Edge debugMode="true" fromNode="MYSQL_DATA_WRITER2:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+</Phase>
+<Phase number="3">
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DBInputTable" guiWidth="0" guiX="33" guiY="289" id="DB_INPUT_TABLE0" sqlQuery="select $intT:=intT, $smallT:=smallT, $decT:=decT, $numT:=numT, $floatT:=floatT, &#10;&#9;$realT:=realT, $datetimeT:=datetimeT, $timestampT:=timestampT, $dateT:=dateT,&#10;&#9;$timeT:=concat('',timeT), $yearT:=yearT, $charT:=charT, $varcharT:=varcharT,&#10;&#9;$textT:=textT from test" type="DB_INPUT_TABLE"/>
+<Node debugFilename="${DATAOUT_DIR}/mysql.out" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="242" guiY="289" id="TRASH0" type="TRASH"/>
 <Edge fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH0:0"/>
 </Phase>
 </Graph>

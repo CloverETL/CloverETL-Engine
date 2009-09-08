@@ -20,9 +20,11 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLUtil;
@@ -284,6 +286,79 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		
 		return s.startsWith("'");
 		
+	}
+
+	/**
+	 * A static method that retrieves schemas from dbMeta objects.
+	 * Returns it as arraylist of strings in the format either <schema> or <catalog>.<schema>
+	 * e.g.:
+	 * mytable
+	 * dbo.anothertable
+	 * 
+	 * @param dbMeta
+	 * @return
+	 * @throws SQLException
+	 */
+	protected static ArrayList<String> getMetaSchemas(DatabaseMetaData dbMeta) throws SQLException {
+		ArrayList<String> ret = new ArrayList<String>();
+		ResultSet result = dbMeta.getSchemas();
+		String tmp;
+		while (result.next()) {
+			tmp = "";
+			try {
+				if (result.getString(2) != null) {
+					tmp = result.getString(2) + dbMeta.getCatalogSeparator();
+				}
+			} catch (Exception e) {
+				// -pnajvar
+				// this is here deliberately
+				// some dbms don't provide second column and that is not wrong, just have to ignore
+			}
+			tmp += result.getString(1);
+			ret.add(tmp);
+		}
+		result.close();
+		return ret;
+	}
+	
+	protected static ArrayList<String> getMetaCatalogs(DatabaseMetaData dbMeta) throws SQLException {
+		ArrayList<String> ret = new ArrayList<String>();
+		ResultSet result = dbMeta.getCatalogs();
+		String tmp;
+		while (result.next()) {
+			tmp = result.getString(1);
+			ret.add(tmp);
+		}
+		result.close();
+		return ret;
+	}
+	
+	public ArrayList<String> getSchemas(DatabaseMetaData dbMeta)
+			throws SQLException {
+
+		ArrayList<String> tmp;
+		
+		ArrayList<String> schemas = new ArrayList<String>();
+
+		// add schemas
+		tmp = getMetaSchemas(dbMeta);
+		if (tmp != null) {
+			schemas.addAll(tmp);
+		}
+
+		// add catalogs
+		tmp = getMetaCatalogs(dbMeta);
+		if (tmp != null) {
+			schemas.addAll(tmp);
+		}
+		
+		return schemas;
+	}
+
+	public ResultSet getTables(DatabaseMetaData dbMeta, String dbName) throws SQLException {
+		// by default, database `dbName` is considered a schema, sometimes it needs to be considered
+		// as a catalog
+		return dbMeta.getTables(dbName, null, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/); //fix by kokon - show only tables and views
 	}
 
     

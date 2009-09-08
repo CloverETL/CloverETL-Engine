@@ -194,8 +194,7 @@ public class JavaExecute extends Node {
                 }
             }
             try {
-                URLClassLoader classLoader = new URLClassLoader(myURLs, Thread
-                        .currentThread().getContextClassLoader());
+                URLClassLoader classLoader = new URLClassLoader(myURLs, JavaExecute.class.getClassLoader());
                 codeToRun = (JavaRunnable) Class.forName(
                         runnableClassName, true, classLoader).newInstance();
             } catch (ClassNotFoundException ex1) {
@@ -304,23 +303,8 @@ public class JavaExecute extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {		
 		super.checkConfig(status);
 		
-		@SuppressWarnings("unused")
-		JavaRunnable testCodeToRun = null;
-				
-		try {
-
-			/* Create JavaRunnable instance to be executed by code */
-			testCodeToRun = createRunnable(runnable, runnableClass, 
-					runnableURL, charset, this,	runnableParameters, this.getClass().getClassLoader(), false);
-			
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        } 
-        
+		// Nothing to check here - trying to create runnable class is too strict in this phase 
+		
         return status;
 	}
 	

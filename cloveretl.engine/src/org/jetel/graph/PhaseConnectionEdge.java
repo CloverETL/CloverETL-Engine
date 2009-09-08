@@ -280,7 +280,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 
     @Override
     public boolean isEOF() {
-        return isReadMode;
+        return isEmpty;
     }
     
 }

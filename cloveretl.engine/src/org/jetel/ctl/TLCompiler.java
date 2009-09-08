@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.component.WrapperTL;
 import org.jetel.ctl.ASTnode.CLVFStart;
 import org.jetel.ctl.ASTnode.CLVFStartExpression;
@@ -24,9 +25,9 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class TLCompiler implements ITLCompiler {
 
-	protected TransformationGraph graph;
-	protected DataRecordMetadata[] inMetadata;
-	protected DataRecordMetadata[] outMetadata;
+	protected TransformationGraph graph; /* may be null */
+	protected DataRecordMetadata[] inMetadata; /* may be null */
+	protected DataRecordMetadata[] outMetadata; /* may be null */
 	protected String encoding;
 	protected TransformLangParser parser;
 	protected ProblemReporter problemReporter;
@@ -35,6 +36,18 @@ public class TLCompiler implements ITLCompiler {
 	protected Log logger;
 	protected String componentId;
 
+	
+	/**
+	 * Constructs TLCompiler to run graph-less, in standalone mode.
+	 * 
+	 * This constructor should be only used by clients wishing to interpret simple CTL
+	 * expression (i.e. no compilation), as the compilation will complain about unresolved 
+	 * metadata, lookups and sequences due to missing graph reference.
+	 * 
+	 */
+	public TLCompiler() {
+		this(null,null,null);
+	}
 	
 	/**
 	 * Creates reusable CTL compiler instance. 
@@ -63,9 +76,9 @@ public class TLCompiler implements ITLCompiler {
 		this.outMetadata = outMetadata;
 		this.encoding = encoding;
 		this.problemReporter = new ProblemReporter();
-		this.logger = graph.getLogger();
+		this.logger = LogFactory.getLog(TLCompiler.class);
 	}
-	
+
 	
 	/**
 	 * Validate given (Filter) expression. 
@@ -89,7 +102,7 @@ public class TLCompiler implements ITLCompiler {
 	 */
 	public List<ErrorMessage> validateExpression(InputStream input) {
 		if (parser == null) {
-			parser = new TransformLangParser(problemReporter, input, encoding);
+			parser = new TransformLangParser(graph, problemReporter, input, encoding);
 		} else {
 			reset(input);
 		}
@@ -143,7 +156,7 @@ public class TLCompiler implements ITLCompiler {
 	 */
 	public List<ErrorMessage> validate(InputStream input) {
 		if (parser == null) {
-			parser = new TransformLangParser(problemReporter, input, encoding);
+			parser = new TransformLangParser(graph, problemReporter, input, encoding);
 		} else {
 			reset(input);
 		}
@@ -246,8 +259,9 @@ public class TLCompiler implements ITLCompiler {
 	}
 	
 	/**
-	 * @return instance of <code>targetInterface</code> specified in {@link #compile(String, Class)}
-	 * or an instance of {@link WrapperTL}
+	 * @return Instance of {@link TransformLangExecutor} that can be used to interpret the CTL code.
+	 * 			This method calls {@link TransformLangExecutor#init()} automatically.  
+	 * 
 	 */
 	public Object getCompiledCode() {
 		final TransformLangExecutor executor = new TransformLangExecutor(parser,graph);
@@ -257,11 +271,16 @@ public class TLCompiler implements ITLCompiler {
 			executor.setAst((CLVFStartExpression)ast);
 		}
 		
-		if (logger != null) {
+		// compiler can be started standalone (i.e. from PropertyRefResolver without component reference)
+		// in that case do not report the execution mode
+		if (logger != null && getComponentId() != null) {
 			logger.info("Component '" + getComponentId() + "' runs in INTERPRETED mode"); 
 		}
-			
-		executor.setRuntimeLogger(graph.getLogger());
+		
+		// perform initialization of the executor for runtime
+		executor.setRuntimeLogger(logger);
+		executor.init();
+		
 		return executor;
 	}
 	

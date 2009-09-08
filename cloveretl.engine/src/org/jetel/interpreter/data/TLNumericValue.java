@@ -147,12 +147,21 @@ public class TLNumericValue<T extends Numeric> extends TLValue implements Numeri
 	public int hashCode() {
 		return value.hashCode();
 	}
+	
+	
+	@Override public boolean equals(Object obj){
+		if (this==obj) return true;
+		if (obj instanceof TLNumericValue){
+			return this.value.equals(((TLNumericValue)obj).value);
+		}
+		return false;
+	}
 
 	public void copyToDataField(DataField field) {
 		if (field instanceof Numeric) {
 			field.setValue(value);
 		} else {
-			field.fromString(field.toString());
+			field.fromString(value.toString());
 		}
 
 	}

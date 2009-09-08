@@ -20,6 +20,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dom4j.io.SAXContentHandler;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -42,6 +43,7 @@ import org.jetel.util.AutoFilling;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -49,7 +51,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * <h3>XMLExtract Component</h3>
@@ -224,7 +225,10 @@ public class XMLExtract extends Node {
     private static final String XML_SEQUENCEID = "sequenceId";
     private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
+//	private static final String XML_SKIP_SOURCE_ROWS_ATTRIBUTE = "skipSourceRows";
+//	private static final String XML_NUM_SOURCE_RECORDS_ATTRIBUTE = "numSourceRecords";
 	private static final String XML_TRIM_ATTRIBUTE = "trim";
+    private static final String XML_VALIDATE_ATTRIBUTE = "validate";
     private static final String XML_XML_FEATURES_ATTRIBUTE = "xmlFeatures";
 
     private static final String FEATURES_DELIMETER = ";";
@@ -260,6 +264,8 @@ public class XMLExtract extends Node {
 	private String schemaFile;
 
 	private String xmlFeatures;
+	
+	private boolean validate;
 
 	private String charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
 
@@ -274,7 +280,7 @@ public class XMLExtract extends Node {
     /**
      * SAX Handler that will dispatch the elements to the different ports.
      */
-    private class SAXHandler extends DefaultHandler {
+    private class SAXHandler extends SAXContentHandler {
         
         // depth of the element, used to determine when we hit the matching
         // close element
@@ -599,6 +605,8 @@ public class XMLExtract extends Node {
         // for skip and number a record attribute for this mapping
 		int skipRecords4Mapping;						// skip records
 		int numRecords4Mapping = Integer.MAX_VALUE;		// number records
+//		int skipSourceRecords4Mapping;					// skip records
+//		int numSourceRecords4Mapping = -1;              // number records
 		int currentRecord4Mapping;						// record counter for this mapping
 		boolean processSkipOrNumRecords;				// what xml element can be skiped
 		boolean bDoMap = true;							// should I skip an xml element? depends on processSkipOrNumRecords
@@ -924,6 +932,22 @@ public class XMLExtract extends Node {
         	this.numRecords4Mapping = numRecords4Mapping;
         }
         
+//		/**
+//		 * skipRecords for this mapping.
+//		 * @param skipRecords4Mapping
+//		 */
+//        public void setSkipSourceRecords4Mapping(int skipSourceRecords4Mapping) {
+//        	this.skipSourceRecords4Mapping = skipSourceRecords4Mapping;
+//        }
+//        
+//        /**
+//         * numRecords for this mapping.
+//         * @param numRecords4Mapping
+//         */
+//        public void setNumSourceRecords4Mapping(int numSourceRecords4Mapping) {
+//        	this.numSourceRecords4Mapping = numSourceRecords4Mapping;
+//        }
+//
         /**
          * Counter for this mapping.
          */
@@ -1035,6 +1059,9 @@ public class XMLExtract extends Node {
             
             if (xattribs.exists(XML_XML_FEATURES_ATTRIBUTE)){
             	extract.setXmlFeatures(xattribs.getString(XML_XML_FEATURES_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_VALIDATE_ATTRIBUTE)){
+            	extract.setValidate(xattribs.getBoolean(XML_VALIDATE_ATTRIBUTE));
             }
             if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
             	extract.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
@@ -1200,17 +1227,25 @@ public class XMLExtract extends Node {
             }
             
             //skip rows field
-            int skipRecords4Mapping = 0;
             if (attributes.exists(XML_SKIP_ROWS_ATTRIBUTE)) {
-                mapping.setSkipRecords4Mapping(skipRecords4Mapping = attributes.getInteger(XML_SKIP_ROWS_ATTRIBUTE, skipRecords4Mapping));
+                mapping.setSkipRecords4Mapping(attributes.getInteger(XML_SKIP_ROWS_ATTRIBUTE, 0));
             }
             
             //number records field
-            int numRecords4Mapping = Integer.MAX_VALUE;
             if (attributes.exists(XML_NUMRECORDS_ATTRIBUTE)) {
-                mapping.setNumRecords4Mapping(attributes.getInteger(XML_NUMRECORDS_ATTRIBUTE, numRecords4Mapping));
+                mapping.setNumRecords4Mapping(attributes.getInteger(XML_NUMRECORDS_ATTRIBUTE, Integer.MAX_VALUE));
             }
-
+            
+//            //skip source rows field
+//            if (attributes.exists(XML_SKIP_SOURCE_ROWS_ATTRIBUTE)) {
+//                mapping.setSkipSourceRecords4Mapping(attributes.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE, 0));
+//            }
+//            
+//            //number source records field
+//            if (attributes.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)) {
+//                mapping.setNumSourceRecords4Mapping(attributes.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE, Integer.MAX_VALUE));
+//            }
+//
             // prepare variables for skip and numRecords for this mapping
         	mapping.prepareProcessSkipOrNumRecords();
 
@@ -1259,6 +1294,7 @@ public class XMLExtract extends Node {
     private boolean parseXML() throws JetelException{
     	// create new sax factory
         SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setValidating(validate);
 		initXmlFeatures(factory);
         SAXParser parser;
         
@@ -1271,8 +1307,13 @@ public class XMLExtract extends Node {
         
         try {
         	// prepare next source
-            if (readableChannelIterator.isGraphDependentSource()) 
-            	prepareNextSource();
+            if (readableChannelIterator.isGraphDependentSource()) {
+                try {
+                    if(!nextSource()) return true;
+                } catch (JetelException e) {
+                    throw new ComponentNotReadyException(e.getMessage()/*"FileURL attribute (" + inputFile + ") doesn't contain valid file url."*/, e);
+                }
+            }
     		do {
     			// parse the input source
                 parser.parse(m_inputSource, new SAXHandler());
@@ -1369,6 +1410,7 @@ public class XMLExtract extends Node {
             		projectURL,
             		inputFile);
             this.readableChannelIterator.setCharset(charset);
+            this.readableChannelIterator.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
             this.readableChannelIterator.setDictionary(graph.getDictionary());
             this.readableChannelIterator.init();
             if (!readableChannelIterator.isGraphDependentSource()) prepareNextSource();
@@ -1380,7 +1422,7 @@ public class XMLExtract extends Node {
 		super.reset();
 		autoFilling.reset();
         this.readableChannelIterator.reset();
-        prepareNextSource();
+        if (!readableChannelIterator.isGraphDependentSource()) prepareNextSource();
 	}
 	
 	/**
@@ -1393,7 +1435,7 @@ public class XMLExtract extends Node {
                 throw new ComponentNotReadyException("FileURL attribute (" + inputFile + ") doesn't contain valid file url.");
             }
         } catch (JetelException e) {
-            throw new ComponentNotReadyException("FileURL attribute (" + inputFile + ") doesn't contain valid file url.");
+            throw new ComponentNotReadyException(e.getMessage()/*"FileURL attribute (" + inputFile + ") doesn't contain valid file url."*/, e);
         }
 	}
 
@@ -1506,6 +1548,14 @@ public class XMLExtract extends Node {
     	this.xmlFeatures = xmlFeatures;
 	}
 
+    /**
+     * Sets validation option.
+     * @param validate
+     */
+    private void setValidate(boolean validate) {
+    	this.validate = validate;
+	}
+    
     /**
      * Sets charset for dictionary and input port reading.
      * @param string

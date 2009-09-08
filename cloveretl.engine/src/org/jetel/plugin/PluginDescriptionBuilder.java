@@ -47,6 +47,8 @@ public class PluginDescriptionBuilder {
     private static final String RUNTIME_ELEMENT = "runtime";
     
     private static final String LIBRARY_ELEMENT = "library";
+
+    private static final String NATIVE_LIBRARY_ELEMENT = "nativelibrary";
     
     private static final String PATH_ATTR = "path";
     
@@ -128,6 +130,11 @@ public class PluginDescriptionBuilder {
             readLibrary((Element) nodes.item(i));
         }
         
+        //native library elements
+        nodes = runtimeElement.getElementsByTagName(NATIVE_LIBRARY_ELEMENT);
+        for (int i = 0; i < nodes.getLength(); i++) {
+            readNativeLibrary((Element) nodes.item(i));
+        }
     }
 
     private void readLibrary(Element libraryElement) throws InvalidAttributesException {
@@ -135,6 +142,13 @@ public class PluginDescriptionBuilder {
             throw new InvalidAttributesException("Plugin.runtime.library 'path' attribute is not set.");
         }
         plugin.addLibrary(libraryElement.getAttribute(PATH_ATTR));
+    }
+
+    private void readNativeLibrary(Element nativeLibraryElement) throws InvalidAttributesException {
+        if(!nativeLibraryElement.hasAttribute(PATH_ATTR)) {
+            throw new InvalidAttributesException("Plugin.runtime.nativelibrary 'path' attribute is not set.");
+        }
+        plugin.addNativeLibrary(nativeLibraryElement.getAttribute(PATH_ATTR));
     }
 
     private void readExtension(Element extensionElement) throws InvalidAttributesException {

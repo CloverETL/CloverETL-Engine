@@ -115,6 +115,11 @@ public class Stack {
 		return stack[top];
 	}
     
+	public final TLValue get(int depth){
+		if (top<0) return null;
+		return stack[top-depth];
+	}
+	
     /**
      * @return length/depth of stack - how many parameters it contains
      * @since 20.3.2007

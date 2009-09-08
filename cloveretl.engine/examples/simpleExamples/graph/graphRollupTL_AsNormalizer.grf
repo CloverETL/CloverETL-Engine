@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of NORMALIZER component with normalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204549060147" licenseType="Evaluation license." modified="Mon Aug 17 09:51:15 CEST 2009" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.56">
+<Global>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="customers" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="cust_no" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="customers" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="EmployeeID" nullable="true" shift="0" size="0" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="122" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Rollup as Normalizer" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="325" x="114" y="248">
+<attr name="text"><![CDATA[
+Rollup can also serve as Normalizer.
+
+The phase 0 is taken from graphNormalizeTL.grf.
+]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER">
+<attr name="DataPolicy"><![CDATA[Strict]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="25" guiName="NORMALIZER" guiWidth="50" guiX="195" guiY="20" id="NORMALIZE" type="NORMALIZER">
+<attr name="normalize"><![CDATA[list customers;
+//declares a list
+
+//counts the number of substrings included in the value of $0.customers field. 
+//(they all are separated by " - ")
+//and returns this number as the length of the list
+function count() {
+	int Length;
+	customers = split($0.customers,"\\s*-\\s*");
+	Length = length(customers);
+	return Length;
+}
+
+//creates length number of new records.
+function transform(idx) {
+	$0.customers := customers[idx];
+	$0.EmployeeID := $0.EmployeeID;
+}
+
+//cleans the list before parsing the next input record.
+function clean() {
+	remove_all(customers);
+}
+]]></attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="NORMALIZE:0"/>
+<Edge debugMode="true" fromNode="NORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="22" guiY="114" id="INPUT2" type="DATA_READER">
+<attr name="DataPolicy"><![CDATA[Strict]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Rollup" guiWidth="0" guiX="195" guiY="113" id="ROLLUP0" type="ROLLUP">
+<attr name="transform"><![CDATA[//#TL
+list customers;
+int Length;
+
+// Called for the first data record in a group.
+function initGroup(groupAccumulator) {
+}
+
+// Called for each data record in a group (including the first one and the last one).
+// Implicitly returns false => updateTransform is not called.
+function updateGroup(groupAccumulator) {
+	customers = split($0.customers," - ");
+	Length = length(customers);
+	return true
+}
+
+// Called for the last data record in a group.
+// Implicitly returns true => transform is called.
+function finishGroup(groupAccumulator) {
+}
+
+// Called to transform data records for intermediate output using the group accumulator.
+// The counter parameter stores the number of previous calls to this method for the current group update.
+// Implicitly returns SKIP to skip sending any data records to output.
+// Returning ALL would cause each data record to be sent to its corresponding output port.
+// A port number may be returned to specify which data record should be sent to output.
+function updateTransform(counter, groupAccumulator) {
+	if (counter >= Length) {
+		remove_all(customers); 
+		return SKIP;
+	}
+	$0.customers := customers[counter];
+	$0.EmployeeID := $0.EmployeeID;
+	return ALL
+}
+
+// Called to transform data records for output using the group accumulator.
+// The counter parameter stores the number of previous calls to this method for the current group.
+// Implicitly returns SKIP to skip sending any data records to output.
+// Returning ALL would cause each data record to be sent to its corresponding output port.
+// A port number may be returned to specify which data record should be sent to output.
+function transform(counter, groupAccumulator) {
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {
+// }
+
+// Called during component initialization.
+// function init() {
+// }
+
+// Called at the end of the rollup transform after all input data records were processed.
+// function finished() {
+// }
+
+]]></attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/normalized_Rollup.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="372" guiY="114" id="WRITER1" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="ROLLUP0:0"/>
+<Edge debugMode="true" fromNode="ROLLUP0:0" guiBendpoints="" id="OUTEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER1:0"/>
+</Phase>
+</Graph>

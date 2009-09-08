@@ -116,7 +116,9 @@ public class CRC32 extends AggregateFunction {
 		}
 		dataBuffer.clear();
 		input.toByteBuffer(dataBuffer, encoder);
-		crc32.update(dataBuffer.array());
+		byte[] array = new byte[dataBuffer.position()];
+		System.arraycopy(dataBuffer.array(), 0, array, 0, array.length);
+		crc32.update(array);
 		loopCount++;
 	}
 

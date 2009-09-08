@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -302,7 +303,14 @@ public class DBExecute extends Node {
 		if (dbSQL==null){
             String delimiter = sqlStatementDelimiter !=null ? sqlStatementDelimiter : DEFAULT_SQL_STATEMENT_DELIMITER;
             if (sqlQuery != null) {
-				dbSQL = sqlQuery.split(delimiter);
+            	String[] parts = sqlQuery.split(delimiter);
+            	ArrayList<String> tmp = new ArrayList<String>();
+            	for(String part: parts) {
+            		if (part.trim().length() > 0) {
+            			tmp.add(part);
+            		}
+            	}
+				dbSQL = tmp.toArray(new String[tmp.size()]); 
 			}else{//read statements from file or input port
 				channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT), getGraph().getProjectURL(),
 						fileUrl);
@@ -372,11 +380,15 @@ public class DBExecute extends Node {
 			}
 			// this does not work for some drivers
 			try {
-				if (DefaultConnection.isTransactionsSupported(connectionInstance.getSqlConnection())) {
-					connectionInstance.getSqlConnection().setAutoCommit(false);
-				}
+// -pnajvar
+// This was bugfix #2207 but seems to cause more trouble than good
+// Rather, set transaction to default empty
+//				if (DefaultConnection.isTransactionsSupported(connectionInstance.getSqlConnection())) {
+//					connectionInstance.getSqlConnection().setAutoCommit(false);
+//				}
+				connectionInstance.getSqlConnection().setAutoCommit(false);
 			} catch (SQLException ex) {
-				if (transaction == InTransaction.ONE) {
+				if (transaction != InTransaction.ONE) {
 					throw new ComponentNotReadyException("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
 				}
 			}

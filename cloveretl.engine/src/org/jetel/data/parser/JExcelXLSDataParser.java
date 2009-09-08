@@ -267,59 +267,61 @@ public class JExcelXLSDataParser extends XLSParser {
 		if (currentRow>=lastRow) return null;
 		char type;
 		for (short i=0;i<fieldNumber.length;i++){
-			// skip all fields that are internally filled 
-			if (isAutoFilling[i]) {
+			int cloverFieldIndex = fieldNumber[i][CLOVER_NUMBER];
+			int xlsFieldIndex = fieldNumber[i][XLS_NUMBER];
+			if (cloverFieldIndex == -1) continue; //in metdata there is not any field corresponding to this column
+			// skip all fields that are internally filled
+			if (isAutoFilling[cloverFieldIndex]) {
 				continue;
 			}
-			if (fieldNumber[i][CLOVER_NUMBER] == -1) continue; //in metdata there is not any field corresponding to this column
 			try {
-				cell = sheet.getCell(fieldNumber[i][XLS_NUMBER], currentRow);
+				cell = sheet.getCell(xlsFieldIndex, currentRow);
 			} catch (ArrayIndexOutOfBoundsException e1) {
 				//more fields in metadata then in xls file
-				record.getField(fieldNumber[i][CLOVER_NUMBER]).setNull(true);
+				record.getField(cloverFieldIndex).setNull(true);
 				continue;
 			}
-			type = metadata.getField(fieldNumber[i][CLOVER_NUMBER]).getType();
+			type = metadata.getField(cloverFieldIndex).getType();
 			try{
 				switch (type) {
 				case DataFieldMetadata.DATE_FIELD:
 				case DataFieldMetadata.DATETIME_FIELD:
-					record.getField(fieldNumber[i][CLOVER_NUMBER]).setValue(
+					record.getField(cloverFieldIndex).setValue(
 							((DateCell)cell).getDate());
 					break;
 				case DataFieldMetadata.BYTE_FIELD:
 				case DataFieldMetadata.STRING_FIELD:
-					record.getField(fieldNumber[i][CLOVER_NUMBER]).fromString(
+					record.getField(cloverFieldIndex).fromString(
 							cell.getContents());
 					break;
 				case DataFieldMetadata.DECIMAL_FIELD:
 				case DataFieldMetadata.INTEGER_FIELD:
 				case DataFieldMetadata.LONG_FIELD:
 				case DataFieldMetadata.NUMERIC_FIELD:
-					record.getField(fieldNumber[i][CLOVER_NUMBER]).setValue(
+					record.getField(cloverFieldIndex).setValue(
 							((NumberCell)cell).getValue());
 					break;
 				case DataFieldMetadata.BOOLEAN_FIELD:
-					record.getField(fieldNumber[i][CLOVER_NUMBER]).setValue(
+					record.getField(cloverFieldIndex).setValue(
 							((BooleanCell)cell).getValue());
 					break;
 				}
 			} catch (ClassCastException bdne) {//exception when trying get date or number from diffrent cell type
 				try {
-					record.getField(fieldNumber[i][CLOVER_NUMBER]).fromString(
+					record.getField(cloverFieldIndex).fromString(
 							cell.getContents());
 				} catch (Exception e) {
 					BadDataFormatException bdfe = new BadDataFormatException(bdne.getMessage());
 					bdfe.setRecordNumber(currentRow+1);
-					bdfe.setFieldNumber(fieldNumber[i][CLOVER_NUMBER]);
+					bdfe.setFieldNumber(cloverFieldIndex);
 					if (exceptionHandler != null) { // use handler only if configured
 						exceptionHandler.populateHandler(getErrorMessage(bdfe
-								.getMessage(), currentRow + 1, fieldNumber[i][CLOVER_NUMBER]),
-								record, currentRow + 1, fieldNumber[i][CLOVER_NUMBER],
+								.getMessage(), currentRow + 1, cloverFieldIndex),
+								record, currentRow + 1, cloverFieldIndex,
 								cell.getContents(), bdfe);
 					} else {
 						throw new RuntimeException(getErrorMessage(bdfe
-								.getMessage(), currentRow + 1, fieldNumber[i][CLOVER_NUMBER]));
+								.getMessage(), currentRow + 1, cloverFieldIndex));
 					}
 				}
 			}
@@ -378,7 +380,7 @@ public class JExcelXLSDataParser extends XLSParser {
 
 	@Override
 	protected boolean getNextSheet() {
-		if (sheet != null) {
+		if (useIncrementalReading && sheet != null) {
 			if (incremental == null) incremental = new Incremental();
 			incremental.setRow(sheet.getName(), currentRow);
 		}

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="1.10" id="1204548969094" licenseType="Evaluation license." modified="Wed Jun 25 09:17:46 CEST 2008" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.16">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="0.0.0.devel" id="1204548969094" licenseType="Evaluation license." modified="Mon Aug 17 09:43:08 CEST 2009" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.22">
 <Global>
-<Metadata id="Metadata0">
-<Record fieldDelimiter="|" name="customers" recordDelimiter="\n" type="delimited">
-<Field name="cust_no" type="integer"/>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="customers" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="number_of_customers" type="integer">
+<attr name="description"><![CDATA[This field contains number of customers, that are listed in 'customers' field.]]></attr>
+</Field>
 <Field name="customers" type="string"/>
 <Field name="EmployeeID" type="integer"/>
 </Record>
@@ -22,26 +24,31 @@ import org.jetel.data.*;
 public class NormalizeTestInline extends DataRecordNormalize {
 
 	String[] customers;
+    int recNo;
 
+	//As we know that first field is just a number of customers
+	//(= number of records after normalization), we return its value
+	//More over we check if above is true
 	public int count(DataRecord source) {
-		return (Integer)source.getField(0).getValue();
+		customers = source.getField(1).toString().split("\\s*-\\s*");
+		recNo = (Integer)source.getField(0).getValue();
+		if (customers.length != recNo){
+			errorMessage = "Invalid input record";
+			return SKIP;
+		}
+		return recNo;
 	}
 
 	public int transform(DataRecord source, DataRecord target, int idx) {
-		customers = source.getField(1).toString().split("\\s*-\\s*");
-		if (customers.length != count(source)){
-			errorMessage = "Invalid input record";
-		}else{
-			target.getField(1).setValue(customers[idx]);
-			target.getField(2).setValue(source.getField(2).getValue());
-		}
-		return 0;
+		target.getField(1).setValue(customers[idx]);
+		target.getField(2).setValue(source.getField(2).getValue());
+		return OK;
 	}
 }
 ]]></attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="NORMALIZE:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="NORMALIZE:0"/>
 <Edge fromNode="NORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
 </Phase>
 </Graph>

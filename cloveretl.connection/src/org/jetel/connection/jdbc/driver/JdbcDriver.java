@@ -181,9 +181,9 @@ public class JdbcDriver {
 
     private void prepareClassLoader() throws ComponentNotReadyException {
         if(driverLibraries != null && driverLibraries.length > 0) {
-            classLoader = new GreedyURLClassLoader(driverLibraries, Thread.currentThread().getContextClassLoader());
+            classLoader = new GreedyURLClassLoader(driverLibraries, JdbcDriver.class.getClassLoader());
         } else {
-            classLoader = Thread.currentThread().getContextClassLoader();
+            classLoader = JdbcDriver.class.getClassLoader();
         }
     }
     
@@ -205,7 +205,7 @@ public class JdbcDriver {
      */
 	@SuppressWarnings("unchecked")
 	public void free() {
-		if (this.classLoader == Thread.currentThread().getContextClassLoader())
+		if (this.classLoader == JdbcDriver.class.getClassLoader())
 			return;
 		// process only classLoaders created by this instance
 		// unload each driver loaded by my classLoader

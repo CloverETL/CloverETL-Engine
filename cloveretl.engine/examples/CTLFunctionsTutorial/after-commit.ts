@@ -77,6 +77,18 @@
 	 <FlatFile outputFile="data-out/conversionLong2dateOverview.txt" supposedFile="supposed-out/conversionLong2dateOverview.txt"/>
 </FunctionalTest>
 
+<FunctionalTest ident="conversionLong2pacdecimal" graphFile="graph/conversionLong2pacdecimal.grf">
+	 <FlatFile outputFile="data-out/conversionLong2pacdecimalOverview.txt" supposedFile="supposed-out/conversionLong2pacdecimalOverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="conversionMd5FromBytes" graphFile="graph/conversionMd5FromBytes.grf">
+	 <FlatFile outputFile="data-out/conversionMd5FromBytesOverview.txt" supposedFile="supposed-out/conversionMd5FromBytesOverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="conversionMd5FromString" graphFile="graph/conversionMd5FromString.grf">
+	 <FlatFile outputFile="data-out/conversionMd5FromStringOverview.txt" supposedFile="supposed-out/conversionMd5FromStringOverview.txt"/>
+</FunctionalTest>
+
 <FunctionalTest ident="conversionNum2bool" graphFile="graph/conversionNum2bool.grf">
 	 <FlatFile outputFile="data-out/conversionNum2boolOverview.txt" supposedFile="supposed-out/conversionNum2boolOverview.txt"/>
 </FunctionalTest>
@@ -104,6 +116,18 @@
 
 <FunctionalTest ident="conversionNum2strNUMBER" graphFile="graph/conversionNum2strNUMBER.grf">
 	 <FlatFile outputFile="data-out/conversionNum2stringNUMBEROverview.txt" supposedFile="supposed-out/conversionNum2stringNUMBEROverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="conversionPacdecimal2long" graphFile="graph/conversionPacdecimal2long.grf">
+	 <FlatFile outputFile="data-out/conversionPacdecimal2longOverview.txt" supposedFile="supposed-out/conversionPacdecimal2longOverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="conversionShaFromBytes" graphFile="graph/conversionShaFromBytes.grf">
+	 <FlatFile outputFile="data-out/conversionShaFromBytesOverview.txt" supposedFile="supposed-out/conversionShaFromBytesOverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="conversionShaFromString" graphFile="graph/conversionShaFromString.grf">
+	 <FlatFile outputFile="data-out/conversionShaFromStringOverview.txt" supposedFile="supposed-out/conversionShaFromStringOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="conversionStr2bits" graphFile="graph/conversionStr2bits.grf">

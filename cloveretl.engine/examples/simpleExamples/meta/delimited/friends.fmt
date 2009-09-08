@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="record" previewAttachmentCharset="UTF-8" recordDelimiter="\n" type="delimited">
+<Field name="country" type="string"/>
+<Field name="town" type="string"/>
+<Field name="name" type="string"/>
+<Field name="age" type="byte"/>
+</Record>

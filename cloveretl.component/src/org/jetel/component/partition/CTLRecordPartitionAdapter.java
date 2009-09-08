@@ -21,6 +21,8 @@
 
 package org.jetel.component.partition;
 
+import java.nio.ByteBuffer;
+
 import org.apache.commons.logging.Log;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -127,6 +129,14 @@ public class CTLRecordPartitionAdapter implements PartitionFunction {
 
 	public void setGraph(TransformationGraph graph) {
 		this.graph = graph;
+	}
+
+	public int getOutputPort(ByteBuffer directRecord) {
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean supportsDirectRecord() {
+		return false;
 	}
 
 }

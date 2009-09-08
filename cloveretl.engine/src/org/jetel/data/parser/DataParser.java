@@ -488,8 +488,7 @@ public class DataParser implements Parser {
 					}
 
 				} catch (Exception ex) {
-//					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, fieldCounter));
-					throw new BadDataFormatException(ex.toString());
+					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, metadataField), ex);
 				}
 			}
 
@@ -509,6 +508,8 @@ public class DataParser implements Parser {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (Exception e1) {
+					throw new RuntimeException(getErrorMessage(e1.getMessage(),	null, metadataField), e1);
                 }
 			}
 
@@ -524,7 +525,7 @@ public class DataParser implements Parser {
             exceptionHandler.populateHandler("Parsing error: " + exceptionMessage, record, recordCounter, fieldNum , getLastRawRecord(), new BadDataFormatException("Parsing error: " + exceptionMessage));
             return record;
         } else {
-			throw new RuntimeException("Parsing error: " + exceptionMessage + " when parsing record #" + recordCounter + " and " + (fieldNum + 1) + ". field (" + recordBuffer.toString() + ")");
+			throw new RuntimeException("Parsing error: " + exceptionMessage + " (" + getLastRawRecord() + ")");
 		}
 	}
 	
@@ -833,7 +834,9 @@ public class DataParser implements Parser {
 	public String getLastRawRecord() {
 		if (verbose) {
 			recordBuffer.flip();
-			return recordBuffer.toString();
+			String lastRawRecord = recordBuffer.toString();
+			recordBuffer.position(recordBuffer.limit()); //it is necessary for repeated invocation of this method for the same record
+			return lastRawRecord;
 		} else {
 			return "<Raw record data is not available, please turn on verbose mode.>";
 		}

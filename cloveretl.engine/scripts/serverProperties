@@ -31,4 +31,6 @@ DataFormatter.FIELD_BUFFER_LENGTH = 16384
 #However, if you increase the size of MAX_RECORD_SIZE , make sure this value is minimally 2*MAX_RECORD_SIZE.
 
 DEFAULT_INTERNAL_IO_BUFFER_SIZE = 262144
+
+InternalSortDataRecord.DEFAULT_INTERNAL_SORT_BUFFER_CAPACITY = 100000
 		

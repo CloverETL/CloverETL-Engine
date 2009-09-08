@@ -472,6 +472,7 @@ public class TextTableFormatter implements Formatter {
 			max = max > dataFieldParams.length ? max : dataFieldParams.length;
 		}
 		max = max > counterLenght ? max : counterLenght;
+		max = max > trashIDLenght ? max : trashIDLenght;
 		StringBuilder sb = new StringBuilder();
 		StringBuilder sb2 = new StringBuilder();
 		for (int i = 0; i < max; i++) {

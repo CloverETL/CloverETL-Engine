@@ -44,6 +44,7 @@ import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertyRefResolver;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -276,6 +277,7 @@ public class XmlXPathReader extends Node {
         parser.setXmlFeatures(xmlFeatures);
         reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
         reader.setCharset(charset);
+        reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
         reader.setDictionary(graph.getDictionary());
         reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
         ports = parser.getPorts().toArray();

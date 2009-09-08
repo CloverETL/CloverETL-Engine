@@ -21,8 +21,6 @@
 
 package org.jetel.component;
 
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -139,9 +137,6 @@ public class SimpleDataGenerator extends DataGenerator {
 		this.recordsNumber = recordsNumber;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#init()
-	 */
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
         super.init();
@@ -168,9 +163,6 @@ public class SimpleDataGenerator extends DataGenerator {
 		autoFilling.reset();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#execute()
-	 */
 	@Override
 	public Result execute() throws Exception {
 		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
@@ -184,9 +176,6 @@ public class SimpleDataGenerator extends DataGenerator {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_PATTERN_ATTRIBUTE, pattern);
@@ -200,9 +189,6 @@ public class SimpleDataGenerator extends DataGenerator {
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception.ConfigurationStatus)
-	 */
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
@@ -226,6 +212,11 @@ public class SimpleDataGenerator extends DataGenerator {
         }
         
         return status;
+	}
+
+	@Override
+	public synchronized void free() {
+	    super.free();
 	}
 
 	/**

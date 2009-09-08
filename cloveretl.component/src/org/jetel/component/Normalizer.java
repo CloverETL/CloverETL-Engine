@@ -219,9 +219,6 @@ public class Normalizer extends Node {
         }
     }
 		
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#init()
-	 */
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -368,27 +365,24 @@ public class Normalizer extends Node {
 			processInput();
 		} catch (Exception e) {
 			throw e;
-		}finally{
-			norm.finished();
-			if (errorLog != null){
+		} finally {
+		    norm.finished();
+
+		    if (errorLog != null){
 				errorLog.flush();
 				errorLog.close();
 			}
-	        broadcastEOF();
+
+		    broadcastEOF();
 		}
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#checkConfig()
-	 */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
@@ -481,9 +475,6 @@ public class Normalizer extends Node {
 		this.errorActionsString = string;		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 
@@ -556,10 +547,6 @@ public class Normalizer extends Node {
 		this.charset = charset;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#reset()
-	 */
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
@@ -573,10 +560,6 @@ public class Normalizer extends Node {
         }
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#free()
-	 */
 	@Override
 	public synchronized void free()  {
 		super.free();

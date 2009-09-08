@@ -113,7 +113,7 @@ public class XLSXDataParser extends XLSParser {
 
 	@Override
 	protected boolean getNextSheet() {
-		if (sheet != null) {
+		if (useIncrementalReading && sheet != null) {
 			if (incremental == null) {
 				incremental = new Incremental();
 			}
@@ -160,7 +160,7 @@ public class XLSXDataParser extends XLSParser {
 		lastRow = (lastRowAttribute == -1 || lastRowAttribute >= sheet.getLastRowNum())
 				? sheet.getLastRowNum() + 1 : lastRowAttribute;
 
-		discardBytes(workbook.getSheetName(sheetCounter));
+		discardBytes(autoFillingSheetName = workbook.getSheetName(sheetCounter));
         logger.info("Reading data from sheet " + sheetCounter + " (" + workbook.getSheetName(sheetCounter) + ").");
 
 		return true;
@@ -213,10 +213,6 @@ public class XLSXDataParser extends XLSParser {
 	protected void mapNames(Map fieldNames) throws ComponentNotReadyException {
 		if (fieldNames == null) {
 			throw new NullPointerException("fieldNames");
-		}
-
-		if (cloverFields.length != xlsFields.length) {
-			throw new ComponentNotReadyException("Number of clover fields and XLSX fields must be the same");
 		}
 
 		Row row = sheet.getRow(metadataRow);
@@ -414,60 +410,62 @@ public class XLSXDataParser extends XLSParser {
 		Row row = sheet.getRow(currentRow);
 
 		for (short i = 0; i < fieldNumber.length; i++) {
+			int cloverFieldIndex = fieldNumber[i][CLOVER_NUMBER];
+			int xlsFieldIndex = fieldNumber[i][XLS_NUMBER];
 			// skip fields that are internally filled 
 			// skip fields with no metadata attached
-			if (isAutoFilling[i] || fieldNumber[i][CLOVER_NUMBER] == -1) {
+			if (cloverFieldIndex == -1 || isAutoFilling[cloverFieldIndex]) {
 				continue;
 			}
 
-			if (fieldNumber[i][XLS_NUMBER] > row.getLastCellNum()) {
-				record.getField(fieldNumber[i][CLOVER_NUMBER]).setNull(true);
+			if (xlsFieldIndex > row.getLastCellNum()) {
+				record.getField(cloverFieldIndex).setNull(true);
 				continue;
 			}
 
-			Cell cell = row.getCell(fieldNumber[i][CLOVER_NUMBER]);
+			Cell cell = row.getCell(xlsFieldIndex);
 
 			if (cell == null) {
 				continue;
 			}
 
-			char type = metadata.getField(fieldNumber[i][CLOVER_NUMBER]).getType();
+			char type = metadata.getField(cloverFieldIndex).getType();
 
 			try {
 				switch (type) {
 					case DataFieldMetadata.DATE_FIELD:
 					case DataFieldMetadata.DATETIME_FIELD:
-						record.getField(fieldNumber[i][CLOVER_NUMBER]).setValue(cell.getDateCellValue());
+						record.getField(cloverFieldIndex).setValue(cell.getDateCellValue());
 						break;
 					case DataFieldMetadata.BYTE_FIELD:
 					case DataFieldMetadata.STRING_FIELD:
-						record.getField(fieldNumber[i][CLOVER_NUMBER]).fromString(cell.getStringCellValue());
+						record.getField(cloverFieldIndex).fromString(cell.getStringCellValue());
 						break;
 					case DataFieldMetadata.DECIMAL_FIELD:
 					case DataFieldMetadata.INTEGER_FIELD:
 					case DataFieldMetadata.LONG_FIELD:
 					case DataFieldMetadata.NUMERIC_FIELD:
-						record.getField(fieldNumber[i][CLOVER_NUMBER]).setValue(cell.getNumericCellValue());
+						record.getField(cloverFieldIndex).setValue(cell.getNumericCellValue());
 						break;
 					case DataFieldMetadata.BOOLEAN_FIELD:
-						record.getField(fieldNumber[i][CLOVER_NUMBER]).setValue(cell.getBooleanCellValue());
+						record.getField(cloverFieldIndex).setValue(cell.getBooleanCellValue());
 						break;
 				}
 			} catch (ClassCastException exception) {// exception when trying get date or number from a different cell type
 				try {
-					record.getField(fieldNumber[i][CLOVER_NUMBER]).fromString(cell.getStringCellValue());
+					record.getField(cloverFieldIndex).fromString(cell.getStringCellValue());
 				} catch (Exception ex) {
 					BadDataFormatException bdfe = new BadDataFormatException(exception.getMessage());
 					bdfe.setRecordNumber(currentRow + 1);
-					bdfe.setFieldNumber(fieldNumber[i][CLOVER_NUMBER]);
+					bdfe.setFieldNumber(cloverFieldIndex);
 
 					if (exceptionHandler != null) { // use handler only if configured
 						exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(), currentRow + 1,
-								fieldNumber[i][CLOVER_NUMBER]), record, currentRow + 1, fieldNumber[i][CLOVER_NUMBER],
+								cloverFieldIndex), record, currentRow + 1, cloverFieldIndex,
 								cell.getStringCellValue(), bdfe);
 					} else {
 						throw new RuntimeException(getErrorMessage(bdfe.getMessage(), currentRow + 1,
-								fieldNumber[i][CLOVER_NUMBER]));
+								cloverFieldIndex));
 					}
 				}
 			}

@@ -67,9 +67,14 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	private final Lock CURRENT_PHASE_LOCK = new ReentrantLock();
 
 	private final Object abortMonitor = new Object();
+	private boolean abortFinished = false;
 	
     public final static String MBEAN_NAME_PREFIX = "CLOVERJMX_";
     public final static long WAITTIME_FOR_STOP_SIGNAL = 5000000000L; //nanoseconds
+
+	private static final long ABORT_TIMEOUT = 5000L;
+	private static final long ABORT_WAIT = 2400L;
+	
     private int[] _MSG_LOCK=new int[0];
     
     private static Log logger = LogFactory.getLog(WatchDog.class);
@@ -239,6 +244,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		}
 		//if the graph was aborted, now the aborting thread is waiting for final notification
 		synchronized (abortMonitor) {
+			abortFinished = true;
 			abortMonitor.notifyAll();
 		}
 	}
@@ -370,10 +376,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	public void abort() {
 		CURRENT_PHASE_LOCK.lock();
+		if(watchDogStatus != Result.RUNNING) {
+			return;
+		}
 		try {
-			if(watchDogStatus != Result.RUNNING) {
-				return;
-			}
 			// iterate through all the nodes and stop them
 	        for(Node node : currentPhase.getNodes().values()) {
 				node.abort();
@@ -383,14 +389,18 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		} finally {
 			synchronized (abortMonitor) {
 				CURRENT_PHASE_LOCK.unlock();
-		        try {
-		        	//the aborting thread try to wait for end of graph run
-					abortMonitor.wait();
-				} catch (InterruptedException e) {
-					//the aborting thread was interupted, so don't wait for the graph abort completation
-				}
-			}
-		}
+				long startAbort = System.currentTimeMillis();
+				while (!abortFinished) {
+					long interval = System.currentTimeMillis() - startAbort;
+					if (interval > ABORT_TIMEOUT)
+						throw new IllegalStateException("Graph aborting error! Timeout "+ABORT_TIMEOUT+"ms exceeded!");
+			        try {
+			        	//the aborting thread try to wait for end of graph run
+						abortMonitor.wait(ABORT_WAIT);
+					} catch (InterruptedException ignore) {	}// catch
+				}// while
+			}// synchronized
+		}// finally
 	}
 
 	/**
@@ -444,7 +454,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		logger.info("Starting up all nodes in phase [" + phase.getPhaseNum() + "]");
 		startUpNodes(phase);
 
-		logger.info("Sucessfully started all nodes in phase!");
+		logger.info("Successfully started all nodes in phase!");
 		// watch running nodes in phase
 		Result phaseStatus;
         try{

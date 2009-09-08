@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.sequence.Sequence;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
@@ -195,6 +196,18 @@ public abstract class DataRecordGenerate implements RecordGenerate {
 		return graph.getLookupTable(id);
 	}
 
+	/**
+	 * Returns Sequence object registered with generation graph under specified name (ID).
+	 * 
+	 * @param id
+	 *            ID of Sequence under which it was registered with graph. It translates to ID if graph is loaded
+	 *            from XML
+	 * @return Sequence object if found, otherwise NULL
+	 */
+	public final Sequence getSequence(String id) {
+		return graph.getSequence(id);
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 

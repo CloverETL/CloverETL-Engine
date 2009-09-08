@@ -276,8 +276,8 @@ public class Dedup extends Node {
      */
 	private void executeFirst() throws IOException, InterruptedException, TransformException {
 		int groupItems = 0;
-		while (runIt && 
-				(records[current] = inPort.readRecord(records[current])) != null) {
+
+		while (runIt && inPort.readRecord(records[current]) != null) {
 			if (isFirst) {
 				writeOutRecord(records[current]);
 				groupItems++;
@@ -295,6 +295,7 @@ public class Dedup extends Node {
 					}
 				}
 			}
+
 			// swap indexes
 			current = current ^ 1;
           	previous = previous ^ 1;
@@ -319,18 +320,21 @@ public class Dedup extends Node {
      * @throws TransformException 
      */
 	private void executeLast() throws IOException, InterruptedException, TransformException {
-    	while (runIt && 
-    			(records[current] = inPort.readRecord(records[current])) != null) {
+    	while (runIt && inPort.readRecord(records[current]) != null) {
             if (isFirst) {
                 isFirst = false;
-            } else {
-                if (isChange(records[current], records[previous])) {
-                	while (ringBuffer.popRecord(records[previous]) != null) {
-                		writeRecordBroadcast(records[previous]);
-                	}
-                	ringBuffer.reset();
-                }
+            } else if (isChange(records[current], records[previous])) {
+            	while (ringBuffer.popRecord(records[previous]) != null) {
+            	    writeOutRecord(records[previous]);
+            	}
+
+            	ringBuffer.reset();
             }
+
+            if (ringBuffer.isFull()) {
+                writeRejectedRecord(ringBuffer.popRecord(records[previous]));
+            }
+
             ringBuffer.pushRecord(records[current]);
 
             // swap indexes
@@ -338,10 +342,11 @@ public class Dedup extends Node {
             previous = previous ^ 1;
           	recordNumber++;
         }
-    	
+
     	while (ringBuffer.popRecord(records[previous]) != null) {
-    		writeRecordBroadcast(records[previous]);
+    	    writeOutRecord(records[previous]);
     	}
+
     	ringBuffer.reset();
     }
 

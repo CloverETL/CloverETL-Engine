@@ -19,6 +19,7 @@
 */
 package org.jetel.component;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
@@ -49,8 +50,10 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
+import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
+import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.RangeLookupTable;
@@ -240,21 +243,60 @@ public class Partition extends Node {
 	@Override
 	public Result execute() throws Exception {
 		InputPort inPort;
-		OutputPort[] outPorts;
-
-		int portNo;
 		inPort=getInputPort(READ_FROM_PORT);
-		//get array of all output ports defined/connected - use collection Collection - getOutPorts();
-		outPorts = (OutputPort[]) getOutPorts().toArray(new OutputPort[0]);
-		//create array holding incoming records
+		OutputPortDirect[] outPorts = (OutputPortDirect[]) getOutPorts().toArray(new OutputPortDirect[0]);
+		
+		
+		if (partitionFce.supportsDirectRecord()){
+			executeDirect((InputPortDirect)inPort,outPorts);
+		}else{
+			executeNonDirect((InputPortDirect)inPort,outPorts); 
+		}
+		
+		broadcastEOF();
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+	
+	
+	private void executeNonDirect(InputPortDirect inPort,
+			OutputPortDirect[] outPorts) throws Exception {
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
-		while (inRecord != null && runIt) {
-			inRecord = inPort.readRecord(inRecord);
-			if (inRecord != null) {
-				portNo = partitionFce.getOutputPort(inRecord);
+		ByteBuffer inRecordDirect = ByteBuffer
+				.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+
+		while (runIt) {
+			if (!inPort.readRecordDirect(inRecordDirect))
+				break;
+			inRecord.deserialize(inRecordDirect);
+			inRecordDirect.rewind();
+			int portNo = partitionFce.getOutputPort(inRecord);
+			try {
+				outPorts[portNo].writeRecordDirect(inRecordDirect);
+			} catch (ArrayIndexOutOfBoundsException e) {
+				if (portNo == RangePartition.NONEXISTENT_REJECTED_PORT) {
+					throw new JetelException(
+							"Not found output port for record:\n" + inRecord);
+				} else {
+					throw new JetelException(
+							"Not found output port for record:\n" + inRecord
+									+ "Port number " + portNo
+									+ " not connected", e);
+				}
+			}
+			SynchronizeUtils.cloverYield();
+		}
+	}
+
+	private void executeDirect(InputPortDirect inPort, OutputPortDirect[] outPorts) throws Exception {
+		ByteBuffer inRecord = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+
+		while (runIt) {
+			if (!inPort.readRecordDirect(inRecord))
+				break;
+				int portNo = partitionFce.getOutputPort(inRecord);
 				try {
-					outPorts[portNo].writeRecord(inRecord);
+					outPorts[portNo].writeRecordDirect(inRecord);
 				} catch (ArrayIndexOutOfBoundsException e) {
 					if (portNo == RangePartition.NONEXISTENT_REJECTED_PORT) {
 						throw new JetelException("Not found output port for record:\n" + inRecord);
@@ -263,11 +305,8 @@ public class Partition extends Node {
 								"Port number " + portNo + " not connected",e);
 					}
 				}
-			}
 			SynchronizeUtils.cloverYield();
 		}
-		broadcastEOF();
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
 	/**
@@ -374,7 +413,7 @@ public class Partition extends Node {
 				throw new ComponentNotReadyException(e.getMessage());
 			}
 		}
-		//create parttion function if still is not created
+		//create partition function if still is not created
 		if (partitionFce != null) {
 			partitionClass = partitionFce.getClass().getName();
 		}else if (partitionClass != null){

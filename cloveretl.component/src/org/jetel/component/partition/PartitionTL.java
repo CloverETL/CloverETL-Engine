@@ -21,6 +21,7 @@
 
 package org.jetel.component.partition;
 
+import java.nio.ByteBuffer;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -102,6 +103,14 @@ public class PartitionTL implements PartitionFunction {
 
 	public void setGraph(TransformationGraph graph) {
 		this.graph = graph;
+	}
+
+	public int getOutputPort(ByteBuffer directRecord) {
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean supportsDirectRecord() {
+		return false;
 	}
 
 }

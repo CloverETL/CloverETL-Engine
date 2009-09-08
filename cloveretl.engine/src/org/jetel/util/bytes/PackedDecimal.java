@@ -38,27 +38,30 @@ public class PackedDecimal {
 		final int DropHO = 0xFF; // AND mask to drop HO sign bits
 		final int GetLO = 0x0F; // Get only LO digit
 		long val = 0; // Value to return
+		boolean signOK=false;
 
+		loop:
 		for (int i = 0; i < input.length; i++) {
 			int aByte = input[i] & DropHO; // Get next 2 digits & drop sign bits
-			if (i == input.length - 1) { // last digit?
-				int digit = aByte >> 4; // First get digit
-				val = val * 10 + digit;
-
-				int sign = aByte & GetLO; // now get sign
-				if (sign == MinusSign)
-					val = -val;
-				else {
-					// Do we care if there is an invalid sign?
-					if (sign != PlusSign && sign != NoSign)
-						throw new IllegalArgumentException("Invalid (missing) Sign in packed decimal representation: "+Arrays.toString(input));
-				}
-			} else {
-				int digit = aByte >> 4; // HO first
-				val = val * 10 + digit;
-				digit = aByte & GetLO; // now LO
+			int digit = aByte >> 4; // First get high digit
+			val = val * 10 + digit;
+			digit = aByte & GetLO; // now LOW digit or sign
+			
+			switch(digit){
+			case PlusSign:
+			case NoSign:
+						signOK=true;
+						break loop;
+			case MinusSign:
+					val=-val;
+						signOK=true;
+						break loop;
+			default: // no sign
 				val = val * 10 + digit;
 			}
+		}
+		if (!signOK) { // last digit and no sign ?
+			throw new IllegalArgumentException("Invalid (missing) Sign in packed decimal representation: "+Arrays.toString(input));
 		}
 		return val;
 	}
@@ -106,18 +109,21 @@ public class PackedDecimal {
 		return j-1;
 
 	}
-
-	/*public static void main(String[] args) throws Exception {
+/*
+	public static void main(String[] args) throws Exception {
 		 byte[] pd = new byte[] {0x19, 0x2C}; // 192
 		 System.out.println(PackedDecimal.parse(pd));
-		 System.out.println(Arrays .toString(PackedDecimal.format(192)));
+		 byte[] result=PackedDecimal.format(192);
+		 System.out.println(Arrays .toString(result));
 		 System.out.println(Arrays.toString(pd));
+		 System.out.println(PackedDecimal.parse(result));
 		 pd = new byte[] {(byte)0x98, 0x44, 0x32, 0x3D}; //-9844323
 		 System.out.println(PackedDecimal.parse(pd));
-		 System.out.println(Arrays .toString(PackedDecimal.format(-9844323)));
+		 System.out.println(Arrays .toString(result=PackedDecimal.format(-9844323)));
+		 System.out.println(PackedDecimal.parse(result));
 		 System.out.println(Arrays .toString(PackedDecimal.format(1234567890123456l)));
 		 System.out.println(Arrays.toString(pd));
-		 pd = new byte[] {(byte)0x98, 0x44, 0x32}; //invalid sign
+		 pd = new byte[] {(byte)0x98, 0x44, 0x32, (byte)0x89}; //invalid sign
 		 System.out.println(PackedDecimal.parse(pd)); 
 	}*/
 	

@@ -1,25 +1,23 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
-// FILE: c:/projects/jetel/org/jetel/data/DateDataField.java
-
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.data;
+
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -27,59 +25,42 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.string.StringUtils;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
+import org.jetel.util.date.DateFormatter;
+import org.jetel.util.date.DateFormatterFactory;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
- *  A class that represents ...
+ * Represents a date data field.
  *
- * @author      D.Pavlis
- * @since       March 28, 2002
- * @revision    $Revision$
- * @created     January 26, 2003
- * @see         OtherClasses
+ * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
+ * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
+ *
+ * @version 17th August 2009
+ * @since 28th March 2002
+ *
+ * @see DateFormatter
+ * @see DateFormatterFactory
+ *
+ * @revision $Revision$
  */
 @SuppressWarnings("EI")
-public class DateDataField extends DataField implements Comparable{
+public class DateDataField extends DataField implements Comparable {
 
 	private static final long serialVersionUID = 1529319195864286249L;
 	
-	// Attributes
-	/**
-	 *  An attribute that represents ...
-	 *
-	 * @since    March 28, 2002
-	 */
+	/** the actual date value */
 	private Date value;
-
-	/** Joda-Time date time formatter */
-	private DateTimeFormatter dateTimeFormatter;
-	/** classic Java date format */
-	private DateFormat dateFormat;
-
-	/** the Java prefix specifying date format strings used by the Java's DateFormat class */
-	public static final String JAVA_FORMAT_PREFIX = "java:";
-	/** the Joda-Time prefix specifying date format strings used by the Joda-Time's DateTimeFormatter class */
-	public static final String JODA_FORMAT_PREFIX = "joda:";
+	/** the date formatter used to format this field */
+	private DateFormatter dateFormatter;
 
 	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
 
-
-	// Associations
-
-	// Operations
-	
 	/**
      * Constructor for the DateDataField object
      * 
@@ -107,36 +88,9 @@ public class DateDataField extends DataField implements Comparable{
             } else {
                 locale = null;
             }
-            // handle format string
-            String formatString = metadata.getFormatStr();
 
-            if (!StringUtils.isEmpty(formatString)) {
-            	if (formatString.startsWith(JODA_FORMAT_PREFIX)) {
-            		dateTimeFormatter = DateTimeFormat.forPattern(
-            				formatString.substring(JODA_FORMAT_PREFIX.length()));
-
-            		if (locale != null) {
-                    	dateTimeFormatter = dateTimeFormatter.withLocale(locale);
-                    }
-            	} else {
-            		if (formatString.startsWith(JAVA_FORMAT_PREFIX)) {
-            			formatString = formatString.substring(JAVA_FORMAT_PREFIX.length());
-            		}
-
-            		if (locale != null) {
-                        dateFormat = new SimpleDateFormat(formatString, locale);
-                    } else {
-                        dateFormat = new SimpleDateFormat(formatString);
-                    }
-
-                    dateFormat.setLenient(false);
-            	}
-            } else if (locale != null) {
-                dateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT, locale);
-                dateFormat.setLenient(false);
-            } else {
-            	dateFormat = SimpleDateFormat.getDateInstance();
-            }
+            // create a date formatter based on the format string and locale
+            dateFormatter = DateFormatterFactory.createFormatter(metadata.getFormatStr(), locale);
         }
     }
 
@@ -173,26 +127,20 @@ public class DateDataField extends DataField implements Comparable{
 	 * @param dateTimeFormatter
 	 * @param dateFormat
 	 */
-	private DateDataField(DataFieldMetadata metadata, Date value, DateTimeFormatter dateTimeFormatter, DateFormat dateFormat) {
+	private DateDataField(DataFieldMetadata metadata, Date value, DateFormatter dateFormatter) {
 	    super(metadata);
 
 	    setValue(value);
 
-	    this.dateTimeFormatter = dateTimeFormatter;
-	    this.dateFormat = dateFormat;
+	    this.dateFormatter = dateFormatter;
 	}
-	
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#copy()
-	 */
 	public DataField duplicate(){
-	    DateDataField newField = new DateDataField(metadata, value, dateTimeFormatter, dateFormat);
+	    DateDataField newField = new DateDataField(metadata, value, dateFormatter);
 	    newField.setNull(isNull());
 
 	    return newField;
 	}
-	
 	
 	/**
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
@@ -244,9 +192,6 @@ public class DateDataField extends DataField implements Comparable{
 		}
 	}
 	
-    /* (non-Javadoc)
-     * @see org.jetel.data.DataField#setValue(org.jetel.data.DataField)
-     */
     @Override
     public void setValue(DataField fromField) {
         if (fromField instanceof DateDataField){
@@ -319,9 +264,6 @@ public class DateDataField extends DataField implements Comparable{
 		}
 	}
     
-     /* (non-Javadoc)
-     * @see org.jetel.data.DataField#reset()
-     */
     public void reset(){
             if (metadata.isNullable()){
                 setNull(true);
@@ -361,11 +303,7 @@ public class DateDataField extends DataField implements Comparable{
 			return "";
 		}
 
-		if (dateTimeFormatter != null) {
-			return dateTimeFormatter.print(value.getTime());
-		}
-
-		return dateFormat.format(value);
+		return dateFormatter.format(value);
 	}
 
 
@@ -409,10 +347,6 @@ public class DateDataField extends DataField implements Comparable{
         }
     }
 
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
-	 */
 	public void fromString(CharSequence seq) {
 		if (seq == null || seq.length() == 0) {
 		    setNull(true);
@@ -421,18 +355,17 @@ public class DateDataField extends DataField implements Comparable{
 		}
 
 		try {
-			if (dateTimeFormatter != null) {
-				value = dateTimeFormatter.parseDateTime(seq.toString()).toDate();
+			if (value == null) {
+				value = dateFormatter.parseDate(seq.toString());
 			} else {
-				value = dateFormat.parse(seq.toString());
+				value.setTime(dateFormatter.parseMillis(seq.toString()));
 			}
 
 			setNull(false);
 		} catch (IllegalArgumentException exception) {
-			throw new BadDataFormatException("not a Date", seq.toString());
-		} catch (ParseException e) {
-			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"", 
-					getMetadata().getName(), DataFieldMetadata.type2Str(getType()),seq ,getMetadata().getFormatStr()  ),seq.toString());
+			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
+					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, getMetadata().getFormatStr()),
+					seq.toString(), exception);
 		}
 	}
 
@@ -539,7 +472,3 @@ public class DateDataField extends DataField implements Comparable{
 	}
 
 }
-/*
- *  end class DateDataField
- */
-

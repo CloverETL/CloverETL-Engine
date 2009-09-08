@@ -1647,6 +1647,22 @@ public class StringUtils {
 		}
 		return copy.toString();
 	}
+	
+	/**
+	 * Calculates hashCode/value for specified CharSequence
+	 * 
+	 * @param seq
+	 * @return
+	 */
+	public static int hashCode(CharSequence seq) {
+		int h = 5381;
+		final int length = seq.length();
+		for (int i = 0; i < length; i++) {
+			h = ((h << 5) + h) + seq.charAt(i);
+		}
+		return (h & 0x7FFFFFFF);
+	}
+	
 	/*
 	 * End class StringUtils
 	 */

@@ -20,9 +20,6 @@
 package org.jetel.data;
 
 import java.nio.ByteBuffer;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -30,8 +27,7 @@ import java.util.GregorianCalendar;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.test.CloverTestCase;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
+import org.jetel.util.date.DateFormatter;
 
 /**
  * @author maciorowski
@@ -45,6 +41,8 @@ public class DateDataFieldTest extends CloverTestCase {
 
 
 protected void setUp() { 
+	initEngine();
+
 	Calendar calendar = new GregorianCalendar(2003,4,10);
 	Date trialTime1 = calendar.getTime(); 
 	DataFieldMetadata fixedFieldMeta1 = new DataFieldMetadata("Field1",'D',(short)3);
@@ -202,7 +200,7 @@ public void test_1_DateDataField() {
 		}
 
 		DataFieldMetadata javaDateMetadataPrefix = new DataFieldMetadata("date", ";");
-		javaDateMetadataPrefix.setFormatStr(DateDataField.JAVA_FORMAT_PREFIX + as400DateFormat);
+		javaDateMetadataPrefix.setFormatStr(DateFormatter.JAVA_FORMAT_PREFIX + as400DateFormat);
 		DateDataField javaDateDataFieldPrefix = new DateDataField(javaDateMetadataPrefix);
 
 		try {
@@ -213,7 +211,7 @@ public void test_1_DateDataField() {
 		}
 
 		DataFieldMetadata jodaDateMetadata = new DataFieldMetadata("date", ";");
-		jodaDateMetadata.setFormatStr(DateDataField.JODA_FORMAT_PREFIX + as400DateFormat);
+		jodaDateMetadata.setFormatStr(DateFormatter.JODA_FORMAT_PREFIX + as400DateFormat);
 		DateDataField jodaDateDataField = new DateDataField(jodaDateMetadata);
 
 		try {

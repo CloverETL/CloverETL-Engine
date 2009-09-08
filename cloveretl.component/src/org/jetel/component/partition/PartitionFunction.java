@@ -21,6 +21,8 @@
  */
 package org.jetel.component.partition;
 
+import java.nio.ByteBuffer;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
@@ -46,6 +48,16 @@ public interface PartitionFunction {
 	     */
 	    int getOutputPort(DataRecord record) throws TransformException;
 	    
+	    
+	    /**
+	     * @param record data record which should be used for determining partition�
+	     * number
+	     * @return port number which should be used for sending
+	     * data out.
+	     */
+	    int getOutputPort(ByteBuffer directRecord);
+	    
+	    
 	    /**
 	     * Called befor partiton function is first used (getOutputPort is used).
 	     * @param numPartitions how many partitions we have
@@ -59,5 +71,11 @@ public interface PartitionFunction {
 		 *  Passes instance of transformation graph to denormalize transformation
 		 */
 		public void setGraph(TransformationGraph graph);
+		
+		/**
+		 * Indicates whether partition function supports operation on serialized records /aka direct
+		 * @return true if getOutputPort(ByteBuffer) method can be called
+		 */
+		public boolean supportsDirectRecord();
 
 }

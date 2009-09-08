@@ -1,5 +1,7 @@
 package org.jetel.component.partition;
 
+import java.nio.ByteBuffer;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.graph.TransformationGraph;
@@ -31,5 +33,14 @@ public class RoundRobinPartition implements PartitionFunction{
     public void setGraph(TransformationGraph graph) {
     	// not used here
     }
+
+	public int getOutputPort(ByteBuffer directRecord) {
+		 last=(last+1)%numPorts;
+	     return last;
+	}
+
+	public boolean supportsDirectRecord() {
+		return true;
+	}
     
 }

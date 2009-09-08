@@ -37,6 +37,8 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 
 	private CharSequence offendingValue;
     
+	private CharSequence rawRecord;
+	
     private int recordNumber=-1;
     
     private int fieldNumber=-1;
@@ -80,7 +82,15 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 	public CharSequence getOffendingValue() {
 		return offendingValue;
 	}
-    
+
+	public void setRawRecord(CharSequence rawRecord) {
+		this.rawRecord = rawRecord;
+	}
+
+	public CharSequence getRawRecord() {
+		return rawRecord;
+	}
+
     @Override
     public String getMessage() {
         StringBuffer ret = new StringBuffer();

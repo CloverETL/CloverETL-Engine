@@ -29,6 +29,7 @@ import java.util.Set;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -54,7 +55,8 @@ public class AggregateProcessor {
 	private boolean sortedGroupChanged = false;
 	
 	private AggregationGroup sortedGroup;
-	private Map<String, AggregationGroup> unsortedGroups;
+	private HashKey hashKey;
+	private Map<HashKey, AggregationGroup> unsortedGroups;
 	private DataRecord previousRecord;
 	
 	// aggregation key
@@ -88,7 +90,8 @@ public class AggregateProcessor {
 		
 		this.sorted = sorted;
 		if (!sorted) {
-			unsortedGroups = new HashMap<String, AggregationGroup>();
+			hashKey = new HashKey(recordKey, null);
+			unsortedGroups = new HashMap<HashKey, AggregationGroup>();
 		}
 		
 		this.inMetadata = inMetadata;
@@ -144,11 +147,16 @@ public class AggregateProcessor {
 			sortedGroup.update(inputRecord);
 			previousRecord = inputRecord;
 		} else {
-			String key = recordKey.getKeyString(inputRecord);
-			if (!unsortedGroups.containsKey(key)) {
-				unsortedGroups.put(key, new AggregationGroup(inputRecord));
+			hashKey.setDataRecord(inputRecord);
+			AggregationGroup group = unsortedGroups.get(hashKey);
+			if (group == null) {
+				DataRecord storedRecord = inputRecord.duplicate();
+				AggregationGroup newGroup = new AggregationGroup(storedRecord);
+				unsortedGroups.put(new HashKey(recordKey, storedRecord), newGroup);
+				newGroup.update(inputRecord);
+			} else {
+				group.update(inputRecord);
 			}
-			unsortedGroups.get(key).update(inputRecord);
 		}
 		
 		sortedGroupChanged = false;
@@ -558,7 +566,7 @@ public class AggregateProcessor {
 	 *         (c) Javlin Consulting (www.javlinconsulting.cz)
 	 */
 	private class UnsortedResultsIterator implements Iterator<DataRecord> {
-		Iterator<String> keyIterator;
+		Iterator<HashKey> keyIterator;
 		DataRecord outRecord;
 		
 		public UnsortedResultsIterator(DataRecord outRecord) {
