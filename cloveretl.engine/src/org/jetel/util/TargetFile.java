@@ -1,10 +1,15 @@
 package org.jetel.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -73,6 +78,10 @@ public class TargetFile {
 	private DataRecord record;
 	private DataField field; 
 	private boolean isStringDataField;
+	private ProcessingType fieldProcesstingType;
+	private CharsetDecoder decoder;
+	private ByteBuffer byteBuffer;
+	private CharBuffer charBuffer;
 
 	private String charset;
 
@@ -81,7 +90,7 @@ public class TargetFile {
 	private WritableByteChannel dictOutChannel;
 	private ArrayList<byte[]> dictOutArray;
 	private boolean fieldOrDictOutput;
-	private RestrictedByteArrayOutputStream bbOutputStream;
+	private ByteArrayOutputStream bbOutputStream;
 
 	private int compressLevel = -1;
 
@@ -147,6 +156,9 @@ public class TargetFile {
 			((MultiOutFile) fileNames).reset();
 		}
 		formatter.reset();
+		
+		// reset CharsetDecoder
+    	if (decoder == null) decoder.reset();
 	}
     
     /**
@@ -242,22 +254,31 @@ public class TargetFile {
 	}
     
 	private void initPortFields() throws ComponentNotReadyException {
+		// prepare output record
 		if (outputPort == null) throw new ComponentNotReadyException("Output port is not connected.");
 		record = new DataRecord(outputPort.getMetadata());
 		record.init();
-		String fName = getFieldName(fileURL);
+		
+		// parse target url
+		String[] aField = fileURL.substring(PORT_PROTOCOL.length()).split(PARAM_DELIMITER);
+		if (aField.length < 1) throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
+		String[] aFieldNamePort = aField[0].split(PORT_DELIMITER);
+		fieldProcesstingType = ProcessingType.fromString(aField.length > 1 ? aField[1] : null, ProcessingType.DISCRETE);
+		if (aFieldNamePort.length < 2) throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
+		String fName = aFieldNamePort[1];
+
+		// check setting
 		if (record.hasField(fName)) field = record.getField(fName);
 		if (field == null) throw new ComponentNotReadyException("The field not found for the statement: '" + fileURL + "'");
 		if (field instanceof StringDataField) isStringDataField = true;
 		else if (!(field instanceof ByteDataField))	throw new ComponentNotReadyException("The field '" + field.getMetadata().getName() + "' must be String or (Compressed) Byte data field.");
-	}
-    
-	private String getFieldName(String source) throws ComponentNotReadyException {
-		String[] param = source.split(PARAM_DELIMITER); // port:$port.field[:processingType]
-		if (param.length < 2) throw new ComponentNotReadyException("The source string '" + source + "' is not valid.");
-		param = param[1].split(PORT_DELIMITER);
-		if (param.length < 2) throw new ComponentNotReadyException("The source string '" + source + "' is not valid.");
-		return param[1];
+
+		decoder = Charset.forName(charset).newDecoder();
+		//FIXME
+		int x = Defaults.PortReadingWriting.DATA_LENGTH;
+		byteBuffer = ByteBuffer.allocateDirect(x);
+		charBuffer = CharBuffer.allocate(x);
+		charBuffer.flip(); // initially empty 
 	}
 
     /**
@@ -300,7 +321,12 @@ public class TargetFile {
     	}
     }
     
-    private void write2OutportOrDictionary(byte[] aData) throws UnsupportedEncodingException {
+    /**
+     * Write data to the output port or to the dictionary.
+     * @param aData
+     * @throws IOException
+     */
+    private void write2OutportOrDictionary(byte[] aData) throws IOException {
     	if (bbOutputStream != null) {
             if (dictProcesstingType != null) {
             	if (dictOutArray != null) {
@@ -308,17 +334,123 @@ public class TargetFile {
             	}
             }
             if (field != null) {
-            	if (aData.length == 0) return;
-       			field.setValue(isStringDataField ? new String(aData, charset) : aData);
-       	        //broadcast the record to all connected Edges
-       	        try {
-       	        	outputPort.writeRecord(record.duplicate());
-       			} catch (Exception e) {
-       				throw new RuntimeException(e);
-       			}
-       	        SynchronizeUtils.cloverYield();
+            	// repeat =0 is 1 record, =1 are 2 records, ...
+				boolean streamType = fieldProcesstingType == ProcessingType.STREAM;
+            	int repeat = 0;
+            	if (aData.length > 0) {
+            		repeat = aData.length / (streamType ? Defaults.PortReadingWriting.DATA_LENGTH : aData.length);
+            	}
+            	
+            	// write to string field
+    			if (isStringDataField) {
+    				write2StringField(aData, streamType, repeat);
+
+            	// write to byte field
+    			} else {
+    				write2ByteField(aData, streamType, repeat);
+    			}
             }
     	}
+    }
+    
+    /**
+     * Write byte array to string field for n records
+     * @param aData
+     * @param streamType
+     * @param repeat
+     * @throws IOException
+     */
+    private void write2StringField(byte[] aData, boolean streamType, int repeat) throws IOException {
+		// string field - stream mode
+    	if (streamType) {
+    		byteBuffer.clear();
+    		byteBuffer.put(aData);
+    		byteBuffer.flip();
+    		for (int i=repeat; i>=0; i--) {
+    			decoder.reset();
+    			boolean isEof = i==0;
+    			// how to convert unicode from byte array
+                CoderResult result = decoder.decode(byteBuffer, charBuffer, isEof);
+                if (result.isError()) {
+                    throw new IOException(result.toString()+" when converting from "+decoder.charset());
+                }
+                if (isEof) {
+                    result = decoder.flush(charBuffer);
+                    if (result.isError()) {
+                    	throw new IOException(result.toString()+" when converting from "+decoder.charset());
+                    }
+                }
+                charBuffer.flip();
+       			field.setValue(charBuffer.toString());
+    		}
+    		
+    		//broadcast the record to the connected edge
+    		writeRecord();
+    		
+   		// string field - byte mode
+    	} else {
+        	if (aData.length == 0) return;
+   			field.setValue(new String(aData, charset));
+
+   			//broadcast the record to the connected edge
+    		writeRecord();
+    	}
+    }
+
+    /**
+     * Write byte array to byte/cbyte field for n records
+     * @param aData
+     * @param streamType
+     * @param repeat
+     */
+    private void write2ByteField(byte[] aData, boolean streamType, int repeat) {
+		if (aData.length == 0)	return;
+		
+		// byte field - stream mode
+    	if (streamType) {
+			// is it necessary to copy the byte array?
+			byte[] subArray = null;
+			int size = Defaults.PortReadingWriting.DATA_LENGTH;
+			if (repeat > 0) {
+				subArray = new byte[size];
+			}
+			
+			// send all data to records, last record is null
+    		for (int i=0; i<=repeat; i++) {
+    			if (i == repeat) {
+    				size = aData.length % Defaults.PortReadingWriting.DATA_LENGTH;
+    				subArray = new byte[size];
+    			}
+       	    	System.arraycopy(aData, Defaults.PortReadingWriting.DATA_LENGTH*i, subArray, 0, size);
+   				field.setValue(subArray);
+
+    			//broadcast the record to the connected edge
+    			writeRecord();
+    		}
+    		
+    		//null mark
+			field.setNull(true);
+
+		// byte field - discrete mode
+		} else {
+			field.setValue(aData);
+		}
+    	
+		//broadcast the record to the connected edge
+		writeRecord();
+    }
+    
+    /**
+     * Writes record to the output port.
+     */
+    private void writeRecord() {
+		//broadcast the record to all connected Edges
+		try {
+			outputPort.writeRecord(record);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		SynchronizeUtils.cloverYield();
     }
     
     /**
@@ -367,8 +499,16 @@ public class TargetFile {
             		write2OutportOrDictionary(bbOutputStream.toByteArray());
                 	bbOutputStream.reset();
             	} else {
-                   	bbOutputStream = new RestrictedByteArrayOutputStream();
-                   	if (field != null) bbOutputStream.setMaxArrayLength(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
+                    // stream mode
+            		if (fieldProcesstingType == ProcessingType.STREAM) {
+                       	bbOutputStream = new ByteArrayOutputStream();
+                    
+               		// discrete mode
+            		} else {
+                       	bbOutputStream = new RestrictedByteArrayOutputStream();
+                       	if (field != null) 
+                       		((RestrictedByteArrayOutputStream)bbOutputStream).setMaxArrayLength(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
+            		}
             	}
         		setDataTarget(Channels.newChannel(bbOutputStream));
     		}

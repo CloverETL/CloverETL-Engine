@@ -151,3 +151,10 @@ INCREMENTAL_STORE_KEY = incremental_store
 # Prevents GreedyClassLoader from loading interfaces and common classes from external libs, which would probably result in ClassCastExceptions
 # GreedyClassLoader is used for JMS implementations, JDBC drivers, transformation classes etc.
 PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING=java.;javax.;sun.misc.
+
+# It determines what is the maximum size of one particular data field for stream mode for writer components. 
+# This value must be less or equal to similar field or record buffers.
+PortReadingWriting.DATA_LENGTH = 2048
+
+
+
