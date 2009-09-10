@@ -215,6 +215,7 @@ public final class Defaults {
 		Graph.init();
 		OracleConnection.init();
 		TLCompiler.init();
+		PortReadingWriting.init();
 	}
 
 	/**
@@ -607,5 +608,23 @@ public final class Defaults {
 		public static String TLCOMPILER_BINARY_DIRECTORY;
 	}
 	
-	
+	/**
+	 * Defaults for port reading/writing - stream mode.
+	 * 
+	 * @author jausperger
+	 * @created September 10, 2009
+	 */
+	public final static class PortReadingWriting {
+		public static void init() {
+			DATA_LENGTH = getIntProperties("PortReadingWriting.DATA_LENGTH", 2048);
+		}
+
+		/**
+		 * It determines what is the maximum size of one particular data field for stream mode for writer components. 
+		 * This value must be less or equal to similar field or record buffers.
+		 */
+		public static int DATA_LENGTH;// = 2048;
+
+	}
+
 }
