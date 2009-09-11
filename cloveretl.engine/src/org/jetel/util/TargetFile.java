@@ -79,9 +79,6 @@ public class TargetFile {
 	private DataField field; 
 	private boolean isStringDataField;
 	private ProcessingType fieldProcesstingType;
-	private CharsetDecoder decoder;
-	private ByteBuffer byteBuffer;
-	private CharBuffer charBuffer;
 
 	private String charset;
 
@@ -156,9 +153,6 @@ public class TargetFile {
 			((MultiOutFile) fileNames).reset();
 		}
 		formatter.reset();
-		
-		// reset CharsetDecoder
-    	if (decoder == null) decoder.reset();
 	}
     
     /**
@@ -272,13 +266,6 @@ public class TargetFile {
 		if (field == null) throw new ComponentNotReadyException("The field not found for the statement: '" + fileURL + "'");
 		if (field instanceof StringDataField) isStringDataField = true;
 		else if (!(field instanceof ByteDataField))	throw new ComponentNotReadyException("The field '" + field.getMetadata().getName() + "' must be String or (Compressed) Byte data field.");
-
-		decoder = Charset.forName(charset).newDecoder();
-		//FIXME
-		int x = Defaults.PortReadingWriting.DATA_LENGTH;
-		byteBuffer = ByteBuffer.allocateDirect(x);
-		charBuffer = CharBuffer.allocate(x);
-		charBuffer.flip(); // initially empty 
 	}
 
     /**
@@ -334,20 +321,16 @@ public class TargetFile {
             	}
             }
             if (field != null) {
-            	// repeat =0 is 1 record, =1 are 2 records, ...
+        		if (aData.length == 0)	return;
 				boolean streamType = fieldProcesstingType == ProcessingType.STREAM;
-            	int repeat = 0;
-            	if (aData.length > 0) {
-            		repeat = aData.length / (streamType ? Defaults.PortReadingWriting.DATA_LENGTH : aData.length);
-            	}
-            	
+				
             	// write to string field
     			if (isStringDataField) {
-    				write2StringField(aData, streamType, repeat);
+    				write2StringField(aData, streamType);
 
             	// write to byte field
     			} else {
-    				write2ByteField(aData, streamType, repeat);
+    				write2ByteField(aData, streamType);
     			}
             }
     	}
@@ -360,41 +343,37 @@ public class TargetFile {
      * @param repeat
      * @throws IOException
      */
-    private void write2StringField(byte[] aData, boolean streamType, int repeat) throws IOException {
+    private void write2StringField(byte[] aData, boolean streamType) throws IOException {
+    	String sData = new String(aData, charset);
+    	
 		// string field - stream mode
     	if (streamType) {
-    		byteBuffer.clear();
-    		byteBuffer.put(aData);
-    		byteBuffer.flip();
-    		for (int i=repeat; i>=0; i--) {
-    			decoder.reset();
-    			boolean isEof = i==0;
-    			// how to convert unicode from byte array
-                CoderResult result = decoder.decode(byteBuffer, charBuffer, isEof);
-                if (result.isError()) {
-                    throw new IOException(result.toString()+" when converting from "+decoder.charset());
-                }
-                if (isEof) {
-                    result = decoder.flush(charBuffer);
-                    if (result.isError()) {
-                    	throw new IOException(result.toString()+" when converting from "+decoder.charset());
-                    }
-                }
-                charBuffer.flip();
-       			field.setValue(charBuffer.toString());
+        	// repeat =0 is 1 record, =1 are 2 records, ...
+        	int repeat = sData.length() / (streamType ? Defaults.PortReadingWriting.DATA_LENGTH : sData.length());
+			int size = Defaults.PortReadingWriting.DATA_LENGTH;
+			
+			// send all data to records, last record is null
+    		for (int i=0; i<=repeat; i++) {
+    			if (i == repeat) {
+    				size = aData.length % Defaults.PortReadingWriting.DATA_LENGTH;
+    			}
+    			int start = Defaults.PortReadingWriting.DATA_LENGTH*i;
+   				field.setValue(sData.substring(start, start+size));
+
+    			//broadcast the record to the connected edge
+    			writeRecord();
     		}
     		
-    		//broadcast the record to the connected edge
-    		writeRecord();
-    		
+    		//null mark
+			field.setNull(true);
+
    		// string field - byte mode
     	} else {
-        	if (aData.length == 0) return;
-   			field.setValue(new String(aData, charset));
-
-   			//broadcast the record to the connected edge
-    		writeRecord();
+   			field.setValue(sData);
     	}
+    	
+    	//broadcast the record to the connected edge
+		writeRecord();
     }
 
     /**
@@ -403,11 +382,12 @@ public class TargetFile {
      * @param streamType
      * @param repeat
      */
-    private void write2ByteField(byte[] aData, boolean streamType, int repeat) {
-		if (aData.length == 0)	return;
-		
+    private void write2ByteField(byte[] aData, boolean streamType) {
 		// byte field - stream mode
     	if (streamType) {
+        	// repeat =0 is 1 record, =1 are 2 records, ...
+        	int repeat = aData.length / (streamType ? Defaults.PortReadingWriting.DATA_LENGTH : aData.length);
+
 			// is it necessary to copy the byte array?
 			byte[] subArray = null;
 			int size = Defaults.PortReadingWriting.DATA_LENGTH;
