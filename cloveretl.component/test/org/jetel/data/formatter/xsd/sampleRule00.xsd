@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://cloverWS.org/ns/types/cloverWSProtocol/" xmlns:metans1="http://cloverWS.org/ns/types/cloverMetadata/" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://cloverWS.org/ns/types/cloverWSProtocol/">
-    <xsd:import namespace="http://cloverWS.org/ns/types/cloverMetadata/" />
-    <xsd:element name="payload" type="metans1:CustomerType"/>
-</xsd:schema>
