@@ -29,8 +29,6 @@
 	<classpathentry kind="lib" path="lib/ooxml-schemas-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jsr173_1.0_api.jar"/>
 	<classpathentry kind="lib" path="lib/jaxb-api-2.1.jar"/>
-	<classpathentry kind="lib" path="lib/commons-jelly-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/commons-beanutils-1.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
