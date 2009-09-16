@@ -4,8 +4,8 @@
    provider-name="Javlin a.s.">
 
 	<runtime>
-		<library path="cloveretl.component.jar"/>
-        <library path="lib/saxon8.jar"/>
+		<library path="bin/"/>
+		<library path="lib/saxon8.jar"/>
    	</runtime> 
 
 	<requires engine-version="0.0.0.devel">
