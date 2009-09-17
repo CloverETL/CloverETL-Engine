@@ -134,6 +134,19 @@ public class ReadableChannelPortIterator {
 			record = inputPort.readRecord(record);
 			currentWrapper = 0;
 		}
+		
+		// the field of the last record doesn't need to have null value
+		for (;currentWrapper<fieldDataWrapper.length; currentWrapper++) {
+			if (fieldDataWrapper[currentWrapper] instanceof StreamFieldDataWrapper) {
+				ReadableByteChannel data;
+				if ((data = ((StreamFieldDataWrapper)fieldDataWrapper[currentWrapper]).getLastData()) != null) {
+					currentFileName = fieldDataWrapper[currentWrapper].getCurrentFileName();
+					lastFieldName = fieldDataWrapper[currentWrapper].getFieldName();
+					currentWrapper++;
+					return data;
+				}
+			}
+		}
 		return null;
 	}
 
@@ -342,6 +355,9 @@ public class ReadableChannelPortIterator {
 	private static class StreamFieldDataWrapper extends FieldDataWrapper {
 		// byte array
 		private ByteArray byteArray;
+
+		// flush data at the end
+		private boolean flushDataAtTheEnd;
 		
 		/**
 		 * Constructor.
@@ -360,10 +376,27 @@ public class ReadableChannelPortIterator {
 			if (value == null) {
 				ReadableByteChannel ch = Channels.newChannel(new ByteArrayInputStream(byteArray.getValueDuplicate()));
 				byteArray.reset();
+				flushDataAtTheEnd = false;
 				return ch;
 			}
 			byteArray.append(value instanceof byte[] ? (byte[])value : value.toString().getBytes(charset));
+			flushDataAtTheEnd = true;
 			return null;
+		}
+		
+		/**
+		 * Gets data if flushDataAtTheEnd = true.
+		 * @return
+		 */
+		public ReadableByteChannel getLastData() {
+			// return null
+			if (!flushDataAtTheEnd) return null;
+			flushDataAtTheEnd = false;
+			
+			// return last data
+			ReadableByteChannel ch = Channels.newChannel(new ByteArrayInputStream(byteArray.getValueDuplicate()));
+			byteArray.reset();
+			return ch;
 		}
 	}
 
