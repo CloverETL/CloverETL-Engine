@@ -339,6 +339,8 @@ public class TargetFile {
      * @throws IOException
      */
     private void write2StringField(byte[] aData, boolean streamType) throws IOException {
+    	// the writing to port string field is not often operation than to the byte field I guess
+    	// the new String is quicker than ByteCharBuffer in all cases but bigger memory is needed
     	String sData = new String(aData, charset);
     	
 		// string field - stream mode
