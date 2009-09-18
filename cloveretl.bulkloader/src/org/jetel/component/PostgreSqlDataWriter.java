@@ -71,6 +71,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	private static final String XML_PSQL_PATH_ATTRIBUTE = "psqlPath";
 	private static final String XML_COMMAND_URL_ATTRIBUTE = "commandURL";
 	private static final String XML_HOST_ATTRIBUTE = "host";
+	private static final String XML_FAIL_ON_ERROR_ATTRIBUTE = "failOnError";
 
 	// params for psql client
 	private static final String PSQL_ECHO_ALL_PARAM = "echoAll";
@@ -136,6 +137,8 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	// variables for copy statement
 	private File commandFile;
 
+	/** should the component fail in case of any error? */
+	private boolean failOnError = true;
 	private boolean csvMode; // true if CSV mode is used for loading data
 	
 	/**
@@ -146,7 +149,11 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	public PostgreSqlDataWriter(String id, String psqlPath, String database) {
 		super(id, psqlPath, database);
 	}
-	
+
+	public void setFailOnError(boolean failOnError) {
+		this.failOnError = failOnError;
+	}
+
 	/**
 	 * Main processing method for the PsqlDataWriter object
 	 * 
@@ -298,10 +305,12 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	private String getDefaultCommandFileContent() throws IOException {
 		CommandBuilder cmdBuilder = new CommandBuilder(properties, SPACE_CHAR);
 
-		// The following command ensures that the entire graph fails if the psql utility failed.
-		// Otherwise the graph would succeed even though an error occurred.
-		cmdBuilder.add("\\set ON_ERROR_STOP");
-		cmdBuilder.add(System.getProperty("line.separator"));
+		if (failOnError) {
+    		// The following command ensures that the entire graph fails if the psql utility failed.
+    		// Otherwise the graph would succeed even though an error occurred.
+    		cmdBuilder.add("\\set ON_ERROR_STOP");
+    		cmdBuilder.add(System.getProperty("line.separator"));
+		}
 
 		cmdBuilder.add("\\copy");
 		// \copy table [ ( column_list ) ]
@@ -523,6 +532,10 @@ public class PostgreSqlDataWriter extends BulkLoader {
 					xattribs.getString(XML_PSQL_PATH_ATTRIBUTE), 
 					xattribs.getString(XML_DATABASE_ATTRIBUTE));
 
+			if (xattribs.exists(XML_FAIL_ON_ERROR_ATTRIBUTE)) {
+				postgreSQLDataWriter.setFailOnError(xattribs.getBoolean(XML_FAIL_ON_ERROR_ATTRIBUTE));
+			}
+
 			if (xattribs.exists(XML_COMMAND_URL_ATTRIBUTE)) {
 				postgreSQLDataWriter.setCommandURL((xattribs.getString(XML_COMMAND_URL_ATTRIBUTE)));
 			}
@@ -558,6 +571,10 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
+
+		if (!failOnError) {
+			xmlElement.setAttribute(XML_FAIL_ON_ERROR_ATTRIBUTE, Boolean.toString(failOnError));
+		}
 
 		xmlElement.setAttribute(XML_PSQL_PATH_ATTRIBUTE, loadUtilityPath);
 		if (!StringUtils.isEmpty(commandURL)) {

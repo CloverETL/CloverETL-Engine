@@ -126,7 +126,7 @@ public abstract class TLFunctionPrototype {
     }
     
     public TLContext createContext() {
-        return null;
+        return TLContext.createEmptyContext();
     }
 
     /**

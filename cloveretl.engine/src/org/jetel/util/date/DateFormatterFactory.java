@@ -2,6 +2,8 @@ package org.jetel.util.date;
 
 import java.util.Locale;
 
+import org.jetel.util.MiscUtils;
+
 public class DateFormatterFactory {
 	
 	/** the Java prefix specifying date format strings used by the Java's DateFormat class */
@@ -30,7 +32,7 @@ public class DateFormatterFactory {
 	}
 
 	public static DateFormatter createFormatter(String formatString, String localeString) {
-		return createFormatter(formatString, localeString !=null ? new Locale(localeString) : null);
+		return createFormatter(formatString, MiscUtils.createLocale(localeString));
 	}
 	
 	public static DateFormatter createFormatter(String formatString) {

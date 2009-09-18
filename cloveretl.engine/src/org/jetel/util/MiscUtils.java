@@ -28,6 +28,7 @@ import java.util.Locale;
 
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.string.StringUtils;
 
 public final class MiscUtils {
 
@@ -50,7 +51,7 @@ public final class MiscUtils {
 	public static Locale createLocale(String localeStr) {
 		Locale locale = null;
 
-		if (localeStr == null) {
+		if (StringUtils.isEmpty(localeStr)) {
 			locale = Locale.getDefault();
 		} else {
 			String[] localeLC = localeStr.split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);

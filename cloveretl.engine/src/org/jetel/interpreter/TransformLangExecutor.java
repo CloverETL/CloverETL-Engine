@@ -1923,13 +1923,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 				node.lookup = lookups.get(node.lookupTable.getId());
 			}
 			if (node.opType == CLVFLookupNode.OP_GET || node.opType==CLVFLookupNode.OP_NEXT) {
-				node.fieldNum = node.lookupTable.getMetadata().getFieldPosition(
-						node.fieldName);
-				if (node.fieldNum < 0) {
-					throw new TransformLangExecutorRuntimeException(node,
-							"Invalid field name \"" + node.fieldName
-									+ "\" at LookupTable \"" + node.lookupName
-									+ "\" in graph \"" + graph.getName() + "\"");
+				DataRecordMetadata metadata = node.lookupTable.getMetadata();
+				if (metadata != null) {
+					node.fieldNum = metadata.getFieldPosition(
+							node.fieldName);
+					if (node.fieldNum < 0) {
+						throw new TransformLangExecutorRuntimeException(node,
+								"Invalid field name \"" + node.fieldName
+										+ "\" at LookupTable \"" + node.lookupName
+										+ "\" in graph \"" + graph.getName() + "\"");
+					}
 				}
 			}
 		}
@@ -1965,6 +1968,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     			lookups.put(node.lookupTable.getId(), node.lookup);
     		}  
 			node.seek(stack);
+			if (node.fieldNum == -1) {
+				node.fieldNum = node.lookupTable.getMetadata().getFieldPosition(node.fieldName);
+			}
 			if (node.lookup.hasNext()) {
 				record = node.lookup.next();
 			}else{

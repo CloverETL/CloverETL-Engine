@@ -13,12 +13,12 @@
 	
 	<FunctionalTest ident="Revenues" graphFile="graph/graphRevenues.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-      	<DBTableToXMLFile outputTable="pololeti_agr_vynosy" supposedTable="pololeti_agr_vynosy" outputTableConnection="postgre_foodmart" 
+      	<DBTableToXMLFile outputTable="halfyear_aggr_revenues" supposedTable="pololeti_agr_vynosy" outputTableConnection="postgre_foodmart" 
       		supposedXMLFile="supposed-out/revenues.xml"/>
-      	<DBTableToXMLFile outputTable="Pololeti_zakaznici_bez_vynosu" supposedTable="Pololeti_zakaznici_bez_vynosu" outputTableConnection="postgre_foodmart" 
+      	<DBTableToXMLFile outputTable="Clients_without_revenues" supposedTable="Pololeti_zakaznici_bez_vynosu" outputTableConnection="postgre_foodmart" 
       		supposedXMLFile="supposed-out/revenues.xml"/>
-      	<DeleteTable connection="postgre_foodmart" name="pololeti_agr_vynosy"/>
-      	<DeleteTable connection="postgre_foodmart" name="Pololeti_zakaznici_bez_vynosu"/>
+      	<DeleteTable connection="postgre_foodmart" name="halfyear_aggr_revenues"/>
+      	<DeleteTable connection="postgre_foodmart" name="Clients_without_revenues"/>
 	</FunctionalTest>
 
     <FunctionalTest ident="SCDType2_example1" graphFile="graph/SCDType2_example1.grf">

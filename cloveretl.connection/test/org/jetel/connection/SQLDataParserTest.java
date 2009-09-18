@@ -72,7 +72,7 @@ public class SQLDataParserTest extends CloverTestCase {
 					assertEquals(record.getField(0).toString(), "-0.7");
 					assertEquals(record.getField(1).toString(), "Bone Broo");
 					assertEquals(record.getField(2).toString(), "99");
-					assertEquals(record.getField(3).toString(), "1993-01-01 00:00:00");
+					assertEquals(record.getField(3).toString(), "2003-01-01 00:00:00");
 				}
 				recCount++;
 			}

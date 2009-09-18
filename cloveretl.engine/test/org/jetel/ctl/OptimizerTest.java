@@ -15,7 +15,7 @@ import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
-public class TestOptimizer extends CompilerTestCase {
+public class OptimizerTest extends CompilerTestCase {
 
 	public TestOptimizer() {
 		super(false);

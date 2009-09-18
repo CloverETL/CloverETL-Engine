@@ -1076,17 +1076,18 @@ public class XMLExtract extends Node {
         }
     }
     
+	@Deprecated
     private void setNodes(NodeList nodes) {
     	this.mappingNodes = nodes;
 	}
 
 
-	private void setMappingURL(String mappingURL) {
+	public void setMappingURL(String mappingURL) {
     	this.mappingURL = mappingURL;
 	}
 
 
-	private void setMapping(String mapping) {
+	public void setMapping(String mapping) {
 		this.mapping = mapping;
 	}
 
@@ -1095,7 +1096,7 @@ public class XMLExtract extends Node {
      * Sets the trim indicator.
      * @param trim
      */
-	private void setTrim(boolean trim) {
+	public void setTrim(boolean trim) {
 		this.trim = trim;
 	}
 
@@ -1544,7 +1545,7 @@ public class XMLExtract extends Node {
      * Sets the xml feature.
      * @param xmlFeatures
      */
-    private void setXmlFeatures(String xmlFeatures) {
+    public void setXmlFeatures(String xmlFeatures) {
     	this.xmlFeatures = xmlFeatures;
 	}
 
@@ -1552,7 +1553,7 @@ public class XMLExtract extends Node {
      * Sets validation option.
      * @param validate
      */
-    private void setValidate(boolean validate) {
+    public void setValidate(boolean validate) {
     	this.validate = validate;
 	}
     
@@ -1560,7 +1561,7 @@ public class XMLExtract extends Node {
      * Sets charset for dictionary and input port reading.
      * @param string
      */
-    private void setCharset(String charset) {
+    public void setCharset(String charset) {
     	this.charset = charset;
 	}
 

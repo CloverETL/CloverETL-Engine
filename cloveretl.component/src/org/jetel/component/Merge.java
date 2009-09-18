@@ -81,10 +81,10 @@ import org.w3c.dom.Element;
  * @created     22. duben 2003
  */
 public class Merge extends Node {
+	public final static String COMPONENT_TYPE = "MERGE";
 
 	private static final String XML_MERGEKEY_ATTRIBUTE = "mergeKey";
-	/**  Description of the Field */
-	public final static String COMPONENT_TYPE = "MERGE";
+	private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
 
 	private final static int WRITE_TO_PORT = 0;
 
@@ -94,6 +94,7 @@ public class Merge extends Node {
 
 	private RecordKey comparisonKey;
 
+	private boolean equalNULL = false; //this default value should be changed to 'true' - issue
 
 	/**
 	 *  Constructor for the Merge object
@@ -238,6 +239,7 @@ public class Merge extends Node {
 		
 		// initialize key
 		comparisonKey = new RecordKey(mergeKeys, getInputPort(0).getMetadata());
+		comparisonKey.setEqualNULLs(equalNULL);
 		try {
 			comparisonKey.init();
 		} catch (Exception e) {
@@ -259,6 +261,8 @@ public class Merge extends Node {
 			mKeys += Defaults.Component.KEY_FIELDS_DELIMITER + mergeKeys[i]; 
 		}
 		xmlElement.setAttribute(XML_MERGEKEY_ATTRIBUTE, mKeys);
+        // equal NULL attribute
+		xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULL));
 	}
 
 
@@ -273,8 +277,12 @@ public class Merge extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
 		try {
-			return new Merge(xattribs.getString(XML_ID_ATTRIBUTE),
+			Merge merge = new Merge(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_MERGEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+            if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
+            	merge.setEqualNULL(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
+            }
+            return merge;
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -328,6 +336,10 @@ public class Merge extends Node {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		// no implementation needed
+	}
+
+	public void setEqualNULL(boolean equalNULL) {
+	    this.equalNULL = equalNULL;
 	}
 
 }

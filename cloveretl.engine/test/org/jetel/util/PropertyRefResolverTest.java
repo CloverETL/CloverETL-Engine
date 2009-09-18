@@ -57,7 +57,10 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertEquals("1 + 1 = 2", resolver.resolveRef("1 + 1 = `1 + 1`"));
 		assertEquals("Hello, World!", resolver.resolveRef("`'H' + 'e' + 'll' + 'o'`, World!"));
 		assertEquals("CTL expression: done", resolver.resolveRef("CTL expression: `${ctl}`"));
-		assertEquals("`back quoted CTL expression`", resolver.resolveRef("``back quoted `'CTL expression'```"));
+		assertEquals("m", resolver.resolveRef("`substring('${user}', 0, 1)`"));
+		assertEquals("back quoted `CTL expression`", resolver.resolveRef("back quoted `'\\`CTL expression\\`'`"));
+		assertEquals("just back quotes (`)", resolver.resolveRef("just back quotes (\\`)"));
+		assertEquals("empty CTL expression", resolver.resolveRef("emp``ty CTL expression"));
 	}
 
 }

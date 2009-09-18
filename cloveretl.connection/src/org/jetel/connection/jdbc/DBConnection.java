@@ -246,7 +246,18 @@ public class DBConnection extends GraphElement implements IConnection {
 			}
 		}
 
-		jdbcProperties = typedProperties.getPropertiesStartWith(XML_JDBC_PROPERTIES_PREFIX);
+		// strip the "jdbc." prefix from the custom properties
+		jdbcProperties = new TypedProperties(null, getGraph());;
+		TypedProperties customProps = typedProperties.getPropertiesStartWith(XML_JDBC_PROPERTIES_PREFIX);
+		Set<Object> keys = customProps.keySet();
+		for (Object key : keys) {
+			String value = customProps.getProperty((String) key);
+
+			String newKey = (String) key;
+			newKey = newKey.substring(XML_JDBC_PROPERTIES_PREFIX.length());
+		
+			jdbcProperties.setProperty(newKey, value);
+		}
 	}
     
 	/**

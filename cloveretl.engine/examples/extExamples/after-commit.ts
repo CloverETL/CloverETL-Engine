@@ -177,7 +177,7 @@
 
 	<FunctionalTest ident="DBUnloadUniversal" graphFile="graph/graphDBUnloadUniversal.grf">
          <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-	 	  <FlatFile outputFile="data-out/employee.output" supposedFile="supposed-out/employee.DBUnloadUniversal.out"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/employee.output" supposedFile="supposed-out/employee.DBUnloadUniversal.output"/>	                                                                    
 	</FunctionalTest>
 
 	<FunctionalTest ident="JMS" graphFile="graph/graphJms.grf">

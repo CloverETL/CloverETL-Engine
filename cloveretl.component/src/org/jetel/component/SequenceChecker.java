@@ -95,7 +95,7 @@ public class SequenceChecker extends Node {
 
 	private static final String XML_SORTORDER_ATTRIBUTE = "sortOrder";
 	private static final String XML_SORTKEY_ATTRIBUTE = "sortKey";
-	//private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
+	private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
 	private static final String XML_UNIQUE_ATTRIBUTE = "uniqueKeys";
     private static final String XML_USE_I18N_ATTRIBUTE = "useI18N";
     private static final String XML_LOCALE_ATTRIBUTE = "locale";
@@ -108,7 +108,7 @@ public class SequenceChecker extends Node {
 	private String[] keyFieldNames;
 	private boolean[] sortOrderings;
 	private RecordComparator recordComparator;
-	//private boolean equalNULLs = true;
+	private boolean equalNULL = true;
 	private boolean uniqueKeys = false;
     private String localeStr = null;
     private boolean useI18N;
@@ -164,20 +164,20 @@ public class SequenceChecker extends Node {
 		records[0].init();
 		records[1].init();
 		boolean error = false; 
-		int row = 0;
+		int row = 1;
 		
 		while ((records[current] = inPort.readRecord(records[current])) != null && runIt) {
 			if (isFirst) {
 				isFirst = false;
 			} else {
-				compareResult = recordComparator.compare(records[current], records[previous]);
+				compareResult = recordComparator.compare(records[previous], records[current]);
 
 				if (compareResult == 0) {
 					if (uniqueKeys) {
 						error = true;
 						break;
 					}
-				} else if (compareResult < 0) {
+				} else if (compareResult > 0) {
 					error = true;
 					break;
 				}
@@ -235,15 +235,13 @@ public class SequenceChecker extends Node {
             }
         }
 	    
-		recordComparator = new RecordComparator(keyFields);
-		//recordComparator.setEqualNULLs(equalNULLs);
-		
         if (useI18N){
             recordComparator=new RecordComparator(keyFields,(RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(localeStr)));
         }else{
         	recordComparator=new RecordComparator(keyFields);
         }
         recordComparator.setSortOrderings(sortOrderings);
+		recordComparator.setEqualNULLs(equalNULL);
 	}
 
 	@Override
@@ -277,7 +275,7 @@ public class SequenceChecker extends Node {
         }
 
         // equal NULL attribute
-		//xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULLs));
+		xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULL));
 		
 		// unique keys attribute
 		xmlElement.setAttribute(XML_UNIQUE_ATTRIBUTE, String.valueOf(uniqueKeys));
@@ -307,6 +305,9 @@ public class SequenceChecker extends Node {
             }
             if (xattribs.exists(XML_LOCALE_ATTRIBUTE)){
             	checker.setLocaleStr(xattribs.getString(XML_LOCALE_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
+            	checker.setEqualNULL(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
             }
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -350,9 +351,9 @@ public class SequenceChecker extends Node {
 		return COMPONENT_TYPE;
 	}
 
-	/*public void setEqualNULLs(boolean equal){
-	    this.equalNULLs=equal;
-	}*/
+	public void setEqualNULL(boolean equalNULL) {
+	    this.equalNULL = equalNULL;
+	}
 
 	public void setUnique(boolean unique){
 	    this.uniqueKeys=unique;

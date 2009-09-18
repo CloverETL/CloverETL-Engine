@@ -79,6 +79,28 @@ public class StringUtils {
 	}
 
 	/**
+	 * Unescapes specified characters within the given string buffer.
+	 *
+	 * @param stringBuffer a string buffer containing escaped characters
+	 * @param character the only character that should be unescaped
+	 *
+	 * @version 16th September 2009
+	 * @since 15th September 2009
+	 */
+	public static void unescapeCharacters(StringBuffer stringBuffer, char character) {
+		String characterString = String.valueOf(character);
+		int index = stringBuffer.indexOf(characterString, 1);
+
+		while (index >= 0) {
+			if (stringBuffer.charAt(index - 1) == '\\') {
+				stringBuffer.deleteCharAt(index - 1);
+			}
+
+			index = stringBuffer.indexOf(characterString, index + 1);
+		}
+	}
+
+	/**
 	 * Trims the XML namespace prefix and delimiter from the given elemenet name.
 	 *
 	 * @param elementName the element name with (or without) its namespace prefix
@@ -576,7 +598,7 @@ public class StringUtils {
 
 	/**
 	 * Converts textual representation of control characters into control characters<br>
-	 * Note: This code handles only \n, \r , \t , \f, \" ,\', \\ special chars
+	 * Note: This code handles only \n, \r , \t , \f, \" ,\', \`, \\ special chars
 	 * 
 	 * @param controlString
 	 *            Description of the Parameter
@@ -612,6 +634,9 @@ public class StringUtils {
 					break;
 				case '\'':
 					copy.append('\'');
+					break;
+				case '`':
+					copy.append('`');
 					break;
 				case 'f':
 					copy.append('\f');
