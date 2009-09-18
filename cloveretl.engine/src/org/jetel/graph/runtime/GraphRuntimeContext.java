@@ -43,6 +43,7 @@ public class GraphRuntimeContext {
 	public static final boolean DEFAULT_USE_JMX = true;
 	public static final boolean DEFAULT_DEBUG_MODE = true;
 	public static final boolean DEFAULT_SKIP_CHECK_CONFIG = false;
+	public static final boolean DEFAULT_SYNCHRONIZED_RUN = false;
 	
 	private long runId;
 	private String logLocation;
@@ -58,6 +59,7 @@ public class GraphRuntimeContext {
 	private boolean debugMode;
 	private String debugDirectory;
 	private String[] classPaths;
+	private boolean synchronizedRun;
 	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
@@ -67,6 +69,7 @@ public class GraphRuntimeContext {
 		additionalProperties = new Properties();
 		skipCheckConfig = DEFAULT_SKIP_CHECK_CONFIG;
 		debugMode = DEFAULT_DEBUG_MODE;
+		synchronizedRun = DEFAULT_SYNCHRONIZED_RUN;
 	}
 	
 	/* (non-Javadoc)
@@ -85,6 +88,7 @@ public class GraphRuntimeContext {
 		ret.password = getPassword();
 		ret.debugMode = isDebugMode();
 		ret.debugDirectory = getDebugDirectory();
+		ret.synchronizedRun = isSynchronizedRun();
 		
 		return ret;
 	}
@@ -308,6 +312,19 @@ public class GraphRuntimeContext {
 		this.classPaths = classPaths;
 	}
 
+	/**
+	 * 'Synchronized' mode currently means that the watchdog 
+	 * between phases waits for an JMX event, which allows next graph processing.
+	 * Future interpretation could be different.
+	 * @return true if graph is running in 'synchronized mode'
+	 */
+	public boolean isSynchronizedRun() {
+		return synchronizedRun;
+	}
+
+	public void setSynchronizedRun(boolean synchronizedRun) {
+		this.synchronizedRun = synchronizedRun;
+	}
 	
 //	/**
 //	 * @return trackingFlushInterval

@@ -57,6 +57,8 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
     
     private boolean graphFinished = false;
     
+    private volatile int approvedPhaseNumber = Integer.MIN_VALUE;
+    
     /**
 	 * Constructor.
      * @param watchDog 
@@ -93,6 +95,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	 */
 	synchronized public void closeServer() {
     	canClose = true;
+    	this.notifyAll();
 	}
 
 	public static boolean isThreadCpuTimeSupported() {
@@ -105,6 +108,15 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 
 	synchronized public boolean canCloseServer() {
 		return canClose;
+	}
+	
+	public synchronized int getApprovedPhaseNumber() {
+		return approvedPhaseNumber;
+	}
+	
+	public synchronized void setApprovedPhaseNumber(int approvedPhaseNumber) {
+		this.approvedPhaseNumber = approvedPhaseNumber;
+		notifyAll();
 	}
 	
 	//******************* EVENTS ********************/

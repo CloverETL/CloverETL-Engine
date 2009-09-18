@@ -70,7 +70,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	private boolean abortFinished = false;
 	
     public final static String MBEAN_NAME_PREFIX = "CLOVERJMX_";
-    public final static long WAITTIME_FOR_STOP_SIGNAL = 5000000000L; //nanoseconds
+    public final static long WAITTIME_FOR_STOP_SIGNAL = 5000; //miliseconds
 
 	private static final long ABORT_TIMEOUT = 5000L;
 	private static final long ABORT_WAIT = 2400L;
@@ -180,6 +180,19 @@ public class WatchDog implements Callable<Result>, CloverPost {
            	
            	Result phaseResult = Result.N_A;
            	for (int currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
+           		//if the graph runs in synchronized mode we need to wait for synchronization event to process next phase
+           		if (runtimeContext.isSynchronizedRun()) {
+           			logger.info("Waiting for phase " + phases[currentPhaseNum] + " approval...");
+           			synchronized (cloverJMX) {
+	           			while (cloverJMX.getApprovedPhaseNumber() < phases[currentPhaseNum].getPhaseNum()){
+	           				try {
+								cloverJMX.wait();
+							} catch (InterruptedException e) {
+								throw new RuntimeException("WatchDog was interrupted while was waiting for phase synchronization event.");
+							}
+	           			}
+           			}
+           		}
            		cloverJMX.phaseStarted(phases[currentPhaseNum]);
                 phaseResult = executePhase(phases[currentPhaseNum]);
                 if(phaseResult == Result.ABORTED)      { 
@@ -199,15 +212,18 @@ public class WatchDog implements Callable<Result>, CloverPost {
            	
            	if(runtimeContext.isWaitForJMXClient()) {
            		//wait for a JMX client (GUI) to download all tracking information
-           		long startWaitingTime = System.nanoTime();
-	           	while (WAITTIME_FOR_STOP_SIGNAL > (System.nanoTime() - startWaitingTime) && !cloverJMX.canCloseServer()) {
-	           		try {
-	    				Thread.sleep(10);
-	    	           	finalJmxNotification();
-	    			} catch (InterruptedException e) {
-	    				//DO NOTHING
-	    			}
-	           	}
+           		long startWaitingTime = System.currentTimeMillis();
+           		synchronized (cloverJMX) {
+		           	while (WAITTIME_FOR_STOP_SIGNAL > (System.currentTimeMillis() - startWaitingTime) 
+		           			&& !cloverJMX.canCloseServer()) {
+		           		try {
+		    				cloverJMX.wait(10);
+		    	           	finalJmxNotification();
+		    			} catch (InterruptedException e) {
+							throw new RuntimeException("WatchDog was interrupted while was waiting for close signal.");
+		    			}
+		           	}
+           		}
            	}
 
             if(finishJMX) {
