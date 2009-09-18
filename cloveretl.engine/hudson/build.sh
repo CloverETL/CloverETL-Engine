@@ -8,7 +8,7 @@ cd cloveretl.engine
 
 /opt/apache-ant/bin/ant clean build reports-hudson dist \
 	-Dadditional.plugin.list=cloveretl.component.commercial,cloveretl.lookup.commercial \
-	-Dcte.environment.config=2.8_java-1.5-Sun \
+	-Dcte.environment.config=trunk_java-1.5-Sun \
 	-Dcte.logpath=/data/cte-logs \
 	-Dcte.hudson.link=job/$JOB_NAME/$BUILD_NUMBER
 	
