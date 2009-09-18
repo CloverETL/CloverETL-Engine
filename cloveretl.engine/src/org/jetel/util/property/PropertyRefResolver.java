@@ -40,8 +40,8 @@ import org.jetel.util.string.StringUtils;
  * references within the properties.
  * <p>
  * By default, CTL expressions have to be enclosed within back quotes, i.e. <code>`&lt;ctl_expression&gt;`</code>, and
- * property references use the <code>${}</code> notation, i.e. <code>${property_reference}</code>. Two consecutive back
- * quotes, i.e. <code>``</code>, produce a single back quote in the result.
+ * property references use the <code>${}</code> notation, i.e. <code>${property_reference}</code>. Escaped back quote,
+ * i.e. <code>\`</code>, within CTL expressions produces a single back quote in the result.
  * This behaviour might be altered by modifying the <code>Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX</code>
  * and <code>Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX</code> configuration properties. Expression evaluation
  * might be disabled by setting the <code>Defaults.GraphProperties.EXPRESSION_EVALUATION_ENABLED</code> configuration
@@ -50,13 +50,14 @@ import org.jetel.util.string.StringUtils;
  * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 17th August 2009
+ * @version 16th September 2009
  * @since 12th May 2004
  */
 public class PropertyRefResolver {
 
 	/** the character used to quote CTL expressions */
-	private static final String EXPRESSION_QUOTE = Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX.substring(0, 1);
+	private static final char EXPRESSION_QUOTE = Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX.charAt(
+			Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX.length() - 1);
 	/** the default value related to resolving of special characters within string values */
 	public static final boolean DEFAULT_RESOLVE_SPEC_CHAR = true;
 
@@ -229,22 +230,6 @@ public class PropertyRefResolver {
 		valueModified |= resolveReferences(value);
 
 		//
-		// convert escaped CTL expression quotes to ordinary quotes
-		//
-
-		if (Defaults.GraphProperties.EXPRESSION_EVALUATION_ENABLED) {
-			int index = value.indexOf(EXPRESSION_QUOTE, 1);
-
-			while (index >= 0) {
-				if (value.charAt(index) == value.charAt(index - 1)) {
-					value.deleteCharAt(index);
-				}
-
-				index = value.indexOf(EXPRESSION_QUOTE, index + 1);
-			}
-		}
-
-		//
 		// resolve special characters if desired
 		//
 
@@ -277,24 +262,30 @@ public class PropertyRefResolver {
 		while (expressionMatcher.find()) {
 			String expression = expressionMatcher.group(1);
 
-			// don't process empty expressions, they actually correspond to escaped CTL expression quote
-			if (0 == expression.length()) {
-				continue;
-			}
+			if (StringUtils.isEmpty(expression)) {
+				// no evaluation is necessary in case of empty CTL expressions
+				value.delete(expressionMatcher.start(), expressionMatcher.end());
+				expressionMatcher.region(expressionMatcher.start(), value.length());
+			} else {
+				// resolve property references that might be present in the CTL expression
+				StringBuffer resolvedExpression = new StringBuffer(expression);
+				resolveReferences(resolvedExpression);
 
-			// resolve property references that might be present in the CTL expression
-			StringBuffer resolvedExpression = new StringBuffer(expression);
-			resolveReferences(resolvedExpression);
+				// make sure that expression quotes are unescaped before evaluation of the CTL expression
+				StringUtils.unescapeCharacters(resolvedExpression, EXPRESSION_QUOTE);
 
-			try {
-				// evaluate the CTL expression
-				String evaluatedExpression = expressionEvaluator.evaluate(resolvedExpression.toString());
-				value.replace(expressionMatcher.start(), expressionMatcher.end(), evaluatedExpression);
-				expressionMatcher.reset(value);
+				try {
+					// finally evaluate the CTL expression
+					String evaluatedExpression = expressionEvaluator.evaluate(resolvedExpression.toString());
 
-				anyExpressionEvaluated = true;
-			} catch (ParseException exception) {
-				logger.warn("Cannot evaluate expression: " + resolvedExpression, exception);
+					// update the expression matcher so that find() starts at the correct index
+					value.replace(expressionMatcher.start(), expressionMatcher.end(), evaluatedExpression);
+					expressionMatcher.region(expressionMatcher.start() + evaluatedExpression.length(), value.length());
+
+					anyExpressionEvaluated = true;
+				} catch (ParseException exception) {
+					logger.warn("Cannot evaluate expression: " + resolvedExpression, exception);
+				}
 			}
 		}
 

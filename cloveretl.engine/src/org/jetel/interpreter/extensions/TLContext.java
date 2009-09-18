@@ -24,6 +24,7 @@
 package org.jetel.interpreter.extensions;
 
 import org.jetel.graph.TransformationGraph;
+import org.jetel.interpreter.data.TLNullValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.interpreter.data.TLByteArrayValue;
@@ -98,6 +99,12 @@ public class TLContext<T> {
     	 TLContext<TLValue> context = new TLContext<TLValue>();
 	     context.setContext(TLValue.create(TLValueType.LIST));
 	     return context;
+    }
+    
+    public static TLContext<TLValue> createEmptyContext() {
+        TLContext<TLValue> context = new TLContext<TLValue>();
+        context.setContext(null);
+        return context;
     }
     
 }

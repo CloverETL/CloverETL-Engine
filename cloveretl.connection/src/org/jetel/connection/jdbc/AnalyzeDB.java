@@ -43,6 +43,7 @@ import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.plugin.Plugins;
 
 /**
  *  Class easing creation of Clover metadata describing data originating in Database.<br>
@@ -207,6 +208,8 @@ public class AnalyzeDB {
 			delimiter = DEFAULT_DELIMITER;
 		}
 		EngineInitializer.initEngine(pluginsRootDirectory, engineConfig, null);
+		Plugins.activateAllPlugins();
+		
 		try {
 			doAnalyze(config);
 		}

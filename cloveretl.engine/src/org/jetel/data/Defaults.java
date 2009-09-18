@@ -510,7 +510,7 @@ public final class Defaults {
 					"GraphProperties.EXPRESSION_EVALUATION_ENABLED", true);
 
 			EXPRESSION_PLACEHOLDER_REGEX = getStringProperties(
-					"GraphProperties.EXPRESSION_PLACEHOLDER_REGEX", "`([^`]*(``[^`]+)*)`");
+					"GraphProperties.EXPRESSION_PLACEHOLDER_REGEX", "(?<!\\\\)`(.*?)(?<!\\\\)`");
 			PROPERTY_PLACEHOLDER_REGEX = getStringProperties(
 					"GraphProperties.PROPERTY_PLACEHOLDER_REGEX", "\\$\\{(\\w+)\\}");
 		}
@@ -519,7 +519,7 @@ public final class Defaults {
 		public static boolean EXPRESSION_EVALUATION_ENABLED;// = true
 
 		/** a regular expression describing the format of CTL expressions */
-		public static String EXPRESSION_PLACEHOLDER_REGEX;// = "`([^`]*(``[^`]+)*)`";
+		public static String EXPRESSION_PLACEHOLDER_REGEX;// = "(?<!\\\\)`(.*?)(?<!\\\\)`";
 		/** a regular expression describing the format of property references */
 		public static String PROPERTY_PLACEHOLDER_REGEX;// = "\\$\\{(\\w+)\\}";
 

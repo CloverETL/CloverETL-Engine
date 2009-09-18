@@ -30,8 +30,10 @@ import java.util.Locale;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.date.DateFormatter;
 import org.jetel.util.date.DateFormatterFactory;
+import org.jetel.util.string.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -70,23 +72,10 @@ public class DateDataField extends DataField implements Comparable {
 	public DateDataField(DataFieldMetadata metadata, boolean plain) {
         super(metadata);
         if (!plain) {
-            Locale locale;
+            Locale locale = null;
             // handle locale
-            if (metadata.getLocaleStr() != null) {
-                String[] localeLC = metadata.getLocaleStr().split(
-                        Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
-                if (localeLC.length > 1) {
-                    locale = new Locale(localeLC[0], localeLC[1]);
-                } else {
-                    locale = new Locale(localeLC[0]);
-                }
-                // probably wrong locale string defined
-                if (locale == null) {
-                    throw new RuntimeException("Can't create Locale based on "
-                            + metadata.getLocaleStr());
-                }
-            } else {
-                locale = null;
+            if (!StringUtils.isEmpty(metadata.getLocaleStr())) {
+            	locale = MiscUtils.createLocale(metadata.getLocaleStr());
             }
 
             // create a date formatter based on the format string and locale

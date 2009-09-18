@@ -28,7 +28,6 @@ import java.nio.charset.CharsetEncoder;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
-import java.text.ParsePosition;
 import java.util.Locale;
 
 import javolution.text.TypeFormat;
@@ -39,6 +38,7 @@ import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 
 
@@ -85,23 +85,10 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	public NumericDataField(DataFieldMetadata _metadata,boolean plain) {
 		super(_metadata);
         if (!plain) {
-            Locale locale;
+            Locale locale = null;
             // handle locale
-            if (_metadata.getLocaleStr() != null) {
-                String[] localeLC = _metadata.getLocaleStr().split(
-                        Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
-                if (localeLC.length > 1) {
-                    locale = new Locale(localeLC[0], localeLC[1]);
-                } else {
-                    locale = new Locale(localeLC[0]);
-                }
-                // probably wrong locale string defined
-                if (locale == null) {
-                    throw new RuntimeException("Can't create Locale based on "
-                            + _metadata.getLocaleStr());
-                }
-            } else {
-                locale = null;
+            if (!StringUtils.isEmpty(_metadata.getLocaleStr())) {
+            	locale = MiscUtils.createLocale(_metadata.getLocaleStr());
             }
             // handle formatString
             String formatString;

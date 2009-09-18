@@ -1996,16 +1996,14 @@ public class InterpreterTest extends CloverTestCase {
         		"boolean isDate4=is_date('test 20.11.2007','hhmm dd.MM.yyyy');\n" +
         		"boolean isDate7=is_date('                ','HH:mm dd.MM.yyyy',true);\n"+
         		"boolean isDate8=is_date('                ','HH:mm dd.MM.yyyy');\n"+
-        		"boolean isDate9=is_date('joda:20-15-2007','dd-MM-yyyy');print_err(str2date('20-15-2007','joda:dd-MM-yyyy'));\n" +
-        		"boolean isDate10=is_date('20-15-2007','dd-MM-yyyy',false);\n" +
-        		"boolean isDate11=is_date('20-15-2007','dd-MM-yyyy',true);\n" + 
-        		"boolean isDate12=is_date('942-12-1996','dd-MM-yyyy','en.US',true);\n" +
-        		"boolean isDate13=is_date('942-12-1996','dd-MM-yyyy','en.US',false);\n" +
-        		"boolean isDate14=is_date('12-Prosinec-1996','dd-MMM-yyyy','cs.CZ',false);\n" +
-        		"boolean isDate15=is_date('12-Prosinec-1996','dd-MMM-yyyy','en.US',false);\n" + 
-        		"boolean isDate16=is_date('24:00 20.11.2007','HH:mm dd.MM.yyyy');print_err(str2date('24:00 20.11.2007','HH:mm dd.MM.yyyy'));\n" +
-        		"boolean isDate17=is_date('','HH:mm dd.MM.yyyy',false);\n" +
-        		"boolean isDate18=is_date('','HH:mm dd.MM.yyyy',true);\n";
+        		"boolean isDate9=is_date('20-15-2007','dd-MM-yyyy');\n" +
+        		"if (isDate9)print_err(str2date('20-15-2007','dd-MM-yyyy'));\n" +
+        		"boolean isDate10=is_date('20-15-2007','dd-MM-yyyy');\n" +
+        		"boolean isDate13=is_date('942-12-1996','dd-MM-yyyy','en.US');\n" +
+        		"boolean isDate14=is_date('12-prosinec-1996','dd-MMMMM-yyyy','cs.CZ');\n" +
+        		"boolean isDate15=is_date('12-prosinec-1996','dd-MMMMM-yyyy','en.US');\n" + 
+        		"boolean isDate16=is_date('24:00 20.11.2007','HH:mm dd.MM.yyyy');\n" +
+        		"boolean isDate17=is_date('','HH:mm dd.MM.yyyy');\n";
         
         print_code(expStr);
 
@@ -2059,8 +2057,6 @@ public class InterpreterTest extends CloverTestCase {
 		      // illegal month: 15
 		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate9")).getTLValue()==TLBooleanValue.TRUE));
 		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate10")).getTLValue()==TLBooleanValue.TRUE));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate11")).getTLValue()==TLBooleanValue.TRUE));
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate12")).getTLValue()==TLBooleanValue.TRUE));
 		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate13")).getTLValue()==TLBooleanValue.TRUE));
 		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate14")).getTLValue()==TLBooleanValue.TRUE));
 		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate15")).getTLValue()==TLBooleanValue.TRUE));
@@ -2068,8 +2064,6 @@ public class InterpreterTest extends CloverTestCase {
 		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate16")).getTLValue()==TLBooleanValue.TRUE));
 		      // empty string in strict mode: invalid
 		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate17")).getTLValue()==TLBooleanValue.TRUE));
-		      // empty string in lenient mode: valid
-		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate18")).getTLValue()==TLBooleanValue.TRUE));
 		      
         } catch (ParseException e) {
             System.err.println(e.getMessage());
@@ -2206,7 +2200,8 @@ public class InterpreterTest extends CloverTestCase {
         		"string curr; curr = try_convert(1234.56,string,'\u00A4#,###.##','en.US');\n" +
         		"print_err(curr);\n" + 
         		"string ns;\n" +
-        		"ns = try_convert(1247,string);";
+        		"ns = try_convert(1247,string);"+
+        		"boolean bol=num2bool(1);";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());

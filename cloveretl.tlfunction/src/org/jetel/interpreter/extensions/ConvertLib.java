@@ -1283,14 +1283,14 @@ class Str2NumContext{
 				//NumericFormat is not good because of eg str2num("5,46 KÄ�","0.## Â¤","cs.CZ") //KÄ�
 				format = locale == null ?
 						new NumericFormat(pattern):
-						new NumericFormat(pattern, new DecimalFormatSymbols(getLocale(locale)));
+						new NumericFormat(pattern, new DecimalFormatSymbols(MiscUtils.createLocale(locale)));
 				break;
 			case NUMBER:
 			case INTEGER:
 			case LONG:
 				format = locale == null ?
 					new DecimalFormat(pattern):
-					new DecimalFormat(pattern, new DecimalFormatSymbols(getLocale(locale)));
+					new DecimalFormat(pattern, new DecimalFormatSymbols(MiscUtils.createLocale(locale)));
 				break;
 			default:
 				throw new IllegalArgumentException(
@@ -1303,21 +1303,6 @@ class Str2NumContext{
 			value = TLValue.create(type);
 		}
 		
-	}
-	
-	private Locale getLocale(String sLocale) {
-        String[] localeLC = sLocale.split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
-        Locale locale;
-        if (localeLC.length > 1) {
-            locale = new Locale(localeLC[0], localeLC[1]);
-        } else {
-            locale = new Locale(localeLC[0]);
-        }
-        // probably wrong locale string defined
-        if (locale == null) {
-            throw new RuntimeException("Can't create Locale based on " + sLocale);
-        }
-		return locale;
 	}
 	
 	public String toPattern(){

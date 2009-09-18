@@ -80,6 +80,8 @@ public class DataParser implements Parser {
 
 	private int fieldLengths[];
 
+	private boolean[] quotedFields;
+	
 	private int recordCounter;
 	
 	private int numFields;
@@ -241,12 +243,17 @@ public class DataParser implements Parser {
 		}
 		delimiterSearcher.compile();
 	
-		// create array of field sizes & initialize them
+		// create array of field sizes and quoting & initialize them
 		fieldLengths = new int[numFields];
+		quotedFields = new boolean[numFields];
 		for (int i = 0; i < numFields; i++) {
 			if(metadata.getField(i).isFixed()) {
 				fieldLengths[i] = metadata.getField(i).getSize();
 			}
+			char type = metadata.getFieldType(i);
+			quotedFields[i] = quotedStrings 
+					&& type != DataFieldMetadata.BYTE_FIELD
+					&& type != DataFieldMetadata.BYTE_FIELD_COMPRESSED;
 		}
 		
 		metadataFields = metadata.getFields();
@@ -354,6 +361,7 @@ public class DataParser implements Parser {
 		boolean inQuote;
 		boolean skipLBlanks, skipTBlanks;
 		char type;
+		boolean quotedField;
 		
 		recordCounter++;
 		if (verbose) {
@@ -361,29 +369,19 @@ public class DataParser implements Parser {
 		}
 		recordIsParsed = false;
 		for (fieldCounter = 0; fieldCounter < numFields; fieldCounter++) {
-			final DataFieldMetadata metadataField = metadataFields[fieldCounter];
-			
 			// skip all fields that are internally filled 
 			if (isAutoFilling[fieldCounter]) {
 				continue;
 			}
 			skipLBlanks = isSkipLeadingBlanks[fieldCounter];
 			skipTBlanks = isSkipTrailingBlanks[fieldCounter];
-			if (metadataField.isDelimited()) { //delimited data field
-				// field
-				// read data till we reach field delimiter, record delimiter,
-				// end of file or exceed buffer size
-				// exceeded buffer is indicated by BufferOverflowException
-				fieldBuffer.setLength(0);
+			quotedField = quotedFields[fieldCounter];
+			fieldBuffer.setLength(0);
+			if (fieldLengths[fieldCounter] == 0) { //delimited data field
 				inQuote = false;
 				try {
 					while ((character = readChar()) != -1) {
-						//end of file
-						if (character == -1) {
-							break;
-						} else {
-							recordIsParsed = true;
-						}
+						recordIsParsed = true;
 						//delimiter update
 						delimiterSearcher.update((char) character);
 						
@@ -393,9 +391,7 @@ public class DataParser implements Parser {
                         }
 
 						//quotedStrings
-						type = metadataField.getType();
-						if (quotedStrings && type != DataFieldMetadata.BYTE_FIELD
-								&& type != DataFieldMetadata.BYTE_FIELD_COMPRESSED){
+						if (quotedField) {
 							if (fieldBuffer.length() == 0 && !inQuote) {
 								if (qDecoder.isStartQuote((char) character)) {
 									inQuote = true;
@@ -444,7 +440,7 @@ public class DataParser implements Parser {
 						}
 					}
 				} catch (Exception ex) {
-					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, metadataField), ex);
+					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, metadataFields[fieldCounter]), ex);
 				}
 			} else { //fixlen data field
 				mark = 0;
@@ -488,7 +484,7 @@ public class DataParser implements Parser {
 					}
 
 				} catch (Exception ex) {
-					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, metadataField), ex);
+					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, metadataFields[fieldCounter]), ex);
 				}
 			}
 
@@ -509,7 +505,7 @@ public class DataParser implements Parser {
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (Exception e1) {
-					throw new RuntimeException(getErrorMessage(e1.getMessage(),	null, metadataField), e1);
+					throw new RuntimeException(getErrorMessage(e1.getMessage(),	null, metadataFields[fieldCounter]), e1);
                 }
 			}
 

@@ -34,7 +34,6 @@ import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverCallableStatement;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.DataParser;
@@ -42,7 +41,6 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -386,7 +384,9 @@ public class DBExecute extends Node {
 //				if (DefaultConnection.isTransactionsSupported(connectionInstance.getSqlConnection())) {
 //					connectionInstance.getSqlConnection().setAutoCommit(false);
 //				}
-				connectionInstance.getSqlConnection().setAutoCommit(false);
+				// Autocommit should be disabled only if multiple queries are executed within a single transaction.
+				// Otherwise some queries might fail.
+				connectionInstance.getSqlConnection().setAutoCommit(transaction == InTransaction.ONE);
 			} catch (SQLException ex) {
 				if (transaction != InTransaction.ONE) {
 					throw new ComponentNotReadyException("Can't disable AutoCommit mode for DB: " + dbConnection + " !");

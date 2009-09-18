@@ -346,7 +346,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 							+ " finished with status: "
 							+ ((ErrorMsgBody) message.getBody())
 									.getErrorMessage() + (causeException != null ? " caused by: " + causeException.getMessage() : ""));
-					logger.debug("Node " + message.getSender().getId() + " error details:", causeException);
+					logger.error("Node " + message.getSender().getId() + " error details:", causeException);
 					return Result.ERROR;
 				case MESSAGE:
 					synchronized (_MSG_LOCK) {

@@ -198,10 +198,8 @@ public class ExtDataGenerator extends DataGenerator {
 		createGeneratorClass(getGraph().getWatchDog(), outMetadata);
 
 		// set graph instance to transformation (if CTL it can access lookups etc.)
-        generatorClass.setGraph(getGraph());
-		
-		if (!generatorClass.init(generateParameters, outMetadata)) {
-			throw new ComponentNotReadyException("Generator failed to initialize: " + generatorClass.getMessage());
+		if (generatorClass != null) {
+			initGeneratorClass(outMetadata);
 		}
 
 		// autofilling
@@ -209,6 +207,14 @@ public class ExtDataGenerator extends DataGenerator {
 		autoFilling.addAutoFillingFields(outMetadata[0]);
 	}
 
+	private void initGeneratorClass(DataRecordMetadata[] outMetadata) throws ComponentNotReadyException {
+        generatorClass.setGraph(getGraph());
+		
+		if (!generatorClass.init(generateParameters, outMetadata)) {
+			throw new ComponentNotReadyException("Generator failed to initialize: " + generatorClass.getMessage());
+		}
+	}
+	
 	/**
 	 * Verifies autofilling.
 	 * @throws ComponentNotReadyException
@@ -314,6 +320,12 @@ public class ExtDataGenerator extends DataGenerator {
 			 DataRecordMetadata[] outMetadata = getOutMetadata().toArray(new DataRecordMetadata[getOutMetadata().size()]);
 			 verifyAutofilling(getOutMetadata().get(0));
 			 createGeneratorClass(getGraph().getWatchDog(), outMetadata);
+			 
+			 // RecordGenerateTL doesn't have check config in contrast to CTLRecordGenerate
+			 if (generatorClass != null && generatorClass instanceof RecordGenerateTL) {
+				 initGeneratorClass(outMetadata);
+			 }
+			 
 		 } catch (ComponentNotReadyException e) {
 			 ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(),
 					 ConfigurationStatus.Severity.ERROR, this,
