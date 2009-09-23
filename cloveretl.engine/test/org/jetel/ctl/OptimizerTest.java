@@ -17,7 +17,7 @@ import org.jetel.metadata.DataRecordMetadata;
 
 public class OptimizerTest extends CompilerTestCase {
 
-	public TestOptimizer() {
+	public OptimizerTest() {
 		super(false);
 	}
 	
