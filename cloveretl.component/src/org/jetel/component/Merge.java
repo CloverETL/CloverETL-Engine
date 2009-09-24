@@ -243,7 +243,7 @@ public class Merge extends Node {
 		try {
 			comparisonKey.init();
 		} catch (Exception e) {
-			throw new ComponentNotReadyException(e.getMessage());
+			throw new ComponentNotReadyException(this, XML_MERGEKEY_ATTRIBUTE, e.getMessage());
 		}
 	}
 
