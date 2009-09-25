@@ -41,6 +41,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.MDC;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
@@ -156,8 +157,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	/**  Main processing method for the WatchDog object */
 	public Result call() {
 		CURRENT_PHASE_LOCK.lock();
-
+		
 		try {
+			//we have to register current watchdog's thread to context provider - from now all 
+			//ContextProvider.getGraph() invocations return proper transformation graph
+			ContextProvider.registerGraph(graph);
+			
     		MDC.put("runId", runtimeContext.getRunId());
     		
     		long startTimestamp = System.currentTimeMillis();
@@ -240,6 +245,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
        		logger.error("Fatal error watchdog execution", e);
        		throw e;
 		} finally {
+			//we have to unregister current watchdog's thread from context provider
+			ContextProvider.unregister();
+
 			CURRENT_PHASE_LOCK.unlock();
 		}
 

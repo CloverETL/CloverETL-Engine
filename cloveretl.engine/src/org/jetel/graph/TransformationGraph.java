@@ -384,80 +384,87 @@ public final class TransformationGraph extends GraphElement {
 	 * @since       Sept. 16, 2005
 	 */
 	public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
-		super.init();
-
-        //remove disabled components and their edges
-        try {
-			TransformationGraphAnalyzer.disableNodesInPhases(this);
-		} catch (GraphConfigurationException e) {
-			throw new ComponentNotReadyException(this, e);
-		}
-
-		//initialize dictionary
-		dictionary.init();
-		
-		Iterator iterator;
-		IConnection dbCon = null;
-		Sequence seq = null;
-		
-		// initialize Connections
-		// iterate through all Connection(s) and initialize them - try to connect to db
-		iterator = connections.values().iterator();
-		while (iterator.hasNext()) {
-			logger.info("Initializing connection: ");
-			try {
-				dbCon = (IConnection) iterator.next();
-				dbCon.init();
-                //dbCon.free();
-				logger.info(dbCon + " ... OK");
-			} catch (Exception ex) {
-				logger.info(dbCon + " ... !!! ERROR !!!");
-				logger.error("Can't init connection", ex);
-				throw new ComponentNotReadyException("Can't init connection "+ ex.getMessage(), ex);
+		try {
+			//register current thread in ContextProvider - it is necessary to static approach to transformation graph
+			ContextProvider.registerGraph(this);
+			
+	        if(isInitialized()) return;
+			super.init();
+	
+	        //remove disabled components and their edges
+	        try {
+				TransformationGraphAnalyzer.disableNodesInPhases(this);
+			} catch (GraphConfigurationException e) {
+				throw new ComponentNotReadyException(this, e);
 			}
-		}
-		// initialize sequences
-		// iterate through all sequences and initialize them
-		Iterator<String> seqNamesIterator = sequences.keySet().iterator();
-		while (seqNamesIterator.hasNext()) {
-			logger.info("Initializing sequence: ");
-			try {
-				String seqName = seqNamesIterator.next();
-				seq = sequences.get(seqName);
-				if (seq.isShared()) {
-					seq = getAuthorityProxy().getSharedSequence(seq);
-					sequences.put(seqName, seq);
+	
+			//initialize dictionary
+			dictionary.init();
+			
+			Iterator iterator;
+			IConnection dbCon = null;
+			Sequence seq = null;
+			
+			// initialize Connections
+			// iterate through all Connection(s) and initialize them - try to connect to db
+			iterator = connections.values().iterator();
+			while (iterator.hasNext()) {
+				logger.info("Initializing connection: ");
+				try {
+					dbCon = (IConnection) iterator.next();
+					dbCon.init();
+	                //dbCon.free();
+					logger.info(dbCon + " ... OK");
+				} catch (Exception ex) {
+					logger.info(dbCon + " ... !!! ERROR !!!");
+					logger.error("Can't init connection", ex);
+					throw new ComponentNotReadyException("Can't init connection "+ ex.getMessage(), ex);
 				}
-				seq.init();
-				logger.info(seq + " ... OK");
-			} catch (Exception ex) {
-				logger.info(seq + " ... !!! ERROR !!!");
-				logger.error("Can't initialize sequence", ex);
-				throw new ComponentNotReadyException("Can't initialize sequence", ex);
 			}
+			// initialize sequences
+			// iterate through all sequences and initialize them
+			Iterator<String> seqNamesIterator = sequences.keySet().iterator();
+			while (seqNamesIterator.hasNext()) {
+				logger.info("Initializing sequence: ");
+				try {
+					String seqName = seqNamesIterator.next();
+					seq = sequences.get(seqName);
+					if (seq.isShared()) {
+						seq = getAuthorityProxy().getSharedSequence(seq);
+						sequences.put(seqName, seq);
+					}
+					seq.init();
+					logger.info(seq + " ... OK");
+				} catch (Exception ex) {
+					logger.info(seq + " ... !!! ERROR !!!");
+					logger.error("Can't initialize sequence", ex);
+					throw new ComponentNotReadyException("Can't initialize sequence", ex);
+				}
+			}
+			
+	        // analyze graph's topology
+			List<Node> orderedNodeList;
+	        try {
+	            orderedNodeList = TransformationGraphAnalyzer.analyzeGraphTopology(new ArrayList<Node>(getNodes().values()));
+	    		TransformationGraphAnalyzer.analyzeEdges(new ArrayList<Edge>(getEdges().values()));
+	    		TransformationGraphAnalyzer.analyzeMultipleFeeds(orderedNodeList);
+			} catch (GraphConfigurationException ex) {
+				logger.error(ex.getMessage(),ex);
+				throw new ComponentNotReadyException("Graph topology analyze failed: " + ex.getMessage(), ex);
+			}
+			
+			//initialization of all phases
+			//phases have to be initialized separately and immediately before is run - in runtime after previous phase is finished
+			//temporarily solution
+			//  for(Phase phase : phases.values()) {
+			//phase.init();
+			//}
+			
+			// initialized OK
+		} finally {
+			//unregister current thread from ContextProvider
+			ContextProvider.registerGraph(this);
 		}
-		
-        // analyze graph's topology
-		List<Node> orderedNodeList;
-        try {
-            orderedNodeList = TransformationGraphAnalyzer.analyzeGraphTopology(new ArrayList<Node>(getNodes().values()));
-    		TransformationGraphAnalyzer.analyzeEdges(new ArrayList<Edge>(getEdges().values()));
-    		TransformationGraphAnalyzer.analyzeMultipleFeeds(orderedNodeList);
-		} catch (GraphConfigurationException ex) {
-			logger.error(ex.getMessage(),ex);
-			throw new ComponentNotReadyException("Graph topology analyze failed: " + ex.getMessage(), ex);
-		}
-		
-		//initialization of all phases
-		//phases have to be initialized separately and immediately before is run - in runtime after previous phase is finished
-		//temporarily solution
-		//  for(Phase phase : phases.values()) {
-		//phase.init();
-		//}
-		
-		// initialized OK
-		
 	}
 
 	@Override
@@ -772,12 +779,20 @@ public final class TransformationGraph extends GraphElement {
      * Clears/removes all registered objects (Edges,Nodes,Phases,etc.)
      */
     public void free() {
-        freeResources();
-    	
-    	//free dictionary /some readers use dictionary in the free method for the incremental reading
-    	dictionary.free();
-    	
-    	setWatchDog(null);
+		try {
+			//register current thread in ContextProvider - it is necessary to static approach to transformation graph
+			ContextProvider.registerGraph(this);
+			
+	        freeResources();
+	    	
+	    	//free dictionary /some readers use dictionary in the free method for the incremental reading
+	    	dictionary.free();
+	    	
+	    	setWatchDog(null);
+		} finally {
+			//unregister current thread from ContextProvider
+			ContextProvider.registerGraph(this);
+		}
     }
     
     /**
@@ -873,39 +888,47 @@ public final class TransformationGraph extends GraphElement {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
-    	if(status == null) {
-            status = new ConfigurationStatus();
-        }
-        
-        //check dictionary
-        dictionary.checkConfig(status);
-        
-        //check connections configuration
-        for(IConnection connection : connections.values()) {
-            connection.checkConfig(status);
-        }
-
-        //check lookup tables configuration
-        for(LookupTable lookupTable : lookupTables.values()) {
-            lookupTable.checkConfig(status);
-        }
-
-        //check sequences configuration
-        for(Sequence sequence : sequences.values()) {
-            sequence.checkConfig(status);
-        }
-
-        //check metadatas configuration
-        for(Object oDataRecordMetadata : dataRecordMetadata.values()) {
-            if (oDataRecordMetadata instanceof DataRecordMetadata) ((DataRecordMetadata)oDataRecordMetadata).checkConfig(status);
-        }
-
-        //check phases configuration
-        for(Phase phase : getPhases()) {
-            phase.checkConfig(status);
-        }
-        
-        return status;
+		try {
+			//register current thread in ContextProvider - it is necessary to static approach to transformation graph
+			ContextProvider.registerGraph(this);
+			
+	    	if(status == null) {
+	            status = new ConfigurationStatus();
+	        }
+	        
+	        //check dictionary
+	        dictionary.checkConfig(status);
+	        
+	        //check connections configuration
+	        for(IConnection connection : connections.values()) {
+	            connection.checkConfig(status);
+	        }
+	
+	        //check lookup tables configuration
+	        for(LookupTable lookupTable : lookupTables.values()) {
+	            lookupTable.checkConfig(status);
+	        }
+	
+	        //check sequences configuration
+	        for(Sequence sequence : sequences.values()) {
+	            sequence.checkConfig(status);
+	        }
+	
+	        //check metadatas configuration
+	        for(Object oDataRecordMetadata : dataRecordMetadata.values()) {
+	            if (oDataRecordMetadata instanceof DataRecordMetadata) ((DataRecordMetadata)oDataRecordMetadata).checkConfig(status);
+	        }
+	
+	        //check phases configuration
+	        for(Phase phase : getPhases()) {
+	            phase.checkConfig(status);
+	        }
+	        
+	        return status;
+		} finally {
+			//unregister current thread from ContextProvider
+			ContextProvider.registerGraph(this);
+		}
     }
     
     public CloverPost getPost(){

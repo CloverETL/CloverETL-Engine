@@ -501,7 +501,7 @@ public abstract class Node extends GraphElement implements Runnable {
 			MDC.put("runId", getGraph().getWatchDog().getGraphRuntimeContext().getRunId());
 			nodeThread.setName(getId());
 		} else {
-			ContextProvider.unregisterNode();
+			ContextProvider.unregister();
 			MDC.remove("runId");
 			this.nodeThread.setName("<unnamed>");
 		}

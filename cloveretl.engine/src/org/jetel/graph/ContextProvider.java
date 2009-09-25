@@ -24,17 +24,20 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.graph.runtime.CloverWorker;
 
 /**
- * This class should be able to provide org.jetel.graph.Node corresponding to current thread.
- * All is provided via static methods. Every time you need the transformation graph instance just call
- * ContextProvider.getGraph().
+ * This class should be able to provide org.jetel.graph.Node or org.jetel.graph.TransformationGraph
+ * corresponding to the current thread. Both are provided via static methods - {@link #getNode()}
+ * and {@link #getGraph()}.
  *
- * This functionality can work only when all threads inside components are registered in this class.
+ * This functionality can work only when all threads working with graph elements are registered 
+ * in this class.
  *
- * For this purpose it is recommended to use CloverWorker class instead Runnable every time you want to create
- * separate thread inside a component.
+ * For this purpose it is recommended to use CloverWorker class instead Runnable every time 
+ * you want to create separate thread inside a component.
  *
+ *@see CloverWorker
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  *
@@ -45,13 +48,22 @@ public class ContextProvider {
     private final static Log logger = LogFactory.getLog(ContextProvider.class);
 
 	static private Map<Thread, Node> nodesCache = new HashMap<Thread, Node>(); 
+
+	static private Map<Thread, TransformationGraph> graphsCache = new HashMap<Thread, TransformationGraph>(); 
     
 	static public TransformationGraph getGraph() {
     	Node node = nodesCache.get(Thread.currentThread());
-    	if (node == null) {
-			logger.warn("ContextProvider was not able to provide requested graph. Current thread is not registered.");
+    	if (node != null) {
+        	return node.getGraph();
+    	} else {
+	    	TransformationGraph graph = graphsCache.get(Thread.currentThread());
+	    	if (graph != null) {
+	    		return graph; 
+	    	} else {
+				logger.warn("ContextProvider was not able to provide requested graph. Current thread is not registered.");
+				return null;
+	    	}
     	}
-    	return node.getGraph();
     }
 
 	static public Node getNode() {
@@ -65,12 +77,20 @@ public class ContextProvider {
 	static public void registerNode(Node node) {
 		nodesCache.put(Thread.currentThread(), node);
 	}
-	
-	static public void unregisterNode() {
-		if (!nodesCache.containsKey(Thread.currentThread())) {
-			logger.warn("Attempt to unregister non-registered thread in the ContextProvider.");
-		} else {
+
+	static public void registerGraph(TransformationGraph graph) {
+		graphsCache.put(Thread.currentThread(), graph);
+	}
+
+	static public void unregister() {
+		if (nodesCache.containsKey(Thread.currentThread())) {
 			nodesCache.remove(Thread.currentThread());
+		} else {
+			if (graphsCache.containsKey(Thread.currentThread())) {
+				graphsCache.remove(Thread.currentThread());
+			} else {
+				logger.warn("Attempt to unregister non-registered thread in the ContextProvider.");
+			}
 		}
 	}
 	

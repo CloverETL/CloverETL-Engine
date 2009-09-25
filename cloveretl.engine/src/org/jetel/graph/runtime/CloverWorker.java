@@ -7,6 +7,7 @@ import org.jetel.graph.Node;
 /**
  * This implementation of Runnable interface should be use for each thread inside a
  * component.
+ * 
  * @see ContextProvider
  * @author Martin Zatopek (info@cloveretl.com)
  *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
@@ -41,7 +42,7 @@ public abstract class CloverWorker implements Runnable {
 		try {
 			work();
 		} finally {
-			ContextProvider.unregisterNode();
+			ContextProvider.unregister();
 			MDC.remove("runId");
 			Thread.currentThread().setName("<unnamed>");
 		}
