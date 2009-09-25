@@ -372,13 +372,11 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since    April 2, 2002
 	 */
 	public void run() {
+        runResult = Result.RUNNING; // set running result, so we know run() method was started
+        
 		//store the current thread like a node executor
-		synchronized (this) {
-			setNodeThread(Thread.currentThread());
-			notifyAll(); //we have to notify the executor (watchdog) that the component is already running and the thread is preset
-		}
+        setNodeThread(Thread.currentThread());
 		
-        runResult=Result.RUNNING; // set running result, so we know run() method was started
         try {
             if((runResult = execute()) == Result.ERROR) {
                 Message msg = Message.createErrorMessage(this,
@@ -433,7 +431,7 @@ public abstract class Node extends GraphElement implements Runnable {
         } finally {
         	sendFinishMessage();
 
-        	//setNodeThread(null);
+        	setNodeThread(null);
         }
     }
     
@@ -473,9 +471,9 @@ public abstract class Node extends GraphElement implements Runnable {
 	}
 
     /**
-     * @return thread of running node; <b>null</b> if node does not runnig
+     * @return thread of running node; <b>null</b> if node does not running
      */
-    public Thread getNodeThread() {
+    public synchronized Thread getNodeThread() {
 //        if(nodeThread == null) {
 //            ThreadGroup defaultThreadGroup = Thread.currentThread().getThreadGroup();
 //            Thread[] activeThreads = new Thread[defaultThreadGroup.activeCount() * 2];
@@ -495,16 +493,36 @@ public abstract class Node extends GraphElement implements Runnable {
      * Sets actual thread in which this node current running.
      * @param nodeThread
      */
-    private void setNodeThread(Thread nodeThread) {
-        this.nodeThread = nodeThread;
+    private synchronized void setNodeThread(Thread nodeThread) {
 		if(nodeThread != null) {
-			nodeThread.setName(getId());
+    		this.nodeThread = nodeThread;
+
+    		ContextProvider.registerNode(this);
 			MDC.put("runId", getGraph().getWatchDog().getGraphRuntimeContext().getRunId());
+			nodeThread.setName(getId());
 		} else {
+			ContextProvider.unregisterNode();
 			MDC.remove("runId");
+			this.nodeThread.setName("<unnamed>");
 		}
+
+		notifyAll(); //we have to notify all threads waiting on startup (watchdog) - the component is already running and the thread is preset
+					// see method waitForStartup()
     }
     
+	/**
+	 * This is blocking method, current thread is waiting for the node is running.
+	 */
+	public synchronized void waitForStartup() {
+		while (getNodeThread() == null) { //we have to wait to real start up of the node
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				throw new RuntimeException("Unexpected interruption of waiting for startup of node '" + getName() + "'.");
+			}
+		}
+	}
+
 	/**
 	 *  End execution of Node - let Node finish gracefully
 	 *
@@ -1147,6 +1165,7 @@ public abstract class Node extends GraphElement implements Runnable {
         runResult=Result.READY;
         resultMessage = null;
         resultException = null;
+        nodeThread = null;
     }
 
 }

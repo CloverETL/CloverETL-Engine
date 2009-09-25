@@ -432,20 +432,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				try {
 					threadManager.wait(); //from time to time thread is woken up to check the condition again
 				} catch (InterruptedException e) {
-					//DO NOTHING
+					throw new RuntimeException("WatchDog was interrupted while was waiting for free workers for nodes in phase " + phase.getPhaseNum());
 				}
 			}
 			for(Node node: phase.getNodes().values()) {
 				threadManager.executeNode(node);
-				synchronized(node) {
-					while (node.getNodeThread() == null) { //we have to wait to real start up of the node
-						try {
-							node.wait();
-						} catch (InterruptedException e) {
-							throw new RuntimeException("Unexpected interruption.");
-						}
-					}
-				}
+				//we have to wait to real start up of the node
+				node.waitForStartup();
 				logger.debug(node.getId()+ " ... started");
 			}
 		}
