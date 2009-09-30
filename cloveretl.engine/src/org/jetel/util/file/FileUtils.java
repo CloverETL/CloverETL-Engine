@@ -54,11 +54,14 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiOutFile;
 import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.protocols.ftp.FTPStreamHandler;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
+import org.jetel.util.protocols.sandbox.SandboxStreamHandler;
 import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 
@@ -137,6 +140,16 @@ public class FileUtils {
     		return new URL(contextURL, fileURL, proxyHandler);
         } catch(MalformedURLException e) {}
 
+        // sandbox url
+    	try {
+    		if (fileURL.startsWith(SandboxStreamHandler.SANDBOX_PROTOCOL)){
+        		TransformationGraph graph = ContextProvider.getGraph();
+        		if (graph == null)
+        			throw new NullPointerException("Graph reference cannot be null when \""+SandboxStreamHandler.SANDBOX_PROTOCOL+"\" protocol is used.");
+        		return new URL(contextURL, fileURL, new SandboxStreamHandler(graph));
+    		}
+        } catch(MalformedURLException e) {}
+        
         // file url
         return new URL(contextURL, "file:" + fileURL);
     }
@@ -222,13 +235,13 @@ public class FileUtils {
 	 * @return
 	 * @throws IOException
 	 */
-    public static ReadableByteChannel getReadableChannel(URL contextURL, String input) throws IOException {
+	public static ReadableByteChannel getReadableChannel(URL contextURL, String input) throws IOException {
     	InputStream in = getInputStream(contextURL, input);
     	//incremental reader needs FileChannel:
     	return in instanceof FileInputStream ? ((FileInputStream)in).getChannel() : Channels.newChannel(in);
     }	
 
-    /**
+	/**
 	 * Creates InputStream from the url definition.
 	 * <p>
 	 * All standard url format are acceptable plus extended form of url by zip & gzip construction:
@@ -245,6 +258,7 @@ public class FileUtils {
 	 * @param input
 	 *            URL of file to read
 	 * @return
+	 * @throws IOException 
 	 * @throws IOException
 	 */
     public static InputStream getInputStream(URL contextURL, String input) throws IOException {
@@ -279,7 +293,13 @@ public class FileUtils {
         	// creates file input stream for incremental reading (random access file)
         	if (archiveType == null && url.getProtocol().equals(FILE_PROTOCOL)) {
             	return new FileInputStream(url.getFile());
+        	} else if (archiveType == null && url.getProtocol().equals(SandboxStreamHandler.SANDBOX_PROTOCOL)) {
+    			TransformationGraph graph = ContextProvider.getGraph();
+        		if (graph == null)
+        			throw new NullPointerException("Graph reference cannot be null when \""+SandboxStreamHandler.SANDBOX_PROTOCOL+"\" protocol is used.");
+            	return graph.getAuthorityProxy().getSandboxResourceInput(graph.getWatchDog().getGraphRuntimeContext().getRunId(), url.getHost(), url.getPath());
         	}
+        	
         	innerStream = getAuthorizedConnection(url).getInputStream();
         }
 
@@ -635,12 +655,18 @@ public class FileUtils {
     				((SFTPConnection)urlConnection).setMode(appendData? ChannelSftp.APPEND : ChannelSftp.OVERWRITE);
     			}
     			os = urlConnection.getOutputStream();
+    		} else if (input.startsWith(SandboxStreamHandler.SANDBOX_PROTOCOL)) {
+    			TransformationGraph graph = ContextProvider.getGraph();
+        		if (graph == null)
+        			throw new NullPointerException("Graph reference cannot be null when \""+SandboxStreamHandler.SANDBOX_PROTOCOL+"\" protocol is used.");
+    			URL url = FileUtils.getFileURL(contextURL, input);
+            	return graph.getAuthorityProxy().getSandboxResourceOutput(graph.getWatchDog().getGraphRuntimeContext().getRunId(), url.getHost(), url.getPath());
     		} else {
     			// file input stream 
     			String filePath = FileUtils.getFile(contextURL, input);
     			os = new FileOutputStream(filePath, appendData);
     		}
-        }
+    	}
 		
 		// create writable channel
 		// zip channel

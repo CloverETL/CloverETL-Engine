@@ -19,6 +19,8 @@
 */
 package org.jetel.graph.runtime;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Properties;
 
 import org.jetel.data.sequence.Sequence;
@@ -52,4 +54,24 @@ public interface IAuthorityProxy {
 	 * @return
 	 */
 	public RunResult executeGraph(long runId, String graphFileName, Properties properties, String logFile);
+
+	/**
+	 * Throws exception if user who executed graph doesn't have read permission for requested sandbox.
+	 * Throws exception if requested sandbox isn't accessible (i.e. it's on cluster node which is disconnected).
+	 * @param runId 
+	 * 
+	 * @param storageCode
+	 * @param path
+	 * @return
+	 */
+	public InputStream getSandboxResourceInput(long runId, String storageCode, String path);
+
+	/**
+	 * 
+	 * @param runId
+	 * @param storageCode
+	 * @param path
+	 * @return
+	 */
+	public OutputStream getSandboxResourceOutput(long runId, String storageCode, String path);
 }
