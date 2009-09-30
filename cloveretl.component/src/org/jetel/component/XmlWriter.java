@@ -318,10 +318,6 @@ public class XmlWriter extends Node {
 			if (th == null)
 				writeHeader();
 			
-			RecordKey recKey = new RecordKey( rootPortDefinition.keys, rootPortDefinition.metadata);
-			HashKey key = new HashKey(recKey, record);
-			//TreeRecord tr = rootPortDefinition.dataMapsByRelationKeys.dataMap.get(key);
-			//List<DataRecord> records = new ArrayList<DataRecord>();
 			List<DataRecord> records = new ArrayList<DataRecord>(); 
 			records.add(record);
 			try {
