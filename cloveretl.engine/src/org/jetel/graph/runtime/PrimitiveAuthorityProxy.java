@@ -21,6 +21,7 @@ package org.jetel.graph.runtime;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.util.Random;
 import java.util.Properties;
@@ -215,5 +216,21 @@ public class PrimitiveAuthorityProxy implements IAuthorityProxy {
 					return Filter.DENY;
 			}
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceInput(long, java.lang.String, java.lang.String)
+	 */
+	public InputStream getSandboxResourceInput(long runId, String storageCode, String path) {
+		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceOutput(long, java.lang.String, java.lang.String)
+	 */
+	public OutputStream getSandboxResourceOutput(long runId, String storageCode, String path) {
+		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 }
