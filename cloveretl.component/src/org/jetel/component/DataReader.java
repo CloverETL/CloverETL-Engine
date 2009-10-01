@@ -352,6 +352,14 @@ public class DataReader extends Node {
 */
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#getUsedUrls()
+	 */
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+	
 	/**
 	 *  Description of the Method
 	 *

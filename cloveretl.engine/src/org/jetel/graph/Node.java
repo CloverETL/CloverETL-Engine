@@ -1168,6 +1168,14 @@ public abstract class Node extends GraphElement implements Runnable {
         nodeThread = null;
     }
 
+	/**
+	 * This method is intended to be overridden.
+	 * @return URLs which this component is using
+	 */
+    public String[] getUsedUrls() {
+    	return new String[0];
+    }
+
 }
 /*
  *  end class Node

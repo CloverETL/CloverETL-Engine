@@ -274,6 +274,14 @@ public class DataWriter extends Node {
 
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#getUsedUrls()
+	 */
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+	
 	/**
 	 * Creates and initializes lookup table.
 	 * 
