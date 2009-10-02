@@ -74,4 +74,23 @@ public interface IAuthorityProxy {
 	 * @return
 	 */
 	public OutputStream getSandboxResourceOutput(long runId, String storageCode, String path);
+	
+	/**
+	 * Provides list of input streams for all parts of given file in a partitioned sandbox.
+	 * @param runId
+	 * @param storageCode
+	 * @param path
+	 * @return
+	 */
+	public InputStream[] getPartitionedSandboxResourceInput(long runId, String storageCode, String path);
+
+	/**
+	 * Provides list of output streams for all parts of given file in a partitioned sandbox.
+	 * @param runId
+	 * @param storageCode
+	 * @param path
+	 * @return
+	 */
+	public OutputStream[] getPartitionedSandboxResourceOutput(long runId, String storageCode, String path);
+
 }
