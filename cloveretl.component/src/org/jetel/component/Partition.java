@@ -32,6 +32,7 @@ import org.jetel.component.partition.CTLRecordPartition;
 import org.jetel.component.partition.CTLRecordPartitionAdapter;
 import org.jetel.component.partition.HashPartition;
 import org.jetel.component.partition.PartitionFunction;
+import org.jetel.component.partition.PartitionFunctionFactory;
 import org.jetel.component.partition.PartitionTL;
 import org.jetel.component.partition.RangePartition;
 import org.jetel.component.partition.RoundRobinPartition;
@@ -161,13 +162,6 @@ public class Partition extends Node {
 	public final static String COMPONENT_TYPE = "PARTITION";
 
 	private final static int READ_FROM_PORT=0;
-	private final static char EQUAL = '=';
-	public final static char COMMA = ',';
-	public final static char START_OPENED = '(';
-	public final static char START_CLOSED = '<';
-	public final static char END_OPENED = ')';
-	public final static char END_CLOSED = '>';
-	private static final String PORT_NO_FIELD_NAME = "portNo"; 
 	
 	private String[] partitionKeyNames = null;
 	private String[] partitionRanges = null;
@@ -177,8 +171,6 @@ public class Partition extends Node {
 	private String charset = null;
 	private boolean useI18N;
 	private String locale = null;
-	protected boolean[] startInclude;
-	protected boolean[] endInclude;
 
 	private RecordKey partitionKey;
 	private HashKey hashKey;
@@ -196,8 +188,7 @@ public class Partition extends Node {
     private static final String XML_USE_I18N_ATTRIBUTE = "useI18N";
     private static final String XML_LOCALE_ATTRIBUTE = "locale";
 
-	static Log logger = LogFactory.getLog(Partition.class);
-	public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+" + PartitionTL.GETOUTPUTPORT_FUNCTION_NAME);
+	private static final Log logger = LogFactory.getLog(Partition.class);
 
 
     /**
@@ -308,88 +299,6 @@ public class Partition extends Node {
 			SynchronizeUtils.cloverYield();
 		}
 	}
-	
-	/**
-	 * This method prepares data for DelimitedDataParser in RangeLookupTable 
-	 * 
-	 * @param ranges ranges defined by user
-	 * @return data prepared for lookup table (0=start00,end00,start01,end01,...,start0n,end0n;1=start10,end10,start11,end11,...;m=startmn,endmn;)
-	 */
-	private String analizeRangesString(String[] ranges) throws ComponentNotReadyException{
-		StringBuilder rangesData = new StringBuilder();
-		int intervalNumbers = ranges[0].split("[(<]").length - 1;
-		if (intervalNumbers == 0) {//old reprezentation: x1;x2;..;xn
-			//corresponding new form: (,x1>;(x1,x2>;(x2,.....,xn>;(xn,>
-			String[] newRanges = new String[ranges.length + 1];
-			String start = "";
-			String end = ranges[0];
-			for (int i=0;i<newRanges.length; i++){
-				newRanges[i] = START_OPENED + start + COMMA + end + END_CLOSED;
-				start = end;
-				end = i+1 < newRanges.length - 1 ? ranges[i+1] : "";
-			}
-			intervalNumbers = 1;
-			ranges = newRanges;
-		}
-		//prepare default start/endInclude
-		startInclude = new boolean[intervalNumbers];
-		endInclude = new boolean[intervalNumbers];
-		Arrays.fill(startInclude, true);
-		Arrays.fill(endInclude, false);
-		
-		int intervalNumber;
-		char c;
-		//remove brackets, set requested start/endInclude
-		for (int i=0; i < ranges.length; i++){
-			intervalNumber = 0;
-			ranges[i] = ranges[i].trim();
-			rangesData.append(i);
-			rangesData.append(EQUAL);
-			for (int index = 0; index < ranges[i].length(); index++){
-				c = ranges[i].charAt(index);
-				switch (c) {
-				case START_OPENED:
-					if (i == 0) {//first '(' - set startInclude to "false"
-						startInclude[intervalNumber] = false;
-					}else if (startInclude[intervalNumber]) {//there was "<" for this interval before
-						logger.warn("startInclude[" + intervalNumber + "] was set to \"true\" before");
-					}
-					if (intervalNumber != 0){
-						rangesData.append(COMMA);
-					}
-					break;
-				case START_CLOSED:
-					if (!startInclude[intervalNumber]) {//there was "(" for this interval before
-						logger.warn("startInclude[" + intervalNumber + "] was set to \"false\" before");
-					}
-					if (intervalNumber != 0){
-						rangesData.append(COMMA);
-					}
-					break;
-				case END_OPENED:
-					if (endInclude[intervalNumber]) {//there was ">" for this interval before
-						logger.warn("endInclude[" + intervalNumber + "] was set to \"true\" before");
-					}
-					intervalNumber++;
-					break;
-				case END_CLOSED:
-					if (i == 0) {//first '>' - set endInclude to "true"
-						endInclude[intervalNumber] = true;
-					}else if (!endInclude[intervalNumber]) {//there was ")" for this interval before
-						logger.warn("endInclude[" + intervalNumber + "] was set to \"false\" before");
-					}
-					intervalNumber++;
-					break;
-				default:
-					rangesData.append(c);
-					break;
-				}
-			}
-			rangesData.append(Defaults.Component.KEY_FIELDS_DELIMITER);
-		}
-		
-		return rangesData.toString();
-	}
 
 	/**
 	 *  Description of the Method
@@ -416,149 +325,23 @@ public class Partition extends Node {
 		//create partition function if still is not created
 		if (partitionFce != null) {
 			partitionClass = partitionFce.getClass().getName();
-		}else if (partitionClass != null){
-			partitionFce = createPartitionFce(partitionClass);
-		}else {
-			if (partitionURL != null &&
-				(partitionSource == null || (partitionSource != null && StringUtils.isEmpty(partitionSource.trim())))) {
-				partitionSource = FileUtils.getStringFromURL(
-						getGraph().getProjectURL(), partitionURL, 
-						charset);
-			}
-			if (partitionSource != null && !StringUtils.isEmpty(partitionSource.trim())) {
-				partitionFce = createPartitionDynamic(partitionSource);
-			}else if (partitionRanges != null){
-				//create RangePartition function from parttionKey and partitionRanges
-				String rangesData = analizeRangesString(partitionRanges);
-				//create metadata for RangeLookupTable
-				DataRecordMetadata lookupMetadata = new DataRecordMetadata("lookup_metadata",
-						DataRecordMetadata.DELIMITED_RECORD);
-				lookupMetadata.addField(new DataFieldMetadata(PORT_NO_FIELD_NAME, 
-						DataFieldMetadata.INTEGER_FIELD, String.valueOf(EQUAL)));
-				DataFieldMetadata keyField, startField, endField;
-				String[] startFields = new String[partitionKeyNames.length];
-				String[] endFields = new String[partitionKeyNames.length];
-				//create startField and endField for each key field
-				for (int i=0; i<partitionKeyNames.length; i++) {
-					keyField = inMetadata.getField(partitionKeyNames[i]);
-					startField = keyField.duplicate();
-					startField.setName(keyField.getName() + "_start");
-					startField.setDelimiter(String.valueOf(COMMA));
-					startFields[i] = startField.getName(); 
-					endField = keyField.duplicate();
-					endField.setName(keyField.getName() + "_end");
-					endField.setDelimiter(i == partitionKeyNames.length -1 ? 
-							Defaults.Component.KEY_FIELDS_DELIMITER : String.valueOf(COMMA));
-					endFields[i] = endField.getName();
-					lookupMetadata.addField(startField);
-					lookupMetadata.addField(endField);
-				}
-				//create RangeLookupTable 
-				RangeLookupTable table = new RangeLookupTable(this.getId() + "_lookupTable", 
-						lookupMetadata, startFields, endFields, new DelimitedDataParser());
-				table.setUseI18N(useI18N);
-				table.setLocale(locale);
-				table.setData(rangesData);
-				table.setStartInclude(startInclude);
-				table.setEndInclude(endInclude);
-				int rejectedPort = getOutPorts().size();
-				partitionFce = new RangePartition(table,
-						lookupMetadata.getFieldPosition(PORT_NO_FIELD_NAME), 
-						partitionRanges.length < rejectedPort ? rejectedPort -1 : RangePartition.NONEXISTENT_REJECTED_PORT);
-			}else if (partitionKeyNames != null){
-				partitionFce = new HashPartition();
-			}else{
-				partitionFce = new RoundRobinPartition();
-			}
+		} else {
+			PartitionFunctionFactory partitionFceFactory = new PartitionFunctionFactory();
+			partitionFceFactory.setNode(this);
+			partitionFceFactory.setMetadata(inMetadata);
+			partitionFceFactory.setPartitionKeyNames(partitionKeyNames);
+			partitionFceFactory.setPartitionRanges(partitionRanges);
+			partitionFceFactory.setAdditionalParameters(parameters);
+			partitionFceFactory.setCharset(charset);
+			partitionFceFactory.setLocale(locale);
+			partitionFceFactory.setUseI18N(useI18N);
+			partitionFceFactory.setLogger(logger);
+			partitionFce = partitionFceFactory.createPartitionFunction(partitionSource, partitionClass, partitionURL);
 		}
+		
 		partitionFce.init(outPorts.size(),partitionKey);
 	}
 
-	/**
-	 * Creates parttition function from givev class name
-	 * 
-	 * @param partitionClass
-	 * @return
-	 * @throws ComponentNotReadyException
-	 */
-	private PartitionFunction createPartitionFce(String partitionClass) throws ComponentNotReadyException{
-		PartitionFunction function;
-        try {
-         	function =  (PartitionFunction)Class.forName(partitionClass).newInstance();
-        }catch (InstantiationException ex){
-            throw new ComponentNotReadyException("Can't instantiate partition function class: "+ex.getMessage());
-        }catch (IllegalAccessException ex){
-            throw new ComponentNotReadyException("Can't instantiate partition function class: "+ex.getMessage());
-        }catch (ClassNotFoundException ex) {
-            throw new ComponentNotReadyException("Can't find specified partition function class: " + partitionClass);
-        }
-        return function;
-	}
-	
-	/**
-	 * Method for creation partition function from CloverETL language or java source
-	 * 
-	 * @param partitionCode source code
-	 * @return Partition function
-	 * @throws ComponentNotReadyException
-	 */
-	private PartitionFunction createPartitionDynamic(String partitionCode) throws ComponentNotReadyException {
-		//check if source code is in CloverETL format
-		if (partitionCode.contains(WrapperTL.TL_TRANSFORM_CODE_ID) ||
-				PATTERN_TL_CODE.matcher(partitionCode).find()) {
-			PartitionTL function =  new PartitionTL(partitionCode, 
-					getInputPort(0).getMetadata(), parameters, logger);
-			function.setGraph(getGraph());
-			return function;
-		} else if (partitionCode.contains(TransformLangExecutor.CTL_TRANSFORM_CODE_ID)) {
-			// compile the CTL code
-			ITLCompiler compiler = TLCompilerFactory.createCompiler(
-					getGraph(),
-					new DataRecordMetadata[]{getInputPort(0).getMetadata()},
-					new DataRecordMetadata[]{getOutputPort(0).getMetadata()},
-					"UTF-8");
-        	List<ErrorMessage> msgs = compiler.compile(partitionCode, CTLRecordPartition.class, getId());
-        	
-        	if (compiler.errorCount() > 0) {
-        		for (ErrorMessage msg : msgs) {
-        			logger.error(msg.toString());
-        		}
-        		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors");
-        	}
-        	
-        	Object ret = compiler.getCompiledCode();
-        	PartitionFunction function = null;
-        	if (ret instanceof TransformLangExecutor) {
-        		// setup interpreted runtime
-        		function = new CTLRecordPartitionAdapter((TransformLangExecutor)ret, logger);
-        	} else if (ret instanceof CTLRecordPartition){
-        		function = (CTLRecordPartition)ret;
-        	} else {
-        		// this should never happen as compiler always generates correct interface
-        		throw new ComponentNotReadyException("Invalid type of record transformation");
-        	}
-        	// pass graph instance to transformation (if CTL it can use lookups etc.)
-			function.setGraph(getGraph());
-			return function;
-		} else {//get partition function form java code
-			DynamicJavaCode dynCode = new DynamicJavaCode(partitionCode, this.getClass().getClassLoader());
-	        logger.info(" (compiling dynamic source) ");
-	        // use DynamicJavaCode to instantiate transformation class
-	        Object transObject = null;
-	        try {
-	            transObject = dynCode.instantiate();
-	        } catch (RuntimeException ex) {
-	            logger.debug(dynCode.getCompilerOutput());
-	            logger.debug(dynCode.getSourceCode());
-	            throw new ComponentNotReadyException("Parttion code is not compilable.\n" + "Reason: " + ex.getMessage());
-	        }
-	        if (transObject instanceof PartitionFunction) {
-	            return (PartitionFunction)transObject;
-	        } else {
-	            throw new ComponentNotReadyException("Provided partition class doesn't implement required interface.");
-	        }
-		}
-    }
 
 	/**
 	 *  Description of the Method
@@ -610,7 +393,7 @@ public class Partition extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Partition partition;
 		try {
@@ -643,12 +426,12 @@ public class Partition extends Node {
 		}
 	}
 
-		/**
-	     * @param functionParameters The functionParameters to set.
-	     */
-	    public void setFunctionParameters(Properties parameters) {
-	        this.parameters = parameters;
-	    }
+	/**
+     * @param functionParameters The functionParameters to set.
+     */
+    public void setFunctionParameters(Properties parameters) {
+        this.parameters = parameters;
+    }
 	    
 
 	/**
@@ -656,45 +439,45 @@ public class Partition extends Node {
 	 *
 	 * @return    Description of the Return Value
 	 */
-        @Override
-        public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-    		super.checkConfig(status);
-   		 
-    		if(!checkInputPorts(status, 1, 1)
-    				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
-    			return status;
-    		}
-    		
-            checkMetadata(status, getInMetadata(), getOutMetadata());
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
+	 
+		if(!checkInputPorts(status, 1, 1)
+				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+			return status;
+		}
+		
+        checkMetadata(status, getInMetadata(), getOutMetadata());
 
-            try {
-            	
-        	    if (partitionKeyNames != null) {
-        			partitionKey = new RecordKey(partitionKeyNames,
-        					getInputPort(0).getMetadata());
-        		}
-        		if (partitionKey != null) {
-        			try {
-        				partitionKey.init();
-        			} catch (Exception e) {
-        				throw new ComponentNotReadyException(this, 
-        						XML_PARTITIONKEY_ATTRIBUTE, e.getMessage());
-        			}
-        		}
-            	
-            	
+        try {
+        	
+    	    if (partitionKeyNames != null) {
+    			partitionKey = new RecordKey(partitionKeyNames,
+    					getInputPort(0).getMetadata());
+    		}
+    		if (partitionKey != null) {
+    			try {
+    				partitionKey.init();
+    			} catch (Exception e) {
+    				throw new ComponentNotReadyException(this, 
+    						XML_PARTITIONKEY_ATTRIBUTE, e.getMessage());
+    			}
+    		}
+        	
+        	
 //                init();
 //                free();
-            } catch (ComponentNotReadyException e) {
-                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-                if(!StringUtils.isEmpty(e.getAttributeName())) {
-                    problem.setAttributeName(e.getAttributeName());
-                }
-                status.add(problem);
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
             }
-            
-            return status;
+            status.add(problem);
         }
+        
+        return status;
+    }
 	
 	public String getType(){
 		return COMPONENT_TYPE;
@@ -724,17 +507,5 @@ public class Partition extends Node {
 		this.useI18N = useI18N;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#reset()
-	 */
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		// no implementation neeeded
-	}
-
-
-	
 }
 
