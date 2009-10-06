@@ -14,6 +14,7 @@ import org.jetel.metadata.DataRecordMetadata;
 public class AutoFilling {
 
 	// names of functions
+    private static final String GLOBAL_READER_ROW_COUNT = "graph_reader_row_count";
     private static final String GLOBAL_ROW_COUNT = "global_row_count";
     private static final String SOURCE_ROW_COUNT = "source_row_count";
     private static final String METADATA_ROW_COUNT = "metadata_row_count";
@@ -29,7 +30,7 @@ public class AutoFilling {
     public static final String SHEET_NAME = "sheet_name";					// is used in XLSParser
     
     // names of functions for gui
-    public static final String[] AUTOFILLING = new String[] {DEFAULT_VALUE, GLOBAL_ROW_COUNT, SOURCE_ROW_COUNT, METADATA_ROW_COUNT, 
+    public static final String[] AUTOFILLING = new String[] {DEFAULT_VALUE, GLOBAL_READER_ROW_COUNT, GLOBAL_ROW_COUNT, SOURCE_ROW_COUNT, METADATA_ROW_COUNT, 
     	METADATA_SOURCE_ROW_COUNT, SOURCE_NAME, SOURCE_TIMESTAMP, SOURCE_SIZE, ROW_TIMESTAMP, READER_TIMESTAMP, ERROR_CODE, ERROR_MESSAGE, SHEET_NAME};
     
     // autofilling for metadata
@@ -39,6 +40,7 @@ public class AutoFilling {
     // variables for global functions
     private Date fileTimestamp;
     private long fileSize;
+	private static volatile int globalReaderCounter; //number of returned records for all readers
 	private int globalCounter; //number of returned records
 	private int sourceCounter; //number of returned records in one source
     private String filename;
@@ -49,6 +51,7 @@ public class AutoFilling {
 		
 		private boolean noAutoFillingData; // the attribute indicates if metadata doesn't contain any autofilling field
 		
+	    private int[] globalReaderRowCount;
 	    private int[] globalRowCount;	// number of returned records for every getNext method
 	    private int[] sourceRowCount;
 	    private int[] sourceName;
@@ -81,6 +84,7 @@ public class AutoFilling {
      */
     private AutoFillingData createAutoFillingFields(DataRecordMetadata metadata) {
         int numFields = metadata.getNumFields();
+        int[] globalReaderRowCountTmp = new int[numFields];
         int[] globalRowCountTmp = new int[numFields];
         int[] sourceRowCountTmp = new int[numFields];
         int[] metadataRowCountTmp = new int[numFields];
@@ -92,6 +96,7 @@ public class AutoFilling {
         int[] rowTimestampTmp = new int[numFields];
         int[] readerTimestampTmp = new int[numFields];
         AutoFillingData data = new AutoFillingData();
+        int globalReaderRowCountLen = 0;
         int globalRowCountLen = 0;
         int sourceNameLen = 0;
         int sourceTimestampLen = 0;
@@ -114,8 +119,10 @@ public class AutoFilling {
         		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(DEFAULT_VALUE)) defaultValueTmp[defaultLen++] = i;
         		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(ROW_TIMESTAMP)) rowTimestampTmp[rowTimestampLen++] = i;
         		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(READER_TIMESTAMP)) readerTimestampTmp[readerTimestampLen++] = i;
+        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(GLOBAL_READER_ROW_COUNT)) globalReaderRowCountTmp[globalReaderRowCountLen++] = i;
         	}
         }
+        data.globalReaderRowCount = new int[globalReaderRowCountLen];
         data.globalRowCount = new int[globalRowCountLen];
         data.sourceRowCount = new int[sourceRowCountLen];
         data.metadataRowCount = new int[metadataRowCountLen];
@@ -127,6 +134,7 @@ public class AutoFilling {
         data.rowTimestamp = new int[rowTimestampLen];
         data.readerTimestamp = new int[readerTimestampLen];
         data.noAutoFillingData = 
+        	globalReaderRowCountLen <= 0 &&
         	globalRowCountLen <= 0 &&
         	sourceRowCountLen <= 0 &&
         	metadataRowCountLen <= 0 &&
@@ -139,6 +147,7 @@ public class AutoFilling {
         	defaultLen <= 0;
 
         // reduce arrays' sizes
+        System.arraycopy(globalReaderRowCountTmp, 0, data.globalReaderRowCount, 0, globalReaderRowCountLen);
         System.arraycopy(globalRowCountTmp, 0, data.globalRowCount, 0, globalRowCountLen);
         System.arraycopy(sourceRowCountTmp, 0, data.sourceRowCount, 0, sourceRowCountLen);
         System.arraycopy(metadataRowCountTmp, 0, data.metadataRowCount, 0, metadataRowCountLen);
@@ -189,6 +198,9 @@ public class AutoFilling {
         	return;
         }
         
+       	for (int i : autoFillingData.globalReaderRowCount) {
+       		rec.getField(i).setValue(globalReaderCounter);
+       	}
        	for (int i : autoFillingData.globalRowCount) {
        		rec.getField(i).setValue(globalCounter);
        	}
@@ -219,6 +231,7 @@ public class AutoFilling {
        	for (int i : autoFillingData.rowTimestamp) {
        		rec.getField(i).setValue(new Date());
        	}
+       	globalReaderCounter++;
         globalCounter++;
         sourceCounter++;
         autoFillingData.counter++;
@@ -229,6 +242,7 @@ public class AutoFilling {
 	 * Reset method.
 	 */
 	public void reset() {
+       	globalReaderCounter=0;
 		globalCounter=0;
 		sourceCounter=0;
 		autoFillingMap.clear();
