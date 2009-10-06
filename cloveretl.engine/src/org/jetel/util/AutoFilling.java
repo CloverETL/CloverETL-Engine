@@ -198,9 +198,9 @@ public class AutoFilling {
         	return;
         }
         
-       	for (int i : autoFillingData.globalReaderRowCount) {
-       		rec.getField(i).setValue(globalReaderCounter);
-       	}
+        if (autoFillingData.globalReaderRowCount.length > 0) {
+        	setValuesAndIncCounter(autoFillingData, rec);
+        }
        	for (int i : autoFillingData.globalRowCount) {
        		rec.getField(i).setValue(globalCounter);
        	}
@@ -231,13 +231,23 @@ public class AutoFilling {
        	for (int i : autoFillingData.rowTimestamp) {
        		rec.getField(i).setValue(new Date());
        	}
-       	globalReaderCounter++;
         globalCounter++;
         sourceCounter++;
         autoFillingData.counter++;
         autoFillingData.sourceCounter++;
 	}
 
+	/**
+	 * This synchronized method sets and increases graph_reader_row_count. 
+	 */
+	private static synchronized void setValuesAndIncCounter(AutoFillingData autoFillingData, DataRecord rec) {
+       	for (int i : autoFillingData.globalReaderRowCount) {
+       		rec.getField(i).setValue(globalReaderCounter);
+       	}
+       	globalReaderCounter++;
+	}
+	
+	
 	/**
 	 * Reset method.
 	 */
