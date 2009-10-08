@@ -234,7 +234,7 @@ public class Trash extends Node {
 									debugAppend, compressLevel )
 					));
 				} catch (IOException e) {
-					e.printStackTrace();
+					throw new ComponentNotReadyException(this, "Output file '" + debugFilename + "' does not exist.", e);
 				}
             } else {
     			if (writableByteChannel == null) {
