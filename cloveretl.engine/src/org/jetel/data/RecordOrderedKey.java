@@ -22,7 +22,10 @@ package org.jetel.data;
 import java.text.RuleBasedCollator;
 import java.util.Arrays;
 
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.key.RecordKeyTokens;
+import org.jetel.util.key.OrderType;
 
 /**
  *  This class serves the role of DataRecords comparator.<br>
@@ -80,6 +83,21 @@ public class RecordOrderedKey extends RecordKey {
 		this.keyOrderings = keyOrderings;
 	}
 
+	public RecordOrderedKey(RecordKeyTokens keyRecordDesc, DataRecordMetadata metadata) throws ComponentNotReadyException {
+		super(keyRecordDesc.getKeyFieldNames(), metadata);
+		
+		this.keyOrderings = new boolean[keyRecordDesc.size()];
+		for (int i = 0; i < keyRecordDesc.size(); i++) {
+			OrderType orderType = keyRecordDesc.getKeyField(i).getOrderType();
+			if (orderType == OrderType.ASCENDING || orderType == null) {
+				keyOrderings[i] = true;
+			} else if (orderType == OrderType.DESCENDING) {
+				keyOrderings[i] = false;
+			} else {
+				throw new ComponentNotReadyException("Unsupported key ordering type '" + orderType + "'.");
+			}
+		}
+	}
 	
 	/**
 	 *  Constructor for the RecordOrderedKey object
