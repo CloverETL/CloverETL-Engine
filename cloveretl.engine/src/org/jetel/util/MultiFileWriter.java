@@ -424,8 +424,9 @@ public class MultiFileWriter {
     
     /**
      * Closes underlying formatter.
+     * @throws IOException 
      */
-    public void close() {
+    public void close() throws IOException {
     	if (outputClosed) return;
     	if (multiTarget != null) {
         	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {

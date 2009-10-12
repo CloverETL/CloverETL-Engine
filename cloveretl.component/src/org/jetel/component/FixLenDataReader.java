@@ -258,7 +258,11 @@ public class FixLenDataReader extends Node {
     public synchronized void free() {
     	super.free();
     	storeValues();
-    	reader.close();
+    	try {
+			reader.close();
+		} catch (IOException e) {
+			logger.error(e);
+		}
     }
 
     /**

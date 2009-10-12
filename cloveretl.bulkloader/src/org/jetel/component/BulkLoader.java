@@ -233,7 +233,11 @@ public abstract class BulkLoader extends Node {
 		super.free();
 		
 		if (formatter != null) {
-			formatter.close();
+			try {
+				formatter.close();
+			} catch (IOException e) {
+				logger.error(e);
+			}
 		}
 		
 		deleteTempFiles();

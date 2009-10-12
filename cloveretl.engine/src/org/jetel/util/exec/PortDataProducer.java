@@ -22,6 +22,7 @@
  */
 package org.jetel.util.exec;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 
@@ -76,7 +77,11 @@ public class PortDataProducer implements DataProducer {
 	 */
 	public void setOutput(OutputStream stream) {
         formatter.init(metadata);
-        formatter.setDataTarget(Channels.newChannel(stream));
+        try {
+			formatter.setDataTarget(Channels.newChannel(stream));
+		} catch (IOException e) {
+			throw new RuntimeException("Unable to close previous data target.", e);
+		}
         record = new DataRecord(metadata);
         record.init();
 	}
@@ -99,9 +104,10 @@ public class PortDataProducer implements DataProducer {
 	}
 
 	/**
+	 * @throws IOException 
 	 * @see org.jetel.util.exec.DataProducer
 	 */
-	public void close() {	
+	public void close() throws IOException {	
 		formatter.close();
 	}
 

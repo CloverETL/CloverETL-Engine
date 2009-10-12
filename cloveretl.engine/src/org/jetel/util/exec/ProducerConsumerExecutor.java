@@ -133,6 +133,8 @@ public class ProducerConsumerExecutor {
 				producer.close();
 			} catch (JetelException e) {
 				logger.error("Data producer failed: " + e.getMessage());
+			} catch (IOException e) {
+				logger.error("Data producer failed: output stream cannot be closed.", e);
 			}
 		}
 	}
@@ -171,7 +173,9 @@ public class ProducerConsumerExecutor {
 					;
 				consumer.close();
 			} catch (JetelException e) {
-				logger.error("Data producer failed: " + e.getMessage());
+				logger.error("Data consumer failed: " + e.getMessage());
+			} catch (IOException e) {
+				logger.error("Data consumer failed: input stream cannot be closed.", e);
 			}
 		}
 	}

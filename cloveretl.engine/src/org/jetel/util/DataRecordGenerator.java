@@ -21,6 +21,7 @@
 package org.jetel.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
@@ -301,7 +302,10 @@ public class DataRecordGenerator implements Parser {
 			try {
 				parser.setDataSource(new ByteArrayInputStream(pattern
 						.getBytes(Defaults.DataParser.DEFAULT_CHARSET_DECODER)));
-			} catch (UnsupportedEncodingException e1) {
+			} catch (UnsupportedEncodingException e) {
+				throw new ComponentNotReadyException("Unexpceted error.", e);
+			} catch (IOException e) { //no previous data source - this exception shouldn't be thrown
+				throw new ComponentNotReadyException("Unexpected error.", e);
 			}
 			try {
 				patternRecord = parser.getNext();
@@ -317,7 +321,11 @@ public class DataRecordGenerator implements Parser {
 				throw new ComponentNotReadyException(component, "Can't get record from pattern: "
 						+ StringUtils.quote(pattern));
 			}
-			parser.close();
+			try {
+				parser.close();
+			} catch (IOException e) {
+				throw new ComponentNotReadyException("Pattern stream reading error, unexpected error.", e);
+			}
 		}
 		// if (component != null) {
 		// Iterator<String> sequences = component.getGraph().getSequences();

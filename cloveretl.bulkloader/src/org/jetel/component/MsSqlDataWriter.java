@@ -1377,7 +1377,11 @@ public class MsSqlDataWriter extends BulkLoader {
 
 		private void close() {
 			if (dbParser != null) {
-				dbParser.close();
+				try {
+					dbParser.close();
+				} catch (IOException e) {
+					logger.warn("DB parser wasn't closed.", e);
+				}
 			}
 
 			try {

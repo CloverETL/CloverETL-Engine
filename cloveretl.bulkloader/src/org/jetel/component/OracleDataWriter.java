@@ -909,7 +909,11 @@ public class OracleDataWriter extends BulkLoader {
 	    
 	    public void close() {
 	    	if (parser != null) {
-	    		parser.close();
+	    		try {
+					parser.close();
+				} catch (IOException e) {
+					logger.warn("Parser wasn't closed.", e);
+				}
 	    		parser = null;
 	    	}
 

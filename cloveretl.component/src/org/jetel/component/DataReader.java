@@ -568,12 +568,12 @@ public class DataReader extends Node {
 		super.free();
 		try {
 	    	storeValues();
+	    	if (reader != null) {
+	    		reader.close();
+	    	}
 		} catch (Exception e){
-			logger.error(e.getMessage(), e);
+			logger.error(e);
 		}
-    	if (reader != null) {
-    		reader.close();
-    	}
 	}
 	
     /**

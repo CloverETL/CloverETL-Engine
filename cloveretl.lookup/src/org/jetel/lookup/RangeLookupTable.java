@@ -19,6 +19,7 @@
 package org.jetel.lookup;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
@@ -305,8 +306,13 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
                 }
             } catch (Exception e) {
                 throw new ComponentNotReadyException(this, e.getMessage(), e);
+            } finally {
+            	try {
+					dataParser.close();
+				} catch (IOException e) {
+	                throw new ComponentNotReadyException(this, "Data parser cannot be closed.", e);
+				}
             }
-            dataParser.close();
         }
 
 	}
@@ -335,9 +341,13 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
                 }
             } catch (Exception e) {
                 throw new ComponentNotReadyException(this, e.getMessage(), e);
+            } finally {
+            	try {
+					dataParser.close();
+				} catch (IOException e) {
+	                throw new ComponentNotReadyException(this, "Data parser cannot be closed.", e);
+				}
             }
-
-            dataParser.close();
         }
 	}
 

@@ -663,7 +663,6 @@ public class SystemExecute extends Node{
 					formatter.write(in_record);
                     SynchronizeUtils.cloverYield();
 				}
-				formatter.close();
 			}catch(IOException ex){
 				resultMsg = ex.getMessage();
 				resultCode = Result.ERROR;
@@ -672,14 +671,21 @@ public class SystemExecute extends Node{
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}catch (InterruptedException ex){
 				resultCode =  Result.ERROR;
-				formatter.close();
 			}catch(Exception ex){
 				logger.error("Error in sysexec GetData",ex);
 				resultMsg = ex.getMessage();
 				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
-				formatter.close();
+			} finally {
+				try {
+					formatter.close();
+				} catch (IOException e) {
+					resultMsg = e.getMessage();
+					resultCode = Result.ERROR;
+					resultException = e;
+					waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
+				}
 			}
 			if (resultCode==Result.RUNNING){
 	           if (runIt){

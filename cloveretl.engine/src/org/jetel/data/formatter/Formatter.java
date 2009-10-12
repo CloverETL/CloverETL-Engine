@@ -51,13 +51,14 @@ public interface Formatter {
     /**
      * Sets output data destination. Some of formatters allow to call this method repeatedly.
      * @param outputDataTarget
+	 * @throws IOException if previous data target throws IOExcpetion on close()
      */
-    public void setDataTarget(Object outputDataTarget);
+    public void setDataTarget(Object outputDataTarget) throws IOException;
 
 	/**
 	 *  Closing/deinitialization of formatter
 	 */
-	public void close();
+	public void close() throws IOException;
 
 
 	/**
