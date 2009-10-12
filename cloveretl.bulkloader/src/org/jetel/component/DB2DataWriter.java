@@ -925,7 +925,11 @@ public class DB2DataWriter extends Node {
 	public synchronized void free() {
 		super.free();
 		if (formatter != null) {
-			formatter.close();
+			try {
+				formatter.close();
+			} catch (IOException e) {
+				logger.error(e);
+			}
 		}
 	}
 	

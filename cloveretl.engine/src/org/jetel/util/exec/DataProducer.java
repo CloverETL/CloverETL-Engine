@@ -19,6 +19,7 @@
 */
 package org.jetel.util.exec;
 
+import java.io.IOException;
 import java.io.OutputStream;
 
 import org.jetel.exception.JetelException;
@@ -46,5 +47,5 @@ public interface DataProducer {
 	 * This is supposed to release resources used by other methods.
 	 * It should not close output stream!
 	 */
-	public void close();
+	public void close() throws IOException;
 }

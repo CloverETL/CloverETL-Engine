@@ -19,6 +19,7 @@
 */
 package org.jetel.util.exec;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.jetel.exception.JetelException;
@@ -46,5 +47,5 @@ public interface DataConsumer {
 	 * This is supposed to release resources used by other methods.
 	 * It should not close input stream!
 	 */
-	public void close();
+	public void close() throws IOException;
 }

@@ -167,7 +167,13 @@ public class MultiFileReader {
 				throw new ComponentNotReadyException("File is unreachable: " + fName, e);
 			}
 		}
-		if (closeLastStream) parser.close();
+		if (closeLastStream) {
+			try {
+				parser.close();
+			} catch (IOException e) {
+				throw new ComponentNotReadyException("File '" + fName + "' cannot be closed.", e);
+			}
+		}
 	}
 	
 	/**
@@ -244,7 +250,13 @@ public class MultiFileReader {
 				throw new JetelException("An error occured while switching input file " + autoFilling.getFilename() + ", the file will be ignored" ,e);
 			}
 		}
-		if (isSourceOpen) parser.close();
+		if (isSourceOpen) {
+			try {
+				parser.close();
+			} catch (IOException e) {
+				throw new JetelException("An error occured while closing input file '" + autoFilling.getFilename() + "'.", e);
+			}
+		}
 		return isSourceOpen = false;
 	}
 
@@ -367,9 +379,10 @@ public class MultiFileReader {
 	
 	/**
 	 * Releases resources held by the instance
+	 * @throws IOException 
 	 *
 	 */
-	public void close() {
+	public void close() throws IOException {
 		if (isSourceOpen) 
 			parser.close();
 	}

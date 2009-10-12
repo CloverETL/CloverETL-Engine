@@ -38,6 +38,8 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -467,7 +469,11 @@ public class XLSReader extends Node {
             }
 
             reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
-            reader.close();
+            try {
+				reader.close();
+			} catch (IOException e) {
+				status.add(new ConfigurationProblem("Data source issue - cannot be closed.", Severity.ERROR, this, Priority.NORMAL));
+			}
         } catch (IllegalArgumentException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR,
                     this, ConfigurationStatus.Priority.NORMAL);
@@ -631,11 +637,15 @@ public class XLSReader extends Node {
 
                 reader.storeIncrementalReading();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                logger.error(e);
             }
         }
 
-        reader.close();
+        try {
+			reader.close();
+		} catch (IOException e) {
+			logger.error(e);
+		}
     }
     
 }

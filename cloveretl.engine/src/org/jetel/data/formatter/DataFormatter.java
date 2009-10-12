@@ -37,7 +37,6 @@ import java.util.Arrays;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -155,7 +154,7 @@ public class DataFormatter implements Formatter {
 	/* (non-Javadoc)
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
      */
-    public void setDataTarget(Object out) {
+    public void setDataTarget(Object out) throws IOException {
         close();
         
         // create buffered output stream reader 
@@ -170,19 +169,16 @@ public class DataFormatter implements Formatter {
     
 	/**
 	 *  Description of the Method
+	 * @throws IOException 
 	 *
 	 * @since    March 28, 2002
 	 */
-	public void close() {
+	public void close() throws IOException {
 		if (writer == null || !writer.isOpen()) {
 			return;
 		}
-		try{
-			flush();
-			writer.close();
-		}catch(IOException ex){
-			ex.printStackTrace();
-		}
+		flush();
+		writer.close();
 		writer = null;
 	}
 

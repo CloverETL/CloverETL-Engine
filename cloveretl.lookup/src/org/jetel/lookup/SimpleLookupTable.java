@@ -227,8 +227,13 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	            }
             } catch (Exception e) {
                 throw new ComponentNotReadyException(this, e.getMessage(), e);
+            } finally {
+	            try {
+					dataParser.close();
+				} catch (IOException e) {
+	                throw new ComponentNotReadyException(this, "Data parser cannot be closed.", e);
+				}
             }
-            dataParser.close();
         }
 	}
 	
@@ -257,9 +262,13 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
                 }
             } catch (Exception e) {
                 throw new ComponentNotReadyException(this, e.getMessage(), e);
+            } finally {
+                try {
+					dataParser.close();
+				} catch (IOException e) {
+	                throw new ComponentNotReadyException(this, "Data parser cannot be closed.", e);
+				}
             }
-
-            dataParser.close();
         }
 	}
 

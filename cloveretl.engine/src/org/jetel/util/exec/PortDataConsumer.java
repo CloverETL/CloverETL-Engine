@@ -19,6 +19,7 @@
 */
 package org.jetel.util.exec;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.logging.Log;
@@ -103,6 +104,8 @@ public class PortDataConsumer implements DataConsumer {
 		} catch (ComponentNotReadyException e) {
 			// this is not expected to happen 
 			throw new RuntimeException("Unable to open parser: " + e.getMessage());
+		} catch (IOException e) {
+			throw new RuntimeException("Unable to close previous data source.", e);
 		}
 		record = new DataRecord(metadata);
 		record.init();
@@ -125,9 +128,10 @@ public class PortDataConsumer implements DataConsumer {
 	}
 
 	/**
+	 * @throws IOException 
 	 * @see org.jetel.util.exec.DataConsumer
 	 */
-	public void close() {
+	public void close() throws IOException {
 		parser.close();
 	}
 

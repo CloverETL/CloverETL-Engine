@@ -269,7 +269,7 @@ public class DataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
-	public void setDataSource(Object inputDataSource) {
+	public void setDataSource(Object inputDataSource) throws IOException {
 		if (releaseInputSource) releaseDataSource();
 
 		decoder.reset();// reset CharsetDecoder
@@ -327,30 +327,25 @@ public class DataParser implements Parser {
 	
 	/**
 	 * Release data source
+	 * @throws IOException 
 	 *
 	 */
-	private void releaseDataSource() {
+	private void releaseDataSource() throws IOException {
 		if (reader == null) {
 			return;
 		}
-		try {
-			reader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		
+		reader.close();
+		
 		reader = null;		
 	}
 
 	/**
 	 * @see org.jetel.data.parser.Parser#close()
 	 */
-	public void close() {
+	public void close() throws IOException {
 		if(reader != null && reader.isOpen()) {
-			try {
-				reader.close();
-			} catch(IOException ex) {
-				ex.printStackTrace();
-			}
+			reader.close();
 		}
 	}
 
@@ -918,8 +913,13 @@ public class DataParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
 	public void reset() {
-		if (releaseInputSource)	
-			releaseDataSource();
+		if (releaseInputSource) {	
+			try {
+				releaseDataSource();
+			} catch (IOException e) {
+				e.printStackTrace(); //TODO
+			}
+		}
 		decoder.reset();// reset CharsetDecoder
 		recordCounter = 0;// reset record counter
 		bytesProcessed = 0;

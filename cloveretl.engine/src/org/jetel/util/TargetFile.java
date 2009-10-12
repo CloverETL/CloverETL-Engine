@@ -432,8 +432,9 @@ public class TargetFile {
     
     /**
      * Closes underlying formatter.
+     * @throws IOException 
      */
-    public void close() {
+    public void close() throws IOException {
         formatter.close();
     }
     
@@ -532,8 +533,9 @@ public class TargetFile {
      * Sets a output to the data formatter.
      * 
      * @param outputDataTarget
+     * @throws IOException previous target cannot be closed
      */
-    public void setDataTarget(Object outputDataTarget) {
+    public void setDataTarget(Object outputDataTarget) throws IOException {
     	formatter.setDataTarget(outputDataTarget);
     }
     
