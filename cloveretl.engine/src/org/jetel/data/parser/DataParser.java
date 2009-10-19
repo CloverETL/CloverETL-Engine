@@ -406,6 +406,9 @@ public class DataParser implements Parser {
 						//fieldDelimiter update
 						if(!skipLBlanks) {
 						    fieldBuffer.append((char) character);
+						    if (fieldBuffer.length() > Defaults.DataParser.FIELD_BUFFER_LENGTH) {
+								return parsingErrorFound("Field delimiter was not found.", record, fieldCounter);
+						    }
                         }
 
 						//test field delimiter
