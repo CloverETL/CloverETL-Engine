@@ -49,8 +49,6 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
-
-
 /**
  *  A class that represents atomic transformation task. It is a base class for
  *  all kinds of transformation components.
@@ -70,9 +68,8 @@ public abstract class Node extends GraphElement implements Runnable {
     protected int passThroughInputPort;
     protected int passThroughOutputPort;
     
-    
-	protected TreeMap outPorts;
-	protected TreeMap inPorts;
+	protected TreeMap<Integer, OutputPort> outPorts;
+	protected TreeMap<Integer, InputPort> inPorts;
 
 	protected OutputPort logPort;
 
@@ -85,10 +82,8 @@ public abstract class Node extends GraphElement implements Runnable {
     protected Phase phase;
 
     // buffered values
-    protected List outPortList;
     protected OutputPort[] outPortsArray;
     protected int outPortsSize;
-    
     
 	/**
 	 *  Various PORT kinds identifiers
@@ -107,21 +102,6 @@ public abstract class Node extends GraphElement implements Runnable {
 	public final static String XML_TYPE_ATTRIBUTE="type";
     public final static String XML_ENABLED_ATTRIBUTE="enabled";
 
-	/**
-	 *  Standard constructor.
-	 *
-	 *@param  id  Unique ID of the Node
-	 *@since      April 4, 2002
-	 */
-	public Node(String id, TransformationGraph graph) {
-		super(id,graph);
-		outPorts = new TreeMap();
-		inPorts = new TreeMap();
-		logPort = null;
-        phase = null;
-        runResult=Result.N_A; // result is not known yet
-	}
-
     /**
      *  Standard constructor.
      *
@@ -131,14 +111,28 @@ public abstract class Node extends GraphElement implements Runnable {
     public Node(String id){
         this(id,null);
     }
+    
+    /**
+	 *  Standard constructor.
+	 *
+	 *@param  id  Unique ID of the Node
+	 *@since      April 4, 2002
+	 */
+	public Node(String id, TransformationGraph graph) {
+		super(id,graph);
+		outPorts = new TreeMap<Integer, OutputPort>();
+		inPorts = new TreeMap<Integer, InputPort>();
+		logPort = null;
+        phase = null;
+        runResult=Result.N_A; // result is not known yet
+	}
 
-    @Override public void init() throws ComponentNotReadyException{
+    @Override 
+    public void init() throws ComponentNotReadyException{
         super.init();
         runResult=Result.READY;
         refreshBufferedValues();
     }
-    
-    
     
 	/**
 	 *  Sets the EOF for particular output port. EOF indicates that no more data
@@ -157,7 +151,6 @@ public abstract class Node extends GraphElement implements Runnable {
 		}
 	}
 
-
 	/**
 	 *  Returns the type of this Node (subclasses/Components should override
 	 * this method to return appropriate type).
@@ -166,7 +159,6 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since     April 4, 2002
 	 */
 	public abstract String getType();
-
 
 	/**
 	 *  Returns True if this Node is Leaf Node - i.e. only consumes data (has only
@@ -190,15 +182,14 @@ public abstract class Node extends GraphElement implements Runnable {
 	 * 
 	 * @return True if this Node is Phase Leaf
 	 */
-	public boolean isPhaseLeaf(){
-		Iterator iterator=getOutPorts().iterator();
-		while(iterator.hasNext()){
-			if (phase!=((OutputPort)(iterator.next())).getReader().getPhase())
+	public boolean isPhaseLeaf() {
+		for (OutputPort outputPort : getOutPorts()) {
+			if (phase != outputPort.getReader().getPhase()) {
 				return true;
+			}
 		}
 		return false;
 	}
-
 
 	/**
 	 *  Returns True if this node is Root Node - i.e. it produces data (has only output ports
@@ -215,7 +206,6 @@ public abstract class Node extends GraphElement implements Runnable {
 		}
 	}
 
-
 	/**
 	 *  Sets the processing phase of the Node object.<br>
 	 *  Default is 0 (ZERO).
@@ -226,7 +216,6 @@ public abstract class Node extends GraphElement implements Runnable {
 		this.phase = phase;
 	}
 
-
 	/**
 	 *  Gets the processing phase of the Node object
 	 *
@@ -236,7 +225,9 @@ public abstract class Node extends GraphElement implements Runnable {
 		return phase;
 	}
 
-    
+    /**
+     * @return phase number
+     */
     public int getPhaseNum(){
         return phase.getPhaseNum();
     }
@@ -250,7 +241,6 @@ public abstract class Node extends GraphElement implements Runnable {
 	public Collection<OutputPort> getOutPorts() {
 		return outPorts.values();
 	}
-
 
 	/**
 	 *  Gets the InPorts attribute of the Node object
@@ -269,8 +259,8 @@ public abstract class Node extends GraphElement implements Runnable {
 	 */
 	public List<DataRecordMetadata> getOutMetadata() {
 		List<DataRecordMetadata> ret = new ArrayList<DataRecordMetadata>(outPorts.size());
-		for(Iterator it = getOutPorts().iterator(); it.hasNext();) {
-		    ret.add(((OutputPort) (it.next())).getMetadata());
+		for(Iterator<OutputPort> it = getOutPorts().iterator(); it.hasNext();) {
+		    ret.add(it.next().getMetadata());
 		}
 	    return ret;
 	}
@@ -282,8 +272,8 @@ public abstract class Node extends GraphElement implements Runnable {
 	 */
 	public List<DataRecordMetadata> getInMetadata() {
 		List<DataRecordMetadata> ret = new ArrayList<DataRecordMetadata>(inPorts.size());
-		for(Iterator it = getInPorts().iterator(); it.hasNext();) {
-		    ret.add(((InputPort) (it.next())).getMetadata());
+		for(Iterator<InputPort> it = getInPorts().iterator(); it.hasNext();) {
+		    ret.add(it.next().getMetadata());
 		}
 	    return ret;
 	}
@@ -326,7 +316,6 @@ public abstract class Node extends GraphElement implements Runnable {
 		return count;
 	}
 
-
 	/**
 	 *  Gets the result code of finished Node.<br>
 	 *
@@ -338,6 +327,10 @@ public abstract class Node extends GraphElement implements Runnable {
 		return runResult;
 	}
 
+	/**
+	 * Sets the result code of component.
+	 * @param result
+	 */
 	public void setResultCode(Result result) {
 		this.runResult = result;
 	}
@@ -364,7 +357,6 @@ public abstract class Node extends GraphElement implements Runnable {
         return resultException;
     }
 
-
 	// Operations
 	/**
 	 *  main execution method of Node (calls in turn execute())
@@ -379,7 +371,7 @@ public abstract class Node extends GraphElement implements Runnable {
 		
         try {
             if((runResult = execute()) == Result.ERROR) {
-                Message msg = Message.createErrorMessage(this,
+                Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
                         new ErrorMsgBody(runResult.code(), 
                                 resultMessage != null ? resultMessage : runResult.message(), null));
                 getCloverPost().sendMessage(msg);
@@ -390,7 +382,7 @@ public abstract class Node extends GraphElement implements Runnable {
             	for (InputPort inputPort : getInPorts()) {
             		if (!inputPort.isEOF()) {
             			runResult = Result.ERROR;
-            			Message msg = Message.createErrorMessage(this,
+            			Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
             					new ErrorMsgBody(runResult.code(), "Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records.", null));
             			getCloverPost().sendMessage(msg);
             			return;
@@ -403,28 +395,28 @@ public abstract class Node extends GraphElement implements Runnable {
         } catch (IOException ex) {  // may be handled differently later
             runResult=Result.ERROR;
             resultException = ex;
-            Message msg = Message.createErrorMessage(this,
+            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(runResult.code(), runResult.message(), ex));
             getCloverPost().sendMessage(msg);
             return;
         } catch (TransformException ex){
             runResult=Result.ERROR;
             resultException = ex;
-            Message msg = Message.createErrorMessage(this,
+            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(runResult.code(), "Error occurred in nested transformation: " + runResult.message(), ex));
             getCloverPost().sendMessage(msg);
             return;
         } catch (SQLException ex){
             runResult=Result.ERROR;
             resultException = ex;
-            Message msg = Message.createErrorMessage(this,
+            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(runResult.code(), runResult.message(), ex));
             getCloverPost().sendMessage(msg);
             return;
         } catch (Exception ex) { // may be handled differently later
             runResult=Result.ERROR;
             resultException = ex;
-            Message msg = Message.createErrorMessage(this,
+            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(runResult.code(), runResult.message(), ex));
             getCloverPost().sendMessage(msg);
             return;
@@ -436,7 +428,6 @@ public abstract class Node extends GraphElement implements Runnable {
     }
     
     public abstract Result execute() throws Exception;
-
     
     /**
      * This method should be called every time when node finishes its work.
@@ -474,18 +465,6 @@ public abstract class Node extends GraphElement implements Runnable {
      * @return thread of running node; <b>null</b> if node does not running
      */
     public synchronized Thread getNodeThread() {
-//        if(nodeThread == null) {
-//            ThreadGroup defaultThreadGroup = Thread.currentThread().getThreadGroup();
-//            Thread[] activeThreads = new Thread[defaultThreadGroup.activeCount() * 2];
-//            int numThreads = defaultThreadGroup.enumerate(activeThreads, false);
-//            
-//            for(int i = 0; i < numThreads; i++) {
-//                if(activeThreads[i].getName().equals(getId())) {
-//                    nodeThread = activeThreads[i];
-//                }
-//            }
-//        }
-        
         return nodeThread;
     }
 
@@ -532,7 +511,6 @@ public abstract class Node extends GraphElement implements Runnable {
 		runIt = false;
 	}
 
-
     /**
      * Provides CloverRuntime - object providing
      * various run-time services
@@ -551,7 +529,6 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since         April 2, 2002
 	 *@deprecated    Use the other method which takes 2 arguments (portNum, port)
 	 */
-
 	public void addInputPort(InputPort port) {
 		Integer portNum;
 		int keyVal;
@@ -565,7 +542,6 @@ public abstract class Node extends GraphElement implements Runnable {
 		port.connectReader(this, keyVal);
 	}
 
-
 	/**
 	 *  An operation that adds port to list of all InputPorts
 	 *
@@ -578,7 +554,6 @@ public abstract class Node extends GraphElement implements Runnable {
 		port.connectReader(this, portNum);
 	}
 
-
 	/**
 	 *  An operation that adds port to list of all OutputPorts
 	 *
@@ -586,7 +561,6 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since         April 4, 2002
 	 *@deprecated    Use the other method which takes 2 arguments (portNum, port)
 	 */
-
 	public void addOutputPort(OutputPort port) {
 		Integer portNum;
 		int keyVal;
@@ -601,7 +575,6 @@ public abstract class Node extends GraphElement implements Runnable {
         resetBufferedValues();
 	}
 
-
 	/**
 	 *  An operation that adds port to list of all OutputPorts
 	 *
@@ -614,7 +587,6 @@ public abstract class Node extends GraphElement implements Runnable {
 		port.connectWriter(this, portNum);
         resetBufferedValues();
 	}
-
 
 	/**
 	 *  Gets the port which has associated the num specified
@@ -687,7 +659,6 @@ public abstract class Node extends GraphElement implements Runnable {
      */
     public void removeInputPort(InputPort inputPort) {
         inPorts.remove(Integer.valueOf(inputPort.getInputPortNumber()));
-        
     }
 
     /**
@@ -710,7 +681,6 @@ public abstract class Node extends GraphElement implements Runnable {
 		port.connectWriter(this, -1);
 	}
 
-
 	/**
 	 *  An operation that does removes/unregisteres por<br>
 	 *  Not yet implemented.
@@ -722,7 +692,6 @@ public abstract class Node extends GraphElement implements Runnable {
 	public void deletePort(int _portNum, char _portType) {
         throw new UnsupportedOperationException("Deleting port is not supported !");
 	}
-
 
 	/**
 	 *  An operation that writes one record through specified output port.<br>
@@ -739,7 +708,6 @@ public abstract class Node extends GraphElement implements Runnable {
 	public void writeRecord(int _portNum, DataRecord _record) throws IOException, InterruptedException {
 			((OutputPort) outPorts.get(Integer.valueOf(_portNum))).writeRecord(_record);
 	}
-
 
 	/**
 	 *  An operation that reads one record through specified input port.<br>
@@ -758,7 +726,6 @@ public abstract class Node extends GraphElement implements Runnable {
 		return	((InputPort) inPorts.get(Integer.valueOf(_portNum))).readRecord(record);
 	}
 
-
 	/**
 	 *  An operation that writes record to Log port
 	 *
@@ -770,7 +737,6 @@ public abstract class Node extends GraphElement implements Runnable {
 	public void writeLogRecord(DataRecord record) throws IOException, InterruptedException {
 			logPort.writeRecord(record);
 	}
-
 
 	/**
 	 *  An operation that does ...
@@ -784,22 +750,6 @@ public abstract class Node extends GraphElement implements Runnable {
         for(int i=0;i<outPortsSize;i++){
 				outPortsArray[i].writeRecord(record);
 		}
-	}
-
-
-	/**
-	 *  Converts the collection of ports into List (ArrayList)<br>
-	 *  This is auxiliary method which "caches" list of ports for faster access
-	 *  when we need to go through all ports sequentially. Namely in
-	 *  RecordBroadcast situations
-	 *
-	 *@param  ports  Collection of Ports
-	 *@return        List (LinkedList) of ports
-	 */
-	private List getPortList(Collection ports) {
-		List portList = new ArrayList();
-		portList.addAll(ports);
-		return portList;
 	}
 
 	/**
@@ -817,7 +767,6 @@ public abstract class Node extends GraphElement implements Runnable {
         }
     }
 
-
 	/**
 	 *  Closes all output ports - sends EOF signal to them.
 	 * @throws IOException 
@@ -825,15 +774,10 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since    April 11, 2002
 	 */
 	public void closeAllOutputPorts() throws InterruptedException, IOException {
-		Iterator iterator = getOutPorts().iterator();
-		OutputPort port;
-
-		while (iterator.hasNext()) {
-			port = (OutputPort) iterator.next();
-			port.eof();
+		for (OutputPort outputPort : getOutPorts()) {
+			outputPort.eof();
 		}
 	}
-
 
 	/**
 	 *  Send EOF (no more data) to all connected output ports
@@ -844,7 +788,6 @@ public abstract class Node extends GraphElement implements Runnable {
 	public void broadcastEOF() throws InterruptedException, IOException{
 		closeAllOutputPorts();
 	}
-
 
 	/**
 	 *  Closes specified output port - sends EOF signal. 
@@ -859,7 +802,7 @@ public abstract class Node extends GraphElement implements Runnable {
             throw new RuntimeException(this.getId()+" - can't close output port \"" + portNum
                     + "\" - does not exists!");
         }
-        port.close();
+        port.eof();
     }
 
 	/**
@@ -880,7 +823,8 @@ public abstract class Node extends GraphElement implements Runnable {
 		return getId().equals(other.getId());
 	}
 
-    @Override public int hashCode(){
+    @Override 
+    public int hashCode(){
         return getId().hashCode();
     }
 
@@ -896,7 +840,6 @@ public abstract class Node extends GraphElement implements Runnable {
 		xmlElement.setAttribute(XML_TYPE_ATTRIBUTE, getType());
 	}
 
-
 	/**
 	 *  Description of the Method
 	 *
@@ -908,14 +851,12 @@ public abstract class Node extends GraphElement implements Runnable {
         throw new  UnsupportedOperationException("not implemented in org.jetel.graph.Node"); 
 	}
 
-
     /**
      * @return <b>true</b> if node is enabled; <b>false</b> else
      */
     public EnabledEnum getEnabled() {
         return enabled;
     }
-
 
     /**
      * @param enabled whether node is enabled
@@ -924,14 +865,12 @@ public abstract class Node extends GraphElement implements Runnable {
         enabled = EnabledEnum.fromString(enabledStr, EnabledEnum.ENABLED);
     }
 
-
     /**
      * @return index of "pass through" input port
      */
     public int getPassThroughInputPort() {
         return passThroughInputPort;
     }
-
 
     /**
      * Sets "pass through" input port.
@@ -941,14 +880,12 @@ public abstract class Node extends GraphElement implements Runnable {
         this.passThroughInputPort = passThroughInputPort;
     }
 
-
     /**
      * @return index of "pass through" output port
      */
     public int getPassThroughOutputPort() {
         return passThroughOutputPort;
     }
-
 
     /**
      * Sets "pass through" output port
@@ -959,13 +896,12 @@ public abstract class Node extends GraphElement implements Runnable {
     }
     
     protected void resetBufferedValues(){
-        outPortList = null;
         outPortsArray=null;
         outPortsSize=0;
     }
     
     protected void refreshBufferedValues(){
-        Collection op = getOutPorts();
+        Collection<OutputPort> op = getOutPorts();
         outPortsArray = (OutputPort[]) op.toArray(new OutputPort[op.size()]);
         outPortsSize = outPortsArray.length;
     }
@@ -1177,7 +1113,3 @@ public abstract class Node extends GraphElement implements Runnable {
     }
 
 }
-/*
- *  end class Node
- */
-
