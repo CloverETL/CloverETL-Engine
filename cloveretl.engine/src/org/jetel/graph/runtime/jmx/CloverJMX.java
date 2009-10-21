@@ -145,6 +145,18 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		sendNotification(new Notification(PHASE_FINISHED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++)); 
 	}
 
+	synchronized public void phaseAborted() {
+		graphDetail.phaseFinished();
+		
+		sendNotification(new Notification(PHASE_ABORTED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++)); 
+	}
+
+	synchronized public void phaseError(String message) {
+		graphDetail.phaseFinished();
+		
+		sendNotification(new Notification(PHASE_ERROR, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++)); 
+	}
+
 	synchronized public void graphFinished() {
 		if(!graphFinished) { // if graph was already finished, we'll send only a notification
 			graphDetail.graphFinished();
