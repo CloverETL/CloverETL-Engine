@@ -122,6 +122,7 @@ public class TrackingLogger implements NotificationListener {
             i = 0;
             for (PortTracking outputPortDetail : nodeDetail.getOutputPortTracking()) {
                 if (i == 0 && !cpuPrinted) {
+                    cpuPrinted = true;
                     final float cpuUsage = (finalTracking ? nodeDetail.getPeakUsageCPU() : nodeDetail.getUsageCPU());
                     portInfo = new Object[] {" %cpu:", cpuUsage > 0.01f ? Float.toString(cpuUsage) : "..",
                             "Out:", Integer.toString(i), 
@@ -139,7 +140,13 @@ public class TrackingLogger implements NotificationListener {
                     logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
                 }
                 i++;
-            }               
+            }
+            //CPU usage has to be printed also for components without ports
+            if (!cpuPrinted) {
+                final float cpuUsage = (finalTracking ? nodeDetail.getPeakUsageCPU() : nodeDetail.getUsageCPU());
+                portInfo = new Object[] {" %cpu:", cpuUsage > 0.01f ? Float.toString(cpuUsage) : ".."};
+                logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU));
+            }
         }
         logger.info("---------------------------------** End of Log **--------------------------------");
     }
@@ -171,6 +178,14 @@ public class TrackingLogger implements NotificationListener {
 			logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
 					+ "] successfully finished - elapsed time(sec): "
 					+ TrackingUtils.converTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
+		} else if(notification.getType().equals(CloverJMX.PHASE_ABORTED)) {
+			logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
+					+ "] was aborted - elapsed time(sec): "
+					+ TrackingUtils.converTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
+		} else if(notification.getType().equals(CloverJMX.PHASE_ERROR)) {
+				logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
+						+ "] finished with error - elapsed time(sec): "
+						+ TrackingUtils.converTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
 		} else if(notification.getType().equals(CloverJMX.GRAPH_FINISHED)
 				|| notification.getType().equals(CloverJMX.GRAPH_ABORTED)
 				|| notification.getType().equals(CloverJMX.GRAPH_ERROR)) {

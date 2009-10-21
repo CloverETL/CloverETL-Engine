@@ -52,6 +52,16 @@ public interface CloverJMXMBean {
     public static final String PHASE_FINISHED = "clover.phase.finished";
 
     /**
+     * Notification identifier - phase was aborted.
+     */
+    public static final String PHASE_ABORTED = "clover.phase.aborted";
+
+    /**
+     * Notification identifier - phase ends with an error.
+     */
+    public static final String PHASE_ERROR = "clover.phase.error";
+
+    /**
      * Notification identifier - graph was finished.
      */
     public static final String GRAPH_FINISHED = "clover.graph.finished";
