@@ -67,11 +67,15 @@ public class CloverDataParser implements Parser {
 	private ByteBuffer recordBuffer;
 	private long index = 0;//index for reading index
 	private long idx = 0;//index for reading record
+	private boolean readIdx;
 	private int recordSize;
 	private String indexFileURL;
 	private String inData;
 	private InputStream inStream;
 	private URL projectURL;
+	
+	private int indexSkipSourceRows;
+	private boolean noDataAvailable;
 	
 	private final static int LONG_SIZE_BYTES = 8;
     private final static int LEN_SIZE_SPECIFIER = 4;
@@ -136,9 +140,9 @@ public class CloverDataParser implements Parser {
             	}
                 recordFile = FileUtils.getReadableChannel(projectURL, !inData.startsWith("zip:") ? inData : 
                 	inData + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName);
-                if (index > 0) {//reading not all records --> find index in record file
+                if (indexSkipSourceRows > 0 || index > 0 || readIdx) {//reading not all records --> find index in record file
                 	try {
-    					setStartIndex(fileName);
+    					noDataAvailable = !setStartIndex(fileName);
     				} catch (Exception e) {
     					throw new ComponentNotReadyException("Can't set starting index", e);
     				}
@@ -166,7 +170,7 @@ public class CloverDataParser implements Parser {
         }
     }
 
-    private void setStartIndex(String fileName) throws IOException, ComponentNotReadyException{
+    private boolean setStartIndex(String fileName) throws IOException, ComponentNotReadyException{
         DataInputStream indexFile;
         if (inData.startsWith("zip:")){
             indexFile = new DataInputStream(FileUtils.getInputStream(projectURL, inData + "#" + CloverDataFormatter.INDEX_DIRECTORY + 
@@ -178,14 +182,26 @@ public class CloverDataParser implements Parser {
             	indexFile = new DataInputStream((FileUtils.getInputStream(projectURL, indexFileURL)));
             }
         }
+        // skip source rows
+        if (indexSkipSourceRows > 0) {
+        	indexFile.skip(indexSkipSourceRows);
+            if (indexFile.available() <= 0) return false;
+        }
+
+        // skip rows
+        long available = indexFile.available();
         indexFile.skip(index);
+        index -= available - Math.max(0, indexFile.available());
         try {
+        	if (indexFile.available() <= 0) return false;	// next file
 			idx = indexFile.readLong();//read index for reading records
+			readIdx = idx != 0;
 		} catch (EOFException e) {
 			throw new ComponentNotReadyException("Start record is greater than last record!!!");
 		}finally{
             indexFile.close();
 		}
+		return true;
     }
     
 	/* (non-Javadoc)
@@ -207,6 +223,9 @@ public class CloverDataParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#getNext(org.jetel.data.DataRecord)
 	 */
 	public DataRecord getNext(DataRecord record)throws JetelException{
+		// the skip rows has skipped whole file
+		if (noDataAvailable) return null;
+		
 		//refill buffer if we are on the end of buffer
 		if (recordBuffer.remaining() < LEN_SIZE_SPECIFIER) {
 			try {
@@ -281,5 +300,13 @@ public class CloverDataParser implements Parser {
 
 	public void setProjectURL(URL projectURL) {
 		this.projectURL = projectURL;
+	}
+
+	/**
+	 * Sets the skip rows per each input
+	 * @param skipSourceRows
+	 */
+	public void setSkipSourceRows(int skipSourceRows) {
+		this.indexSkipSourceRows = LONG_SIZE_BYTES * skipSourceRows;
 	}
 }
