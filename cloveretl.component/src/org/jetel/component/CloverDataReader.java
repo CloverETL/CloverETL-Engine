@@ -35,6 +35,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
@@ -107,6 +108,8 @@ public class CloverDataReader extends Node {
 	private static final String XML_FINALRECORD_ATTRIBUTE = "finalRecord";
 	private static final String XML_SKIPROWS_ATTRIBUTE = "skipRows";
 	private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
+	private static final String XML_SKIP_SOURCE_ROWS_ATTRIBUTE = "skipSourceRows";
+	private static final String XML_NUM_SOURCE_RECORDS_ATTRIBUTE = "numSourceRecords";
 
 	private final static int OUTPUT_PORT = 0;
 
@@ -115,7 +118,9 @@ public class CloverDataReader extends Node {
 	private CloverDataParser parser;
 
 	private int skipRows;
-	private int numRecords = Integer.MAX_VALUE;
+	private int numRecords = -1;
+	private int skipSourceRows = -1;
+	private int numSourceRecords = -1;
 
     private AutoFilling autoFilling = new AutoFilling();
 
@@ -147,37 +152,64 @@ public class CloverDataReader extends Node {
 	public Result execute() throws Exception {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
         record.init();
-		int recordCount = 0;
-		String fName;
         DataRecord rec;
 		if (inputSource) {
 			do {
 				while ((rec = parser.getNext(record))!=null && runIt){
-			        //check for index of last returned record
-			        if(numRecords == recordCount) {
-						break;
-			        }
+					if (!checkRowAndPrepareSource()) break;
+					
 			        autoFilling.setLastUsedAutoFillingFields(rec);
 				    writeRecordBroadcast(rec);
 					SynchronizeUtils.cloverYield();
-				    recordCount++;
 				}
 
 				// prepare next file
-				parser.close();
-				if (!filenameItor.hasNext()) break;
-				fName = filenameItor.next();
-				if (indexFileURL != null) {
-					parser.setDataSource(new String[]{fName,indexFileURL});
-				} else {
-					parser.setDataSource(fName);
-				}
+				if (!nextSource()) break;
+				
 			} while (true);
 			
 			parser.close();
 		}
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+	
+	/**
+	 * Checks numRecords. Returns true if the source could return a record.
+	 * @return
+	 * @throws ComponentNotReadyException 
+	 */
+	private final boolean checkRowAndPrepareSource() throws ComponentNotReadyException {
+        //check for index of last returned record
+        if(numRecords > 0 && numRecords == autoFilling.getGlobalCounter()) {
+            return numSourceRecords > 0 && nextSource();
+        }
+        
+        //check for index of last returned record for each source
+        if(numSourceRecords > 0 && numSourceRecords == autoFilling.getSourceCounter()) {
+            return numRecords > autoFilling.getGlobalCounter() || nextSource();
+        }
+        
+        return true;
+	}
+
+	private boolean nextSource() throws ComponentNotReadyException {
+		// close previous source
+		parser.close();
+		
+		// reset autofilling
+		autoFilling.resetGlobalSourceCounter();
+		autoFilling.resetSourceCounter();
+		
+		// prepare next source
+		if (!filenameItor.hasNext()) return false;
+		String fName = filenameItor.next();
+		if (indexFileURL != null) {
+			parser.setDataSource(new String[]{fName,indexFileURL});
+		} else {
+			parser.setDataSource(fName);
+		}
+		return true;
 	}
 	
 	
@@ -200,6 +232,12 @@ public class CloverDataReader extends Node {
 			}
 			if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
 				aDataReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_SKIP_SOURCE_ROWS_ATTRIBUTE)){
+				aDataReader.setSkipSourceRows(xattribs.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
+				aDataReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
 			}
 		} catch (Exception ex) {
 		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -270,6 +308,20 @@ public class CloverDataReader extends Node {
 				parser.skip(skipRows);
 			}catch (JetelException ex) {}
 		}
+		
+        // skip/number source rows
+        if (skipSourceRows == -1) {
+        	OutputPort outputPort = getOutputPort(OUTPUT_PORT);
+        	DataRecordMetadata metadata;
+        	if (outputPort != null && (metadata = outputPort.getMetadata()) != null) {
+            	int ssr = metadata.getSkipSourceRows();
+            	if (ssr > 0) {
+                    skipSourceRows = ssr;
+            	}
+        	}
+        }
+        parser.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : 0);
+
 		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
 		parser.init(metadata);
 		parser.setProjectURL(getGraph().getProjectURL());
@@ -344,6 +396,20 @@ public class CloverDataReader extends Node {
 	 */
 	public void setNumRecords(int numRecords) {
 		this.numRecords = Math.max(numRecords, 0);
+	}
+
+	/**
+	 * @param how many rows to skip for every source
+	 */
+	public void setSkipSourceRows(int skipSourceRows) {
+		this.skipSourceRows = Math.max(skipSourceRows, 0);
+	}
+	
+	/**
+	 * @param how many rows to process for every source
+	 */
+	public void setNumSourceRecords(int numSourceRecords) {
+		this.numSourceRecords = Math.max(numSourceRecords, 0);
 	}
 
 }
