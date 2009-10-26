@@ -401,47 +401,49 @@ public final class TransformationGraph extends GraphElement {
 			//initialize dictionary
 			dictionary.init();
 			
-			Iterator iterator;
-			IConnection dbCon = null;
-			Sequence seq = null;
-			
-			// initialize Connections
-			// iterate through all Connection(s) and initialize them - try to connect to db
-			iterator = connections.values().iterator();
-			while (iterator.hasNext()) {
-				logger.info("Initializing connection: ");
+			// initialize connections
+			for (IConnection connection : connections.values()) {
+				logger.info("Initializing connection:");
 				try {
-					dbCon = (IConnection) iterator.next();
-					dbCon.init();
-	                //dbCon.free();
-					logger.info(dbCon + " ... OK");
-				} catch (Exception ex) {
-					logger.info(dbCon + " ... !!! ERROR !!!");
-					logger.error("Can't init connection", ex);
-					throw new ComponentNotReadyException("Can't init connection "+ ex.getMessage(), ex);
+					connection.init();
+					logger.info(connection + " ... OK");
+				} catch (ComponentNotReadyException e) {
+					throw new ComponentNotReadyException(this, "Can't initialize connection " + connection + ".", e);
+				} catch (Exception e) {
+					throw new ComponentNotReadyException(this, "FATAL - Can't initialize connection " + connection + ".", e);
 				}
 			}
+
 			// initialize sequences
-			// iterate through all sequences and initialize them
-			Iterator<String> seqNamesIterator = sequences.keySet().iterator();
-			while (seqNamesIterator.hasNext()) {
-				logger.info("Initializing sequence: ");
+			for (Sequence sequence : sequences.values()) {
+				logger.info("Initializing sequence:");
 				try {
-					String seqName = seqNamesIterator.next();
-					seq = sequences.get(seqName);
-					if (seq.isShared()) {
-						seq = getAuthorityProxy().getSharedSequence(seq);
-						sequences.put(seqName, seq);
+					if (sequence.isShared()) {
+						sequence = getAuthorityProxy().getSharedSequence(sequence);
+						sequences.put(sequence.getId(), sequence);
 					}
-					seq.init();
-					logger.info(seq + " ... OK");
-				} catch (Exception ex) {
-					logger.info(seq + " ... !!! ERROR !!!");
-					logger.error("Can't initialize sequence", ex);
-					throw new ComponentNotReadyException("Can't initialize sequence", ex);
+					sequence.init();
+					logger.info(sequence + " ... OK");
+				} catch (ComponentNotReadyException e) {
+					throw new ComponentNotReadyException(this, "Can't initialize sequence " + sequence + ".", e);
+				} catch (Exception e) {
+					throw new ComponentNotReadyException(this, "FATAL - Can't initialize sequence " + sequence + ".", e);
 				}
 			}
-			
+
+			// initialize lookup tables
+			for (LookupTable lookupTable : lookupTables.values()) {
+				logger.info("Initializing lookup table:");
+				try {
+					lookupTable.init();
+					logger.info(lookupTable + " ... OK");
+				} catch (ComponentNotReadyException e) {
+					throw new ComponentNotReadyException(this, "Can't initialize lookup table " + lookupTable + ".", e);
+				} catch (Exception e) {
+					throw new ComponentNotReadyException(this, "FATAL - Can't initialize lookup table " + lookupTable + ".", e);
+				}
+			}
+
 	        // analyze graph's topology
 			List<Node> orderedNodeList;
 	        try {
@@ -450,17 +452,18 @@ public final class TransformationGraph extends GraphElement {
 	    		TransformationGraphAnalyzer.analyzeMultipleFeeds(orderedNodeList);
 			} catch (GraphConfigurationException ex) {
 				logger.error(ex.getMessage(),ex);
-				throw new ComponentNotReadyException("Graph topology analyze failed: " + ex.getMessage(), ex);
+				throw new ComponentNotReadyException(this, "Graph topology analyze failed: " + ex.getMessage(), ex);
 			}
 			
 			//initialization of all phases
-			//phases have to be initialized separately and immediately before is run - in runtime after previous phase is finished
-			//temporarily solution
-			//  for(Phase phase : phases.values()) {
-			//phase.init();
-			//}
-			
-			// initialized OK
+			//it is no more true --> phases have to be initialized separately and immediately before is run - in runtime after previous phase is finished
+			for(Phase phase : phases.values()) {
+				try {
+					phase.init();
+				} catch (ComponentNotReadyException e) {
+					throw new ComponentNotReadyException(this, "Phase " + phase.getPhaseNum() + " can't be initilized.", e);
+				}
+			}
 		} finally {
 			//unregister current thread from ContextProvider
 			ContextProvider.registerGraph(this);

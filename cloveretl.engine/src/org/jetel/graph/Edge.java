@@ -259,7 +259,21 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		if (edge == null) {
 			edge = edgeType.createEdgeBase(this);
 		}
-        if (debugMode && getGraph().isDebugMode()) {
+        try {
+            edge.init();
+        } catch (Exception ex){
+            throw new ComponentNotReadyException(this, ex);
+        }
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#preExecute()
+	 */
+	@Override
+	public synchronized void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+
+		if (debugMode && getGraph().isDebugMode()) {
             String debugFileName = getDebugFileName();
             logger.debug("Edge '" + getId() + "' is running in debug mode. (" + debugFileName + ")");
             edgeDebuger = new EdgeDebuger(debugFileName, false, debugMaxRecords, debugLastRecords,
@@ -270,21 +284,26 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
                 throw new ComponentNotReadyException(this, ex);
             }
         }
-        try {
-            edge.init();
-        } catch (Exception ex){
-            throw new ComponentNotReadyException(this, ex);
-        }
 	}
-
+	
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		
 		edge.reset();
-		if(edgeDebuger != null) {
-			edgeDebuger.reset();
-		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		
+        if (edgeDebuger != null) {
+            edgeDebuger.close();
+            edgeDebuger = null;
+        }
 	}
 	
     /**
@@ -446,11 +465,6 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         super.free();
 
         edge.free();
-        
-        if(edgeDebuger != null) {
-            edgeDebuger.close();
-            edgeDebuger = null;
-        }
     }
 
     @Override public int hashCode(){

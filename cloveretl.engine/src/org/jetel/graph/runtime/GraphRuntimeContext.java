@@ -26,6 +26,8 @@ import java.util.Properties;
 
 import org.apache.log4j.Level;
 import org.jetel.data.Defaults;
+import org.jetel.graph.IGraphElement;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -44,6 +46,7 @@ public class GraphRuntimeContext {
 	public static final boolean DEFAULT_DEBUG_MODE = true;
 	public static final boolean DEFAULT_SKIP_CHECK_CONFIG = false;
 	public static final boolean DEFAULT_SYNCHRONIZED_RUN = false;
+	public static final boolean DEFAULT_TRANSACTION_MODE = false;
 	
 	private long runId;
 	private String logLocation;
@@ -60,6 +63,7 @@ public class GraphRuntimeContext {
 	private String debugDirectory;
 	private String[] classPaths;
 	private boolean synchronizedRun;
+	private boolean transactionMode;
 	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
@@ -70,6 +74,7 @@ public class GraphRuntimeContext {
 		skipCheckConfig = DEFAULT_SKIP_CHECK_CONFIG;
 		debugMode = DEFAULT_DEBUG_MODE;
 		synchronizedRun = DEFAULT_SYNCHRONIZED_RUN;
+		transactionMode = DEFAULT_TRANSACTION_MODE;
 	}
 	
 	/* (non-Javadoc)
@@ -89,6 +94,7 @@ public class GraphRuntimeContext {
 		ret.debugMode = isDebugMode();
 		ret.debugDirectory = getDebugDirectory();
 		ret.synchronizedRun = isSynchronizedRun();
+		ret.transactionMode = isTransactionMode();
 		
 		return ret;
 	}
@@ -325,7 +331,23 @@ public class GraphRuntimeContext {
 	public void setSynchronizedRun(boolean synchronizedRun) {
 		this.synchronizedRun = synchronizedRun;
 	}
-	
+
+	/**
+	 * Transaction mode means that all graph elements should not affect none of their output resources
+	 * until postExecute with COMMIT statement is invoked.
+	 * 
+	 * @see IGraphElement#postExecute(org.jetel.graph.TransactionMethod)
+	 * @see TransactionMethod
+	 * @return
+	 */
+	public boolean isTransactionMode() {
+		return transactionMode;
+	}
+
+	public void setTransactionMode(boolean transactionMode) {
+		this.transactionMode = transactionMode;
+	}
+
 //	/**
 //	 * @return trackingFlushInterval
 //	 */

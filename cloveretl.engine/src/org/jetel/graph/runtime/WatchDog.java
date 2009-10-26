@@ -47,6 +47,7 @@ import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.util.primitive.DuplicateKeyMap;
@@ -460,10 +461,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	private Result executePhase(Phase phase) {
 		currentPhase = phase;
+		
+		//preExecute() invocation
 		try {
-			phase.init();
+			phase.preExecute();
 		} catch (ComponentNotReadyException e) {
-			logger.error("Phase initialization failed with reason: " + e.getMessage(), e);
+			logger.error("Phase pre-execute initialization failed with reason: " + e.getMessage(), e);
 			causeException = e;
 			causeGraphElement = e.getGraphElement();
 			return Result.ERROR;
@@ -473,11 +476,31 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 		logger.info("Successfully started all nodes in phase!");
 		// watch running nodes in phase
-		Result phaseStatus;
+		Result phaseStatus = Result.N_A;
         try{
             phaseStatus = watch(phase);
         }catch(InterruptedException ex){
             phaseStatus = Result.ABORTED;
+        } finally {
+        	//postExecute() invocation
+        	TransactionMethod transactionMethod = TransactionMethod.DEFAULT;
+        	if (runtimeContext.isTransactionMode()) {
+	        	switch (phaseStatus) {
+	        	case FINISHED_OK:
+	        		transactionMethod = TransactionMethod.COMMIT;
+	        		break;
+	       		default:
+	        		transactionMethod = TransactionMethod.ROLLBACK;
+	        	}
+        	}
+        	try {
+        		phase.postExecute(transactionMethod);
+        	} catch (ComponentNotReadyException e) {
+    			logger.error("Phase post-execute finalization [transaction method=" + transactionMethod + "] failed with reason: " + e.getMessage(), e);
+    			causeException = e;
+    			causeGraphElement = e.getGraphElement();
+    			return Result.ERROR;
+        	}
         }
         
         //now we can notify all waiting phases for free threads
