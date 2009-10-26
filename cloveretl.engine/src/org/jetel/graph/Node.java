@@ -127,13 +127,6 @@ public abstract class Node extends GraphElement implements Runnable {
         runResult=Result.N_A; // result is not known yet
 	}
 
-    @Override 
-    public void init() throws ComponentNotReadyException{
-        super.init();
-        runResult=Result.READY;
-        refreshBufferedValues();
-    }
-    
 	/**
 	 *  Sets the EOF for particular output port. EOF indicates that no more data
 	 * will be sent throught the output port.
@@ -358,6 +351,27 @@ public abstract class Node extends GraphElement implements Runnable {
     }
 
 	// Operations
+
+    /* (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#init()
+     */
+    @Override 
+    public void init() throws ComponentNotReadyException {
+        super.init();
+
+        runResult = Result.READY;
+        refreshBufferedValues();
+    }
+
+    /* (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#preExecute()
+     */
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	
+        runResult = Result.READY;
+    }
+    
 	/**
 	 *  main execution method of Node (calls in turn execute())
 	 *

@@ -22,15 +22,35 @@ package org.jetel.graph;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 
+/**
+ * This interface should be implemented by all elements living in a transformation graph -
+ * - components
+ * - connections
+ * - lookup tables
+ * - sequences
+ * - metadata
+ * - ...
+ * 
+ * @author Martin Zatopek (info@cloveretl.com)
+ *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 21.10.2009
+ */
 public interface IGraphElement {
 
     /**
-     * XML attribute of every cloverETL element.
+     * Name of required XML attribute for element <i>identifier</i>.
      */
     public final static String XML_ID_ATTRIBUTE = "id";
 
+    /**
+     * Name of required XML attribute for element <i>type</i>.
+     */
     public final static String XML_TYPE_ATTRIBUTE = "type";
 
+    /**
+     * Name of required XML attribute for element <i>name</i>.
+     */
     public final static String XML_NAME_ATTRIBUTE = "name";
 
     /**
@@ -38,37 +58,84 @@ public interface IGraphElement {
      * This method is called for each graph element before the graph is executed. This method should
      * verify that all required parameters are set and element may be use.
      */
-    public abstract ConfigurationStatus checkConfig(ConfigurationStatus status);
+    public ConfigurationStatus checkConfig(ConfigurationStatus status);
 
     /**
-     *  Initialization of Node
+     * Initialization of the graph element. This initialization is done exactly once at the start
+     * of existence the graph element. All resources, which are intended to be allocated all the time
+     * of graph existence (including time between particular graph runs), should be allocated in this
+     * method. All here allocated resources should be release in {@link #free()} method.
      *
-     *@exception  ComponentNotReadyException  Error when trying to initialize
-     *      Node/Component
-     *@since                                  April 2, 2002
+     * @throws ComponentNotReadyException some of the required resource is not available or other
+     * precondition is not accomplish
      */
-    public abstract void init() throws ComponentNotReadyException;
+    public void init() throws ComponentNotReadyException;
 
     /**
+     * This is also initialization method, which is invoked before each separate graph run.
+     * Contrary the init() procedure here should be allocated only resources for this graph run.
+     * All here allocated resources should be released in #postExecute() method.
+     * 
+     * @throws ComponentNotReadyException some of the required resource is not available or other
+     * precondition is not accomplish
+     */
+    public void preExecute() throws ComponentNotReadyException; 
+        
+    /**
+     * This is de-initialization method for a single graph run. All resources allocated 
+     * in {@link #preExecute()} method should be released here. It is guaranteed that this method
+     * is invoked after graph finish at the latest. For some graph elements, for instance
+     * components, is this method called immediately after phase finish.
+     * 
+     * @param transactionMethod type of transaction finalize method; was the graph/phase run successful?
+     * @throws ComponentNotReadyException
+     */
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException;
+    
+    /**
+     * @deprecated this method was substituted by pair of another methods {@link #preExecute()}
+     * and {@link #postExecute()}.
+     * 
+     * This method should be invoked automatically by {@link #preExecute()} method for
+     * backward compatibility. 
+     * 
      * Restore all internal element settings to the initial state.
      * Cannot be called before init() and after free() method invokation. 
      */
-    public abstract void reset() throws ComponentNotReadyException;
+    public void reset() throws ComponentNotReadyException;
 
     /**
-     * Free all allocated resources.
+     * This is de-initialization method for this graph element. All resources allocated
+     * in {@link #init()} method should be released here. This method is invoked only once
+     * at the end of element existence.
      */
-    public abstract void free();
+    public void free();
 
-    public abstract TransformationGraph getGraph();
+    /**
+     * @return transformation graph which this graph element belongs
+     */
+    public TransformationGraph getGraph();
 
-    public abstract void setGraph(TransformationGraph graph);
+    /**
+     * Sets parent transformation graph.
+     * @param graph
+     */
+    public void setGraph(TransformationGraph graph);
 
-    public abstract String getId();
+    /**
+     * @return unique string identifier 
+     */
+    public String getId();
 
-    public abstract String getName();
+    /**
+     * @return human readable graph element name
+     */
+    public String getName();
 
-    public abstract void setName(String name);
+    /**
+     * @param name human readable graph element name
+     */
+    public void setName(String name);
 
     /**
      * @return <b>true</b> if graph element is checked by checkConfig method; else <b>false</b>
@@ -79,4 +146,5 @@ public interface IGraphElement {
      * @return <b>true</b> if graph element is initialized by init() method; else <b>false</b>
      */
     public abstract boolean isInitialized();
+    
 }

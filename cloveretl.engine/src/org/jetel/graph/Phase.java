@@ -132,13 +132,17 @@ public class Phase extends GraphElement implements Comparable {
         // list of leaf nodes -will be filled later
         leafNodes = new LinkedList<Node>();
         
-		// if the output stream is specified, create logging possibility information
-		logger.info("[Clover] Initializing phase: "	+ phaseNum);
+		logger.info("[Clover] Initializing phase: " + phaseNum);
 
         //initialization of all edges
 		logger.debug(" initializing edges: ");
-        for(Edge edge : edges.values()) {
-        	edge.init();
+        for (Edge edge : edges.values()) {
+        	try {
+        		edge.init();
+        	} catch (ComponentNotReadyException e) {
+				result = Result.ERROR;
+        		throw new ComponentNotReadyException(this, "Edge " + edge.getId() + " initialization faild.", e);
+        	}
         }
 		logger.debug(" all edges initialized successfully... ");
 
@@ -150,7 +154,6 @@ public class Phase extends GraphElement implements Comparable {
                 if (node.isLeaf() || node.isPhaseLeaf()) {
                     leafNodes.add(node);
                 }
-				// if logger exists, print some out information
 				node.init();
 				logger.debug("\t" + node.getId() + " ...OK");
 			} catch (ComponentNotReadyException ex) {
@@ -171,6 +174,47 @@ public class Phase extends GraphElement implements Comparable {
 		// initialized OK
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#preExecute()
+	 */
+	@Override
+	public synchronized void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		
+		logger.info("[Clover] Pre-execute phase initialization: " + phaseNum);
+
+        //pre-execute initialization of all edges
+		logger.debug(" pre-execute edges initializing: ");
+        for (Edge edge : edges.values()) {
+        	try {
+        		edge.preExecute();
+        	} catch (ComponentNotReadyException e) {
+				result = Result.ERROR;
+        		throw new ComponentNotReadyException(this, "Edge " + edge.getId() + " initialization faild.", e);
+        	}
+        }
+		logger.debug(" all edges initialized successfully... ");
+
+		// iterate through all nodes and initialize them
+		logger.debug(" pre-execute initializing nodes: ");
+		for(Node node : nodes.values()) {
+			try {
+				node.preExecute();
+				logger.debug("\t" + node.getId() + " ...OK");
+			} catch (ComponentNotReadyException ex) {
+				node.setResultCode(Result.ERROR);
+				result = Result.ERROR;
+				throw new ComponentNotReadyException(node.getId() + " ...FAILED ! \nReason: " +  ex.getMessage(), ex);
+			} catch (Exception ex) {
+				node.setResultCode(Result.ERROR);
+				result = Result.ERROR;
+				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !\nReason: " +  ex.getMessage(), ex);
+			}
+		}
+        
+		logger.info("[Clover] phase: " + phaseNum + " pre-execute initialization successfully.");
+	}
+	
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
@@ -188,6 +232,47 @@ public class Phase extends GraphElement implements Comparable {
 			edge.reset();
 		}
 
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		
+		logger.info("[Clover] Post-execute phase finalization: " + phaseNum);
+
+        //post-execute initialization of all edges
+		logger.debug(" post-execute edges finalizing: ");
+        for (Edge edge : edges.values()) {
+        	try {
+        		edge.postExecute(transactionMethod);
+        	} catch (ComponentNotReadyException e) {
+				result = Result.ERROR;
+        		throw new ComponentNotReadyException(this, "Edge " + edge.getId() + " initialization faild.", e);
+        	}
+        }
+		logger.debug(" all edges finalized successfully... ");
+
+		// iterate through all nodes and initialize them
+		logger.debug(" post-execute nodes finalizing: ");
+		for(Node node : nodes.values()) {
+			try {
+				node.postExecute(transactionMethod);
+				logger.debug("\t" + node.getId() + " ...OK");
+			} catch (ComponentNotReadyException ex) {
+				node.setResultCode(Result.ERROR);
+				result = Result.ERROR;
+				throw new ComponentNotReadyException(node.getId() + " ...FAILED ! \nReason: " +  ex.getMessage(), ex);
+			} catch (Exception ex) {
+				node.setResultCode(Result.ERROR);
+				result = Result.ERROR;
+				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !\nReason: " +  ex.getMessage(), ex);
+			}
+		}
+        
+		logger.info("[Clover] phase: " + phaseNum + " post-execute finalization successfully.");
 	}
 	
 	/**

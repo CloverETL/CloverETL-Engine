@@ -42,6 +42,12 @@ public abstract class GraphElement implements IGraphElement {
     private boolean initialized;
     
     /**
+     * This variable is here just for backward compatibility. Deprecated {@link #reset()} method
+     * cannot be invoked in first run of transformation graph. 
+     */
+    private boolean firstRun = true;
+    
+    /**
      * Constructor.
      * @param id
      */
@@ -102,6 +108,28 @@ public abstract class GraphElement implements IGraphElement {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#preExecute()
+     */
+    synchronized public void preExecute() throws ComponentNotReadyException {
+    	if (!firstRun) {
+    		//this is necessary for backward compatibility for graph elements 
+			//with obsoleted reset() method already implemented
+    		reset(); 
+    	}
+    }
+    
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#postExecute()
+     */
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	firstRun = false;
+    }
+    
+    /**
+     * @see org.jetel.graph.IGraphElement#reset()
+     * @deprecated see {@link org.jetel.graph.IGraphElement#preExecute()} and {@link org.jetel.graph.IGraphElement#postExecute()} methods 
+     */
     synchronized public void reset() throws ComponentNotReadyException {
         if(!isInitialized()) {
         	String msg = "Graph element " + this + " is not initialized, cannot be reseted before initialization or after element was released.";
