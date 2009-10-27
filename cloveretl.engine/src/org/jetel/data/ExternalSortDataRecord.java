@@ -2,6 +2,7 @@ package org.jetel.data;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.Collator;
 import java.text.RuleBasedCollator;
 
 import org.jetel.data.tape.DataRecordTape;
@@ -53,6 +54,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	private boolean[] sourceRecordsFlags;
 	private DataRecord[] sourceRecords;
 	private String localeStr;
+	private boolean caseSensitive;
 	private RuleBasedCollator collator;
 	int prevIndex;
 	
@@ -79,6 +81,11 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	
 	public ExternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, int internalBufferCapacity,
 			int numberOfTapes, String[] tmpDirs, String localeStr) {
+		this(metadata, keyItems, sortOrderings, internalBufferCapacity, numberOfTapes, tmpDirs, null, false);
+	}
+
+	public ExternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, int internalBufferCapacity,
+				int numberOfTapes, String[] tmpDirs, String localeStr, boolean caseSensitive) {
 	
 		this.sortKeysNames = keyItems;		
 		this.sortOrderings = sortOrderings;
@@ -86,9 +93,8 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		this.tmpDirs = tmpDirs;
 		this.prevIndex = -1;
 		this.localeStr = localeStr;
-		
+		this.caseSensitive = caseSensitive;
 		inMetadata = metadata;
-		
 		if (internalBufferCapacity>0){	
             sorter = new InternalSortDataRecord(metadata, keyItems, sortOrderings, false, internalBufferCapacity);
         } else {
@@ -98,6 +104,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 			sorter.setUseCollator(true);
 			sorter.setCollatorLocale(this.localeStr);
 			this.collator = (RuleBasedCollator) RuleBasedCollator.getInstance(MiscUtils.createLocale(this.localeStr));
+			sorter.setCaseSensitive(this.caseSensitive);
 		}
 		
 		recordBuffer = ByteBuffer

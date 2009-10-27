@@ -65,6 +65,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	private DataRecordCol[] recordColArray;
 	private int numCollections;
     private Locale collatorLocale;
+    private boolean caseSensitive = false;
     private boolean useCollator=false;
     
 	private final static int DEFAULT_NUM_COLLECTIONS = 8;
@@ -225,8 +226,11 @@ public class InternalSortDataRecord implements ISortDataRecord {
         }else{
             comparator=new RecordOrderedComparator(key.getKeyFields(), this.sortOrderings);
         }
+        if(comparator.getCollator()!=null) {
+        	comparator.getCollator().setStrength(this.caseSensitive?Collator.TERTIARY:Collator.SECONDARY);
+        }
         comparator.setEqualNULLs(true);
-	    DataRecordCol recordArray;
+        DataRecordCol recordArray;
 	    for (Iterator iterator=recordColList.iterator();iterator.hasNext();){
 	        recordArray=((DataRecordCol)iterator.next());
 	        // sort it now
@@ -433,5 +437,11 @@ public class InternalSortDataRecord implements ISortDataRecord {
     public void setCollatorLocale(String collatorLocale) {
         this.collatorLocale = MiscUtils.createLocale(collatorLocale);
     }
-  
+
+    /**
+	 * @param caseSensitive the caseSensitive to set
+	 */
+	public void setCaseSensitive(boolean caseSensitive) {
+		this.caseSensitive = caseSensitive;
+	}
 }

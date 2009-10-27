@@ -116,6 +116,7 @@ public class ExtSort extends Node {
     private static final String XML_BUFFER_CAPACITY_ATTRIBUTE = "bufferCapacity";
     private static final String XML_TEMPORARY_DIRS = "tmpDirs";
     private static final String XML_LOCALE_ATTRIBUTE = "locale";
+	private static final String XML_CASE_SENSITIVE_ATTRIBUTE = "caseSensitive";
     
     
 	/**  Description of the Field */
@@ -128,6 +129,11 @@ public class ExtSort extends Node {
 //	private SortOrder sortOrderAscending;
 	private boolean[] sortOrderings;
 	private String[] sortKeysNames;    
+	/*
+	 * case sensitive sorting of string fields?
+	 */
+	boolean caseSensitive = false;
+
 	
 	private InputPort inPort;
 	private DataRecord inRecord;
@@ -235,11 +241,10 @@ public class ExtSort extends Node {
     public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
-        
 		try {
 			// create sorter
 			sorter = new ExternalSortDataRecord(getInputPort(READ_FROM_PORT)
-					.getMetadata(), sortKeysNames, sortOrderings, internalBufferCapacity, DEFAULT_NUMBER_OF_TAPES, tmpDirs, localeStr);
+					.getMetadata(), sortKeysNames, sortOrderings, internalBufferCapacity, DEFAULT_NUMBER_OF_TAPES, tmpDirs, localeStr, caseSensitive);
 		} catch (Exception e) {
             throw new ComponentNotReadyException(e);
 		}
@@ -363,6 +368,9 @@ public class ExtSort extends Node {
             if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {
                 sort.setLocaleStr(xattribs.getString(XML_LOCALE_ATTRIBUTE));
             }
+			if (xattribs.exists(XML_CASE_SENSITIVE_ATTRIBUTE)) {
+				sort.setCaseSensitive(xattribs.getBoolean(XML_CASE_SENSITIVE_ATTRIBUTE));
+			}
 
             
         } catch (Exception ex) {
@@ -452,7 +460,13 @@ public class ExtSort extends Node {
 		this.localeStr = localeStr;
 	}
 
-    
+	public boolean isCaseSensitive() {
+		return caseSensitive;
+	}
+
+	public void setCaseSensitive(boolean caseSensitive) {
+		this.caseSensitive = caseSensitive;
+	}    
     
 }
 
