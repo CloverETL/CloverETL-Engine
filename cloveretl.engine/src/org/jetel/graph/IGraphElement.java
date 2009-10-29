@@ -102,6 +102,7 @@ public interface IGraphElement {
      * Restore all internal element settings to the initial state.
      * Cannot be called before init() and after free() method invokation. 
      */
+    @Deprecated
     public void reset() throws ComponentNotReadyException;
 
     /**

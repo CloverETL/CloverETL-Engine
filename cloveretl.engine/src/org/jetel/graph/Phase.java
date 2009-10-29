@@ -216,6 +216,7 @@ public class Phase extends GraphElement implements Comparable {
 	}
 	
 	@Override
+	@Deprecated
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		
