@@ -32,7 +32,6 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
@@ -41,7 +40,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 
@@ -129,7 +127,7 @@ public class JavaExecute extends Node {
         }
 		
         if (runnableClass != null) {
-        	String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
+        	String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
             //get runnable from link to the compiled class
             codeToRun = JavaExecute.loadClass(logger, runnableClass, null, classPaths);
         } else if (runnable == null && runnableURL != null) {

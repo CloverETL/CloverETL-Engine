@@ -20,7 +20,6 @@ package org.jetel.graph;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -46,6 +45,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.runtime.CloverPost;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.graph.runtime.WatchDog;
@@ -114,6 +114,13 @@ public final class TransformationGraph extends GraphElement {
 
 	private IAuthorityProxy authorityProxy;
 	
+	/**
+	 * This runtime context is necessary to be given in the initialization time.
+	 * A lot of components need to have a runtimeContext instance for their initialization.
+	 * While the graph is running the runtime context from current watchdog is taken to account. 
+	 */
+	private GraphRuntimeContext initialRuntimeContext;
+	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
 	}
@@ -135,6 +142,7 @@ public final class TransformationGraph extends GraphElement {
 		graphProperties = new TypedProperties();
 		dictionary = new Dictionary(this);
 		authorityProxy = new PrimitiveAuthorityProxy();
+		initialRuntimeContext = new GraphRuntimeContext();
 	}
 
 	private boolean firstCallProjectURL = true; //have to be reset
@@ -359,22 +367,13 @@ public final class TransformationGraph extends GraphElement {
     }
     
 	/**
-	 *  initializes graph (must be called prior attemting to run graph)
-	 *
-	 * @param out The output stream to log to
-	 * @return      returns TRUE if succeeded or FALSE if some Node or Edge failed initialization
-	 * @since       April 10, 2002
-	 * @deprecated The OutputStream is now ignored, please call init().  The logging is
-	 * sent to commons-logging.
+	 * @param initialRuntimeContext
+	 * @throws ComponentNotReadyException
 	 */
-	@Deprecated
-	public boolean init(OutputStream out) {
-		try {
-			init();
-		} catch (ComponentNotReadyException e) {
-			return false;
-		}
-		return true;
+	public void init(GraphRuntimeContext initialRuntimeContext) throws ComponentNotReadyException {
+		setInitialRuntimeContext(initialRuntimeContext);
+		
+		init();
 	}
 	
 	/**
@@ -470,7 +469,62 @@ public final class TransformationGraph extends GraphElement {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#preExecute()
+	 */
 	@Override
+	public synchronized void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		
+		//pre-execute initialization of dictionary
+		dictionary.preExecute();
+		
+		//pre-execute initialization of connections
+		for (IConnection connection : connections.values()) {
+			logger.info("Pre-execute initialization of connection:");
+			try {
+				connection.preExecute();
+				logger.info(connection + " ... OK");
+			} catch (ComponentNotReadyException e) {
+				throw new ComponentNotReadyException(this, "Can't initialize connection " + connection + ".", e);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "FATAL - Can't initialize connection " + connection + ".", e);
+			}
+		}
+
+		//pre-execute initialization of sequences
+		for (Sequence sequence : sequences.values()) {
+			logger.info("Pre-execute initialization of sequence:");
+			try {
+				if (sequence.isShared()) {
+					sequence = getAuthorityProxy().getSharedSequence(sequence);
+					sequences.put(sequence.getId(), sequence);
+				}
+				sequence.init();
+				logger.info(sequence + " ... OK");
+			} catch (ComponentNotReadyException e) {
+				throw new ComponentNotReadyException(this, "Can't initialize sequence " + sequence + ".", e);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "FATAL - Can't initialize sequence " + sequence + ".", e);
+			}
+		}
+
+		//pre-execute initialization of lookup tables
+		for (LookupTable lookupTable : lookupTables.values()) {
+			logger.info("Pre-execute initialization of lookup table:");
+			try {
+				lookupTable.init();
+				logger.info(lookupTable + " ... OK");
+			} catch (ComponentNotReadyException e) {
+				throw new ComponentNotReadyException(this, "Can't initialize lookup table " + lookupTable + ".", e);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "FATAL - Can't initialize lookup table " + lookupTable + ".", e);
+			}
+		}
+	}
+	
+	@Override
+	@Deprecated
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		
@@ -499,6 +553,60 @@ public final class TransformationGraph extends GraphElement {
 			sequence.reset();
 		}
 		
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		
+		//post-execute initialization of dictionary
+		dictionary.postExecute(transactionMethod);
+		
+		//post-execute finalization of connections
+		for (IConnection connection : connections.values()) {
+			logger.info("Post-execute finalization of connection:");
+			try {
+				connection.preExecute();
+				logger.info(connection + " ... OK");
+			} catch (ComponentNotReadyException e) {
+				throw new ComponentNotReadyException(this, "Can't finalize connection " + connection + ".", e);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "FATAL - Can't finalize connection " + connection + ".", e);
+			}
+		}
+
+		//post-execute finalization of sequences
+		for (Sequence sequence : sequences.values()) {
+			logger.info("Post-execute finalization of sequence:");
+			try {
+				if (sequence.isShared()) {
+					sequence = getAuthorityProxy().getSharedSequence(sequence);
+					sequences.put(sequence.getId(), sequence);
+				}
+				sequence.init();
+				logger.info(sequence + " ... OK");
+			} catch (ComponentNotReadyException e) {
+				throw new ComponentNotReadyException(this, "Can't finalize sequence " + sequence + ".", e);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "FATAL - Can't finalize sequence " + sequence + ".", e);
+			}
+		}
+
+		//post-execute finalization of lookup tables
+		for (LookupTable lookupTable : lookupTables.values()) {
+			logger.info("Post-execute finalization of lookup table:");
+			try {
+				lookupTable.init();
+				logger.info(lookupTable + " ... OK");
+			} catch (ComponentNotReadyException e) {
+				throw new ComponentNotReadyException(this, "Can't finalize lookup table " + lookupTable + ".", e);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "FATAL - Can't finalize lookup table " + lookupTable + ".", e);
+			}
+		}
 	}
 	
 	/**  Free all allocated resources which need special care */
@@ -955,6 +1063,25 @@ public final class TransformationGraph extends GraphElement {
         this.watchDog = watchDog;
     }
 
+    /**
+     * @return runtime context of watchdog if is available or initialization runtime context instance
+     */
+    public GraphRuntimeContext getRuntimeContext() {
+    	if (watchDog == null) {
+    		return initialRuntimeContext;
+    	} else {
+    		return watchDog.getGraphRuntimeContext();
+    	}
+    }
+    
+    /**
+     * Sets an instance of runtime context which is used during initialization time.
+     * @param initialRuntimeContext
+     */
+    public void setInitialRuntimeContext(GraphRuntimeContext initialRuntimeContext) {
+    	this.initialRuntimeContext = initialRuntimeContext;
+    }
+    
 	public Log getLogger() {
 		return TransformationGraph.logger;
 	}

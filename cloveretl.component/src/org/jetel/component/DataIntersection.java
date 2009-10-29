@@ -519,7 +519,7 @@ public class DataIntersection extends Node {
         if (transformation != null){
         	transformation.init(transformationParameters, inMetadata, outMetadata);
         }else{
-			String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
+			String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
 			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
 					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
 					this.getClass().getClassLoader(), classPaths);

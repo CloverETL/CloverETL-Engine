@@ -686,7 +686,7 @@ public class AproxMergeJoin extends Node {
 		if (transformation != null) {
 			transformation.init(transformationParameters, inMetadata, outMetadata);
 		} else {
-			String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
+			String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
 			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
 					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
 					this.getClass().getClassLoader(), classPaths);
@@ -696,7 +696,7 @@ public class AproxMergeJoin extends Node {
 			transformationForSuspicious.init(transformationParametersForSuspicious, 
 					inMetadata,	outMetadata);
 		} else {
-			String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
+			String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
 			transformationForSuspicious = RecordTransformFactory.createTransform(transformSourceForSuspicious, 
 					transformClassNameForSuspicious, transformURLForsuspicious, charset, this, 
 					inMetadata, outMetadata, transformationParametersForSuspicious, this.getClass().getClassLoader(), classPaths);

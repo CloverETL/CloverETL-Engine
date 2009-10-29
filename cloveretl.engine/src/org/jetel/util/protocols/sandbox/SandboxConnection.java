@@ -34,7 +34,7 @@ public class SandboxConnection extends URLConnection {
 	public InputStream getInputStream() throws IOException {
 		String storageCode = url.getHost();
 		String path = url.getPath();
-		long runId = graph.getWatchDog().getGraphRuntimeContext().getRunId();
+		long runId = graph.getRuntimeContext().getRunId();
 		InputStream is = graph.getAuthorityProxy().getSandboxResourceInput(runId, storageCode, path);
 		return is;
 	}
@@ -47,7 +47,7 @@ public class SandboxConnection extends URLConnection {
 	public OutputStream getOutputStream() throws IOException {
 		String storageCode = url.getHost();
 		String path = url.getPath();
-		long runId = graph.getWatchDog().getGraphRuntimeContext().getRunId();
+		long runId = graph.getRuntimeContext().getRunId();
 		OutputStream os = graph.getAuthorityProxy().getSandboxResourceOutput(runId, storageCode, path);
 		return os;
 	}

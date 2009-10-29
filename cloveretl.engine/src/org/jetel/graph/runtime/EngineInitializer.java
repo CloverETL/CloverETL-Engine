@@ -161,7 +161,7 @@ public class EngineInitializer {
 			logger.info("Graph configuration checking is skipped.");
 		}
 		logger.info("Graph initialization (" + graph.getName() + ")");
-        graph.init();
+        graph.init(runtimeContext);
 	}
 
 }

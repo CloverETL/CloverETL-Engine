@@ -68,7 +68,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	private final Lock CURRENT_PHASE_LOCK = new ReentrantLock();
 
-	private final Object abortMonitor = new Object();
+	private final Object ABORT_MONITOR = new Object();
 	private boolean abortFinished = false;
 	
     public final static String MBEAN_NAME_PREFIX = "CLOVERJMX_";
@@ -182,56 +182,52 @@ public class WatchDog implements Callable<Result>, CloverPost {
           	
            	cloverJMX.graphStarted();
 
-           	Phase[] phases = graph.getPhases();
-           	
-           	Result phaseResult = Result.N_A;
-           	for (int currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
-           		//if the graph runs in synchronized mode we need to wait for synchronization event to process next phase
-           		if (runtimeContext.isSynchronizedRun()) {
-           			logger.info("Waiting for phase " + phases[currentPhaseNum] + " approval...");
-           			synchronized (cloverJMX) {
-	           			while (cloverJMX.getApprovedPhaseNumber() < phases[currentPhaseNum].getPhaseNum()){
-	           				try {
-								cloverJMX.wait();
-							} catch (InterruptedException e) {
-								throw new RuntimeException("WatchDog was interrupted while was waiting for phase synchronization event.");
-							}
-	           			}
-           			}
-           		}
-           		cloverJMX.phaseStarted(phases[currentPhaseNum]);
-                phaseResult = executePhase(phases[currentPhaseNum]);
-                if(phaseResult == Result.ABORTED)      { 
-                    logger.warn("!!! Phase execution aborted !!!");
-               		cloverJMX.phaseAborted();
-                    break;
-                } else if(phaseResult == Result.ERROR) {
-                    logger.error("!!! Phase finished with error - stopping graph run !!!");
-               		cloverJMX.phaseError(getErrorMessage());
-                    break;
-                }
-           		cloverJMX.phaseFinished();
-            }
-           	watchDogStatus = phaseResult;
-
-           	finalJmxNotification();
-           	
-           	if(runtimeContext.isWaitForJMXClient()) {
-           		//wait for a JMX client (GUI) to download all tracking information
-           		long startWaitingTime = System.currentTimeMillis();
-           		synchronized (cloverJMX) {
-		           	while (WAITTIME_FOR_STOP_SIGNAL > (System.currentTimeMillis() - startWaitingTime) 
-		           			&& !cloverJMX.canCloseServer()) {
-		           		try {
-		    				cloverJMX.wait(10);
-		    	           	finalJmxNotification();
-		    			} catch (InterruptedException e) {
-							throw new RuntimeException("WatchDog was interrupted while was waiting for close signal.");
-		    			}
-		           	}
-           		}
+           	//pre-execute initialization of graph
+           	try {
+           		graph.preExecute();
+           	} catch (ComponentNotReadyException e) {
+    			causeException = e;
+    			causeGraphElement = e.getGraphElement();
+           		watchDogStatus = Result.ERROR;
+           		logger.error("Graph pre-execute initialization faild.", e);
            	}
 
+           	//run all phases
+           	if (watchDogStatus == Result.RUNNING) {
+	           	Phase[] phases = graph.getPhases();
+	           	Result phaseResult = Result.N_A;
+	           	for (int currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
+	           		//if the graph runs in synchronized mode we need to wait for synchronization event to process next phase
+	           		if (runtimeContext.isSynchronizedRun()) {
+	           			logger.info("Waiting for phase " + phases[currentPhaseNum] + " approval...");
+	           			synchronized (cloverJMX) {
+		           			while (cloverJMX.getApprovedPhaseNumber() < phases[currentPhaseNum].getPhaseNum()){
+		           				try {
+									cloverJMX.wait();
+								} catch (InterruptedException e) {
+									throw new RuntimeException("WatchDog was interrupted while was waiting for phase synchronization event.");
+								}
+		           			}
+	           			}
+	           		}
+	           		cloverJMX.phaseStarted(phases[currentPhaseNum]);
+	           		//execute phase
+	                phaseResult = executePhase(phases[currentPhaseNum]);
+	                
+	                if(phaseResult == Result.ABORTED)      { 
+	                    logger.warn("!!! Phase execution aborted !!!");
+	                    break;
+	                } else if(phaseResult == Result.ERROR) {
+	                    logger.error("!!! Phase finished with error - stopping graph run !!!");
+	                    break;
+	                }
+	           		cloverJMX.phaseFinished();
+	            }
+	           	watchDogStatus = phaseResult;
+           	}
+
+           	sendFinalJmxNotification();
+           	
             if(finishJMX) {
             	finishJMX();
             }
@@ -255,7 +251,34 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		return watchDogStatus;
 	}
 
-	private void finalJmxNotification() {
+	private void sendFinalJmxNotification() {
+		sendFinalJmxNotification0();
+		
+       	if(runtimeContext.isWaitForJMXClient()) {
+       		//wait for a JMX client (GUI) to download all tracking information
+       		long startWaitingTime = System.currentTimeMillis();
+       		synchronized (cloverJMX) {
+	           	while (WAITTIME_FOR_STOP_SIGNAL > (System.currentTimeMillis() - startWaitingTime) 
+	           			&& !cloverJMX.canCloseServer()) {
+	           		try {
+	    				cloverJMX.wait(10);
+	    	           	sendFinalJmxNotification0();
+	    			} catch (InterruptedException e) {
+						throw new RuntimeException("WatchDog was interrupted while was waiting for close signal.");
+	    			}
+	           	}
+       		}
+       	}
+
+		
+		//if the graph was aborted, now the aborting thread is waiting for final notification
+		synchronized (ABORT_MONITOR) {
+			abortFinished = true;
+			ABORT_MONITOR.notifyAll();
+		}
+	}
+
+	private void sendFinalJmxNotification0() {
 		switch (watchDogStatus) {
 		case FINISHED_OK:
 			cloverJMX.graphFinished();
@@ -267,13 +290,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			cloverJMX.graphError(getErrorMessage());
 			break;
 		}
-		//if the graph was aborted, now the aborting thread is waiting for final notification
-		synchronized (abortMonitor) {
-			abortFinished = true;
-			abortMonitor.notifyAll();
-		}
 	}
-
+	
     /**
      * Register given jmx mbean.
      */
@@ -412,7 +430,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			}
 	        watchDogStatus = Result.ABORTED;
 		} finally {
-			synchronized (abortMonitor) {
+			synchronized (ABORT_MONITOR) {
 				CURRENT_PHASE_LOCK.unlock();
 				long startAbort = System.currentTimeMillis();
 				while (!abortFinished) {
@@ -421,7 +439,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 						throw new IllegalStateException("Graph aborting error! Timeout "+ABORT_TIMEOUT+"ms exceeded!");
 			        try {
 			        	//the aborting thread try to wait for end of graph run
-						abortMonitor.wait(ABORT_WAIT);
+						ABORT_MONITOR.wait(ABORT_WAIT);
 					} catch (InterruptedException ignore) {	}// catch
 				}// while
 			}// synchronized
@@ -482,7 +500,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
         }catch(InterruptedException ex){
             phaseStatus = Result.ABORTED;
         } finally {
-        	//postExecute() invocation
+        	//specify transaction mode for postExecute()
         	TransactionMethod transactionMethod = TransactionMethod.DEFAULT;
         	if (runtimeContext.isTransactionMode()) {
 	        	switch (phaseStatus) {
@@ -493,6 +511,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	        		transactionMethod = TransactionMethod.ROLLBACK;
 	        	}
         	}
+        	//postExecute() invocation
         	try {
         		phase.postExecute(transactionMethod);
         	} catch (ComponentNotReadyException e) {
