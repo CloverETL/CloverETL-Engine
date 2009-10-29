@@ -130,6 +130,7 @@ public abstract class GraphElement implements IGraphElement {
      * @see org.jetel.graph.IGraphElement#reset()
      * @deprecated see {@link org.jetel.graph.IGraphElement#preExecute()} and {@link org.jetel.graph.IGraphElement#postExecute()} methods 
      */
+    @Deprecated
     synchronized public void reset() throws ComponentNotReadyException {
         if(!isInitialized()) {
         	String msg = "Graph element " + this + " is not initialized, cannot be reseted before initialization or after element was released.";
