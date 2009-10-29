@@ -27,10 +27,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.channels.Channels;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.parser.DelimitedDataParser;
@@ -49,6 +53,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -105,22 +110,34 @@ import org.w3c.dom.Element;
  *    <tr><td><b>outputFile</b></td><td>path to the output file</td></tr>
  *    <tr><td><b>append</b></td><td> whether to append data at the end if output 
  *    file exists or replace it (values: true/false)</td></tr>
- *    </table>
+ *    <tr><td><b>workingDirecory</b></td><td>this component's working directory.
+ *    If not set, used current directory.</td></tr>
+ *    <tr><td><b>environment</b></td><td>system-dependent mapping from variables to values. 
+ * 		Mappings are divided by {@link Defaults.Component.KEY_FIELDS_DELIMITER_REGEX}. By default the new value is appended
+ * 		to the environment of the current process. It can be changed by adding <i>!false</i> after the new value, eg.:
+ * 		<i>PATH=/home/user/mydir</i> appends <i>/home/user/mydir</i> to the existing PATH, but <i>PATH=/home/user/mydir!false</i>
+ * 		replaces the old value by the new one (<i>/home/user/mydir</i>).</td></tr>
+ *    <tr><td><b>deleteBach</b></td><td> whether to delete or not temporary batch file (values: true/false)</td></tr>
+ *     </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="SYS_EXECUTE0" type="SYS_EXECUTE"&gt;
  * &lt;attr name="capturedErrorLines"&gt;3&lt;/attr&gt;
- * &lt;attr name="command"&gt;rm test.txt &lt;/attr&gt;
+ * &lt;attr name="command"&gt;echo $PATH
+ * rm test.txt &lt;/attr&gt;
+ * &lt;attr name="environment"&gt;PATH=/mybin&lt;/attr&gt;
  * &lt;/Node&gt;
  *&lt;Node id="SYS_EXECUTE0" type="SYS_EXECUTE"&gt;
  *&lt;attr name="interpreter"&gt;sh ${}&lt;/attr&gt;
  *&lt;attr name="outputFile"&gt;data/data.txt&lt;/attr&gt;
  *&lt;attr name="command"&gt;touch data/data.txt
  *cat
- *dir /home/username&lt;/attr&gt;
+ *dir .&lt;/attr&gt;
+ *&lt;attr name="workingDirectory"&gt;/home/user&lt;/attr&gt;
  *&lt;/Node&gt;
  *&lt;Node id="SYS_EXECUTE0" type="SYS_EXECUTE"&gt;
  *&lt;attr name="interpreter"&gt;sh ${} /tmp&lt;/attr&gt;
  *&lt;attr name="command"&gt;cat
  *ls -l $1&lt;/attr&gt;
+ * &lt;attr name="deleteBatch"&gt;false&lt;/attr&gt;
  *&lt;/Node&gt;
  *</pre>
 /**
@@ -136,6 +153,9 @@ public class SystemExecute extends Node{
 	private static final String XML_OUTPUT_FILE_ATTRIBUTE = "outputFile";
 	private static final String XML_APPEND_ATTRIBUTE = "append";
 	private static final String XML_INTERPRETER_ATTRIBUTE = "interpreter";
+	private static final String XML_WORKING_DIRECTORY_ATTRIBUTE = "workingDirectory";
+	private static final String XML_ENVIRONMENT_ATTRIBUTE = "environment";
+	private static final String XML_DELETE_BATCH_ATTRIBUTE = "deleteBatch";
 	
 	public static String COMPONENT_TYPE = "SYS_EXECUTE";
 
@@ -148,16 +168,19 @@ public class SystemExecute extends Node{
 	
 	private String command;
 	private String[] cmdArray;
-	private String executeCommand;
 	private int capturedErrorLines;
 	private FileWriter outputFile = null;
 	private boolean append;
+	private boolean deleteBatch = true;
 	private int exitValue;
 	private Parser parser;
 	private Formatter formatter;
 	private File batch;
 	private String interpreter;
 	private String outputFileName;
+	private File workingDirectory = null;
+	private Properties environment = new Properties();
+	private ProcessBuilder processBuilder;
 	
 	static Log logger = LogFactory.getLog(SystemExecute.class);
 	
@@ -241,6 +264,9 @@ public class SystemExecute extends Node{
 		FileWriter batchWriter = new FileWriter(batch);
 		batchWriter.write(command);
 		batchWriter.close();
+		if (!batch.setExecutable(true)){
+			logger.warn("Can't set executable to " + batch.getAbsolutePath());
+		}
 		return batch.getCanonicalPath();
 	}
 
@@ -276,24 +302,10 @@ public class SystemExecute extends Node{
 		}
 
 		boolean ok = true;
-		StringBuffer msg = new StringBuffer("Executing command: \"");
-		Process	process;
-		if (cmdArray != null) {
-			msg.append(cmdArray[0]).append("\" with parameters:\n");
-			for (int idx = 1; idx < cmdArray.length; idx++) {
-				msg.append(idx).append(": ").append(cmdArray[idx]).append("\n");
-			}
-			logger.info(msg.toString());
-			process = Runtime.getRuntime().exec(cmdArray);
-		} else {
-			msg.append(executeCommand + "\"");
-			logger.info(msg.toString());
-			process = Runtime.getRuntime().exec(executeCommand);
-		}
+		Process process = processBuilder.start();
 		//get process input and output streams
 		BufferedOutputStream process_in=new BufferedOutputStream(process.getOutputStream());
 		BufferedInputStream process_out=new BufferedInputStream(process.getInputStream());
-		BufferedInputStream process_err=new BufferedInputStream(process.getErrorStream());
 		// If there is input port read records and write them to input stream of the process
 		GetData getData=null; 
 		if (inPort!=null) {
@@ -305,9 +317,7 @@ public class SystemExecute extends Node{
 		//If there is output port read output from process and send it to output port
 		SendData sendData=null;
 		SendDataToFile sendDataToFile = null;
-		SendDataToFile sendErrToFile = null;
 		SendDataToConsole sendDataToConsole = null;
-		SendDataToConsole sendErrToConsole = null;
 		if (outPort!=null){
             parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
             parser.setDataSource(process_out);
@@ -318,20 +328,17 @@ public class SystemExecute extends Node{
 		// and error from process and send it to the file	
 		}else if (outputFile!=null){
 			sendDataToFile = new SendDataToFile(Thread.currentThread(),outputFile,process_out);
-			sendErrToFile = new SendDataToFile(Thread.currentThread(),outputFile, process_err);
 			sendDataToFile.start();
-			sendErrToFile.start();
 		// neither output port nor output file is defined then read output
 		// and error from process and send it to the console
 		} else {
 			sendDataToConsole = new SendDataToConsole(Thread.currentThread(),logger,process_out);
-			sendErrToConsole = new SendDataToConsole(Thread.currentThread(),logger, process_err);
 			sendDataToConsole.start();
-			sendErrToConsole.start();
 		}
 
-		//if output is sent to output file log process error stream
+		//if output is sent to output port log process error stream
 		if (sendData!=null){ 
+			BufferedInputStream process_err=new BufferedInputStream(process.getErrorStream());
 			BufferedReader err=new BufferedReader(new InputStreamReader(process_err));
 			String line;
 			StringBuffer errmes=new StringBuffer();
@@ -358,11 +365,9 @@ public class SystemExecute extends Node{
 			if (getData!=null) getData.join(KILL_PROCESS_WAIT_TIME);
 			if (sendDataToFile!=null){
 				sendDataToFile.join(KILL_PROCESS_WAIT_TIME);
-				sendErrToFile.join(KILL_PROCESS_WAIT_TIME);
 			}
 			if (sendDataToConsole!=null){
 				sendDataToConsole.join(KILL_PROCESS_WAIT_TIME);
-				sendErrToConsole.join(KILL_PROCESS_WAIT_TIME);
 			}
 			
 		}catch(InterruptedException ex){
@@ -383,16 +388,10 @@ public class SystemExecute extends Node{
 				if (!kill(sendDataToFile,KILL_PROCESS_WAIT_TIME)){
 					throw new RuntimeException("Can't kill "+sendDataToFile.getName());
 				}
-				if (!kill(sendErrToFile,KILL_PROCESS_WAIT_TIME)){
-					throw new RuntimeException("Can't kill "+sendErrToFile.getName());
-				}
 			}
 			if (sendDataToConsole!=null) {
 				if (!kill(sendDataToConsole,KILL_PROCESS_WAIT_TIME)){
 					throw new RuntimeException("Can't kill "+sendDataToConsole.getName());
-				}
-				if (!kill(sendErrToConsole,KILL_PROCESS_WAIT_TIME)){
-					throw new RuntimeException("Can't kill "+sendErrToConsole.getName());
 				}
 			}
 		}
@@ -429,13 +428,6 @@ public class SystemExecute extends Node{
 				ok = false;
 				resultMsg = (resultMsg == null ? "" : resultMsg) + sendDataToFile.getResultMsg() + "\n" + sendDataToFile.getResultException();
 			}
-			if (!kill(sendErrToFile,KILL_PROCESS_WAIT_TIME)){
-				throw new RuntimeException("Can't kill "+sendErrToFile.getName());
-			}
-			if (sendErrToFile.getResultCode()==Result.ERROR){
-				ok = false;
-				resultMsg = (resultMsg == null ? "" : resultMsg) + sendErrToFile.getResultMsg() + "\n" + sendErrToFile.getResultException();
-			}
 		}
 		
 		if (sendDataToConsole!=null){
@@ -445,13 +437,6 @@ public class SystemExecute extends Node{
 			if (sendDataToConsole.getResultCode()==Result.ERROR){
 				ok = false;
 				resultMsg = (resultMsg == null ? "" : resultMsg) + sendDataToConsole.getResultMsg() + "\n" + sendDataToConsole.getResultException();
-			}
-			if (!kill(sendErrToConsole,KILL_PROCESS_WAIT_TIME)){
-				throw new RuntimeException("Can't kill "+sendErrToConsole.getName());
-			}
-			if (sendErrToConsole.getResultCode()==Result.ERROR){
-				ok = false;
-				resultMsg = (resultMsg == null ? "" : resultMsg) + sendErrToConsole.getResultMsg() + "\n" + sendErrToConsole.getResultException();
 			}
 		}
 //		broadcastEOF();
@@ -480,13 +465,15 @@ public class SystemExecute extends Node{
         if(!isInitialized()) return;
 		super.free();
 		
-		deleteBatch();
+		if (deleteBatch) {
+			deleteBatch();
+		}
 	}
 	
 	private void deleteBatch(){
 		if (interpreter!=null) {
 			if (!batch.delete()) {
-				logger.warn("Batch file (" + batch.getName() + ")was not deleted");
+				logger.warn("Batch file (" + batch.getName() + ") was not deleted");
 			}
 		}
 	}
@@ -499,23 +486,56 @@ public class SystemExecute extends Node{
 		super.init();
 		
 		//create tmp file with commands and string to execute
-		if (interpreter!=null){
-			try {
-				if (interpreter.contains("${}")){
-					executeCommand = interpreter.replace("${}",createBatch(command));
-				}else {
-					throw new ComponentNotReadyException("Incorect form of "+
-							XML_INTERPRETER_ATTRIBUTE + " attribute:" + interpreter +
-							"\nUse form:\"interpreter [parameters] ${} [parameters]\"");
+		if (cmdArray == null){
+			if (interpreter != null) {
+				try {
+					if (interpreter.contains("${}")) {
+						cmdArray = interpreter.replace("${}", createBatch(command)).split("\\s+");
+					} else {
+						throw new ComponentNotReadyException("Incorect form of " + XML_INTERPRETER_ATTRIBUTE + " attribute:" + interpreter + "\nUse form:\"interpreter [parameters] ${} [parameters]\"");
+					}
+				} catch (IOException ex) {
+					throw new ComponentNotReadyException(ex);
 				}
-			}catch(IOException ex){
-				throw new ComponentNotReadyException(ex);
+			}else{
+				cmdArray = command.split("\\s+");
 			}
-		}else if (cmdArray != null) {
-			executeCommand = null;
-		} else {
-			executeCommand = command;
 		}
+		StringBuffer msg = new StringBuffer("Command to execute: \"");
+		msg.append(cmdArray[0]).append("\" with parameters:\n");
+		for (int idx = 1; idx < cmdArray.length; idx++) {
+			msg.append(idx).append(": ").append(cmdArray[idx]).append("\n");
+		}
+		logger.info(msg.toString());
+		processBuilder = new ProcessBuilder(cmdArray);
+		processBuilder.directory(workingDirectory != null ? 
+				workingDirectory : (getGraph().getProjectURL() != null ? new File(getGraph().getProjectURL().getFile()) : new File(".")));
+		logger.info("Working directory set to: " + processBuilder.directory().getAbsolutePath());
+		if (!environment.isEmpty()){
+			Map<String, String> origEnvironment = processBuilder.environment();
+			String name, value, oldValue;
+			int exclIndex;
+			boolean appendV;
+			for (Entry variable : environment.entrySet()) {
+				appendV = true;
+				name = (String) variable.getKey();
+				value = (String) variable.getValue();
+				exclIndex = value.indexOf('!');
+				if (exclIndex > -1) {
+					appendV = Boolean.valueOf(value.substring(exclIndex + 1));
+					value = value.substring(0, exclIndex);
+				}
+				if (origEnvironment.containsKey(name) && appendV) {
+					oldValue = origEnvironment.get(name);
+					value = oldValue.concat(File.pathSeparator).concat(value);
+				}
+				origEnvironment.put(name, value);
+				logger.info("Variable " + name + " = " +value);
+			}
+		}
+		//wee need separate error stream only if data are sent to output port
+		processBuilder.redirectErrorStream(getOutputPort(OUTPUT_PORT) == null);
+		
 		//prepare output file
 		if (getOutPorts().size()==0 && outputFileName!=null){
 			try{
@@ -547,17 +567,23 @@ public class SystemExecute extends Node{
 			return status;
 		}
 
-        try {
-            init();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        } finally {
-        	free();
-        }
+        	try {
+				if (interpreter != null) {
+					if (interpreter.contains("${}")) {
+						createBatch(command);
+						deleteBatch();
+					}else{
+			            ConfigurationProblem problem = new ConfigurationProblem(
+			            		"Incorect form of " + XML_INTERPRETER_ATTRIBUTE + " attribute:" + interpreter + "\nUse form:\"interpreter [parameters] ${} [parameters]\"", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+			            problem.setAttributeName(XML_INTERPRETER_ATTRIBUTE);
+			            status.add(problem);
+					}
+				}
+			} catch (IOException e) {
+	            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+	            problem.setAttributeName(XML_COMMAND_ATTRIBUTE);
+	            status.add(problem);
+	        }
         
         return status;
     }
@@ -577,13 +603,58 @@ public class SystemExecute extends Node{
 			if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
 				sysExec.setOutputFile(xattribs.getString(XML_OUTPUT_FILE_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_WORKING_DIRECTORY_ATTRIBUTE)){
+				sysExec.setWorkingDirectory(xattribs.getString(XML_WORKING_DIRECTORY_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_ENVIRONMENT_ATTRIBUTE)) {
+				sysExec.setEnvironment(xattribs.getString(XML_ENVIRONMENT_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_DELETE_BATCH_ATTRIBUTE)) {
+				sysExec.setDeleteBatch(xattribs.getBoolean(XML_DELETE_BATCH_ATTRIBUTE,true));
+			}
 			return sysExec;
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 	}
 	
-	   /* (non-Javadoc)
+	 /**
+	  * Sets whether to delete or not temporary batch file
+	  * 
+	 * @param delete
+	 */
+	public void setDeleteBatch(boolean delete) {
+		this.deleteBatch = delete;
+	}
+
+	/**
+	  * Sets environment. 
+	  * 
+	 * @param string system-dependent mapping from variables to values. 
+	 * 		Mappings are divided by {@link Defaults.Component.KEY_FIELDS_DELIMITER_REGEX}. By default the new value is appended
+	 * 		to the environment of the current process. It can be changed by adding <i>!false</i> after the new value, eg.:
+	 * 		<i>PATH=/home/user/mydir</i> appends <i>/home/user/mydir</i> to the existing PATH, but <i>PATH=/home/user/mydir!false</i>
+	 * 		replaces the old value by the new one (<i>/home/user/mydir</i>).
+	 */
+	public void setEnvironment(String string) {
+		String[] key = StringUtils.split(string);
+		String[] def;
+		for (int i = 0; i < key.length; i++) {
+			def = JoinKeyUtils.getMappingItemsFromMappingString(key[i]);
+			environment.setProperty(def[0], StringUtils.unquote(def[1]));
+		}
+	}
+
+	/**
+	 * Sets working directory
+	 * 
+	 * @param string working directory for command
+	 */
+	public void setWorkingDirectory(String string) {
+		this.workingDirectory = new File(string);
+	}
+
+	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
 	 */
 	@Override public void toXML(Element xmlElement) {
@@ -597,6 +668,18 @@ public class SystemExecute extends Node{
 		if (outputFile!=null){
 			xmlElement.setAttribute(XML_OUTPUT_FILE_ATTRIBUTE,outputFileName);
 		}
+		xmlElement.setAttribute(XML_DELETE_BATCH_ATTRIBUTE,String.valueOf(deleteBatch));
+		if (!environment.isEmpty()){
+			StringBuilder env = new StringBuilder();
+			for (Entry variable : environment.entrySet()) {
+				env.append(variable.getKey()).append('=').append(variable.getValue()).append(Defaults.Component.KEY_FIELDS_DELIMITER);
+			}		
+			env.setLength(env.length() - 1);
+			xmlElement.setAttribute(XML_ENVIRONMENT_ATTRIBUTE,env.toString());
+		}
+		if (workingDirectory != null) {
+			xmlElement.setAttribute(XML_WORKING_DIRECTORY_ATTRIBUTE,workingDirectory.getPath());
+		}
 	}
 	
 	/**
@@ -604,7 +687,7 @@ public class SystemExecute extends Node{
 	 * 
 	 * @param outputFile
 	 */
-	protected void setOutputFile(String outputFile){
+	public void setOutputFile(String outputFile){
 		this.outputFileName = outputFile;
 	}
 
@@ -613,7 +696,7 @@ public class SystemExecute extends Node{
 	 * 
 	 * @param append
 	 */
-	protected void setAppend(boolean append) {
+	public void setAppend(boolean append) {
 		this.append = append;
 	}
 
