@@ -311,7 +311,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      * @return absolute path to debug file
      */
     private String getDebugFileName() {
-        GraphRuntimeContext runtimeContext = getGraph().getWatchDog().getGraphRuntimeContext();
+        GraphRuntimeContext runtimeContext = getGraph().getRuntimeContext();
 		String tmpFile = runtimeContext.getDebugDirectory();
         
         if(!tmpFile.endsWith(System.getProperty("file.separator"))) {

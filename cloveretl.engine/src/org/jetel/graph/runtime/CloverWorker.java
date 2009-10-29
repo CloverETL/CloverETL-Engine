@@ -33,7 +33,7 @@ public abstract class CloverWorker implements Runnable {
 	
 	public void run() {
 		ContextProvider.registerNode(node);
-		MDC.put("runId", node.getGraph().getWatchDog().getGraphRuntimeContext().getRunId());
+		MDC.put("runId", node.getGraph().getRuntimeContext().getRunId());
 		Thread.currentThread().setName(node.getId() + ":" + name);
 		synchronized (this) {
 			isRunning = true;

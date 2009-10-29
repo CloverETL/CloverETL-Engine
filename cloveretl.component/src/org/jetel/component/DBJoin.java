@@ -425,7 +425,7 @@ public class DBJoin extends Node {
 				transformation.init(transformationParameters, inMetadata, outMetadata);
 			}
 			if (transformSource != null || transformClassName != null) {
-				String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
+				String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
 				transformation = RecordTransformFactory.createTransform(
 						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
 						outMetadata, transformationParameters, this.getClass().getClassLoader(), classPaths);

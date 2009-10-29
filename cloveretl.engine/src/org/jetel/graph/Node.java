@@ -491,7 +491,7 @@ public abstract class Node extends GraphElement implements Runnable {
     		this.nodeThread = nodeThread;
 
     		ContextProvider.registerNode(this);
-			MDC.put("runId", getGraph().getWatchDog().getGraphRuntimeContext().getRunId());
+			MDC.put("runId", getGraph().getRuntimeContext().getRunId());
 			nodeThread.setName(getId());
 		} else {
 			ContextProvider.unregister();
@@ -1100,9 +1100,11 @@ public abstract class Node extends GraphElement implements Runnable {
 		return checkMetadata(status, inputMetadata, outputMetadata);
 	}
 
-	/**
-	 * Reset node for next graph execution.
-	 */
+    /* (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#reset()
+     * @deprecated see {@link org.jetel.graph.IGraphElement#preExecute()} and {@link org.jetel.graph.IGraphElement#postExecute()} methods 
+     */
+    @Deprecated
     synchronized public void reset() throws ComponentNotReadyException {
     	super.reset();
         for(OutputPort outPort : this.getOutPorts())

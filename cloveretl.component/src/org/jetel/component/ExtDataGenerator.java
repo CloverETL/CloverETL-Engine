@@ -37,7 +37,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.Result;
-import org.jetel.graph.runtime.WatchDog;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
@@ -195,7 +195,7 @@ public class ExtDataGenerator extends DataGenerator {
 
 		DataRecordMetadata[] outMetadata = getOutMetadata().toArray(new DataRecordMetadata[getOutMetadata().size()]);
 		verifyAutofilling(outMetadata[0]);
-		createGeneratorClass(getGraph().getWatchDog(), outMetadata);
+		createGeneratorClass(getGraph().getRuntimeContext(), outMetadata);
 
 		// set graph instance to transformation (if CTL it can access lookups etc.)
 		if (generatorClass != null) {
@@ -239,17 +239,17 @@ public class ExtDataGenerator extends DataGenerator {
 	 * @param watchDog
 	 * @throws ComponentNotReadyException
 	 */
-	private void createGeneratorClass(WatchDog watchDog, DataRecordMetadata outMetadata[]) throws ComponentNotReadyException {
+	private void createGeneratorClass(GraphRuntimeContext runtimeContext, DataRecordMetadata outMetadata[]) throws ComponentNotReadyException {
 		if (generatorSource != null || generatorClassName != null || generatorURL != null) {
 			// create instance of the record generator
 			if (generatorClass == null) {
 				
 				if (generatorClassName != null) {
 					// load class base on its class name
-					if (watchDog == null) return;
+					if (runtimeContext == null) return;
 					generatorClass = (RecordGenerate) RecordTransformFactory.loadClass(this.getClass().getClassLoader(), logger, generatorClassName, 
 							getGraph().getProjectURL(),
-							watchDog.getGraphRuntimeContext().getClassPaths());
+							runtimeContext.getClassPaths());
 				} else if (generatorSource == null) {
 					// read source code from URL
 					generatorSource = FileUtils.getStringFromURL(getGraph().getProjectURL(), generatorURL, "UTF-8");
@@ -319,7 +319,7 @@ public class ExtDataGenerator extends DataGenerator {
 		 try {
 			 DataRecordMetadata[] outMetadata = getOutMetadata().toArray(new DataRecordMetadata[getOutMetadata().size()]);
 			 verifyAutofilling(getOutMetadata().get(0));
-			 createGeneratorClass(getGraph().getWatchDog(), outMetadata);
+			 createGeneratorClass(null, outMetadata);
 			 
 			 // RecordGenerateTL doesn't have check config in contrast to CTLRecordGenerate
 			 if (generatorClass != null && generatorClass instanceof RecordGenerateTL) {

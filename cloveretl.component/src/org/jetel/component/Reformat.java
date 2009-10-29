@@ -326,7 +326,7 @@ public class Reformat extends Node {
 			transformation.init(transformationParameters, inMetadata,
 					outMetadata);
 		} else {
-			String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
+			String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
 			transformation = RecordTransformFactory.createTransform(transform, transformClass, 
 					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
 					this.getClass().getClassLoader(), classPaths);

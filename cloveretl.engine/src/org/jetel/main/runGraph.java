@@ -373,7 +373,7 @@ public class runGraph {
 			printGraphProperties(graph);
 			futureResult = executeGraph(graph, runtimeContext);			
 		} catch (ComponentNotReadyException e) {
-            logger.error("Error during graph initialization !");
+            logger.error("Error during graph initialization !", e);
             if (runtimeContext.isVerboseMode()) {
                 e.printStackTrace(System.err);
             }

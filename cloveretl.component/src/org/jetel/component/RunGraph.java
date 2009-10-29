@@ -444,7 +444,7 @@ public class RunGraph extends Node{
 	 * @return
 	 */
 	private boolean runGraphThisInstance(String graphFileName, OutputRecordData outputRecordData) {
-		long runId = this.getGraph().getWatchDog().getGraphRuntimeContext().getRunId();
+		long runId = this.getGraph().getRuntimeContext().getRunId();
 
 		RunResult rr = this.getGraph().getAuthorityProxy().executeGraph( runId, graphFileName, this.getGraph().getGraphProperties(), outputFileName);
 		
