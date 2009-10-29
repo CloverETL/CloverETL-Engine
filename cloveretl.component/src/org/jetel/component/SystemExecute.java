@@ -113,11 +113,11 @@ import org.w3c.dom.Element;
  *    <tr><td><b>workingDirecory</b></td><td>this component's working directory.
  *    If not set, used current directory.</td></tr>
  *    <tr><td><b>environment</b></td><td>system-dependent mapping from variables to values. 
- * 		Mappings are divided by {@link Defaults.Component.KEY_FIELDS_DELIMITER_REGEX}. By default the new value is appended
+ * 		Mappings are separated by {@link Defaults.Component.KEY_FIELDS_DELIMITER_REGEX}. By default the new value is appended
  * 		to the environment of the current process. It can be changed by adding <i>!false</i> after the new value, eg.:
  * 		<i>PATH=/home/user/mydir</i> appends <i>/home/user/mydir</i> to the existing PATH, but <i>PATH=/home/user/mydir!false</i>
  * 		replaces the old value by the new one (<i>/home/user/mydir</i>).</td></tr>
- *    <tr><td><b>deleteBach</b></td><td> whether to delete or not temporary batch file (values: true/false)</td></tr>
+ *    <tr><td><b>deleteBatch</b></td><td> whether to delete or not temporary batch file (values: true/false)</td></tr>
  *     </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="SYS_EXECUTE0" type="SYS_EXECUTE"&gt;
  * &lt;attr name="capturedErrorLines"&gt;3&lt;/attr&gt;
@@ -264,9 +264,10 @@ public class SystemExecute extends Node{
 		FileWriter batchWriter = new FileWriter(batch);
 		batchWriter.write(command);
 		batchWriter.close();
-		if (!batch.setExecutable(true)){
-			logger.warn("Can't set executable to " + batch.getAbsolutePath());
-		}
+		//TODO uncomment following rows for java 1.6
+//		if (!batch.setExecutable(true)){
+//			logger.warn("Can't set executable to " + batch.getAbsolutePath());
+//		}
 		return batch.getCanonicalPath();
 	}
 
@@ -631,7 +632,7 @@ public class SystemExecute extends Node{
 	  * Sets environment. 
 	  * 
 	 * @param string system-dependent mapping from variables to values. 
-	 * 		Mappings are divided by {@link Defaults.Component.KEY_FIELDS_DELIMITER_REGEX}. By default the new value is appended
+	 * 		Mappings are separated by {@link Defaults.Component.KEY_FIELDS_DELIMITER_REGEX}. By default the new value is appended
 	 * 		to the environment of the current process. It can be changed by adding <i>!false</i> after the new value, eg.:
 	 * 		<i>PATH=/home/user/mydir</i> appends <i>/home/user/mydir</i> to the existing PATH, but <i>PATH=/home/user/mydir!false</i>
 	 * 		replaces the old value by the new one (<i>/home/user/mydir</i>).
