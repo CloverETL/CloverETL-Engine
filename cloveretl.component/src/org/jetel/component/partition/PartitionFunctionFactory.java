@@ -94,7 +94,7 @@ public class PartitionFunctionFactory {
 			if (partitionURL != null && StringUtils.isEmpty(partitionSource)) {
 				partitionSource = FileUtils.getStringFromURL(node.getGraph().getProjectURL(), partitionURL, charset);
 			}
-			if (StringUtils.isEmpty(partitionSource)) {
+			if (!StringUtils.isEmpty(partitionSource)) {
 				partitionFunction = createPartitionDynamic(partitionSource);
 			} else if (partitionRanges != null) {
 				//create RangePartition function from partitionKey and partitionRanges
