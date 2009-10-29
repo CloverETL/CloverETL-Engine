@@ -42,6 +42,7 @@ import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
 /**
@@ -213,11 +214,13 @@ public class DBFDataReader extends Node {
 	public synchronized void free() {
 		super.free();
     	storeValues();
-		try {
-			reader.close();
-		} catch (IOException e) {
-			logger.error(e);
-		}
+    	if (reader != null) {
+			try {
+    			reader.close();
+			} catch (IOException e) {
+				logger.error(e);
+			}
+	    }
 	}
 
     /**
@@ -315,11 +318,11 @@ public class DBFDataReader extends Node {
 		try {
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				dbfDataReader = new DBFDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILEURL_ATTRIBUTE),
+						xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
 						xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			} else {
 				dbfDataReader = new DBFDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILEURL_ATTRIBUTE));
+						xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
 				dbfDataReader.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(
@@ -332,7 +335,7 @@ public class DBFDataReader extends Node {
             	dbfDataReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
             }
 			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
-				dbfDataReader.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
+				dbfDataReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
 				dbfDataReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));

@@ -44,6 +44,7 @@ import org.jetel.util.bytes.WritableByteChannelIterator;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
 /**
@@ -318,7 +319,7 @@ public class Trash extends Node {
 				trash.setDebugPrint(xattribs.getBoolean(XML_DEBUGPRINT_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_DEBUGFILENAME_ATTRIBUTE)) {
-				trash.setDebugFile(xattribs.getString(XML_DEBUGFILENAME_ATTRIBUTE));
+				trash.setDebugFile(xattribs.getStringEx(XML_DEBUGFILENAME_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_DEBUGAPPEND_ATTRIBUTE)) {
 				trash.setDebugAppend( xattribs.getBoolean(XML_DEBUGAPPEND_ATTRIBUTE) );

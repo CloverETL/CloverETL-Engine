@@ -45,6 +45,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -317,16 +318,16 @@ public class XmlXPathReader extends Node {
 		XmlXPathReader aXmlXPathReader = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		try {
-			String mappingURL = xattribs.getString(XML_MAPPING_URL_ATTRIBUTE, null);
+			String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF);
 			if (mappingURL != null) {
 				aXmlXPathReader = new XmlXPathReader(
 						xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILE_ATTRIBUTE),
+						xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
 						mappingURL);
 			} else {
 				aXmlXPathReader = new XmlXPathReader(
 						xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILE_ATTRIBUTE),
+						xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
 						createDocumentFromString(xattribs.getString(XML_MAPPING_ATTRIBUTE)));
 			}
 			

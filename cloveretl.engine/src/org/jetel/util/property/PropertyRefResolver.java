@@ -58,8 +58,6 @@ public class PropertyRefResolver {
 	/** the character used to quote CTL expressions */
 	private static final char EXPRESSION_QUOTE = Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX.charAt(
 			Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX.length() - 1);
-	/** the default value related to resolving of special characters within string values */
-	public static final boolean DEFAULT_RESOLVE_SPEC_CHAR = true;
 
 	/** the logger for this class */
 	private static final Log logger = LogFactory.getLog(PropertyRefResolver.class);
@@ -104,7 +102,9 @@ public class PropertyRefResolver {
 	 * to <code>false</code>.
 	 *
 	 * @param graph a graph with properties to be used for resolving references
+	 * @deprecated call new PropertyRefResolver(graph.getGraphProperties()) instead
 	 */
+	@Deprecated
 	public PropertyRefResolver(TransformationGraph graph) {
 		this.properties = (graph != null) ? graph.getGraphProperties() : new Properties();
 	}
@@ -161,21 +161,7 @@ public class PropertyRefResolver {
 	 * is disabled
 	 */
 	public String resolveRef(String value) {
-		return resolveRef(value, DEFAULT_RESOLVE_SPEC_CHAR);
-	}
-
-	/**
-	 * If resolving is enabled, evaluates CTL expressions and resolves property references present in the given string
-	 * buffer. After that, special characters are resolved. The result is then stored back into the given string buffer.
-	 * Does nothing if resolving is disabled.
-	 *
-	 * @param value a string buffer containing CTL expressions and property references
-	 *
-	 * @return <code>true</code> if resolving is enabled and at least one CTL expression or property reference was found
-	 * and evaluated/resolved, <code>false</code> otherwise
-	 */
-	public boolean resolveRef(StringBuffer value) {
-		return resolveRef(value, DEFAULT_RESOLVE_SPEC_CHAR);
+		return resolveRef(value, RefResFlag.REGULAR);
 	}
 
 	/**
@@ -188,42 +174,66 @@ public class PropertyRefResolver {
 	 *
 	 * @return the value with CTL expressions evaluated and property references resolved or the same value if resolving
 	 * is disabled
+	 * @deprecated to turn off the special characters resolving call resolveRef(value, RefResOption.ALL_OFF) instead
 	 */
+	@Deprecated
 	public String resolveRef(String value, boolean resolveSpecChars) {
+		if (!resolveSpecChars) {
+			return resolveRef(value, RefResFlag.ALL_OFF);
+		} else {
+			return resolveRef(value);
+		}
+	}
+
+	/**
+	 * If resolving is enabled, CTL expressions and special characters resolving is dedicated
+	 * by options parameter. Does nothing if resolving is disabled.
+	 *
+	 * @param value a string containing CTL expressions and property references
+	 * @param flag flag specifying whether special characters within string values should be resolved and
+	 * CTL expressions within the global scope should be evaluated
+	 *
+	 * @return the value with CTL expressions evaluated and property references resolved or the same value if resolving
+	 * is disabled
+	 */
+	public String resolveRef(String value, RefResFlag flag) {
 		if (value == null || !resolve) {
 			return value;
 		}
 
 		StringBuffer valueBuffer = new StringBuffer(value);
-		resolveRef(valueBuffer, resolveSpecChars);
+		resolveRef(valueBuffer, flag);
 
 		return valueBuffer.toString();
 	}
-
+	
 	/**
 	 * If resolving is enabled, evaluates CTL expressions and resolves property references present in the given string
 	 * buffer. After that, special characters are resolved. The result is then stored back into the given string buffer.
 	 * Does nothing if resolving is disabled.
 	 *
 	 * @param value a string buffer containing CTL expressions and property references
-	 * @param resolveSpecChars flag specifying whether special characters within string values should be resolved and
+	 * @param flag flag specifying whether special characters within string values should be resolved and
 	 * CTL expressions within the global scope should be evaluated
 	 *
 	 * @return <code>true</code> if resolving is enabled and at least one CTL expression or property reference was found
 	 * and evaluated/resolved, <code>false</code> otherwise
 	 */
-	public boolean resolveRef(StringBuffer value, boolean resolveSpecChars) {
+	private boolean resolveRef(StringBuffer value, RefResFlag flag) {
 		if (value == null || !resolve) {
 			return false;
 		}
 
+		if (flag == null) {
+			flag = RefResFlag.REGULAR;
+		}
+		
 		//
 		// evaluate CTL expressions and resolve remaining property references
 		//
-
 		boolean valueModified = false;
 
-		if (resolveSpecChars) {
+		if (flag.resolveCTLstatements()) {
 			valueModified |= evaluateExpressions(value);
 		}
 
@@ -233,7 +243,7 @@ public class PropertyRefResolver {
 		// resolve special characters if desired
 		//
 
-		if (resolveSpecChars) {
+		if (flag.resolveSpecCharacters()) {
 			String resolvedValue = StringUtils.stringToSpecChar(value);
 
 			value.setLength(0);

@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -170,21 +168,7 @@ public class ComponentXMLAttributes {
 		}
 		
 	}
-
-
 	
-	/**
-	 *  Returns the String value of specified XML attribute
-	 *
-	 * @param  key  name of the attribute
-	 * @return      The string value
-     * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
-     * reference to global parameter/property included in atribute's textual/string value
-	 */
-	public String getString(String key) throws AttributeNotFoundException {
-		return getString(key, PropertyRefResolver.DEFAULT_RESOLVE_SPEC_CHAR);
-	}
-    
     /**
      * Returns the String value of specified XML attribute
      * 
@@ -194,6 +178,69 @@ public class ComponentXMLAttributes {
      * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
      * reference to global parameter/property included in atribute's textual/string value
      */
+	public String getString(String key) throws AttributeNotFoundException {
+    	if (!nodeXML.hasAttribute(key)) {
+            throw new AttributeNotFoundException(key);
+    	}
+        String value = nodeXML.getAttribute(key);
+        return refResolver.resolveRef(value);
+    }
+
+	/**
+     * Returns the String value of specified XML attribute. If the attribute is not found returns
+     * default value.
+	 * @param key
+	 * @param defaultValue
+	 * @return
+	 */
+	public String getString(String key, String defaultValue) {
+		return getStringEx(key, defaultValue, null);
+	}
+
+	/**
+     * Returns the String value of specified XML attribute. If the attribute is not found returns
+     * default value. Reference resolving is done according the given flag.
+	 * @param key
+	 * @param defaultValue
+	 * @param options
+	 * @return
+	 */
+	public String getStringEx(String key, String defaultValue, RefResFlag flag) {
+		if (!nodeXML.hasAttribute(key)) {
+            return defaultValue;
+		}
+        String value=nodeXML.getAttribute(key);
+        return refResolver.resolveRef(value, flag);
+	}
+
+
+	/**
+     * Returns the String value of specified XML attribute. Reference resolving is done according the given flag.
+	 * @param key
+	 * @param flag
+	 * @return
+	 * @throws AttributeNotFoundException
+	 */
+	public String getStringEx(String key, RefResFlag flag) throws AttributeNotFoundException {
+    	if (!nodeXML.hasAttribute(key)) {
+            throw new AttributeNotFoundException(key);
+    	}
+        String value = nodeXML.getAttribute(key);
+        return refResolver.resolveRef(value, flag);
+    }
+
+
+    /**
+     * Returns the String value of specified XML attribute
+     * 
+     * @param key   name of the attribute
+     * @param resolveSpecChars if true, all special characters will be resolved; @see StringUtils.stringToSpecChar()
+     * @return  The string value
+     * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
+     * reference to global parameter/property included in atribute's textual/string value
+     * @deprecated call getString(String, RefResFlag) instead
+     */
+	@Deprecated
     public String getString(String key, boolean resolveSpecChars) throws AttributeNotFoundException {
     	if (!nodeXML.hasAttribute(key)) {
             throw new AttributeNotFoundException(key);
@@ -209,18 +256,9 @@ public class ComponentXMLAttributes {
 	 * @param  key           name of the attribute
 	 * @param  defaultValue  default value to be returned when attribute can't be found
 	 * @return               The string value
+	 * @deprecated call getString(String, String, RefResFlag)
 	 */
-	public String getString(String key, String defaultValue) {
-		return getString(key, defaultValue, PropertyRefResolver.DEFAULT_RESOLVE_SPEC_CHAR);
-	}
-
-	/**
-	 *  Returns the String value of specified XML attribute
-	 *
-	 * @param  key           name of the attribute
-	 * @param  defaultValue  default value to be returned when attribute can't be found
-	 * @return               The string value
-	 */
+	@Deprecated
 	public String getString(String key, String defaultValue, boolean resolveSpecChars) {
 		if (!nodeXML.hasAttribute(key)) {
             return defaultValue;
@@ -468,10 +506,6 @@ public class ComponentXMLAttributes {
     	nodeXML.setAttribute(key,String.valueOf(value));
     }
 
-    
-    
-    
-    
 	/**
      * Checks whether specified attribute exists (XML node has such attribute
      * defined)
@@ -487,7 +521,6 @@ public class ComponentXMLAttributes {
 		return false;
 	}
 
-
 	/**
 	 *  Returns first TEXT_NODE child under specified XML Node
 	 *
@@ -497,6 +530,7 @@ public class ComponentXMLAttributes {
      * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
      * reference to global parameter/property included in atribute's textual/string value
      */
+	@Deprecated
 	public String getText(org.w3c.dom.Node nodeXML, boolean resolveSpecChars) throws AttributeNotFoundException{
 		org.w3c.dom.Node childNode;
 		org.w3c.dom.NodeList list;
@@ -520,6 +554,7 @@ public class ComponentXMLAttributes {
      * * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
      * reference to global parameter/property included in atribute's textual/string value
      */
+	@Deprecated
     public String getText(org.w3c.dom.Node nodeXML) throws AttributeNotFoundException{
         return getText(nodeXML,true);
     }
@@ -531,6 +566,7 @@ public class ComponentXMLAttributes {
 	 * @param  childNodeName  name of the child node to be searched for
 	 * @return                childNode if exist under specified name or null
 	 */
+	@Deprecated
 	public org.w3c.dom.Node getChildNode(org.w3c.dom.Node nodeXML, String childNodeName) {
 		org.w3c.dom.Node childNode;
 		org.w3c.dom.NodeList list;
@@ -552,42 +588,6 @@ public class ComponentXMLAttributes {
 		return null;
 	}
 
-
-	/**
-	 *  Gets the childNodes attribute of the ComponentXMLAttributes object
-	 *
-	 * @param  nodeXML        Description of the Parameter
-	 * @param  childNodeName  Description of the Parameter
-	 * @return                The childNodes value
-	 */
-	public org.w3c.dom.Node[] getChildNodes(org.w3c.dom.Node nodeXML, String childNodeName) {
-		org.w3c.dom.Node childNode;
-		org.w3c.dom.NodeList list;
-		List<Node> childNodesList = new LinkedList<Node>();
-		if (nodeXML.hasChildNodes()) {
-			list = nodeXML.getChildNodes();
-			for (int i = 0; i < list.getLength(); i++) {
-				childNode = list.item(i);
-				if (childNodeName.equals(childNode.getNodeName())) {
-					childNodesList.add(childNode);
-				}
-			}
-		}
-		return (org.w3c.dom.Node[]) childNodesList.toArray(new org.w3c.dom.Node[childNodesList.size()]);
-	}
-
-	
-	/**
-	 * Converts XML Node's attributes to Properties object - hash of key-value pairs.
-	 * Can omit/exclude certain attributes based on specified array of Strings - attribute
-	 * names.
-	 * @param exclude	array of Strings - names of attributes to be excluded (can be null)
-	 * @return Properties object with pairs [attribute name]-[attribute value]
-	 */
-	public Properties attributes2Properties(String[] exclude)  {
-		return attributes2Properties(exclude, PropertyRefResolver.DEFAULT_RESOLVE_SPEC_CHAR);
-	}
-	
 	/**
 	 * Converts XML Node's attributes to Properties object - hash of key-value pairs.
 	 * Can omit/exclude certain attributes based on specified array of Strings - attribute
@@ -597,6 +597,7 @@ public class ComponentXMLAttributes {
 	 * {@link StringUtils#stringToSpecChar(CharSequence)}
 	 * @return Properties object with pairs [attribute name]-[attribute value]
 	 */
+	@Deprecated
 	public Properties attributes2Properties(String[] exclude, boolean resolveSpecChars) {
 	    Properties properties=new Properties();
 	    Set<String> exception=new HashSet<String>();
@@ -611,6 +612,37 @@ public class ComponentXMLAttributes {
 	                    refResolver.resolveRef(attributes.item(i).getNodeValue(), resolveSpecChars));
 	        }
 	    }
+	    return properties;
+	}
+
+	public Properties attributes2Properties(String[] exclude) {
+		return attributes2Properties(exclude, null);
+	}
+
+	/**
+	 * Converts XML Node's attributes to Properties object - hash of key-value pairs.
+	 * Can omit/exclude certain attributes based on specified array of Strings - attribute
+	 * names.
+	 * @param exclude	array of Strings - names of attributes to be excluded (can be null)
+	 * @param flag		flag for property resolving
+	 * @return Properties object with pairs [attribute name]-[attribute value]
+	 */
+	public Properties attributes2Properties(String[] exclude, RefResFlag flag) {
+	    Properties properties = new Properties();
+	    Set<String> exceptions = new HashSet<String>();
+	    String name;
+	    
+	    if (exclude != null) {
+	    	Collections.addAll(exceptions, exclude);
+	    }
+       
+	    for (int i = 0; i < attributes.getLength(); i++) {
+	        name = attributes.item(i).getNodeName();
+	        if (!exceptions.contains(name)) {
+	            properties.setProperty(name, refResolver.resolveRef(attributes.item(i).getNodeValue(), flag));
+	        }
+	    }
+	    
 	    return properties;
 	}
 
@@ -630,7 +662,11 @@ public class ComponentXMLAttributes {
             }
         }
     }
-	
+
+	public String resolveReferences(String input) throws AttributeNotFoundException {
+		return resolveReferences(input, null);
+	}
+
 	/**
 	 * Replaces references to parameters in string with parameters' values.
 	 * 
@@ -638,8 +674,8 @@ public class ComponentXMLAttributes {
 	 * (substituted with parameters' values)
 	 * @return String with references resolved.
 	 */
-	public String resolveReferences(String input) throws AttributeNotFoundException{
-	    return refResolver.resolveRef(input);
+	public String resolveReferences(String input, RefResFlag flag) throws AttributeNotFoundException{
+	    return refResolver.resolveRef(input, flag);
 	}
 
 	/**
@@ -649,10 +685,10 @@ public class ComponentXMLAttributes {
 	 * @return
 	 * @throws AttributeNotFoundException
 	 */
+	@Deprecated
 	public String resolveReferences(String input, boolean resolveSpecChars) throws AttributeNotFoundException{
 	    return refResolver.resolveRef(input, resolveSpecChars);
 	}
-	
 	
 	/**
 	 * Determines whether resolving references is enabled/disabled.

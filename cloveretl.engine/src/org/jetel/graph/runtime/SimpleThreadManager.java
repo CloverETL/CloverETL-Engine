@@ -51,6 +51,7 @@ public class SimpleThreadManager implements IThreadManager {
 	 */
 	public void executeNode(Runnable node) {
 		Thread nodeThread = new Thread(node);
+		nodeThread.setContextClassLoader(node.getClass().getClassLoader());
 		nodeThread.setPriority(Thread.MIN_PRIORITY);
 		nodeThread.setDaemon(true);
 		nodeThread.start();

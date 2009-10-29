@@ -291,6 +291,8 @@ public class PluginDescriptor {
      * This method is called only from Plugins.activatePlugin() method.
      */
     protected void activate() {
+        isActive = true;
+        
         //first, we activate all prerequisites plugins
         for(Iterator it = getPrerequisites().iterator(); it.hasNext();) {
             PluginPrerequisite prerequisite = (PluginPrerequisite) it.next();
@@ -305,8 +307,6 @@ public class PluginDescriptor {
         }
         //update java.library.path according native libraries
         applyNativeLibraries();
-
-        isActive = true;
     }
 
     /**

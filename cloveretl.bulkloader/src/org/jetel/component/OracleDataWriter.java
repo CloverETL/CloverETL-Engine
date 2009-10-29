@@ -50,6 +50,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -610,7 +611,7 @@ public class OracleDataWriter extends BulkLoader {
                 oracleDataWriter.setUseFileForExchange(xattribs.getBoolean(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE));
             }
             if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-            	oracleDataWriter.setFileUrl(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
+            	oracleDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
 			}
             if (xattribs.exists(XML_MAX_ERRORS_ATTRIBUTE)) {
             	oracleDataWriter.setMaxErrors(xattribs.getInteger(XML_MAX_ERRORS_ATTRIBUTE));

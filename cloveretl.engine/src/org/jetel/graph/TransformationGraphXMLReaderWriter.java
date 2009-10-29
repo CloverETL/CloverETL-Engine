@@ -22,11 +22,9 @@ package org.jetel.graph;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
@@ -747,39 +745,23 @@ public class TransformationGraphXMLReaderWriter {
 	}
 
 	private void instantiateProperties(NodeList propertyElements) throws  XMLConfigurationException {
-	    
 	    // loop through all property elements & create appropriate properties
-        try{
-        	// container for inner properties
-    		List<ComponentXMLAttributes> innerProperties = new ArrayList<ComponentXMLAttributes>();
-    		
-    		// load file properties first
-    	    for (int i = 0; i < propertyElements.getLength(); i++) {
-    	        ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element)propertyElements.item(i), graph);
-    	            // process property from file
-    	            if (attributes.exists("fileURL")){
-    	                String fileURL = attributes.getString("fileURL");
-    	               try{
-    	                   graph.loadGraphPropertiesSafe(fileURL);
-                       }catch(IOException ex){
-                           throw new XMLConfigurationException("Can't load property definition from "+fileURL,ex); 
-                       }
-    	            }else if (attributes.exists("name")){
-    	    	        innerProperties.add(attributes);
-    	            }else{
-    	                throw new XMLConfigurationException("Invalid property definition :"+propertyElements.item(i));
-    	            }
-    	    }
-    		
-    		// resolve inner properties
-    	    for (ComponentXMLAttributes componentXMLAttributes: innerProperties) {
-                graph.getGraphProperties().setPropertySafe(componentXMLAttributes.getString("name"),
-                		componentXMLAttributes.resolveReferences(componentXMLAttributes.getString("value")));
-    	    }
-        }catch(AttributeNotFoundException ex){
-            throw new XMLConfigurationException("Property - Attributes missing "+ex.getMessage());
-        }
-	    // we successfully instantiated all properties
+	    for (int i = 0; i < propertyElements.getLength(); i++) {
+	        Element propertyElement = (Element) propertyElements.item(i);
+	        // process property from file
+	        if (propertyElement.hasAttribute("fileURL")) {
+	        	String fileURL = propertyElement.getAttribute("fileURL");
+	        	try {
+	        		graph.loadGraphPropertiesSafe(fileURL);
+	        	} catch(IOException ex) {
+	        		throw new XMLConfigurationException("Can't load property definition from " + fileURL, ex); 
+	        	}
+	        } else if (propertyElement.hasAttribute("name")) {
+	        	graph.getGraphProperties().setPropertySafe(propertyElement.getAttribute("name"), propertyElement.getAttribute("value"));
+	        } else {
+	        	throw new XMLConfigurationException("Invalid property definition :" + propertyElement);
+	        }
+	    }
 	}
 
 	private void instantiateDictionary(NodeList dictionaryElements) throws  XMLConfigurationException {

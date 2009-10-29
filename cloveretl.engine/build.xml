@@ -154,8 +154,10 @@
 		</ant>
 	</target>
 	
-	<target name="dist" depends="dist.bin, dist.src, dist.javadoc, dist.examples" description="Creates all distribution files"/>
+	<target name="dist" depends="dist.bin, dist.src, dist.javadoc, dist.examples" description="Creates all distribution files with sources"/>
 				
+	<target name="dist-nosrc" depends="dist.bin, dist.javadoc, dist.examples" description="Creates all distribution files without sources"/>
+	
 	<target name="dist.src" depends="init" description="Creates source distribution">
 	
 		<mkdir dir="${dir.distprepare.src}/cloverETL"/>
@@ -323,6 +325,11 @@ defined.version.suffix=release
 		</copy>
 		<copy todir="${dir.distprepare.exa}/cloverETL/examples/SimpleExamples">
 			<fileset dir="${dir.examples}/simpleExamples" >
+				<patternset refid="example.files"/>
+			</fileset>
+		</copy>
+		<copy todir="${dir.distprepare.exa}/cloverETL/examples/DWHExamples">
+			<fileset dir="${dir.examples}/DWHExamples" >
 				<patternset refid="example.files"/>
 			</fileset>
 		</copy>
@@ -655,6 +662,11 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			</classpath>
 			<src path="${dir.src.test}"/>
 		</javac>
+		<copy todir="${dir.classestest}">
+			<fileset dir="${dir.src.test}">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
 	</target>
 	
 	<target name="coverage-instrument" depends="coverage-instrument-engine,coverage-instrument-plugins">

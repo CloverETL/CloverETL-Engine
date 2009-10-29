@@ -44,6 +44,8 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -57,6 +59,7 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.AproximativeJoinKey;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringAproxComparator;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -632,11 +635,10 @@ public class AproxMergeJoin extends Node {
 				case 1:
 					throw new JetelException("Driver record out of order!");
 				}
-			}else{
-				while (slavePort.readRecord(slaveRecords[CURRENT]) != null) {
-					//Wait for eof on slave
-				}
+			} else {
+				readRemainingSlaveRecords(slavePort, notMatchSlavePort, slaveRecords[CURRENT]);
 			}
+
 			// switch temporary --> current
 			tmpRec = driverRecords[CURRENT];
 			driverRecords[CURRENT] = driverRecords[TEMPORARY];
@@ -644,9 +646,7 @@ public class AproxMergeJoin extends Node {
 			SynchronizeUtils.cloverYield();
 		}
 
-		while (slavePort.readRecord(slaveRecords[CURRENT]) != null) {
-            //Wait for eof on slave
-        }
+		readRemainingSlaveRecords(slavePort, notMatchSlavePort, slaveRecords[CURRENT]);
 
 		transformation.finished();
 		transformationForSuspicious.finished();
@@ -658,8 +658,18 @@ public class AproxMergeJoin extends Node {
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
-	
-	
+
+	private void readRemainingSlaveRecords(InputPort slavePort, OutputPort notMatchSlavePort, DataRecord slaveRecord)
+			throws IOException, InterruptedException {
+		while (!slavePort.isEOF()) {
+			if (notMatchSlavePort != null) {
+				notMatchSlavePort.writeRecord(slaveRecord);
+			}
+
+			slavePort.readRecord(slaveRecord);
+        }
+	}
+
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
         super.init();
@@ -901,8 +911,8 @@ public class AproxMergeJoin extends Node {
                     xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
                     xattribs.getString(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,null),
                     xattribs.getString(XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,null),
-                    xattribs.getString(XML_TRANSFORM_URL_ATTRIBUTE, null),
-                    xattribs.getString(XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE, null));
+                    xattribs.getStringEx(XML_TRANSFORM_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
+                    xattribs.getStringEx(XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
             if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
             	join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
             }
@@ -1125,8 +1135,51 @@ public class AproxMergeJoin extends Node {
             status.add(problem);
         }
         
+        checkCTL(status, transformSource, transformURL,  CONFORMING_OUT,
+        		XML_TRANSFORM_ATTRIBUTE, XML_TRANSFORM_URL_ATTRIBUTE);
+        checkCTL(status, transformSourceForSuspicious, transformURLForsuspicious, SUSPICIOUS_OUT, 
+        		XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE, XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE);
+
         return status;
     }
+
+	private void checkCTL(ConfigurationStatus status,
+			String transform, String transformURL, int outputPort,
+			String transformAttribute, String transformURLAttribute) {
+		
+		// transformation source for checkconfig
+        String checkTransform = null;
+        if (transform != null) {
+        	checkTransform = transform;
+        } else if (transformURL != null) {
+        	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), transformURL, charset);
+        }
+        // only the transform and transformURL parameters are checked, transformClass is ignored
+        if (checkTransform != null) {
+        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
+        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
+        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
+        		// only CTL is checked
+        		
+        		DataRecordMetadata[] inMetadata = new DataRecordMetadata[2];
+        		inMetadata[0] = getInputPort(DRIVER_ON_PORT).getMetadata();
+        		inMetadata[1] = getInputPort(SLAVE_ON_PORT).getMetadata();
+        		DataRecordMetadata[] outMetadata = 
+        			new DataRecordMetadata[] { getOutputPort(outputPort).getMetadata() };
+
+    			try {
+    				RecordTransformFactory.createTransform(checkTransform, null, null, 
+    						charset, this, inMetadata, outMetadata, transformationParameters, 
+    						null, null);
+				} catch (ComponentNotReadyException e) {
+					// find which component attribute was used
+					String attribute = transform != null ? transformAttribute : transformURLAttribute;
+					// report CTL error as a warning
+					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
+				}
+        	}
+        }
+	}
 
     public String getType(){
 		return COMPONENT_TYPE;

@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLUtil;
@@ -46,6 +47,9 @@ import org.jetel.util.string.StringUtils;
  * @created Jun 3, 2008
  */
 abstract public class AbstractJdbcSpecific implements JdbcSpecific {
+
+	/** the SQL comments pattern conforming to the SQL standard */
+	private static final Pattern COMMENTS_PATTERN = Pattern.compile("--[^\r\n]*|/\\*.*?\\*/", Pattern.DOTALL);
 
 	private static final String TYPES_CLASS_NAME = "java.sql.Types";
 
@@ -220,6 +224,10 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		return TYPES_CLASS_NAME;
 	}
 
+	public Pattern getCommentsPattern() {
+		return COMMENTS_PATTERN;
+	}
+
 	public String sqlType2str(int sqlType) {
 		return SQLUtil.sqlType2str(sqlType);
 	}
@@ -228,7 +236,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
         return identifier;
     }
 
-	public String getValidateQuery(String query, QueryType queryType) throws SQLException {
+    public String getValidateQuery(String query, QueryType queryType) throws SQLException {
 		
 		String q = null;
         String where = "WHERE";
@@ -333,13 +341,15 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		return ret;
 	}
 	
-	public ArrayList<String> getSchemas(DatabaseMetaData dbMeta)
+	public ArrayList<String> getSchemas(java.sql.Connection connection)
 			throws SQLException {
 
 		ArrayList<String> tmp;
 		
 		ArrayList<String> schemas = new ArrayList<String>();
 
+		DatabaseMetaData dbMeta = connection.getMetaData();
+		
 		// add schemas
 		tmp = getMetaSchemas(dbMeta);
 		if (tmp != null) {
@@ -355,10 +365,10 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		return schemas;
 	}
 
-	public ResultSet getTables(DatabaseMetaData dbMeta, String dbName) throws SQLException {
+	public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
 		// by default, database `dbName` is considered a schema, sometimes it needs to be considered
 		// as a catalog
-		return dbMeta.getTables(dbName, null, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/); //fix by kokon - show only tables and views
+		return connection.getMetaData().getTables(dbName, null, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/); //fix by kokon - show only tables and views
 	}
 
     

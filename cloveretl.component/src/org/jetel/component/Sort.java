@@ -165,7 +165,9 @@ public class Sort extends Node {
         if(!isInitialized()) return;
 		super.free();
 		
-		newSorter.free();
+		if (newSorter != null) {
+			newSorter.free();
+		}
 	}
 	/**
 	 *  Sets the sortOrderAscending attribute of the Sort object

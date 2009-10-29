@@ -66,6 +66,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -936,7 +937,7 @@ public class XmlWriter extends Node {
 			writer = new XmlWriter(xattribs.getString(XML_ID_ATTRIBUTE));
 			
 	        // set mapping
-	        String mappingURL = xattribs.getString(XML_MAPPING_URL_ATTRIBUTE, null);
+	        String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF);
 	        String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
 	        NodeList nodes = xmlElement.getChildNodes();
 	        if (mappingURL != null) 
@@ -948,7 +949,7 @@ public class XmlWriter extends Node {
 	            //mapping xml elements are child nodes of the component
 	        	writer.setMappingNodes(nodes);
 	        } else {
-	        	xattribs.getString(XML_MAPPING_URL_ATTRIBUTE); // throw configuration exception
+	        	xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF); // throw configuration exception
 	        }
 
 			boolean omitNewLines = xattribs.getBoolean(XML_SINGLE_ROW_ATTRIBUTE, false); // singleRow is deprecated attribute, but still possible ... 

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="Product" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipSourceRows="1" type="delimited">
+<Field name="UPC" type="string"/>
+<Field name="PRODUCT_DESCRIPTION" type="string"/>
+<Field name="BRAND_DESCRIPTION" type="string"/>
+<Field name="DEPARTMENT_DESCRIPTION" type="string"/>
+</Record>

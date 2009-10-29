@@ -46,6 +46,7 @@ import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -402,7 +403,7 @@ public class DataReader extends Node {
 
 		try {
 			aDataReader = new DataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_FILE_ATTRIBUTE),
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
 					xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 					xattribs.getBoolean(XML_VERBOSE_ATTRIBUTE, false));
 			aDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Jul 31 09:29:05 CEST 2007" description="This graph illustrates usage of Db2DataWriterComponent.&#10;This component can be used in two ways:&#10;* data read from input port, are properly formated and saved in temporary file or named pipe (on Linux/Unix) and then load to database (phase 0)&#10;* data from existing file are lodaed to database (phase 1)&#10;Information about rejected records can be sent to output port." guiVersion="0.0" id="1204537468815" licenseType="Evaluation license." modified="Thu Nov 27 12:51:17 CET 2008" modifiedBy="avackova" name="test" revision="1.460">
+<Graph author="avackova" created="Tue Jul 31 09:29:05 CEST 2007" description="This graph illustrates usage of Db2DataWriterComponent.&#10;This component can be used in two ways:&#10;* data read from input port, are properly formated and saved in temporary file or named pipe (on Linux/Unix) and then load to database (phase 0)&#10;* data from existing file are lodaed to database (phase 1)&#10;Information about rejected records can be sent to output port." guiVersion="0.0.0.devel" id="1204537468815" licenseType="Evaluation Devel" modified="Wed Oct 21 11:15:13 GMT+01:00 2009" modifiedBy="avackova" name="test" revision="1.514">
 <Global>
 <Metadata id="Metadata2">
 <Record fieldDelimiter=";" name="errors" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -35,45 +35,20 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Sequence cached="0" fileURL="${SEQ_DIR}/seq.seq" id="Sequence0" name="seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="22" guiY="141" id="DATA_GENERATOR0" pattern="46.67;20:20;31-12-2007 23:59;delimited&#10;" randomFields="$LONG_COL:=random(&quot;-100&quot;,&quot;100&quot;);$DATE_COL:=random(&quot;01.09.2007&quot;,&quot;30.09.2007&quot;);$DECIMAL_COL_NOT_NULL:=random(&quot;0&quot;,&quot;1&quot;);$REAL_COL:=random(&quot;-1&quot;,&quot;1&quot;)" recordsNumber="200" sequenceFields="$INT_COL_NOT_NULL:=Sequence0;" type="DATA_GENERATOR"/>
-<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="22" guiY="39" id="DATA_GENERATOR1" pattern="70.0      11:3217-08-2007 00:01fixlen metadata     " randomFields="$LONG_COL:=random(&quot;-100&quot;,&quot;100&quot;);$DATE_COL:=random(&quot;01.08.2007&quot;,&quot;31.08.2007&quot;);$DECIMAL_COL_NOT_NULL:=random(&quot;0&quot;,&quot;1&quot;);$REAL_COL:=random(&quot;-1&quot;,&quot;1&quot;)" recordsNumber="200" sequenceFields="$INT_COL_NOT_NULL:=Sequence0;" type="DATA_GENERATOR">
-<attr name="parameters"><![CDATA[dateformat=dd-mm-yyyy]]></attr>
-</Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/mytab_fix.txt" guiHeight="0" guiName="Universal Data Writer" guiWidth="0" guiX="219" guiY="39" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node columnDelimiter=";" database="mydb" enabled="enabled" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="394" guiY="141" id="DB2_DATA_WRITER0" loadMode="insert" password="clover" table="mytab" type="DB2_DATA_WRITER" useNamedPipe="true" userName="db2inst1">
+<Node database="test" enabled="enabled" fileMetadata="Metadata1" fileURL="${DATAIN_DIR}/fixlen/db2fix.dat" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="208" guiY="27" id="DB2_DATA_WRITER1" loadMode="insert" parameters="reclen=97" password="semafor" rejectedURL="/home/db2inst/rejected_fix.txt" table="mytab" type="DB2_DATA_WRITER" userName="db2inst">
 <attr name="transferMode"><![CDATA[file]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="219" guiY="141" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[function decimalColumnValue(inputValue){
-	if (inputValue < 0.1) return null;
-	return inputValue;
-}
-
-function transform() {
-	$0.LONG_COL := $0.LONG_COL;
-	$0.DATE_COL := $0.DATE_COL;
-	$0.DECIMAL_COL_NOT_NULL := decimalColumnValue($0.DECIMAL_COL_NOT_NULL);
-	$0.DOUBLE_COL_NOT_NULL_DEFAULT := $0.DOUBLE_COL_NOT_NULL_DEFAULT;
-	$0.INT_COL_NOT_NULL := $0.INT_COL_NOT_NULL;
-	$0.REAL_COL := $0.REAL_COL;
-	$0.TIME_COL_NOT_NULL_DEFAULT := $0.TIME_COL_NOT_NULL_DEFAULT;
-	$0.TIMESTAMP_COLL_NOT_NULL := $0.TIMESTAMP_COLL_NOT_NULL;
-	$0.STRING_COL := $0.STRING_COL;
-}
-]]></attr>
-</Node>
-<Node debugPrint="false" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="580" guiY="141" id="TRASH0" type="TRASH"/>
-<Edge fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
-<Edge debugMode="true" fromNode="DATA_GENERATOR1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
-<Edge debugMode="true" fromNode="DB2_DATA_WRITER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="TRASH0:0"/>
-<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DB2_DATA_WRITER0:0"/>
 </Phase>
 <Phase number="1">
-<Node database="mydb" enabled="enabled" fileMetadata="Metadata1" fileURL="${DATAOUT_DIR}/mytab_fix.txt" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="394" guiY="39" id="DB2_DATA_WRITER1" loadMode="insert" parameters="reclen=97" password="clover" table="mytab" type="DB2_DATA_WRITER" userName="db2inst1">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/db2delimited.dat" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="22" guiY="140" id="DATA_READER1" type="DATA_READER"/>
+<!-- Following node should work with useNamedPipe="true", but now it causes unfinishing loop in test. Change it, when the issue 3040 is resolved -->
+<Node columnDelimiter=";" database="test" enabled="enabled" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="208" guiY="140" id="DB2_DATA_WRITER0" loadMode="insert" password="semafor" table="mytab" type="DB2_DATA_WRITER" useNamedPipe="false" userName="db2inst">
 <attr name="transferMode"><![CDATA[file]]></attr>
 </Node>
+<Node debugFilename="${DATAOUT_DIR}/rejected_delimited.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="394" guiY="140" id="TRASH0" type="TRASH"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DB2_DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="DB2_DATA_WRITER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="TRASH0:0"/>
 </Phase>
 </Graph>

@@ -20,13 +20,15 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
+import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.conn.OracleConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  * Oracle specific behaviour.
@@ -37,6 +39,9 @@ import org.jetel.util.string.StringUtils;
  * @created Jun 3, 2008
  */
 public class OracleSpecific extends AbstractJdbcSpecific {
+
+	/** the SQL comments pattern conforming to the SQL standard */
+	private static final Pattern COMMENTS_PATTERN = Pattern.compile("--[^\r\n]*|/\\*(?!\\+).*?\\*/", Pattern.DOTALL);
 
 	private static final String ORACLE_TYPES_CLASS_NAME = "oracle.jdbc.OracleTypes";
 
@@ -118,4 +123,14 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 		return ORACLE_TYPES_CLASS_NAME;
 	}
 
+	@Override
+	public Pattern getCommentsPattern() {
+		return COMMENTS_PATTERN;
+	}
+
+	@Override
+	public ResultSet getTables(Connection connection, String dbName) throws SQLException {
+		return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW" });
+	}
+	
 }

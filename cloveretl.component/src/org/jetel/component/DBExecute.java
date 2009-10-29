@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverCallableStatement;
+import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
@@ -54,6 +55,7 @@ import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -301,7 +303,9 @@ public class DBExecute extends Node {
 		if (dbSQL==null){
             String delimiter = sqlStatementDelimiter !=null ? sqlStatementDelimiter : DEFAULT_SQL_STATEMENT_DELIMITER;
             if (sqlQuery != null) {
-            	String[] parts = sqlQuery.split(delimiter);
+            	String sqlQueryWithouComments = StringUtils.removeAllSubstrings(sqlQuery,
+            			dbConnection.getJdbcSpecific().getCommentsPattern());
+            	String[] parts = StringUtils.split(sqlQueryWithouComments,delimiter);
             	ArrayList<String> tmp = new ArrayList<String>();
             	for(String part: parts) {
             		if (part.trim().length() > 0) {
@@ -346,57 +350,7 @@ public class DBExecute extends Node {
 			errorCodeFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_CODE);
 			errMessFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_MESSAGE);
 		}
-		try {
-			//prepare statements if are not read from file or port
-			if (procedureCall) {
-				int resultSetType = dbConnection.getJdbcDriver().getResultSetType();
-
-				connectionInstance = dbConnection.getConnection(getId(), OperationType.CALL);
-				if (dbSQL != null) {
-					callableStatement = new SQLCloverCallableStatement[dbSQL.length];
-					for (int i = 0; i < callableStatement.length; i++) {
-						callableStatement[i] = new SQLCloverCallableStatement(connectionInstance, dbSQL[i], 
-								inRecord, outRecord, resultSetType);
-						if (inParams != null) {
-							callableStatement[i].setInParameters(inParams[i]);
-						}
-						if (outParams != null) {
-							callableStatement[i].setOutParameters(outParams[i]);
-						}
-						callableStatement[i].setOutputFields(outputFields);
-						callableStatement[i].prepareCall();
-					}
-				}else if (inParams != null) {
-					throw new ComponentNotReadyException(this, XML_SQLQUERY_ATTRIBUTE, 
-							"Can't read statement and parameters from input port");
-				}else{
-					callableStatement = new SQLCloverCallableStatement[1];
-				}
-			}else{
-				connectionInstance = dbConnection.getConnection(getId(), OperationType.WRITE);
-				sqlStatement = connectionInstance.getSqlConnection().createStatement();
-			}
-			// this does not work for some drivers
-			try {
-// -pnajvar
-// This was bugfix #2207 but seems to cause more trouble than good
-// Rather, set transaction to default empty
-//				if (DefaultConnection.isTransactionsSupported(connectionInstance.getSqlConnection())) {
-//					connectionInstance.getSqlConnection().setAutoCommit(false);
-//				}
-				// Autocommit should be disabled only if multiple queries are executed within a single transaction.
-				// Otherwise some queries might fail.
-				connectionInstance.getSqlConnection().setAutoCommit(transaction == InTransaction.ONE);
-			} catch (SQLException ex) {
-				if (transaction != InTransaction.ONE) {
-					throw new ComponentNotReadyException("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
-				}
-			}
-		} catch (SQLException e) {
-			throw new ComponentNotReadyException(this, XML_SQLCODE_ELEMENT, e.getMessage());
-		} catch (Exception e) {
-			throw new ComponentNotReadyException(e);
-		}
+		initConnectionAndStatements();
 		errorActions = new HashMap<Integer, ErrorAction>();
 		if (errorActionsString != null){
         	String[] actions = StringUtils.split(errorActionsString);
@@ -430,28 +384,84 @@ public class DBExecute extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		if (procedureCall && getInPorts().size() > 0) {
+
+		if (getInPorts().size() > 0) {
 			inRecord = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
 			inRecord.init();
-			for (SQLCloverCallableStatement statement : callableStatement) {
-				statement.setInRecord(inRecord);
-			}
 		}
-		if (outRecord != null){
+
+		if (outRecord != null) {
 			outRecord.reset();
 		}
-		if (errRecord != null){
+
+		if (errRecord != null) {
 			errRecord.reset();
 		}
-        if (errorLogURL != null) {
-        	try {
+
+		initConnectionAndStatements();
+
+		if (errorLogURL != null) {
+			try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
 			} catch (IOException e) {
 				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
 			}
-        }
+		}
 	}
 
+	private void initConnectionAndStatements() throws ComponentNotReadyException {
+		try {
+			// prepare statements if are not read from file or port
+			if (procedureCall) {
+				connectionInstance = dbConnection.getConnection(getId(), OperationType.CALL);
+				int resultSetType = dbConnection.getJdbcDriver().getResultSetType();
+
+				if (dbSQL != null) {
+					callableStatement = new SQLCloverCallableStatement[dbSQL.length];
+					for (int i = 0; i < callableStatement.length; i++) {
+						callableStatement[i] = new SQLCloverCallableStatement(
+								connectionInstance, dbSQL[i], inRecord, outRecord, resultSetType);
+						if (inParams != null) {
+							callableStatement[i].setInParameters(inParams[i]);
+						}
+						if (outParams != null) {
+							callableStatement[i].setOutParameters(outParams[i]);
+						}
+						callableStatement[i].setOutputFields(outputFields);
+						callableStatement[i].prepareCall();
+					}
+				} else if (inParams != null) {
+					throw new ComponentNotReadyException(this, XML_SQLQUERY_ATTRIBUTE,
+							"Can't read statement and parameters from input port");
+				} else {
+					callableStatement = new SQLCloverCallableStatement[1];
+				}
+			} else {
+				connectionInstance = dbConnection.getConnection(getId(), OperationType.WRITE);
+				sqlStatement = connectionInstance.getSqlConnection().createStatement();
+			}
+			// this does not work for some drivers
+			try {
+				// -pnajvar
+				// This was bugfix #2207 but seems to cause more trouble than good
+				// Rather, set transaction to default empty
+				// if (DefaultConnection.isTransactionsSupported(connectionInstance.getSqlConnection())) {
+				// connectionInstance.getSqlConnection().setAutoCommit(false);
+				// }
+				// Autocommit should be disabled only if multiple queries are executed within a single transaction.
+				// Otherwise some queries might fail.
+				connectionInstance.getSqlConnection().setAutoCommit(transaction == InTransaction.ONE);
+			} catch (SQLException ex) {
+				if (transaction != InTransaction.ONE) {
+					throw new ComponentNotReadyException("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
+				}
+			}
+		} catch (SQLException e) {
+			throw new ComponentNotReadyException(this, XML_SQLCODE_ELEMENT, e.getMessage());
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(e);
+		}
+	}
 
 	/**
 	 *  Sets the transaction attribute of the DBExecute object
@@ -518,91 +528,107 @@ public class DBExecute extends Node {
 	}
 	
 	private void commit() throws IOException, InterruptedException, SQLException{
-		try {
-			connectionInstance.getSqlConnection().commit();
-		} catch (SQLException e) {
-			handleException(e, inRecord, -1);
+		if (!connectionInstance.getSqlConnection().getAutoCommit()) {
+    		try {
+    			connectionInstance.getSqlConnection().commit();
+    		} catch (SQLException e) {
+    			handleException(e, inRecord, -1);
+    		}
 		}
 	}
 	
 	@Override
 	public Result execute() throws Exception {
-
-		if (channelIterator != null) {
-			DataRecord statementRecord;
-			ReadableByteChannel tmp;//TODO remove it !!!!!!
-			while (channelIterator.hasNext()) {
-				tmp = channelIterator.next();
-				if (tmp == null) break;
-				parser.setDataSource(tmp);
-				statementRecord = new DataRecord(statementMetadata);
-				statementRecord.init();
-				int index = 0;
-				//read statements from byte channel
-				while ((statementRecord = parser.getNext(statementRecord)) != null) {
-					if (printStatements) {
-						logger.info("Executing  statement: " + statementRecord.getField(0).toString());
-					}
-					try {
-						if (procedureCall) {
-							callableStatement[0] = new SQLCloverCallableStatement(connectionInstance, 
-									statementRecord.getField(0).toString(), null, outRecord, dbConnection.getJdbcDriver().getResultSetType());
-							callableStatement[0].prepareCall();
-							executeCall(callableStatement[0], index);
-						}else{
-							sqlStatement.executeUpdate(statementRecord.getField(0).toString());
-						}
-					} catch (SQLException e) {
-						handleException(e, null, index);
-					}
-					index++;
-					if (transaction == InTransaction.ONE){
-						commit();
+		try {
+    		if (channelIterator != null) {
+    			DataRecord statementRecord;
+    			ReadableByteChannel tmp;//TODO remove it !!!!!!
+    			while (channelIterator.hasNext()) {
+    				tmp = channelIterator.next();
+    				if (tmp == null) break;
+    				parser.setDataSource(tmp);
+    				statementRecord = new DataRecord(statementMetadata);
+    				statementRecord.init();
+    				int index = 0;
+    				//read statements from byte channel
+    				while ((statementRecord = parser.getNext(statementRecord)) != null) {
+    					if (printStatements) {
+    						logger.info("Executing  statement: " + statementRecord.getField(0).toString());
+    					}
+    					try {
+    						if (procedureCall) {
+    							callableStatement[0] = new SQLCloverCallableStatement(connectionInstance, 
+    									statementRecord.getField(0).toString(), null, outRecord, dbConnection.getJdbcDriver().getResultSetType());
+    							callableStatement[0].prepareCall();
+    							executeCall(callableStatement[0], index);
+    						}else{
+    							sqlStatement.executeUpdate(statementRecord.getField(0).toString());
+    						}
+    					} catch (SQLException e) {
+    						handleException(e, null, index);
+    					}
+    					index++;
+    					if (transaction == InTransaction.ONE){
+    						commit();
+    					}
+    				}
+    				if (transaction == InTransaction.SET){
+    					commit();
+    				}
+    			}
+    		}else{//sql statements are "solid" (set as sql query)
+    			InputPort inPort = getInputPort(READ_FROM_PORT);
+    			if (inPort != null) {
+    				inRecord = inPort.readRecord(inRecord);
+    			}
+    			if (inPort == null || inRecord != null) do {
+    				for (int i = 0; i < dbSQL.length; i++){
+    					try {
+    						if (procedureCall) {
+    							executeCall(callableStatement[i], i);
+    						}else{
+    							sqlStatement.executeUpdate(dbSQL[i]);
+    						}
+    					} catch (SQLException e) {
+    						handleException(e, inRecord, i);
+    					}
+    					if (transaction == InTransaction.ONE){
+    						commit();
+    					}
+    				}
+    				if (transaction == InTransaction.SET){
+    					commit();
+    				}
+    				if (inPort != null) {
+    					inRecord = inPort.readRecord(inRecord);
+    				}
+    			} while (runIt && inRecord != null);
+    		}
+    		if (transaction == InTransaction.ALL){
+    			commit();
+    		}
+    		if (errorLog != null){
+    			errorLog.flush();
+    			errorLog.close();
+    		}
+    		if (!runIt) {
+    			connectionInstance.getSqlConnection().rollback();
+    		}
+		} finally {
+    		broadcastEOF();
+    		try {
+				if (callableStatement != null) {
+					for (SQLCloverCallableStatement statement : callableStatement) {
+						statement.close(); 
 					}
 				}
-				if (transaction == InTransaction.SET){
-					commit();
+				if (sqlStatement != null) {
+					sqlStatement.close();
 				}
+			} catch (SQLException e) {
+				logger.warn("SQLException when closing statement", e);
 			}
-		}else{//sql statements are "solid" (set as sql query)
-			InputPort inPort = getInputPort(READ_FROM_PORT);
-			if (inPort != null) {
-				inRecord = inPort.readRecord(inRecord);
-			}
-			if (inPort == null || inRecord != null) do {
-				for (int i = 0; i < dbSQL.length; i++){
-					try {
-						if (procedureCall) {
-							executeCall(callableStatement[i], i);
-						}else{
-							sqlStatement.executeUpdate(dbSQL[i]);
-						}
-					} catch (SQLException e) {
-						handleException(e, inRecord, i);
-					}
-					if (transaction == InTransaction.ONE){
-						commit();
-					}
-				}
-				if (transaction == InTransaction.SET){
-					commit();
-				}
-				if (inPort != null) {
-					inRecord = inPort.readRecord(inRecord);
-				}
-			} while (runIt && inRecord != null);
 		}
-		if (transaction == InTransaction.ALL){
-			commit();
-		}
-		if (errorLog != null){
-			errorLog.flush();
-			errorLog.close();
-		}
-		if (!runIt) {
-			connectionInstance.getSqlConnection().rollback();
-		}
-		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
@@ -649,25 +675,6 @@ public class DBExecute extends Node {
 		}
 	}
 	
-	@Override
-	public synchronized void free() {
-		super.free();
-		try {
-			if (procedureCall) {
-				if (callableStatement != null){
-					for (SQLCloverCallableStatement statement : callableStatement) {
-						statement.close();
-					}
-				}
-			}else{
-				if (sqlStatement != null)
-					sqlStatement.close();
-			}
-		} catch (SQLException e) {
-			 logger.warn("SQLException when closing statement",e);
-		}
-	}
-
 	/**
 	 *  Description of the Method
 	 *
@@ -758,7 +765,7 @@ public class DBExecute extends Node {
 
         try {
         	if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-                fileURL = xattribs.getString(XML_URL_ATTRIBUTE);
+                fileURL = xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF);
             } else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)) {
                 query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
             } else if (xattribs.exists(XML_DBSQL_ATTRIBUTE)) {

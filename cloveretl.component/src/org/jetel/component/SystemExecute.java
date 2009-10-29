@@ -55,6 +55,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -314,6 +315,7 @@ public class SystemExecute extends Node{
             formatter.setDataTarget(Channels.newChannel(process_in));
             getData=new GetData(Thread.currentThread(),inPort, in_record, formatter);
 			getData.start();
+			registerChildThread(getData); //register worker as a child thread of this component
 		}
 		//If there is output port read output from process and send it to output port
 		SendData sendData=null;
@@ -325,16 +327,21 @@ public class SystemExecute extends Node{
             sendData=new SendData(Thread.currentThread(),outPort,out_record,parser);
 			//send all out_records to output ports
 			sendData.start();
+			registerChildThread(sendData); //register worker as a child thread of this component
 		//If there is no output port, but there is defined output file read output
 		// and error from process and send it to the file	
 		}else if (outputFile!=null){
 			sendDataToFile = new SendDataToFile(Thread.currentThread(),outputFile,process_out);
 			sendDataToFile.start();
+			registerChildThread(sendDataToFile); //register worker as a child thread of this component
+			registerChildThread(sendErrToFile); //register worker as a child thread of this component
 		// neither output port nor output file is defined then read output
 		// and error from process and send it to the console
 		} else {
 			sendDataToConsole = new SendDataToConsole(Thread.currentThread(),logger,process_out);
 			sendDataToConsole.start();
+			registerChildThread(sendDataToConsole); //register worker as a child thread of this component
+			registerChildThread(sendErrToConsole); //register worker as a child thread of this component
 		}
 
 		//if output is sent to output port log process error stream
@@ -598,11 +605,11 @@ public class SystemExecute extends Node{
 		try {
 			sysExec = new SystemExecute(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_INTERPRETER_ATTRIBUTE,null),
-					xattribs.getString(XML_COMMAND_ATTRIBUTE),
+					xattribs.getStringEx(XML_COMMAND_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
 					xattribs.getInteger(XML_ERROR_LINES_ATTRIBUTE,2));
 			sysExec.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
 			if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
-				sysExec.setOutputFile(xattribs.getString(XML_OUTPUT_FILE_ATTRIBUTE));
+				sysExec.setOutputFile(xattribs.getStringEx(XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_WORKING_DIRECTORY_ATTRIBUTE)){
 				sysExec.setWorkingDirectory(xattribs.getString(XML_WORKING_DIRECTORY_ATTRIBUTE));

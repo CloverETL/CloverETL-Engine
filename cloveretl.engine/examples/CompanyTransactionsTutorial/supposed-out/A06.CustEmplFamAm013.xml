@@ -1,118 +1,118 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <customers>
-<CustomerID>14</CustomerID>
-<CustomerState>Michigan</CustomerState>
-<CustomerSurname>Segura</CustomerSurname>
-<CustomerFirstname>H.</CustomerFirstname>
-<employees>
-<EmployeeID>14</EmployeeID>
-<EmployeeSurname>Mcculloch</EmployeeSurname>
-<EmployeeFirstname>Richard</EmployeeFirstname>
-<spouse>
-<SpouseName>Francene</SpouseName>
-</spouse>
-<children>
-<ChildName>Rosemary</ChildName>
-</children>
-<children>
-<ChildName>William</ChildName>
-</children>
-<transactions>
-<AmountID>14</AmountID>
-<Amount>672.45</Amount>
-</transactions>
-</employees>
-<employees>
-<EmployeeID>32</EmployeeID>
-<EmployeeSurname>Saver</EmployeeSurname>
-<EmployeeFirstname>Janessa</EmployeeFirstname>
-<spouse>
-<SpouseName>Daniel</SpouseName>
-</spouse>
-<children>
-<ChildName>Gordon</ChildName>
-</children>
-<children>
-<ChildName>Jacqueline</ChildName>
-</children>
-<children>
-<ChildName>Thomas</ChildName>
-</children>
-<transactions>
-<AmountID>96627</AmountID>
-<Amount>239.94</Amount>
-</transactions>
-</employees>
-<employees>
-<EmployeeID>46</EmployeeID>
-<EmployeeSurname>Delgado</EmployeeSurname>
-<EmployeeFirstname>Priscila</EmployeeFirstname>
-<spouse>
-<SpouseName>Arnold</SpouseName>
-</spouse>
-<children>
-<ChildName></ChildName>
-</children>
-<transactions>
-<AmountID>58054</AmountID>
-<Amount>65.42</Amount>
-</transactions>
-</employees>
-<employees>
-<EmployeeID>95</EmployeeID>
-<EmployeeSurname>Biondo</EmployeeSurname>
-<EmployeeFirstname>Amanda</EmployeeFirstname>
-<spouse>
-<SpouseName>George</SpouseName>
-</spouse>
-<children>
-<ChildName>Gordon</ChildName>
-</children>
-<children>
-<ChildName>Tia</ChildName>
-</children>
-<transactions>
-<AmountID>84590</AmountID>
-<Amount>670.55</Amount>
-</transactions>
-</employees>
-<employees>
-<EmployeeID>130</EmployeeID>
-<EmployeeSurname>Bach</EmployeeSurname>
-<EmployeeFirstname>Anthony</EmployeeFirstname>
-<spouse>
-<SpouseName>Rosemary</SpouseName>
-</spouse>
-<children>
-<ChildName>Frank</ChildName>
-</children>
-<children>
-<ChildName>Helen</ChildName>
-</children>
-<children>
-<ChildName>Joseph</ChildName>
-</children>
-<transactions>
-<AmountID>39098</AmountID>
-<Amount>122.01</Amount>
-</transactions>
-</employees>
-<employees>
-<EmployeeID>183</EmployeeID>
-<EmployeeSurname>Fischer</EmployeeSurname>
-<EmployeeFirstname>Ashley</EmployeeFirstname>
-<spouse>
-<SpouseName>Gabriel</SpouseName>
-</spouse>
-<children>
-<ChildName>Daniel</ChildName>
-</children>
-<children>
-<ChildName>Raquel</ChildName>
-</children>
-<transactions>
-<AmountID>76017</AmountID>
-<Amount>789.33</Amount>
-</transactions>
-</employees>
+  <CustomerID>14</CustomerID>
+  <CustomerState>Michigan</CustomerState>
+  <CustomerSurname>Segura</CustomerSurname>
+  <CustomerFirstname>H.</CustomerFirstname>
+  <employees>
+    <EmployeeID>14</EmployeeID>
+    <EmployeeSurname>Mcculloch</EmployeeSurname>
+    <EmployeeFirstname>Richard</EmployeeFirstname>
+    <spouse>
+      <SpouseName>Francene</SpouseName>
+    </spouse>
+    <children>
+      <ChildName>Rosemary</ChildName>
+    </children>
+    <children>
+      <ChildName>William</ChildName>
+    </children>
+    <transactions>
+      <AmountID>14</AmountID>
+      <Amount>672.45</Amount>
+    </transactions>
+  </employees>
+  <employees>
+    <EmployeeID>32</EmployeeID>
+    <EmployeeSurname>Saver</EmployeeSurname>
+    <EmployeeFirstname>Janessa</EmployeeFirstname>
+    <spouse>
+      <SpouseName>Daniel</SpouseName>
+    </spouse>
+    <children>
+      <ChildName>Gordon</ChildName>
+    </children>
+    <children>
+      <ChildName>Jacqueline</ChildName>
+    </children>
+    <children>
+      <ChildName>Thomas</ChildName>
+    </children>
+    <transactions>
+      <AmountID>96627</AmountID>
+      <Amount>239.94</Amount>
+    </transactions>
+  </employees>
+  <employees>
+    <EmployeeID>46</EmployeeID>
+    <EmployeeSurname>Delgado</EmployeeSurname>
+    <EmployeeFirstname>Priscila</EmployeeFirstname>
+    <spouse>
+      <SpouseName>Arnold</SpouseName>
+    </spouse>
+    <children>
+      <ChildName/>
+    </children>
+    <transactions>
+      <AmountID>58054</AmountID>
+      <Amount>65.42</Amount>
+    </transactions>
+  </employees>
+  <employees>
+    <EmployeeID>95</EmployeeID>
+    <EmployeeSurname>Biondo</EmployeeSurname>
+    <EmployeeFirstname>Amanda</EmployeeFirstname>
+    <spouse>
+      <SpouseName>George</SpouseName>
+    </spouse>
+    <children>
+      <ChildName>Gordon</ChildName>
+    </children>
+    <children>
+      <ChildName>Tia</ChildName>
+    </children>
+    <transactions>
+      <AmountID>84590</AmountID>
+      <Amount>670.55</Amount>
+    </transactions>
+  </employees>
+  <employees>
+    <EmployeeID>130</EmployeeID>
+    <EmployeeSurname>Bach</EmployeeSurname>
+    <EmployeeFirstname>Anthony</EmployeeFirstname>
+    <spouse>
+      <SpouseName>Rosemary</SpouseName>
+    </spouse>
+    <children>
+      <ChildName>Frank</ChildName>
+    </children>
+    <children>
+      <ChildName>Helen</ChildName>
+    </children>
+    <children>
+      <ChildName>Joseph</ChildName>
+    </children>
+    <transactions>
+      <AmountID>39098</AmountID>
+      <Amount>122.01</Amount>
+    </transactions>
+  </employees>
+  <employees>
+    <EmployeeID>183</EmployeeID>
+    <EmployeeSurname>Fischer</EmployeeSurname>
+    <EmployeeFirstname>Ashley</EmployeeFirstname>
+    <spouse>
+      <SpouseName>Gabriel</SpouseName>
+    </spouse>
+    <children>
+      <ChildName>Daniel</ChildName>
+    </children>
+    <children>
+      <ChildName>Raquel</ChildName>
+    </children>
+    <transactions>
+      <AmountID>76017</AmountID>
+      <Amount>789.33</Amount>
+    </transactions>
+  </employees>
 </customers>

@@ -47,6 +47,8 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -56,6 +58,7 @@ import org.jetel.util.MiscUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -769,7 +772,7 @@ public class MergeJoin extends Node {
 					xattribs.getString(XML_JOINKEY_ATTRIBUTE),
 					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
-					xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null),
+					xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF),
 					joinType,
 					xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true),
 					xattribs.getBoolean(XML_ASCENDING_INPUTS_ATTRIBUTE, true));
@@ -899,6 +902,40 @@ public class MergeJoin extends Node {
 	                status.add(problem);
 	            }
 	            
+	            // transformation source for checkconfig
+	            String checkTransform = null;
+	            if (transformSource != null) {
+	            	checkTransform = transformSource;
+	            } else if (transformURL != null) {
+	            	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), transformURL, charset);
+	            }
+	            // only the transform and transformURL parameters are checked, transformClass is ignored
+	            if (checkTransform != null) {
+	            	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
+	            	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
+	            			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
+	            		// only CTL is checked
+	            		
+	            		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {
+	            				getOutputPort(WRITE_TO_PORT).getMetadata()};
+	            		DataRecordMetadata[] inMetadata = new DataRecordMetadata[inputCnt];
+	            		for (int idx = 0; idx < inputCnt; idx++) {
+	            			inMetadata[idx] = getInputPort(idx).getMetadata();
+	            		}
+
+	        			try {
+	        				RecordTransformFactory.createTransform(checkTransform, null, null, 
+	        						charset, this, inMetadata, outMetadata, transformationParameters, 
+	        						null, null);
+						} catch (ComponentNotReadyException e) {
+							// find which component attribute was used
+							String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
+							// report CTL error as a warning
+							status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
+						}
+	            	}
+	            }
+
 	            return status;
 		}
 	

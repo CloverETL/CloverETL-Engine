@@ -49,6 +49,7 @@ import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -298,7 +299,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 		try{
 			filter = new ExtFilter(xattribs.getString(XML_ID_ATTRIBUTE));
 			if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)){
-				filter.setFilterExpression(xattribs.getString(XML_FILTEREXPRESSION_ATTRIBUTE, false));
+				filter.setFilterExpression(xattribs.getStringEx(XML_FILTEREXPRESSION_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
 			}else{
 				try {
 					filter.setFilterExpression(xattribs.getText(xmlElement, false));

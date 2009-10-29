@@ -51,6 +51,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.PortDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -1010,7 +1011,7 @@ public class MsSqlDataWriter extends BulkLoader {
 				msSqlDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-				msSqlDataWriter.setFileUrl(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
+				msSqlDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_OWNER_ATTRIBUTE)) {
 				msSqlDataWriter.setOwner(xattribs.getString(XML_OWNER_ATTRIBUTE));

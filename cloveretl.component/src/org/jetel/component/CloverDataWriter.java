@@ -43,6 +43,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
 /**
@@ -283,7 +284,7 @@ public class CloverDataWriter extends Node {
 		
 		try{
 			aDataWriter = new CloverDataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_FILEURL_ATTRIBUTE),
+					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
 					xattribs.getBoolean(XML_SAVEINDEX_ATRRIBUTE,false));
 			aDataWriter.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
 			aDataWriter.setSaveMetadata(xattribs.getBoolean(XML_SAVEMETADATA_ATTRIBUTE,false));

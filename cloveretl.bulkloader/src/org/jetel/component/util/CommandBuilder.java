@@ -103,6 +103,10 @@ public class CommandBuilder {
 	 * @param attrValue
 	 */
 	public void addAttributeAsTwoAttributes(String attrName, String attrValue) {
+		if (StringUtils.isEmpty(attrValue)) {
+			return;
+		}
+
 		cmdList.add(switchMark + attrName);
 		cmdList.add(attrValue);
 	}

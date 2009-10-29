@@ -301,8 +301,8 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test extends CloverTest
 			fail("Should not raise an BadDataFormatException");
 			e.printStackTrace();
 		} catch (Exception ee) {
-			fail("Should not throw Exception");
 			ee.printStackTrace();
+			fail("Should not throw Exception");
 		}
 	}
 

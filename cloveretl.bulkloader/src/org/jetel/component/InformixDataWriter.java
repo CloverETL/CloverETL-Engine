@@ -56,6 +56,7 @@ import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -273,26 +274,26 @@ public class InformixDataWriter extends BulkLoader {
     	CommandBuilder cmdBuilder = new CommandBuilder(properties, SWITCH_MARK, SPACE_MARK);
     	
 		if (useLoadUtility) {
-			cmdBuilder.add(loadUtilityPath);
-			cmdBuilder.addAttribute(LOAD_DATABASE_OPTION, database);
-			cmdBuilder.addAttribute(LOAD_HOST_OPTION, host);
-			cmdBuilder.addAttribute(LOAD_USER_OPTION, user);
-			cmdBuilder.addAttribute(LOAD_PASSWORD_OPTION, password);
-			cmdBuilder.addAttribute(LOAD_TABLE_OPTION, table);
-			cmdBuilder.addAttribute(LOAD_COMMIT_INTERVAL_OPTION, commitInterval);
+			cmdBuilder.add(getFilePath(loadUtilityPath));
+			cmdBuilder.addAttributeAsTwoAttributes(LOAD_DATABASE_OPTION, database);
+			cmdBuilder.addAttributeAsTwoAttributes(LOAD_HOST_OPTION, host);
+			cmdBuilder.addAttributeAsTwoAttributes(LOAD_USER_OPTION, user);
+			cmdBuilder.addAttributeAsTwoAttributes(LOAD_PASSWORD_OPTION, password);
+			cmdBuilder.addAttributeAsTwoAttributes(LOAD_TABLE_OPTION, table);
+			cmdBuilder.addAttributeAsTwoAttributes(LOAD_COMMIT_INTERVAL_OPTION, commitInterval);
 			cmdBuilder.addBooleanAttribute(LOAD_IGNORE_UNIQUE_KEY_VIOLATION_OPTION, ignoreUniqueKeyViolation);
 			cmdBuilder.addBooleanAttribute(LOAD_USE_INSERT_CURSOR_OPTION, useInsertCursor);
-			cmdBuilder.addAttribute(LOAD_ERRORS_OPTION, maxErrors);
-			cmdBuilder.addAttribute(LOAD_ERROR_LOG_OPTION, errorLog);
+			cmdBuilder.addAttributeAsTwoAttributes(LOAD_ERRORS_OPTION, maxErrors);
+			cmdBuilder.addAttributeAsTwoAttributes(LOAD_ERROR_LOG_OPTION, getFilePath(errorLog));
 
 			if (!isDataReadFromPort || !StringUtils.isEmpty(dataURL)) {
 				cmdBuilder.add(getFilePath(dataFile));
 			} // else - when no file is defined stdio is used
 		} else {
-			cmdBuilder.add(loadUtilityPath);
+			cmdBuilder.add(getFilePath(loadUtilityPath));
 			cmdBuilder.addAttributeAsTwoAttributes(INFORMIX_COMMAND_PATH_OPTION, commandFileName);
 			cmdBuilder.addAttributeAsTwoAttributes(INFORMIX_DATABASE_OPTION, getDbConn());
-			cmdBuilder.addAttributeAsTwoAttributes(INFORMIX_ERROR_LOG_OPTION, errorLog);
+			cmdBuilder.addAttributeAsTwoAttributes(INFORMIX_ERROR_LOG_OPTION, getFilePath(errorLog));
 			cmdBuilder.addAttributeAsTwoAttributes(INFORMIX_ERRORS_OPTION, maxErrors);
 			cmdBuilder.addAttributeAsTwoAttributes(INFORMIX_IGNORE_ROWS_OPTION, ignoreRows);
 			cmdBuilder.addAttributeAsTwoAttributes(INFORMIX_COMMIT_INTERVAL_OPTION, commitInterval);
@@ -322,7 +323,7 @@ public class InformixDataWriter extends BulkLoader {
 	            commandFileName = createTempFile(LOADER_FILE_NAME_PREFIX, CONTROL_FILE_NAME_SUFFIX).getCanonicalPath();
 	            
 	            if (errorLog == null) {
-	            	errorLog = getFilePath(DEFAULT_ERROR_FILE);
+	            	errorLog = DEFAULT_ERROR_FILE;
 	            }
 	            
 	            if (isDataReadDirectlyFromFile) {
@@ -599,7 +600,7 @@ public class InformixDataWriter extends BulkLoader {
         		informixDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
         	}
         	if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-        		informixDataWriter.setFileUrl(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
+        		informixDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
         	}
         	if (xattribs.exists(XML_HOST_ATTRIBUTE)) {
         		informixDataWriter.setHost(xattribs.getString(XML_HOST_ATTRIBUTE));

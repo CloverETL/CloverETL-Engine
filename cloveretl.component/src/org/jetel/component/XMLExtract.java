@@ -44,6 +44,7 @@ import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -1021,7 +1022,7 @@ public class XMLExtract extends Node {
             extract = new XMLExtract(xattribs.getString(XML_ID_ATTRIBUTE));
             
             // set input file
-            extract.setInputFile(xattribs.getString(XML_SOURCEURI_ATTRIBUTE));
+            extract.setInputFile(xattribs.getStringEx(XML_SOURCEURI_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
             
             // set dtd schema
             if (xattribs.exists(XML_SCHEMA_ATTRIBUTE)) {
@@ -1034,7 +1035,7 @@ public class XMLExtract extends Node {
             }
             
             // set mapping
-            String mappingURL = xattribs.getString(XML_MAPPING_URL_ATTRIBUTE, null);
+            String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF);
             String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
             NodeList nodes = xmlElement.getChildNodes();
             if (mappingURL != null) extract.setMappingURL(mappingURL);
@@ -1044,7 +1045,7 @@ public class XMLExtract extends Node {
                 //mapping xml elements are child nodes of the component
             	extract.setNodes(nodes);
             } else {
-            	xattribs.getString(XML_MAPPING_URL_ATTRIBUTE); // throw configuration exception
+            	xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF); // throw configuration exception
             }
 
             // set a skip row attribute

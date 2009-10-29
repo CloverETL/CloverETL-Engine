@@ -51,6 +51,7 @@ import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -258,10 +259,12 @@ public class FixLenDataReader extends Node {
     public synchronized void free() {
     	super.free();
     	storeValues();
-    	try {
-			reader.close();
-		} catch (IOException e) {
-			logger.error(e);
+    	if (reader != null) {
+	    	try {
+				reader.close();
+			} catch (IOException e) {
+				logger.error(e);
+			}
 		}
     }
 
@@ -346,7 +349,7 @@ public class FixLenDataReader extends Node {
 				byteMode = xattribs.getBoolean(XML_BYTEMODE_ATTRIBUTE);
 			}
 			aFixLenDataReaderNIO = new FixLenDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILEURL_ATTRIBUTE, ""),
+						xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, "", RefResFlag.SPEC_CHARACTERS_OFF),
 						charset, byteMode);
 			if (xattribs.exists(XML_ENABLEINCOMPLETE_ATTRIBUTE)){
 				aFixLenDataReaderNIO.parser.setEnableIncomplete(xattribs.getBoolean(XML_ENABLEINCOMPLETE_ATTRIBUTE));
@@ -374,7 +377,7 @@ public class FixLenDataReader extends Node {
 				aFixLenDataReaderNIO.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
-				aFixLenDataReaderNIO.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
+				aFixLenDataReaderNIO.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
 				aFixLenDataReaderNIO.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));

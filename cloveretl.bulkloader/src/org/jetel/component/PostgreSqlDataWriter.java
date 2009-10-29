@@ -40,6 +40,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -537,7 +538,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 			}
 
 			if (xattribs.exists(XML_COMMAND_URL_ATTRIBUTE)) {
-				postgreSQLDataWriter.setCommandURL((xattribs.getString(XML_COMMAND_URL_ATTRIBUTE)));
+				postgreSQLDataWriter.setCommandURL((xattribs.getStringEx(XML_COMMAND_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF)));
 			}
 			if (xattribs.exists(XML_HOST_ATTRIBUTE)) {
 				postgreSQLDataWriter.setHost(xattribs.getString(XML_HOST_ATTRIBUTE));
@@ -550,7 +551,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 				postgreSQLDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-				postgreSQLDataWriter.setFileUrl(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
+				postgreSQLDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
 				postgreSQLDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));

@@ -228,6 +228,11 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			}
 		}
 		
+        if (data != null && metadata.containsCarriageReturnInDelimiters()) {
+            status.add(new ConfigurationProblem("Cannot use carriage return as a delimiter when inline data is specified!",
+            		Severity.ERROR, this, Priority.NORMAL, XML_DATA_ATTRIBUTE));
+        }
+
 		return status;
 	}
 	
@@ -299,8 +304,11 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 							fileURL));
 				}else if (data != null) {
 					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
-				}                
-            	dataParser.skip(metadata.getSkipSourceRows());
+				}           
+				
+				if (metadata.getSkipSourceRows() > 0) {
+					dataParser.skip(metadata.getSkipSourceRows());
+				}
 				while (dataParser.getNext(tmpRecord) != null) {
                     lookupTable.add(tmpRecord.duplicate());
                 }

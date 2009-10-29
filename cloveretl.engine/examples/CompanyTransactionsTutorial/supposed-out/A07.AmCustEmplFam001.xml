@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transactions>
-<AmountID>2</AmountID>
-<Amount>768.50</Amount>
-<customers>
-<CustomerID>2</CustomerID>
-<CustomerState>Montana</CustomerState>
-<CustomerSurname>Keane</CustomerSurname>
-<CustomerFirstname>Wathalee</CustomerFirstname>
-</customers>
-<employees>
-<EmployeeID>2</EmployeeID>
-<EmployeeSurname>Galvin</EmployeeSurname>
-<EmployeeFirstname>William</EmployeeFirstname>
-<spouse>
-<SpouseName>Valerie</SpouseName>
-</spouse>
-<children>
-<ChildName>Amanda</ChildName>
-</children>
-<children>
-<ChildName>Zoe</ChildName>
-</children>
-</employees>
+  <AmountID>2</AmountID>
+  <Amount>768.50</Amount>
+  <customers>
+    <CustomerID>2</CustomerID>
+    <CustomerState>Montana</CustomerState>
+    <CustomerSurname>Keane</CustomerSurname>
+    <CustomerFirstname>Wathalee</CustomerFirstname>
+  </customers>
+  <employees>
+    <EmployeeID>2</EmployeeID>
+    <EmployeeSurname>Galvin</EmployeeSurname>
+    <EmployeeFirstname>William</EmployeeFirstname>
+    <spouse>
+      <SpouseName>Valerie</SpouseName>
+    </spouse>
+    <children>
+      <ChildName>Amanda</ChildName>
+    </children>
+    <children>
+      <ChildName>Zoe</ChildName>
+    </children>
+  </employees>
 </transactions>

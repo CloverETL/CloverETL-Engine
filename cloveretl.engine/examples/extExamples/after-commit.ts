@@ -2,59 +2,12 @@
 <!DOCTYPE TestScenario SYSTEM "testscenario.dtd">
 <TestScenario ident="ext-examples" description="Engine extended examples" useJMX="true">
 
-	<DBConnection ident="postgre_test" type="POSTGRE" user="test" password="test" URL="jdbc:postgresql://koule/test" driver="org.postgresql.Driver" />
 	<DBConnection ident="postgre_foodmart" type="POSTGRE" user="test" password="test" URL="jdbc:postgresql://koule/foodmart" driver="org.postgresql.Driver" />
-	<DBConnection ident="oracle" type="ORACLE" user="test" password="test" URL="jdbc:oracle:thin:@koule:1521:xe" driver="oracle.jdbc.OracleDriver" >
-	    	 <DBUnitFeature name="http://www.dbunit.org/features/qualifiedTableNames" enabled="true"/>
-	    	 <DBUnitFeature name="http://www.dbunit.org/features/skipOracleRecycleBinTables" enabled="true"/>
-	</DBConnection>
-	<DBConnection ident="mysql" type="MYSQL" user="test" password="" URL="jdbc:mysql://koule/test?zeroDateTimeBehavior=convertToNull" driver="org.gjt.mm.mysql.Driver" />
 
 <!--
 	<FunctionalTest ident="LDAPReaderWriter" graphFile="graph/graphLdapReaderWriter.grf">
 	</FunctionalTest>
 -->
-	<FunctionalTest ident="PostgreDataWriter" graphFile="graph/graphPostgreSqlDataWriter.grf">
-	      <SQLStatement connection="postgre_test">DELETE FROM test</SQLStatement>
-	      <DBTableToTable
-	      	 outputTable="test" 
-	      	 outputTableConnection="postgre_test"
-	      	 supposedTable="test_supposed"
-	      	 supposedTableConnection="postgre_test"
-	      />
-	</FunctionalTest>
-	
-	<FunctionalTest ident="OracleDataWriter" graphFile="graph/graphOracleDataWriter.grf">
-	      	<SQLStatement connection="oracle">DELETE FROM test.writer_test</SQLStatement>
-	      <DBTableToTable
-	      	 outputTable="test.writer_test" 
-	      	 outputTableConnection="oracle"
-	      	 supposedTable="test.test_supposed"
-	      	 supposedTableConnection="oracle"
-	      />
-<!--      	 <DBTableToXMLFile outputTable="writer_test" supposedTable="test" outputTableConnection="oracle" supposedXMLFile="supposed-out/oracle_supposed.xml"/>--> 
-	 	  <FlatFile outputFile="data-out/bad0Port.bad" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/bad1.kkk" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/bad1Port.bad" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/bad2.kkk" supposedFile="supposed-out/bad2.OracleDataWriter.kkk"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/bad2Port.bad" supposedFile="supposed-out/bad2.OracleDataWriter.kkk"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/bad3Port.bad" supposedFile="supposed-out/bad2.OracleDataWriter.kkk"/>	                                                                    
-	</FunctionalTest>
-
-	<FunctionalTest ident="MySqlDataWriter" graphFile="graph/graphMysqlDataWriter.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-	      	<SQLStatement connection="mysql">DELETE FROM test</SQLStatement>
-<!--	      <DBTableToTable
-	      	 outputTable="test" 
-	      	 outputTableConnection="mysql"
-	      	 supposedTable="test_supposed"
-	      	 supposedTableConnection="mysql"
-	      />-->
-	 	  <FlatFile outputFile="data-out/out.dat" supposedFile="supposed-out/out.MysqlDataWriter.dat"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/out_remote.dat" supposedFile="supposed-out/out.MysqlDataWriter.dat"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/mysql.out" supposedFile="supposed-out/mysql.MysqlDataWriter.out"/>	                                                                    
-	 	  <FlatFile outputFile="data-tmp/mysql_load.cmd" supposedFile="supposed-out/mysql_load.MysqlDataWriter.cmd"/>	                                                                    
-	</FunctionalTest>
 
 	<FunctionalTest ident="ApproximativeJoin" graphFile="graph/graphApproximativeJoin.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
@@ -124,24 +77,25 @@
 
 	<FunctionalTest ident="DBLoad5" graphFile="graph/graphDBLoad5.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-<!--      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_tmp" outputTableConnection="postgre_foodmart" supposedXMLFile="supposed-out/employee.DBLoad5.xml"/>-->
-	      <DBTableToTable
+      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_names" outputTableConnection="postgre_foodmart" supposedXMLFile="supposed-out/employee.DBLoad5.xml"/>
+<!--	      <DBTableToTable
 	      	 outputTable="employee_tmp" 
 	      	 outputTableConnection="postgre_foodmart"
 	      	 supposedTable="employee_names"
 	      	 supposedTableConnection="postgre_foodmart"
-	      /> 
+	      /> -->
       	<DeleteTable connection="postgre_foodmart" name="employee_tmp"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBLoad6" graphFile="graph/graphDBLoad6.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-	      <DBTableToTable
+      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_names_dates" outputTableConnection="postgre_foodmart" supposedXMLFile="supposed-out/employee.DBLoad6.xml"/>
+<!--	      <DBTableToTable
 	      	 outputTable="employee_tmp" 
 	      	 outputTableConnection="postgre_foodmart"
 	      	 supposedTable="employee_names_dates"
 	      	 supposedTableConnection="postgre_foodmart"
-	      /> 
+	      />--> 
       	<DeleteTable connection="postgre_foodmart" name="employee_tmp"/>
 	</FunctionalTest>
 
@@ -171,8 +125,10 @@
 
 	<FunctionalTest ident="DBUnloadParametrized" graphFile="graph/graphDBUnloadParametrized.grf">
          <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-	 	  <FlatFile outputFile="data-out/employees.xls" supposedFile="supposed-out/employees.DBUnloadParametrized.xls"/>	                                                                    
+<!-- We are not able to compare xls files now. This comparison test should be uncommented after issue 2981 is resolved.
+	 	  <FlatFile outputFile="data-out/employees.xls" supposedFile="supposed-out/employees.DBUnloadParametrized.xls"/>	          
 	     <DeleteFile file="data-out/employees.xls"/>
+-->                                                          
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBUnloadUniversal" graphFile="graph/graphDBUnloadUniversal.grf">

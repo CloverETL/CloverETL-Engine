@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229616712953" licenseType="Evaluation license." modified="Fri May 15 14:35:46 CEST 2009" modifiedBy="cloveruser" name="stringIs_date" revision="1.68">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229616712953" licenseType="Evaluation Devel" modified="Tue Oct 13 10:56:09 CEST 2009" modifiedBy="cloveruser" name="stringIs_date" revision="1.73">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="is_dateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -16,24 +16,24 @@
 <Field name="Locale" type="string"/>
 <Field name="Lenient" nullable="true" type="boolean"/>
 <Field name="DefaultLocaleIsSystemAndDefaultLenientIsFalse" type="string"/>
-<Field name="ResultLocaleAndLenientDefault" type="boolean"/>
-<Field name="DefaultLocaleIsSystemValue" type="string"/>
-<Field name="ResultLocaleDefault" type="boolean"/>
+<Field name="ResultLocaleAndDefaultLenientIsFalse" type="boolean"/>
+<Field name="DefaultLocaleIsSystemValueAndDefaultLenientFalseIsUsed" type="string"/>
+<Field name="ResultLocaleDefaultAndDefaultLenientFalseIsUsed" type="boolean"/>
 <Field name="DefaultLenientIsFalse" type="string"/>
-<Field name="ResultLenientDefault" type="boolean"/>
-<Field name="AllArguments" type="string"/>
-<Field name="ResultAllArguments" type="boolean"/>
+<Field name="ResultDefaultLenientIsFalse" type="boolean"/>
+<Field name="AllArgumentsAndDefaultLenientFalseIsUsed" type="string"/>
+<Field name="ResultAllArgumentsAndDefaultLenientFalseIsUsed" type="boolean"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="172" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="boolean is_date(string arg, string pattern, string locale, boolean lenient)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="579" x="80" y="15">
 <attr name="text"><![CDATA[
-The is_date(string, string, string, boolean) function accepts three string arguments and one boolean. It takes them, compares the first argument with the second as a pattern, use the third (locale) and the fourth (lenient) arguments and, if the first string can be converted to a date which is valid within specified locale, according to the specified pattern, the function returns true independently on the fourth argument.
-If this is not possible, it returns false. However, it is possible to set the fourth argument (lenient) to true and the function will use heuristic to guess whether the string is date. If it is successful, again true is returned.]]></attr>
+The is_date(string, string, string, boolean) function accepts three string arguments and one boolean. The fourth argument is ignored and false is used as its default value. It takes these arguments, compares the first argument with the second as a pattern, use the third (locale) and, if the first string can be converted to a date which is valid within specified locale, according to the specified pattern, the function returns true. 
+If this is not possible, it returns false. ]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="150" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="The other is_date functions." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="745" x="79" y="207">
 <attr name="text"><![CDATA[
-The is_date(string arg, string pattern, boolean lenient) function equals to is_date(string arg, string pattern, SystemLocale, boolean lenient).
+The is_date(string arg, string pattern, boolean lenient) function equals to is_date(string arg, string pattern, SystemLocale, boolean lenient). The third argument is ignored and false is used as its default value.
 
 The is_date(string arg, string pattern, string locale) function equals to is_date(string arg, string pattern, string locale, false).
 
@@ -57,13 +57,13 @@ function transform() {
 	$0.Locale := $0.Locale;
 	$0.Lenient := $0.Lenient;
 	$0.DefaultLocaleIsSystemAndDefaultLenientIsFalse := "is_date($0.Arg,$0.Pattern)";
-	$0.ResultLocaleAndLenientDefault := is_date($0.Arg,$0.Pattern);
-	$0.DefaultLocaleIsSystemValue := "is_date($0.Arg,$0.Pattern,$0.Lenient)";
-	$0.ResultLocaleDefault := is_date($0.Arg,$0.Pattern,$0.Lenient);
+	$0.ResultLocaleAndDefaultLenientIsFalse := is_date($0.Arg,$0.Pattern);
+	$0.DefaultLocaleIsSystemValueAndDefaultLenientFalseIsUsed := "is_date($0.Arg,$0.Pattern,false)";
+	$0.ResultLocaleDefaultAndDefaultLenientFalseIsUsed := is_date($0.Arg,$0.Pattern,$0.Lenient);
 	$0.DefaultLenientIsFalse := "is_date($0.Arg,$0.Pattern,$0.Locale)";
-	$0.ResultLenientDefault := is_date($0.Arg,$0.Pattern,$0.Locale);
-	$0.AllArguments := "is_date($0.Arg,$0.Pattern,$0.Locale,$0.Lenient)";
-	$0.ResultAllArguments := is_date($0.Arg,$0.Pattern,$0.Locale,$0.Lenient);
+	$0.ResultDefaultLenientIsFalse := is_date($0.Arg,$0.Pattern,$0.Locale);
+	$0.AllArgumentsAndDefaultLenientFalseIsUsed := "is_date($0.Arg,$0.Pattern,$0.Locale,false)";
+	$0.ResultAllArgumentsAndDefaultLenientFalseIsUsed := is_date($0.Arg,$0.Pattern,$0.Locale,$0.Lenient);
 }
 // Called during component initialization.
 // function init() {}
@@ -88,13 +88,13 @@ function transform() {
 	$0.Locale := $0.Locale;
 	$0.Lenient := $0.Lenient;
 	$0.DefaultLocaleIsSystemAndDefaultLenientIsFalse := "is_date(" + $0.Arg + "," + $0.Pattern + ")";
-	$0.ResultLocaleAndLenientDefault := is_date($0.Arg,$0.Pattern);
-	$0.DefaultLocaleIsSystemValue := "is_date(" + $0.Arg + "," + $0.Pattern + "," + $0.Lenient + ")";
-	$0.ResultLocaleDefault := is_date($0.Arg,$0.Pattern,$0.Lenient);
-	$0.DefaultLenientIsFalse := "is_date(" + $0.Arg + "," + $0.Pattern +"," + $0.Locale + ")";
-	$0.ResultLenientDefault := is_date($0.Arg,$0.Pattern,$0.Locale);
-	$0.AllArguments := "is_date(" + $0.Arg + "," + $0.Pattern + "," + $0.Locale + "," + $0.Lenient + ")";
-	$0.ResultAllArguments := is_date($0.Arg,$0.Pattern,$0.Locale,$0.Lenient);
+	$0.ResultLocaleAndDefaultLenientIsFalse := is_date($0.Arg,$0.Pattern);
+	$0.DefaultLocaleIsSystemValueAndDefaultLenientFalseIsUsed := "is_date(" + $0.Arg + "," + $0.Pattern + "," + "false" + ")";
+	$0.ResultLocaleDefaultAndDefaultLenientFalseIsUsed := is_date($0.Arg,$0.Pattern,$0.Lenient);
+	$0.DefaultLenientIsFalse := "is_date(" + $0.Arg + "," + $0.Pattern + "," + $0.Locale + ")";
+	$0.ResultDefaultLenientIsFalse := is_date($0.Arg,$0.Pattern,$0.Locale);
+	$0.AllArgumentsAndDefaultLenientFalseIsUsed := "is_date(" + $0.Arg + "," + $0.Pattern + "," + $0.Locale + "," + "false" + ")";
+	$0.ResultAllArgumentsAndDefaultLenientFalseIsUsed := is_date($0.Arg,$0.Pattern,$0.Locale,$0.Lenient);
 }
 // Called during component initialization.
 // function init() {}

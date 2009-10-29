@@ -59,8 +59,7 @@ public interface RecordTransform {
 	 * beginning of transformation process. Any object allocation/initialization should
 	 * happen here.
 	 *
-	 *@param  parameters	   Global graph parameters and parameters defined specially for the
-	 * component which calls this transformation class
+	 *@param  parameters	   component attributes defined for the component which calls this transformation class
 	 *@param  sourcesMetadata  Metadata describing source data records [array]
 	 *@param  targetMetadata   Metadata describing target data record
 	 *@return                  True if OK, otherwise False

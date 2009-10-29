@@ -48,6 +48,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -417,8 +418,8 @@ public class HttpConnector extends Node {
 
 			httpConnector.setUrl(xattribs.getString(XML_URL_ATTRIBUTE));
 			httpConnector.setRequestMethod(xattribs.getString(XML_REQUEST_METHOD_ATTRIBUTE, null));
-			httpConnector.setInputFileUrl(xattribs.getString(XML_INPUT_FILEURL_ATTRIBUTE, null));
-			httpConnector.setOutputFileUrl(xattribs.getString(XML_OUTPUT_FILEURL_ATTRIBUTE, null));
+			httpConnector.setInputFileUrl(xattribs.getStringEx(XML_INPUT_FILEURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+			httpConnector.setOutputFileUrl(xattribs.getStringEx(XML_OUTPUT_FILEURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
 			httpConnector.setAppendOutput(xattribs.getBoolean(XML_APPEND_OUTPUT_ATTRIBUTE, DEFAULT_APPEND_OUTPUT));
 			httpConnector.setRequestProperties(xattribs.getString(XML_HEADER_PROPERTIES_ATTRIBUTE, null));
 			httpConnector.setRequestContent(xattribs.getString(XML_REQUEST_CONTENT_ATTRIBUTE, null));

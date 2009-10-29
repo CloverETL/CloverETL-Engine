@@ -41,6 +41,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -222,7 +223,7 @@ public class SortWithinGroups extends Node {
             }
 
             if (componentAttributes.exists(XML_ATTRIBUTE_TEMP_DIRECTORIES)) {
-                sortWithinGroups.setTempDirectories(componentAttributes.getString(XML_ATTRIBUTE_TEMP_DIRECTORIES)
+                sortWithinGroups.setTempDirectories(componentAttributes.getStringEx(XML_ATTRIBUTE_TEMP_DIRECTORIES,RefResFlag.SPEC_CHARACTERS_OFF)
                         .split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
             }
         } catch (AttributeNotFoundException exception) {

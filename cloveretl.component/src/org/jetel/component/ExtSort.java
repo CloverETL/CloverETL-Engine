@@ -41,6 +41,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 /**
@@ -362,7 +363,7 @@ public class ExtSort extends Node {
             }
             
             if (xattribs.exists(XML_TEMPORARY_DIRS)){
-                sort.setTmpDirs(xattribs.getString(XML_TEMPORARY_DIRS).split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
+                sort.setTmpDirs(xattribs.getStringEx(XML_TEMPORARY_DIRS,RefResFlag.SPEC_CHARACTERS_OFF).split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
             }
 
             if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {

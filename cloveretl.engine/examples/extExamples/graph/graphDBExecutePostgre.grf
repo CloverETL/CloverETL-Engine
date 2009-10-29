@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" description="This graph illustrates how-to run SQL/DDL/DML commands againts database. Commands&#10;in SQLCode are delimited by semicolon and are executed one by one. If needed, they&#10;may be grouped into single transaction.&#10;&#10;This graph creates two tables (EMPLOYEE and EMPLOYEE_TMP) and populates table EMPLOYEE with sample data.&#10;MySql:&#10;CREATE PROCEDURE p (OUT ver_param VARCHAR(25), INOUT incr_param INT)&#10;BEGIN&#10;  # Set value of OUT parameter&#10;  SELECT VERSION() INTO ver_param;&#10;  # Increment value of INOUT parameter&#10;  SET incr_param = incr_param + 1;&#10;END;" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation" modified="Fri Sep 04 09:55:54 CEST 2009" modifiedBy="avackova" name="TestingDB2" revision="1.222">
+<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation Devel" modified="Fri Oct 02 08:34:17 GMT+01:00 2009" modifiedBy="avackova" name="TestingDB2" revision="1.224">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter=";" name="city" recordDelimiter="\n" recordSize="-1" type="delimited">

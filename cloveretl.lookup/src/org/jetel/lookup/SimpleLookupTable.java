@@ -220,7 +220,9 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 				} else if (data != null) {
 					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes(charset)));
 				}
-            	dataParser.skip(metadata.getSkipSourceRows());
+				if (metadata.getSkipSourceRows() > 0) {
+					dataParser.skip(metadata.getSkipSourceRows());
+				}
 				while (dataParser.getNext(record) != null) {
 	                    DataRecord storeRecord = record.duplicate();
 	                    lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
@@ -412,6 +414,11 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
             } catch (IOException e) {
                 status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_FILE_URL));
             }
+        }
+
+        if (data != null && metadata.containsCarriageReturnInDelimiters()) {
+            status.add(new ConfigurationProblem("Cannot use carriage return as a delimiter when inline data is specified!",
+            		Severity.ERROR, this, Priority.NORMAL, XML_DATA_ATTRIBUTE));
         }
 
         return status;

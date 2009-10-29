@@ -177,7 +177,7 @@ public class LookupTableReaderWriter extends Node {
         if(!isInitialized()) return;
 		super.free();
 		
-		if (freeLookupTable){
+		if (freeLookupTable && lookupTable != null){
 			lookupTable.free();
 		}
 	}

@@ -291,6 +291,10 @@
 
 </FunctionalTest>
 
+<FunctionalTest ident="RunGraph" graphFile="graph/graphRunGraph.grf">
+		<Property name="GRAPH_DIR" value="../cloveretl.engine/examples/simpleExamples/graph"/>
+</FunctionalTest>
+
 
 <FunctionalTest ident="Sequence" graphFile="graph/graphSequence.grf">
 	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.Sequence.dat.out"/>

@@ -46,6 +46,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.TargetFile;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -393,13 +394,13 @@ public class XSLDataTransformer extends Node {
 			if (xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
 				xslTransformer = new XSLDataTransformer(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_MAPPING_ATTRIBUTE),
-						xattribs.getString(XML_XSLT_FILE_ATTRIBUTE, null),
+						xattribs.getStringEx(XML_XSLT_FILE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
 						xattribs.getString(XML_XSLT_ATTRIBUTE, null));
 			} else {
 				xslTransformer = new XSLDataTransformer(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_XML_INPUT_FILE_ATTRIBUTE),
-						xattribs.getString(XML_XML_OUTPUT_FILE_ATTRIBUTE),
-						xattribs.getString(XML_XSLT_FILE_ATTRIBUTE, null),
+						xattribs.getStringEx(XML_XML_INPUT_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
+						xattribs.getStringEx(XML_XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
+						xattribs.getStringEx(XML_XSLT_FILE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
 						xattribs.getString(XML_XSLT_ATTRIBUTE, null));
 			}
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {

@@ -39,7 +39,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 23rd July 2009
+ * @version 2nd October 2009
  * @since 28th April 2009
  */
 public class RecordRollupTL implements RecordRollup {
@@ -82,12 +82,18 @@ public class RecordRollupTL implements RecordRollup {
      * Creates an instance of the <code>RecordRollupTL</code> class.
      *
      * @param sourceCode the source code of the transformation
-     * @param graph the graph this transformation belongs to
      */
-    public RecordRollupTL(String sourceCode, TransformationGraph graph) {
+    public RecordRollupTL(String sourceCode) {
         wrapper = new WrapperTL(sourceCode, LogFactory.getLog(RecordRollupTL.class));
-        wrapper.setGraph(graph);
     }
+
+	public void setGraph(TransformationGraph graph) {
+		wrapper.setGraph(graph);
+	}
+
+	public TransformationGraph getGraph() {
+		return wrapper.getGraph();
+	}
 
     public void init(Properties parameters, DataRecordMetadata inputMetadata, DataRecordMetadata accumulatorMetadata,
             DataRecordMetadata[] outputMetadata) throws ComponentNotReadyException {

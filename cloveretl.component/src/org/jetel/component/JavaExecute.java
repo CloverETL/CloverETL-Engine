@@ -40,6 +40,8 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 
@@ -364,9 +366,9 @@ public class JavaExecute extends Node {
     		}
             javaExecute = new JavaExecute(
                     xattribs.getString(XML_ID_ATTRIBUTE),
-                    xattribs.getString(XML_RUNNABLE_ATTRIBUTE, null, false), 
+                    xattribs.getStringEx(XML_RUNNABLE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
                     xattribs.getString(XML_RUNNABLECLASS_ATTRIBUTE, null),
-                    xattribs.getString(XML_RUNNABLEURL_ATTRIBUTE,null),
+                    xattribs.getStringEx(XML_RUNNABLEURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF),
                     internalProperties);
 
             if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {            	

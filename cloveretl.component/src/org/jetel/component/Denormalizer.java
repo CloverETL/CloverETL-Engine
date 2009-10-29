@@ -60,6 +60,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
 /**
@@ -497,6 +498,36 @@ public class Denormalizer extends Node {
 //            status.add(problem);
 //        }
         
+        // transformation source for checkconfig
+        String checkTransform = null;
+        if (xform != null) {
+        	checkTransform = xform;
+        } else if (xformURL != null) {
+        	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), xformURL, charset);
+        }
+        // only the transform and transformURL parameters are checked, transformClass is ignored
+        if (checkTransform != null) {
+        	int transformType = guessTransformType(checkTransform);
+        	if (transformType != TRANSFORM_JAVA_SOURCE ) {
+        		// only CTL is checked
+        		
+        		InputPort inPort = getInputPort(IN_PORT);
+        		OutputPort outPort = getOutputPort(OUT_PORT);	
+        		DataRecordMetadata inMetadata = inPort.getMetadata();
+        		DataRecordMetadata outMetadata = outPort.getMetadata();
+
+    			try {
+    				RecordDenormalizeTL denorm = new RecordDenormalizeTL(logger, checkTransform, getGraph());
+    				denorm.init(transformationParameters, inMetadata, outMetadata);
+    			} catch (ComponentNotReadyException e) {
+					// find which component attribute was used
+					String attribute = xform != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
+					// report CTL error as a warning
+					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
+				}
+        	}
+        }
+
         return status;
    }
 
@@ -541,9 +572,9 @@ public class Denormalizer extends Node {
 		try {
 			denorm = new Denormalizer(
 					xattribs.getString(XML_ID_ATTRIBUTE),					
-					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null, false), 
+					xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
-					xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE, null),
+					xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
 					parseKeyList(xattribs.getString(XML_KEY_ATTRIBUTE, null)),
 					order
 					);

@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transactions>
-<AmountID>5</AmountID>
-<Amount>600.89</Amount>
-<CustomerID>5</CustomerID>
-<CustomerState>Ohio</CustomerState>
-<CustomerSurname>Mc Guigan</CustomerSurname>
-<CustomerFirstname>Jeannet</CustomerFirstname>
-<EmployeeID>5</EmployeeID>
-<EmployeeSurname>Blaney</EmployeeSurname>
-<EmployeeFirstname>Theresa</EmployeeFirstname>
-<spouse>
-<SpouseName>Charles</SpouseName>
-</spouse>
-<children>
-<ChildName>Harry</ChildName>
-</children>
-<children>
-<ChildName>Stanley</ChildName>
-</children>
+  <AmountID>5</AmountID>
+  <Amount>600.89</Amount>
+  <CustomerID>5</CustomerID>
+  <CustomerState>Ohio</CustomerState>
+  <CustomerSurname>Mc Guigan</CustomerSurname>
+  <CustomerFirstname>Jeannet</CustomerFirstname>
+  <EmployeeID>5</EmployeeID>
+  <EmployeeSurname>Blaney</EmployeeSurname>
+  <EmployeeFirstname>Theresa</EmployeeFirstname>
+  <spouse>
+    <SpouseName>Charles</SpouseName>
+  </spouse>
+  <children>
+    <ChildName>Harry</ChildName>
+  </children>
+  <children>
+    <ChildName>Stanley</ChildName>
+  </children>
 </transactions>

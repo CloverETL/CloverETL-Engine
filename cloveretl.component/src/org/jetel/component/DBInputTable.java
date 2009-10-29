@@ -49,6 +49,7 @@ import org.jetel.util.AutoFilling;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -238,30 +239,37 @@ public class DBInputTable extends Node {
 
 	@Override
 	public Result execute() throws Exception {
-		// we need to create data record - take the metadata from first output port
-		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
-		record.init();
-		record.reset();
-		parser.setDataSource(connection.getConnection(getId(), OperationType.READ));
-		autoFilling.setFilename(sqlQuery);
+		try {
+    		// we need to create data record - take the metadata from first output port
+    		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
+    		record.init();
+    		record.reset();
+    		parser.setDataSource(connection.getConnection(getId(), OperationType.READ));
+    		autoFilling.setFilename(sqlQuery);
 
-		// till it reaches end of data or it is stopped from outside
-		while (record != null && runIt){
-			try{
-				record = parser.getNext(record);
-				if (record != null) {
-			        autoFilling.setAutoFillingFields(record);
-					writeRecordBroadcast(record);
-				}
-			}catch(BadDataFormatException bdfe){
-		        if(policyType == PolicyType.STRICT) {
-		            throw bdfe;
-		        } else {
-		            logger.info(bdfe.getMessage());
-		        }
-			}
+    		// till it reaches end of data or it is stopped from outside
+    		while (record != null && runIt){
+    			try{
+    				record = parser.getNext(record);
+    				if (record != null) {
+    			        autoFilling.setAutoFillingFields(record);
+    					writeRecordBroadcast(record);
+    				}
+    			}catch(BadDataFormatException bdfe){
+    		        if(policyType == PolicyType.STRICT) {
+    		            throw bdfe;
+    		        } else {
+    		            logger.info(bdfe.getMessage());
+    		        }
+    			}
+    		}
+		} finally {
+    		broadcastEOF();
+        	parser.close();
+        	if (parser.getIncrementalFile() != null){
+        		storeValues();
+        	}
 		}
-		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
@@ -331,7 +339,7 @@ public class DBInputTable extends Node {
                 if (xattribs.exists(XML_URL_ATTRIBUTE))
                 {
                    query=xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getProjectURL(), 
-                		   xattribs.getString(XML_URL_ATTRIBUTE), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
+                		   xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
                 }else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)){
                     query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
                 }else if (xattribs.exists(XML_SQLCODE_ELEMENT)){
@@ -358,10 +366,10 @@ public class DBInputTable extends Node {
                 }
                 
                 if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-                	aDBInputTable.setURL(XML_URL_ATTRIBUTE);
+                	aDBInputTable.setURL(xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
                 }
                 if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
-                	aDBInputTable.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
+                	aDBInputTable.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
                 }
                 if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
                 	aDBInputTable.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
@@ -373,15 +381,6 @@ public class DBInputTable extends Node {
 
             return aDBInputTable;
 	}
-
-    @Override
-    public synchronized void free() {
-    	super.free();
-    	parser.close();
-    	if (parser.getIncrementalFile() != null){
-    		storeValues();
-    	}
-    }
 
     /**
      * Stores all values as incremental reading.

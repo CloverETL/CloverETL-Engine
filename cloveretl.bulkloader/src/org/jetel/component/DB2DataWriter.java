@@ -28,6 +28,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -59,8 +60,10 @@ import org.jetel.util.CommandBuilder;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -806,7 +809,11 @@ public class DB2DataWriter extends Node {
 				tmpDir = tmpDir.concat(File.separator);
 			}
 			if (dataURL != null) {
-				dataFile = new File(dataURL);
+				try {
+					dataFile = new File(FileUtils.getFile(getGraph().getProjectURL(), dataURL));
+				} catch (MalformedURLException exception) {
+					throw new ComponentNotReadyException(this, "The data URL is invalid!", exception);
+				}
 			}
 			try {
 				if (dataFile == null) {
@@ -863,7 +870,11 @@ public class DB2DataWriter extends Node {
 			formatter.init(fileMetadata);
 		}else{//there is not input port connected, data is read from existing file
 			if (dataURL != null) {
-				dataFile = new File(dataURL);
+				try {
+					dataFile = new File(FileUtils.getFile(getGraph().getProjectURL(), dataURL));
+				} catch (MalformedURLException exception) {
+					throw new ComponentNotReadyException(this, "The data URL is invalid!", exception);
+				}
 
 				if (fileMetadata == null) throw new ComponentNotReadyException(this,
 						XML_FILEMETADATA_ATTRIBUTE, "File metadata have to be defined");
@@ -1403,7 +1414,7 @@ public class DB2DataWriter extends Node {
 	 */
 	private String prepareBatch() throws IOException, ComponentNotReadyException{
 		if (batchURL != null) {
-			batchFile = new File(batchURL);
+			batchFile = new File(FileUtils.getFile(getGraph().getProjectURL(), batchURL));
 			if (batchFile.length() > 0) {
 				logger.info("Node " + this.getId() + " info: Batch file exist. " +
 						"New batch file will not be created.");
@@ -1621,7 +1632,7 @@ public class DB2DataWriter extends Node {
             	writer.setRecordSkip(xattribs.getInteger(XML_RECORD_SKIP_ATTRIBUTE));
             }
             if (xattribs.exists(XML_BATCHURL_ATTRIBUTE)) {
-            	writer.setBatchURL(xattribs.getString(XML_BATCHURL_ATTRIBUTE));
+            	writer.setBatchURL(xattribs.getStringEx(XML_BATCHURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
             }
             if (xattribs.exists(XML_WARNING_LINES_ATTRIBUTE)) {
             	writer.setWarningNumber(xattribs.getInteger(XML_WARNING_LINES_ATTRIBUTE));

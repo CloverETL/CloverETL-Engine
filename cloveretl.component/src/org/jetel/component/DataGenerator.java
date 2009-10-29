@@ -28,6 +28,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
 /**
@@ -158,9 +159,9 @@ public abstract class DataGenerator extends Node {
 				xattribs.exists(XML_RANDOM_FIELDS_ATTRIBUTE) ||
 				xattribs.exists(XML_SEQUENCE_FIELDS_ATTRIBUTE))) {
 				dataGenerator = new ExtDataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 
-						xattribs.getString(XML_GENERATE_ATTRIBUTE, null, false), 
+						xattribs.getStringEx(XML_GENERATE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 						xattribs.getString(XML_GENERATECLASS_ATTRIBUTE, null), 
-						xattribs.getString(XML_GENERATEURL_ATTRIBUTE, null),
+						xattribs.getStringEx(XML_GENERATEURL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF),
 						xattribs.getInteger(XML_RECORDS_NUMBER_ATTRIBUTE));
 			} else {
 				dataGenerator = new SimpleDataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 

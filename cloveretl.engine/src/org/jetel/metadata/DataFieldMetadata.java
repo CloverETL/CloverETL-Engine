@@ -480,6 +480,23 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
+	 * @return <code>true</code> if any field delimiter contains a carriage return, <code>false</code> otherwise
+	 */
+	public boolean containsCarriageReturnInDelimiters() {
+		String[] delimiters = getDelimiters();
+
+		if (delimiters != null) {
+			for (String delimiter : delimiters) {
+				if (delimiter.indexOf('\r') >= 0) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Sets the OEF-as-delimiter flag.
 	 *
 	 * @param eofAsDelimiter the new value of the flag

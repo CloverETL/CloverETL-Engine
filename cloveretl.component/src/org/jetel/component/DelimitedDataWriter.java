@@ -44,6 +44,7 @@ import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.bytes.WritableByteChannelIterator;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
 /**
@@ -339,7 +340,7 @@ public class DelimitedDataWriter extends Node {
 		
 		try{
 			aDelimitedDataWriterNIO = new DelimitedDataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
-									xattribs.getString(XML_FILEURL_ATTRIBUTE),
+									xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
 									xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 									xattribs.getBoolean(XML_APPEND_ATTRIBUTE,APPEND_DATA_AS_DEFAULT));	
 			if (xattribs.exists(XML_OUTPUT_FIELD_NAMES)){

@@ -498,7 +498,7 @@ public class TargetFile {
         	if (useChannel) {
         		setDataTarget(byteChannel);
         	} else {
-           		setDataTarget(FileUtils.getFileURL(contextURL, fName));
+           		setDataTarget(new Object[] {contextURL, fName});
         	}
         	
         } else {

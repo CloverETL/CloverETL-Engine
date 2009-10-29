@@ -19,6 +19,7 @@
 */
 package org.jetel.connection.jdbc.specific.conn;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -75,5 +76,55 @@ public class MSSQLConnection extends DefaultConnection {
 			return connection.prepareStatement(sql);
 		}
 	}
-	
+
+	/* (non-Javadoc) We had to ommit holdability settings.
+	 * @see org.jetel.connection.jdbc.specific.conn.DefaultConnection#optimizeConnection(org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType)
+	 */
+	@Override
+	protected void optimizeConnection(OperationType operationType) {
+		switch (operationType) {
+		case READ:
+			try {
+				connection.setAutoCommit(false);
+				connection.setReadOnly(true);
+				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+			} catch (SQLException ex) {
+				logger.warn("Optimizing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
+			} catch (UnsupportedOperationException ex) {
+				logger.warn("Optimizing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
+			}
+			break;
+		case WRITE:
+		case CALL:
+			try {
+				connection.setAutoCommit(false);
+				connection.setReadOnly(false);
+				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+			} catch (SQLException ex) {
+				logger.warn("Optimizing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
+			} catch (UnsupportedOperationException ex) {
+				logger.warn("Optimizing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
+			}
+			break;
+
+		case TRANSACTION:
+			try {
+				connection.setAutoCommit(true);
+				connection.setReadOnly(false);
+				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+			} catch (SQLException ex) {
+				logger.warn("Optimizing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
+			} catch (UnsupportedOperationException ex) {
+				logger.warn("Optimizing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
+			}
+			break;
+		}
+	}
+
 }

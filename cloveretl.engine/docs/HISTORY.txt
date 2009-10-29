@@ -1,6 +1,23 @@
 *******************************************************************************
-                          CLOVER ETL - HISTORY of RELEASES
+                          CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
+
+REL 2-8-1
+---------
+Features:
++ DBInputTable - incremental file is created automatically when properly configured
++ AspellLookupTable can now return edit distance
++ DBOutputTable has new attribute "Atomic SQL query" for ensuring that SQL query rollbacks on error
++ SQL query in DBExecute can have comments inside
++ Bundled jTDS for direct support for Microsoft SQL Server and Sybase
+ 
+Fixed:
++ Fixed CPU info tracking for multithreaded components
++ Fixed special characters resolving in some URL attributes
++ XMLWriter can be created from Java
++ Minor fixes in InformixDataWriter
+
+
 REL 2-8-0
 ---------
 + Method DataRecord2JmsMsg.createLastMsg(DataRecord) is deprecated. Use the same method without parameters instead.  
@@ -8,6 +25,10 @@ REL 2-8-0
 + bodyField attribute of JmsReader/JmsWriter have default value 
 + interfaces DataRecord2JmsMsg and JmsMsg2DataRecord now have 2 new methods: setGraph(TransformationGraph) and getGraph()
 + context(thread) class-loader changed to current(class) class-loader
++ new run option: -skipcheckconfig
++ optimized UniversalDataReader
++ Trash now can print out its ID for debugging purposes
++ unified null and empty field values in sorting, Dedup, etc. 
 
 REL 2-7-2
 ---------

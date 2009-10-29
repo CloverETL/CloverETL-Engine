@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Map.Entry;
 
@@ -339,7 +340,12 @@ public abstract class BulkLoader extends Node {
 		if (process == null) {
 			process = Runtime.getRuntime().exec(commandLine);
 		}
-		return new ProcBox(process, null, consumer, errConsumer);
+		ProcBox box = new ProcBox(process, null, consumer, errConsumer);
+    List<Thread> threads = box.getChildThreads();
+    for(Thread t:threads) {
+      this.registerChildThread(t);
+    }
+		return box; 
 	}
 	
 	/**
@@ -360,6 +366,10 @@ public abstract class BulkLoader extends Node {
     	try {
 			Process proc = Runtime.getRuntime().exec("mkfifo " + dataFile.getCanonicalPath());
 			ProcBox box = new ProcBox(proc, null, consumer, errConsumer);
+			List<Thread> threads = box.getChildThreads();
+			for(Thread t:threads) {
+			  this.registerChildThread(t);
+			}
 			box.join();
 		} catch (Exception e) {
 			throw e;
@@ -369,7 +379,7 @@ public abstract class BulkLoader extends Node {
 	protected int runWithPipe() throws Exception {
     	createNamedPipe();
     	ProcBox box = createProcBox();
-		
+		Thread t = 
 		new Thread() {
 			public void run() {
 				try {
@@ -378,7 +388,9 @@ public abstract class BulkLoader extends Node {
 					throw new RuntimeException(e);
 				}
 			}
-		}.start();
+		};
+		registerChildThread(t);
+		t.start();
 		return box.join();
     }
 	

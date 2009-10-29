@@ -42,6 +42,8 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -52,6 +54,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -846,7 +849,7 @@ public class HashJoin extends Node {
 					xattribs.getString(XML_JOINKEY_ATTRIBUTE),
 					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
-                    xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null),
+          xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF),
 					joinType);
 			
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
@@ -899,12 +902,13 @@ public class HashJoin extends Node {
         	return status;
         }
 
+        int slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
+
         try {
         	
     		driverPort = getInputPort(DRIVER_ON_PORT);
     		outPort = getOutputPort(WRITE_TO_PORT);
 
-    		int slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
     		if (driverJoiners == null) {
     			List<DataRecordMetadata> inMetadata = getInMetadata();
     			String[][][] joiners = JoinKeyUtils.parseHashJoinKey(joinKey, inMetadata);
@@ -987,6 +991,42 @@ public class HashJoin extends Node {
             }
             status.add(problem);
         }
+        
+        // transformation source for checkconfig
+        String checkTransform = null;
+        if (transformSource != null) {
+        	checkTransform = transformSource;
+        } else if (transformURL != null) {
+        	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), transformURL, charset);
+        }
+        // only the transform and transformURL parameters are checked, transformClass is ignored
+        if (checkTransform != null) {
+        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
+        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
+        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
+        		// only CTL is checked
+        		
+        		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {
+        				getOutputPort(WRITE_TO_PORT).getMetadata()};
+        		DataRecordMetadata[] inMetadata = new DataRecordMetadata[1 + slaveCnt];
+        		inMetadata[0] = getInputPort(DRIVER_ON_PORT).getMetadata();
+        		for (int idx = 0; idx < slaveCnt; idx++) {
+        			inMetadata[1 + idx] = getInputPort(FIRST_SLAVE_PORT + idx).getMetadata();
+        		}
+
+    			try {
+    				RecordTransformFactory.createTransform(checkTransform, null, null, 
+    						charset,this, inMetadata, outMetadata, transformationParameters, 
+    						null, null);
+				} catch (ComponentNotReadyException e) {
+					// find which component attribute was used
+					String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
+					// report CTL error as a warning
+					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
+				}
+        	}
+        }
+
         
         return status;
 	}
