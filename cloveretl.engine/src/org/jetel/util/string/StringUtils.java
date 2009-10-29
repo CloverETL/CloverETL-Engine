@@ -79,6 +79,25 @@ public class StringUtils {
 	}
 
 	/**
+	 * Removes all substrings matching the pattern from the given string.
+	 *
+	 * @param string a string to be processed
+	 * @param pattern a regex pattern used to find the substrings
+	 *
+	 * @return a new string with all the substrings replaced by an empty string
+	 *
+	 * @version 7th October 2009
+	 * @since 7th October 2009
+	 */
+	public static String removeAllSubstrings(String string, Pattern pattern) {
+		if (string == null) {
+			return null;
+		}
+
+		return pattern.matcher(string).replaceAll("");
+	}
+
+	/**
 	 * Unescapes specified characters within the given string buffer.
 	 *
 	 * @param stringBuffer a string buffer containing escaped characters
@@ -1117,6 +1136,71 @@ public class StringUtils {
 		return s == null || s.length() == 0;
 	}
 
+	  /**
+	   * Splits input string into parts delimited by specified delimiter. It's compatible with double quoted strings and quoted strings, so a delimiter in a
+	   * double quoted string or quoted string doesn't cause a split.
+	   * 
+	   * @param input
+	   * @param delimiter
+	   * @return
+	   */
+	  public static String[] split(String input, String delimiter) {
+	    if(input==null) {
+	      return null;
+	    }
+	    if(delimiter==null || delimiter.length()==0) {
+	      return new String[] {input};
+	    }
+	    boolean escaped = false;
+	    char quote = 0;
+	    
+	    ArrayList<String> parts = new ArrayList<String>();
+	    StringBuilder currentPart = new StringBuilder();
+	    
+	    for(int i=0; i<input.length(); i++) {
+	      char c = input.charAt(i);
+	      
+	      //this character is escaped
+	      if(escaped) {
+	        //if we are not inside quotes, start string
+	        if(quote==0) {
+	          if(c=='"' || c=='\'') {
+	            quote=c;
+	          }
+	        }
+	        escaped = false;
+	      }else{
+	        //next character is escaped
+	        if(c=='\\') { escaped = true; }
+	        else if(c=='"' || c=='\'') {
+	          //end of string
+	          if(quote==c) { quote = 0; }
+	          //start of string
+	          else if(quote==0) { quote = c; }
+	        }
+	      }
+	      //check for bounds of string
+	      int endIndex = i+delimiter.length();
+	      if(endIndex>input.length()) {
+	        endIndex = input.length();
+	      }
+	      if(quote==0 && input.substring(i,endIndex).equals(delimiter)) {
+	        //delimiter found .... let's split
+	        i = i + delimiter.length()-1;
+	        parts.add(currentPart.toString());
+	        currentPart = new StringBuilder();
+	      }else{
+	        currentPart.append(c);
+	      }
+	    }
+	    //add last part
+	    if(currentPart.length()>0) {
+	      parts.add(currentPart.toString());
+	    }
+	    return parts.toArray(new String[] {});
+	  }
+	  	
+	
 	/**
 	 * This method appends passed-in CharSequence to the end of passed-in StringBuffer;<br>
 	 * It returns reference to buffer object to allow cascading of these operations.

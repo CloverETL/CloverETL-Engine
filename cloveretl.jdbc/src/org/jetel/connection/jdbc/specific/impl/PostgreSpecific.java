@@ -20,7 +20,11 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.conn.PostgreConnection;
@@ -79,5 +83,32 @@ public class PostgreSpecific extends AbstractJdbcSpecific {
 		}
 		return super.jetelType2sqlDDL(field);
 	}
-    
+
+	
+  public ArrayList<String> getSchemas(java.sql.Connection connection)
+      throws SQLException {
+
+    ArrayList<String> tmp;
+
+    ArrayList<String> schemas = new ArrayList<String>();
+
+    DatabaseMetaData dbMeta = connection.getMetaData();
+
+    // add schemas
+    tmp = getMetaSchemas(dbMeta);
+    if (tmp != null) {
+      schemas.addAll(tmp);
+    }
+
+    //catalogs not added - postgresql allows only catalog specified in connection url, cannot get matadata from other catalogs 
+    // add catalogs
+
+    return schemas;
+  }
+	
+	
+  public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
+    return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW"}/*tableTypes*/);
+  }
+	
 }

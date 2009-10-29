@@ -20,13 +20,13 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.exception.JetelException;
-import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  * DB2 specific behaviour.
@@ -67,4 +67,8 @@ public class DB2Specific extends AbstractJdbcSpecific {
 		return super.sqlType2str(sqlType);
 	}
 	
+	public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
+		return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/);
+	}
+
 }

@@ -57,6 +57,7 @@ import org.jetel.util.property.PropertyRefResolver;
 public class MultiFileReader {
 	
     private static Log defaultLogger = LogFactory.getLog(MultiFileReader.class);
+    private static final String UNREACHABLE_FILE = "File is unreachable: ";
     private static final String STD_IN = "-";
     private Log logger = defaultLogger;
 
@@ -154,17 +155,24 @@ public class MultiFileReader {
 				fName = fit.next();
 				if (fName.equals(STD_IN)) continue;
 				if (fName.startsWith("dict:")) continue; //this test has to be here, since an involuntary warning is caused
-				URL url = FileUtils.getFileURL(contextURL, FileURLParser.getMostInnerAddress(fName));
+				String mostInnerFile = FileURLParser.getMostInnerAddress(fName);
+				URL url = FileUtils.getFileURL(contextURL, mostInnerFile);
 				if (FileUtils.isServerURL(url)) {
 					//FileUtils.checkServer(url); //this is very long operation
 					continue;
 				}
-				parser.setDataSource(FileUtils.getReadableChannel(contextURL, url.toString()));
+				if (FileURLParser.isArchiveURL(fName)) {
+					// test if the archive file exists
+					// getReadableChannel is too long for archives
+					if (new File(url.getFile()).exists()) continue;
+					throw new ComponentNotReadyException(UNREACHABLE_FILE + fName);
+				}
+				parser.setDataSource(FileUtils.getReadableChannel(contextURL, fName));
 				parser.setReleaseDataSource(closeLastStream = true);
 			} catch (IOException e) {
-				throw new ComponentNotReadyException("File is unreachable: " + fName, e);
+				throw new ComponentNotReadyException(UNREACHABLE_FILE + fName, e);
 			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException("File is unreachable: " + fName, e);
+				throw new ComponentNotReadyException(UNREACHABLE_FILE + fName, e);
 			}
 		}
 		if (closeLastStream) {

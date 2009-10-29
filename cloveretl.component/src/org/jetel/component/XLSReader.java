@@ -50,6 +50,7 @@ import org.jetel.util.NumberIterator;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -182,11 +183,11 @@ public class XLSReader extends Node {
 
             if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
                 aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-                        xattribs.getString(XML_FILE_ATTRIBUTE), fieldMap, xattribs.getString(XML_CHARSET_ATTRIBUTE));
+                        xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), fieldMap, xattribs.getString(XML_CHARSET_ATTRIBUTE));
 
             } else {
                 aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-                        xattribs.getString(XML_FILE_ATTRIBUTE), fieldMap);
+                        xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), fieldMap);
             }
 
             aXLSReader.setParserType(XLSType.valueOfIgnoreCase(xattribs.getString(XML_PARSER_ATTRIBUTE, null)));
@@ -218,7 +219,7 @@ public class XLSReader extends Node {
             } 
 
             if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
-                aXLSReader.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
+                aXLSReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
             }
 
             if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {

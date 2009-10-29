@@ -34,6 +34,11 @@ public class RoundRobinPartition implements PartitionFunction{
     	// not used here
     }
 
+    public TransformationGraph getGraph() {
+    	// not used here
+    	return null;
+    }
+
 	public int getOutputPort(ByteBuffer directRecord) {
 		 last=(last+1)%numPorts;
 	     return last;

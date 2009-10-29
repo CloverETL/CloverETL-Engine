@@ -6,7 +6,7 @@
 
     <FunctionalTest ident="AccessLogParsing" graphFile="graph/AccessLogParsing.grf">
         <FlatFile outputFile="data-out/irrelevant.txt" supposedFile="supposed-out/irrelevant.txt"/>
-        <FlatFile outputFile="data-out/statistics.xls" supposedFile="supposed-out/statistics.xls"/>
+        <FlatFile outputFile="data-out/statistics.xls" supposedFile="supposed-out/statistics.xls"/>     
         <DeleteFile file="data-out/irrelevant.txt"/>
         <DeleteFile file="data-out/statistics.xls"/>
     </FunctionalTest>
@@ -21,27 +21,9 @@
       	<DeleteTable connection="postgre_foodmart" name="Clients_without_revenues"/>
 	</FunctionalTest>
 
-    <FunctionalTest ident="SCDType2_example1" graphFile="graph/SCDType2_example1.grf">
-        <FlatFile outputFile="data-out/exchange_rates_DIM_insert.txt" supposedFile="supposed-out/exchange_rates_DIM_insert.txt"/>
-        <FlatFile outputFile="data-out/exchange_rates_DIM_update.txt" supposedFile="supposed-out/exchange_rates_DIM_update.txt"/>
-        <FlatFile outputFile="data-out/exchange_rates_matched.txt" supposedFile="supposed-out/exchange_rates_matched.txt"/>
-        <FlatFile outputFile="data-out/onlyInRates.txt" supposedFile="supposed-out/onlyInRates.txt"/>
-        <FlatFile outputFile="data-out/onlyInRatesByCode.txt" supposedFile="supposed-out/onlyInRatesByCode.txt"/>
-         <DeleteFile file="seq/exchange_rates_ID.seq"/>
-    </FunctionalTest>
-	
-    <FunctionalTest ident="SCDType2_example2" graphFile="graph/SCDType2_example2.grf">
-        <FlatFile outputFile="data-out/invalid.txt" supposedFile="supposed-out/empty.txt"/>
-        <FlatFile outputFile="data-out/NewProductsWithNewDescription.txt" supposedFile="supposed-out/NewProductsWithNewDescription.txt"/>
-        <FlatFile outputFile="data-out/OriginalProductsWithNewDescription.txt" supposedFile="supposed-out/OriginalProductsWithNewDescription.txt"/>
-        <FlatFile outputFile="data-out/OriginalProductsWithOriginalDescription.txt" supposedFile="supposed-out/OriginalProductsWithOriginalDescription.txt"/>
-        <FlatFile outputFile="data-out/OriginalProductsWithTerminatedDescription.txt" supposedFile="supposed-out/OriginalProductsWithTerminatedDescription.txt"/>
-         <DeleteFile file="seq/Product_id_seq.dat"/>
-         <DeleteFile file="seq/Internal_key_seq.dat"/>
-    </FunctionalTest>
-
     <FunctionalTest ident="SOAP_EXAMPLE" graphFile="graph/SOAP_EXAMPLE.grf">
-        <FlatFile outputFile="data-out/extract.xls" supposedFile="supposed-out/extract.xls"/>
+<!-- We are not able to compare xls files now. This comparison test should be uncommented after issue 2981 is resolved.
+        <FlatFile outputFile="data-out/extract.xls" supposedFile="supposed-out/extract.xls"/> -->   
         <DeleteFile file="data-out/extract.xls"/>
          <DeleteFile file="seq/temp_seq.seq"/>
          <DeleteFile file="seq/time_seq.seq"/>

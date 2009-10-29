@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Petr" created="Tue Sep 29 10:18:42 CEST 2009" guiVersion="0.0.0.devel" id="1254226439664" licenseType="Evaluation Devel" modified="Wed Oct 14 14:54:15 CEST 2009" modifiedBy="cloveruser" name="D_PRODUCT_SCD3" revision="1.22">
+<Global>
+<Metadata fileURL="${META_DIR}/D_PRODUCT.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/Product.fmt" id="Metadata0"/>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="D_PRODUCT_Product" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ID_D_PRODUCT" type="integer"/>
+<Field name="UPC" type="string"/>
+<Field name="PRODUCT_DESCRIPTION" type="string"/>
+<Field name="BRAND_DESCRIPTION" type="string"/>
+<Field name="DEPARTMENT_DESCRIPTION" type="string"/>
+<Field name="PREVIOUS_DEPARTMENT" type="string"/>
+<Field name="DEPARTMENT_DESCRIPTION_NEW" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Sequence cached="5" fileURL="${SEQ_DIR}/ID_D_PRODUCT.seq" id="Sequence0" name="ID_D_PRODUCT" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="108" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Data Warehouse" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="149" x="50" y="8"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="103" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="OLTP" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="148" x="48" y="127"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="324" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Filling of Product dimension of DWH" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="780" x="153" y="290">
+<attr name="text"><![CDATA[
+Product dimension is slowly changing dimension type 3 (stores both the actual and the previous values of chosen attributes)
+Only for DEPARTMENT attribute the previous value is stored
+
+Inputs:
+- D_PRODUCT file contains the contents of Product dimension as of 24th Sep 2009
+- Product_input contains a snapshot of the online transaction processing system (OLTP) as of 25th Sep 2009
+
+Processing:
+- data records from dimension and OLTP are intersected on natural key (UPC - universal product code) in the DataIntersection component
+- the records not contained in DWH but contained in OLTP are processed in the third branch of the graph after DataIntersection - new ID_D_PRODUCT is generated, PREVIOUS_DEPARTMENT is set to null and the resulting data records are written to the D_STORE_insert.tbl file
+- the records contained in both DWH and OLTP are processed in the second branch of the graph after DataIntersection - differences between OLTP and DWH are found, the value of the DEPARTMENT attribute from DWH is assigned to PREVIOUS_DEPARTMENT, DEPARTMENT is set to the value from OLTP, the updated records are written to the D_PRODUCT_update.tbl file
+
+If the data is stored in database instead of files, the D_PRODUCT_update.tbl and D_PRODUCT_insert.tbl files are replaced by SQL queries: UPDATE (ID_D_PRODUCT is unique identifier of records) and INSERT
+]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="0" guiName="DataIntersection" guiWidth="0" guiX="436" guiY="93" id="DATA_INTERSECTION0" joinKey="$UPC=$UPC" type="DATA_INTERSECTION">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.ID_D_PRODUCT := $0.ID_D_PRODUCT;
+	$0.UPC := $0.UPC;
+	$0.PRODUCT_DESCRIPTION := $0.PRODUCT_DESCRIPTION;
+	$0.BRAND_DESCRIPTION := $0.BRAND_DESCRIPTION;
+	$0.DEPARTMENT_DESCRIPTION := $0.DEPARTMENT_DESCRIPTION;
+	$0.PREVIOUS_DEPARTMENT := $0.PREVIOUS_DEPARTMENT;
+	$0.DEPARTMENT_DESCRIPTION_NEW := $1.DEPARTMENT_DESCRIPTION;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Product_25092009.csv" guiHeight="0" guiName="Product_input" guiWidth="0" guiX="58" guiY="159" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${TABLES}/D_PRODUCT.tbl" guiHeight="0" guiName="D_PRODUCT" guiWidth="0" guiX="59" guiY="43" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${TABLES}/D_PRODUCT_insert.tbl" guiHeight="0" guiName="INSERT to D_PRODUCT" guiWidth="0" guiX="771" guiY="201" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${TABLES}/D_PRODUCT_update.tbl" guiHeight="0" guiName="UPDATE D_PRODUCT" guiWidth="0" guiX="933" guiY="110" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Find differences" guiWidth="0" guiX="602" guiY="108" id="EXT_FILTER0" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[$DEPARTMENT_DESCRIPTION != $DEPARTMENT_DESCRIPTION_NEW]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Sort by UPC" guiWidth="0" guiX="239" guiY="43" id="EXT_SORT0" sortKey="UPC(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort by UPC" guiWidth="0" guiX="240" guiY="159" id="EXT_SORT1" sortKey="UPC(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Add ID_D_PRODUCT" guiWidth="0" guiX="603" guiY="201" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.UPC := $0.UPC;
+	$0.PRODUCT_DESCRIPTION := $0.PRODUCT_DESCRIPTION;
+	$0.BRAND_DESCRIPTION := $0.BRAND_DESCRIPTION;
+	$0.DEPARTMENT_DESCRIPTION := $0.DEPARTMENT_DESCRIPTION;
+	$0.ID_D_PRODUCT := sequence(Sequence0).next;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Set DEPARTMENT" guiWidth="0" guiX="770" guiY="109" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.ID_D_PRODUCT := $0.ID_D_PRODUCT;
+	$0.UPC := $0.UPC;
+	$0.PRODUCT_DESCRIPTION := $0.PRODUCT_DESCRIPTION;
+	$0.BRAND_DESCRIPTION := $0.BRAND_DESCRIPTION;
+	$0.DEPARTMENT_DESCRIPTION := $0.DEPARTMENT_DESCRIPTION_NEW;
+	$0.PREVIOUS_DEPARTMENT := $0.DEPARTMENT_DESCRIPTION;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="602" guiY="16" id="TRASH0" type="TRASH"/>
+<Edge fromNode="DATA_INTERSECTION0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (only in A)" toNode="TRASH0:0"/>
+<Edge debugMode="false" fromNode="DATA_INTERSECTION0:1" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (in A &amp; B)" toNode="EXT_FILTER0:0"/>
+<Edge fromNode="DATA_INTERSECTION0:2" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (only in B)" toNode="REFORMAT0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
+<Edge fromNode="EXT_FILTER0:0" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (accepted)" toNode="REFORMAT1:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (set A)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge3" inPort="Port 1 (set B)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:1"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+</Phase>
+</Graph>

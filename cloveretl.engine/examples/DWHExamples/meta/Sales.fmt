@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="Sales" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipSourceRows="1" type="delimited">
+<Field name="INVOICE_NUMBER" type="string"/>
+<Field name="TRANSACTION_DATE" type="date"/>
+<Field name="STORE_NUMBER" type="integer"/>
+<Field name="UPC" type="string"/>
+<Field name="CUSTOMER_NUMBER" type="integer"/>
+<Field length="10" name="PRICE_PER_UNIT" scale="2" type="decimal"/>
+<Field name="UNITS" type="integer"/>
+</Record>

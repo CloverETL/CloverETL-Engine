@@ -48,6 +48,11 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 public class WcardPattern {
 
+	// for embedded source
+	//     "[zip|gzip|tar]     :       ^(       something   )          [[#|$]something]?
+	//      ((zip|gzip|tar)    :       ([^\\(]  .*          [^\\)])    #(.*))|((zip|gzip|tar):([^\\(].*[^\\)])$)
+	private final static Pattern ARCHIVE_SOURCE = Pattern.compile("((zip|gzip|tar):([^\\(].*[^\\)])#(.*))|((zip|gzip|tar):([^\\(].*[^\\)])$)");
+	
 	// Wildcard characters.
 	@SuppressWarnings("MS")
 	public final static char[] WCARD_CHAR = {'*', '?'};
@@ -177,6 +182,20 @@ public class WcardPattern {
 			iPostName = iPreName + innerSource.length();
 			fileStreamNames = innerFileNames(innerSource, outherPathNeedsInputStream 
 					|| fileName.contains("" + WCARD_CHAR[0]) || fileName.contains("" + WCARD_CHAR[1]));
+		} else {
+			// for archives without ...:(......), just ...:......
+			Matcher archMatcher = getArchiveURLMatcher(fileName);
+			if (archMatcher != null && (innerSource = archMatcher.group(3)) != null) {
+				iPreName = archMatcher.group(2).length()+1;
+				iPostName = iPreName + innerSource.length();
+				fileStreamNames = innerFileNames(innerSource, outherPathNeedsInputStream 
+						|| fileName.contains("" + WCARD_CHAR[0]) || fileName.contains("" + WCARD_CHAR[1]));
+			} else if (archMatcher != null && (innerSource = archMatcher.group(7)) != null) {
+				iPreName = archMatcher.group(6).length()+1;
+				iPostName = iPreName + innerSource.length();
+				fileStreamNames = innerFileNames(innerSource, outherPathNeedsInputStream 
+						|| fileName.contains("" + WCARD_CHAR[0]) || fileName.contains("" + WCARD_CHAR[1]));
+			}
 		}
 		
 		// get archive type
@@ -489,6 +508,23 @@ public class WcardPattern {
 		public InputStream getInputStream() {
 			return inputStream;
 		}
+	}
+
+	/**
+	 * Finds embedded source.
+	 * 
+	 * Example: 
+	 * 		source:      zip:http://linuxweb/~jausperger/employees.dat.zip#employees0.dat
+	 *      result: (g1) zip:
+	 *              (g2) http://linuxweb/~jausperger/employees.dat.zip
+	 *              (g3) #employees0.dat
+	 * 
+	 * @param source - input/output source
+	 * @return matcher or null
+	 */
+	public static Matcher getArchiveURLMatcher(String source) {
+		Matcher matcher = ARCHIVE_SOURCE.matcher(source);
+		return matcher.find() ? matcher : null;
 	}
 
 }

@@ -533,11 +533,6 @@ public final class TransformationGraph extends GraphElement {
 		//reset dictionary
 		dictionary.reset();
 		
-		//reset all phases
-		for(Phase phase : phases.values()) {
-			phase.reset();
-		}
-
 		//reset all connections
 		for(IConnection connection : connections.values()) {
 			connection.reset();
@@ -552,7 +547,12 @@ public final class TransformationGraph extends GraphElement {
 		for(Sequence sequence: sequences.values()) {
 			sequence.reset();
 		}
-		
+
+		//reset all phases
+		for(Phase phase : phases.values()) {
+			phase.reset();
+		}
+
 	}
 	
 	/* (non-Javadoc)

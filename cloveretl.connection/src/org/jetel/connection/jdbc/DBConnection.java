@@ -53,6 +53,7 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
@@ -151,12 +152,110 @@ public class DBConnection extends GraphElement implements IConnection {
     
     public static final String EMBEDDED_UNLOCK_CLASS = "com.ddtek.jdbc.extensions.ExtEmbeddedConnection";
     
-    private final static String[] TRANSACTION_ISOLATION = {"TRANSACTION_NONE", "READ_UNCOMMITTED", "READ_COMMITTED", 
-    	"REPEATABLE_READ", "SERIALIZABLE"
-    };
+    /**
+     * Enum for the transaction isolation property values.
+     * 
+     * @author Jaroslav Urban (jaroslav.urban@javlin.eu)
+     *         (c) Javlin a.s. (www.javlin.eu)
+     *
+     * @since Oct 2, 2009
+     */
+    public static enum TransactionIsolation {
+    	TRANSACTION_NONE(Connection.TRANSACTION_NONE),
+    	READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED),
+    	READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED),
+    	REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ),
+    	SERIALIZABLE(Connection.TRANSACTION_SERIALIZABLE);
+    	
+    	private int code;
+    	
+    	// map of transaction isolation codes to their enum values
+    	private static HashMap<Integer, TransactionIsolation> codeMap = 
+    		new HashMap<Integer, TransactionIsolation>();
+    	
+    	static {
+    		TransactionIsolation[] values = TransactionIsolation.values();
+    		for (TransactionIsolation transationIsolation : values) {
+				codeMap.put(transationIsolation.getCode(), transationIsolation);
+			}
+    	}
+    	
+    	/**
+    	 * @param code
+    	 * @return enum value for the transaction isolation code.
+    	 */
+    	public static TransactionIsolation fromCode(int code) {
+    		return codeMap.get(code);
+    	}
+    	
+    	/**
+    	 * Allocates a new <tt>TransactionIsolation</tt> object.
+    	 *
+    	 * @param code
+    	 */
+    	private TransactionIsolation(int code) {
+    		this.code = code;
+    	}
+    	
+    	/**
+    	 * @return the number code for the transaction isolation.
+    	 */
+    	public int getCode() {
+    		return this.code;
+    	}
+    }
+    
+    /**
+     * Enum for the holdability property values.
+     * 
+     * @author Jaroslav Urban (jaroslav.urban@javlin.eu)
+     *         (c) Javlin a.s. (www.javlin.eu)
+     *
+     * @since Oct 2, 2009
+     */
+    public static enum Holdability {
+    	HOLD_CURSORS(ResultSet.HOLD_CURSORS_OVER_COMMIT),
+    	CLOSE_CURSORS(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+    	
+    	private int code;
+    	
+    	// map of holdability codes to their enum values
+    	private static HashMap<Integer, Holdability> codeMap = 
+    		new HashMap<Integer, Holdability>();
+    	
+    	static {
+    		Holdability[] values = Holdability.values();
+    		for (Holdability holdability : values) {
+				codeMap.put(holdability.getCode(), holdability);
+			}
+    	}
+    	
+    	/**
+    	 * @param code
+    	 * @return enum value for the holdability code.
+    	 */
+    	public static Holdability fromCode(int code) {
+    		return codeMap.get(code);
+    	}
 
-	private static final String[] HOLDABILITY = {"HOLD_CURSORS", "CLOSE_CURSORS"};
 
+    	/**
+    	 * Allocates a new <tt>Holdability</tt> object.
+    	 *
+    	 * @param code
+    	 */
+    	private Holdability(int code) {
+    		this.code = code;
+    	}
+    	
+    	/**
+    	 * @return the number code for the holdability.
+    	 */
+    	public int getCode() {
+    		return this.code;
+    	}
+    }
+    
     // not yet used by component
     public static final String XML_NAME_ATTRIBUTE = "name";
 
@@ -228,20 +327,22 @@ public class DBConnection extends GraphElement implements IConnection {
 		try {
 			setHoldability(typedProperties.getIntProperty(XML_HOLDABILITY));
 		} catch (NumberFormatException e) {
-			int index = StringUtils.findString(typedProperties.getStringProperty(XML_HOLDABILITY), HOLDABILITY);
-			if (index != -1) {
-				setHoldability(index + 1);
-			}else {
+			String propertyValue = typedProperties.getStringProperty(XML_HOLDABILITY);
+			try {
+				Holdability holdability = Holdability.valueOf(propertyValue);
+				setHoldability(holdability.getCode());
+			} catch (IllegalArgumentException ex) {
 				logger.warn("Unknown holdability");
 			}
 		}
 		try {
 			setTransactionIsolation(typedProperties.getIntProperty(XML_TRANSACTION_ISOLATION));
 		} catch (Exception e) {
-			int index = StringUtils.findString(typedProperties.getStringProperty(XML_HOLDABILITY), TRANSACTION_ISOLATION);
-			if (index != -1) {
-				setTransactionIsolation(index > 0 ? 2 ^ (index - 1) : 0);
-			}else {
+			String propertyValue = typedProperties.getStringProperty(XML_TRANSACTION_ISOLATION);
+			try {
+				TransactionIsolation transactionIsolation = TransactionIsolation.valueOf(propertyValue);
+				setTransactionIsolation(transactionIsolation.getCode());
+			} catch (IllegalArgumentException ex) {
 				logger.warn("Unknown transaction isolation");
 			}
 		}
@@ -395,31 +496,47 @@ public class DBConnection extends GraphElement implements IConnection {
 			}
     	}
     }
-    
+
+    @Override
+    public synchronized void reset() throws ComponentNotReadyException {
+    	super.reset();
+    	//TODO: Issue 2939; close connections only when desired (make changes to JdbcSpecific)
+//    	closeConnections();
+    }
+
     /**
      * Commits and closes all allocated connections.
      * 
      * @see org.jetel.graph.GraphElement#free()
      */
-    synchronized public void free() {
-        if (!isInitialized()) return;
-        super.free();
+    @Override
+    public synchronized void free() {
+        if (!isInitialized()) {
+            throw new NotInitializedException(this);
+        }
 
+		super.free();
+		closeConnections();
+
+		if (jdbcDriver != null) {
+			jdbcDriver.free();
+		}
+	}
+
+    private void closeConnections() {
         if (threadSafeConnections) {
             for (DBConnectionInstance connectionInstance : connectionsCache.values()) {
             	Connection connection = connectionInstance.getSqlConnection();
             	closeConnection(connection);
             }
             connectionsCache.clear();
-        } else {
-        	if (connectionInstance != null) {
-            	Connection connection = connectionInstance.getSqlConnection();
-            	closeConnection(connection);
-            	connectionInstance = null;
-        	}
         }
-        if (jdbcDriver!=null)
-        	jdbcDriver.free();
+
+        if (connectionInstance != null) {
+			Connection connection = connectionInstance.getSqlConnection();
+			closeConnection(connection);
+			connectionInstance = null;
+		}
     }
 
     private void closeConnection(Connection connection) {

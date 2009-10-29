@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -69,7 +70,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Martin Zatopek, Javlin a.s. &lt;martin.zatopek@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 30th July 2009
+ * @version 2nd October 2009
  * @since 24th February 2009
  */
 public interface RecordRollup {
@@ -80,10 +81,23 @@ public interface RecordRollup {
     public static final int SKIP = -1;
 
     /**
+     * Associates a graph with this rollup transform.
+     *
+     * @param graph a <code>Transformation</code> graph to be set
+     */
+    public void setGraph(TransformationGraph graph);
+
+    /**
+	 * @return a <code>TransformationGraph</code> associated with this rollup transform, or <code>null</code>
+	 * if no graph is associated
+	 */
+    public TransformationGraph getGraph();
+
+    /**
      * Initializes the rollup transform. This method is called once at the beginning of the life-cycle of the rollup
      * transform. Any internal allocation/initialization code should be placed here.
      *
-     * @param parameters global graph parameters and parameters defined for the component which calls this transformation
+     * @param parameters custom component attributes defined for the component which calls this transformation
      * @param inputMetadata metadata of input data records
      * @param accumulatorMetadata metadata of a group "accumulator" used to store intermediate results
      * or <code>null</code> if no metadata were specified

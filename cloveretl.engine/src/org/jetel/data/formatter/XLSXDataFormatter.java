@@ -47,6 +47,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 import org.openxml4j.exceptions.InvalidFormatException;
 import org.openxml4j.opc.Package;
@@ -126,23 +127,24 @@ public class XLSXDataFormatter extends XLSFormatter {
 		//
 
 		try {
-			if (dataTarget instanceof URL) {
-				URL url = (URL) dataTarget;
+    		if (dataTarget instanceof Object[]) {
+    			URL url = (URL) ((Object[])dataTarget)[0];
+        		String fName = (String) ((Object[])dataTarget)[1];
+        		// input stream
+        		try {
+            		InputStream inputStream = FileUtils.getInputStream(url, fName);
+    				workbook = (inputStream.available() > 0) ? new XSSFWorkbook(Package.open(inputStream)) : new XSSFWorkbook();
+    				inputStream.close();
+        		} catch (InvalidFormatException exception) {
+        			throw new IllegalArgumentException("The XLSX workbook has invalid format!", exception);
+        		} catch (Throwable t) {
+        			//NOTHING - create new xlsx
+    				workbook = new XSSFWorkbook();
+        		}
+				
+				// output stream
+        		outputStream = FileUtils.getOutputStream(url, fName, false, -1);
 
-				if (url.getProtocol().equals(FILE_PROTOCOL)) {
-					File file = new File(url.getFile());
-
-					workbook = (file.length() > 0) ? new XSSFWorkbook(file.getPath()) : new XSSFWorkbook();
-					outputStream = new FileOutputStream(file);
-				} else {
-					URLConnection urlConnection = url.openConnection();
-
-					InputStream inputStream = urlConnection.getInputStream();
-					workbook = (inputStream.available() > 0) ? new XSSFWorkbook(Package.open(inputStream)) : new XSSFWorkbook();
-					inputStream.close();
-
-					outputStream = urlConnection.getOutputStream();
-				}
 			} else if (dataTarget instanceof WritableByteChannel) {
 				workbook = new XSSFWorkbook();
 				outputStream = Channels.newOutputStream((WritableByteChannel) dataTarget);
@@ -151,8 +153,6 @@ public class XLSXDataFormatter extends XLSFormatter {
 			}
 		} catch (IOException exception) {
 			throw new IllegalArgumentException("Error opening/writing the XLS(X) workbook!", exception);
-		} catch (InvalidFormatException exception) {
-			throw new IllegalArgumentException("The XLSX workbook has invalid format!", exception);
 		}
 
 		//

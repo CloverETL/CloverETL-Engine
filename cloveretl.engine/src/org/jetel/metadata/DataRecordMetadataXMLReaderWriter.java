@@ -510,13 +510,13 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		}
 		recordMetadata.setRecordSize(recSize);
 		
-		int iSkipSourceRows = -1;
 		try {
+			int iSkipSourceRows = -1;
 			if (skipSourceRows != null)	iSkipSourceRows = Integer.parseInt(skipSourceRows);
+			recordMetadata.setSkipSourceRows(iSkipSourceRows);
 		} catch (NumberFormatException e) {
 			// ignore 
 		}
-		recordMetadata.setSkipSourceRows(iSkipSourceRows);
 
 		/*
 		 * parse metadata of FIELDs

@@ -1100,6 +1100,34 @@ public abstract class Node extends GraphElement implements Runnable {
 		return checkMetadata(status, inputMetadata, outputMetadata);
 	}
 
+    /**
+     * The given thread is registered as a child thread of this component.
+     * The child threads are exploited for grabing of tracking information - CPU usage of this component
+     * is sum of all threads.
+     * @param childThread
+     */
+    protected void registerChildThread(Thread childThread) {
+    	childThreads.add(childThread);
+    }
+
+    /**
+     * The given threads are registered as child threads of this component.
+     * The child threads are exploited for grabing of tracking information - for instance 
+     * CPU usage of this component is sum of all threads.
+     * @param childThreads
+     */
+    protected void registerChildThreads(List<Thread> childThreads) {
+    	childThreads.addAll(childThreads);
+    }
+
+    /**
+     * @return list of all child threads - threads running under this component
+     */
+    public List<Thread> getChildThreads() {
+    	return childThreads;
+    }
+
+
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#reset()
      * @deprecated see {@link org.jetel.graph.IGraphElement#preExecute()} and {@link org.jetel.graph.IGraphElement#postExecute()} methods 
@@ -1117,7 +1145,15 @@ public abstract class Node extends GraphElement implements Runnable {
         runResult=Result.READY;
         resultMessage = null;
         resultException = null;
+        childThreads.clear();
         nodeThread = null;
+    }
+
+    @Override
+    public synchronized void free() {
+    	super.free();
+    	
+    	childThreads.clear();
     }
 
 	/**

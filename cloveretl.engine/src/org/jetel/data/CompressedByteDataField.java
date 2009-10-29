@@ -76,7 +76,7 @@ public class CompressedByteDataField extends ByteDataField {
 		compressedByteDataField.value = value; //potencial issue !
 		compressedByteDataField.dataLen = dataLen;
 		if (value == null) compressedByteDataField.setNull(true);
-	    return compressedByteDataField;
+	    return compressedByteDataField; 
 	}
 
 	/**

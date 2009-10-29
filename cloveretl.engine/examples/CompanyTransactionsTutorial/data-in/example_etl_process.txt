@@ -1,5 +1,5 @@
-graph/A01_SplittingTransactions.grf
-graph/A02_CreatingXLSEmployeesWithFamily.grf
-graph/A03_ConvertingCustomersFromDelimitedToFixed.grf
-graph/A05_CreatingXMLEmplFamCustAm.grf
-graph/A09_XMLExtractEmplFamCustAm.grf
+A01_SplittingTransactions.grf
+A02_CreatingXLSEmployeesWithFamily.grf
+A03_ConvertingCustomersFromDelimitedToFixed.grf
+A05_CreatingXMLEmplFamCustAm.grf
+A09_XMLExtractEmplFamCustAm.grf

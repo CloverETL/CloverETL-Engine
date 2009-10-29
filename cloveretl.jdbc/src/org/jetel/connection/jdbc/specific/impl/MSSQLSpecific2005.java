@@ -29,7 +29,6 @@ import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.conn.MSSQLConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  * MS SQL 2005 specific behaviour.
@@ -101,10 +100,12 @@ public class MSSQLSpecific2005 extends AbstractJdbcSpecific {
         return ('[' + identifier + ']');
     }
 
-	@Override
-	public ArrayList<String> getSchemas(DatabaseMetaData dbMeta)
-			throws SQLException {
-		return AbstractJdbcSpecific.getMetaCatalogs(dbMeta);
-	}
+    @Override
+    public ArrayList<String> getSchemas(java.sql.Connection connection)
+        throws SQLException {
+      ArrayList <String> currentCatalog = new ArrayList<String>();
+      currentCatalog.add(connection.getCatalog());
+      return currentCatalog;
+    }
     
 }

@@ -5,10 +5,17 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Future;
 
-import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
+import junit.framework.TestResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,53 +34,109 @@ import org.jetel.graph.runtime.WatchDog;
 
 public class ResetTest extends TestCase{
 
-	private final static String EXAMPLE_PATH = "examples/simpleExamples/";
+	private final static String[] EXAMPLE_PATH = {
+		"examples/simpleExamples/", 
+		"examples/advancedExamples/",
+		"examples/CTLFunctionsTutorial/",
+		"examples/extExamples/",
+		"../cloveretl.test.scenarios/",
+		"../cloveretl.examples.commercial/",
+		"examples/CompanyTransactionsTutorial/"
+		};
 	
 	static Log logger = LogFactory.getLog(ResetTest.class);
 	private GraphRuntimeContext runtimeContext;
 
-	private final static String PROJECT_DIR = "examples/simpleExamples/";
 	private final static String GRAPHS_DIR = "graph";
 	private final static String[] OUT_DIRS = {"data-out/", "data-tmp/", "seq/"};
 	
+	/**
+	 * We suppose that this test is running from cloveretl.engine directory. 
+	 * If not, this variable has to be change to point to the cloveretl.engine directory. 
+	 */
+	private final static File current_directory = new File(".");
+	private final static String SCENARIOS_RELATIVE_PATH = "/../cloveretl.test.scenarios";
+	
+	private Map<String, Exception> errors = new HashMap<String, Exception>();
+
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		EngineInitializer.initEngine( "plugins", null, null);
-
+		EngineInitializer.initEngine( "..", null, null);
+		
 		runtimeContext = new GraphRuntimeContext();
-		runtimeContext.addAdditionalProperty("PROJECT_DIR", EXAMPLE_PATH);
 		runtimeContext.addAdditionalProperty("PROJECT", ".");
+		runtimeContext.addAdditionalProperty("CONN_DIR", current_directory.getAbsolutePath() + SCENARIOS_RELATIVE_PATH + "/conn");
 		runtimeContext.setUseJMX(false);
+		
+		errors.clear();
 	}
 	
-	public void testAllExamples() throws Exception {
-		File[] graphFile = (new File(PROJECT_DIR + GRAPHS_DIR)).listFiles(new FileFilter(){
-			public boolean accept(File pathname) {
-				return pathname.getName().endsWith(".grf")
-					&& !pathname.getName().endsWith("graphSimpleLookup.grf") // ok, uses lookup free in transform attribute
-					&& !pathname.getName().equals("graphJoinData.grf") // ok, uses class file that is not created
-				 	&& !pathname.getName().equals("graphJoinHash.grf") // ok, uses class file that is not created
-				 	&& !pathname.getName().equals("graphOrdersReformat.grf") // ok, uses class file that is not created
-				 	&& !pathname.getName().equals("graphDataGeneratorExt.grf") // ok, uses class file that is not created
-					&& !pathname.getName().equals("graphParametrizedLookup.grf") // ok, wrong path to lookup
-					&& !pathname.getName().equals("graphRunGraph.grf") // ok, wrong path to output file
-					&& !pathname.getName().equals("graphSystemExecute.grf") // ok, wrong path
-					&& !pathname.getName().equals("graphAspellLookup.grf") // ok, use commercial components
-					&& !pathname.getName().equals("graphPersistentLookup.grf") // ok, use commercial components
-					&& !pathname.getName().equals("graphPersistentLookup2.grf") // ok, use commercial components
-					&& !pathname.getName().equals("graphSystemExecuteWin.grf"); // ok, graph for Windows
+	public void testAllExamples(){
+		for (int i = 0; i < EXAMPLE_PATH.length; i++) {
+			File[] graphFile = (new File(EXAMPLE_PATH[i] + GRAPHS_DIR)).listFiles(new FileFilter() {
+				public boolean accept(File pathname) {
+					return pathname.getName().endsWith(".grf") 
+//							&& !pathname.getName().endsWith("graphSimpleLookup.grf") // ok, uses lookup free in transform attribute
+							&& !pathname.getName().startsWith("TPCH")// ok, performance tests - last very long
+							&& !pathname.getName().contains("Performance")// ok, performance tests - last very long
+							&& !pathname.getName().equals("graphJoinData.grf") // ok, uses class file that is not created
+							&& !pathname.getName().equals("graphJoinHash.grf") // ok, uses class file that is not created
+							&& !pathname.getName().equals("graphOrdersReformat.grf") // ok, uses class file that is not created
+							&& !pathname.getName().equals("graphDataGeneratorExt.grf") // ok, uses class file that is not created
+							&& !pathname.getName().equals("graphApproximativeJoin.grf") // ok, uses class file that is not created
+							&& !pathname.getName().equals("graphDBJoin.grf") // ok, uses class file that is not created
+							&& !pathname.getName().equals("conversionNum2num.grf") // ok, should fail
+							&& !pathname.getName().equals("outPortWriting.grf") // ok, should fail
+							&& !pathname.getName().equals("graphDb2Load.grf") // ok, can only work with db2 client
+							&& !pathname.getName().equals("graphMsSqlDataWriter.grf") // ok, can only work with MsSql client
+							&& !pathname.getName().equals("graphMysqlDataWriter.grf") // ok, can only work with MySql client
+							&& !pathname.getName().equals("graphOracleDataWriter.grf") // ok, can only work with Oracle client
+							&& !pathname.getName().equals("graphInformixDataWriter.grf") // ok, can only work with informix server
+							&& !pathname.getName().equals("graphSystemExecuteWin.grf") // ok, graph for Windows
+							
+//TODO these graphs should work in the future:
+							&& !pathname.getName().startsWith("graphLdap") //LDAP server is not configured properly yet
+							&& !pathname.getName().equals("mountainsSybase.grf"); //issue 2939
+				}
+			});
+			Arrays.sort(graphFile);
+			runtimeContext.addAdditionalProperty("PROJECT_DIR", EXAMPLE_PATH[i]);
+			for (int j = 0; j < graphFile.length; j++) {
+				if (!graphFile[j].getName().contains("Jms")) {//set LIB_DIR to jdbc drivers directory
+					runtimeContext.addAdditionalProperty("LIB_DIR", current_directory.getAbsolutePath() + SCENARIOS_RELATIVE_PATH + "/lib");
+				}
+				try {
+					testExample(graphFile[j]);
+//				} catch (AssertionFailedError e) {
+//					fail(graphFile[j] + ": " + e.getMessage());
+				} catch (Exception e) {
+//					if (e.getMessage() == null){
+//						e.printStackTrace();
+//					}
+//					fail(graphFile[j] + ": " + e.getMessage());
+					errors.put(graphFile[j].getName(), e);
+				}
 			}
-		});
+		}
 		
-		for (int i = 0; i < graphFile.length; i++) {
-			try {
-				testExample(graphFile[i]);
-			} catch (AssertionFailedError e) {
-				//if (!graphFile[i].getName().contains("graphIntersectData.grf")) // issue 870
-				fail(graphFile[i] + ": " + e.getMessage());
-			} catch (Exception e) {
-				fail(graphFile[i] + ": " + e.getMessage());
+		
+		if (!errors.isEmpty()) {
+			for (Entry<String, Exception> error : errors.entrySet()) {
+				System.err.println(error.getKey() + ": ");
+				error.getValue().printStackTrace();
+			}
+		}
+	}
+	
+	@Override
+	public void run(TestResult result) {
+		super.run(result);
+		if (!errors.isEmpty()) {
+			Exception e;
+			for (Entry<String, Exception> error : errors.entrySet()) {
+				e = new RuntimeException(error.getKey() + "failed.", error.getValue());
+				result.addError(this, e);
 			}
 		}
 	}
@@ -86,13 +149,17 @@ public class ResetTest extends TestCase{
 				graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(file), runtimeContext.getAdditionalProperties());
 				graph.setDebugMode(false);
 			} catch (Exception e) {
-				fail("Error in graph loading: " + e);
+//				fail("Error in graph loading: " + e);
+				errors.put(file.getName(), e);
+				return;
 			}
 
 			try {
 				EngineInitializer.initGraph(graph, runtimeContext);
 			} catch (ComponentNotReadyException e) {
-				fail("Error in graph initialization: " + e);
+//				fail("Error in graph initialization: " + e);
+				errors.put(file.getName(), e);
+				return;
 			}
 
 			for(int i = 0; i < 5; i++) {
@@ -102,14 +169,18 @@ public class ResetTest extends TestCase{
 			        WatchDog watchDog = new WatchDog(graph, runtimeContext);
 					futureResult = threadManager.executeWatchDog(watchDog);
 				} catch (Exception e) {
-					fail("Error in graph execution: " + e);
+//					fail("Error in graph execution: " + e);
+					errors.put(file.getName(), e);
+					return;
 				}
 
 				Result result = Result.N_A;
 				try {
 					result = futureResult.get();
 				} catch (Exception e) {
-					fail("Error during graph processing: " + e);
+//					fail("Error during graph processing: " + e);
+					errors.put(file.getName(), e);
+					return;
 				}
 
 				switch (result) {
@@ -124,14 +195,18 @@ public class ResetTest extends TestCase{
 					break;
 				default:
 					System.err.println("Execution of graph failed !");
-					fail();
+//					fail();
+					errors.put(file.getName(), new RuntimeException("Execution of graph failed !"));
+					return;
 				}
 
 				if (i < 4) {
 					try {
 						graph.reset();
 					} catch (ComponentNotReadyException e) {
-						fail("Graph reseting failed: " + e);
+//						fail("Graph reseting failed: " + e);
+						errors.put(file.getName(), e);
+						return;
 					}
 				}
 			}
@@ -139,17 +214,24 @@ public class ResetTest extends TestCase{
 			System.out.println("Transformation graph is freeing.\n");
 			graph.free();
 			
+			System.out.println("Registered drivers:");
+			Enumeration<Driver> drivers = DriverManager.getDrivers();
+			for (;drivers.hasMoreElements();) {
+				System.out.println(drivers.nextElement());
+			}
+			System.out.println();
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		System.out.println("Graph executor is terminating.");
-		for (String outDir : OUT_DIRS) {
-			File outDirFile = new File(PROJECT_DIR + outDir);
-			File[] file = outDirFile.listFiles();
-			for (int i = 0; i < file.length; i++) {
-				file[i].delete();
+		for (int j = 0; j < EXAMPLE_PATH.length; j++) {
+			for (String outDir : OUT_DIRS) {
+				File outDirFile = new File(EXAMPLE_PATH[j] + outDir);
+				File[] file = outDirFile.listFiles();
+				for (int i = 0; i < file.length; i++) {
+					file[i].delete();
+				}
 			}
 		}
 	}
@@ -157,22 +239,24 @@ public class ResetTest extends TestCase{
 	/**
 	 * 1. param should be plugins location
 	 * 2. param should be graph file location
+	 * 3. param (optional) should be project directory, if not exist simpleExamples project is used
 	 * @param args
 	 * @throws MalformedURLException
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws Exception {
 		
-		// "../cloveretl.engine/plugins"
+		// ".."
 		EngineInitializer.initEngine(args[0], null, null);
 
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-		runtimeContext.addAdditionalProperty("PROJECT_DIR", "examples/extExamples/");
+		runtimeContext.addAdditionalProperty("PROJECT_DIR", args.length > 2 ? args[2] : "examples/simpleExamples");
 		runtimeContext.setUseJMX(false);
 
 		TransformationGraph graph = null;
 		try {
-			graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(args[1]), runtimeContext.getAdditionalProperties());
+			graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream((args.length > 2 ? args[2] + "/" : "") + args[1]), 
+					runtimeContext.getAdditionalProperties());
 		} catch (Exception e) {
 			logger.error("Error in graph loading !", e);
 			System.exit(-1);
@@ -225,6 +309,7 @@ public class ResetTest extends TestCase{
 					graph.reset();
 				} catch (ComponentNotReadyException e) {
 					System.err.println("Graph reseting failed !");
+					e.printStackTrace();
 					System.exit(-1);
 				}
 			}

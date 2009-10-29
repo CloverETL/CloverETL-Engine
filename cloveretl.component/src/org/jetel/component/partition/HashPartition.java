@@ -39,7 +39,12 @@ public class HashPartition implements PartitionFunction{
     	// not used here
     }
 
-	public int getOutputPort(ByteBuffer directRecord) {
+    public TransformationGraph getGraph() {
+    	// not used here
+    	return null;
+    }
+
+    public int getOutputPort(ByteBuffer directRecord) {
 		throw new UnsupportedOperationException();
 	}
 

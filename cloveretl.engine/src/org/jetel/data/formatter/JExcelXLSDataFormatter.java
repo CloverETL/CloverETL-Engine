@@ -20,12 +20,10 @@
 
 package org.jetel.data.formatter;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.text.SimpleDateFormat;
@@ -58,6 +56,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.date.DateUtils;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -250,43 +249,26 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
             WorkbookSettings settings = new WorkbookSettings();
             if (charset != null) settings.setEncoding(charset);
     		
-    		URL url = null;
-    		WritableByteChannel writableByteChannel = null;
-    		if (outputDataTarget instanceof URL) {
-        		url = (URL) outputDataTarget;
+    		os = null;
+    		InputStream is = null;
+    		if (outputDataTarget instanceof Object[]) {
+    			URL url = (URL) ((Object[])outputDataTarget)[0];
+        		String fName = (String) ((Object[])outputDataTarget)[1];
+        		try {
+            		is = FileUtils.getInputStream(url, fName);
+            		oldWb = Workbook.getWorkbook(is, settings);
+        			open = true;
+        		} catch (Throwable t) {
+        			//NOTHING - xls file doesn't exist, create new one
+        		}
+        		os = FileUtils.getOutputStream(url, fName, false, -1);
     		} else if (outputDataTarget instanceof WritableByteChannel) {
-    			writableByteChannel = (WritableByteChannel) outputDataTarget;
+    			os = Channels.newOutputStream((WritableByteChannel) outputDataTarget);
     		}
-    		if (url != null && url.getProtocol().equals(FILE_PROTOCOL)) {
-    			File file = new File(url.getFile());
-                if (((File)file).length() > 0) {//if xls file exist add to it new data
-                    oldWb = Workbook.getWorkbook(file, settings);
-                }
-                if (oldWb != null){
-                	wb = Workbook.createWorkbook(file, oldWb, settings);
-            		open = true;
-               }else{
-                	wb = Workbook.createWorkbook(file, settings);
-                }
+    		if (oldWb != null) {
+       			wb = Workbook.createWorkbook(os, oldWb, settings);
     		} else {
-    			if (url != null) {
-            		URLConnection connection = url.openConnection();
-            		InputStream is = connection.getInputStream();
-                    if (is.available() > 0) {//if xls file exist add to it new data
-                        oldWb = Workbook.getWorkbook(is, settings);
-                    } else {
-                    	is.close();
-                    }
-                    os = connection.getOutputStream();
-    			} else if (writableByteChannel != null) {
-    				os = Channels.newOutputStream(writableByteChannel);
-    			}
-                if (oldWb != null){
-                	wb = Workbook.createWorkbook(os, oldWb, settings);
-            		open = true;
-               }else{
-                	wb = Workbook.createWorkbook(os, settings);
-                }
+    			wb = Workbook.createWorkbook(os, settings);
     		}
     		
         }catch(Exception ex){

@@ -24,6 +24,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
@@ -119,6 +120,14 @@ public interface JdbcSpecific {
 	public String getResultSetParameterTypeField();
 
 	/**
+	 * @return a regex pattern matching all specific SQL comments
+	 *
+	 * @version 7th October 2009
+	 * @since 7th October 2009
+	 */
+	public Pattern getCommentsPattern();
+
+	/**
 	 * This can be used to convert java sql types into real names of a data type instide the database
 	 * @return Name of database specific data type corresponding to java.sql.Types type
 	 */
@@ -163,7 +172,7 @@ public interface JdbcSpecific {
 	 * @return ArrayList<String[]> Returns arraylist of rows, each contains a pair of strings CATALOG, SCHEMA
 	 * @throws SQLException
 	 */
-	public ArrayList<String> getSchemas(DatabaseMetaData dbMeta) throws SQLException;
+	public ArrayList<String> getSchemas(java.sql.Connection connection) throws SQLException;
 	
 	/**
 	 * Returns a ResultSet representing tables in given database
@@ -173,6 +182,6 @@ public interface JdbcSpecific {
 	 * @param dbName
 	 * @return
 	 */
-	public ResultSet getTables(DatabaseMetaData dbMeta, String dbName) throws SQLException;
+	public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException;
 	
 }

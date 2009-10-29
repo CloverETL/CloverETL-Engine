@@ -53,6 +53,7 @@ import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 /**
@@ -456,7 +457,9 @@ public class DBJoin extends Node {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		lookup.getLookupTable().reset();
-		transformation.reset();
+		if (transformation != null) {
+			transformation.reset();
+		}
         if (errorLogURL != null) {
         	try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
@@ -483,7 +486,7 @@ public class DBJoin extends Node {
                     connectionName,query,joinKey,
                     xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
                     xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
-                    xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null));
+                    xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF));
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				dbjoin.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}

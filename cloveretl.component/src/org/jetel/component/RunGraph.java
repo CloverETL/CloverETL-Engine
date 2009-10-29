@@ -57,6 +57,7 @@ import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.Concatenate;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -405,6 +406,7 @@ public class RunGraph extends Node{
 		String[] command = commandList.toArray(new String[commandList.size()]);
 		Process process = Runtime.getRuntime().exec(command);
 		ProcBox procBox = new ProcBox(process, null, consumer, errConsumer);
+		registerChildThreads(procBox.getChildThreads()); //register workers as child threads of this component
 		
 		// wait for executed process to finish
 		// wait for SendData and/or GetData threads to finish work
@@ -671,7 +673,7 @@ public class RunGraph extends Node{
 			runG.setCloverCmdLineArgs(DEFAULT_CLOVER_CMD_LINE);
 									
 			if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
-				runG.setOutputFile(xattribs.getString(XML_OUTPUT_FILE_ATTRIBUTE));
+				runG.setOutputFile(xattribs.getStringEx(XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_GRAPH_NAME_ATTRIBUTE)) {				
 				runG.setGraphName(xattribs.getString(XML_GRAPH_NAME_ATTRIBUTE));

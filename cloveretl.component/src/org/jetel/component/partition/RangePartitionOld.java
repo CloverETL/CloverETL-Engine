@@ -76,6 +76,11 @@ public class RangePartitionOld implements PartitionFunction{
     	// not used here
     }
 
+    public TransformationGraph getGraph() {
+    	// not used here
+    	return null;
+    }
+
 	public int getOutputPort(ByteBuffer directRecord) {
 		throw new UnsupportedOperationException();
 	}

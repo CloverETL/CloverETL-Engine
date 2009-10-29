@@ -47,9 +47,11 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -290,12 +292,32 @@ public class LookupJoin extends Node {
 		outRecord[0].reset();
 		DataRecord[] inRecords = new DataRecord[] { inRecord, null };
 		int counter = 0;
+		
+		// test if the lookup needs runtime metadata
+		LookupTable lookupTable = getGraph().getLookupTable(lookupTableName);
+		boolean createTransformation = runtimeMetadata(lookupTable);
+		
 		while (inRecord != null && runIt) {
 			inRecord = inPort.readRecord(inRecord);
 			if (inRecord != null) {
 				// find slave record in database
 			    lookup.seek();
                 inRecords[1] = lookup.hasNext() ? lookup.next() : NullRecord.NULL_RECORD;
+
+				// create the transformation
+    			if (createTransformation){
+    				// get metadata
+    				DataRecordMetadata lookupMetadata = lookupTable.getMetadata();
+    				DataRecordMetadata inMetadata[] = {	getInputPort(READ_FROM_PORT).getMetadata(), lookupMetadata };
+    				DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT).getMetadata() };
+    				
+    				// create the transformation
+    				String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
+    				transformation = RecordTransformFactory.createTransform(
+    						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
+    						outMetadata, transformationParameters, this.getClass().getClassLoader(), classPaths);
+    				createTransformation = false;
+    			}
 
                 do {
 					if ((inRecords[1] != NullRecord.NULL_RECORD || leftOuterJoin)) {
@@ -440,9 +462,9 @@ public class LookupJoin extends Node {
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
-			if (transformation != null){
+			if (transformation != null) {
 				transformation.init(transformationParameters, inMetadata, outMetadata);
-			}else{
+			} else if (!runtimeMetadata(lookupTable)) {
 				String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
 				transformation = RecordTransformFactory.createTransform(
 						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
@@ -464,6 +486,15 @@ public class LookupJoin extends Node {
 				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
 			}
        }
+	}
+	
+	/**
+	 * Returns true if a lookup table doesn't have to have a metadata and doesn't have the metadata.
+	 * @param lookupTable
+	 * @return
+	 */
+	private boolean runtimeMetadata(LookupTable lookupTable) {
+		return lookupTable instanceof DBLookupTable && lookupTable.getMetadata() == null;
 	}
 	
 	@Override
@@ -494,7 +525,7 @@ public class LookupJoin extends Node {
 					xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE), joinKey,
 					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), xattribs
 							.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
-		                    xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null));
+		      xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF));
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}

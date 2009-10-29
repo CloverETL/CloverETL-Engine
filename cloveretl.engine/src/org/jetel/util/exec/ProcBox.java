@@ -24,6 +24,8 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -152,6 +154,21 @@ public class ProcBox {
 			logger.warn("Cannot close process' error output", e);
 		}
 		return retval;
+	}
+	
+	/**
+	 * @return list of all inner threads - producer, consumer and error consumer thread
+	 */
+	public List<Thread> getChildThreads() {
+		List<Thread> childThreads = new ArrayList<Thread>();
+		
+		if (producer != null) {
+			childThreads.add(producer);
+		}
+		childThreads.add(consumer);
+		childThreads.add(errConsumer);
+		
+		return childThreads;
 	}
 	
 	/**

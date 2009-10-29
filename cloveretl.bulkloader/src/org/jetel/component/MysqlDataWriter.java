@@ -48,6 +48,7 @@ import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -869,7 +870,7 @@ public class MysqlDataWriter extends BulkLoader {
 					xattribs.getString(XML_TABLE_ATTRIBUTE));
 
 			if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-				mysqlDataWriter.setFileUrl(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
+				mysqlDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
 				mysqlDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
@@ -884,7 +885,7 @@ public class MysqlDataWriter extends BulkLoader {
 				mysqlDataWriter.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_COMMAND_URL_ATTRIBUTE)) {
-				mysqlDataWriter.setCommandURL((xattribs.getString(XML_COMMAND_URL_ATTRIBUTE)));
+				mysqlDataWriter.setCommandURL((xattribs.getStringEx(XML_COMMAND_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF)));
 			}
 			if (xattribs.exists(XML_LOCK_TABLE_ATTRIBUTE)) {
 			    mysqlDataWriter.setLockTable(xattribs.getBoolean(XML_LOCK_TABLE_ATTRIBUTE));

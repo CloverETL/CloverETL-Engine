@@ -106,6 +106,8 @@ public class MultiFileWriter {
 	private boolean mkDir;
 	private boolean outputClosed;
 	
+	private boolean reset;
+	
     /**
      * Constructor.
      * @param formatter formatter is used for incoming records formatting
@@ -161,7 +163,7 @@ public class MultiFileWriter {
 		skip = skipRecords;
 		outputClosed = false;
     	preparePatitionKey();	// initialize partition key - if defined
-    	prepareTargets();		// prepare output targets
+    	reset = true;			//TODO delete in the 2.9, there is pre_execute
 	}
 	
     /**
@@ -270,6 +272,11 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException 
      */
     public void write(DataRecord record) throws IOException, ComponentNotReadyException {
+    	if (reset) {
+    		prepareTargets();		// prepare output targets //TODO remove in 2.9, there is pre_execute
+    		reset = false;
+    	}
+    	
         // check for index of last returned record
         if(numRecords > 0 && numRecords == counter) {
             return;

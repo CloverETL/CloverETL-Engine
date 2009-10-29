@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="Store" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="STORE_NUMBER" type="integer"/>
+<Field name="STORE_NAME" type="string"/>
+<Field name="STORE_STREET_ADDRESS" type="string"/>
+<Field name="STORE_CITY" type="string"/>
+<Field name="STORE_MANAGER" type="string"/>
+<Field name="STORE_ZIP_CODE" type="string"/>
+<Field eofAsDelimiter="true" name="NO_EMPLOYEE" type="integer"/>
+</Record>

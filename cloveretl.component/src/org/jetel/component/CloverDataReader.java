@@ -45,6 +45,7 @@ import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
 /**
@@ -219,8 +220,8 @@ public class CloverDataReader extends Node {
 
 		try {
 			aDataReader = new CloverDataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILE_ATTRIBUTE),
-						xattribs.getString(XML_INDEXFILEURL_ATTRIBUTE,null));
+						xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
+						xattribs.getStringEx(XML_INDEXFILEURL_ATTRIBUTE,null,RefResFlag.SPEC_CHARACTERS_OFF));
 			if (xattribs.exists(XML_STARTRECORD_ATTRIBUTE)){
 				aDataReader.setStartRecord(xattribs.getInteger(XML_STARTRECORD_ATTRIBUTE));
 			}
@@ -362,7 +363,9 @@ public class CloverDataReader extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		parser.close();
+		if (parser != null) {
+			parser.close();
+		}
 	}
 	
 	@Override

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph reads personal data from three sources and finds records with the same values on corresponding fields (lname – last_name, fname – first_name). Matching pairs are transformed into one output record and saved in intersection_customer_employee.txt file." guiVersion="0.0.0.devel" id="1199878555903" licenseType="Evaluation" modified="Fri Sep 04 09:57:36 CEST 2009" modifiedBy="avackova" name="DBTest" revision="1.42">
+<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph reads personal data from three sources and finds records with the same values on corresponding fields (lname – last_name, fname – first_name). Matching pairs are transformed into one output record and saved in intersection_customer_employee.txt file." guiVersion="0.0.0.devel" id="1199878555903" licenseType="Evaluation Devel" modified="Mon Oct 12 12:15:26 GMT+01:00 2009" modifiedBy="avackova" name="DBTest" revision="1.46">
 <Global>
 <Metadata id="Metadata0">
 <Record name="customer" recordDelimiter="\n" recordSize="212" type="fixed">
@@ -30,8 +30,8 @@
 <Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata1">
-<Record fieldDelimiter=";" name="employee" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="employee" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field name="employee_id" nullable="true" shift="0" type="integer"/>
 <Field name="full_name" nullable="true" shift="0" type="string"/>
 <Field name="first_name" nullable="true" shift="0" type="string"/>
@@ -62,7 +62,7 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="74" guiName="Data Intersection" guiWidth="118" guiX="563" guiY="266" id="DATA_INTERSECTION0" joinKey="$lname=$last_name;$fname=$first_name;#" type="DATA_INTERSECTION">
+<Node enabled="enabled" guiHeight="74" guiName="Data Intersection" guiWidth="118" guiX="563" guiY="273" id="DATA_INTERSECTION0" joinKey="$lname=$last_name;$fname=$first_name;#" type="DATA_INTERSECTION">
 <attr name="transform"><![CDATA[// automatically generated on Fri Nov 14 12:49:55 CET 2008
 function transform() {
 	$0.lname := $0.lname;
@@ -73,28 +73,21 @@ function transform() {
 </Node>
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="74" guiName="customer from DB" guiWidth="145" guiX="57" guiY="87" id="DB_INPUT_TABLE0" sqlQuery="select customer.customer_id,customer.account_num,customer.lname,customer.fname,customer.mi,customer.address,customer.city,customer.state_province,customer.postal_code,customer.country,customer.customer_region_id,customer.phone1,customer.phone2,customer.birthdate,customer.marital_status,customer.yearly_income,customer.gender,customer.total_children,customer.num_children_at_home,customer.education,customer.date_accnt_opened,customer.member_card,customer.occupation,customer.houseowner,customer.num_cars_owned&#10;from customer" type="DB_INPUT_TABLE"/>
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="82" guiName="DB Input Table" guiWidth="131" guiX="57" guiY="370" id="DB_INPUT_TABLE1" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/intersection_customer_employee.txt" guiHeight="61" guiName="Delimited Data Writer (New I/O)" guiWidth="83" guiX="902" guiY="266" id="DELIMITED_DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="128" guiX="400" guiY="151" id="EXT_SORT0" sortKey="lname(a);fname(a)" type="EXT_SORT"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/intersection_customer_employee.txt" guiHeight="61" guiName="Delimited Data Writer (New I/O)" guiWidth="83" guiX="758" guiY="273" id="DELIMITED_DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="128" guiX="400" guiY="153" id="EXT_SORT0" sortKey="lname(a);fname(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="88" guiName="Ext Sort" guiWidth="125" guiX="400" guiY="370" id="EXT_SORT1" sortKey="last_name(a);first_name(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="FastSort" guiWidth="0" guiX="756" guiY="151" id="FAST_SORT0" sortKey="lname(a);fname(a);address1(a)" type="FAST_SORT"/>
 <Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="66" guiName="customer from file" guiWidth="130" guiX="57" guiY="234" id="FIXLEN_DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="90" guiName="Simple Gather" guiWidth="177" guiX="233" guiY="151" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
-<Node debugFilename="${DATAOUT_DIR}/customer.out" debugPrint="true" enabled="enabled" guiHeight="74" guiName="Trash" guiWidth="106" guiX="902" guiY="151" id="TRASH0" type="TRASH"/>
-<Node debugFilename="${DATAOUT_DIR}/employee.out" debugPrint="true" enabled="enabled" guiHeight="77" guiName="Trash" guiWidth="109" guiX="902" guiY="370" id="TRASH1" type="TRASH"/>
-<Edge fromNode="DATA_INTERSECTION0:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (only in A)" toNode="FAST_SORT0:0"/>
+<Node enabled="enabled" guiHeight="90" guiName="Simple Gather" guiWidth="177" guiX="233" guiY="153" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
+<Node debugFilename="${DATAOUT_DIR}/customer.out " debugPrint="true" enabled="enabled" guiHeight="74" guiName="Trash" guiWidth="106" guiX="758" guiY="153" id="TRASH0" type="TRASH"/>
+<Node debugFilename="${DATAOUT_DIR}/employee.out " debugPrint="true" enabled="enabled" guiHeight="77" guiName="Trash" guiWidth="109" guiX="758" guiY="385" id="TRASH1" type="TRASH"/>
+<Edge fromNode="DATA_INTERSECTION0:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (only in A)" toNode="TRASH0:0"/>
 <Edge fromNode="DATA_INTERSECTION0:1" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (in A &amp; B)" toNode="DELIMITED_DATA_WRITER0:0"/>
 <Edge fromNode="DATA_INTERSECTION0:2" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 2 (only in B)" toNode="TRASH1:0"/>
 <Edge fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge9" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:1"/>
 <Edge fromNode="DB_INPUT_TABLE1:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
 <Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (set A)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:0"/>
 <Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge5" inPort="Port 1 (set B)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:1"/>
-<Edge fromNode="FAST_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH0:0"/>
 <Edge fromNode="FIXLEN_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:0"/>
 <Edge fromNode="SIMPLE_GATHER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
-</Phase>
-<Phase number="1">
-<Node dbConnection="Connection0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiHeight="75" guiName="drop employee_tmp" guiWidth="124" guiX="57" guiY="495" id="DB_EXECUTE0" type="DB_EXECUTE">
-<attr name="sqlQuery"><![CDATA[drop table employee_tmp;]]></attr>
-</Node>
 </Phase>
 </Graph>

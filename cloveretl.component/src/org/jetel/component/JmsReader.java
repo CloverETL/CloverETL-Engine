@@ -46,6 +46,7 @@ import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
 
@@ -300,7 +301,10 @@ public class JmsReader extends Node {
 		
 	@Override
 	public Result execute() throws Exception {
-		(new Interruptor()).start();	// run thread taking care about interrupting blocking msg receive calls
+		Interruptor interruptor = new Interruptor();
+		registerChildThread(interruptor); //register interrupter as a child thread of this component
+		interruptor.start();	// run thread taking care about interrupting blocking msg receive calls
+		
 		try {
 			for (Message msg = getMsg(); msg != null; msg = getMsg()) {
 				DataRecord rec = psor.extractRecord(msg);
@@ -391,7 +395,7 @@ public class JmsReader extends Node {
 					xattribs.getString(XML_SELECTOR_ATTRIBUTE, null),
 					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, null),
 					xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
-					xattribs.getString(XML_PSORURL_ATTRIBUTE, null),
+					xattribs.getStringEx(XML_PSORURL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF),
 					xattribs.getInteger(XML_MAXMSGCNT_ATTRIBUTE, 0),
 					xattribs.getInteger(XML_TIMEOUT_ATTRIBUTE, 0),
 					xattribs.attributes2Properties(new String[]{	// all unknown attributes will be passed to the processor 

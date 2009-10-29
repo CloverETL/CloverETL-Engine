@@ -20,6 +20,9 @@
 package org.jetel.connection.jdbc.specific;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
@@ -83,4 +86,25 @@ public class DBConnectionInstance {
 		return getDbConnection().getJdbcSpecific();
 	}
 	
+	/**
+	 * Returns a ResultSet representing schemas
+	 * @param dbMeta
+	 * @return ArrayList<String[]> Returns arraylist of rows, each contains a pair of strings CATALOG, SCHEMA
+	 * @throws SQLException
+	 */
+	public ArrayList<String> getSchemas() throws SQLException {
+		return getJdbcSpecific().getSchemas(getSqlConnection());
+	}
+	
+	/**
+	 * Returns a ResultSet representing tables in given database
+	 * It has to extract it from dbMeta object
+	 * 
+	 * @param dbName
+	 * @return
+	 */
+	public ResultSet getTables(String dbName) throws SQLException {
+		return getJdbcSpecific().getTables(getSqlConnection(), dbName);
+	}
+
 }

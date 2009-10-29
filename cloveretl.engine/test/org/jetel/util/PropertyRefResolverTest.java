@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 
 public class PropertyRefResolverTest extends CloverTestCase {
 
@@ -49,7 +50,7 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertEquals("myself/xxxyyyzzz/xxxyyyzzz is user/password",
 				resolver.resolveRef("${user}/${password}/${pwd} is user/password"));
 		assertEquals("${user1}/${password1}/xxxyyyzzz is user/password",
-				resolver.resolveRef("${user1}/${password1}/${pwd} is user/password", false));
+				resolver.resolveRef("${user1}/${password1}/${pwd} is user/password", RefResFlag.SPEC_CHARACTERS_OFF));
 	}
 
 	public void testEvaluate() {

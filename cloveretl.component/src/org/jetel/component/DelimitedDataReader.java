@@ -42,6 +42,7 @@ import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -221,10 +222,12 @@ public class DelimitedDataReader extends Node {
     public synchronized void free() {
     	super.free();
     	storeValues();
-    	try {
-			reader.close();
-		} catch (IOException e) {
-			logger.error(e);
+    	if (reader != null) {
+	    	try {
+				reader.close();
+			} catch (IOException e) {
+				logger.error(e);
+			}
 		}
     }
 
@@ -281,11 +284,11 @@ public class DelimitedDataReader extends Node {
 		try {
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				aDelimitedDataReaderNIO = new DelimitedDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILE_ATTRIBUTE),
+						xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
 						xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			} else {
 				aDelimitedDataReaderNIO = new DelimitedDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILE_ATTRIBUTE));
+						xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			aDelimitedDataReaderNIO.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
             if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
@@ -301,7 +304,7 @@ public class DelimitedDataReader extends Node {
 				aDelimitedDataReaderNIO.parser.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
-				aDelimitedDataReaderNIO.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
+				aDelimitedDataReaderNIO.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
 				aDelimitedDataReaderNIO.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));

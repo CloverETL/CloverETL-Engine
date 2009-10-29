@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter="|" name="D_DATE" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ID_D_DATE" type="integer"/>
+<Field name="DATE" type="date"/>
+<Field name="DAY_OF_WEEK_DESCRIPTION" type="string"/>
+<Field name="DAY_OF_MONTH" type="integer"/>
+<Field name="WEEK_OF_YEAR" type="integer"/>
+<Field name="MONTH_OF_YEAR" type="integer"/>
+<Field name="MONTH_OF_YEAR_DESCRIPTION" type="string"/>
+<Field name="YEAR_QUARTER" type="integer"/>
+<Field name="YEAR" type="integer"/>
+<Field name="WEEKDAY_INDICATOR" type="string"/>
+</Record>

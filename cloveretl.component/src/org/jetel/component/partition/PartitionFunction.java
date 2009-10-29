@@ -71,7 +71,13 @@ public interface PartitionFunction {
 		 *  Passes instance of transformation graph to denormalize transformation
 		 */
 		public void setGraph(TransformationGraph graph);
-		
+
+		/**
+		 * @return a <code>TransformationGraph</code> associated with this partition function or <code>null</code>
+		 * if no graph is associated
+		 */
+		public TransformationGraph getGraph();
+
 		/**
 		 * Indicates whether partition function supports operation on serialized records /aka direct
 		 * @return true if getOutputPort(ByteBuffer) method can be called

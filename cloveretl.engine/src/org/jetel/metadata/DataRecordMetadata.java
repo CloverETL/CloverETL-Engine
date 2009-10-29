@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
@@ -76,7 +74,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	/** The type of the data record. */
 	private char recType;
 
-	private int skipSourceRows;
+	private int skipSourceRows = -1;
 
 	private String recordDelimiter;
 	private String fieldDelimiter;
@@ -266,6 +264,19 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 */
 	public boolean isSpecifiedRecordDelimiter() {
 		return (getRecordDelimiters() != null);
+	}
+
+	/**
+	 * @return <code>true</code> if any field/record delimiter contains a carriage return, <code>false</code> otherwise
+	 */
+	public boolean containsCarriageReturnInDelimiters() {
+		for (DataFieldMetadata field : fields) {
+			if (field.containsCarriageReturnInDelimiters()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

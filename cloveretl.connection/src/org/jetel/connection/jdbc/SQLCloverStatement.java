@@ -114,11 +114,30 @@ public class SQLCloverStatement {
 	private final static Pattern TABLE_NAME_PATTERN = Pattern.compile(
 			"(?:from|into|update)\\s+" + SQLUtil.DB_FIELD_PATTERN, Pattern.CASE_INSENSITIVE);
 	
-	public enum QueryType{
+	public enum QueryType {
+
 		INSERT,
 		UPDATE,
 		DELETE,
-		SELECT
+		SELECT,
+		UNKNOWN;
+
+		public static QueryType fromSqlQuery(String sqlQuery) {
+            if (sqlQuery == null) {
+                throw new NullPointerException("sqlQuery");
+            }
+
+            String normalizedSqlQuery = sqlQuery.trim().toUpperCase();
+
+            for (QueryType queryType : values()) {
+				if (normalizedSqlQuery.startsWith(queryType.name())) {
+					return queryType;
+				}
+			}
+
+			return UNKNOWN;
+		}
+
 	}
 	
 	/**
@@ -133,7 +152,7 @@ public class SQLCloverStatement {
 		this.query = query;
 		this.record = inRecord;
 		returnResult = query.toLowerCase().contains(RETURNING_KEY_WORD);
-		queryType = QueryType.valueOf((new StringTokenizer(this.query.toUpperCase(), " \t\n\r\f*").nextToken()));
+		queryType = QueryType.fromSqlQuery(query);
 	}
 	
 	/**
@@ -353,7 +372,11 @@ public class SQLCloverStatement {
 			statement = connection.getSqlConnection().prepareStatement(sqlQuery);
 		}
 	}
-	
+
+	public void setConnection(DBConnectionInstance connection) {
+		this.connection = connection;
+	}
+
 	/**
 	 * Sets input record.
 	 * 
@@ -401,6 +424,7 @@ public class SQLCloverStatement {
 		switch (queryType) {
 		case SELECT:
 		case INSERT:
+		case UNKNOWN:
 			fillKeyRecord(outRecord);
 			break;
 		case UPDATE:

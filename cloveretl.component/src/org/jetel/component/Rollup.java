@@ -20,9 +20,11 @@ package org.jetel.component;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.jetel.component.rollup.RecordRollup;
@@ -51,6 +53,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -150,7 +153,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 22nd July 2009
+ * @version 5th October 2009
  * @since 30th April 2009
  *
  * @see RecordRollup
@@ -226,9 +229,15 @@ public class Rollup extends Node {
                     componentAttributes.getString(XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE, null));
 
             rollup.setTransform(componentAttributes.getString(XML_TRANSFORM_ATTRIBUTE, null));
-            rollup.setTransformUrl(componentAttributes.getString(XML_TRANSFORM_URL_ATTRIBUTE, null));
+            rollup.setTransformUrl(componentAttributes.getStringEx(XML_TRANSFORM_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
             rollup.setTransformUrlCharset(componentAttributes.getString(XML_TRANSFORM_URL_CHARSET_ATTRIBUTE, null));
             rollup.setTransformClassName(componentAttributes.getString(XML_TRANSFORM_CLASS_NAME_ATTRIBUTE, null));
+
+            rollup.setTransformParameters(componentAttributes.attributes2Properties(new String[] {
+            		XML_TYPE_ATTRIBUTE, XML_ID_ATTRIBUTE, XML_GROUP_KEY_FIELDS_ATTRIBUTE,
+            		XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE, XML_TRANSFORM_ATTRIBUTE, XML_TRANSFORM_URL_ATTRIBUTE,
+            		XML_TRANSFORM_URL_CHARSET_ATTRIBUTE, XML_TRANSFORM_CLASS_NAME_ATTRIBUTE, XML_INPUT_SORTED_ATTRIBUTE,
+            		XML_EQUAL_NULL_ATTRIBUTE }));
 
             rollup.setInputSorted(componentAttributes.getBoolean(XML_INPUT_SORTED_ATTRIBUTE, true));
             rollup.setEqualNULL(componentAttributes.getBoolean(XML_EQUAL_NULL_ATTRIBUTE, true));
@@ -259,7 +268,10 @@ public class Rollup extends Node {
     /** the class name of a Java rollup transform */
     private String transformClassName;
 
-    /** the flag specifying whether the input data records are sorted or not */
+    /** the parameters passed to the init() method of the rollup transform */
+	private Properties transformParameters;
+
+	/** the flag specifying whether the input data records are sorted or not */
     private boolean inputSorted = true;
     /** the flag specifying whether the null values are considered equal or not */
     private boolean equalNULL = true;
@@ -313,6 +325,10 @@ public class Rollup extends Node {
         this.transformClassName = transformClassName;
     }
 
+    public void setTransformParameters(Properties transformParameters) {
+		this.transformParameters = transformParameters;
+	}
+
     public void setInputSorted(boolean inputSorted) {
         this.inputSorted = inputSorted;
     }
@@ -348,6 +364,15 @@ public class Rollup extends Node {
 
         if (!StringUtils.isEmpty(transformClassName)) {
             xmlElement.setAttribute(XML_TRANSFORM_CLASS_NAME_ATTRIBUTE, transformClassName);
+        }
+
+        if (transformParameters != null) {
+        	Enumeration<?> propertyNames = transformParameters.propertyNames();
+
+        	while (propertyNames.hasMoreElements()) {
+        		String propertyName = (String) propertyNames.nextElement();
+            	xmlElement.setAttribute(propertyName, transformParameters.getProperty(propertyName));
+        	}
         }
 
         if (!inputSorted) {
@@ -391,6 +416,34 @@ public class Rollup extends Node {
             status.add(new ConfigurationProblem("The transform URL character set is not supported!",
                     Severity.ERROR, this, Priority.NORMAL, XML_TRANSFORM_URL_CHARSET_ATTRIBUTE));
         }
+        
+        // transformation source for checkconfig
+        String checkTransform = null;
+        if (transform != null) {
+        	checkTransform = transform;
+        } else if (transformUrl != null) {
+        	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), transformUrl, transformUrlCharset);
+        }
+        // only the transform and transformURL parameters are checked, transformClass is ignored
+        if (checkTransform != null) {
+        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
+        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
+        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
+        		// only CTL is checked
+
+    			try {
+    				RecordRollup rollup = createTransformFromSourceCode(checkTransform);
+    				rollup.init(transformParameters, getInputPort(INPUT_PORT_NUMBER).getMetadata(),
+    						getGraph().getDataRecordMetadata(groupAccumulatorMetadataId),
+    						getOutMetadata().toArray(new DataRecordMetadata[getOutPorts().size()]));
+				} catch (ComponentNotReadyException e) {
+					// find which component attribute was used
+					String attribute = transform != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORM_URL_ATTRIBUTE;
+					// report CTL error as a warning
+					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
+				}
+        	}
+        }
 
         return status;
     }
@@ -418,7 +471,7 @@ public class Rollup extends Node {
             recordRollup = createTransformFromClassName(transformClassName);
         }
 
-        recordRollup.init(null, getInputPort(INPUT_PORT_NUMBER).getMetadata(),
+        recordRollup.init(transformParameters, getInputPort(INPUT_PORT_NUMBER).getMetadata(),
                 getGraph().getDataRecordMetadata(groupAccumulatorMetadataId),
                 getOutMetadata().toArray(new DataRecordMetadata[getOutPorts().size()]));
 
@@ -443,7 +496,10 @@ public class Rollup extends Node {
     private RecordRollup createTransformFromSourceCode(String sourceCode) throws ComponentNotReadyException {
         if (sourceCode.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID) >= 0
                 || Pattern.compile(REGEX_TL_CODE).matcher(sourceCode).find()) {
-            return new RecordRollupTL(sourceCode, getGraph());
+        	RecordRollup transform = new RecordRollupTL(sourceCode);
+        	transform.setGraph(getGraph());
+
+        	return transform;
         }
 
         if (Pattern.compile(REGEX_JAVA_CLASS).matcher(sourceCode).find()) {

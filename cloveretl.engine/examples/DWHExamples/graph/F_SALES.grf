@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Petr" created="Tue Sep 29 10:18:42 CEST 2009" guiVersion="0.0.0.devel" id="1254235145118" licenseType="Evaluation Devel" modified="Wed Oct 14 14:56:14 CEST 2009" modifiedBy="cloveruser" name="F_SALES" revision="1.27">
+<Global>
+<Metadata fileURL="${META_DIR}/D_CUSTOMER.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/D_DATE.fmt" id="Metadata8"/>
+<Metadata fileURL="${META_DIR}/D_PRODUCT.fmt" id="Metadata3"/>
+<Metadata fileURL="${META_DIR}/D_STORE.fmt" id="Metadata4"/>
+<Metadata fileURL="${META_DIR}/Sales.fmt" id="Metadata0"/>
+<Metadata id="Metadata9" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="F_SALES" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipSourceRows="1" type="delimited">
+<Field name="id_d_store" type="integer"/>
+<Field name="id_d_customer" type="integer"/>
+<Field name="id_d_product" type="integer"/>
+<Field name="id_d_date" type="integer"/>
+<Field name="invoice_number" type="string"/>
+<Field length="10" name="units" scale="2" type="integer"/>
+<Field length="10" name="total_price" scale="2" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="F_SALES1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipSourceRows="1" type="delimited">
+<Field name="INVOICE_NUMBER" type="string"/>
+<Field name="TRANSACTION_DATE" type="date"/>
+<Field name="UPC" type="string"/>
+<Field name="CUSTOMER_NUMBER" type="integer"/>
+<Field length="10" name="PRICE_PER_UNIT" scale="2" type="decimal"/>
+<Field name="UNITS" type="integer"/>
+<Field length="10" name="total_price" scale="2" type="decimal"/>
+<Field name="id_d_store" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata6" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="F_SALES2" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipSourceRows="1" type="delimited">
+<Field name="INVOICE_NUMBER" type="string"/>
+<Field name="TRANSACTION_DATE" type="date"/>
+<Field name="UPC" type="string"/>
+<Field length="10" name="PRICE_PER_UNIT" scale="2" type="decimal"/>
+<Field name="UNITS" type="integer"/>
+<Field length="10" name="total_price" scale="2" type="decimal"/>
+<Field name="id_d_store" type="integer"/>
+<Field name="id_d_customer" type="integer"/>
+<Field name="from_date" type="date"/>
+<Field name="to_date" type="date"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata7" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="F_SALES3" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipSourceRows="1" type="delimited">
+<Field name="INVOICE_NUMBER" type="string"/>
+<Field name="TRANSACTION_DATE" type="date"/>
+<Field length="10" name="PRICE_PER_UNIT" scale="2" type="decimal"/>
+<Field name="UNITS" type="integer"/>
+<Field length="10" name="total_price" scale="2" type="decimal"/>
+<Field name="id_d_store" type="integer"/>
+<Field name="id_d_customer" type="integer"/>
+<Field name="id_d_product" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Sales_with_total_price" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipSourceRows="1" type="delimited">
+<Field name="INVOICE_NUMBER" type="string"/>
+<Field name="TRANSACTION_DATE" type="date"/>
+<Field name="STORE_NUMBER" type="integer"/>
+<Field name="UPC" type="string"/>
+<Field name="CUSTOMER_NUMBER" type="integer"/>
+<Field length="10" name="PRICE_PER_UNIT" scale="2" type="decimal"/>
+<Field name="UNITS" type="integer"/>
+<Field length="10" name="total_price" scale="2" type="decimal"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<LookupTable charset="ISO-8859-1" fileURL="${TABLES}/D_CUSTOMER.tbl" id="LookupTable0" initialSize="512" key="CUSTOMER_NUMBER" keyDuplicates="true" metadata="Metadata2" name="D_CUSTOMER_Lookup" type="simpleLookup"/>
+<LookupTable charset="windows-1250" fileURL="${TABLES}/D_DATE.tbl" id="LookupTable3" initialSize="512" key="DATE" metadata="Metadata8" name="D_DATE_Lookup" type="simpleLookup"/>
+<LookupTable charset="ISO-8859-1" fileURL="${TABLES}/D_PRODUCT.tbl" id="LookupTable1" initialSize="512" key="UPC" metadata="Metadata3" name="D_PRODUCT_Lookup" type="simpleLookup"/>
+<LookupTable charset="ISO-8859-1" fileURL="${TABLES}/D_STORE.tbl" id="LookupTable2" initialSize="512" key="STORE_NUMBER" metadata="Metadata4" name="D_STORE_Lookup" type="simpleLookup"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="103" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="OLTP" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="148" x="37" y="22"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="225" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Filling of Sales fact table" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="818" x="57" y="269">
+<attr name="text"><![CDATA[
+Sales fact table stores two aggregable attributes (UNITS, TOTAL_PRICE) , one degenerate dimension (INVOICE_NUMBER) and is linked with 4 dimension (Customer, Date, Store and Product).
+
+- graph uses 4 lookup tables containing DWH dimensions
+- OLTP data and dimensions are joined on natural key (CUSTOMER_NUMBER, STORE_NUMBER ...)
+- Customer dimension can return more than one record for one value of natural key (Slowly Changing Dimension Type 2), only the record valid on TRANSACTION_DATE is selected
+
+If the data is stored in database instead of files, the DBJoin component can be used for big dimensions instead of LookupJoin, for small dimension the ExtHashJoin component can be used instead of LookupJoin.]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Sales_24092009.csv" guiHeight="0" guiName="Sales_input" guiWidth="0" guiX="47" guiY="55" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${TABLES}/F_SALES.tbl" guiHeight="0" guiName="INSERT to F_SALES" guiWidth="0" guiX="660" guiY="177" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtFilter" guiWidth="0" guiX="730" guiY="56" id="EXT_FILTER0" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[$0.TRANSACTION_DATE >= $0.from_date AND ( isnull($0.to_date) OR $0.TRANSACTION_DATE <= $0.to_date )]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Lookup ID_D_STORE" guiWidth="0" guiX="389" guiY="56" id="LOOKUP_JOIN0" joinKey="STORE_NUMBER" lookupTable="LookupTable2" type="LOOKUP_JOIN">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.INVOICE_NUMBER := $0.INVOICE_NUMBER;
+	$0.UPC := $0.UPC;
+	$0.CUSTOMER_NUMBER := $0.CUSTOMER_NUMBER;
+	$0.PRICE_PER_UNIT := $0.PRICE_PER_UNIT;
+	$0.UNITS := $0.UNITS;
+	$0.total_price := $0.total_price;
+	$0.id_d_store := $1.ID_D_STORE;
+	$0.TRANSACTION_DATE := $0.TRANSACTION_DATE;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Lookup ID_D_CUSTOMER" guiWidth="0" guiX="564" guiY="56" id="LOOKUP_JOIN1" joinKey="CUSTOMER_NUMBER" lookupTable="LookupTable0" type="LOOKUP_JOIN">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.INVOICE_NUMBER := $0.INVOICE_NUMBER;
+	$0.UPC := $0.UPC;
+	$0.PRICE_PER_UNIT := $0.PRICE_PER_UNIT;
+	$0.UNITS := $0.UNITS;
+	$0.total_price := $0.total_price;
+	$0.id_d_store := $0.id_d_store;
+	$0.id_d_customer := $1.ID_D_CUSTOMER;
+	$0.from_date := $1.FROM_DATE;
+	$0.to_date := $1.TO_DATE;
+	$0.TRANSACTION_DATE := $0.TRANSACTION_DATE;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Lookup ID_D_PRODUCT" guiWidth="0" guiX="136" guiY="177" id="LOOKUP_JOIN2" joinKey="UPC" lookupTable="LookupTable1" type="LOOKUP_JOIN">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.INVOICE_NUMBER := $0.INVOICE_NUMBER;
+	$0.TRANSACTION_DATE := $0.TRANSACTION_DATE;
+	$0.PRICE_PER_UNIT := $0.PRICE_PER_UNIT;
+	$0.UNITS := $0.UNITS;
+	$0.total_price := $0.total_price;
+	$0.id_d_store := $0.id_d_store;
+	$0.id_d_customer := $0.id_d_customer;
+	$0.id_d_product := $1.ID_D_PRODUCT;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Lookup ID_D_DATE" guiWidth="0" guiX="391" guiY="177" id="LOOKUP_JOIN3" joinKey="TRANSACTION_DATE" lookupTable="LookupTable3" type="LOOKUP_JOIN">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.total_price := $0.total_price;
+	$0.id_d_store := $0.id_d_store;
+	$0.id_d_customer := $0.id_d_customer;
+	$0.id_d_product := $0.id_d_product;
+	$0.id_d_date := $1.ID_D_DATE;
+	$0.invoice_number := $0.INVOICE_NUMBER;
+	$0.units := $0.UNITS;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Compute TOTAL_PRICE" guiWidth="0" guiX="218" guiY="55" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.STORE_NUMBER := $0.STORE_NUMBER;
+	$0.UPC := $0.UPC;
+	$0.CUSTOMER_NUMBER := $0.CUSTOMER_NUMBER;
+	$0.PRICE_PER_UNIT := $0.PRICE_PER_UNIT;
+	$0.UNITS := $0.UNITS;
+	$0.total_price := $0.PRICE_PER_UNIT * $0.UNITS;
+	$0.INVOICE_NUMBER := $0.INVOICE_NUMBER;
+	$0.TRANSACTION_DATE := $0.TRANSACTION_DATE;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge fromNode="EXT_FILTER0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (accepted)" toNode="LOOKUP_JOIN2:0"/>
+<Edge fromNode="LOOKUP_JOIN0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (joined records)" toNode="LOOKUP_JOIN1:0"/>
+<Edge fromNode="LOOKUP_JOIN1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (joined records)" toNode="EXT_FILTER0:0"/>
+<Edge fromNode="LOOKUP_JOIN2:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 0 (joined records)" toNode="LOOKUP_JOIN3:0"/>
+<Edge debugMode="false" fromNode="LOOKUP_JOIN3:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata9" outPort="Port 0 (joined records)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="LOOKUP_JOIN0:0"/>
+</Phase>
+</Graph>

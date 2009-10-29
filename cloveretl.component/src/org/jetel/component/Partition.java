@@ -475,7 +475,32 @@ public class Partition extends Node {
             }
             status.add(problem);
         }
-        
+
+        // transformation source for checkconfig
+        String checkTransform = null;
+        if (partitionSource != null) {
+        	checkTransform = partitionSource;
+        } else if (partitionURL != null) {
+        	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), partitionURL, charset);
+        }
+        // only the transform and transformURL parameters are checked, transformClass is ignored
+        if (checkTransform != null) {
+        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
+        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
+        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
+
+    			try {
+    				PartitionFunction function = createPartitionDynamic(checkTransform);
+    				function.init(outPorts.size(), partitionKey);
+				} catch (ComponentNotReadyException e) {
+					// find which component attribute was used
+					String attribute = partitionSource != null ? XML_PARTIONSOURCE_ATTRIBUTE : XML_PARTITIONURL_ATTRIBUTE;
+					// report CTL error as a warning
+					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
+				}
+        	}
+        }
+       
         return status;
     }
 	

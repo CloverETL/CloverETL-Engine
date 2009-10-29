@@ -51,6 +51,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
 /**
@@ -475,8 +476,11 @@ public class DataIntersection extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		driverReader.free();
-		slaveReader.free();
+		if (driverReader != null) {
+			driverReader.free();
+		} if (slaveReader != null) {
+			slaveReader.free();
+		}
 	}
 
 	/**
@@ -622,9 +626,9 @@ public class DataIntersection extends Node {
 			intersection = new DataIntersection(
                     xattribs.getString(XML_ID_ATTRIBUTE),
                     xattribs.getString(XML_JOINKEY_ATTRIBUTE),
-                    xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null, false), 
+                    xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null ,RefResFlag.SPEC_CHARACTERS_OFF), 
                     xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
-                    xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null));
+                    xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
         	intersection.setSlaveDuplicates(xattribs.getBoolean(
         			XML_KEY_DUPLICATES_ATTRIBUTE, true));
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
@@ -713,6 +717,38 @@ public class DataIntersection extends Node {
 			} catch (ComponentNotReadyException e) {
 				status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_ERROR_LOG_ATTRIBUTE));
 			}
+        }
+
+        // transformation source for checkconfig
+        String checkTransform = null;
+        if (transformSource != null) {
+        	checkTransform = transformSource;
+        } else if (transformURL != null) {
+        	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), transformURL, charset);
+        }
+        // only the transform and transformURL parameters are checked, transformClass is ignored
+        if (checkTransform != null) {
+        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
+        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
+        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
+        		// only CTL is checked
+        		
+        		DataRecordMetadata[] inMetadata = 
+        			(DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]);
+        		DataRecordMetadata[] outMetadata = 
+        			new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT_A_B).getMetadata() };
+
+    			try {
+    				RecordTransformFactory.createTransform(checkTransform, null, null, 
+    						charset, this, inMetadata, outMetadata, transformationParameters, 
+    						null, null);
+				} catch (ComponentNotReadyException e) {
+					// find which component attribute was used
+					String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
+					// report CTL error as a warning
+					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
+				}
+        	}
         }
 
         return status;

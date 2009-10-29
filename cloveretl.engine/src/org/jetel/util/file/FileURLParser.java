@@ -228,11 +228,11 @@ public class FileURLParser {
 	 * @param sURL
 	 * @return
 	 */
-	public static String getFileWithoutAnchor(String sURL, boolean verifyAnchor) {
-        if(verifyAnchor && sURL.contains(ARCHIVE_ANCHOR)) { 
+	public static String getFileWithoutAnchor(String sURL) {
+        if(sURL.contains(ARCHIVE_ANCHOR)) { 
         	return sURL.substring(sURL.indexOf(DOUBLE_DOT_DEL) + 1, sURL.lastIndexOf(ARCHIVE_ANCHOR));
         }
-    	return sURL.substring(sURL.lastIndexOf(ARCHIVE_ANCHOR) + 1);
+    	return sURL.substring(sURL.lastIndexOf(DOUBLE_DOT_DEL) + 1);
 	}
 
     /**
@@ -252,13 +252,10 @@ public class FileURLParser {
     	else if (input.startsWith(GZIP_DDOT)) archiveType = ArchiveType.GZIP;
     	
     	// parse the archive
-        if((archiveType == ArchiveType.ZIP) || (archiveType == ArchiveType.TAR)) {
+        if((archiveType == ArchiveType.ZIP) || (archiveType == ArchiveType.TAR || archiveType == ArchiveType.GZIP)) {
         	String sTmp;
         	if ((sTmp = getAnchor(input)) != null) anchor.append(sTmp);
-        	innerInput.append(getFileWithoutAnchor(input, true));
-        }
-        else if (archiveType == ArchiveType.GZIP) {
-        	innerInput.append(getFileWithoutAnchor(input, false));
+        	innerInput.append(getFileWithoutAnchor(input));
         }
         
         // if doesn't exist inner input, inner input is input

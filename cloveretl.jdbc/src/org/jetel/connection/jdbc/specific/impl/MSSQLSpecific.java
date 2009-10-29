@@ -90,9 +90,11 @@ public class MSSQLSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	public ArrayList<String> getSchemas(DatabaseMetaData dbMeta)
+	public ArrayList<String> getSchemas(java.sql.Connection connection)
 			throws SQLException {
-		return AbstractJdbcSpecific.getMetaCatalogs(dbMeta);
+	  ArrayList <String> currentCatalog = new ArrayList<String>();
+	  currentCatalog.add(connection.getCatalog());
+	  return currentCatalog;
 	}
     
 	

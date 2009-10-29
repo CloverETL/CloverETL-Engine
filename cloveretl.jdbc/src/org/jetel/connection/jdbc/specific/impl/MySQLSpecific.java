@@ -24,6 +24,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.conn.MySQLConnection;
@@ -40,6 +41,9 @@ import org.jetel.metadata.DataFieldMetadata;
  */
 public class MySQLSpecific extends AbstractJdbcSpecific {
 
+	/** the SQL comments pattern specific for MySQL */
+	private static final Pattern COMMENTS_PATTERN = Pattern.compile("(#|-- )[^\r\n]*|/\\*(?!!).*?\\*/", Pattern.DOTALL);
+
 	private static final MySQLSpecific INSTANCE = new MySQLSpecific();
 	
 	protected MySQLSpecific() {
@@ -48,6 +52,11 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 
 	public static MySQLSpecific getInstance() {
 		return INSTANCE;
+	}
+
+	@Override
+	public Pattern getCommentsPattern() {
+		return COMMENTS_PATTERN;
 	}
 
 	/* (non-Javadoc)
@@ -73,12 +82,11 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 		}
 	}
 
+	@Override
     public String quoteIdentifier(String identifier) {
         return ('`' + identifier + '`');
     }
 
-    
-    
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
 		case Types.TIMESTAMP :
@@ -105,8 +113,8 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 	/**
 	 * for MySQL a database is a catalog AND a schema
 	 */
-	public ResultSet getTables(DatabaseMetaData dbMeta, String dbName) throws SQLException {
-		return dbMeta.getTables(dbName, dbName, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/); //fix by kokon - show only tables and views
+	public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
+		return connection.getMetaData().getTables(dbName, dbName, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/); //fix by kokon - show only tables and views
 	}
 
 

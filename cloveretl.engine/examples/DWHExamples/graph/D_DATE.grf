@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Petr" created="Fri Sep 25 09:38:20 CEST 2009" guiVersion="0.0.0.devel" id="1253876009318" licenseType="Evaluation Devel" modified="Wed Oct 21 09:49:04 GMT+01:00 2009" modifiedBy="avackova" name="D_TIME" revision="1.36">
+<Global>
+<Metadata fileURL="${META_DIR}/D_DATE.fmt" id="Metadata0"/>
+<Property id="GraphParameter14" name="FROM" value="2000-01-01"/>
+<Property id="GraphParameter0" name="TO" value="2050-01-01"/>
+<Property id="GraphParameter13" name="WEEKDAY" value="Weekday"/>
+<Property id="GraphParameter1" name="WEEKEND" value="Weekend"/>
+<Property fileURL="workspace.prm" id="GraphParameter2"/>
+<Sequence cached="5" fileURL="${SEQ_DIR}/ID_D_DATE.seq" id="Sequence0" name="ID_D_DATE" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="217" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Filling of D_DATE dimension" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="704" x="44" y="145">
+<attr name="text"><![CDATA[
+Date dimension is standard prefilled DWH dimension with daily granularity.
+
+Graph uses two parameters: FROM and TO. They enclose the time interval in which the date dimension should store.
+
+Default values:
+FROM=2000-01-01
+TO=2050-01-01
+
+The default values can be overwritten by runtime specification of parameters (-P option)]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="0" guiName="DataGenerator" guiWidth="0" guiX="214" guiY="46" id="DATA_GENERATOR0" recordsNumber="`datediff(${TO},${FROM},day)`" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#TL
+date d = ${FROM} - 1;
+string SAT = date2str(2009-10-24, 'E');
+string SUN = date2str(2009-10-25, 'E');
+
+// Generates output record.
+function generate() {
+	int year_quarter;
+	d = d + 1;
+	
+	year_quarter = str2num(date2str(d, 'M'), int) + 3 / 4;
+	
+	$0.ID_D_DATE := sequence(Sequence0).next;
+	$0.DATE := d;
+	$0.DAY_OF_WEEK_DESCRIPTION := date2str(d, 'EEEE');
+	$0.DAY_OF_MONTH := str2num(date2str(d, 'd'), int);
+	$0.WEEK_OF_YEAR := str2num(date2str(d, 'w'), int);
+	$0.MONTH_OF_YEAR := str2num(date2str(d, 'M'), int);
+	$0.MONTH_OF_YEAR_DESCRIPTION := date2str(d, 'MMMM');
+	$0.YEAR_QUARTER := year_quarter;
+	$0.YEAR := str2num(date2str(d, 'yyyy'), int);
+	$0.WEEKDAY_INDICATOR := iif( date2str(d, 'E') == SAT || date2str(d, 'E') == SUN, '${WEEKEND}', '${WEEKDAY}');
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node charset="windows-1250" enabled="enabled" fileURL="${TABLES}/D_DATE.tbl" guiHeight="0" guiName="INSERT to D_DATE" guiWidth="0" guiX="397" guiY="46" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

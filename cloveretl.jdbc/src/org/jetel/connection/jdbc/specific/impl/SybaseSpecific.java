@@ -31,7 +31,6 @@ import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.conn.SybaseConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  * @author Agata Vackova (agata.vackova@javlinconsulting.cz) ; 
@@ -120,9 +119,9 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 	}
     
 	@Override
-	public ArrayList<String> getSchemas(DatabaseMetaData dbMeta)
+	public ArrayList<String> getSchemas(java.sql.Connection connection)
 			throws SQLException {
-		return AbstractJdbcSpecific.getMetaCatalogs(dbMeta);
+		return AbstractJdbcSpecific.getMetaCatalogs(connection.getMetaData());
 	}
 	
 }
