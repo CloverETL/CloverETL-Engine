@@ -120,6 +120,7 @@ public abstract class DataGenerator extends Node {
 	private static final String XML_GENERATECLASS_ATTRIBUTE = "generateClass";
 	public static final String XML_GENERATE_ATTRIBUTE = "generate";
 	private static final String XML_GENERATEURL_ATTRIBUTE = "generateURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_RECORDS_NUMBER_ATTRIBUTE = "recordsNumber"; 
 	private static final String XML_RANDOM_SEED_ATTRIBUTE = "randomSeed";
 
@@ -163,6 +164,10 @@ public abstract class DataGenerator extends Node {
 						xattribs.getString(XML_GENERATECLASS_ATTRIBUTE, null), 
 						xattribs.getStringEx(XML_GENERATEURL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF),
 						xattribs.getInteger(XML_RECORDS_NUMBER_ATTRIBUTE));
+				
+				if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+					((ExtDataGenerator)dataGenerator).setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+				}
 			} else {
 				dataGenerator = new SimpleDataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 
 						xattribs.getString(XML_PATTERN_ATTRIBUTE,""), 
