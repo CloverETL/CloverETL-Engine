@@ -131,6 +131,7 @@ public abstract class Node extends GraphElement implements Runnable {
 		logPort = null;
         phase = null;
         runResult=Result.N_A; // result is not known yet
+        childThreads = new ArrayList<Thread>();
 	}
 
 	/**
