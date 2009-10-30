@@ -22,7 +22,7 @@ package org.jetel.exception;
 import org.apache.commons.logging.Log;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
-import org.jetel.graph.GraphElement;
+import org.jetel.graph.IGraphElement;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -40,7 +40,7 @@ public class ConfigurationProblem {
     
     private Severity severity;
     
-    private GraphElement graphElement;
+    private IGraphElement graphElement;
 
     private Priority priority;
     
@@ -48,7 +48,9 @@ public class ConfigurationProblem {
     
     private String graphElementID;
     
-    public ConfigurationProblem(String message, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
+    private Exception causeException;
+    
+	public ConfigurationProblem(String message, Severity severity, IGraphElement graphElement, Priority priority, String attributeName) {
         this.message = message;
         this.severity = severity;
         this.graphElement = graphElement;
@@ -56,11 +58,11 @@ public class ConfigurationProblem {
         this.attributeName = attributeName;
     }
     
-    public ConfigurationProblem(String message, Severity severity, GraphElement graphElement, Priority priority) {
+    public ConfigurationProblem(String message, Severity severity, IGraphElement graphElement, Priority priority) {
     	this(message, severity, graphElement, priority, null);
     }
 
-    public ConfigurationProblem(ComponentNotReadyException e, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
+    public ConfigurationProblem(ComponentNotReadyException e, Severity severity, IGraphElement graphElement, Priority priority, String attributeName) {
         this(e.getMessage(), severity, graphElement, priority, attributeName);
         
         if(!StringUtils.isEmpty(e.getAttributeName()) && StringUtils.isEmpty(attributeName)) {
@@ -82,7 +84,7 @@ public class ConfigurationProblem {
         }
     }
     
-    public GraphElement getGraphElement() {
+    public IGraphElement getGraphElement() {
         return graphElement;
     }
 
@@ -125,6 +127,14 @@ public class ConfigurationProblem {
 	 */
 	public void setGraphElementID(String graphElementID) {
 		this.graphElementID = graphElementID;
+	}
+
+    public Exception getCauseException() {
+		return causeException;
+	}
+
+	public void setCauseException(Exception causeException) {
+		this.causeException = causeException;
 	}
 
 	@Override

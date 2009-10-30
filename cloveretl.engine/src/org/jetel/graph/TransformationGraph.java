@@ -41,8 +41,11 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.database.IConnection;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -1012,17 +1015,35 @@ public final class TransformationGraph extends GraphElement {
 	        
 	        //check connections configuration
 	        for(IConnection connection : connections.values()) {
-	            connection.checkConfig(status);
+	        	try {
+	        		connection.checkConfig(status);
+	        	} catch (Exception e) {
+	        		ConfigurationProblem problem = new ConfigurationProblem("FATAL ERROR: " + e.getMessage(), Severity.ERROR, connection, Priority.HIGH);
+	        		problem.setCauseException(e);
+	        		status.add(problem);
+	        	}
 	        }
 	
 	        //check lookup tables configuration
 	        for(LookupTable lookupTable : lookupTables.values()) {
-	            lookupTable.checkConfig(status);
+	        	try {
+	        		lookupTable.checkConfig(status);
+	        	} catch (Exception e) {
+	        		ConfigurationProblem problem = new ConfigurationProblem("FATAL ERROR: " + e.getMessage(), Severity.ERROR, lookupTable, Priority.HIGH);
+	        		problem.setCauseException(e);
+	        		status.add(problem);
+	        	}
 	        }
 	
 	        //check sequences configuration
 	        for(Sequence sequence : sequences.values()) {
-	            sequence.checkConfig(status);
+	        	try {
+	        		sequence.checkConfig(status);
+	        	} catch (Exception e) {
+	        		ConfigurationProblem problem = new ConfigurationProblem("FATAL ERROR: " + e.getMessage(), Severity.ERROR, sequence, Priority.HIGH);
+	        		problem.setCauseException(e);
+	        		status.add(problem);
+	        	}
 	        }
 	
 	        //check metadatas configuration

@@ -28,8 +28,11 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 
 /**
  * A class that represents processing Phase of Transformation Graph
@@ -286,7 +289,13 @@ public class Phase extends GraphElement implements Comparable {
 
 		//check nodes configuration
         for(Node node : nodes.values()) {
-            node.checkConfig(status);
+        	try {
+        		node.checkConfig(status);
+        	} catch (Exception e) {
+        		ConfigurationProblem problem = new ConfigurationProblem("FATAL ERROR: " + e.getMessage(), Severity.ERROR, node, Priority.HIGH);
+        		problem.setCauseException(e);
+        		status.add(problem);
+        	}
         }
 
         //check edges configuration
@@ -420,7 +429,11 @@ public class Phase extends GraphElement implements Comparable {
         
         //free all nodes in this phase
         for(Node node : nodes.values()) {
-            node.free();
+        	try {
+        		node.free();
+        	} catch (Exception e) {
+        		logger.error("Node " + node.getId() + " releasing failed.", e);
+        	}
         }
         
         //free all edges in this phase
