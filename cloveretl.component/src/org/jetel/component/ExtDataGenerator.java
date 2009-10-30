@@ -78,6 +78,7 @@ public class ExtDataGenerator extends DataGenerator {
 	private String generatorSource;
 	private String generatorClassName;
 	private String generatorURL;
+	private String charset;
 	private int recordsNumber;
 
 	// data generator
@@ -252,7 +253,7 @@ public class ExtDataGenerator extends DataGenerator {
 							runtimeContext.getClassPaths());
 				} else if (generatorSource == null) {
 					// read source code from URL
-					generatorSource = FileUtils.getStringFromURL(getGraph().getProjectURL(), generatorURL, "UTF-8");
+					generatorSource = FileUtils.getStringFromURL(getGraph().getProjectURL(), generatorURL, charset);
 				}
 				
 				if (generatorClassName == null) {
@@ -406,6 +407,12 @@ public class ExtDataGenerator extends DataGenerator {
             throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordGenerate.");
         }
     }
-	
 
+	/**
+	 * Sets the charset for URL transform file.
+	 * @param charset
+	 */
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
 }
