@@ -33,7 +33,6 @@ import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
 import org.jetel.lookup.RangeLookupTable;
 import org.jetel.metadata.DataFieldMetadata;
@@ -61,7 +60,7 @@ public class PartitionFunctionFactory {
 
 	private static final String PORT_NO_FIELD_NAME = "portNo"; 
 
-	private static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+" + PartitionTL.GETOUTPUTPORT_FUNCTION_NAME);
+	public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+" + PartitionTL.GETOUTPUTPORT_FUNCTION_NAME);
 
 	private Node node;
 
@@ -172,7 +171,7 @@ public class PartitionFunctionFactory {
 	 * @return Partition function
 	 * @throws ComponentNotReadyException
 	 */
-	private PartitionFunction createPartitionDynamic(String partitionSource) throws ComponentNotReadyException {
+	public PartitionFunction createPartitionDynamic(String partitionSource) throws ComponentNotReadyException {
 		//check if source code is in CloverETL format
 		if (partitionSource.contains(WrapperTL.TL_TRANSFORM_CODE_ID) ||
 				PATTERN_TL_CODE.matcher(partitionSource).find()) {
