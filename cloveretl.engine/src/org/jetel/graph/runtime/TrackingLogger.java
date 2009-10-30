@@ -175,23 +175,9 @@ public class TrackingLogger implements NotificationListener {
 			printProcessingStatus(false);
 		} else if(notification.getType().equals(CloverJMX.PHASE_FINISHED)) {
 			printProcessingStatus(true);
-			switch (cloverJMX.getGraphTracking().getRunningPhaseTracking().getResult()) {
-			case FINISHED_OK:
-				logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
-						+ "] successfully finished - elapsed time(sec): "
-						+ TrackingUtils.converTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
-				break;
-			case ERROR:
-				logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
-						+ "] finished with error - elapsed time(sec): "
-						+ TrackingUtils.converTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
-				break;
-			case ABORTED:
-				logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
-						+ "] was aborted - elapsed time(sec): "
-						+ TrackingUtils.converTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
-				break;
-			}
+			logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
+					+ "] successfully finished - elapsed time(sec): "
+					+ TrackingUtils.converTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
 		} else if(notification.getType().equals(CloverJMX.PHASE_ABORTED)) {
 			logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
 					+ "] was aborted - elapsed time(sec): "
