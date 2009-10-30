@@ -20,48 +20,35 @@
 package org.jetel.component;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.partition.CTLRecordPartition;
-import org.jetel.component.partition.CTLRecordPartitionAdapter;
-import org.jetel.component.partition.HashPartition;
 import org.jetel.component.partition.PartitionFunction;
 import org.jetel.component.partition.PartitionFunctionFactory;
-import org.jetel.component.partition.PartitionTL;
 import org.jetel.component.partition.RangePartition;
-import org.jetel.component.partition.RoundRobinPartition;
-import org.jetel.ctl.ErrorMessage;
-import org.jetel.ctl.ITLCompiler;
-import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
-import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
-import org.jetel.graph.OutputPort;
 import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.RangeLookupTable;
-import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
-import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -450,11 +437,11 @@ public class Partition extends Node {
 		
         checkMetadata(status, getInMetadata(), getOutMetadata());
 
+        DataRecordMetadata inMetadata = getInputPort(0).getMetadata();
         try {
         	
     	    if (partitionKeyNames != null) {
-    			partitionKey = new RecordKey(partitionKeyNames,
-    					getInputPort(0).getMetadata());
+    			partitionKey = new RecordKey(partitionKeyNames, inMetadata);
     		}
     		if (partitionKey != null) {
     			try {
@@ -483,22 +470,31 @@ public class Partition extends Node {
         } else if (partitionURL != null) {
         	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), partitionURL, charset);
         }
-        // only the transform and transformURL parameters are checked, transformClass is ignored
-        if (checkTransform != null) {
-        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
-        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
-
-    			try {
-    				PartitionFunction function = createPartitionDynamic(checkTransform);
-    				function.init(outPorts.size(), partitionKey);
+        // partition class is checked only if is given specific CTL or TL code
+        if (partitionFce == null && partitionClass == null && checkTransform != null) {
+    		if (checkTransform.contains(WrapperTL.TL_TRANSFORM_CODE_ID) 
+    				|| PartitionFunctionFactory.PATTERN_TL_CODE.matcher(checkTransform).find() 
+    				|| checkTransform.contains(TransformLangExecutor.CTL_TRANSFORM_CODE_ID)) {
+	        	try {
+					PartitionFunctionFactory partitionFceFactory = new PartitionFunctionFactory();
+					partitionFceFactory.setNode(this);
+					partitionFceFactory.setMetadata(inMetadata);
+					partitionFceFactory.setPartitionKeyNames(partitionKeyNames);
+					partitionFceFactory.setPartitionRanges(partitionRanges);
+					partitionFceFactory.setAdditionalParameters(parameters);
+					partitionFceFactory.setCharset(charset);
+					partitionFceFactory.setLocale(locale);
+					partitionFceFactory.setUseI18N(useI18N);
+					partitionFceFactory.setLogger(logger);
+					partitionFce = partitionFceFactory.createPartitionDynamic(checkTransform);
+					partitionFce.init(outPorts.size(), partitionKey);
 				} catch (ComponentNotReadyException e) {
 					// find which component attribute was used
 					String attribute = partitionSource != null ? XML_PARTIONSOURCE_ATTRIBUTE : XML_PARTITIONURL_ATTRIBUTE;
 					// report CTL error as a warning
 					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
 				}
-        	}
+    		}
         }
        
         return status;
