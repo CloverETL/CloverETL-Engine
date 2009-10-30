@@ -64,6 +64,12 @@ public abstract class Node extends GraphElement implements Runnable {
     private static final Log logger = LogFactory.getLog(Node.class);
 
     protected Thread nodeThread;
+    /**
+     * List of all threads under this component.
+     * For instance parallel reader uses threads for parallel reading.
+     * It is component's responsibility to register all inner threads via addChildThread() method.
+     */
+    protected List<Thread> childThreads;  
     protected EnabledEnum enabled;
     protected int passThroughInputPort;
     protected int passThroughOutputPort;
