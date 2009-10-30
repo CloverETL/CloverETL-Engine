@@ -334,14 +334,12 @@ public class SystemExecute extends Node{
 			sendDataToFile = new SendDataToFile(Thread.currentThread(),outputFile,process_out);
 			sendDataToFile.start();
 			registerChildThread(sendDataToFile); //register worker as a child thread of this component
-			registerChildThread(sendErrToFile); //register worker as a child thread of this component
 		// neither output port nor output file is defined then read output
 		// and error from process and send it to the console
 		} else {
 			sendDataToConsole = new SendDataToConsole(Thread.currentThread(),logger,process_out);
 			sendDataToConsole.start();
 			registerChildThread(sendDataToConsole); //register worker as a child thread of this component
-			registerChildThread(sendErrToConsole); //register worker as a child thread of this component
 		}
 
 		//if output is sent to output port log process error stream
