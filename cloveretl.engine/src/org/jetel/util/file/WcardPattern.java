@@ -28,6 +28,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -35,6 +36,9 @@ import java.util.zip.GZIPInputStream;
 import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
 import org.jetel.util.protocols.proxy.ProxyHandler;
+import org.jetel.util.protocols.sftp.SFTPConnection;
+
+import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -71,6 +75,12 @@ public class WcardPattern {
 
 	// Regex end anchor.
 	private final static char REGEX_END_ANCHOR = '$';
+
+	// file protocol
+	private final static String FILE = "file";
+	
+	// sftp protocol
+	private final static String SFTP = "sftp";
 	
 	// Collection of filename patterns.
 	private List<String> patterns;
@@ -121,7 +131,7 @@ public class WcardPattern {
 	 * @param filePat Filename pattern. 
 	 * @return false for pattern without wildcards, true otherwise. 
 	 */
-	private boolean splitPattern(String pat, StringBuffer dir, StringBuffer filePat) {
+	private boolean splitFilePattern(String pat, StringBuffer dir, StringBuffer filePat) {
 		dir.setLength(0);
 		filePat.setLength(0);
 
@@ -355,6 +365,92 @@ public class WcardPattern {
      * @return
      */
 	private List<String> resolveAndSetFileNames(String fileName) {
+		// check if the filename is a file or something else
+		URL url = null;
+		try {
+			url = FileUtils.getFileURL(parent, fileName);
+		} catch (MalformedURLException e) {
+			// NOTHING
+		}
+		
+		// wildcards for file protocol
+		if (url.getProtocol().equals(FILE)) {
+			return getFileNames(fileName);
+		}
+		
+		// wildcards for sftp protocol
+		else if (url.getProtocol().equals(SFTP)) {
+			return getSftpNames(url);
+		}
+		
+		// return original filename
+		List<String> mfiles = new ArrayList<String>();
+		mfiles.add(fileName);
+		return mfiles;
+	}
+
+	/**
+	 * Gets files from fileName that can contain wildcards or returns original name.
+	 * @param url
+	 * @return
+	 */
+	private List<String> getSftpNames(URL url) {
+		// result list
+		List<String> mfiles = new ArrayList<String>();
+		
+		// check if the url has wildcards
+		String fileName = url.getFile().substring(url.getPath().length());
+		boolean bWildCard = false;
+		for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
+			if (fileName.indexOf("" + WCARD_CHAR[wcardIdx]) >= 0) { // wildcard found
+				bWildCard = true;
+				break;
+			}
+		}
+		// if no wildcard found, return original name
+		if (!bWildCard) {
+			mfiles.add(url.toString());
+			return mfiles;
+		}
+
+		// get files
+		SFTPConnection sftpConnection = null;
+		try {
+			// list files
+			sftpConnection = (SFTPConnection)url.openConnection();
+			Vector<?> v = sftpConnection.ls(url.getFile());				// note: too long operation
+			for (Object lsItem: v) {
+				LsEntry lsEntry = (LsEntry) lsItem;
+				String resolverdFileNameWithoutPath = lsEntry.getFilename();
+				
+				// replace file name
+				String urlPath = url.getFile();
+
+				// find last / or \ or set index to the start position
+				// create new filepath
+				int lastIndex = urlPath.lastIndexOf('/')+1;
+				if (lastIndex <= 0) lastIndex = urlPath.lastIndexOf('\\')+1;
+				String newUrlPath = urlPath.substring(0, lastIndex) + resolverdFileNameWithoutPath;
+				
+				// add new resolved url string
+				mfiles.add(url.toString().replace(urlPath, newUrlPath));
+			}
+		} catch (Throwable e) {
+			// return original name
+			mfiles.add(url.toString());
+		} finally {
+			if (sftpConnection != null) sftpConnection.disconnect();
+		}
+		
+		return mfiles;
+	}
+
+	/**
+	 * Gets files from fileName that can contain wildcards or returns original name.
+	 * @param fileName
+	 * @return
+	 */
+	private List<String> getFileNames(String fileName) {
 		// result list
 		List<String> mfiles = new ArrayList<String>();
 
@@ -362,18 +458,8 @@ public class WcardPattern {
 		StringBuffer dirName = new StringBuffer();
 		StringBuffer filePat = new StringBuffer();
 		
-		// is file fileName protocol?
-		boolean fileProtocol = false;
-		
-		// check if the filename is a file or something else
-		try {
-			fileProtocol = FileUtils.getFileURL(parent, fileName).getProtocol().equals("file");
-		} catch (MalformedURLException e) {
-			// NOTHING
-		}
-		
-		// if not file or doesn't contains wild cards, return original filename
-		if (!fileProtocol || !splitPattern(fileName, dirName, filePat)) {	// no wildcards
+		// if no wildcards, return original filename
+		if (!splitFilePattern(fileName, dirName, filePat)) {	// no wildcards
 			mfiles.add(fileName);
 			return mfiles;
 		}
@@ -396,9 +482,10 @@ public class WcardPattern {
 				mfiles.add(f.getAbsolutePath());
 			}
 		}
+
 		return mfiles;
 	}
-
+	
 	/**
 	 * Checks if the name accepts the pattern
 	 * @param pattern
