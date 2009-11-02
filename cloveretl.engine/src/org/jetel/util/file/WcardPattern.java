@@ -33,8 +33,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.net.ftp.FTPFile;
 import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
+import org.jetel.util.protocols.ftp.FTPConnection;
+import org.jetel.util.protocols.ftp.FTPStreamHandler;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.protocols.sftp.SFTPConnection;
 
@@ -82,6 +85,9 @@ public class WcardPattern {
 	// sftp protocol
 	private final static String SFTP = "sftp";
 	
+	// ftp protocol
+	private final static String FTP = "ftp";
+
 	// Collection of filename patterns.
 	private List<String> patterns;
 	
@@ -383,6 +389,15 @@ public class WcardPattern {
 			return getSftpNames(url);
 		}
 		
+		// wildcards for ftp protocol
+		else if (url.getProtocol().equals(FTP)) {
+			try {
+				return getFtpNames(new URL(parent, fileName, FileUtils.ftpStreamHandler));	// the FTPStreamHandler is not properly tested but supports 'ls'
+			} catch (MalformedURLException e) {
+				//NOTHING
+			}
+		}
+
 		// return original filename
 		List<String> mfiles = new ArrayList<String>();
 		mfiles.add(fileName);
@@ -394,21 +409,79 @@ public class WcardPattern {
 	 * @param url
 	 * @return
 	 */
+	private List<String> getFtpNames(URL url) {
+		// result list
+		List<String> mfiles = new ArrayList<String>();
+
+		// if no wildcard found, return original name
+		if (!hasWildcard(url)) {
+			mfiles.add(url.toString());
+			return mfiles;
+		}
+
+		// get files
+		FTPConnection ftpConnection = null;
+		try {
+			// list files
+			ftpConnection = (FTPConnection)url.openConnection();
+			FTPFile[] ftpFiles = ftpConnection.ls(url.getFile());				// note: too long operation
+			for (FTPFile lsFile: ftpFiles) {
+				String resolverdFileNameWithoutPath = lsFile.getName();
+				
+				// replace file name
+				String urlPath = url.getFile();
+
+				// find last / or \ or set index to the start position
+				// create new filepath
+				int lastIndex = urlPath.lastIndexOf('/')+1;
+				if (lastIndex <= 0) lastIndex = urlPath.lastIndexOf('\\')+1;
+				String newUrlPath = urlPath.substring(0, lastIndex) + resolverdFileNameWithoutPath;
+				
+				// add new resolved url string
+				mfiles.add(url.toString().replace(urlPath, newUrlPath));
+			}
+		} catch (Throwable e) {
+			// return original name
+			mfiles.add(url.toString());
+		} finally {
+			if (ftpConnection != null)
+				try {
+					ftpConnection.disconnect();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+		}
+
+		return mfiles;
+	}
+
+	/**
+	 * Returns true if the URL, in the concrete his file, has a wildcard. 
+	 * @param url
+	 * @return
+	 */
+	private boolean hasWildcard(URL url) {
+		// check if the url has wildcards
+		String fileName = url.getFile().substring(url.getPath().length());
+		for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
+			if (fileName.indexOf("" + WCARD_CHAR[wcardIdx]) >= 0) { // wildcard found
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Gets files from fileName that can contain wildcards or returns original name.
+	 * @param url
+	 * @return
+	 */
 	private List<String> getSftpNames(URL url) {
 		// result list
 		List<String> mfiles = new ArrayList<String>();
 		
-		// check if the url has wildcards
-		String fileName = url.getFile().substring(url.getPath().length());
-		boolean bWildCard = false;
-		for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
-			if (fileName.indexOf("" + WCARD_CHAR[wcardIdx]) >= 0) { // wildcard found
-				bWildCard = true;
-				break;
-			}
-		}
 		// if no wildcard found, return original name
-		if (!bWildCard) {
+		if (!hasWildcard(url)) {
 			mfiles.add(url.toString());
 			return mfiles;
 		}
