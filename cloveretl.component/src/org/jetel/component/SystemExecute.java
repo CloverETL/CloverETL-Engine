@@ -643,10 +643,10 @@ public class SystemExecute extends Node{
 	 * 		replaces the old value by the new one (<i>/home/user/mydir</i>).
 	 */
 	public void setEnvironment(String string) {
-		String[] key = StringUtils.split(string);
+		String[] env = StringUtils.split(string);
 		String[] def;
-		for (int i = 0; i < key.length; i++) {
-			def = JoinKeyUtils.getMappingItemsFromMappingString(key[i]);
+		for (int i = 0; i < env.length; i++) {
+			def = JoinKeyUtils.getMappingItemsFromMappingString(env[i]);
 			environment.setProperty(def[0], StringUtils.unquote(def[1]));
 		}
 	}
