@@ -37,7 +37,6 @@ import org.apache.commons.net.ftp.FTPFile;
 import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
 import org.jetel.util.protocols.ftp.FTPConnection;
-import org.jetel.util.protocols.ftp.FTPStreamHandler;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.protocols.sftp.SFTPConnection;
 
