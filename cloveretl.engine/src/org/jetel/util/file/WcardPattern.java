@@ -425,6 +425,7 @@ public class WcardPattern {
 			ftpConnection = (FTPConnection)url.openConnection();
 			FTPFile[] ftpFiles = ftpConnection.ls(url.getFile());				// note: too long operation
 			for (FTPFile lsFile: ftpFiles) {
+				if (lsFile.getType() == FTPFile.DIRECTORY_TYPE) continue;
 				String resolverdFileNameWithoutPath = lsFile.getName();
 				
 				// replace file name
