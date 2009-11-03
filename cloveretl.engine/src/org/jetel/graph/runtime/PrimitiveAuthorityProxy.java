@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
-import java.util.Random;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -247,4 +247,26 @@ public class PrimitiveAuthorityProxy implements IAuthorityProxy {
 	public OutputStream[] getPartitionedSandboxResourceOutput(long runId, String storageCode, String path) {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSlaveInputStream(long)
+	 */
+	public InputStream getSlaveInputStream(long runId) throws IOException {
+		throw new UnsupportedOperationException("Slave input stream are available only in CloverETL Server environment!");
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSlaveOutputStreams(long)
+	 */
+	public OutputStream[] getSlaveOutputStreams(long runId) throws IOException {
+		throw new UnsupportedOperationException("Slave output streams are available only in CloverETL Server environment!");
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#isMaster(long)
+	 */
+	public boolean isMaster(long runId) {
+		throw new UnsupportedOperationException("Master/Slave runtime mode is available only in CloverETL Server environment!");
+	}
+	
 }
