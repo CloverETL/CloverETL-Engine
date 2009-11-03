@@ -19,6 +19,7 @@
 */
 package org.jetel.graph.runtime;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
@@ -64,7 +65,7 @@ public interface IAuthorityProxy {
 	 * @param path
 	 * @return
 	 */
-	public InputStream getSandboxResourceInput(long runId, String storageCode, String path);
+	public InputStream getSandboxResourceInput(long runId, String storageCode, String path) throws IOException;
 
 	/**
 	 * 
@@ -73,7 +74,7 @@ public interface IAuthorityProxy {
 	 * @param path
 	 * @return
 	 */
-	public OutputStream getSandboxResourceOutput(long runId, String storageCode, String path);
+	public OutputStream getSandboxResourceOutput(long runId, String storageCode, String path) throws IOException;
 	
 	/**
 	 * Provides list of input streams for all parts of given file in a partitioned sandbox.
@@ -82,7 +83,7 @@ public interface IAuthorityProxy {
 	 * @param path
 	 * @return
 	 */
-	public InputStream[] getPartitionedSandboxResourceInput(long runId, String storageCode, String path);
+	public InputStream[] getPartitionedSandboxResourceInput(long runId, String storageCode, String path) throws IOException;
 
 	/**
 	 * Provides list of output streams for all parts of given file in a partitioned sandbox.
@@ -91,6 +92,12 @@ public interface IAuthorityProxy {
 	 * @param path
 	 * @return
 	 */
-	public OutputStream[] getPartitionedSandboxResourceOutput(long runId, String storageCode, String path);
+	public OutputStream[] getPartitionedSandboxResourceOutput(long runId, String storageCode, String path) throws IOException;
 
+	public boolean isMaster(long runId);
+	
+	public OutputStream[] getSlaveOutputStreams(long runId) throws IOException;
+
+	public InputStream getSlaveInputStream(long runId) throws IOException;
+	
 }
