@@ -409,6 +409,8 @@ public abstract class Node extends GraphElement implements Runnable {
             			return;
             		}
             	}
+            	//broadcast all output ports with EOF information
+            	broadcastEOF();
             }
         } catch (InterruptedException ex) {
             runResult=Result.ABORTED;

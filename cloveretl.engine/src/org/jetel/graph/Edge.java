@@ -65,6 +65,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     protected String debugFilterExpression;
     protected boolean debugSampleData;
     
+    private boolean eofSent;
+    
 	private EdgeTypeEnum edgeType;
 
 	private EdgeBase edge;
@@ -83,6 +85,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		reader = writer = null;
     	edgeType = EdgeTypeEnum.DIRECT;
 		edge = null;
+		eofSent = false;
 	}
 
     public Edge(String id, DataRecordMetadata metadata) {
@@ -290,6 +293,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		
+		eofSent = false;
 		edge.reset();
 	}
 	
@@ -432,7 +436,10 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      * @see org.jetel.graph.OutputPort#eof()
      */
     public void eof() throws InterruptedException, IOException {
-        edge.eof();
+    	if (!eofSent) {
+        	edge.eof();
+        	eofSent = true;
+    	}
     }
     
 	public boolean hasData(){

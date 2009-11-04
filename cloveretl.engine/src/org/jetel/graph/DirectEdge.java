@@ -51,7 +51,7 @@ public class DirectEdge extends EdgeBase {
 	private int recordCounter;
     private long byteCounter;
     private AtomicInteger bufferedRecords; 
-	private boolean isClosed;
+	private volatile boolean isClosed;
     private boolean readerWait;
     private volatile boolean writerWait;
 	
