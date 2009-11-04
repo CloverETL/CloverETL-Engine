@@ -191,6 +191,50 @@ public class DataReader extends Node {
 		this.verbose = verbose;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#init()
+	 */
+	@Override
+	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
+        super.init();
+
+		//is the logging port attached?
+		if (getOutPorts().size() == 2) {
+			if (checkLogPortMetadata()) {
+				logging = true;
+			}
+		}
+		
+		//create data parser
+		parser = new DataParser(charset, logging ? true : verbose); //verbose mode is true by default in case the logging port is used
+        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
+        parser.setTreatMultipleDelimitersAsOne(treatMultipleDelimitersAsOne);
+        parser.setQuotedStrings(quotedStrings);
+        parser.setSkipLeadingBlanks(skipLeadingBlanks);
+        parser.setSkipTrailingBlanks(skipTrailingBlanks);
+        parser.setTrim(trim);
+        
+        prepareMultiFileReader();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#preExecute()
+	 */
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+
+		if (firstRun()) {
+	        try {
+	            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+	        } catch(ComponentNotReadyException e) {
+	            e.setAttributeName(XML_FILE_ATTRIBUTE);
+	            throw e;
+	        }
+		}
+	}
+	
 	@Override
 	public Result execute() throws Exception {
 		OutputPort outPort = getOutputPort(OUTPUT_PORT);
@@ -250,7 +294,6 @@ public class DataReader extends Node {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
-
 	private boolean checkLogPortMetadata() {
         DataRecordMetadata logMetadata = getOutputPort(LOG_PORT).getMetadata();
 
@@ -267,42 +310,6 @@ public class DataReader extends Node {
         return ret;
     }
 	
-	/**
-	 *  Description of the Method
-	 *
-	 * @exception  ComponentNotReadyException  Description of the Exception
-	 * @since                                  April 4, 2002
-	 */
-	public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
-        super.init();
-
-		//is the logging port attached?
-		if (getOutPorts().size() == 2) {
-			if (checkLogPortMetadata()) {
-				logging = true;
-			}
-		}
-		
-		//create data parser
-		parser = new DataParser(charset, logging ? true : verbose); //verbose mode is true by default in case the logging port is used
-        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
-        parser.setTreatMultipleDelimitersAsOne(treatMultipleDelimitersAsOne);
-        parser.setQuotedStrings(quotedStrings);
-        parser.setSkipLeadingBlanks(skipLeadingBlanks);
-        parser.setSkipTrailingBlanks(skipTrailingBlanks);
-        parser.setTrim(trim);
-        
-        prepareMultiFileReader();
-        
-        try {
-            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
-        } catch(ComponentNotReadyException e) {
-            e.setAttributeName(XML_FILE_ATTRIBUTE);
-            throw e;
-        }
-	}
-
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
 		// initialize multifile reader based on prepared parser
 		TransformationGraph graph = getGraph();
