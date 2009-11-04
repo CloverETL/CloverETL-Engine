@@ -148,4 +148,9 @@ public interface IGraphElement {
      */
     public abstract boolean isInitialized();
     
+    /**
+     * @return true if the graph element is in first iteration of life cycle
+     */
+    public boolean firstRun();
+    
 }
