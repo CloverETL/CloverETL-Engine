@@ -351,6 +351,10 @@ public class ExtFilter extends org.jetel.graph.Node {
 		return COMPONENT_TYPE;
 	}
 	
+	public RecordFilter getRecordFilter() {
+		return filter;
+	}
+	
 	public void reset() throws ComponentNotReadyException  {
 		super.reset();
 		// Nothing more to reinitialize
