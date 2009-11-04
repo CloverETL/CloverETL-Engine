@@ -195,6 +195,13 @@ public abstract class GraphElement implements IGraphElement {
         return initialized;
     }
     
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#firstRun()
+     */
+    public boolean firstRun() {
+    	return firstRun;
+    }
+    
     @Override
     public String toString() {
         return (getName() == null ? "" : getName()) + "[" + getId() + "]";
