@@ -84,14 +84,25 @@ public class ReadableChannelIterator {
 	}
 
 	/**
+	 * Checks this class for the first using.
+	 */
+	public void checkConfig() throws ComponentNotReadyException {
+		common(false);
+	}
+
+	/**
 	 * Initializes this class for the first using.
 	 */
 	public void init() throws ComponentNotReadyException {
+		common(true);
+	}
+	
+	private void common(boolean resolveAllFileNames) throws ComponentNotReadyException {
 		// charset
 		if (charset == null) charset = DEFAULT_CHARSET;
 		
-		// file iteroator
-		initFileIterator();
+		// file iterator
+		prepareFileIterator(resolveAllFileNames);
 		
 		// port iterator
 		initPortFields();
@@ -124,10 +135,11 @@ public class ReadableChannelIterator {
 	 * File iterator initialization.
 	 * @throws ComponentNotReadyException
 	 */
-	private void initFileIterator() throws ComponentNotReadyException {
+	private void prepareFileIterator(boolean resolveAllNames) throws ComponentNotReadyException {
 		WcardPattern pat = new WcardPattern();
 		pat.setParent(contextURL);
         pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+        pat.resolveAllNames(resolveAllNames);
         try {
 			files = pat.filenames();
 		} catch (IOException e) {
