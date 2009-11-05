@@ -200,15 +200,26 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	           		//if the graph runs in synchronized mode we need to wait for synchronization event to process next phase
 	           		if (runtimeContext.isSynchronizedRun()) {
 	           			logger.info("Waiting for phase " + phases[currentPhaseNum] + " approval...");
+           				watchDogStatus = Result.WAITING;
+           				CURRENT_PHASE_LOCK.unlock();
 	           			synchronized (cloverJMX) {
-		           			while (cloverJMX.getApprovedPhaseNumber() < phases[currentPhaseNum].getPhaseNum()){
+		           			while (cloverJMX.getApprovedPhaseNumber() < phases[currentPhaseNum].getPhaseNum() 
+		           					&& watchDogStatus == Result.WAITING){
 		           				try {
-									cloverJMX.wait();
-								} catch (InterruptedException e) {
-									throw new RuntimeException("WatchDog was interrupted while was waiting for phase synchronization event.");
-								}
+		           					cloverJMX.wait();
+		           				} catch (InterruptedException e) {
+		           					throw new RuntimeException("WatchDog was interrupted while was waiting for phase synchronization event.");
+		           				}
 		           			}
 	           			}
+           				CURRENT_PHASE_LOCK.lock();
+           				//watchdog was aborted while was waiting for next phase approval
+           				if (watchDogStatus == Result.ABORTED) {
+    	                    logger.warn("!!! Graph execution aborted !!!");
+    	                    break;
+           				} else {
+           					watchDogStatus = Result.RUNNING;
+           				}
 	           		}
 	           		cloverJMX.phaseStarted(phases[currentPhaseNum]);
 	           		//execute phase
@@ -223,7 +234,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	                }
 	           		cloverJMX.phaseFinished();
 	            }
-	           	watchDogStatus = phaseResult;
+	           	if (watchDogStatus != Result.RUNNING) {
+	           		watchDogStatus = phaseResult;
+	           	}
            	}
 
            	sendFinalJmxNotification();
@@ -419,16 +432,25 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	public void abort() {
 		CURRENT_PHASE_LOCK.lock();
-		if(watchDogStatus != Result.RUNNING) {
+		if (watchDogStatus != Result.RUNNING && watchDogStatus != Result.WAITING) {
 			return;
 		}
 		try {
-			// iterate through all the nodes and stop them
-	        for(Node node : currentPhase.getNodes().values()) {
-				node.abort();
-				logger.warn("Interrupted node: " + node.getId());
-			}
 	        watchDogStatus = Result.ABORTED;
+			//if the phase is running broadcast all nodes in the phase they should be aborted
+			if (watchDogStatus == Result.RUNNING) { 
+				// iterate through all the nodes and stop them
+		        for(Node node : currentPhase.getNodes().values()) {
+					node.abort();
+					logger.warn("Interrupted node: " + node.getId());
+				}
+			}
+			//if the graph is waiting on a phase synchronization point the watchdog is woken up with current status ABORTED 
+			if (watchDogStatus == Result.WAITING) {
+				synchronized (cloverJMX) {
+					cloverJMX.notifyAll();
+				}
+			}
 		} finally {
 			synchronized (ABORT_MONITOR) {
 				CURRENT_PHASE_LOCK.unlock();
