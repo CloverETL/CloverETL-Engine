@@ -46,6 +46,7 @@ public enum Result{
     N_A(3,"N/A", false),
     READY(2,"READY", false),
     RUNNING(1,"RUNNING", false),
+    WAITING(4,"WAITING", false),
     FINISHED_OK(0,"FINISHED_OK", true),
     ERROR(-1,"ERROR", true),
     ABORTED(-2,"ABORTED", true);
