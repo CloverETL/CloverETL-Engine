@@ -64,7 +64,7 @@ import org.jetel.util.string.StringUtils;
 public class WatchDog implements Callable<Result>, CloverPost {
 
 	/**
-	 * This lock object guards currentPhase variable. 
+	 * This lock object guards currentPhase variable and watchDogStatus. 
 	 */
 	private final Lock CURRENT_PHASE_LOCK = new ReentrantLock();
 
@@ -204,7 +204,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
            				CURRENT_PHASE_LOCK.unlock();
 	           			synchronized (cloverJMX) {
 		           			while (cloverJMX.getApprovedPhaseNumber() < phases[currentPhaseNum].getPhaseNum() 
-		           					&& watchDogStatus == Result.WAITING){
+		           					&& watchDogStatus == Result.WAITING) { //graph was maybe aborted
 		           				try {
 		           					cloverJMX.wait();
 		           				} catch (InterruptedException e) {
@@ -234,7 +234,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	                }
 	           		cloverJMX.phaseFinished();
 	            }
-	           	if (watchDogStatus != Result.RUNNING) {
+	            //aborted graph does not follow last phase status
+	           	if (watchDogStatus == Result.RUNNING) {
 	           		watchDogStatus = phaseResult;
 	           	}
            	}
@@ -432,7 +433,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	public void abort() {
 		CURRENT_PHASE_LOCK.lock();
+		//only running or waiting graph can be aborted
 		if (watchDogStatus != Result.RUNNING && watchDogStatus != Result.WAITING) {
+			CURRENT_PHASE_LOCK.unlock();
 			return;
 		}
 		try {
