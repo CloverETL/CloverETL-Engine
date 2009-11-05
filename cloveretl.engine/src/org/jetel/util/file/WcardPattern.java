@@ -92,6 +92,9 @@ public class WcardPattern {
 	
 	// Context URL.
 	private URL parent;
+
+	// default - resolve server names
+	private boolean resolveAllNames = true;
 	
 	/**
 	 * Constructor. Creates instance with empty set of patterns. It doesn't match any filenames initially.  
@@ -154,6 +157,15 @@ public class WcardPattern {
 		return false;
 	}
 	
+	/**
+	 * Sets if the method filenames resolves server paths. 
+	 * @param resolveAllNames
+	 * @throws IOException
+	 */
+	public void resolveAllNames(boolean resolveAllNames) {
+		this.resolveAllNames = resolveAllNames;
+	}
+
 	/**
 	 * Generates filenames matching current set of patterns.
 	 * @return Set of matching filenames.
@@ -384,12 +396,12 @@ public class WcardPattern {
 		}
 		
 		// wildcards for sftp protocol
-		else if (url.getProtocol().equals(SFTP)) {
+		else if (resolveAllNames && url.getProtocol().equals(SFTP)) {
 			return getSftpNames(url);
 		}
 		
 		// wildcards for ftp protocol
-		else if (url.getProtocol().equals(FTP)) {
+		else if (resolveAllNames && url.getProtocol().equals(FTP)) {
 			try {
 				return getFtpNames(new URL(parent, fileName, FileUtils.ftpStreamHandler));	// the FTPStreamHandler is not properly tested but supports 'ls'
 			} catch (MalformedURLException e) {

@@ -122,12 +122,29 @@ public class MultiFileReader {
         }
     }
 
+    /**
+     * ChannelItereator - check configuration.
+     * @throws ComponentNotReadyException
+     */
+    private void checkChannelIterator() throws ComponentNotReadyException {
+    	commonSettingChannelIterator();
+    	channelIterator.checkConfig();
+    }
+
+    /**
+     * ChannelItereator - initialize.
+     * @throws ComponentNotReadyException
+     */
     private void initChannelIterator() throws ComponentNotReadyException {
+    	commonSettingChannelIterator();
+    	channelIterator.init();
+    }
+    
+    private void commonSettingChannelIterator() throws ComponentNotReadyException {
     	channelIterator = new ReadableChannelIterator(inputPort, contextURL, fileURL);
     	channelIterator.setCharset(charset);
     	channelIterator.setDictionary(dictionary);
     	channelIterator.setPropertyRefResolver(propertyRefResolve);
-    	channelIterator.init();
     }
     
     /**
@@ -145,7 +162,7 @@ public class MultiFileReader {
      */
 	public void checkConfig(DataRecordMetadata metadata) throws ComponentNotReadyException {
         parser.init(metadata);
-        initChannelIterator();
+        checkChannelIterator();
         
 		String fName = null; 
 		Iterator<String> fit = channelIterator.getFileIterator();
