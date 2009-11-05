@@ -1,6 +1,7 @@
 <plugin id="org.jetel.bulkloader" version="0.0.0.devel">
 	<runtime>
 		<library path="bin/"/>
+		<library path="lib/infobright-core-2.7.jar"/>
 	</runtime>
 	
 	<requires engine-version="0.0.0.devel">
@@ -36,6 +37,11 @@
 	<extension point-id="component">
 		<parameter id="type" value="POSTGRESQL_DATA_WRITER"/>
 		<parameter id="className" value="org.jetel.component.PostgreSqlDataWriter"/>
+	</extension>
+	
+	<extension point-id="component">
+		<parameter id="type" value="INFOBRIGHT_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.InfobrightDataWriter"/>
 	</extension>
 	
 </plugin>
