@@ -20,7 +20,6 @@
 package org.jetel.component.infobright;
 
 import java.math.BigDecimal;
-import java.nio.ByteBuffer;
 import java.util.Date;
 
 import org.jetel.data.BooleanDataField;
@@ -43,7 +42,6 @@ public class CloverValueConverter implements ValueConverter {
 	/* (non-Javadoc)
 	 * @see com.infobright.etl.model.ValueConverter#getBigNumber(java.lang.Object)
 	 */
-	@Override
 	public BigDecimal getBigNumber(Object object) throws ValueConverterException {
 		DataField field = (DataField)object;
 		if (field.isNull()) return null;
@@ -57,7 +55,6 @@ public class CloverValueConverter implements ValueConverter {
 	/* (non-Javadoc)
 	 * @see com.infobright.etl.model.ValueConverter#getBinary(java.lang.Object)
 	 */
-	@Override
 	public byte[] getBinary(Object object) throws ValueConverterException {
 		try {
 			return ((ByteDataField)object).getByteArray();
@@ -69,7 +66,6 @@ public class CloverValueConverter implements ValueConverter {
 	/* (non-Javadoc)
 	 * @see com.infobright.etl.model.ValueConverter#getBinaryString(java.lang.Object)
 	 */
-	@Override
 	public byte[] getBinaryString(Object object) throws ValueConverterException {
 		//TODO
 		return getBinary(object);
@@ -78,7 +74,6 @@ public class CloverValueConverter implements ValueConverter {
 	/* (non-Javadoc)
 	 * @see com.infobright.etl.model.ValueConverter#getBoolean(java.lang.Object)
 	 */
-	@Override
 	public Boolean getBoolean(Object object) throws ValueConverterException {
 		try {
 			return ((BooleanDataField)object).getBoolean();
@@ -90,7 +85,6 @@ public class CloverValueConverter implements ValueConverter {
 	/* (non-Javadoc)
 	 * @see com.infobright.etl.model.ValueConverter#getDate(java.lang.Object)
 	 */
-	@Override
 	public Date getDate(Object object) throws ValueConverterException {
 		try {
 			return ((DateDataField)object).getDate();
@@ -102,7 +96,6 @@ public class CloverValueConverter implements ValueConverter {
 	/* (non-Javadoc)
 	 * @see com.infobright.etl.model.ValueConverter#getInteger(java.lang.Object)
 	 */
-	@Override
 	public Long getInteger(Object object) throws ValueConverterException {
 		DataField field = (DataField)object;
 		if (field.isNull()) return null;
@@ -116,7 +109,6 @@ public class CloverValueConverter implements ValueConverter {
 	/* (non-Javadoc)
 	 * @see com.infobright.etl.model.ValueConverter#getNumber(java.lang.Object)
 	 */
-	@Override
 	public Double getNumber(Object object) throws ValueConverterException {
 		DataField field = (DataField)object;
 		if (field.isNull()) return null;
@@ -130,7 +122,6 @@ public class CloverValueConverter implements ValueConverter {
 	/* (non-Javadoc)
 	 * @see com.infobright.etl.model.ValueConverter#getString(java.lang.Object)
 	 */
-	@Override
 	public String getString(Object object) throws ValueConverterException {
 		return object.toString();
 	}

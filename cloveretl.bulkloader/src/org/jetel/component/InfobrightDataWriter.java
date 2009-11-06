@@ -722,7 +722,6 @@ public class InfobrightDataWriter extends Node {
 		/* (non-Javadoc)
 		 * @see com.infobright.logging.EtlLogger#debug(java.lang.String)
 		 */
-		@Override
 		public void debug(String s) {
 			logger.debug(s);
 		}
@@ -730,7 +729,6 @@ public class InfobrightDataWriter extends Node {
 		/* (non-Javadoc)
 		 * @see com.infobright.logging.EtlLogger#error(java.lang.String)
 		 */
-		@Override
 		public void error(String s) {
 			logger.error(s);
 		}
@@ -738,7 +736,6 @@ public class InfobrightDataWriter extends Node {
 		/* (non-Javadoc)
 		 * @see com.infobright.logging.EtlLogger#error(java.lang.String, java.lang.Throwable)
 		 */
-		@Override
 		public void error(String s, Throwable cause) {
 			logger.error(s, cause);
 		}
@@ -746,7 +743,6 @@ public class InfobrightDataWriter extends Node {
 		/* (non-Javadoc)
 		 * @see com.infobright.logging.EtlLogger#fatal(java.lang.String)
 		 */
-		@Override
 		public void fatal(String s) {
 			logger.fatal(s);
 		}
@@ -754,7 +750,6 @@ public class InfobrightDataWriter extends Node {
 		/* (non-Javadoc)
 		 * @see com.infobright.logging.EtlLogger#info(java.lang.String)
 		 */
-		@Override
 		public void info(String s) {
 			logger.info(s);
 		}
@@ -762,7 +757,6 @@ public class InfobrightDataWriter extends Node {
 		/* (non-Javadoc)
 		 * @see com.infobright.logging.EtlLogger#trace(java.lang.String)
 		 */
-		@Override
 		public void trace(String s) {
 			logger.trace(s);
 		}
@@ -770,7 +764,6 @@ public class InfobrightDataWriter extends Node {
 		/* (non-Javadoc)
 		 * @see com.infobright.logging.EtlLogger#warn(java.lang.String)
 		 */
-		@Override
 		public void warn(String s) {
 			logger.warn(s);
 		}
@@ -782,7 +775,6 @@ public class InfobrightDataWriter extends Node {
 		/* (non-Javadoc)
 		 * @see com.infobright.logging.EtlLogger#debug(java.lang.String)
 		 */
-		@Override
 		public void debug(String s) {
 			// TODO Auto-generated method stub
 			
@@ -791,7 +783,6 @@ public class InfobrightDataWriter extends Node {
 		/* (non-Javadoc)
 		 * @see com.infobright.logging.EtlLogger#error(java.lang.String)
 		 */
-		@Override
 		public void error(String s) {
 			// TODO Auto-generated method stub
 			
@@ -800,7 +791,6 @@ public class InfobrightDataWriter extends Node {
 		/* (non-Javadoc)
 		 * @see com.infobright.logging.EtlLogger#error(java.lang.String, java.lang.Throwable)
 		 */
-		@Override
 		public void error(String s, Throwable cause) {
 			// TODO Auto-generated method stub
 			
@@ -809,7 +799,6 @@ public class InfobrightDataWriter extends Node {
 		/* (non-Javadoc)
 		 * @see com.infobright.logging.EtlLogger#fatal(java.lang.String)
 		 */
-		@Override
 		public void fatal(String s) {
 			// TODO Auto-generated method stub
 			
@@ -818,7 +807,6 @@ public class InfobrightDataWriter extends Node {
 		/* (non-Javadoc)
 		 * @see com.infobright.logging.EtlLogger#info(java.lang.String)
 		 */
-		@Override
 		public void info(String s) {
 			// TODO Auto-generated method stub
 			
@@ -827,7 +815,6 @@ public class InfobrightDataWriter extends Node {
 		/* (non-Javadoc)
 		 * @see com.infobright.logging.EtlLogger#trace(java.lang.String)
 		 */
-		@Override
 		public void trace(String s) {
 			// TODO Auto-generated method stub
 			
@@ -836,7 +823,6 @@ public class InfobrightDataWriter extends Node {
 		/* (non-Javadoc)
 		 * @see com.infobright.logging.EtlLogger#warn(java.lang.String)
 		 */
-		@Override
 		public void warn(String s) {
 			// TODO Auto-generated method stub
 			
