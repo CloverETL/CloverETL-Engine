@@ -92,8 +92,6 @@ public class InfobrightDataWriter extends Node {
 
     public final static String COMPONENT_TYPE = "INFOBRIGHT_DATA_WRITER";
 
-	public  final static long KILL_PROCESS_WAIT_TIME = 1000;
-
 	static Log logger = LogFactory.getLog(CheckForeignKey.class);
 
 	private final static int READ_FROM_PORT = 0;
@@ -127,7 +125,7 @@ public class InfobrightDataWriter extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception.ConfigurationStatus)
 	 */
-	@Override
+	
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 		 
@@ -135,9 +133,6 @@ public class InfobrightDataWriter extends Node {
 				|| !checkOutputPorts(status, 0, 1)) {
 			return status;
 		}
-		//TODO
-		//check output metadata
-		
 		// get dbConnection from graph
 	    if (dbConnection == null){
 	        IConnection conn = getGraph().getConnection(connectionName);
@@ -204,7 +199,7 @@ public class InfobrightDataWriter extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#init()
 	 */
-	@Override
+	
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -250,12 +245,13 @@ public class InfobrightDataWriter extends Node {
 			if (logFile != null) {
 				loader.setDebugOutputStream(FileUtils.getOutputStream(getGraph().getProjectURL(), logFile, append, -1));
 			}else if (getOutputPort(WRITE_TO_PORT) != null){
-				PipedOutputStream loaderOutput = new PipedOutputStream();
-				loader.setDebugOutputStream(loaderOutput);
 				dataParser = new DataParser(charset);
 				dataParser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
-				PipedInputStream parserInput = new PipedInputStream(loaderOutput);
+				dataParser.setQuotedStrings(true);
+				PipedInputStream parserInput = new PipedInputStream();
+				PipedOutputStream loaderOutput = new PipedOutputStream(parserInput);
 				dataParser.setDataSource(parserInput);
+				loader.setDebugOutputStream(loaderOutput);
 			}
 			if (pipeNamePrefix != null){
 				loader.setPipeNamePrefix(pipeNamePrefix);
@@ -277,7 +273,7 @@ public class InfobrightDataWriter extends Node {
 	    ResultSetMetaData md = rs.getMetaData();
 	    if (md.getColumnCount() != cloverFieldIndexes.length) {
 	    	throw new ComponentNotReadyException(this, "Number of db fields (" + md.getColumnCount()+ ") is different then " +
-					"number of clover fields " + cloverFieldIndexes.length + ")." );
+					"number of clover fields (" + cloverFieldIndexes.length + ")." );
 	    }
 		List<AbstractColumnType> columns = new ArrayList<AbstractColumnType>(md.getColumnCount());
 		for (int i = 0; i < cloverFieldIndexes.length; i++) {
@@ -322,9 +318,10 @@ public class InfobrightDataWriter extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#execute()
 	 */
-	@Override
+	
 	public Result execute() throws Exception {
 		Result result = Result.RUNNING;
+		Throwable ex = null;
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
@@ -350,6 +347,7 @@ public class InfobrightDataWriter extends Node {
 			result = portWriter.getResultCode();
 			if (result == Result.ERROR){
 				resultMessage = "Port writer error: " + portWriter.getResultMsg();
+				ex = portWriter.getResultException();
 			}
 		}
 		try {
@@ -364,23 +362,25 @@ public class InfobrightDataWriter extends Node {
 		if (infobrightWriter.getResultCode() == Result.ERROR) {
 			result = Result.ERROR;
 			resultMessage = (resultMessage == null ? "" : resultMessage + "\n") + "Infobright writer error: " + infobrightWriter.getResultMsg();
+			ex = infobrightWriter.getResultException();
 		}
 		if (result == Result.ERROR) {
-			return Result.ERROR;
+			throw new JetelException(resultMessage, ex);
 		}
-        return runIt ? result : Result.ABORTED;
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
 	 */
-	@Override
+	
 	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
 		try {
-			if (transactionMethod.equals(TransactionMethod.COMMIT)) {
-				sqlConnection.commit();
-			}else{
+			if (transactionMethod.equals(TransactionMethod.ROLLBACK) || runResult == Result.ERROR) {
 				sqlConnection.rollback();
+				logger.warn(this.getId() + " finished with error. The current transaction has been rolled back.");
+			}else{
+				sqlConnection.commit();
 			}
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
@@ -391,7 +391,7 @@ public class InfobrightDataWriter extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#getType()
 	 */
-	@Override
+	
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
@@ -399,7 +399,7 @@ public class InfobrightDataWriter extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
 	 */
-	@Override
+	
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_DATA_FORMAT_ATTRIBUTE, dataFormat.getBhDataFormat());
@@ -524,23 +524,224 @@ public class InfobrightDataWriter extends Node {
 		this.charset = charset;
 	}
 
-	/**
-	 * This method interupts process if it is alive after given time
-	 * 
-	 * @param thread to be killed
-	 * @param millisec time to wait before interrupting
-	 */
-	static void waitKill(Thread thread, long millisec){
-		if (!thread.isAlive()){
-			return;
+	private static class CommonsLogger implements EtlLogger {
+
+		Log logger;
+		
+		/**
+		 * @param logger
+		 */
+		public CommonsLogger(Log logger) {
+			this.logger = logger;
 		}
-		try{
-			Thread.sleep(millisec);
-			thread.interrupt();
-		}catch(InterruptedException ex){
-			//do nothing, just leave
+
+		/* (non-Javadoc)
+		 * @see com.infobright.logging.EtlLogger#debug(java.lang.String)
+		 */
+		
+		public void debug(String s) {
+			logger.debug(s);
 		}
+
+		/* (non-Javadoc)
+		 * @see com.infobright.logging.EtlLogger#error(java.lang.String)
+		 */
+		
+		public void error(String s) {
+			logger.error(s);
+		}
+
+		/* (non-Javadoc)
+		 * @see com.infobright.logging.EtlLogger#error(java.lang.String, java.lang.Throwable)
+		 */
+		
+		public void error(String s, Throwable cause) {
+			logger.error(s, cause);
+		}
+
+		/* (non-Javadoc)
+		 * @see com.infobright.logging.EtlLogger#fatal(java.lang.String)
+		 */
+		
+		public void fatal(String s) {
+			logger.fatal(s);
+		}
+
+		/* (non-Javadoc)
+		 * @see com.infobright.logging.EtlLogger#info(java.lang.String)
+		 */
+		
+		public void info(String s) {
+			logger.info(s);
+		}
+
+		/* (non-Javadoc)
+		 * @see com.infobright.logging.EtlLogger#trace(java.lang.String)
+		 */
+		
+		public void trace(String s) {
+			logger.trace(s);
+		}
+
+		/* (non-Javadoc)
+		 * @see com.infobright.logging.EtlLogger#warn(java.lang.String)
+		 */
+		
+		public void warn(String s) {
+			logger.warn(s);
+		}
+		
+	}
+	
+	private static class DumbLogger implements EtlLogger {
+
+		/* (non-Javadoc)
+		 * @see com.infobright.logging.EtlLogger#debug(java.lang.String)
+		 */
+		
+		public void debug(String s) {
+			// TODO Auto-generated method stub
 			
+		}
+
+		/* (non-Javadoc)
+		 * @see com.infobright.logging.EtlLogger#error(java.lang.String)
+		 */
+		
+		public void error(String s) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see com.infobright.logging.EtlLogger#error(java.lang.String, java.lang.Throwable)
+		 */
+		
+		public void error(String s, Throwable cause) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see com.infobright.logging.EtlLogger#fatal(java.lang.String)
+		 */
+		
+		public void fatal(String s) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see com.infobright.logging.EtlLogger#info(java.lang.String)
+		 */
+		
+		public void info(String s) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see com.infobright.logging.EtlLogger#trace(java.lang.String)
+		 */
+		
+		public void trace(String s) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see com.infobright.logging.EtlLogger#warn(java.lang.String)
+		 */
+		
+		public void warn(String s) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
+	
+	private static class InfoBrightWriter extends Thread {
+
+		InputPort inPort;
+		DataRecord in_record;
+		String resultMsg=null;
+		Result resultCode;
+        volatile boolean runIt;
+		Throwable resultException;
+		private int[] cloverFields;
+		private BrighthouseRecord bRecord;
+		private ValueConverter converter;
+		private OutputStream output;
+		private InfobrightNamedPipeLoader loader;
+	
+		InfoBrightWriter(Thread parentThread,InputPort inPort,DataRecord in_record,int[] cloverFields, BrighthouseRecord bRecord, 
+				ValueConverter converter, InfobrightNamedPipeLoader loader) throws IOException{
+			super(parentThread.getName()+".InfoBrightWriter");
+			this.in_record=in_record;
+			this.inPort=inPort;
+			this.cloverFields = cloverFields;
+			this.bRecord = bRecord;
+			this.converter = converter;
+			runIt=true;
+			this.loader = loader;
+		}
+		
+		public void stop_it(){
+			runIt=false;	
+		}
+		
+		public void run() {
+			resultCode = Result.RUNNING;
+			try{
+				loader.start();
+				output = loader.getOutputStream2();
+				while (runIt && (( in_record=inPort.readRecord(in_record))!= null )) {
+					for (int i = 0; i < cloverFields.length; i++) {
+						bRecord.setData(i, in_record.getField(cloverFields[i]), converter);
+					}
+					bRecord.writeTo(output);
+                    SynchronizeUtils.cloverYield();
+				}
+			}catch(IOException ex){
+				resultMsg = ex.getMessage();
+				resultCode = Result.ERROR;
+				resultException = ex;
+				resultMsg = ex.getMessage();
+			}catch (InterruptedException ex){
+				resultCode =  Result.ABORTED;
+			}catch(Exception ex){
+				resultMsg = ex.getMessage();
+				resultCode = Result.ERROR;
+				resultException = ex;
+			} finally{
+				try {
+					loader.stop();
+				} catch (Exception e) {
+					resultMsg = e.getMessage();
+					resultCode = Result.ERROR;
+					resultException = e;
+				}
+			}
+			if (resultCode==Result.RUNNING){
+	           if (runIt){
+	        	   resultCode=Result.FINISHED_OK;
+	           }else{
+	        	   resultCode = Result.ABORTED;
+	           }
+			}
+		}
+
+		public Result getResultCode() {
+			return resultCode;
+		}
+
+		public String getResultMsg() {
+			return resultMsg;
+		}
+
+		public Throwable getResultException() {
+			return resultException;
+		}
 	}
 
 	private static class PortWriter extends Thread {
@@ -551,7 +752,6 @@ public class InfobrightDataWriter extends Node {
 		String resultMsg=null;
 		Result resultCode;
 		volatile boolean runIt;
-		Thread parentThread;
 		Throwable resultException;
 		
 		PortWriter(Thread parentThread,OutputPort outPort,DataRecord out_record,Parser parser){
@@ -560,7 +760,6 @@ public class InfobrightDataWriter extends Node {
 			this.parser=parser;
 			this.outPort=outPort;
 			this.runIt=true;
-			this.parentThread = parentThread;
 		}
 		
 		public void stop_it(){
@@ -578,15 +777,12 @@ public class InfobrightDataWriter extends Node {
 				resultMsg = ex.getMessage();
 				resultCode = Result.ERROR;
 				resultException = ex;
-				parentThread.interrupt();
-				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}catch (InterruptedException ex){
 				resultCode = Result.ABORTED;
 			}catch(Exception ex){
 				resultMsg = ex.getMessage();
 				resultCode = Result.ERROR;
 				resultException = ex;
-				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}finally{
 				try {
 					parser.close();
@@ -620,213 +816,4 @@ public class InfobrightDataWriter extends Node {
 		}
 	}
 
-	private static class InfoBrightWriter extends Thread {
-
-		InputPort inPort;
-		DataRecord in_record;
-		String resultMsg=null;
-		Result resultCode;
-        volatile boolean runIt;
-        Thread parentThread;
-		Throwable resultException;
-		private int[] cloverFields;
-		private BrighthouseRecord bRecord;
-		private ValueConverter converter;
-		private OutputStream output;
-		private InfobrightNamedPipeLoader loader;
-	
-		InfoBrightWriter(Thread parentThread,InputPort inPort,DataRecord in_record,int[] cloverFields, BrighthouseRecord bRecord, 
-				ValueConverter converter, InfobrightNamedPipeLoader loader) throws IOException{
-			super(parentThread.getName()+".InfoBrightWriter");
-			this.in_record=in_record;
-			this.inPort=inPort;
-			this.cloverFields = cloverFields;
-			this.bRecord = bRecord;
-			this.converter = converter;
-			runIt=true;
-			this.parentThread = parentThread;
-			this.loader = loader;
-		}
-		
-		public void stop_it(){
-			runIt=false;	
-		}
-		
-		public void run() {
-			resultCode = Result.RUNNING;
-			try{
-				loader.start();
-				output = loader.getOutputStream2();
-				while (runIt && (( in_record=inPort.readRecord(in_record))!= null )) {
-					for (int i = 0; i < cloverFields.length; i++) {
-						bRecord.setData(i, in_record.getField(cloverFields[i]), converter);
-					}
-					bRecord.writeTo(output);
-                    SynchronizeUtils.cloverYield();
-				}
-			}catch(IOException ex){
-				resultMsg = ex.getMessage();
-				resultCode = Result.ERROR;
-				resultException = ex;
-				resultMsg = ex.getMessage();
-				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
-			}catch (InterruptedException ex){
-				resultCode =  Result.ERROR;
-			}catch(Exception ex){
-				resultMsg = ex.getMessage();
-				resultCode = Result.ERROR;
-				resultException = ex;
-				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
-			} finally{
-				try {
-					loader.stop();
-				} catch (Exception e) {
-					resultMsg = e.getMessage();
-					resultCode = Result.ERROR;
-					resultException = e;
-				}
-			}
-			if (resultCode==Result.RUNNING){
-	           if (runIt){
-	        	   resultCode=Result.FINISHED_OK;
-	           }else{
-	        	   resultCode = Result.ABORTED;
-	           }
-			}
-		}
-
-		public Result getResultCode() {
-			return resultCode;
-		}
-
-		public String getResultMsg() {
-			return resultMsg;
-		}
-
-		public Throwable getResultException() {
-			return resultException;
-		}
-	}
-
-	private static class CommonsLogger implements EtlLogger {
-
-		Log logger;
-		
-		/**
-		 * @param logger
-		 */
-		public CommonsLogger(Log logger) {
-			this.logger = logger;
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#debug(java.lang.String)
-		 */
-		public void debug(String s) {
-			logger.debug(s);
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#error(java.lang.String)
-		 */
-		public void error(String s) {
-			logger.error(s);
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#error(java.lang.String, java.lang.Throwable)
-		 */
-		public void error(String s, Throwable cause) {
-			logger.error(s, cause);
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#fatal(java.lang.String)
-		 */
-		public void fatal(String s) {
-			logger.fatal(s);
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#info(java.lang.String)
-		 */
-		public void info(String s) {
-			logger.info(s);
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#trace(java.lang.String)
-		 */
-		public void trace(String s) {
-			logger.trace(s);
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#warn(java.lang.String)
-		 */
-		public void warn(String s) {
-			logger.warn(s);
-		}
-		
-	}
-	
-	private static class DumbLogger implements EtlLogger {
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#debug(java.lang.String)
-		 */
-		public void debug(String s) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#error(java.lang.String)
-		 */
-		public void error(String s) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#error(java.lang.String, java.lang.Throwable)
-		 */
-		public void error(String s, Throwable cause) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#fatal(java.lang.String)
-		 */
-		public void fatal(String s) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#info(java.lang.String)
-		 */
-		public void info(String s) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#trace(java.lang.String)
-		 */
-		public void trace(String s) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#warn(java.lang.String)
-		 */
-		public void warn(String s) {
-			// TODO Auto-generated method stub
-			
-		}
-		
-	}
 }
