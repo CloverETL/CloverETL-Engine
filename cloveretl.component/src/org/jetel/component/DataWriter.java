@@ -237,9 +237,25 @@ public class DataWriter extends Node {
         writer.setDictionary(graph.getDictionary());
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         writer.setMkDir(mkDir);
-        writer.init(metadata);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#preExecute()
+	 */
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		
+		if (firstRun()) {
+	        try {
+	            writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+	        } catch(ComponentNotReadyException e) {
+	            e.setAttributeName(XML_FILEURL_ATTRIBUTE);
+	            throw e;
+	        }
+		}
+	}
+	
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
