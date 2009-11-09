@@ -429,10 +429,6 @@ public class TransformationGraphAnalyzer {
             for(Node node : nodesToRemove) {
             	phases[i].deleteNode(node);
             }
-            
-            if (phases[i].getNodes().isEmpty()) {
-            	graph.removePhase(phases[i]);
-            }
         }
     }
     
