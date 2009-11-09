@@ -246,8 +246,8 @@ public class InfobrightDataWriter extends Node {
 				loader.setDebugOutputStream(FileUtils.getOutputStream(getGraph().getProjectURL(), logFile, append, -1));
 			}else if (getOutputPort(WRITE_TO_PORT) != null){
 				dataParser = new DataParser(charset);
-				dataParser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
 				dataParser.setQuotedStrings(true);
+				dataParser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
 				PipedInputStream parserInput = new PipedInputStream();
 				PipedOutputStream loaderOutput = new PipedOutputStream(parserInput);
 				dataParser.setDataSource(parserInput);
