@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -460,8 +461,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				long startAbort = System.currentTimeMillis();
 				while (!abortFinished) {
 					long interval = System.currentTimeMillis() - startAbort;
-					if (interval > ABORT_TIMEOUT)
+					if (interval > ABORT_TIMEOUT) {
 						throw new IllegalStateException("Graph aborting error! Timeout "+ABORT_TIMEOUT+"ms exceeded!");
+					}
 			        try {
 			        	//the aborting thread try to wait for end of graph run
 						ABORT_MONITOR.wait(ABORT_WAIT);
@@ -487,7 +489,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					throw new RuntimeException("WatchDog was interrupted while was waiting for free workers for nodes in phase " + phase.getPhaseNum());
 				}
 			}
+			CyclicBarrier preExecuteBarrier = new CyclicBarrier(phase.getNodes().size());
 			for(Node node: phase.getNodes().values()) {
+				node.setPreExecuteBarrier(preExecuteBarrier);
 				threadManager.executeNode(node);
 				//we have to wait to real start up of the node
 				node.waitForStartup();

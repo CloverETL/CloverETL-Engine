@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
+import java.util.concurrent.CyclicBarrier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -90,6 +91,10 @@ public abstract class Node extends GraphElement implements Runnable {
     // buffered values
     protected OutputPort[] outPortsArray;
     protected int outPortsSize;
+    
+    //synchronization barrier for synchronization randezvous all nodes after pre-execute
+    //execute() method can be invoked only after successful preExecute() methods on all nodes in the phase
+    private CyclicBarrier preExecuteBarrier;
     
 	/**
 	 *  Various PORT kinds identifiers
@@ -376,7 +381,7 @@ public abstract class Node extends GraphElement implements Runnable {
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
     	
-        runResult = Result.READY;
+        runResult = Result.RUNNING;
     }
     
 	/**
@@ -391,6 +396,17 @@ public abstract class Node extends GraphElement implements Runnable {
         setNodeThread(Thread.currentThread());
 		
         try {
+    		//preExecute() invocation
+    		try {
+    			preExecute();
+    		} catch (ComponentNotReadyException e) {
+    			throw new ComponentNotReadyException(this, "Component pre-execute initialization failed.", e);
+    		}
+
+    		//waiting for other nodes in the current phase - first all pre-execution has to be done at all nodes
+    		preExecuteBarrier.await();
+    		
+    		//execute() invocation
             if((runResult = execute()) == Result.ERROR) {
                 Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
                         new ErrorMsgBody(runResult.code(), 
@@ -1172,5 +1188,9 @@ public abstract class Node extends GraphElement implements Runnable {
     public String[] getUsedUrls() {
     	return new String[0];
     }
+
+	public void setPreExecuteBarrier(CyclicBarrier preExecuteBarrier) {
+		this.preExecuteBarrier = preExecuteBarrier;
+	}
 
 }

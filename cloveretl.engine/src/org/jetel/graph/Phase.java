@@ -184,10 +184,7 @@ public class Phase extends GraphElement implements Comparable {
 	public synchronized void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 		
-		logger.info("[Clover] Pre-execute phase initialization: " + phaseNum);
-
         //pre-execute initialization of all edges
-		logger.debug(" pre-execute edges initializing: ");
         for (Edge edge : edges.values()) {
         	try {
         		edge.preExecute();
@@ -196,26 +193,24 @@ public class Phase extends GraphElement implements Comparable {
         		throw new ComponentNotReadyException(this, "Edge " + edge.getId() + " initialization faild.", e);
         	}
         }
-		logger.debug(" all edges initialized successfully... ");
 
+		//nodes are pre-executed at theirs own threads
 		// iterate through all nodes and initialize them
-		logger.debug(" pre-execute initializing nodes: ");
-		for(Node node : nodes.values()) {
-			try {
-				node.preExecute();
-				logger.debug("\t" + node.getId() + " ...OK");
-			} catch (ComponentNotReadyException ex) {
-				node.setResultCode(Result.ERROR);
-				result = Result.ERROR;
-				throw new ComponentNotReadyException(node.getId() + " ...FAILED ! \nReason: " +  ex.getMessage(), ex);
-			} catch (Exception ex) {
-				node.setResultCode(Result.ERROR);
-				result = Result.ERROR;
-				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !\nReason: " +  ex.getMessage(), ex);
-			}
-		}
-        
-		logger.info("[Clover] phase: " + phaseNum + " pre-execute initialization successfully.");
+//		logger.debug(" pre-execute initializing nodes: ");
+//		for(Node node : nodes.values()) {
+//			try {
+//				node.preExecute();
+//				logger.debug("\t" + node.getId() + " ...OK");
+//			} catch (ComponentNotReadyException ex) {
+//				node.setResultCode(Result.ERROR);
+//				result = Result.ERROR;
+//				throw new ComponentNotReadyException(node.getId() + " ...FAILED ! \nReason: " +  ex.getMessage(), ex);
+//			} catch (Exception ex) {
+//				node.setResultCode(Result.ERROR);
+//				result = Result.ERROR;
+//				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !\nReason: " +  ex.getMessage(), ex);
+//			}
+//		}
 	}
 	
 	@Override
