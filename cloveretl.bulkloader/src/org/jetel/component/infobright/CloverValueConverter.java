@@ -27,6 +27,7 @@ import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DateDataField;
 import org.jetel.data.primitive.Numeric;
+import org.jetel.metadata.DataFieldMetadata;
 
 import com.infobright.etl.model.ValueConverter;
 import com.infobright.etl.model.ValueConverterException;
@@ -48,7 +49,8 @@ public class CloverValueConverter implements ValueConverter {
 		try {
 			return ((Numeric)field).getBigDecimal();
 		} catch (ClassCastException e) {
-		    throw new ValueConverterException("value \"" + object.toString() + "\" of type " + object.getClass().getName() + " is not convertible to BigDecimal");
+		    throw new ValueConverterException("value \"" + object.toString() + "\" of type " + DataFieldMetadata.type2Str(field.getType()) + 
+		    		" is not convertible to BigDecimal");
 		} 
 	}
 
@@ -59,7 +61,8 @@ public class CloverValueConverter implements ValueConverter {
 		try {
 			return ((ByteDataField)object).getByteArray();
 		} catch (ClassCastException e) {
-		    throw new ValueConverterException("value \"" + object.toString() + "\" of type " + object.getClass().getName() + " is not convertible to byte[]");
+		    throw new ValueConverterException("value \"" + object.toString() + "\" of type " + DataFieldMetadata.type2Str(((DataField) object).getType()) + 
+		    		" is not convertible to byte[]");
 		}
 	}
 
@@ -67,7 +70,6 @@ public class CloverValueConverter implements ValueConverter {
 	 * @see com.infobright.etl.model.ValueConverter#getBinaryString(java.lang.Object)
 	 */
 	public byte[] getBinaryString(Object object) throws ValueConverterException {
-		//TODO
 		return getBinary(object);
 	}
 
@@ -78,7 +80,8 @@ public class CloverValueConverter implements ValueConverter {
 		try {
 			return ((BooleanDataField)object).getBoolean();
 		} catch (ClassCastException e) {
-		    throw new ValueConverterException("value \"" + object.toString() + "\" of type " + object.getClass().getName() + " is not convertible to Boolean");
+		    throw new ValueConverterException("value \"" + object.toString() + "\" of type " + DataFieldMetadata.type2Str(((DataField) object).getType()) + 
+		    		" is not convertible to Boolean");
 		}
 	}
 
@@ -89,7 +92,8 @@ public class CloverValueConverter implements ValueConverter {
 		try {
 			return ((DateDataField)object).getDate();
 		} catch (ClassCastException e) {
-		    throw new ValueConverterException("value \"" + object.toString() + "\" of type " + object.getClass().getName() + " is not convertible to Date");
+		    throw new ValueConverterException("value \"" + object.toString() + "\" of type " + DataFieldMetadata.type2Str(((DataField) object).getType())+ 
+		    		" is not convertible to Date");
 		}
 	}
 
@@ -102,7 +106,8 @@ public class CloverValueConverter implements ValueConverter {
 		try {
 			return ((Numeric)field).getLong();
 		} catch (ClassCastException e) {
-		    throw new ValueConverterException("value \"" + object.toString() + "\" of type " + object.getClass().getName() + " is not convertible to Long");
+		    throw new ValueConverterException("value \"" + object.toString() + "\" of type " + DataFieldMetadata.type2Str(field.getType())+ 
+		    		" is not convertible to Long");
 		} 
 	}
 
@@ -115,7 +120,8 @@ public class CloverValueConverter implements ValueConverter {
 		try {
 			return ((Numeric)field).getDouble();
 		} catch (ClassCastException e) {
-		    throw new ValueConverterException("value \"" + object.toString() + "\" of type " + object.getClass().getName() + " is not convertible to Double");
+		    throw new ValueConverterException("value \"" + object.toString() + "\" of type " + DataFieldMetadata.type2Str(field.getType()) + 
+		    		" is not convertible to Double");
 		} 
 	}
 
