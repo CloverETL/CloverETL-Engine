@@ -489,13 +489,15 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					throw new RuntimeException("WatchDog was interrupted while was waiting for free workers for nodes in phase " + phase.getPhaseNum());
 				}
 			}
-			CyclicBarrier preExecuteBarrier = new CyclicBarrier(phase.getNodes().size());
-			for(Node node: phase.getNodes().values()) {
-				node.setPreExecuteBarrier(preExecuteBarrier);
-				threadManager.executeNode(node);
-				//we have to wait to real start up of the node
-				node.waitForStartup();
-				logger.debug(node.getId()+ " ... started");
+			if (phase.getNodes().size() > 0) {
+				CyclicBarrier preExecuteBarrier = new CyclicBarrier(phase.getNodes().size());
+				for(Node node: phase.getNodes().values()) {
+					node.setPreExecuteBarrier(preExecuteBarrier);
+					threadManager.executeNode(node);
+					//we have to wait to real start up of the node
+					node.waitForStartup();
+					logger.debug(node.getId()+ " ... started");
+				}
 			}
 		}
 	}
