@@ -19,6 +19,8 @@
  */
 package org.jetel.data.parser;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -36,10 +38,13 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.StringDataField;
+import org.jetel.data.formatter.BinaryDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
+import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
 
@@ -148,6 +153,7 @@ public class BinaryDataParser implements Parser {
 			}
 		}
 		buffer.clear();
+		buffer.limit(0);
 	}
 
 	public IParserExceptionHandler getExceptionHandler() {
@@ -264,7 +270,8 @@ public class BinaryDataParser implements Parser {
 		buffer = useDirectBuffers ? ByteBuffer.allocateDirect(buffSize) : ByteBuffer.allocate(buffSize);
 //		buffer = ByteBuffer.allocate(buffSize); // for memory consumption testing
 		buffer.clear();
-		
+		buffer.limit(0);
+
 		eofReached = false;
 	}
 
@@ -282,6 +289,7 @@ public class BinaryDataParser implements Parser {
 
 	public void reset() throws ComponentNotReadyException {
 		buffer.clear();
+		buffer.limit(0);
 		close();
 		if (backendStream != null) {
 			reader = Channels.newChannel(backendStream);
