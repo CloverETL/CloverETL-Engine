@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
@@ -65,10 +66,6 @@ public class BinaryDataParser implements Parser {
 	 */
 	int recordSize;
 	/*
-	 * whether this parser has been opened
-	 */
-	boolean opened = false;
-	/*
 	 * Size of read buffer
 	 */
 	int bufferLimit = -1;
@@ -92,6 +89,8 @@ public class BinaryDataParser implements Parser {
 	boolean useDirectBuffers = true;
 	
 	private final static int LEN_SIZE_SPECIFIER = 4;
+	
+	private boolean eofReached;
 
 	public BinaryDataParser() {
 
@@ -163,13 +162,10 @@ public class BinaryDataParser implements Parser {
 
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		try {
-			if (!opened) {
-				open();
-			}
 			if (LEN_SIZE_SPECIFIER > buffer.remaining()) {
-				reloadBuffer();
+				reloadBuffer(LEN_SIZE_SPECIFIER);
 				if (buffer.remaining() == 0) {
-					return null;
+					return null; //correct end of stream
 				}
 			}
 			
@@ -177,9 +173,9 @@ public class BinaryDataParser implements Parser {
 
 			// check that internal buffer has enough data to read data record
 			if (recordSize > buffer.remaining()) {
-				reloadBuffer();
+				reloadBuffer(recordSize);
 				if (recordSize > buffer.remaining()) {
-					return null;
+					throw new JetelException("Invalid end of data stream.");
 				}
 			}
 
@@ -191,7 +187,9 @@ public class BinaryDataParser implements Parser {
 			
 			return record;
 		} catch (IOException e) {
-			throw new JetelException(e.getMessage());
+			throw new JetelException("IO exception", e);
+		} catch (BufferUnderflowException e) {
+			throw new JetelException("Invalid end of stream.", e);
 		}
 
 	}
@@ -227,9 +225,25 @@ public class BinaryDataParser implements Parser {
 		}
 	}
 	
-	void reloadBuffer() throws IOException {
+	private void reloadBuffer(int requiredSize) throws IOException {
+		if (eofReached) {
+			return;
+		}
+		int size;
 		buffer.compact();
-		reader.read(buffer);
+		do {
+			size = reader.read(buffer);
+			if (buffer.position() > requiredSize) {
+				break;
+			}
+			//data are not available, so let the other thread work now, we need to wait for a while
+			//unfortunately, the read() method is non-blocking and easily returns no bytes
+			Thread.yield();
+		} while (size != -1);
+
+		if (size == -1) {
+			eofReached = true;
+		}
 		buffer.flip();
 	}
 
@@ -249,6 +263,9 @@ public class BinaryDataParser implements Parser {
 		int buffSize = bufferLimit > 0 ? Math.min(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE, bufferLimit) : Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
 		buffer = useDirectBuffers ? ByteBuffer.allocateDirect(buffSize) : ByteBuffer.allocate(buffSize);
 //		buffer = ByteBuffer.allocate(buffSize); // for memory consumption testing
+		buffer.clear();
+		
+		eofReached = false;
 	}
 
 	public void init(DataRecordMetadata _metadata, String charsetName) throws ComponentNotReadyException {
@@ -269,16 +286,8 @@ public class BinaryDataParser implements Parser {
 		if (backendStream != null) {
 			reader = Channels.newChannel(backendStream);
 		}
-		opened = false;
-	}
-
-	public void open() throws IOException {
-		if (!opened && reader != null && reader.isOpen()) {
-			buffer.clear();
-			reader.read(buffer);
-			buffer.flip();
-			opened = true;
-		}
+		
+		eofReached = false;
 	}
 
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
