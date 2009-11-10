@@ -1,5 +1,6 @@
 package org.jetel.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -36,6 +37,7 @@ public class ReadableChannelIterator {
 	// dictionary and port protocol prefix
 	private static final String DICT = "dict:";
 	private static final String PORT = "port:";
+	private static final String PROTOCOL_FILE = "file";
 
 	// all file URLs and a context for URLs.
 	private String fileURL;
@@ -184,7 +186,11 @@ public class ReadableChannelIterator {
 	 */
 	public ReadableByteChannel next() throws JetelException {
 		// read next value from dictionary array or list
-		if (dictionaryReadingIterator.hasNext()) return dictionaryReadingIterator.next();
+		if (dictionaryReadingIterator.hasNext()) {
+			ReadableByteChannel res = dictionaryReadingIterator.next();
+			currentFileName = res.toString();
+			return res;
+		}
 		
 		// read from fields
 		if (currentPortProtocolPosition == firstPortProtocolPosition) {
@@ -211,11 +217,23 @@ public class ReadableChannelIterator {
 				dictionaryReadingIterator.init(currentFileName);
 				return next();
 			}
+			currentFileName = unificateFileName(currentFileName);
 			return createReadableByteChannel(currentFileName);
 		}
 		return null;
 	}
 
+	private String unificateFileName(String fileName) {
+		try {
+			if (FileUtils.getFileURL(contextURL, currentFileName).getProtocol().equals(PROTOCOL_FILE)) {
+				currentFileName = new File(currentFileName).getCanonicalFile().toString();
+			}
+		} catch (Exception e) {
+			//NOTHING
+		}
+		return currentFileName;
+	}
+	
 	/**
 	 * If an input port is connected but not used.
 	 */

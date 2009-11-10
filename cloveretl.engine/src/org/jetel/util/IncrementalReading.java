@@ -7,13 +7,17 @@ import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.datasection.DataSection;
+import org.jetel.util.datasection.DataSectionUtil;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -35,9 +39,13 @@ public class IncrementalReading {
 
 	// inner variables
     private static Map<String, IncrementalData> incrementalProperties;
-    private String[] incrementalInValues;
-    private ArrayList<String> incrementalOutValues;
+    private Map<String, String> incrementalValues;
 
+    // data section such as CDATA for input file
+    private static DataSection inFileDataSection = new DataSection("InFile");
+    
+    private FakedInput fakedInput; // because of backward compatibility
+    
     /**
      * Constructor.
      * @param incrementalFile
@@ -58,16 +66,13 @@ public class IncrementalReading {
     
     /**
      * Updates incremental value from the previous source.
-     * @param iSource
+     * @param sourceName
      * @param position
      */
-    public void nextSource(int iSource, Object position) {
+    public void nextSource(String sourceName, Object position) {
 		// update incremental value from previous source
-		if (incrementalOutValues != null && iSource >= 0) {
-			for (int i=incrementalOutValues.size(); i<iSource; i++) incrementalOutValues.add(null);
-			if (iSource < incrementalOutValues.size()) incrementalOutValues.remove(iSource);
-			incrementalOutValues.add(iSource, position != null ? position.toString() : null);
-		}
+    	if (incrementalValues == null) return;
+       	incrementalValues.put(sourceName, position != null ? position.toString() : null);
     }
     
 	/**
@@ -82,6 +87,7 @@ public class IncrementalReading {
     	if (incrementalProperties == null) {
     		incrementalProperties = new HashMap<String, IncrementalData>();
     	}
+    	incrementalValues = new HashMap<String, String>();
     	IncrementalData incremental;
     	Properties prop = new Properties();
     	try {
@@ -96,11 +102,28 @@ public class IncrementalReading {
 		String incrementalValue = (String) prop.get(incrementalKey);
 		if (incrementalValue == null) {
 			logger.warn("The incremental key '" + incrementalKey + "' not found!");
+			return;
 		}
-		incrementalInValues = incrementalValue != null && !incrementalValue.equals("") ? incrementalValue.split(";") : new String[0];
-		incrementalOutValues = new ArrayList<String>();
-		for (String value: incrementalInValues) {
-			incrementalOutValues.add(value);
+
+		// if no inFile section found, add empty file name - because of backward compatibility
+		if (!DataSectionUtil.containsDataSections(incrementalValue, inFileDataSection)) {
+			String[] positions = incrementalValue != null && !incrementalValue.equals("") ? incrementalValue.split(";") : new String[0];
+			if (positions.length > 0) fakedInput = new FakedInput();
+			for(String position: positions) {
+				fakedInput.addPosition(position);
+			}
+
+		// parse files and positions
+		} else {
+			String dataSection;
+			int endIndex = 0;
+			while ((dataSection = DataSectionUtil.getDataSectionBlock(incrementalValue, inFileDataSection, endIndex)) != null) {
+				int startIndex = dataSection.length() + incrementalValue.indexOf(dataSection, endIndex)+1;
+				endIndex = incrementalValue.indexOf(';', startIndex);
+				endIndex = endIndex == -1 ? incrementalValue.length() : endIndex;		// if no ';' (it is optional), get string length 
+				String position = incrementalValue.substring(startIndex, endIndex);
+				incrementalValues.put(DataSectionUtil.decodeString(dataSection, inFileDataSection), position);
+			}
 		}
 		try {
 			storeIncrementalReading();
@@ -114,9 +137,12 @@ public class IncrementalReading {
      * @param iSource
      * @return
      */
-    public Object getSourcePosition(int iSource) {
-		if (incrementalInValues != null && iSource < incrementalInValues.length) {
-			return incrementalInValues[iSource];
+    public Object getSourcePosition(String sourceName) {
+		if (fakedInput != null) {
+			return fakedInput.getNextPosition();
+		}
+		if (incrementalValues != null) {
+			return incrementalValues.get(sourceName);
 		}
 		return null;
     }
@@ -127,10 +153,8 @@ public class IncrementalReading {
      */
     public void reset() throws IOException {
     	storeIncrementalReading();
-		if (incrementalOutValues != null) {
-			incrementalInValues = new String[incrementalOutValues.size()];
-			incrementalOutValues.toArray(incrementalInValues);
-		}
+    	incrementalValues.clear();
+		if (fakedInput != null) fakedInput.i = 0;
     }
     
 	/**
@@ -138,13 +162,17 @@ public class IncrementalReading {
 	 * @throws IOException 
 	 */
 	public void storeIncrementalReading() throws IOException {
-		if (incrementalFile == null || incrementalProperties == null) return;
+		if (incrementalFile == null || incrementalProperties == null || incrementalValues.size() == 0) return;
 		
 		OutputStream os = Channels.newOutputStream(FileUtils.getWritableChannel(contextURL, incrementalFile, false));
 		Properties prop = incrementalProperties.get(incrementalFile).getProperties();
 		prop.remove(incrementalKey);
 		StringBuilder sb = new StringBuilder();
-		for (String value: incrementalOutValues) sb.append(value).append(";");
+		for (Entry<String, String> entry: incrementalValues.entrySet()) {
+			if (entry.getValue() == null) continue;
+			sb.append(DataSectionUtil.encodeString(entry.getKey(), inFileDataSection)).append(':');
+			sb.append(entry.getValue()).append(';');
+		}
 		if (sb.length() > 0) sb.deleteCharAt(sb.length()-1);
 		prop.put(incrementalKey, sb.toString());
 		prop.store(os, "Incremental reading properties");
@@ -185,4 +213,16 @@ public class IncrementalReading {
     	}
     }
 
+    @Deprecated
+    private static class FakedInput {
+    	List<String> lPosition = new ArrayList<String>();
+    	int i = 0;
+    	String getNextPosition() {
+    		if (lPosition.size() <= i) return null;
+    		return lPosition.get(i++);
+    	}
+    	void addPosition(String position) {
+    		lPosition.add(position);
+    	}
+    }
 }

@@ -244,7 +244,7 @@ public class MultiFileReader {
 	 */
 	private boolean nextSource() throws JetelException {
 		// update incremental value from previous source
-		incrementalReading.nextSource(iSource, parser.getPosition());
+		if (iSource >= 0) incrementalReading.nextSource(channelIterator.getCurrentFileName(), parser.getPosition());
 		
 		// next source
 		ReadableByteChannel stream = null;
@@ -264,7 +264,7 @@ public class MultiFileReader {
 				parser.setDataSource(stream);
 				parser.setReleaseDataSource(!autoFilling.getFilename().equals(STD_IN));
 				Object sourcePosition;
-				if ((sourcePosition = incrementalReading.getSourcePosition(iSource)) != null) {
+				if ((sourcePosition = incrementalReading.getSourcePosition(channelIterator.getCurrentFileName())) != null) {
 					parser.movePosition(sourcePosition);
 				}
 				if(skipSourceRows > 0) parser.skip(skipSourceRows);
