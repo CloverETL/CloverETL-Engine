@@ -187,9 +187,7 @@ public class ReadableChannelIterator {
 	public ReadableByteChannel next() throws JetelException {
 		// read next value from dictionary array or list
 		if (dictionaryReadingIterator.hasNext()) {
-			ReadableByteChannel res = dictionaryReadingIterator.next();
-			currentFileName = res.toString();
-			return res;
+			return dictionaryReadingIterator.next();
 		}
 		
 		// read from fields
