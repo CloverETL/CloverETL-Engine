@@ -20,6 +20,8 @@ package org.jetel.component;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.text.Collator;
+import java.text.RuleBasedCollator;
 
 import org.jetel.data.Defaults;
 import org.jetel.data.DoubleRecordBuffer;
@@ -39,6 +41,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -165,6 +168,14 @@ public class SortWithinGroups extends Node {
     private static final String XML_ATTRIBUTE_NUMBER_OF_TAPES = "numberOfTapes";
     /** the XML attribute used to store the temporary directories */
     private static final String XML_ATTRIBUTE_TEMP_DIRECTORIES = "tempDirectories";
+    /** the XML attribute used to store the locale */
+	private static final String XML_LOCALE_ATTRIBUTE = "locale4sort";
+    /** the XML attribute used to store the case sensitivity */
+	private static final String XML_CASE_SENSITIVE_ATTRIBUTE = "caseSensitive4sort";
+    /** the XML attribute used to store the locale */
+	private static final String XML_LOCALE4GROUP_ATTRIBUTE = "locale4group";
+    /** the XML attribute used to store the case sensitivity */
+	private static final String XML_CASE_SENSITIVE4GROUP_ATTRIBUTE = "caseSensitive4group";
 
     /** the ascending sort order */
     private static final char SORT_ASCENDING = 'a';
@@ -226,6 +237,18 @@ public class SortWithinGroups extends Node {
                 sortWithinGroups.setTempDirectories(componentAttributes.getStringEx(XML_ATTRIBUTE_TEMP_DIRECTORIES,RefResFlag.SPEC_CHARACTERS_OFF)
                         .split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
             }
+			if (componentAttributes.exists(XML_LOCALE_ATTRIBUTE)) {
+				sortWithinGroups.setLocale(componentAttributes.getString(XML_LOCALE_ATTRIBUTE));
+			}
+			if (componentAttributes.exists(XML_CASE_SENSITIVE_ATTRIBUTE)) {
+				sortWithinGroups.setCaseSensitive(componentAttributes.getBoolean(XML_CASE_SENSITIVE_ATTRIBUTE));
+			}
+			if (componentAttributes.exists(XML_LOCALE4GROUP_ATTRIBUTE)) {
+				sortWithinGroups.setLocale4Group(componentAttributes.getString(XML_LOCALE4GROUP_ATTRIBUTE));
+			}
+			if (componentAttributes.exists(XML_CASE_SENSITIVE4GROUP_ATTRIBUTE)) {
+				sortWithinGroups.setCaseSensitive4Group(componentAttributes.getBoolean(XML_CASE_SENSITIVE4GROUP_ATTRIBUTE));
+			}
         } catch (AttributeNotFoundException exception) {
             throw new XMLConfigurationException("Missing a required attribute!", exception);
         } catch (Exception exception) {
@@ -250,6 +273,17 @@ public class SortWithinGroups extends Node {
     /** temporary directories used by the data record sorter */
     private String[] tempDirectories = DEFAULT_TEMP_DIRECTORIES;
 
+    /** locale for string compare */
+	private String locale = null;
+    /** case sensitivity for string compare */
+	private boolean caseSensitive;
+    /** locale for string compare */
+	private String locale4Group = null;
+    /** case sensitivity for string compare */
+	private boolean caseSensitive4Group;
+	/** Collator for group sorting */
+	private RuleBasedCollator collator4Group;
+	
     /** a data record sorter used to sort the record groups */
     private ISortDataRecord dataRecordSorter = null;
     /** a data record buffer used to retrieve data records from the above sorter */
@@ -316,6 +350,38 @@ public class SortWithinGroups extends Node {
     public String[] getTempDirectories() {
         return tempDirectories;
     }
+
+	public void setLocale(String locale) {
+		this.locale = locale;
+	}
+
+	public String getLocale() {
+		return locale;
+	}
+
+	public void setCaseSensitive(boolean caseSensitive) {
+		this.caseSensitive = caseSensitive;
+	}
+
+	public boolean getCaseSensitive() {
+		return caseSensitive;
+	}
+
+	public void setLocale4Group(String locale4Group) {
+		this.locale4Group = locale4Group;
+	}
+
+	public String getLocale4Group() {
+		return locale4Group;
+	}
+
+	public void setCaseSensitive4Group(boolean caseSensitive4Group) {
+		this.caseSensitive4Group = caseSensitive4Group;
+	}
+
+	public boolean getCaseSensitive4Group() {
+		return caseSensitive4Group;
+	}
 
     @Override
     public void toXML(Element xmlElement) {
@@ -415,7 +481,7 @@ public class SortWithinGroups extends Node {
 
         try {
             dataRecordSorter = new ExternalSortDataRecord(getInputPort(INPUT_PORT_NUMBER).getMetadata(),
-                    sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories);
+                    sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories, locale, caseSensitive);
         } catch (Exception exception) {
             throw new ComponentNotReadyException("Error creating a data record sorter!", exception);
         }
@@ -425,6 +491,12 @@ public class SortWithinGroups extends Node {
         if (dataRecordBuffer == null) {
             throw new ComponentNotReadyException("Error allocating a data record buffer! Required size: "
                     + Defaults.Record.MAX_RECORD_SIZE);
+        }
+        
+        // create collator for the group key
+        if (locale4Group != null) {
+        	collator4Group = (RuleBasedCollator) RuleBasedCollator.getInstance(MiscUtils.createLocale(locale4Group));
+        	collator4Group.setStrength(caseSensitive4Group ? Collator.TERTIARY : Collator.SECONDARY);
         }
     }
 
@@ -437,6 +509,7 @@ public class SortWithinGroups extends Node {
         InputPort inputPort = getInputPort(INPUT_PORT_NUMBER);
 
         RecordKey groupKey = new RecordKey(groupKeyFields, inputPort.getMetadata());
+        groupKey.setCollator(collator4Group);
         groupKey.init();
 
         DoubleRecordBuffer inputRecords = new DoubleRecordBuffer(inputPort.getMetadata());
