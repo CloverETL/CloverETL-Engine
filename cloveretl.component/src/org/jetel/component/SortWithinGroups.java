@@ -481,8 +481,11 @@ public class SortWithinGroups extends Node {
 
         DataRecordMetadata inMetadata = getInputPort(INPUT_PORT_NUMBER).getMetadata();
         try {
+        	String localeFromMetadata = getLocaleFromMetadata(inMetadata, sortKeyFields);
             dataRecordSorter = new ExternalSortDataRecord(inMetadata,
-                    sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories, locale, caseSensitive);
+                    sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories, 
+                    locale == null ? localeFromMetadata : locale, 
+                    caseSensitive);
         } catch (Exception exception) {
             throw new ComponentNotReadyException("Error creating a data record sorter!", exception);
         }
@@ -498,6 +501,16 @@ public class SortWithinGroups extends Node {
        	collator4Group = createCollator(inMetadata, groupKeyFields, locale4Group, caseSensitive4Group);
     }
 
+    private String getLocaleFromMetadata(DataRecordMetadata metaData, String[] keys) {
+		String metadataLocale = metaData.getLocaleStr();
+		int[] fields = new int[keys.length];
+		for (int i = 0; i < fields.length; i++) {
+			fields[i] = metaData.getFieldPosition(keys[i]);
+			if (metadataLocale == null)	metadataLocale = metaData.getField(fields[i]).getLocaleStr();
+		}
+		return metadataLocale;
+    }
+    
 	/**
 	 * Constructs a RecordComparator based on particular metadata and settings
 	 * 
@@ -505,13 +518,7 @@ public class SortWithinGroups extends Node {
 	 * @return
 	 */
 	private RuleBasedCollator createCollator(DataRecordMetadata metaData, String[] keys, String localeStr, boolean caseSensitive) {
-		String metadataLocale = metaData.getLocaleStr();
-		int[] fields = new int[keys.length];
-		for (int i = 0; i < fields.length; i++) {
-			fields[i] = metaData.getFieldPosition(keys[i]);
-			if (metadataLocale == null)	metadataLocale = metaData.getField(fields[i]).getLocaleStr();
-		}
-		
+		String metadataLocale = getLocaleFromMetadata(metaData, keys);
 		if (metadataLocale != null || localeStr != null) {
 			metadataLocale = metadataLocale != null ? metadataLocale : localeStr;
 			RuleBasedCollator col = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(metadataLocale));
