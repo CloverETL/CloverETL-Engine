@@ -479,8 +479,9 @@ public class SortWithinGroups extends Node {
 
         super.init();
 
+        DataRecordMetadata inMetadata = getInputPort(INPUT_PORT_NUMBER).getMetadata();
         try {
-            dataRecordSorter = new ExternalSortDataRecord(getInputPort(INPUT_PORT_NUMBER).getMetadata(),
+            dataRecordSorter = new ExternalSortDataRecord(inMetadata,
                     sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories, locale, caseSensitive);
         } catch (Exception exception) {
             throw new ComponentNotReadyException("Error creating a data record sorter!", exception);
@@ -494,12 +495,35 @@ public class SortWithinGroups extends Node {
         }
         
         // create collator for the group key
-        if (locale4Group != null) {
-        	collator4Group = (RuleBasedCollator) RuleBasedCollator.getInstance(MiscUtils.createLocale(locale4Group));
-        	collator4Group.setStrength(caseSensitive4Group ? Collator.TERTIARY : Collator.SECONDARY);
-        }
+       	collator4Group = createCollator(inMetadata, groupKeyFields, locale4Group, caseSensitive4Group);
     }
 
+	/**
+	 * Constructs a RecordComparator based on particular metadata and settings
+	 * 
+	 * @param metaData
+	 * @return
+	 */
+	private RuleBasedCollator createCollator(DataRecordMetadata metaData, String[] keys, String localeStr, boolean caseSensitive) {
+		String metadataLocale = metaData.getLocaleStr();
+		int[] fields = new int[keys.length];
+		for (int i = 0; i < fields.length; i++) {
+			fields[i] = metaData.getFieldPosition(keys[i]);
+			if (metadataLocale == null)	metadataLocale = metaData.getField(fields[i]).getLocaleStr();
+		}
+		
+		if (metadataLocale != null || localeStr != null) {
+			metadataLocale = metadataLocale != null ? metadataLocale : localeStr;
+			RuleBasedCollator col = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(metadataLocale));
+			col.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
+			col.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+			return col;
+		} else {
+			return null;
+		}
+	}
+
+    
     @Override
     public Result execute() throws Exception {
         if (!isInitialized()) {
