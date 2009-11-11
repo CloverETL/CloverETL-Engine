@@ -81,7 +81,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	
 	public ExternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, int internalBufferCapacity,
 			int numberOfTapes, String[] tmpDirs, String localeStr) {
-		this(metadata, keyItems, sortOrderings, internalBufferCapacity, numberOfTapes, tmpDirs, null, false);
+		this(metadata, keyItems, sortOrderings, internalBufferCapacity, numberOfTapes, tmpDirs, localeStr, false);
 	}
 
 	public ExternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, int internalBufferCapacity,

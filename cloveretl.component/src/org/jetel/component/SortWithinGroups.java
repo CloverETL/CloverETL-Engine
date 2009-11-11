@@ -168,14 +168,6 @@ public class SortWithinGroups extends Node {
     private static final String XML_ATTRIBUTE_NUMBER_OF_TAPES = "numberOfTapes";
     /** the XML attribute used to store the temporary directories */
     private static final String XML_ATTRIBUTE_TEMP_DIRECTORIES = "tempDirectories";
-    /** the XML attribute used to store the locale */
-	private static final String XML_LOCALE_ATTRIBUTE = "locale4sort";
-    /** the XML attribute used to store the case sensitivity */
-	private static final String XML_CASE_SENSITIVE_ATTRIBUTE = "caseSensitive4sort";
-    /** the XML attribute used to store the locale */
-	private static final String XML_LOCALE4GROUP_ATTRIBUTE = "locale4group";
-    /** the XML attribute used to store the case sensitivity */
-	private static final String XML_CASE_SENSITIVE4GROUP_ATTRIBUTE = "caseSensitive4group";
 
     /** the ascending sort order */
     private static final char SORT_ASCENDING = 'a';
@@ -237,18 +229,6 @@ public class SortWithinGroups extends Node {
                 sortWithinGroups.setTempDirectories(componentAttributes.getStringEx(XML_ATTRIBUTE_TEMP_DIRECTORIES,RefResFlag.SPEC_CHARACTERS_OFF)
                         .split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
             }
-			if (componentAttributes.exists(XML_LOCALE_ATTRIBUTE)) {
-				sortWithinGroups.setLocale(componentAttributes.getString(XML_LOCALE_ATTRIBUTE));
-			}
-			if (componentAttributes.exists(XML_CASE_SENSITIVE_ATTRIBUTE)) {
-				sortWithinGroups.setCaseSensitive(componentAttributes.getBoolean(XML_CASE_SENSITIVE_ATTRIBUTE));
-			}
-			if (componentAttributes.exists(XML_LOCALE4GROUP_ATTRIBUTE)) {
-				sortWithinGroups.setLocale4Group(componentAttributes.getString(XML_LOCALE4GROUP_ATTRIBUTE));
-			}
-			if (componentAttributes.exists(XML_CASE_SENSITIVE4GROUP_ATTRIBUTE)) {
-				sortWithinGroups.setCaseSensitive4Group(componentAttributes.getBoolean(XML_CASE_SENSITIVE4GROUP_ATTRIBUTE));
-			}
         } catch (AttributeNotFoundException exception) {
             throw new XMLConfigurationException("Missing a required attribute!", exception);
         } catch (Exception exception) {
@@ -273,14 +253,6 @@ public class SortWithinGroups extends Node {
     /** temporary directories used by the data record sorter */
     private String[] tempDirectories = DEFAULT_TEMP_DIRECTORIES;
 
-    /** locale for string compare */
-	private String locale = null;
-    /** case sensitivity for string compare */
-	private boolean caseSensitive;
-    /** locale for string compare */
-	private String locale4Group = null;
-    /** case sensitivity for string compare */
-	private boolean caseSensitive4Group;
 	/** Collator for group sorting */
 	private RuleBasedCollator collator4Group;
 	
@@ -350,38 +322,6 @@ public class SortWithinGroups extends Node {
     public String[] getTempDirectories() {
         return tempDirectories;
     }
-
-	public void setLocale(String locale) {
-		this.locale = locale;
-	}
-
-	public String getLocale() {
-		return locale;
-	}
-
-	public void setCaseSensitive(boolean caseSensitive) {
-		this.caseSensitive = caseSensitive;
-	}
-
-	public boolean getCaseSensitive() {
-		return caseSensitive;
-	}
-
-	public void setLocale4Group(String locale4Group) {
-		this.locale4Group = locale4Group;
-	}
-
-	public String getLocale4Group() {
-		return locale4Group;
-	}
-
-	public void setCaseSensitive4Group(boolean caseSensitive4Group) {
-		this.caseSensitive4Group = caseSensitive4Group;
-	}
-
-	public boolean getCaseSensitive4Group() {
-		return caseSensitive4Group;
-	}
 
     @Override
     public void toXML(Element xmlElement) {
@@ -481,11 +421,8 @@ public class SortWithinGroups extends Node {
 
         DataRecordMetadata inMetadata = getInputPort(INPUT_PORT_NUMBER).getMetadata();
         try {
-        	String localeFromMetadata = getLocaleFromMetadata(inMetadata, sortKeyFields);
             dataRecordSorter = new ExternalSortDataRecord(inMetadata,
-                    sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories, 
-                    locale == null ? localeFromMetadata : locale, 
-                    caseSensitive);
+                    sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories, getLocaleFromMetadata(inMetadata, sortKeyFields));
         } catch (Exception exception) {
             throw new ComponentNotReadyException("Error creating a data record sorter!", exception);
         }
@@ -498,7 +435,7 @@ public class SortWithinGroups extends Node {
         }
         
         // create collator for the group key
-       	collator4Group = createCollator(inMetadata, groupKeyFields, locale4Group, caseSensitive4Group);
+       	collator4Group = createCollator(inMetadata, groupKeyFields);
     }
 
     private String getLocaleFromMetadata(DataRecordMetadata metaData, String[] keys) {
@@ -517,12 +454,11 @@ public class SortWithinGroups extends Node {
 	 * @param metaData
 	 * @return
 	 */
-	private RuleBasedCollator createCollator(DataRecordMetadata metaData, String[] keys, String localeStr, boolean caseSensitive) {
+	private RuleBasedCollator createCollator(DataRecordMetadata metaData, String[] keys) {
 		String metadataLocale = getLocaleFromMetadata(metaData, keys);
-		if (metadataLocale != null || localeStr != null) {
-			metadataLocale = metadataLocale != null ? metadataLocale : localeStr;
+		if (metadataLocale != null) {
 			RuleBasedCollator col = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(metadataLocale));
-			col.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
+			col.setStrength(false/*default case sensitivity*/ ? Collator.TERTIARY : Collator.SECONDARY);
 			col.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
 			return col;
 		} else {
