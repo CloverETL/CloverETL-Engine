@@ -20,6 +20,8 @@ public abstract class CloverWorker implements Runnable {
 	
 	private String name;
 	
+	private Thread thread;
+	
 	/**
 	 * True if the worker is already running. This variable is guarded by 'this' monitor.
 	 */
@@ -63,5 +65,13 @@ public abstract class CloverWorker implements Runnable {
 	}
 	
 	public abstract void work();
+	
+	public Thread startWorker() {
+		thread = new Thread(this);
+		thread.setDaemon(true);
+		thread.start();
+		node.registerChildThread(thread); //register worker as a child thread of this component
+		return thread;
+	}
 	
 }
