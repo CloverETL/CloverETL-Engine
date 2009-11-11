@@ -314,15 +314,36 @@ public class RecordKey {
 		}
 		if (equalNULLs){
 		    for (int i = 0; i < keyFields.length; i++) {
-		        if (!record1.getField(keyFields[i]).equals(record2.getField(keyFields[i]))) {
-		            if (!(record1.getField(keyFields[i]).isNull&&record2.getField(keyFields[i]).isNull)){
+		    	DataField field1 = record1.getField(keyFields[i]);
+		    	DataField field2 = record2.getField(keyFields[i]);
+				if (collator != null && field1 instanceof StringDataField && field2 instanceof StringDataField) {
+					Object o1 = field1.getValue();
+					Object o2 = field2.getValue();
+			        if ((o1 == null || o2 == null) && !collator.equals(o1.toString(), o2.toString())) {
+						if (!(field1.isNull() && field2.isNull())) {
+							return false;
+						}
+			        }
+				}
+
+		        if (!field1.equals(field2)) {
+		            if (!(field1.isNull && field2.isNull)){
 		                return false;
 		            }
 		        }
 		    }
 		}else{
 		    for (int i = 0; i < keyFields.length; i++) {
-		        if (!record1.getField(keyFields[i]).equals(record2.getField(keyFields[i]))) {
+		    	DataField field1 = record1.getField(keyFields[i]);
+		    	DataField field2 = record2.getField(keyFields[i]);
+				if (collator != null && field1 instanceof StringDataField && field2 instanceof StringDataField) {
+					Object o1 = field1.getValue();
+					Object o2 = field2.getValue();
+					if (o1 == null || o2 == null) return false;
+			        if (!collator.equals(o1.toString(), o2.toString())) {
+			            return false;
+			        }
+				} else if (!field1.equals(field2)) {
 		            return false;
 		        }
 		    }
