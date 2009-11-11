@@ -1131,7 +1131,7 @@ public abstract class Node extends GraphElement implements Runnable {
      * is sum of all threads.
      * @param childThread
      */
-    protected void registerChildThread(Thread childThread) {
+    public void registerChildThread(Thread childThread) {
     	childThreads.add(childThread);
     }
 
