@@ -94,10 +94,10 @@ public interface IAuthorityProxy {
 	 */
 	public OutputStream[] getPartitionedSandboxResourceOutput(long runId, String storageCode, String path) throws IOException;
 
-	public boolean isMaster(long runId);
+	public boolean isPrimaryWorker(long runId);
 	
-	public OutputStream[] getSlaveOutputStreams(long runId) throws IOException;
+	public OutputStream[] getSlaveOutputStreams(long runId, String componentId) throws IOException;
 
-	public InputStream getSlaveInputStream(long runId) throws IOException;
+	public InputStream getSlaveInputStream(long runId, String componentId) throws IOException;
 	
 }
