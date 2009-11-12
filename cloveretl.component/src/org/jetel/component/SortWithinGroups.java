@@ -22,12 +22,14 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
+import java.util.Arrays;
 
 import org.jetel.data.Defaults;
 import org.jetel.data.DoubleRecordBuffer;
 import org.jetel.data.ExternalSortDataRecord;
 import org.jetel.data.ISortDataRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.enums.CollatorSensitivityType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -254,7 +256,7 @@ public class SortWithinGroups extends Node {
     private String[] tempDirectories = DEFAULT_TEMP_DIRECTORIES;
 
 	/** Collator for group sorting */
-	private RuleBasedCollator collator4Group;
+	private RuleBasedCollator[] collators4Group;
 	
     /** a data record sorter used to sort the record groups */
     private ISortDataRecord dataRecordSorter = null;
@@ -421,8 +423,10 @@ public class SortWithinGroups extends Node {
 
         DataRecordMetadata inMetadata = getInputPort(INPUT_PORT_NUMBER).getMetadata();
         try {
+//            dataRecordSorter = new ExternalSortDataRecord(inMetadata,
+//                    sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories, getLocaleFromMetadata(inMetadata, sortKeyFields));
             dataRecordSorter = new ExternalSortDataRecord(inMetadata,
-                    sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories, getLocaleFromMetadata(inMetadata, sortKeyFields));
+                  sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories, null);
         } catch (Exception exception) {
             throw new ComponentNotReadyException("Error creating a data record sorter!", exception);
         }
@@ -435,17 +439,32 @@ public class SortWithinGroups extends Node {
         }
         
         // create collator for the group key
-       	collator4Group = createCollator(inMetadata, groupKeyFields);
+       	collators4Group = createCollators(inMetadata, groupKeyFields);
     }
 
-    private String getLocaleFromMetadata(DataRecordMetadata metaData, String[] keys) {
-		String metadataLocale = metaData.getLocaleStr();
-		int[] fields = new int[keys.length];
-		for (int i = 0; i < fields.length; i++) {
-			fields[i] = metaData.getFieldPosition(keys[i]);
-			if (metadataLocale == null)	metadataLocale = metaData.getField(fields[i]).getLocaleStr();
+    private Integer[] getSensitivityFromMetadata(DataRecordMetadata metaData, String[] keys) {
+		Integer[] sensitivities = new Integer[keys.length];
+		boolean found = false;
+		for (int i = 0; i < keys.length; i++) {
+			String sCollatorSensitivity = metaData.getField(metaData.getFieldPosition(keys[i])).getCollatorSensitivity();
+			CollatorSensitivityType type;
+			if (sCollatorSensitivity != null && (type = CollatorSensitivityType.fromString(sCollatorSensitivity, null)) != null) {
+				sensitivities[i] = type.getCollatorSensitivityValue();
+				found = true;
+			}
 		}
-		return metadataLocale;
+		return found ? sensitivities : null;
+    }
+
+    private String[] getLocaleFromMetadata(DataRecordMetadata metaData, String[] keys) {
+    	String[] metadataLocale = new String[keys.length];
+    	Arrays.fill(metadataLocale, metaData.getLocaleStr());
+    	boolean found = false;
+		for (int i = 0; i < keys.length; i++) {
+			metadataLocale[i] = metaData.getField(metaData.getFieldPosition(keys[i])).getLocaleStr();
+			if (!found && metadataLocale[i] != null) found = true;
+		}
+		return found ? metadataLocale : null;
     }
     
 	/**
@@ -454,19 +473,22 @@ public class SortWithinGroups extends Node {
 	 * @param metaData
 	 * @return
 	 */
-	private RuleBasedCollator createCollator(DataRecordMetadata metaData, String[] keys) {
-		String metadataLocale = getLocaleFromMetadata(metaData, keys);
-		if (metadataLocale != null) {
-			RuleBasedCollator col = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(metadataLocale));
-			col.setStrength(false/*default case sensitivity*/ ? Collator.TERTIARY : Collator.SECONDARY);
-			col.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
-			return col;
-		} else {
-			return null;
+	private RuleBasedCollator[] createCollators(DataRecordMetadata metaData, String[] keys) {
+		String[] metadataLocale = getLocaleFromMetadata(metaData, keys);
+		if (metadataLocale == null) return null;
+		Integer[] iSensitivity = getSensitivityFromMetadata(metaData, keys);
+		
+		RuleBasedCollator[] col = new RuleBasedCollator[keys.length];
+		for (int i=0; i<keys.length; i++) {
+			if (metadataLocale[i] == null) continue;
+			col[i] = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(metadataLocale[i]));
+			
+			if (iSensitivity != null && iSensitivity[i] != null) col[i].setStrength(iSensitivity[i].intValue());
+			col[i].setDecomposition(Collator.CANONICAL_DECOMPOSITION);
 		}
+		return col;
 	}
 
-    
     @Override
     public Result execute() throws Exception {
         if (!isInitialized()) {
@@ -476,7 +498,7 @@ public class SortWithinGroups extends Node {
         InputPort inputPort = getInputPort(INPUT_PORT_NUMBER);
 
         RecordKey groupKey = new RecordKey(groupKeyFields, inputPort.getMetadata());
-        groupKey.setCollator(collator4Group);
+        groupKey.setCollators(collators4Group);
         groupKey.init();
 
         DoubleRecordBuffer inputRecords = new DoubleRecordBuffer(inputPort.getMetadata());
