@@ -251,22 +251,22 @@ public class PrimitiveAuthorityProxy implements IAuthorityProxy {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSlaveInputStream(long)
 	 */
-	public InputStream getSlaveInputStream(long runId) throws IOException {
+	public InputStream getSlaveInputStream(long runId, String componentId) throws IOException {
 		throw new UnsupportedOperationException("Slave input stream are available only in CloverETL Server environment!");
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSlaveOutputStreams(long)
 	 */
-	public OutputStream[] getSlaveOutputStreams(long runId) throws IOException {
+	public OutputStream[] getSlaveOutputStreams(long runId, String componentId) throws IOException {
 		throw new UnsupportedOperationException("Slave output streams are available only in CloverETL Server environment!");
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#isMaster(long)
 	 */
-	public boolean isMaster(long runId) {
-		throw new UnsupportedOperationException("Master/Slave runtime mode is available only in CloverETL Server environment!");
+	public boolean isPrimaryWorker(long runId) {
+		throw new UnsupportedOperationException("Primary worker does has sense only in CloverETL Server environment!");
 	}
 	
 }
