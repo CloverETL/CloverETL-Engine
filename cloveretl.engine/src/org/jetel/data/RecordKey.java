@@ -62,7 +62,8 @@ public class RecordKey {
 	private final static char KEY_ITEMS_DELIMITER = ':';
 	private final static int DEFAULT_STRING_KEY_LENGTH = 32;
 	private boolean isInitialized = false;
-    protected RuleBasedCollator collator;
+    protected RuleBasedCollator[] collators;
+    boolean useCollator = false;
 
 	private StringBuffer keyStr;
 
@@ -133,10 +134,10 @@ public class RecordKey {
 	    if (keyFields == null) {
             Integer position;
             keyFields = new int[keyFieldNames.length];
-            Map fields = metadata.getFieldNamesMap();
+            Map<String, Integer> fields = metadata.getFieldNamesMap();
 
             for (int i = 0; i < keyFieldNames.length; i++) {
-                if ((position = (Integer) fields.get(keyFieldNames[i])) != null) {
+                if ((position = fields.get(keyFieldNames[i])) != null) {
                     keyFields[i] = position.intValue();
                 } else {
                     throw new RuntimeException(
@@ -151,6 +152,11 @@ public class RecordKey {
             }
         }
 	    
+    	if (useCollator) {
+    		 if (collators.length != keyFields.length) 
+    			 throw new ArrayIndexOutOfBoundsException("Collator's array has a different length to key fields.");
+    	}
+
 	    isInitialized = true;
 	}
 
@@ -221,8 +227,8 @@ public class RecordKey {
 		if (equalNULLs){
 		    for (int i = 0; i < keyFields.length; i++) {
 		    	DataField field = record1.getField(keyFields[i]);
-				if (collator != null && (field instanceof StringDataField)) {
-			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collator);
+				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
+			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collators[i]);
 				} else {
 					compResult = field.compareTo(record2.getField(keyFields[i]));
 				}
@@ -235,8 +241,8 @@ public class RecordKey {
 		}else {
 		    for (int i = 0; i < keyFields.length; i++) {
 		    	DataField field = record1.getField(keyFields[i]);
-				if (collator != null && (field instanceof StringDataField)) {
-			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collator);
+				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
+			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collators[i]);
 				} else {
 					compResult = field.compareTo(record2.getField(keyFields[i]));
 				}
@@ -271,8 +277,8 @@ public class RecordKey {
 		if (equalNULLs){
 		    for (int i = 0; i < keyFields.length; i++) {
 		    	DataField field = record1.getField(keyFields[i]);
-				if (collator != null && (field instanceof StringDataField)) {
-			        compResult = ((StringDataField)field).compareTo(record2.getField(record2KeyFields[i]), collator);
+				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
+			        compResult = ((StringDataField)field).compareTo(record2.getField(record2KeyFields[i]), collators[i]);
 				} else {
 					compResult = field.compareTo(record2.getField(record2KeyFields[i]));
 				}
@@ -285,8 +291,8 @@ public class RecordKey {
 		}else{
 		    for (int i = 0; i < keyFields.length; i++) {
 		    	DataField field = record1.getField(keyFields[i]);
-				if (collator != null && (field instanceof StringDataField)) {
-			        compResult = ((StringDataField)field).compareTo(record2.getField(record2KeyFields[i]), collator);
+				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
+			        compResult = ((StringDataField)field).compareTo(record2.getField(record2KeyFields[i]), collators[i]);
 				} else {
 					compResult = field.compareTo(record2.getField(record2KeyFields[i]));
 				}
@@ -316,10 +322,10 @@ public class RecordKey {
 		    for (int i = 0; i < keyFields.length; i++) {
 		    	DataField field1 = record1.getField(keyFields[i]);
 		    	DataField field2 = record2.getField(keyFields[i]);
-				if (collator != null && field1 instanceof StringDataField && field2 instanceof StringDataField) {
+				if (useCollator && collators[i] != null && field1 instanceof StringDataField && field2 instanceof StringDataField) {
 					Object o1 = field1.getValue();
 					Object o2 = field2.getValue();
-			        if ((o1 == null || o2 == null) && !collator.equals(o1.toString(), o2.toString())) {
+			        if ((o1 == null || o2 == null) && !collators[i].equals(o1.toString(), o2.toString())) {
 						if (!(field1.isNull() && field2.isNull())) {
 							return false;
 						}
@@ -336,11 +342,11 @@ public class RecordKey {
 		    for (int i = 0; i < keyFields.length; i++) {
 		    	DataField field1 = record1.getField(keyFields[i]);
 		    	DataField field2 = record2.getField(keyFields[i]);
-				if (collator != null && field1 instanceof StringDataField && field2 instanceof StringDataField) {
+				if (useCollator && collators[i] != null && field1 instanceof StringDataField && field2 instanceof StringDataField) {
 					Object o1 = field1.getValue();
 					Object o2 = field2.getValue();
 					if (o1 == null || o2 == null) return false;
-			        if (!collator.equals(o1.toString(), o2.toString())) {
+			        if (!collators[i].equals(o1.toString(), o2.toString())) {
 			            return false;
 			        }
 				} else if (!field1.equals(field2)) {
@@ -572,9 +578,23 @@ public class RecordKey {
 	}
 	
     public void setCollator(RuleBasedCollator collator) {
-        this.collator = collator;
+    	int len = keyFields != null ? keyFields.length : keyFieldNames.length;
+    	collators = new RuleBasedCollator[len];
+    	Arrays.fill(collators, collator);
+    	useCollator = collators != null;
     }
-
+    
+    public void setCollators(RuleBasedCollator[] collator) {
+    	this.collators = collator;
+    	useCollator = false;
+    	if (collators == null) return;
+    	for (RuleBasedCollator col: collators) {
+    		if (col != null) {
+    			useCollator = true;
+    			return;
+    		}
+    	}
+    }
 }
 // end RecordKey
 
