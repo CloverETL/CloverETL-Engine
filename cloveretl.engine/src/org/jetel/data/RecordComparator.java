@@ -24,8 +24,12 @@ import java.text.Collator;
 import java.text.RuleBasedCollator;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Locale;
 
+import org.jetel.enums.CollatorSensitivityType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 
 /**
  *  This class compares two records of the same structure (created based on
@@ -62,6 +66,7 @@ public class RecordComparator implements Comparator {
      * @param keyFields indexes of fields to be considered for sorting
      * @param collator  Collator which should be use for comparing String fields
      */
+	@Deprecated
     public RecordComparator(int keyFields[], RuleBasedCollator collator){
         this.keyFields = keyFields;
         sortOrderings = new boolean[keyFields.length];
@@ -73,27 +78,6 @@ public class RecordComparator implements Comparator {
         }
     }
     
-    /**
-     * Constructor for the RecordComparator object
-     * 
-     * @param keyFields indexes of fields to be considered for sorting
-     * @param collators  Collator array which should be use for comparing String fields
-     */
-    public RecordComparator(int keyFields[], RuleBasedCollator[] collators){
-        this.keyFields = keyFields;
-        sortOrderings = new boolean[keyFields.length];
-        Arrays.fill(sortOrderings, true);        
-        this.collators = collators;
-        if (collators == null) return;
-        
-    	for (Collator col: collators) {
-    		if (col != null) {
-    	        useCollator = true;
-    	        return;
-    		}
-    	}
-    }
-
 	/**
 	 *  Gets the keyFields attribute of the RecordKey object
 	 *
@@ -365,7 +349,65 @@ public class RecordComparator implements Comparator {
         }
     }
     
+    /**
+     * 
+     * @param metadata
+     */
+    public void updateCollators(DataRecordMetadata metadata) {
+		Locale[] metadataLocale = getLocaleFromMetadata(metadata, keyFields);
+		if (metadataLocale == null) return;
+		Integer[] iSensitivity = getSensitivityFromMetadata(metadata, keyFields);
+		
+		if (collators == null) collators = new RuleBasedCollator[keyFields.length];
+		for (int i=0; i<keyFields.length; i++) {
+			if (metadataLocale[i] == null) continue;
+			collators[i] = (RuleBasedCollator)Collator.getInstance(metadataLocale[i]);
+			
+			if (iSensitivity != null && iSensitivity[i] != null) collators[i].setStrength(iSensitivity[i].intValue());
+			collators[i].setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+			useCollator = true;
+		}
+    }
     
+    /**
+     * Creates sensitivity array for collators.
+     * @param metaData
+     * @param keys
+     * @return
+     */
+    private Integer[] getSensitivityFromMetadata(DataRecordMetadata metaData, int[] keys) {
+		Integer[] sensitivities = new Integer[keys.length];
+		boolean found = false;
+		for (int i = 0; i < keys.length; i++) {
+			String sCollatorSensitivity = metaData.getField(keys[i]).getCollatorSensitivity();
+			CollatorSensitivityType type;
+			if (sCollatorSensitivity != null && (type = CollatorSensitivityType.fromString(sCollatorSensitivity, null)) != null) {
+				sensitivities[i] = type.getCollatorSensitivityValue();
+				found = true;
+			}
+		}
+		return found ? sensitivities : null;
+    }
+
+    /**
+     * Creates locale array for collators.
+     * @param metaData
+     * @param keys
+     * @return
+     */
+    private Locale[] getLocaleFromMetadata(DataRecordMetadata metaData, int[] keys) {
+    	Locale[] metadataLocale = new Locale[keys.length];
+    	boolean found;
+    	if (found = metaData.getLocaleStr() != null) {
+        	Arrays.fill(metadataLocale, MiscUtils.createLocale(metaData.getLocaleStr()));
+    	}
+		for (int i = 0; i < keys.length; i++) {
+			metadataLocale[i] = MiscUtils.createLocale(metaData.getField(keys[i]).getLocaleStr());
+			if (!found && metadataLocale[i] != null) found = true;
+		}
+		return found ? metadataLocale : null;
+    }
+
 }
 // end RecordKey
 

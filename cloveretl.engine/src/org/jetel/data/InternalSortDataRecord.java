@@ -65,7 +65,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	private DataRecordCol[] recordColArray;
 	private int numCollections;
     private boolean useCollator=false;
-    private RuleBasedCollator[] collators;
+    private RuleBasedCollator collator;
     
 	private final static int DEFAULT_NUM_COLLECTIONS = 8;
 
@@ -100,8 +100,8 @@ public class InternalSortDataRecord implements ISortDataRecord {
 		currentRecordCol=new DataRecordCol(oneColCapacity, metadata);
 		currentColSize=oneColCapacity;
 		recordColList.add(currentRecordCol);
+		updateUseCollatorIndicator(metadata, keyItems);
 	}
-
 
     public InternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, boolean growingBuffer) {
     	this(metadata,keyItems, sortOrderings, growingBuffer, Defaults.InternalSortDataRecord.DEFAULT_INTERNAL_SORT_BUFFER_CAPACITY);
@@ -218,7 +218,8 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	public void sort() {
         RecordOrderedComparator comparator;
         if (useCollator){
-            comparator=new RecordOrderedComparator(key.getKeyFields(), this.sortOrderings, collators);
+            comparator=new RecordOrderedComparator(key.getKeyFields(), this.sortOrderings, collator);
+            comparator.updateCollators(metadata);
         }else{
             comparator=new RecordOrderedComparator(key.getKeyFields(), this.sortOrderings);
         }
@@ -419,41 +420,9 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	@Deprecated
     public void setCollatorLocale(Locale collatorLocale) {
 		useCollator = true;
-		if (collators == null) {
-			collators = new RuleBasedCollator[key.getKeyFields().length];
-	        Arrays.fill(collators, Collator.getInstance(collatorLocale));
-	        return;
-		}
-		
-		Integer iStrength = null;
-		if (collators.length > 0) {
-			iStrength = collators[0].getStrength();
-		}
-		collators = new RuleBasedCollator[key.getKeyFields().length];
-        Arrays.fill(collators, Collator.getInstance(collatorLocale));
-		
-		if (collators.length > 0 && iStrength != null) {
-			for (Collator col: collators) {
-				col.setStrength(iStrength.intValue());
-			}
-		}
+		collator = (RuleBasedCollator) Collator.getInstance(collatorLocale);
     }
 
-    /**
-     * 
-     * @param collators
-     */
-    public void setCollators(RuleBasedCollator[] collators) {
-    	this.collators = collators;
-    	if (collators != null) {
-    		for (Collator col: collators) {
-    			if (col != null) {
-    				useCollator = true;
-    			}
-    		}
-    	}
-    }
-    
     /**
      * Set which Locale (national peculiarities) will be
      * used when comparing Strings.<br>
@@ -472,12 +441,27 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	 */
 	@Deprecated
 	public void setCaseSensitive(boolean caseSensitive) {
-		if (collators == null) {
-			collators = new RuleBasedCollator[key.getKeyFields().length];
-	        Arrays.fill(collators, Collator.getInstance(Locale.getDefault()));
+		if (collator == null) {
+			collator =  (RuleBasedCollator) Collator.getInstance(Locale.getDefault());
 		}
-		for (Collator col: collators) {
-			col.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
-		}
+		collator.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
 	}
+	
+    /**
+     * @param metaData
+     * @param keys
+     * @return
+     */
+    private void updateUseCollatorIndicator(DataRecordMetadata metaData, String[] keys) {
+    	if (metaData.getLocaleStr() != null) {
+    		useCollator = true;
+    		return;
+    	}
+		for (int i = 0; i < keys.length; i++) {
+			if (metaData.getField(keys[i]).getLocaleStr() != null) {
+				useCollator = true;
+				return;
+			}
+		}
+    }
 }
