@@ -38,7 +38,6 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -243,15 +242,9 @@ public class ExtSort extends Node {
         if(isInitialized()) return;
 		super.init();
 		try {
-			// get input metadata
-			DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
-			
-			// get locale
-			String locale = getLocaleFromMetadata(metadata, sortKeysNames);
-			if (locale == null) locale = localeStr;
-			
 			// create sorter
-			sorter = new ExternalSortDataRecord(metadata, sortKeysNames, sortOrderings, internalBufferCapacity, DEFAULT_NUMBER_OF_TAPES, tmpDirs, locale, caseSensitive);
+			sorter = new ExternalSortDataRecord(getInputPort(READ_FROM_PORT)
+					.getMetadata(), sortKeysNames, sortOrderings, internalBufferCapacity, DEFAULT_NUMBER_OF_TAPES, tmpDirs, localeStr, caseSensitive);
 		} catch (Exception e) {
             throw new ComponentNotReadyException(e);
 		}
@@ -265,16 +258,6 @@ public class ExtSort extends Node {
 		}
     }
     
-    private String getLocaleFromMetadata(DataRecordMetadata metadata, String[] keys) {
-		String metadataLocale = metadata.getLocaleStr();
-		int[] fields = new int[keys.length];
-		for (int i = 0; i < fields.length; i++) {
-			fields[i] = metadata.getFieldPosition(keys[i]);
-			if (metadataLocale == null)	metadataLocale = metadata.getField(fields[i]).getLocaleStr();
-		}
-		return metadataLocale;
-    }
-
     @Override
     public void free() {
         if(!isInitialized()) return;

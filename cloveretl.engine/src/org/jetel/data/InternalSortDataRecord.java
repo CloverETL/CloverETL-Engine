@@ -64,9 +64,8 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	private List recordColList;
 	private DataRecordCol[] recordColArray;
 	private int numCollections;
-    private Locale collatorLocale;
-    private boolean caseSensitive = false;
     private boolean useCollator=false;
+    private RuleBasedCollator[] collators;
     
 	private final static int DEFAULT_NUM_COLLECTIONS = 8;
 
@@ -219,15 +218,9 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	public void sort() {
         RecordOrderedComparator comparator;
         if (useCollator){
-            if (collatorLocale==null){
-                collatorLocale=Locale.getDefault();
-            }
-            comparator=new RecordOrderedComparator(key.getKeyFields(), this.sortOrderings,  (RuleBasedCollator)Collator.getInstance(collatorLocale));
+            comparator=new RecordOrderedComparator(key.getKeyFields(), this.sortOrderings, collators);
         }else{
             comparator=new RecordOrderedComparator(key.getKeyFields(), this.sortOrderings);
-        }
-        if(comparator.getCollator()!=null) {
-        	comparator.getCollator().setStrength(this.caseSensitive?Collator.TERTIARY:Collator.SECONDARY);
         }
         comparator.setEqualNULLs(true);
         DataRecordCol recordArray;
@@ -409,6 +402,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
      * 
      * @param useCollator the useCollator to set
      */
+	@Deprecated
     public void setUseCollator(boolean useCollator) {
         this.useCollator = useCollator;
     }
@@ -422,10 +416,44 @@ public class InternalSortDataRecord implements ISortDataRecord {
      * 
      * @param collatorLocale the collatorLocale to set
      */
+	@Deprecated
     public void setCollatorLocale(Locale collatorLocale) {
-        this.collatorLocale = collatorLocale;
+		useCollator = true;
+		if (collators == null) {
+			collators = new RuleBasedCollator[key.getKeyFields().length];
+	        Arrays.fill(collators, Collator.getInstance(collatorLocale));
+	        return;
+		}
+		
+		Integer iStrength = null;
+		if (collators.length > 0) {
+			iStrength = collators[0].getStrength();
+		}
+		collators = new RuleBasedCollator[key.getKeyFields().length];
+        Arrays.fill(collators, Collator.getInstance(collatorLocale));
+		
+		if (collators.length > 0 && iStrength != null) {
+			for (Collator col: collators) {
+				col.setStrength(iStrength.intValue());
+			}
+		}
     }
 
+    /**
+     * 
+     * @param collators
+     */
+    public void setCollators(RuleBasedCollator[] collators) {
+    	this.collators = collators;
+    	if (collators != null) {
+    		for (Collator col: collators) {
+    			if (col != null) {
+    				useCollator = true;
+    			}
+    		}
+    	}
+    }
+    
     /**
      * Set which Locale (national peculiarities) will be
      * used when comparing Strings.<br>
@@ -434,14 +462,22 @@ public class InternalSortDataRecord implements ISortDataRecord {
      * 
      * @param collatorLocale    String representation of locale - e.g. "uk" or "fr"
      */
+	@Deprecated
     public void setCollatorLocale(String collatorLocale) {
-        this.collatorLocale = MiscUtils.createLocale(collatorLocale);
+		setCollatorLocale(MiscUtils.createLocale(collatorLocale));
     }
 
     /**
 	 * @param caseSensitive the caseSensitive to set
 	 */
+	@Deprecated
 	public void setCaseSensitive(boolean caseSensitive) {
-		this.caseSensitive = caseSensitive;
+		if (collators == null) {
+			collators = new RuleBasedCollator[key.getKeyFields().length];
+	        Arrays.fill(collators, Collator.getInstance(Locale.getDefault()));
+		}
+		for (Collator col: collators) {
+			col.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
+		}
 	}
 }

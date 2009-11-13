@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
+import java.util.Arrays;
+import java.util.Locale;
 
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.data.tape.TapeCarousel;
+import org.jetel.enums.CollatorSensitivityType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.SynchronizeUtils;
@@ -53,10 +56,9 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	private ByteBuffer recordBuffer;
 	private boolean[] sourceRecordsFlags;
 	private DataRecord[] sourceRecords;
-	private String localeStr;
-	private boolean caseSensitive;
-	private RuleBasedCollator collator;
+	private RuleBasedCollator[] collators;
 	int prevIndex;
+	private boolean useCollator;
 	
 	public ExternalSortDataRecord() {
 		super();
@@ -79,32 +81,41 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		this(metadata, keyItems, sortOrderings, internalBufferCapacity, numberOfTapes, tmpDirs, null);
 	}
 	
+	@Deprecated
 	public ExternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, int internalBufferCapacity,
 			int numberOfTapes, String[] tmpDirs, String localeStr) {
-		this(metadata, keyItems, sortOrderings, internalBufferCapacity, numberOfTapes, tmpDirs, localeStr, false);
+		this(metadata, keyItems, sortOrderings, internalBufferCapacity, numberOfTapes, tmpDirs, null, false);
 	}
-
+	
+	@Deprecated
 	public ExternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, int internalBufferCapacity,
 				int numberOfTapes, String[] tmpDirs, String localeStr, boolean caseSensitive) {
-	
+
+		// create collators
+		if (localeStr != null) {
+			collators = new RuleBasedCollator[keyItems.length];
+			useCollator = true;
+			RuleBasedCollator col = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(localeStr));
+			col.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
+			Arrays.fill(collators, col);
+		}
+	    // update collators from field metadata
+	    updateCollators(metadata, keyItems);
+		
 		this.sortKeysNames = keyItems;		
 		this.sortOrderings = sortOrderings;
 		this.numberOfTapes = numberOfTapes;
 		this.tmpDirs = tmpDirs;
 		this.prevIndex = -1;
-		this.localeStr = localeStr;
-		this.caseSensitive = caseSensitive;
 		inMetadata = metadata;
 		if (internalBufferCapacity>0){	
             sorter = new InternalSortDataRecord(metadata, keyItems, sortOrderings, false, internalBufferCapacity);
         } else {
             sorter = new InternalSortDataRecord(metadata, keyItems, sortOrderings, false);
         }
-		if (this.localeStr != null) {
-			sorter.setUseCollator(true);
-			sorter.setCollatorLocale(this.localeStr);
-			this.collator = (RuleBasedCollator) RuleBasedCollator.getInstance(MiscUtils.createLocale(this.localeStr));
-			sorter.setCaseSensitive(this.caseSensitive);
+		
+		if (useCollator) {
+			sorter.setCollators(collators);
 		}
 		
 		recordBuffer = ByteBuffer
@@ -114,7 +125,6 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 			throw new RuntimeException("Can NOT allocate internal record buffer ! Required size:"
                     + Defaults.Record.MAX_RECORD_SIZE);
 		}
-        
 	}
 
 	/* (non-Javadoc)
@@ -264,7 +274,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
         sourceRecordsFlags = new boolean[tapeCarousel.numTapes()];
 
         // initialize sort key which will be used when merging data
-        sortKey = new RecordOrderedKey(sortKeysNames, sortOrderings, inMetadata, collator);
+        sortKey = new RecordOrderedKey(sortKeysNames, sortOrderings, inMetadata);
         sortKey.setEqualNULLs(true);
         sortKey.init();
 
@@ -430,5 +440,65 @@ public class ExternalSortDataRecord implements ISortDataRecord {
         }
         return false;
     }
+
+    /**
+     * Creates sensitivity array for collators.
+     * @param metaData
+     * @param keys
+     * @return
+     */
+    private Integer[] getSensitivityFromMetadata(DataRecordMetadata metaData, String[] keys) {
+		Integer[] sensitivities = new Integer[keys.length];
+		boolean found = false;
+		for (int i = 0; i < keys.length; i++) {
+			String sCollatorSensitivity = metaData.getField(keys[i]).getCollatorSensitivity();
+			CollatorSensitivityType type;
+			if (sCollatorSensitivity != null && (type = CollatorSensitivityType.fromString(sCollatorSensitivity, null)) != null) {
+				sensitivities[i] = type.getCollatorSensitivityValue();
+				found = true;
+			}
+		}
+		return found ? sensitivities : null;
+    }
+
+    /**
+     * Creates locale array for collators.
+     * @param metaData
+     * @param keys
+     * @return
+     */
+    private Locale[] getLocaleFromMetadata(DataRecordMetadata metaData, String[] keys) {
+    	Locale[] metadataLocale = new Locale[keys.length];
+    	boolean found;
+    	if (found = metaData.getLocaleStr() != null) {
+        	Arrays.fill(metadataLocale, MiscUtils.createLocale(metaData.getLocaleStr()));
+    	}
+		for (int i = 0; i < keys.length; i++) {
+			metadataLocale[i] = MiscUtils.createLocale(metaData.getField(keys[i]).getLocaleStr());
+			if (!found && metadataLocale[i] != null) found = true;
+		}
+		return found ? metadataLocale : null;
+    }
+    
+	/**
+	 * Creates collator array.
+	 * @param metadata
+	 * @return
+	 */
+	private void updateCollators(DataRecordMetadata metadata, String[] keys) {
+		Locale[] metadataLocale = getLocaleFromMetadata(metadata, keys);
+		if (metadataLocale == null) return;
+		Integer[] iSensitivity = getSensitivityFromMetadata(metadata, keys);
+		
+		if (collators == null) collators = new RuleBasedCollator[keys.length];
+		for (int i=0; i<keys.length; i++) {
+			if (metadataLocale[i] == null) continue;
+			collators[i] = (RuleBasedCollator)Collator.getInstance(metadataLocale[i]);
+			
+			if (iSensitivity != null && iSensitivity[i] != null) collators[i].setStrength(iSensitivity[i].intValue());
+			collators[i].setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+			useCollator = true;
+		}
+	}
 
 }

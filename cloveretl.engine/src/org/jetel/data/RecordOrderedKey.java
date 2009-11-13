@@ -24,8 +24,8 @@ import java.util.Arrays;
 
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.key.RecordKeyTokens;
 import org.jetel.util.key.OrderType;
+import org.jetel.util.key.RecordKeyTokens;
 
 /**
  *  This class serves the role of DataRecords comparator.<br>
@@ -52,8 +52,6 @@ public class RecordOrderedKey extends RecordKey {
 	private final static int DEFAULT_STRING_KEY_LENGTH = 32;
 	private static final Object KEY_ORDERING_1ST_DELIMITER = "(";
 	private static final Object KEY_ORDERING_2ND_DELIMITER = ")";
-	private boolean isInitialized = false;
-	private RuleBasedCollator collator; 
 	private StringBuffer keyStr;
 
 	private boolean equalNULLs = false; // specifies whether two NULLs are deemed equal
@@ -107,12 +105,19 @@ public class RecordOrderedKey extends RecordKey {
 	 * @param  metadata       metadata describing structure of DataRecord for which the key is built
      * @param  collator       language collator
 	 */
+	@Deprecated
 	public RecordOrderedKey(String keyFieldNames[], boolean keyOrderings[], DataRecordMetadata metadata, RuleBasedCollator collator) {
 		super(keyFieldNames, metadata);
 		this.keyOrderings = keyOrderings;
-		this.collator = collator;
+		
+		// if the collator could be used
+		if (collators != null) {
+			collators = new RuleBasedCollator[keyOrderings.length];
+			Arrays.fill(collators, collator);
+			useCollator = true;
+		}
 	}
-
+	
 	/**
 	 * @param keyFields indices of fields composing the key
 	 * @param metadata metadata describing structure of DataRecord for which the key is built
@@ -138,12 +143,18 @@ public class RecordOrderedKey extends RecordKey {
 	 * @param keyOrderings ordering of columns for each key (true=ascending)
 	 * @param metadata metadata describing structure of DataRecord for which the key is built
 	 */
+	@Deprecated
 	public RecordOrderedKey(int keyFields[], boolean keyOrderings[], DataRecordMetadata metadata, RuleBasedCollator collator) {
 		super (keyFields, metadata);
 		this.keyOrderings = keyOrderings;
-		this.collator = collator;
+		
+		if (collator != null) {
+			collators = new RuleBasedCollator[keyOrderings.length];
+			Arrays.fill(collators, collator);
+			useCollator = true;
+		}
 	}
-	
+
 	/**
 	 * Serializes ordered key into string, format is list of keys separated by default key separator,
 	 * together with ordering inserted after each key in braces
@@ -199,8 +210,8 @@ public class RecordOrderedKey extends RecordKey {
 		if (equalNULLs){
 			for (int i = 0; i < keyFields.length; i++) {
 		        field = record1.getField(keyFields[i]);
-				if (collator != null && (field instanceof StringDataField)) {
-			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collator);
+				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
+			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collators[i]);
 				} else {
 					compResult = field.compareTo(record2.getField(keyFields[i]));
 				}
@@ -215,8 +226,8 @@ public class RecordOrderedKey extends RecordKey {
 		}else {
 		    for (int i = 0; i < keyFields.length; i++) {
 		        field = record1.getField(keyFields[i]);
-				if (collator != null && (field instanceof StringDataField)) {
-			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collator);
+				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
+			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collators[i]);
 				} else {
 					compResult = field.compareTo(record2.getField(keyFields[i]));
 				}
@@ -252,8 +263,8 @@ public class RecordOrderedKey extends RecordKey {
 		if (equalNULLs){
 		    for (int i = 0; i < keyFields.length; i++) {
 		    	field = record1.getField(keyFields[i]);
-		    	if (collator != null && (field instanceof StringDataField)) {
-		    		compResult = ((StringDataField)field).compareTo(record2.getField(record2KeyFields[i]), collator);
+		    	if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
+		    		compResult = ((StringDataField)field).compareTo(record2.getField(record2KeyFields[i]), collators[i]);
 		    	} else {
 		    		compResult = field.compareTo(record2.getField(record2KeyFields[i]));
 		    	}
@@ -269,8 +280,8 @@ public class RecordOrderedKey extends RecordKey {
 		}else{
 		    for (int i = 0; i < keyFields.length; i++) {
 		    	field = record1.getField(keyFields[i]);
-		    	if (collator != null && (field instanceof StringDataField)) {
-		    		compResult = ((StringDataField)field).compareTo(record2.getField(record2KeyFields[i]), collator);
+		    	if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
+		    		compResult = ((StringDataField)field).compareTo(record2.getField(record2KeyFields[i]), collators[i]);
 		    	} else {
 		    		compResult = field.compareTo(record2.getField(record2KeyFields[i]));
 		    	}

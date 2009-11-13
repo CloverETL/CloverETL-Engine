@@ -20,16 +20,12 @@ package org.jetel.component;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.text.Collator;
-import java.text.RuleBasedCollator;
-import java.util.Arrays;
 
 import org.jetel.data.Defaults;
 import org.jetel.data.DoubleRecordBuffer;
 import org.jetel.data.ExternalSortDataRecord;
 import org.jetel.data.ISortDataRecord;
 import org.jetel.data.RecordKey;
-import org.jetel.enums.CollatorSensitivityType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -43,7 +39,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.MiscUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -255,9 +250,6 @@ public class SortWithinGroups extends Node {
     /** temporary directories used by the data record sorter */
     private String[] tempDirectories = DEFAULT_TEMP_DIRECTORIES;
 
-	/** Collator for group sorting */
-	private RuleBasedCollator[] collators4Group;
-	
     /** a data record sorter used to sort the record groups */
     private ISortDataRecord dataRecordSorter = null;
     /** a data record buffer used to retrieve data records from the above sorter */
@@ -421,12 +413,9 @@ public class SortWithinGroups extends Node {
 
         super.init();
 
-        DataRecordMetadata inMetadata = getInputPort(INPUT_PORT_NUMBER).getMetadata();
         try {
-//            dataRecordSorter = new ExternalSortDataRecord(inMetadata,
-//                    sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories, getLocaleFromMetadata(inMetadata, sortKeyFields));
-            dataRecordSorter = new ExternalSortDataRecord(inMetadata,
-                  sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories, null);
+            dataRecordSorter = new ExternalSortDataRecord(getInputPort(INPUT_PORT_NUMBER).getMetadata(),
+                    sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories);
         } catch (Exception exception) {
             throw new ComponentNotReadyException("Error creating a data record sorter!", exception);
         }
@@ -437,57 +426,7 @@ public class SortWithinGroups extends Node {
             throw new ComponentNotReadyException("Error allocating a data record buffer! Required size: "
                     + Defaults.Record.MAX_RECORD_SIZE);
         }
-        
-        // create collator for the group key
-       	collators4Group = createCollators(inMetadata, groupKeyFields);
     }
-
-    private Integer[] getSensitivityFromMetadata(DataRecordMetadata metaData, String[] keys) {
-		Integer[] sensitivities = new Integer[keys.length];
-		boolean found = false;
-		for (int i = 0; i < keys.length; i++) {
-			String sCollatorSensitivity = metaData.getField(metaData.getFieldPosition(keys[i])).getCollatorSensitivity();
-			CollatorSensitivityType type;
-			if (sCollatorSensitivity != null && (type = CollatorSensitivityType.fromString(sCollatorSensitivity, null)) != null) {
-				sensitivities[i] = type.getCollatorSensitivityValue();
-				found = true;
-			}
-		}
-		return found ? sensitivities : null;
-    }
-
-    private String[] getLocaleFromMetadata(DataRecordMetadata metaData, String[] keys) {
-    	String[] metadataLocale = new String[keys.length];
-    	Arrays.fill(metadataLocale, metaData.getLocaleStr());
-    	boolean found = false;
-		for (int i = 0; i < keys.length; i++) {
-			metadataLocale[i] = metaData.getField(metaData.getFieldPosition(keys[i])).getLocaleStr();
-			if (!found && metadataLocale[i] != null) found = true;
-		}
-		return found ? metadataLocale : null;
-    }
-    
-	/**
-	 * Constructs a RecordComparator based on particular metadata and settings
-	 * 
-	 * @param metaData
-	 * @return
-	 */
-	private RuleBasedCollator[] createCollators(DataRecordMetadata metaData, String[] keys) {
-		String[] metadataLocale = getLocaleFromMetadata(metaData, keys);
-		if (metadataLocale == null) return null;
-		Integer[] iSensitivity = getSensitivityFromMetadata(metaData, keys);
-		
-		RuleBasedCollator[] col = new RuleBasedCollator[keys.length];
-		for (int i=0; i<keys.length; i++) {
-			if (metadataLocale[i] == null) continue;
-			col[i] = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(metadataLocale[i]));
-			
-			if (iSensitivity != null && iSensitivity[i] != null) col[i].setStrength(iSensitivity[i].intValue());
-			col[i].setDecomposition(Collator.CANONICAL_DECOMPOSITION);
-		}
-		return col;
-	}
 
     @Override
     public Result execute() throws Exception {
@@ -498,7 +437,6 @@ public class SortWithinGroups extends Node {
         InputPort inputPort = getInputPort(INPUT_PORT_NUMBER);
 
         RecordKey groupKey = new RecordKey(groupKeyFields, inputPort.getMetadata());
-        groupKey.setCollators(collators4Group);
         groupKey.init();
 
         DoubleRecordBuffer inputRecords = new DoubleRecordBuffer(inputPort.getMetadata());

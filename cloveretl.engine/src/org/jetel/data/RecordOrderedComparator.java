@@ -7,8 +7,7 @@ import java.util.Comparator;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
-public class RecordOrderedComparator extends RecordComparator implements
-		Comparator {
+public class RecordOrderedComparator extends RecordComparator implements Comparator {
 	
 	private boolean[] keyOrderings;
 
@@ -42,11 +41,22 @@ public class RecordOrderedComparator extends RecordComparator implements
      * @param collator  Collator which should be use for comparing String fields
      */
 	private RecordOrderedComparator(int[] keyFields, RuleBasedCollator collator) {
-	
 		super(keyFields, collator);
 		keyOrderings = new boolean[keyFields.length];
 		Arrays.fill(keyOrderings, true);
 		
+	}
+	
+    /**
+     * Constructor for the RecordOrderedComparator object
+     * 
+     * @param keyFields indexes of fields to be considered for sorting
+     * @param collators  Collator array which should be use for comparing String fields
+     */
+	private RecordOrderedComparator(int[] keyFields, RuleBasedCollator[] collator) {
+		super(keyFields, collator);
+		keyOrderings = new boolean[keyFields.length];
+		Arrays.fill(keyOrderings, true);
 	}
 	
 	/**
@@ -56,13 +66,22 @@ public class RecordOrderedComparator extends RecordComparator implements
      * @param collator  Collator which should be use for comparing String fields
      */
 	public RecordOrderedComparator(int[] keyFields, boolean[] keyOrderings, RuleBasedCollator collator) {
-	
 		super(keyFields, collator);
 		this.keyOrderings = keyOrderings;
-				
 	}
 	
-		/**
+	/**
+     * Constructor for the RecordOrderedComparator object
+     * 
+     * @param keyFields indexes of fields to be considered for sorting
+     * @param collator  Collator which should be use for comparing String fields
+     */
+	public RecordOrderedComparator(int[] keyFields, boolean[] keyOrderings, RuleBasedCollator[] collator) {
+		super(keyFields, collator);
+		this.keyOrderings = keyOrderings;
+	}
+
+	/**
 	 *  Compares two records (of the same layout) based on defined key-fields and returns (-1;0;1) if (< ; = ; >)
 	 *
 	 *@param  record1  Description of the Parameter
@@ -79,12 +98,12 @@ public class RecordOrderedComparator extends RecordComparator implements
          * throw new RuntimeException("Can't compare - records have different
          * metadata associated." + " Possibly different structure"); }
          */
-        if (collator != null) {
+        if (useCollator) {
             for (int i = 0; i < keyFields.length; i++) {
                 final DataField field1 = record1.getField(keyFields[i]);
-                if (field1.getType() == DataFieldMetadata.STRING_FIELD) {
+                if (collators[i] != null && field1.getType() == DataFieldMetadata.STRING_FIELD) {
                     compResult = ((StringDataField) field1).compareTo(
-                            record2.getField(keyFields[i]), collator);
+                            record2.getField(keyFields[i]), collators[i]);
                 } else {
                     compResult = field1.compareTo(record2
                             .getField(keyFields[i]));
@@ -149,12 +168,12 @@ public class RecordOrderedComparator extends RecordComparator implements
 			throw new RuntimeException("Can't compare. keys have different number of DataFields");
 		}
         
-         if (collator != null) {
+         if (useCollator) {
              for (int i = 0; i < keyFields.length; i++) {
                  final DataField field1 = record1.getField(keyFields[i]);
-                 if (field1.getType() == DataFieldMetadata.STRING_FIELD) {
+                 if (collators[i] != null && field1.getType() == DataFieldMetadata.STRING_FIELD) {
                     compResult = ((StringDataField) field1).compareTo(
-                             record2.getField(record2KeyFields[i]),collator);
+                             record2.getField(record2KeyFields[i]),collators[i]);
                  }else{
                      compResult = field1.compareTo(
                              record2.getField(record2KeyFields[i]));
