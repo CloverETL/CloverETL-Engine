@@ -240,6 +240,11 @@ public class DataFieldMetadata implements Serializable {
 	private String localeStr = null;
 
 	/**
+	 * See Collator.setStregth(String strength). It is used only in string fields.
+	 */
+	private String collatorSensitivity = null;
+
+	/**
 	 * Constructor for a delimited type of field.
 	 * 
 	 * @param name the name of the field
@@ -854,6 +859,22 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
+	 * Set collator sensitivity string.	
+	 * @param collatorSensitivity
+	 */
+	public void setCollatorSensitivity(String collatorSensitivity) {
+		this.collatorSensitivity = collatorSensitivity;
+	}
+
+	/**
+	 * Returns collator sensitivity as string according to CollatorSensitivityType class.
+	 * @return
+	 */
+	public String getCollatorSensitivity() {
+		return collatorSensitivity;
+	}
+
+	/**
 	 * This method checks if value from this field can be put safe in another field.
 	 *
 	 * @param anotherField the another field to be checked
@@ -1009,6 +1030,7 @@ public class DataFieldMetadata implements Serializable {
 		dataFieldMetadata.setAutoFilling(autoFilling);
 		dataFieldMetadata.setFieldProperties(fieldProperties);
 		dataFieldMetadata.setLocaleStr(localeStr);
+		dataFieldMetadata.setCollatorSensitivity(collatorSensitivity);
 
 		return dataFieldMetadata;
 	}
