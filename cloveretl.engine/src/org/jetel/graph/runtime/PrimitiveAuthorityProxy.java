@@ -249,19 +249,33 @@ public class PrimitiveAuthorityProxy implements IAuthorityProxy {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSlaveInputStream(long)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSlaveOutputStreams(long)
 	 */
-	public InputStream getSlaveInputStream(long runId, String componentId) throws IOException {
-		throw new UnsupportedOperationException("Slave input stream are available only in CloverETL Server environment!");
+	public OutputStream[] getClusterPartitionerOutputStreams(long runId, String componentId) throws IOException {
+		throw new UnsupportedOperationException("ClusterPartitioner output streams are available only in CloverETL Server environment!");
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSlaveOutputStreams(long)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSlaveInputStream(long)
 	 */
-	public OutputStream[] getSlaveOutputStreams(long runId, String componentId) throws IOException {
-		throw new UnsupportedOperationException("Slave output streams are available only in CloverETL Server environment!");
+	public InputStream getClusterPartitionerInputStream(long runId, String componentId) throws IOException {
+		throw new UnsupportedOperationException("ClusterPartitioner input stream is available only in CloverETL Server environment!");
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getClusterGatherInputStreams(long, java.lang.String)
+	 */
+	public InputStream[] getClusterGatherInputStreams(long runId, String componentId) throws IOException {
+		throw new UnsupportedOperationException("ClusterGather input streams are available only in CloverETL Server environment!");
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getClusterGatherOutputStream(long, java.lang.String)
+	 */
+	public OutputStream getClusterGatherOutputStream(long runId, String componentId) throws IOException {
+		throw new UnsupportedOperationException("ClusterGather output stream is available only in CloverETL Server environment!");
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#isMaster(long)
 	 */

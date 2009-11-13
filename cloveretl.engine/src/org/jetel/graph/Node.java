@@ -1193,4 +1193,14 @@ public abstract class Node extends GraphElement implements Runnable {
 		this.preExecuteBarrier = preExecuteBarrier;
 	}
 
+	/**
+	 * That is not nice solution to make public this variable. Unfortunately this is necessary
+	 * for new ComponentAlgorithm interface. Whenever this class will be removed also this
+	 * getter can be removed. 
+	 * @return current status of runIt variable
+	 */
+	public boolean runIt() {
+		return runIt;
+	}
+	
 }
