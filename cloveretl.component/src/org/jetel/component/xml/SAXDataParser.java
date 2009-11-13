@@ -51,6 +51,7 @@ import org.xml.sax.SAXException;
  * @created 9.11.2009
  *
  * NOTE: almost hard copy from XMLExtract - has to be re-developed!!!
+ * NOTE: autofilling, record skipping and max record number is not supported
  */
 public class SAXDataParser {
 
