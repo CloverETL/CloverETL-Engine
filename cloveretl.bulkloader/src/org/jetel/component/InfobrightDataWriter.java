@@ -27,6 +27,8 @@ import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -73,6 +75,51 @@ import com.infobright.io.InfobrightNamedPipeLoader;
 import com.infobright.logging.EtlLogger;
 
 /**
+ *  <h3>Infobright Data Writer Component</h3>
+ *
+ * <table border="1">
+ *  <th>Component:</th>
+ * <tr><td><h4><i>Name:</i></h4></td>
+ * <td>Infobright data writer</td></tr>
+ * <tr><td><h4><i>Category:</i></h4></td>
+ * <td>Bulk loaders</td></tr>
+ * <tr><td><h4><i>Description:</i></h4></td>
+ * <td>Loads data to Infobright database</td></tr>
+ * <tr><td><h4><i>Inputs:</i></h4></td>
+ * <td>[0] - input records.</td></tr>
+ * <tr><td><h4><i>Outputs:</i></h4></td>
+ * <td>[0] - optionally one output port connected - for debugging purpose. Records as they were sent to database. Date fields must have
+ * <i>yyyy-MM-dd</i> format for dates and <i>yyyy-MM-dd HH:mm:ss</i> format for dates with time. </tr>
+ * <tr><td><h4><i>Comment:</i></h4></td>
+ * <td>To run this component on Windows, infobright_jni.dll must be present in the Java library path 
+ * (<a href="http://www.infobright.org/downloads/contributions/infobright-core-2_7.zip">infobright-core-v2_7</a>).</tr>
+ * </tr>
+ * </table>
+ *  <br>
+ *  <table border="1">
+ *  <th>XML attributes:</th>
+ *  <tr><td><b>type</b></td><td>"INFOBRIGHT_DATA_WRITER"</td></tr>
+ *  <tr><td><b>id</b></td><td>component identification</td>
+ *  <tr><td><b>table</b></td><td>table name in database for loading data. </td>
+ *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
+ *  <tr><td><b>dataFormat</b><br><i>optional</i></td><td>bh_dataformat supported by Infobright. Available values:<ul><li><i>txt_variable</i>
+ *  <li><i>binary</i> - faster but works with IEE only</ul> </td>
+ *  <tr><td><b>charset</b><br><i>optional</i></td><td>the character set to use to encode String values for CHAR, VARCHAR column types.
+ *  Default is {@link Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER}</td>
+ *  <tr><td><b>logFile</b><br><i>optional</i></td><td>path to debug file. Records as they were sent to database. This attribute has higher
+ *  priority then output port, i.e. if <i>logFile</i> is set and output port is connected no data is sent to output port.</td>
+ *  <tr><td><b>timeout</b><br><i>optional</i></td><td>timeout for load command. Has effect only on Windows platform. </td>
+ *  <tr><td><b>cloverFields</b><br><i>optional</i></td><td>delimited list of input record's fields. Only listed fields (in the order they appear 
+ *  in the list) will be considered for mapping onto target table's fields. </td>
+ *  <tr><td><b>checkValues</b><br><i>optional</i></td><td>Should strings and binary types be checked for size before being passed to the database?
+ *  Default is <i>false</i>. (Should be set to <i>true</i> if you support a dubugging). </td>
+ *  </tr>
+ *  </table>
+ *
+ *  <h4>Example:</h4>
+ * <pre>&lt;Node cloverFields="boolField;dateField;decimalField;stringField" dataFormat="txt_variable" dbConnection="JDBC1" 
+ *  id="INFOBRIGHT_DATA_WRITER0" table="test1" type="INFOBRIGHT_DATA_WRITER"/&gt;</pre>
+ * 
  * @author avackova (info@cloveretl.com)
  *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
  *
@@ -86,9 +133,10 @@ public class InfobrightDataWriter extends Node {
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_LOG_FILE_ATTRIBUTE = "logFile";
 	private static final String XML_APPEND_ATTRIBUTE = "append";
-	private static final String XML_PIPE_NAMEPREFIX_ATTRIBUTE = "pipeNamePrefix";
+	private static final String XML_PIPE_NAMEPREFIX_ATTRIBUTE = "pipeNamePrefix";//changing this parameter has no effect - infobright-core bug
 	private static final String XML_TIMEOUT_ATTRIBUTE = "timeout";
 	private static final String XML_CLOVER_FIELDS_ATTRIBUTE = "cloverFields";
+	private static final String XML_CHECK_VALUES_ATTRIBUTE = "checkValues";
 
     public final static String COMPONENT_TYPE = "INFOBRIGHT_DATA_WRITER";
 
@@ -114,6 +162,9 @@ public class InfobrightDataWriter extends Node {
 	private InfobrightNamedPipeLoader loader;
 	private int[] cloverFieldIndexes;
 	private DataParser dataParser;
+	private Charset chset;
+	private CommonsLogger log;
+	private boolean checkValues = false;
 	
 	/**
 	 * @param id
@@ -145,6 +196,7 @@ public class InfobrightDataWriter extends Node {
             	dbConnection = (DBConnection) conn;
             }
 	    }
+	    //check connection
 		if (dbConnection != null && !dbConnection.isInitialized()) {
 			try {
 				dbConnection.init();
@@ -156,13 +208,13 @@ public class InfobrightDataWriter extends Node {
 			}
 		}        
 		
-		Charset chset = null;
 		try {
 			chset = Charset.forName(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 		} catch (Exception e) {
 			status.add(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
 		}
 
+		//check debug file
 		try {
 			if (logFile != null && !FileUtils.canWrite(getGraph().getProjectURL(), logFile)) {
 				status.add(new ConfigurationProblem("Can't write to " + logFile, Severity.WARNING, this, Priority.NORMAL, XML_LOG_FILE_ATTRIBUTE));
@@ -184,11 +236,14 @@ public class InfobrightDataWriter extends Node {
 				cloverFieldIndexes[i] = i;
 			}
 		}
+		//try to create loader and Brighthouse record
 		try {
 			loader = new InfobrightNamedPipeLoader(table, sqlConnection, log, dataFormat, chset);
 			if (sqlConnection != null) {
-				bRecord = createBrighthouseRecord(metadata, dbConnection.getJdbcSpecific(), chset, log);
+				bRecord = createBrighthouseRecord(metadata, dbConnection.getJdbcSpecific(), log);
 			}
+		}catch (SQLSyntaxErrorException e) {//table doesn't exist yet
+			status.add(e.getMessage(), Severity.WARNING, this, Priority.NORMAL);
 		} catch (Exception e) {
 			status.add(e.getMessage(), Severity.ERROR, this, Priority.NORMAL);
 		}
@@ -224,6 +279,7 @@ public class InfobrightDataWriter extends Node {
 			throw new ComponentNotReadyException(this, XML_DBCONNECTION_ATTRIBUTE, e.getMessage());
 		}
 
+		//prepare indexes of clover fields to load
 		DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
 		if (cloverFields != null) {
 			cloverFieldIndexes = new int[cloverFields.length];
@@ -237,14 +293,15 @@ public class InfobrightDataWriter extends Node {
 			}
 		}
 
-		Charset chset = Charset.forName(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		chset = Charset.forName(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 		
-		EtlLogger log = new CommonsLogger(logger);
+		//create loader and Brighthouse record
+		log = new CommonsLogger(logger);
 		try {
 			loader = new InfobrightNamedPipeLoader(table, sqlConnection, log, dataFormat, chset);
 			if (logFile != null) {
 				loader.setDebugOutputStream(FileUtils.getOutputStream(getGraph().getProjectURL(), logFile, append, -1));
-			}else if (getOutputPort(WRITE_TO_PORT) != null){
+			}else if (getOutputPort(WRITE_TO_PORT) != null){//prepare parser for output port
 				dataParser = new DataParser(charset);
 				dataParser.setQuotedStrings(true);
 				dataParser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
@@ -253,20 +310,29 @@ public class InfobrightDataWriter extends Node {
 				dataParser.setDataSource(parserInput);
 				loader.setDebugOutputStream(loaderOutput);
 			}
-			if (pipeNamePrefix != null){
+			if (pipeNamePrefix != null){//has no effect - infobright-core bug
 				loader.setPipeNamePrefix(pipeNamePrefix);
 			}
 			if (timeout > -1){
 				loader.setTimeout(timeout);
 			}
-			bRecord = createBrighthouseRecord(metadata, dbConnection.getJdbcSpecific(), chset, log);
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
 		}
 		converter = new CloverValueConverter();
 	}
 
-	private BrighthouseRecord createBrighthouseRecord(DataRecordMetadata metadata, JdbcSpecific jdbcSpecific, Charset charset, 
+	/**
+	 * Creates brighthouse record from input metadata
+	 * 
+	 * @param metadata input metadata
+	 * @param jdbcSpecific connection specific (should be MYSQL)
+	 * @param logger
+	 * @return
+	 * @throws SQLException when database error occurs
+	 * @throws ComponentNotReadyException for wrong number or type of the fields 
+	 */
+	private BrighthouseRecord createBrighthouseRecord(DataRecordMetadata metadata, JdbcSpecific jdbcSpecific, 
 			EtlLogger logger) throws Exception{
 	    Statement stmt = sqlConnection.createStatement();
 	    ResultSet rs = stmt.executeQuery("select * from `" + table + "` limit 0");
@@ -276,15 +342,28 @@ public class InfobrightDataWriter extends Node {
 					"number of clover fields (" + cloverFieldIndexes.length + ")." );
 	    }
 		List<AbstractColumnType> columns = new ArrayList<AbstractColumnType>(md.getColumnCount());
+		AbstractColumnType col;
 		for (int i = 0; i < cloverFieldIndexes.length; i++) {
-			columns.add(jetelType2Brighthouse(metadata.getField(cloverFieldIndexes[i]), md.getPrecision(i + 1), jdbcSpecific, charset, logger));
+			col = jetelType2Brighthouse(metadata.getField(cloverFieldIndexes[i]), md.getPrecision(i + 1), jdbcSpecific, logger);
+			col.setCheckValues(checkValues);
+			columns.add(col);
 		}
 	    rs.close();
 	    stmt.close();
-		return dataFormat.createRecord(columns, charset, logger);
+		return dataFormat.createRecord(columns, chset, logger);
 	}
 	
-	private AbstractColumnType jetelType2Brighthouse(DataFieldMetadata field, int precision, JdbcSpecific jdbcSpecific, Charset charset, EtlLogger logger) throws ComponentNotReadyException{
+	/**
+	 * Convert clover type to brighthouse type
+	 * 
+	 * @param field field metadata
+	 * @param precision length for character and binary fields, precision for decimal field
+	 * @param jdbcSpecific connection specific (should be MYSQL)
+	 * @param logger
+	 * @return
+	 * @throws ComponentNotReadyException
+	 */
+	private AbstractColumnType jetelType2Brighthouse(DataFieldMetadata field, int precision, JdbcSpecific jdbcSpecific, EtlLogger logger) throws ComponentNotReadyException{
 		String columnName = field.getName();
 		String columnTypeName = field.getTypeAsString();
 		switch (field.getType()) {
@@ -294,22 +373,22 @@ public class InfobrightDataWriter extends Node {
 		case DataFieldMetadata.BYTE_FIELD:
 		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
 			return AbstractColumnType.getInstance(columnName, field.isFixed() ? Types.BINARY : Types.VARBINARY, columnTypeName, 
-					field.isFixed() ? field.getSize() : precision, 0, charset, logger);
+					field.isFixed() ? field.getSize() : precision, 0, chset, logger);
 		case DataFieldMetadata.DATE_FIELD:
-			return AbstractColumnType.getInstance(columnName, jdbcSpecific.jetelType2sql(field), columnTypeName, 0, 0, charset, logger);
+			return AbstractColumnType.getInstance(columnName, jdbcSpecific.jetelType2sql(field), columnTypeName, 0, 0, chset, logger);
 		case DataFieldMetadata.DECIMAL_FIELD:
 			return AbstractColumnType.getInstance(columnName, Types.DECIMAL, columnTypeName, 
 					field.getFieldProperties().getIntProperty(DataFieldMetadata.LENGTH_ATTR),
-					field.getFieldProperties().getIntProperty(DataFieldMetadata.SCALE_ATTR), charset, logger);
+					field.getFieldProperties().getIntProperty(DataFieldMetadata.SCALE_ATTR), chset, logger);
 		case DataFieldMetadata.INTEGER_FIELD:
-			return AbstractColumnType.getInstance(columnName, Types.INTEGER, columnTypeName, precision, 0, charset, logger);
+			return AbstractColumnType.getInstance(columnName, Types.INTEGER, columnTypeName, precision, 0, chset, logger);
 		case DataFieldMetadata.LONG_FIELD:
-			return AbstractColumnType.getInstance(columnName, Types.BIGINT, columnTypeName, precision, 0, charset, logger);
+			return AbstractColumnType.getInstance(columnName, Types.BIGINT, columnTypeName, precision, 0, chset, logger);
 		case DataFieldMetadata.NUMERIC_FIELD:
-			return AbstractColumnType.getInstance(columnName, Types.DOUBLE, columnTypeName, precision, 0, charset, logger);
+			return AbstractColumnType.getInstance(columnName, Types.DOUBLE, columnTypeName, precision, 0, chset, logger);
 		case DataFieldMetadata.STRING_FIELD:
 			return AbstractColumnType.getInstance(columnName, field.isFixed() ? Types.CHAR : Types.VARCHAR, columnTypeName, 
-					field.isFixed() ? field.getSize() : precision, 0, charset, logger);
+					field.isFixed() ? field.getSize() : precision, 0, chset, logger);
 		default:
 		      throw new ComponentNotReadyException(this, "Unsupported type (" + columnTypeName  + ") for column " + columnName);
 		}
@@ -319,17 +398,38 @@ public class InfobrightDataWriter extends Node {
 	 * @see org.jetel.graph.Node#execute()
 	 */
 	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#preExecute()
+	 */
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		try {
+			//create brighthouse record if it hasn't been created yet
+			if (bRecord == null) {
+				bRecord = createBrighthouseRecord(getInputPort(READ_FROM_PORT).getMetadata(), dbConnection.getJdbcSpecific(), log);
+			}
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(this, e);
+		}
+		super.preExecute();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#execute()
+	 */
 	public Result execute() throws Exception {
 		Result result = Result.RUNNING;
 		Throwable ex = null;
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
+		//thread that writes data to database
 		InfoBrightWriter infobrightWriter = 
 			new InfoBrightWriter(Thread.currentThread(), inPort, inRecord, cloverFieldIndexes, bRecord, converter, loader);
 		infobrightWriter.start();
 		registerChildThread(infobrightWriter);
 		PortWriter portWriter = null;
+		//thread that sends debug data to output port
 		if (dataParser != null) {
 			OutputPort outPort = getOutputPort(WRITE_TO_PORT);
 			DataRecord out_record = new DataRecord(outPort.getMetadata());
@@ -341,7 +441,7 @@ public class InfobrightDataWriter extends Node {
 				portWriter.join();
 			} catch (InterruptedException e) {
 				runIt = false;
-				infobrightWriter.stop_it();
+				infobrightWriter.stop_it();//interrupt writing to database
 				resultMessage = "Writing to output port interrupted";
 			}
 			result = portWriter.getResultCode();
@@ -355,7 +455,7 @@ public class InfobrightDataWriter extends Node {
 		} catch (InterruptedException e) {
 			runIt = false;
 			if (portWriter != null) {
-				portWriter.stop_it();
+				portWriter.stop_it();//interrupt sending data to output port
 			}
 			resultMessage = "Writing to database interrupted";
 		}
@@ -405,6 +505,7 @@ public class InfobrightDataWriter extends Node {
 		xmlElement.setAttribute(XML_DATA_FORMAT_ATTRIBUTE, dataFormat.getBhDataFormat());
 		xmlElement.setAttribute(XML_TABLE_ATTRIBUTE, table);
 		xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, connectionName != null ? connectionName : dbConnection.getId());
+		xmlElement.setAttribute(XML_CHECK_VALUES_ATTRIBUTE, String.valueOf(checkValues));
 		if (logFile != null) {
 			xmlElement.setAttribute(XML_LOG_FILE_ATTRIBUTE, logFile);
 			xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(append));
@@ -425,8 +526,7 @@ public class InfobrightDataWriter extends Node {
         InfobrightDataWriter loader;
 
 		try {
-            loader = new InfobrightDataWriter(
-                    xattribs.getString(XML_ID_ATTRIBUTE));
+            loader = new InfobrightDataWriter(xattribs.getString(XML_ID_ATTRIBUTE));
             loader.setDbConnection(xattribs.getString(XML_DBCONNECTION_ATTRIBUTE));
             loader.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
             if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
@@ -448,11 +548,24 @@ public class InfobrightDataWriter extends Node {
             if (xattribs.exists(XML_CLOVER_FIELDS_ATTRIBUTE)){
             	loader.setCloverFields(xattribs.getString(XML_CLOVER_FIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             }
+            if (xattribs.exists(XML_CHECK_VALUES_ATTRIBUTE)){
+            	loader.setCheckValues(xattribs.getBoolean(XML_CHECK_VALUES_ATTRIBUTE));
+            }
 			return loader;
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 	}
+	/**
+	 * Should strings and binary types be checked for size before being passed to the database? 
+	 * (Should be set to TRUE if you support an error path)
+	 * 
+	 * @param checkValues
+	 */
+	public void setCheckValues(boolean checkValues) {
+		this.checkValues = checkValues;
+	}
+
 	/**
 	 * @param table the table to set
 	 */
@@ -524,6 +637,14 @@ public class InfobrightDataWriter extends Node {
 		this.charset = charset;
 	}
 
+	/**
+	 * Wrapper for commons logger to pass it to Infobright components
+	 * 
+	 * @author avackova (info@cloveretl.com)
+	 *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created 13 Nov 2009
+	 */
 	private static class CommonsLogger implements EtlLogger {
 
 		Log logger;
@@ -593,6 +714,14 @@ public class InfobrightDataWriter extends Node {
 		
 	}
 	
+	/**
+	 * Dumb logger (forgets all messages) - used in checkConfig method
+	 * 
+	 * @author avackova (info@cloveretl.com)
+	 *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created 13 Nov 2009
+	 */
 	private static class DumbLogger implements EtlLogger {
 
 		/* (non-Javadoc)
@@ -660,6 +789,14 @@ public class InfobrightDataWriter extends Node {
 		
 	}
 	
+	/**
+	 * Thread for loading data to Infobright database
+	 * 
+	 * @author avackova (info@cloveretl.com)
+	 *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created 13 Nov 2009
+	 */
 	private static class InfoBrightWriter extends Thread {
 
 		InputPort inPort;
@@ -744,6 +881,14 @@ public class InfobrightDataWriter extends Node {
 		}
 	}
 
+	/**
+	 * Thread for sending data to output port
+	 * 
+	 * @author avackova (info@cloveretl.com)
+	 *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created 13 Nov 2009
+	 */
 	private static class PortWriter extends Thread {
 
 		DataRecord out_record;
