@@ -160,7 +160,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String SKIP_SOURCE_ROW_ATTR = "skipSourceRows";
 	private static final String AUTO_FILLING_ATTR = "auto_filling";
 	public static final String CONNECTION_ATTR = "connection";
-		
+	private static final String COLLATOR_SENSITIVITY_ATTR = "collator_sensitivity";
+	
 	private static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
 
 	  private static final String XSL_FORMATER
@@ -538,6 +539,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String eofAsDelimiter = null;
 			String nullable = null;
 			String localeStr = null;
+			String collatorSensitivity = null;
 			String compressed = null;
 			String autoFilling = null;
 			String trim = null;
@@ -568,6 +570,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					nullable = itemValue;
 				} else if (itemName.equalsIgnoreCase("locale")) {
 					localeStr = itemValue;
+				} else if (itemName.equalsIgnoreCase(COLLATOR_SENSITIVITY_ATTR)) {
+					collatorSensitivity = itemValue;
 				}else if (itemName.equalsIgnoreCase("trim")) {
 					trim = itemValue;
 				} else if (itemName.equalsIgnoreCase(COMPRESSED_ATTR)) {
@@ -649,6 +653,11 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				field.setLocaleStr(localeStr);
 			}
 
+			// set collator sensitivity if defined
+			if (collatorSensitivity != null) {
+				field.setCollatorSensitivity(collatorSensitivity);
+			}
+			
 			if (autoFilling != null) {
 				field.setAutoFilling(autoFilling);
 			}
