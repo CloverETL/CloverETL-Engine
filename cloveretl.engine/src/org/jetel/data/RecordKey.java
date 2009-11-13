@@ -20,20 +20,24 @@
 package org.jetel.data;
 
 import java.nio.ByteBuffer;
+import java.text.Collator;
 import java.text.RuleBasedCollator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.jetel.enums.CollatorSensitivityType;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -152,10 +156,8 @@ public class RecordKey {
             }
         }
 	    
-    	if (useCollator) {
-    		 if (collators.length != keyFields.length) 
-    			 throw new ArrayIndexOutOfBoundsException("Collator's array has a different length to key fields.");
-    	}
+	    // update collators from field metadata
+	    updateCollators(metadata, keyFields);
 
 	    isInitialized = true;
 	}
@@ -577,6 +579,7 @@ public class RecordKey {
 		return keyFieldNames;
 	}
 	
+	@Deprecated
     public void setCollator(RuleBasedCollator collator) {
     	int len = keyFields != null ? keyFields.length : keyFieldNames.length;
     	collators = new RuleBasedCollator[len];
@@ -584,17 +587,65 @@ public class RecordKey {
     	useCollator = collators != null;
     }
     
-    public void setCollators(RuleBasedCollator[] collator) {
-    	this.collators = collator;
-    	useCollator = false;
-    	if (collators == null) return;
-    	for (RuleBasedCollator col: collators) {
-    		if (col != null) {
-    			useCollator = true;
-    			return;
-    		}
-    	}
+    /**
+     * Creates sensitivity array for collators.
+     * @param metaData
+     * @param keys
+     * @return
+     */
+    private Integer[] getSensitivityFromMetadata(DataRecordMetadata metaData, int[] keys) {
+		Integer[] sensitivities = new Integer[keys.length];
+		boolean found = false;
+		for (int i = 0; i < keys.length; i++) {
+			String sCollatorSensitivity = metaData.getField(keys[i]).getCollatorSensitivity();
+			CollatorSensitivityType type;
+			if (sCollatorSensitivity != null && (type = CollatorSensitivityType.fromString(sCollatorSensitivity, null)) != null) {
+				sensitivities[i] = type.getCollatorSensitivityValue();
+				found = true;
+			}
+		}
+		return found ? sensitivities : null;
     }
+
+    /**
+     * Creates locale array for collators.
+     * @param metaData
+     * @param keys
+     * @return
+     */
+    private Locale[] getLocaleFromMetadata(DataRecordMetadata metaData, int[] keys) {
+    	Locale[] metadataLocale = new Locale[keys.length];
+    	boolean found;
+    	if (found = metaData.getLocaleStr() != null) {
+        	Arrays.fill(metadataLocale, MiscUtils.createLocale(metaData.getLocaleStr()));
+    	}
+		for (int i = 0; i < keys.length; i++) {
+			metadataLocale[i] = MiscUtils.createLocale(metaData.getField(keys[i]).getLocaleStr());
+			if (!found && metadataLocale[i] != null) found = true;
+		}
+		return found ? metadataLocale : null;
+    }
+    
+	/**
+	 * Creates collator array.
+	 * @param metadata
+	 * @return
+	 */
+	private void updateCollators(DataRecordMetadata metadata, int[] keys) {
+		Locale[] metadataLocale = getLocaleFromMetadata(metadata, keys);
+		if (metadataLocale == null) return;
+		Integer[] iSensitivity = getSensitivityFromMetadata(metadata, keys);
+		
+		if (collators == null) collators = new RuleBasedCollator[keys.length];
+		for (int i=0; i<keys.length; i++) {
+			if (metadataLocale[i] == null) continue;
+			collators[i] = (RuleBasedCollator)Collator.getInstance(metadataLocale[i]);
+			
+			if (iSensitivity != null && iSensitivity[i] != null) collators[i].setStrength(iSensitivity[i].intValue());
+			collators[i].setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+			useCollator = true;
+		}
+	}
 }
 // end RecordKey
 

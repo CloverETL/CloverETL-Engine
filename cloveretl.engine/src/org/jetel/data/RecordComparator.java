@@ -38,10 +38,11 @@ import org.jetel.metadata.DataFieldMetadata;
  *@since      February 28, 2004
  *@revision    $Revision$
  */
-public class RecordComparator implements Comparator{
+public class RecordComparator implements Comparator {
 
 	protected int keyFields[];
-    protected RuleBasedCollator collator;
+    protected RuleBasedCollator[] collators;
+    protected boolean useCollator = false;
     protected boolean equalNULLs = false; // specifies whether two NULLs are deemed equal
 	private boolean[] sortOrderings;
 	
@@ -52,7 +53,7 @@ public class RecordComparator implements Comparator{
 	 *@since                 May 2, 2002
 	 */
 	public RecordComparator(int keyFields[]) {
-		this(keyFields,null);
+		this(keyFields,(RuleBasedCollator) null);
 	}
 
     /**
@@ -63,11 +64,36 @@ public class RecordComparator implements Comparator{
      */
     public RecordComparator(int keyFields[], RuleBasedCollator collator){
         this.keyFields = keyFields;
-        this.collator=collator;
         sortOrderings = new boolean[keyFields.length];
-        Arrays.fill(sortOrderings, true);        
+        Arrays.fill(sortOrderings, true);
+        
+        if (useCollator = collator != null) {
+            this.collators = new RuleBasedCollator[keyFields.length];
+            Arrays.fill(collators, collator);
+        }
     }
     
+    /**
+     * Constructor for the RecordComparator object
+     * 
+     * @param keyFields indexes of fields to be considered for sorting
+     * @param collators  Collator array which should be use for comparing String fields
+     */
+    public RecordComparator(int keyFields[], RuleBasedCollator[] collators){
+        this.keyFields = keyFields;
+        sortOrderings = new boolean[keyFields.length];
+        Arrays.fill(sortOrderings, true);        
+        this.collators = collators;
+        if (collators == null) return;
+        
+    	for (Collator col: collators) {
+    		if (col != null) {
+    	        useCollator = true;
+    	        return;
+    		}
+    	}
+    }
+
 	/**
 	 *  Gets the keyFields attribute of the RecordKey object
 	 *
@@ -95,12 +121,12 @@ public class RecordComparator implements Comparator{
          * throw new RuntimeException("Can't compare - records have different
          * metadata associated." + " Possibly different structure"); }
          */
-        if (collator != null) {
+        if (useCollator) {
             for (int i = 0; i < keyFields.length; i++) {
                 final DataField field1 = record1.getField(keyFields[i]);
-                if (field1.getType() == DataFieldMetadata.STRING_FIELD) {
+                if (collators[i] != null && field1.getType() == DataFieldMetadata.STRING_FIELD) {
                     compResult = ((StringDataField) field1).compareTo(
-                            record2.getField(keyFields[i]), collator);
+                            record2.getField(keyFields[i]), collators[i]);
                 } else {
                     compResult = field1.compareTo(record2
                             .getField(keyFields[i]));
@@ -169,12 +195,12 @@ public class RecordComparator implements Comparator{
 			throw new RuntimeException("Can't compare. keys have different number of DataFields");
 		}
         
-         if (collator != null) {
+         if (useCollator) {
              for (int i = 0; i < keyFields.length; i++) {
                  final DataField field1 = record1.getField(keyFields[i]);
-                 if (field1.getType() == DataFieldMetadata.STRING_FIELD) {
+                 if (collators[i] != null && field1.getType() == DataFieldMetadata.STRING_FIELD) {
                     compResult = ((StringDataField) field1).compareTo(
-                             record2.getField(record2KeyFields[i]),collator);
+                             record2.getField(record2KeyFields[i]),collators[i]);
                  }else{
                      compResult = field1.compareTo(
                              record2.getField(record2KeyFields[i]));
@@ -221,11 +247,22 @@ public class RecordComparator implements Comparator{
 	public boolean equals(Object obj){
 		if (obj instanceof RecordComparator){
 			RecordComparator comp = (RecordComparator)obj;
-			boolean collatorEquals;
-			if (collator == null){
-				collatorEquals = comp.getCollator() == null;
+			boolean collatorEquals = false;
+			if (!useCollator){
+				collatorEquals = !comp.useCollator;
 			}else{
-				collatorEquals = collator.equals(comp.getCollator());
+				Collator[] refCollators = comp.getCollators();
+				if (collators.length == refCollators.length) {
+					boolean isDifferent = false;
+					for (int i=0; i<collators.length; i++) {
+						if (collators[i] == refCollators[i]) continue;
+						if (!collators[i].equals(refCollators[i])) {
+							isDifferent = true;
+							break;
+						}
+					}
+					if (!isDifferent) collatorEquals = true;
+				}
 			}
 			return collatorEquals && Arrays.equals(this.keyFields,comp.getKeyFields()) && 
 				Arrays.equals(this.sortOrderings,comp.getSortOrderings()); 
@@ -237,17 +274,36 @@ public class RecordComparator implements Comparator{
 	@Override
 	public int hashCode() {
 		int hashCode = Arrays.hashCode(keyFields);
-		return 31*hashCode + (collator==null ? 0 : collator.hashCode());
+		return 31*hashCode + (collators==null ? 0 : collators.hashCode());
 	}
 	
     public Collator getCollator() {
-        return collator;
+    	if (collators == null || collators.length == 0) return null;
+        return collators[0];
+    }
+
+    public Collator[] getCollators() {
+        return collators;
     }
 
     public void setCollator(RuleBasedCollator collator) {
-        this.collator = collator;
+    	if (collators == null) {
+    		collators = new RuleBasedCollator[keyFields.length];
+    	}
+    	Arrays.fill(collators, collator);
     }
     
+    public void setCollator(RuleBasedCollator[] collators) {
+		useCollator = false;
+    	if (collators == null) return;
+    	for (Collator col: collators) {
+    		if (col != null) {
+    			useCollator = true;
+    			return;
+    		}
+    	}
+    }
+
     /**
      * True if two NULL values (fields with NULL flag set) are considered equal
      * 
