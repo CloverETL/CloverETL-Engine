@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataRecordMetadata;
 
 public class RecordOrderedComparator extends RecordComparator implements Comparator {
 	
@@ -40,6 +39,7 @@ public class RecordOrderedComparator extends RecordComparator implements Compara
      * @param keyFields indexes of fields to be considered for sorting
      * @param collator  Collator which should be use for comparing String fields
      */
+	@Deprecated
 	private RecordOrderedComparator(int[] keyFields, RuleBasedCollator collator) {
 		super(keyFields, collator);
 		keyOrderings = new boolean[keyFields.length];
@@ -47,40 +47,18 @@ public class RecordOrderedComparator extends RecordComparator implements Compara
 		
 	}
 	
-    /**
-     * Constructor for the RecordOrderedComparator object
-     * 
-     * @param keyFields indexes of fields to be considered for sorting
-     * @param collators  Collator array which should be use for comparing String fields
-     */
-	private RecordOrderedComparator(int[] keyFields, RuleBasedCollator[] collator) {
-		super(keyFields, collator);
-		keyOrderings = new boolean[keyFields.length];
-		Arrays.fill(keyOrderings, true);
-	}
-	
 	/**
      * Constructor for the RecordOrderedComparator object
      * 
      * @param keyFields indexes of fields to be considered for sorting
      * @param collator  Collator which should be use for comparing String fields
      */
+	@Deprecated
 	public RecordOrderedComparator(int[] keyFields, boolean[] keyOrderings, RuleBasedCollator collator) {
 		super(keyFields, collator);
 		this.keyOrderings = keyOrderings;
 	}
 	
-	/**
-     * Constructor for the RecordOrderedComparator object
-     * 
-     * @param keyFields indexes of fields to be considered for sorting
-     * @param collator  Collator which should be use for comparing String fields
-     */
-	public RecordOrderedComparator(int[] keyFields, boolean[] keyOrderings, RuleBasedCollator[] collator) {
-		super(keyFields, collator);
-		this.keyOrderings = keyOrderings;
-	}
-
 	/**
 	 *  Compares two records (of the same layout) based on defined key-fields and returns (-1;0;1) if (< ; = ; >)
 	 *
