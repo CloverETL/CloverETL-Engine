@@ -266,7 +266,7 @@ public class RecordComparator implements Comparator {
         return collators[0];
     }
 
-    public Collator[] getCollators() {
+    public RuleBasedCollator[] getCollators() {
         return collators;
     }
 
