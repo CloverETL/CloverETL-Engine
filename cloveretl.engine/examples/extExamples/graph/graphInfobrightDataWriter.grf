@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Mon Nov 16 09:49:05 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1258363737992" licenseType="Evaluation Devel" modified="Mon Nov 16 10:39:12 GMT+01:00 2009" modifiedBy="avackova" name="graphInfobrightDataWriter" revision="1.8">
+<Global>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="," name="output" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="boolField" nullable="true" shift="0" size="0" type="boolean"/>
+<Field eofAsDelimiter="false" format="yyyy-MM-dd" name="dateField" nullable="true" shift="0" size="0" type="date"/>
+<Field eofAsDelimiter="false" length="8" name="decimalField" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" name="stringField" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="test" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="boolField" nullable="true" shift="0" size="0" type="boolean"/>
+<Field eofAsDelimiter="false" format="HH:mm:ss" name="timeField" nullable="true" shift="0" size="0" type="date"/>
+<Field eofAsDelimiter="false" format="yyyy-MM-dd HH:mm:ss" name="dateTimeField" nullable="true" shift="0" size="0" type="date"/>
+<Field eofAsDelimiter="false" name="defaultDateTimeField" nullable="true" shift="0" size="0" type="date"/>
+<Field eofAsDelimiter="false" format="yyyy/MM/dd" name="dateField" nullable="true" shift="0" size="0" type="date"/>
+<Field eofAsDelimiter="false" length="8" name="decimalField" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" name="intField" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="longField" nullable="true" shift="0" size="0" type="long"/>
+<Field eofAsDelimiter="false" name="numberField" nullable="true" shift="0" size="0" type="number"/>
+<Field eofAsDelimiter="false" name="stringField" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<Connection database="MYSQL" dbURL="jdbc:mysql://localhost:5029/test" id="JDBC1" jdbcSpecific="MYSQL" jndiName="" name="NewConnection" password="" type="JDBC" user="root"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node dbConnection="JDBC1" enabled="enabled" guiHeight="0" guiName="DBExecute" guiWidth="0" guiX="64" guiY="46" id="DB_EXECUTE0" sqlQuery="create table test (&#10;&#9;boolField TINYINT(1),&#10;&#9;dateField DATE,&#10;&#9;decimalField DECIMAL(8,2),&#10;&#9;stringField VARCHAR(80)&#10;)&#10;" type="DB_EXECUTE"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/infobright.dat" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="65" guiY="134" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/infobright_out.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="465" guiY="134" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node cloverFields="boolField;dateField;decimalField;stringField" dbConnection="JDBC1" enabled="enabled" guiHeight="0" guiName="InfobrigtDataWriter" guiWidth="0" guiX="264" guiY="134" id="INFOBRIGHT_DATA_WRITER0" table="test" type="INFOBRIGHT_DATA_WRITER"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="INFOBRIGHT_DATA_WRITER0:0"/>
+<Edge fromNode="INFOBRIGHT_DATA_WRITER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
