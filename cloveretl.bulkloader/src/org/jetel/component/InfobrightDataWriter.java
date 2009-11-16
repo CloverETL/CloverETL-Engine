@@ -88,10 +88,11 @@ import com.infobright.logging.EtlLogger;
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0] - input records.</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
- * <td>[0] - optionally one output port connected - for debugging purpose. Records as they were sent to database. Date fields must have
+ * <td>[0] - optionally one output port connected - for debugging purpose. Records as they were sent to database.<i>Comma</i> must be set as
+ * delimiter for each field, {@link System.getProperty("line.separator")} must be set as record delimiter. Date fields must have
  * <i>yyyy-MM-dd</i> format for dates and <i>yyyy-MM-dd HH:mm:ss</i> format for dates with time. </tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
- * <td>To run this component on Windows, infobright_jni.dll must be present in the Java library path 
+ * <td>Only <i>root</i> user can insert data into database with this component.<br>To run this component on Windows, infobright_jni.dll must be present in the Java library path 
  * (<a href="http://www.infobright.org/downloads/contributions/infobright-core-2_7.zip">infobright-core-v2_7</a>).</tr>
  * </tr>
  * </table>
