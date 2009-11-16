@@ -8,6 +8,7 @@
 	    	 <DBUnitFeature name="http://www.dbunit.org/features/skipOracleRecycleBinTables" enabled="true"/>
 	</DBConnection>
 	<DBConnection ident="mysql" type="MYSQL" user="test" password="" URL="jdbc:mysql://koule/test?zeroDateTimeBehavior=convertToNull" driver="org.gjt.mm.mysql.Driver" />
+	<DBConnection ident="infobright" type="MYSQL" user="root" password="semafor" URL="jdbc:mysql://localhost:5029/test" driver="org.gjt.mm.mysql.Driver" />
 	<DBConnection ident="db2" type="DB2" user="db2inst" password="semafor" URL="jdbc:db2://koule:50002/test" driver="com.ibm.db2.jcc.DB2Driver" />
 	
 	<FunctionalTest ident="PostgreDataWriter" graphFile="graph/graphPostgreSqlDataWriter.grf">
@@ -61,6 +62,17 @@
 	      />
 	 	  <FlatFile outputFile="data-out/rejected_delimited.txt" supposedFile="supposed-out/rejected_delimited.Db2Load.txt"/>	                                                                    
 	 	  <FlatFile outputFile="/home/db2inst/rejected_fix.txt" supposedFile="supposed-out/rejected_fix.Db2Load.txt"/>	                                                                    
+	</FunctionalTest>
+	
+	<FunctionalTest ident="InfobrightDataWriter" graphFile="graph/graphInfobrightDataWriter.grf">
+	      <SQLStatement connection="infobright">drop table test</SQLStatement>
+	      <DBTableToTable
+	      	 outputTable="test" 
+	      	 outputTableConnection="infobright"
+	      	 supposedTable="test_supposed"
+	      	 supposedTableConnection="infobright"
+	      />
+	 	  <FlatFile outputFile="data-tmp/infobright_out.txt" supposedFile="supposed-out/infobright_out.txt"/>	                                                                    
 	</FunctionalTest>
 	
 </TestScenario>
