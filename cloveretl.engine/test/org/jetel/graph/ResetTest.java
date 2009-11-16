@@ -232,6 +232,7 @@ public class ResetTest extends TestCase{
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
+		log_file.close();
 		for (int j = 0; j < EXAMPLE_PATH.length; j++) {
 			for (String outDir : OUT_DIRS) {
 				File outDirFile = new File(EXAMPLE_PATH[j] + outDir);
