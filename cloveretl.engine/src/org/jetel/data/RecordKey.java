@@ -620,7 +620,10 @@ public class RecordKey {
         	Arrays.fill(metadataLocale, MiscUtils.createLocale(metaData.getLocaleStr()));
     	}
 		for (int i = 0; i < keys.length; i++) {
-			metadataLocale[i] = MiscUtils.createLocale(metaData.getField(keys[i]).getLocaleStr());
+			String sLocale = metaData.getField(keys[i]).getLocaleStr();
+			if (sLocale == null) continue;
+
+			metadataLocale[i] = MiscUtils.createLocale(sLocale);
 			if (!found && metadataLocale[i] != null) found = true;
 		}
 		return found ? metadataLocale : null;
