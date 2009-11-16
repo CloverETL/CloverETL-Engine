@@ -3,12 +3,10 @@ package org.jetel.graph;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.sql.Driver;
-import java.sql.DriverManager;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -50,6 +48,10 @@ public class ResetTest extends TestCase{
 	private final static String GRAPHS_DIR = "graph";
 	private final static String[] OUT_DIRS = {"data-out/", "data-tmp/", "seq/"};
 	
+	private final static String LOG_FILE_NAME = "reset.log";
+	
+	private FileWriter log_file = null;
+	
 	/**
 	 * We suppose that this test is running from cloveretl.engine directory. 
 	 * If not, this variable has to be change to point to the cloveretl.engine directory. 
@@ -62,6 +64,14 @@ public class ResetTest extends TestCase{
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		
+		try {
+			log_file = new FileWriter(LOG_FILE_NAME);
+		} catch (Exception e) {
+			System.err.println("Log file cannot be created:");
+			e.printStackTrace();
+		}
+		
 		EngineInitializer.initEngine( "..", null, null);
 		
 		runtimeContext = new GraphRuntimeContext();
@@ -100,6 +110,9 @@ public class ResetTest extends TestCase{
 							&& !pathname.getName().equals("mountainsSybase.grf"); //issue 2939
 				}
 			});
+			
+			log("Testing graphs in " + EXAMPLE_PATH[i]);
+			
 			Arrays.sort(graphFile);
 			runtimeContext.addAdditionalProperty("PROJECT_DIR", EXAMPLE_PATH[i]);
 			for (int j = 0; j < graphFile.length; j++) {
@@ -144,8 +157,8 @@ public class ResetTest extends TestCase{
 	public void testExample(File file) throws Exception {
 		TransformationGraph graph = null;
 		Future<Result> futureResult = null;
-			System.out.println("Analizing graph " + file.getName());
-			try {
+		log("Analizing graph " + file.getName());
+		try {
 				graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(file), runtimeContext.getAdditionalProperties());
 				graph.setDebugMode(false);
 			} catch (Exception e) {
@@ -186,40 +199,34 @@ public class ResetTest extends TestCase{
 				switch (result) {
 				case FINISHED_OK:
 					// everything O.K.
-					System.out.println("Execution of graph successful !");
+					log("Execution of graph successful !");
 					break;
 				case ABORTED:
 					// execution was ABORTED !!
-					System.err.println("Execution of graph aborted !");
+					log("Execution of graph aborted !");
 					System.exit(result.code());
 					break;
 				default:
-					System.err.println("Execution of graph failed !");
+					log("Execution of graph failed !");
 //					fail();
 					errors.put(file.getName(), new RuntimeException("Execution of graph failed !"));
 					return;
 				}
 
-				if (i < 4) {
-					try {
-						graph.reset();
-					} catch (ComponentNotReadyException e) {
-//						fail("Graph reseting failed: " + e);
-						errors.put(file.getName(), e);
-						return;
-					}
-				}
+//				if (i < 4) {
+//					try {
+//						graph.reset();
+//					} catch (ComponentNotReadyException e) {
+////						fail("Graph reseting failed: " + e);
+//						errors.put(file.getName(), e);
+//						return;
+//					}
+//				}
 			}
 
-			System.out.println("Transformation graph is freeing.\n");
+			log("Transformation graph is freeing.\n");
 			graph.free();
 			
-			System.out.println("Registered drivers:");
-			Enumeration<Driver> drivers = DriverManager.getDrivers();
-			for (;drivers.hasMoreElements();) {
-				System.out.println(drivers.nextElement());
-			}
-			System.out.println();
 	}
 
 	@Override
@@ -318,6 +325,19 @@ public class ResetTest extends TestCase{
 		System.out.println("Transformation graph is freeing.");
 		graph.free();
 		System.out.println("Graph executor is terminating.");
+	}
+	
+	private void log(String message){
+		System.out.println(message);
+		if (log_file != null) {
+			try {
+				log_file.write(message);
+				log_file.flush();
+			} catch (IOException e) {
+				System.err.println("Can't write to log file");
+				e.printStackTrace();
+			}
+		}
 	}
 }
 
