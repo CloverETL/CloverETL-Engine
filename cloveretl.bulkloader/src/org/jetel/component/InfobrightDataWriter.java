@@ -28,7 +28,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -243,7 +242,7 @@ public class InfobrightDataWriter extends Node {
 			if (sqlConnection != null) {
 				bRecord = createBrighthouseRecord(metadata, dbConnection.getJdbcSpecific(), log);
 			}
-		}catch (SQLSyntaxErrorException e) {//table doesn't exist yet
+		}catch (SQLException e) {//table doesn't exist yet
 			status.add(e.getMessage(), Severity.WARNING, this, Priority.NORMAL);
 		} catch (Exception e) {
 			status.add(e.getMessage(), Severity.ERROR, this, Priority.NORMAL);
