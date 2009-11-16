@@ -39,6 +39,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -110,7 +111,10 @@ public class SequenceChecker extends Node {
 	private RecordComparator recordComparator;
 	private boolean equalNULL = true;
 	private boolean uniqueKeys = false;
+	
+	@Deprecated
     private String localeStr = null;
+	@Deprecated
     private boolean useI18N;
 
 	private final static boolean DEFAULT_ASCENDING_SORT_ORDER = true; 
@@ -223,7 +227,8 @@ public class SequenceChecker extends Node {
 		int keyFields[];
         Integer position;
         keyFields = new int[keyFieldNames.length];
-        Map fields = getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesMap();
+        DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
+        Map fields = metadata.getFieldNamesMap();
 
         for (int i = 0; i < keyFieldNames.length; i++) {
             if ((position = (Integer) fields.get(keyFieldNames[i])) != null) {
@@ -242,6 +247,7 @@ public class SequenceChecker extends Node {
         }
         recordComparator.setSortOrderings(sortOrderings);
 		recordComparator.setEqualNULLs(equalNULL);
+        recordComparator.updateCollators(metadata);
 	}
 
 	@Override
@@ -362,6 +368,7 @@ public class SequenceChecker extends Node {
     /**
      * @return the localeStr
      */
+    @Deprecated
     public String getLocaleStr() {
         return localeStr;
     }
@@ -370,6 +377,7 @@ public class SequenceChecker extends Node {
     /**
      * @param localeStr the localeStr to set
      */
+    @Deprecated
     public void setLocaleStr(String localeStr) {
         this.localeStr = localeStr;
     }
@@ -378,6 +386,7 @@ public class SequenceChecker extends Node {
     /**
      * @return the useI18N
      */
+    @Deprecated
     public boolean isUseI18N() {
         return useI18N;
     }
@@ -386,6 +395,7 @@ public class SequenceChecker extends Node {
     /**
      * @param useI18N the useI18N to set
      */
+    @Deprecated
     public void setUseI18N(boolean useI18N) {
         this.useI18N = useI18N;
     }
