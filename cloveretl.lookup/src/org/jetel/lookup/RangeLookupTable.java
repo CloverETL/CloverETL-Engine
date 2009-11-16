@@ -114,7 +114,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	protected String[] endFields;
 	protected int[] endField;
 	protected IntervalRecordComparator comparator;
-	protected RuleBasedCollator collator = null;
+	protected RuleBasedCollator[] collators = null;
 	protected boolean[] startInclude;
 	protected boolean[] endInclude;
 	protected boolean useI18N;
@@ -141,7 +141,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		this.startFields = startFields;
 		this.endFields = endFields;
 		this.dataParser = parser;
-		this.collator = collator;
+		this.collators = new RuleBasedCollator[metadata.getFields().length];
+		Arrays.fill(collators, collator);
 		if (startInclude.length != (metadata.getNumFields() - 1)/2) {
 			throw new InvalidParameterException("startInclude parameter has wrong number " +
 					"of elements: " + startInclude.length + " (should be " + 
@@ -274,15 +275,17 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			Arrays.fill(endInclude, DEFAULT_END_INCLUDE);
 		}
 		
-		if (collator == null && useI18N) {
+		if (collators == null && useI18N) {
+			collators = new RuleBasedCollator[metadata.getFields().length];
 			if (locale != null) {
-				collator = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(locale));
+				Arrays.fill(collators, (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(locale)));
 			}else{
-				collator = (RuleBasedCollator)Collator.getInstance();
+				Arrays.fill(collators, (RuleBasedCollator)Collator.getInstance());
 			}
 		}
 		
-		comparator = new IntervalRecordComparator(metadata, startField, endField, collator);
+		comparator = new IntervalRecordComparator(metadata, startField, endField, getCollator());
+		collators = ((IntervalRecordComparator)comparator).getCollators();
 		
 		lookupTable = Collections.synchronizedSortedSet(new TreeSet<DataRecord>(comparator));
 
@@ -639,8 +642,13 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	}
 
 	public RuleBasedCollator getCollator() {
-		return collator;
+		return collators != null && collators.length > 0 ? collators[0] : null;
 	}
+
+	public RuleBasedCollator[] getCollators() {
+		return collators;
+	}
+
 
 	public Lookup createLookup(RecordKey key) {
 		return createLookup(key, null);
@@ -685,7 +693,8 @@ class RangeLookup implements Lookup{
 	private SortedSet<DataRecord> subTable;
 	private Iterator<DataRecord> subTableIterator;
 	private DataRecord next;
-	private RuleBasedCollator collator;
+	private RuleBasedCollator[] collators;
+	private boolean useCollator = false;
 	private int[] comparison;
 	private int numFound;
 	private boolean[] startInclude;
@@ -699,7 +708,12 @@ class RangeLookup implements Lookup{
 	    endField = lookupTable.getEndFields();
 	    startInclude = lookupTable.getStartInclude();
 	    endInclude = lookupTable.getEndInclude();
-	    collator = lookupTable.getCollator();
+	    for (Collator col: collators = lookupTable.getCollators()) {
+	    	if (col != null) {
+	    		useCollator = true;
+	    		break;
+	    	}
+	    }
 	    this.lookup = lookupTable.lookupTable;
 		this.key = key;
 		this.inRecord = record;
@@ -787,18 +801,18 @@ class RangeLookup implements Lookup{
 			endComp = -1;
 		}
 		if (startComp != 1) {//lookup record's start field is not null
-			if (collator != null && lookupRecord.getField(startField[keyFieldNo]).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
+			if (useCollator && collators[startField[keyFieldNo]] != null && lookupRecord.getField(startField[keyFieldNo]).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
 				startComp = ((StringDataField)keyRecord.getField(startField[keyFieldNo])).compareTo(
-						lookupRecord.getField(startField[keyFieldNo]), collator);
+						lookupRecord.getField(startField[keyFieldNo]), collators[startField[keyFieldNo]]);
 			}else{
 				startComp = keyRecord.getField(startField[keyFieldNo]).compareTo(
 						lookupRecord.getField(startField[keyFieldNo]));
 			}
 		}
 		if (endComp != -1) {//lookup record's end field is not null
-			if (collator != null && lookupRecord.getField(endField[keyFieldNo]).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
+			if (useCollator && collators[endField[keyFieldNo]] != null && lookupRecord.getField(endField[keyFieldNo]).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
 				endComp = ((StringDataField)keyRecord.getField(startField[keyFieldNo])).compareTo(
-						lookupRecord.getField(endField[keyFieldNo]), collator);
+						lookupRecord.getField(endField[keyFieldNo]), collators[endField[keyFieldNo]]);
 			}else{
 				endComp = keyRecord.getField(endField[keyFieldNo]).compareTo(
 						lookupRecord.getField(endField[keyFieldNo]));
@@ -828,6 +842,7 @@ class RangeLookup implements Lookup{
 		int[] endFields;
 		int startComparison;
 		int endComparison;
+		RuleBasedCollator[] collators;
 
 		/**
 		 * Costructor
@@ -844,12 +859,24 @@ class RangeLookup implements Lookup{
 			this.endFields = endFields;
 			startComparator = new RecordComparator[startFields.length];
 			endComparator = new RecordComparator[endFields.length];
+			collators = new RuleBasedCollator[metadata.getFields().length];
+			Arrays.fill(collators, collator);
 			for (int i=0;i<startComparator.length;i++){
 				startComparator[i] = new RecordComparator(new int[]{startFields[i]},collator);
+				startComparator[i].updateCollators(metadata);
+				if (((RecordComparator)startComparator[i]).getCollators() != null && ((RecordComparator)startComparator[i]).getCollators().length > 0 &&
+						((RecordComparator)startComparator[i]).getCollators()[0] != null) this.collators[startFields[i]] = ((RecordComparator)startComparator[i]).getCollators()[0];
 				endComparator[i] = new RecordComparator(new int[]{endFields[i]},collator);
+				endComparator[i].updateCollators(metadata);
+				if (((RecordComparator)endComparator[i]).getCollator() != null && ((RecordComparator)endComparator[i]).getCollators().length > 0 &&
+						((RecordComparator)endComparator[i]).getCollators()[0] != null) this.collators[endFields[i]] = ((RecordComparator)endComparator[i]).getCollators()[0];
 			}
 		}
 
+		protected RuleBasedCollator[] getCollators() {
+			return collators;
+		}
+		
 		public IntervalRecordComparator(DataRecordMetadata metadata, int[] startFields,
 				int[] endFields) {
 			this(metadata, startFields, endFields, null);
