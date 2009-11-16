@@ -3,113 +3,46 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE></TITLE>
-	<META NAME="CREATED" CONTENT="20080414;10125200">
-	<META NAME="CHANGED" CONTENT="20080414;10442000">
 	<STYLE TYPE="text/css">
 	<!--
-		@page { size: 8.5in 11in }
+		@page { size: 21.59cm 27.94cm }
 	-->
 	</STYLE>
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<H1><FONT COLOR="#008000">Running CloverETL examples</FONT></H1>
-<P STYLE="margin-bottom: 0in"><I>by Agata Vackova, Last modified 
+<H1 LANG="en-GB"><FONT COLOR="#008000">Running CloverETL examples</FONT></H1>
+<P LANG="en-GB" STYLE="margin-bottom: 0cm"><I>by Agata Vackova, Last
+modified 
 <SCRIPT LANGUAGE="javascript">
 document.writeln(document.lastModified)
 </SCRIPT>
 </I></P>
 <HR>
-<H2>Preliminaries</H2>
-<P>Complete <A HREF="http://wiki.clovergui.net/">documentation to
-CloverETL</A>. 
+<H2 LANG="en-GB">Preliminaries</H2>
+<P LANG="en-GB">Complete <A HREF="http://wiki.clovergui.net/">documentation
+to CloverETL</A>. 
 </P>
-<P>Detailed <A HREF="http://wiki.clovergui.net/www/doku.php?id=examples">examples
+<P LANG="en-GB">Detailed <A HREF="http://wiki.clovergui.net/www/doku.php?id=examples">examples
 description</A>. 
 </P>
-<P>Clover Examples zip file contains 4 complete Eclipse project, so
-if you use CloverGUI you can <A HREF="#Importing examples to Eclipse |outline">import</A>
+<P LANG="en-GB">Clover Examples zip file contains complete Eclipse
+projects, so if you use CloverDesigner you can <A HREF="http://www.cloveretl.com/documentation/UserGuide/index.jsp?topic=/com.cloveretl.gui.docs/docs/examples-project.html">import</A>
 them to your workspace. 
 </P>
-<H2>Prerequisites</H2>
-<P>I assume that you have <A HREF="http://www.cloveretl.org/download/clover-etl">downloaded</A>
+<H2 LANG="en-GB">Installing and running examples</H2>
+<ul><li><A HREF="http://sourceforge.net/projects/cloveretl/files/">Download</A>
 a binary package of <B>CloverETL engine</B> and <B>Clover Examples</B>
-or you built one from sources. Extract examples zip file to the
-directory <FONT FACE="Cumberland AMT, monospace">examples</FONT> in
-CloverETL home directory.   Let's assume you have extracted the
-archives into <TT>/home</TT>. When executing any example, you have to
-be switched in requested example project directory eg.:
-<TT>/home/cloverETL/examples/simpleExamples</TT> . 
-</P>
-<H2><A NAME="Common things|outline"></A>Common things</H2>
-<P>The examples presented here have the structure as default
-Clover.ETL project: graph files are in <FONT FACE="Cumberland AMT, monospace">graph</FONT>
-subdirectory, input data are taken from files stored in <FONT FACE="Cumberland AMT, monospace">data-in</FONT>
-subdirectory, outputs are created in <FONT FACE="Cumberland AMT, monospace">data-out</FONT>
-subdirectory (sometimes we use <FONT FACE="Cumberland AMT, monospace">data-tmp</FONT>
-directory for reading or writing files), required metadata are read
-from <TT>meta</TT> subdirectory. Connection's configuration files are
-stored in <FONT FACE="Cumberland AMT, monospace">conn </FONT><FONT FACE="Thorndale AMT, serif">subdirectory
-(in example package you can found some example files), for
-transformations (source files as well as .class files) there is used
-<FONT FACE="Cumberland AMT, monospace">trans</FONT> directory. In
-</FONT><FONT FACE="Cumberland AMT, monospace">lookup </FONT><FONT FACE="Thorndale AMT, serif">directory
-can be data for lookup tables and </FONT><FONT FACE="Cumberland AMT, monospace">seq
-</FONT><FONT FACE="Thorndale AMT, serif">directory is used for
-sequences.</FONT></P>
-<P>In the main examples directories there are files workspace.prm
-with PROJECT parameter definition. You have to change this parameter
-to proper value before running graphs. This file contains more
-parameters: they defines all needed directory paths, and are defined
-by PROJECT parameter, so they don't need to by modified. 
-</P>
-<P>To run graphs you can use scripts (clover.bat or clover) included
-in CloverETL package (<FONT FACE="Cumberland AMT, monospace">bin</FONT>
-directory). They assumes that environment variable JAVA_HOME is set
-to java home directory. Or you can use old fashion way: 
-</P>
-<PRE>  JARSPATH=&quot;../../lib/cloveretl.engine.jar:../../lib/commons-logging.jar&quot;
-  JARSPATH=&quot;$JARSPATH:../../lib/commons-cli-1.0.jar:../../lib/jms.jar&quot;
-  JARSPATH=&quot;$JARSPATH:../../lib/log4j-1.2.12.zip:../../lib/javolution.jar:trans&quot;
-  java -cp &quot;$JARSPATH&quot; org.jetel.main.runGraph -plugins ../../plugins graph/graphSimpleCopy.grf</PRE><H3>
-Important notes</H3>
-<P>There is shown above how to run transformations on Linux (Unix)
-machine. If you have Windows installed, just change the <TT>java -cp
-&quot;../../lib/cloveretl.engine.jar:../../lib/commons-logging.jar:../../lib/log4j-1.2.12.zip:../../lib/javolution.jar:trans&quot;
-</TT>into <TT>-cp
-<TT>&quot;../../lib/cloveretl.engine.jar;../../lib/commons-logging.jar;../../lib/log4j-1.2.12.zip;<TT>../../lib/javolution.jar;trans</TT>&quot;</TT></TT>
-- the Java classpath delimiter on Windows is <TT>;</TT> (semicolon)
-not <TT>:</TT> (colon). 
-</P>
-<P><B>CloverETL requires Java (JVM) version 1.5 ! </B>
-</P>
-<H2><A NAME="Importing examples to Eclipse |outline"></A>Importing
-examples to Eclipse type filter text</H2>
-<H4>Step 1</H4>
-<P>Begin the import from the Eclipse File menu item. 
-</P>
-<H4><IMG SRC="img/FileMenu.png" NAME="graphics1" ALIGN=LEFT WIDTH=428 HEIGHT=550 BORDER=0><BR CLEAR=LEFT><BR><BR>
-</H4>
-<H4>Step 2</H4>
-<P>This screenshot shows the screen as it initially comes up. Select
-General and then Existing Project into Workspace. 
-</P>
-<H4><IMG SRC="img/ImportWindow.png" NAME="graphics2" ALIGN=LEFT WIDTH=525 HEIGHT=550 BORDER=0><BR CLEAR=LEFT><BR><BR>
-</H4>
-<H4>Step 3</H4>
-<P>This is the next page of wizard. If you haven't extracted examples
-from archive, change the radio button. Then click proper Browse
-button to choose a directory or an archive file. 
-</P>
-<H4><IMG SRC="img/ImportWindow2.png" NAME=" NAME=" ALIGN=LEFT WIDTH=525 HEIGHT=550 BORDER=0><BR CLEAR=LEFT><BR><BR>
-</H4>
-<H4>Step 4</H4>
-<P>After clicking Finish button project will import to your
-workspace. 
-</P>
-<P><A HREF="#Common things|outline">Set PROJECT and connection
-parameters</A> and you can run graphs. 
-</P>
-<P><BR><BR>
+or build one from sources.
+<li>Extract <B>CloverETL engine</B> and <B>Clover Examples</B> to the same directory
+<li>Ensure that <i>cloverETL/bin/clover (clover.bat)</i> is executable.
+<li>Go to project directory you want to run graph from (e.g <i>cloverETL/examples/simpleExamples</i>)
+<li>Use <i>clover (clover.bat)</i> script to run a graph, eg.:<br>
+<i>../../bin/clover graph/graphPartition.grf</i></ul>
+<H2 LANG="en-GB">Importent notes</H2>
+<ul><li>CloverETL requires Java (JVM) version 1.5 or higher! 
+<li>You must configure the database <a href="http://wiki.clovergui.net/doku.php?id=graph_elements:connections">connection</a> to run database related examples 
+(all <i>extExamples</i>, <i>graphRevenues.grf</i> from <i>advancedExamples</i>)
+<li><i>javaExamples</i> project contains examples, that illustrate how to use <b>CloverETL</b> from java</ul>
 </P>
 </BODY>
 </HTML>
