@@ -367,6 +367,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		// let's create a copy of leaf nodes - we will watch them
 		phaseNodes = new HashSet<Node>(phase.getNodes().values());
 
+		// is there any node running ? - this test is necessary for phases without nodes - empty phase
+		if (phaseNodes.isEmpty()) {
+			return watchDogStatus != Result.ABORTED ? Result.FINISHED_OK : Result.ABORTED;
+		}
+
 		// entering the loop awaiting completion of work by all leaf nodes
 		while (true) {
 			// wait on error message queue
