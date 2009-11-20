@@ -300,7 +300,12 @@ public class FileUtils {
             	return graph.getAuthorityProxy().getSandboxResourceInput(graph.getRuntimeContext().getRunId(), url.getHost(), url.getPath());
         	}
         	
-        	innerStream = getAuthorizedConnection(url).getInputStream();
+        	try {
+            	innerStream = getAuthorizedConnection(url).getInputStream();
+        	} catch (IOException e) {
+				log.debug("IOException occured for URL - host: '" + url.getHost() + "', userinfo: '" + url.getUserInfo() + "', path: '" + url.getPath() + "'");
+				throw e;
+        	}
         }
 
         // create archive streams
@@ -654,7 +659,12 @@ public class FileUtils {
     			if (urlConnection instanceof SFTPConnection) {
     				((SFTPConnection)urlConnection).setMode(appendData? ChannelSftp.APPEND : ChannelSftp.OVERWRITE);
     			}
-    			os = urlConnection.getOutputStream();
+    			try {
+        			os = urlConnection.getOutputStream();
+    			} catch (IOException e) {
+    				log.debug("IOException occured for URL - host: '" + url.getHost() + "', userinfo: '" + url.getUserInfo() + "', path: '" + url.getPath() + "'");
+    				throw e;
+    			}
     		} else if (input.startsWith(SandboxStreamHandler.SANDBOX_PROTOCOL)) {
     			TransformationGraph graph = ContextProvider.getGraph();
         		if (graph == null)
