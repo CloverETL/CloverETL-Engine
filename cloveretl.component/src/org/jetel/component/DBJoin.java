@@ -189,7 +189,7 @@ public class DBJoin extends Node {
 	private InputPort inPort;
 	private DataRecord inRecord;
 	
-	static Log logger = LogFactory.getLog(Reformat.class);
+	static Log logger = LogFactory.getLog(DBJoin.class);
 	
 	/**
 	 *Constructor
