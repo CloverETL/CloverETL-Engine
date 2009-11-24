@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" guiVersion="0.0.0.devel" id="1204539735714" licenseType="Evaluation Devel" modified="Tue Nov 24 12:25:09 GMT+01:00 2009" modifiedBy="avackova" name="Testing Simple Copy" revision="1.16">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" guiVersion="0.0.0.devel" id="1204539735714" licenseType="Evaluation Devel" modified="Tue Nov 24 13:24:48 GMT+01:00 2009" modifiedBy="avackova" name="Testing Simple Copy" revision="1.22">
 <Global>
 <Metadata id="InOutMetadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="organizationalPerson" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -22,6 +22,10 @@
 <Connection dbConfig="${CONN_DIR}/oracle.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <LookupTable id="LookupTable0" initialSize="512" key="id" metadata="Metadata0" name="countries" type="simpleLookup"/>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="164" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="LDAP data menagment" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="230" x="789" y="115">
+<attr name="text"><![CDATA[LDAP reader component reads all ldap records, that have not empty ou attribute. As the user is not provided, anonymous acces is used when connecting.
+Value of st attribute is changed in Reformat component and attributes of data in ldap directory are replaced by LDAPWriter component. Here we have to provide user, as the anonymous user has no privilege to write to ldap database.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
 <Node dbConnection="JDBC0" enabled="enabled" guiHeight="0" guiName="DBInputTable" guiWidth="0" guiX="20" guiY="16" id="DB_INPUT_TABLE0" sqlQuery="select * from RT_COUNTRIES" type="DB_INPUT_TABLE"/>
