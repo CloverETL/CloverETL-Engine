@@ -30,5 +30,6 @@
 	<classpathentry kind="lib" path="lib/jaxb-api-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-net-2.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
