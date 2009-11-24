@@ -1,29 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" guiVersion="1.10" id="1204539735714" licenseType="Evaluation license." modified="Fri Jun 27 11:28:04 CEST 2008" modifiedBy="avackova" name="Testing Simple Copy" revision="1.7">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" guiVersion="0.0.0.devel" id="1204539735714" licenseType="Evaluation Devel" modified="Tue Nov 24 12:25:09 GMT+01:00 2009" modifiedBy="avackova" name="Testing Simple Copy" revision="1.16">
 <Global>
-<Metadata id="Metadata">
-<Record fieldDelimiter=";" name="inEmployees" recordSize="-1" type="delimited">
-<Field name="dn" nullable="true" shift="0" type="string"/>
-<Field delimiter="\n" name="sn" nullable="true" shift="0" type="string"/>
-<Field name="objectClass" nullable="true" shift="0" type="string"/>
-<Field name="cn" nullable="true" shift="0" type="string"/>
+<Metadata id="InOutMetadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="organizationalPerson" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="sn" type="string"/>
+<Field name="cn" type="string"/>
+<Field name="telephoneNumber" type="string"/>
+<Field name="objectClass" type="string"/>
+<Field name="dn" type="string"/>
+<Field name="ou" type="string"/>
+<Field name="st" type="string"/>
 </Record>
 </Metadata>
+<Metadata id="Metadata0">
+<Record fieldDelimiter=";" name="RT_COUNTRIES" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="COUNTRY_CODE" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="COUNTRY_NAME" nullable="true" shift="0" size="0" type="string"/>
+<Field auto_filling="global_row_count" name="id" type="integer"/>
+</Record>
+</Metadata>
+<Connection dbConfig="${CONN_DIR}/oracle.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<LookupTable id="LookupTable0" initialSize="512" key="id" metadata="Metadata0" name="countries" type="simpleLookup"/>
 </Global>
 <Phase number="0">
-<Node base="dc=javlinconsulting,dc=cz" enabled="enabled" filter="sn=*" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="22" id="INPUT1" ldapUrl="ldap://koule:389/" password="secret" scope="SUBTREE" type="LDAP_READER" user="cn=root,dc=javlinconsulting,dc=cz"/>
-<Node action="add_entry" enabled="enabled" guiHeight="25" guiName="OUTPUT1" guiWidth="50" guiX="433" guiY="22" id="OUTPUT1" ldapUrl="ldap://koule:389/" password="secret" type="LDAP_WRITER" user="cn=root,dc=javlinconsulting,dc=cz"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="236" guiY="22" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[function transform() {
-$0.dn := $0.dn;
-$0.cn := $0.cn;
-$0.objectClass := $0.objectClass;
-$0.sn := $0.sn + "x";
+<Node dbConnection="JDBC0" enabled="enabled" guiHeight="0" guiName="DBInputTable" guiWidth="0" guiX="20" guiY="16" id="DB_INPUT_TABLE0" sqlQuery="select * from RT_COUNTRIES" type="DB_INPUT_TABLE"/>
+<Node enabled="enabled" guiHeight="0" guiName="LookupTableReaderWriter" guiWidth="0" guiX="201" guiY="16" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Edge fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/persons.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="632" guiY="119" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="LDAPReader" guiWidth="0" guiX="20" guiY="119" id="LDAP_READER0" scope="subtree" type="LDAP_READER">
+<attr name="ldapUrl"><![CDATA[ldap://koule]]></attr>
+<attr name="filter"><![CDATA[ou=*]]></attr>
+<attr name="base"><![CDATA[dc=javlin,dc=eu]]></attr>
+</Node>
+<Node action="replace_attributes" enabled="enabled" guiHeight="0" guiName="LDAPWriter" guiWidth="0" guiX="632" guiY="211" id="LDAP_WRITER1" ldapUrl="ldap://koule" passThroughInputPort="0" passThroughOutputPort="0" password="secret" type="LDAP_WRITER" user="cn=Manager,dc=javlin,dc=eu"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="197" guiY="119" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.sn := $0.sn;
+	$0.cn := $0.cn;
+	$0.telephoneNumber := $0.telephoneNumber;
+	$0.objectClass := $0.objectClass;
+	$0.dn := $0.dn;
+	$0.ou := $0.ou;
+	$0.st := lookup(LookupTable0,random_int(0,42)).COUNTRY_NAME;
 }
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
 ]]></attr>
 </Node>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
-<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata" outPort="Port 0 (out)" toNode="OUTPUT1:0"/>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="403" guiY="119" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Edge fromNode="LDAP_READER0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
+<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 1 (out)" toNode="LDAP_WRITER1:0"/>
+</Phase>
+<Phase number="2">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/ldap_persons.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="632" guiY="296" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="LDAPReader" guiWidth="0" guiX="19" guiY="296" id="LDAP_READER1" scope="subtree" type="LDAP_READER">
+<attr name="ldapUrl"><![CDATA[ldap://koule]]></attr>
+<attr name="filter"><![CDATA[ou=*]]></attr>
+<attr name="base"><![CDATA[dc=javlin,dc=eu]]></attr>
+</Node>
+<Edge fromNode="LDAP_READER1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>
