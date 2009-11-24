@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.codec.language.DoubleMetaphone;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.AhoCorasick;
 import org.jetel.metadata.DataFieldMetadata;
@@ -383,7 +384,21 @@ public class StringUtils {
 	public static String metaphone(String input){
 		return metaphone(input, DEFAULT_METAPHONE_LENGTH);
 	}
-	
+
+	/**
+	 * Encodes a given word using the Double Metaphone algorithm.
+	 *
+	 * @param word the word to be encoded
+	 *
+	 * @return the result of encoding
+	 */
+	public static String doubleMetaphone(String word) {
+		DoubleMetaphone doubleMetaphone = new DoubleMetaphone();
+		doubleMetaphone.setMaxCodeLen(word.length());
+
+		return doubleMetaphone.doubleMetaphone(word);
+	}
+
 	/**
 	 * Finds The New York State Identification and Intelligence System Phonetic Code
 	 * 
