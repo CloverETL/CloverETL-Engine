@@ -22,6 +22,8 @@ package org.jetel.graph.runtime;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.Properties;
 
 import org.jetel.data.sequence.Sequence;
@@ -65,7 +67,7 @@ public interface IAuthorityProxy {
 	 * @param path
 	 * @return
 	 */
-	public InputStream getSandboxResourceInput(long runId, String storageCode, String path) throws IOException;
+	public ReadableByteChannel getSandboxResourceInput(long runId, String storageCode, String path) throws IOException;
 
 	/**
 	 * 
@@ -74,7 +76,7 @@ public interface IAuthorityProxy {
 	 * @param path
 	 * @return
 	 */
-	public OutputStream getSandboxResourceOutput(long runId, String storageCode, String path) throws IOException;
+	public WritableByteChannel getSandboxResourceOutput(long runId, String storageCode, String path) throws IOException;
 	
 	/**
 	 * Provides list of input streams for all parts of given file in a partitioned sandbox.
@@ -83,7 +85,7 @@ public interface IAuthorityProxy {
 	 * @param path
 	 * @return
 	 */
-	public InputStream[] getPartitionedSandboxResourceInput(long runId, String storageCode, String path) throws IOException;
+	//public InputStream[] getPartitionedSandboxResourceInput(long runId, String storageCode, String path) throws IOException;
 
 	/**
 	 * Provides list of output streams for all parts of given file in a partitioned sandbox.
@@ -92,7 +94,7 @@ public interface IAuthorityProxy {
 	 * @param path
 	 * @return
 	 */
-	public OutputStream[] getPartitionedSandboxResourceOutput(long runId, String storageCode, String path) throws IOException;
+	//public OutputStream[] getPartitionedSandboxResourceOutput(long runId, String storageCode, String path) throws IOException;
 
 	//will be removed
 	public boolean isPrimaryWorker(long runId);
