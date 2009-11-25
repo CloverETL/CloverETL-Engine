@@ -67,7 +67,7 @@ public interface IAuthorityProxy {
 	 * @param path
 	 * @return
 	 */
-	public ReadableByteChannel getSandboxResourceInput(long runId, String storageCode, String path) throws IOException;
+	public InputStream getSandboxResourceInput(long runId, String storageCode, String path) throws IOException;
 
 	/**
 	 * 
@@ -76,7 +76,7 @@ public interface IAuthorityProxy {
 	 * @param path
 	 * @return
 	 */
-	public WritableByteChannel getSandboxResourceOutput(long runId, String storageCode, String path) throws IOException;
+	public OutputStream getSandboxResourceOutput(long runId, String storageCode, String path) throws IOException;
 	
 	/**
 	 * Provides list of input streams for all parts of given file in a partitioned sandbox.
