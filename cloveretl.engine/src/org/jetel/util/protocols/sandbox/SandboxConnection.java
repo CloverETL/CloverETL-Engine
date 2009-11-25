@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.channels.Channels;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,7 +36,7 @@ public class SandboxConnection extends URLConnection {
 		String storageCode = url.getHost();
 		String path = url.getPath();
 		long runId = graph.getRuntimeContext().getRunId();
-		InputStream is = graph.getAuthorityProxy().getSandboxResourceInput(runId, storageCode, path);
+		InputStream is = Channels.newInputStream(graph.getAuthorityProxy().getSandboxResourceInput(runId, storageCode, path));
 		return is;
 	}
 
@@ -48,7 +49,7 @@ public class SandboxConnection extends URLConnection {
 		String storageCode = url.getHost();
 		String path = url.getPath();
 		long runId = graph.getRuntimeContext().getRunId();
-		OutputStream os = graph.getAuthorityProxy().getSandboxResourceOutput(runId, storageCode, path);
+		OutputStream os = Channels.newOutputStream(graph.getAuthorityProxy().getSandboxResourceOutput(runId, storageCode, path));
 		return os;
 	}
 

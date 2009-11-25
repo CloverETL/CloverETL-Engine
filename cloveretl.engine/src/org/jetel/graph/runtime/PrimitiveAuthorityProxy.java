@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -222,7 +224,7 @@ public class PrimitiveAuthorityProxy implements IAuthorityProxy {
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceInput(long, java.lang.String, java.lang.String)
 	 */
-	public InputStream getSandboxResourceInput(long runId, String storageCode, String path) {
+	public ReadableByteChannel getSandboxResourceInput(long runId, String storageCode, String path) {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 
@@ -230,7 +232,7 @@ public class PrimitiveAuthorityProxy implements IAuthorityProxy {
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceOutput(long, java.lang.String, java.lang.String)
 	 */
-	public OutputStream getSandboxResourceOutput(long runId, String storageCode, String path) {
+	public WritableByteChannel getSandboxResourceOutput(long runId, String storageCode, String path) {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 
