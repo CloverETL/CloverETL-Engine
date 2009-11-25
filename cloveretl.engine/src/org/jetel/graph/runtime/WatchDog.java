@@ -566,7 +566,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
         	for (Node node : phase.getNodes().values()){
         		Thread t = node.getNodeThread();
         		long runId = this.getGraphRuntimeContext().getRunId();
-        		t.setName("exNode_"+runId+"_"+getGraph().getId()+"_"+node.getId());
+        		t.setName("exNode_"+runId+"_"+node.getId());
         		// explicit interruption of threads of failed graph; (some nodes may be still running)
         		if (node.getResultCode() == Result.RUNNING)
 //        			node.setResultCode(Result.ABORTED);
