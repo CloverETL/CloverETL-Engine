@@ -21,6 +21,7 @@ package org.jetel.connection.jdbc.specific;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -100,11 +101,22 @@ public class DBConnectionInstance {
 	 * Returns a ResultSet representing tables in given database
 	 * It has to extract it from dbMeta object
 	 * 
-	 * @param dbName
+	 * @param schema
 	 * @return
 	 */
-	public ResultSet getTables(String dbName) throws SQLException {
-		return getJdbcSpecific().getTables(getSqlConnection(), dbName);
+	public ResultSet getTables(String schema) throws SQLException {
+		return getJdbcSpecific().getTables(getSqlConnection(), schema);
 	}
 
+	/**
+	 * Returns columns metadata for the given table.
+	 * @param schema
+	 * @param table
+	 * @return
+	 * @throws SQLException 
+	 */
+	public ResultSetMetaData getColumns(String schema, String table) throws SQLException {
+		return getJdbcSpecific().getColumns(getSqlConnection(), schema, table);
+	}
+	
 }

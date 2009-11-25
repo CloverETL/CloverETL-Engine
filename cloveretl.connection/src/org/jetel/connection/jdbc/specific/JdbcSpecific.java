@@ -20,8 +20,8 @@
 package org.jetel.connection.jdbc.specific;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -178,10 +178,29 @@ public interface JdbcSpecific {
 	 * Returns a ResultSet representing tables in given database
 	 * It has to extract it from dbMeta object
 	 * 
-	 * @param dbMeta
-	 * @param dbName
+	 * @param connection
+	 * @param schema
 	 * @return
 	 */
-	public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException;
-	
+	public ResultSet getTables(java.sql.Connection connection, String schema) throws SQLException;
+
+	/**
+	 * Returns columns metadata in given table.
+	 * 
+	 * @param connection
+	 * @param schema
+	 * @param table
+	 * @return
+	 */
+	public ResultSetMetaData getColumns(java.sql.Connection connection, String schema, String table) throws SQLException;
+
+    /**
+     * Return select sql statement for given table.
+     * Usually returns <code>select * from tablename</code>.
+     * @param schema
+     * @param table
+     * @return
+     */
+    public String compileSelectQuery4Table(String schema, String table);
+
 }

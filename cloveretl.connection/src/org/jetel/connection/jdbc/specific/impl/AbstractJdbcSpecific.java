@@ -22,6 +22,7 @@ package org.jetel.connection.jdbc.specific.impl;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -371,6 +372,23 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		return connection.getMetaData().getTables(dbName, null, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/); //fix by kokon - show only tables and views
 	}
 
+    /* (non-Javadoc)
+     * @see org.jetel.connection.jdbc.specific.JdbcSpecific#getColumns(java.sql.Connection, java.lang.String, java.lang.String)
+     */
+    public ResultSetMetaData getColumns(Connection connection, String schema, String table) throws SQLException {
+		String sqlQuery = compileSelectQuery4Table(schema, table) + " where 0=1";
+		ResultSet resultSet = connection.createStatement().executeQuery(sqlQuery);
+
+		return resultSet.getMetaData();
+    }
     
+    /* (non-Javadoc)
+     * @see org.jetel.connection.jdbc.specific.JdbcSpecific#compileSelectQuery4Table(java.lang.String, java.lang.String)
+     */
+    public String compileSelectQuery4Table(String schema, String table) {
+//		some dbms don't support 
+//    	return "select * from " + schema + "." + table
+		return "select * from " + table;
+    }
     
 }
