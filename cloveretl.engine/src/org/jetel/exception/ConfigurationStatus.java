@@ -78,4 +78,17 @@ public class ConfigurationStatus extends LinkedList<ConfigurationProblem> {
     	return false;
     }
     
+    /**
+     * @return first configuration problem with <code>error</code> severity
+     */
+    public ConfigurationProblem firstError() {
+    	for (ConfigurationProblem problem : this) {
+    		if (problem.getSeverity() == Severity.ERROR) {
+    			return problem;
+    		}
+    	}
+    	
+    	return null;
+    }
+    
 }
