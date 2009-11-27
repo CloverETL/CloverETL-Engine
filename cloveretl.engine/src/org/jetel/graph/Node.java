@@ -415,15 +415,19 @@ public abstract class Node extends GraphElement implements Runnable {
             }
             
             if (runResult == Result.FINISHED_OK) {
-            	//check whether all input ports are already closed
-            	for (InputPort inputPort : getInPorts()) {
-            		if (!inputPort.isEOF()) {
-            			runResult = Result.ERROR;
-            			Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-            					new ErrorMsgBody(runResult.code(), "Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records.", null));
-            			getCloverPost().sendMessage(msg);
-            			return;
-            		}
+            	if (runIt = false) { //component returns ok tag, but the component was actually aborted
+            		runResult = Result.ABORTED;
+            	} else {
+	            	//check whether all input ports are already closed
+	            	for (InputPort inputPort : getInPorts()) {
+	            		if (!inputPort.isEOF()) {
+	            			runResult = Result.ERROR;
+	            			Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
+	            					new ErrorMsgBody(runResult.code(), "Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records.", null));
+	            			getCloverPost().sendMessage(msg);
+	            			return;
+	            		}
+	            	}
             	}
             	//broadcast all output ports with EOF information
             	broadcastEOF();
