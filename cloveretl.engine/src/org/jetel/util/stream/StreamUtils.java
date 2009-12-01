@@ -23,6 +23,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Simple routines for stream manipulating.
@@ -67,4 +71,48 @@ public class StreamUtils {
         return sb.toString();
     }
     
+    /**
+     * Read all available bytes from one channel and copy them to the other.
+     * @param in
+     * @param out
+     * @throws IOException
+     */
+    public static void copy(ReadableByteChannel in, WritableByteChannel out) throws IOException {
+    	// First, we need a buffer to hold blocks of copied bytes.
+    	ByteBuffer buffer = ByteBuffer.allocateDirect(32 * 1024);
+
+    	// Now loop until no more bytes to read and the buffer is empty
+    	while (in.read(buffer) != -1 || buffer.position() > 0) {
+    		// The read() call leaves the buffer in "fill mode". To prepare
+    		// to write bytes from the bufferwe have to put it in "drain mode"
+    		// by flipping it: setting limit to position and position to zero
+    		buffer.flip();
+
+    		// Now write some or all of the bytes out to the output channel
+    		out.write(buffer);
+
+    		// Compact the buffer by discarding bytes that were written,
+    		// and shifting any remaining bytes. This method also
+    		// prepares the buffer for the next call to read() by setting the
+    		// position to the limit and the limit to the buffer capacity.
+    		buffer.compact();
+    	}
+    }
+
+    private static final int IO_BUFFER_SIZE = 4 * 1024;  
+
+    /**
+     * Read all available bytes from one stream and copy them to the other.
+     * @param in
+     * @param out
+     * @throws IOException
+     */
+    public static void copy(InputStream in, OutputStream out) throws IOException {
+    	byte[] b = new byte[IO_BUFFER_SIZE];
+    	int read;
+    	while ((read = in.read(b)) != -1) {
+    		out.write(b, 0, read);
+    	}
+    }
+
 }
