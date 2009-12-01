@@ -18,7 +18,6 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -49,6 +48,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.stream.StreamUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -333,7 +333,7 @@ public class HttpConnector extends Node {
 				ReadableByteChannel inputFile = FileUtils.getReadableChannel(getGraph() != null ? getGraph().getProjectURL() : null, inputFileUrl);
 				WritableByteChannel outputConnection = Channels.newChannel(httpConnection.getOutputStream());
 				
-				copy(inputFile, outputConnection);
+				StreamUtils.copy(inputFile, outputConnection);
 
 				inputFile.close();
 				outputConnection.close();
@@ -349,7 +349,7 @@ public class HttpConnector extends Node {
 			}
 			ReadableByteChannel inputConnection = Channels.newChannel(httpConnection.getInputStream());
 
-			copy(inputConnection, outputFile);
+			StreamUtils.copy(inputConnection, outputFile);
 		}
 
 		
@@ -372,7 +372,7 @@ public class HttpConnector extends Node {
 		ByteArrayInputStream is = new ByteArrayInputStream(bytes);
 		OutputStream os = httpConnection.getOutputStream();
 
-		copy(is, os);
+		StreamUtils.copy(is, os);
 		
 		is.close();
 		os.close();
@@ -635,50 +635,5 @@ public class HttpConnector extends Node {
 		return COMPONENT_TYPE;
 	}
 	
-	
-
-    /**
-     * Read all available bytes from one channel and copy them to the other.
-     * @param in
-     * @param out
-     * @throws IOException
-     */
-    public static void copy(ReadableByteChannel in, WritableByteChannel out) throws IOException {
-    	// First, we need a buffer to hold blocks of copied bytes.
-    	ByteBuffer buffer = ByteBuffer.allocateDirect(32 * 1024);
-
-    	// Now loop until no more bytes to read and the buffer is empty
-    	while (in.read(buffer) != -1 || buffer.position() > 0) {
-    		// The read() call leaves the buffer in "fill mode". To prepare
-    		// to write bytes from the bufferwe have to put it in "drain mode"
-    		// by flipping it: setting limit to position and position to zero
-    		buffer.flip();
-
-    		// Now write some or all of the bytes out to the output channel
-    		out.write(buffer);
-
-    		// Compact the buffer by discarding bytes that were written,
-    		// and shifting any remaining bytes. This method also
-    		// prepares the buffer for the next call to read() by setting the
-    		// position to the limit and the limit to the buffer capacity.
-    		buffer.compact();
-    	}
-    }
-
-    private static final int IO_BUFFER_SIZE = 4 * 1024;  
-
-    /**
-     * Read all available bytes from one stream and copy them to the other.
-     * @param in
-     * @param out
-     * @throws IOException
-     */
-    public static void copy(InputStream in, OutputStream out) throws IOException {
-    	byte[] b = new byte[IO_BUFFER_SIZE];
-    	int read;
-    	while ((read = in.read(b)) != -1) {
-    		out.write(b, 0, read);
-    	}
-    }
 
 }
