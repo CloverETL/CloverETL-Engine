@@ -22,12 +22,11 @@ package org.jetel.graph.runtime;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.Properties;
 
 import org.jetel.data.sequence.Sequence;
 import org.jetel.graph.Result;
+import org.jetel.util.FileConstrains;
 
 /**
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
@@ -107,4 +106,20 @@ public interface IAuthorityProxy {
 	//will be removed
 	public OutputStream getClusterGatherOutputStream(long runId, String componentId) throws IOException;
 
+	/**
+	 * Assigns proper portion of a file to current cluster node. It is used mainly by ParallelReader,
+	 * which is able to read just pre-defined part of file. Null is returned if the whole file should
+	 * be processed. This functionality make available that each cluster node can process different
+	 * part of a single file.
+	 * 
+	 * @param runId
+	 * @param componentId
+	 * @param fileURL
+	 * @return
+	 * @throws IOException
+	 * @see {@link FileConstrains}
+	 * @see {@link ParallelReader}
+	 */
+	public FileConstrains assignFilePortion(long runId, String componentId, String fileURL) throws IOException;
+	
 }
