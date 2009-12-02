@@ -79,10 +79,6 @@ public class Dictionary extends GraphElement {
 	}
 	
 	public DictionaryEntry getEntry(String key) {
-		if (!isInitialized()) {
-			throw new IllegalStateException("Dictionary is not initialized.");
-		}
-		
 		return dictionary.get(key);
 	}
 	
