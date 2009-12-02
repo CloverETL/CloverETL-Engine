@@ -307,7 +307,8 @@
 				<method type="void" name="readObject" parameters="java.io.ObjectInputStream"/>
 				<method type="void" name="writeObject" parameters="java.io.ObjectOutputStream"/>
 			</keep>
-			<keep name="com.opensys.cloveretl.lookup.AspellLookupTable"><field access="protected public"/><method access="protected public"/></keep>
+            <keep name="com.opensys.cloveretl.lookup.AspellLookupTable"><field access="protected public"/><method access="protected public"/></keep>
+            <keep name="com.opensys.cloveretl.lookup.aspell.AspellDictionary"><field access="protected public"/><method access="protected public"/></keep>
 
 			<keep name="org.jetel.ctl.CTLDefaultImport"><field access="protected public"/><method access="protected public"/></keep>
 			
