@@ -20,6 +20,7 @@
 package org.jetel.graph.dictionary;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -66,13 +67,14 @@ public class Dictionary extends GraphElement {
 		super.reset();
 		
 		//resets default dictionary entries and removes all the others
-		for (String key : dictionary.keySet()) {
-			final DictionaryEntry entry = dictionary.get(key);
-			if (entry.isDefault()) {
-				entry.reset();
-			} else {
-				dictionary.remove(key);
-			}
+		Iterator<DictionaryEntry> iterator = dictionary.values().iterator();
+		while (iterator.hasNext()) {
+		    final DictionaryEntry entry = iterator.next();
+		    if (entry.isDefault()) {
+		        entry.reset();
+		    } else {
+		        iterator.remove();
+		    }
 		}
 	}
 	
