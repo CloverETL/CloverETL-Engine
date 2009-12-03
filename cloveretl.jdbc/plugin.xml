@@ -12,6 +12,13 @@
 	</requires>
 
 	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="GENERIC"/>
+		<parameter id="name" value="Generic"/>
+		<!--parameter id="majorVersion" value="x"/-->
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="DB2"/>
 		<parameter id="name" value="DB2"/>
 		<!--parameter id="majorVersion" value="x"/-->
