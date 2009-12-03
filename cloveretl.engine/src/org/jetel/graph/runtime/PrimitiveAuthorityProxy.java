@@ -43,6 +43,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.main.runGraph;
 import org.jetel.util.FileConstrains;
+import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -287,7 +288,7 @@ public class PrimitiveAuthorityProxy implements IAuthorityProxy {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#assignFilePortion(long, java.lang.String, java.lang.String)
 	 */
-	public FileConstrains assignFilePortion(long runId, String componentId, String fileURL) throws IOException {
+	public FileConstrains assignFilePortion(long runId, String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException {
 		return null;
 	}
 	

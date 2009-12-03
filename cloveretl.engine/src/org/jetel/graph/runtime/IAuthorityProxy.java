@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.graph.Result;
 import org.jetel.util.FileConstrains;
+import org.jetel.util.bytes.SeekableByteChannel;
 
 /**
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
@@ -109,7 +110,7 @@ public interface IAuthorityProxy {
 	/**
 	 * Assigns proper portion of a file to current cluster node. It is used mainly by ParallelReader,
 	 * which is able to read just pre-defined part of file. Null is returned if the whole file should
-	 * be processed. This functionality make available that each cluster node can process different
+	 * be processed. This functionality makes available that each cluster node can process different
 	 * part of a single file.
 	 * 
 	 * @param runId
@@ -120,6 +121,6 @@ public interface IAuthorityProxy {
 	 * @see {@link FileConstrains}
 	 * @see {@link ParallelReader}
 	 */
-	public FileConstrains assignFilePortion(long runId, String componentId, String fileURL) throws IOException;
+	public FileConstrains assignFilePortion(long runId, String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException;
 	
 }
