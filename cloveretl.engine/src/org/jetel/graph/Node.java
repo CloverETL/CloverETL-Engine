@@ -404,7 +404,8 @@ public abstract class Node extends GraphElement implements Runnable {
     		}
 
     		//waiting for other nodes in the current phase - first all pre-execution has to be done at all nodes
-    		preExecuteBarrier.await();
+    		// FIXME removed by MVa - hack for cluster parallelism
+    		//preExecuteBarrier.await();
     		
     		//execute() invocation
             if((runResult = execute()) == Result.ERROR) {
