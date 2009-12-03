@@ -297,7 +297,7 @@ public class FileUtils {
     			TransformationGraph graph = ContextProvider.getGraph();
         		if (graph == null)
         			throw new NullPointerException("Graph reference cannot be null when \""+SandboxStreamHandler.SANDBOX_PROTOCOL+"\" protocol is used.");
-            	return graph.getAuthorityProxy().getSandboxResourceInput(graph.getRuntimeContext().getRunId(), url.getHost(), url.getPath());
+            	return url.openConnection().getInputStream();
         	}
         	
         	try {
