@@ -69,7 +69,7 @@ public class TrackingLogger implements NotificationListener {
 
     	cloverJMX.addNotificationListener(this, null, null);
     }
-    
+
     /**
      *  Outputs basic LOG information about graph processing
      *
@@ -87,7 +87,11 @@ public class TrackingLogger implements NotificationListener {
         logger.info("Time: "
             + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).
                 format(Calendar.getInstance().getTime()));
-        logger.info("Node                   Status     Port      #Records         #KB  Rec/s    KB/s");
+        if (finalTracking) {
+        	logger.info("Node                   Status     Port      #Records         #KB aRec/s   aKB/s");
+        } else {
+        	logger.info("Node                   Status     Port      #Records         #KB  Rec/s    KB/s");
+        }
         logger.info("---------------------------------------------------------------------------------");
         for (NodeTracking nodeDetail : cloverJMX.getGraphTracking().getRunningPhaseTracking().getNodeTracking()) {
             Object nodeInfo[] = {nodeDetail.getNodeID(), nodeDetail.getResult().message()};
@@ -105,15 +109,15 @@ public class TrackingLogger implements NotificationListener {
                             "In:", Integer.toString(i), 
                             Integer.toString(inputPortDetail.getTotalRecords()),
                             Long.toString(inputPortDetail.getTotalBytes() >> 10),
-                            Integer.toString(inputPortDetail.getRecordFlow()),
-                            Integer.toString(inputPortDetail.getByteFlow() >> 10)};
+                            Integer.toString(finalTracking ? (int) (inputPortDetail.getTotalRecords() / TrackingUtils.converTime(nodeDetail.getParentPhaseTracking().getExecutionTime(), TimeUnit.SECONDS)) : inputPortDetail.getRecordFlow()),
+                            Integer.toString(finalTracking ? (int) ((inputPortDetail.getTotalBytes() >> 10) / TrackingUtils.converTime(nodeDetail.getParentPhaseTracking().getExecutionTime(), TimeUnit.SECONDS)) : inputPortDetail.getByteFlow() >> 10)};
                     logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU)); 
                 } else {
                         portInfo = new Object[] {"In:", Integer.toString(i), 
                         Integer.toString(inputPortDetail.getTotalRecords()),
                         Long.toString(inputPortDetail.getTotalBytes() >> 10),
-                        Integer.toString(inputPortDetail.getRecordFlow()),
-                        Integer.toString(inputPortDetail.getByteFlow())};
+                        Integer.toString(finalTracking ? (int) (inputPortDetail.getTotalRecords() / TrackingUtils.converTime(nodeDetail.getParentPhaseTracking().getExecutionTime(), TimeUnit.SECONDS)) : inputPortDetail.getRecordFlow()),
+                        Integer.toString(finalTracking ? (int) ((inputPortDetail.getTotalBytes() >> 10) / TrackingUtils.converTime(nodeDetail.getParentPhaseTracking().getExecutionTime(), TimeUnit.SECONDS)) : inputPortDetail.getByteFlow() >> 10)};
                     logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
                 }
                 i++;
@@ -128,15 +132,15 @@ public class TrackingLogger implements NotificationListener {
                             "Out:", Integer.toString(i), 
                             Integer.toString(outputPortDetail.getTotalRecords()),
                             Long.toString(outputPortDetail.getTotalBytes() >> 10),
-                            Integer.toString(outputPortDetail.getRecordFlow()),
-                            Integer.toString(outputPortDetail.getByteFlow() >> 10)};
+                            Integer.toString(finalTracking ? (int) (outputPortDetail.getTotalRecords() / TrackingUtils.converTime(nodeDetail.getParentPhaseTracking().getExecutionTime(), TimeUnit.SECONDS)) : outputPortDetail.getRecordFlow()),
+                            Integer.toString(finalTracking ? (int) ((outputPortDetail.getTotalBytes() >> 10) / TrackingUtils.converTime(nodeDetail.getParentPhaseTracking().getExecutionTime(), TimeUnit.SECONDS)) : outputPortDetail.getByteFlow() >> 10)};
                     logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU));
                 }else{
                     portInfo = new Object[] {"Out:", Integer.toString(i), 
                         Integer.toString(outputPortDetail.getTotalRecords()),
                         Long.toString(outputPortDetail.getTotalBytes() >> 10),
-                        Integer.toString(outputPortDetail.getRecordFlow()),
-                        Integer.toString(outputPortDetail.getByteFlow() >> 10)};
+                        Integer.toString(finalTracking ? (int) (outputPortDetail.getTotalRecords() / TrackingUtils.converTime(nodeDetail.getParentPhaseTracking().getExecutionTime(), TimeUnit.SECONDS)) : outputPortDetail.getRecordFlow()),
+                        Integer.toString(finalTracking ? (int) ((outputPortDetail.getTotalBytes() >> 10) / TrackingUtils.converTime(nodeDetail.getParentPhaseTracking().getExecutionTime(), TimeUnit.SECONDS)) : outputPortDetail.getByteFlow() >> 10)};
                     logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
                 }
                 i++;
