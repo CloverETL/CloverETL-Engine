@@ -45,13 +45,13 @@ import org.jetel.graph.runtime.CloverWorker;
  */
 public class ContextProvider {
 
-    private final static Log logger = LogFactory.getLog(ContextProvider.class);
+    private static final Log logger = LogFactory.getLog(ContextProvider.class);
 
-	static private Map<Thread, Node> nodesCache = new HashMap<Thread, Node>(); 
+	private static final Map<Thread, Node> nodesCache = new HashMap<Thread, Node>(); 
 
-	static private Map<Thread, TransformationGraph> graphsCache = new HashMap<Thread, TransformationGraph>(); 
+	private static final Map<Thread, TransformationGraph> graphsCache = new HashMap<Thread, TransformationGraph>(); 
     
-	static public TransformationGraph getGraph() {
+	public static synchronized TransformationGraph getGraph() {
     	Node node = nodesCache.get(Thread.currentThread());
     	if (node != null) {
         	return node.getGraph();
@@ -66,7 +66,7 @@ public class ContextProvider {
     	}
     }
 
-	static public Node getNode() {
+	public static synchronized Node getNode() {
     	Node node = nodesCache.get(Thread.currentThread());
     	if (node == null) {
 			logger.warn("ContextProvider was not able to provide requested node. Current thread is not registered.");
@@ -74,15 +74,15 @@ public class ContextProvider {
     	return node;
     }
 
-	static public void registerNode(Node node) {
+	public static synchronized void registerNode(Node node) {
 		nodesCache.put(Thread.currentThread(), node);
 	}
 
-	static public void registerGraph(TransformationGraph graph) {
+	public static synchronized void registerGraph(TransformationGraph graph) {
 		graphsCache.put(Thread.currentThread(), graph);
 	}
 
-	static public void unregister() {
+	public static synchronized void unregister() {
 		if (nodesCache.containsKey(Thread.currentThread())) {
 			nodesCache.remove(Thread.currentThread());
 		} else {
