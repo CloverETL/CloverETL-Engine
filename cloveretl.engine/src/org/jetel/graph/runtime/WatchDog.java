@@ -445,9 +445,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			return;
 		}
 		try {
-	        watchDogStatus = Result.ABORTED;
 			//if the phase is running broadcast all nodes in the phase they should be aborted
 			if (watchDogStatus == Result.RUNNING) { 
+		        watchDogStatus = Result.ABORTED;
 				// iterate through all the nodes and stop them
 		        for(Node node : currentPhase.getNodes().values()) {
 					node.abort();
@@ -456,6 +456,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			}
 			//if the graph is waiting on a phase synchronization point the watchdog is woken up with current status ABORTED 
 			if (watchDogStatus == Result.WAITING) {
+		        watchDogStatus = Result.ABORTED;
 				synchronized (cloverJMX) {
 					cloverJMX.notifyAll();
 				}
