@@ -3,7 +3,6 @@
 
 <TestScenario ident="simple-examples" description="Engine simple examples" useJMX="true">    
 
-
  
 <FunctionalTest ident="AggregateSorted" graphFile="graph/graphAggregateSorted.grf">
 	 <FlatFile outputFile="data-out/orders.aggregated" supposedFile="supposed-out/orders.aggregated.AggregateSorted"/>
