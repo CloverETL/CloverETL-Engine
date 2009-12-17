@@ -226,10 +226,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	           		//execute phase
 	                phaseResult = executePhase(phases[currentPhaseNum]);
 	                
-	                if(phaseResult == Result.ABORTED)      { 
+	                if(phaseResult == Result.ABORTED)      {
+	                	cloverJMX.phaseAborted();
 	                    logger.warn("!!! Phase execution aborted !!!");
 	                    break;
 	                } else if(phaseResult == Result.ERROR) {
+	                	cloverJMX.phaseError(getErrorMessage());
 	                    logger.error("!!! Phase finished with error - stopping graph run !!!");
 	                    break;
 	                }
