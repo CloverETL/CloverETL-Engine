@@ -103,9 +103,6 @@ public abstract class GraphElement implements IGraphElement {
      */
     synchronized public void init() throws ComponentNotReadyException {
         initialized = true;
-        if(!isChecked()) {
-            logger.warn("Graph element " + this + " is not checked by checkConfig() method. Please call TransformationGraph.checkConfig() first.");
-        }
     }
 
     /* (non-Javadoc)
