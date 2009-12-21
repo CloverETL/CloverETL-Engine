@@ -70,6 +70,10 @@ public interface IAuthorityProxy {
 	public InputStream getSandboxResourceInput(long runId, String storageCode, String path) throws IOException;
 
 	/**
+	 * Returns output stream for updating of specified sandbox resource.
+	 * If the specified storage is sandbox with more then one locations, 
+	 * it should return stream to the resource, which is in location accessible locally. 
+	 * If there is no locally accessible location, it chooses any other location. 
 	 * 
 	 * @param runId
 	 * @param storageCode
@@ -77,34 +81,67 @@ public interface IAuthorityProxy {
 	 * @return
 	 */
 	public OutputStream getSandboxResourceOutput(long runId, String storageCode, String path) throws IOException;
+
+	/**
+	 * Returns true, if this worker instance is "primary" in curretn phase. 
+	 * 
+	 * MZa: will be removed
+	 * 
+	 * @param runId
+	 * @return 
+	 */
+	public boolean isPrimaryWorker(long runId);
 	
 	/**
-	 * Provides list of input streams for all parts of given file in a partitioned sandbox.
+	 * Called by Cluster Partitioner component on "primary" worker.
+	 * Returns list of output streams to "slave" workers.
+	 * 
+	 * MZa: will be removed
+	 * 
 	 * @param runId
-	 * @param storageCode
-	 * @param path
-	 * @return
+	 * @param componentId
+	 * @return streams array of size workersCount-1
+	 * @throws IOException
 	 */
-	//public InputStream[] getPartitionedSandboxResourceInput(long runId, String storageCode, String path) throws IOException;
-
-	/**
-	 * Provides list of output streams for all parts of given file in a partitioned sandbox.
-	 * @param runId
-	 * @param storageCode
-	 * @param path
-	 * @return
-	 */
-	//public OutputStream[] getPartitionedSandboxResourceOutput(long runId, String storageCode, String path) throws IOException;
-
-	//will be removed
-	public boolean isPrimaryWorker(long runId);
-	//will be removed
 	public OutputStream[] getClusterPartitionerOutputStreams(long runId, String componentId) throws IOException;
-	//will be removed
+	
+	/**
+	 * Called by Cluster Partitioner component on "slave" worker.
+	 * Returns input stream with data from "primary" worker.  
+	 * 
+	 * MZa: will be removed
+	 * 
+	 * @param runId
+	 * @param componentId
+	 * @return 
+	 * @throws IOException
+	 */
 	public InputStream getClusterPartitionerInputStream(long runId, String componentId) throws IOException;
-	//will be removed
+	
+	/**
+	 * Called by ClusterGather component on "primary" worker.
+	 * Returns list of input streams with data from "slave" workers.
+	 * 
+	 * MZa: will be removed
+	 *  
+	 * @param runId
+	 * @param componentId
+	 * @return streams array of size workersCount-1
+	 * @throws IOException
+	 */
 	public InputStream[] getClusterGatherInputStreams(long runId, String componentId) throws IOException;
-	//will be removed
+	
+	/**
+	 * Called by Cluster Gather component on "slave" worker. 
+	 * Returns output stream which will be fed by output data.
+	 * 
+	 * MZa: will be removed 
+	 * 
+	 * @param runId
+	 * @param componentId
+	 * @return
+	 * @throws IOException
+	 */
 	public OutputStream getClusterGatherOutputStream(long runId, String componentId) throws IOException;
 
 	/**
