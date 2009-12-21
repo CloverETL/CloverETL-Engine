@@ -23,6 +23,8 @@ import java.net.URL;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -43,6 +45,8 @@ import org.jetel.util.string.StringUtils;
  */
 public class JdbcDriver {
     private static Log logger = LogFactory.getLog(JdbcDriver.class);
+    
+    private static Map<JdbcDriverDescription, JdbcDriver> driversCache = new HashMap<JdbcDriverDescription, JdbcDriver>();
     
     /**
      * Identifier of the JDBC driver.
@@ -85,7 +89,7 @@ public class JdbcDriver {
      * @param jdbcDriverDescription
      * @throws ComponentNotReadyException
      */
-    public JdbcDriver(JdbcDriverDescription jdbcDriverDescription) throws ComponentNotReadyException {
+    private JdbcDriver(JdbcDriverDescription jdbcDriverDescription) throws ComponentNotReadyException {
     	this(jdbcDriverDescription.getDatabase(),
     			jdbcDriverDescription.getName(),
     			jdbcDriverDescription.getDbDriver(),
@@ -233,4 +237,21 @@ public class JdbcDriver {
 		*/
 	}
 
+	/**
+	 * Factory method for creating a JdbcDriver based on a JdbcDriverDescription.
+	 * @param jdbcDriverDescription
+	 * @return
+	 * @throws ComponentNotReadyException
+	 */
+	public static JdbcDriver createInstance(JdbcDriverDescription jdbcDriverDescription) throws ComponentNotReadyException {
+		JdbcDriver result = driversCache.get(jdbcDriverDescription);
+		if (result != null) {
+			return result;
+		} else {
+			result = new JdbcDriver(jdbcDriverDescription);
+			driversCache.put(jdbcDriverDescription, result);
+			return result;
+		}
+	}
+	
 }

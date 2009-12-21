@@ -179,7 +179,7 @@ public class JdbcDriverDescription extends PluginableItemDescription {
      * @throws ComponentNotReadyException
      */
     public JdbcDriver createJdbcDriver() throws ComponentNotReadyException {
-    	return new JdbcDriver(this);
+    	return JdbcDriver.createInstance(this);
     }
 
     public JdbcSpecificDescription getJdbcSpecificDescription() {
