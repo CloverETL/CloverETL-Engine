@@ -141,14 +141,14 @@ public class FileUtils {
         } catch(MalformedURLException e) {}
 
         // sandbox url
-    	try {
-    		if (fileURL.startsWith(SandboxStreamHandler.SANDBOX_PROTOCOL)){
-        		TransformationGraph graph = ContextProvider.getGraph();
-        		if (graph == null)
-        			throw new NullPointerException("Graph reference cannot be null when \""+SandboxStreamHandler.SANDBOX_PROTOCOL+"\" protocol is used.");
+		if (fileURL.startsWith(SandboxStreamHandler.SANDBOX_PROTOCOL)){
+    		TransformationGraph graph = ContextProvider.getGraph();
+    		if (graph == null)
+    			throw new MalformedURLException("Graph reference cannot be null when \""+SandboxStreamHandler.SANDBOX_PROTOCOL+"\" protocol is used.");
+        	try {
         		return new URL(contextURL, fileURL, new SandboxStreamHandler(graph));
-    		}
-        } catch(MalformedURLException e) {}
+            } catch(MalformedURLException e) {}
+		}
         
         // file url
         return new URL(contextURL, "file:" + fileURL);
