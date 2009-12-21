@@ -241,7 +241,7 @@ public class ReadableChannelDictionaryIterator {
 			return hasNext;
 		}
 		public ReadableByteChannel next() {
-			if (hasNext()) return null;
+			if (!hasNext()) return null;
 			hasNext = false;
 			return rch;
 		}
