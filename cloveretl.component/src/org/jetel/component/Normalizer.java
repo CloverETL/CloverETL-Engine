@@ -262,9 +262,6 @@ public class Normalizer extends Node {
 	            		// this should never happen as compiler always generates correct interface
 	            		throw new ComponentNotReadyException("Invalid type of record transformation");
 	            	}
-	            	
-	            	// set graph instance to transformation (if CTL it can access lookups etc.)
-	            	norm.setGraph(getGraph());
 					break;
 				default:
 					throw new ComponentNotReadyException(
@@ -272,6 +269,8 @@ public class Normalizer extends Node {
 									+ getId());
 				}
 			}
+        	// set graph instance to transformation (if CTL it can access lookups etc.)
+        	norm.setGraph(getGraph());
 		}
 		if (!norm.init(transformationParameters, inMetadata, outMetadata)) {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + norm.getMessage());
