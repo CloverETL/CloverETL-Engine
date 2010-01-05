@@ -301,8 +301,6 @@ public class Denormalizer extends Node {
 	            		// this should never happen as compiler always generates correct interface
 	            		throw new ComponentNotReadyException("Invalid type of record transformation");
 	            	}
-	            	// set graph to transformation (if CTL it can use lookups etc.)
-	            	denorm.setGraph(getGraph());
 					break;
 				default:
 					throw new ComponentNotReadyException(
@@ -310,6 +308,8 @@ public class Denormalizer extends Node {
 									+ getId());
 				}
 			}
+			// set graph to transformation (if CTL it can use lookups etc.)
+			denorm.setGraph(getGraph());
 		}
 		if (!denorm.init(transformationParameters, inMetadata, outMetadata)) {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + denorm.getMessage());
