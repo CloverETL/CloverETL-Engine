@@ -117,6 +117,10 @@ public class LdapWriter extends Node {
 	/** rejected record are writed to this port */
 	private final static int WRITE_REJECTED_TO_PORT = 0;
 
+	/**	Multi-value separator constant which means no data values are recognized as multi-value. 
+	 *  This is necessary to use special constant for null value due backward compatibility.*/
+	public final static String NONE_MULTI_VALUE_SEPARATOR = "__none__";
+	
 	/*
 	 * Attributes read from the xml .grf file
 	 * TODO : modify ldap url to server (mandatory) + port (default 389)
@@ -129,6 +133,8 @@ public class LdapWriter extends Node {
 	private static final String XML_USER_ATTRIBUTE = "user";
 	/** The attribute name in grf file used to specify a password */
 	private static final String XML_PASSWORD_ATTRIBUTE = "password";
+	/** The attribute name in grf file used to specify a multi-value separator */
+	private static final String XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE = "multiValueSeparator";
 	
 	/*
 	 * Action values available on xml file.
@@ -153,7 +159,10 @@ public class LdapWriter extends Node {
 	private String user;
 	/** User password used on authentificated connection */
 	private String passwd;
-
+	/** This string is used as a multi-value separator. 
+	 *  One jetel field can contain multiple values separated by this string. */
+	private String multiValueSeparator = "|";
+	
 	/** A logger for the class */
 	static Log logger = LogFactory.getLog(LdapWriter.class);
 
@@ -191,6 +200,7 @@ public class LdapWriter extends Node {
 		super.init();
 
 		this.formatter = new LdapFormatter(this.ldapUrl, this.action, this.user, this.passwd);
+		this.formatter.setMultiValueSeparator(multiValueSeparator);
 		
 		// based on file mask, create/open output file
 		try {
@@ -317,6 +327,9 @@ public class LdapWriter extends Node {
 						action);
 				
 			}
+			if (xattribs.exists(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE)) {
+				aSimpleLdapWriter.setMultiValueSeparator(xattribs.getString(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE));
+			}
 		} catch(Exception ex){
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(), ex);
 		}
@@ -374,5 +387,17 @@ public class LdapWriter extends Node {
 		super.free();
 		this.formatter.close();
 	}
-	
+
+	public String getMultiValueSeparator() {
+		return multiValueSeparator;
+	}
+
+	public void setMultiValueSeparator(String multiValueSeparator) {
+		if (!StringUtils.isEmpty(multiValueSeparator) && !multiValueSeparator.equals(NONE_MULTI_VALUE_SEPARATOR)) {
+			this.multiValueSeparator = multiValueSeparator;
+		} else {
+			this.multiValueSeparator = null;
+		}
+	}
+
 }

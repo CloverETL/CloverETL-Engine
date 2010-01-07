@@ -31,6 +31,7 @@ import javax.naming.directory.Attribute;
 import org.jetel.data.DataField;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * this class is a mapping utilities between LDAP data and Jetel internal data
@@ -106,10 +107,12 @@ public abstract class Ldap2JetelData {
 					if (ne.hasMore()) {
 						StringBuilder resString = new StringBuilder("");
 						resString.append(ne.next().toString());
-						while (ne.hasMore()) {
-							Object o = ne.next();
-							resString.append(this.multiSeparator);
-							resString.append(o.toString());
+						if (!StringUtils.isEmpty(multiSeparator)) {
+							while (ne.hasMore()) {
+								Object o = ne.next();
+								resString.append(this.multiSeparator);
+								resString.append(o.toString());
+							}
 						}
 						df.setValue(resString.toString());
 					} else { // attr exist but value are null.
@@ -123,6 +126,41 @@ public abstract class Ldap2JetelData {
 			}
 		}
 
-	} //end of class CopyStrin
+	} //end of class CopyString
+
+	static public class Ldap2JetelByte extends Ldap2JetelData {
+
+		public Ldap2JetelByte() {
+			super(null);
+		}
+		
+		/**
+		 * This function set the value of the field passed in argument
+		 * to the value of the LDAP attr.
+		 * @param df the field which has to be set
+		 * @param attr the LDAP attribute whose values have to be got 
+		 */
+		public void setField(DataField df, Attribute attr) throws BadDataFormatException {
+			if (attr == null) { // attr not set in the LDAP directory
+				df.setNull(true);
+			} else if (df.getType() == DataFieldMetadata.BYTE_FIELD 
+					|| df.getType() == DataFieldMetadata.BYTE_FIELD_COMPRESSED) {
+				Object value;
+				try {
+					value = attr.get(); //only first value is taken into consideration
+				} catch (NamingException e) {
+					throw new BadDataFormatException("LDAP attribute to Jetel field transformation exception : Field " + attr.getID() + ".");
+				}
+				if (value == null) {
+					df.setNull(true);
+				} else {
+					df.setValue(value);
+				}
+			} else {
+				throw new BadDataFormatException("LDAP attribute to Jetel field transformation exception : Field " + attr.getID() + " is not a Byte array.");
+			}
+		}
+
+	} //end of class CopyByte
 
 }

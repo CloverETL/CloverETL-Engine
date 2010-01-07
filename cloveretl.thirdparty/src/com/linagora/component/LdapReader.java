@@ -109,6 +109,7 @@ public class LdapReader extends Node {
 	private static final String XML_LDAPURL_ATTRIBUTE = "ldapUrl";
 	private static final String XML_USER_ATTRIBUTE = "user";
 	private static final String XML_PASSWORD_ATTRIBUTE = "password";
+	private static final String XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE = "multiValueSeparator";
 
 	/**
 	 * Component type
@@ -133,6 +134,9 @@ public class LdapReader extends Node {
 	private String ldapUrl;
 	private String user;
 	private String passwd;
+	/** This string is used as a multi-value separator. 
+	 *  One jetel field can contain multiple values separated by this string. */
+	private String multiValueSeparator = "|";
 
 	/**
 	 * A logger for the class
@@ -191,7 +195,8 @@ public class LdapReader extends Node {
 		} else {
 			this.parser = new LdapParser(this.ldapUrl, this.base, this.filter, this.scope);
 		}	
-			
+		parser.setMultiValueSeparator(multiValueSeparator);
+		
 		/*
 		 * TODO : well... I don't know how to add LdapConnection node to transformation graphe.
 		 * But it will be better if LdapConnection node exist, as it is for DB connection.
@@ -305,6 +310,10 @@ public class LdapReader extends Node {
 						xattribs.getString(XML_FILTER_ATTRIBUTE),
 						i_scope);
 			}
+			if (xattribs.exists(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE)) {
+				aLdapReader.setMultiValueSeparator(xattribs.getString(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE));
+			}
+
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(), ex);
 		}
@@ -332,6 +341,18 @@ public class LdapReader extends Node {
 	public synchronized void free() {
 		super.free();
 		parser.close();
+	}
+
+	public String getMultiValueSeparator() {
+		return multiValueSeparator;
+	}
+
+	public void setMultiValueSeparator(String multiValueSeparator) {
+		if (!StringUtils.isEmpty(multiValueSeparator) && !multiValueSeparator.equals(LdapWriter.NONE_MULTI_VALUE_SEPARATOR)) {
+			this.multiValueSeparator = multiValueSeparator;
+		} else {
+			this.multiValueSeparator = null;
+		}
 	}
 
 	

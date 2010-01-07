@@ -34,16 +34,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
+import com.linagora.ldap.Jetel2LdapData.Jetel2LdapByte;
 import com.linagora.ldap.Jetel2LdapData.Jetel2LdapString;
 
 /**
  * This class is used by LdapWriter component to actually
- * create connection and manged update on the LDAP directory
+ * create connection and managed update on the LDAP directory
  * and transform CloverETL internal data representation to
  * LDAP objects.
  * @see com.linagora.component.LdapWriter
@@ -104,7 +104,7 @@ public class LdapFormatter {
 	private LdapManager ldapManager;
 	
 	/** Ugly hack to simulate multivaluated attributes */
-	private String multiSeparator = "|";
+	private String multiSeparator = null; //'null' means no multi-values are expected
 	
 	/**
 	 * A logger (log4j) for the class
@@ -345,19 +345,25 @@ public class LdapFormatter {
 			 * Approximation : Ldap attributes are Strings.
 			 * TODO : correct this in the right way, from experiences.
 			 */
-			if(this.metadata.getField(i).getType() != DataFieldMetadata.STRING_FIELD) {
+			if(this.metadata.getField(i).getType() == DataFieldMetadata.STRING_FIELD) {
+				transMap[i] = new Jetel2LdapString(this.multiSeparator);
+			} else if (this.metadata.getField(i).getType() == DataFieldMetadata.BYTE_FIELD
+					|| this.metadata.getField(i).getType() == DataFieldMetadata.BYTE_FIELD_COMPRESSED) {
+				transMap[i] = new Jetel2LdapByte();
+			} else {
 				throw new BadDataFormatException("LDAP intialialisation : Field " + dfm.getName()
 						+" has type " + dfm.getType() + " which is not supported." +
-				"Only String type is supported.");
+				"Only String and Byte array types are supported.");
 			}
-			
-			/*
-			 * Ok, map the methode to corresponding to the type in 
-			 * the mapping vector.
-			 * Only one type for now.
-			 */
-			transMap[i] = new Jetel2LdapString(this.multiSeparator);
 		}
 	}
 	
+	public String getMultiSeparator() {
+		return multiSeparator;
+	}
+
+	public void setMultiValueSeparator(String multiSeparator) {
+		this.multiSeparator = multiSeparator;
+	}
+
 }
