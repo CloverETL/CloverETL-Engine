@@ -48,6 +48,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
+import com.linagora.ldap.Ldap2JetelData.Ldap2JetelByte;
 import com.linagora.ldap.Ldap2JetelData.Ldap2JetelString;
 
 
@@ -88,7 +89,7 @@ public class LdapParser implements Parser {
 	private Ldap2JetelData[] transMap = null;
 
 	/** Hack to manage multivaluated attributes */
-	private final String multiSeparator = "|";
+	private String multiSeparator = null;
 
 	/** Useful constant to connect to the LDAP server and perform the search */
 	private String base;
@@ -341,18 +342,16 @@ public class LdapParser implements Parser {
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			DataFieldMetadata dfm = this.metadata.getField(i);
 
-			if(this.metadata.getField(i).getType() != DataFieldMetadata.STRING_FIELD) {
+			if (this.metadata.getField(i).getType() == DataFieldMetadata.STRING_FIELD) {
+				transMap[i] = new Ldap2JetelString(multiSeparator);
+			} else if (this.metadata.getField(i).getType() == DataFieldMetadata.BYTE_FIELD
+					|| this.metadata.getField(i).getType() == DataFieldMetadata.BYTE_FIELD_COMPRESSED) {
+				transMap[i] = new Ldap2JetelByte();
+			} else {
 				throw new BadDataFormatException("LDAP intialialisation : Field " + dfm.getName()
 						+ " has type " + dfm.getType() + " which is not supported." 
-						+ "Only String type is supported.");
+						+ "Only String and Byte array types are supported.");
 			}
-				
-			/*
-			 * Ok, map the methode to corresponding to the type in 
-			 * the mapping vector.
-			 * Only one type for now.
-				 */
-			transMap[i] = new Ldap2JetelString(multiSeparator);
 		}
 	}
 
@@ -416,5 +415,13 @@ public class LdapParser implements Parser {
 		// TODO Auto-generated method stub
 		
 	}
-	
+
+	public String getMultiValueSeparator() {
+		return multiSeparator;
+	}
+
+	public void setMultiValueSeparator(String multiValueSeparator) {
+		this.multiSeparator = multiValueSeparator;
+	}
+
 }

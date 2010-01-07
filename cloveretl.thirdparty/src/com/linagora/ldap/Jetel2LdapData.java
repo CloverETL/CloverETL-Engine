@@ -33,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * this class is a mapping utilities between 
@@ -46,7 +47,7 @@ abstract public class Jetel2LdapData {
 
 	/**
 	 * In the case where LDAP attribute are
-	 * multi valuated, we have to concatenat them.
+	 * multi valuated, we have to concatenate them.
 	 * This is the separator btw value in Jetel format
 	 * 
 	 * XXX Sould it be static ? Should it be final ?
@@ -136,12 +137,55 @@ abstract public class Jetel2LdapData {
 			/*
 			 * Have we a multivaluated value ?
 			 */
-			Pattern pattern = Pattern.compile(Pattern.quote(this.multiSeparator));
+			if (StringUtils.isEmpty(multiSeparator)) {
+				return new Object[] { stringValues };
+			} else {
+				Pattern pattern = Pattern.compile(Pattern.quote(this.multiSeparator));
 			
-			Object[] values = pattern.split(stringValues);
-			return values;
+				return pattern.split(stringValues);
+			}
 		}
 
 	} //end of class CopyStrin
+
+	static public class Jetel2LdapByte extends Jetel2LdapData {
+
+		public Jetel2LdapByte() {
+			super(null);
+		}
+
+		/**
+		 * 
+		 */
+		public void setAttribute(Attribute attr, DataField df) throws BadDataFormatException {
+
+			/*
+			 * df is null in the DataRecord. It's a real problem, 
+			 * if the value is null, df is not and reply true to isNull.			 
+			 */
+			if (df == null) {
+				throw new NullPointerException("Field " + attr.getID() + " is null.");
+			} else if (df.getType() != DataFieldMetadata.BYTE_FIELD
+					&& df.getType() != DataFieldMetadata.BYTE_FIELD_COMPRESSED) {
+				throw new BadDataFormatException("LDAP transformation exception : Field " + attr.getID() + " is not a Byte array.");
+			} else if (df.isNull()) {
+				// Set Ldap Attr value to null
+				attr.clear();
+			} else {
+				Object[] values = getvalues(df);
+				for(int i = 0; i < values.length; i++) {
+					Object o = values[i];
+					if (!attr.add(o)) {
+						throw new BadDataFormatException("LDAP transformation exception : Field " + attr.getID() + " is not a Byte array.");
+					}
+				}
+			}
+		}
+
+		public Object[] getvalues(DataField df) {
+			return new Object[] { df.getValue() };
+		}
+
+	}
 
 }
