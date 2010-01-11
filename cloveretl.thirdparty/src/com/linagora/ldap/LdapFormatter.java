@@ -32,6 +32,7 @@ import javax.naming.directory.BasicAttributes;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.JetelException;
@@ -105,6 +106,9 @@ public class LdapFormatter {
 	
 	/** Ugly hack to simulate multivaluated attributes */
 	private String multiSeparator = null; //'null' means no multi-values are expected
+	
+	/** Clover fields with null value will be ignored. */
+	private boolean ignoreNullFields;
 	
 	/**
 	 * A logger (log4j) for the class
@@ -243,7 +247,15 @@ public class LdapFormatter {
 			String attrId = this.metadata.getField(i).getName();
 			if(!attrId.equalsIgnoreCase("dn")) { //ignore dn as an attribute
 				Attribute attr = new BasicAttribute(attrId);
-				transMap[i].setAttribute(attr, record.getField(i));
+				DataField dataField = record.getField(i);
+				
+				//null values with add_entry action are ignored
+				if (ignoreNullFields 
+						&& (this.action == ADD_ENTRY && !dn_exists)
+						&& dataField.isNull()) {
+					continue;
+				}
+				transMap[i].setAttribute(attr, dataField);
 				/*
 				 * TODO Hum. Shall we add the attr in every case ? 
 				 * For instance, if the value is null or equals to "", should we had
@@ -364,6 +376,14 @@ public class LdapFormatter {
 
 	public void setMultiValueSeparator(String multiSeparator) {
 		this.multiSeparator = multiSeparator;
+	}
+
+	public boolean getIgnoreNullFields() {
+		return ignoreNullFields;
+	}
+	
+	public void setIgnoreNullFields(boolean ignoreNullFields) {
+		this.ignoreNullFields = ignoreNullFields;
 	}
 
 }
