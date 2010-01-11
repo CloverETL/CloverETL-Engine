@@ -135,6 +135,8 @@ public class LdapWriter extends Node {
 	private static final String XML_PASSWORD_ATTRIBUTE = "password";
 	/** The attribute name in grf file used to specify a multi-value separator */
 	private static final String XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE = "multiValueSeparator";
+	/** The attribute name in grf file used to ignore null clover fields - has sense only for add_entry action */
+	private static final String XML_IGNORE_NULL_FIELDS_ATTRIBUTE = "ignoreNullFields";
 	
 	/*
 	 * Action values available on xml file.
@@ -162,6 +164,8 @@ public class LdapWriter extends Node {
 	/** This string is used as a multi-value separator. 
 	 *  One jetel field can contain multiple values separated by this string. */
 	private String multiValueSeparator = "|";
+	/** This switch makes available to ignore null clover fields */
+	private boolean ignoreNullFields = false;
 	
 	/** A logger for the class */
 	static Log logger = LogFactory.getLog(LdapWriter.class);
@@ -201,6 +205,7 @@ public class LdapWriter extends Node {
 
 		this.formatter = new LdapFormatter(this.ldapUrl, this.action, this.user, this.passwd);
 		this.formatter.setMultiValueSeparator(multiValueSeparator);
+		this.formatter.setIgnoreNullFields(ignoreNullFields);
 		
 		// based on file mask, create/open output file
 		try {
@@ -330,6 +335,9 @@ public class LdapWriter extends Node {
 			if (xattribs.exists(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE)) {
 				aSimpleLdapWriter.setMultiValueSeparator(xattribs.getString(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_IGNORE_NULL_FIELDS_ATTRIBUTE)) {
+				aSimpleLdapWriter.setIgnoreNullFields(xattribs.getBoolean(XML_IGNORE_NULL_FIELDS_ATTRIBUTE));
+			}
 		} catch(Exception ex){
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(), ex);
 		}
@@ -400,4 +408,12 @@ public class LdapWriter extends Node {
 		}
 	}
 
+	public boolean getIgnoreNullFields() {
+		return ignoreNullFields;
+	}
+	
+	public void setIgnoreNullFields(boolean ignoreNullFields) {
+		this.ignoreNullFields = ignoreNullFields;
+	}
+	
 }
