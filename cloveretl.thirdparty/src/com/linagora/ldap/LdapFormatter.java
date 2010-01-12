@@ -107,9 +107,6 @@ public class LdapFormatter {
 	/** Ugly hack to simulate multivaluated attributes */
 	private String multiSeparator = null; //'null' means no multi-values are expected
 	
-	/** Clover fields with null value will be ignored. */
-	private boolean ignoreNullFields;
-	
 	/**
 	 * A logger (log4j) for the class
 	 */
@@ -250,9 +247,7 @@ public class LdapFormatter {
 				DataField dataField = record.getField(i);
 				
 				//null values with add_entry action are ignored
-				if (ignoreNullFields 
-						&& (this.action == ADD_ENTRY && !dn_exists)
-						&& dataField.isNull()) {
+				if ((this.action == ADD_ENTRY && !dn_exists) && dataField.isNull()) {
 					continue;
 				}
 				transMap[i].setAttribute(attr, dataField);
@@ -376,14 +371,6 @@ public class LdapFormatter {
 
 	public void setMultiValueSeparator(String multiSeparator) {
 		this.multiSeparator = multiSeparator;
-	}
-
-	public boolean getIgnoreNullFields() {
-		return ignoreNullFields;
-	}
-	
-	public void setIgnoreNullFields(boolean ignoreNullFields) {
-		this.ignoreNullFields = ignoreNullFields;
 	}
 
 }
