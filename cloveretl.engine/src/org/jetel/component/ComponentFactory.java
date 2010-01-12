@@ -32,9 +32,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.distribution.NodeDistribution;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
 /**
@@ -128,7 +130,19 @@ public class ComponentFactory {
         try {
             //create instance of component
 			Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
-			return (org.jetel.graph.Node) method.invoke(null, new Object[] {graph, nodeXML});
+			Node result = (org.jetel.graph.Node) method.invoke(null, new Object[] {graph, nodeXML});
+
+			//nodeDistribution attribute parsing
+			//hack for extracting of node layout information - Clover3 solves this issue
+			//it is the easiest way how to add new common attribute for all nodes
+			ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
+			
+			if (xattribs.exists(Node.XML_DISTRIBUTION_ATTRIBUTE)) {
+				NodeDistribution nodeDistribution = NodeDistribution.createFromString(xattribs.getString(Node.XML_DISTRIBUTION_ATTRIBUTE));
+				result.setDistribution(nodeDistribution);
+			}
+			
+			return result;
         } catch(InvocationTargetException e) {
             logger.error("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
             throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
