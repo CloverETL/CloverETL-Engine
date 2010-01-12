@@ -43,6 +43,7 @@ import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.graph.distribution.NodeDistribution;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.ErrorMsgBody;
 import org.jetel.graph.runtime.Message;
@@ -88,6 +89,11 @@ public abstract class Node extends GraphElement implements Runnable {
 	
     protected Phase phase;
 
+    /**
+     * Distribution of this node processing at cluster environment.
+     */
+    protected NodeDistribution distribution;
+    
     // buffered values
     protected OutputPort[] outPortsArray;
     protected int outPortsSize;
@@ -112,6 +118,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 */
 	public final static String XML_TYPE_ATTRIBUTE="type";
     public final static String XML_ENABLED_ATTRIBUTE="enabled";
+    public final static String XML_DISTRIBUTION_ATTRIBUTE = "distribution";
 
     /**
      *  Standard constructor.
@@ -137,6 +144,7 @@ public abstract class Node extends GraphElement implements Runnable {
         phase = null;
         runResult=Result.N_A; // result is not known yet
         childThreads = new ArrayList<Thread>();
+        distribution = NodeDistribution.createBasedOnNeighbours();
 	}
 
 	/**
@@ -937,6 +945,21 @@ public abstract class Node extends GraphElement implements Runnable {
      */
     public void setPassThroughOutputPort(int passThroughOutputPort) {
         this.passThroughOutputPort = passThroughOutputPort;
+    }
+    
+    
+    /**
+     * @return type of distribution processing at cluster environment
+     */
+    public NodeDistribution getDistribution() {
+    	return distribution;
+    }
+    
+    /**
+     * @param distribution type of distribution processing at cluster environment
+     */
+    public void setDistribution(NodeDistribution distribution) {
+    	this.distribution = distribution;
     }
     
     protected void resetBufferedValues(){
