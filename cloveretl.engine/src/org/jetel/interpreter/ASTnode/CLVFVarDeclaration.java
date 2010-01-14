@@ -4,8 +4,10 @@ package org.jetel.interpreter.ASTnode;
 
 import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.ParseException;
+import org.jetel.interpreter.Token;
 import org.jetel.interpreter.TransformLangParserConstants;
 import org.jetel.interpreter.TransformLangParserVisitor;
+import org.jetel.metadata.DataRecordMetadata;
 
 public class CLVFVarDeclaration extends SimpleNode implements TransformLangParserConstants{
  
@@ -17,6 +19,7 @@ public class CLVFVarDeclaration extends SimpleNode implements TransformLangParse
     public int length;
 	public int precision;
 	public String metadataId;
+	public int recordNo=-1;
     
     public CLVFVarDeclaration(int id) {
     super(id);
@@ -81,4 +84,19 @@ public class CLVFVarDeclaration extends SimpleNode implements TransformLangParse
 	  this.metadataId=id;
   }
   
+  public void setRecordNum(Token t,String fRecNum) throws ParseException { 
+ 	 recordNo=Integer.parseInt(fRecNum.substring(1));
+      DataRecordMetadata record=parser.getInRecordMeta(recordNo);
+      if (record==null){
+          throw new ParseException(t,"Input record number ["+recordNo+"] does not exist"); 
+      }
+  }
+  
+  public void setRecordName(Token t,String recName) throws ParseException { 
+ 	 recordNo=parser.getInRecordNum(recName.substring(1));
+      if (recordNo<0){
+          throw new ParseException(t,"Input record name ["+recName+"] does not exist"); 
+      }
+  }
+    
 }
