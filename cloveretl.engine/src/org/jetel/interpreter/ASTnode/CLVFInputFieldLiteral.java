@@ -17,6 +17,7 @@ public class CLVFInputFieldLiteral extends SimpleNode {
     public int recordNo=-1;
     public int fieldNo=-1;
     public String fieldName;
+    public boolean indexSet=false;
 	
 	public CLVFInputFieldLiteral(int id) {
 		super(id);
@@ -128,7 +129,7 @@ public class CLVFInputFieldLiteral extends SimpleNode {
      public void setRecordName(Token t,String recName) throws ParseException { 
     	 recordNo=parser.getInRecordNum(recName.substring(1));
          if (recordNo<0){
-             throw new ParseException(t,"Input record name ["+recName+"] does not exist"); 
+             throw new ParseException(t,"Input record name ["+recName.substring(1)+"] does not exist"); 
          }
      }
      

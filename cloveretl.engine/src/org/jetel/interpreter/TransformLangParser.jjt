@@ -718,6 +718,10 @@ void VarSpec(CLVFVarDeclaration node) #void :
 	  l=<IDENTIFIER> { node.setMetadataId(l.image);} 
   	|  		
   	l=<INTEGER_LITERAL> { node.setLength(l.image);} [ "," p=<INTEGER_LITERAL>  { node.setPrecision(p.image); } ]
+  	|
+  	 l=<REC_NUM_ID> {  node.setRecordNum(l,l.image);}
+  	|
+  	 l=<REC_NAME_ID> { node.setRecordName(l,l.image); }
    	
 }
 
@@ -963,13 +967,13 @@ void ListOfLiterals() :
 	"]"	
 }
 
-void InputFieldExp() #void :
-{  Token t;}{  t = <FIELD_ID> { jjtThis.setFieldName(t,t.image); } #InputFieldLiteral  | t = <REC_NAME_FIELD_ID> { jjtThis.setRecordFieldName(t,t.image); } #InputFieldLiteral
-  | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t,t.image); } #InputFieldLiteral
-  | t = <REC_NUM_FIELD_NUM> { jjtThis.setRecordNumFieldNum(t,t.image); } #InputFieldLiteral
-  | t= <REC_NAME_FIELD_NUM>  { jjtThis.setRecordNameFieldNum(t,t.image); } #InputFieldLiteral
-  | t= <REC_NAME_ID> { jjtThis.setRecordName(t,t.image); }  #InputFieldLiteral
-  | t= <REC_NUM_ID> { jjtThis.setRecordNum(t,t.image); }  #InputFieldLiteral}/*
+void InputFieldExp() #InputFieldLiteral :
+{  Token t;}{  t = <FIELD_ID> { jjtThis.setFieldName(t,t.image); }   | t = <REC_NAME_FIELD_ID> { jjtThis.setRecordFieldName(t,t.image); } 
+  | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t,t.image); }
+  | t = <REC_NUM_FIELD_NUM> { jjtThis.setRecordNumFieldNum(t,t.image); }
+  | t= <REC_NAME_FIELD_NUM>  { jjtThis.setRecordNameFieldNum(t,t.image); } 
+  | t= <REC_NAME_ID> [ "[" AdditiveExpression() "]" {jjtThis.indexSet=true;} ] { jjtThis.setRecordName(t,t.image); } 
+  | t= <REC_NUM_ID> [ "[" AdditiveExpression() "]" {jjtThis.indexSet=true;} ] { jjtThis.setRecordNum(t,t.image); } }/*
 void OutputFieldExp() #void :// IDExp -> ID
 {
   Token t;

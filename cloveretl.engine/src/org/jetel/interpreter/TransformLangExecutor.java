@@ -755,16 +755,43 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFInputFieldLiteral node, Object data) {
     	DataRecord record = inputRecords[node.recordNo];
+    	int fieldNo=-1;
 		if (record == NullRecord.NULL_RECORD || record == null) {
 			stack.push(TLNullValue.getInstance());
 			return null;
 		}
+		
+		if (node.indexSet){ 
+			node.childrenAccept(this, data);
+			TLValue val=stack.pop();
+			try{
+				fieldNo=val.getNumeric().getInt();
+			}catch(Exception ex){
+				throw new TransformLangExecutorRuntimeException(node,new Object[] {val},"invalid field index");
+			}
+		}
 
 		if (node.fieldNo < 0) { // record context
 			if (node.value == null) {
-				node.value = new TLRecordValue(record);
+				if (node.indexSet){
+					try{
+						node.value = TLValue.convertValue(record.getField(fieldNo));
+					}catch(Exception ex){
+						throw new TransformLangExecutorRuntimeException(node, "field index ("+fieldNo +") out of bounds");
+					}
+				}else{
+					node.value = new TLRecordValue(record);
+				}
 			} else {
-				node.value.setValue(record);
+				if (node.indexSet){
+					try{
+						node.value = TLValue.convertValue(record.getField(fieldNo));
+					}catch(Exception ex){
+						throw new TransformLangExecutorRuntimeException(node, "field index ("+fieldNo +") out of bounds");
+					}
+				}else{
+					node.value.setValue(record);
+				}
 			}
 
 			stack.push(node.value);
@@ -1291,20 +1318,21 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         }
             break;
         case RECORD_VAR:
-        	DataRecordMetadata metadata =null;
-        	try{
-        		metadata = graph.getDataRecordMetadata(node.metadataId, true);
-        	}catch(Exception ex){
-        		throw new TransformLangExecutorRuntimeException(node,"error in Record declaration",ex);
-        	}
-        	if (metadata==null){
-        		throw new TransformLangExecutorRuntimeException(node,
-                        "record variable declaration - "
-                                + "can't find metadata ID \""
-                                + (node.metadataId!=null ? node.metadataId : "<unknown ID>") + "\"");
-        	}
-        	value = new TLRecordValue(metadata);
-        	break;
+			DataRecordMetadata metadata = null;
+			if (node.recordNo >= 0) {
+				metadata = inputRecords[node.recordNo].getMetadata();
+			} else {
+				try {
+					metadata = graph.getDataRecordMetadata(node.metadataId, true);
+				} catch (Exception ex) {
+					throw new TransformLangExecutorRuntimeException(node, "error in Record declaration", ex);
+				}
+			}
+			if (metadata == null) {
+				throw new TransformLangExecutorRuntimeException(node, "record variable declaration - " + "can't find metadata ID \"" + (node.metadataId != null ? node.metadataId : "<unknown ID>") + "\"");
+			}
+			value = new TLRecordValue(metadata);
+			break;
         default:
             throw new TransformLangExecutorRuntimeException(node,
                     "variable declaration - "
