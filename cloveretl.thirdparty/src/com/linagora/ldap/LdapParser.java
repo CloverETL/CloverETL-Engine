@@ -158,7 +158,7 @@ public class LdapParser implements Parser {
 		try {
 			ldapManager.openContext();
 		} catch (NamingException ne) {
-			throw new ComponentNotReadyException(ne);
+			throw new ComponentNotReadyException("LDAP connection failed.", ne);
 		}
 
 		/*
