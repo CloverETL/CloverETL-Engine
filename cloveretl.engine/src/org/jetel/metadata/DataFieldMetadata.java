@@ -1,20 +1,21 @@
 /*
- * jETeL/Clover.ETL - Java based ETL application framework.
- * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
+ *    jETeL/Clover - Java based ETL application framework.
+ *    Copyright (c) Opensys TM by Javlin, a.s. (www.opensys.com)
+ *   
+ *    This library is free software; you can redistribute it and/or
+ *    modify it under the terms of the GNU Lesser General Public
+ *    License as published by the Free Software Foundation; either
+ *    version 2.1 of the License, or (at your option) any later version.
+ *   
+ *    This library is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU   
+ *    Lesser General Public License for more details.
+ *   
+ *    You should have received a copy of the GNU Lesser General Public
+ *    License along with this library; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.jetel.metadata;
 
@@ -42,8 +43,8 @@ import org.jetel.util.string.StringUtils;
  * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 13th March 2009
- * @since 26th March 2002
+ * @version 20th January 2010
+ * @created 26th March 2002
  *
  * @see org.jetel.metadata.DataRecordMetadata
  *
@@ -211,8 +212,11 @@ public class DataFieldMetadata implements Serializable {
 	private short shift = 0;
 	/** Indicates if when reading from file try to trim string value to obtain value */
 	private boolean trim = false;
+
 	/** Fields can assume null value by default. */
 	private boolean nullable = true;
+	/** String value that is considered as null (in addition to null itself). */
+	private String nullValue = null;
 
 	/** The default value. */
 	private Object defaultValue;
@@ -676,6 +680,31 @@ public class DataFieldMetadata implements Serializable {
 	 */
 	public boolean isNullable() {
 		return nullable;
+	}
+
+	/**
+	 * Sets a string value that will be considered as <code>null</code> (in addition to <code>null</code> itself).
+	 *
+	 * @param nullValue the string value to be considered as null, or <code>null</code> if the default null value
+	 * should be used
+	 */
+	public void setNullValue(String nullValue) {
+		this.nullValue = nullValue;
+	}
+
+	/**
+	 * @return the string value that is considered as <code>null</code>, never returns <code>null</code>
+	 */
+	public String getNullValue() {
+		if (nullValue != null) {
+			return nullValue;
+		}
+
+		if (dataRecordMetadata != null) {
+			return dataRecordMetadata.getNullValue();
+		}
+
+		return DataRecordMetadata.DEFAULT_NULL_VALUE;
 	}
 
 	/**
