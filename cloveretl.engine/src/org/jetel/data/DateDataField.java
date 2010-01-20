@@ -33,6 +33,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.date.DateFormatter;
 import org.jetel.util.date.DateFormatterFactory;
+import org.jetel.util.string.Compare;
 import org.jetel.util.string.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -337,9 +338,8 @@ public class DateDataField extends DataField implements Comparable {
     }
 
 	public void fromString(CharSequence seq) {
-		if (seq == null || seq.length() == 0) {
+		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
 		    setNull(true);
-
 		    return;
 		}
 
