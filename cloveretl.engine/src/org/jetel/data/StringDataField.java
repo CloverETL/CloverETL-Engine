@@ -347,10 +347,16 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
 	 */
 	public void fromString(CharSequence seq) {
-		if (!StringUtils.isEmpty(seq) && stringFormat != null && !stringFormat.matches(seq))
+		if (!StringUtils.isEmpty(seq) && stringFormat != null && !stringFormat.matches(seq)) {
 			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
 					getMetadata().getName(),DataFieldMetadata.type2Str(getType()),seq,stringFormat.getPattern()), seq.toString());
-		setValue(seq);
+		}
+
+		if (seq != null && !Compare.equals(seq, metadata.getNullValue())) {
+			setValue(seq);
+		} else {
+			setValue((CharSequence) null);
+		}
 	}
 
 	/**

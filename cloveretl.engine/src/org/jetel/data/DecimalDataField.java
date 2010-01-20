@@ -34,6 +34,7 @@ import org.jetel.data.primitive.NumericFormat;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.string.Compare;
 import org.jetel.util.string.StringUtils;
 
 
@@ -412,7 +413,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
 	 */
 	public void fromString(CharSequence seq) {
-		if(seq == null || seq.length() == 0) {
+		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
 		    setNull(true);
 			return;
 		}

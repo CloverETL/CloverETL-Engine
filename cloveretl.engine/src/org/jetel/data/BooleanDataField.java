@@ -30,7 +30,7 @@ import java.nio.charset.CharsetEncoder;
 import org.jetel.data.primitive.StringFormat;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.string.StringUtils;
+import org.jetel.util.string.Compare;
 
 /**
  * Instance of this class represents boolean value.
@@ -250,8 +250,7 @@ public class BooleanDataField extends DataField implements Comparable{
 	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
 	 */
 	public void fromString(CharSequence seq) {
-		//parsePosition.setIndex(0);
-		if (seq == null || seq.length() == 0) {
+		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
 		    setNull(true);
 			return;
 		}
