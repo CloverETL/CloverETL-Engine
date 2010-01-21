@@ -29,6 +29,7 @@ import java.util.Arrays;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.file.ZipUtils;
+import org.jetel.util.string.Compare;
 
 /**
  * Class implementing field which represents gzip-compressed array of bytes. 
@@ -181,7 +182,7 @@ public class CompressedByteDataField extends ByteDataField {
 	 * @see org.jetel.data.ByteDataField#fromString(java.lang.String)
 	 */
 	public void fromString(CharSequence seq) {
-        if(seq == null || seq.length() == 0) {
+        if(seq == null || Compare.equals(seq, metadata.getNullValue())) {
             setNull(true);
             return;
         }
@@ -201,7 +202,7 @@ public class CompressedByteDataField extends ByteDataField {
      * @see org.jetel.data.ByteDataField#fromString(java.lang.String, java.lang.String)
      */
     public void fromString(CharSequence seq, String charset){
-        if(seq == null || seq.length() == 0) {
+        if(seq == null || Compare.equals(seq, metadata.getNullValue())) {
             setNull(true);
             return;
         }

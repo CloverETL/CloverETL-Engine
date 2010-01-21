@@ -28,6 +28,7 @@ import java.util.Arrays;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.string.Compare;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -330,7 +331,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
 	 */
 	public void fromString(CharSequence seq) {
-        if(seq == null || seq.length() == 0) {
+        if(seq == null || Compare.equals(seq, metadata.getNullValue())) {
             setNull(true);
             return;
         }
@@ -352,7 +353,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 * @since            11.12.2006
      */
     public void fromString(CharSequence seq,String charset){
-        if(seq == null || seq.length() == 0) {
+        if(seq == null || Compare.equals(seq, metadata.getNullValue())) {
             setNull(true);
             return;
         }
