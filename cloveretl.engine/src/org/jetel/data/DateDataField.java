@@ -290,7 +290,7 @@ public class DateDataField extends DataField implements Comparable {
 	 */
 	public String toString() {
 		if (value == null) {
-			return "";
+			return metadata.getNullValue();
 		}
 
 		return dateFormatter.format(value);

@@ -316,7 +316,7 @@ public class ByteDataField extends DataField implements Comparable{
      */
     public String toString(String charset) {
         if (isNull()) {
-            return "";
+			return metadata.getNullValue();
         }
         try{
             return new String(getByteArray(),charset);

@@ -409,7 +409,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 */
 	public String toString() {
 		if (isNull) {
-			return "";
+			return metadata.getNullValue();
 		}
 		if (numberFormat != null) {
 			return numberFormat.format(value);

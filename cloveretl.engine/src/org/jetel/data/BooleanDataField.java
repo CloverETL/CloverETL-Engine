@@ -203,7 +203,7 @@ public class BooleanDataField extends DataField implements Comparable{
 	 */
 	public String toString() {
 		if (isNull()) {
-			return "";
+			return metadata.getNullValue();
 		}
 		return Boolean.toString(value);
 	}
