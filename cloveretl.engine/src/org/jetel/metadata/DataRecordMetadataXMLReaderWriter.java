@@ -154,6 +154,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String DEFAULT_ATTR = "default";
 	private static final String LOCALE_ATTR = "locale";
 	private static final String NULLABLE_ATTR = "nullable";
+	private static final String NULL_VALUE_ATTR = "nullValue";
 	private static final String COMPRESSED_ATTR = "compressed";
 	private static final String SHIFT_ATTR = "shift";
 	private static final String SIZE_ATTR = "size";
@@ -369,6 +370,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				fieldElement.setAttribute(NULLABLE_ATTR,
 				        String.valueOf(field.isNullable()));
 
+				if (!StringUtils.isEmpty(field.getNullValue())) {
+					fieldElement.setAttribute(NULL_VALUE_ATTR, field.getNullValue());
+				}
+
 				// output field properties - if anything defined
 				prop = field.getFieldProperties();
 				if (prop != null) {
@@ -439,6 +444,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		String fieldDelimiter = null;
 		String sizeStr = null;
 		String recLocaleStr = null;
+		String recNullValue = null;
 		String itemName;
 		String itemValue;
 		String skipSourceRows = null;
@@ -463,6 +469,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				recordType = itemValue;
 			} else if (itemName.equalsIgnoreCase("locale")) {
 				recLocaleStr = itemValue;
+			} else if (itemName.equalsIgnoreCase(NULL_VALUE_ATTR)) {
+				recNullValue = itemValue;
 			} else if (itemName.equalsIgnoreCase(RECORD_DELIMITER_ATTR)) {
 				recordDelimiter = itemValue;
 			} else if (itemName.equalsIgnoreCase(FIELD_DELIMITER_ATTR)) {
@@ -494,6 +502,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		recordMetadata = new DataRecordMetadata(recordName, rt);
 		if (recLocaleStr != null) {
 			recordMetadata.setLocaleStr(recLocaleStr);
+		}
+		if (recNullValue != null) {
+			recordMetadata.setNullValue(recNullValue);
 		}
 		recordMetadata.setRecordProperties(recordProperties);
 		if(!StringUtils.isEmpty(recordDelimiter)) {
@@ -538,6 +549,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String delimiter = null;
 			String eofAsDelimiter = null;
 			String nullable = null;
+			String nullValue = null;
 			String localeStr = null;
 			String collatorSensitivity = null;
 			String compressed = null;
@@ -568,6 +580,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					defaultValue = itemValue;
 				} else if (itemName.equalsIgnoreCase("nullable")) {
 					nullable = itemValue;
+				} else if (itemName.equalsIgnoreCase(NULL_VALUE_ATTR)) {
+					nullValue = itemValue;
 				} else if (itemName.equalsIgnoreCase("locale")) {
 					localeStr = itemValue;
 				} else if (itemName.equalsIgnoreCase(COLLATOR_SENSITIVITY_ATTR)) {
@@ -648,6 +662,11 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			if (nullable != null) {
 				field.setNullable(nullable.matches("^[tTyY].*"));
 			}
+
+			if (nullValue != null) {
+				field.setNullValue(nullValue);
+			}
+
 			// set localeStr if defined
 			if (localeStr != null) {
 				field.setLocaleStr(localeStr);
