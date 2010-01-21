@@ -339,6 +339,10 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since     April 23, 2002
 	 */
 	public String toString() {
+		if (isNull) {
+			return metadata.getNullValue();
+		}
+
 		return value.toString();
 	}
 

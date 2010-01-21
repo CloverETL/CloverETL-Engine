@@ -403,7 +403,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 */
 	public String toString() {
 		if(isNull) {
-			return "";
+			return metadata.getNullValue();
 		}
 		return value.toString(numericFormat);
 	}
