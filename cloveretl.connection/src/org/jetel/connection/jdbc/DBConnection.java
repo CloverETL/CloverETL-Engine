@@ -150,8 +150,6 @@ public class DBConnection extends GraphElement implements IConnection {
     
     public static final String XML_JDBC_PROPERTIES_PREFIX = "jdbc.";
     
-    public static final String EMBEDDED_UNLOCK_CLASS = "com.ddtek.jdbc.extensions.ExtEmbeddedConnection";
-    
     /**
      * Enum for the transaction isolation property values.
      * 
