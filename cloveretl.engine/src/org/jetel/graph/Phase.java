@@ -190,7 +190,7 @@ public class Phase extends GraphElement implements Comparable {
         		edge.preExecute();
         	} catch (ComponentNotReadyException e) {
 				result = Result.ERROR;
-        		throw new ComponentNotReadyException(this, "Edge " + edge.getId() + " initialization faild.", e);
+        		throw new ComponentNotReadyException(this, "Edge " + edge.getId() + " initialization failed.", e);
         	}
         }
 
