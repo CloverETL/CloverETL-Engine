@@ -69,6 +69,19 @@ public class RecordKeyTokens implements Iterable<KeyFieldTokens> {
 	}
 
 	/**
+	 * @param fieldName searched field name
+	 * @return true if fieldName is part of record key
+	 */
+	public boolean contains(String fieldName) {
+		for (KeyFieldTokens field : keyFields) {
+			if (field.getFieldName().equals(fieldName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
 	 * @return number of key fields
 	 */
 	public int size() {
