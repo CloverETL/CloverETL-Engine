@@ -20,6 +20,7 @@
 package org.jetel.util.key;
 
 import org.jetel.exception.JetelException;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Collection of static methods for manipulating and creating tokens witch represent a record key.
@@ -38,9 +39,15 @@ public class KeyTokenizer {
 	 * @throws JetelException
 	 */
 	public static RecordKeyTokens tokenizeRecordKey(String recordKeyString) throws JetelException {
+		if (StringUtils.isEmpty(recordKeyString)) {
+			throw new IllegalArgumentException("RecordKeyString cannot be empty.");
+		}
 		RecordKeyTokens keyRecord = RecordKeyTokens.parseKeyRecord(recordKeyString);
 		
 		return keyRecord;
 	}
 	
+	public static RecordKeyTokens createEmptyRecordKey() {
+		return new RecordKeyTokens();
+	}
 }
