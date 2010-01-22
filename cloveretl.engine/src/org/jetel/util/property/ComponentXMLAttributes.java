@@ -727,7 +727,7 @@ public class ComponentXMLAttributes {
 
 		value = refResolver.resolveRef(value);
 
-		return new QName(value);
+		return QName.valueOf(value);
 	}
 
 	/**
