@@ -312,6 +312,8 @@
 
 			<keep name="org.jetel.ctl.CTLDefaultImport"><field access="protected public"/><method access="protected public"/></keep>
 			
+			<keep name="com.opensys.cloveretl.component.ws.WSDLAnalyzer"><field access="protected public"/><method access="protected public"/></keep>
+			
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
 			-->
