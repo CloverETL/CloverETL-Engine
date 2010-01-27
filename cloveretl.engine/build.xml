@@ -427,6 +427,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.graph.runtime.IThreadManager"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.dictionary.StringDictionaryEntryProvider"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.parser.TypeSelector"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.graph.runtime.GraphRuntimeContext"><field access="protected public"/><method access="protected public"/></keep>
 			
 			<!-- keep classes usualy used in trasformation -->
 			<keep name="java.util.*"><field access="public"/><method access="public"/></keep>
