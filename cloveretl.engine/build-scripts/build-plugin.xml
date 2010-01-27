@@ -274,8 +274,10 @@
 			<keep name="org.jetel.component.RecordTransform"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.component.DataRecordTransform"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.component.partition.PartitionFunction"><field access="protected public"/><method access="protected public"/></keep>
-			<keep name="org.jetel.component.partition.PartitionFunction"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.component.jms.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.partition.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.rollup.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.rollup.*"></keep>
 			
 			<keep name="org.jetel.connection.jdbc.CopySQLData"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.connection.jdbc.DBConnection"><field access="protected public"/><method access="protected public"/></keep>
@@ -286,6 +288,8 @@
 			<keep name="org.jetel.connection.jdbc.SQLDataParser"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.connection.jdbc.SQLCloverCallableStatement"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.connection.jdbc.driver.JdbcDriver"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.driver.JdbcDriverDescription"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.driver.JdbcDriverFactory"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.connection.jms.JmsConnection"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.connection.jdbc.specific.conn.DefaultConnection"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific"><field access="protected public"/><method access="protected public"/></keep>
