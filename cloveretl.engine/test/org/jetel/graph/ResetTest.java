@@ -39,7 +39,8 @@ public class ResetTest extends TestCase{
 		"examples/extExamples/",
 		"../cloveretl.test.scenarios/",
 		"../cloveretl.examples.commercial/",
-		"examples/CompanyTransactionsTutorial/"
+		"examples/CompanyTransactionsTutorial/",
+		"examples/DataProfiling/"
 		};
 	
 	static Log logger = LogFactory.getLog(ResetTest.class);
@@ -103,6 +104,7 @@ public class ResetTest extends TestCase{
 							&& !pathname.getName().equals("graphMysqlDataWriter.grf") // ok, can only work with MySql client
 							&& !pathname.getName().equals("graphOracleDataWriter.grf") // ok, can only work with Oracle client
 							&& !pathname.getName().equals("graphInformixDataWriter.grf") // ok, can only work with informix server
+							&& !pathname.getName().equals("graphInfobrightDataWriter.grf") // ok, can only work with infobright server
 							&& !pathname.getName().equals("graphSystemExecuteWin.grf") // ok, graph for Windows
 							
 //TODO these graphs should work in the future:
@@ -120,10 +122,12 @@ public class ResetTest extends TestCase{
 							&& !pathname.getName().equals("mathRandom_longWithoutRange.grf") //issue 3220
 							&& !pathname.getName().equals("graphCheckForeignKey.grf") //issue 3220
 							&& !pathname.getName().equals("graphDBExecuteMySql.grf") //issue 3220
+							&& !pathname.getName().equals("graphDBExecuteMsSql.grf") //issue 3220
 							&& !pathname.getName().equals("graphDBExecuteOracle.grf") //issue 3220
 							&& !pathname.getName().equals("graphDBExecutePostgre.grf") //issue 3220
 							&& !pathname.getName().equals("graphDBUnload.grf") //issue 3220
 							&& !pathname.getName().equals("graphDBUnload2.grf") //issue 3220
+							&& !pathname.getName().equals("graphDBLoad5.grf") //issue 3220
 							&& !pathname.getName().equals("graphDBUnloadUniversal.grf") //issue 3220
 							&& !pathname.getName().equals("bufferedEdge1.grf") //issue 3220
 							&& !pathname.getName().equals("bufferedEdge2.grf") //issue 3220
@@ -131,7 +135,11 @@ public class ResetTest extends TestCase{
 							&& !pathname.getName().equals("informix.grf") //issue 3220
 							&& !pathname.getName().equals("parallelReaderFunctionalTest.grf") //issue 3220
 							&& !pathname.getName().equals("sort.grf") //issue 3220
-							&& !pathname.getName().equals("transformations.grf"); //issue 3220
+							&& !pathname.getName().equals("transformations.grf") //issue 3220
+							&& !pathname.getName().equals("mountainsPgsql.grf") //issue 3220
+							&& !pathname.getName().equals("A12_XMLExtractTransactionsFamily.grf") //issue 3220
+							&& !pathname.getName().equals("graphXMLExtract.grf") //issue 3220
+							&& !pathname.getName().equals("graphXMLExtractXsd.grf"); //issue 3220
 				}
 			});
 			
