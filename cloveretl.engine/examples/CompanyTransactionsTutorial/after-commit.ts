@@ -11,7 +11,7 @@
 	</FunctionalTest>
 	
 	<FunctionalTest ident="A02" graphFile="graph/A02_CreatingXLSEmployeesWithFamily.grf">
-	 	<FlatFile outputFile="data-tmp/EmployeesWithFamily.xls" supposedFile="supposed-out/A02.EmployeesWithFamily.xls"/>
+	 	<XlsFile outputFile="data-tmp/EmployeesWithFamily.xls" supposedFile="supposed-out/A02.EmployeesWithFamily.xls"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="A03" graphFile="graph/A03_ConvertingCustomersFromDelimitedToFixed.grf">
