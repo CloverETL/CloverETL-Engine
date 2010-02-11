@@ -20,6 +20,7 @@
 
 package org.jetel.graph.dictionary;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -134,6 +135,9 @@ public class DictionaryTypeFactory {
 		return (IDictionaryType) entryProviderObject;
 	}
     
+	final static public Map<String, DictionaryTypeDescription> getDictionaryTypes() {
+		return Collections.unmodifiableMap(dictionaryTypeDescriptionMap);
+	}
 }
 
 
