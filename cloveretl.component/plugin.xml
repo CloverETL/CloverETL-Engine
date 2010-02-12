@@ -275,11 +275,6 @@
 	</extension>
 	
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.Pacemaker"/>
-	    <parameter id="type" value="PACEMAKER"/>
-	</extension>
-
-	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.SpeedLimiter"/>
 	    <parameter id="type" value="SPEED_LIMITER"/>
 	</extension>
