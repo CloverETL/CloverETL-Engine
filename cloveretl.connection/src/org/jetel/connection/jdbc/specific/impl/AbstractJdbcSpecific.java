@@ -388,7 +388,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
     public String compileSelectQuery4Table(String schema, String table) {
 //		some dbms don't support 
 //    	return "select * from " + schema + "." + table
-		return "select * from " + table;
+		return "select * from " + quoteIdentifier(table);
     }
     
 }
