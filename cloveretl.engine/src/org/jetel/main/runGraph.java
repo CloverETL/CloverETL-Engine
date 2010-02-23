@@ -45,6 +45,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.dictionary.SerializedDictionaryValue;
+import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IThreadManager;
@@ -357,6 +358,8 @@ public class runGraph {
 	        	Properties properties = serializedDictionaryValue.getProperties();
 	        	graph.getDictionary().setValueFromProperties(key, type, properties);
 	        } catch (ComponentNotReadyException e) {
+	            throw new XMLConfigurationException("Dictionary initialization problem.", e);
+			} catch (UnsupportedDictionaryOperation e) {
 	            throw new XMLConfigurationException("Dictionary initialization problem.", e);
 			}
 		}

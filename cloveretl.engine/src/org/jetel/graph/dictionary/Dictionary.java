@@ -123,12 +123,15 @@ public class Dictionary extends GraphElement {
 		setValue(key, dictionaryType, value);
 	}
 
-	public void setValueFromProperties(String key, String typeId, Properties properties) throws ComponentNotReadyException {
+	public void setValueFromProperties(String key, String typeId, Properties properties) throws ComponentNotReadyException, UnsupportedDictionaryOperation {
 		IDictionaryType dictionaryType;
 		try {
 			dictionaryType = DictionaryTypeFactory.getDictionaryType(typeId);
 		} catch(Exception e) {
 			throw new ComponentNotReadyException("Dictionary type '" + typeId + "' does not exist (key = " + key + ").", e);
+		}
+		if (!dictionaryType.isParsePropertiesSupported()) {
+			throw new UnsupportedDictionaryOperation("Dictionary type '" + typeId + "' cannot be initialized from Properties.");
 		}
 		try {
 			setValue(key, dictionaryType, dictionaryType.parseProperties(properties));
