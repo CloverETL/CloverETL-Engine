@@ -21,6 +21,7 @@ package org.jetel.graph.dictionary;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import javax.xml.bind.JAXBContext;
@@ -136,7 +137,9 @@ public class DictionaryFactory {
 			if (entry.getValue() != null) {
 				if (entry.getType().isFormatPropertiesSupported()) {
 					Properties valueProperties = entry.getType().formatProperties(entry.getValue());
-					for (String propertyKey : valueProperties.stringPropertyNames()) {
+					
+					for (Enumeration<?> e = valueProperties.propertyNames(); e.hasMoreElements();) {
+						String propertyKey = (String) e.nextElement();
 						Property property = new Property();
 						property.setKey(propertyKey);
 						property.setValue(valueProperties.getProperty(propertyKey));
