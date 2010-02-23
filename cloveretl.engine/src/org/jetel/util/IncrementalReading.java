@@ -153,7 +153,8 @@ public class IncrementalReading {
      */
     public void reset() throws IOException {
     	storeIncrementalReading();
-    	incrementalValues.clear();
+    	if (incrementalValues != null)
+    		incrementalValues.clear();
 		if (fakedInput != null) fakedInput.i = 0;
     }
     
