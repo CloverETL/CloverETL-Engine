@@ -50,6 +50,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
@@ -783,7 +784,13 @@ public class TransformationGraphXMLReaderWriter {
 			        	entryProperties.remove(DICTIONARY_ENTRY_REQUIRED);
 			        	entryProperties.remove(DICTIONARY_ENTRY_CONTENT_TYPE);
 			        	if (!entryProperties.isEmpty()) {
-				        	dictionary.setValueFromProperties(name, type, entryProperties);
+				        	try {
+								dictionary.setValueFromProperties(name, type, entryProperties);
+							} catch (UnsupportedDictionaryOperation e) {
+								//probably only if the dictionary type does not support initialization from Properties and an ID attribute or others was passed
+								//so just create dictionary entry without value
+								dictionary.setValue(name, type, null);
+							}
 						} else {
 							dictionary.setValue(name, type, null);
 						}
