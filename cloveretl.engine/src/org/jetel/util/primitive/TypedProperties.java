@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.PropertyRefResolver;
 
@@ -196,4 +197,8 @@ public class TypedProperties extends Properties {
     	}
     }
     
+	public void print(Log logger, String message) {
+        logger.debug(message + " " + this);
+	}
+
 }
