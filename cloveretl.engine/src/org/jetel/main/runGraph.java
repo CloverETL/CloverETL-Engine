@@ -29,7 +29,6 @@ import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -369,8 +368,6 @@ public class runGraph {
 			if (!graph.isInitialized()) {
 				EngineInitializer.initGraph(graph, runtimeContext);
 			}
-			printDictionary("Initial dictionary content:", graph);
-			printGraphProperties(graph);
 			futureResult = executeGraph(graph, runtimeContext);			
 		} catch (ComponentNotReadyException e) {
             logger.error("Error during graph initialization !", e);
@@ -389,7 +386,6 @@ public class runGraph {
         Result result = Result.N_A;
 		try {
 			result = futureResult.get();
-			printDictionary("Final dictionary content:", graph);
 		} catch (InterruptedException e) {
             logger.error("Graph was unexpectedly interrupted !", e);
             if (runtimeContext.isVerboseMode()) {
@@ -435,21 +431,6 @@ public class runGraph {
         IThreadManager threadManager = new SimpleThreadManager();
         WatchDog watchDog = new WatchDog(graph, runtimeContext);
 		return threadManager.executeWatchDog(watchDog);
-	}
-    
-	private static void printDictionary(String message, TransformationGraph graph) {
-		if(!graph.getDictionary().isEmpty()) {
-			logger.info(message);
-			
-			Set<String> keys = graph.getDictionary().getKeys();
-			for (String key : keys) {
-				logger.info(key + ":" + graph.getDictionary().getValue(key));
-			}
-		}
-	}
-
-	private static void printGraphProperties(TransformationGraph graph) {
-        logger.debug("Graph properties: " + graph.getGraphProperties());
 	}
     
 	private static void printHelp() {
