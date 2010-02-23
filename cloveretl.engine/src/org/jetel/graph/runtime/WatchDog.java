@@ -169,6 +169,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
     		
     		long startTimestamp = System.currentTimeMillis();
     		
+    		//print graph properties
+    		graph.getGraphProperties().print(logger, "Graph properties:");
+    		
+    		//print initial dictionary content
+    		graph.getDictionary().printContent(logger, "Initial dictionary content:");
+    		
             if (runtimeContext.isVerboseMode()) {
                 // this can be called only after graph.init()
                 graph.dumpGraphConfiguration();
@@ -242,6 +248,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	           		watchDogStatus = phaseResult;
 	           	}
            	}
+
+    		//print initial dictionary content
+    		graph.getDictionary().printContent(logger, "Final dictionary content:");
 
            	sendFinalJmxNotification();
            	
