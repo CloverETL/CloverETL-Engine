@@ -22,9 +22,7 @@ package org.jetel.graph.dictionary;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.Properties;
 
-import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 
 /**
@@ -56,10 +54,6 @@ public class WritableChannelDictionaryType extends DictionaryType {
 	
 	public boolean isValidValue(Object value) {
 		return value == null || value instanceof WritableByteChannel || value instanceof OutputStream;
-	}
-
-	public Object parseProperties(Properties properties) throws AttributeNotFoundException {
-		throw new UnsupportedOperationException("Writable channel dictionary element cannot be parsed from properties.");
 	}
 
 }

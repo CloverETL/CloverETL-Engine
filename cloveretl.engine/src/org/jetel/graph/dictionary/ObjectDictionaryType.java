@@ -41,13 +41,6 @@ public class ObjectDictionaryType extends DictionaryType {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.dictionary.DictionaryType#getValue(java.util.Properties)
-	 */
-	public Object parseProperties(Properties properties) throws AttributeNotFoundException {
-		throw new UnsupportedOperationException("Common object dictionary type cannot be parsed from properties.");
-	}
-
-	/* (non-Javadoc)
 	 * @see org.jetel.graph.dictionary.IDictionaryType#isValidValue(java.lang.Object)
 	 */
 	public boolean isValidValue(Object value) {

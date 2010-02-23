@@ -58,12 +58,43 @@ public class StringDictionaryType extends DictionaryType {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.jetel.graph.dictionary.DictionaryType#isParsePropertiesSupported()
+	 */
+	@Override
+	public boolean isParsePropertiesSupported() {
+		return true;
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.jetel.graph.dictionary.DictionaryType#getValue(java.util.Properties)
 	 */
+	@Override
 	public Object parseProperties(Properties properties) throws AttributeNotFoundException {
 		return properties.getProperty(VALUE_ATTRIBUTE);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.dictionary.DictionaryType#isFormatPropertiesSupported()
+	 */
+	@Override
+	public boolean isFormatPropertiesSupported() {
+		return true;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.dictionary.DictionaryType#formatProperties(java.lang.Object)
+	 */
+	@Override
+	public Properties formatProperties(Object value) {
+		if (value != null) {
+			Properties result = new Properties();
+			result.setProperty(VALUE_ATTRIBUTE, (String) value);
+			return result;
+		} else {
+			return null;
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.dictionary.IDictionaryType#isValidValue(java.lang.Object)
 	 */

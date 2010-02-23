@@ -19,6 +19,9 @@
 */
 package org.jetel.graph.dictionary;
 
+import java.util.Properties;
+
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 
 /**
@@ -53,6 +56,34 @@ public abstract class DictionaryType implements IDictionaryType {
 		return value;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.dictionary.IDictionaryType#isParsePropertiesSupported()
+	 */
+	public boolean isParsePropertiesSupported() {
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.dictionary.IDictionaryType#parseProperties(java.util.Properties)
+	 */
+	public Object parseProperties(Properties properties) throws AttributeNotFoundException {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.dictionary.IDictionaryType#isFormatPropertiesSupported()
+	 */
+	public boolean isFormatPropertiesSupported() {
+		return false;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.dictionary.IDictionaryType#formatteProperties(java.lang.Object)
+	 */
+	public Properties formatProperties(Object value) {
+		throw new UnsupportedOperationException();
+	}
+		
 	@Override
 	public String toString() {
 		return "[" + getClass().getName() + "] " + typeId + ", " + valueClass.getName();

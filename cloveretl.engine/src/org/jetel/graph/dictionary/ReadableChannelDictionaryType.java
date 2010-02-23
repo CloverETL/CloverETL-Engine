@@ -68,6 +68,15 @@ public class ReadableChannelDictionaryType extends DictionaryType {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.dictionary.DictionaryType#isParsePropertiesSupported()
+	 */
+	@Override
+	public boolean isParsePropertiesSupported() {
+		return true;
+	}
+	
+	@Override
 	public Object parseProperties(Properties properties) throws AttributeNotFoundException {
 		String data = properties.getProperty(VALUE_ATTRIBUTE);
 		String charset = properties.getProperty(CHARSET_ATTRIBUTE);

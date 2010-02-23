@@ -54,9 +54,32 @@ public interface IDictionaryType {
 	public Object init(Object value, Dictionary dictionary) throws ComponentNotReadyException;
 
 	/**
+	 * Is the Properties object supported as an intermediate format?
+	 * Can parseProperties() method be invoked?
+	 * @return
+	 */
+	public boolean isParsePropertiesSupported();
+	
+	/**
 	 * Returns a dictionary value based on the given properties.
+	 * This method can throw {@link UnsupportedOperationException}, check isParsePropertiesSupported() method.
 	 */
 	public Object parseProperties(Properties properties) throws AttributeNotFoundException;
+	
+	/**
+	 * Is the Properties object supported as an intermediate format?
+	 * Can formatProperties() method be invoked?
+	 * @return
+	 */
+	public boolean isFormatPropertiesSupported();
+	
+	/**
+	 * Create properties object which represents given value.
+	 * This method can throw {@link UnsupportedOperationException}, check isFormatPropertiesSupported() method.
+	 * @param value
+	 * @return
+	 */
+	public Properties formatProperties(Object value);
 	
 	/**
 	 * Tests, whether the given value is acceptable for this dictionary entry type.
