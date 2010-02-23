@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns:tns="http://www.example.org/dictionary/" xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/dictionary/">
+    <element name="Dictionary" type="tns:Dictionary"></element>
+    
+    <complexType name="Dictionary">
+    	<sequence>
+    		<element name="Entry" type="tns:Entry" minOccurs="0" maxOccurs="unbounded"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="Entry">
+    	<sequence>
+    		<element name="property" type="tns:Property" minOccurs="0" maxOccurs="unbounded"></element>
+    	</sequence>
+    	<attribute name="name" type="string"></attribute>
+    	<attribute name="type" type="string"></attribute>
+    	<attribute name="input" type="boolean"></attribute>
+    	<attribute name="output" type="boolean"></attribute>
+    	<attribute name="required" type="boolean"></attribute>
+    	<attribute name="contentType" type="string"></attribute>
+    </complexType>
+
+    <complexType name="Property">
+    	<simpleContent>
+    		<extension base="string">
+    			<attribute name="key" type="string"></attribute>
+    		</extension>
+    	</simpleContent>
+    </complexType>
+</schema>

@@ -18,6 +18,15 @@
 	  </classpath>
 	</taskdef>
 	
+	<taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
+	  <classpath>
+	    <fileset dir="${dir.tools}/jaxb-ri/lib">
+	      <include name="*.jar"/>
+	      <include name="*.zip"/>
+	    </fileset>
+	  </classpath>
+	</taskdef>
+
 	<!-- ProGuard task definition -->
 	<taskdef resource="proguard/ant/task.properties" classpath="${dir.tools}/proguard.jar" />
 	    	
@@ -906,4 +915,9 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
    		<cobertura-report datafile="${cobertura.ser}" format="xml" destdir="${dir.coverage.xml}" srcdir="${dir.src}" />
 	</target>
 		
+	<target name="jaxb-dictionary-generator">
+		<delete dir="src/org/jetel/graph/dictionary/jaxb"/>
+		<xjc schema="src/org/jetel/graph/dictionary/dictionary.xsd" destdir="src" package="org.jetel.graph.dictionary.jaxb"/>
+	</target>
+
 </project>

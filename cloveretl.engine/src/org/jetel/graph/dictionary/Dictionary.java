@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -255,4 +256,30 @@ public class Dictionary extends GraphElement {
 		return dictionary.isEmpty();
 	}
 	
+	/**
+	 * Prints out the dictionary content into log at INFO level.
+	 * @param logger
+	 * @param message
+	 */
+	public void printContent(Log logger, String message) {
+		if (!dictionary.isEmpty() && logger.isInfoEnabled()) {
+			logger.info(message);
+			
+			Set<String> keys = this.getKeys();
+			for (String key : keys) {
+				DictionaryEntry entry = this.getEntry(key);
+				String entryValue = null;
+				if (entry.getType().isFormatPropertiesSupported()) {
+					Properties properties = entry.getType().formatProperties(entry.getValue());
+					if (properties != null) {
+						entryValue = properties.toString();
+					}
+				} else {
+					entryValue = "<unprintable_value>";
+				}
+				logger.info("DictEntry:" + key + ":" + entry.getType().getTypeId() + ":" + entryValue);
+			}
+		}
+	}
+
 }
