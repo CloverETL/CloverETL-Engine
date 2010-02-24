@@ -67,6 +67,7 @@
 	<!--load external properties-->
 	<property file="build-local.properties"/>
 	<property file="version.properties"/>
+	<property file="${settings.file}"/>
 	<property file="build.properties"/>
 		
 	<!-- =========================== VERSIONs =========================== -->
@@ -88,6 +89,16 @@
 		<format property="build.year" pattern="yyyy" locale="en" />
 	</tstamp>
 	<property name="build.number" value="0"/>
+	
+	<patternset id="example.files">
+		<exclude name="**/*.ts"/>
+		<exclude name="**/data-out/*"/>
+		<exclude name="**/data-tmp/*"/>
+		<exclude name="**/supposed-out"/>
+		<exclude name="**/supposed-out/*"/>
+		<exclude name="**/supposed-out-night"/>
+		<exclude name="**/supposed-out-night/*"/>
+	</patternset>
 	
 	<!-- =========================== PATHS ============================= -->
 	<path id="all.sources">
@@ -245,7 +256,7 @@ defined.version.suffix=release
 		
 		<!-- create zip package for source distribution -->
 		<mkdir dir="${dir.distribution}"/>
-		<zip destfile="${dir.distribution}/cloverETL.src.rel-${version.major}-${version.minor}-${version.revision}.zip" >
+		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.src.rel-${version.major}-${version.minor}-${version.revision}.zip" >
 			<fileset dir="${dir.distprepare.src}">
 				<include name="cloverETL/**/*"/>
 			</fileset>
@@ -275,7 +286,7 @@ defined.version.suffix=release
 
 		<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
-		<zip destfile="${dir.distribution}/cloverETL.rel-${version.major}-${version.minor}-${version.revision}.zip" >
+		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.rel-${version.major}-${version.minor}-${version.revision}.zip" >
 			<fileset dir="${dir.distprepare.bin}">
 				<include name="cloverETL/**/*"/>
 			</fileset>
@@ -286,7 +297,7 @@ defined.version.suffix=release
 	<target name="dist.javadoc" depends="javadoc" description="Creates javadoc distribution">
 		<!-- create zip package for javadoc -->
 		<mkdir dir="${dir.distribution}"/>
-		<zip destfile="${dir.distribution}/cloverETL.javadoc.rel-${version.major}-${version.minor}-${version.revision}.zip" >
+		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.javadoc.rel-${version.major}-${version.minor}-${version.revision}.zip" >
 			<fileset dir="${dir.doc}">
 				<include name="cloverETL/**/*"/>
 			</fileset>
@@ -294,65 +305,42 @@ defined.version.suffix=release
 		
 	</target>
 	
-	<import file="${dir.build-scripts}/examples-exclude.xml"/>
-	
 	<target name="dist.examples" depends="init" description="Creates examples distribution">
 		
 		<!-- binary distribution -->
-		<mkdir dir="${dir.distprepare.exa}/cloverETL/examples"/>
+		<mkdir dir="${dir.distprepare.exa}/${example.archive.dir}"/>
 
-		<copy todir="${dir.distprepare.exa}/cloverETL/examples/">
-			<fileset dir="${dir.examples}" >
-				<include name="*html"/>
-				<include name="img/**"/>
-			</fileset>
-		</copy>
-		<copy todir="${dir.distprepare.exa}/cloverETL/examples/AdvancedExamples">
-			<fileset dir="${dir.examples}/advancedExamples" >
-				<patternset refid="example.files"/>
-			</fileset>
-		</copy>
-		<copy todir="${dir.distprepare.exa}/cloverETL/examples/CompanyTransactionsTutorial">
-			<fileset dir="${dir.examples}/CompanyTransactionsTutorial" >
-				<patternset refid="example.files"/>
-			</fileset>
-		</copy>
-		<copy todir="${dir.distprepare.exa}/cloverETL/examples/CTLFunctionsTutorial">
-			<fileset dir="${dir.examples}/CTLFunctionsTutorial" >
-				<patternset refid="example.files"/>
-			</fileset>
-		</copy>
-		<copy todir="${dir.distprepare.exa}/cloverETL/examples/ExtExamples">
-			<fileset dir="${dir.examples}/extExamples" >
-				<patternset refid="example.files"/>
-			</fileset>
-		</copy>
-		<copy todir="${dir.distprepare.exa}/cloverETL/examples/JavaExamples">
-			<fileset dir="${dir.examples}/javaExamples" >
-				<patternset refid="example.files"/>
-			</fileset>
-		</copy>
-		<copy todir="${dir.distprepare.exa}/cloverETL/examples/SimpleExamples">
-			<fileset dir="${dir.examples}/simpleExamples" >
-				<patternset refid="example.files"/>
-			</fileset>
-		</copy>
-		<copy todir="${dir.distprepare.exa}/cloverETL/examples/DWHExamples">
-			<fileset dir="${dir.examples}/DWHExamples" >
-				<patternset refid="example.files"/>
-			</fileset>
-		</copy>
-
+		<if><istrue value="${example.include.htmls}"/><then>
+			<copy todir="${dir.distprepare.exa}/${example.archive.dir}/">
+				<fileset dir="${dir.examples}" >
+					<include name="*html"/>
+				</fileset>
+			</copy>
+		</then></if>
+		
+		<foreach target="copy-example-project" param="dir.example.project" list="${example.projects}" delimiter=","/>
+		
 		<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
-		<zip destfile="${dir.distribution}/cloverETL.examples.rel-${version.major}-${version.minor}-${version.revision}.zip">
+		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.examples.rel-${version.major}-${version.minor}-${version.revision}.zip">
 			<fileset dir="${dir.distprepare.exa}">
-				<include name="cloverETL/**/*"/>
+				<include name="**/*"/>
 			</fileset>
 		</zip>			
 
 	</target>
-
+	
+	<target name="copy-example-project">
+		<basename property="example.project.basename" file="${dir.example.project}" />
+		<customproperty name="example.project.name" value="${example.project.basename}" prefix="example.project." suffix=".name"/>
+		<echo>Copying example project ${example.project.name} from ${dir.example.project}</echo>
+		<copy todir="${dir.distprepare.exa}/${example.archive.dir}/${example.project.name}">
+			<fileset dir="${dir.example.project}" >
+				<patternset refid="example.files"/>
+			</fileset>
+		</copy>
+	</target>
+	
 	<!-- The "clean" target deletes previously compiled files. -->
 	<target name="clean-engine">
 		<delete dir="${dir.build}"/>
@@ -920,4 +908,16 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		<xjc schema="src/org/jetel/graph/dictionary/dictionary.xsd" destdir="src" package="org.jetel.graph.dictionary.jaxb"/>
 	</target>
 
+	<macrodef name="customproperty">
+		<attribute name="name"/>
+		<attribute name="value"/>
+		<attribute name="prefix"/>
+		<attribute name="suffix"/>
+		<sequential>
+			<if><isset property="@{prefix}@{value}@{suffix}"/>
+				<then><property name="@{name}" value="${@{prefix}@{value}@{suffix}}"/></then>
+				<else><property name="@{name}" value="@{value}"/></else>
+			</if>
+		</sequential>
+	</macrodef>
 </project>
