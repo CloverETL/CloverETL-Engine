@@ -63,6 +63,7 @@
 	<property name="dir.coverage.xml" value="${dir.build}/coveragereport/xml" />
 	<property name="dir.coverage.html" value="${dir.build}/coveragereport/html" />
 	<property name="cobertura.ser" value="${dir.build}/cobertura.ser"/>
+	<property name="dir.src.javadoc" value="${dir.build}/src-javadoc" />
 
 	<!--load external properties-->
 	<property file="build-local.properties"/>
@@ -99,19 +100,6 @@
 		<exclude name="**/supposed-out-night"/>
 		<exclude name="**/supposed-out-night/*"/>
 	</patternset>
-	
-	<!-- =========================== PATHS ============================= -->
-	<path id="all.sources">
-		<pathelement path="${dir.src}" />
-		<pathelement path="../cloveretl.component/src" />
-		<pathelement path="../cloveretl.connection/src" />
-		<pathelement path="../cloveretl.sequence/src" />
-		<pathelement path="../cloveretl.lookup/src" />
-		<pathelement path="../cloveretl.thirdparty/src" />
-		<pathelement path="../cloveretl.bulkloader/src" />
-		<pathelement path="../cloveretl.tlfunction/src" />
-		<pathelement path="../cloveretl.ctlfunction/src" />
-	</path>
 	
 	<!-- =========================== LIBRARIES ============================= -->
 	<fileset id="engine-libs" dir="${dir.lib}">
@@ -528,7 +516,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			target="${dir.src}/org/jetel/util/ddl2clover/DDL2Clover.jj"/>
 	</target>
 	
-	<target name="javadoc" depends="init" description="Create Javadoc API documentation">
+	<target name="javadoc" depends="init,collect-javadoc-src" description="Create Javadoc API documentation">
 		<echo message="Building code documentation..." />
 		<property name="dist.subdir" value="cloverETL/javadoc"/>
 		<mkdir dir="${dir.doc}/${dist.subdir}" />
@@ -536,11 +524,10 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 				destdir="${dir.doc}/${dist.subdir}" 
 				packagenames="*"
 				author="true" >
-			<sourcepath refid="all.sources"/>
+			<fileset dir="${dir.src.javadoc}"/>
 			<classpath>
 				<fileset refid="engine-libs"/>
 			</classpath>
-			<excludepackage name="${java.src.exclude}"/>
 			<doclet name="com.sun.tools.doclets.standard.Standard">
 				<param name="-breakiterator" value="on" />
 				<!-- Following tag definition is here to get rid of complains produced by standard doclet-->
@@ -550,9 +537,27 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<bottom>
 				<![CDATA[<address>Copyright &#169; 2002-${build.year} Javlin a.s.</address>]]>
 			</bottom>
+			<link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
 		</javadoc>
-
 	</target>
+	
+	<target name="collect-javadoc-src" depends="init">
+		<mkdir dir="${dir.src.javadoc}"/>
+		<copy todir="${dir.src.javadoc}">
+			<fileset dir="${dir.src}">
+			</fileset>
+		</copy>
+		<foreach list="${plugin.list}" inheritall="true" target="plugin-collect-javadoc-src" param="plugin.dir"/>
+	</target>
+	<target name="plugin-collect-javadoc-src">
+		<echo message="Collect plugin javadoc sources - ${plugin.dir}"/>
+		<ant target="collect-javadoc-src" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
+			<property name="dir.src.javadoc" value="${dir.src.javadoc}"/>
+			<property name="java.src.exclude" value="${java.src.exclude}"/>
+			<property name="javadoc.limited" value="${javadoc.limited}"/>
+		</ant>
+	</target>
+	
 		
 	<target name="generateDocContainer" description="Generates container XML, which contains docs from all components from all plugins">
 		<delete file="${dir.component.doc.default}/components/ComponentDoc.xml"/>

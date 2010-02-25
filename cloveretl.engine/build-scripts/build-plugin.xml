@@ -11,7 +11,6 @@
 	<property name="dir.src" value="${basedir}/src"/>
 	<property name="dir.src.test" value="${basedir}/test"/>
 	<property name="dir.lib" value="${basedir}/lib"/>
-	<property name="dir.doc" value="${basedir}/doc"/>
 	<property name="dir.dist" value="${basedir}/dist"/>
 	<property name="dir.dist.other.plugins" value="${dir.dist}"/>
 	<property name="dir.plugin.dist" value="${dir.dist}/plugins/${plugin.dir.name}"/>
@@ -37,7 +36,9 @@
 	<property name="required.plugins.file" value="${dir.build}/required-plugins.txt"/>
 	<property name="cobertura.ser" value="${dir.build}/plugin-cobertura.ser"/>
 
-
+	<property file="${basedir}/build.properties"/>
+	<property name="javadoc.limited.include" value="**"/>
+	
 	<!-- ProGuard task definition -->
 	<taskdef resource="proguard/ant/task.properties" classpath="${dir.engine.tools}/proguard.jar" />
 		
@@ -68,7 +69,6 @@
 	<target name="init">
 
 		<echo message="Using directory for classes: ${dir.classes}"/>
-		<echo message="Using directory for javadoc: ${dir.doc}"/>
 		<echo message="Using directory for dist: ${dir.dist}"/>
 
 		<mkdir dir="${dir.build}"/>
@@ -496,6 +496,18 @@
 				<fileset refid="engine-tools"/>
 			</auxClasspath>
 		</findbugs>
+	</target>
+
+	<target name="collect-javadoc-src">
+		<fail unless="dir.src.javadoc"/>
+		<if><istrue value="${javadoc.limited}"/>
+			<then><property name="javadoc.src.include" value="${javadoc.limited.include}"/></then>
+			<else><property name="javadoc.src.include" value=""/></else>
+		</if>
+		<echo>IIIII ${javadoc.src.include}</echo>
+		<copy todir="${dir.src.javadoc}">
+			<fileset dir="${dir.src}" excludes="${java.src.exclude}" includes="${javadoc.src.include}"/>
+		</copy>
 	</target>
 	
 </project>
