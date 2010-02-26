@@ -96,9 +96,9 @@
 		<exclude name="**/data-out/*"/>
 		<exclude name="**/data-tmp/*"/>
 		<exclude name="**/supposed-out"/>
-		<exclude name="**/supposed-out/*"/>
+		<exclude name="**/supposed-out/**"/>
 		<exclude name="**/supposed-out-night"/>
-		<exclude name="**/supposed-out-night/*"/>
+		<exclude name="**/supposed-out-night/**"/>
 	</patternset>
 	
 	<!-- =========================== LIBRARIES ============================= -->
