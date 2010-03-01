@@ -1002,6 +1002,8 @@ public abstract class CopySQLData {
 			if (resultSet.wasNull()) {
 				field.fromString(null);
 			} else {
+				// TODO: Issue 3650; consider using setValue() for string fields here, fromString() takes the nullValue
+				// attribute into account and that might lead to incorrect results when the value equals nullValue
 				field.fromString(fieldVal);
 			}
 		}
@@ -1011,6 +1013,8 @@ public abstract class CopySQLData {
 			if (statement.wasNull()) {
 				field.fromString(null);
 			} else {
+				// TODO: Issue 3650; consider using setValue() for string fields here, fromString() takes the nullValue
+				// attribute into account and that might lead to incorrect results when the value equals nullValue
 				field.fromString(fieldVal);
 			}
 		}
@@ -1638,6 +1642,8 @@ public abstract class CopySQLData {
          * @throws SQLException if the conversion to a string value failed
          */
         private void setJetel(Object fieldValue, boolean wasNull) throws SQLException {
+			// TODO: Issue 3650; consider using setValue() for string fields here, fromString() takes the nullValue
+			// attribute into account and that might lead to incorrect results when the value equals nullValue
             if (!wasNull) {
                 try {
                     Method getStringValMethod = fieldValue.getClass().getDeclaredMethod(GET_STRING_VAL_METHOD_NAME);

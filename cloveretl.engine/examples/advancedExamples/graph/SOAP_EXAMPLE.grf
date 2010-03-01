@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Feb 29 16:16:12 CET 2008" guiVersion="0.0.0.devel" id="1204298432250" licenseType="Evaluation license." modified="Fri Aug 07 15:50:37 CEST 2009" modifiedBy="avackova" name="SOAP_EXAMPLE" revision="1.351">
+<Graph author="avackova" created="Fri Feb 29 16:16:12 CET 2008" guiVersion="0.0.0.devel" id="1204298432250" licenseType="Evaluation Devel" modified="Wed Dec 23 10:33:40 GMT+01:00 2009" modifiedBy="avackova" name="SOAP_EXAMPLE" revision="1.355">
 <Global>
 <Metadata fileURL="${META_DIR}/extract.fmt" id="Metadata10"/>
+<Metadata fileURL="${META_DIR}/extractAgg.fmt" id="Metadata11"/>
 <Metadata fileURL="${META_DIR}/link.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/location_full.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/location_temp_header.fmt" id="Metadata5"/>
@@ -12,7 +13,6 @@
 <Metadata fileURL="${META_DIR}/time_dim.fmt" id="Metadata7"/>
 <Metadata fileURL="${META_DIR}/time_layout.fmt" id="Metadata3"/>
 <Metadata fileURL="${META_DIR}/time_pairs.fmt" id="Metadata4"/>
-<Metadata fileURL="${META_DIR}/extractAgg.fmt" id="Metadata11"/>
 <Property fileURL="parameters.prm" id="GraphParameter0"/>
 <Property fileURL="workspace.prm" id="GraphParameter4"/>
 <Sequence cached="0" fileURL="${SEQ_DIR}/time_seq.seq" id="Sequence1" name="time_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
@@ -55,7 +55,7 @@ We can read the information from SOAP server or from the prepared ndfdXMLclient.
 To the "all_data" sheet.
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="75" id="Note13" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Statistical information is written to an xls file." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="340" x="1536" y="75">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="75" id="Note13" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Statistical information is written to an xls file." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="340" x="1531" y="37">
 <attr name="text"><![CDATA[
 To the "aggregated" sheet.
 ]]></attr>
@@ -161,6 +161,7 @@ function transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="SortingOnCities" guiWidth="0" guiX="954" guiY="-21" id="EXT_SORT0" sortKey="city(a);state(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="1372" guiY="130" id="EXT_SORT1" sortKey="city(a);state(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="358" guiY="419" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="358" guiY="199" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="1210" guiY="-21" id="SIMPLE_COPY2" type="SIMPLE_COPY"/>
@@ -202,31 +203,32 @@ function transform() {
 
 ]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata11" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
-<Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" id="Edge12" inPort="Port 1 (slave)" metadata="Metadata8" outPort="Port 0 (unique)" toNode="EXT_HASH_JOIN3:1"/>
-<Edge debugMode="true" fromNode="DEDUP1:0" guiBendpoints="" id="Edge17" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (unique)" toNode="EXT_HASH_JOIN4:1"/>
-<Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" id="Edge8" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN7:1"/>
-<Edge debugMode="true" fromNode="EXT_HASH_JOIN1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata8" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
-<Edge debugMode="true" fromNode="EXT_HASH_JOIN2:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
-<Edge debugMode="true" fromNode="EXT_HASH_JOIN3:0" guiBendpoints="" id="Edge15" inPort="Port 0 (driver)" metadata="Metadata8" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN6:0"/>
-<Edge debugMode="true" fromNode="EXT_HASH_JOIN4:0" guiBendpoints="" id="Edge19" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN6:1"/>
-<Edge debugMode="true" fromNode="EXT_HASH_JOIN6:0" guiBendpoints="" id="Edge21" inPort="Port 0 (driver)" metadata="Metadata9" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN7:0"/>
-<Edge debugMode="true" fromNode="EXT_HASH_JOIN7:0" guiBendpoints="" id="Edge22" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="SIMPLE_COPY2:0"/>
+<Edge fromNode="AGGREGATE0:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata11" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="DEDUP0:0" guiBendpoints="" id="Edge12" inPort="Port 1 (slave)" metadata="Metadata8" outPort="Port 0 (unique)" toNode="EXT_HASH_JOIN3:1"/>
+<Edge fromNode="DEDUP1:0" guiBendpoints="" id="Edge17" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (unique)" toNode="EXT_HASH_JOIN4:1"/>
+<Edge fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" id="Edge8" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN7:1"/>
+<Edge fromNode="EXT_HASH_JOIN1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata8" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="EXT_HASH_JOIN2:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
+<Edge fromNode="EXT_HASH_JOIN3:0" guiBendpoints="" id="Edge15" inPort="Port 0 (driver)" metadata="Metadata8" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN6:0"/>
+<Edge fromNode="EXT_HASH_JOIN4:0" guiBendpoints="" id="Edge19" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN6:1"/>
+<Edge fromNode="EXT_HASH_JOIN6:0" guiBendpoints="" id="Edge21" inPort="Port 0 (driver)" metadata="Metadata9" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN7:0"/>
+<Edge fromNode="EXT_HASH_JOIN7:0" guiBendpoints="" id="Edge22" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="SIMPLE_COPY2:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge24" inPort="Port 0 (in)" metadata="Metadata11" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
 <Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge14" inPort="Port 0 (driver)" metadata="Metadata8" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN3:0"/>
 <Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata8" outPort="Port 1 (out)" toNode="DEDUP0:0"/>
 <Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" id="Edge18" inPort="Port 0 (driver)" metadata="Metadata7" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN4:0"/>
 <Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" id="Edge16" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 1 (out)" toNode="DEDUP1:0"/>
-<Edge debugMode="true" fromNode="SIMPLE_COPY2:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
-<Edge debugMode="true" fromNode="SIMPLE_COPY2:1" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 1 (out)" toNode="AGGREGATE0:0"/>
-<Edge debugMode="true" fromNode="XML_XPATH_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
-<Edge debugMode="true" fromNode="XML_XPATH_READER0:1" guiBendpoints="" id="Edge1" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN0:1"/>
-<Edge debugMode="true" fromNode="XML_XPATH_READER0:2" guiBendpoints="" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 2 (out)" toNode="EXT_HASH_JOIN2:1"/>
-<Edge debugMode="true" fromNode="XML_XPATH_READER0:3" guiBendpoints="" id="Edge4" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 3 (out)" toNode="EXT_HASH_JOIN2:0"/>
-<Edge debugMode="true" fromNode="XML_XPATH_READER0:4" guiBendpoints="" id="Edge2" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 4 (out)" toNode="EXT_HASH_JOIN1:1"/>
-<Edge debugMode="true" fromNode="XML_XPATH_READER0:5" guiBendpoints="" id="Edge5" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 5 (out)" toNode="EXT_HASH_JOIN1:0"/>
+<Edge fromNode="SIMPLE_COPY2:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
+<Edge fromNode="SIMPLE_COPY2:1" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 1 (out)" toNode="AGGREGATE0:0"/>
+<Edge fromNode="XML_XPATH_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
+<Edge fromNode="XML_XPATH_READER0:1" guiBendpoints="" id="Edge1" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge fromNode="XML_XPATH_READER0:2" guiBendpoints="" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 2 (out)" toNode="EXT_HASH_JOIN2:1"/>
+<Edge fromNode="XML_XPATH_READER0:3" guiBendpoints="" id="Edge4" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 3 (out)" toNode="EXT_HASH_JOIN2:0"/>
+<Edge fromNode="XML_XPATH_READER0:4" guiBendpoints="" id="Edge2" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 4 (out)" toNode="EXT_HASH_JOIN1:1"/>
+<Edge fromNode="XML_XPATH_READER0:5" guiBendpoints="" id="Edge5" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 5 (out)" toNode="EXT_HASH_JOIN1:0"/>
 </Phase>
 <Phase number="1">
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/extract.xls" guiHeight="0" guiName="StatisticalInformation" guiWidth="0" guiX="1397" guiY="130" id="XLS_WRITER1" namesRow="1" sheetName="aggregated" type="XLS_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/extract.xls" guiHeight="0" guiName="StatisticalInformation" guiWidth="0" guiX="1533" guiY="130" id="XLS_WRITER1" namesRow="1" sheetName="aggregated" type="XLS_WRITER"/>
 </Phase>
 </Graph>

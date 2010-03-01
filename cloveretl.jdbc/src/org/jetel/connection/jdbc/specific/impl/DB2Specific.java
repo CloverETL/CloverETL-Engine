@@ -71,4 +71,8 @@ public class DB2Specific extends AbstractJdbcSpecific {
 		return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/);
 	}
 
+	@Override
+	public boolean isSchemaRequired() {
+		return true;
+	}
 }

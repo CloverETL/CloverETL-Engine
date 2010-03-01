@@ -1,5 +1,4 @@
 #Fri Mar 21 13:35:40 CET 2008
-plugins=/home/avackova/workspace3.3/cloveretl.gui/lib/plugins
 connection = postgre.cfg
 query = select * from employee where department_id = ?
 key = 11

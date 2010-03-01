@@ -1,22 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="admin" created="Tue Oct 07 10:02:00 CEST 2008" guiVersion="0.0" id="1223366615315" licenseType="Evaluation license." modified="Thu Nov 27 14:28:40 CET 2008" modifiedBy="admin" name="graphSequenceChecker" revision="1.32">
+<Graph author="admin" created="Tue Oct 07 10:02:00 CEST 2008" guiVersion="2.9.1" id="1223366615315" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 15:10:56 CET 2010" modifiedBy="cloveruser" name="graphSequenceChecker" revision="1.46">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="64" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 1 : sequence checker passes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="250" x="863" y="20"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="64" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 2 : sequence checker fails" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="250" x="863" y="107"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="139" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 1 : sequence checker passes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="250" x="863" y="20">
+<attr name="text"><![CDATA[
+SequenceChecker is preceded by ExtSort which has sorted data records. For this reason, SequenceChecker of phase 1 runs successfully.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="119" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 2 : sequence checker fails" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="250" x="570" y="193">
+<attr name="text"><![CDATA[
+SequenceChecker is not preceded by any sorter. Thus, records are not sorted and the phase 2 of the graph fails.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="170" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of SequenceChecker" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="485" x="62" y="192">
+<attr name="text"><![CDATA[
+SequenceChecker is a component that allows to check whether the records are sorted according to the specified Sort key. If they are sorted other way, graph fails.
+
+Component can send the same data records to unlimited number of ports.
+
+If no output port is connected, SequenceChecker serves as a safety-fuse. 
+
+
+]]></attr>
+</Note>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="20" guiY="20" id="DATA_READER0" type="DATA_READER"/>
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="470" guiY="20" id="EXT_SORT0" sortKey="LastName(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="Sequence checker" guiWidth="0" guiX="695" guiY="20" id="SEQUENCE_CHECKER0" sortKey="LastName" type="SEQUENCE_CHECKER"/>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="245" guiY="20" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="245" guiY="16" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
-<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SEQUENCE_CHECKER0:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SEQUENCE_CHECKER0:0"/>
 <Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SEQUENCE_CHECKER1:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SEQUENCE_CHECKER1:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="disabled" guiHeight="0" guiName="Sequence checker" guiWidth="0" guiX="470" guiY="107" id="SEQUENCE_CHECKER1" sortKey="LastName" type="SEQUENCE_CHECKER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sequence checker" guiWidth="0" guiX="695" guiY="20" id="SEQUENCE_CHECKER0" sortKey="LastName(a)" type="SEQUENCE_CHECKER"/>
+</Phase>
+<Phase number="2">
+<Node enabled="enabled" guiHeight="0" guiName="Sequence checker" guiWidth="0" guiX="470" guiY="107" id="SEQUENCE_CHECKER1" sortKey="LastName(a)" type="SEQUENCE_CHECKER"/>
 </Phase>
 </Graph>

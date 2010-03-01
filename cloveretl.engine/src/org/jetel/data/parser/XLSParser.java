@@ -28,6 +28,7 @@ import javax.naming.InvalidNameException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.XLSFormatter;
 import org.jetel.exception.ComponentNotReadyException;
@@ -62,66 +63,6 @@ import org.jetel.util.NumberIterator;
  */
 public abstract class XLSParser implements Parser {
 
-	/**
-	 * For incremental reading.
-	 */
-	protected static class Incremental {
-		private Map<String, Integer> sheetRow;
-
-		public Incremental() {
-			this(null);
-		}
-
-		public Incremental(String position) {
-			sheetRow = new HashMap<String, Integer>();
-			parsePosition(position);
-		}
-		
-		private void parsePosition(String position) {
-			if (position == null) return;
-			String[] all = position.split("#");
-			if (all.length != 2) return;
-			String[] tabs = all[0].split(",");
-			String[] rows = all[1].split(",");
-			if (tabs.length != rows.length) return;
-			
-			try {
-				for (int i=0; i<tabs.length; i++) {
-					sheetRow.put(tabs[i], Integer.parseInt(rows[i]));
-				}
-			} catch (NumberFormatException e) {
-				sheetRow.clear();
-				return;
-			}
-		}
-		
-		public Integer getRow(String sheetName) {
-			return sheetRow.get(sheetName);
-		}
-		
-		public void setRow(String sheetName, int row) {
-			sheetRow.put(sheetName, row);
-		}
-		
-		public void clear() {
-			sheetRow.clear();
-		}
-		
-		public String getPosition() {
-			StringBuilder sbKey = new StringBuilder();
-			StringBuilder sbValue = new StringBuilder();
-			if (sheetRow.size() <= 0) return "";
-			for (String key: sheetRow.keySet()) {
-				sbKey.append(key).append(",");
-				sbValue.append(sheetRow.get(key)).append(",");
-			}
-			sbKey.deleteCharAt(sbKey.length()-1);
-			sbValue.deleteCharAt(sbValue.length()-1);
-			sbKey.append("#");
-			return sbKey.append(sbValue.toString()).toString();
-		}
-	}
-	
 	public final static int NO_METADATA_INFO = 0;
 	public final static int ONLY_CLOVER_FIELDS = 1;
 	public final static int CLOVER_FIELDS_AND_XLS_NUMBERS = 2;
@@ -164,6 +105,9 @@ public abstract class XLSParser implements Parser {
 	private boolean noAutofillingSheetName;
 	private int[] autofillingFieldPositions;
 	protected String autoFillingSheetName = null;
+
+	/** the data formatter used to format cell values as strings */
+	protected final DataFormatter dataFormatter = new DataFormatter();
 
 	public final static int MAX_NAME_LENGTH = 15;
 
@@ -326,7 +270,7 @@ public abstract class XLSParser implements Parser {
 			fieldNumber[i][CLOVER_NUMBER] = -1;
 		}
 
-		Map fieldNames = metadata.getFieldNamesMap();
+		Map<String, Integer> fieldNames = metadata.getFieldNamesMap();
 
 		switch (mappingType) {
 			case ONLY_CLOVER_FIELDS:
@@ -364,14 +308,13 @@ public abstract class XLSParser implements Parser {
 	 * @param fieldNames
 	 * @throws ComponentNotReadyException
 	 */
-	private void onlyCloverFields(Map fieldNames) throws ComponentNotReadyException{
+	private void onlyCloverFields(Map<String, Integer> fieldNames) throws ComponentNotReadyException{
 		for (int i = 0; i < cloverFields.length; i++) {
 			fieldNumber[i][XLS_NUMBER] = i;
 			try {
-				fieldNumber[i][CLOVER_NUMBER] = (Integer) fieldNames.get(cloverFields[i]);
+				fieldNumber[i][CLOVER_NUMBER] = fieldNames.get(cloverFields[i]);
 			} catch (NullPointerException ex) {
-				throw new ComponentNotReadyException("Clover field \""
-						+ cloverFields[i] + "\" not found");
+				throw new ComponentNotReadyException("Clover field \"" + cloverFields[i] + "\" not found");
 			}
 		}
 	}
@@ -382,7 +325,7 @@ public abstract class XLSParser implements Parser {
 	 * @param fieldNames
 	 * @throws ComponentNotReadyException
 	 */
-	private void cloverFieldsAndXlsNumbers(Map fieldNames) throws ComponentNotReadyException {
+	private void cloverFieldsAndXlsNumbers(Map<String, Integer> fieldNames) throws ComponentNotReadyException {
 		if (cloverFields.length!=xlsFields.length){
 			throw new ComponentNotReadyException("Number of clover fields and xls fields must be the same");
 		}
@@ -395,7 +338,7 @@ public abstract class XLSParser implements Parser {
 			}
 			fieldNumber[i][XLS_NUMBER] = cellNumber;
 			try {
-				fieldNumber[i][CLOVER_NUMBER] = (Integer)fieldNames.get(cloverFields[i]);
+				fieldNumber[i][CLOVER_NUMBER] = fieldNames.get(cloverFields[i]);
 			}catch (NullPointerException ex) {
 				throw new ComponentNotReadyException("Clover field \""
 						+ cloverFields[i] + "\" not found");
@@ -410,8 +353,7 @@ public abstract class XLSParser implements Parser {
 	 * @param fieldNames
 	 * @throws ComponentNotReadyException
 	 */
-	protected abstract void mapNames(Map fieldNames) 
-		throws ComponentNotReadyException;
+	protected abstract void mapNames(Map<String, Integer> fieldNames) throws ComponentNotReadyException;
 	
 	/**
 	 * If clover fields and xls colums are set there is made mapping between coresponding fields and cells
@@ -419,8 +361,7 @@ public abstract class XLSParser implements Parser {
 	 * @param fieldNames
 	 * @throws ComponentNotReadyException
 	 */
-	protected abstract void cloverfieldsAndXlsNames(Map fieldNames)
-		throws ComponentNotReadyException;
+	protected abstract void cloverfieldsAndXlsNames(Map<String, Integer> fieldNames) throws ComponentNotReadyException;
 
 	/**
 	 * Sets xls sheet for reading data
@@ -633,4 +574,64 @@ public abstract class XLSParser implements Parser {
 		this.useIncrementalReading = useIncrementalReading;
 	}
 
+	/**
+	 * For incremental reading.
+	 */
+	protected static class Incremental {
+		private Map<String, Integer> sheetRow;
+
+		public Incremental() {
+			this(null);
+		}
+
+		public Incremental(String position) {
+			sheetRow = new HashMap<String, Integer>();
+			parsePosition(position);
+		}
+		
+		private void parsePosition(String position) {
+			if (position == null) return;
+			String[] all = position.split("#");
+			if (all.length != 2) return;
+			String[] tabs = all[0].split(",");
+			String[] rows = all[1].split(",");
+			if (tabs.length != rows.length) return;
+			
+			try {
+				for (int i=0; i<tabs.length; i++) {
+					sheetRow.put(tabs[i], Integer.parseInt(rows[i]));
+				}
+			} catch (NumberFormatException e) {
+				sheetRow.clear();
+				return;
+			}
+		}
+		
+		public Integer getRow(String sheetName) {
+			return sheetRow.get(sheetName);
+		}
+		
+		public void setRow(String sheetName, int row) {
+			sheetRow.put(sheetName, row);
+		}
+		
+		public void clear() {
+			sheetRow.clear();
+		}
+		
+		public String getPosition() {
+			StringBuilder sbKey = new StringBuilder();
+			StringBuilder sbValue = new StringBuilder();
+			if (sheetRow.size() <= 0) return "";
+			for (String key: sheetRow.keySet()) {
+				sbKey.append(key).append(",");
+				sbValue.append(sheetRow.get(key)).append(",");
+			}
+			sbKey.deleteCharAt(sbKey.length()-1);
+			sbValue.deleteCharAt(sbValue.length()-1);
+			sbKey.append("#");
+			return sbKey.append(sbValue.toString()).toString();
+		}
+	}
+	
 }

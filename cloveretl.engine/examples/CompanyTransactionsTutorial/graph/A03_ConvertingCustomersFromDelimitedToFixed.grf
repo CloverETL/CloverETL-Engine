@@ -16,7 +16,7 @@ More detailed information about this graph can be found in the "readme.html" fil
 <Node enabled="enabled" fileURL="${DATATMP_DIR}/Customers.dat" guiHeight="0" guiName="CustomersDelimited" guiWidth="0" guiX="36" guiY="226" id="DATA_READER0" skipFirstLine="true" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixed.txt" guiHeight="0" guiName="CustomersFixed" guiWidth="0" guiX="421" guiY="226" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="DelimitedToFixed" guiWidth="0" guiX="226" guiY="226" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
-<Edge debugMode="true" fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

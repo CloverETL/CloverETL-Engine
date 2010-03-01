@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Nov 16 09:49:05 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1258363737992" licenseType="Evaluation Devel" modified="Mon Nov 16 10:39:12 GMT+01:00 2009" modifiedBy="avackova" name="graphInfobrightDataWriter" revision="1.8">
+<Graph author="avackova" created="Mon Nov 16 09:49:05 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1258363737992" licenseType="Evaluation Devel" modified="Wed Feb 10 14:12:43 GMT+01:00 2010" modifiedBy="avackova" name="graphInfobrightDataWriter" revision="1.26">
 <Global>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter="," name="output" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Record fieldDelimiter="," name="output" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n\\|\r\n" recordSize="-1" type="delimited">
 <Field eofAsDelimiter="false" name="boolField" nullable="true" shift="0" size="0" type="boolean"/>
 <Field eofAsDelimiter="false" format="yyyy-MM-dd" name="dateField" nullable="true" shift="0" size="0" type="date"/>
 <Field eofAsDelimiter="false" length="8" name="decimalField" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
@@ -25,15 +25,22 @@
 </Metadata>
 <Connection database="MYSQL" dbURL="jdbc:mysql://localhost:5029/test" id="JDBC1" jdbcSpecific="MYSQL" jndiName="" name="NewConnection" password="" type="JDBC" user="root"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="154" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Loading data to local Infobright server" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="422" x="217" y="32">
+<attr name="text"><![CDATA[If the hostname is “localhost” or “127.0.0.1” then the load will be done using a local pipe. Otherwise it will use a remote pipe. The external IP address of the server is not recognized as a local server. So if you use IP adress, different then "127.0.0.1", you get  "java.net.ConnectException: Connection refused" as the loader try to communicate with remote agent on port 5555.
+Output metadata has to meet certain conditions:
+    * comma as a field delimiter
+    * system new line ('\\n' for Linux, '\\r\\n' for Windows) as a record delimiter - we can use alternative delimiter (\\n\\\|\\r\\n) to make the graph running on both systems
+    * date/time formatting: yyyy-MM-dd HH:mm:ss (can be date only, time only or both)]]></attr>
+</Note>
 </Global>
 <Phase number="0">
 <Node dbConnection="JDBC1" enabled="enabled" guiHeight="0" guiName="DBExecute" guiWidth="0" guiX="64" guiY="46" id="DB_EXECUTE0" sqlQuery="create table test (&#10;&#9;boolField TINYINT(1),&#10;&#9;dateField DATE,&#10;&#9;decimalField DECIMAL(8,2),&#10;&#9;stringField VARCHAR(80)&#10;)&#10;" type="DB_EXECUTE"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/infobright.dat" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="65" guiY="134" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATATMP_DIR}/infobright_out.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="465" guiY="134" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node cloverFields="boolField;dateField;decimalField;stringField" dbConnection="JDBC1" enabled="enabled" guiHeight="0" guiName="InfobrigtDataWriter" guiWidth="0" guiX="264" guiY="134" id="INFOBRIGHT_DATA_WRITER0" table="test" type="INFOBRIGHT_DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/infobright.dat" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="65" guiY="218" id="DATA_READER0" type="DATA_READER"/>
+<Node cloverFields="boolField;dateField;decimalField;stringField" dbConnection="JDBC1" enabled="enabled" guiHeight="0" guiName="InfobrigtDataWriter" guiWidth="0" guiX="264" guiY="218" id="INFOBRIGHT_DATA_WRITER0" table="test" type="INFOBRIGHT_DATA_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATATMP_DIR}/infobright_out.xml" footer="&lt;/dataset&gt;" guiHeight="0" guiName="StructuredDataWriter" guiWidth="0" guiX="465" guiY="220" header="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;dataset&gt;&#10;" id="STRUCTURE_WRITER0" mask="&lt;test boolField=&quot;$boolField&quot; dateField=&quot;$dateField&quot; decimalField=&quot;$decimalField&quot; stringField=&quot;$stringField&quot;/&gt;&#10;" type="STRUCTURE_WRITER"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="INFOBRIGHT_DATA_WRITER0:0"/>
-<Edge fromNode="INFOBRIGHT_DATA_WRITER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="INFOBRIGHT_DATA_WRITER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (Body port)" metadata="Metadata2" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
 </Phase>
 </Graph>

@@ -435,6 +435,14 @@ public class MultiFileWriter {
      */
     public void close() throws IOException {
     	if (outputClosed) return;
+    	if (reset) {
+    		try {
+				prepareTargets();						// prepare output targets //TODO remove in 2.9, there is pre_execute
+			} catch (ComponentNotReadyException e) {
+				e.printStackTrace();
+			}
+    		reset = false;
+    	}
     	if (multiTarget != null) {
         	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
         		entry.getValue().close();
@@ -447,6 +455,14 @@ public class MultiFileWriter {
     }
     
     public void finish() throws IOException{
+    	if (reset) {
+    		try {
+				prepareTargets();						// prepare output targets //TODO remove in 2.9, there is pre_execute
+			} catch (ComponentNotReadyException e) {
+				e.printStackTrace();
+			}
+    		reset = false;
+    	}
     	if (multiTarget != null) {
         	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
         		entry.getValue().finish();

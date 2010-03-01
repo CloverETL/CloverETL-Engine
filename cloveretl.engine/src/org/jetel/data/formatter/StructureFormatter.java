@@ -87,10 +87,27 @@ public class StructureFormatter implements Formatter {
 	public StructureFormatter(String charEncoder){
 		charSet = charEncoder;
 	}
+	
+	public static String createDefaultMask(DataRecordMetadata metadata){
+		StringBuilder maskBuilder = new StringBuilder();
+		maskBuilder.append("< ");
+		maskBuilder.append(metadata.getName());
+		maskBuilder.append(">\n");
+		for (int i=0;i<metadata.getNumFields();i++){
+			maskBuilder.append("\t<");
+			maskBuilder.append(metadata.getField(i).getName());
+			maskBuilder.append(">$");
+			maskBuilder.append(metadata.getField(i).getName());
+			maskBuilder.append("</");
+			maskBuilder.append(metadata.getField(i).getName());
+			maskBuilder.append(">\n");
+		}
+		maskBuilder.append("</");
+		maskBuilder.append(metadata.getName());
+		maskBuilder.append(">\n");
+		return maskBuilder.toString();
+	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
-	 */
 	public void init(DataRecordMetadata _metadata)
 			throws ComponentNotReadyException {
 		this.metadata = _metadata;
@@ -102,18 +119,7 @@ public class StructureFormatter implements Formatter {
 		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
 		//if mask is not given create default mask
 		if (mask == null) {
-			StringBuilder maskBuilder = new StringBuilder();
-			maskBuilder.append("< ");
-			maskBuilder.append(metadata.getName());
-			maskBuilder.append(" ");
-			for (int i=0;i<metadata.getNumFields();i++){
-				maskBuilder.append(metadata.getField(i).getName());
-				maskBuilder.append("=$");
-				maskBuilder.append(metadata.getField(i).getName());
-				maskBuilder.append(" ");
-			}
-			maskBuilder.append("/>\n");
-			mask = maskBuilder.toString();
+			mask = createDefaultMask(metadata);
 		}
 		try {
 			maskBytes = mask.getBytes(charSet != null ? charSet

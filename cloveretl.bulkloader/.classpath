@@ -5,6 +5,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/cloveretl.component"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/cloveretl.connection"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/cloveretl.engine"/>
-	<classpathentry kind="lib" path="lib/infobright-core-2.7.jar"/>
+	<classpathentry kind="lib" path="lib/infobright-core-3.0-remote.jar" />
 	<classpathentry kind="output" path="bin"/>
 </classpath>

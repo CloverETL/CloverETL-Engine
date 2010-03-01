@@ -19,6 +19,6 @@ The random_gaussian() function accepts no argument and returns numeric values in
 <Phase number="0">
 <Node enabled="enabled" generate="//#TL&#10;long randomSeed = 2;&#10;&#10;// Generates output record.&#10;function generate() {&#10;&#9;$0.Random_gaussianFunction := 'random_gaussian()';&#10;&#9;$0.ResultInteger := random_gaussian(randomSeed);&#10;&#9;$0.ResultLong := random_gaussian(randomSeed);&#10;&#9;$0.ResultDecimal := random_gaussian(randomSeed);&#10;&#9;$0.ResultNumber := random_gaussian(randomSeed);&#10;}&#10;" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="81" guiY="240" id="DATA_GENERATOR0" recordsNumber="10" type="DATA_GENERATOR"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/mathRandom_gaussianOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="473" guiY="240" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

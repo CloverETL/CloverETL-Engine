@@ -456,6 +456,8 @@ public class DBJoin extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
+		inRecord = new DataRecord(inPort.getMetadata());
+		inRecord.init();
 		lookup.getLookupTable().reset();
 		if (transformation != null) {
 			transformation.reset();

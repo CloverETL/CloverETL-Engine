@@ -59,18 +59,18 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge19" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT4:0"/>
-<Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" id="Edge24" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (unique)" toNode="DATA_WRITER2:0"/>
-<Edge debugMode="true" fromNode="DEDUP1:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (unique)" toNode="DATA_WRITER3:0"/>
-<Edge debugMode="true" fromNode="DEDUP2:0" guiBendpoints="" id="Edge21" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (unique)" toNode="DATA_WRITER1:0"/>
-<Edge debugMode="true" fromNode="DEDUP3:0" guiBendpoints="" id="Edge18" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (unique)" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge23" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="DEDUP1:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DEDUP2:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT3:0" guiBendpoints="" id="Edge17" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DEDUP3:0"/>
-<Edge debugMode="true" fromNode="REFORMAT4:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT3:0"/>
-<Edge debugMode="true" fromNode="REFORMAT4:1" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="EXT_SORT2:0"/>
-<Edge debugMode="true" fromNode="REFORMAT4:2" guiBendpoints="" id="Edge22" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 2 (out)" toNode="EXT_SORT0:0"/>
-<Edge debugMode="true" fromNode="REFORMAT4:3" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 3 (out)" toNode="EXT_SORT1:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge19" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT4:0"/>
+<Edge debugMode="false" fromNode="DEDUP0:0" guiBendpoints="" id="Edge24" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (unique)" toNode="DATA_WRITER2:0"/>
+<Edge debugMode="false" fromNode="DEDUP1:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (unique)" toNode="DATA_WRITER3:0"/>
+<Edge debugMode="false" fromNode="DEDUP2:0" guiBendpoints="" id="Edge21" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (unique)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="false" fromNode="DEDUP3:0" guiBendpoints="" id="Edge18" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (unique)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge23" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="DEDUP1:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DEDUP2:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT3:0" guiBendpoints="" id="Edge17" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DEDUP3:0"/>
+<Edge debugMode="false" fromNode="REFORMAT4:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT3:0"/>
+<Edge debugMode="false" fromNode="REFORMAT4:1" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="EXT_SORT2:0"/>
+<Edge debugMode="false" fromNode="REFORMAT4:2" guiBendpoints="" id="Edge22" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 2 (out)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT4:3" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 3 (out)" toNode="EXT_SORT1:0"/>
 </Phase>
 </Graph>

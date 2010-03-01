@@ -154,7 +154,11 @@ public abstract class Ldap2JetelData {
 				if (value == null) {
 					df.setNull(true);
 				} else {
-					df.setValue(value);
+					if (value instanceof byte[]) {
+						df.setValue(value);
+					} else {
+						throw new BadDataFormatException("LDAP attribute to Jetel field transformation exception : Field " + attr.getID() + " is not a Byte array.");
+					}
 				}
 			} else {
 				throw new BadDataFormatException("LDAP attribute to Jetel field transformation exception : Field " + attr.getID() + " is not a Byte array.");

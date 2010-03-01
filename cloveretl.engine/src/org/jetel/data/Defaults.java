@@ -246,8 +246,8 @@ public final class Defaults {
 	public static String DEFAULT_DATE_FORMAT;// = "yyyy-MM-dd";
 	public static String DEFAULT_TIME_FORMAT;// = "HH:mm:ss";
 	public static String DEFAULT_DATETIME_FORMAT;// = "yyyy-MM-dd HH:mm:ss";
-	public static String DEFAULT_REGEXP_TRUE_STRING;// = "T|TRUE|YES|Y||t|true|1|yes|y"
-	public static String DEFAULT_REGEXP_FALSE_STRING;// = "F|FALSE|NO|N||f|false|0|no|n"
+	public static String DEFAULT_REGEXP_TRUE_STRING;// = "T|TRUE|YES|Y|t|true|1|yes|y"
+	public static String DEFAULT_REGEXP_FALSE_STRING;// = "F|FALSE|NO|N|f|false|0|no|n"
 
 	public static String DEFAULT_LOCALE_STR_DELIMITER_REGEX;// = "\\.";
 
@@ -426,6 +426,31 @@ public final class Defaults {
 		 * Delimiter character used when exporting components to XML
 		 */
 		public static String KEY_FIELDS_DELIMITER;// = ";";
+		
+		/**
+		 * This long value is used as a header for internal clover binary data sources/targets.
+		 * CloverDataReader and CloverDataWriter components are dedicated to work with this data format. 
+		 * Each clover data source (since 2.9 version) starts with this value and follows
+		 * with compatibility value @see CLOVER_DATA_COMPATIBILITY_HASH, one byte for major version number,
+		 * one byte for minor version number, one byte for revision number, and other four bytes
+		 * for type of encoding.
+		 * NOTE: cannot be changed from defaultProperties file
+		 */
+		public final static long CLOVER_DATA_HEADER = 7198760165196065077L; 
+
+		/**
+		 * This long value is used for decision about inter-version compatibility 
+		 * of clover binary format. Need to be changed whenever clover engine changed way how to 
+		 * data records are serialized.
+		 * NOTE: cannot be changed from defaultProperties file
+		 */
+		public final static long CLOVER_DATA_COMPATIBILITY_HASH = 620003156160528134L;
+		
+    	/**
+    	 * This is the size of header (in bytes) for clover binary data format (@see CLOVER_DATA_HEADER). 
+		 * NOTE: cannot be changed from defaultProperties file
+s    	 */
+    	public final static int CLOVER_DATA_HEADER_SIZE = 23;
 	}
 
 	/**

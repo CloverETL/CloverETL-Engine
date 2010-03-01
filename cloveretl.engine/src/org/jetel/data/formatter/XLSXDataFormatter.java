@@ -18,13 +18,10 @@
  */
 package org.jetel.data.formatter;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.Date;
@@ -49,40 +46,16 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
-import org.openxml4j.exceptions.InvalidFormatException;
-import org.openxml4j.opc.Package;
 
 /**
  * Represents a XLSX data formatter based on the Apache POI library.
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 17th July 2009
+ * @version 26th November 2009
  * @since 30th January 2009
  */
 public class XLSXDataFormatter extends XLSFormatter {
-
-	/**
-	 * A structure used to save states when multiple sheet writing is enabled.
-	 *
-	 * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
-	 *
-	 * @version 30th January 2009
-	 * @since 30th January 2009
-	 */
-	private static final class SheetData {
-
-		/** the sheet affected */
-		private Sheet sheet;
-		/** the current row within the sheet */
-		private int currentRow;
-
-		public SheetData(Sheet sheet, int currentRow) {
-			this.sheet = sheet;
-			this.currentRow = currentRow;
-		}
-
-	}
 
 	/** the value specifying that no data format is used/set */
 	public static final String GENERAL_FORMAT_STRING = "General";
@@ -133,10 +106,8 @@ public class XLSXDataFormatter extends XLSFormatter {
         		// input stream
         		try {
             		InputStream inputStream = FileUtils.getInputStream(url, fName);
-    				workbook = (inputStream.available() > 0) ? new XSSFWorkbook(Package.open(inputStream)) : new XSSFWorkbook();
+        			workbook = (inputStream.available() > 0) ? new XSSFWorkbook(inputStream) : new XSSFWorkbook();
     				inputStream.close();
-        		} catch (InvalidFormatException exception) {
-        			throw new IllegalArgumentException("The XLSX workbook has invalid format!", exception);
         		} catch (Throwable t) {
         			//NOTHING - create new xlsx
     				workbook = new XSSFWorkbook();
@@ -233,7 +204,7 @@ public class XLSXDataFormatter extends XLSFormatter {
 		// determine the correct row and write the names row
 		//
 
-		currentRowIndex = append ? sheet.getLastRowNum() + 1 : 0;
+		currentRowIndex = append ? sheet.getLastRowNum() + (sheet.getPhysicalNumberOfRows() > 0 ? 1 : 0) : 0;
 
 		if (namesRow > -1) {
 			if (!append || sheet.getLastRowNum() < 0) {
@@ -357,7 +328,7 @@ public class XLSXDataFormatter extends XLSFormatter {
 
 	public void close() {
 		if (workbook != null) {
-			if (metadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
+			if (metadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD && sheetData != null) {
 				for (SheetData aSheetData : sheetData.values()) {
 					for (int i = 0; i < includedFieldIndices.length; i++) {
 						aSheetData.sheet.autoSizeColumn(firstColumn + i);
@@ -386,6 +357,28 @@ public class XLSXDataFormatter extends XLSFormatter {
 		currentRowIndex = 0;
 
 		outputStream = null;
+	}
+
+	/**
+	 * A structure used to save states when multiple sheet writing is enabled.
+	 *
+	 * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
+	 *
+	 * @version 30th January 2009
+	 * @since 30th January 2009
+	 */
+	private static final class SheetData {
+
+		/** the sheet affected */
+		private Sheet sheet;
+		/** the current row within the sheet */
+		private int currentRow;
+
+		public SheetData(Sheet sheet, int currentRow) {
+			this.sheet = sheet;
+			this.currentRow = currentRow;
+		}
+
 	}
 
 }

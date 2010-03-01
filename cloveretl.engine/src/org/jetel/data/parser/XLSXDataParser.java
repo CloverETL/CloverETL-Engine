@@ -43,15 +43,13 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.NumberIterator;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.string.StringUtils;
-import org.openxml4j.exceptions.InvalidFormatException;
-import org.openxml4j.opc.Package;
 
 /**
  * Represents a XLSX data parser based on the Apache POI library.
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 10th April 2009
+ * @version 1st December 2009
  * @since 30th January 2009
  */
 public class XLSXDataParser extends XLSParser {
@@ -78,11 +76,9 @@ public class XLSXDataParser extends XLSParser {
 		}
 
 		try {
-			workbook = new XSSFWorkbook(Package.open(dataInputStream));
+			workbook = new XSSFWorkbook(dataInputStream);
 		} catch (IOException exception) {
 			throw new ComponentNotReadyException("Error opening the XLSX workbook!", exception);
-		} catch (InvalidFormatException exception) {
-			throw new ComponentNotReadyException("The XLSX workbook has invalid format!", exception);
 		} finally {
 			if (releaseDataSource) {
 				try {
@@ -158,7 +154,7 @@ public class XLSXDataParser extends XLSParser {
 
 		// set last row to read on set attribute or to last row in current sheet
 		lastRow = (lastRowAttribute == -1 || lastRowAttribute >= sheet.getLastRowNum())
-				? sheet.getLastRowNum() + 1 : lastRowAttribute;
+				? sheet.getLastRowNum() + (sheet.getPhysicalNumberOfRows() > 0 ? 1 : 0) : lastRowAttribute;
 
 		discardBytes(autoFillingSheetName = workbook.getSheetName(sheetCounter));
         logger.info("Reading data from sheet " + sheetCounter + " (" + workbook.getSheetName(sheetCounter) + ").");
@@ -167,8 +163,7 @@ public class XLSXDataParser extends XLSParser {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	protected void cloverfieldsAndXlsNames(Map fieldNames) throws ComponentNotReadyException {
+	protected void cloverfieldsAndXlsNames(Map<String, Integer> fieldNames) throws ComponentNotReadyException {
 		if (fieldNames == null) {
 			throw new NullPointerException("fieldNames");
 		}
@@ -191,7 +186,7 @@ public class XLSXDataParser extends XLSParser {
 					fieldNumber[numberOfFoundFields][XLS_NUMBER] = i;
 	
 					try {
-						fieldNumber[numberOfFoundFields][CLOVER_NUMBER] = (Integer) fieldNames.get(cloverFields[xlsNumber]);
+						fieldNumber[numberOfFoundFields][CLOVER_NUMBER] = fieldNames.get(cloverFields[xlsNumber]);
 					}catch (NullPointerException ex) {
 						throw new ComponentNotReadyException("Clover field \"" + cloverFields[xlsNumber] + "\" not found");
 					}
@@ -209,8 +204,7 @@ public class XLSXDataParser extends XLSParser {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	protected void mapNames(Map fieldNames) throws ComponentNotReadyException {
+	protected void mapNames(Map<String, Integer> fieldNames) throws ComponentNotReadyException {
 		if (fieldNames == null) {
 			throw new NullPointerException("fieldNames");
 		}
@@ -226,7 +220,7 @@ public class XLSXDataParser extends XLSParser {
 	
 				if (fieldNames.containsKey(cellValue)) {// corresponding field in metadata found
 					fieldNumber[numberOfFoundFields][XLS_NUMBER] = i;
-					fieldNumber[numberOfFoundFields][CLOVER_NUMBER] = (Integer) fieldNames.get(cellValue);
+					fieldNumber[numberOfFoundFields][CLOVER_NUMBER] = fieldNames.get(cellValue);
 					numberOfFoundFields++;
 	
 					fieldNames.remove(cellValue);
@@ -239,7 +233,7 @@ public class XLSXDataParser extends XLSParser {
 		if (numberOfFoundFields < metadata.getNumFields()) {
 			logger.warn("Not all fields found:");
 
-			for (Object fieldName : fieldNames.keySet()) {
+			for (String fieldName : fieldNames.keySet()) {
 				logger.warn(fieldName);
 			}
 		}
@@ -418,14 +412,10 @@ public class XLSXDataParser extends XLSParser {
 				continue;
 			}
 
-			if (xlsFieldIndex > row.getLastCellNum()) {
-				record.getField(cloverFieldIndex).setNull(true);
-				continue;
-			}
-
 			Cell cell = row.getCell(xlsFieldIndex);
 
 			if (cell == null) {
+				record.getField(cloverFieldIndex).setNull(true);
 				continue;
 			}
 
@@ -439,7 +429,7 @@ public class XLSXDataParser extends XLSParser {
 						break;
 					case DataFieldMetadata.BYTE_FIELD:
 					case DataFieldMetadata.STRING_FIELD:
-						record.getField(cloverFieldIndex).fromString(cell.getStringCellValue());
+						record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell));
 						break;
 					case DataFieldMetadata.DECIMAL_FIELD:
 					case DataFieldMetadata.INTEGER_FIELD:
@@ -451,9 +441,9 @@ public class XLSXDataParser extends XLSParser {
 						record.getField(cloverFieldIndex).setValue(cell.getBooleanCellValue());
 						break;
 				}
-			} catch (ClassCastException exception) {// exception when trying get date or number from a different cell type
+			} catch (RuntimeException exception) {// exception when trying get date or number from a different cell type
 				try {
-					record.getField(cloverFieldIndex).fromString(cell.getStringCellValue());
+					record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell));
 				} catch (Exception ex) {
 					BadDataFormatException bdfe = new BadDataFormatException(exception.getMessage());
 					bdfe.setRecordNumber(currentRow + 1);

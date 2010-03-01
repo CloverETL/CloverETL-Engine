@@ -41,8 +41,10 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.JetelVersion;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.primitive.BitArray;
 
 
 /**
@@ -62,6 +64,7 @@ import org.jetel.util.file.FileUtils;
  *
  */
 public class CloverDataFormatter implements Formatter {
+	
 	
 	public final static char FILE_SEPARATOR = '/';
 	public final static String DATA_DIRECTORY = "DATA" + FILE_SEPARATOR;
@@ -134,8 +137,28 @@ public class CloverDataFormatter implements Formatter {
             idxBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
         }
         isOpen = true;
+
+        //write header information for compatibility testing while later reading
+        writeCompatibilityHeader();
     }
 
+    private void writeCompatibilityHeader() {
+        //write a clover data binary header @see Defaults.Component.CLOVER_DATA_HEADER
+        //HEADER & COMPATIBILITY_HASH & MAJOR_VERSION & MINOR_VERSION & REVISION_VERSION & 4_EXTRA_BYTES
+        buffer.putLong(Defaults.Component.CLOVER_DATA_HEADER);
+        buffer.putLong(Defaults.Component.CLOVER_DATA_COMPATIBILITY_HASH);
+        buffer.put((byte) JetelVersion.getMajorVersion());
+        buffer.put((byte) JetelVersion.getMinorVersion());
+        buffer.put((byte) JetelVersion.getRevisionVersion());
+        //extra bytes now used only first bit to distinquish whether null fields are serialized as a bit array
+        //@see Defaults.Record.USE_FIELDS_NULL_INDICATORS
+    	byte[] extraBytes = new byte[4];
+        if (Defaults.Record.USE_FIELDS_NULL_INDICATORS) {
+        	BitArray.set(extraBytes, 0);
+        }
+        buffer.put(extraBytes);
+    }
+    
     public void reset() {
 		if (isOpen) {
 			close();

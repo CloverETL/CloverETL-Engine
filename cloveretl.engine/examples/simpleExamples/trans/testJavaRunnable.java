@@ -21,7 +21,7 @@ import org.jetel.component.BasicJavaRunnable;
 public class testJavaRunnable extends BasicJavaRunnable {
 	
 	public void run() {
-		System.out.println("Basic example of Java Execute, value of testingProperty = " 
+		getGraph().getLogger().info("Basic example of Java Execute, value of testingProperty = " 
 				+ parameters.getProperty("testingProperty"));
 	}
 }

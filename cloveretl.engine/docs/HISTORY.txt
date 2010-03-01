@@ -2,6 +2,27 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL 2-9-1
+---------
++ JMS Writer - Fix of exception propagation during sending of JMS message
++ fixed HashPartition function giving negative port numbers occasionally
++ improved SFTP speed
+
+
+REL 2-9-0
+---------
+Features:
++ XLS reading - formatted value can be obtained as a String type field if needed
++ Tracking - in final tracking summary average Rec/s and KB/s is displayed
++ LDAPWriter - possibility of changing/disabling multiseparator
++ CTL transformation has now PROJECT_DIR available
++ new AbstractPartitionFunction for Java writen PartitionFunction
+
+Fixed:
++ PostgreSqlDataWriter and OracleDataWriter - NullPointerException fix
++ Reading of zipped MS Excel files
+
+
 REL 2-8-1
 ---------
 Features:

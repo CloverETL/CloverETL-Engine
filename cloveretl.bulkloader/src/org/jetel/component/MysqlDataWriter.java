@@ -693,12 +693,7 @@ public class MysqlDataWriter extends BulkLoader {
 	}
 	
 	private String getDataFilePath() throws ComponentNotReadyException {
-	    // if the data file is located on server, return its URL to prevent any normalization (change of slashes)
-	    if ("false".equalsIgnoreCase(properties.getProperty(LOAD_LOCAL_PARAM))) {
-	        return dataURL;
-	    }
-
-	    if (ProcBox.isWindowsPlatform()) {
+	    if (ProcBox.isWindowsPlatform() || "false".equalsIgnoreCase(properties.getProperty(LOAD_LOCAL_PARAM))) {
 			// convert "C:\examples\xxx.dat" to "C:/examples/xxx.dat"
 			return StringUtils.backslashToSlash(getFilePath(dataFile));
 		}
@@ -711,7 +706,7 @@ public class MysqlDataWriter extends BulkLoader {
     	if (isDataReadDirectlyFromFile) {
             if (!fileUrlExists(dataURL)) {
                 free();
-                throw new ComponentNotReadyException(this, "Data file " + StringUtils.quote(dataURL) + " not exists.");
+                throw new ComponentNotReadyException(this, "Data file " + StringUtils.quote(dataURL) + " doesn't exist.");
             }
 
             dataFile = getFile(dataURL);

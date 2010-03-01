@@ -428,6 +428,8 @@ public class HashJoin extends Node {
 	}
 
 	public void reset() throws ComponentNotReadyException{
+		inRecords[0] = new DataRecord(driverPort.getMetadata());
+		inRecords[0].init();
 		for (HashMap<HashKey,MapItem> hashMapItem : hashMap) {
 			hashMapItem.clear();
 		}

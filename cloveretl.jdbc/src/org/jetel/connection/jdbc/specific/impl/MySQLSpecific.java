@@ -20,7 +20,6 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -117,6 +116,8 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 		return connection.getMetaData().getTables(dbName, dbName, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/); //fix by kokon - show only tables and views
 	}
 
-
-	
+	@Override
+	public boolean isSchemaRequired() {
+		return true;
+	}	
 }

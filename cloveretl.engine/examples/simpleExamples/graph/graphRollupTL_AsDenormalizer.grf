@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jan 12 08:41:50 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204545430039" licenseType="Evaluation license." modified="Mon Aug 17 09:52:13 CEST 2009" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.94">
+<Graph author="avackova" created="Fri Jan 12 08:41:50 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204545430039" licenseType="Evaluation Devel" modified="Tue Dec 01 11:45:23 GMT+01:00 2009" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.100">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -11,7 +11,7 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="185" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sort order for Rollup" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="380" x="256" y="272">
 <attr name="text"><![CDATA[
-When using groupAccumulator, Rollup does not need sorted input and gives the same result as Denormalizer with sorted input (phase 0).
+When using groupAccumulator, Rollup does not need sorted input and gives the same result (with an accuracy of  order) as Denormalizer with sorted input (phase 0).
 Unlike Denormalizer with unsorted input (phase 1) which gives different result.
 
 The phases with Denormalizers are taken from graphDenormalizeTL.grf.
@@ -49,10 +49,10 @@ function clean(){
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTL.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="529" guiY="20" id="WRITER" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTL.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="537" guiY="20" id="WRITER" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
 <Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DENORMALIZE:0"/>
-<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" guiHeight="25" guiName="DENORMALIZE" guiWidth="50" guiX="353" guiY="104" id="DENORMALIZE1" key="EmployeeID" order="Ignore" type="DENORMALIZER">
@@ -83,15 +83,16 @@ function clean(){
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="23" guiY="104" id="INPUT2" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTLwithoutOrder.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="532" guiY="104" id="WRITER1" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="DENORMALIZE1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER1:0"/>
-<Edge debugMode="true" fromNode="INPUT2:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DENORMALIZE1:0"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTLwithoutOrder.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="537" guiY="104" id="WRITER1" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="DENORMALIZE1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER1:0"/>
+<Edge debugMode="false" fromNode="INPUT2:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DENORMALIZE1:0"/>
 </Phase>
 <Phase number="2">
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="537" guiY="190" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="23" guiY="190" id="INPUT4" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node enabled="enabled" groupAccumulatorMetadataId="Metadata1" groupKeyFields="EmployeeID" guiHeight="0" guiName="Rollup-Need not be sorted" guiWidth="0" guiX="354" guiY="191" id="ROLLUP0" inputSorted="false" type="ROLLUP">
+<Node enabled="enabled" groupAccumulatorMetadataId="Metadata1" groupKeyFields="EmployeeID" guiHeight="0" guiName="Rollup-Need not be sorted" guiWidth="0" guiX="354" guiY="190" id="ROLLUP0" inputSorted="false" type="ROLLUP">
 <attr name="transform"><![CDATA[//#TL
 
 // Called for the first data record in a group.
@@ -147,8 +148,9 @@ function transform(counter, groupAccumulator) {
 
 ]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTLwithoutOrder_Rollup.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="534" guiY="189" id="WRITER3" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="INPUT4:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="ROLLUP0:0"/>
-<Edge debugMode="true" fromNode="ROLLUP0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER3:0"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTLwithoutOrder_Rollup.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="689" guiY="190" id="WRITER3" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER3:0"/>
+<Edge debugMode="false" fromNode="INPUT4:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="ROLLUP0:0"/>
+<Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
 </Phase>
 </Graph>

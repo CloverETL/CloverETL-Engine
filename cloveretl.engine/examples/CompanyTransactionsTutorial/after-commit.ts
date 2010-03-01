@@ -29,7 +29,7 @@
 	</FunctionalTest>
 	
 	<FunctionalTest ident="A05" graphFile="graph/A05_CreatingXMLEmplFamCustAm.grf">
-	 	<FlatFile outputFile="data-tmp/EmplFamCustAm000.xml" supposedFile="supposed-out/A05.EmplFamCustAm000.xml"/>
+<!--	 	<FlatFile outputFile="data-tmp/EmplFamCustAm000.xml" supposedFile="supposed-out/A05.EmplFamCustAm000.xml"/>
 	 	<FlatFile outputFile="data-tmp/EmplFamCustAm001.xml" supposedFile="supposed-out/A05.EmplFamCustAm001.xml"/>
 	 	<FlatFile outputFile="data-tmp/EmplFamCustAm002.xml" supposedFile="supposed-out/A05.EmplFamCustAm002.xml"/>
 	 	<FlatFile outputFile="data-tmp/EmplFamCustAm003.xml" supposedFile="supposed-out/A05.EmplFamCustAm003.xml"/>
@@ -44,10 +44,11 @@
 	 	<FlatFile outputFile="data-tmp/EmplFamCustAm012.xml" supposedFile="supposed-out/A05.EmplFamCustAm012.xml"/>
 	 	<FlatFile outputFile="data-tmp/EmplFamCustAm013.xml" supposedFile="supposed-out/A05.EmplFamCustAm013.xml"/>
 	 	<FlatFile outputFile="data-tmp/EmplFamCustAm014.xml" supposedFile="supposed-out/A05.EmplFamCustAm014.xml"/>
+-->
 	</FunctionalTest>
 
 	<FunctionalTest ident="A06" graphFile="graph/A06_CreatingXMLCustEmplFamAm.grf">
-	 	<FlatFile outputFile="data-tmp/CustEmplFamAm000.xml" supposedFile="supposed-out/A06.CustEmplFamAm000.xml"/>
+<!--	 	<FlatFile outputFile="data-tmp/CustEmplFamAm000.xml" supposedFile="supposed-out/A06.CustEmplFamAm000.xml"/>
 	 	<FlatFile outputFile="data-tmp/CustEmplFamAm001.xml" supposedFile="supposed-out/A06.CustEmplFamAm001.xml"/>
 	 	<FlatFile outputFile="data-tmp/CustEmplFamAm002.xml" supposedFile="supposed-out/A06.CustEmplFamAm002.xml"/>
 	 	<FlatFile outputFile="data-tmp/CustEmplFamAm003.xml" supposedFile="supposed-out/A06.CustEmplFamAm003.xml"/>
@@ -62,10 +63,11 @@
 	 	<FlatFile outputFile="data-tmp/CustEmplFamAm012.xml" supposedFile="supposed-out/A06.CustEmplFamAm012.xml"/>
 	 	<FlatFile outputFile="data-tmp/CustEmplFamAm013.xml" supposedFile="supposed-out/A06.CustEmplFamAm013.xml"/>
 	 	<FlatFile outputFile="data-tmp/CustEmplFamAm014.xml" supposedFile="supposed-out/A06.CustEmplFamAm014.xml"/>
+-->
 	</FunctionalTest>
 
 	<FunctionalTest ident="A07" graphFile="graph/A07_CreatingXMLAmCustEmplFam.grf">
-	 	<FlatFile outputFile="data-tmp/AmCustEmplFam000.xml" supposedFile="supposed-out/A07.AmCustEmplFam000.xml"/>
+<!--	 	<FlatFile outputFile="data-tmp/AmCustEmplFam000.xml" supposedFile="supposed-out/A07.AmCustEmplFam000.xml"/>
 	 	<FlatFile outputFile="data-tmp/AmCustEmplFam001.xml" supposedFile="supposed-out/A07.AmCustEmplFam001.xml"/>
 	 	<FlatFile outputFile="data-tmp/AmCustEmplFam002.xml" supposedFile="supposed-out/A07.AmCustEmplFam002.xml"/>
 	 	<FlatFile outputFile="data-tmp/AmCustEmplFam003.xml" supposedFile="supposed-out/A07.AmCustEmplFam003.xml"/>
@@ -75,10 +77,11 @@
 	 	<FlatFile outputFile="data-tmp/AmCustEmplFam007.xml" supposedFile="supposed-out/A07.AmCustEmplFam007.xml"/>
 	 	<FlatFile outputFile="data-tmp/AmCustEmplFam008.xml" supposedFile="supposed-out/A07.AmCustEmplFam008.xml"/>
 	 	<FlatFile outputFile="data-tmp/AmCustEmplFam009.xml" supposedFile="supposed-out/A07.AmCustEmplFam009.xml"/>
+-->
 	</FunctionalTest>
 
 	<FunctionalTest ident="A08" graphFile="graph/A08_CreatingXMLTransactionsFamily.grf">
-	 	<FlatFile outputFile="data-tmp/TransactionsFamily000.xml" supposedFile="supposed-out/A08.TransactionsFamily000.xml"/>
+<!--	 	<FlatFile outputFile="data-tmp/TransactionsFamily000.xml" supposedFile="supposed-out/A08.TransactionsFamily000.xml"/>
 	 	<FlatFile outputFile="data-tmp/TransactionsFamily001.xml" supposedFile="supposed-out/A08.TransactionsFamily001.xml"/>
 	 	<FlatFile outputFile="data-tmp/TransactionsFamily002.xml" supposedFile="supposed-out/A08.TransactionsFamily002.xml"/>
 	 	<FlatFile outputFile="data-tmp/TransactionsFamily003.xml" supposedFile="supposed-out/A08.TransactionsFamily003.xml"/>
@@ -88,6 +91,7 @@
 	 	<FlatFile outputFile="data-tmp/TransactionsFamily007.xml" supposedFile="supposed-out/A08.TransactionsFamily007.xml"/>
 	 	<FlatFile outputFile="data-tmp/TransactionsFamily008.xml" supposedFile="supposed-out/A08.TransactionsFamily008.xml"/>
 	 	<FlatFile outputFile="data-tmp/TransactionsFamily009.xml" supposedFile="supposed-out/A08.TransactionsFamily009.xml"/>
+-->
 	</FunctionalTest>
 
 	<FunctionalTest ident="A09" graphFile="graph/A09_XMLExtractEmplFamCustAm.grf">

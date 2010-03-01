@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.ByteArray;
 import org.jetel.data.primitive.CloverLong;
@@ -48,6 +49,7 @@ import org.jetel.interpreter.data.TLByteArrayValue;
 import org.jetel.interpreter.data.TLDateValue;
 import org.jetel.interpreter.data.TLNullValue;
 import org.jetel.interpreter.data.TLNumericValue;
+import org.jetel.interpreter.data.TLRecordValue;
 import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
@@ -92,7 +94,9 @@ public class ConvertLib extends TLFunctionLibrary {
         LONG2PACKEDDECIMAL("long2pacdecimal"),
         PACKEDDECIMAL2LONG("pacdecimal2long"),
         MD5("md5"),
-        SHA("sha");
+        SHA("sha"),
+        GET_FIELD_NAME("get_field_name"),
+        GET_FIELD_TYPE("get_field_type");
         
         
         public String name;
@@ -140,6 +144,8 @@ public class ConvertLib extends TLFunctionLibrary {
         case PACKEDDECIMAL2LONG: return new PackedDecimal2LongFunction();
         case MD5: return new MD5Function();
         case SHA: return new SHAFunction();
+        case GET_FIELD_NAME: return new GetFieldNameFunction();
+        case GET_FIELD_TYPE: return new GetFieldTypeFunction();
         default: return null;
        }
     }
@@ -1199,6 +1205,64 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 }
 
+		//GET_FIELD_NAME
+		class GetFieldNameFunction extends TLFunctionPrototype {
+
+			public GetFieldNameFunction() {
+				super("convert", "get_field_name", "Returns name of i-th field of passed-in record",
+						new TLValueType[] { TLValueType.RECORD, TLValueType.INTEGER} , TLValueType.STRING);
+			}
+
+			@Override
+			public TLValue execute(TLValue[] params, TLContext context) {
+				TLStringValue value = (TLStringValue)context.getContext();
+		   	if (params[0].getType()!= TLValueType.RECORD || !params[1].getType().isNumeric()){
+		   		throw new TransformLangExecutorRuntimeException(params,
+		                   "get_field_name - - wrong type of literals");
+		   	}
+		   	try{
+		   		value.setValue(((DataRecord)((TLRecordValue)params[0]).getValue()).getField(params[1].getNumeric().getInt()).getMetadata().getName());
+		   		return value;
+		   	}catch(Exception ex){
+		   		return TLStringValue.EMPTY;
+		   	}
+			}
+
+		   @Override
+		   public TLContext createContext() {
+		   	return TLContext.createStringContext();
+		   }
+		}
+
+		//GET_FIELD_TYPE
+		class GetFieldTypeFunction extends TLFunctionPrototype {
+
+			public GetFieldTypeFunction() {
+				super("convert", "get_field_type", "Returns data type of i-th field of passed-in record",
+						new TLValueType[] { TLValueType.RECORD, TLValueType.INTEGER} , TLValueType.STRING);
+			}
+
+			@Override
+			public TLValue execute(TLValue[] params, TLContext context) {
+				TLStringValue value = (TLStringValue)context.getContext();
+		   	if (params[0].getType()!= TLValueType.RECORD || !params[1].getType().isNumeric()){
+		   		throw new TransformLangExecutorRuntimeException(params,
+		                   "get_field_type - - wrong type of literals");
+		   	}
+		   	try{
+		   		value.setValue(((DataRecord)((TLRecordValue)params[0]).getValue()).getField(params[1].getNumeric().getInt()).getMetadata().getTypeAsString());
+		   		return value;
+		   	}catch(Exception ex){
+		   		return TLStringValue.EMPTY;
+		   	}
+			}
+
+		   @Override
+		   public TLContext createContext() {
+		   	return TLContext.createStringContext();
+		   }
+		}
+
 
 class Date2StrContext {
     TLValue value;
@@ -1343,6 +1407,8 @@ class Str2NumContext{
         
         return context;
 	}
- 
-  
+
+	
+	
 }
+

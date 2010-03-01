@@ -117,6 +117,8 @@
         <value>sha</value>
         <value>long2pacdecimal</value>
         <value>pacdecimal2long</value>
+        <value>get_field_name</value>
+        <value>get_field_type</value>
 		</parameter>
 	</extension>
 	

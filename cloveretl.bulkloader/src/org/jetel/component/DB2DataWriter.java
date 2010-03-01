@@ -1,24 +1,21 @@
-
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2005-06  Javlin Consulting <info@javlinconsulting.cz>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
-
+ * jETeL/Clover.ETL - Java based ETL application framework.
+ * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.component;
 
 import java.io.BufferedReader;
@@ -30,7 +27,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Map.Entry;
@@ -763,9 +759,6 @@ public class DB2DataWriter extends Node {
         return status;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#init()
-	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
@@ -809,11 +802,7 @@ public class DB2DataWriter extends Node {
 				tmpDir = tmpDir.concat(File.separator);
 			}
 			if (dataURL != null) {
-				try {
-					dataFile = new File(FileUtils.getFile(getGraph().getProjectURL(), dataURL));
-				} catch (MalformedURLException exception) {
-					throw new ComponentNotReadyException(this, "The data URL is invalid!", exception);
-				}
+				initDataFile();
 			}
 			try {
 				if (dataFile == null) {
@@ -870,11 +859,7 @@ public class DB2DataWriter extends Node {
 			formatter.init(fileMetadata);
 		}else{//there is not input port connected, data is read from existing file
 			if (dataURL != null) {
-				try {
-					dataFile = new File(FileUtils.getFile(getGraph().getProjectURL(), dataURL));
-				} catch (MalformedURLException exception) {
-					throw new ComponentNotReadyException(this, "The data URL is invalid!", exception);
-				}
+				initDataFile();
 
 				if (fileMetadata == null) throw new ComponentNotReadyException(this,
 						XML_FILEMETADATA_ATTRIBUTE, "File metadata have to be defined");
@@ -924,6 +909,24 @@ public class DB2DataWriter extends Node {
 		}
 	}
 	
+	private void initDataFile() throws ComponentNotReadyException {
+		// We want this method to fail atomically, so create a temporary data file.
+		File newDataFile = null;
+
+		try {
+			newDataFile = new File(FileUtils.getFile(getGraph().getProjectURL(), dataURL));
+		} catch (MalformedURLException exception) {
+			throw new ComponentNotReadyException(this, "The fileURL attribute is invalid!", exception);
+		}
+
+		if (!newDataFile.exists()) {
+			throw new ComponentNotReadyException(this, "File " + newDataFile.getAbsolutePath() + " not found!");
+		}
+
+		// The data file is valid, save it.
+		dataFile = newDataFile;
+	}
+
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
@@ -1464,10 +1467,7 @@ public class DB2DataWriter extends Node {
 		}.start();
 		return box.join();
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#execute()
-	 */
+
 	@Override
 	public Result execute() throws Exception {
 		inPort = getInputPort(READ_FROM_PORT);
@@ -1583,7 +1583,6 @@ public class DB2DataWriter extends Node {
                     xattribs.getString(XML_FILEMETADATA_ATTRIBUTE, null));
 			if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
 				String[] pairs = StringUtils.split(xattribs.getString(XML_FIELDMAP_ATTRIBUTE));
-//				String[] pairs = xattribs.getString(XML_FIELDMAP_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 				String[] cloverFields = new String[pairs.length];
 				String[] dbFields = new String[pairs.length];
 				String[] pair;
@@ -1705,21 +1704,21 @@ public class DB2DataWriter extends Node {
 			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, parameters);
 		}else if (!properties.isEmpty()) {
 			StringBuilder props = new StringBuilder();
-			for (Iterator iter = properties.entrySet().iterator(); iter.hasNext();) {
-				Entry<String, String> element = (Entry<String, String>) iter.next();
-				props.append(element.getKey());
+
+			for (Entry<Object, Object> entry : properties.entrySet()) {
+				String key = (String) entry.getKey();
+				String value = (String) entry.getValue();
+
+				props.append(key);
 				props.append('=');
-				props.append(StringUtils.isQuoted(element.getValue()) ? element.getValue() : 
-					StringUtils.quote(element.getValue()));
+				props.append(StringUtils.isQuoted(value) ? value : StringUtils.quote(value));
 				props.append(';');
-			} 
+			}
+
 			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, props.toString());
 		}
-   }
+	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
 	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
@@ -1961,9 +1960,6 @@ class DB2DataConsumer implements DataConsumer {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.util.exec.LoggerDataConsumer#consume()
-	 */
 	public boolean consume() throws JetelException {
 		String line;
 		try {
@@ -2066,6 +2062,5 @@ class DB2DataConsumer implements DataConsumer {
 	public int getSkipped() {
 		return skipped;
 	}
-
 	
 }

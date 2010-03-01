@@ -1,24 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="1.9" id="1204551079958" licenseType="Evaluation license." modified="Thu Apr 03 11:49:43 CEST 2008" name="graphSystemExecute" revision="1.5">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Evaluation Devel" modified="Fri Feb 26 15:40:39 CET 2010" modifiedBy="cloveruser" name="graphSystemExecute" revision="1.37">
 <Global>
 <Metadata id="Metadata0">
 <Record name="strings" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field locale="en.US" name="Field1" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Property id="GraphParameter0" name="MY_DIR" value="${GRAPH_DIR}"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="117" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="System Execute" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="207" x="58" y="-27">
+<attr name="text"><![CDATA[SystemExecute reads data from input port and uses it as an input to system command. Output from the process can be sent to output port.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="168" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Processing composed system command" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="263" x="613" y="284">
+<attr name="text"><![CDATA[To execute more than one command, tha batch file must be created and interpreter for executing the batch file must be provided.
+Content of the batch is specified by the command attribute and the component itself saves it to temporary batch file. 
+Standard input is redirected to input port and standard output to output port.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="155" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Executing simple system command" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="262" x="609" y="99">
+<attr name="text"><![CDATA[* cat - Concatenate FILE(s), or standard input, to standard output. In this example reads data from input port and send it to the console.
+* ls - List information about the FILEs (the current directory by default). In this example sends information about the files in ${PROJECT} directory to output port.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="0" guiName="Universal Data Reader" guiWidth="0" guiX="56" guiY="99" id="DATA_READER0" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="0" guiName="Universal Data Reader" guiWidth="0" guiX="58" guiY="99" id="DATA_READER0" type="DATA_READER">
 <attr name="finalRecord"><![CDATA[30]]></attr>
 <attr name="startRecord"><![CDATA[0]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiHeight="0" guiName="Universal Data Writer" guiWidth="0" guiX="459" guiY="99" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node append="false" enabled="enabled" guiHeight="0" guiName="System execute" guiWidth="0" guiX="254" guiY="99" id="SYS_EXECUTE0" interpreter="sh ${}" type="SYS_EXECUTE">
-<attr name="command"><![CDATA[cat
-ls -l .]]></attr>
+<Node append="false" enabled="enabled" guiHeight="0" guiName="System execute" guiWidth="0" guiX="256" guiY="99" id="SYS_EXECUTE0" type="SYS_EXECUTE">
+<attr name="command"><![CDATA[cat]]></attr>
 </Node>
-<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (input for command)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SYS_EXECUTE0:0"/>
-<Edge fromNode="SYS_EXECUTE0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (input for command)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SYS_EXECUTE0:0"/>
+</Phase>
+<Phase number="1">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiHeight="0" guiName="Universal Data Writer" guiWidth="0" guiX="464" guiY="191" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node append="true" enabled="enabled" guiHeight="0" guiName="System execute" guiWidth="0" guiX="256" guiY="191" id="SYS_EXECUTE1" type="SYS_EXECUTE">
+<attr name="command"><![CDATA[ls ${MY_DIR}]]></attr>
+</Node>
+<Edge fromNode="SYS_EXECUTE1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" toNode="DATA_WRITER1:0"/>
+</Phase>
+<Phase number="2">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="0" guiName="Universal Data Reader" guiWidth="0" guiX="58" guiY="287" id="DATA_READER1" type="DATA_READER">
+<attr name="finalRecord"><![CDATA[30]]></attr>
+<attr name="startRecord"><![CDATA[0]]></attr>
+</Node>
+<Node append="true" enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiHeight="0" guiName="Universal Data Writer" guiWidth="0" guiX="464" guiY="287" id="DATA_WRITER2" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="System execute" guiWidth="0" guiX="256" guiY="287" id="SYS_EXECUTE2" interpreter="sh ${}" type="SYS_EXECUTE">
+<attr name="command"><![CDATA[cat
+ls ${MY_DIR}]]></attr>
+</Node>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (input for command)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SYS_EXECUTE2:0"/>
+<Edge fromNode="SYS_EXECUTE2:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" toNode="DATA_WRITER2:0"/>
 </Phase>
 </Graph>

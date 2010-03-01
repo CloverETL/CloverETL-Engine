@@ -110,5 +110,10 @@ public class PostgreSpecific extends AbstractJdbcSpecific {
   public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
     return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW"}/*tableTypes*/);
   }
+
+	@Override
+	public boolean isSchemaRequired() {
+		return true;
+	}  
 	
 }

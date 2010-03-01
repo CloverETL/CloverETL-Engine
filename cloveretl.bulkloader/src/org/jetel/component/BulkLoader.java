@@ -125,8 +125,8 @@ public abstract class BulkLoader extends Node {
 		
 		properties = parseParameters(parameters);
 		
-		preInit();
 		checkParams();
+		preInit();
 		initDataFile();
 		commandLine = createCommandLineForLoadUtility();
 		printCommandLineToLog(commandLine);
@@ -375,20 +375,25 @@ public abstract class BulkLoader extends Node {
 			throw e;
 		}
     }
+
+	/**
+	 * This class cannot be anonymous, since "ProGuard" obfuscator cannot handle it.
+	 * @author MVarecha - created from anonymous inner class
+	 */
+	private class PipeThread extends Thread {
+		public void run() {
+			try {
+				readFromPortAndWriteByFormatter();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
 	
 	protected int runWithPipe() throws Exception {
     	createNamedPipe();
     	ProcBox box = createProcBox();
-		Thread t = 
-		new Thread() {
-			public void run() {
-				try {
-					readFromPortAndWriteByFormatter();
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-			}
-		};
+    	Thread t = new PipeThread();
 		registerChildThread(t);
 		t.start();
 		return box.join();
@@ -481,7 +486,7 @@ public abstract class BulkLoader extends Node {
 			}
 			return true;
 		} catch (IOException e) {
-			throw new ComponentNotReadyException(this, e);
+			throw new ComponentNotReadyException(this, "Cannot access " + fileURL, e);
 		}
 	}
 	
@@ -502,8 +507,7 @@ public abstract class BulkLoader extends Node {
 			return file;
 		} catch (IOException e) {
 			free();
-			throw new ComponentNotReadyException(this, 
-					"Temporary data file wasn't created.");
+			throw new ComponentNotReadyException(this, "Temporary data file wasn't created.", e);
 		}
 	}
 	
@@ -745,7 +749,7 @@ public abstract class BulkLoader extends Node {
 		try {
 			return new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL));
 		} catch (MalformedURLException mue) {
-			throw new ComponentNotReadyException(mue);
+			throw new ComponentNotReadyException(this, "Malformed file URL: " + fileURL, mue);
 		}
     }
 }

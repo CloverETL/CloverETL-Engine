@@ -391,4 +391,8 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		return "select * from " + quoteIdentifier(table);
     }
     
+	
+	public boolean isSchemaRequired() {
+		return false;
+	}
 }

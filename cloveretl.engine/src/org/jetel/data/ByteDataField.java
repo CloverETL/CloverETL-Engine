@@ -418,9 +418,11 @@ public class ByteDataField extends DataField implements Comparable{
 	public void serialize(ByteBuffer buffer) {
         try {
             if(isNull) {
+    			// encode nulls as zero
                 ByteBufferUtils.encodeLength(buffer, 0);
             } else {
-                ByteBufferUtils.encodeLength(buffer, value.length);
+            	// increment length of non-null values by one
+                ByteBufferUtils.encodeLength(buffer, value.length + 1);
                	buffer.put(value);
             }
     	} catch (BufferOverflowException e) {
@@ -436,17 +438,19 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since          October 29, 2002
 	 */
 	public void deserialize(ByteBuffer buffer) {
-		final int length = ByteBufferUtils.decodeLength(buffer);
-        
-        if(length == 0) {
-            setNull(true);
-        } else {
-            if(value == null || length != value.length) {
-                value = new byte[length];
-            }
-            buffer.get(value);
-            setNull(false);
-        }
+		// encoded length is incremented by one, decrement it back to normal
+		final int length = ByteBufferUtils.decodeLength(buffer) - 1;
+
+		if (length < 0) {
+			setNull(true);
+		} else {
+			if (value == null || length != value.length) {
+				value = new byte[length];
+			}
+
+			buffer.get(value);
+			setNull(false);
+		}
 	}
 
 

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of Partition component.&#10;This component can be used to split input data flow into several&#10;output data flows according to specified key or range" guiVersion="2.9.1" id="1196682624808" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Mon Mar 01 11:46:18 CET 2010" modifiedBy="cloveruser" name="Partition data" revision="1.76">
+<Global>
+<Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="279" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Possible Settings of Partition" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="506" x="496" y="25">
+<attr name="text"><![CDATA[
+There are four options how to assign a record to an output port:
+
+1) One of the three attributes: Partition, Partition URL, or Partition class. Number of output port is returned by the required getOutputPort() function.  See graphPartition_Transform.grf. 
+
+2) Both Partition key and Ranges are defined. Values of Partition key fields are assigned to individual intervals and sent out accordingly (shown in this example). See graphPartition.grf.
+
+3) Only Partition key is used. Hash function is used in place of Ranges. Records are distributed as shown above (as if Ranges were defined). Demostrated in this graph.
+
+4) Neither Partition key nor Ranges are defined. Round Robin algorithm is used to distribute records among connected output ports. See graphPartition_RoundRobin.grf.
+
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="223" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Partition Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="391" x="-133" y="253">
+<attr name="text"><![CDATA[
+Graph demonstrates the use of Partition. In it, Partition key is defined, but no Ranges are specified for it. Partition key consists of two fields (integer, date). Hash codes are calculated for these two fields (depending on the count of output ports) and records are distributed among connected output ports according to these calculated hash codes.
+
+See the other note on the right side about possible settings of the Partition component.
+]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode3.txt" guiHeight="0" guiName="HashCode3" guiWidth="0" guiX="358" guiY="245" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode0.txt" guiHeight="25" guiName="HashCode0" guiWidth="50" guiX="316" guiY="12" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode1.txt" guiHeight="25" guiName="HashCode1" guiWidth="50" guiX="358" guiY="86" id="DATA_WRITER2" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode2.txt" guiHeight="25" guiName="HashCode2" guiWidth="50" guiX="358" guiY="161" id="DATA_WRITER3" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode4.txt" guiHeight="0" guiName="HashCode4" guiWidth="0" guiX="331" guiY="330" id="DATA_WRITER4" type="DATA_WRITER"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="-107" guiY="138" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="25" guiName="PARTITION" guiWidth="50" guiX="96" guiY="146" id="PARTITION" partitionKey="EmployeeID;BirthDate" type="PARTITION"/>
+<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="PARTITION:0"/>
+<Edge debugMode="true" fromNode="PARTITION:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="true" fromNode="PARTITION:1" guiBendpoints="" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="DATA_WRITER2:0"/>
+<Edge debugMode="true" fromNode="PARTITION:2" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="DATA_WRITER3:0"/>
+<Edge debugMode="true" fromNode="PARTITION:3" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="PARTITION:4" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 4 (out)" toNode="DATA_WRITER4:0"/>
+</Phase>
+</Graph>

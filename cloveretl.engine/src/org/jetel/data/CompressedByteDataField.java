@@ -263,9 +263,11 @@ public class CompressedByteDataField extends ByteDataField {
 	public void serialize(ByteBuffer buffer) {
         try {
             if(isNull) {
+    			// encode nulls as zero
                 ByteBufferUtils.encodeLength(buffer, 0);
             } else {
-                ByteBufferUtils.encodeLength(buffer, dataLen);
+            	// increment length of non-null values by one
+                ByteBufferUtils.encodeLength(buffer, dataLen + 1);
                 ByteBufferUtils.encodeLength(buffer, value.length);
                	buffer.put(value);
             }
@@ -278,21 +280,24 @@ public class CompressedByteDataField extends ByteDataField {
 	 * @see org.jetel.data.ByteDataField#deserialize(java.nio.ByteBuffer)
 	 */
 	public void deserialize(ByteBuffer buffer) {
-		
 		dataLen = ByteBufferUtils.decodeLength(buffer);
-        
-        if(dataLen == 0) {
-            setNull(true);
-            return;
-        }
 
-        int bufLen = ByteBufferUtils.decodeLength(buffer);
-        
-        if(value == null || bufLen != value.length) {
-        	value = new byte[bufLen];
-        }
-        buffer.get(value);
-        setNull(false);
+		if (dataLen == 0) {
+			setNull(true);
+			return;
+		}
+
+		// encoded length is incremented by one, decrement it back to normal
+		dataLen--;
+
+		int bufLen = ByteBufferUtils.decodeLength(buffer);
+
+		if (value == null || bufLen != value.length) {
+			value = new byte[bufLen];
+		}
+
+		buffer.get(value);
+		setNull(false);
 	}
 
 	/* (non-Javadoc)

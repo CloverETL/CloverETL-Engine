@@ -74,15 +74,15 @@ function transform() {
   </Mapping>
 </Mapping>]]></attr>
 </Node>
-<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="XML_WRITER0:0"/>
-<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
-<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER4:0" guiBendpoints="" id="Edge8" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN1:1"/>
-<Edge debugLastRecords="true" debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" id="Edge11" inPort="Port 3 (in)" metadata="Metadata8" outPort="Port 0 (out)" toNode="XML_WRITER0:3"/>
-<Edge debugLastRecords="true" debugMode="true" fromNode="EXT_HASH_JOIN1:0" guiBendpoints="" id="Edge14" inPort="Port 4 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="XML_WRITER0:4"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="XML_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER4:0" guiBendpoints="" id="Edge8" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN1:1"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" id="Edge11" inPort="Port 3 (in)" metadata="Metadata8" outPort="Port 0 (out)" toNode="XML_WRITER0:3"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="EXT_HASH_JOIN1:0" guiBendpoints="" id="Edge14" inPort="Port 4 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="XML_WRITER0:4"/>
 <Edge debugLastRecords="true" fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge9" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
 <Edge debugLastRecords="true" fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge10" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN1:0"/>
-<Edge debugLastRecords="true" debugMode="true" fromNode="XLS_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="XML_WRITER0:1"/>
-<Edge debugLastRecords="true" debugMode="true" fromNode="XLS_READER1:0" guiBendpoints="" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
-<Edge debugLastRecords="true" debugMode="true" fromNode="XLS_READER2:0" guiBendpoints="" id="Edge2" inPort="Port 2 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="XML_WRITER0:2"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="XLS_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="XML_WRITER0:1"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="XLS_READER1:0" guiBendpoints="" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="XLS_READER2:0" guiBendpoints="" id="Edge2" inPort="Port 2 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="XML_WRITER0:2"/>
 </Phase>
 </Graph>

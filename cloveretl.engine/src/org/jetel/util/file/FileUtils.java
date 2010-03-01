@@ -276,7 +276,7 @@ public class FileUtils {
 			Proxy proxy = getProxy(innerSource);
 			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
 			innerStream = proxy == null ? getInputStream(contextURL, innerSource) 
-					: getAuthorizedProxyConnection(getFileURL(contextURL, input), proxy).getInputStream();
+					: getAuthorizedConnection(getFileURL(contextURL, input), proxy).getInputStream();
 		}
 		
 		// get archive type
@@ -546,7 +546,7 @@ public class FileUtils {
      * @return
      * @throws IOException
      */
-    private static URLConnection getAuthorizedProxyConnection(URL url, Proxy proxy) throws IOException {
+    public static URLConnection getAuthorizedConnection(URL url, Proxy proxy) throws IOException {
         return URLConnectionRequest.getAuthorizedConnection(
         		url.openConnection(proxy),
         		url.getUserInfo(), 
@@ -635,7 +635,7 @@ public class FileUtils {
 			// get and set proxy and go to inner source
 			Proxy proxy = getProxy(innerSource);
 			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
-			os = proxy == null ? getOutputStream(null, innerSource, appendData, compressLevel) : getAuthorizedProxyConnection(getFileURL((URL)null, input), proxy).getOutputStream();
+			os = proxy == null ? getOutputStream(null, innerSource, appendData, compressLevel) : getAuthorizedConnection(getFileURL((URL)null, input), proxy).getOutputStream();
 		}
 		
 		// get archive type

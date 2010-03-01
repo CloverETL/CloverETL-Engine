@@ -32,7 +32,7 @@ public class HashPartition implements PartitionFunction{
         hashKey.setDataRecord(record);
         //int hash=hashKey.hashCode(); 
         //int value=(hash)&0x0FF;//// take only last 8 bits
-        return hashKey.hashCode()%numPorts;
+        return Math.abs(hashKey.hashCode() % numPorts);
     }
     
     public void setGraph(TransformationGraph graph) {

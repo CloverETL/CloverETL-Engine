@@ -88,6 +88,24 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 		
 	}
 
+	@Override
+	public void optimizeResultSet(ResultSet resultSet,
+			OperationType operationType) {
+
+		switch (operationType){
+		case READ:
+			try {
+				resultSet.setFetchDirection(ResultSet.FETCH_FORWARD);
+				// SQLite driver MUST HAVE fetch size set to 0 - otherwise it limits number of results returned
+				resultSet.setFetchSize(0);
+			} catch(SQLException ex) {
+				//TODO: for now, do nothing
+			}
+		}
+
+	}
+
+
 	
 	
 }

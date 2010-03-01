@@ -36,6 +36,7 @@ public class ResetTest extends TestCase{
 		"examples/simpleExamples/", 
 		"examples/advancedExamples/",
 		"examples/CTLFunctionsTutorial/",
+		"examples/DataProfiling/",
 		"examples/extExamples/",
 		"../cloveretl.test.scenarios/",
 		"../cloveretl.examples.commercial/",
@@ -106,6 +107,8 @@ public class ResetTest extends TestCase{
 							&& !pathname.getName().equals("graphInformixDataWriter.grf") // ok, can only work with informix server
 							&& !pathname.getName().equals("graphInfobrightDataWriter.grf") // ok, can only work with infobright server
 							&& !pathname.getName().equals("graphSystemExecuteWin.grf") // ok, graph for Windows
+							&& !pathname.getName().equals("graphLdapReader_Uninett.grf") // ok, invalid server
+							&& !pathname.getName().equals("graphSequenceChecker.grf") // ok, is to fail
 							
 //TODO these graphs should work in the future:
 							&& !pathname.getName().startsWith("graphLdap") //LDAP server is not configured properly yet
@@ -140,6 +143,10 @@ public class ResetTest extends TestCase{
 							&& !pathname.getName().equals("A12_XMLExtractTransactionsFamily.grf") //issue 3220
 							&& !pathname.getName().equals("graphXMLExtract.grf") //issue 3220
 							&& !pathname.getName().equals("graphXMLExtractXsd.grf"); //issue 3220
+							&& !pathname.getName().equals("mountainsInformix.grf") //issue 2550
+							&& !pathname.getName().equals("graphRunGraph.grf") 
+							&& !pathname.getName().equals("DBJoin.grf");//issue 3285
+							
 				}
 			});
 			
@@ -180,7 +187,7 @@ public class ResetTest extends TestCase{
 		if (!errors.isEmpty()) {
 			Exception e;
 			for (Entry<String, Exception> error : errors.entrySet()) {
-				e = new RuntimeException(error.getKey() + "failed.", error.getValue());
+				e = new RuntimeException(error.getKey() + " failed.", error.getValue());
 				result.addError(this, e);
 			}
 		}
@@ -207,7 +214,7 @@ public class ResetTest extends TestCase{
 				return;
 			}
 
-			for(int i = 0; i < 5; i++) {
+			for(int i = 0; i < 3; i++) {
 
 				try {
 			        IThreadManager threadManager = new SimpleThreadManager();
@@ -245,15 +252,15 @@ public class ResetTest extends TestCase{
 					return;
 				}
 
-//				if (i < 4) {
-//					try {
-//						graph.reset();
-//					} catch (ComponentNotReadyException e) {
-////						fail("Graph reseting failed: " + e);
-//						errors.put(file.getName(), e);
-//						return;
-//					}
-//				}
+				if (i < 2) {
+					try {
+						graph.reset();
+					} catch (ComponentNotReadyException e) {
+//						fail("Graph reseting failed: " + e);
+						errors.put(file.getName(), e);
+						return;
+					}
+				}
 			}
 
 			log("Transformation graph is freeing.\n");

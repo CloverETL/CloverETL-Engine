@@ -470,7 +470,6 @@ public class Rollup extends Node {
         } else if (transformClassName != null) {
             recordRollup = createTransformFromClassName(transformClassName);
         }
-
         recordRollup.init(transformParameters, getInputPort(INPUT_PORT_NUMBER).getMetadata(),
                 getGraph().getDataRecordMetadata(groupAccumulatorMetadataId),
                 getOutMetadata().toArray(new DataRecordMetadata[getOutPorts().size()]));
@@ -504,7 +503,9 @@ public class Rollup extends Node {
 
         if (Pattern.compile(REGEX_JAVA_CLASS).matcher(sourceCode).find()) {
             try {
-                return (RecordRollup) new DynamicJavaCode(sourceCode, getClass().getClassLoader()).instantiate();
+            	RecordRollup transform = (RecordRollup) new DynamicJavaCode(sourceCode, getClass().getClassLoader()).instantiate();
+            	transform.setGraph(getGraph());
+                return transform;
             } catch (ClassCastException exception) {
                 throw new ComponentNotReadyException(
                         "The transformation code does not implement the RecordRollup interface!", exception);
@@ -527,7 +528,9 @@ public class Rollup extends Node {
      */
     private RecordRollup createTransformFromClassName(String className) throws ComponentNotReadyException {
         try {
-            return (RecordRollup) Class.forName(transformClassName).newInstance();
+        	RecordRollup transform = (RecordRollup) Class.forName(transformClassName).newInstance(); 
+            transform.setGraph(getGraph());
+            return transform;
         } catch (ClassNotFoundException exception) {
             throw new ComponentNotReadyException("Cannot find the transformation class!", exception);
         } catch (IllegalAccessException exception) {

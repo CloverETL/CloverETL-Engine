@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Mon Dec 07 09:19:45 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1260188038200" licenseType="Evaluation Devel" modified="Fri Jan 15 14:19:18 GMT+01:00 2010" modifiedBy="avackova" name="DataProfiling" revision="1.311">
+<Global>
+<Metadata fileURL="${metadata}" id="Metadata0"/>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="data" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="fieldName" type="string"/>
+<Field name="type" type="string"/>
+<Field name="value" type="number"/>
+<Field name="firstNotNull" type="string"/>
+<Field name="isAscii" type="boolean"/>
+<Field name="isNumber" type="boolean"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="dataProfile" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="fieldName" type="string"/>
+<Field name="type" type="string"/>
+<Field name="min" type="number"/>
+<Field name="max" type="number"/>
+<Field name="average" type="number"/>
+<Field name="count" type="long"/>
+<Field name="countNotNull" type="long"/>
+<Field name="countNull" type="long"/>
+<Field name="firstNotNull" type="string"/>
+<Field name="isAscii" type="boolean"/>
+<Field name="isNumber" type="boolean"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="dataProfileNormalized" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="fieldName" type="string"/>
+<Field name="type" type="string"/>
+<Field name="stat_desc" type="string"/>
+<Field name="value" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="dataProfileString" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="fieldName" type="string"/>
+<Field name="type" type="string"/>
+<Field name="min" type="string"/>
+<Field name="max" type="string"/>
+<Field name="average" type="string"/>
+<Field name="count" type="long"/>
+<Field name="countNotNull" type="long"/>
+<Field name="countNull" type="long"/>
+<Field name="firstNotNull" type="string"/>
+<Field name="isAscii" type="boolean"/>
+<Field name="isNumber" type="boolean"/>
+</Record>
+</Metadata>
+<Property id="GraphParameter0" name="output_file" value="${DATAOUT_DIR}/summary.html"/>
+<Property fileURL="parameters.prm" id="GraphParameter1"/>
+<Property fileURL="workspace.prm" id="GraphParameter7"/>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="287" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Basic statistic - description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="275" x="34" y="-25">
+<attr name="text"><![CDATA[This graph finds basic statistic for input data file:
+- minimum value for numeric fields or minimum lenght of data for string and byt fields
+- maximum value for numeric fields or maximum lenght of data for string and byt fields
+- average value for numeric fields or average lenght of data for string and byt fields
+- number of records in data file
+- number of not null values for each data field
+- number of null values for each data field
+Additionally, for string data fields, it finds:
+- firts not null value
+- if all values are Ascii
+- if all values can be converted to number]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="288" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Basic statistic - parameters" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="548" x="327" y="-25">
+<attr name="text"><![CDATA[DataProfiling project contains (as usuall CloverDesigner project) workspace.prm file, that stores project structure. It contains also parameters.prm file, which defines parameters shared by BasicStatistic and AdvancedStatistic graphs:
+DATE_FORMAT - format for parsing dates in final output
+READER_TYPE - both graphs are prepared for reading various types of data. This example is configured for reading data from all sheets (sheetName=*) of xls file. The project contains the flat file also; to read this file, change READER_TYPE to DATA_READER. For some other Readers it is necessry to set additional attributes, eg. sqlQuery and dbConnection for DBInputTable.
+WRITER_TYPE - both graphs are prepared for writing results in various formats. This example is configured, to create the data statistic as simple html page. Changing WRITER_TYPE to XLS_WRITER results in creating xls file. To write statistic to flate file, change WRITER_TYPE to DATA_WRITER, for printing it out to console set it to TRASH.
+charset - data encoding - all Readers and Writers in both graphs use the same charset
+input_file - data file for analysis (attached two example files: ${DATAIN_DIR}/ORDERS.xls and ${DATAIN_DIR}/employees.list.dat)
+metadata - shared metadata corresponding to input file (for above example files use ${META_DIR}/orders.fmt and ${META_DIR}/employees.fmt respectively)
+This graph has its own parameter also. It is output_file, that defines file for data statistc.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="221" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Normalizing data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="239" x="115" y="354">
+<attr name="text"><![CDATA[This component creates "normalized" records from each input record. Such "normalized" record consists of three basic fields: original field name, field type  and "normalized" value, which is original value for numeric fields, time in miliseconds for date fields and data lenght for string or byte fields.
+This component collects basic information about string data also: finds first not null value, checks if string contains only Ascii characters and if it can be converted to number.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="219" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Creating statistic" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="177" x="363" y="355">
+<attr name="text"><![CDATA[Statistic is created by Rollup component. This component, for each group of records (defined by original field name), calculates minimum, maximum and average value. It also propagates first not null value, checks if all isAscii and isNumber fields are not false and sets proper value for whole group.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="219" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Converting to string" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="146" x="549" y="355">
+<attr name="text"><![CDATA[Purpose of this component is to convert date data from miliseconds to the value pellucid to user. For data of all other types, there is used default to string transform.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="218" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Storing statistic in file" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="194" x="704" y="354">
+<attr name="text"><![CDATA[Data statistic can be stored in an output file of any type or be printed out to console. This example is configured to create a simple html page, that contains table with cretaed basic statistic. Changing WRITER_TYPE to XLS_WRITER results in creating xls file with data statistic in "Statistic" sheet. To print out statistic on the console set WRITER_TYPE to TRASH.]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="0" guiName="DataReader" guiWidth="0" guiX="78" guiY="282" id="DATA_READER0" type="${READER_TYPE}">
+<attr name="fileURL"><![CDATA[${input_file}]]></attr>
+<attr name="startRow"><![CDATA[2]]></attr>
+<attr name="sheetName"><![CDATA[*]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="675" guiY="282" id="EXT_SORT0" sortKey="fieldName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Normalizer" guiWidth="0" guiX="225" guiY="282" id="NORMALIZER0" normalizeURL="${TRANS_DIR}/DataNormalizer.java" type="NORMALIZER"/>
+<Node enabled="enabled" guiHeight="0" guiName="ToStringValue" guiWidth="0" guiX="523" guiY="282" id="REFORMAT0" transformURL="${TRANS_DIR}/StatNormalizer.java" type="REFORMAT"/>
+<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="fieldName" guiHeight="0" guiName="Stattistic" guiWidth="0" guiX="379" guiY="282" id="ROLLUP0" inputSorted="false" type="ROLLUP">
+<attr name="transform"><![CDATA[//#TL
+
+// Called for the first data record in a new group. Starts the parsing of the new group.
+function initGroup(groupAccumulator) {
+	groupAccumulator["fieldName"] = $fieldName;
+	groupAccumulator["count"] = 0;
+	groupAccumulator["countNotNull"] = 0;
+}
+
+// Called for each data record in the group (including the first one and the last one).
+// Implicitly returns false => updateTransform() is not called. When returns true, calls updateTransform().
+function updateGroup(groupAccumulator) {
+	groupAccumulator["count"] = groupAccumulator["count"]+1;
+	if (isnull($value) || $type == 'b') return false;//do not statistic for boolean field
+	if (isnull(groupAccumulator["min"]) || $value < groupAccumulator["min"]) {
+		groupAccumulator["min"] = $value;
+	} 
+	if (isnull(groupAccumulator["max"]) || $value > groupAccumulator["max"]) {
+		groupAccumulator["max"] = $value;
+	}
+	if (isnull(groupAccumulator["average"])) {
+		groupAccumulator["average"] = $value;
+	}else {
+		groupAccumulator["average"] = (groupAccumulator["average"]*groupAccumulator["countNotNull"] + $value)/(groupAccumulator["countNotNull"] + 1);
+	}
+	if (isnull(groupAccumulator["firstNotNull"]) && !isnull($firstNotNull)){
+		groupAccumulator["firstNotNull"] = $firstNotNull;
+	}
+	if (!isnull($isAscii)) {//till now, we don't know or is Ascii
+		groupAccumulator["isAscii"] = $isAscii;
+	}
+	if (!isnull($isNumber)) {//till now, we don't know or is Number
+		groupAccumulator["isNumber"] = $isNumber && groupAccumulator["isNumber"];
+	}
+	groupAccumulator["countNotNull"] = groupAccumulator["countNotNull"]+1;
+}
+
+// Called for the last data records in all groups sequentially, but only after all incoming data records have been parsed.
+// Implicitly returns true => transform() is called for the whole group.
+function finishGroup(groupAccumulator) {
+}
+
+// Called to transform data records that have been parsed so far into user-specified number of output data record(s).
+// Counter (incremented by 1 starting from 0) stores the number of previous calls to this method for the current group update.
+// Group accumulator can optionally be used.
+// Function implicitly returns SKIP to skip sending any data records to output.
+// Returning ALL causes each data record to be sent to all output port(s).
+// Can also return a number of the output port to which individual data record should be sent.
+function updateTransform(counter, groupAccumulator){
+}
+
+// Called to transform the whole group of incoming data record(s) into user-specified number of output data record(s).
+// Counter (incremented by 1 starting from 0) stores the number of previous calls to this method for the current group update.
+// Group accumulator can optionally be used.
+// Function implicitly returns SKIP to skip sending any data records to output.
+// Returning ALL causes each data record to be sent to all output port(s).
+// Can also return a number of the output port to which individual data record should be sent.
+function transform(counter, groupAccumulator) {
+	if (counter > 0) return SKIP;
+	$fieldName := groupAccumulator["fieldName"];
+	$type := $type;
+	$min := groupAccumulator["min"];
+	$max := groupAccumulator["max"];
+	$average := groupAccumulator["average"];
+	$count := groupAccumulator["count"];
+	$countNotNull := groupAccumulator["countNotNull"];
+	$countNull := groupAccumulator["count"] - groupAccumulator["countNotNull"];
+	$firstNotNull := groupAccumulator["firstNotNull"];
+	//if isnull(groupAccumulator["isAscii"]) --> all are Ascii or all are null
+	$isAscii := iif(!isnull(groupAccumulator["isAscii"]), groupAccumulator["isAscii"], iif(groupAccumulator["countNotNull"] > 0, true, false));
+	//if isnull(groupAccumulator["isNumber"]) --> all are numbers or all are null
+	$isNumber := iif(!isnull(groupAccumulator["isNumber"]), groupAccumulator["isNumber"], iif(groupAccumulator["countNotNull"] > 0 , true, false));
+	return ALL
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {
+// }
+
+// Called during component initialization.
+// function init() {
+// }
+
+// Called after the component finishes.
+// function finished() {
+// }
+
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="DataWriter" guiWidth="0" guiX="830" guiY="282" id="STRUCTURE_WRITER0" type="${WRITER_TYPE}">
+<attr name="mask"><![CDATA[	<TR>
+		<TD>
+			$fieldName
+		</TD>
+		<TD ALIGN=CENTER>
+			$type
+		</TD>
+		<TD>
+			$min
+		</TD>
+		<TD>
+			$max
+		</TD>
+		<TD>
+			$average
+		</TD>
+		<TD >
+			$count
+		</TD>
+		<TD >
+			$countNotNull
+		</TD>
+		<TD >
+			$countNull
+		</TD>
+		<TD >
+			$firstNotNull
+		</TD>
+		<TD >
+			$isAscii
+		</TD>
+		<TD >
+			$isNumber
+		</TD>
+	</TR>]]></attr>
+<attr name="fileURL"><![CDATA[${output_file}]]></attr>
+<attr name="debugPrint"><![CDATA[true]]></attr>
+<attr name="sheetName"><![CDATA[Statistic]]></attr>
+<attr name="namesRow"><![CDATA[1]]></attr>
+<attr name="header"><![CDATA[<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=ISO-8859-1">
+	<TITLE>Data statistic for ${input_file}</TITLE>
+</HEAD>
+<BODY LANG="en-GB">
+<H1 CLASS="western">Data statistic for ${input_file}</H1>
+<TABLE BORDER=1 BORDERCOLOR="#000000">
+	<TR>
+		<TH>
+			Field name
+		</TH>
+		<TH>
+			Field type
+		</TH>
+		<TH>
+			min
+		</TH>
+		<TH>
+			max
+		</TH>
+		<TH>
+			average
+		</TH>
+		<TH>
+			count
+		</TH>
+		<TH>
+			count not null
+		</TH>
+		<TH>
+			count null
+		</TH>
+		<TH>
+			first not null
+		</TH>
+		<TH>
+			is Ascii
+		</TH>
+		<TH>
+			is number
+		</TH>
+	</TR>]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+<attr name="footer"><![CDATA[</TABLE>
+</BODY>
+</HTML>]]></attr>
+</Node>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" toNode="NORMALIZER0:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (out)" metadata="Metadata4" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
+<Edge debugMode="false" fromNode="NORMALIZER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="ROLLUP0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+</Phase>
+</Graph>

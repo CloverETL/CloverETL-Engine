@@ -32,7 +32,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverCallableStatement;
-import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
@@ -604,7 +603,7 @@ public class DBExecute extends Node {
     				}
     			} while (runIt && inRecord != null);
     		}
-    		if (transaction == InTransaction.ALL){
+    		if (runIt && transaction == InTransaction.ALL){
     			commit();
     		}
     		if (errorLog != null){

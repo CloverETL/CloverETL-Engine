@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="yanas" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation&#10;code (class) inlined (saved with the graph itself). The source code&#10;is automatically compiled at runtime.&#10;For successfull compilation, tools.jar library must be part of CLASSPATH.&#10;" guiVersion="2.0" id="1204549413620" licenseType="Evaluation license." modified="Mon Oct 13 16:48:05 CEST 2008" modifiedBy="yanas" name="Testing Reformat" revision="1.19">
+<Graph author="yanas" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation&#10;code (class) inlined (saved with the graph itself). The source code&#10;is automatically compiled at runtime.&#10;For successfull compilation, tools.jar library must be part of CLASSPATH.&#10;" guiVersion="2.9.1" id="1204549413620" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Mon Mar 01 10:22:00 CET 2010" modifiedBy="cloveruser" name="Testing Reformat" revision="1.22">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="294" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of Reformat" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="481" x="27" y="136">
+<attr name="text"><![CDATA[
+The graph demonstrates the use of Reformat. In this graph, transformation is defined using the Transform attribute and it is written in Java directly in the graph. It can be seen in the Source tab.
+
+Transformation can also be written in the source code in Clover transformation language (graphOrdersTLReformat.grf).
+
+It can also be written in an external file in Java or CTL. See graphOrdersReformatExternTransform.grf or graphOrdersTLReformatExtern.grf, respectively.
+
+Also a compiled Java class can be used: graphOrdersReformat.grf.
+
+All of these options are equivalent ways of defining the transformation. Most component allow to use the same 5 options. Only MultiLevelReader, JMSReader, JMSWriter, and JavaExecute do not allow the use of CTL.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.dat.out" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.dat.out" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="25" guiName="REF" guiWidth="50" guiX="195" guiY="20" id="REF" type="REFORMAT">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;

@@ -153,7 +153,7 @@ public interface JdbcSpecific {
 	public String getValidateQuery(String query, QueryType queryType) throws SQLException;
 	
 	/**
-	 * Returns whether given string is a literal in gived db engine
+	 * Returns whether given string is a literal in given db engine
 	 * Examples:
 	 * 'string' - true
 	 * fieldName - false
@@ -203,4 +203,11 @@ public interface JdbcSpecific {
      */
     public String compileSelectQuery4Table(String schema, String table);
 
+	/**
+	 * Returns whether schema should be explicitly set to address table correctly in given db engine. 
+	 * 
+	 * @return
+	 */
+	public boolean isSchemaRequired();
+	
 }

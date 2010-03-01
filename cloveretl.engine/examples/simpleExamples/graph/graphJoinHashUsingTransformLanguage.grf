@@ -1,15 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Feb 16 10:01:53 CET 2007" description="This graph demonstrates functionality of HASH_JOIN components. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted" guiVersion="2.0" id="1204547472100" licenseType="Evaluation license." modified="Tue Oct 21 12:14:28 CEST 2008" modifiedBy="avackova" name="Testing Hash Joiner" revision="1.6">
+<Graph author="avackova" created="Fri Feb 16 10:01:53 CET 2007" description="This graph demonstrates functionality of HASH_JOIN components. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted" guiVersion="2.9.1" id="1204547472100" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Mon Mar 01 13:47:14 CET 2010" modifiedBy="cloveruser" name="Testing Hash Joiner" revision="1.18">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="285" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the ExtHashJoin component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="543" x="23" y="194">
+<attr name="text"><![CDATA[
+In this graph, Orders are joined with Employees on the EmployeeID field which is used as Join key.
+
+Orders data is received through the master port and Employees data through the first slave port.
+
+Inner join is performed. In other words, orders without corresponding employee are not sent to transform function. Nor the employees without corresponding order.
+
+Transformation is defined in the Transform attribute. It is written in Clover transformation language directly in the graph and can be seen in the Source tab.
+
+See graphJoinHash. In it, the same transformation is defined using Java class specified in the Transform class attribute. One difference consists in the Join type which is Left outer in the mentioned graph.
+
+Remember that ExtHashJoin does not require sorted data!
+
+]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="20" guiY="107" id="INPUT2" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="195" guiY="20" id="JOIN" joinKey="$EmployeeID=$EmployeeID;#" type="EXT_HASH_JOIN">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="20" guiY="107" id="INPUT2" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="25" guiName="JOIN (Inner)" guiWidth="50" guiX="195" guiY="20" id="JOIN" joinKey="$EmployeeID=$EmployeeID;#" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[
 function transform(){
 $OrderID := $OrderID;
@@ -21,8 +37,8 @@ $LastName := concat($1.LastName,":",$1.FirstName);
 ]]></attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DATA_WRITER"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (output)" toNode="JOIN:0"/>
-<Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JOIN:1"/>
-<Edge fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="WRITER:0"/>
+<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (output)" toNode="JOIN:0"/>
+<Edge debugMode="true" fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JOIN:1"/>
+<Edge debugMode="true" fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="WRITER:0"/>
 </Phase>
 </Graph>

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates usage of the new Aggregate component. " guiVersion="0.0.0.devel" id="1204535282174" licenseType="Evaluation license." modified="Mon Aug 17 09:54:43 CEST 2009" modifiedBy="cloveruser" name="TestingSort" revision="1.55">
+<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates usage of the new Aggregate component. " guiVersion="0.0.0.devel" id="1204535282174" licenseType="Evaluation Devel" modified="Tue Dec 22 15:13:12 GMT+01:00 2009" modifiedBy="avackova" name="TestingSort" revision="1.62">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersAggregate.fmt" id="Metadata1"/>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="groupAccumulator" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field name="count" type="integer"/>
-<Field name="totalFreight" type="decimal"/>
-<Field name="avgFreight" type="decimal"/>
+<Field name="totalFreight" type="number"/>
+<Field name="avgFreight" type="number"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
@@ -31,16 +31,17 @@ The phase 0 is taken from graphAggregateSorted.grf.
 <Node dedupKey="ShipName;ShipCity;OrderID;CustomerID;EmployeeID;OrderDate;RequiredDate;ShippedDate;ShipVia;Freight;ShipAddress;ShipRegion;ShipPostalCode;ShipCountry" enabled="enabled" guiHeight="65" guiName="Dedup" guiWidth="89" guiX="330" guiY="24" id="DEDUP0" keep="first" type="DEDUP"/>
 <Node enabled="enabled" guiHeight="25" guiName="EXT_SORT" guiWidth="50" guiX="173" guiY="24" id="EXT_SORT" sortKey="ShipCountry(a)" type="EXT_SORT"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="24" id="INPUT1" type="DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="650" guiY="24" id="OUTPUT" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="AGGREGATE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
-<Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (unique)" toNode="AGGREGATE:0"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="820" guiY="24" id="OUTPUT" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="AGGREGATE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+<Edge debugMode="false" fromNode="DEDUP0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (unique)" toNode="AGGREGATE:0"/>
 <Edge debugMode="false" fromNode="EXT_SORT:0" guiBendpoints="" id="MIDDLE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
-<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="23" guiY="136" id="INPUT4" type="DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated_Rollup" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="653" guiY="135" id="OUTPUT3" type="DATA_WRITER"/>
-<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="ShipCountry" guiHeight="0" guiName="Rollup" guiWidth="0" guiX="497" guiY="136" id="ROLLUP4" inputSorted="false" type="ROLLUP">
+<Node enabled="enabled" guiHeight="25" guiName="EXT_SORT" guiWidth="50" guiX="664" guiY="135" id="EXT_SORT1" sortKey="ShipCountry(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="23" guiY="135" id="INPUT4" type="DATA_READER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated_Rollup" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="823" guiY="135" id="OUTPUT3" type="DATA_WRITER"/>
+<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="ShipCountry" guiHeight="0" guiName="Rollup" guiWidth="0" guiX="498" guiY="135" id="ROLLUP4" inputSorted="false" type="ROLLUP">
 <attr name="transform"><![CDATA[//#TL
 
 // Called for the first data record in a group.
@@ -97,7 +98,7 @@ function transform(counter, groupAccumulator) {
 
 ]]></attr>
 </Node>
-<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="OrderID;CustomerID;EmployeeID;OrderDate;RequiredDate;ShippedDate;ShipVia;Freight;ShipName;ShipAddress;ShipCity;ShipRegion;ShipPostalCode;ShipCountry" guiHeight="0" guiName="Dedup equal records" guiWidth="0" guiX="252" guiY="136" id="ROLLUP5" inputSorted="false" type="ROLLUP">
+<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="OrderID;CustomerID;EmployeeID;OrderDate;RequiredDate;ShippedDate;ShipVia;Freight;ShipName;ShipAddress;ShipCity;ShipRegion;ShipPostalCode;ShipCountry" guiHeight="0" guiName="Dedup equal records" guiWidth="0" guiX="330" guiY="135" id="ROLLUP5" inputSorted="false" type="ROLLUP">
 <attr name="transform"><![CDATA[//#TL
 int INT;
 INT = 2;
@@ -153,8 +154,9 @@ function transform(counter, groupAccumulator) {
 
 ]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="INPUT4:0" guiBendpoints="" id="INEDGE5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="ROLLUP5:0"/>
-<Edge debugMode="true" fromNode="ROLLUP4:0" guiBendpoints="" id="Edge18" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT3:0"/>
-<Edge debugMode="true" fromNode="ROLLUP5:0" guiBendpoints="" id="Edge16" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="ROLLUP4:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT3:0"/>
+<Edge debugMode="false" fromNode="INPUT4:0" guiBendpoints="" id="INEDGE5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="ROLLUP5:0"/>
+<Edge debugMode="false" fromNode="ROLLUP4:0" guiBendpoints="" id="Edge18" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge debugMode="false" fromNode="ROLLUP5:0" guiBendpoints="" id="Edge16" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="ROLLUP4:0"/>
 </Phase>
 </Graph>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Václav" created="Thu Mar 12 09:07:07 CET 2009" guiVersion="0.0.0.devel" id="1236845275482" licenseType="Evaluation license." modified="Tue Apr 21 13:03:26 CEST 2009" modifiedBy="avackova" name="AccessLogParsing" revision="1.87">
+<Graph author="Václav" created="Thu Mar 12 09:07:07 CET 2009" guiVersion="0.0.0.devel" id="1236845275482" licenseType="Evaluation Devel" modified="Tue Jan 19 13:28:30 GMT+01:00 2010" modifiedBy="avackova" name="AccessLogParsing" revision="1.90">
 <Global>
 <Metadata id="Metadata0" previewAttachment="C:/Users/Václav/workspace-prezentace/AccessLogParsing/data-in/cloveretl${PROJECT}org-access_log" previewAttachmentCharset="ISO-8859-1">
 <Record name="accessLogData" previewAttachment="C:/Users/Václav/workspace-prezentace/AccessLogParsing/data-in/cloveretl${PROJECT}org-access_log" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" skipFirstLine="false" type="delimited">
@@ -60,7 +60,7 @@ If the graph parameter "GET_HOSTNAME" is set to the value "1", the graph returns
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/irrelevant_ip_addresses.txt" guiHeight="0" guiName="Irrelevant IP addresses" guiWidth="0" guiX="28" guiY="-51" id="DATA_READER1" type="DATA_READER"/>
 <Node enabled="enabled" guiHeight="0" guiName="LookupTableReaderWriter" guiWidth="0" guiX="186" guiY="-51" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
-<Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
 </Phase>
 <Phase number="1">
 <Node aggregateKey="ip_address" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="853" guiY="81" id="AGGREGATE0" mapping="$ip_address:=$ip_address;$access_count:=count();" type="AGGREGATE"/>
@@ -165,17 +165,17 @@ public class GetHostName extends DataRecordTransform {
 <Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="516" guiY="83" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
 <Node debugFilename="${DATAOUT_DIR}/irrelevant.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="515" guiY="1" id="TRASH0" type="TRASH"/>
 <Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/statistics.xls" firstDataRow="2" guiHeight="0" guiName="IP addresses" guiWidth="0" guiX="1362" guiY="81" id="XLS_WRITER0" namesRow="1" sheetName="IP addresses" type="XLS_WRITER"/>
-<Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT2:0"/>
-<Edge debugMode="true" fromNode="AGGREGATE1:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT3:0"/>
-<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_FILTER0:0"/>
-<Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" toNode="LOOKUP_JOIN0:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="AGGREGATE0:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="AGGREGATE1:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT3:0" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
-<Edge debugMode="true" fromNode="LOOKUP_JOIN0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (joined records)" toNode="TRASH0:0"/>
-<Edge debugMode="true" fromNode="LOOKUP_JOIN0:1" guiBendpoints="" id="Edge16" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (skipped records)" toNode="SIMPLE_COPY0:0"/>
-<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
+<Edge debugMode="false" fromNode="AGGREGATE0:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT2:0"/>
+<Edge debugMode="false" fromNode="AGGREGATE1:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT3:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_FILTER0:0"/>
+<Edge debugMode="false" fromNode="EXT_FILTER0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" toNode="LOOKUP_JOIN0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="AGGREGATE0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="AGGREGATE1:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT3:0" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
+<Edge debugMode="false" fromNode="LOOKUP_JOIN0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (joined records)" toNode="TRASH0:0"/>
+<Edge debugMode="false" fromNode="LOOKUP_JOIN0:1" guiBendpoints="" id="Edge16" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (skipped records)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
 <Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
 <Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="EXT_SORT1:0"/>
 </Phase>

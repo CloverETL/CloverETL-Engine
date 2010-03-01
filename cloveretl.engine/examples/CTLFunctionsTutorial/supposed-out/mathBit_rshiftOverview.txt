@@ -1,5 +1,5 @@
-11;1;bit_rshift($0.Arg,$0.Shift);22;1011;10110
-11;2;bit_rshift($0.Arg,$0.Shift);44;1011;101100
-11;3;bit_rshift($0.Arg,$0.Shift);88;1011;1011000
-11;4;bit_rshift($0.Arg,$0.Shift);176;1011;10110000
-11;5;bit_rshift($0.Arg,$0.Shift);352;1011;101100000
+11;1;bit_rshift($0.Arg,$0.Shift);5;1011;101
+11;2;bit_rshift($0.Arg,$0.Shift);2;1011;10
+11;3;bit_rshift($0.Arg,$0.Shift);1;1011;1
+11;4;bit_rshift($0.Arg,$0.Shift);0;1011;0
+11;5;bit_rshift($0.Arg,$0.Shift);0;1011;0

@@ -33,6 +33,8 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
+
 
 /**
  * A class that represents processing Phase of Transformation Graph
@@ -167,6 +169,10 @@ public class Phase extends GraphElement implements Comparable {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
 				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !\nReason: " +  ex.getMessage(), ex);
+			} catch (Throwable ex) {
+				node.setResultCode(Result.ERROR);
+				result = Result.ERROR;
+				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !\nReason: " +  ex.getMessage(), new JetelException(ex.getMessage(), ex));
 			}
 		}
         

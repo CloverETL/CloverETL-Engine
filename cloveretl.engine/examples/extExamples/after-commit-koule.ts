@@ -10,6 +10,7 @@
 	<DBConnection ident="mysql" type="MYSQL" user="test" password="" URL="jdbc:mysql://koule/test?zeroDateTimeBehavior=convertToNull" driver="org.gjt.mm.mysql.Driver" />
 	<DBConnection ident="infobright" type="MYSQL" user="root" password="semafor" URL="jdbc:mysql://localhost:5029/test" driver="org.gjt.mm.mysql.Driver" />
 	<DBConnection ident="db2" type="DB2" user="db2inst" password="semafor" URL="jdbc:db2://koule:50002/test" driver="com.ibm.db2.jcc.DB2Driver" />
+	<DBConnection ident="infobright" type="MYSQL" user="root" password="" URL="jdbc:mysql://koule:5029/test" driver="org.gjt.mm.mysql.Driver" />
 	
 	<FunctionalTest ident="PostgreDataWriter" graphFile="graph/graphPostgreSqlDataWriter.grf">
 	      <SQLStatement connection="postgre_test">DELETE FROM test</SQLStatement>
@@ -23,13 +24,13 @@
 	
 	<FunctionalTest ident="OracleDataWriter" graphFile="graph/graphOracleDataWriter.grf">
 	      	<SQLStatement connection="oracle">DELETE FROM test.writer_test</SQLStatement>
-	      <DBTableToTable
+<!--	      <DBTableToTable
 	      	 outputTable="test.writer_test" 
 	      	 outputTableConnection="oracle"
 	      	 supposedTable="test.test_supposed"
 	      	 supposedTableConnection="oracle"
 	      />
-<!--      	 <DBTableToXMLFile outputTable="writer_test" supposedTable="test" outputTableConnection="oracle" supposedXMLFile="supposed-out/oracle_supposed.xml"/>--> 
+      	 <DBTableToXMLFile outputTable="writer_test" supposedTable="test" outputTableConnection="oracle" supposedXMLFile="supposed-out/oracle_supposed.xml"/>--> 
 	 	  <FlatFile outputFile="data-out/bad0Port.bad" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/bad1.kkk" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/bad1Port.bad" supposedFile="supposed-out/bad1.OracleDataWriter.kkk"/>	                                                                    

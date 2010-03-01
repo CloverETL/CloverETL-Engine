@@ -266,12 +266,22 @@ public class DBInputTable extends Node {
 		} finally {
     		broadcastEOF();
         	parser.close();
-        	if (parser.getIncrementalFile() != null){
-        		storeValues();
-        	}
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
+
+    @Override
+    public synchronized void free() {
+    	super.free();
+
+    	try {
+        	if (parser.getIncrementalFile() != null){
+        		storeValues();
+        	}
+    	} catch (Exception e){
+    		logger.error(e.getMessage(), e);
+    	}
+    }
 
 
 	/**

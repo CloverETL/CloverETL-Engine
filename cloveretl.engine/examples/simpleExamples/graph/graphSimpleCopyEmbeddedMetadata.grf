@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file." guiVersion="1.9" id="1196683081647" licenseType="Evaluation license." modified="Thu Apr 03 11:44:58 CEST 2008" name="Testing Simple Copy" revision="1.9">
+<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file." guiVersion="2.9.1" id="1196683081647" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 16:12:35 CET 2010" modifiedBy="cloveruser" name="Testing Simple Copy" revision="1.16">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter=";" name="Employees" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -23,6 +23,20 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="120" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Internal Metadata" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="172" x="342" y="289">
+<attr name="text"><![CDATA[
+Metadata are internal. They are written directly in the graph and can be seen in the Source tab.
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="181" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the SimpleCopy and Trash Components" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="314" x="9" y="151">
+<attr name="text"><![CDATA[
+
+This graph is similar to the graphSimpleCopy.grf.
+
+Settings of Trashes are different here. However, for more details about the use of these components, see the graph mentioned above.
+
+]]></attr>
+</Note>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="25" guiName="BROADCAST" guiWidth="50" guiX="195" guiY="20" id="BROADCAST" type="SIMPLE_COPY"/>
@@ -35,6 +49,6 @@
 <Edge fromNode="BROADCAST:1" guiBendpoints="" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="TRASH2:0"/>
 <Edge fromNode="BROADCAST:2" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="BROADCAST2:0"/>
 <Edge fromNode="BROADCAST2:0" guiBendpoints="" id="INNEREDGE4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH3:0"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="BROADCAST:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="BROADCAST:0"/>
 </Phase>
 </Graph>
