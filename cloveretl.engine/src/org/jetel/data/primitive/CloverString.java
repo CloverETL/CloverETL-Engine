@@ -104,20 +104,19 @@ public class CloverString implements Readable, Appendable, CharSequence, Compara
 	}
 	
 	private final void secureCapacity(int count, boolean preserveData) {
-		int newCapacity = (dataL1.length + 1) * 2;
-		if (newCapacity < 0) {
-			newCapacity = Integer.MAX_VALUE;
-		} else if (count > newCapacity) {
-			newCapacity = count;
-		}
-		if (preserveData && length > 0) {
-			char[] tmpdata = new char[newCapacity];
-			charArrayCopy(dataL1, 0, tmpdata, 0, length);
-			dataL1 = tmpdata;
-		} else {
-			dataL1 = new char[newCapacity];
-		}
-
+			int newCapacity = (dataL1.length + 1) * 2;
+			if (newCapacity < 0) {
+				newCapacity = Integer.MAX_VALUE;
+			} else if (count > newCapacity) {
+				newCapacity = count;
+			}
+			if (preserveData && length > 0) {
+				char[] tmpdata = new char[newCapacity];
+				charArrayCopy(dataL1, 0, tmpdata, 0, length);
+				dataL1 = tmpdata;
+			} else {
+				dataL1 = new char[newCapacity];
+			}
 	}
 	
 	/* (non-Javadoc)
@@ -203,6 +202,19 @@ public class CloverString implements Readable, Appendable, CharSequence, Compara
 		if (newlength>dataL1.length) secureCapacity(newlength,true);
 		str.getChars(0, len, dataL1, length);
 		length=newlength;
+		return this;
+	}
+	
+	public Appendable append(Object str){
+		if (str instanceof CloverString){
+			append((CloverString)str);
+		}else if (str instanceof String){
+			append((String)str);
+		}else if (str instanceof CharSequence){
+			append((CharSequence)str);
+		}else{
+			append(str.toString());
+		}
 		return this;
 	}
 	
@@ -403,7 +415,7 @@ public class CloverString implements Readable, Appendable, CharSequence, Compara
 	}
 	
 	public void deserialize(ByteBuffer buffer,int count){
-		secureCapacity(count, false);
+		if(count>dataL1.length) secureCapacity(count, false);
 		for(int i=0;i<count;dataL1[i++]=buffer.getChar());
 		length=count;
 	}
