@@ -34,6 +34,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.string.Compare;
+import org.jetel.util.string.StringUtils;
 
 /**
  *  A class that represents String type data field.<br>
