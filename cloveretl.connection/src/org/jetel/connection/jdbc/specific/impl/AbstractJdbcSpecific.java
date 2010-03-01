@@ -386,9 +386,11 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
      * @see org.jetel.connection.jdbc.specific.JdbcSpecific#compileSelectQuery4Table(java.lang.String, java.lang.String)
      */
     public String compileSelectQuery4Table(String schema, String table) {
-//		some dbms don't support 
-//    	return "select * from " + schema + "." + table
-		return "select * from " + quoteIdentifier(table);
+    	if (isSchemaRequired() && !StringUtils.isEmpty(schema)) {
+    		return "select * from " + quoteIdentifier(schema) + "." + quoteIdentifier(table);
+    	} else {
+    		return "select * from " + quoteIdentifier(table);
+    	}
     }
     
 	
