@@ -21,6 +21,7 @@ package org.jetel.data.primitive;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.Calendar;
 
 
@@ -53,6 +54,10 @@ public class CloverDate implements Comparable<CloverDate>, Serializable {
 		datetime=date.datetime;
 	}
 	
+	public CloverDate(Timestamp time){
+		datetime=time.getTime();
+	}
+	
 	public long getTime(){
 		return datetime;
 	}
@@ -61,8 +66,20 @@ public class CloverDate implements Comparable<CloverDate>, Serializable {
 		return new Date(datetime);
 	}
 	
+	public void setTime(java.util.Date value){
+		datetime=value.getTime();
+	}
+	
 	public void setTime(long time){
 		datetime=time;
+	}
+	
+	public void setTime(CloverDate value){
+		datetime=value.datetime;
+	}
+	
+	public void setTime(Timestamp time){
+		datetime=time.getTime();
 	}
 	
 	public void setDate(Date date){
@@ -104,12 +121,23 @@ public class CloverDate implements Comparable<CloverDate>, Serializable {
 		return 0;
 	}
 
-	public int compareTo(Date date){
+	public int compareTo(java.util.Date date){
 		long otherdate=date.getTime();
 		if (datetime!=otherdate){
 			return datetime>otherdate ? 1 : -1;
 		}
 		return 0;
+	}
+	
+	public int compareTo(long time){
+		if (datetime>=time){
+			if (datetime==time)
+				return 0;
+			else
+				return 1;
+		}else{
+			return -1;
+		}
 	}
 	
 	@Override
