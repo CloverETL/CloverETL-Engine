@@ -1,15 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component. Source data contains&#10;info about orders customers made.&#10;We add artifitial key - OrderKey which is a sequence of integers. We also&#10;combine individual fields of ship-to-address (address,city,country) into&#10;one single field.&#10;The ShippedDate is set to constant- 02.02.1999&#10;&#10;Reformat component calls &quot;reformatOrders&quot; class which  implements RecordTransform&#10;interface (required by Reformat component).&#10;" guiVersion="1.9" id="1204549338496" licenseType="Evaluation license." modified="Tue Mar 04 14:20:25 CET 2008" name="Testing Reformat" revision="1.12">
+<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component. Source data contains&#10;info about orders customers made.&#10;We add artifitial key - OrderKey which is a sequence of integers. We also&#10;combine individual fields of ship-to-address (address,city,country) into&#10;one single field.&#10;The ShippedDate is set to constant- 02.02.1999&#10;&#10;Reformat component calls &quot;reformatOrders&quot; class which  implements RecordTransform&#10;interface (required by Reformat component).&#10;" guiVersion="2.9.1" id="1204549338496" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Mon Mar 01 10:27:46 CET 2010" modifiedBy="cloveruser" name="Testing Reformat" revision="1.17">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="294" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of Reformat" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="481" x="47" y="156">
+<attr name="text"><![CDATA[
+The graph demonstrates the use of Reformat. In this graph, transformation is defined using the Transform URL attribute and it is written in Java in a file outside the graph.
+
+Transformation can also be defined in such external file written in Clover transformation languge (graphOrdersTLReformatExtern.grf).
+
+It can also be written in Java or CTL directly in the graph. See graphOrdersReformatInline.grf or graphOrdersTLReformat.grf, respectively.
+
+Also a compiled Java class can be used: graphOrdersReformat.grf.
+
+All of these options are equivalent ways of defining the transformation. Most component allow to use the same 5 options. Only MultiLevelReader, JMSReader, JMSWriter, and JavaExecute do not allow the use of CTL.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.dat.out" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.dat.out" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="25" guiName="REF" guiWidth="50" guiX="195" guiY="20" id="REF" transformURL="${TRANS_DIR}/reformatOrders.java" type="REFORMAT"/>
-<Edge debugMode="false" fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REF:0"/>
+<Edge debugMode="false" fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REF:0"/>
 <Edge debugMode="false" fromNode="REF:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

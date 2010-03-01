@@ -6,7 +6,7 @@
 
     <FunctionalTest ident="AccessLogParsing" graphFile="graph/AccessLogParsing.grf">
         <FlatFile outputFile="data-out/irrelevant.txt" supposedFile="supposed-out/irrelevant.txt"/>
-        <FlatFile outputFile="data-out/statistics.xls" supposedFile="supposed-out/statistics.xls"/>     
+        <XlsFile outputFile="data-out/statistics.xls" supposedFile="supposed-out/statistics.xls"/>     
         <DeleteFile file="data-out/irrelevant.txt"/>
         <DeleteFile file="data-out/statistics.xls"/>
     </FunctionalTest>
@@ -22,8 +22,7 @@
 	</FunctionalTest>
 
     <FunctionalTest ident="SOAP_EXAMPLE" graphFile="graph/SOAP_EXAMPLE.grf">
-<!-- We are not able to compare xls files now. This comparison test should be uncommented after issue 2981 is resolved.
-        <FlatFile outputFile="data-out/extract.xls" supposedFile="supposed-out/extract.xls"/> -->   
+        <XlsFile outputFile="data-out/extract.xls" supposedFile="supposed-out/extract.xls"/>    
         <DeleteFile file="data-out/extract.xls"/>
          <DeleteFile file="seq/temp_seq.seq"/>
          <DeleteFile file="seq/time_seq.seq"/>

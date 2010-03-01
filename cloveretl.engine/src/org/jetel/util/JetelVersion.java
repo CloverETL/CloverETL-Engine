@@ -78,9 +78,17 @@ public final class JetelVersion {
      * the library version is "1.6" then 6 is returned
      */
     public static final int getMinorVersion(){
-        return Integer.parseInt(MAJOR_VERSION);
+        return Integer.parseInt(MINOR_VERSION);
     }
-    
+
+    /**
+     * @return Revision version of current library - e.g. if
+     * the library version is "1.6.3" then 3 is returned
+     */
+    public static final int getRevisionVersion(){
+        return Integer.parseInt(REVISION_VERSION);
+    }
+
     /**
      * @return Build number of current library - it is a sequence number
      */

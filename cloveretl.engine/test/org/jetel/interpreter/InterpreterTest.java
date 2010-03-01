@@ -30,11 +30,13 @@ import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.ByteDataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.parser.Parser;
+import org.jetel.data.primitive.ByteArray;
 import org.jetel.data.primitive.CloverLong;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.sequence.Sequence;
@@ -62,11 +64,12 @@ import org.jetel.util.string.StringUtils;
  */
 public class InterpreterTest extends CloverTestCase {
 	
-	DataRecordMetadata metadata,metadata1,metaOut,metaOut1;
-	DataRecord record,record1,out,out1;
+	DataRecordMetadata metadata,metadata1,metaOut,metaOut1,metadataBinary;
+	DataRecord record,record1,out,out1,recBinary,recBinaryOut;
     TransformationGraph graph;
     LookupTable lkp;
 	private GregorianCalendar today;
+	static byte[] BYTEARRAY_INITVALUE = new byte[] {0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48};
 	
 	protected void setUp() {
 		initEngine();
@@ -106,6 +109,11 @@ public class InterpreterTest extends CloverTestCase {
 		metaOut1.addField(new DataFieldMetadata("City",DataFieldMetadata.STRING_FIELD, "\n"));
 		metaOut1.addField(new DataFieldMetadata("Born",DataFieldMetadata.DATE_FIELD, "\n"));
 		metaOut1.addField(new DataFieldMetadata("Value",DataFieldMetadata.INTEGER_FIELD, "\n"));
+		
+		metadataBinary=new DataRecordMetadata("inBinary",DataRecordMetadata.DELIMITED_RECORD);
+		
+		metadataBinary.addField(new DataFieldMetadata("Binary",DataFieldMetadata.BYTE_FIELD, ";"));
+		metadataBinary.addField(new DataFieldMetadata("Compressed",DataFieldMetadata.BYTE_FIELD_COMPRESSED, "\n"));
 
 		record = new DataRecord(metadata);
 		record.init();
@@ -115,6 +123,11 @@ public class InterpreterTest extends CloverTestCase {
 		out.init();
 		out1 = new DataRecord(metaOut1);
 		out1.init();
+		
+		recBinary= new DataRecord(metadataBinary);
+		recBinary.init();
+		recBinaryOut=new DataRecord(metadataBinary);
+		recBinaryOut.init();
 		
 		SetVal.setString(record,0,"  HELLO ");
 		SetVal.setString(record1,0,"  My name ");
@@ -128,6 +141,7 @@ public class InterpreterTest extends CloverTestCase {
 		SetVal.setInt(record,4,-999);
 		record1.getField("Value").setNull(true);
 		record.getField("BooleanValueT").setValue(Boolean.TRUE);
+		recBinary.getField(0).setValue(BYTEARRAY_INITVALUE);
         
         Sequence seq = SequenceFactory.createSequence(graph, "PRIMITIVE_SEQUENCE", 
         		new Object[]{"test",graph,"test"}, new Class[]{String.class,TransformationGraph.class,String.class});
@@ -2959,6 +2973,64 @@ public class InterpreterTest extends CloverTestCase {
 	    }
 	}
     
+    public void test_binaryMapping(){
+		System.out.println("\nBuild-in string functions test:");
+		String expStr = "print_err(byte2hex($0.Binary)); bytearray data=$0.Binary; print_err(byte2hex(data)); \n"+
+						"$0.Binary:= data; \n" +
+						"$0.Compressed := $0.Binary; \n";
+	      print_code(expStr);
+		try {
+			
+
+			// We use for different metadata with the same structure but different names
+			// so that they resolve to different ports
+			DataRecordMetadata[] outputMetadata = new DataRecordMetadata[] {metadataBinary};
+			DataRecord[] outputRecords = new DataRecord[] {recBinaryOut};
+			
+			// We create input field with identical structure
+			DataRecordMetadata[] inputMetadata = new DataRecordMetadata[] {metadataBinary};
+			DataRecord[] inputRecords = new DataRecord[] {recBinary};
+			
+			TransformLangParser parser = new TransformLangParser(inputMetadata,outputMetadata,
+					  new ByteArrayInputStream(expStr.getBytes()),"UTF-8");
+			  
+			CLVFStart parseTree = parser.Start();
+
+			if (parser.getParseExceptions().size()>0){
+				  // report error
+				for(Throwable t : parser.getParseExceptions()) {
+					System.out.println(t);
+				}
+				throw new RuntimeException("Parse exception");
+			}
+
+
+ 		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setParser(parser);
+		      executor.setInputRecords(inputRecords);
+		      executor.setOutputRecords(outputRecords);
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+		      
+		      // Compare for each output records if the original values were copied successfully
+		    	 System.out.println(((ByteDataField)outputRecords[0].getField(0)).toString());
+		      		assertEquals(((ByteDataField)outputRecords[0].getField(0)).toString(),(new ByteArray(BYTEARRAY_INITVALUE)).toString());
+		    	    assertEquals(((ByteDataField)outputRecords[0].getField(1)).toString(),(new ByteArray(BYTEARRAY_INITVALUE)).toString());
+		  		
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception",e);
+	    }
+	}
+    
     public void test_bitFunctions(){
 		System.out.println("\nBuild-in bits functions test:");
 		String expStr = "int number1=0; int number2; number2=bit_set(number2,7,true); \n" +
@@ -3005,8 +3077,8 @@ public class InterpreterTest extends CloverTestCase {
 		      assertEquals("number2",128,executor.getGlobalVariable(parser.getGlobalVariableSlot("number2")).getTLValue().getNumeric().getInt());
 		      assertEquals("number4",15,executor.getGlobalVariable(parser.getGlobalVariableSlot("number4")).getTLValue().getNumeric().getInt());
 		      assertTrue("isN2", (Boolean)executor.getGlobalVariable(parser.getGlobalVariableSlot("isN2")).getTLValue().getValue());
-		      assertEquals("shiftL",127>>2,executor.getGlobalVariable(parser.getGlobalVariableSlot("shiftL")).getTLValue().getNumeric().getInt());
-		      assertEquals("shiftR",(127>>2)<<2,executor.getGlobalVariable(parser.getGlobalVariableSlot("shiftR")).getTLValue().getNumeric().getInt());
+		      assertEquals("shiftL",127<<2,executor.getGlobalVariable(parser.getGlobalVariableSlot("shiftL")).getTLValue().getNumeric().getInt());
+		      assertEquals("shiftR",(127<<2)>>2,executor.getGlobalVariable(parser.getGlobalVariableSlot("shiftR")).getTLValue().getNumeric().getInt());
 		      assertEquals("invert1",~127,executor.getGlobalVariable(parser.getGlobalVariableSlot("invert1")).getTLValue().getNumeric().getInt());
 		      assertEquals("invert2",~-1,executor.getGlobalVariable(parser.getGlobalVariableSlot("invert2")).getTLValue().getNumeric().getInt());
 		      assertEquals("and1",0x07&0x070,executor.getGlobalVariable(parser.getGlobalVariableSlot("and1")).getTLValue().getNumeric().getInt());

@@ -193,7 +193,7 @@ public class BinaryDataParser implements Parser {
 			
 			return record;
 		} catch (IOException e) {
-			throw new JetelException("IO exception", e);
+			throw new JetelException(e.getMessage(), e);
 		} catch (BufferUnderflowException e) {
 			throw new JetelException("Invalid end of stream.", e);
 		}

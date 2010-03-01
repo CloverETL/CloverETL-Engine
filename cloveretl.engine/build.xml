@@ -726,6 +726,8 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 				>
     		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
     		<sysproperty key="file.encoding" value="UTF-8" />
+        	<jvmarg value="-Xmx2048m"/>
+        	<jvmarg value="-XX:MaxPermSize=256m"/> 
 			<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 			<classpath>
 			    <pathelement path="${dir.classestest}"/>

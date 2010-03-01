@@ -182,6 +182,7 @@ public class TransformLangParser extends ExpParser {
       	* If set to null or invalid URL, relative paths will be resolved from working directory
       	* where java is running.
       	*/
+      @Deprecated
       public void setProjectDir(String projectDir) {
       		try {
       			this.projectDirURL = StringUtils.isEmpty(projectDir) 
@@ -191,6 +192,17 @@ public class TransformLangParser extends ExpParser {
       			// nowhere to report unfortunately...
       			this.projectDirURL = null;
       		}
+      }
+
+      /**
+        * Sets project root directory from where relative paths will be resolved
+        * in import statements. This should be in common cases PROJECT_DIR definition
+        * from workspace.prm
+        * 
+        * @param projectURL
+      */
+      public void setProjectURL(URL projectURL) {
+        this.projectDirURL = projectURL;
       }
 
       public final DataRecordMetadata getInRecordMeta(){

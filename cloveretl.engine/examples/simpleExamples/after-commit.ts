@@ -34,9 +34,11 @@
 
 
 <FunctionalTest ident="DataPolicy" graphFile="graph/graphDataPolicy.grf">
-	 <FlatFile outputFile="data-out/correctCustomers.txt" supposedFile="supposed-out/correctCustomers.DataPolicy.txt"/>
+	 <FlatFile outputFile="data-out/correctCustomersControlled.txt" supposedFile="supposed-out/correctCustomers.DataPolicy.Controlled.txt"/>
+	 <FlatFile outputFile="data-out/correctCustomersLenient.txt" supposedFile="supposed-out/correctCustomers.DataPolicy.Lenient.txt"/>
      
-<DeleteFile file="data-out/correctCustomers.txt"/>
+<DeleteFile file="data-out/correctCustomersControlled.txt"/>
+<DeleteFile file="data-out/correctCustomersLenient.txt"/>
 
 </FunctionalTest>
 
@@ -89,6 +91,29 @@
 	<DeleteFile file="data-out/denormalizedTLwithoutOrder.out"/>
 </FunctionalTest>
 
+<FunctionalTest ident="DictionaryJava" graphFile="graph/graphDictionaryJava.grf">
+	 <FlatFile outputFile="data-out/smaller_half.txt" supposedFile="supposed-out/smaller_half.DictionaryJava.txt"/>
+	 <FlatFile outputFile="data-out/greater_half.txt" supposedFile="supposed-out/greater_half.DictionaryJava.txt"/>
+<!-- Trash output is not logged on	 
+	 <RegEx expression="TRASH_MIN \|# 1    \|153" occurences="1"/>
+	 <RegEx expression="TRASH_MAX \|# 1    \|9978" occurences="1"/> -->
+<!-- Test environment doesn't register the logged when graph finished (issue 3510)
+	 <RegEx expression="min:153" occurences="1"/>
+	 <RegEx expression="median:4607.0" occurences="1"/>
+	 <RegEx expression="max:9978" occurences="1"/> -->
+</FunctionalTest>
+
+<FunctionalTest ident="DictionaryTL" graphFile="graph/graphDictionaryTL.grf">
+	 <FlatFile outputFile="data-out/smaller_half.txt" supposedFile="supposed-out/smaller_half.DictionaryTL.txt"/>
+	 <FlatFile outputFile="data-out/greater_half.txt" supposedFile="supposed-out/greater_half.DictionaryTL.txt"/>
+<!-- Trash output is not logged on	 
+	 <RegEx expression="TRASH_MIN \|# 1    \|68" occurences="1"/>
+	 <RegEx expression="TRASH_MAX \|# 1    \|9975" occurences="1"/> -->
+<!-- Test environment doesn't register the logged when graph finished (issue 3510)
+	 <RegEx expression="min:68" occurences="1"/>
+	 <RegEx expression="median:5053.0" occurences="1"/>
+	 <RegEx expression="max:9975" occurences="1"/> -->
+</FunctionalTest>
 
 <FunctionalTest ident="ExtFilter" graphFile="graph/graphExtFilter.grf">
 	 <FlatFile outputFile="data-out/memoFluent.dat" supposedFile="supposed-out/memoFluent.ExtFilter.dat"/>
@@ -135,6 +160,7 @@
 
 
 <FunctionalTest ident="JavaExecute" graphFile="graph/graphJavaExecute.grf">
+		<RegEx expression="Basic example of Java Execute, value of testingProperty = Testing output string!!!" occurences="1"/>
 </FunctionalTest>
 
 
@@ -178,10 +204,8 @@
 
 
 <FunctionalTest ident="LookupReader" graphFile="graph/graphLookupReader.grf">
-	 <FlatFile outputFile="data-out/employees.out" supposedFile="supposed-out//employees.LookupReader.out"/>
-     
-<DeleteFile file="data-out/employees.out"/>
-
+	 <FlatFile outputFile="data-out/employees_without_duplicates.out" supposedFile="supposed-out/employees_without_duplicates.LookupReader.out"/>
+	 <FlatFile outputFile="data-out/employees_with_duplicates.out" supposedFile="supposed-out/employees_with_duplicates.LookupReader.out"/>
 </FunctionalTest>
 
 
@@ -252,6 +276,12 @@
 
 </FunctionalTest>
 
+<FunctionalTest ident="OrdersTLReformatExtern" graphFile="graph/graphOrdersTLReformatExtern.grf">
+	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersTLReformatExtern.out"/>
+     
+<DeleteFile file="data-out/orders.dat.out"/>
+
+</FunctionalTest>
 
 <FunctionalTest ident="ParametrizedLookup" graphFile="graph/graphParametrizedLookup.grf">
 	 <FlatFile outputFile="data-out/joined_data_hash.out" supposedFile="supposed-out//joined_data_hash.ParametrizedLookup.out"/>
@@ -275,6 +305,51 @@
 
 </FunctionalTest>
 
+<FunctionalTest ident="Partition_Transform" graphFile="graph/graphPartition_Transform.grf">
+	 <FlatFile outputFile="data-out/smallIdOlder.txt" supposedFile="supposed-out//smallIdOlder.PartitionTransform.txt"/>
+	 <FlatFile outputFile="data-out/bigIdOlder.txt" supposedFile="supposed-out//bigIdOlder.PartitionTransform.txt"/>
+	 <FlatFile outputFile="data-out/smallIdYounger.txt" supposedFile="supposed-out//smallIdYounger.PartitionTransform.txt"/>
+	 <FlatFile outputFile="data-out/bigIdYounger.txt" supposedFile="supposed-out//bigIdYounger.PartitionTransform.txt"/>
+	 <FlatFile outputFile="data-out/rejectedId.txt" supposedFile="supposed-out//rejectedId.PartitionTransform.txt"/>
+     
+<DeleteFile file="data-out/smallIdOlder.txt"/>
+<DeleteFile file="data-out/bigIdOlder.txt"/>
+<DeleteFile file="data-out/smallIdYounger.txt"/>
+<DeleteFile file="data-out/bigIdYounger.txt"/>
+<DeleteFile file="data-out/rejectedId.txt"/>
+
+</FunctionalTest>
+
+<FunctionalTest ident="Partition_KeyHashCode" graphFile="graph/graphPartition_KeyHashCode.grf">
+	 <FlatFile outputFile="data-out/hashcode0.txt" supposedFile="supposed-out//hashcode0.Partition.txt"/>
+	 <FlatFile outputFile="data-out/hashcode1.txt" supposedFile="supposed-out//hashcode1.Partition.txt"/>
+	 <FlatFile outputFile="data-out/hashcode2.txt" supposedFile="supposed-out//hashcode2.Partition.txt"/>
+	 <FlatFile outputFile="data-out/hashcode3.txt" supposedFile="supposed-out//hashcode3.Partition.txt"/>
+	 <FlatFile outputFile="data-out/hashcode4.txt" supposedFile="supposed-out//hashcode4.Partition.txt"/>
+     
+<DeleteFile file="data-out/hashcode0.txt"/>
+<DeleteFile file="data-out/hashcode1.txt"/>
+<DeleteFile file="data-out/hashcode2.txt"/>
+<DeleteFile file="data-out/hashcode3.txt"/>
+<DeleteFile file="data-out/hashcode4.txt"/>
+
+</FunctionalTest>
+
+<FunctionalTest ident="Partition_RoundRobin" graphFile="graph/graphPartition_RoundRobin.grf">
+	 <FlatFile outputFile="data-out/output0.txt" supposedFile="supposed-out//output0.Partition.txt"/>
+	 <FlatFile outputFile="data-out/output1.txt" supposedFile="supposed-out//output1.Partition.txt"/>
+	 <FlatFile outputFile="data-out/output2.txt" supposedFile="supposed-out//output2.Partition.txt"/>
+	 <FlatFile outputFile="data-out/output3.txt" supposedFile="supposed-out//output3.Partition.txt"/>
+	 <FlatFile outputFile="data-out/output4.txt" supposedFile="supposed-out//output4.Partition.txt"/>
+     
+<DeleteFile file="data-out/output0.txt"/>
+<DeleteFile file="data-out/output1.txt"/>
+<DeleteFile file="data-out/output2.txt"/>
+<DeleteFile file="data-out/output3.txt"/>
+<DeleteFile file="data-out/output4.txt"/>
+
+</FunctionalTest>
+
 <FunctionalTest ident="PhasesDemo" graphFile="graph/graphPhasesDemo.grf">
 	 <FlatFile outputFile="data-out/orders.phases.merged" supposedFile="supposed-out//orders.phases.merged.PhasesDemo"/>
      
@@ -290,8 +365,27 @@
 
 </FunctionalTest>
 
+<FunctionalTest ident="RollupTL_AsAggregatorAndDedup" graphFile="graph/graphRollupTL_AsAggregatorAndDedup.grf">
+	 <FlatFile outputFile="data-out/orders.aggregated" supposedFile="supposed-out/orders.aggregated.AggregateSorted"/>
+	 <FlatFile outputFile="data-out/orders.aggregated_Rollup" supposedFile="supposed-out/orders.aggregated.AggregateSorted"/>
+</FunctionalTest>
+
+<FunctionalTest ident="RollupTL_AsDenormalizer" graphFile="graph/graphRollupTL_AsDenormalizer.grf">
+	 <FlatFile outputFile="data-out/denormalizedTL.out" supposedFile="supposed-out/denormalizedTL.DenormalizeTL.out"/>
+	 <FlatFile outputFile="data-out/denormalizedTLwithoutOrder.out" supposedFile="supposed-out/denormalizedTLwithoutOrder.DenormalizeTL.out"/>
+	 <FlatFile outputFile="data-out/denormalizedTLwithoutOrder_Rollup.out" supposedFile="supposed-out/denormalizedTL.DenormalizeTL.out"/>
+</FunctionalTest>
+
+<FunctionalTest ident="RollupTL_AsNormalizer" graphFile="graph/graphRollupTL_AsNormalizer.grf">
+	 <FlatFile outputFile="data-out/normalized.out" supposedFile="supposed-out/normalized.NormalizeTL.out"/>
+	 <FlatFile outputFile="data-out/normalized_Rollup.out" supposedFile="supposed-out/normalized.NormalizeTL.out"/>
+</FunctionalTest>
+
 <FunctionalTest ident="RunGraph" graphFile="graph/graphRunGraph.grf">
 		<Property name="GRAPH_DIR" value="../cloveretl.engine/examples/simpleExamples/graph"/>
+		<RegEx expression="DEDUP0                 FINISHED_OK" occurences="2"/>
+		<RegEx expression="DENORMALIZE            FINISHED_OK" occurences="2"/>
+		<RegEx expression="EXT_SORT0              FINISHED_OK" occurences="4"/>
 </FunctionalTest>
 
 
@@ -304,7 +398,9 @@
 </FunctionalTest>
 
 
-<FunctionalTest ident="SequenceChecker" graphFile="graph/graphSequenceChecker.grf">
+<FunctionalTest ident="SequenceChecker" graphFile="graph/graphSequenceChecker.grf" assertion="false">
+		<RegEx expression="SEQUENCE_CHECKER0      FINISHED_OK" occurences="1"/>
+		<RegEx expression="The sequence checker fails at row '6'." occurences="1"/>
 </FunctionalTest>
 
 
@@ -359,6 +455,13 @@
 
 </FunctionalTest>
 
+<FunctionalTest ident="SystemExecute" graphFile="graph/graphSystemExecute.grf">
+		<Property name="MY_DIR" value="../cloveretl.engine/examples/simpleExamples/graph" />
+<!-- I don't know why this test doesn't work. Do not merge it with higher version
+	 <FlatFile outputFile="data-out/command.out" supposedFile="supposed-out/command.SystemExecute.out"/>
+-->
+</FunctionalTest>
+
 <FunctionalTest ident="ViewData" graphFile="graph/graphViewData.grf">
 	 <FlatFile outputFile="data-out/data.out" supposedFile="supposed-out//data.ViewData.out"/>
      
@@ -367,7 +470,7 @@
 </FunctionalTest>
 
 <FunctionalTest ident="XLSReadWrite" graphFile="graph/graphXLSReadWrite.grf">
-	 <FlatFile outputFile="data-out/ordersByCountry.xls" supposedFile="supposed-out//ordersByCountry.XLSReadWrite.xls"/>
+	 <XlsFile outputFile="data-out/ordersByCountry.xls" supposedFile="supposed-out//ordersByCountry.XLSReadWrite.xls"/>
 	 <FlatFile outputFile="data-out/orders_delimited.txt" supposedFile="supposed-out/orders_delimited.XLSReadWrite.txt"/>
 <DeleteFile file="data-out/ordersByCountry.xls"/>
 
@@ -421,8 +524,8 @@
 </FunctionalTest>
 
 <FunctionalTest ident="DataGeneratorExt" graphFile="graph/graphDataGeneratorExt.grf">
-<!--	 <FlatFile outputFile="data-out/random.txt" supposedFile="supposed-out/random.DataGeneratorExt.txt"/>
-	 <FlatFile outputFile="data-out/random1.txt" supposedFile="supposed-out/random1.DataGeneratorExt.txt"/>-->
+	 <FlatFile outputFile="data-out/random.txt" supposedFile="supposed-out/random.DataGeneratorExt.txt"/>
+	 <FlatFile outputFile="data-out/random1.txt" supposedFile="supposed-out/random1.DataGeneratorExt.txt"/>
  </FunctionalTest>
 
 </TestScenario>

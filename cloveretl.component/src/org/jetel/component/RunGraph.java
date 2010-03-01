@@ -245,7 +245,7 @@ public class RunGraph extends Node{
 		DataRecord outRec = initOutRecord();
 		
 		if (pipelineMode) {
-			if (runSingleGraph(graphName, outRec, cloverCmdLineArgs)) {				
+			if (runSingleGraph(FileUtils.getFile(getGraph().getProjectURL(),graphName), outRec, cloverCmdLineArgs)) {				
 				writeOutRecord(outRec);
 			} else {								
 				writeErrRecord(outRec);
@@ -391,6 +391,8 @@ public class RunGraph extends Node{
 		for (String cloverCommandArg : cloverCommandLineArgs.split(" ")) {
 			commandList.add(cloverCommandArg);
 		}
+		
+		commandList.add("-P:PROJECT_DIR=" + getGraph().getProjectURL());
 
 		// TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
 		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed

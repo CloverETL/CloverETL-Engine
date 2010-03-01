@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter="|" name="Orders" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field format="#" name="OrderID" nullable="true" shift="0" type="number"/>
+<Field name="CustomerID" nullable="true" shift="0" type="string"/>
+<Field name="EmployeeID" nullable="true" shift="0" type="integer"/>
+<Field format="dd.MM.yyyy" name="OrderDate" nullable="true" shift="0" type="date"/>
+<Field format="dd.MM.yyyy" name="RequiredDate" nullable="true" shift="0" type="date"/>
+<Field format="dd.MM.yyyy" name="ShippedDate" nullable="true" shift="0" type="date"/>
+<Field format="#" name="ShipVia" nullable="true" shift="0" type="integer"/>
+<Field format="#" name="Freight" nullable="true" shift="0" type="number"/>
+<Field name="ShipName" nullable="true" shift="0" type="string"/>
+<Field name="ShipAddress" nullable="true" shift="0" type="string"/>
+<Field name="ShipCity" nullable="true" shift="0" type="string"/>
+<Field name="ShipRegion" nullable="true" shift="0" type="string"/>
+<Field name="ShipPostalCode" nullable="true" shift="0" type="string"/>
+<Field name="ShipCountry" nullable="true" shift="0" type="string"/>
+</Record>

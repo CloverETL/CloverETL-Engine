@@ -15,7 +15,7 @@ fi
 ANT_TARGET=run-scenarios-with-engine-build
 
 echo ${CONFIG} | grep '\-profile$' > /dev/null \
-	&& OTHER_OPTIONS="${OTHER_OPTIONS} -Dprofiler.settings=CPURecording" \
+	&& OTHER_OPTIONS="${OTHER_OPTIONS} -Dprofiler.settings=CPURecording;MonitorRecording;ThreadProfiling;VMTelemetryRecording" \
 	&& ANT_TARGET=run-scenarios-with-profiler
 
  
@@ -26,9 +26,11 @@ CLOVER_VERSION_X_X=`echo $JOB_NAME | sed 's/^cloveretl.engine-tests-\(night\|nig
 CLOVER_VERSION_X_X_DASH=`echo $CLOVER_VERSION_X_X | sed 's/\./-/g'`
 ENGINE_JOB_NAME=cloveretl.engine-${CLOVER_VERSION_X_X}
 
-LATEST_SCRIPT=/tmp/latestSuccessfulBuildNumber.groovy
-scp cloveretl.engine/hudson/latestSuccessfulBuildNumber.groovy klara:${LATEST_SCRIPT}
-ENGINE_BUILD_NUMBER=`ssh klara "java -jar /data/hudson/war/WEB-INF/hudson-cli.jar -s ${HUDSON_URL} groovy ${LATEST_SCRIPT} ${ENGINE_JOB_NAME}"`
+# get latestSuccessfulBuildNumber by CLI - replaced by hudson xml api
+#LATEST_SCRIPT=/tmp/latestSuccessfulBuildNumber.groovy
+#scp cloveretl.engine/hudson/latestSuccessfulBuildNumber.groovy klara:${LATEST_SCRIPT}
+#ENGINE_BUILD_NUMBER=`ssh klara "java -jar /data/hudson/war/WEB-INF/hudson-cli.jar -s ${HUDSON_URL} groovy ${LATEST_SCRIPT} ${ENGINE_JOB_NAME}"`
+ENGINE_BUILD_NUMBER=`wget -q -O - ${HUDSON_URL}/job/cloveretl.engine-${CLOVER_VERSION_X_X}/lastSuccessfulBuild/api/xml?xpath=/*/number/text%28%29`
 
 wget http://klara.javlin.eu:8081/hudson/job/${ENGINE_JOB_NAME}/${ENGINE_BUILD_NUMBER}/artifact/cloveretl.engine/version.properties
 CLOVER_VERSION_X_X_X=`cat version.properties | sed 's/\./-/g'|sed 's/version=//'`

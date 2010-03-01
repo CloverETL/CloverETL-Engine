@@ -1,7 +1,7 @@
 <plugin id="org.jetel.bulkloader" version="0.0.0.devel">
 	<runtime>
 		<library path="bin/"/>
-		<library path="lib/infobright-core-2.7.jar"/>
+		<library path="lib/infobright-core-3.0-remote.jar"/>
 	</runtime>
 	
 	<requires engine-version="0.0.0.devel">

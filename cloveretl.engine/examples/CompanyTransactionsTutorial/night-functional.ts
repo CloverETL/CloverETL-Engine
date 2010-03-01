@@ -120,14 +120,12 @@
 	 	<FlatFile outputFile="data-out/spousesXMLXPath.txt" supposedFile="/data/bigfiles/cloveretl-engine-2.8/cloveretl.engine.examples.CompanyTransactionsTutorial.bigdata/supposed-out/A16.spousesXMLXPath.txt"/>
         <DeleteFile file="/data/bigfiles/cloveretl-engine-2.8/cloveretl.engine.examples.CompanyTransactionsTutorial.bigdata/data-tmp/EmployeesWithFamily.xls"/>
 	</FunctionalTest>
-	
+
 	<!-- 
 		When I modify runAllGraphs.grf and set cloverCmdLineArgs="-plugins ${PROJECT_DIR}/${PLUGINS_DIR} -P:PROJECT_DIR=${PROJECT_DIR}" 
 		all graphs are successuly executed.
 	-->
 	<FunctionalTest ident="allGraphs" graphFile="graph/runAllGraphs.grf">
-		<Property name="PROJECT_DIR" value="../cloveretl.engine/examples/CompanyTransactionsTutorial"/>
-		<Property name="GRAPH_DIR" value="../cloveretl.engine/examples/CompanyTransactionsTutorial/graph"/>
 		<RegEx expression="Some graph\(s\) finished with error" occurences="0"/>
 		<RegEx expression="Processing finished successfully" occurences="5"/>
         <DeleteFile file="data-tmp/EmployeesWithFamily.xls"/>

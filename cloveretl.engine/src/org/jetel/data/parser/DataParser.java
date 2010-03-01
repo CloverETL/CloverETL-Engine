@@ -448,6 +448,8 @@ public class DataParser implements Parser {
 						//end of file
 						if ((character = readChar()) == -1) {
 							break;
+						} else {
+							recordIsParsed = true;
 						}
 
 						//delimiter update

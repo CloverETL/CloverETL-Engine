@@ -749,7 +749,7 @@ public class MathLib extends TLFunctionLibrary {
                 try {
                 	TLNumericValue retVal=(TLNumericValue)context.getContext();
                 	 
-               		retVal.setValue(((TLNumericValue)params[0]).getLong() >> ((TLNumericValue)params[1]).getLong()); 
+               		retVal.setValue(((TLNumericValue)params[0]).getLong() << ((TLNumericValue)params[1]).getLong()); 
                 	return retVal;
                 
                 	
@@ -779,7 +779,7 @@ public class MathLib extends TLFunctionLibrary {
                 try {
                 	TLNumericValue retVal=(TLNumericValue)context.getContext();
                 	 
-               		retVal.setValue(((TLNumericValue)params[0]).getLong() << ((TLNumericValue)params[1]).getLong()); 
+               		retVal.setValue(((TLNumericValue)params[0]).getLong() >> ((TLNumericValue)params[1]).getLong()); 
                 	return retVal;
                 
                 	

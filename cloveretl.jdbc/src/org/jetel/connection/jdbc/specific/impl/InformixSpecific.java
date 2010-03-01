@@ -20,6 +20,7 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.regex.Pattern;
@@ -134,5 +135,16 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 		}
 		return super.jetelType2sqlDDL(field);
 	}
+
+	@Override
+	public ResultSet getTables(Connection connection, String dbName) throws SQLException {
+		return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW"});
+	}
+
+	@Override
+	public boolean isSchemaRequired() {
+		return true;
+	}
+	
 	
 }

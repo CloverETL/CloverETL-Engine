@@ -267,6 +267,7 @@ public class JmsWriter extends Node {
 			}
 		} catch (Exception e) {
 			logger.error("JmxWriter execute", e);
+			throw e;
 		}
         if (psor != null)
             psor.finished();

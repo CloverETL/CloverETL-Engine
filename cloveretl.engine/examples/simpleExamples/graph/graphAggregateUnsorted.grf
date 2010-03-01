@@ -1,15 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates usage of the new Aggregate component. " guiVersion="1.9" id="1204542338830" licenseType="Evaluation license." modified="Tue Mar 04 12:37:03 CET 2008" name="TestingSort" revision="1.29">
+<Graph author="cloveruser" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates usage of the new Aggregate component. " guiVersion="2.9.1" id="1204542338830" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 12:46:41 CET 2010" modifiedBy="cloveruser" name="TestingSort" revision="1.35">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersAggregate.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="341" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Aggregate Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="576" x="20" y="112">
+<attr name="text"><![CDATA[
+Aggregate processes the groups of records with the same value of Aggregate key (independently of whether these records are adjacent to each other or not) or it processes all incoming records as such a single group if Aggregate key is not specified. 
+
+In this example, records are not sorted on Aggregate key by ExtSort before they are processed by Aggregate and duplicate records are among those incoming.
+
+For this reason, duplicate records are processed twice. Make sure that this has sense when you process the data.
+
+When the records reach Aggregate, it processes them in the following way (as shown in the example):
+
+1) Since ShipCountry is the only field od Aggregate key, only this field can be mapped directly from input to output. (Only key fields can be mapped this way!)
+
+2) The count() function is calculated and its result is mapped to the output for every group of records. This function does not need any parameters.
+
+3) The avg() function is applied to the values of the Freight field for every group of records and the result is sent to the output. 
+]]></attr>
+</Note>
 </Global>
 <Phase number="0">
 <Node aggregateKey="ShipCountry" enabled="enabled" guiHeight="25" guiName="AGGREGATE" guiWidth="50" guiX="195" guiY="20" id="AGGREGATE" mapping="$ShipCountry:=$ShipCountry;$Count:=count();$AvgFreight:=avg($Freight)" sorted="false" type="AGGREGATE"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
-<Edge fromNode="AGGREGATE:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="AGGREGATE:0"/>
+<Edge debugMode="true" fromNode="AGGREGATE:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="AGGREGATE:0"/>
 </Phase>
 </Graph>

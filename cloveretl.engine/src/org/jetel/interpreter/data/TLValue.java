@@ -97,13 +97,14 @@ public abstract class TLValue implements Comparable<TLValue>{
         	newval = TLBooleanValue.getInstance(((BooleanDataField)field).getBoolean());
         	break;
        case DataFieldMetadata.BYTE_FIELD:
+       case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
     	   	newval = new TLByteArrayValue(((ByteDataField)field).getByteArray());
         	break;
         case DataFieldMetadata.STRING_FIELD:
         	newval= new TLStringValue((StringBuilder)field.getValueDuplicate());
         	break;
         default:
-            throw new IllegalArgumentException("Don't know how to convert "+field.getType());
+            throw new IllegalArgumentException("Don't know how to convert "+DataFieldMetadata.type2Str(field.getType()));
         
         }
         return newval;

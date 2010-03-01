@@ -101,6 +101,7 @@ public class TLByteArrayValue extends TLContainerValue {
 	@Override
 	public void copyToDataField(DataField field) {
 		if (field instanceof ByteDataField) {
+			//TODO:suboptimal performance, but internal bytearray may have array.length>length
 			field.setValue(value.getValueDuplicate());
 		}else{
 			field.fromString(((ByteArray)value).toString());

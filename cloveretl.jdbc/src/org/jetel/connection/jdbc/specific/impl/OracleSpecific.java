@@ -132,5 +132,9 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 	public ResultSet getTables(Connection connection, String dbName) throws SQLException {
 		return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW" });
 	}
-	
+
+	@Override
+	public boolean isSchemaRequired() {
+		return true;
+	}
 }

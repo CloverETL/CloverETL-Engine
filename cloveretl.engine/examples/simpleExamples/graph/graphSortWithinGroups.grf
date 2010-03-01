@@ -1,20 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="yanas" created="Thu Sep 25 11:48:52 CEST 2008" guiVersion="0.0.0.devel" id="1222336215500" licenseType="Evaluation license." modified="Wed Jul 29 14:04:35 CEST 2009" modifiedBy="avackova" name="sortWithinGroups" revision="1.38">
+<Graph author="yanas" created="Thu Sep 25 11:48:52 CEST 2008" guiVersion="2.9.1" id="1222336215500" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 14:37:27 CET 2010" modifiedBy="cloveruser" name="sortWithinGroups" revision="1.50">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/friends.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="111" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Records with the same value of Group key are adjacent " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="400" x="-13" y="131">
+<attr name="text"><![CDATA[
+Records with the same value of Group key (specified in SortWithinGroups) compose one group.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="250" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the SortWithinGroups Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="583" x="-10" y="266">
+<attr name="text"><![CDATA[
+UniversalDataReader reads data records that are grouped according to the following fields: country;town.
+
+SimpleCopy copies data records to two connected output ports. 
+
+After that: 
+
+First SortWithinGroups component reorders data records (only "country" remains to belong to the Group key and the Sort key becomes "town(a);name(a)" now. Records were originaly sorted (in flat file) in descending order on "town" within "country". Now this order has been changed and "town" will be sorted in ascending order within "country". And "name" in ascending order within "town".
+
+Second SortWithinGroups component preserves Group key and adds an additional field "age(d)" (which will be sorted in descending order).
+
+]]></attr>
+</Note>
 </Global>
 <Phase number="0">
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/friends.dat" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="47" guiY="46" id="DATA_READER0" type="DATA_READER"/>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/friends-country-town-name.dat" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="637" guiY="46" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/friends-country-town-age.dat" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="637" guiY="136" id="DATA_WRITER1" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="237" guiY="48" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node enabled="enabled" groupKey="country" guiHeight="0" guiName="SortWithinGroups" guiWidth="0" guiX="432" guiY="46" id="SORT_WITHIN_GROUPS0" sortKey="town(a);name(a)" type="SORT_WITHIN_GROUPS"/>
-<Node enabled="enabled" groupKey="country;town" guiHeight="0" guiName="SortWithinGroups" guiWidth="0" guiX="433" guiY="136" id="SORT_WITHIN_GROUPS1" sortKey="age(d)" type="SORT_WITHIN_GROUPS"/>
-<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SORT_WITHIN_GROUPS0:0"/>
+<Node enabled="enabled" groupKey="country" guiHeight="0" guiName="Reorder and Add" guiWidth="0" guiX="432" guiY="46" id="SORT_WITHIN_GROUPS0" sortKey="town(a);name(a)" type="SORT_WITHIN_GROUPS"/>
+<Node enabled="enabled" groupKey="country;town" guiHeight="0" guiName="Add Field" guiWidth="0" guiX="433" guiY="136" id="SORT_WITHIN_GROUPS1" sortKey="age(d)" type="SORT_WITHIN_GROUPS"/>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SORT_WITHIN_GROUPS0:0"/>
 <Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SORT_WITHIN_GROUPS1:0"/>
-<Edge fromNode="SORT_WITHIN_GROUPS0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
-<Edge fromNode="SORT_WITHIN_GROUPS1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="true" fromNode="SORT_WITHIN_GROUPS0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="SORT_WITHIN_GROUPS1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>

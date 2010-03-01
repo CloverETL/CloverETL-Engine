@@ -18,8 +18,11 @@
  */
 package org.jetel.util.property;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,8 +52,9 @@ import org.jetel.util.string.StringUtils;
  *
  * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
+ * @author Martin Zatopek, Javlin a.s. &lt;martin.zatopek@javlin.eu&gt;
  *
- * @version 16th September 2009
+ * @version 12th November 2009
  * @since 12th May 2004
  */
 public class PropertyRefResolver {
@@ -72,6 +76,9 @@ public class PropertyRefResolver {
 
 	/** the CTL expression evaluator used to evaluate CTL expressions */
 	private final CTLExpressionEvaluator expressionEvaluator = new CTLExpressionEvaluator();
+
+	/** the set (same errors need to be listed once only) of errors that occurred during evaluation of a single string */
+	private final Set<String> errorMessages = new HashSet<String>();
 
 	/** the flag specifying whether the CTL expressions should be evaluated and the property references resolved */
 	private boolean resolve = true;
@@ -220,6 +227,9 @@ public class PropertyRefResolver {
 	 * and evaluated/resolved, <code>false</code> otherwise
 	 */
 	private boolean resolveRef(StringBuffer value, RefResFlag flag) {
+		// clear error messages before doing anything else
+		errorMessages.clear();
+
 		if (value == null || !resolve) {
 			return false;
 		}
@@ -231,6 +241,7 @@ public class PropertyRefResolver {
 		//
 		// evaluate CTL expressions and resolve remaining property references
 		//
+
 		boolean valueModified = false;
 
 		if (flag.resolveCTLstatements()) {
@@ -294,6 +305,7 @@ public class PropertyRefResolver {
 
 					anyExpressionEvaluated = true;
 				} catch (ParseException exception) {
+					errorMessages.add("CTL expression '" + resolvedExpression + "' is not valid.");
 					logger.warn("Cannot evaluate expression: " + resolvedExpression, exception);
 				}
 			}
@@ -338,11 +350,28 @@ public class PropertyRefResolver {
 
 				anyReferenceResolved = true;
 			} else {
+				errorMessages.add("Property '" + reference + "' is not defined.");
 				logger.warn("Cannot resolve reference to property: " + reference);
 			}
 		}
 
 		return anyReferenceResolved;
+	}
+
+	/**
+	 * @return <code>true</code> if any error occurred during the last call to the
+	 * {@link #resolveRef(StringBuffer, RefResFlag)} method, <code>false</code> otherwise
+	 */
+	public boolean anyErrorOccured() {
+		return !errorMessages.isEmpty();
+	}
+
+	/**
+	 * @return a read-only list of error messages collected during the last call to the
+	 * {@link #resolveRef(StringBuffer, RefResFlag)} method
+	 */
+	public Set<String> getErrorMessages() {
+		return Collections.unmodifiableSet(errorMessages);
 	}
 
 	/**

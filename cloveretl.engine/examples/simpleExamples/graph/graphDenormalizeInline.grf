@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="0.0" id="1204545320021" licenseType="Evaluation license." modified="Mon Feb 09 09:49:39 CET 2009" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.36">
+<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="2.9.1" id="1204545320021" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 14:09:32 CET 2010" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.47">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="333" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Denormalizer Component (Java)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="567" x="21" y="112">
+<attr name="text"><![CDATA[
+Denormalizer processes groups of data records with the same value of Key. 
+
+If records with the same value of Key are not adjacent to each other and are separated by any other Key value, such records are considered to be different groups of records. For this reason, if you do not want to process non-adjacent records as separate groups, sort the records on specified Key before they are processed by Denormalizer.
+
+Records are sorted on EmployeeID (Sort order is set to Ascending). After that, all records with the same value of Key are appended to each other (the append() function is used) and the information that is gathered is used to create output records in the transform() function. These are sent to the connected output port.
+
+In this graph, all customers for each employee are concatenated using white spaces and hyphens. 
+
+After processing every group of records, before processing the next key value, the clean() function is used to return the settings to the initial state.
+
+Transformation is defined in Java directly in the graph. It can be seen in the Source code and is compiled on runtime.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="25" guiName="Denormalize" guiWidth="50" guiX="366" guiY="17" id="DENORMALIZE" key="EmployeeID" order="Asc" type="DENORMALIZER">
-<attr name="denormalize">
+<attr name="denormalize"><![CDATA[
 import org.jetel.component.denormalize.DataRecordDenormalize;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.data.*;
 
 public class DenormalizeTestInline extends DataRecordDenormalize {
@@ -17,9 +30,6 @@ public class DenormalizeTestInline extends DataRecordDenormalize {
 	private int employeeID;
 
 	public DenormalizeTestInline() {
-	}
-
-	public void setGraph(TransformationGraph graph) {
 	}
 
 	public int append(DataRecord inRecord) {
@@ -40,14 +50,15 @@ public class DenormalizeTestInline extends DataRecordDenormalize {
 		customerID = "";
 	}
 }
-</attr></Node>
+]]></attr>
+</Node>
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="194" guiY="17" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="17" id="INPUT1" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/denormalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="542" guiY="16" id="WRITER" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
-<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DENORMALIZE:0"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="true" fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DENORMALIZE:0"/>
+<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
 </Phase>
 </Graph>

@@ -260,8 +260,6 @@
 			<keep implements="org.jetel.connection.jdbc.specific.JdbcSpecific">
 				<field access="protected public"/><method access="protected public"/>
 			</keep>
-			
-			
 
 			<!-- list of classes to keep from all plugins except cloveretl.engine (better to place in plugin build script but duplication of proguard tag in each plugin is required; duplication is worse)-->
 			<keep name="org.jetel.component.RecordFilterTL"><field access="protected public"/><method access="protected public"/></keep>
@@ -293,6 +291,10 @@
 			<keep name="org.jetel.connection.jms.JmsConnection"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.connection.jdbc.specific.conn.DefaultConnection"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.specific.impl.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.specific.conn.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.Activator"><field access="protected public"/><method access="protected public"/></keep>
 			
 			<keep name="org.jetel.lookup.DBLookupTable"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.lookup.RangeLookupTable"><field access="protected public"/><method access="protected public"/></keep>
@@ -315,9 +317,13 @@
             <keep name="com.opensys.cloveretl.lookup.aspell.AspellDictionary"><field access="protected public"/><method access="protected public"/></keep>
 
 			<keep name="org.jetel.ctl.CTLDefaultImport"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.ctl.extensions.*"><field access="protected public"/><method access="protected public"/></keep>
 			
 			<keep name="com.opensys.cloveretl.component.ws.WSDLAnalyzer"><field access="protected public"/><method access="protected public"/></keep>
 			
+			<keep name="com.opensys.cloveretl.component.ws.WSDLAnalyzer"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.ws.proxy.WSOperationName"><field access="public"/><method access="public"/></keep>
+
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
 			-->

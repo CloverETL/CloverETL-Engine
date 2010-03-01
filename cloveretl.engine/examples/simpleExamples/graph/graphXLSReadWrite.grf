@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="0.0.0.devel" id="1199778867506" licenseType="Evaluation license." modified="Thu Aug 20 10:15:54 CEST 2009" modifiedBy="cloveruser" name="graphXLSRead" revision="1.57">
+<Graph author="avackova" created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="2.9.1" id="1199778867506" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Tue Feb 23 16:54:13 CET 2010" modifiedBy="cloveruser" name="graphXLSRead" revision="1.59">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="Orders" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -50,11 +50,11 @@
 <Node enabled="enabled" excludeFields="ShipCountry" fileURL="${DATAOUT_DIR}/ordersByCountry.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="224" guiY="32" id="XLS_WRITER0" namesRow="1" sheetName="$ShipCountry" type="XLS_WRITER">
 <attr name="saveNames"><![CDATA[true]]></attr>
 </Node>
-<Edge fromNode="XLS_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
+<Edge debugMode="true" fromNode="XLS_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders_delimited.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="224" guiY="194" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/ordersByCountry.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="27" guiY="194" id="XLS_READER2" metadataRow="1" sheetNumber="*" type="XLS_READER"/>
-<Edge fromNode="XLS_READER2:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="XLS_READER2:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

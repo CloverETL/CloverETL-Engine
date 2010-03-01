@@ -489,7 +489,9 @@ public class PostgreSqlDataWriter extends BulkLoader {
 					" attribute have to be specified and specified file must exist.");
 		}
 
-		if (columnDelimiter.length() != 1) {
+		/*Assumes that if delimiter is null, it will be set right away, since checkParams()
+		 *  is run right before preInit() in init() of BulkLoader*/
+		if (columnDelimiter != null && columnDelimiter.length() != 1) {
 			throw new ComponentNotReadyException(this, XML_COLUMN_DELIMITER_ATTRIBUTE, 
 					"Max. length of column delimiter is one.");
 		}

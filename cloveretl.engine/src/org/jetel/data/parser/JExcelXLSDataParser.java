@@ -24,7 +24,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Map;
 
 import jxl.BooleanCell;
@@ -54,14 +53,13 @@ import org.jetel.util.string.StringUtils;
  * @author Agata Vackova, Javlin a.s. &lt;agata.vackova@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 31st January 2009
+ * @version 26th November 2009
  * @since 16th January 2007
  */
 public class JExcelXLSDataParser extends XLSParser {
 	
 	private Workbook wb;
 	private Sheet sheet;
-	private Cell cell;
 	private String charset = null;
 	
 	/**
@@ -86,7 +84,7 @@ public class JExcelXLSDataParser extends XLSParser {
 	}
 
 	@Override
-	protected void cloverfieldsAndXlsNames(Map fieldNames) throws ComponentNotReadyException {
+	protected void cloverfieldsAndXlsNames(Map<String, Integer> fieldNames) throws ComponentNotReadyException {
 		if (cloverFields.length!=xlsFields.length){
 			throw new ComponentNotReadyException("Number of clover fields and XLS fields must be the same");
 		}
@@ -95,13 +93,13 @@ public class JExcelXLSDataParser extends XLSParser {
 		int count = 0;
 		//go through each not empty cell
 		for (int i=0;i<row.length;i++){
-			cell = row[i];
+			Cell cell = row[i];
 			String cellValue = cell.getContents();
 			int xlsNumber = StringUtils.findString(cellValue,xlsFields);
 			if (xlsNumber > -1){//string from cell found in xlsFields attribute
 				fieldNumber[count][XLS_NUMBER] = cell.getColumn();
 				try {
-					fieldNumber[count][CLOVER_NUMBER] = (Integer)fieldNames.get(cloverFields[xlsNumber]);
+					fieldNumber[count][CLOVER_NUMBER] = fieldNames.get(cloverFields[xlsNumber]);
 				}catch (NullPointerException ex) {
 					throw new ComponentNotReadyException("Clover field \""
 							+ cloverFields[xlsNumber] + "\" not found");
@@ -123,14 +121,14 @@ public class JExcelXLSDataParser extends XLSParser {
 			Cell[] row = sheet.getRow(metadataRow);
 			//go through each not empty cell
 			for (int i=0;i<row.length;i++){
-				cell = row[i];
+				Cell cell = row[i];
 				names.add(XLSFormatter.getCellCode(cell.getColumn()) + " - " +
 						cell.getContents());
 			}
 		}else{
 			Cell[] row = sheet.getRow(firstRow);
 			for (int i=0;i<row.length;i++){
-				cell = row[i];
+				Cell cell = row[i];
 				names.add(XLSFormatter.getCellCode(cell.getColumn()) + " - " +
 						cell.getContents().substring(0, Math.min(
 								cell.getContents().length(), MAX_NAME_LENGTH)));
@@ -237,27 +235,27 @@ public class JExcelXLSDataParser extends XLSParser {
 	}
 	
 	@Override
-	protected void mapNames(Map fieldNames) throws ComponentNotReadyException {
+	protected void mapNames(Map<String, Integer> fieldNames) throws ComponentNotReadyException {
 		//getting metadata row
 		Cell[] row = sheet.getRow(metadataRow);
 		int count = 0;
 		//go through each not empty cell
 		for (int i=0;i<row.length;i++){
-			cell = row[i];
+			Cell cell = row[i];
 			String cellValue = cell.getContents();
 			if (fieldNames.containsKey(cellValue)){//corresponding field in metadata found
 				fieldNumber[count][XLS_NUMBER] = cell.getColumn();
-				fieldNumber[count][CLOVER_NUMBER] = (Integer)fieldNames.get(cellValue);
+				fieldNumber[count][CLOVER_NUMBER] = fieldNames.get(cellValue);
 				fieldNames.remove(cellValue);
 				count++;
 			}else{
 				logger.warn("There is no field \"" + cellValue + "\" in output metadata");
 			}
 		}
-		if (count<metadata.getNumFields()){
+		if (count < metadata.getNumFields()) {
 			logger.warn("Not all fields found:");
-			for (Iterator i=fieldNames.keySet().iterator();i.hasNext();){
-				logger.warn(i.next());
+			for (String fieldName : fieldNames.keySet()) {
+				logger.warn(fieldName);
 			}
 		}
 	}
@@ -274,6 +272,9 @@ public class JExcelXLSDataParser extends XLSParser {
 			if (isAutoFilling[cloverFieldIndex]) {
 				continue;
 			}
+
+			Cell cell = null;
+
 			try {
 				cell = sheet.getCell(xlsFieldIndex, currentRow);
 			} catch (ArrayIndexOutOfBoundsException e1) {
@@ -286,30 +287,25 @@ public class JExcelXLSDataParser extends XLSParser {
 				switch (type) {
 				case DataFieldMetadata.DATE_FIELD:
 				case DataFieldMetadata.DATETIME_FIELD:
-					record.getField(cloverFieldIndex).setValue(
-							((DateCell)cell).getDate());
+					record.getField(cloverFieldIndex).setValue(((DateCell) cell).getDate());
 					break;
 				case DataFieldMetadata.BYTE_FIELD:
 				case DataFieldMetadata.STRING_FIELD:
-					record.getField(cloverFieldIndex).fromString(
-							cell.getContents());
+					record.getField(cloverFieldIndex).fromString(parseString(cell));
 					break;
 				case DataFieldMetadata.DECIMAL_FIELD:
 				case DataFieldMetadata.INTEGER_FIELD:
 				case DataFieldMetadata.LONG_FIELD:
 				case DataFieldMetadata.NUMERIC_FIELD:
-					record.getField(cloverFieldIndex).setValue(
-							((NumberCell)cell).getValue());
+					record.getField(cloverFieldIndex).setValue(((NumberCell) cell).getValue());
 					break;
 				case DataFieldMetadata.BOOLEAN_FIELD:
-					record.getField(cloverFieldIndex).setValue(
-							((BooleanCell)cell).getValue());
+					record.getField(cloverFieldIndex).setValue(((BooleanCell) cell).getValue());
 					break;
 				}
 			} catch (ClassCastException bdne) {//exception when trying get date or number from diffrent cell type
 				try {
-					record.getField(cloverFieldIndex).fromString(
-							cell.getContents());
+					record.getField(cloverFieldIndex).fromString(parseString(cell));
 				} catch (Exception e) {
 					BadDataFormatException bdfe = new BadDataFormatException(bdne.getMessage());
 					bdfe.setRecordNumber(currentRow+1);
@@ -329,6 +325,17 @@ public class JExcelXLSDataParser extends XLSParser {
 		currentRow++;
 		recordCounter++;
 		return record;
+	}
+
+	private String parseString(Cell cell) {
+		if (cell.getType() == CellType.NUMBER) {
+			double cellValue = ((NumberCell) cell).getValue();
+			String cellFormat = cell.getCellFormat().getFormat().getFormatString();
+
+			return dataFormatter.formatRawCellContents(cellValue, -1, cellFormat);
+		}
+
+		return cell.getContents();
 	}
 
 	@Override

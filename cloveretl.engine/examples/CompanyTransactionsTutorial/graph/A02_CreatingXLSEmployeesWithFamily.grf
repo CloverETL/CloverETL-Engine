@@ -18,18 +18,18 @@ More detailed information about this graph can be found in the "readme.html" fil
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATATMP_DIR}/Employees.dat" guiHeight="0" guiName="EmployeesDelimited" guiWidth="0" guiX="56" guiY="280" id="DATA_READER0" skipFirstLine="true" type="DATA_READER"/>
 <Node append="false" enabled="enabled" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="0" guiName="EmployeesWithChildren" guiWidth="0" guiX="562" guiY="280" id="XLS_WRITER0" namesRow="1" sheetName="Employees" type="XLS_WRITER"/>
-<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="XLS_WRITER0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="XLS_WRITER0:0"/>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/Children.dat" guiHeight="0" guiName="ChildrenDelimited" guiWidth="0" guiX="56" guiY="399" id="DATA_READER1" skipFirstLine="true" type="DATA_READER"/>
 <Node enabled="enabled" guiHeight="0" guiName="AlphabeticalSorting" guiWidth="0" guiX="309" guiY="399" id="EXT_SORT0" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
 <Node append="false" enabled="enabled" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="0" guiName="EmployeesWithChildren" guiWidth="0" guiX="562" guiY="399" id="XLS_WRITER1" namesRow="1" sheetName="Children" type="XLS_WRITER"/>
-<Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
+<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
 </Phase>
 <Phase number="2">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/Spouses.dat" guiHeight="0" guiName="EmployeesDelimited" guiWidth="0" guiX="57" guiY="510" id="DATA_READER2" skipFirstLine="true" type="DATA_READER"/>
 <Node append="false" enabled="enabled" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="0" guiName="EmployeesWithChildren" guiWidth="0" guiX="563" guiY="510" id="XLS_WRITER2" namesRow="1" sheetName="Spouses" type="XLS_WRITER"/>
-<Edge debugMode="true" fromNode="DATA_READER2:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="XLS_WRITER2:0"/>
+<Edge debugMode="false" fromNode="DATA_READER2:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="XLS_WRITER2:0"/>
 </Phase>
 </Graph>

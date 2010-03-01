@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Mira Haupt" created="Thu Dec 11 15:46:21 CET 2007" description="This graph uses runGraph component to execute graphXmlWriter example" guiVersion="0.0.0.devel" id="1111111" licenseType="Evaluation Devel" modified="Thu Oct 22 10:17:44 GMT+01:00 2009" modifiedBy="avackova" name="Testing RunGraph" revision="1.191">
+<Graph author="Mira Haupt" created="Thu Dec 11 15:46:21 CET 2007" description="This graph uses runGraph component to execute graphXmlWriter example" guiVersion="2.9.1" id="1111111" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Tue Feb 23 11:50:33 CET 2010" modifiedBy="cloveruser" name="Testing RunGraph" revision="1.195">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="graphsToRun" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -16,10 +16,10 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="92" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Executing set of graphs" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="243" x="686" y="23">
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="154" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Executing set of graphs" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="243" x="46" y="131">
 <attr name="text"><![CDATA[Graphs to execute are stored in flat file. Reader reads the graph names and send them to RunGraph component. For each graph it is created output record, that informs user if graph execution was successful or not.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="93" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Executing one graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="241" x="688" y="147">
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="153" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Executing one graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="241" x="353" y="315">
 <attr name="text"><![CDATA[Graph name is pasted as attribute of the RunGraph component. If graph execution is successful record with this information is sent to output port 0, in other case record with error message is sent to output port 1.]]></attr>
 </Note>
 </Global>
@@ -49,15 +49,15 @@ function transform() {
 <attr name="dataPolicy"><![CDATA[Strict]]></attr>
 </Node>
 <Node debugFilename="${PROJECT}/data-out/Trash0_output.txt" debugPrint="true" enabled="enabled" guiHeight="25" guiName="Trash" guiWidth="50" guiX="520" guiY="46" id="TRASH2" type="TRASH"/>
-<Edge fromNode="DELIMITED_DATA_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
-<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in regular mode: names of the graphs to be executed, otherwise nothing)" metadata="Metadata1" outPort="Port 0 (out)" toNode="RUN2:0"/>
-<Edge debugMode="false" fromNode="RUN2:0" guiBendpoints="" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="TRASH2:0"/>
+<Edge debugMode="true" fromNode="DELIMITED_DATA_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in regular mode: names of the graphs to be executed, otherwise nothing)" metadata="Metadata1" outPort="Port 0 (out)" toNode="RUN2:0"/>
+<Edge debugMode="true" fromNode="RUN2:0" guiBendpoints="" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="TRASH2:0"/>
 </Phase>
 <Phase number="2">
 <Node enabled="enabled" graphName="${PROJECT}/graph/graphDedup.grf" guiHeight="0" guiName="RunGraph" guiWidth="0" guiX="348" guiY="178" id="RUN_GRAPH0" logAppend="false" logFile="${PROJECT}/data-out/log2.txt" type="RUN_GRAPH"/>
 <Node debugFilename="${PROJECT}/data-out/Trash1_output.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash1" guiWidth="0" guiX="518" guiY="149" id="TRASH0" type="TRASH"/>
 <Node debugFilename="${PROJECT}/data-out/Trash2_output.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="518" guiY="239" id="TRASH3" type="TRASH"/>
-<Edge debugMode="false" fromNode="RUN_GRAPH0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="TRASH0:0"/>
-<Edge debugMode="false" fromNode="RUN_GRAPH0:1" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (in pipeline mode an information record in case of an error, otherwise nothing)" toNode="TRASH3:0"/>
+<Edge debugMode="true" fromNode="RUN_GRAPH0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="TRASH0:0"/>
+<Edge debugMode="true" fromNode="RUN_GRAPH0:1" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (in pipeline mode an information record in case of an error, otherwise nothing)" toNode="TRASH3:0"/>
 </Phase>
 </Graph>

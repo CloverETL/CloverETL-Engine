@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" guiVersion="0.0.0.devel" id="1204539735714" licenseType="Evaluation Devel" modified="Tue Nov 24 13:24:48 GMT+01:00 2009" modifiedBy="avackova" name="Testing Simple Copy" revision="1.22">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" guiVersion="0.0.0.devel" id="1204539735714" licenseType="Evaluation Devel" modified="Mon Dec 21 13:52:12 GMT+01:00 2009" modifiedBy="avackova" name="Testing Simple Copy" revision="1.23">
 <Global>
 <Metadata id="InOutMetadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="organizationalPerson" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -39,7 +39,6 @@ Value of st attribute is changed in Reformat component and attributes of data in
 <attr name="filter"><![CDATA[ou=*]]></attr>
 <attr name="base"><![CDATA[dc=javlin,dc=eu]]></attr>
 </Node>
-<Node action="replace_attributes" enabled="enabled" guiHeight="0" guiName="LDAPWriter" guiWidth="0" guiX="632" guiY="211" id="LDAP_WRITER1" ldapUrl="ldap://koule" passThroughInputPort="0" passThroughOutputPort="0" password="secret" type="LDAP_WRITER" user="cn=Manager,dc=javlin,dc=eu"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="197" guiY="119" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
@@ -71,6 +70,9 @@ function transform() {
 <Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 1 (out)" toNode="LDAP_WRITER1:0"/>
 </Phase>
 <Phase number="2">
+<Node action="replace_attributes" enabled="enabled" guiHeight="0" guiName="LDAPWriter" guiWidth="0" guiX="632" guiY="211" id="LDAP_WRITER1" ldapUrl="ldap://koule" passThroughInputPort="0" passThroughOutputPort="0" password="secret" type="LDAP_WRITER" user="cn=Manager,dc=javlin,dc=eu"/>
+</Phase>
+<Phase number="3">
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/ldap_persons.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="632" guiY="296" id="DATA_WRITER1" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="LDAPReader" guiWidth="0" guiX="19" guiY="296" id="LDAP_READER1" scope="subtree" type="LDAP_READER">
 <attr name="ldapUrl"><![CDATA[ldap://koule]]></attr>

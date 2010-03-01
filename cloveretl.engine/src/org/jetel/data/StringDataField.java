@@ -34,7 +34,6 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.string.Compare;
-import org.jetel.util.string.StringUtils;
 
 /**
  *  A class that represents String type data field.<br>
@@ -163,7 +162,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since                              April 23, 2002
 	 */
 	public void setValue(Object value) throws BadDataFormatException {
-        if(value instanceof CharSequence || value == null) {
+        if(value == null || value instanceof CharSequence) {
             setValue((CharSequence) value);
         } else if (value instanceof char[]) {
             setValue(new String((char[]) value));
@@ -201,7 +200,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 */
 	void setValue(CharSequence seq) {
 		value.setLength(0);
-		if (seq != null && seq.length() > 0) {
+		if (seq != null) {
 		    value.append(seq);
 			setNull(false);
 		} else {
@@ -373,7 +372,8 @@ public class StringDataField extends DataField implements CharSequence{
 	    final int length = value.length();
 	    
 		try {
-			ByteBufferUtils.encodeLength(buffer, length);
+			// encode nulls as zero, increment length of non-null values by one
+			ByteBufferUtils.encodeLength(buffer, isNull ? 0 : length + 1);
 	
 			for(int counter = 0; counter < length; counter++) {
 				buffer.putChar(value.charAt(counter));
@@ -391,17 +391,18 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since          April 23, 2002
 	 */
 	public void deserialize(ByteBuffer buffer) {
-        final int length=ByteBufferUtils.decodeLength(buffer);
-	 
+		// encoded length is incremented by one, decrement it back to normal
+		final int length = ByteBufferUtils.decodeLength(buffer) - 1;
+
 		// empty value - so we can store new string
 		value.setLength(0);
 
-		if (length == 0) {
+		if (length < 0) {
 			setNull(true);
 		} else {
-		    for(int counter = 0; counter < length; counter++){
-		        value.append(buffer.getChar());
-		    }
+			for (int counter = 0; counter < length; counter++) {
+				value.append(buffer.getChar());
+			}
 			setNull(false);
 		}
 	}

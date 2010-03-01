@@ -42,7 +42,7 @@ public class testDataParsing {
 	String plugins = args.length > 0 ? args[0] : null;
 	String propertiesFile = args.length > 1 ? args[1] : null;
 		
-	if (plugins == null || propertiesFile == null) {
+	if (plugins == null && propertiesFile == null) {
 		Properties arguments = new Properties();
 		if ((new File(PARAMETER_FILE)).exists()) {
 			try {

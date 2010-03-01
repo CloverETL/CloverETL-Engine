@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Wed Dec 09 11:23:30 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1260358279137" licenseType="Evaluation Devel" modified="Thu Jan 14 11:13:13 GMT+01:00 2010" modifiedBy="avackova" name="BasicStatistic1" revision="1.249">
+<Global>
+<Metadata fileURL="${metadata}" id="Metadata0"/>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="data" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="fieldName" type="string"/>
+<Field name="type" type="string"/>
+<Field name="valueBoolean" type="boolean"/>
+<Field name="valueByte" type="byte"/>
+<Field name="valueDate" type="date"/>
+<Field name="valueNumber" type="number"/>
+<Field name="valueString" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="dataHistogram" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="fieldName" type="string"/>
+<Field name="type" type="string"/>
+<Field name="valueBoolean" type="boolean"/>
+<Field name="valueByte" type="byte"/>
+<Field name="valueDate" type="date"/>
+<Field name="valueNumber" type="number"/>
+<Field name="valueString" type="string"/>
+<Field name="count" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="dataHistogramOutput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="fieldName" type="string"/>
+<Field name="type" type="string"/>
+<Field name="value" type="string"/>
+<Field name="count" type="integer"/>
+<Field name="countGraphic" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="dataProfile" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="fieldName" type="string"/>
+<Field name="type" type="string"/>
+<Field name="count" type="long"/>
+<Field name="countNotNull" type="long"/>
+<Field name="countUnique" type="long"/>
+<Field name="minDate" type="date"/>
+<Field name="minNumber" type="number"/>
+<Field name="minString" type="string"/>
+<Field name="maxDate" type="date"/>
+<Field name="maxNumber" type="number"/>
+<Field name="maxString" type="string"/>
+<Field name="avgNumber" type="number"/>
+<Field name="medianDate" type="date"/>
+<Field name="medianNumber" type="number"/>
+<Field name="medianString" type="string"/>
+<Field name="modusBoolean" type="boolean"/>
+<Field name="modusByte" type="byte"/>
+<Field name="modusDate" type="date"/>
+<Field name="modusNumber" type="number"/>
+<Field name="modusString" type="string"/>
+<Field name="updated" type="boolean"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="dataProfileOutput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="fieldName" type="string"/>
+<Field name="type" type="string"/>
+<Field name="count" type="long"/>
+<Field name="countNotNull" type="long"/>
+<Field name="countUnique" type="long"/>
+<Field name="min" type="string"/>
+<Field name="max" type="string"/>
+<Field name="avgNumber" type="number"/>
+<Field name="median" type="string"/>
+<Field name="modus" type="string"/>
+</Record>
+</Metadata>
+<Property id="GraphParameter0" name="HISTOGRAM_THRESHOLD" value="25"/>
+<Property id="GraphParameter1" name="NOT_STATISTIC_FIELDS" value=""/>
+<Property id="GraphParameter2" name="output_file" value="${DATAOUT_DIR}/histogram.html"/>
+<Property fileURL="parameters.prm" id="GraphParameter3"/>
+<Property id="GraphParameter9" name="STATISTIC_FIELDS" value=""/>
+<Property fileURL="workspace.prm" id="GraphParameter10"/>
+<Note alignment="1" backgroundColorB="240" backgroundColorG="150" backgroundColorR="222" folded="false" height="205" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Advanced statistic - description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="379" x="-132" y="269">
+<attr name="text"><![CDATA[This graph finds statistic for input data file:
+- number of records in data file
+- number of not null values for each data field
+- number of unique values for each data field
+- minimum value
+- maximum value
+- average value for numeric fields 
+- median value
+- modus value
+It also finds frequency counts for fields with not many unique values.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="311" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Advanced statistic - parameters" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="625" x="717" y="21">
+<attr name="text"><![CDATA[DataProfiling project contains (as usuall CloverDesigner project) workspace.prm file, that stores project structure. It contains also parameters.prm file, which defines parameters shared by BasicStatistic and AdvancedStatistic graphs:
+DATE_FORMAT - format for parsing dates in final output
+READER_TYPE - both graphs are prepared for reading various types of data. This example is configured for reading data from all sheets (sheetName=*) of xls file. The project contains the flat file also; to read this file, change READER_TYPE to DATA_READER. For some other Readers it is necessry to set additional attributes, eg. sqlQuery and dbConnection for DBInputTable.
+WRITER_TYPE - both graphs are prepared for writing results in various formats. This example is configured, to create the data statistic as simple html page. Changing WRITER_TYPE to XLS_WRITER results in creating xls file. To write statistic to flate file, change WRITER_TYPE to DATA_WRITER, for printing it out to console set it to TRASH.
+charset - data encoding - all Readers and Writers in both graphs use the same charset
+input_file - data file for analysis (attached two example files: ${DATAIN_DIR}/ORDERS.xls and ${DATAIN_DIR}/employees.list.dat)
+metadata - shared metadata corresponding to input file (for above example files use ${META_DIR}/orders.fmt and ${META_DIR}/employees.fmt respectively)
+This graph has its own parameters also:
+HISTOGRAM_THRESHOLD - only fields with number of unique values smaller than this threshold are processed in the Pahse 1 (creating frequency counts)
+STATISTIC_FIELDS - filter for creating statistic for selected fields only. If empty, statistic is created for all fields except fields listed in NOT_STATISTIC_FIELDS parameter. Field names can be separated by :;| {colon, semicolon, pipe}
+NOT_STATISTIC_FIELDS - filter for excluding fields from statistic. If empty, statistic is created for fields listed in STATISTIC_FIELDS parameter or for all fields. Field names can be separated by :;| {colon, semicolon, pipe}
+output_file - output file for statistic]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="158" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Normalizing data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="241" x="9" y="96">
+<attr name="text"><![CDATA[This component creates "normalized" records from each input record. Such "normalized" record contains information about each input field: its original name, type and value. Depending on the type only one value output fields is fulfilled.
+This components serves also as a filter if STATISTIC_FIELDS or NOT_STATISTIC_FIELDS parameter is not empty.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="120" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Type partition" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="128" x="342" y="116">
+<attr name="text"><![CDATA[This component partitions data depending on the value type, so Aggregate components work with not empty records.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="202" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Creating statistic" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="128" x="342" y="245">
+<attr name="text"><![CDATA[Aggregate components, for each group of records (defined by original field name), calculate number of records in data file, number of not null and unique values, minimum, maximum, median and modus value. For numeric fields average value is calculated also.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="119" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Statistic unificaton" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="275" x="737" y="433">
+<attr name="text"><![CDATA[Simple Gather and Reformat components gather all statistic to one stream and convert various data types to their string representation.
+Reformat also stores fields for further processing in the graph dictionary . There will be processed only fields, with number of unique values smaller the HISTOGRAM_THRESHOLD in the phase number 1.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="119" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Storing statistic in file" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="297" x="1042" y="433">
+<attr name="text"><![CDATA[Data statistic can be stored in an output file of any type or be printed out to console. This example is configured to create a simple html page, that contains tables with statistic. Changing WRITER_TYPE to XLS_WRITER results in creating xls file with data statistic in "Statistic" sheet (the next phase will add the next sheet to the file). To print out statistic on the console set WRITER_TYPE to TRASH.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="129" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Histogram filter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="126" x="345" y="543">
+<attr name="text"><![CDATA[This component filters only values, for which frequency counts will be calculated.
+It also serves as a type partition like in Pahase 0.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Creating &#10;histograms" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="128" x="344" y="683">
+<attr name="text"><![CDATA[Aggregate components count frequencies for fields, that have been choosen on the end of phase 0.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="88" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Histogram unificaton" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="275" x="737" y="635">
+<attr name="text"><![CDATA[Simple Gather and Reformat components gather all histograms to one stream and convert various data types to their string representation.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="109" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Storing histograms in file" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="290" x="1046" y="634">
+<attr name="text"><![CDATA[The last component appends histograms to statistic created in the previous phase. 
+As a STRUCTURE_WRITER it creates the table with histograms and closes html page. If changed to XLS_WRITER, it creates "Histogram" sheet and inserts it to existing xls file.]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node aggregateKey="fieldName;type" enabled="enabled" equalNULL="true" guiHeight="0" guiName="Boolean Aggregate" guiWidth="0" guiX="544" guiY="22" id="AGGREGATE0" mapping="$fieldName:=$fieldName;$type:=$type;$count:=count();$countNotNull:=countnonnull($valueBoolean);$countUnique:=countunique($valueBoolean);$modusBoolean:=modus($valueBoolean);" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;type" enabled="enabled" equalNULL="true" guiHeight="0" guiName="Byte Aggregate" guiWidth="0" guiX="544" guiY="277" id="AGGREGATE1" mapping="$fieldName:=$fieldName;$type:=$type;$count:=count();$countNotNull:=countnonnull($valueByte);$countUnique:=countunique($valueByte);$modusByte:=modus($valueByte);" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;type" enabled="enabled" equalNULL="true" guiHeight="0" guiName="Date Aggregate" guiWidth="0" guiX="544" guiY="108" id="AGGREGATE2" mapping="$fieldName:=$fieldName;$type:=$type;$count:=count();$countNotNull:=countnonnull($valueDate);$countUnique:=countunique($valueDate);$minDate:=min($valueDate);$maxDate:=max($valueDate);$medianDate:=median($valueDate);$modusDate:=modus($valueDate);" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;type" enabled="enabled" equalNULL="true" guiHeight="0" guiName="Number Aggregate" guiWidth="0" guiX="545" guiY="356" id="AGGREGATE3" mapping="$fieldName:=$fieldName;$type:=$type;$count:=count();$countNotNull:=countnonnull($valueNumber);$countUnique:=countunique($valueNumber);$minNumber:=min($valueNumber);$maxNumber:=max($valueNumber);$avgNumber:=avg($valueNumber);$medianNumber:=median($valueNumber);$modusNumber:=modus($valueNumber);" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;type" enabled="enabled" equalNULL="true" guiHeight="0" guiName="String Aggregate" guiWidth="0" guiX="544" guiY="193" id="AGGREGATE4" mapping="$fieldName:=$fieldName;$type:=$type;$count:=count();$countNotNull:=countnonnull($valueString);$countUnique:=countunique($valueString);$minString:=min($valueString);$maxString:=max($valueString);$medianString:=median($valueString);$modusString:=modus($valueString);" sorted="false" type="AGGREGATE"/>
+<Node enabled="enabled" guiHeight="0" guiName="DataReader" guiWidth="0" guiX="-132" guiY="23" id="DATA_READER1" type="${READER_TYPE}">
+<attr name="fileURL"><![CDATA[${input_file}]]></attr>
+<attr name="startRow"><![CDATA[2]]></attr>
+<attr name="sheetName"><![CDATA[*]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="1041" guiY="356" id="EXT_SORT1" sortKey="fieldName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" errorLog="${DATATMP_DIR}/stat_skipped.log" guiHeight="0" guiName="Normalizer" guiWidth="0" guiX="13" guiY="22" id="NORMALIZER0" normalizeURL="${TRANS_DIR}/DataNormalizer1.java" type="NORMALIZER"/>
+<Node enabled="enabled" guiHeight="0" guiName="TypePartition" guiWidth="0" guiX="342" guiY="22" id="PARTITION0" partitionKey="type" type="PARTITION">
+<attr name="partitionSource"><![CDATA[//#TL
+// This transformation partitions input records into multiple output ports.
+import '${TRANS_DIR}/types.ctl';
+// Returns the number of the output port where the input record will be sent.
+function getOutputPort() {
+	switch ($type) {
+			case DATE:return 1
+			case DECIMAL:return 4
+			case INTEGER:return 4
+			case LONG:return 4
+			case NUMBER:return 4
+			case BOOLEAN:return 0
+			case BYTE:return 3
+			case CBYTE:return 3
+			case STRING:return 2
+	}
+
+}
+
+// Called during component initialization, partitionCount is the number of output ports.
+// function init(partitionCount) {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Simplification" guiWidth="0" guiX="882" guiY="356" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[import '${TRANS_DIR}/types.ctl';
+
+string histFields = "";
+int count = -1;
+
+//#TL
+function modus(type){
+	switch (type) {
+			case DATE:return date2str($modusDate,'${DATE_FORMAT}')
+			case DECIMAL:return num2str($modusNumber)
+			case INTEGER:return num2str($modusNumber)
+			case LONG:return num2str($modusNumber)
+			case NUMBER:return num2str($modusNumber)
+			case BOOLEAN:return to_string($modusBoolean)
+			case BYTE:return to_string($modusByte)
+			case CBYTE:return to_string($modusByte)
+			case STRING:return $modusString
+	}
+}
+
+// Transforms input record into output record.
+function transform() {
+	if (count == -1) {//remember number of records, always the same
+		count = $count; 
+	}
+	if ($countUnique < ${HISTOGRAM_THRESHOLD}) {
+		histFields = concat(histFields, $fieldName, ';');
+	}
+	$fieldName := $fieldName;
+	$type := $type;
+	$count := count;
+	$countNotNull := $countNotNull;
+	$countUnique := $countUnique;
+	$min := iif($type == STRING, $minString, 
+				iif($type == DATE, date2str($minDate,'${DATE_FORMAT}'), 
+								   num2str($minNumber)));
+	$max := iif($type == STRING, $maxString, 
+				iif($type == DATE, date2str($maxDate,'${DATE_FORMAT}'), 
+								   num2str($maxNumber)));
+	$avgNumber := $avgNumber;
+	$median := iif($type == STRING, $medianString, 
+				iif($type == DATE, date2str($medianDate,'${DATE_FORMAT}'), 
+								   num2str($medianNumber)));
+	$modus := modus($type);
+	return ALL
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+ function finished() {
+ 	write_dict('histFields',histFields);
+ 	write_dict('count',num2str(count));
+ }
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="168" guiY="22" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleGather" guiWidth="0" guiX="737" guiY="336" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiHeight="0" guiName="DataWriter" guiWidth="0" guiX="1204" guiY="356" id="STRUCTURE_WRITER0" type="${WRITER_TYPE}">
+<attr name="mask"><![CDATA[	<TR>
+		<TD>
+			$fieldName
+		</TD>
+		<TD ALIGN=CENTER>
+			$type
+		</TD>
+		<TD>
+			$min
+		</TD>
+		<TD>
+			$max
+		</TD>
+		<TD>
+			$avgNumber
+		</TD>
+		<TD >
+			$count
+		</TD>
+		<TD >
+			$countNotNull
+		</TD>
+		<TD >
+			$countUnique
+		</TD>
+		<TD >
+			$median
+		</TD>
+		<TD >
+			$modus
+		</TD>
+	</TR>]]></attr>
+<attr name="fileURL"><![CDATA[${output_file}]]></attr>
+<attr name="debugPrint"><![CDATA[true]]></attr>
+<attr name="sheetName"><![CDATA[Statistic]]></attr>
+<attr name="namesRow"><![CDATA[1]]></attr>
+<attr name="header"><![CDATA[<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=ISO-8859-1">
+	<TITLE>Advanced data statistic for ${input_file}</TITLE>
+</HEAD>
+<BODY LANG="en-GB">
+<H1>Advanced data statistic and histograms for ${input_file}</H1>
+<H2>Statistic</H2>
+<TABLE BORDER=1 BORDERCOLOR="#000000">
+	<TR>
+		<TH>
+			Field name
+		</TH>
+		<TH>
+			Field type
+		</TH>
+		<TH>
+			min
+		</TH>
+		<TH>
+			max
+		</TH>
+		<TH>
+			average number
+		</TH>
+		<TH>
+			count
+		</TH>
+		<TH>
+			count not null
+		</TH>
+		<TH>
+			count unique
+		</TH>
+		<TH>
+			median
+		</TH>
+		<TH>
+			modus
+		</TH>
+	</TR>]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+<attr name="footer"><![CDATA[</TABLE>
+]]></attr>
+</Node>
+<Edge fromNode="AGGREGATE0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:0"/>
+<Edge fromNode="AGGREGATE1:0" guiBendpoints="" id="Edge9" inPort="Port 1 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:1"/>
+<Edge fromNode="AGGREGATE2:0" guiBendpoints="" id="Edge10" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:2"/>
+<Edge fromNode="AGGREGATE3:0" guiBendpoints="" id="Edge11" inPort="Port 3 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:3"/>
+<Edge fromNode="AGGREGATE4:0" guiBendpoints="" id="Edge12" inPort="Port 4 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:4"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" toNode="NORMALIZER0:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge4" inPort="Port 0 (out)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
+<Edge fromNode="NORMALIZER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="PARTITION0:0" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="AGGREGATE0:0"/>
+<Edge fromNode="PARTITION0:1" guiBendpoints="" id="Edge17" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="AGGREGATE2:0"/>
+<Edge fromNode="PARTITION0:2" guiBendpoints="" id="Edge19" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 2 (out)" toNode="AGGREGATE4:0"/>
+<Edge fromNode="PARTITION0:3" guiBendpoints="" id="Edge16" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 3 (out)" toNode="AGGREGATE1:0"/>
+<Edge fromNode="PARTITION0:4" guiBendpoints="" id="Edge24" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 4 (out)" toNode="AGGREGATE3:0"/>
+<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge14" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge25" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge26" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="REFORMAT1:0"/>
+<Edge fromNode="SIMPLE_GATHER0:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+</Phase>
+<Phase number="1">
+<Node aggregateKey="fieldName;type;valueBoolean" enabled="enabled" equalNULL="true" guiHeight="0" guiName="Boolean Aggregate" guiWidth="0" guiX="544" guiY="451" id="AGGREGATE10" mapping="$fieldName:=$fieldName;$type:=$type;$valueBoolean:=$valueBoolean;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;type;valueString" enabled="enabled" equalNULL="true" guiHeight="0" guiName="String Aggregate" guiWidth="0" guiX="544" guiY="593" id="AGGREGATE6" mapping="$fieldName:=$fieldName;$type:=$type;$valueString:=$valueString;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;type;valueNumber" enabled="enabled" equalNULL="true" guiHeight="0" guiName="Number Aggregate" guiWidth="0" guiX="544" guiY="751" id="AGGREGATE7" mapping="$fieldName:=$fieldName;$type:=$type;$valueNumber:=$valueNumber;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;type;valueDate" enabled="enabled" equalNULL="true" guiHeight="0" guiName="Date Aggregate" guiWidth="0" guiX="544" guiY="525" id="AGGREGATE8" mapping="$fieldName:=$fieldName;$type:=$type;$valueDate:=$valueDate;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;type;valueByte" enabled="enabled" equalNULL="true" guiHeight="0" guiName="Byte Aggregate" guiWidth="0" guiX="544" guiY="668" id="AGGREGATE9" mapping="$fieldName:=$fieldName;$type:=$type;$valueByte:=$valueByte;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="1041" guiY="751" id="EXT_SORT0" sortKey="fieldName(a);count(d);value(a)" type="EXT_SORT"/>
+<Node enabled="enabled" errorLog="${DATATMP_DIR}/skipped.log" guiHeight="0" guiName="Histogram filter" guiWidth="0" guiX="342" guiY="451" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+import '${TRANS_DIR}/types.ctl';
+
+string histFields = null;
+boolean initialized = false;
+
+function initInternal(){
+	histFields = read_dict("histFields");
+	initialized = true;
+}
+
+function filter(field){
+	int index = index_of(histFields, field);
+	if (index == -1) return false;
+	if (char_at(histFields,index + length(field)) == ';') return true;
+	return false;
+}
+
+function getPortNumber(type){
+	switch (type) {
+			case DATE:return 1
+			case DECIMAL:return 4
+			case INTEGER:return 4
+			case LONG:return 4
+			case NUMBER:return 4
+			case BOOLEAN:return 0
+			case BYTE:return 3
+			case CBYTE:return 3
+			case STRING:return 2
+	}
+}
+
+// Transforms input record into output record.
+function transform() {
+	if (!initialized) {
+		initInternal();
+	}
+	if (!filter($0.fieldName)) return SKIP;
+	$0.*:= $0.*;
+	$1.*:= $0.*;
+	$2.*:= $0.*;
+	$3.*:= $0.*;
+	$4.*:= $0.*;
+	return getPortNumber($type)
+}
+
+// Called to return a user-defined error message when an error occurs.
+ function getMessage() {
+ 	return "Field " + $fieldName + "is not among histogram fields";
+ }
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Simplification" guiWidth="0" guiX="882" guiY="751" id="REFORMAT2" type="REFORMAT">
+<attr name="transform"><![CDATA[import '${TRANS_DIR}/types.ctl';
+
+string histFields = "";
+string max="****************************************************************************************************";
+string fillerChar = "\u00b7";
+string filler ='';
+int l = length(max);
+boolean initialized = false;
+long countAll;
+int percentLenght;
+
+//#TL
+function to_string(type){
+	switch (type) {
+			case DATE:return iif(isnull($valueDate), '', date2str($valueDate,'${DATE_FORMAT}'))
+			case DECIMAL:return iif(isnull($valueNumber), '', num2str($valueNumber))
+			case INTEGER:return iif(isnull($valueNumber), '', num2str($valueNumber))
+			case LONG:return iif(isnull($valueNumber), '', num2str($valueNumber))
+			case NUMBER:return iif(isnull($valueNumber), '', num2str($valueNumber))
+			case BOOLEAN:return to_string($valueBoolean)
+			case BYTE:return to_string($valueByte)
+			case CBYTE:return to_string($valueByte)
+			case STRING:return $valueString
+	}
+}
+
+function initInternal(){
+	int i;	
+	for (i;i<l;i++){
+		filler = concat(filler,fillerChar);
+	}
+	countAll = str2num(read_dict('count'), long);
+	initialized = true;
+}
+
+// Transforms input record into output record.
+function transform() {
+	if (!initialized){
+		initInternal();
+	}
+	percentLenght = $count*l/countAll;
+	$fieldName := $fieldName;
+	$type := $type;
+	$count := $count;
+	$value := to_string($type);
+	$countGraphic := concat(substring(max,0,percentLenght), substring(filler,percentLenght,l-percentLenght));
+	return ALL
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() { }
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleGather" guiWidth="0" guiX="737" guiY="731" id="SIMPLE_GATHER1" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiHeight="0" guiName="DataWriter" guiWidth="0" guiX="1187" guiY="751" id="STRUCTURE_WRITER1" type="${WRITER_TYPE}">
+<attr name="sheetName"><![CDATA[Histogram]]></attr>
+<attr name="debugPrint"><![CDATA[true]]></attr>
+<attr name="append"><![CDATA[true]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+<attr name="fileURL"><![CDATA[${output_file}]]></attr>
+<attr name="header"><![CDATA[
+<H2>Histograms</H2>
+<TABLE BORDER=1 BORDERCOLOR="#000000">
+	<TR>
+		<TH>
+			Field name
+		</TH>
+		<TH>
+			Field type
+		</TH>
+		<TH>
+			value
+		</TH>
+		<TH>
+			count
+		</TH>
+		<TH>
+			count %
+		</TH>
+	</TR>]]></attr>
+<attr name="namesRow"><![CDATA[1]]></attr>
+<attr name="footer"><![CDATA[</TABLE>
+</BODY>
+</HTML>]]></attr>
+<attr name="mask"><![CDATA[	<TR>
+		<TD>
+			$fieldName
+		</TD>
+		<TD ALIGN=CENTER>
+			$type
+		</TD>
+		<TD>
+			$value
+		</TD>
+		<TD>
+			$count
+		</TD>
+		<TD ><font face="monospace">
+			$countGraphic
+			</font>
+		</TD>
+	</TR>]]></attr>
+</Node>
+<Edge fromNode="AGGREGATE10:0" guiBendpoints="" id="Edge34" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:0"/>
+<Edge fromNode="AGGREGATE6:0" guiBendpoints="" id="Edge36" inPort="Port 2 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:2"/>
+<Edge fromNode="AGGREGATE7:0" guiBendpoints="" id="Edge38" inPort="Port 4 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:4"/>
+<Edge fromNode="AGGREGATE8:0" guiBendpoints="" id="Edge35" inPort="Port 1 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:1"/>
+<Edge fromNode="AGGREGATE9:0" guiBendpoints="" id="Edge37" inPort="Port 3 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:3"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (out)" metadata="Metadata5" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER1:0"/>
+<Edge fromNode="REFORMAT1:0" guiBendpoints="" id="Edge27" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="AGGREGATE10:0"/>
+<Edge fromNode="REFORMAT1:1" guiBendpoints="" id="Edge28" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="AGGREGATE8:0"/>
+<Edge fromNode="REFORMAT1:2" guiBendpoints="" id="Edge29" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 2 (out)" toNode="AGGREGATE6:0"/>
+<Edge fromNode="REFORMAT1:3" guiBendpoints="" id="Edge30" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 3 (out)" toNode="AGGREGATE9:0"/>
+<Edge fromNode="REFORMAT1:4" guiBendpoints="" id="Edge31" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 4 (out)" toNode="AGGREGATE7:0"/>
+<Edge fromNode="REFORMAT2:0" guiBendpoints="" id="Edge33" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge fromNode="SIMPLE_GATHER1:0" guiBendpoints="" id="Edge32" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="REFORMAT2:0"/>
+</Phase>
+</Graph>

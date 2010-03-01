@@ -90,9 +90,24 @@ import com.infobright.logging.EtlLogger;
  * <td>[0] - optionally one output port connected - for debugging purpose. Records as they were sent to database.<i>Comma</i> must be set as
  * delimiter for each field, {@link System.getProperty("line.separator")} must be set as record delimiter. Date fields must have
  * <i>yyyy-MM-dd</i> format for dates and <i>yyyy-MM-dd HH:mm:ss</i> format for dates with time. </tr>
- * <tr><td><h4><i>Comment:</i></h4></td>
- * <td>Only <i>root</i> user can insert data into database with this component.<br>To run this component on Windows, infobright_jni.dll must be present in the Java library path 
- * (<a href="http://www.infobright.org/downloads/contributions/infobright-core-2_7.zip">infobright-core-v2_7</a>).</tr>
+ * <tr><td><h4><i><a name="comment">Comment:</a></i></h4></td>
+ * <td>If the hostname is "localhost" or "127.0.0.1" then the load
+will be done using a local pipe. Otherwise it will use a
+remote pipe. The external IP address of the server is not
+recognized as a local server.
+
+If loading to a remote server, then you need to start the
+Infobright remote load agent on the server where Infobright
+is running. The command to do this is:
+
+  java -jar infobright-core-3.0-remote.jar [-p port] [-l loglevel]
+  
+The output can be redirected to a log file.
+
+The port defaults to 5555. 
+
+The loglevel can be one of: "info", "error", "debug".<br>To run this component on Windows, infobright_jni.dll must be present in the Java library path 
+ * (<a href="http://www.infobright.org/downloads/contributions/infobright-core-3.0-remote.zip">infobright-core-3.0-remote.zip</a>).</tr>
  * </tr>
  * </table>
  *  <br>
@@ -114,11 +129,15 @@ import com.infobright.logging.EtlLogger;
  *  <tr><td><b>checkValues</b><br><i>optional</i></td><td>Should strings and binary types be checked for size before being passed to the database?
  *  Default is <i>false</i>. (Should be set to <i>true</i> if you support a dubugging). </td>
  *  </tr>
+ *  <tr><td><b>agentPort</b><br><i>optional</i></td><td>Port the remote agent is listening on (see {@link #comment}). </td>
  *  </table>
  *
  *  <h4>Example:</h4>
  * <pre>&lt;Node cloverFields="boolField;dateField;decimalField;stringField" dataFormat="txt_variable" dbConnection="JDBC1" 
  *  id="INFOBRIGHT_DATA_WRITER0" table="test1" type="INFOBRIGHT_DATA_WRITER"/&gt;</pre>
+ *  
+ *  <b>Remote loading:</b>
+ *  <pre>&lt;Node agentPort="6666" dbConnection="JDBC2" id="INFOBRIGHT_DATA_WRITER0" table="test" type="INFOBRIGHT_DATA_WRITER"/&gt;</pre>
  * 
  * @author avackova (info@cloveretl.com)
  *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
@@ -137,8 +156,12 @@ public class InfobrightDataWriter extends Node {
 	private static final String XML_TIMEOUT_ATTRIBUTE = "timeout";
 	private static final String XML_CLOVER_FIELDS_ATTRIBUTE = "cloverFields";
 	private static final String XML_CHECK_VALUES_ATTRIBUTE = "checkValues";
+	private static final String XML_AGENT_PORT_ATTRIBUTE = "agentPort";
 
     public final static String COMPONENT_TYPE = "INFOBRIGHT_DATA_WRITER";
+    
+    private final static int DEFAULT_AGENT_PORT = 5555;
+    private final static DataFormat DEFAULT_DATA_FORMAT = DataFormat.TXT_VARIABLE;
 
 	static Log logger = LogFactory.getLog(CheckForeignKey.class);
 
@@ -149,13 +172,15 @@ public class InfobrightDataWriter extends Node {
 	private String connectionName;
 	private DBConnection dbConnection;
 	private Connection sqlConnection;
-	private DataFormat dataFormat = DataFormat.TXT_VARIABLE;
+	private DataFormat dataFormat = DEFAULT_DATA_FORMAT;
+	private String dataFormatStr;
 	private String charset;
 	private String logFile;
 	private boolean append = false;
 	private String pipeNamePrefix;
 	private int timeout = -1;
 	private String[] cloverFields;
+	private int agentPort = DEFAULT_AGENT_PORT;
 	
 	private BrighthouseRecord bRecord;
 	private ValueConverter converter;
@@ -180,10 +205,34 @@ public class InfobrightDataWriter extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 		 
-		if(!checkInputPorts(status, 1, 1)
-				|| !checkOutputPorts(status, 0, 1)) {
-			return status;
+		checkInputPorts(status, 1, 1);
+		checkOutputPorts(status, 0, 1);
+		
+		try {
+			chset = Charset.forName(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		} catch (Exception e) {
+			status.add(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_CHARSET_ATTRIBUTE);
 		}
+
+		//check debug file
+		try {
+			if (logFile != null && !FileUtils.canWrite(getGraph().getProjectURL(), logFile)) {
+				status.add(new ConfigurationProblem("Can't write to " + logFile, Severity.WARNING, this, Priority.NORMAL, XML_LOG_FILE_ATTRIBUTE));
+			}
+		} catch (ComponentNotReadyException e) {
+			status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_LOG_FILE_ATTRIBUTE));
+		}
+		
+		if (dataFormatStr != null) {
+			if (!(dataFormatStr.equalsIgnoreCase(DataFormat.BINARY.getBhDataFormat())
+					|| dataFormatStr.equalsIgnoreCase(DataFormat.TXT_VARIABLE.getBhDataFormat()))){
+				status.add(new ConfigurationProblem("Unknown data format: " + dataFormatStr + ". " + DEFAULT_DATA_FORMAT.getBhDataFormat() + " will be used.", 
+						Severity.WARNING, this, Priority.NORMAL, XML_DATA_FORMAT_ATTRIBUTE));
+			}
+			this.dataFormat = dataFormatStr.equalsIgnoreCase(DataFormat.BINARY.getBhDataFormat()) ?
+					DataFormat.BINARY : DataFormat.TXT_VARIABLE;
+		}
+		
 		// get dbConnection from graph
 	    if (dbConnection == null){
 	        IConnection conn = getGraph().getConnection(connectionName);
@@ -203,27 +252,13 @@ public class InfobrightDataWriter extends Node {
 				sqlConnection = dbConnection.getConnection(getId(), OperationType.WRITE).getSqlConnection();
 			} catch (ComponentNotReadyException e) {
 				status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+				return status;
 			} catch (JetelException e) {
 				status.add(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+				return status;
 			}
 		}        
-		
-		try {
-			chset = Charset.forName(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
-		} catch (Exception e) {
-			status.add(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
-		}
 
-		//check debug file
-		try {
-			if (logFile != null && !FileUtils.canWrite(getGraph().getProjectURL(), logFile)) {
-				status.add(new ConfigurationProblem("Can't write to " + logFile, Severity.WARNING, this, Priority.NORMAL, XML_LOG_FILE_ATTRIBUTE));
-			}
-		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_LOG_FILE_ATTRIBUTE));
-		}
-		
-		EtlLogger log = new DumbLogger();
 		DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
 		if (cloverFields != null) {
 			cloverFieldIndexes = new int[cloverFields.length];
@@ -237,17 +272,22 @@ public class InfobrightDataWriter extends Node {
 			}
 		}
 		//try to create loader and Brighthouse record
+		log = new CommonsLogger(logger);
 		try {
-			loader = new InfobrightNamedPipeLoader(table, sqlConnection, log, dataFormat, chset);
-			if (sqlConnection != null) {
-				bRecord = createBrighthouseRecord(metadata, dbConnection.getJdbcSpecific(), log);
-			}
-		}catch (SQLException e) {//table doesn't exist yet
-			status.add(e.getMessage(), Severity.WARNING, this, Priority.NORMAL);
+			loader = new InfobrightNamedPipeLoader(table, sqlConnection, log, dataFormat, chset, agentPort);
 		} catch (Exception e) {
-			status.add(e.getMessage(), Severity.ERROR, this, Priority.NORMAL);
+			status.add(new ComponentNotReadyException(e), Severity.ERROR, this, Priority.NORMAL, XML_AGENT_PORT_ATTRIBUTE);
 		}
 
+		if (sqlConnection != null && loader != null) {
+			try {
+				bRecord = createBrighthouseRecord(metadata, dbConnection.getJdbcSpecific(), log);
+			} catch (SQLException e) {//probably table doesn't exist yet
+				status.add(e.getMessage(), Severity.WARNING, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE);
+			}catch (Exception e) {
+				status.add(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_CLOVER_FIELDS_ATTRIBUTE);
+			}
+		}
 		return status;
 	}
 	
@@ -259,65 +299,90 @@ public class InfobrightDataWriter extends Node {
         if(isInitialized()) return;
 		super.init();
 		
-		// get dbConnection from graph
-	    if (dbConnection == null){
-	        IConnection conn = getGraph().getConnection(connectionName);
-            if(conn == null) {
-                throw new ComponentNotReadyException("Can't find DBConnection ID: " + connectionName);
-            }
-            if(!(conn instanceof DBConnection)) {
-                throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class.");
-            }
-            dbConnection = (DBConnection) conn;
-	    }
-		if (!dbConnection.isInitialized()) {
-			dbConnection.init();
-		}        
+		if (loader == null) {//if not created in checkConfig() 
+			// get dbConnection from graph
+			if (dbConnection == null) {
+				IConnection conn = getGraph().getConnection(connectionName);
+				if (conn == null) {
+					throw new ComponentNotReadyException(
+							"Can't find DBConnection ID: " + connectionName);
+				}
+				if (!(conn instanceof DBConnection)) {
+					throw new ComponentNotReadyException("Connection with ID: "
+							+ connectionName
+							+ " isn't instance of the DBConnection class.");
+				}
+				dbConnection = (DBConnection) conn;
+			}
+			if (!dbConnection.isInitialized()) {
+				dbConnection.init();
+			}
+			try {
+				sqlConnection = dbConnection.getConnection(getId(),
+						OperationType.WRITE).getSqlConnection();
+			} catch (JetelException e) {
+				throw new ComponentNotReadyException(this,
+						XML_DBCONNECTION_ATTRIBUTE, e.getMessage());
+			}
+			//prepare indexes of clover fields to load
+			DataRecordMetadata metadata = getInputPort(READ_FROM_PORT)
+					.getMetadata();
+			if (cloverFields != null) {
+				cloverFieldIndexes = new int[cloverFields.length];
+				for (int i = 0; i < cloverFieldIndexes.length; i++) {
+					cloverFieldIndexes[i] = metadata
+							.getFieldPosition(cloverFields[i]);
+				}
+			} else {
+				cloverFieldIndexes = new int[metadata.getNumFields()];
+				for (int i = 0; i < cloverFieldIndexes.length; i++) {
+					cloverFieldIndexes[i] = i;
+				}
+			}
+			chset = Charset.forName(charset != null ? charset
+					: Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+			if (dataFormatStr != null) {
+				if (!(dataFormatStr.equalsIgnoreCase(DataFormat.BINARY.getBhDataFormat()) 
+						|| dataFormatStr.equalsIgnoreCase(DataFormat.TXT_VARIABLE.getBhDataFormat()))){
+					logger.info("Unknown data format: " + dataFormatStr + ". " + DEFAULT_DATA_FORMAT + " will be used.");
+				}
+				this.dataFormat = dataFormatStr.equalsIgnoreCase(DataFormat.BINARY.getBhDataFormat()) ?
+						DataFormat.BINARY : DataFormat.TXT_VARIABLE;
+			}
+			//create loader and Brighthouse record
+			log = new CommonsLogger(logger);
+			try {
+				loader = new InfobrightNamedPipeLoader(table, sqlConnection, log, dataFormat, chset, agentPort);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, e);
+			}
+		}
 		try {
-			sqlConnection = dbConnection.getConnection(getId(), OperationType.WRITE).getSqlConnection();
-		} catch (JetelException e) {
-			throw new ComponentNotReadyException(this, XML_DBCONNECTION_ATTRIBUTE, e.getMessage());
+			bRecord = createBrighthouseRecord(getInputPort(READ_FROM_PORT).getMetadata(), dbConnection.getJdbcSpecific(), log);
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(this, e);
 		}
 
-		//prepare indexes of clover fields to load
-		DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
-		if (cloverFields != null) {
-			cloverFieldIndexes = new int[cloverFields.length];
-			for (int i = 0; i < cloverFieldIndexes.length; i++) {
-				cloverFieldIndexes[i] = metadata.getFieldPosition(cloverFields[i]);
-			}
-		}else{
-			cloverFieldIndexes = new int[metadata.getNumFields()];
-			for (int i = 0; i < cloverFieldIndexes.length; i++) {
-				cloverFieldIndexes[i] = i;
-			}
-		}
-
-		chset = Charset.forName(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
-		
-		//create loader and Brighthouse record
-		log = new CommonsLogger(logger);
 		try {
-			loader = new InfobrightNamedPipeLoader(table, sqlConnection, log, dataFormat, chset);
 			if (logFile != null) {
 				loader.setDebugOutputStream(FileUtils.getOutputStream(getGraph().getProjectURL(), logFile, append, -1));
-			}else if (getOutputPort(WRITE_TO_PORT) != null){//prepare parser for output port
+			} else if (getOutputPort(WRITE_TO_PORT) != null) {//prepare parser for output port
 				dataParser = new DataParser(charset);
 				dataParser.setQuotedStrings(true);
 				dataParser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
 				PipedInputStream parserInput = new PipedInputStream();
-				PipedOutputStream loaderOutput = new PipedOutputStream(parserInput);
+				PipedOutputStream loaderOutput = new PipedOutputStream(	parserInput);
 				dataParser.setDataSource(parserInput);
 				loader.setDebugOutputStream(loaderOutput);
 			}
-			if (pipeNamePrefix != null){//has no effect - infobright-core bug
-				loader.setPipeNamePrefix(pipeNamePrefix);
-			}
-			if (timeout > -1){
-				loader.setTimeout(timeout);
-			}
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw new ComponentNotReadyException(this, e);
+		}
+		if (pipeNamePrefix != null) {//has no effect - infobright-core bug
+			loader.setPipeNamePrefix(pipeNamePrefix);
+		}
+		if (timeout > -1) {
+			loader.setTimeout(timeout);
 		}
 		converter = new CloverValueConverter();
 	}
@@ -506,6 +571,7 @@ public class InfobrightDataWriter extends Node {
 		xmlElement.setAttribute(XML_TABLE_ATTRIBUTE, table);
 		xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, connectionName != null ? connectionName : dbConnection.getId());
 		xmlElement.setAttribute(XML_CHECK_VALUES_ATTRIBUTE, String.valueOf(checkValues));
+		xmlElement.setAttribute(XML_AGENT_PORT_ATTRIBUTE, String.valueOf(agentPort));
 		if (logFile != null) {
 			xmlElement.setAttribute(XML_LOG_FILE_ATTRIBUTE, logFile);
 			xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(append));
@@ -551,11 +617,19 @@ public class InfobrightDataWriter extends Node {
             if (xattribs.exists(XML_CHECK_VALUES_ATTRIBUTE)){
             	loader.setCheckValues(xattribs.getBoolean(XML_CHECK_VALUES_ATTRIBUTE));
             }
+            if (xattribs.exists(XML_AGENT_PORT_ATTRIBUTE)){
+            	loader.setAgentPort(xattribs.getInteger(XML_AGENT_PORT_ATTRIBUTE));
+            }
 			return loader;
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 	}
+    
+	public void setAgentPort(int agentPort) {
+		this.agentPort = agentPort;
+	}
+
 	/**
 	 * Should strings and binary types be checked for size before being passed to the database? 
 	 * (Should be set to TRUE if you support an error path)
@@ -626,8 +700,7 @@ public class InfobrightDataWriter extends Node {
 	 * @param dataFormat the dataFormat to set
 	 */
 	public void setDataFormat(String dataFormat) {
-		this.dataFormat = dataFormat.equalsIgnoreCase(DataFormat.BINARY.getBhDataFormat()) ?
-				DataFormat.BINARY : DataFormat.TXT_VARIABLE;
+		dataFormatStr = dataFormat;
 	}
 
 	/**
@@ -715,81 +788,6 @@ public class InfobrightDataWriter extends Node {
 	}
 	
 	/**
-	 * Dumb logger (forgets all messages) - used in checkConfig method
-	 * 
-	 * @author avackova (info@cloveretl.com)
-	 *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
-	 *
-	 * @created 13 Nov 2009
-	 */
-	private static class DumbLogger implements EtlLogger {
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#debug(java.lang.String)
-		 */
-		
-		public void debug(String s) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#error(java.lang.String)
-		 */
-		
-		public void error(String s) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#error(java.lang.String, java.lang.Throwable)
-		 */
-		
-		public void error(String s, Throwable cause) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#fatal(java.lang.String)
-		 */
-		
-		public void fatal(String s) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#info(java.lang.String)
-		 */
-		
-		public void info(String s) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#trace(java.lang.String)
-		 */
-		
-		public void trace(String s) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		/* (non-Javadoc)
-		 * @see com.infobright.logging.EtlLogger#warn(java.lang.String)
-		 */
-		
-		public void warn(String s) {
-			// TODO Auto-generated method stub
-			
-		}
-		
-	}
-	
-	/**
 	 * Thread for loading data to Infobright database
 	 * 
 	 * @author avackova (info@cloveretl.com)
@@ -827,10 +825,19 @@ public class InfobrightDataWriter extends Node {
 			runIt=false;	
 		}
 		
+		@Override
+		public synchronized void start() {
+			try {
+				loader.start();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			} 
+			super.start();
+		}
+		
 		public void run() {
 			resultCode = Result.RUNNING;
 			try{
-				loader.start();
 				output = loader.getOutputStream2();
 				while (runIt && (( in_record=inPort.readRecord(in_record))!= null )) {
 					for (int i = 0; i < cloverFields.length; i++) {

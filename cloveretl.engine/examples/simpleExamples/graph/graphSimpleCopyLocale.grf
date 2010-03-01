@@ -1,29 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file.&#10;Output metadata is the same as input except that for BirthDate and HireDate, locale&#10;property is defined. It allows to specify language or language.Country locale&#10;which is used when formatting output.&#10;In this example, date info on input is expected to be in dd/MM/yyyy format, wherease&#10;on output it should follow US/UK standard -&gt; (usually defined as MM/dd/YYYY)." guiVersion="1.9" id="1196683146888" licenseType="Evaluation license." modified="Thu Apr 03 11:49:00 CEST 2008" name="Testing Simple Copy" revision="1.8">
+<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file.&#10;Output metadata is the same as input except that for BirthDate and HireDate, locale&#10;property is defined. It allows to specify language or language.Country locale&#10;which is used when formatting output.&#10;In this example, date info on input is expected to be in dd/MM/yyyy format, wherease&#10;on output it should follow US/UK standard -&gt; (usually defined as MM/dd/YYYY)." guiVersion="2.9.1" id="1196683146888" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 16:11:38 CET 2010" modifiedBy="cloveruser" name="Testing Simple Copy" revision="1.19">
 <Global>
-<Metadata id="OutMetadata">
-<Record fieldDelimiter=";" name="Employees" recordDelimiter="\n" recordSize="-1" type="delimited">
-<Field name="EmployeeID" nullable="true" shift="0" type="string"/>
-<Field format="#" name="LastName" nullable="true" shift="0" type="string"/>
-<Field name="FirstName" nullable="true" shift="0" type="string"/>
-<Field name="Title" nullable="true" shift="0" type="string"/>
-<Field name="TitleInCourtesy" nullable="true" shift="0" type="string"/>
-<Field locale="en.US" name="BirthDate" nullable="true" shift="0" type="date"/>
-<Field locale="en.UK" name="HireDate" nullable="true" shift="0" type="date"/>
-<Field name="Address" nullable="true" shift="0" type="string"/>
-<Field name="City" nullable="true" shift="0" type="string"/>
-<Field name="Region" nullable="true" shift="0" type="string"/>
-<Field name="PostalCode" nullable="true" shift="0" type="string"/>
-<Field name="Country" nullable="true" shift="0" type="string"/>
-<Field name="Phone" nullable="true" shift="0" type="string"/>
-<Field name="Extension" nullable="true" shift="0" type="string"/>
-<Field name="Photo" nullable="true" shift="0" type="string"/>
-<Field name="Memo" nullable="true" shift="0" type="string"/>
-<Field format="#" name="ReportsTo" nullable="true" shift="0" type="number"/>
-</Record>
-</Metadata>
-<Metadata id="InMetadata">
-<Record fieldDelimiter=";" name="Employees" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Metadata id="InMetadata" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Employees" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field name="EmployeeID" nullable="true" shift="0" type="string"/>
 <Field name="LastName" nullable="true" shift="0" type="string"/>
 <Field name="FirstName" nullable="true" shift="0" type="string"/>
@@ -43,7 +22,38 @@
 <Field format="#" name="ReportsTo" nullable="true" shift="0" type="number"/>
 </Record>
 </Metadata>
+<Metadata id="OutMetadata" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Employees" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="EmployeeID" nullable="true" shift="0" type="string"/>
+<Field format="#" name="LastName" nullable="true" shift="0" type="string"/>
+<Field name="FirstName" nullable="true" shift="0" type="string"/>
+<Field name="Title" nullable="true" shift="0" type="string"/>
+<Field name="TitleInCourtesy" nullable="true" shift="0" type="string"/>
+<Field locale="en.US" name="BirthDate" nullable="true" shift="0" type="date"/>
+<Field locale="en.UK" name="HireDate" nullable="true" shift="0" type="date"/>
+<Field name="Address" nullable="true" shift="0" type="string"/>
+<Field name="City" nullable="true" shift="0" type="string"/>
+<Field name="Region" nullable="true" shift="0" type="string"/>
+<Field name="PostalCode" nullable="true" shift="0" type="string"/>
+<Field name="Country" nullable="true" shift="0" type="string"/>
+<Field name="Phone" nullable="true" shift="0" type="string"/>
+<Field name="Extension" nullable="true" shift="0" type="string"/>
+<Field name="Photo" nullable="true" shift="0" type="string"/>
+<Field name="Memo" nullable="true" shift="0" type="string"/>
+<Field format="#" name="ReportsTo" nullable="true" shift="0" type="number"/>
+</Record>
+</Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="245" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the SimpleCopy Component (Format Changes)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="479" x="20" y="112">
+<attr name="text"><![CDATA[
+In addition to what has been described in other examples about SimpleCopy, here we demonstrate how SimpleCopy can serve to change metadata. Metadata on the component output differ from those on its input. 
+
+Sometimes you want to change metadata from delimited to fixed, mixed, etc. You can do this in Reformat, but you can do the same with SimpleCopy.
+
+In this example, date data fields of the input have specified format (dd/MM/yyyy). Their output equivalents use locale (en.US). Thus, format of date changes, but dates are the same. 
+
+Also delimiters can be changed, etc.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="25" guiName="BROADCAST" guiWidth="50" guiX="195" guiY="20" id="BROADCAST" type="SIMPLE_COPY"/>
@@ -51,7 +61,7 @@
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees_locale.dat" guiHeight="25" guiName="OUTPUT1" guiWidth="50" guiX="370" guiY="20" id="OUTPUT1" type="DATA_WRITER">
 <attr name="dataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Edge fromNode="BROADCAST:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="OutMetadata" outPort="Port 0 (out)" toNode="OUTPUT1:0"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (out)" toNode="BROADCAST:0"/>
+<Edge debugMode="false" fromNode="BROADCAST:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="OutMetadata" outPort="Port 0 (out)" toNode="OUTPUT1:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (output)" toNode="BROADCAST:0"/>
 </Phase>
 </Graph>

@@ -1,14 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph illustrates usage of Sort component. It sorts data based on specified key. " guiVersion="1.10" id="1204550898178" licenseType="Evaluation license." modified="Fri Jun 27 13:26:43 CEST 2008" modifiedBy="avackova" name="TestingSort" revision="1.5">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph illustrates usage of Sort component. It sorts data based on specified key. " guiVersion="2.9.1" id="1204550898178" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 15:19:23 CET 2010" modifiedBy="cloveruser" name="TestingSort" revision="1.23">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="311" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the ExtSort Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="446" x="38" y="182">
+<attr name="text"><![CDATA[
+This graph demonstrates the use of ExtSort. This component receives records through single input port, sorts them on the specified Sort key, and sends them to all connected output ports. 
+
+Sort key can have different fields sorted in different order. The key looks like this:
+fieldJ(a);...;fieldN(d)
+
+The "a" and "d" letters mean that records are sorted in ascending or descending order, respectively, on this field. Priority of sorting of individual fields descends to the right.
+
+All output ports get the same data records.
+
+In addition to ExtSort, also FastSort (commercial) can be used. 
+
+Also SortWithinGroups allows to sort data records that have been previously sorted according to another key.
+
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="252" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sort Key (Example)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="237" x="513" y="22">
+<attr name="text"><![CDATA[
+For example, 
+
+if Sort key looked like this:
+
+surname(a);firstname(d)
+
+The output would be the following:
+
+Brown;Peter
+Brown;John
+Smith;Thomas
+Smith;Gabriel
+]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="25" guiName="EXT_SORT" guiWidth="50" guiX="195" guiY="20" id="EXT_SORT" sortKey="ShipName;ShipVia" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="25" guiName="EXT_SORT" guiWidth="50" guiX="195" guiY="20" id="EXT_SORT" sortKey="ShipName(a);ShipVia(a)" type="EXT_SORT"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.sorted" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
-<Edge fromNode="EXT_SORT:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.sorted" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="370" guiY="112" id="TRASH0" type="TRASH"/>
+<Edge debugMode="true" fromNode="EXT_SORT:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="TRASH0:0"/>
+<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT:0"/>
 </Phase>
 </Graph>

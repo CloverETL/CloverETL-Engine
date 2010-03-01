@@ -1,12 +1,16 @@
 package org.jetel.util.protocols.sftp;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.util.Vector;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -39,6 +43,10 @@ public class SFTPConnection extends URLConnection {
 
 	private Proxy proxy;
 	private Proxy proxy4;
+
+	// standard encoding for URLDecoder
+	// see http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars
+	private static final String ENCODING = "UTF-8";
 
 	/**
 	 * SFTP constructor.
@@ -159,7 +167,13 @@ public class SFTPConnection extends URLConnection {
 		try {
 			channel = getChannelSftp();
 			String file = url.getFile();
-			InputStream is = new SFTPInputStream(session, channel.get(file.equals("") ? "/" : file));
+			InputStream is = new BufferedInputStream(channel.get(file.equals("") ? "/" : file)) {
+				@Override
+				public void close() throws IOException {
+					super.close();
+					session.disconnect();
+				}
+			};
 			return is;
 		} catch (SftpException e) {
 			throw new IOException(e.getMessage());
@@ -173,7 +187,14 @@ public class SFTPConnection extends URLConnection {
 		connect();
 		try {
 			channel = getChannelSftp();
-			return new SFTPOutputStream(session, channel.put(url.getFile(), mode));
+			OutputStream os = new BufferedOutputStream(channel.put(url.getFile(), mode)) {
+				@Override
+				public void close() throws IOException {
+					super.close();
+			    	session.disconnect();
+				}
+			};
+			return os;
 		} catch (SftpException e) {
 			throw new IOException(e.getMessage());
 		} catch (JSchException e) {
@@ -253,9 +274,22 @@ public class SFTPConnection extends URLConnection {
 	}
 
 	private String[] getUserInfo() {
-		String userInfo;
-		return (userInfo = url.getUserInfo()) == null ? new String[] { "" }
-				: userInfo.split(":");
+		String userInfo = url.getUserInfo();
+		if (userInfo == null) return new String[] {""};
+		return decodeString(userInfo).split(":");
+	}
+
+	/**
+	 * Decodes string.
+	 * @param s
+	 * @return
+	 */
+	private String decodeString(String s) {
+		try {
+			return URLDecoder.decode(s, ENCODING);
+		} catch (UnsupportedEncodingException e) {
+			return s;
+		}
 	}
 
 	/**

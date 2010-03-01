@@ -125,10 +125,8 @@
 
 	<FunctionalTest ident="DBUnloadParametrized" graphFile="graph/graphDBUnloadParametrized.grf">
          <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-<!-- We are not able to compare xls files now. This comparison test should be uncommented after issue 2981 is resolved.
-	 	  <FlatFile outputFile="data-out/employees.xls" supposedFile="supposed-out/employees.DBUnloadParametrized.xls"/>	          
+ 	  <XlsFile outputFile="data-out/employees.xls" supposedFile="supposed-out/employees.DBUnloadParametrized.xls"/>	          
 	     <DeleteFile file="data-out/employees.xls"/>
--->                                                          
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBUnloadUniversal" graphFile="graph/graphDBUnloadUniversal.grf">
@@ -145,6 +143,11 @@
          <Property name="LIB_DIR" value="examples/extExamples/lib" />
 	 	  <FlatFile outputFile="data-out/customers.out" supposedFile="supposed-out/customers.JmsSingleXmlField.out"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/orders.out" supposedFile="supposed-out/orders.JmsSingleXmlField.out"/>	                                                                    
+	</FunctionalTest>
+
+	<FunctionalTest ident="LDAPReaderWriter" graphFile="graph/graphLdapReaderWriter.grf">
+          <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/persons.txt" supposedFile="data-out/ldap_persons.txt"/>	                                                                 
 	</FunctionalTest>
 
 	<FunctionalTest ident="LookupJoin" graphFile="graph/graphLookupJoin.grf">

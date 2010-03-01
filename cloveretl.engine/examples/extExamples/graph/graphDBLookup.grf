@@ -43,17 +43,21 @@ import org.jetel.exception.ComponentNotReadyException;
 
 public class ReformatTestInline extends DataRecordTransform{
 
-	Lookup mylookup;
+	private RecordKey key;
+
+	private LookupTable lt;
+	private Lookup mylookup;
 
 	public boolean init() throws ComponentNotReadyException{
 		
 		// create key 
 	    String[] lookupKeyStr={"EmployeeID"};
-		RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);
+		key=new RecordKey(lookupKeyStr,sourceMetadata[0]);
 		key.init();
 
-		LookupTable lt = graph.getLookupTable("LookupTable0");
+		lt = graph.getLookupTable("LookupTable0");
 		lt.init();
+
 		mylookup = lt.createLookup(key);
 
 		return true;
@@ -78,6 +82,17 @@ public class ReformatTestInline extends DataRecordTransform{
 
 		return ALL;
 	}
+
+	public void reset() {
+		super.reset();
+
+		try {
+			mylookup = lt.createLookup(key);
+		} catch (ComponentNotReadyException ex) {
+			ex.printStackTrace();
+		}
+	}
+
 }
 ]]></attr>
 </Node>
