@@ -142,7 +142,7 @@ public class ResetTest extends TestCase{
 							&& !pathname.getName().equals("mountainsPgsql.grf") //issue 3220
 							&& !pathname.getName().equals("A12_XMLExtractTransactionsFamily.grf") //issue 3220
 							&& !pathname.getName().equals("graphXMLExtract.grf") //issue 3220
-							&& !pathname.getName().equals("graphXMLExtractXsd.grf"); //issue 3220
+							&& !pathname.getName().equals("graphXMLExtractXsd.grf") //issue 3220
 							&& !pathname.getName().equals("mountainsInformix.grf") //issue 2550
 							&& !pathname.getName().equals("graphRunGraph.grf") 
 							&& !pathname.getName().equals("DBJoin.grf");//issue 3285
