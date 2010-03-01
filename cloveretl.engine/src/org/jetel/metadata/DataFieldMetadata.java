@@ -213,6 +213,8 @@ public class DataFieldMetadata implements Serializable {
 	private boolean trim = false;
 	/** Fields can assume null value by default. */
 	private boolean nullable = true;
+	/** String value that is considered as null (in addition to null itself). */
+	private String nullValue = null;
 
 	/** The default value. */
 	private Object defaultValue;
@@ -238,6 +240,11 @@ public class DataFieldMetadata implements Serializable {
 	 * @see java.util.Locale
 	 */
 	private String localeStr = null;
+
+	/**
+	 * See Collator.setStregth(String strength). It is used only in string fields.
+	 */
+	private String collatorSensitivity = null;
 
 	/**
 	 * Constructor for a delimited type of field.
@@ -674,6 +681,26 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
+	 * Sets a string value that will be considered as <code>null</code> (in addition to <code>null</code> itself).
+	 *
+	 * @param nullValue the string value to be considered as null, or <code>null</code> if an empty string should be used
+	 */
+	public void setNullValue(String nullValue) {
+		this.nullValue = nullValue;
+	}
+
+	/**
+	 * @return the string value that is considered as <code>null</code>, never returns <code>null</code>
+	 */
+	public String getNullValue() {
+		if (nullValue != null) {
+			return nullValue;
+		}
+
+		return "";
+	}
+
+	/**
 	 * Sets the default value.
 	 *
 	 * @param defaultValue the new default value
@@ -854,6 +881,22 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
+	 * Set collator sensitivity string.	
+	 * @param collatorSensitivity
+	 */
+	public void setCollatorSensitivity(String collatorSensitivity) {
+		this.collatorSensitivity = collatorSensitivity;
+	}
+
+	/**
+	 * Returns collator sensitivity as string according to CollatorSensitivityType class.
+	 * @return
+	 */
+	public String getCollatorSensitivity() {
+		return collatorSensitivity;
+	}
+
+	/**
 	 * This method checks if value from this field can be put safe in another field.
 	 *
 	 * @param anotherField the another field to be checked
@@ -1009,6 +1052,7 @@ public class DataFieldMetadata implements Serializable {
 		dataFieldMetadata.setAutoFilling(autoFilling);
 		dataFieldMetadata.setFieldProperties(fieldProperties);
 		dataFieldMetadata.setLocaleStr(localeStr);
+		dataFieldMetadata.setCollatorSensitivity(collatorSensitivity);
 
 		return dataFieldMetadata;
 	}
