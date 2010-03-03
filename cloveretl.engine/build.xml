@@ -495,7 +495,10 @@ defined.version.suffix=release
 		</replace>
 	</target>
 	
-	<target name="generate-java-sources" description="Generate java sources by javaCC">
+	<target name="generate-java-sources" depends="generate-ctl-parser,generate-jaxb-dictionary" description="Generate some java sources"/>
+
+	<target name="generate-ctl-parser" description="Generate ctl parser sources by javaCC">
+		
 		<jjtree javacchome="${dir.tools}" 
 			target="${dir.src}/org/jetel/interpreter/TransformLangParser.jjt" 
 			outputdirectory="${dir.src}/org/jetel/interpreter/"/>
@@ -514,7 +517,18 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		
 		<javacc javacchome="${dir.tools}" 
 			target="${dir.src}/org/jetel/util/ddl2clover/DDL2Clover.jj"/>
+	
 	</target>
+	
+	<target name="generate-jaxb-dictionary">
+		<delete>
+			<fileset dir="src/org/jetel/graph/dictionary/jaxb">
+				<include name="*.java"/>
+			</fileset>
+		</delete>
+		<xjc schema="src/org/jetel/graph/dictionary/dictionary.xsd" destdir="src" package="org.jetel.graph.dictionary.jaxb"/>
+	</target>
+	
 	
 	<target name="javadoc" depends="init,collect-javadoc-src" description="Create Javadoc API documentation">
 		<echo message="Building code documentation..." />
@@ -910,10 +924,6 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
    		<cobertura-report datafile="${cobertura.ser}" format="xml" destdir="${dir.coverage.xml}" srcdir="${dir.src}" />
 	</target>
 		
-	<target name="jaxb-dictionary-generator">
-		<delete dir="src/org/jetel/graph/dictionary/jaxb"/>
-		<xjc schema="src/org/jetel/graph/dictionary/dictionary.xsd" destdir="src" package="org.jetel.graph.dictionary.jaxb"/>
-	</target>
 
 	<macrodef name="customproperty">
 		<attribute name="name"/>
