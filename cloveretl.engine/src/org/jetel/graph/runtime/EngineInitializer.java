@@ -58,22 +58,22 @@ public class EngineInitializer {
      *        <br>can be null
      */
     public static void initEngine(String pluginsRootDirectory, String defaultPropertiesFile, String logHost) {
-    	if(alreadyInitialized) {
-    		//clover engine is already initialized
-    		return;
-    	}
-    	
-    	//init logging
-    	initLogging(logHost);
-    	
-        //init framework constants
-        Defaults.init(defaultPropertiesFile);
-
-        //init clover plugins system
-        Plugins.init(pluginsRootDirectory);
-        
-        //make a note, engine is already initialized
-        alreadyInitialized = true;
+    	synchronized (EngineInitializer.class) {
+	    	if(alreadyInitialized) {
+	    		//clover engine is already initialized
+	    		return;
+	    	}
+	    	alreadyInitialized = true;
+	    	
+	    	//init logging
+	    	initLogging(logHost);
+	    	
+	        //init framework constants
+	        Defaults.init(defaultPropertiesFile);
+	
+	        //init clover plugins system
+	        Plugins.init(pluginsRootDirectory);
+		}
     }
 
     /**
