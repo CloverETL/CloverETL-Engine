@@ -98,8 +98,12 @@ public abstract class Node extends GraphElement implements Runnable {
     protected OutputPort[] outPortsArray;
     protected int outPortsSize;
     
-    //synchronization barrier for synchronization randezvous all nodes after pre-execute
-    //execute() method can be invoked only after successful preExecute() methods on all nodes in the phase
+    //synchronization barrier for all components in a phase
+    //all components have to finish pre-execution before execution method
+    private CyclicBarrier executeBarrier;
+
+    //synchronization barrier for all components in a phase
+    //watchdog needs to have all components with thread assignment before can continue to watch the phase
     private CyclicBarrier preExecuteBarrier;
     
 	/**
@@ -402,9 +406,13 @@ public abstract class Node extends GraphElement implements Runnable {
         
 		//store the current thread like a node executor
         setNodeThread(Thread.currentThread());
-		
+
         try {
-    		//preExecute() invocation
+        	//we need a synchronization point for all components in a phase
+        	//watchdog starts all components in phase and wait on this barrier for real startup
+    		preExecuteBarrier.await();
+        	
+        	//preExecute() invocation
     		try {
     			preExecute();
     		} catch (ComponentNotReadyException e) {
@@ -412,8 +420,7 @@ public abstract class Node extends GraphElement implements Runnable {
     		}
 
     		//waiting for other nodes in the current phase - first all pre-execution has to be done at all nodes
-    		// FIXME removed by MVa - hack for cluster parallelism
-    		//preExecuteBarrier.await();
+    		executeBarrier.await();
     		
     		//execute() invocation
             if((runResult = execute()) == Result.ERROR) {
@@ -536,24 +543,8 @@ public abstract class Node extends GraphElement implements Runnable {
 			MDC.remove("runId");
 			this.nodeThread.setName("<unnamed>");
 		}
-
-		notifyAll(); //we have to notify all threads waiting on startup (watchdog) - the component is already running and the thread is preset
-					// see method waitForStartup()
     }
     
-	/**
-	 * This is blocking method, current thread is waiting for the node is running.
-	 */
-	public synchronized void waitForStartup() {
-		while (getNodeThread() == null) { //we have to wait to real start up of the node
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				throw new RuntimeException("Unexpected interruption of waiting for startup of node '" + getName() + "'.");
-			}
-		}
-	}
-
 	/**
 	 *  End execution of Node - let Node finish gracefully
 	 *
@@ -1188,18 +1179,11 @@ public abstract class Node extends GraphElement implements Runnable {
     @Deprecated
     synchronized public void reset() throws ComponentNotReadyException {
     	super.reset();
-        for(OutputPort outPort : this.getOutPorts())
-        	outPort.reset();
-        for(InputPort inPort : this.getInPorts())
-        	inPort.reset();
-        if (logPort!=null)
-        	logPort.reset();
     	runIt = true;
         runResult=Result.READY;
         resultMessage = null;
         resultException = null;
         childThreads.clear();
-        nodeThread = null;
     }
 
     @Override
@@ -1219,6 +1203,10 @@ public abstract class Node extends GraphElement implements Runnable {
 
 	public void setPreExecuteBarrier(CyclicBarrier preExecuteBarrier) {
 		this.preExecuteBarrier = preExecuteBarrier;
+	}
+
+	public void setExecuteBarrier(CyclicBarrier executeBarrier) {
+		this.executeBarrier = executeBarrier;
 	}
 
 	/**
