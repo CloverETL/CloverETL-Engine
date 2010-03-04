@@ -173,6 +173,11 @@
 	    <parameter id="className" value="org.jetel.component.RunGraph"/>
 	    <parameter id="type" value="RUN_GRAPH"/>
 	</extension>
+	
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.component.HttpConnector"/>
+		<parameter id="type" value="HTTP_CONNECTOR"/>
+	</extension>
 
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.KeyGenerator"/>
