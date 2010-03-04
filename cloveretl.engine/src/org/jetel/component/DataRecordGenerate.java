@@ -151,8 +151,8 @@ public abstract class DataRecordGenerate implements RecordGenerate {
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Method called at the end of transformation process.  
 	 * 
 	 * @see org.jetel.component.RecordTransform#finished()
 	 */
