@@ -543,7 +543,9 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 				failonerror="true"
 				private="false"
 				>
-			<fileset dir="${dir.src.javadoc}"/>
+			<fileset dir="${dir.src.javadoc}">
+				<include name="**/*.java"/>
+			</fileset>
 			<classpath>
 				<fileset dir="${dir.lib.javadoc}">
 					<include name="**/*.jar"/>
