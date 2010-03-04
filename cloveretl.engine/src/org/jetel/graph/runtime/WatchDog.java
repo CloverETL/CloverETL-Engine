@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -507,13 +508,25 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				}
 			}
 			if (phase.getNodes().size() > 0) {
-				CyclicBarrier preExecuteBarrier = new CyclicBarrier(phase.getNodes().size());
+				//this barrier can be broken only when all components and wathdog is waiting there
+				CyclicBarrier preExecuteBarrier = new CyclicBarrier(phase.getNodes().size() + 1);
+				//this barrier is used for synchronization of all components between pre-execute and execute
+				//it is necessary to finish all pre-execute's before execution
+				CyclicBarrier executeBarrier = new CyclicBarrier(phase.getNodes().size());
 				for(Node node: phase.getNodes().values()) {
 					node.setPreExecuteBarrier(preExecuteBarrier);
+					node.setExecuteBarrier(executeBarrier);
 					threadManager.executeNode(node);
-					//we have to wait to real start up of the node
-					node.waitForStartup();
-					logger.debug(node.getId()+ " ... started");
+					logger.debug(node.getId()+ " ... starting");
+				}
+				try {
+					//now we will wait for all components are really alive - node.getNodeThread() return non-null value
+					preExecuteBarrier.await();
+					logger.debug("All components are ready to start.");
+				} catch (InterruptedException e) {
+					throw new RuntimeException("WatchDog was interrupted while was waiting for workers startup in phase " + phase.getPhaseNum());
+				} catch (BrokenBarrierException e) {
+					throw new RuntimeException("WatchDog or a worker was interrupted while was waiting for nodes tartup in phase " + phase.getPhaseNum());
 				}
 			}
 		}
