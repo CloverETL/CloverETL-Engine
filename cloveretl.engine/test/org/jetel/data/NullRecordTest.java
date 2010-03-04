@@ -7,10 +7,12 @@ import org.jetel.test.CloverTestCase;
 public class NullRecordTest extends CloverTestCase {
 	
 	DataRecord nullRecord, record;
-	DataRecordMetadata metadata = new DataRecordMetadata("meta");
+	DataRecordMetadata metadata;
 	
 	@Override
 	protected void setUp() throws Exception {
+		initEngine();
+		metadata = new DataRecordMetadata("meta");
 		metadata.addField(new DataFieldMetadata("int_field", DataFieldMetadata.INTEGER_FIELD,";"));
 		metadata.addField(new DataFieldMetadata("string_field", DataFieldMetadata.STRING_FIELD,";"));
 		metadata.addField(new DataFieldMetadata("date_field", DataFieldMetadata.DATE_FIELD, "\n"));
