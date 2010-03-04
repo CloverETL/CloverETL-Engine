@@ -169,6 +169,7 @@ public class TransformationGraphXMLReaderWriter {
 	
 	private final static String DICTIONARY_ELEMENT = "Dictionary";
 	private final static String DICTIONARY_ENTRY_ELEMENT = "Entry";
+	private final static String DICTIONARY_ENTRY_ID = "id";
 	private final static String DICTIONARY_ENTRY_NAME = "name";
 	private final static String DICTIONARY_ENTRY_TYPE = "type";
 	private final static String DICTIONARY_ENTRY_INPUT = "input";
@@ -777,6 +778,7 @@ public class TransformationGraphXMLReaderWriter {
 			        	String type = attributes.getString(DICTIONARY_ENTRY_TYPE);
 			        	String name = attributes.getString(DICTIONARY_ENTRY_NAME);
 			        	final Properties entryProperties = attributes.attributes2Properties(null);
+			        	entryProperties.remove(DICTIONARY_ENTRY_ID);
 			        	entryProperties.remove(DICTIONARY_ENTRY_TYPE);
 			        	entryProperties.remove(DICTIONARY_ENTRY_NAME);
 			        	entryProperties.remove(DICTIONARY_ENTRY_INPUT);
