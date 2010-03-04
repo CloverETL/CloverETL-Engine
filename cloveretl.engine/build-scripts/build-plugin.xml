@@ -36,7 +36,7 @@
 	<property name="required.plugins.file" value="${dir.build}/required-plugins.txt"/>
 	<property name="cobertura.ser" value="${dir.build}/plugin-cobertura.ser"/>
 
-	<property file="${basedir}/build.properties"/>
+	<property file="${basedir}/build-plugin.properties"/>
 	<property name="javadoc.limited.include" value="**"/>
 	
 	<!-- ProGuard task definition -->
@@ -504,15 +504,19 @@
 		</findbugs>
 	</target>
 
-	<target name="collect-javadoc-src">
+	<target name="collect-javadoc-src" depends="init">
 		<fail unless="dir.src.javadoc"/>
 		<if><istrue value="${javadoc.limited}"/>
 			<then><property name="javadoc.src.include" value="${javadoc.limited.include}"/></then>
 			<else><property name="javadoc.src.include" value=""/></else>
 		</if>
-		<echo>IIIII ${javadoc.src.include}</echo>
 		<copy todir="${dir.src.javadoc}">
 			<fileset dir="${dir.src}" excludes="${java.src.exclude}" includes="${javadoc.src.include}"/>
+		</copy>
+		<copy todir="${dir.lib.javadoc}">
+			<fileset refid="plugin-lib-files"/>
+			<flattenmapper/>
+			<filterset endtoken=".jar"/>
 		</copy>
 	</target>
 	
