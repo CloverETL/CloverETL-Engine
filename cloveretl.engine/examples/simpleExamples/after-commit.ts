@@ -109,10 +109,9 @@
 <!-- Trash output is not logged on	 
 	 <RegEx expression="TRASH_MIN \|# 1    \|68" occurences="1"/>
 	 <RegEx expression="TRASH_MAX \|# 1    \|9975" occurences="1"/> -->
-<!-- Test environment doesn't register the logged when graph finished (issue 3510)
-	 <RegEx expression="min:68" occurences="1"/>
-	 <RegEx expression="median:5053.0" occurences="1"/>
-	 <RegEx expression="max:9975" occurences="1"/> -->
+	 <RegEx expression="DictEntry:min:string:\{value=68\}" occurences="1"/>
+	 <RegEx expression="DictEntry:median:string:\{value=5053.0\}" occurences="1"/>
+	 <RegEx expression="DictEntry:max:string:\{value=9975\}" occurences="1"/>
 </FunctionalTest>
 
 <FunctionalTest ident="ExtFilter" graphFile="graph/graphExtFilter.grf">
