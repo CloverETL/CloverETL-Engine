@@ -23,7 +23,12 @@ public interface NodeTracking extends Serializable {
 	 * @return node's graph ID.
 	 */
 	String getNodeID();
-	
+
+	/**
+	 * @return node's name.
+	 */
+	String getNodeName();
+
 	/**
 	 * @return current CPU usage.
 	 */

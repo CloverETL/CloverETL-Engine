@@ -45,6 +45,7 @@ public class NodeTrackingDetail implements NodeTracking {
     private OutputPortTrackingDetail[] outputPortsDetails;
     
     private String nodeId;
+    private String nodeName;
     private long totalCPUTime;
     private long totalUserTime;
     private float usageCPU;
@@ -56,6 +57,7 @@ public class NodeTrackingDetail implements NodeTracking {
 		this.parentPhaseDetail = parentPhaseDetail;
 		this.node = node;
 		this.nodeId = node.getId();
+		this.nodeName = node.getName();
 		this.result = Result.N_A;
 		int i;
 		
@@ -81,6 +83,8 @@ public class NodeTrackingDetail implements NodeTracking {
 
 	public void copyFrom(NodeTrackingDetail nodeDetail) {
 		this.result = nodeDetail.result;
+	    this.nodeId = nodeDetail.getNodeID();
+	    this.nodeName = nodeDetail.getNodeName();
 		this.totalCPUTime = nodeDetail.totalCPUTime;
 		this.totalUserTime = nodeDetail.totalUserTime;
 		this.usageCPU = nodeDetail.usageCPU;
@@ -196,6 +200,13 @@ public class NodeTrackingDetail implements NodeTracking {
 	 */
 	public String getNodeID() {
 		return nodeId;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getNodeName()
+	 */
+	public String getNodeName() {
+		return nodeName;
 	}
 	
 	/* (non-Javadoc)

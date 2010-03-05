@@ -120,6 +120,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	/**
 	 * XML attributes of every cloverETL component
 	 */
+    public final static String XML_NAME_ATTRIBUTE = "guiName";
 	public final static String XML_TYPE_ATTRIBUTE="type";
     public final static String XML_ENABLED_ATTRIBUTE="enabled";
     public final static String XML_DISTRIBUTION_ATTRIBUTE = "distribution";
