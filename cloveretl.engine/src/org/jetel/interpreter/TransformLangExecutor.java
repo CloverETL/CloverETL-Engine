@@ -796,7 +796,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
 			stack.push(node.value);
 
-			// we return reference to DataField so we can
+			// we return reference to DataRecord so we can
 			// perform extra checking in special cases
 			return record;
 
@@ -1637,45 +1637,88 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
     
-    public Object visit(CLVFDirectMapping node, Object data) {
-        DataField field=outputRecords[node.recordNo].getField(node.fieldNo);
-        int arity=node.jjtGetNumChildren(); // how many children we have defined
-        TLValue value=null;
-        try{
-            // we try till success or no more options
-            for (int i=0;i<arity;i++){
-                node.jjtGetChild(i).jjtAccept(this, data);
-                value=stack.pop();
-                try{
-                    value.copyToDataField(field);
-                    break; // success during assignment, finish looping
-               }catch(Exception ex){
-                    if (i == arity-1)
-                        throw ex;
-               }
-            }
-            
-        }catch(BadDataFormatException ex){
-            if (!outputRecords[node.recordNo].getField(node.fieldNo).getMetadata().isNullable()){
-                throw new TransformLangExecutorRuntimeException(node,"can't assign NULL to \"" + node.fieldName + "\"");
-            }
-            
-            throw new TransformLangExecutorRuntimeException(node,"bad data when mapping field \"" + node.fieldName + "\" ("+field.getMetadata().getName()+":"+field.getMetadata().getTypeAsString()+
-            		") - assigning \"" + value + "\" ("+value.type+")");
-        }catch(TransformLangExecutorRuntimeException ex){
-        	throw ex;
-    	}catch(Exception ex){
-            String msg=ex.getMessage();
-            throw new TransformLangExecutorRuntimeException(node,
-                    (msg!=null ? msg : "") +
-                    " when mapping \"" + node.fieldName + "\" ("+DataFieldMetadata.type2Str(field.getType())
-                    +") - assigning \"" + value + "\" ("+(value!=null ? value.getType().getName(): "unknown type" )+")");
-            
-        }
-        return data;
-    }
+	public Object visit(CLVFDirectMapping node, Object data) {
+		DataField field = outputRecords[node.recordNo].getField(node.fieldNo);
+		TLValue value = null;
+		switch (node.mappingType) {
+		case MultipleLiteral2Field:
+			final int arity = node.arity;
+			try {
+				// we try till success or no more options
+				for (int i = 0; i < arity; i++) {
+					node.jjtGetChild(i).jjtAccept(this, data);
+					value = stack.pop();
+					try {
+						value.copyToDataField(field);
+						break; // success during assignment, finish looping
+					} catch (Exception ex) {
+						if (i == arity - 1)
+							throw ex;
+					}
+				}
 
-    
+			} catch (BadDataFormatException ex) {
+				if (!outputRecords[node.recordNo].getField(node.fieldNo).getMetadata().isNullable()) {
+					throw new TransformLangExecutorRuntimeException(node, "can't assign NULL to \"" + node.fieldName + "\"");
+				}
+
+				throw new TransformLangExecutorRuntimeException(node, "bad data when mapping field \"" + node.fieldName + "\" (" + field.getMetadata().getName() + ":" + field.getMetadata().getTypeAsString() + ") - assigning \"" + value + "\" (" + value.type + ")");
+			} catch (TransformLangExecutorRuntimeException ex) {
+				throw ex;
+			} catch (Exception ex) {
+				String msg = ex.getMessage();
+				throw new TransformLangExecutorRuntimeException(node, (msg != null ? msg : "") + " when mapping \"" + node.fieldName + "\" (" + DataFieldMetadata.type2Str(field.getType()) + ") - assigning \"" + value + "\" (" + (value != null ? value.getType().getName() : "unknown type") + ")");
+
+			}
+			break;
+		case Field2Field:
+			try {
+				if (node.srcField==null){
+					CLVFInputFieldLiteral childNode=((CLVFInputFieldLiteral)node.jjtGetChild(0));
+					childNode.bindToField(inputRecords);
+					node.srcField=childNode.field;
+				}
+				field.setValue(node.srcField);
+			} catch (BadDataFormatException ex) {
+				if (!outputRecords[node.recordNo].getField(node.fieldNo).getMetadata().isNullable() && node.srcField.isNull()) {
+					throw new TransformLangExecutorRuntimeException(node, "can't assign NULL to \"" + node.fieldName + "\"");
+				}else{
+					throw new TransformLangExecutorRuntimeException(node, "bad data when mapping field \"" + node.fieldName + "\" (" + field.getMetadata().getName() + ":" + field.getMetadata().getTypeAsString() + ") - assigning \"" + node.srcField.toString() + 
+							"\" (" + node.srcField.getMetadata().getName() + ":" + node.srcField.getMetadata().getTypeAsString() +" )");
+				}
+			} catch (Exception ex) {
+				String msg = ex.getMessage();
+				throw new TransformLangExecutorRuntimeException(node, (msg != null ? msg : "") + " when mapping \"" + node.fieldName + "\" (" + DataFieldMetadata.type2Str(field.getType()) + ") - assigning \"" + value + "\" (" + (value != null ? value.getType().getName() : "unknown type") + ")");
+
+			}
+			break;
+		case Literal2Field:
+			try {
+				node.jjtGetChild(0).jjtAccept(this, data);
+				value = stack.pop();
+				value.copyToDataField(field);
+			} catch (BadDataFormatException ex) {
+				if (!outputRecords[node.recordNo].getField(node.fieldNo).getMetadata().isNullable()) {
+					throw new TransformLangExecutorRuntimeException(node, "can't assign NULL to \"" + node.fieldName + "\"");
+				}
+
+				throw new TransformLangExecutorRuntimeException(node, "bad data when mapping field \"" + node.fieldName + "\" (" + field.getMetadata().getName() + ":" + field.getMetadata().getTypeAsString() + ") - assigning \"" + value + "\" (" + value.type + ")");
+			} catch (TransformLangExecutorRuntimeException ex) {
+				throw ex;
+			} catch (Exception ex) {
+				String msg = ex.getMessage();
+				throw new TransformLangExecutorRuntimeException(node, (msg != null ? msg : "") + " when mapping \"" + node.fieldName + "\" (" + DataFieldMetadata.type2Str(field.getType()) + ") - assigning \"" + value + "\" (" + (value != null ? value.getType().getName() : "unknown type") + ")");
+
+			}
+			break;
+		default:
+			// this should not happen
+			throw new TransformLangExecutorRuntimeException(node, "unrecognized mapping type (internal error)");
+		}
+
+		return data;
+	}
+
     public Object visit(CLVFWildCardMapping node, Object data) {
     	if (!node.initialized) {
 			try {

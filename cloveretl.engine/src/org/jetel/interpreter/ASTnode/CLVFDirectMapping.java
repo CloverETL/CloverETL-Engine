@@ -13,11 +13,19 @@ import org.jetel.metadata.DataRecordMetadata;
 
 public class CLVFDirectMapping extends SimpleNode {
  
+	public enum MappingType {
+		Field2Field,
+		Literal2Field,
+		MultipleLiteral2Field
+	}
+	
     public DataField field;
+    public DataField srcField;
     public int recordNo=-1;
     public int fieldNo=-1;
     public String fieldName;
     public int arity;
+    public MappingType mappingType;
     
   public CLVFDirectMapping(int id) {
     super(id);
@@ -32,6 +40,27 @@ public class CLVFDirectMapping extends SimpleNode {
   public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
     return visitor.visit(this, data);
   }
+  
+  
+  @Override 
+  public void jjtClose(){
+	  //optimize type of mapping
+	  arity=jjtGetNumChildren();
+	  if (arity==1){
+		  Node aNode=jjtGetChild(0);
+		  CLVFInputFieldLiteral childNode = aNode instanceof CLVFInputFieldLiteral ? (CLVFInputFieldLiteral)aNode : null;
+		  if (childNode !=null &&  childNode.fieldNo>=0 && 
+				  parser.getOutRecordMeta(recordNo).getField(fieldNo).getType() == parser.getOutRecordMeta(childNode.recordNo).getField(childNode.fieldNo).getType()){
+		  		  mappingType=MappingType.Field2Field;
+		  		  srcField=childNode.field;
+		  }else{
+			  mappingType=MappingType.Literal2Field;
+		  }
+	  }else{
+		  mappingType=MappingType.MultipleLiteral2Field;
+	  }
+  }
+  
   
   /**
    * Get field of input record (1st record)

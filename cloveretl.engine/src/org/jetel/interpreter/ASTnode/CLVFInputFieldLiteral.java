@@ -44,6 +44,7 @@ public class CLVFInputFieldLiteral extends SimpleNode {
 	 */
 	public void setFieldName(Token t,String fName) throws ParseException{
 		// get rid of leading '$' character (the 1st character)
+		fieldName=fName;
         recordNo=0;
         DataRecordMetadata record= parser.getInRecordMeta();
         if (record==null){
@@ -57,6 +58,7 @@ public class CLVFInputFieldLiteral extends SimpleNode {
      public void setRecordFieldName(Token t,String fRecName) throws ParseException{
             // get rid of leading '$' character (the 1st character)
             String recFieldName[]=fRecName.substring(1).split("\\.");
+            fieldName=recFieldName[1];
             recordNo=parser.getInRecordNum(recFieldName[0]);
             DataRecordMetadata record=parser.getInRecordMeta(recordNo);
             if (record==null){
@@ -71,6 +73,7 @@ public class CLVFInputFieldLiteral extends SimpleNode {
      public void setRecordNameFieldNum(Token t,String fRecName) throws ParseException{
          // get rid of leading '$' character (the 1st character)
          String recFieldName[]=fRecName.substring(1).split("\\.");
+         fieldName=recFieldName[1];
          recordNo=parser.getInRecordNum(recFieldName[0]);
          DataRecordMetadata record=parser.getInRecordMeta(recordNo);
          if (record==null){
@@ -98,6 +101,7 @@ public class CLVFInputFieldLiteral extends SimpleNode {
          if (fieldNo==-1){
              throw new ParseException(t,"Unknown input field ["+fRecName+"]");
          }
+         fieldName=record.getField(fieldNo).getName();
      }   
      
      
@@ -113,6 +117,7 @@ public class CLVFInputFieldLiteral extends SimpleNode {
         	 DataFieldMetadata field = record.getField(fieldNo);
         	 if (field==null)
         		 throw new ParseException(t,"Unknown input field ["+fRecFieldNum+"]");
+        	 fieldName=field.getName();
          }catch(Throwable ex){
              throw new ParseException(t,"Unknown input field ["+fRecFieldNum+"]");
          }
