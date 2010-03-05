@@ -144,7 +144,7 @@ public class ExtDataGenerator extends DataGenerator {
 				autoFilling
 						.setLastUsedAutoFillingFields(outRecord[transformResult]);
 				writeRecord(transformResult, outRecord[transformResult]);
-			} else if (transformResult == -1) {
+			} else if (transformResult == RecordTransform.SKIP) {
 				// DO NOTHING - skip the record
 			} else {
 				throw new TransformException(
