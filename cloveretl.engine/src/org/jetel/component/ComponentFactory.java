@@ -132,16 +132,21 @@ public class ComponentFactory {
 			Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
 			Node result = (org.jetel.graph.Node) method.invoke(null, new Object[] {graph, nodeXML});
 
+			ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
+			
 			//nodeDistribution attribute parsing
 			//hack for extracting of node layout information - Clover3 solves this issue
 			//it is the easiest way how to add new common attribute for all nodes
-			ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
-			
 			if (xattribs.exists(Node.XML_DISTRIBUTION_ATTRIBUTE)) {
 				NodeDistribution nodeDistribution = NodeDistribution.createFromString(xattribs.getString(Node.XML_DISTRIBUTION_ATTRIBUTE));
 				result.setDistribution(nodeDistribution);
 			}
-			
+			//name attribute parsing
+			if (xattribs.exists(Node.XML_NAME_ATTRIBUTE)) {
+				String nodeName = xattribs.getString(Node.XML_NAME_ATTRIBUTE);
+				result.setName(nodeName);
+			}
+
 			return result;
         } catch(InvocationTargetException e) {
             logger.error("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
