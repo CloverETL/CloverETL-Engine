@@ -1699,10 +1699,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 				value.copyToDataField(field);
 			} catch (BadDataFormatException ex) {
 				if (!outputRecords[node.recordNo].getField(node.fieldNo).getMetadata().isNullable()) {
-					throw new TransformLangExecutorRuntimeException(node, "can't assign NULL to \"" + node.fieldName + "\"");
+					throw new TransformLangExecutorRuntimeException(node, "can't assign NULL to \"" + node.fieldName + "\"",ex);
 				}
 
-				throw new TransformLangExecutorRuntimeException(node, "bad data when mapping field \"" + node.fieldName + "\" (" + field.getMetadata().getName() + ":" + field.getMetadata().getTypeAsString() + ") - assigning \"" + value + "\" (" + value.type + ")");
+				throw new TransformLangExecutorRuntimeException(node, "bad data when mapping field \"" + node.fieldName + "\" (" + field.getMetadata().getName() + ":" + field.getMetadata().getTypeAsString() + ") - assigning \"" + value + "\" (" + value.type + ")",ex);
 			} catch (TransformLangExecutorRuntimeException ex) {
 				throw ex;
 			} catch (Exception ex) {
