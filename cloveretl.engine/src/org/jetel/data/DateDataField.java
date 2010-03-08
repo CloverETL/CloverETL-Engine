@@ -63,6 +63,7 @@ public class DateDataField extends DataField implements Comparable {
 	private DateFormatter dateFormatter;
 
 	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
+	private final static long DATE_NULL_VAL_SERIALIZED=Long.MIN_VALUE;
 
 	/**
      * Constructor for the DateDataField object
@@ -370,7 +371,7 @@ public class DateDataField extends DataField implements Comparable {
 			if (value != null) {
 				buffer.putLong(value.getTime());
 			} else {
-				buffer.putLong(0);
+				buffer.putLong(DATE_NULL_VAL_SERIALIZED);
 			}
 		} catch (BufferOverflowException e) {
 			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
@@ -386,7 +387,7 @@ public class DateDataField extends DataField implements Comparable {
 	 */
 	public void deserialize(ByteBuffer buffer) {
 		long tmpl = buffer.getLong();
-		if (tmpl == 0) {
+		if (tmpl == DATE_NULL_VAL_SERIALIZED) {
 			setNull(true);
 			return;
 		}
