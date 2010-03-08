@@ -51,9 +51,13 @@ public interface RecordTransform {
 
 	/** the return value of the transform() method specifying that the record will be sent to all the output ports */
 	public static final int ALL = Integer.MAX_VALUE;
+	
 	/** the return value of the transform() method specifying that the record will be skipped */
 	public static final int SKIP = -1;
 
+	/** the return value of the transform() method, all values lesser or equal this value are considered as errors */
+	public static final int ERROR = -2;
+	
 	/**
 	 *  Initializes reformat class/function. This method is called only once at the
 	 * beginning of transformation process. Any object allocation/initialization should
