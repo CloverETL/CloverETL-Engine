@@ -130,7 +130,7 @@ public abstract class GraphElement implements IGraphElement {
     @Deprecated
     synchronized public void reset() throws ComponentNotReadyException {
         if(!isInitialized()) {
-        	String msg = "Graph element " + this + " is not initialized, cannot be reseted before initialization or after element was released.";
+        	String msg = "Graph element " + this + " is not initialized, cannot be reset before initialization or after element was released.";
             logger.error(msg);
         	throw new IllegalStateException(msg);
         }
