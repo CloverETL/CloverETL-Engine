@@ -1158,25 +1158,31 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return TLBooleanValue.FALSE;
     }
 
-    public Object visit(CLVFTryCatchStatement node, Object data) {
-    	try {
-            node.jjtGetChild(0).jjtAccept(this, data); // evaluate the
-        } catch (Exception ex) {
-        	//	 populate chosen variable with exception name
-        	// TODO: check that variable is of type String
-        	CLVFVariableLiteral varLit = (CLVFVariableLiteral)node.jjtGetChild(1);
-        	TLVariable var=stack.getVar(varLit.localVar, varLit.varSlot);
-        	if (var.getType()!=TLValueType.STRING){
-        		throw new TransformLangExecutorRuntimeException(node,"variable \""+var.getName()+"\" is not of type string in catch() block");
-        	}
-        	var.getTLValue().setValue(ex.getClass().getName());
-        	
-        	// call the catch block
-        	node.jjtGetChild(2).jjtAccept(this, data);
-        }
+	public Object visit(CLVFTryCatchStatement node, Object data) {
+		try {
+			node.jjtGetChild(0).jjtAccept(this, data); // evaluate the
+		} catch (TransformLangExecutorRuntimeException ex) {
+			if (node.jjtGetNumChildren() > 2) {
+				// populate chosen variable with exception name
 
-        return data;
-    }
+				CLVFVariableLiteral varLit = (CLVFVariableLiteral) node.jjtGetChild(1);
+				TLVariable var = stack.getVar(varLit.localVar, varLit.varSlot);
+				if (var.getType() != TLValueType.STRING) {
+					throw new TransformLangExecutorRuntimeException(node, "variable \"" + var.getName() + "\" is not of type string in catch() block");
+				}
+				
+				var.getTLValue().setValue(ex.getCause()== null ? ex.getClass().getName() : ex.getCause().getClass().getName());
+
+				// call the catch block when variable is present
+				node.jjtGetChild(2).jjtAccept(this, data);
+			} else {
+				// call the catch block - simple variant
+				node.jjtGetChild(1).jjtAccept(this, data);
+			}
+		}
+
+		return data;
+	}
 
     
 

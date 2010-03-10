@@ -1238,7 +1238,7 @@ void DoStatement() #DoStatement(2) :
 void TryCatchStatement() :
 {}
 {
-  <TRY> Statement() <CATCH> "(" VarExp() ")" Statement()
+  <TRY> Statement() <CATCH>  "(" [ VarExp() ] ")" Statement()
 }
 
 
