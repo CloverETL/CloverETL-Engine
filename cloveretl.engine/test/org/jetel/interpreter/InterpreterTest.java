@@ -2470,6 +2470,7 @@ public class InterpreterTest extends CloverTestCase {
 						"	$0.Age:=$Age;\n" +
 						"	$out.City:=concat(\"My City \",$City);\n" +
 						"	$Born:=$1.Born;\n" +
+						"	$Born:=$Value;\n" +
 						"	$0.Value:=nvl(0,$in1.Value);\n" +
 						"	}\n" +
 						"test();\n" +
@@ -3228,6 +3229,52 @@ public class InterpreterTest extends CloverTestCase {
 		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
+    
+    
+    public void test_TryCatch(){
+		System.out.println("\nDate Error:");
+		String expStr = "string exception;\n"+
+						"date datum;\n"+
+						"try \n" +
+						"  datum = 123;\n" +
+						"catch (exception) " +
+						"   print_err(exception); \n"+
+						"try \n" +
+						"  datum = 123;\n" +
+						"catch () " +
+						"   print_err('error when assigning 123 to date variable'); \n";
+	      print_code(expStr);
+		try {
+		      DataRecordMetadata[] recordMetadata=new DataRecordMetadata[] {metadata,metadata1};
+		      DataRecordMetadata[] outMetadata=new DataRecordMetadata[] {metaOut,metaOut1};
+			  TransformLangParser parser = new TransformLangParser(recordMetadata,
+			  		outMetadata,new ByteArrayInputStream(expStr.getBytes()),"UTF-8");
+		      CLVFStart parseTree = parser.Start();
+
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record,record1});
+		      executor.setOutputRecords(new DataRecord[]{out,out1});
+		      SetVal.setString(record1,2,"Prague");
+		      record.getField("Age").setNull(true);
+		      
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+		      
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception",e);
+	    }
+	}
+    
+    
     
     
     public void print_code(String text){
