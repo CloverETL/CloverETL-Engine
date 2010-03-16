@@ -1161,7 +1161,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 	public Object visit(CLVFTryCatchStatement node, Object data) {
 		try {
 			node.jjtGetChild(0).jjtAccept(this, data); // evaluate the
-		} catch (TransformLangExecutorRuntimeException ex) {
+		} catch (Exception ex) {
 			if (node.jjtGetNumChildren() > 2) {
 				// populate chosen variable with exception name
 
