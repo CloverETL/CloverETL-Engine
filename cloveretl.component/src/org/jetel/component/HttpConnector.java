@@ -31,6 +31,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthPolicy;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -80,7 +81,7 @@ import org.w3c.dom.Element;
  * GET and POST. Place holders can be used at URL when input port is connected. The format of placeholder is *{placeholder_name}. Input fields 
  * not used for substitution of placeholders can be added to the URL as parameters (they can be add to the query string or method body if the 
  * POST method is used. Ignored fields specify which input fields can't be add as parameters. If POST method is used input fields can be added 
- * as multipart entities. Component allows BASIC HTTP Authentication. Authentication is proceed if username and password is set.)</td></tr>
+ * as multipart entities. Component allows HTTP Authentication (basic and digest). Authentication is proceed if username and password is set.)</td></tr>
  * <tr><td></td></tr>
  * </table>
  *  <br>  
@@ -89,19 +90,23 @@ import org.w3c.dom.Element;
  *  <tr><td><b>url</b></td><td>URL for http request. Place holders can be used when input port is connected. Place holder format is *{}</td>
  *  <tr><td><b>urlInputField</b></td><td>URL for http request from metadata field. Place holders can be used.</td>
  *  <tr><td><b>requestMethod</b></td><td>Http request method. GET and POST are implemented. (values: POST/GET)</td>
- *  <tr><td><b>addInputFieldsAsParametres</b></td><td>Parameters which are added to the URL. (values: true/false)</td>
- *  <tr><td><b>addInputFieldsAsParametresTo</b></td><td>Specifies whether input fields should be add to the query string or method body. (values: Query/Body)</td>
+ *  <tr><td><b>addInputFieldsAsParametres</b></td><td>Specifies whether parameters are added to the URL. (values: true/false)</td>
+ *  <tr><td><b>addInputFieldsAsParametresTo</b></td><td>Specifies whether input fields should be add to the query string or method body. 
+ *  Parameters can be added to the method body in case that POST method is used. (values: Query/Body)</td>
  *  <tr><td><b>ignoredFields</b></td><td>Specifies which input fields aren't added as parameters. List of input fields separated by ; is expected.</td>
- *  <tr><td><b>multipartEntities</b></td><td>Specifies which input fields are added to the request as multipart entities. List of input fields separated by ; is expected.</td>
+ *  <tr><td><b>multipartEntities</b></td><td>Specifies which input fields are added to the request as multipart entities. Multipart entities can be added 
+ *  to the request in case that POST method is used. List of input fields separated by ; is expected.</td>
  *  <tr><td><b>headerProperties</b></td><td>Additional http header properties.</td>
- *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
+ *  <tr><td><b>charset</b></td><td>Character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>inputField</b></td><td>The input field whose content is sent as the request.</td>
  *  <tr><td><b>requestContent</b></td><td>The text field whose content is sent as the request.</td>
  *  <tr><td><b>inFileUrl</b></td><td>Input file.</td>
  *  <tr><td><b>outFileUrl</b></td><td>Output file.</td>
  *  <tr><td><b>append</b></td><td>Whether to append data at the end if output file exists or replace it (values: true/false)</td>
- *  <tr><td><b>username</b></td><td>Username for BASIC HTTP Authentication.</td>
- *  <tr><td><b>password</b></td><td>Password for BASIC HTTP Authentication.</td>
+ *  <tr><td><b>authenticationMethod</b></td><td>HTTP Authentication method. Authentication is done if username and password is entered. 
+ *  (values: BASIC/DIGEST/ANY)</td>
+ *  <tr><td><b>username</b></td><td>Username for http authentication</td>
+ *  <tr><td><b>password</b></td><td>Password for http authentication</td>
  *  <tr><td><b>responseAsFileName</b></td><td>If specified, the component will write response to a temporary file and send the file name in output field User
  *  can then read with "indirect" reading. If not specified, the response is passed by value. (values true/false)</td>
  *  <tr><td><b>responseDirectory</b></td><td>Directory for response files.</td>
@@ -118,7 +123,6 @@ import org.w3c.dom.Element;
 public class HttpConnector extends Node {
 
 	private static final String GET = "GET";
-
 	private static final String POST = "POST";
 
 	private final static Log logger = LogFactory.getLog(HttpConnector.class);
@@ -135,6 +139,7 @@ public class HttpConnector extends Node {
 	private final static String XML_INPUT_PORT_FIELD_NAME = "inputField";
 	private final static String XML_OUTPUT_PORT_FIELD_NAME = "outputField";
 	private final static String XML_CHARSET_ATTRIBUTE = "charset";
+	private final static String XML_AUTHENTICATION_METHOD_ATTRIBUTE = "authenticationMethod";
 	private final static String XML_USERNAME_ATTRIBUTE = "username";
 	private final static String XML_PASSWORD_ATTRIBUTE = "password";
 	private final static String XML_ADD_INPUT_FIELDS_AS_PARAMETERS_ATTRIBUTE = "addInputFieldsAsParameters";
@@ -215,6 +220,7 @@ public class HttpConnector extends Node {
 	private String inputFieldName;
 	private String outputFieldName;
 	private String charset;
+	private String authenticationMethod;
 	private String username;
 	private String password;
 	private boolean addInputFieldsAsParameters;
@@ -483,6 +489,7 @@ public class HttpConnector extends Node {
 			httpConnector.setStoreResponseToTempFile(xattribs.getBoolean(XML_STORE_RESPONSE_TO_TEMP_FILE, false));
 			httpConnector.setTemporaryDirectory(xattribs.getString(XML_TEMPORARY_DIRECTORY, System.getProperty("java.io.tmpdir")));
 			httpConnector.setTemporaryFilePrefix(xattribs.getString(XML_TEMPORARY_FILE_PREFIX, "http-response-"));
+			httpConnector.setAuthenticationMethod(xattribs.getString(XML_AUTHENTICATION_METHOD_ATTRIBUTE, "BASIC"));
 			httpConnector.setUsername(xattribs.getString(XML_USERNAME_ATTRIBUTE, null));
 			httpConnector.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE, null));
 			httpConnector.setAddInputFieldsAsParameters(xattribs.getBoolean(XML_ADD_INPUT_FIELDS_AS_PARAMETERS_ATTRIBUTE, false));
@@ -514,6 +521,10 @@ public class HttpConnector extends Node {
 		//check whether some URL is entered
 		if (StringUtils.isEmpty(rawUrl) && StringUtils.isEmpty(urlInputField)) {
 			status.add(new ConfigurationProblem("No URL to proceed.", Severity.WARNING, this, Priority.NORMAL));
+		}
+		
+		if (!authenticationMethod.equals("BASIC") && !authenticationMethod.equals("DIGEST") && !authenticationMethod.equals("ANY")) {
+			status.add(new ConfigurationProblem("Unsupported authentication method: "+authenticationMethod, Severity.ERROR, this, Priority.NORMAL));
 		}
 		
 		InputPort inPort = getInputPort(IN_PORT);
@@ -678,11 +689,36 @@ public class HttpConnector extends Node {
 			}
 		}
 		
-		//basic http auth
+		//authentication
 		httpClient = new HttpClient();
 		if (username != null && password != null) {
+			//create credentials
 			creds = new UsernamePasswordCredentials(username, password);
 			httpClient.getState().setCredentials(AuthScope.ANY, creds);
+			
+			//set authentication method
+			String authMethod = null;
+			if (authenticationMethod.equals("BASIC")) {
+				//basic http authentication
+				authMethod = AuthPolicy.BASIC;
+			} else if (authenticationMethod.equals("DIGEST")) {
+				//digest http authentication
+				authMethod = AuthPolicy.DIGEST;
+			} else if (authenticationMethod.equals("ANY")) {
+				//one of the possible authentication method will be used
+				authMethod = "ANY";
+			}
+			List<String> authPrefs = null;
+			if (authMethod.equals("ANY")) {
+				authPrefs = new ArrayList<String>(2);
+				authPrefs.add(AuthPolicy.BASIC);
+				authPrefs.add(AuthPolicy.DIGEST);
+			} else {
+				authPrefs = new ArrayList<String>(1);
+				authPrefs.add(authMethod);
+			}
+			authPrefs.add(authMethod);
+			httpClient.getParams().setParameter(AuthPolicy.AUTH_SCHEME_PRIORITY, authPrefs);
 		}
 
 		if (requestMethod.equals(POST)) {
@@ -838,7 +874,7 @@ public class HttpConnector extends Node {
 			}
 		}
 
-		if (rawUrlToProceed.indexOf("*") > 0) {
+		if (rawUrlToProceed.indexOf("*{") > 0) {
 			//some placeholder wasn't substituted. This should never happen.
 			throw new ComponentNotReadyException("Invalid URL.");
 		}
@@ -916,8 +952,8 @@ public class HttpConnector extends Node {
 				sb.append(line + "\n");
 			}
 		} catch (IOException e) {
-			logger.error("Unable to read request result. Caused by "+e.getMessage());
-			return null;
+			logger.error("Unable to read request result. Caused by: "+e.getMessage());
+			throw e;
 		} finally {
 			try {
 				result.close();
@@ -1152,6 +1188,20 @@ public class HttpConnector extends Node {
 	 */
 	public String getAddInputFieldsAsParametersTo() {
 		return addInputFieldsAsParametersTo;
+	}
+
+	/**
+	 * @param authenticationMethod the authenticationMethod to set
+	 */
+	public void setAuthenticationMethod(String authenticationMethod) {
+		this.authenticationMethod = authenticationMethod;
+	}
+
+	/**
+	 * @return the authenticationMethod
+	 */
+	public String getAuthenticationMethod() {
+		return authenticationMethod;
 	}
 
 }
