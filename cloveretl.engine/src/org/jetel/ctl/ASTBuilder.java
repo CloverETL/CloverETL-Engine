@@ -3,10 +3,13 @@ package org.jetel.ctl;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.jetel.ctl.ASTnode.CLVFAssignment;
@@ -467,6 +470,9 @@ public class ASTBuilder extends NavigatingVisitor {
 	public Object visit(CLVFSwitchStatement node, Object data) {
 		super.visit(node,data);
 		
+		Map <Object, SimpleNode> map = new HashMap<Object, SimpleNode>();
+		Set <SimpleNode> duplicates = new HashSet<SimpleNode>();
+		
 		ArrayList<Integer> caseIndices = new ArrayList<Integer>();
 		for (int i=0; i<node.jjtGetNumChildren(); i++) {
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
@@ -476,6 +482,21 @@ public class ASTBuilder extends NavigatingVisitor {
 				} else {
 					caseIndices.add(i);
 				}
+				CLVFLiteral caseLiteral = (CLVFLiteral) child.jjtGetChild(0);
+				Object value = caseLiteral.getValue();
+				
+				SimpleNode otherNode;
+				if ((otherNode = map.get(value)) != null) {
+					duplicates.add(child);
+					duplicates.add(otherNode);
+				} else {
+					map.put(value, child);
+				}
+				for (SimpleNode duplicateNode : duplicates) {
+					error(duplicateNode, "Duplicate case");
+				}
+				
+
 			}
 		}
 		
@@ -555,7 +576,6 @@ public class ASTBuilder extends NavigatingVisitor {
 		return node;
 	}
 
-	
 	
 	// ----------------------------- Utility methods -----------------------------
 
