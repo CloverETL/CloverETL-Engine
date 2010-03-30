@@ -8,6 +8,7 @@ import org.jetel.ctl.ASTnode.CLVFForStatement;
 import org.jetel.ctl.ASTnode.CLVFForeachStatement;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.ctl.ASTnode.CLVFIfStatement;
+import org.jetel.ctl.ASTnode.CLVFRaiseErrorNode;
 import org.jetel.ctl.ASTnode.CLVFReturnStatement;
 import org.jetel.ctl.ASTnode.CLVFStart;
 import org.jetel.ctl.ASTnode.CLVFSwitchStatement;
@@ -233,6 +234,11 @@ public class FlowControl {
 
 		@Override
 		public Boolean visit(CLVFReturnStatement node, Object data) {
+			return true;
+		}
+		
+		@Override
+		public Boolean visit(CLVFRaiseErrorNode node, Object data) {
 			return true;
 		}
 

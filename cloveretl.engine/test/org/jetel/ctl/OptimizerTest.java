@@ -3810,6 +3810,10 @@ public class OptimizerTest extends CompilerTestCase {
 		check("ok", NORMALIZE_RETURN_OK);
 	}
 	
+	public void test_raise_error_terminal() {
+		doCompile("test_raise_error_terminal");
+	}
+	
 	public void test_list_concatenate() {
 		doCompile("test_list_concatenate");
 	}
