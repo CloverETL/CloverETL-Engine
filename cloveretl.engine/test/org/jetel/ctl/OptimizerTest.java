@@ -7,6 +7,7 @@ import junit.framework.AssertionFailedError;
 
 import org.jetel.component.CTLRecordTransform;
 import org.jetel.component.CTLRecordTransformAdapter;
+import org.jetel.component.RecordTransform;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.ctl.ASTnode.CLVFStart;
 import org.jetel.data.DataRecord;
@@ -3797,6 +3798,21 @@ public class OptimizerTest extends CompilerTestCase {
 		doCompile("test_length_function");
 	}
 	
+
+	private static final int NORMALIZE_RETURN_OK = 0;
+		
+	public void test_return_constants() {
+		System.out.println("Return constants test:");
+		doCompile("test_return_constants");
+
+		check("skip", RecordTransform.SKIP);
+		check("all", RecordTransform.ALL);
+		check("ok", NORMALIZE_RETURN_OK);
+	}
+	
+	public void test_list_concatenate() {
+		doCompile("test_list_concatenate");
+	}
 
 	
 	
