@@ -1,6 +1,7 @@
 package org.jetel.ctl;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.AssertionFailedError;
@@ -3812,6 +3813,18 @@ public class OptimizerTest extends CompilerTestCase {
 	
 	public void test_raise_error_terminal() {
 		doCompile("test_raise_error_terminal");
+	}
+	
+	public void test_case_unique_check() {
+		doCompileExpectError("test_case_unique_check", Arrays.asList("Duplicate case", "Duplicate case"));
+	}
+	
+	public void test_case_unique_check2() {
+		doCompileExpectError("test_case_unique_check2", Arrays.asList("Duplicate case", "Duplicate case"));
+	}
+	
+	public void test_case_unique_check3() {
+		doCompileExpectError("test_case_unique_check3", "Default case is already defined");
 	}
 	
 	public void test_list_concatenate() {

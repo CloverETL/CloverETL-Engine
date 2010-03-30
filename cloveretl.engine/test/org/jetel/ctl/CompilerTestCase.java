@@ -6,9 +6,11 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import junit.framework.AssertionFailedError;
@@ -273,6 +275,72 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		executeCode(compiler);
 	}
+	
+	protected void doCompileExpectError(String expStr, String testIdentifier, List<String> errCodes) {
+		TransformationGraph graph = createDefaultGraph();
+		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
+
+		// prepend the compilation mode prefix
+		if (compileToJava) {
+			expStr = "//#CTL:COMPILE\n" + expStr;
+		}
+		
+		print_code(expStr);
+		
+		ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
+		List<ErrorMessage> messages = compiler.compile(expStr,CTLRecordTransform.class, testIdentifier);
+		printMessages(messages);
+		
+		if (compiler.errorCount() == 0) {
+			throw new AssertionFailedError("No errors in parsing. Expected " + errCodes.size() + " errors.");
+		}
+
+		if (compiler.errorCount() != errCodes.size()) {
+			throw new AssertionFailedError(compiler.errorCount() + " errors in code, but expected " + errCodes.size() + " errors.");
+		}
+		
+
+		Iterator<String> it = errCodes.iterator();
+		
+		for (ErrorMessage errorMessage: compiler.getDiagnosticMessages()) {
+			String expectedError = it.next();
+			if (!expectedError.equals(errorMessage.getErrorMessage())) {
+				throw new AssertionFailedError("Error : \'" + compiler.getDiagnosticMessages().get(0).getErrorMessage() + "\', but expected: \'" + expectedError + "\'");
+			}
+		}
+
+//		CLVFStart parseTree = compiler.getStart();
+//		parseTree.dump("");
+		
+//		executeCode(compiler);
+	}
+	
+	protected void doCompileExpectError(String testIdentifier, String errCode) {
+		doCompileExpectError(testIdentifier, Arrays.asList(errCode));
+	}
+	
+	protected void doCompileExpectError(String testIdentifier, List<String> errCodes) {
+		URL importLoc = CompilerTestCase.class.getResource(testIdentifier + ".ctl");
+		if (importLoc == null) {
+			throw new RuntimeException("Test case '" + testIdentifier + ".ctl" + "' not found");
+		}
+		
+		final StringBuilder sourceCode = new StringBuilder();
+		String line = null;
+		try {
+			BufferedReader rd = new BufferedReader(new InputStreamReader(importLoc.openStream()));
+			while ((line = rd.readLine()) != null) {
+				sourceCode.append(line).append("\n");
+			}
+			rd.close();
+		} catch (IOException e) {
+			throw new RuntimeException("I/O error occured when reading source file",e);
+		}
+		
+		doCompileExpectError(sourceCode.toString(),testIdentifier, errCodes);
+	}
+
 	
 	
 	/**
