@@ -562,16 +562,19 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			stack.push(lhs + rhs);
 		} else if (node.getType().isList()) {
 			List<Object> lhs = null;
+			List<Object> result = new ArrayList<Object>();
 			if (((SimpleNode)node.jjtGetChild(1)).getType().isList()) {
 				final List<Object> rhs = stack.popList();
 				lhs = stack.popList();
-				lhs.addAll(rhs);
+				result.addAll(lhs);
+				result.addAll(rhs);
 			} else {
 				final Object rhs = stack.pop();
 				lhs = stack.popList();
-				lhs.add(rhs);
+				result.addAll(lhs);
+				result.add(rhs);
 			}
-			stack.push(lhs);
+			stack.push(result);
 		} else if (node.getType().isMap()) {
 			final Map<Object,Object> rhs = stack.popMap();
 			final Map<Object,Object> lhs = stack.popMap();

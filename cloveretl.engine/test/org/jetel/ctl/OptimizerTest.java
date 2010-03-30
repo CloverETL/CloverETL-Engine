@@ -49,7 +49,7 @@ public class OptimizerTest extends CompilerTestCase {
 	}
 	
 	protected void check(String varName, Object value) {
-		assertEquals(varName,executor.getVariableValue(varName),value);
+		assertEquals(varName,value,executor.getVariableValue(varName));
 	}
 	
 	
@@ -3803,6 +3803,7 @@ public class OptimizerTest extends CompilerTestCase {
 	private static final int NORMALIZE_RETURN_OK = 0;
 		
 	public void test_return_constants() {
+		// test case for issue 2257
 		System.out.println("Return constants test:");
 		doCompile("test_return_constants");
 
@@ -3812,14 +3813,17 @@ public class OptimizerTest extends CompilerTestCase {
 	}
 	
 	public void test_raise_error_terminal() {
+		// test case for issue 2337 
 		doCompile("test_raise_error_terminal");
 	}
 	
 	public void test_case_unique_check() {
+		// test case for issue 2515
 		doCompileExpectError("test_case_unique_check", Arrays.asList("Duplicate case", "Duplicate case"));
 	}
 	
 	public void test_case_unique_check2() {
+		// test case for issue 2515
 		doCompileExpectError("test_case_unique_check2", Arrays.asList("Duplicate case", "Duplicate case"));
 	}
 	
@@ -3827,7 +3831,16 @@ public class OptimizerTest extends CompilerTestCase {
 		doCompileExpectError("test_case_unique_check3", "Default case is already defined");
 	}
 	
+	public void test_rvalue_for_append() {
+		// test case for issue 3956
+		doCompile("test_rvalue_for_append");
+		check("a", Arrays.asList("1", "2"));
+		check("b", Arrays.asList("a", "b", "c"));
+		check("c", Arrays.asList("1", "2", "a", "b", "c"));
+	}
+	
 	public void test_list_concatenate() {
+		// test case for issue 
 		doCompile("test_list_concatenate");
 	}
 
