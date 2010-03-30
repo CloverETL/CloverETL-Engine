@@ -479,6 +479,8 @@ public class ASTBuilder extends NavigatingVisitor {
 			}
 		}
 		
+		/* XXX: implement checking for case-value uniqueness here - bt issue 2515 */
+		
 		node.setCaseIndices((Integer[]) caseIndices.toArray(new Integer[caseIndices.size()]));
 		return node;
 	}
