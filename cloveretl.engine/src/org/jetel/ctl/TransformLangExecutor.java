@@ -578,8 +578,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		} else if (node.getType().isMap()) {
 			final Map<Object,Object> rhs = stack.popMap();
 			final Map<Object,Object> lhs = stack.popMap();
-			lhs.putAll(rhs);
-			stack.push(lhs);
+			Map<Object,Object> result = new HashMap<Object,Object>();
+			result.putAll(lhs);
+			result.putAll(rhs);
+			stack.push(result);
 		} else {
 			throw new TransformLangExecutorRuntimeException("add: unknown type");
 		}

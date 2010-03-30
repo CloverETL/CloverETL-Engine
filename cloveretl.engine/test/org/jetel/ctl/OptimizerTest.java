@@ -2,6 +2,7 @@ package org.jetel.ctl;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import junit.framework.AssertionFailedError;
@@ -3837,6 +3838,25 @@ public class OptimizerTest extends CompilerTestCase {
 		check("a", Arrays.asList("1", "2"));
 		check("b", Arrays.asList("a", "b", "c"));
 		check("c", Arrays.asList("1", "2", "a", "b", "c"));
+	}
+	
+	public void test_rvalue_for_map_append() {
+		// test case for issue 3960
+		doCompile("test_rvalue_for_map_append");
+		HashMap<Integer, String> map1instance = new HashMap<Integer, String>();
+		map1instance.put(1, "a");
+		map1instance.put(2, "b");
+		HashMap<Integer, String> map2instance = new HashMap<Integer, String>();
+		map2instance.put(3, "c");
+		map2instance.put(4, "d");
+		HashMap<Integer, String> map3instance = new HashMap<Integer, String>();
+		map3instance.put(1, "a");
+		map3instance.put(2, "b");
+		map3instance.put(3, "c");
+		map3instance.put(4, "d");
+		check("map1", map1instance);
+		check("map2", map2instance);
+		check("map3", map3instance);
 	}
 	
 	public void test_list_concatenate() {
