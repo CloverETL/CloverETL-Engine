@@ -785,6 +785,11 @@ public class TransformationGraphXMLReaderWriter {
 			        	entryProperties.remove(DICTIONARY_ENTRY_OUTPUT);
 			        	entryProperties.remove(DICTIONARY_ENTRY_REQUIRED);
 			        	entryProperties.remove(DICTIONARY_ENTRY_CONTENT_TYPE);
+			        	for(Object key : entryProperties.keySet()){
+			        		if(key.toString().matches("^ss[.].*")){
+			        			entryProperties.remove(key);
+			        		}
+			        	}
 			        	if (!entryProperties.isEmpty()) {
 				        	try {
 								dictionary.setValueFromProperties(name, type, entryProperties);
