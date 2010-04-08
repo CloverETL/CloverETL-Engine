@@ -48,6 +48,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
@@ -183,6 +184,7 @@ public class DBJoin extends Node {
 
 	private Properties transformationParameters=null;
 	
+	private DBLookupTable lookupTable;
 	private Lookup lookup;
 	private RecordKey recordKey;
 	private DataRecordMetadata dbMetadata;
@@ -408,7 +410,6 @@ public class DBJoin extends Node {
         dbMetadata = getGraph().getDataRecordMetadata(metadataName, true);
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
-        DBLookupTable lookupTable;
 		try {
 			lookupTable = new DBLookupTable(
 					"LOOKUP_TABLE_FROM_" + this.getId(),
@@ -435,33 +436,19 @@ public class DBJoin extends Node {
 			throw new ComponentNotReadyException(this, e);
 		}
 		inPort=getInputPort(READ_FROM_PORT);
-		inRecord = new DataRecord(inPort.getMetadata());
-		inRecord.init();
-		lookup = lookupTable.createLookup(recordKey, inRecord);
-		
 		if (transformation != null && leftOuterJoin && getOutputPort(REJECTED_PORT) != null) {
 			logger.info(this.getId() + " info: There will be no skipped records " +
 					"while left outer join is switched on");
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
-        if (errorLogURL != null) {
-       	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
-			}
-       }
 	}
 	
 	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
 		inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
-		lookup.getLookupTable().reset();
-		if (transformation != null) {
-			transformation.reset();
-		}
+		lookup = lookupTable.createLookup(recordKey, inRecord);
         if (errorLogURL != null) {
         	try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
@@ -470,8 +457,23 @@ public class DBJoin extends Node {
 			}
         }
 	}
+
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		super.reset();
+		if (transformation != null) {
+			transformation.reset();
+		}
+	}
 	
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    @Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		lookup.getLookupTable().reset();
+		lookup = null;
+	}
+
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		DBJoin dbjoin;
 		String connectionName;
