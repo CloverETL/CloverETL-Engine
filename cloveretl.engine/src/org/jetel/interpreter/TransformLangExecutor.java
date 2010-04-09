@@ -909,6 +909,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             System.err.println("["+i+"] : "+stack.stack[i]);
         }
         
+    	System.out.println("** list of local variables ***");
+    	for (int i=0;i<stack.localVarCounter;i++)
+    		System.out.println(stack.localVarSlot[stack.localVarSlotOffset+i]);
 
         return data;
     }
