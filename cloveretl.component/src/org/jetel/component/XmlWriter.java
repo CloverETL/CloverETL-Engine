@@ -19,8 +19,12 @@
 */
 package org.jetel.component;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.nio.channels.Channels;
@@ -39,6 +43,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -56,8 +62,11 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -71,9 +80,11 @@ import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * This writer component reads data records from any number of input ports 
@@ -1171,9 +1182,71 @@ public class XmlWriter extends Node {
 			return status;
 		}
 		
+		//Check whether XML mapping schema is valid
+		try {
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+			DefaultHandler handler = new MyHandler();
+			InputStream is = null;
+			if (this.mappingURL != null) {
+				String filePath = FileUtils.getFile(getGraph().getProjectURL(), mappingURL);
+				is = new FileInputStream(new File(filePath));
+			} else if (this.mappingString != null) {
+				is = new ByteArrayInputStream(mappingString.getBytes(charset));
+	        }
+			if (is != null) {
+				saxParser.parse(is, handler);
+				Set<String> attributesNames = ((MyHandler) handler).getAttributesNames();
+				for (String attributeName : attributesNames) {
+					if (!isXMLAttribute(attributeName)) {
+						status.add(new ConfigurationProblem("Can't resolve XML attribute: " + attributeName, Severity.WARNING, this, Priority.NORMAL));
+					}
+				}
+			}
+		} catch (Exception e) {
+			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: "+e.getMessage(), Severity.ERROR, this, Priority.NORMAL));
+		}
+        
 		//...
 		
         return status;
+	}
+	
+	private static class MyHandler extends DefaultHandler { 
+		//Handler used at checkConfig to parse XML mapping and retrieve attributes names
+		private Set<String> attributesNames = new HashSet<String>();
+		
+		public void startElement(String namespaceURI, String localName, String qName, Attributes atts) { 
+			int length = atts.getLength(); 
+			for (int i=0; i<length; i++) { 
+				attributesNames.add(atts.getQName(i)); 
+			}
+		}
+		
+		public Set<String> getAttributesNames() {
+			return attributesNames;
+		}
+	}
+	
+	private boolean isXMLAttribute(String attribute) {
+		//returns true if given attribute is known XML attribute
+		if (attribute.equals(XML_MAPPING_ELEMENT) ||
+				attribute.equals(XML_INDEX_ATTRIBUTE) ||
+				attribute.equals(XML_KEYS_ATTRIBUTE) ||
+				attribute.equals(XML_PARENT_KEYS_ATTRIBUTE) ||
+				attribute.equals(XML_RELATION_KEYS_TO_PARENT_ATTRIBUTE) ||
+				attribute.equals(XML_RELATION_KEYS_FROM_PARENT_ATTRIBUTE) ||
+				attribute.equals(XML_ELEMENT_ATTRIBUTE) ||
+				attribute.equals(XML_FIELDS_AS_ATTRIBUTE) ||
+				attribute.equals(XML_FIELDS_AS_EXCEPT_ATTRIBUTE) ||
+				attribute.equals(XML_FIELDS_IGNORE_ATTRIBUTE) ||
+				attribute.equals(XML_NAMESPACES_ATTRIBUTE) ||
+				attribute.equals(XML_DEFAULT_NAMESPACE_ATTRIBUTE) ||
+				attribute.equals(XML_NAMESPACE_PREFIX_ATTRIBUTE) ) {
+			return true;
+		}
+		
+		return false;
 	}
 
 	public void setCharset(String charset) {
