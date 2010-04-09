@@ -1,6 +1,9 @@
 package org.jetel.component;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.net.URL;
@@ -10,8 +13,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -29,9 +34,12 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -52,6 +60,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * <h3>XMLExtract Component</h3>
@@ -1471,9 +1480,72 @@ public class XMLExtract extends Node {
     
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+    	
+    	//Check whether XML mapping schema is valid
+		try {
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+			DefaultHandler handler = new MyHandler();
+			InputStream is = null;
+			if (this.mappingURL != null) {
+				String filePath = FileUtils.getFile(getGraph().getProjectURL(), mappingURL);
+				is = new FileInputStream(new File(filePath));
+			} else if (this.mapping != null) {
+				is = new ByteArrayInputStream(mapping.getBytes(charset));
+	        }
+			if (is != null) {
+				saxParser.parse(is, handler);
+				Set<String> attributesNames = ((MyHandler) handler).getAttributesNames();
+				for (String attributeName : attributesNames) {
+					if (!isXMLAttribute(attributeName)) {
+						status.add(new ConfigurationProblem("Can't resolve XML attribute: " + attributeName, Severity.WARNING, this, Priority.NORMAL));
+					}
+				}
+			}
+		} catch (Exception e) {
+			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: "+e.getMessage(), Severity.ERROR, this, Priority.NORMAL));
+		}
+    	
         //TODO
         return status;
     }
+    
+    private static class MyHandler extends DefaultHandler { 
+		//Handler used at checkConfig to parse XML mapping and retrieve attributes names
+		private Set<String> attributesNames = new HashSet<String>();
+		
+		public void startElement(String namespaceURI, String localName, String qName, Attributes atts) { 
+			int length = atts.getLength(); 
+			for (int i=0; i<length; i++) { 
+				attributesNames.add(atts.getQName(i)); 
+			}
+		}
+		
+		public Set<String> getAttributesNames() {
+			return attributesNames;
+		}
+	}
+	
+	private boolean isXMLAttribute(String attribute) {
+		//returns true if given attribute is known XML attribute
+		if (attribute.equals(XML_ELEMENT) ||
+				attribute.equals(XML_OUTPORT) ||
+				attribute.equals(XML_PARENTKEY) ||
+				attribute.equals(XML_GENERATEDKEY) ||
+				attribute.equals(XML_XMLFIELDS) ||
+				attribute.equals(XML_CLOVERFIELDS) ||
+				attribute.equals(XML_SEQUENCEFIELD) ||
+				attribute.equals(XML_SEQUENCEID) ||
+				attribute.equals(XML_SKIP_ROWS_ATTRIBUTE) ||
+				attribute.equals(XML_NUMRECORDS_ATTRIBUTE) ||
+				attribute.equals(XML_TRIM_ATTRIBUTE) ||
+				attribute.equals(XML_VALIDATE_ATTRIBUTE) ||
+				attribute.equals(XML_XML_FEATURES_ATTRIBUTE) ) {
+			return true;
+		}
+		
+		return false;
+	}
     
     public org.w3c.dom.Node toXML() {
         return null;
