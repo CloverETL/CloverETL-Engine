@@ -499,7 +499,11 @@ public class XMLExtract extends Node {
                     // to null
                     if (m_hasCharacters) {
 	                    try {
-	                        field.fromString(trim ? m_characters.toString().trim() : m_characters.toString());
+	                    	if (field.getValue() != null) {
+	                    		field.fromString(trim ? field.getValue().toString().trim() : field.getValue().toString());
+	                    	} else {
+	                    		field.fromString(trim ? m_characters.toString().trim() : m_characters.toString());
+	                    	}
 	                    } catch (BadDataFormatException ex) {
 	                        // This is a bit hacky here SOOO let me explain...
 	                        if (field.getType() == DataFieldMetadata.DATE_FIELD) {
