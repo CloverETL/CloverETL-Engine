@@ -45,6 +45,8 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -674,19 +676,120 @@ public class InformixDataWriter extends BulkLoader {
 				|| !checkOutputPorts(status, 0, 1)) {
 			return status;
 		}
-
-        try {
-            init();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        } finally {
-        	free();
-        }
-        
+		
+		isDataReadFromPort = !getInPorts().isEmpty();
+		isDataReadDirectlyFromFile = !isDataReadFromPort && !StringUtils.isEmpty(dataURL);
+        isDataWrittenToPort = !getOutPorts().isEmpty();
+		
+		//--Checkparams
+		if (StringUtils.isEmpty(loadUtilityPath)) {
+			status.add(new ConfigurationProblem(StringUtils.quote(XML_DB_LOADER_PATH_ATTRIBUTE)	+ " attribute have to be set.",
+					Severity.ERROR, this, Priority.HIGH, XML_DB_LOADER_PATH_ATTRIBUTE));
+		}
+		if (StringUtils.isEmpty(database)) {
+			status.add(new ConfigurationProblem(StringUtils.quote(XML_DATABASE_ATTRIBUTE) + " attribute have to be set.",
+					Severity.ERROR, this, Priority.HIGH, XML_DATABASE_ATTRIBUTE));
+		}		
+    	if (columnDelimiter != null && columnDelimiter.length() != 1) {
+    		status.add(new ConfigurationProblem("Max. length of column delimiter is one.", Severity.ERROR, this, 
+    				Priority.NORMAL, XML_COLUMN_DELIMITER_ATTRIBUTE));
+		}
+    	if (maxErrors != UNUSED_INT && maxErrors < 0) {
+    		status.add(new ConfigurationProblem(XML_MAX_ERRORS_ATTRIBUTE + " mustn't be less than 0.", Severity.ERROR, this, 
+    				Priority.NORMAL, XML_MAX_ERRORS_ATTRIBUTE));
+    	}
+    	if (ignoreRows != UNUSED_INT && ignoreRows < 0) {
+    		status.add(new ConfigurationProblem(XML_IGNORE_ROWS_ATTRIBUTE + " mustn't be less than 0.", Severity.ERROR, this, 
+    				Priority.NORMAL, XML_IGNORE_ROWS_ATTRIBUTE));
+    	}
+		if (commitInterval != UNUSED_INT && commitInterval < 0) {
+			status.add(new ConfigurationProblem(XML_COMMIT_INTERVAL_ATTRIBUTE + " mustn't be less than 0.", Severity.ERROR, this, 
+    				Priority.NORMAL, XML_COMMIT_INTERVAL_ATTRIBUTE));
+		}
+		
+		// check if each of mandatory attributes is set
+		try {
+			if (!isDataReadFromPort && !fileExists(dataURL) && StringUtils.isEmpty(command)) {
+				status.add(new ConfigurationProblem("Input port or " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute or " +
+						StringUtils.quote(XML_COMMAND_ATTRIBUTE) + " attribute have to be specified and specified file must exist.",
+						Severity.ERROR, this, Priority.NORMAL));
+			}
+		} catch (ComponentNotReadyException e) {
+			status.add(new ConfigurationProblem(e.getMessage(),	Severity.ERROR, this, Priority.NORMAL));
+		}
+		if (StringUtils.isEmpty(command) && StringUtils.isEmpty(table)) {
+			status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
+					StringUtils.quote(XML_COMMAND_ATTRIBUTE) + " attribute has to be specified.", Severity.ERROR, this, Priority.NORMAL));
+		}
+		
+		if (!isDataReadFromPort) {
+			if (StringUtils.isEmpty(dataURL)) {
+				status.add(new ConfigurationProblem("There is neither input port nor " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) +
+						" attribute specified.", Severity.ERROR, this, Priority.NORMAL));
+        	} else
+				try {
+					if (!fileExists(dataURL)) {
+						status.add(new ConfigurationProblem("Data file " + StringUtils.quote(dataURL) + " not exists.",
+								Severity.ERROR,	this, Priority.NORMAL));
+					}
+				} catch (ComponentNotReadyException e) {
+					status.add(new ConfigurationProblem(e.getMessage(),	Severity.ERROR, this, Priority.NORMAL));
+				}
+		}
+		
+		// report on ignoring some attributes
+		List<String> ignoredFields = new ArrayList<String>();
+		if (useLoadUtility) {
+			if (!StringUtils.isEmpty(command)) {
+				ignoredFields.add(XML_COMMAND_ATTRIBUTE);
+			}
+			if (ignoreRows != UNUSED_INT) {
+				ignoredFields.add(XML_IGNORE_ROWS_ATTRIBUTE);
+			}
+			if (!DEFAULT_COLUMN_DELIMITER.equals(columnDelimiter)) {
+				ignoredFields.add(XML_COLUMN_DELIMITER_ATTRIBUTE);
+			}
+		} else { // dbload
+			if (!StringUtils.isEmpty(user)) {
+				ignoredFields.add(XML_USER_ATTRIBUTE);
+			}
+			if (!StringUtils.isEmpty(password)) {
+				ignoredFields.add(XML_PASSWORD_ATTRIBUTE);
+			}
+			if (ignoreUniqueKeyViolation != DEFAULT_IGNORE_UNIQUE_KEY_VIOLATION) {
+				ignoredFields.add(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE);
+			}
+			if (useInsertCursor != DEFAULT_USE_INSERT_CURSOR) {
+				ignoredFields.add(XML_USE_INSERT_CUROSOR_ATTRIBUTE);
+			}
+		}		
+		if (!ignoredFields.isEmpty()) {
+			StringBuilder fields = new StringBuilder("(");
+			for (String field : ignoredFields) {
+				fields.append(StringUtils.quote(field));
+				fields.append(", ");
+			}
+			fields.replace(fields.length() - 2, fields.length(), ")");
+			status.add(new ConfigurationProblem("Attributes " + fields + " are ignored. " +	"They are used only when '" +
+					(useLoadUtility ? "dbload" : "load") + "' utility is used.", Severity.WARNING, this, Priority.NORMAL));
+		}
+		//--CheckParams end
+		
+		try {
+			initDataFile();
+			if (useLoadUtility) {
+				getFilePath(loadUtilityPath);
+				getFilePath(errorLog);
+				if (!isDataReadFromPort || !StringUtils.isEmpty(dataURL)) {
+					getFilePath(dataFile);
+				}
+			} else {
+				getFilePath(loadUtilityPath);
+				getFilePath(errorLog);
+			}
+		} catch (ComponentNotReadyException e) {
+			status.add(new ConfigurationProblem(e.getMessage(),	Severity.ERROR, this, Priority.NORMAL));
+		}        
         return status;
     }
     

@@ -41,6 +41,8 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -689,20 +691,71 @@ public class OracleDataWriter extends BulkLoader {
         		|| !checkOutputPorts(status, 0, 1)) {
         	return status;
         }
-
-        try {
-			init();
-		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(),
-					ConfigurationStatus.Severity.ERROR, this,ConfigurationStatus.Priority.NORMAL);
-			if (!StringUtils.isEmpty(e.getAttributeName())) {
-				problem.setAttributeName(e.getAttributeName());
-			}
-			status.add(problem);
-        } finally {
-        	free();
-		}
+        isDataReadFromPort = !getInPorts().isEmpty();
+		isDataReadDirectlyFromFile = !isDataReadFromPort && !StringUtils.isEmpty(dataURL);
+        isDataWrittenToPort = !getOutPorts().isEmpty();
         
+        //--CheckParams
+        if (StringUtils.isEmpty(loadUtilityPath)) {
+        	status.add(new ConfigurationProblem(StringUtils.quote(XML_SQLLDR_ATTRIBUTE) + " attribute have to be set.",
+					Severity.ERROR, this, Priority.HIGH, XML_SQLLDR_ATTRIBUTE));
+		}		
+		if (StringUtils.isEmpty(table) && StringUtils.isEmpty(control)) {
+			status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute or " + StringUtils.quote(XML_CONTROL_ATTRIBUTE) + 
+					" attribute have to be defined.", Severity.ERROR, this, Priority.HIGH));
+		}		
+		if (!isDataReadFromPort && StringUtils.isEmpty(dataURL)) {
+			status.add(new ConfigurationProblem("Input port or " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + 
+					" attribute	have to be defined.", Severity.ERROR, this, Priority.HIGH));
+		}		
+		if (isDataReadDirectlyFromFile && StringUtils.isEmpty(control)) {
+			status.add(new ConfigurationProblem("When no input port is connected then " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + 
+					" attribute and " +	StringUtils.quote(XML_CONTROL_ATTRIBUTE) +	" attribute have to be defined.", Severity.ERROR,
+					this, Priority.HIGH));
+		}
+		
+		// report on ignoring some attributes
+        if ((useFileForExchange && isDefinedUseFileForExchange) && !isDataReadFromPort) {
+        	status.add(new ConfigurationProblem("When no port is connected (data is read directly from file) then " +
+        			StringUtils.quote(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE) + " attribute is omitted.", Severity.WARNING,
+					this, Priority.NORMAL, XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE));
+        }        
+        if (!useFileForExchange && isDataReadFromPort && !StringUtils.isEmpty(dataURL)) {
+        	status.add(new ConfigurationProblem("When port is connected and " + StringUtils.quote(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE) + 
+        			" attribute is set to false then " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute is omitted.",
+        			Severity.WARNING, this, Priority.NORMAL, XML_FILE_URL_ATTRIBUTE));
+        }        
+        if (!StringUtils.isEmpty(control)) {
+        	if (append != null) {
+        		status.add(new ConfigurationProblem("When attribute " + StringUtils.quote(XML_CONTROL_ATTRIBUTE) + 
+            			" is defined then " + StringUtils.quote(XML_APPEND_ATTRIBUTE) + " attribute is omitted.",
+            			Severity.WARNING, this, Priority.LOW, XML_APPEND_ATTRIBUTE));
+        	}        	
+        	if (!StringUtils.isEmpty(table)) {
+        		status.add(new ConfigurationProblem("When attribute " + StringUtils.quote(XML_CONTROL_ATTRIBUTE) + 
+                		" is defined then " + StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute is omitted.",
+            			Severity.WARNING, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE));
+        	}
+        }
+        if (dbFields != null && dbFields.length > 0) {
+        	status.add(new ConfigurationProblem("When attribute " + StringUtils.quote(XML_CONTROL_ATTRIBUTE) + 
+        			" is defined then " + StringUtils.quote(XML_DBFIELDS_ATTRIBUTE) + " attribute is omitted.",
+        			Severity.WARNING, this, Priority.NORMAL, XML_DBFIELDS_ATTRIBUTE));
+        }        
+        //---CheckParams END
+        try {
+        	//check control and data file creation
+			preInit();
+			initDataFile();
+			getData();
+			//check for malformed file names
+	    	getFilePath(logFileName);
+	    	getFilePath(badFileName);
+	    	getFilePath(discardFileName);
+		} catch (ComponentNotReadyException e) {
+			status.add(new ConfigurationProblem(e.getMessage(),	ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+		}
+		deleteTempFiles();        
         return status;
     }
     
