@@ -36,6 +36,7 @@ public class XLSFormatterProvider implements FormatterProvider {
 
 	private boolean useXLSX;
 	private boolean append;
+	private boolean removeSheets;
 	private String sheetName;
 	private int namesRow = -1;
 	private int firstRow;
@@ -45,12 +46,13 @@ public class XLSFormatterProvider implements FormatterProvider {
 
 	private String[] excludedFieldNames;
 
-	public XLSFormatterProvider(boolean append) {
-		this(append, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+	public XLSFormatterProvider(boolean append, boolean removeSheets) {
+		this(append, removeSheets, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
-	public XLSFormatterProvider(boolean append, String charset) {
+	public XLSFormatterProvider(boolean append, boolean removeSheets, String charset) {
 		this.append = append;
+		this.removeSheets = removeSheets;
 		this.charset = charset;
 	}
 
@@ -60,7 +62,7 @@ public class XLSFormatterProvider implements FormatterProvider {
 	 * @return data formatter
 	 */
 	public Formatter getNewFormatter() {
-		XLSFormatter formatter = useXLSX ? new XLSXDataFormatter(append) : new JExcelXLSDataFormatter(charset, append);
+		XLSFormatter formatter = useXLSX ? new XLSXDataFormatter(append, removeSheets) : new JExcelXLSDataFormatter(charset, append, removeSheets);
 		formatter.setSheetName(sheetName);
 		formatter.setSheetNumber(sheetNumber);
 		formatter.setFirstColumn(firstColumnIndex);
@@ -154,6 +156,13 @@ public class XLSFormatterProvider implements FormatterProvider {
 	 */
 	public boolean isAppend() {
 		return append;
+	}
+
+	/**
+	 * @return true iff all sheets are removed when a source file is opened 
+	 */
+	public boolean isRemoveSheets() {
+		return removeSheets;
 	}
 
 	public String getCharset() {

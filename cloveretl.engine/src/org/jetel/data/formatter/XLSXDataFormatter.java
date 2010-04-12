@@ -83,9 +83,10 @@ public class XLSXDataFormatter extends XLSFormatter {
 	 * Creates a XLSX data formatter.
 	 *
 	 * @param append determines whether the new data should be appended to the old data or replace them
+	 * @param removeSheets indicates if all sheets are to be removed from a file
 	 */
-	public XLSXDataFormatter(boolean append) {
-		super(append);
+	public XLSXDataFormatter(boolean append, boolean removeSheets) {
+		super(append, removeSheets);
 	}
 
 	public void setDataTarget(Object dataTarget) {
@@ -124,6 +125,14 @@ public class XLSXDataFormatter extends XLSFormatter {
 			}
 		} catch (IOException exception) {
 			throw new IllegalArgumentException("Error opening/writing the XLS(X) workbook!", exception);
+		}
+		
+		if (removeSheets) { //remove all sheets in a workbook
+			//they must be removed from the last sheet to the first sheet, because Workbook
+			//re-indexes sheets with a higher number than the removed one
+			for (int i=workbook.getNumberOfSheets()-1; i>=0; --i) {
+    			workbook.removeSheetAt(i);
+			}
 		}
 
 		//

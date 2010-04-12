@@ -126,6 +126,7 @@ public class XLSWriter extends Node {
 	private static final String XML_SHEETNAME_ATTRIBUTE = "sheetName";
 	private static final String XML_SHEETNUMBER_ATTRIBUTE = "sheetNumber";
 	private static final String XML_APPEND_ATTRIBUTE = "append";
+	private static final String XML_REMOVESHEETS_ATTRIBUTE = "removeSheets";	
 	private static final String XML_FIRSTDATAROW_ATTRIBUTE = "firstDataRow";
 	private static final String XML_FIRSTCOLUMN_ATTRIBUTE = "firstColumn";
 	private static final String XML_NAMESROW_ATTRIBUTE = "namesRow";
@@ -150,7 +151,7 @@ public class XLSWriter extends Node {
 
         try {
             xlsWriter = new XLSWriter(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
-                    xattribs.getString(XML_CHARSET_ATTRIBUTE, null), xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
+                    xattribs.getString(XML_CHARSET_ATTRIBUTE, null), xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false), xattribs.getBoolean(XML_REMOVESHEETS_ATTRIBUTE, false));
             xlsWriter.setFormatterType(XLSType.valueOfIgnoreCase(xattribs.getString(XML_FORMATTER_ATTRIBUTE, null)));
 
             if (xattribs.exists(XML_SHEETNAME_ATTRIBUTE)) {
@@ -240,19 +241,21 @@ public class XLSWriter extends Node {
      *            indicates if save metadata names
      * @param append
      *            indicates if new data are appended or rewrite old data
+     * @param removeSheets
+     *            indicates if all sheets are to be removed from a file
      */
-	public XLSWriter(String id, String fileURL, boolean append) {
+	public XLSWriter(String id, String fileURL, boolean append, boolean removeSheets) {
 		super(id);
 
 		this.fileURL = fileURL;
-        this.formatterProvider = new XLSFormatterProvider(append);
+        this.formatterProvider = new XLSFormatterProvider(append, removeSheets);
 	}
 	
-	public XLSWriter(String id, String fileURL, String charset, boolean append) {
+	public XLSWriter(String id, String fileURL, String charset, boolean append, boolean removeSheets) {
 		super(id);
 
 		this.fileURL = fileURL;
-		this.formatterProvider = new XLSFormatterProvider(append, charset);
+		this.formatterProvider = new XLSFormatterProvider(append, removeSheets, charset);
 	}
 
 	@Override
@@ -415,6 +418,7 @@ public class XLSWriter extends Node {
         xmlElement.setAttribute(XML_FORMATTER_ATTRIBUTE, formatterType.name());
         xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE, this.fileURL);
         xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(formatterProvider.isAppend()));
+        xmlElement.setAttribute(XML_REMOVESHEETS_ATTRIBUTE, String.valueOf(formatterProvider.isRemoveSheets()));
         xmlElement.setAttribute(XML_FIRSTCOLUMN_ATTRIBUTE, String.valueOf(formatterProvider.getFirstColumn()));
         xmlElement.setAttribute(XML_FIRSTDATAROW_ATTRIBUTE, String.valueOf(formatterProvider.getFirstRow() + 1));
         xmlElement.setAttribute(XML_NAMESROW_ATTRIBUTE, String.valueOf(formatterProvider.getNamesRow() + 1));
