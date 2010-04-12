@@ -45,6 +45,8 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -739,23 +741,108 @@ public class DB2DataWriter extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        if(!checkInputPorts(status, 0, 1)
-        		|| !checkOutputPorts(status, 0, 1)) {
+        if(!checkInputPorts(status, 0, 1) || !checkOutputPorts(status, 0, 1)) {
         	return status;
         }
-        
-        try {
-            init();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        } finally {
-        	free();
-        }
-        
+        //--Check mandatory attributes
+		if (StringUtils.isEmpty(database)) {
+			status.add(new ConfigurationProblem(StringUtils.quote(XML_DATABASE_ATTRIBUTE) + " attribute have to be set.", Severity.ERROR,
+					this, Priority.HIGH, XML_DATABASE_ATTRIBUTE));
+		}
+		if (StringUtils.isEmpty(table)) {
+			status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute have to be set.", Severity.ERROR,
+					this, Priority.HIGH, XML_TABLE_ATTRIBUTE));
+		}
+		if (StringUtils.isEmpty(user)) {
+			status.add(new ConfigurationProblem(StringUtils.quote(XML_USERNAME_ATTRIBUTE) + " attribute have to be set.", Severity.ERROR,
+					this, Priority.HIGH, XML_USERNAME_ATTRIBUTE));
+		}
+		if (StringUtils.isEmpty(psw)) {
+			status.add(new ConfigurationProblem(StringUtils.quote(XML_PASSWORD_ATTRIBUTE) + " attribute have to be set.", Severity.ERROR,
+					this, Priority.HIGH, XML_PASSWORD_ATTRIBUTE));
+		}
+		if (loadMode == null) {
+			status.add(new ConfigurationProblem(StringUtils.quote(XML_MODE_ATTRIBUTE) + " attribute have to be set.", Severity.ERROR,
+					this, Priority.HIGH, XML_MODE_ATTRIBUTE));
+		}
+		// --- Check column delimiter 
+        if (columnDelimiter == 0 && parameters != null){
+			String[] param = StringUtils.split(parameters);
+			int index;
+			for (String string : param) {
+				index = string.indexOf(EQUAL_CHAR);
+				if (index > -1) {
+					properties.setProperty(string.substring(0, index).toLowerCase(), 
+							StringUtils.unquote(string.substring(index + 1)));
+				}else{
+					properties.setProperty(string.toLowerCase(), String.valueOf(true));
+				}
+			}
+			if (properties.contains(COL_DEL_PARAM)) {
+				columnDelimiter = properties.getProperty(COL_DEL_PARAM).charAt(0);
+			}			
+		}
+		if (Character.isWhitespace(columnDelimiter)) {
+			status.add(new ConfigurationProblem(StringUtils.quote(String.valueOf(columnDelimiter)) + " is not allowed as column delimiter",
+					Severity.ERROR, this, Priority.NORMAL, XML_COLUMNDELIMITER_ATTRIBUTE));
+		}
+		
+		// Check data file
+		if (dataURL == null && getInPorts().isEmpty()) {
+			status.add(new ConfigurationProblem("There is neither input port nor data file URL specified.", Severity.ERROR, this,
+					Priority.NORMAL, XML_FILEURL_ATTRIBUTE));			
+		} else if (dataURL != null){
+			try {
+				initDataFile();
+			} catch (ComponentNotReadyException e) {
+				status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE));
+			}
+		}
+		
+		//---Data is read from port
+		if (!getInPorts().isEmpty()) {
+			if (usePipe && ProcBox.isWindowsPlatform()) {
+				status.add(new ConfigurationProblem("Pipe transfer not supported on Windows", Severity.WARNING, this,
+						Priority.NORMAL, XML_USEPIPE_ATTRIBUTE));
+			}
+			inMetadata = getInputPort(READ_FROM_PORT).getMetadata();
+		}
+		
+		// Check FileMetadata
+		if (fileMetadataName != null) {
+			try {
+				fileMetadata = getGraph().getDataRecordMetadata(fileMetadataName, true);
+			} catch (ComponentNotReadyException e) {
+				status.add(new ConfigurationProblem(e.getMessage(),	Severity.ERROR, this, Priority.NORMAL, XML_FILEMETADATA_ATTRIBUTE));
+			}
+			if (fileMetadata == null) {
+				status.add(new ConfigurationProblem("File metadata ID is not valid", Severity.ERROR, this, Priority.NORMAL,
+						XML_FILEMETADATA_ATTRIBUTE));
+			} else {
+				if (fileMetadata.getRecType() == DataRecordMetadata.MIXED_RECORD) {
+					status.add(new ConfigurationProblem("Only fixlen or delimited metadata allowed", Severity.ERROR, this, Priority.HIGH,
+							XML_FILEMETADATA_ATTRIBUTE));
+				}
+			}
+		}
+		if (interpreter != null && !interpreter.contains("${}")) {
+			status.add(new ConfigurationProblem("Incorect form of " + XML_INTERPRETER_ATTRIBUTE + " attribute:" + interpreter +
+					"\nUse form:\"interpreter [parameters] ${} [parameters]\"", Severity.ERROR, this,
+					Priority.HIGH, XML_INTERPRETER_ATTRIBUTE));
+		}
+		try {
+			if (batchURL != null) {
+				batchFile = new File(FileUtils.getFile(getGraph().getProjectURL(), batchURL));
+			}
+			if (batchFile == null) {
+				batchFile = File.createTempFile("tmp", ".bat", new File("."));
+			}
+			if (!batchFile.canWrite()) {
+				status.add(new ConfigurationProblem("Can not create batch file", Severity.ERROR, this, Priority.NORMAL));
+			}
+		} catch (IOException e) {
+			status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
+		}        	
         return status;
 	}
 
@@ -796,11 +883,6 @@ public class DB2DataWriter extends Node {
 		}
 
 		if (!getInPorts().isEmpty()) {
-			//prepare name for temporary data file/pipe
-			String tmpDir = System.getProperty("java.io.tmpdir");
-			if (!tmpDir.endsWith(File.separator)) {
-				tmpDir = tmpDir.concat(File.separator);
-			}
 			if (dataURL != null) {
 				initDataFile();
 			}
@@ -862,7 +944,7 @@ public class DB2DataWriter extends Node {
 				initDataFile();
 
 				if (fileMetadata == null) throw new ComponentNotReadyException(this,
-						XML_FILEMETADATA_ATTRIBUTE, "File metadata have to be defined");
+						XML_FILEMETADATA_ATTRIBUTE, "File metadata has to be defined");
 				switch (fileMetadata.getRecType()) {
 				case DataRecordMetadata.DELIMITED_RECORD:
 					delimitedData = true;

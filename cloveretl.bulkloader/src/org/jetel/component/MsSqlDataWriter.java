@@ -42,6 +42,8 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -1071,20 +1073,70 @@ public class MsSqlDataWriter extends BulkLoader {
 				|| !checkOutputPorts(status, 0, 1)) {
 			return status;
 		}
-
-		try {
-			init();
-		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, 
-					this, ConfigurationStatus.Priority.NORMAL);
-			if (!StringUtils.isEmpty(e.getAttributeName())) {
-				problem.setAttributeName(e.getAttributeName());
-			}
-			status.add(problem);
-		} finally {
-			free();
+		
+		isDataReadFromPort = !getInPorts().isEmpty();
+		isDataReadDirectlyFromFile = !isDataReadFromPort && !StringUtils.isEmpty(dataURL);
+        isDataWrittenToPort = !getOutPorts().isEmpty();
+        properties = parseParameters(parameters);
+        
+		//---checkParams
+		if (StringUtils.isEmpty(loadUtilityPath)) {
+			status.add(new ConfigurationProblem(StringUtils.quote(XML_BCP_UTILITY_PATH_ATTRIBUTE) + " attribute have to be set.",
+					Severity.ERROR, this, Priority.HIGH, XML_BCP_UTILITY_PATH_ATTRIBUTE));			
 		}
-
+		if (StringUtils.isEmpty(table) && StringUtils.isEmpty(view)) {
+			status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute or " +
+					StringUtils.quote(XML_VIEW_ATTRIBUTE) + " attribute must be set.", Severity.ERROR, this, Priority.HIGH));
+		}		
+		if (isUsedDataTypeForImportData() > 1) {
+			status.add(new ConfigurationProblem("Only one parameter from these " +	StringUtils.quote(MS_SQL_NATIVE_TYPE_PARAM) + ", " +
+					StringUtils.quote(MS_SQL_CHARACTER_TYPE_PARAM) + ", " +	StringUtils.quote(MS_SQL_WIDE_CHARACTER_TYPE_PARAM) + ", " +
+					StringUtils.quote(MS_SQL_KEEP_NON_TEXT_NATIVE_PARAM) + " can be used simultaneously.",
+					Severity.ERROR, this, Priority.NORMAL));
+		} else if (isUsedDataTypeForImportData() < 1 && !properties.containsKey(MS_SQL_FORMAT_FILE_PARAM)
+				&& !properties.containsKey(MS_SQL_INPUT_FILE_PARAM)) {
+			status.add(new ConfigurationProblem("One of these parameters has to be set: " + StringUtils.quote(MS_SQL_NATIVE_TYPE_PARAM) + ", " +
+					StringUtils.quote(MS_SQL_CHARACTER_TYPE_PARAM) + ", " +	StringUtils.quote(MS_SQL_WIDE_CHARACTER_TYPE_PARAM) + ", " +
+					StringUtils.quote(MS_SQL_KEEP_NON_TEXT_NATIVE_PARAM) + ", " + StringUtils.quote(MS_SQL_FORMAT_FILE_PARAM) + ", " +
+					StringUtils.quote(MS_SQL_INPUT_FILE_PARAM) + ".\n" + "For most cases (when input port is connected) " + 
+					StringUtils.quote(MS_SQL_CHARACTER_TYPE_PARAM) + " should be used.", Severity.ERROR, this, Priority.NORMAL));
+		}
+		// report that some problem can occur
+		if (StringUtils.specCharToString("\r\n").equals(getRecordDelimiter(true)) && isCharTypeUseToLoad()) {
+			status.add(new ConfigurationProblem("When " + StringUtils.quote(MS_SQL_RECORD_DELIMITER_PARAM +	"=" +
+					StringUtils.specCharToString("\r\n")) + " then problem with loading data can occur.",
+					Severity.WARNING, this, Priority.NORMAL, MS_SQL_RECORD_DELIMITER_PARAM));
+		}
+		
+		// report on ignoring some attributes
+		if (columnDelimiter != null && properties.containsKey(MS_SQL_COLUMN_DELIMITER_PARAM)) {
+			status.add(new ConfigurationProblem("Parameter " + StringUtils.quote(MS_SQL_COLUMN_DELIMITER_PARAM) + " in attribute "
+					+ StringUtils.quote(XML_PARAMETERS_ATTRIBUTE) + " is ignored. Attribute " + StringUtils.quote(XML_COLUMN_DELIMITER_ATTRIBUTE) +
+					" is used.", Severity.WARNING, this, Priority.NORMAL, MS_SQL_COLUMN_DELIMITER_PARAM));
+		}		
+		if (properties.containsKey(MS_SQL_RECORD_DELIMITER_PARAM) && properties.containsKey(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM) ) {
+			status.add(new ConfigurationProblem("Parameter " + StringUtils.quote(MS_SQL_RECORD_DELIMITER_ALIAS_PARAM) + " in attribute "
+					+ StringUtils.quote(XML_PARAMETERS_ATTRIBUTE) + " is ignored. Parameter " + StringUtils.quote(MS_SQL_RECORD_DELIMITER_PARAM) +
+					" is used.", Severity.WARNING, this, Priority.NORMAL, MS_SQL_RECORD_DELIMITER_ALIAS_PARAM));
+		}		
+		if (serverName != null && properties.containsKey(MS_SQL_SERVER_NAME_PARAM)) {
+			status.add(new ConfigurationProblem("Parameter " + StringUtils.quote(MS_SQL_SERVER_NAME_PARAM) + " in attribute "
+					+ StringUtils.quote(XML_PARAMETERS_ATTRIBUTE) + " is ignored. Attribute " + StringUtils.quote(XML_SERVER_NAME_ATTRIBUTE) +
+					" is used.", Severity.WARNING, this, Priority.NORMAL, MS_SQL_SERVER_NAME_PARAM));
+		}		
+		String sn = getServerName();
+		if (sn != null && sn.contains(":")) {
+			status.add(new ConfigurationProblem("If attribute " + StringUtils.quote(XML_SERVER_NAME_ATTRIBUTE) 
+					+ " contains port number then 'bcp' utility can fail - " + StringUtils.quote("Connection string is not valid") + ":.",
+					Severity.WARNING, this, Priority.NORMAL, XML_SERVER_NAME_ATTRIBUTE));			
+		}
+		//---End of checkParams
+		try {
+			initDataFile();
+		} catch (ComponentNotReadyException e) {
+			status.add(new ConfigurationProblem(e.getMessage(),	ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+		}
+		deleteTempFiles();
 		return status;
 	}
 
