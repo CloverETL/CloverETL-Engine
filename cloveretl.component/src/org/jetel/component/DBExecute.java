@@ -46,6 +46,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -334,10 +335,6 @@ public class DBExecute extends Node {
 				logger.info(dbSQL[i]);
 			}
 		}
-		if (getInPorts().size() > 0) {
-			inRecord = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
-			inRecord.init();
-		}
 		if ((outPort = getOutputPort(WRITE_TO_PORT)) != null) {
 			outRecord = new DataRecord(outPort.getMetadata());
 			outRecord.init();
@@ -349,7 +346,6 @@ public class DBExecute extends Node {
 			errorCodeFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_CODE);
 			errMessFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_MESSAGE);
 		}
-		initConnectionAndStatements();
 		errorActions = new HashMap<Integer, ErrorAction>();
 		if (errorActionsString != null){
         	String[] actions = StringUtils.split(errorActionsString);
@@ -371,34 +367,28 @@ public class DBExecute extends Node {
         }else{
         	errorActions.put(Integer.MIN_VALUE, ErrorAction.DEFAULT_ERROR_ACTION);
         }
-        if (errorLogURL != null) {
-       	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
-			}
-       }
 	}
 
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
+		if (outRecord != null) {
+			outRecord.reset();
+		}
+		if (errRecord != null) {
+			errRecord.reset();
+		}		
+	}
+
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
 
 		if (getInPorts().size() > 0) {
 			inRecord = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
 			inRecord.init();
 		}
-
-		if (outRecord != null) {
-			outRecord.reset();
-		}
-
-		if (errRecord != null) {
-			errRecord.reset();
-		}
-
 		initConnectionAndStatements();
-
 		if (errorLogURL != null) {
 			try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
@@ -407,6 +397,38 @@ public class DBExecute extends Node {
 			}
 		}
 	}
+
+
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+
+		if (errorLog != null){
+			try {
+				errorLog.flush();
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+			try {
+				errorLog.close();
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+		}
+		try {
+			if (callableStatement != null) {
+				for (SQLCloverCallableStatement statement : callableStatement) {
+					statement.close(); 
+				}
+			}
+			if (sqlStatement != null) {
+				sqlStatement.close();
+			}
+		} catch (SQLException e) {
+			logger.warn("SQLException when closing statement", e);
+		}
+	}
+
 
 	private void initConnectionAndStatements() throws ComponentNotReadyException {
 		try {
@@ -606,27 +628,11 @@ public class DBExecute extends Node {
     		if (runIt && transaction == InTransaction.ALL){
     			commit();
     		}
-    		if (errorLog != null){
-    			errorLog.flush();
-    			errorLog.close();
-    		}
     		if (!runIt) {
     			connectionInstance.getSqlConnection().rollback();
     		}
 		} finally {
     		broadcastEOF();
-    		try {
-				if (callableStatement != null) {
-					for (SQLCloverCallableStatement statement : callableStatement) {
-						statement.close(); 
-					}
-				}
-				if (sqlStatement != null) {
-					sqlStatement.close();
-				}
-			} catch (SQLException e) {
-				logger.warn("SQLException when closing statement", e);
-			}
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
