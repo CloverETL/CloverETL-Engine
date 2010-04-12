@@ -102,12 +102,12 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	 * @param append indicates if append data to existing xls sheet or replace 
 	 * them by new data 
 	 */
-	public JExcelXLSDataFormatter(boolean append){
-		this(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER, append);
+	public JExcelXLSDataFormatter(boolean append, boolean removeSheets){
+		this(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER, append, removeSheets);
 	}
 
-	public JExcelXLSDataFormatter(String charset, boolean append){
-		super(append);
+	public JExcelXLSDataFormatter(String charset, boolean append, boolean removeSheets){
+		super(append, removeSheets);
 		this.charset = charset;
 	}
 	/* (non-Javadoc)
@@ -269,6 +269,13 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
        			wb = Workbook.createWorkbook(os, oldWb, settings);
     		} else {
     			wb = Workbook.createWorkbook(os, settings);
+    		}
+    		if (removeSheets) { //remove all sheets in a workbook
+    			//they must be removed from the last sheet to the first sheet, because Workbook
+    			//re-indexes sheets with a higher number than the removed one
+    			for (int i=wb.getNumberOfSheets()-1; i>=0; --i) {
+        			wb.removeSheet(i);
+    			}
     		}
     		
         }catch(Exception ex){

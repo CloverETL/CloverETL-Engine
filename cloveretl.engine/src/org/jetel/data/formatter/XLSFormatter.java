@@ -94,6 +94,7 @@ public abstract class XLSFormatter implements Formatter {
 	protected int firstRow = 0;
 	protected int namesRow = -1;
 	protected boolean append;
+	protected boolean removeSheets;
 	protected String sheetName = null;
 	protected int sheetNumber = -1;
 	protected String firstColumnIndex = "A";
@@ -106,11 +107,14 @@ public abstract class XLSFormatter implements Formatter {
 	/**
 	 * Constructor
 	 * 
-	 * @param append indicates if append data to existing xls sheet or replace 
-	 * them by new data 
+	 * @param append
+	 *         indicates if append data to existing xls sheet or replace them by new data
+	 * @param removeSheets
+	 *         indicates if all sheets are to be removed from a file 
 	 */
-	public XLSFormatter(boolean append){
+	public XLSFormatter(boolean append, boolean removeSheets){
 		this.append = append;
+		this.removeSheets = removeSheets;
 	}
 
 	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException{
@@ -211,6 +215,14 @@ public abstract class XLSFormatter implements Formatter {
 	public boolean isAppend() {
 		return append;
 	}
+	
+	/**
+	 * @return true iff all sheets are removed when a source file is opened 
+	 */
+	public boolean isRemoveSheets() {
+		return removeSheets;
+	}	
+	
 
 	/**
 	 * @return number of first data row
