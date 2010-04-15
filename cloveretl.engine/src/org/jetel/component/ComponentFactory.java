@@ -32,7 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.distribution.NodeDistribution;
+import org.jetel.graph.distribution.NodeAllocation;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
@@ -137,9 +137,9 @@ public class ComponentFactory {
 			//nodeDistribution attribute parsing
 			//hack for extracting of node layout information - Clover3 solves this issue
 			//it is the easiest way how to add new common attribute for all nodes
-			if (xattribs.exists(Node.XML_DISTRIBUTION_ATTRIBUTE)) {
-				NodeDistribution nodeDistribution = NodeDistribution.createFromString(xattribs.getString(Node.XML_DISTRIBUTION_ATTRIBUTE));
-				result.setDistribution(nodeDistribution);
+			if (xattribs.exists(Node.XML_ALLOCATION_ATTRIBUTE)) {
+				NodeAllocation nodeAllocation = NodeAllocation.createFromString(xattribs.getString(Node.XML_ALLOCATION_ATTRIBUTE));
+				result.setAllocation(nodeAllocation);
 			}
 			//name attribute parsing
 			if (xattribs.exists(Node.XML_NAME_ATTRIBUTE)) {
