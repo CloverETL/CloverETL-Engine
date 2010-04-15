@@ -15,6 +15,7 @@ import org.jetel.graph.TransformationGraph;
 public class SandboxStreamHandler extends URLStreamHandler {
 
 	public static final String SANDBOX_PROTOCOL = "sandbox";
+	public static final String SANDBOX_PROTOCOL_URL_PREFIX = SANDBOX_PROTOCOL+"://";
 	
 	private final TransformationGraph graph; 
 	
