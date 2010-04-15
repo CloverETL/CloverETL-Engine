@@ -665,7 +665,7 @@ public class FileUtils {
     				log.debug("IOException occured for URL - host: '" + url.getHost() + "', userinfo: '" + url.getUserInfo() + "', path: '" + url.getPath() + "'");
     				throw e;
     			}
-    		} else if (input.startsWith(SandboxStreamHandler.SANDBOX_PROTOCOL)) {
+    		} else if (input.startsWith(SandboxStreamHandler.SANDBOX_PROTOCOL_URL_PREFIX)) {
     			TransformationGraph graph = ContextProvider.getGraph();
         		if (graph == null)
         			throw new NullPointerException("Graph reference cannot be null when \""+SandboxStreamHandler.SANDBOX_PROTOCOL+"\" protocol is used.");
