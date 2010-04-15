@@ -217,7 +217,8 @@ public class GraphTrackingDetail implements GraphTracking {
 	}
 
 	void gatherTrackingDetails() {
-		runningPhaseDetail.gatherTrackingDetails();
+		if (runningPhaseDetail != null)
+			runningPhaseDetail.gatherTrackingDetails();
 	}
 
 	void phaseFinished() {
