@@ -73,5 +73,9 @@ public abstract class CloverWorker implements Runnable {
 		node.registerChildThread(thread); //register worker as a child thread of this component
 		return thread;
 	}
+
+	public Thread getThread() {
+		return thread;
+	}
 	
 }
