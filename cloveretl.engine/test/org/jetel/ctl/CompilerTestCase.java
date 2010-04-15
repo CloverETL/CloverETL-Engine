@@ -317,10 +317,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	
 	protected void doCompileExpectError(String testIdentifier, String errCode) {
-		doCompileExpectError(testIdentifier, Arrays.asList(errCode));
+		doCompileExpectErrors(testIdentifier, Arrays.asList(errCode));
 	}
 	
-	protected void doCompileExpectError(String testIdentifier, List<String> errCodes) {
+	protected void doCompileExpectErrors(String testIdentifier, List<String> errCodes) {
 		URL importLoc = CompilerTestCase.class.getResource(testIdentifier + ".ctl");
 		if (importLoc == null) {
 			throw new RuntimeException("Test case '" + testIdentifier + ".ctl" + "' not found");
