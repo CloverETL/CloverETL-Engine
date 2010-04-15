@@ -3820,12 +3820,12 @@ public class OptimizerTest extends CompilerTestCase {
 	
 	public void test_case_unique_check() {
 		// test case for issue 2515
-		doCompileExpectError("test_case_unique_check", Arrays.asList("Duplicate case", "Duplicate case"));
+		doCompileExpectErrors("test_case_unique_check", Arrays.asList("Duplicate case", "Duplicate case"));
 	}
 	
 	public void test_case_unique_check2() {
 		// test case for issue 2515
-		doCompileExpectError("test_case_unique_check2", Arrays.asList("Duplicate case", "Duplicate case"));
+		doCompileExpectErrors("test_case_unique_check2", Arrays.asList("Duplicate case", "Duplicate case"));
 	}
 	
 	public void test_case_unique_check3() {
@@ -3857,6 +3857,11 @@ public class OptimizerTest extends CompilerTestCase {
 		check("map1", map1instance);
 		check("map2", map2instance);
 		check("map3", map3instance);
+	}
+	
+	public void test_global_field_access() {
+		// test case for issue 3957
+		doCompileExpectError("test_global_field_access", "Unable to access record field in global scope");
 	}
 	
 	public void test_list_concatenate() {

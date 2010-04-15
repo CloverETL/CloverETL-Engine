@@ -28,6 +28,7 @@ import org.jetel.ctl.ASTnode.CLVFSwitchStatement;
 import org.jetel.ctl.ASTnode.CLVFType;
 import org.jetel.ctl.ASTnode.CLVFUnaryExpression;
 import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
+import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
@@ -192,7 +193,7 @@ public class ASTBuilder extends NavigatingVisitor {
 
 		return node;
 	}
-		
+
 	/**
 	 * Calculates positional references according to field names. 
 	 * Validates that metadata and field references are valid
@@ -200,6 +201,12 @@ public class ASTBuilder extends NavigatingVisitor {
 	 */
 	@Override
 	public CLVFFieldAccessExpression visit(CLVFFieldAccessExpression node, Object data) {
+
+		if (isGlobal(node)) {
+			error(node, "Unable to access record field in global scope");
+		}
+
+		
 		Object id = node.getRecordId();
 		// if the FieldAccessExpression appears somewhere except assignment 
 		// the 'data' will be null so we treat it as a reference to the input field
@@ -273,6 +280,20 @@ public class ASTBuilder extends NavigatingVisitor {
 		
 		return node;
 	}
+	
+	/**
+	 * @param node
+	 * @return
+	 */
+	private boolean isGlobal(SimpleNode node) {
+		Node actualNode = node;
+		while ((actualNode = actualNode.jjtGetParent()) != null) {
+			if (actualNode instanceof CLVFFunctionDeclaration)
+				return false;
+		}
+		return true;
+	}
+
 
 	@Override
 	public Object visit(CLVFForeachStatement node, Object data) {
