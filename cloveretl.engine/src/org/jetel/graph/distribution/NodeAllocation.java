@@ -29,16 +29,16 @@ import org.jetel.util.string.StringUtils;
  *
  * @created 11.1.2010
  */
-public class NodeDistribution {
+public class NodeAllocation {
 
 	private static final String SANDBOX_PREFIX = "sandbox:";
 	
 	private static final String NODE_PREFIX = "node:";
 	
-	private static final NodeDistribution INFERED_FROM_NEIGHBOURS;
+	private static final NodeAllocation INFERED_FROM_NEIGHBOURS;
 	
 	static {
-		INFERED_FROM_NEIGHBOURS = new NodeDistribution();
+		INFERED_FROM_NEIGHBOURS = new NodeAllocation();
 		INFERED_FROM_NEIGHBOURS.setNeighbours(true);
 	}
 	
@@ -51,58 +51,58 @@ public class NodeDistribution {
 	//is not supported yet
 	private String[] clusterNodes;
 	
-	public static NodeDistribution createBasedOnNeighbours() {
+	public static NodeAllocation createBasedOnNeighbours() {
 		return INFERED_FROM_NEIGHBOURS;
 	}
 
-	public static NodeDistribution createBasedOnSandbox(String sandboxId) {
+	public static NodeAllocation createBasedOnSandbox(String sandboxId) {
 		if (StringUtils.isEmpty(sandboxId)) {
 			throw new IllegalArgumentException("Sandbox id cannot be empty.");
 		}
-		NodeDistribution nodeDistribution = new NodeDistribution();
-		nodeDistribution.setSandboxId(sandboxId);
-		return nodeDistribution;
+		NodeAllocation nodeAllocation = new NodeAllocation();
+		nodeAllocation.setSandboxId(sandboxId);
+		return nodeAllocation;
 	}
 
-	public static NodeDistribution createBasedOnNodeId(String nodeId) {
+	public static NodeAllocation createBasedOnNodeId(String nodeId) {
 		if (StringUtils.isEmpty(nodeId)) {
 			throw new IllegalArgumentException("Node id cannot be empty.");
 		}
-		NodeDistribution nodeDistribution = new NodeDistribution();
-		nodeDistribution.setNodeId(nodeId);
-		return nodeDistribution;
+		NodeAllocation nodeAllocation = new NodeAllocation();
+		nodeAllocation.setNodeId(nodeId);
+		return nodeAllocation;
 	}
 
-	public static NodeDistribution createBasedOnClusterNodes(String[] clusterNodes) {
+	public static NodeAllocation createBasedOnClusterNodes(String[] clusterNodes) {
 		if (clusterNodes == null || clusterNodes.length == 0) {
 			throw new IllegalArgumentException("Cluster nodes cannot be empty array.");
 		}
-		NodeDistribution nodeDistribution = new NodeDistribution();
-		nodeDistribution.setClusterNodes(clusterNodes);
-		return nodeDistribution;
+		NodeAllocation nodeAllocation = new NodeAllocation();
+		nodeAllocation.setClusterNodes(clusterNodes);
+		return nodeAllocation;
 	}
 
-	public static NodeDistribution createFromString(String rawDistribution) throws JetelException {
-		if (rawDistribution.startsWith(SANDBOX_PREFIX)) {
-			String sandboxId = rawDistribution.substring(SANDBOX_PREFIX.length());
+	public static NodeAllocation createFromString(String rawAllocation) throws JetelException {
+		if (rawAllocation.startsWith(SANDBOX_PREFIX)) {
+			String sandboxId = rawAllocation.substring(SANDBOX_PREFIX.length());
 			if (StringUtils.isEmpty(sandboxId)) {
-				throw new JetelException("Ivalid node distribution format: " + rawDistribution + ".");
+				throw new JetelException("Ivalid node allocation format: " + rawAllocation + ".");
 			}
-			return NodeDistribution.createBasedOnSandbox(sandboxId);
-		} else if (rawDistribution.startsWith(NODE_PREFIX)) {
-			String nodeId = rawDistribution.substring(NODE_PREFIX.length());
+			return NodeAllocation.createBasedOnSandbox(sandboxId);
+		} else if (rawAllocation.startsWith(NODE_PREFIX)) {
+			String nodeId = rawAllocation.substring(NODE_PREFIX.length());
 			if (StringUtils.isEmpty(nodeId)) {
-				throw new JetelException("Ivalid node distribution format: " + rawDistribution + ".");
+				throw new JetelException("Ivalid node allocation format: " + rawAllocation + ".");
 			}
-			return NodeDistribution.createBasedOnNodeId(nodeId);
+			return NodeAllocation.createBasedOnNodeId(nodeId);
 		}
-		throw new JetelException("Ivalid node distribution format: " + rawDistribution + ".");
+		throw new JetelException("Ivalid node allocation format: " + rawAllocation + ".");
 	}
 	
 	/**
 	 * Only private constructor. 
 	 */
-	private NodeDistribution() {
+	private NodeAllocation() {
 		//DO NOTHING
 	}
 	
