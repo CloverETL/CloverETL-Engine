@@ -27,7 +27,7 @@ import java.util.GregorianCalendar;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.test.CloverTestCase;
-import org.jetel.util.date.DateFormatter;
+import org.jetel.util.date.DateFormatterFactory;
 
 /**
  * @author maciorowski
@@ -200,7 +200,7 @@ public void test_1_DateDataField() {
 		}
 
 		DataFieldMetadata javaDateMetadataPrefix = new DataFieldMetadata("date", ";");
-		javaDateMetadataPrefix.setFormatStr(DateFormatter.JAVA_FORMAT_PREFIX + as400DateFormat);
+		javaDateMetadataPrefix.setFormatStr(DateFormatterFactory.JAVA_FORMAT_PREFIX + as400DateFormat);
 		DateDataField javaDateDataFieldPrefix = new DateDataField(javaDateMetadataPrefix);
 
 		try {
@@ -211,7 +211,7 @@ public void test_1_DateDataField() {
 		}
 
 		DataFieldMetadata jodaDateMetadata = new DataFieldMetadata("date", ";");
-		jodaDateMetadata.setFormatStr(DateFormatter.JODA_FORMAT_PREFIX + as400DateFormat);
+		jodaDateMetadata.setFormatStr(DateFormatterFactory.JODA_FORMAT_PREFIX + as400DateFormat);
 		DateDataField jodaDateDataField = new DateDataField(jodaDateMetadata);
 
 		try {

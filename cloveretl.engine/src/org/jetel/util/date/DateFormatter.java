@@ -26,15 +26,10 @@ import java.util.Date;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  *
- * @version 17th August 2009
- * @since 10th August 2009
+ * @version 16th April 2010
+ * @created 10th August 2009
  */
 public interface DateFormatter {
-
-	/** the Java prefix specifying date format strings used by the Java's DateFormat class */
-	public static final String JAVA_FORMAT_PREFIX = "java:";
-	/** the Joda-Time prefix specifying date format strings used by the Joda-Time's DateTimeFormatter class */
-	public static final String JODA_FORMAT_PREFIX = "joda:";
 
 	/**
 	 * Formats the given date value.

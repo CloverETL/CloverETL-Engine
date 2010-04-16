@@ -23,7 +23,7 @@ package org.jetel.util.date;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 17th August 2009
+ * @version 16th April 2010
  * @since 17th August 2009
  */
 public final class DateUtils {
@@ -41,12 +41,12 @@ public final class DateUtils {
 			return null;
 		}
 
-		if (formatString.startsWith(DateFormatter.JAVA_FORMAT_PREFIX)) {
-			return formatString.substring(DateFormatter.JAVA_FORMAT_PREFIX.length());
+		if (formatString.startsWith(DateFormatterFactory.JAVA_FORMAT_PREFIX)) {
+			return formatString.substring(DateFormatterFactory.JAVA_FORMAT_PREFIX.length());
 		}
 
-		if (formatString.startsWith(DateFormatter.JODA_FORMAT_PREFIX)) {
-			return formatString.substring(DateFormatter.JODA_FORMAT_PREFIX.length());
+		if (formatString.startsWith(DateFormatterFactory.JODA_FORMAT_PREFIX)) {
+			return formatString.substring(DateFormatterFactory.JODA_FORMAT_PREFIX.length());
 		}
 
 		return formatString;
