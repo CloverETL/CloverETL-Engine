@@ -8,6 +8,7 @@ import org.jetel.util.MiscUtils;
  * Factory for internally used date formatters.
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
+ * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  *
  * @version 16th April 2010
  * @created 17th August 2009
