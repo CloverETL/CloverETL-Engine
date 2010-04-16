@@ -50,7 +50,7 @@ public class CLVFDirectMapping extends SimpleNode {
 		  Node aNode=jjtGetChild(0);
 		  CLVFInputFieldLiteral childNode = aNode instanceof CLVFInputFieldLiteral ? (CLVFInputFieldLiteral)aNode : null;
 		  if (childNode !=null &&  childNode.fieldNo>=0 && 
-				  parser.getOutRecordMeta(recordNo).getField(fieldNo).getType() == parser.getOutRecordMeta(childNode.recordNo).getField(childNode.fieldNo).getType()){
+				  parser.getOutRecordMeta(recordNo).getField(fieldNo).getType() == parser.getInRecordMeta(childNode.recordNo).getField(childNode.fieldNo).getType()){
 		  		  mappingType=MappingType.Field2Field;
 		  		  srcField=childNode.field;
 		  }else{
