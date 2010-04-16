@@ -24,13 +24,10 @@ import java.util.Date;
  * Unified interface of internally used date formatters.
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
+ * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  *
  * @version 17th August 2009
  * @since 10th August 2009
- */
-/**
- * @author dpavlis
- *
  */
 public interface DateFormatter {
 
