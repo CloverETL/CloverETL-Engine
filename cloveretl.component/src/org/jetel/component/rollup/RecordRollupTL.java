@@ -106,7 +106,7 @@ public class RecordRollupTL implements RecordRollup {
         } catch (JetelException exception) {
             // OK, don't do anything, function init() is not necessary
         }
-        
+
         functionInitGroupId = wrapper.prepareFunctionExecution(FUNCTION_INIT_GROUP_NAME);
         functionUpdateGroupId = wrapper.prepareFunctionExecution(FUNCTION_UPDATE_GROUP_NAME);
         functionFinishGroupId = wrapper.prepareFunctionExecution(FUNCTION_FINISH_GROUP_NAME);
