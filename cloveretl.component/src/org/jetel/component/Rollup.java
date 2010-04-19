@@ -153,7 +153,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 5th October 2009
+ * @version 19th April 2010
  * @since 30th April 2009
  *
  * @see RecordRollup
@@ -470,6 +470,7 @@ public class Rollup extends Node {
         } else if (transformClassName != null) {
             recordRollup = createTransformFromClassName(transformClassName);
         }
+
         recordRollup.init(transformParameters, getInputPort(INPUT_PORT_NUMBER).getMetadata(),
                 getGraph().getDataRecordMetadata(groupAccumulatorMetadataId),
                 getOutMetadata().toArray(new DataRecordMetadata[getOutPorts().size()]));
@@ -528,8 +529,9 @@ public class Rollup extends Node {
      */
     private RecordRollup createTransformFromClassName(String className) throws ComponentNotReadyException {
         try {
-        	RecordRollup transform = (RecordRollup) Class.forName(transformClassName).newInstance(); 
+        	RecordRollup transform = (RecordRollup) Class.forName(className).newInstance(); 
             transform.setGraph(getGraph());
+
             return transform;
         } catch (ClassNotFoundException exception) {
             throw new ComponentNotReadyException("Cannot find the transformation class!", exception);
