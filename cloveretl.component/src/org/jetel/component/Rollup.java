@@ -229,7 +229,8 @@ public class Rollup extends Node {
                     componentAttributes.getString(XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE, null));
 
             rollup.setTransform(componentAttributes.getString(XML_TRANSFORM_ATTRIBUTE, null));
-            rollup.setTransformUrl(componentAttributes.getStringEx(XML_TRANSFORM_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+            rollup.setTransformUrl(componentAttributes.getStringEx(XML_TRANSFORM_URL_ATTRIBUTE, null,
+            		RefResFlag.SPEC_CHARACTERS_OFF));
             rollup.setTransformUrlCharset(componentAttributes.getString(XML_TRANSFORM_URL_CHARSET_ATTRIBUTE, null));
             rollup.setTransformClassName(componentAttributes.getString(XML_TRANSFORM_CLASS_NAME_ATTRIBUTE, null));
 
@@ -504,9 +505,11 @@ public class Rollup extends Node {
 
         if (Pattern.compile(REGEX_JAVA_CLASS).matcher(sourceCode).find()) {
             try {
-            	RecordRollup transform = (RecordRollup) new DynamicJavaCode(sourceCode, getClass().getClassLoader()).instantiate();
+            	RecordRollup transform = (RecordRollup) new DynamicJavaCode(sourceCode,
+            			getClass().getClassLoader()).instantiate();
             	transform.setGraph(getGraph());
-                return transform;
+
+            	return transform;
             } catch (ClassCastException exception) {
                 throw new ComponentNotReadyException(
                         "The transformation code does not implement the RecordRollup interface!", exception);
