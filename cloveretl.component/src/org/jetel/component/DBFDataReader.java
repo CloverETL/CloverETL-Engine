@@ -36,6 +36,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileReader;
@@ -164,6 +165,20 @@ public class DBFDataReader extends Node {
 		parser = new DBFDataParser(this.charset = charset);
 	}
 
+	
+	
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		if (firstRun()) {
+			reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+		}
+		else {
+			reader.reset();
+		}
+	}
+
+
 	@Override
 	public Result execute() throws Exception {
 		// we need to create data record - take the metadata from first output port
@@ -191,21 +206,21 @@ public class DBFDataReader extends Node {
 			throw e;
 		}finally{
 			broadcastEOF();
-			reader.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#reset()
-	 */
 	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		reader.reset();
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		try {
+			reader.close();
+		}
+		catch (IOException e) {
+			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+		}
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#free()
@@ -274,7 +289,6 @@ public class DBFDataReader extends Node {
         reader.setCharset(charset);
         reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
         reader.setDictionary(graph.getDictionary());
-		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
 	/**

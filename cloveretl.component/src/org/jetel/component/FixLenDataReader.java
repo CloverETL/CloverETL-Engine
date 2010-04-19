@@ -46,6 +46,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
@@ -186,6 +187,22 @@ public class FixLenDataReader extends Node {
 				new FixLenCharDataParser(charset);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#preExecute()
+	 */
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+
+		if (firstRun()) {
+			reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+		}
+		else {
+			parser.reset();
+			reader.reset();
+		}
+	}	
+	
 	@Override
 	public Result execute() throws Exception {
 		// we need to create data record - take the metadata from first output port
@@ -211,10 +228,20 @@ public class FixLenDataReader extends Node {
 		} catch (Exception e) {
 			throw e;
 		}finally{
-			reader.close();
 			broadcastEOF();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		try {
+			reader.close();
+		}
+		catch (IOException e) {
+			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+		}
 	}
 
 
@@ -229,7 +256,6 @@ public class FixLenDataReader extends Node {
 		super.init();
         
 		prepareMultiFileReader();
-		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
@@ -246,13 +272,6 @@ public class FixLenDataReader extends Node {
         reader.setCharset(charset);
         reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
         reader.setDictionary(graph.getDictionary());
-	}
-
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		parser.reset();
-		reader.reset();
 	}
 
     @Override

@@ -22,6 +22,7 @@
 package org.jetel.component;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.Collection;
@@ -42,6 +43,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
@@ -230,6 +232,25 @@ public class StructureWriter extends Node {
 	}
 
 	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		
+		if (firstRun()) {
+	        writer.init(getInputPort(BODY_PORT).getMetadata());
+		}
+		else {
+			writer.reset();
+			if (headerFormatter != null) {
+				headerFormatter.reset();
+			}
+			if (footerFormatter != null) {
+				footerFormatter.reset();
+			}
+		}
+	}
+
+	
+	@Override
 	public Result execute() throws Exception {
 		
 		Producer headerProducer = null, footerProducer = null;
@@ -262,7 +283,6 @@ public class StructureWriter extends Node {
 		InputPort bodyPort = getInputPort(BODY_PORT);
 		DataRecord record = new DataRecord(bodyPort.getMetadata());
 		record.init();
-        writer.init(bodyPort.getMetadata());
 		while (record != null && runIt) {
 			record = bodyPort.readRecord(record);
 			if (record != null) {
@@ -271,9 +291,20 @@ public class StructureWriter extends Node {
 			SynchronizeUtils.cloverYield();
 		}
 		writer.finish();
-		writer.close();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
+	
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		try {
+			writer.close();
+		}
+		catch (IOException e) {
+			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+		}
+	}
+	
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
@@ -373,18 +404,6 @@ public class StructureWriter extends Node {
         	footerFormatter.init(getInputPort(FOOTER_PORT).getMetadata());
         	footerFormatter.setDataTarget(Channels.newChannel(footerOutput));
         }
-	}
-
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		writer.reset();
-		if (headerFormatter != null) {
-			headerFormatter.reset();
-		}
-		if (footerFormatter != null) {
-			footerFormatter.reset();
-		}
 	}
 	
 	@Override

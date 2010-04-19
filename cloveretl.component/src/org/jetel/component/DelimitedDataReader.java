@@ -37,6 +37,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
@@ -152,7 +153,18 @@ public class DelimitedDataReader extends Node {
 		parser = new DelimitedDataParser(this.charset = charset);
 	}
 
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
 
+		if (firstRun()) {
+			reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+		}
+		else {
+			reader.reset();
+		}
+	}	
+	
 	@Override
 	public Result execute() throws Exception {
 		// we need to create data record - take the metadata from first output port
@@ -174,10 +186,20 @@ public class DelimitedDataReader extends Node {
 		    SynchronizeUtils.cloverYield();
 		}
 		broadcastEOF();
-    	reader.close();
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		try {
+			reader.close();
+		}
+		catch (IOException e) {
+			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+		}
+	}
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -189,7 +211,6 @@ public class DelimitedDataReader extends Node {
 		super.init();
 
 		prepareMultiFileReader();
-		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
@@ -207,16 +228,6 @@ public class DelimitedDataReader extends Node {
         reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
         reader.setDictionary(graph.getDictionary());
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#reset()
-	 */
-    synchronized public void reset() throws ComponentNotReadyException {
-    	super.reset();
-    	reader.reset();
-    	//parser.reset();
-    }
 
     @Override
     public synchronized void free() {

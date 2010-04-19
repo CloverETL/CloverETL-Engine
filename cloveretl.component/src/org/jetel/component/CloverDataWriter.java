@@ -36,6 +36,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
@@ -168,6 +169,32 @@ public class CloverDataWriter extends Node {
 			metaFile.close();
 		}
 	}
+
+	@Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	
+    	if (firstRun()) {//a phase-dependent part of initialization
+    		//all has been initialized in init()
+    	}
+    	else {
+    		formatter.reset();
+    	}
+
+    	try{//create output stream and rewrite existing data
+        	fileName = new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL)).getName();
+        	if (fileName.toLowerCase().endsWith(".zip")) {
+        		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
+        	}
+			out = FileUtils.getOutputStream(getGraph().getProjectURL(), 
+					fileURL.startsWith("zip:") ? fileURL + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName : fileURL, 
+					append, compressLevel);
+		} catch(IOException e) {
+			throw new ComponentNotReadyException(e);
+		}
+
+        formatter.setDataTarget(out);
+    }
 	
 	@Override
 	public Result execute() throws Exception {
@@ -188,10 +215,16 @@ public class CloverDataWriter extends Node {
 		if (saveMetadata){
 			saveMetadata();
 		}
-		formatter.close();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
+    @Override
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	
+  		formatter.close(); //indirectly closes out    		
+    }
+    
 	@Override
 	public synchronized void free() {
         if(!isInitialized()) return;
@@ -232,45 +265,10 @@ public class CloverDataWriter extends Node {
 
 		inPort = getInputPort(READ_FROM_PORT);
 		metadata = inPort.getMetadata();
-		try{//create output stream and rewrite existing data
-        	fileName = new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL)).getName();
-        	if (fileName.toLowerCase().endsWith(".zip")) {
-        		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
-        	}
-			out = FileUtils.getOutputStream(getGraph().getProjectURL(), 
-					fileURL.startsWith("zip:") ? fileURL + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName : fileURL, 
-					append, compressLevel);
-		}catch(IOException ex){
-			throw new ComponentNotReadyException(ex);
-		}
 		formatter.setProjectURL(getGraph().getProjectURL());
 		formatter.init(metadata);
-        formatter.setDataTarget(out);
 	}
-	
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		formatter.reset();
-		try {
-			out.close();
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(e);
-		}
-		try{//create output stream and rewrite existing data
-        	String fileName = new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL)).getName();
-        	if (fileName.toLowerCase().endsWith(".zip")) {
-        		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
-        	}
-			out = FileUtils.getOutputStream(getGraph().getProjectURL(), 
-					fileURL.startsWith("zip:") ? fileURL + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName : fileURL, 
-					append, compressLevel);
-		}catch(IOException ex){
-			throw new ComponentNotReadyException(ex);
-		}
-        formatter.setDataTarget(out);
-	}
-	
+		
 	/**
 	 *  Description of the Method
 	 *

@@ -3,6 +3,7 @@ package org.jetel.component;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
@@ -43,6 +44,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -1283,6 +1285,23 @@ public class XMLExtract extends Node {
         }
     }
     
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+
+		if (firstRun()) {
+			//all necessary for the first run has been done in init()
+		}
+		else {
+			autoFilling.reset();
+	        this.readableChannelIterator.reset();
+		}
+		
+        if (!readableChannelIterator.isGraphDependentSource()) prepareNextSource();
+	}	
+	
+
+    
     @Override
     public Result execute() throws Exception {
     	Result result;
@@ -1300,6 +1319,13 @@ public class XMLExtract extends Node {
     	broadcastEOF();
 		return result;
     }
+    
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		//no input channel is closed here - this could be changed in future
+	}
+
     
      /**
      * Parses the inputSource. The SAXHandler defined in this class will handle
@@ -1428,17 +1454,8 @@ public class XMLExtract extends Node {
             this.readableChannelIterator.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
             this.readableChannelIterator.setDictionary(graph.getDictionary());
             this.readableChannelIterator.init();
-            if (!readableChannelIterator.isGraphDependentSource()) prepareNextSource();
         }
     }
-    
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		autoFilling.reset();
-        this.readableChannelIterator.reset();
-        if (!readableChannelIterator.isGraphDependentSource()) prepareNextSource();
-	}
 	
 	/**
 	 * Prepares a next source.

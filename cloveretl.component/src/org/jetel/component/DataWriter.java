@@ -19,6 +19,7 @@
 */
 
 package org.jetel.component;
+import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 
 import org.apache.commons.logging.Log;
@@ -37,6 +38,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
@@ -172,10 +174,19 @@ public class DataWriter extends Node {
 			SynchronizeUtils.cloverYield();
 		}
 		writer.finish();
-		writer.close();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		try {
+			writer.close();
+		}
+		catch (IOException e) {
+			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+		}
+	}
 
 	/**
 	 *  Description of the Method
@@ -254,41 +265,9 @@ public class DataWriter extends Node {
 	            throw e;
 	        }
 		}
-	}
-	
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		writer.reset();
-		
-		// initialize multifile writer based on prepared formatter
-//		if (fileURL != null) {
-//	        writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
-//		} else {
-//			if (writableByteChannel == null) {
-//		        writableByteChannel = Channels.newChannel(System.out);
-//			}
-//	        writer = new MultiFileWriter(formatterProvider, new WritableByteChannelIterator(writableByteChannel));
-//		}
-//        writer.setLogger(logger);
-//        writer.setBytesPerFile(bytesPerFile);
-//        writer.setRecordsPerFile(recordsPerFile);
-//        writer.setAppendData(appendData);
-//        writer.setSkip(skip);
-//        writer.setNumRecords(numRecords);
-//        if (attrPartitionKey != null) {
-//            writer.setLookupTable(lookupTable);
-//            writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-//            writer.setPartitionFileTag(partitionFileTagType);
-//        	if (attrPartitionOutFields != null) {
-//        		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-//        	}
-//        }
-//        if(outputFieldNames) {
-//        	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
-//        }
-//        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
-
+		else {
+			writer.reset();
+		}
 	}
 	
 	/* (non-Javadoc)

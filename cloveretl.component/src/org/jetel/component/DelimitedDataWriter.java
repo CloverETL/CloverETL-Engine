@@ -19,6 +19,7 @@
 */
 
 package org.jetel.component;
+import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 
 import org.apache.commons.logging.Log;
@@ -37,6 +38,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
@@ -171,6 +173,18 @@ public class DelimitedDataWriter extends Node {
 	}
 
 	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		
+		if (firstRun()) {
+	        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+		}
+		else {
+			writer.reset();
+		}
+	}
+	
+	@Override
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
@@ -183,8 +197,18 @@ public class DelimitedDataWriter extends Node {
 			SynchronizeUtils.cloverYield();
 		}
 		writer.finish();
-		writer.close();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		try {
+			writer.close();
+		}
+		catch (IOException e) {
+			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+		}
 	}
 	
 	/**
@@ -236,7 +260,6 @@ public class DelimitedDataWriter extends Node {
         }
 
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data 
-        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 	
 	/**
@@ -520,16 +543,6 @@ public class DelimitedDataWriter extends Node {
 	 */
     private void setPartitionUnassignedFileName(String partitionUnassignedFileName) {
     	this.partitionUnassignedFileName = partitionUnassignedFileName;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#reset()
-	 */
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		writer.reset();
 	}
 
 	/*
