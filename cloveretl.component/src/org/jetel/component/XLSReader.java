@@ -43,6 +43,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileReader;
@@ -570,8 +571,6 @@ public class XLSReader extends Node {
         	}
         }
         reader.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : 0);
-        
-        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
     }
 
     private void instantiateParser() {
@@ -582,6 +581,17 @@ public class XLSReader extends Node {
         }
     }
 
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+    	}
+    	else {
+            reader.reset();
+    	}
+    }    
+    
     @Override
     public Result execute() throws Exception {
         DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
@@ -610,15 +620,20 @@ public class XLSReader extends Node {
         }
 
         broadcastEOF();
-        reader.close();
         return (runIt ? Result.FINISHED_OK : Result.ABORTED);
     }
 
     @Override
-    public synchronized void reset() throws ComponentNotReadyException {
-        super.reset();
-        reader.reset();
-    }
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	
+    	try {
+            reader.close();
+    	}
+    	catch (Exception e) {
+    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    	}
+    }    
 
     @Override
     public void free() {

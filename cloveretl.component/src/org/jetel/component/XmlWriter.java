@@ -70,6 +70,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
@@ -648,11 +649,25 @@ public class XmlWriter extends Node {
         //writer.setPartitionFileTag(partitionFileTagType);
         writer.setDictionary(graph.getDictionary());
         writer.setMkDir(mkDir);
-        writer.init( this.rootPortDefinition.metadata );
         writer.setCompressLevel(compressLevel);
 	}
 
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		
+		if (firstRun()) {
+		    writer.init(this.rootPortDefinition.metadata);
+		}
+		else {
+			writer.reset();
+			for (PortDefinition def : allPortDefinitionMap.values()){
+				def.reset();
+			}// for
+		}
+	}
 
+	
 	@Override
 	public Result execute() throws Exception {
 		InputReader[] portReaders = new InputReader[portsCnt];
@@ -694,11 +709,23 @@ public class XmlWriter extends Node {
 			throw e;
 		} finally {
 			writer.finish();
-			writer.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
+
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		try {
+			writer.close();
+		}
+		catch (IOException e) {
+			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+		}
+	}
+
+	
 	/**
 	 * Creates output XML from all read records using SAX.
 	 * Call this after all records are stored in PortDefinition structures.  
@@ -1251,19 +1278,6 @@ public class XmlWriter extends Node {
 
 	public void setCharset(String charset) {
 		this.charset = charset;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#reset()
-	 */
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		this.writer.reset();
-		for (PortDefinition def : allPortDefinitionMap.values()){
-			def.reset();
-		}// for
 	}
 
 	@Override

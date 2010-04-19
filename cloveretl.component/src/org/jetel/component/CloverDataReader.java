@@ -37,6 +37,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
@@ -149,6 +150,22 @@ public class CloverDataReader extends Node {
 		return COMPONENT_TYPE;
 	}
 	
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	
+    	if (firstRun()) {//a phase-dependent part of initialization
+    	}
+    	else {
+    		initFileIterator();
+    		parser.reset();
+    		autoFilling.reset();
+    	}
+		inputSource = setDataSource(); //assigns data source to a parser and returns true if succeeds
+    }    
+
+	
+	
 	@Override
 	public Result execute() throws Exception {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
@@ -169,11 +186,19 @@ public class CloverDataReader extends Node {
 				
 			} while (true);
 			
-			parser.close();
 		}
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
+
+
+    @Override
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+		parser.close();
+    }    
+	
+	
 	
 	/**
 	 * Checks numRecords. Returns true if the source could return a record.
@@ -326,7 +351,6 @@ public class CloverDataReader extends Node {
 		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
 		parser.init(metadata);
 		parser.setProjectURL(getGraph().getProjectURL());
-		inputSource = setDataSource();
 		
     	if (metadata != null) {
     		autoFilling.addAutoFillingFields(metadata);
@@ -366,15 +390,6 @@ public class CloverDataReader extends Node {
 		if (parser != null) {
 			parser.close();
 		}
-	}
-	
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		initFileIterator();
-		parser.reset();
-		inputSource = setDataSource();
-		autoFilling.reset();
 	}
 	
 	@Deprecated

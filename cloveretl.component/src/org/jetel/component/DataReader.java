@@ -39,6 +39,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -233,6 +234,9 @@ public class DataReader extends Node {
 	            throw e;
 	        }
 		}
+		else {
+			reader.reset();
+		}
 	}
 	
 	@Override
@@ -289,10 +293,23 @@ public class DataReader extends Node {
 			throw e;
 		}finally{
 			broadcastEOF();
-			reader.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
+	
+	
+
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		try {
+			reader.close();
+		}
+		catch (IOException e) {
+			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+		}
+	}
+
 
 	private boolean checkLogPortMetadata() {
         DataRecordMetadata logMetadata = getOutputPort(LOG_PORT).getMetadata();
@@ -337,27 +354,6 @@ public class DataReader extends Node {
         	}
         }
         reader.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : (skipFirstLine ? 1 : 0));
-	}
-
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		reader.reset();
-
-		/*
-		// initialize multifile reader based on prepared parser
-        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
-        reader.setLogger(logger);
-        reader.setFileSkip(skipFirstLine ? 1 : 0);
-        reader.setSkip(skipRows);
-        reader.setNumRecords(numRecords);
-        try {
-            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
-        } catch(ComponentNotReadyException e) {
-            e.setAttributeName(XML_FILE_ATTRIBUTE);
-            throw e;
-        }
-*/
 	}
 
 	/* (non-Javadoc)

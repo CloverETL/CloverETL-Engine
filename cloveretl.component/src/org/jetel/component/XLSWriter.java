@@ -38,6 +38,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
@@ -558,9 +559,19 @@ public class XLSWriter extends Node {
         writer.setDictionary(getGraph().getDictionary());
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         writer.setMkDir(mkDir);
-        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
     }
 
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+            writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+    	}
+    	else {
+            writer.reset();
+    	}
+    }
+    
     @Override
     public Result execute() throws Exception {
         InputPort inPort = getInputPort(READ_FROM_PORT);
@@ -577,18 +588,23 @@ public class XLSWriter extends Node {
 
             SynchronizeUtils.cloverYield();
         }
-        writer.finish();
-		writer.close();
+		writer.finish();
 		
         return (runIt ? Result.FINISHED_OK : Result.ABORTED);
     }
-
+    
     @Override
-    public synchronized void reset() throws ComponentNotReadyException {
-        super.reset();
-        writer.reset();
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	
+    	try {
+    		writer.close();
+    	}
+    	catch (Exception e) {
+    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    	}
     }
-
+    
     @Override
     public synchronized void free() {
         super.free();
