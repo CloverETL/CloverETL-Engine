@@ -56,6 +56,10 @@ public class Concatenate {
 		setSeparator(glue);
 	}
 
+	public boolean isEmpty() {
+		return items.isEmpty();
+	}
+
 	public void append(String s) {
 		items.add(s);
 	}
