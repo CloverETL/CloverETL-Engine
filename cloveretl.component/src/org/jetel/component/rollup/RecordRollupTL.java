@@ -75,7 +75,7 @@ public class RecordRollupTL implements RecordRollup {
     /** the ID of the prepared transform() function */
     private int functionTransformId;
 
-    /** temporary data record, which is used instead of null group accumulator */
+    /** temporary data record used instead of null group accumulator */
     private DataRecord emptyRecord;
 
     /**
@@ -84,7 +84,7 @@ public class RecordRollupTL implements RecordRollup {
      * @param sourceCode the source code of the transformation
      */
     public RecordRollupTL(String sourceCode) {
-        wrapper = new WrapperTL(sourceCode, LogFactory.getLog(RecordRollupTL.class));
+        this.wrapper = new WrapperTL(sourceCode, LogFactory.getLog(RecordRollupTL.class));
     }
 
 	public void setGraph(TransformationGraph graph) {
@@ -198,7 +198,7 @@ public class RecordRollupTL implements RecordRollup {
         try {
             result = wrapper.execute(FUNCTION_GET_MESSAGE_NAME, null);
         } catch (JetelException exception) {
-            // OK, don't do anything, function free() is not necessary
+            // OK, don't do anything, function getMessage() is not necessary
         }
 
         return ((result != null) ? result.toString() : null);
