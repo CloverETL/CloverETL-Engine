@@ -801,8 +801,9 @@ public class Rollup extends Node {
             }
         }
     }
-    
-    @Override
+
+	@Override
+    @SuppressWarnings("deprecation")
     public synchronized void reset() throws ComponentNotReadyException {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
@@ -815,10 +816,6 @@ public class Rollup extends Node {
 
     @Override
     public synchronized void free() {
-        if (!isInitialized()) {
-            throw new NotInitializedException(this);
-        }
-
         groupKey = null;
         recordRollup = null;
         outputRecords = null;
