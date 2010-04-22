@@ -27,8 +27,16 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jetel.component.rollup.CTLRecordRollup;
+import org.jetel.component.rollup.CTLRecordRollupAdapter;
 import org.jetel.component.rollup.RecordRollup;
 import org.jetel.component.rollup.RecordRollupTL;
+import org.jetel.ctl.ErrorMessage;
+import org.jetel.ctl.ITLCompiler;
+import org.jetel.ctl.TLCompilerFactory;
+import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.DoubleRecordBuffer;
@@ -153,8 +161,8 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 19th April 2010
- * @since 30th April 2009
+ * @version 22nd April 2010
+ * @created 30th April 2009
  *
  * @see RecordRollup
  */
@@ -197,6 +205,9 @@ public class Rollup extends Node {
     private static final String REGEX_JAVA_CLASS = "class\\s+\\w+";
     /** the regular expression pattern that should be present in a CTL code transformation */
     private static final String REGEX_TL_CODE = "function\\s+((init|update|finish)Group|updateTransform|transform)";
+
+    /** the encoding to be used by CTL-to-Java compiler */
+    private static final String CTL_COMPILER_ENCODING = "UTF-8";
 
     /**
      * Creates an instance of the <code>Rollup</code> component from an XML element.
@@ -495,6 +506,38 @@ public class Rollup extends Node {
      * or if the type of the transformation code could not be determined
      */
     private RecordRollup createTransformFromSourceCode(String sourceCode) throws ComponentNotReadyException {
+        if (sourceCode.indexOf(TransformLangExecutor.CTL_TRANSFORM_CODE_ID) >= 0) {
+        	ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),
+        			getInMetadata().toArray(new DataRecordMetadata[getInPorts().size()]),
+        			getOutMetadata().toArray(new DataRecordMetadata[getOutPorts().size()]), CTL_COMPILER_ENCODING);
+        	compiler.compile(sourceCode, CTLRecordRollup.class, getId());
+
+        	if (compiler.errorCount() > 0) {
+        		Log logger = LogFactory.getLog(getClass());
+
+        		for (ErrorMessage errorMessage : compiler.getDiagnosticMessages()) {
+    				if (errorMessage.getErrorLevel() == ErrorMessage.ErrorLevel.ERROR) {
+    					logger.error(errorMessage);
+    				} else {
+    					logger.warn(errorMessage);
+    				}
+    			}
+
+        		throw new ComponentNotReadyException("Compilation of CTL rollup transform finished with "
+        				+ compiler.errorCount() + " errors!");
+        	}
+
+        	Object compiledTransform = compiler.getCompiledCode();
+
+        	if (compiledTransform instanceof TransformLangExecutor) {
+        		return new CTLRecordRollupAdapter((TransformLangExecutor) compiledTransform);
+        	} else if (compiledTransform instanceof CTLRecordRollup){
+        		return (CTLRecordRollup) compiledTransform;
+        	}
+
+    		throw new ComponentNotReadyException("Invalid type of rollup transformation!");
+        }
+
         if (sourceCode.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID) >= 0
                 || Pattern.compile(REGEX_TL_CODE).matcher(sourceCode).find()) {
         	RecordRollup transform = new RecordRollupTL(sourceCode);
