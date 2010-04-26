@@ -33,7 +33,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 22nd April 2010
+ * @version 26th April 2010
  * @created 22nd April 2010
  *
  * @see RecordRollup
@@ -113,7 +113,7 @@ public abstract class CTLRecordRollup implements RecordRollup, CTLCompilable {
 	public int updateTransform(int counter, DataRecord inputRecord, DataRecord groupAccumulator,
 			DataRecord[] outputRecords) throws TransformException {
 		this.inputRecord = inputRecord;
-		this.outputRecords = NO_DATA_RECORDS;
+		this.outputRecords = outputRecords;
 
 		return updateTransform(counter, groupAccumulator);
 	}
@@ -124,7 +124,7 @@ public abstract class CTLRecordRollup implements RecordRollup, CTLCompilable {
 	public int transform(int counter, DataRecord inputRecord, DataRecord groupAccumulator, DataRecord[] outputRecords)
 			throws TransformException {
 		this.inputRecord = inputRecord;
-		this.outputRecords = NO_DATA_RECORDS;
+		this.outputRecords = outputRecords;
 
 		return transform(counter, groupAccumulator);
 	}
