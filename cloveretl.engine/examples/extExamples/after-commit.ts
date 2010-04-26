@@ -4,11 +4,6 @@
 
 	<DBConnection ident="postgre_foodmart" type="POSTGRE" user="test" password="test" URL="jdbc:postgresql://koule/foodmart" driver="org.postgresql.Driver" />
 
-	<FunctionalTest ident="LDAPReaderWriter" graphFile="graph/graphLdapReaderWriter.grf">
-          <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-	 	  <FlatFile outputFile="data-out/persons.txt" supposedFile="data-out/ldap_persons.txt"/>	                                                                 
-	</FunctionalTest>
-
 	<FunctionalTest ident="ApproximativeJoin" graphFile="graph/graphApproximativeJoin.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/conformingKeyGenerator.txt" supposedFile="supposed-out/conformingKeyGenerator.AproximativeJoin.txt"/>	                                                                 
