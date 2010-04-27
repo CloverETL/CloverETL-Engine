@@ -33,6 +33,7 @@ import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.data.UnknownTypeException;
+import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
@@ -51,6 +52,10 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  */
 public class ASTBuilder extends NavigatingVisitor {
+
+	/** Void metadata used by Rollup transforms when no group accumulator is used. */
+	private static final DataRecordMetadata VOID_METADATA =
+			new DataRecordMetadata(Defaults.TLCompiler.VOID_METADATA_NAME);
 
 	/** Metadata for component's input ports */
 	private final DataRecordMetadata[] inputMetadata; // may be null
@@ -781,8 +786,15 @@ public class ASTBuilder extends NavigatingVisitor {
 		case TransformLangParserConstants.IDENTIFIER:
 			DataRecordMetadata meta = resolveMetadata(typeNode.getMetadataName());
 			if (meta == null) {
-				error(typeNode, "Unable to resolve metadata '" + typeNode.getMetadataName() + "'");
-				return TLType.ERROR;
+				if (voidMetadataAllowed(typeNode)) {
+					meta = VOID_METADATA;
+				} else {
+					error(typeNode, "Unable to resolve metadata '" + typeNode.getMetadataName() + "'");
+					return TLType.ERROR;
+				}
+			} else if (voidMetadataAllowed(typeNode)) {
+				warn(typeNode, "Reference to '" + VOID_METADATA.getName() + "' is ambiguous",
+						"Rename metadata '" + VOID_METADATA.getName() + "'");
 			}
 			// variables of record type hold REFERENCE
 			return TLType.forRecord(meta,true);
@@ -797,7 +809,17 @@ public class ASTBuilder extends NavigatingVisitor {
 			throw new IllegalArgumentException("Unknown variable type: '" + typeNode.getKind() + "'");
 		}
 	}
-	
+
+	private boolean voidMetadataAllowed(CLVFType typeNode) {
+		if (!typeNode.getMetadataName().equals(VOID_METADATA.getName())) {
+			return false;
+		}
+
+		Node parent = typeNode.jjtGetParent();
+
+		return (parent != null && parent.jjtGetParent() instanceof CLVFParameters);
+	}
+
 	/**
 	 * Checks if block contains only legal statements (or statement expressions)
 	 * 
