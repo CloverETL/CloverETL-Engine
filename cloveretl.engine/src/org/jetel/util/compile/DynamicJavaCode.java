@@ -40,6 +40,7 @@ import org.codehaus.janino.Scanner;
 import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.Parser.ParseException;
 import org.jetel.data.Defaults;
+import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -178,25 +179,37 @@ public class DynamicJavaCode {
 		try {
 		    logger.info("compile Class: " + className + " by Janino compiler");
 
-			SimpleCompiler compiler = new SimpleCompiler();
-			if (classLoader != null)
-				compiler.setParentClassLoader( classLoader );
-			else
-				compiler.setParentClassLoader( DynamicJavaCode.class.getClassLoader() );
-
-			compiler.cook(srcCode);
-			
-			ClassLoader loader = compiler.getClassLoader();
-
-			/*
-			 * obtain className by creating AST
-			 */
+			// Obtain className by creating AST.
 			Reader srcReader = new StringReader(srcCode);
 			Java.CompilationUnit cu = new Parser(new Scanner(null, srcReader)).parseCompilationUnit();
 			Java.PackageMemberTypeDeclaration[] declarations = cu.getPackageMemberTypeDeclarations();
 			className = declarations[0].getClassName(); // we expect single class in whole compilation unit
+
+			SimpleCompiler compiler = new SimpleCompiler();
+			// We need to wrap the parent class loader into another class loader that alters the loading process.
+			// Otherwise the compiled class will have lower priority than classes on the classpath a may never get
+			// loaded. This may happen if a class with an equivalent name exists on the classpath. See issue #121.
+			compiler.setParentClassLoader(new ClassLoader((classLoader != null)
+					? classLoader : DynamicJavaCode.class.getClassLoader()) {
+
+				@Override
+				public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+					// If the dynamic class is to be loaded, notify the class loader that called this method
+					// to load the class using its own findClass() method.
+					if (name.equals(className)) {
+						throw new ClassNotFoundException(name);
+					}
+
+					// Loading of all other classes goes as usual.
+					return super.loadClass(name, resolve);
+				}
+
+			});
+			compiler.cook(srcCode);
 			
-			Class tClass = loader.loadClass(className);
+			ClassLoader loader = compiler.getClassLoader();
+
+			Class<?> tClass = loader.loadClass(className);
 			instance = tClass.newInstance();
 
 		} catch (ParseException ex){
@@ -238,7 +251,7 @@ public class DynamicJavaCode {
 			throw new RuntimeException(ex);
 		}
 
-        URLClassLoader classLoader = new URLClassLoader(myURLs, getClassLoader());
+        URLClassLoader classLoader = new GreedyURLClassLoader(myURLs, getClassLoader());
 		try {
 		    logger.debug("Loading Class: " + className + "...");
 			tClass = Class.forName(className, true, classLoader);
