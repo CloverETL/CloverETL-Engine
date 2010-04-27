@@ -606,31 +606,29 @@ s    	 */
 		public static int ROW_PREFETCH; // -1
 	}
 	
-	
 	/**
 	 * Default settings for CTL language compilers.
-	 * 
-	 * @author Michal Tomcanyi <michal.tomcanyi@javlin.cz>
 	 *
+	 * @author Michal Tomcanyi, Javlin a.s. &lt;michal.tomcanyi@javlin.cz&gt;
+	 * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
 	 */
 	public static final class TLCompiler {
-		public static void init() {
-			TLCOMPILER_SOURCE_DIRECTORY = getStringProperties("TLCompiler.TLCOMPILER_SOURCE_DIRECTORY",
-					"./trans");
-			TLCOMPILER_BINARY_DIRECTORY = getStringProperties("TLCompiler.TLCOMPILER_BINARY_DIRECTORY",
-			"./trans");
 
+		public static void init() {
+			VOID_METADATA_NAME = getStringProperties("TLCompiler.VOID_METADATA_NAME", "VoidMetadata");
+
+			TLCOMPILER_SOURCE_DIRECTORY = getStringProperties("TLCompiler.TLCOMPILER_SOURCE_DIRECTORY", "./trans");
+			TLCOMPILER_BINARY_DIRECTORY = getStringProperties("TLCompiler.TLCOMPILER_BINARY_DIRECTORY", "./trans");
 		}
-		
-		/**
-		 * Directory where all generated .java source files are stored
-		 */
+
+		/** The name of void metadata used by Rollup transforms when no group accumulator is used. */
+		public static String VOID_METADATA_NAME;
+
+		/** Directory where all generated .java source files are stored */
 		public static String TLCOMPILER_SOURCE_DIRECTORY;
-		
-		/**
-		 * Directory where all generated .class files are stored
-		 */
+		/** Directory where all generated .class files are stored */
 		public static String TLCOMPILER_BINARY_DIRECTORY;
+
 	}
 	
 	/**
