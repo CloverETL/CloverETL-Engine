@@ -456,9 +456,7 @@
 
 <FunctionalTest ident="SystemExecute" graphFile="graph/graphSystemExecute.grf">
 		<Property name="MY_DIR" value="../cloveretl.engine/examples/simpleExamples/graph" />
-<!-- I don't know why this test doesn't work. Do not merge it with higher version
 	 <FlatFile outputFile="data-out/command.out" supposedFile="supposed-out/command.SystemExecute.out"/>
--->
 </FunctionalTest>
 
 <FunctionalTest ident="ViewData" graphFile="graph/graphViewData.grf">
