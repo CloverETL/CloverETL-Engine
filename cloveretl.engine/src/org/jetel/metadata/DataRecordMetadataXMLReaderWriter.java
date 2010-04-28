@@ -411,9 +411,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	}
 
 	public DataRecordMetadata parseRecordMetadata(Document document, String metadataId) throws DOMException {
-		org.w3c.dom.NodeList nodes;
 		if (metadataId != null) {
-			nodes = document.getElementsByTagName(METADATA_ELEMENT);
+			org.w3c.dom.NodeList nodes = document.getElementsByTagName(METADATA_ELEMENT);
 			int lenght = nodes.getLength();
 			org.w3c.dom.Node node = null;
 			for (int i=0; i<lenght; i++) {
@@ -423,18 +422,16 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				}
 			}
 			return null;
-		} else {
-			nodes = document.getElementsByTagName(RECORD_ELEMENT);
-			if (nodes.getLength() == 0) {
-				throw new DOMException(DOMException.NOT_FOUND_ERR,
-						"No Record element has been found ! ");
-			}
-			return parseRecordMetadata(nodes.item(0));
 		}
+
+		return parseRecordMetadata(document.getDocumentElement());
 	}
 	
-	public DataRecordMetadata parseRecordMetadata(org.w3c.dom.Node topNode)
-			throws DOMException {
+	public DataRecordMetadata parseRecordMetadata(org.w3c.dom.Node topNode) throws DOMException {
+		if (!topNode.getNodeName().equals(RECORD_ELEMENT)) {
+			throw new DOMException(DOMException.NOT_FOUND_ERR,
+					"Root node is not of type " + RECORD_ELEMENT);
+		}
 
 		org.w3c.dom.NamedNodeMap attributes;
 		DataRecordMetadata recordMetadata;
@@ -449,11 +446,6 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		String itemValue;
 		String skipSourceRows = null;
 		Properties recordProperties = null;
-
-		if (topNode.getNodeName() != RECORD_ELEMENT) {
-			throw new DOMException(DOMException.NOT_FOUND_ERR,
-					"Root Node is not of type " + RECORD_ELEMENT);
-		}
 
 		/*
 		 * get Record level metadata
