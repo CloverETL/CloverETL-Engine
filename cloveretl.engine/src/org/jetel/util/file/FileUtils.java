@@ -83,7 +83,7 @@ public class FileUtils {
 	private final static Pattern INNER_SOURCE = Pattern.compile("(([^:]*)([:])([\\(]))(.*)(\\))(((#)(.*))|($))");
 
 	// standard input/output source
-	private final static String STD_SOURCE = "-";
+	public final static String STD_CONSOLE = "-";
 	
 	// sftp protocol handler
 	public static final SFTPStreamHandler sFtpStreamHandler = new SFTPStreamHandler();
@@ -263,7 +263,7 @@ public class FileUtils {
 	 */
     public static InputStream getInputStream(URL contextURL, String input) throws IOException {
 		// std input (console)
-		if (input.equals(STD_SOURCE)) {
+		if (input.equals(STD_CONSOLE)) {
 			return System.in;
 		}
 
@@ -623,7 +623,7 @@ public class FileUtils {
 		throws IOException {
 		
 		// std input (console)
-		if (input.equals(STD_SOURCE)) {
+		if (input.equals(STD_CONSOLE)) {
 			return Channels.newOutputStream(new SystemOutByteChannel());
 		}
 		
@@ -1014,7 +1014,7 @@ public class FileUtils {
 		}
 		
 		// std input (console)
-		if (input.equals(STD_SOURCE)) {
+		if (input.equals(STD_CONSOLE)) {
 			return null;
 		}
 		
