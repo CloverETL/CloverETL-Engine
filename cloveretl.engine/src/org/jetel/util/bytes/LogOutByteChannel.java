@@ -124,16 +124,17 @@ public class LogOutByteChannel implements WritableByteChannel {
 			// end index
 			endIndex = nextLF != -1 && nextLF < nextCR ? nextLF : nextCR;
 			if (endIndex == -1) {
-				unwrittenLine = result.substring(currentPosition, result.length());
+				String sRes = result.substring(currentPosition, result.length());
+				unwrittenLine = unwrittenLine != null && unwrittenLine.length() > 0 ? unwrittenLine + sRes : sRes;
 				return;
 			} else {
 				// write result to logger
 				String sRes = result.substring(currentPosition, endIndex);
-				if (unwrittenLine != null) {
+				if (unwrittenLine != null && unwrittenLine.length() > 0) {
 					sRes = unwrittenLine + sRes;
 					unwrittenLine = null;
 				}
-		        logger.debug(sRes);	//otestovat to i s daty, kdete jsou vetsi na radek nez databuffer/charbuffer
+		        logger.debug(sRes);
 			}
 			
 	        // set begin index
