@@ -39,7 +39,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
-import org.jetel.util.bytes.SystemOutByteChannel;
+import org.jetel.util.bytes.LogOutByteChannel;
 import org.jetel.util.bytes.WritableByteChannelIterator;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
@@ -240,7 +240,7 @@ public class Trash extends Node {
             } else {
     			if (writableByteChannel == null) {
     				formatter = new TextTableFormatter(charSet);
-    		        writableByteChannel = new SystemOutByteChannel();
+    		        writableByteChannel = new LogOutByteChannel(logger, charSet);
         	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
     			}
             }
