@@ -107,29 +107,24 @@ public class LogOutByteChannel implements WritableByteChannel {
 		// Windows		CRLF
 		// Unix			LF
 		// Macintosh	CR
-		int nextLF = 0;
-		int nextCR = 0;
-		int currentPosition = 0;
-		int endIndex;
+		int beginIndex = 0;
         int len = result.length();
 		do {
-			// find LF/CR
-			if (nextLF <= currentPosition && nextLF != -1) {
-				nextLF = result.indexOf(Character.LINE_SEPARATOR, currentPosition);
+			// get begin and end position
+			beginIndex = getPositionAfterCRLF(result, beginIndex);
+			if (beginIndex == -1) {	// no valid character found
+				return;
 			}
-			if (nextCR <= currentPosition && nextCR != -1) {
-				nextCR = result.indexOf(Character.LETTER_NUMBER, currentPosition);
-			}
+			int endIndex = getPositionBeforeCRLF(result, beginIndex);
 
 			// end index
-			endIndex = nextLF != -1 && nextLF < nextCR ? nextLF : nextCR;
 			if (endIndex == -1) {
-				String sRes = result.substring(currentPosition, result.length());
+				String sRes = result.substring(beginIndex, result.length());
 				unwrittenLine = unwrittenLine != null && unwrittenLine.length() > 0 ? unwrittenLine + sRes : sRes;
 				return;
 			} else {
 				// write result to logger
-				String sRes = result.substring(currentPosition, endIndex);
+				String sRes = result.substring(beginIndex, endIndex);
 				if (unwrittenLine != null && unwrittenLine.length() > 0) {
 					sRes = unwrittenLine + sRes;
 					unwrittenLine = null;
@@ -138,11 +133,55 @@ public class LogOutByteChannel implements WritableByteChannel {
 			}
 			
 	        // set begin index
-	        currentPosition = endIndex+1;
-		}while (currentPosition != len);
+			beginIndex = endIndex+1;
+		}while (beginIndex != len);
 
 	}
 	
+	/**
+	 * Skip CRLF and get position.
+	 * @param input
+	 * @param currentPosition
+	 * @return
+	 */
+	private int getPositionAfterCRLF(String input, int currentPosition) {
+		int len = input.length();
+		if (len == 0 || currentPosition == len-1) {
+			return -1;
+		}
+		char ch = input.charAt(currentPosition);
+		while (ch == Character.LETTER_NUMBER || ch == Character.LINE_SEPARATOR) {
+			if (currentPosition == len-1) {
+				return -1;
+			}
+			currentPosition++;
+			ch = input.charAt(currentPosition);
+		}
+		return currentPosition;
+	}
+	
+	/**
+	 * Skip characters without CRLF and get position.
+	 * @param input
+	 * @param currentPosition
+	 * @return
+	 */
+	private int getPositionBeforeCRLF(String input, int currentPosition) {
+		int len = input.length();
+		if (len == 0 || currentPosition == len-1) {
+			return -1;
+		}
+		char ch = input.charAt(currentPosition);
+		while (ch != Character.LETTER_NUMBER && ch != Character.LINE_SEPARATOR) {
+			if (currentPosition == len-1) {
+				return -1;
+			}
+			currentPosition++;
+			ch = input.charAt(currentPosition);
+		}
+		return currentPosition;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.nio.channels.Channel#isOpen()
 	 */
