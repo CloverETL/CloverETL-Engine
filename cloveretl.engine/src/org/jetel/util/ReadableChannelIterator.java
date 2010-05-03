@@ -223,6 +223,7 @@ public class ReadableChannelIterator {
 
 	private String unificateFileName(String fileName) {
 		try {
+			if (currentFileName.equals(FileUtils.STD_CONSOLE)) return currentFileName;
 			URL fileURL = FileUtils.getFileURL(contextURL, currentFileName);
 			if (fileURL.getProtocol().equals(PROTOCOL_FILE)) {
 				currentFileName = new File(fileURL.getFile()).getCanonicalFile().toString();
