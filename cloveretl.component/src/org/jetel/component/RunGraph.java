@@ -109,6 +109,7 @@ import org.w3c.dom.Element;
 * 3rd field - description; type=string
 * 4th field - message; type=string
 * 5th field - duration; type=decimal
+* 6th field - runId; type=decimal - optional
 *
 * Output metadata fields:
 * <ul>
@@ -117,6 +118,7 @@ import org.w3c.dom.Element;
 * <li>descriptor - text description usefull when graph fails 
 * <li>message - string value of org.jetel.graph.Result 
 * <li>duration - graph execution duration in milliseconds
+* <li>runId - execution ID - optional field
 * </ul>
 * 
 * @author jvicenik <juraj.vicenik@javlinconsulting.cz> 
@@ -456,6 +458,7 @@ public class RunGraph extends Node{
 		outputRecordData.setDuration(rr.duration);
 		outputRecordData.setGraphName(graphFileName);
 		outputRecordData.setMessage(rr.result.message());
+		outputRecordData.setRunId(rr.runId);
 		if (rr.result == Result.ABORTED) {
         	outputRecordData.setResult("Aborted");
         	outputRecordData.setDescription("Graph execution aborted.");
@@ -774,6 +777,7 @@ public class RunGraph extends Node{
 		private final static int DESC_FIELD = 2;
 		private final static int MESSAGE_FIELD = 3;
 		private final static int DURATION_FIELD = 4;
+		private final static int RUNID_FIELD = 5;
 		private DataRecord record = null;
 		
 		public OutputRecordData(DataRecord record, String graphName) {
@@ -818,6 +822,12 @@ public class RunGraph extends Node{
 		private void setDuration(long duration) {
 			if (record != null) {
 				record.getField(DURATION_FIELD).setValue(duration);
+			}
+		}
+		
+		private void setRunId(long runId) {
+			if (record != null && record.getNumFields()>RUNID_FIELD) {
+				record.getField(RUNID_FIELD).setValue(runId);
 			}
 		}
 	}
