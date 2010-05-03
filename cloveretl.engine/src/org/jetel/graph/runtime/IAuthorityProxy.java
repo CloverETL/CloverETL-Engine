@@ -41,6 +41,7 @@ public interface IAuthorityProxy {
 		public Result result;
 		public String description;
 		public long duration;
+		public long runId;
 	}
 		
 	public Sequence getSharedSequence(Sequence sequence);
