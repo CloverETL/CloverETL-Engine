@@ -161,7 +161,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 22nd April 2010
+ * @version 4th May 2010
  * @created 30th April 2009
  *
  * @see RecordRollup
@@ -445,6 +445,7 @@ public class Rollup extends Node {
 
     			try {
     				RecordRollup rollup = createTransformFromSourceCode(checkTransform);
+    				rollup.setGraph(getGraph());
     				rollup.init(transformParameters, getInputPort(INPUT_PORT_NUMBER).getMetadata(),
     						getGraph().getDataRecordMetadata(groupAccumulatorMetadataId),
     						getOutMetadata().toArray(new DataRecordMetadata[getOutPorts().size()]));
@@ -483,6 +484,7 @@ public class Rollup extends Node {
             recordRollup = createTransformFromClassName(transformClassName);
         }
 
+        recordRollup.setGraph(getGraph());
         recordRollup.init(transformParameters, getInputPort(INPUT_PORT_NUMBER).getMetadata(),
                 getGraph().getDataRecordMetadata(groupAccumulatorMetadataId),
                 getOutMetadata().toArray(new DataRecordMetadata[getOutPorts().size()]));
@@ -540,19 +542,12 @@ public class Rollup extends Node {
 
         if (sourceCode.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID) >= 0
                 || Pattern.compile(REGEX_TL_CODE).matcher(sourceCode).find()) {
-        	RecordRollup transform = new RecordRollupTL(sourceCode);
-        	transform.setGraph(getGraph());
-
-        	return transform;
+        	return new RecordRollupTL(sourceCode);
         }
 
         if (Pattern.compile(REGEX_JAVA_CLASS).matcher(sourceCode).find()) {
             try {
-            	RecordRollup transform = (RecordRollup) new DynamicJavaCode(sourceCode,
-            			getClass().getClassLoader()).instantiate();
-            	transform.setGraph(getGraph());
-
-            	return transform;
+            	return (RecordRollup) new DynamicJavaCode(sourceCode, getClass().getClassLoader()).instantiate();
             } catch (ClassCastException exception) {
                 throw new ComponentNotReadyException(
                         "The transformation code does not implement the RecordRollup interface!", exception);
@@ -575,10 +570,7 @@ public class Rollup extends Node {
      */
     private RecordRollup createTransformFromClassName(String className) throws ComponentNotReadyException {
         try {
-        	RecordRollup transform = (RecordRollup) Class.forName(className).newInstance(); 
-            transform.setGraph(getGraph());
-
-            return transform;
+            return (RecordRollup) Class.forName(className).newInstance();
         } catch (ClassNotFoundException exception) {
             throw new ComponentNotReadyException("Cannot find the transformation class!", exception);
         } catch (IllegalAccessException exception) {
