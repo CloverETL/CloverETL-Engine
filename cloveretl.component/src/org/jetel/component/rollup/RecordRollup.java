@@ -70,7 +70,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Martin Zatopek, Javlin a.s. &lt;martin.zatopek@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 2nd October 2009
+ * @version 4th May 2010
  * @since 24th February 2009
  */
 public interface RecordRollup {
@@ -83,7 +83,7 @@ public interface RecordRollup {
     /**
      * Associates a graph with this rollup transform.
      *
-     * @param graph a <code>Transformation</code> graph to be set
+     * @param graph a <code>TransformationGraph</code> graph to be set
      */
     public void setGraph(TransformationGraph graph);
 
