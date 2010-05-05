@@ -133,109 +133,111 @@ public interface TransformLangParserConstants {
   /** RegularExpression Id. */
   int BYTE_VAR = 72;
   /** RegularExpression Id. */
-  int LIST_VAR = 73;
+  int CBYTE_VAR = 73;
   /** RegularExpression Id. */
-  int MAP_VAR = 74;
+  int LIST_VAR = 74;
   /** RegularExpression Id. */
-  int RECORD_VAR = 75;
+  int MAP_VAR = 75;
   /** RegularExpression Id. */
-  int OBJECT_VAR = 76;
+  int RECORD_VAR = 76;
   /** RegularExpression Id. */
-  int VOID_VAR = 77;
+  int OBJECT_VAR = 77;
   /** RegularExpression Id. */
-  int BREAK = 78;
+  int VOID_VAR = 78;
   /** RegularExpression Id. */
-  int CONTINUE = 79;
+  int BREAK = 79;
   /** RegularExpression Id. */
-  int ELSE = 80;
+  int CONTINUE = 80;
   /** RegularExpression Id. */
-  int FOR = 81;
+  int ELSE = 81;
   /** RegularExpression Id. */
-  int FOR_EACH = 82;
+  int FOR = 82;
   /** RegularExpression Id. */
-  int FUNCTION = 83;
+  int FOR_EACH = 83;
   /** RegularExpression Id. */
-  int IF = 84;
+  int FUNCTION = 84;
   /** RegularExpression Id. */
-  int RETURN = 85;
+  int IF = 85;
   /** RegularExpression Id. */
-  int WHILE = 86;
+  int RETURN = 86;
   /** RegularExpression Id. */
-  int CASE = 87;
+  int WHILE = 87;
   /** RegularExpression Id. */
-  int ENUM = 88;
+  int CASE = 88;
   /** RegularExpression Id. */
-  int IMPORT = 89;
+  int ENUM = 89;
   /** RegularExpression Id. */
-  int SWITCH = 90;
+  int IMPORT = 90;
   /** RegularExpression Id. */
-  int CASE_DEFAULT = 91;
+  int SWITCH = 91;
   /** RegularExpression Id. */
-  int DO = 92;
+  int CASE_DEFAULT = 92;
   /** RegularExpression Id. */
-  int TRY = 93;
+  int DO = 93;
   /** RegularExpression Id. */
-  int CATCH = 94;
+  int TRY = 94;
   /** RegularExpression Id. */
-  int LOOKUP = 95;
+  int CATCH = 95;
   /** RegularExpression Id. */
-  int LOOKUP_NEXT = 96;
+  int LOOKUP = 96;
   /** RegularExpression Id. */
-  int LOOKUP_FOUND = 97;
+  int LOOKUP_NEXT = 97;
   /** RegularExpression Id. */
-  int LOOKUP_ADMIN = 98;
+  int LOOKUP_FOUND = 98;
   /** RegularExpression Id. */
-  int SEQUENCE = 99;
+  int LOOKUP_ADMIN = 99;
   /** RegularExpression Id. */
-  int LOGLEVEL_DEBUG = 100;
+  int SEQUENCE = 100;
   /** RegularExpression Id. */
-  int LOGLEVEL_INFO = 101;
+  int LOGLEVEL_DEBUG = 101;
   /** RegularExpression Id. */
-  int LOGLEVEL_WARN = 102;
+  int LOGLEVEL_INFO = 102;
   /** RegularExpression Id. */
-  int LOGLEVEL_ERROR = 103;
+  int LOGLEVEL_WARN = 103;
   /** RegularExpression Id. */
-  int LOGLEVEL_FATAL = 104;
+  int LOGLEVEL_ERROR = 104;
   /** RegularExpression Id. */
-  int LOGLEVEL_TRACE = 105;
+  int LOGLEVEL_FATAL = 105;
   /** RegularExpression Id. */
-  int YEAR = 106;
+  int LOGLEVEL_TRACE = 106;
   /** RegularExpression Id. */
-  int MONTH = 107;
+  int YEAR = 107;
   /** RegularExpression Id. */
-  int WEEK = 108;
+  int MONTH = 108;
   /** RegularExpression Id. */
-  int DAY = 109;
+  int WEEK = 109;
   /** RegularExpression Id. */
-  int HOUR = 110;
+  int DAY = 110;
   /** RegularExpression Id. */
-  int MINUTE = 111;
+  int HOUR = 111;
   /** RegularExpression Id. */
-  int SECOND = 112;
+  int MINUTE = 112;
   /** RegularExpression Id. */
-  int MILLISEC = 113;
+  int SECOND = 113;
   /** RegularExpression Id. */
-  int RETURN_OK = 114;
+  int MILLISEC = 114;
   /** RegularExpression Id. */
-  int RETURN_SKIP = 115;
+  int RETURN_OK = 115;
   /** RegularExpression Id. */
-  int RETURN_ALL = 116;
+  int RETURN_SKIP = 116;
   /** RegularExpression Id. */
-  int FIELD_ACCESS_OPERATOR = 117;
+  int RETURN_ALL = 117;
   /** RegularExpression Id. */
-  int FIELD_IDENTIFIER = 118;
+  int FIELD_ACCESS_OPERATOR = 118;
   /** RegularExpression Id. */
-  int NUMERIC_ID = 119;
+  int FIELD_IDENTIFIER = 119;
   /** RegularExpression Id. */
-  int STRING_ID = 120;
+  int NUMERIC_ID = 120;
   /** RegularExpression Id. */
-  int IDENTIFIER = 121;
+  int STRING_ID = 121;
   /** RegularExpression Id. */
-  int LETTER = 122;
+  int IDENTIFIER = 122;
   /** RegularExpression Id. */
-  int UNDERSCORE = 123;
+  int LETTER = 123;
   /** RegularExpression Id. */
-  int ERROR = 127;
+  int UNDERSCORE = 124;
+  /** RegularExpression Id. */
+  int ERROR = 128;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -321,6 +323,7 @@ public interface TransformLangParserConstants {
     "\"boolean\"",
     "\"string\"",
     "\"bytearray\"",
+    "\"cbytearray\"",
     "\"list\"",
     "\"map\"",
     "\"record\"",

@@ -48,7 +48,7 @@ options {
                       
                                 
    JAVA_UNICODE_ESCAPE = true;
-                            // change to true only if new Node has been added 
+                             // change to true only if new Node has been added 
    DEBUG_PARSER = false;	
    DEBUG_TOKEN_MANAGER = false;
    
@@ -558,6 +558,7 @@ TOKEN :
  |  <BOOLEAN_VAR: "boolean" >
  |  <STRING_VAR: "string" >
  |  <BYTE_VAR: "bytearray" >
+ |  <CBYTE_VAR: "cbytearray" > 
  |  <LIST_VAR: "list" >
  |  <MAP_VAR: "map" >
  |  <RECORD_VAR: "record" >
@@ -1303,7 +1304,21 @@ void PrimitiveType()      :
     	 		jjtn000.end(token.endLine,token.endColumn);  
     	 		jjtn000.setKind(BYTE_VAR);
     	 	} 
+    	 )
+		|
+		 ( <CBYTE_VAR>/*@bgen(jjtree)*/
+                        {
+                          jjtree.closeNodeScope(jjtn000, true);
+                          jjtc000 = false;
+                        }
+/*@egen*/
+		 	{ 
+    	 		jjtn000.begin(token.beginLine,token.beginColumn);
+    	 		jjtn000.end(token.endLine,token.endColumn);  
+    	 		jjtn000.setKind(CBYTE_VAR);
+    	 	} 
     	 ) 
+    	  
 		|
 		 ( <BOOLEAN_VAR>/*@bgen(jjtree)*/
                         {

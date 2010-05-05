@@ -781,6 +781,8 @@ public class ASTBuilder extends NavigatingVisitor {
 			return TLTypePrimitive.DATETIME;
 		case TransformLangParserConstants.BYTE_VAR:
 			return TLTypePrimitive.BYTEARRAY;
+		case TransformLangParserConstants.CBYTE_VAR:
+			return TLTypePrimitive.CBYTEARRAY;
 		case TransformLangParserConstants.BOOLEAN_VAR:
 			return TLTypePrimitive.BOOLEAN;
 		case TransformLangParserConstants.IDENTIFIER:
