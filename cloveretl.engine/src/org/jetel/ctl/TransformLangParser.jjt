@@ -554,6 +554,7 @@ TOKEN :
  |  <BOOLEAN_VAR: "boolean" >
  |  <STRING_VAR: "string" >
  |  <BYTE_VAR: "bytearray" >
+ |  <CBYTE_VAR: "cbytearray" > 
  |  <LIST_VAR: "list" >
  |  <MAP_VAR: "map" >
  |  <RECORD_VAR: "record" >
@@ -990,7 +991,16 @@ void PrimitiveType() #Type:
     	 		jjtThis.end(token.endLine,token.endColumn);  
     	 		jjtThis.setKind(BYTE_VAR);
     	 	} 
+    	 )
+		|
+		 ( <CBYTE_VAR>
+		 	{ 
+    	 		jjtThis.begin(token.beginLine,token.beginColumn);
+    	 		jjtThis.end(token.endLine,token.endColumn);  
+    	 		jjtThis.setKind(CBYTE_VAR);
+    	 	} 
     	 ) 
+    	  
 		|
 		 ( <BOOLEAN_VAR>
 		 	{ 

@@ -261,6 +261,8 @@ public abstract class TLTypePrimitive extends TLType {
 			return DATETIME;
 		case DataFieldMetadata.BYTE_FIELD:
 			return TLType.BYTEARRAY;
+		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+			return TLType.CBYTEARRAY;
 		case DataFieldMetadata.STRING_FIELD:
 			return STRING;
 		case DataFieldMetadata.BOOLEAN_FIELD:
