@@ -61,12 +61,10 @@ public abstract class CTLAbstractTransform {
 	}
 
 	/**
-	 * Initializes the global scope of the transform.
+	 * Initializes the global scope of the transform. Has to be overridden by the generated transform class.
 	 */
-	@CTLEntryPoint(name = "globalScopeInit", required = false)
-	protected void globalScopeInit() throws ComponentNotReadyException {
-		// do nothing by default
-	}
+	@CTLEntryPoint(name = "globalScopeInit", required = true)
+	protected abstract void globalScopeInit() throws ComponentNotReadyException;
 
 	// TODO: All common methods should be moved here when there is a common transformation interface.
 
