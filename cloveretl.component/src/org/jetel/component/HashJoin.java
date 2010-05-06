@@ -21,22 +21,22 @@ package org.jetel.component;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordMap;
 import org.jetel.data.Defaults;
-import org.jetel.data.HashKey;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.data.DataRecordMap.DataRecordIterator;
+import org.jetel.data.DataRecordMap.DataRecordLookup;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -188,9 +188,7 @@ import org.w3c.dom.Element;
  */
 public class HashJoin extends Node {
 	public enum Join {
-		INNER,
-		LEFT_OUTER,
-		FULL_OUTER,
+		INNER, LEFT_OUTER, FULL_OUTER,
 	}
 
 	private static final String XML_HASHTABLESIZE_ATTRIBUTE = "hashTableSize";
@@ -200,14 +198,14 @@ public class HashJoin extends Node {
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	private static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
-	private static final String XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE ="slaveDuplicates";
+	private static final String XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE = "slaveDuplicates";
 	// legacy attributes
 	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
 	private static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
 	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
-    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
+	private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
 
-	/**  Description of the Field */
+	/** Description of the Field */
 	public final static String COMPONENT_TYPE = "HASH_JOIN";
 
 	private final static int DEFAULT_HASH_TABLE_INITIAL_CAPACITY = 512;
@@ -224,17 +222,17 @@ public class HashJoin extends Node {
 	private String charset = null;
 
 	private Join join;
-	private boolean slaveDuplicates=false;
+	private boolean slaveDuplicates = false;
 
 	private String[][] driverJoiners;
 	private String[][] slaveJoiners;
-	
+
 	private RecordKey[] driverKeys;
 	private RecordKey[] slaveKeys;
-	
+
 	private boolean slaveOverriden = false;
 
-	private HashMap<HashKey, MapItem>[] hashMap;
+	private DataRecordMap[] hashMap;
 	private int hashTableInitialCapacity;
 
 	private Properties transformationParameters;
@@ -258,19 +256,25 @@ public class HashJoin extends Node {
 
 	/**
 	 *Constructor for the HashJoin object
-	 *
-	 * @param id		Description of the Parameter
-	 * @param driverJoiners	Array of driver joiners (each element contains list of join keys for one slave)
-	 * @param slaveJoiners	Array of slave joiners (each element contains list of join keys for one slave)
+	 * 
+	 * @param id
+	 *            Description of the Parameter
+	 * @param driverJoiners
+	 *            Array of driver joiners (each element contains list of join keys for one slave)
+	 * @param slaveJoiners
+	 *            Array of slave joiners (each element contains list of join keys for one slave)
 	 * @param transform
-	 * @param transformClass  class (name) to be used for transforming data
-	 * @param join join type
-	 * @param slaveDuplicates enables/disables duplicate slaves
+	 * @param transformClass
+	 *            class (name) to be used for transforming data
+	 * @param join
+	 *            join type
+	 * @param slaveDuplicates
+	 *            enables/disables duplicate slaves
 	 */
 	public HashJoin(String id, String[][] driverJoiners, String[][] slaveJoiners, String transform,
 			String transformClass, String transformURL, Join join, boolean slaveOverriden) {
 		super(id);
-		this.transformSource =transform;
+		this.transformSource = transform;
 		this.transformClassName = transformClass;
 		this.transformURL = transformURL;
 		this.join = join;
@@ -280,16 +284,15 @@ public class HashJoin extends Node {
 		this.slaveOverriden = slaveOverriden;
 	}
 
-	public HashJoin(String id, String[][] driverJoiners, String[][] slaveJoiners, 
-			RecordTransform transform, Join join, boolean slaveOverriden) {
-        this(id, driverJoiners, slaveJoiners, null, null, null, join, slaveOverriden);
+	public HashJoin(String id, String[][] driverJoiners, String[][] slaveJoiners, RecordTransform transform, Join join,
+			boolean slaveOverriden) {
+		this(id, driverJoiners, slaveJoiners, null, null, null, join, slaveOverriden);
 		this.transformation = transform;
 	}
-	
-	public HashJoin(String id, String joinKey, String transform, String transformClass, String transformURL,
-			Join join){
+
+	public HashJoin(String id, String joinKey, String transform, String transformClass, String transformURL, Join join) {
 		super(id);
-		this.transformSource =transform;
+		this.transformSource = transform;
 		this.transformClassName = transformClass;
 		this.transformURL = transformURL;
 		this.join = join;
@@ -297,24 +300,25 @@ public class HashJoin extends Node {
 		this.joinKey = joinKey;
 	}
 
-	public HashJoin(String id, String joinKey, RecordTransform transform, Join join){
+	public HashJoin(String id, String joinKey, RecordTransform transform, Join join) {
 		this(id, joinKey, null, null, null, join);
 		this.transformation = transform;
 	}
-	
-	//	/**
-//	*  Sets the leftOuterJoin attribute of the HashJoin object
-//	*
-//	* @param  outerJoin  The new leftOuterJoin value
-//	*/
-//	public void setLeftOuterJoin(boolean outerJoin) {
-//	leftOuterJoin = outerJoin;
-//	}
+
+	// /**
+	// * Sets the leftOuterJoin attribute of the HashJoin object
+	// *
+	// * @param outerJoin The new leftOuterJoin value
+	// */
+	// public void setLeftOuterJoin(boolean outerJoin) {
+	// leftOuterJoin = outerJoin;
+	// }
 
 	/**
-	 *  Sets the hashTableInitialCapacity attribute of the HashJoin object
-	 *
-	 * @param  capacity  The new hashTableInitialCapacity value
+	 * Sets the hashTableInitialCapacity attribute of the HashJoin object
+	 * 
+	 * @param capacity
+	 *            The new hashTableInitialCapacity value
 	 */
 	public void setHashTableInitialCapacity(int capacity) {
 		if (capacity > DEFAULT_HASH_TABLE_INITIAL_CAPACITY) {
@@ -323,14 +327,15 @@ public class HashJoin extends Node {
 	}
 
 	public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
+		if (isInitialized())
+			return;
 		super.init();
-		
+
 		driverPort = getInputPort(DRIVER_ON_PORT);
 		outPort = getOutputPort(WRITE_TO_PORT);
 
 		slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
-		if (driverJoiners == null) {//need to parse join key
+		if (driverJoiners == null) {// need to parse join key
 			List<DataRecordMetadata> inMetadata = getInMetadata();
 			String[][][] joiners = JoinKeyUtils.parseHashJoinKey(joinKey, inMetadata);
 			driverJoiners = joiners[0];
@@ -340,7 +345,7 @@ public class HashJoin extends Node {
 					throw new ComponentNotReadyException(this, XML_SLAVEOVERRIDEKEY_ATTRIBUTE, "Driver key and slave key doesn't match");
 				}
 				for (int i = 0; i < joiners[1].length; i++) {
-					joiners[1][i] = slaveKeys; 
+					joiners[1][i] = slaveKeys;
 				}
 			}
 			slaveJoiners = joiners[1];
@@ -390,57 +395,54 @@ public class HashJoin extends Node {
 			slaveKeys[idx].init();
 		}
 
-		// allocate maps		
+		// allocate maps
 		try {
-			hashMap = (HashMap<HashKey, MapItem>[])new HashMap[slaveCnt];
+			hashMap = new DataRecordMap[slaveCnt];
 			for (int idx = 0; idx < slaveCnt; idx++) {
-				hashMap[idx] = new HashMap<HashKey, MapItem>(hashTableInitialCapacity);
+				hashMap[idx] = new DataRecordMap(slaveKeys[idx], slaveDuplicates, hashTableInitialCapacity, false);
 			}
 		} catch (OutOfMemoryError ex) {
 			logger.fatal(ex);
-			throw new ComponentNotReadyException("Can't allocate HashMap of size: "	+ hashTableInitialCapacity);
+			throw new ComponentNotReadyException("Can't allocate HashMap of size: " + hashTableInitialCapacity);
 		}
 
 		// init transformation
-		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {
-				getOutputPort(WRITE_TO_PORT).getMetadata()};
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT).getMetadata() };
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[1 + slaveCnt];
 		inMetadata[0] = getInputPort(DRIVER_ON_PORT).getMetadata();
 		for (int idx = 0; idx < slaveCnt; idx++) {
 			inMetadata[1 + idx] = getInputPort(FIRST_SLAVE_PORT + idx).getMetadata();
 		}
-		if (transformation != null){
+		if (transformation != null) {
 			transformation.init(transformationParameters, inMetadata, outMetadata);
-		}else{
+		} else {
 			String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
-			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
-					transformURL, charset,this, inMetadata, outMetadata, transformationParameters, 
-					this.getClass().getClassLoader(), classPaths);
+			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, transformURL, charset, this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader(), classPaths);
 		}
-        errorActions = ErrorAction.createMap(errorActionsString);
-        if (errorLogURL != null) {
-       	try {
+		errorActions = ErrorAction.createMap(errorActionsString);
+		if (errorLogURL != null) {
+			try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
 			} catch (IOException e) {
 				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
 			}
-       }
+		}
 	}
 
-	public void reset() throws ComponentNotReadyException{
+	public void reset() throws ComponentNotReadyException {
 		inRecords[0] = new DataRecord(driverPort.getMetadata());
 		inRecords[0].init();
-		for (HashMap<HashKey,MapItem> hashMapItem : hashMap) {
-			hashMapItem.clear();
+		for (DataRecordMap mapItem : hashMap) {
+			mapItem.clear();
 		}
 		transformation.reset();
-        if (errorLogURL != null) {
-        	try {
+		if (errorLogURL != null) {
+			try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
 			} catch (IOException e) {
 				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
 			}
-        }
+		}
 	}
 
 	public void free() {
@@ -456,7 +458,7 @@ public class HashJoin extends Node {
 	}
 
 	/**
-	 * read records from all slave input ports and stores them to hashtables 
+	 * read records from all slave input ports and stores them to hashtables
 	 */
 	private void loadSlaveData() {
 		InputReader[] slaveReader = new InputReader[slaveCnt];
@@ -486,9 +488,10 @@ public class HashJoin extends Node {
 
 	/**
 	 * Flush orphaned slaves.
+	 * 
 	 * @throws TransformException
-	 * @throws InterruptedException 
-	 * @throws IOException 
+	 * @throws InterruptedException
+	 * @throws IOException
 	 */
 	private void flushOrphaned() throws TransformException, IOException, InterruptedException {
 		// flush slaves without driver record
@@ -496,190 +499,153 @@ public class HashJoin extends Node {
 			inRecords[idx] = NullRecord.NULL_RECORD;
 		}
 
-		if (slaveDuplicates) {
-		    flushOrphanedMulti();
-		} else {
-		    flushOrphanedSingle();
-		}
-	}
-
-	private void flushOrphanedMulti() throws TransformException, IOException, InterruptedException {
-		MapMultiItem mapItem;
 		for (int slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
-			for (Entry<HashKey, MapItem> pair: hashMap[slaveIdx].entrySet()) {
-				mapItem = (MapMultiItem)pair.getValue();
-				if (mapItem.indicator && slaveDuplicates) {
-					continue;	// all slave records in collection were already used
-				}
-				Iterator<DataRecord> itor = mapItem.records.iterator();
-				if (mapItem.indicator) {
-					itor.next();	// first slave record in collection was already used
-				}
-				// process unused records
-				while (itor.hasNext()) {
-					if (!runIt) {
-						return;
-					}
-					transformAndWriteRecord(itor.next(), slaveIdx);
-				} // for 
-			} // for
-			inRecords[FIRST_SLAVE_PORT + slaveIdx] = null;
-		} // for all slaves
-	}
-
-	private void flushOrphanedSingle() throws TransformException, IOException, InterruptedException {
-		MapSingleItem mapItem;
-		for (int slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
-			for (Entry<HashKey, MapItem> pair: hashMap[slaveIdx].entrySet()) {
-				mapItem = (MapSingleItem)pair.getValue();
-				if (mapItem.indicator || (mapItem.indicator && slaveDuplicates)) {
-					continue;	// all slave records in collection were already used
-				}
-				// process unused records
+			Iterator<DataRecord> itor = hashMap[slaveIdx].getOrphanedIterator();
+			while (itor.hasNext()) {
 				if (!runIt) {
 					return;
 				}
-				transformAndWriteRecord(mapItem.dataRecord, slaveIdx);
-			} // for
+				transformAndWriteRecord(itor.next(), slaveIdx);
+			}
 			inRecords[FIRST_SLAVE_PORT + slaveIdx] = null;
-		} // for all slaves
+		}
 	}
 
-	private void transformAndWriteRecord(DataRecord record, int slaveIdx) throws TransformException, IOException, InterruptedException {
+	private void transformAndWriteRecord(DataRecord record, int slaveIdx) throws TransformException, IOException,
+			InterruptedException {
 		inRecords[FIRST_SLAVE_PORT + slaveIdx] = record;
 		int transformResult = transformation.transform(inRecords, outRecords);
 		if (transformResult < 0) {
 			handleException(transformation, transformResult, masterCounter);
-		}else{
+		} else {
 			outPort.writeRecord(outRecords[0]);
 		}
 		outRecords[0].reset();
 	}
-	
+
 	/**
 	 * Reads all driver records and performs transformation for them
+	 * 
 	 * @throws TransformException
-	 * @throws InterruptedException 
-	 * @throws IOException 
+	 * @throws InterruptedException
+	 * @throws IOException
 	 */
 	private void flush() throws TransformException, IOException, InterruptedException {
-        DataRecord driverRecord = inRecords[0];
-		HashKey[] hashKey = new HashKey[slaveCnt];
-
-		for (int idx = 0; idx < slaveCnt; idx++) {
-			hashKey[idx] = new HashKey(driverKeys[idx], driverRecord);
-		}
-
+		DataRecord driverRecord = inRecords[0];
 		masterCounter = 0;
+		// move to preExecute/init?
+		DataRecordLookup[] mapLookups = new DataRecordLookup[slaveCnt];
+		for (int i = 0; i < slaveCnt; i++) {
+			mapLookups[i] = hashMap[i].createDataRecordLookup(driverKeys[i], driverRecord);
+		}
+		// end of move
 
-		if (slaveDuplicates) {
-		    flushMulti(driverRecord, new MapMultiItem[slaveCnt], hashKey); 
-		} else {
-		    flushSingle(driverRecord, new MapSingleItem[slaveCnt], hashKey);
+		if (slaveDuplicates)
+			flushMulti(mapLookups, driverRecord);
+		else
+			flushSingle(mapLookups, driverRecord);
+	}
+
+	/**
+	 * @param mapLookups
+	 */
+	private void flushSingle(DataRecordLookup[] mapLookups, DataRecord driverRecord) throws TransformException,
+			IOException, InterruptedException {
+		while (runIt && driverPort.readRecord(driverRecord) != null) {
+			int slaveIdx;
+
+			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
+				inRecords[1 + slaveIdx] = mapLookups[slaveIdx].getAndMark();
+				if (inRecords[1 + slaveIdx] == null) {
+					if (join == Join.INNER) { // missing slave
+						break;
+					}
+					inRecords[1 + slaveIdx] = NullRecord.NULL_RECORD;
+				}
+			}
+			if (slaveIdx < slaveCnt) { // missing slaves
+				continue; // read next driver
+			}
+			int transfrormResult = transformation.transform(inRecords, outRecords);
+			if (transfrormResult < 0) {
+				handleException(transformation, transfrormResult, masterCounter);
+			} else {
+				outPort.writeRecord(outRecords[0]);
+			}
+			outRecords[0].reset();
+
+			SynchronizeUtils.cloverYield();
+			masterCounter++;
 		}
 	}
-	
-	private void flushMulti(DataRecord driverRecord, MapMultiItem[] slaveRecords, HashKey[] hashKey) throws TransformException, IOException, InterruptedException {
+
+	/**
+	 * @param mapLookups
+	 */
+	private void flushMulti(DataRecordLookup[] mapLookups, DataRecord driverRecord) throws TransformException,
+			IOException, InterruptedException {
+		DataRecordIterator[] iterators = new DataRecordIterator[slaveCnt];
 		while (runIt && driverPort.readRecord(driverRecord) != null) {
 			int slaveIdx;
 
 			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
-				slaveRecords[slaveIdx] = (MapMultiItem)hashMap[slaveIdx].get(hashKey[slaveIdx]);
-				if (slaveRecords[slaveIdx] == null) {
-					if (join == Join.INNER) {	// missing slave
+				iterators[slaveIdx] = mapLookups[slaveIdx].getAllAndMark();
+				if (iterators[slaveIdx] == null) {
+					if (join == Join.INNER) { // missing slave
 						break;
 					}
-					slaveRecords[slaveIdx] = new MapMultiItem();
-					slaveRecords[slaveIdx].records.add(NullRecord.NULL_RECORD);
+					iterators[slaveIdx] = hashMap[0].getNULLIterator();
 				}
-				slaveRecords[slaveIdx].indicator = true;
 			}
-			if (slaveIdx < slaveCnt) {	// missing slaves
-				continue;	// read next driver
+			if (slaveIdx < slaveCnt) { // missing slaves
+				continue; // read next driver
 			}
 
-			// we need to generate all combinations of slaves 
-			int[] cnt = new int[slaveCnt];
-			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
-				cnt[slaveIdx] = slaveRecords[slaveIdx].records.size();
+			for (int i = 0; i < iterators.length; i++) {
+				inRecords[i + 1] = iterators[i].next();
 			}
-			
-			for (int recIdx = 0; true; recIdx++) {
-				int q = recIdx;
-				for (slaveIdx = 0; slaveIdx < slaveCnt - 1; slaveIdx++) {					
-					inRecords[1 + slaveIdx] = slaveRecords[slaveIdx].records.get(q%cnt[slaveIdx]);
-					q /= cnt[slaveIdx];
+			int currentIterator = iterators.length - 1;
+
+			while (currentIterator >= 0) {
+				transform();
+
+				while (iterators[currentIterator].hasNext()) {
+					inRecords[currentIterator + 1] = iterators[currentIterator].next();
+					transform();
 				}
-				if (q >= cnt[slaveCnt - 1]) { // all combinations exhausted
-					break;
-				}
-				inRecords[1 + slaveCnt - 1] = slaveRecords[slaveIdx].records.get(q);
+				currentIterator--;
+				while (currentIterator >= 0) {
+					if (iterators[currentIterator].hasNext()) {
+						inRecords[currentIterator + 1] = iterators[currentIterator].next();
 
-				int transfrormResult = transformation.transform(inRecords, outRecords);
-				if (transfrormResult < 0) {
-					handleException(transformation, transfrormResult, masterCounter);
-				}else{
-					outPort.writeRecord(outRecords[0]);
-				}
-				outRecords[0].reset();
-	 		}
+						for (int i = currentIterator + 1; i < iterators.length; i++) {
+							iterators[i].reset();
+							inRecords[i + 1] = iterators[i].next();
+						}
 
-			SynchronizeUtils.cloverYield();
-			masterCounter++;
-		} // while
-	}
-
-	private void flushSingle(DataRecord driverRecord, MapSingleItem[] slaveRecords, HashKey[] hashKey) throws TransformException, IOException, InterruptedException {
-		while (runIt && driverPort.readRecord(driverRecord) != null) {
-			int slaveIdx;
-
-			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
-				slaveRecords[slaveIdx] = (MapSingleItem)hashMap[slaveIdx].get(hashKey[slaveIdx]);
-				if (slaveRecords[slaveIdx] == null) {
-					if (join == Join.INNER) {	// missing slave
+						currentIterator = iterators.length - 1;
 						break;
 					}
-					slaveRecords[slaveIdx] = new MapSingleItem();
-					slaveRecords[slaveIdx].dataRecord = NullRecord.NULL_RECORD;
+					currentIterator--;
 				}
-				slaveRecords[slaveIdx].indicator = true;
 			}
-			if (slaveIdx < slaveCnt) {	// missing slaves
-				continue;	// read next driver
-			}
-
-			// we need to generate all combinations of slaves 
-			int[] cnt = new int[slaveCnt];
-			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
-				cnt[slaveIdx] = slaveRecords[slaveIdx].dataRecord == null ? 0 : 1;
-			}
-			
-			for (int recIdx = 0; true; recIdx++) {
-				int q = recIdx;
-				for (slaveIdx = 0; slaveIdx < slaveCnt - 1; slaveIdx++) {					
-					inRecords[1 + slaveIdx] = slaveRecords[slaveIdx].dataRecord;
-					q /= cnt[slaveIdx];
-				}
-				if (q >= cnt[slaveCnt - 1]) { // all combinations exhausted
-					break;
-				}
-				inRecords[1 + slaveCnt - 1] = slaveRecords[slaveIdx].dataRecord;
-
-				int transfrormResult = transformation.transform(inRecords, outRecords);
-				if (transfrormResult < 0) {
-					handleException(transformation, transfrormResult, masterCounter);
-				}else{
-					outPort.writeRecord(outRecords[0]);
-				}
-				outRecords[0].reset();
-	 		}
-				
 			SynchronizeUtils.cloverYield();
 			masterCounter++;
-		} // while
+		}
 	}
-	
-	private void handleException(RecordTransform transform, int transformResult, int recNo) throws TransformException, IOException{
+
+	private void transform() throws TransformException, IOException, InterruptedException {
+		int transfrormResult = transformation.transform(inRecords, outRecords);
+		if (transfrormResult < 0) {
+			handleException(transformation, transfrormResult, masterCounter);
+		} else {
+			outPort.writeRecord(outRecords[0]);
+		}
+		outRecords[0].reset();
+	}
+
+	private void handleException(RecordTransform transform, int transformResult, int recNo) throws TransformException,
+			IOException {
 		ErrorAction action = errorActions.get(transformResult);
 		if (action == null) {
 			action = errorActions.get(Integer.MIN_VALUE);
@@ -687,10 +653,9 @@ public class HashJoin extends Node {
 				action = ErrorAction.DEFAULT_ERROR_ACTION;
 			}
 		}
-		String message = "Transformation for master record:\n " + inRecords[0] + "finished with code: "	+ transformResult + 
-			". Error message: " + transformation.getMessage();
+		String message = "Transformation for master record:\n " + inRecords[0] + "finished with code: " + transformResult + ". Error message: " + transformation.getMessage();
 		if (action == ErrorAction.CONTINUE) {
-			if (errorLog != null){
+			if (errorLog != null) {
 				errorLog.write(String.valueOf(recNo));
 				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
 				errorLog.write(String.valueOf(transformResult));
@@ -705,11 +670,11 @@ public class HashJoin extends Node {
 					errorLog.write(semiResult.toString());
 				}
 				errorLog.write("\n");
-			}else{
+			} else {
 				logger.warn(message);
 			}
-		}else{
-			if (errorLog != null){
+		} else {
+			if (errorLog != null) {
 				errorLog.flush();
 				errorLog.close();
 			}
@@ -720,73 +685,71 @@ public class HashJoin extends Node {
 	@Override
 	public Result execute() throws Exception {
 		loadSlaveData();
-        flush();
+		flush();
 
-        if (join == Join.FULL_OUTER) {
-            flushOrphaned();
-        }
+		if (join == Join.FULL_OUTER) {
+			flushOrphaned();
+		}
 
-        transformation.finished();
+		transformation.finished();
 
-        if (errorLog != null) {
-            errorLog.flush();
-            errorLog.close();
-        }
+		if (errorLog != null) {
+			errorLog.flush();
+			errorLog.close();
+		}
 
-        setEOF(WRITE_TO_PORT);
+		setEOF(WRITE_TO_PORT);
 
-        return (runIt ? Result.FINISHED_OK : Result.ABORTED);
+		return (runIt ? Result.FINISHED_OK : Result.ABORTED);
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
+	 * Description of the Method
+	 * 
+	 * @return Description of the Returned Value
+	 * @since May 21, 2002
 	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 
 		if (transformClassName != null) {
 			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClassName);
-		} 
+		}
 
-		if (transformSource!=null){
-			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
+		if (transformSource != null) {
+			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE, transformSource);
 		}
 
 		if (transformURL != null) {
 			xmlElement.setAttribute(XML_TRANSFORMURL_ATTRIBUTE, transformURL);
 		}
-		
-		if (charset != null){
+
+		if (charset != null) {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
 		}
 		xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, createJoinSpec(driverJoiners, slaveJoiners));
 
+		xmlElement.setAttribute(XML_JOINTYPE_ATTRIBUTE, join == Join.FULL_OUTER ? "fullOuter" : join == Join.LEFT_OUTER ? "leftOuter" : "inner");
 
-		xmlElement.setAttribute(XML_JOINTYPE_ATTRIBUTE,
-				join == Join.FULL_OUTER ? "fullOuter" : join == Join.LEFT_OUTER ? "leftOuter" : "inner");
-
-		if (hashTableInitialCapacity > DEFAULT_HASH_TABLE_INITIAL_CAPACITY ) {
+		if (hashTableInitialCapacity > DEFAULT_HASH_TABLE_INITIAL_CAPACITY) {
 			xmlElement.setAttribute(XML_HASHTABLESIZE_ATTRIBUTE, String.valueOf(hashTableInitialCapacity));
 		}
 
-		if (slaveDuplicates){
+		if (slaveDuplicates) {
 			xmlElement.setAttribute(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, String.valueOf(slaveDuplicates));
 		}
-		if (errorActionsString != null){
+		if (errorActionsString != null) {
 			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
 		}
-		
-		if (errorLogURL != null){
+
+		if (errorLogURL != null) {
 			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
 		}
-		
+
 		Enumeration propertyAtts = transformationParameters.propertyNames();
 		while (propertyAtts.hasMoreElements()) {
-			String attName = (String)propertyAtts.nextElement();
-			xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
+			String attName = (String) propertyAtts.nextElement();
+			xmlElement.setAttribute(attName, transformationParameters.getProperty(attName));
 		}
 	}
 
@@ -803,12 +766,12 @@ public class HashJoin extends Node {
 			for (int j = 0; true; j++) {
 				joinStr += driverJoiners[i][j] + "=" + slaveJoiners[i][j];
 				if (j == driverJoiners[i].length - 1) {
-					break;	// leave inner loop
+					break; // leave inner loop
 				}
 				joinStr += Defaults.Component.KEY_FIELDS_DELIMITER;
 			}
 			if (i == driverJoiners.length - 1) {
-				break;	// leave outer loop
+				break; // leave outer loop
 			}
 			joinStr += "#";
 		}
@@ -816,20 +779,21 @@ public class HashJoin extends Node {
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 * @param  nodeXML  Description of Parameter
-	 * @return          Description of the Returned Value
-	 * @since           May 21, 2002
+	 * Description of the Method
+	 * 
+	 * @param nodeXML
+	 *            Description of Parameter
+	 * @return Description of the Returned Value
+	 * @since May 21, 2002
 	 */
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		HashJoin join;
-		
+
 		try {
 			String joinStr = xattribs.getString(XML_JOINTYPE_ATTRIBUTE, "inner");
 			Join joinType;
-			
+
 			if (joinStr == null || joinStr.equalsIgnoreCase("inner")) {
 				joinType = Join.INNER;
 			} else if (joinStr.equalsIgnoreCase("leftOuter")) {
@@ -837,8 +801,7 @@ public class HashJoin extends Node {
 			} else if (joinStr.equalsIgnoreCase("fullOuter")) {
 				joinType = Join.FULL_OUTER;
 			} else {
-				throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" 
-						+ "Invalid joinType specification: " + joinStr);				
+				throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + "Invalid joinType specification: " + joinStr);
 			}
 
 			// legacy attributes handling {
@@ -846,14 +809,8 @@ public class HashJoin extends Node {
 				joinType = xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE) ? Join.LEFT_OUTER : Join.INNER;
 			}
 
-			join = new HashJoin(
-					xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_JOINKEY_ATTRIBUTE),
-					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
-					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
-          xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF),
-					joinType);
-			
+			join = new HashJoin(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_JOINKEY_ATTRIBUTE), xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null), xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), joinType);
+
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE));
 			}
@@ -867,19 +824,16 @@ public class HashJoin extends Node {
 			if (xattribs.exists(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE)) {
 				join.setSlaveDuplicates(xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)) {
 				join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)) {
 				join.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
 			}
-			join.setTransformationParameters(xattribs.attributes2Properties(
-					new String[]{XML_ID_ATTRIBUTE,XML_JOINKEY_ATTRIBUTE,
-							XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE, XML_JOINTYPE_ATTRIBUTE,
-							XML_HASHTABLESIZE_ATTRIBUTE,XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE}));
+			join.setTransformationParameters(xattribs.attributes2Properties(new String[] { XML_ID_ATTRIBUTE, XML_JOINKEY_ATTRIBUTE, XML_TRANSFORM_ATTRIBUTE, XML_TRANSFORMCLASS_ATTRIBUTE, XML_JOINTYPE_ATTRIBUTE, XML_HASHTABLESIZE_ATTRIBUTE, XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE }));
 			return join;
 		} catch (Exception ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
 		}
 	}
 
@@ -888,152 +842,145 @@ public class HashJoin extends Node {
 	}
 
 	public void setErrorActions(String string) {
-		this.errorActionsString = string;		
+		this.errorActionsString = string;
 	}
+
 	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Return Value
+	 * Description of the Method
+	 * 
+	 * @return Description of the Return Value
 	 */
-    @Override
-    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        super.checkConfig(status);
-        
-        if(!checkInputPorts(status, 2, Integer.MAX_VALUE)
-        		|| !checkOutputPorts(status, 1, 1)) {
-        	return status;
-        }
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
 
-        int slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
+		if (!checkInputPorts(status, 2, Integer.MAX_VALUE) || !checkOutputPorts(status, 1, 1)) {
+			return status;
+		}
 
-        try {
-        	
-    		driverPort = getInputPort(DRIVER_ON_PORT);
-    		outPort = getOutputPort(WRITE_TO_PORT);
+		int slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
 
-    		if (driverJoiners == null) {
-    			List<DataRecordMetadata> inMetadata = getInMetadata();
-    			String[][][] joiners = JoinKeyUtils.parseHashJoinKey(joinKey, inMetadata);
-    			driverJoiners = joiners[0];
-    			if (slaveOverrideKey != null) {
-    				String[] slaveKeys = slaveOverrideKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-    				if (slaveKeys.length != joiners[0][0].length) {
-    					throw new ComponentNotReadyException(this, XML_SLAVEOVERRIDEKEY_ATTRIBUTE, "Driver key and slave key doesn't match");
-    				}
-    				for (int i = 0; i < joiners[1].length; i++) {
-    					joiners[1][i] = slaveKeys; 
-    				}
-    			}
-    			slaveJoiners = joiners[1];
-    		}
-    		if (driverJoiners.length < 1) {
-    			throw new ComponentNotReadyException(this, XML_JOINKEY_ATTRIBUTE, "Driver key list not specified");
-    		}
-    		if (driverJoiners.length < slaveCnt) {
-    			logger.warn("Driver keys aren't specified for all slave inputs - deducing missing keys");
-    			String[][] replJoiners = new String[slaveCnt][];
-    			for (int i = 0; i < driverJoiners.length; i++) {
-    				replJoiners[i] = driverJoiners[i];
-    			}
-    			// use first master key specification to deduce all missing driver key specifications
-    			for (int i = driverJoiners.length; i < slaveCnt; i++) {
-    				replJoiners[i] = driverJoiners[0];
-    			}
-    			driverJoiners = replJoiners;
-    		}
-    		if (slaveJoiners.length < slaveCnt) {
-    			logger.warn("Slave keys aren't specified for all slave inputs - deducing missing keys");
-    			String[][] replJoiners = new String[slaveCnt][];
-    			for (int i = 0; i < slaveJoiners.length; i++) {
-    				replJoiners[i] = slaveJoiners[i];
-    			}
-    			// use first master key specification to deduce all missing driver key specifications
-    			for (int i = slaveJoiners.length; i < slaveCnt; i++) {
-    				replJoiners[i] = driverJoiners[0];
-    			}
-    			slaveJoiners = replJoiners;
-    		}
+		try {
 
-    		inRecords = new DataRecord[1 + slaveCnt];
-    		inRecords[0] = new DataRecord(driverPort.getMetadata());
-    		inRecords[0].init();
-    		outRecords = new DataRecord[1];
-    		outRecords[0] = new DataRecord(outPort.getMetadata());
-    		outRecords[0].init();
+			driverPort = getInputPort(DRIVER_ON_PORT);
+			outPort = getOutputPort(WRITE_TO_PORT);
 
-    		driverKeys = new RecordKey[slaveCnt];
-    		slaveKeys = new RecordKey[slaveCnt];
-    		for (int idx = 0; idx < slaveCnt; idx++) {
-    			driverKeys[idx] = new RecordKey(driverJoiners[idx], driverPort.getMetadata());
-    			slaveKeys[idx] = new RecordKey(slaveJoiners[idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
-    			
-    			if (slaveOverriden) {
-    				RecordKey.checkKeys(driverKeys[idx], XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
-    						XML_SLAVEOVERRIDEKEY_ATTRIBUTE, status, this);
-    			} else {
-    				RecordKey.checkKeys(driverKeys[idx], XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
-    						XML_JOINKEY_ATTRIBUTE, status, this);
-    			}
-    		}
+			if (driverJoiners == null) {
+				List<DataRecordMetadata> inMetadata = getInMetadata();
+				String[][][] joiners = JoinKeyUtils.parseHashJoinKey(joinKey, inMetadata);
+				driverJoiners = joiners[0];
+				if (slaveOverrideKey != null) {
+					String[] slaveKeys = slaveOverrideKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+					if (slaveKeys.length != joiners[0][0].length) {
+						throw new ComponentNotReadyException(this, XML_SLAVEOVERRIDEKEY_ATTRIBUTE, "Driver key and slave key doesn't match");
+					}
+					for (int i = 0; i < joiners[1].length; i++) {
+						joiners[1][i] = slaveKeys;
+					}
+				}
+				slaveJoiners = joiners[1];
+			}
+			if (driverJoiners.length < 1) {
+				throw new ComponentNotReadyException(this, XML_JOINKEY_ATTRIBUTE, "Driver key list not specified");
+			}
+			if (driverJoiners.length < slaveCnt) {
+				logger.warn("Driver keys aren't specified for all slave inputs - deducing missing keys");
+				String[][] replJoiners = new String[slaveCnt][];
+				for (int i = 0; i < driverJoiners.length; i++) {
+					replJoiners[i] = driverJoiners[i];
+				}
+				// use first master key specification to deduce all missing driver key specifications
+				for (int i = driverJoiners.length; i < slaveCnt; i++) {
+					replJoiners[i] = driverJoiners[0];
+				}
+				driverJoiners = replJoiners;
+			}
+			if (slaveJoiners.length < slaveCnt) {
+				logger.warn("Slave keys aren't specified for all slave inputs - deducing missing keys");
+				String[][] replJoiners = new String[slaveCnt][];
+				for (int i = 0; i < slaveJoiners.length; i++) {
+					replJoiners[i] = slaveJoiners[i];
+				}
+				// use first master key specification to deduce all missing driver key specifications
+				for (int i = slaveJoiners.length; i < slaveCnt; i++) {
+					replJoiners[i] = driverJoiners[0];
+				}
+				slaveJoiners = replJoiners;
+			}
 
-    		if (errorActionsString != null) {
+			inRecords = new DataRecord[1 + slaveCnt];
+			inRecords[0] = new DataRecord(driverPort.getMetadata());
+			inRecords[0].init();
+			outRecords = new DataRecord[1];
+			outRecords[0] = new DataRecord(outPort.getMetadata());
+			outRecords[0].init();
+
+			driverKeys = new RecordKey[slaveCnt];
+			slaveKeys = new RecordKey[slaveCnt];
+			for (int idx = 0; idx < slaveCnt; idx++) {
+				driverKeys[idx] = new RecordKey(driverJoiners[idx], driverPort.getMetadata());
+				slaveKeys[idx] = new RecordKey(slaveJoiners[idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
+
+				if (slaveOverriden) {
+					RecordKey.checkKeys(driverKeys[idx], XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], XML_SLAVEOVERRIDEKEY_ATTRIBUTE, status, this);
+				} else {
+					RecordKey.checkKeys(driverKeys[idx], XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], XML_JOINKEY_ATTRIBUTE, status, this);
+				}
+			}
+
+			if (errorActionsString != null) {
 				ErrorAction.checkActions(errorActionsString);
 			}
-    		
-            if (errorLog != null){
- 				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
-           	}        	
-        	
-//            init();
-//            free();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        }
-        
-        // transformation source for checkconfig
-        String checkTransform = null;
-        if (transformSource != null) {
-        	checkTransform = transformSource;
-        } else if (transformURL != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), transformURL, charset);
-        }
-        // only the transform and transformURL parameters are checked, transformClass is ignored
-        if (checkTransform != null) {
-        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
-        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
-        		// only CTL is checked
-        		
-        		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {
-        				getOutputPort(WRITE_TO_PORT).getMetadata()};
-        		DataRecordMetadata[] inMetadata = new DataRecordMetadata[1 + slaveCnt];
-        		inMetadata[0] = getInputPort(DRIVER_ON_PORT).getMetadata();
-        		for (int idx = 0; idx < slaveCnt; idx++) {
-        			inMetadata[1 + idx] = getInputPort(FIRST_SLAVE_PORT + idx).getMetadata();
-        		}
 
-    			try {
-    				RecordTransformFactory.createTransform(checkTransform, null, null, 
-    						charset,this, inMetadata, outMetadata, transformationParameters, 
-    						null, null);
+			if (errorLog != null) {
+				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+			}
+
+			// init();
+			// free();
+		} catch (ComponentNotReadyException e) {
+			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+			if (!StringUtils.isEmpty(e.getAttributeName())) {
+				problem.setAttributeName(e.getAttributeName());
+			}
+			status.add(problem);
+		}
+
+		// transformation source for checkconfig
+		String checkTransform = null;
+		if (transformSource != null) {
+			checkTransform = transformSource;
+		} else if (transformURL != null) {
+			checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), transformURL, charset);
+		}
+		// only the transform and transformURL parameters are checked, transformClass is ignored
+		if (checkTransform != null) {
+			int transformType = RecordTransformFactory.guessTransformType(checkTransform);
+			if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL || transformType == RecordTransformFactory.TRANSFORM_CTL) {
+				// only CTL is checked
+
+				DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT).getMetadata() };
+				DataRecordMetadata[] inMetadata = new DataRecordMetadata[1 + slaveCnt];
+				inMetadata[0] = getInputPort(DRIVER_ON_PORT).getMetadata();
+				for (int idx = 0; idx < slaveCnt; idx++) {
+					inMetadata[1 + idx] = getInputPort(FIRST_SLAVE_PORT + idx).getMetadata();
+				}
+
+				try {
+					RecordTransformFactory.createTransform(checkTransform, null, null, charset, this, inMetadata, outMetadata, transformationParameters, null, null);
 				} catch (ComponentNotReadyException e) {
 					// find which component attribute was used
 					String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
 					// report CTL error as a warning
 					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
 				}
-        	}
-        }
+			}
+		}
 
-        
-        return status;
+		return status;
 	}
 
-	public String getType(){
+	public String getType() {
 		return COMPONENT_TYPE;
 	}
 
@@ -1044,39 +991,16 @@ public class HashJoin extends Node {
 	public void setSlaveDuplicates(boolean slaveDuplicates) {
 		this.slaveDuplicates = slaveDuplicates;
 	}
-	
-	/**
-	 * Represents a set of slave records with identical key.
-	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
-	 *
-	 */
-	private static interface MapItem {
-	}
-	
-	private static class MapMultiItem implements MapItem {
-		public boolean indicator;
-		public List<DataRecord> records;
-		
-		public MapMultiItem() {
-			records = new ArrayList<DataRecord>(1);
-		}
-	}
 
-	private static class MapSingleItem implements MapItem {
-		public boolean indicator;
-		public DataRecord dataRecord;
-	}
-
-	
 	/**
 	 * Reads records from one slave input and stores them to appropriate data structures.
+	 * 
 	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
-	 *
+	 * 
 	 */
 	private class InputReader extends Thread {
 		private InputPort inPort;
-		private Map<HashKey, MapItem> map;
-		RecordKey recKey;
+		private DataRecordMap map;
 		DataRecordMetadata metadata;
 
 		public InputReader(int slaveIdx) {
@@ -1085,21 +1009,18 @@ public class HashJoin extends Node {
 			map = hashMap[slaveIdx];
 			inPort = getInputPort(FIRST_SLAVE_PORT + slaveIdx);
 			metadata = inPort.getMetadata();
-			recKey = slaveKeys[slaveIdx];
 		}
-		
+
 		public void run() {
 			DataRecord record = new DataRecord(metadata);
 			record.init();
-			
+
 			while (runIt) {
 				try {
 					if (inPort.readRecord(record) == null) { // no more input data
 						return;
 					}
-					HashKey key = new HashKey(recKey, record);
-					if (slaveDuplicates) putMulti2Map(record, key);
-					else putSimple2Map(record, key);
+					map.put(record.duplicate());
 				} catch (InterruptedException e) {
 					logger.error(getId() + ": thread forcibly aborted", e);
 					return;
@@ -1107,36 +1028,8 @@ public class HashJoin extends Node {
 					logger.error(getId() + ": thread failed", e);
 					return;
 				}
-				record = record.duplicate();
 			} // while
 		}
-
-		private void putSimple2Map(DataRecord record, HashKey key) {
-			MapSingleItem item = (MapSingleItem)map.get(key);
-			if (item == null) { // this is first record associated with current key
-				// create map item
-				item = new MapSingleItem();
-				// put it into map
-				map.put(key, item);
-			}
-			if (item.dataRecord == null || slaveDuplicates) {
-				item.dataRecord = record;
-			}
-		}
-		
-		private void putMulti2Map(DataRecord record, HashKey key) {
-			MapMultiItem item = (MapMultiItem)map.get(key);
-			if (item == null) { // this is first record associated with current key
-				// create map item
-				item = new MapMultiItem();
-				// put it into map
-				map.put(key, item);
-			}
-			if (item.records.isEmpty() || slaveDuplicates) {
-				item.records.add(record);
-			}
-		}
-		
 	}
 
 	public String getCharset() {
@@ -1150,6 +1043,4 @@ public class HashJoin extends Node {
 	public void setSlaveOverrideKey(String slaveOverrideKey) {
 		this.slaveOverrideKey = slaveOverrideKey;
 	}
-
 }
-
