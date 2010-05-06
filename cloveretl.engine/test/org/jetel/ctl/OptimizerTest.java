@@ -3864,6 +3864,76 @@ public class OptimizerTest extends CompilerTestCase {
 		doCompileExpectError("test_global_field_access", "Unable to access record field in global scope");
 	}
 	
+	public void test_new() {
+		doCompile("test_new");
+	}
+	
+	public void test_parameters_missing_type() {
+		// test case for issue 4038
+		doCompileExpectError("test_parameters_missing_type", "???");
+	}
+	
+	public void test_bitwise_or() {
+		doCompile("test_bitwise_or");
+		check("resultInt1", 1);
+		check("resultInt2", 1);
+		check("resultInt3", 3);
+		check("resultInt4", 3);
+		check("resultLong1", 1l);
+		check("resultLong2", 1l);
+		check("resultLong3", 3l);
+		check("resultLong4", 3l);
+	}
+
+	public void test_bitwise_and() {
+		doCompile("test_bitwise_and");
+		check("resultInt1", 0);
+		check("resultInt2", 1);
+		check("resultInt3", 0);
+		check("resultInt4", 1);
+		check("resultLong1", 0l);
+		check("resultLong2", 1l);
+		check("resultLong3", 0l);
+		check("resultLong4", 1l);
+	}
+	
+	public void test_bitwise_xor() {
+		doCompile("test_bitwise_xor");
+		check("resultInt1", 1);
+		check("resultInt2", 0);
+		check("resultInt3", 3);
+		check("resultInt4", 2);
+		check("resultLong1", 1l);
+		check("resultLong2", 0l);
+		check("resultLong3", 3l);
+		check("resultLong4", 2l);
+	}
+	
+	public void test_bitwise_lshift() {
+		doCompile("test_bitwise_lshift");
+		check("resultInt1", 2);
+		check("resultInt2", 4);
+		check("resultInt3", 10);
+		check("resultInt4", 20);
+		check("resultLong1", 2l);
+		check("resultLong2", 4l);
+		check("resultLong3", 10l);
+		check("resultLong4", 20l);
+	}
+
+	public void test_bitwise_rshift() {
+		doCompile("test_bitwise_rshift");
+		check("resultInt1", 2);
+		check("resultInt2", 0);
+		check("resultInt3", 4);
+		check("resultInt4", 2);
+		check("resultLong1", 2l);
+		check("resultLong2", 0l);
+		check("resultLong3", 4l);
+		check("resultLong4", 2l);
+	}
+
+
 	public void test_list_concatenate() {
 		// test case for issue 
 		doCompile("test_list_concatenate");

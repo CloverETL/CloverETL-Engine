@@ -79,7 +79,13 @@ public class MathLib extends TLFunctionLibrary {
 			"pi".equals(functionName) ? new PiFunction() :
 			"e".equals(functionName) ? new EFunction() :
 			"random".equals(functionName) ? new RandomFunction() :
-			"abs".equals(functionName) ? new AbsFunction() : 
+			"abs".equals(functionName) ? new AbsFunction() :
+			"bit_or".equals(functionName) ? new BitOrFunction() :
+			"bit_and".equals(functionName) ? new BitAndFunction() :
+			"bit_xor".equals(functionName) ? new BitXorFunction() :
+			"bit_lshift".equals(functionName) ? new BitLShiftFunction() :
+			"bit_rshift".equals(functionName) ? new BitRShiftFunction() :
+			/*TODO: bit_is_set bit_set*/
 			null;
 			
 		if (ret == null) {
@@ -327,7 +333,136 @@ public class MathLib extends TLFunctionLibrary {
 			}
 		} 
 
-    }                        
+    }
+
+    @TLFunctionAnnotation("Computes bitwise OR of two operands.")
+    public static final Long bit_or(Long i, Long j) {
+    	return i | j;
+    }
+
+    @TLFunctionAnnotation("Computes bitwise OR of two operands.")
+    public static final Integer bit_or(Integer i, Integer j) {
+    	return i | j;
+    }
+    
+    class BitOrFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			if (actualParams[0].isInteger() && actualParams[1].isInteger()) {
+				stack.push(bit_or(stack.popInt(), stack.popInt()));
+				return;
+			} 
+			
+			if (actualParams[0].isLong() && actualParams[1].isLong()) {
+				stack.push(bit_or(stack.popLong(), stack.popLong()));
+				return;
+			} 
+			
+		} 
+
+    }
+
+    @TLFunctionAnnotation("Computes bitwise AND of two operands.")
+    public static final Long bit_and(Long i, Long j) {
+    	return i & j;
+    }
+
+    @TLFunctionAnnotation("Computes bitwise AND of two operands.")
+    public static final Integer bit_and(Integer i, Integer j) {
+    	return i & j;
+    }
+    
+    class BitAndFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			if (actualParams[0].isInteger() && actualParams[1].isInteger()) {
+				stack.push(bit_and(stack.popInt(), stack.popInt()));
+				return;
+			} 
+			
+			if (actualParams[0].isLong() && actualParams[1].isLong()) {
+				stack.push(bit_and(stack.popLong(), stack.popLong()));
+				return;
+			} 
+			
+		} 
+
+    }
+
+    @TLFunctionAnnotation("Computes bitwise AND of two operands.")
+    public static final Long bit_xor(Long i, Long j) {
+    	return i ^ j;
+    }
+
+    @TLFunctionAnnotation("Computes bitwise AND of two operands.")
+    public static final Integer bit_xor(Integer i, Integer j) {
+    	return i ^ j;
+    }
+    
+    class BitXorFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			if (actualParams[0].isInteger() && actualParams[1].isInteger()) {
+				stack.push(bit_xor(stack.popInt(), stack.popInt()));
+				return;
+			} 
+			
+			if (actualParams[0].isLong() && actualParams[1].isLong()) {
+				stack.push(bit_xor(stack.popLong(), stack.popLong()));
+				return;
+			} 
+		} 
+    }
+    
+    @TLFunctionAnnotation("Shifts the first operand to the left by bits specified in the second operand.")
+    public static final Long bit_lshift(Long j, Long i) {
+    	return i << j;
+    }
+
+    @TLFunctionAnnotation("Shifts the first operand to the left by bits specified in the second operand.")
+    public static final Integer bit_lshift(Integer j, Integer i) {
+    	return i << j;
+    }
+    
+    class BitLShiftFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			if (actualParams[0].isInteger() && actualParams[1].isInteger()) {
+				stack.push(bit_lshift(stack.popInt(), stack.popInt()));
+				return;
+			} 
+			
+			if (actualParams[0].isLong() && actualParams[1].isLong()) {
+				stack.push(bit_lshift(stack.popLong(), stack.popLong()));
+				return;
+			} 
+		} 
+    }
+
+    @TLFunctionAnnotation("Shifts the first operand to the right by bits specified in the second operand.")
+    public static final Long bit_rshift(Long j, Long i) {
+    	return i >> j;
+    }
+
+    @TLFunctionAnnotation("Shifts the first operand to the right by bits specified in the second operand.")
+    public static final Integer bit_rshift(Integer j, Integer i) {
+    	return i >> j;
+    }
+    
+    class BitRShiftFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			if (actualParams[0].isInteger() && actualParams[1].isInteger()) {
+				stack.push(bit_rshift(stack.popInt(), stack.popInt()));
+				return;
+			} 
+			
+			if (actualParams[0].isLong() && actualParams[1].isLong()) {
+				stack.push(bit_rshift(stack.popLong(), stack.popLong()));
+				return;
+			} 
+		} 
+    }
 
 
 }
