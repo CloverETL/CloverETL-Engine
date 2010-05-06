@@ -83,12 +83,7 @@ public class HashKey {
 
         HashKey hashKey = (HashKey) object;
 
-        // compare the key lengths here to prevent an exception to be thrown in the following comparison
-        if (recKey.getLength() != hashKey.getRecordKey().getLength()) {
-        	return false;
-        }
-
-        return (recKey.compare(hashKey.getRecordKey(), record, hashKey.getDataRecord()) == 0);
+        return recKey.equals(hashKey.getRecordKey(), record, hashKey.getDataRecord());
 	}
 
 	/**
