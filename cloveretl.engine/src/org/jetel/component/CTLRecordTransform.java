@@ -34,7 +34,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Michal Tomcanyi, Javlin a.s. &lt;michal.tomcanyi@javlin.cz&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 5th May 2010
+ * @version 6th May 2010
  * @created 28th April 2009
  *
  * @see RecordTransform
@@ -91,9 +91,7 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 		// does nothing
 	}
 
-	@CTLEntryPoint(name = "getSemiResult", required = false)
-	public Object getSemiResult() {
-		// null by default, may be overridden by generated transform classes
+	public final Object getSemiResult() {
 		return null;
 	}
 
