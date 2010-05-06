@@ -306,6 +306,42 @@ public class RecordKey {
 		return 0;
 		// seem to be the same
 	}
+	
+	/**
+	 *  Compares two records (can have different layout) based on defined key-fields.<br>
+	 *  
+	 * @param  secondKey  RecordKey defined for the second record
+	 * @param  record1    First record
+	 * @param  record2    Second record
+	 * @return true/false
+	 */
+	public boolean equals(RecordKey secondKey, DataRecord record1, DataRecord record2) {
+		if (record1 == record2) return true;
+		int[] record2KeyFields = secondKey.getKeyFields();
+		if (keyFields.length != record2KeyFields.length) { // records can not be equals based on defined key-fields
+			return false;
+		}
+		if (equalNULLs) {
+			for (int i = 0; i < keyFields.length; i++) {
+				DataField field1 = record1.getField(keyFields[i]);
+		    	DataField field2 = record2.getField(record2KeyFields[i]);
+				if (!field1.equals(field2)) {
+					if (!(field1.isNull() && field2.isNull())) {
+						return false;
+					}
+				}
+			}
+		} else {
+			for (int i = 0; i < keyFields.length; i++) {
+				DataField field1 = record1.getField(keyFields[i]);
+		    	DataField field2 = record2.getField(record2KeyFields[i]);
+				if (!field1.equals(field2)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 
 
 	/**
