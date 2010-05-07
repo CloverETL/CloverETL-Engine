@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="In this example data are read from employees.xml file. 'Mapping' attribute describes dependencies between xml nodes and metadata fields. " guiVersion="2.9.1" id="1204551969115" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Tue Feb 23 16:08:41 CET 2010" modifiedBy="cloveruser" name="XXX" revision="1.29">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="In this example data are read from employees.xml file. 'Mapping' attribute describes dependencies between xml nodes and metadata fields. " guiVersion="0.0.0.devel" id="1204551969115" licenseType="Evaluation Devel" modified="Fri Mar 12 11:14:05 CET 2010" modifiedBy="cloveruser" name="XXX" revision="1.32">
 <Global>
 <Metadata id="Metadata2">
 <Record fieldDelimiter=";" name="BenefitsOthers" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -74,6 +74,7 @@ Input file contains the information about company employees, their benefits, fam
 
 ]]></attr>
 </Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="209" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Employees.xml" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="168" x="-1" y="28"/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputEMPL.txt" guiHeight="0" guiName="Employees" guiWidth="0" guiX="391" guiY="27" id="DATA_WRITER0" type="DATA_WRITER">
@@ -114,7 +115,7 @@ function transform() {
  }
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/employees.xml" guiHeight="0" guiName="XML XPath Reader" guiWidth="0" guiX="22" guiY="128" id="XML_XPATH_READER0" type="XML_XPATH_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/employees.xml" guiHeight="0" guiName="XMLXPathReader" guiWidth="0" guiX="22" guiY="128" id="XML_XPATH_READER0" type="XML_XPATH_READER">
 <attr name="mapping"><![CDATA[
 	<Context xpath="/employees/employee" outPort="0">
 		<Mapping nodeName="salary" cloverField="basic_salary"/>

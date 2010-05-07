@@ -24,12 +24,14 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * This interface represents customization in behaviour of a JDBC connection.
@@ -85,7 +87,28 @@ public interface JdbcSpecific {
 	public void optimizeResultSet(ResultSet resultSet, OperationType operationType);
 	
 	/**
-	 * This method defines a conversion table from a sql type to a clover field type.
+	 * Returns whether given Clover data type can be converted to given SQL data type
+	 * (some conversions are ambiguous)
+	 * 
+	 * @param sqlType
+	 * @param field
+	 * @return
+	 */
+	
+	public boolean isJetelTypeConvertible2sql(int sqlType, DataFieldMetadata field);
+	
+	/**
+	 * Returns whether given Sql data type can be converted to given Clover data type
+	 * (some conversions are ambiguous)
+	 * 
+	 * @param sqlType
+	 * @param field
+	 * @return
+	 */
+	public boolean isSqlTypeConvertible2jetel(int sqlType, DataFieldMetadata field);
+	
+	/**
+	 * This method defines a conversion table from a sql type to a clover field type.	 * 
 	 * @param sqlType
 	 * @return
 	 */
@@ -204,10 +227,57 @@ public interface JdbcSpecific {
     public String compileSelectQuery4Table(String schema, String table);
 
 	/**
+	 * Returns list of column names from DB
+	 * @param connection
+	 * @return
+	 * @throws SQLException
+	 */
+	public ArrayList<String> getColumns(java.sql.Connection connection) throws SQLException;
+	
+	/**
 	 * Returns whether schema should be explicitly set to address table correctly in given db engine. 
 	 * 
 	 * @return
 	 */
 	public boolean isSchemaRequired();
 	
+	/**
+	 * Returns table prefix, so it can be correctly fully qualified.
+	 * 
+	 * @param schema - table schema
+	 * @param owner - table owner
+	 * @param quoteIdentifiers - identifiers will be quoted if true. 
+	 * @return
+	 */
+	public String getTablePrefix(String schema, String owner, boolean quoteIdentifiers);
+	
+	/**
+	 * Returns ResultSetMetaData for table to obtain info about columns. This method should be
+	 * overriden when getting columns info has to be done some special way.
+	 * @param targetName
+	 * @return
+	 */
+	public ResultSetMetaData getColumnsMetadata(java.sql.Connection connection, String targetName) throws SQLException;
+	
+	/**
+	 * Created as a substitute for DatabaseMetaData.supportsGetGeneratedKeys called from
+	 * DBOutputTable. According to JDBC specification, DatabaseMetaData.supportsGetGeneratedKeys
+	 * returns true only if multi-row inserts are supported by auto-generated keys retrieval.
+	 * In contrast, this (JdbcSpecific) method returns true also for databases which can return
+	 * auto-generated keys only for single-row inserts.
+	 * 
+	 * @param metadata - metadata of a corresponding JDBC connection
+	 * @return true iff a database supports at least single-row auto-generated keys retrieval
+	 * @throws SQLException
+	 */
+	public boolean supportsGetGeneratedKeys(DatabaseMetaData metadata) throws SQLException;
+	
+	/**
+	 * Returns list of java.sql.Types values - types of each column in resultset
+	 * @param resultSetMetadata metadata of DB ResultSet
+	 * @param cloverMetadata clover metadata
+	 * @return list of constants for types. Constants are from java.sql.Types
+	 * @throws SQLException
+	 */
+	public List<Integer> getFieldTypes(ResultSetMetaData resultSetMetadata, DataRecordMetadata cloverMetadata) throws SQLException;	
 }

@@ -80,6 +80,12 @@
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.SQLiteSpecific"/>
 	</extension>
 
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="DERBY"/>
+		<parameter id="name" value="Derby"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.DerbySpecific"/>
+	</extension>
+
 	<extension point-id="jdbcDriver">
 		<parameter id="database" value="MYSQL"/>
 		<parameter id="name" value="MySQL"/>

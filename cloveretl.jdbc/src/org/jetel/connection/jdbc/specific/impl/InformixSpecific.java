@@ -108,8 +108,6 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
-		case Types.BOOLEAN :
-			return "SMALLINT";
 		case Types.TIMESTAMP :
 			return "DATETIME YEAR TO SECOND";
 		case Types.TIME :
@@ -118,11 +116,25 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 			return "FLOAT";
 		case Types.BINARY :
 		case Types.VARBINARY :
+		case Types.LONGVARBINARY :
 			return "BYTE";
 		case Types.BIGINT :
 			return "INT8";
 		}
 		return super.sqlType2str(sqlType);
+	}
+	
+	@Override
+	public int jetelType2sql(DataFieldMetadata field) {
+		switch (field.getType()) {
+		case DataFieldMetadata.BYTE_FIELD:
+        case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+        	return Types.LONGVARBINARY;
+        case DataFieldMetadata.NUMERIC_FIELD:
+        	return Types.FLOAT;
+		default: 
+        	return super.jetelType2sql(field);
+		}
 	}
 
 	@Override

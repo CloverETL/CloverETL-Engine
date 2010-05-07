@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation Devel" modified="Mon Apr 19 12:12:02 CEST 2010" modifiedBy="avackova" name="TestingDB2" revision="1.298">
+<Global>
+<Metadata id="Metadata0">
+<Record fieldDelimiter=";" name="city" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="id" nullable="true" shift="0" skipFirstLine="false" type="integer"/>
+<Field name="city" nullable="true" shift="0" skipFirstLine="false" type="string"/>
+<Field name="country" nullable="true" shift="0" skipFirstLine="false" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="errorInfo" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field auto_filling="ErrCode" name="errCode" type="integer"/>
+<Field auto_filling="ErrText" name="errMess" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record fieldDelimiter="|" name="id" recordDelimiter="\n" type="delimited">
+<Field name="id" type="integer"/>
+</Record>
+</Metadata>
+<Connection dbConfig="${CONN_DIR}/${connection}" id="Connection0" type="JDBC"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Sequence cached="0" fileURL="${SEQ_DIR}/seq.txt" id="Sequence0" name="sequence" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="101" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="320" x="16" y="-89">
+<attr name="text"><![CDATA[This example uses Derby database located in ${DATAIN_DIR} directory. To run this graph successfully PROJECT parameter needs to be set to absolute path to ExtExamples project.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="357" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the DBExecute Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="495" x="18" y="187">
+<attr name="text"><![CDATA[
+This graph shows how a DBExecute component can be used to define a procedure in one phase and to call it in another. 
+
+In phase 0, a procedure is created. It is stored in database. During the first graph run, the procedure is created. During all other runs, it already exists and an error code with the error message is sent to Trash connected to the optional second output port of DBExecute.  
+
+However, this error does not prevent the successful graph execution as the Error actions attribute is set to MIN_INT=CONTINUE. That ensures that graph may continue even when an error occurs.
+
+In addition, the definition of the procedure is written to Console (Print statements is true).
+
+In phase 1, DataGenerator uses a sequence to generate cities ID-s for this procedure that is subsequently called in the DBExecute of the phase 1. This sequence is always reset in the init() function of DataGenerator transformation. The generated ids are used to select info about cities stored in the database table. This DBExecute only includes a call of the previously defined stored procedure. The Call as stored procedure attribute must be set to true, otherwise, the graph would fail.
+
+Both the input parameters and the fields for the result output set are specified.
+
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="182" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Strored procedures&#10;in Derby database" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="242" x="351" y="-88">
+<attr name="text"><![CDATA[Derby supports procedures written in the Java programming language. The class that defines the stored procedure created by "Procedure creation" component is located in ${TRANS_DIR} directory (DerbyStoredProc.cityInfo(int, ResultSet[])).  This class was packed into the jar file and installed to database.]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node dbConnection="Connection0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiHeight="0" guiName="Procedure creation" guiWidth="0" guiX="18" guiY="26" id="DB_EXECUTE1" printStatements="true" sqlQuery="CREATE PROCEDURE get_city_info(city_id INTEGER)&#13;&#10;PARAMETER STYLE JAVA&#13;&#10;LANGUAGE JAVA&#13;&#10;READS SQL DATA&#13;&#10;DYNAMIC RESULT SETS 1&#13;&#10;EXTERNAL NAME 'DerbyStoredProc.cityInfo'" sqlStatementDelimiter="#" type="DB_EXECUTE"/>
+<Node charset="UTF-8" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Error info" guiWidth="0" guiX="207" guiY="26" id="TRASH0" type="TRASH"/>
+<Edge debugMode="false" fromNode="DB_EXECUTE1:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (error output)" toNode="TRASH0:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" guiHeight="0" guiName="ID-s generator" guiWidth="0" guiX="18" guiY="106" id="DATA_GENERATOR3" recordsNumber="100" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#TL
+
+// Generates output record.
+function generate() {
+	$0.id := sequence(Sequence0).next;
+}
+
+// Called during component initialization.
+ function init() {
+ 	sequence(Sequence0).reset;
+ }
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/cities.txt" guiHeight="0" guiName="Procedure output" guiWidth="0" guiX="384" guiY="106" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Procedure call" guiWidth="0" guiX="207" guiY="106" id="DB_EXECUTE2" inParameters="1:=$id;" outputFields="id;city;country" sqlQuery="{call get_city_info(?)}" type="DB_EXECUTE"/>
+<Edge fromNode="DATA_GENERATOR3:0" guiBendpoints="" id="Edge5" inPort="Port 0 (input parameters)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DB_EXECUTE2:0"/>
+<Edge debugMode="false" fromNode="DB_EXECUTE2:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (procedure output)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

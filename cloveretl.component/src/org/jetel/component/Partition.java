@@ -20,6 +20,8 @@
 package org.jetel.component;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -435,23 +437,29 @@ public class Partition extends Node {
 				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
 			return status;
 		}
-		
+
+   		if (charset != null && !Charset.isSupported(charset)) {
+           	status.add(new ConfigurationProblem(
+               		"Charset "+charset+" not supported!", 
+               		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+         }
+
         checkMetadata(status, getInMetadata(), getOutMetadata());
 
-        DataRecordMetadata inMetadata = getInputPort(0).getMetadata();
-        try {
-        	
-    	    if (partitionKeyNames != null) {
-    			partitionKey = new RecordKey(partitionKeyNames, inMetadata);
-    		}
-    		if (partitionKey != null) {
-    			try {
-    				partitionKey.init();
-    			} catch (Exception e) {
-    				throw new ComponentNotReadyException(this, 
-    						XML_PARTITIONKEY_ATTRIBUTE, e.getMessage());
-    			}
-    		}
+            try {
+            	
+        	    if (partitionKeyNames != null) {
+        			partitionKey = new RecordKey(partitionKeyNames,
+        					getInputPort(0).getMetadata());
+        		}
+        		if (partitionKey != null) {
+        			try {
+        				partitionKey.init();
+        			} catch (Exception e) {
+        				throw new ComponentNotReadyException(this, 
+        						XML_PARTITIONKEY_ATTRIBUTE, e.getMessage());
+        			}
+        		}
         	
         	
 //                init();

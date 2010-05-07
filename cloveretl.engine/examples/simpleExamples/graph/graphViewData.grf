@@ -1,16 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph is a simple utility which demonstrates usage of parameters. It allows viewing content&#10;of particular data file (in delimited format). It reads in data and stores them in &quot;debug&quot; format&#10;under name Debug_output_&lt;inputfilename&gt;&#10;&#10;Execution: java org.jetel.main.runGraph -P:data=&lt;data file&gt; -P:meta=&lt;metadata file&gt; graphViewData.grf" guiVersion="0.0.0.devel" id="1204551287558" licenseType="Evaluation license." modified="Thu Feb 19 11:36:33 CET 2009" modifiedBy="avackova" name="View Data" revision="1.8">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph is a simple utility which demonstrates usage of parameters. It allows viewing content&#10;of particular data file (in delimited format). It reads in data and stores them in &quot;debug&quot; format&#10;under name Debug_output_&lt;inputfilename&gt;&#10;&#10;Execution: java org.jetel.main.runGraph -P:data=&lt;data file&gt; -P:meta=&lt;metadata file&gt; graphViewData.grf" guiVersion="0.0.0.devel" id="1204551287558" licenseType="Evaluation Devel" modified="Fri Mar 12 11:31:36 CET 2010" modifiedBy="cloveruser" name="View Data" revision="1.19">
 <Global>
 <Metadata fileURL="${meta}" id="InMetadata"/>
 <Property id="GraphParameter0" name="data" value="data-in/delimited/orders.dat"/>
 <Property id="GraphParameter1" name="meta" value="${META_DIR}/delimited/orders.fmt"/>
 <Property fileURL="workspace.prm" id="GraphParameter2"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="345" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="View Data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="569" x="24" y="108">
+<attr name="text"><![CDATA[
+You can view data in multiple different ways.
+
+On Reader:
+Right click the Reader and select View data. Then you can choose Plain (default) or Grid view.
+
+On Writer:
+After creating the output file, right click the Writer and select View data. Then you can get Plain view.
+
+On Edges:
+After the graph has been run, right click the debug edge and select View data. The grid with debug data will be displayed.
+
+Using the Trash component:
+To view data using a Trash, set its Debug print attribute to true. Then you may specify the Debug file URL attribute. 
+If Debug file URL is empty, a table with data is written to Console.
+If Debug file URL is not empty, a table with data is written to the specified file. Its contents can also be seen after right clicking Trash and selecting View data.
+
+]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="25" guiName="BROADCAST" guiWidth="50" guiX="195" guiY="20" id="BROADCAST" type="SIMPLE_COPY"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${PROJECT}/${data}" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
-<Node charset="UTF-8" debugFilename="${DATAOUT_DIR}/data.out" debugPrint="true" enabled="enabled" guiHeight="25" guiName="TRASH1" guiWidth="50" guiX="370" guiY="20" id="TRASH1" type="TRASH"/>
-<Edge fromNode="BROADCAST:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (out)" toNode="TRASH1:0"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (output)" toNode="BROADCAST:0"/>
+<Node enabled="enabled" fileURL="${PROJECT}/${data}" guiHeight="25" guiName="${data}" guiWidth="50" guiX="24" guiY="24" id="INPUT1" type="DATA_READER"/>
+<Node charset="UTF-8" debugFilename="${DATAOUT_DIR}/data.out" debugPrint="true" enabled="enabled" guiHeight="25" guiName="Trash output" guiWidth="50" guiX="336" guiY="24" id="TRASH1" type="TRASH"/>
+<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (output)" toNode="TRASH1:0"/>
 </Phase>
 </Graph>

@@ -22,6 +22,7 @@ package org.jetel.component;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
 import java.util.Arrays;
@@ -1037,6 +1038,12 @@ public class AproxMergeJoin extends Node {
         if(!checkInputPorts(status, 2, 2)
         		|| !checkOutputPorts(status, 2, 4)) {
         	return status;
+        }
+        
+        if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+            		"Charset "+charset+" not supported!", 
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
         
 		if (getOutputPort(NOT_MATCH_DRIVER_OUT) != null) {

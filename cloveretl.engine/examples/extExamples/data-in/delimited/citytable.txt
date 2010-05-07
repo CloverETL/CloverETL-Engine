@@ -1,0 +1,88 @@
+1;Acapulco;Mexico
+2;Albany;USA
+3;Altadena;USA
+4;Anacortes;USA
+5;Arcadia;USA
+6;Ballard;USA
+7;Bellflower;USA
+8;Bellingham;USA
+9;Beverly Hills;USA
+10;Bremerton;USA
+11;Burbank;USA
+12;Burlingame;USA
+13;Burnaby;Canada
+14;Camacho;Mexico
+15;Chula Vista;USA
+16;Cliffside;Canada
+17;Colma;USA
+18;Concord;USA
+19;Coronado;USA
+20;Corvallis;USA
+21;Daly City;USA
+22;Downey;USA
+23;Edmonds;USA
+24;El Cajon;USA
+25;Everett;USA
+26;Fremont;USA
+27;Glendale;USA
+28;Guadalajara;Mexico
+29;Haney;Canada
+30;Hidalgo;Mexico
+31;Imperial Beach;USA
+32;Issaquah;USA
+33;La Cruz;Mexico
+34;Ladner;Canada
+35;La Jolla;USA
+36;Lake Oswego;USA
+37;Lakewood;USA
+38;La Mesa;USA
+39;Langford;Canada
+40;Langley;Canada
+41;Lebanon;USA
+42;Lemon Grove;USA
+43;Lincoln Acres;USA
+44;London;UK
+45;Long Beach;USA
+46;Lynnwoo;USA
+47;Lynnwood;USA
+48;Merida;Mexico
+49;Metchosin;Canada
+50;Mill Valley;USA
+51;Milwaukie;USA
+52;National City;USA
+53;Newport Beach;USA
+54;Newton;Canada
+55;Novato;USA
+56;N. Vancouver;Canada
+57;Olympia;USA
+58;Oregon City;USA
+59;Orizaba;Mexico
+60;Pomona;USA
+61;Port Hammond;Canada
+62;Portland;USA
+63;Port Orchard;USA
+64;Puyallup;USA
+65;Redmond;USA
+66;Richmond;USA
+67;Royal Oak;Canada
+68;Salem;USA
+69;San Carlos;USA
+70;San Diego;USA
+71;San Francisco;USA
+72;San Gabriel;USA
+73;Santa Anita;Mexico
+74;Santa Cruz;USA
+75;Santa Fe;Mexico
+76;Seattle;USA
+77;Sedro Woolley;USA
+78;Shawnee;Canada
+79;Spokane;USA
+80;Tacoma;USA
+81;Torrance;USA
+82;Vancouver;Canada
+83;Victoria;Canada
+84;Walla Walla;USA
+85;Westminster;Canada
+86;W. Linn;USA
+87;Woodburn;USA
+88;Yakima;USA

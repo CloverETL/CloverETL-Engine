@@ -21,6 +21,7 @@ package org.jetel.component;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
 import java.util.Arrays;
@@ -833,6 +834,12 @@ public class MergeJoin extends Node {
 	            if(!checkInputPorts(status, 2, Integer.MAX_VALUE)
 	            		|| !checkOutputPorts(status, 1, 1)) {
 	            	return status;
+	            }
+	            
+	            if (charset != null && !Charset.isSupported(charset)) {
+	            	status.add(new ConfigurationProblem(
+	                		"Charset "+charset+" not supported!", 
+	                		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 	            }
 	            
 	            try {

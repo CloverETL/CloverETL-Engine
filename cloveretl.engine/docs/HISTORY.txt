@@ -2,6 +2,21 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL 2-9-2
+---------
++ Example projects using DB migrated to Derby - easy setup for newbies
++ FastSort NPE fix with non-nullable record and no default value
++ fixed XLSWriter long sheet names issue
++ fixed occasional NPE in DataIntersection
++ fixed DB2DataWriter not finishing in pipe mode
++ SQLite support improved
++ fixed ExtSort sorting composed key with nulls incorrectly
++ fixed fields delimited by "\n" - doubling backslash
++ CloverDataReader is now able to read without index file
++ fixed Reading timestamps from XLS sheets
+
+  
+
 REL 2-9-1
 ---------
 + JMS Writer - Fix of exception propagation during sending of JMS message

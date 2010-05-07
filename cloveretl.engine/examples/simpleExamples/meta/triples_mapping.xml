@@ -1,0 +1,6 @@
+<Mappings>
+	<Mapping element="statement" generatedKey="predicate" outPort="2">
+		<Mapping element="subject" parentKey="predicate" generatedKey="predicate" outPort="0" cloverFields="type;content" xmlFields="type;subject"/>
+		<Mapping element="object" parentKey="predicate" generatedKey="predicate" outPort="1" cloverFields="type;content" xmlFields="type;object"/>
+	</Mapping>
+</Mappings>

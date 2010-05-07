@@ -35,7 +35,7 @@ import java.util.NoSuchElementException;
  * one element - the mask itself. The mask must not be followed by any directory separators.
  */
 public class MultiOutFile implements Iterator<String> {
-	private static final char NUM_CHAR='$';
+	protected static final char NUM_CHAR='$';
 	
 	private int digitCnt;
 	private int counter;

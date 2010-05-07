@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation Devel" modified="Fri Oct 02 08:33:57 GMT+01:00 2009" modifiedBy="avackova" name="TestingDB2" revision="1.238">
+<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation Devel" modified="Tue Mar 30 09:22:02 CEST 2010" modifiedBy="avackova" name="TestingDB2" revision="1.242">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -17,10 +17,8 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/countries.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="251" guiY="30" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DBExecute" guiWidth="0" guiX="37" guiY="30" id="DB_EXECUTE1" outParameters="result_set" outputFields="COUNTRY_CODE;COUNTRY_NAME" printStatements="true" type="DB_EXECUTE">
-<attr name="sqlQuery"><![CDATA[{call test.get_list(?)}]]></attr>
-</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/countries.txt" guiHeight="0" guiName="Procedure output" guiWidth="0" guiX="251" guiY="30" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Procedure call" guiWidth="0" guiX="37" guiY="30" id="DB_EXECUTE1" outParameters="result_set" outputFields="COUNTRY_CODE;COUNTRY_NAME" printStatements="true" sqlQuery="{call test.get_list(?)}" type="DB_EXECUTE"/>
 <Edge fromNode="DB_EXECUTE1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (procedure output)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

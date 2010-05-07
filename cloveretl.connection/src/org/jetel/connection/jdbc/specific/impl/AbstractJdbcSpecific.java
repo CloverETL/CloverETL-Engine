@@ -26,6 +26,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.DBConnection;
@@ -34,7 +35,9 @@ import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
+
 
 /**
  * Abstract implementation of JdbcSpecific, which is currently ancestor of all 
@@ -50,7 +53,8 @@ import org.jetel.util.string.StringUtils;
 abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 
 	/** the SQL comments pattern conforming to the SQL standard */
-	private static final Pattern COMMENTS_PATTERN = Pattern.compile("--[^\r\n]*|/\\*.*?\\*/", Pattern.DOTALL);
+	//&&[^-?=-] part added due to issue 3472
+	private static final Pattern COMMENTS_PATTERN = Pattern.compile("--[^\r\n&&[^-?=-]]*|/\\*.*?\\*/", Pattern.DOTALL);
 
 	private static final String TYPES_CLASS_NAME = "java.sql.Types";
 
@@ -394,7 +398,46 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
     }
     
 	
+	public ArrayList<String> getColumns(java.sql.Connection connection) throws SQLException {
+		ArrayList<String> columns = new ArrayList<String>();
+		try {
+			ResultSet result = connection.getMetaData().getColumns(null, null, null, "%");
+			while (result.next()) {
+				columns.add(result.getString(4));
+			}
+		} catch (SQLException e) {
+		}
+		return columns;
+	}
+	
+	
 	public boolean isSchemaRequired() {
 		return false;
 	}
+
+	public String getTablePrefix(String schema, String owner,
+			boolean quoteIdentifiers) {
+		return quoteIdentifiers ? quoteIdentifier(schema) : schema;
+	}
+	
+	public ResultSetMetaData getColumnsMetadata(java.sql.Connection connection, String targetName) throws SQLException {
+		return null;
+	}
+
+	public boolean isJetelTypeConvertible2sql(int sqlType, DataFieldMetadata field) {
+		return sqlType == jetelType2sql(field);
+	}
+
+	public boolean isSqlTypeConvertible2jetel(int sqlType, DataFieldMetadata field) {
+		return sqlType2jetel(sqlType) == field.getType();
+	}
+	
+	public boolean supportsGetGeneratedKeys(DatabaseMetaData metadata) throws SQLException {
+		return metadata.supportsGetGeneratedKeys();
+	}
+
+	public List<Integer> getFieldTypes(ResultSetMetaData resultSetMetadata, DataRecordMetadata cloverMetadata) throws SQLException {
+		return SQLUtil.getFieldTypes(resultSetMetadata);
+	}
+
 }

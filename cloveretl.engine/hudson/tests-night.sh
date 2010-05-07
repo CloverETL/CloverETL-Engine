@@ -18,6 +18,8 @@ echo ${CONFIG} | grep '\-profile$' > /dev/null \
 	&& OTHER_OPTIONS="${OTHER_OPTIONS} -Dprofiler.settings=CPURecording;MonitorRecording;ThreadProfiling;VMTelemetryRecording" \
 	&& ANT_TARGET=run-scenarios-with-profiler
 
+echo ${SCENARIOS} | grep '\-koule' > /dev/null \
+    && OTHER_OPTIONS="${OTHER_OPTIONS} -Drunscenarios.Xmx=-Xmx2048m" \
  
 export ANT_OPTS="-Xmx500m"
 HUDSON_URL=http://klara.javlin.eu:8081/hudson

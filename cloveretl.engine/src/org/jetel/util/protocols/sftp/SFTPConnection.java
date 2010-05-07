@@ -373,43 +373,4 @@ public class SFTPConnection extends URLConnection {
 		}
 
 	}
-
-	public static void main(String[] s) {
-		/*try {
-			FileUtils.getReadableChannel(null, "gzip:(sftp://jausperger:relatko5@linuxweb:/home/jausperger/public_html/employees0.dat.gz)");
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}*/
-		
-		try {
-			//URL.setURLStreamHandlerFactory(new CloverURLStreamHandlerFactory());
-			
-			// URL("sftp://e-potrisalova:W8MPJYLm@eft.boehringer-ingelheim.com:/LSC/AED/Export/O_*");
-			// URL("sftp://e-potrisalova:W8MPJYLm@eft.boehringer-ingelheim.com:/LSC/AED/Export/O_010_0000000000017003.xml");
-			URL url = new URL("sftp://jausperger:relatko5@linuxweb:/home/jausperger/public_html/");
-			/*URL url = new URL("sftp://jausperger:relatko5@home.javlinconsulting.cz:/home/jausperger/public_html/");*/
-			SFTPConnection con = (SFTPConnection) url.openConnection();
-			// con.getInputStream();
-
-			con.connect();
-			System.out.println(con.pwd());
-			con.cd("/home/jausperger/public_html/xml");
-			con.ls(con.pwd());
-			System.out.println(con.pwd());
-			
-			/*Vector v = con.ls(con.pwd());
-			Iterator it = v.iterator();
-			LsEntry entry;
-			while (it.hasNext()) {
-				entry = (LsEntry) it.next();
-				con.get("/LSC/AED/Export/" + entry.getFilename(), System.out);
-			}
-			con.disconnect();*/
-
-		} catch (Throwable e) {
-			System.err.println(e.getMessage());
-		}
-		System.exit(0);
-	}
-
 }

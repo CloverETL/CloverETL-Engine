@@ -518,10 +518,7 @@ public class DefaultConnection implements Connection {
 				connection.setReadOnly(true);
 				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
-			} catch (SQLException ex) {
-				logger.warn("Optimizing connection failed: " + ex.getMessage());
-				logger.warn("Try to use another jdbc specific");
-			} catch (UnsupportedOperationException ex) {
+			} catch (Exception ex) {
 				logger.warn("Optimizing connection failed: " + ex.getMessage());
 				logger.warn("Try to use another jdbc specific");
 			}
@@ -533,10 +530,7 @@ public class DefaultConnection implements Connection {
 				connection.setReadOnly(false);
 				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
-			} catch (SQLException ex) {
-				logger.warn("Optimizing connection failed: " + ex.getMessage());
-				logger.warn("Try to use another jdbc specific");
-			} catch (UnsupportedOperationException ex) {
+			} catch (Exception ex) {
 				logger.warn("Optimizing connection failed: " + ex.getMessage());
 				logger.warn("Try to use another jdbc specific");
 			}
@@ -548,10 +542,7 @@ public class DefaultConnection implements Connection {
 				connection.setReadOnly(false);
 				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
-			} catch (SQLException ex) {
-				logger.warn("Optimizing connection failed: " + ex.getMessage());
-				logger.warn("Try to use another jdbc specific");
-			} catch (UnsupportedOperationException ex) {
+			} catch (Exception ex) {
 				logger.warn("Optimizing connection failed: " + ex.getMessage());
 				logger.warn("Try to use another jdbc specific");
 			}

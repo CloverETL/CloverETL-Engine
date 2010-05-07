@@ -254,17 +254,18 @@ public class NumericFormat extends NumberFormat {
 		int maximumIntegerDigits = dFormat.getMaximumIntegerDigits();
 		int minimumFractionDigits = dFormat.getMinimumFractionDigits();
 		int minimumIntegerDigits = dFormat.getMinimumIntegerDigits();
-		int decimalPoint = toAppendTo.indexOf(".");
-		if (decimalPoint==-1) {//if input number has no fraction digits set decimal point position to the end of string
+		int decimalPoint = toAppendTo.indexOf(".");  //BigDecimal.toString always uses '.' (and never ',')
+		if (decimalPoint==-1) {//if input number has no fractional part, append a decimal separator to the end of string
 			decimalPoint = toAppendTo.length();
 			if (minimumFractionDigits>0 || isDecimalSeparatorAlwaysShown()){
 				toAppendTo.append(dFormat.getDecimalFormatSymbols().getDecimalSeparator());
 			}
-		}else if (maximumFractionDigits>0){
+		} else if (maximumFractionDigits>0 || isDecimalSeparatorAlwaysShown()) {
 			toAppendTo.replace(decimalPoint,decimalPoint+1,String.valueOf(dFormat.getDecimalFormatSymbols().getDecimalSeparator()));
-		}else{
+		} else {//strip out the entire fractional part
 			toAppendTo.setLength(decimalPoint);
 		}
+		
 		//formating integer digits from decimal point to left
 		int index=decimalPoint-1;
 		boolean end = index<start ;
@@ -313,10 +314,14 @@ public class NumericFormat extends NumberFormat {
 		}
 		//remove trailing 0 if we can
 		index = toAppendTo.length() - 1;
-		int shortBy = 0;
+		int shortBy = 0; 
 		while (fractionDigits > minimumFractionDigits && toAppendTo.charAt(index) == '0'){
 			shortBy++;
 			fractionDigits--;
+			index--;
+		}
+		if (index==decimalPoint && !isDecimalSeparatorAlwaysShown()) {
+			shortBy++;
 		}
 		toAppendTo.setLength(toAppendTo.length() - shortBy);
 		//appending suffixes
@@ -325,7 +330,6 @@ public class NumericFormat extends NumberFormat {
 		}else{
 			toAppendTo.append(dFormat.getPositiveSuffix());
 		}
-		
 		
 		return toAppendTo;
 	}

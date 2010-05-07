@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.Charset;
 import java.util.Collection;
 
 import org.apache.commons.logging.Log;
@@ -328,6 +329,12 @@ public class StructureWriter extends Node {
 		if(!checkOutputPorts(status, 0, 1)) {
 			return status;
 		}
+		
+		if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+            		"Charset "+charset+" not supported!", 
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+        }
 
         try {
         	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() : null, fileURL, mkDir);

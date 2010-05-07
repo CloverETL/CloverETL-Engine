@@ -1,14 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jan 12 15:46:21 CET 2007" description="This graph demonstrates usage of Node-level parameters" guiVersion="0.0" id="1204549694917" licenseType="Evaluation license." modified="Mon Nov 10 11:56:28 CET 2008" modifiedBy="avackova" name="Testing Simple Lookup with parameters" revision="1.19">
+<Graph author="avackova" created="Fri Jan 12 15:46:21 CET 2007" description="This graph demonstrates usage of Node-level parameters" guiVersion="0.0.0.devel" id="1204549694917" licenseType="Evaluation Devel" modified="Fri Mar 12 12:10:42 CET 2010" modifiedBy="cloveruser" name="Testing Simple Lookup with parameters" revision="1.28">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata2"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="508" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Reformat component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="543" x="24" y="108">
+<attr name="text"><![CDATA[
+In this graph, Orders are joined with Employees on the EmployeeID field in the Reformat component. A lookup table is created in Reformat. It is filled there and used for join of Orders with Employees.
+
+Orders data is received through the single input port. Employees data is added for join in Reformat itself.
+
+The specified transformation performs Inner join. In other words, orders without corresponding employee are not sent to transform function. Nor the employees without corresponding order.
+
+Transformation is defined in the Transform attribute. It is written in Java directly in the graph and can be seen in the Source tab.
+
+This graph is an equivalent of others that give the same result. They are the following:
+
+- graphJoinHash.grf (In it, the same transformation is defined using the Transform class attribute. It specifies compiled Java class performing the transformation.)
+
+- graphJoinHashUsingTransformLanguage.grf (In it, the same transformation is defined using the Transform attribute. It is written in Clover transformation language directly in the graph and can be seen in the Source tab.)
+
+- graphJoinData.grf (In it, the same transformation is defined using the ExtMergeJoin component instead of ExtHashJoin. Also there, the transformation is defined in the Transform class attribute. Unlike ExtHashJoin, ExtMergeJoin requires the inputs to be sorted.)
+
+- graphParametrizedLookup.grf (In it, the same transformation is defined using the Reformat component instead of ExtHashJoin or ExtMergeJoin. Lookup table is defined in the Reformat and it is filled with values in that component. The transformation is defined in the Transform attribute. It is written in Java directly in the graph and can be seen in the Source tab. The result corresponds to Inner join of a Joiner.)
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="150" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Orders joined with Employees" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="216" x="172" y="-52">
+<attr name="text"><![CDATA[
+Corresponds to Inner join.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="195" guiY="20" id="JOIN" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="24" guiY="24" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="25" guiName="Reformat" guiWidth="50" guiX="204" guiY="24" id="JOIN" type="REFORMAT">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.DataRecord;
@@ -63,8 +88,8 @@ public class ReformatTestInline extends DataRecordTransform{
 <attr name="lookupFile"><![CDATA[${LOOKUP_DIR}/employees.dat]]></attr>
 <attr name="keyField"><![CDATA[EmployeeID]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="25" guiName="Orders-Employees" guiWidth="50" guiX="436" guiY="24" id="WRITER" type="DATA_WRITER"/>
 <Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="JOIN:0"/>
-<Edge fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITER:0"/>
+<Edge debugMode="true" fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITER:0"/>
 </Phase>
 </Graph>

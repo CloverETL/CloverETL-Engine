@@ -1,5 +1,7 @@
 package org.jetel.connection.jdbc.specific.conn;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -50,13 +52,53 @@ public class OracleConnection extends DefaultConnection {
 		
 		if (prefetchRows) {
 			try {
-				// ((OracleStatement)stmt).setRowPrefetch(prefetchValue);
-				stmt.getClass().getMethod("setRowPrefetch", int.class).invoke(stmt, prefetchValue);
-			} catch (Exception e) {
-				throw new RuntimeException(e);
+				stmt.setFetchSize(prefetchValue);
+			} catch (SQLException e) {
+				logger.warn(e.getMessage());
+			} catch (UnsupportedOperationException e) {
+				logger.warn(e.getMessage());
 			}
 		}
-		
 		return stmt;
+	}
+	
+	protected void optimizeConnection(OperationType operationType) {
+		switch (operationType) {
+		case READ:
+			try {
+				connection.setAutoCommit(false);
+				connection.setReadOnly(true);
+				connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+			} catch (Exception ex) {
+				logger.warn("Optimizing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
+			}
+			break;
+		case WRITE:
+		case CALL:
+			try {
+				connection.setAutoCommit(false);
+				connection.setReadOnly(false);
+				connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+			} catch (Exception ex) {
+				logger.warn("Optimizing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
+			}
+			break;
+
+		case TRANSACTION:
+			try {
+				connection.setAutoCommit(true);
+				connection.setReadOnly(false);
+				connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+			} catch (Exception ex) {
+				logger.warn("Optimizing connection failed: " + ex.getMessage());
+				logger.warn("Try to use another jdbc specific");
+			}
+			break;
+		}
 	}
 }

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -303,6 +304,11 @@ public class JavaExecute extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {		
 		super.checkConfig(status);
 		
+		if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+            		"Charset "+charset+" not supported!", 
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+        }
 		// Nothing to check here - trying to create runnable class is too strict in this phase 
 		
         return status;

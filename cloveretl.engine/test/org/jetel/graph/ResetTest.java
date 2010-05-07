@@ -154,6 +154,8 @@ public class ResetTest extends TestCase{
 			
 			Arrays.sort(graphFile);
 			runtimeContext.addAdditionalProperty("PROJECT_DIR", EXAMPLE_PATH[i]);
+			// absolute path in PROJECT parameter is required for graphs using Derby database
+			runtimeContext.addAdditionalProperty("PROJECT", new File(EXAMPLE_PATH[i]).getAbsolutePath());
 			for (int j = 0; j < graphFile.length; j++) {
 				if (!graphFile[j].getName().contains("Jms")) {//set LIB_DIR to jdbc drivers directory
 					runtimeContext.addAdditionalProperty("LIB_DIR", current_directory.getAbsolutePath() + SCENARIOS_RELATIVE_PATH + "/lib");

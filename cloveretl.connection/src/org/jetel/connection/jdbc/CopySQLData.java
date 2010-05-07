@@ -568,7 +568,11 @@ public abstract class CopySQLData {
 				break;
 			case Types.INTEGER:
 			case Types.SMALLINT:
-				obj = new CopyInteger(record, fromIndex, toIndex);
+				if (jetelType == DataFieldMetadata.BOOLEAN_FIELD) {
+					obj = new CopyBoolean(record, fromIndex, toIndex);
+				} else {
+					obj = new CopyInteger(record, fromIndex, toIndex);
+				}
 				break;
 			case Types.BIGINT:
 			    obj = new CopyLong(record,fromIndex,toIndex);
@@ -576,12 +580,26 @@ public abstract class CopySQLData {
 			case Types.DECIMAL:
 			case Types.DOUBLE:
 			case Types.FLOAT:
-			case Types.NUMERIC:
 			case Types.REAL:
 				// fix for copying when target is numeric and
 				// clover source is integer - no precision can be
 				// lost so we can use CopyInteger
 				if (jetelType == DataFieldMetadata.INTEGER_FIELD) {
+					obj = new CopyInteger(record, fromIndex, toIndex);
+				} else if (jetelType == DataFieldMetadata.LONG_FIELD) {
+					obj = new CopyLong(record, fromIndex, toIndex);
+				} else if(jetelType == DataFieldMetadata.NUMERIC_FIELD) {
+				    obj = new CopyNumeric(record, fromIndex, toIndex);
+				} else {
+					obj = new CopyDecimal(record, fromIndex, toIndex);
+				}
+				break;
+			case Types.NUMERIC:
+				// Oracle doesn't have boolean type, data type SMALLINT is the same as NUMBER(38);
+				// see issue #3815
+				if (jetelType == DataFieldMetadata.BOOLEAN_FIELD) {
+					obj = new CopyBoolean(record, fromIndex, toIndex);
+				}else if (jetelType == DataFieldMetadata.INTEGER_FIELD) {
 					obj = new CopyInteger(record, fromIndex, toIndex);
 				} else if (jetelType == DataFieldMetadata.LONG_FIELD) {
 					obj = new CopyLong(record, fromIndex, toIndex);

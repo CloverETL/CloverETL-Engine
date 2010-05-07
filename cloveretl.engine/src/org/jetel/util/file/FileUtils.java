@@ -635,7 +635,7 @@ public class FileUtils {
 			// get and set proxy and go to inner source
 			Proxy proxy = getProxy(innerSource);
 			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
-			os = proxy == null ? getOutputStream(null, innerSource, appendData, compressLevel) : getAuthorizedConnection(getFileURL((URL)null, input), proxy).getOutputStream();
+			os = proxy == null ? getOutputStream(contextURL, innerSource, appendData, compressLevel) : getAuthorizedConnection(getFileURL(contextURL, input), proxy).getOutputStream();
 		}
 		
 		// get archive type

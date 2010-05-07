@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="2.9.1" id="1204548969094" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 14:04:07 CET 2010" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.32">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="0.0.0.devel" id="1204548969094" licenseType="Evaluation Devel" modified="Fri Mar 12 12:47:11 CET 2010" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.32">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="customers" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
-<Field name="number_of_customers" type="integer">
+<Field name="customers_count" type="integer">
 <attr name="description"><![CDATA[This field contains number of customers, that are listed in 'customers' field.]]></attr>
 </Field>
 <Field name="customers" type="string"/>
@@ -11,7 +11,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="338" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Normalizer Component (Java)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="472" x="37" y="143">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="338" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Normalizer Component (Java)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="472" x="22" y="128">
 <attr name="text"><![CDATA[
 Graph demonstrates the use of Normalizer. Received records contain a field named "customers". Its values are strings consisting of substrings, white spaces and hyphens.
 
@@ -28,10 +28,10 @@ Transformation is written in Java directly in the graph. It can be seen in the S
 </Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="25" guiName="Customers Grouped for Each Employee" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="25" guiName="NORMALIZER" guiWidth="50" guiX="195" guiY="20" id="NORMALIZE" type="NORMALIZER">
+<Node enabled="enabled" guiHeight="25" guiName="Normalizer" guiWidth="50" guiX="195" guiY="20" id="NORMALIZE" type="NORMALIZER">
 <attr name="normalize"><![CDATA[
 import org.jetel.component.normalize.DataRecordNormalize;
 import org.jetel.data.*;
@@ -62,8 +62,8 @@ public class NormalizeTestInline extends DataRecordNormalize {
 }
 ]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="NORMALIZE:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="25" guiName="Customers Normalized" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="NORMALIZE:0"/>
 <Edge debugMode="true" fromNode="NORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
 </Phase>
 </Graph>

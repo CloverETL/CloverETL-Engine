@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="yanas" created="Thu Sep 25 11:48:52 CEST 2008" guiVersion="2.9.1" id="1222336215500" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 14:37:27 CET 2010" modifiedBy="cloveruser" name="sortWithinGroups" revision="1.50">
+<Graph author="yanas" created="Thu Sep 25 11:48:52 CEST 2008" guiVersion="0.0.0.devel" id="1222336215500" licenseType="Evaluation Devel" modified="Fri Mar 12 11:27:38 CET 2010" modifiedBy="cloveruser" name="sortWithinGroups" revision="1.53">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/friends.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
@@ -23,11 +23,11 @@ Second SortWithinGroups component preserves Group key and adds an additional fie
 </Note>
 </Global>
 <Phase number="0">
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/friends.dat" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="47" guiY="46" id="DATA_READER0" type="DATA_READER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/friends-country-town-name.dat" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="637" guiY="46" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/friends-country-town-age.dat" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="637" guiY="136" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/friends.dat" guiHeight="0" guiName="Friends" guiWidth="0" guiX="47" guiY="46" id="DATA_READER0" type="DATA_READER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/friends-country-town-name.dat" guiHeight="0" guiName="Friends Order 1" guiWidth="0" guiX="637" guiY="46" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/friends-country-town-age.dat" guiHeight="0" guiName="Friends Order 2" guiWidth="0" guiX="637" guiY="136" id="DATA_WRITER1" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="237" guiY="48" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node enabled="enabled" groupKey="country" guiHeight="0" guiName="Reorder and Add" guiWidth="0" guiX="432" guiY="46" id="SORT_WITHIN_GROUPS0" sortKey="town(a);name(a)" type="SORT_WITHIN_GROUPS"/>
+<Node enabled="enabled" groupKey="country" guiHeight="0" guiName="Reorder and Add Field" guiWidth="0" guiX="432" guiY="46" id="SORT_WITHIN_GROUPS0" sortKey="town(a);name(a)" type="SORT_WITHIN_GROUPS"/>
 <Node enabled="enabled" groupKey="country;town" guiHeight="0" guiName="Add Field" guiWidth="0" guiX="433" guiY="136" id="SORT_WITHIN_GROUPS1" sortKey="age(d)" type="SORT_WITHIN_GROUPS"/>
 <Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
 <Edge debugMode="false" fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SORT_WITHIN_GROUPS0:0"/>

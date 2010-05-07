@@ -858,6 +858,12 @@ public class HashJoin extends Node {
 			return status;
 		}
 
+		if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+            		"Charset "+charset+" not supported!", 
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+        }
+
 		int slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
 
 		try {

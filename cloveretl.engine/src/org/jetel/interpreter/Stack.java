@@ -54,6 +54,7 @@ public class Stack {
     int funcStackTop;
     int localVarSlotOffset;
     int localVarCounter;
+    int stackSave[];
 	
 	public Stack(){
         this(STACK_DEPTH,DEFAULT_VAR_SLOT_LENGTH );
@@ -68,8 +69,25 @@ public class Stack {
         funcStackTop= -1;
         localVarSlotOffset =localVarCounter = 0;
         calendar = Calendar.getInstance();
+        stackSave=new int[4];
 	}
 
+	
+	public void saveStack(){
+		stackSave[0]=top;
+		stackSave[1]=funcStackTop;
+		stackSave[2]=localVarSlotOffset;
+		stackSave[3]=localVarCounter;
+		
+	}
+	
+	public void restoreStack(){
+		top=stackSave[0];
+		funcStackTop=stackSave[1];
+		localVarSlotOffset=stackSave[2];
+		localVarCounter=stackSave[3];
+	}
+	
 	/**
 	 * clear stack (remove all object references) 
 	 */

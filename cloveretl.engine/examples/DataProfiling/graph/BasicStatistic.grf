@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Dec 07 09:19:45 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1260188038200" licenseType="Evaluation Devel" modified="Fri Jan 15 14:19:18 GMT+01:00 2010" modifiedBy="avackova" name="DataProfiling" revision="1.311">
+<Graph author="avackova" created="Mon Dec 07 09:19:45 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1260188038200" licenseType="Evaluation Devel" modified="Thu Mar 18 11:42:33 CET 2010" modifiedBy="avackova" name="DataProfiling" revision="1.322">
 <Global>
 <Metadata fileURL="${metadata}" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -51,18 +51,18 @@
 </Record>
 </Metadata>
 <Property id="GraphParameter0" name="output_file" value="${DATAOUT_DIR}/summary.html"/>
-<Property fileURL="parameters.prm" id="GraphParameter1"/>
-<Property fileURL="workspace.prm" id="GraphParameter7"/>
+<Property fileURL="parameters.prm" id="GraphParameter11"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
 <Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="287" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Basic statistic - description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="275" x="34" y="-25">
 <attr name="text"><![CDATA[This graph finds basic statistic for input data file:
-- minimum value for numeric fields or minimum lenght of data for string and byt fields
-- maximum value for numeric fields or maximum lenght of data for string and byt fields
-- average value for numeric fields or average lenght of data for string and byt fields
+- minimum value for numeric fields or minimum length of data for string and byte fields
+- maximum value for numeric fields or maximum length of data for string and byte fields
+- average value for numeric fields or average length of data for string and byte fields
 - number of records in data file
 - number of not null values for each data field
 - number of null values for each data field
 Additionally, for string data fields, it finds:
-- firts not null value
+- first not null value
 - if all values are Ascii
 - if all values can be converted to number]]></attr>
 </Note>
@@ -77,7 +77,7 @@ metadata - shared metadata corresponding to input file (for above example files 
 This graph has its own parameter also. It is output_file, that defines file for data statistc.]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="221" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Normalizing data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="239" x="115" y="354">
-<attr name="text"><![CDATA[This component creates "normalized" records from each input record. Such "normalized" record consists of three basic fields: original field name, field type  and "normalized" value, which is original value for numeric fields, time in miliseconds for date fields and data lenght for string or byte fields.
+<attr name="text"><![CDATA[This component creates "normalized" records from each input record. Such "normalized" record consists of three basic fields: original field name, field type  and "normalized" value, which is original value for numeric fields, time in milliseconds for date fields and data length for string or byte fields.
 This component collects basic information about string data also: finds first not null value, checks if string contains only Ascii characters and if it can be converted to number.]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="219" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Creating statistic" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="177" x="363" y="355">
@@ -100,7 +100,7 @@ This component collects basic information about string data also: finds first no
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="675" guiY="282" id="EXT_SORT0" sortKey="fieldName(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Normalizer" guiWidth="0" guiX="225" guiY="282" id="NORMALIZER0" normalizeURL="${TRANS_DIR}/DataNormalizer.java" type="NORMALIZER"/>
 <Node enabled="enabled" guiHeight="0" guiName="ToStringValue" guiWidth="0" guiX="523" guiY="282" id="REFORMAT0" transformURL="${TRANS_DIR}/StatNormalizer.java" type="REFORMAT"/>
-<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="fieldName" guiHeight="0" guiName="Stattistic" guiWidth="0" guiX="379" guiY="282" id="ROLLUP0" inputSorted="false" type="ROLLUP">
+<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="fieldName" guiHeight="0" guiName="Statistic" guiWidth="0" guiX="379" guiY="282" id="ROLLUP0" inputSorted="false" type="ROLLUP">
 <attr name="transform"><![CDATA[//#TL
 
 // Called for the first data record in a new group. Starts the parsing of the new group.
@@ -279,10 +279,10 @@ function transform(counter, groupAccumulator) {
 </BODY>
 </HTML>]]></attr>
 </Node>
-<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" toNode="NORMALIZER0:0"/>
-<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (out)" metadata="Metadata4" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
-<Edge debugMode="false" fromNode="NORMALIZER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="ROLLUP0:0"/>
-<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
-<Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" toNode="NORMALIZER0:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (out)" metadata="Metadata4" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
+<Edge debugMode="true" fromNode="NORMALIZER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="ROLLUP0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="true" fromNode="ROLLUP0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
 </Phase>
 </Graph>

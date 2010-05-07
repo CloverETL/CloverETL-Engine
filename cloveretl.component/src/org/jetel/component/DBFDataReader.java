@@ -21,6 +21,7 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,6 +30,7 @@ import org.jetel.data.Defaults;
 import org.jetel.database.dbf.DBFDataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
@@ -389,6 +391,12 @@ public class DBFDataReader extends Node {
         if(!checkInputPorts(status, 0, 1)
         		|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
         	return status;
+        }
+        
+        if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+            		"Charset "+charset+" not supported!", 
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
         
         checkMetadata(status, getOutMetadata());

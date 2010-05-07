@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.DBConnection;
@@ -102,11 +103,43 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 
 	@Override
 	public String jetelType2sqlDDL(DataFieldMetadata field) {
-		switch(jetelType2sql(field)) {
-		case Types.BOOLEAN :
+		switch (jetelType2sql(field)) {
+		case Types.BOOLEAN:
+		case Types.BIT:
 			return "TINYINT(1)";
+		case Types.DATE:
+			if (field.getFormatStr() != null) {
+				Pattern p = Pattern.compile("[y]{1,4}");
+				Matcher m = p.matcher(field.getFormatStr());
+				if (m.matches()) {
+					return "YEAR";
+				}
+			}
+			return super.jetelType2sqlDDL(field);
 		}
 		return super.jetelType2sqlDDL(field);
+	}
+	
+	@Override
+	public int jetelType2sql(DataFieldMetadata field) {
+		switch (field.getType()) {
+		case DataFieldMetadata.BOOLEAN_FIELD:
+        	return Types.BIT;
+		case DataFieldMetadata.NUMERIC_FIELD:
+			return Types.DOUBLE;
+        default: 
+        	return super.jetelType2sql(field);
+		}
+	}
+	
+	@Override
+	public char sqlType2jetel(int sqlType) {
+		switch (sqlType) {
+		case Types.BIT:
+			return DataFieldMetadata.BOOLEAN_FIELD;
+		default:
+			return super.sqlType2jetel(sqlType);
+		}
 	}
     
 	/**

@@ -131,6 +131,9 @@ public class TargetFile {
            	initDictTarget();
     	} else {
         	initUrl();
+        	if (fileURL != null && (after.indexOf(MultiOutFile.NUM_CHAR) != -1 && before.startsWith("zip:"))) {
+        		throw new ComponentNotReadyException("File url must not contain wildcard in inzip filename");
+        	}
         	if (fileTag == null) {
         		initFileNames(null);
         	} 

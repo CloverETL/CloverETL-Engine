@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="In this example data are read from employees.xml file. “Mapping” attribute describes dependencies between xml nodes and metadata fields. " guiVersion="2.9.1" id="1204551492111" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 12:58:26 CET 2010" modifiedBy="cloveruser" name="XXX" revision="1.38">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="In this example data are read from employees.xml file. “Mapping” attribute describes dependencies between xml nodes and metadata fields. " guiVersion="0.0.0.devel" id="1204551492111" licenseType="Evaluation Devel" modified="Fri Mar 12 11:15:16 CET 2010" modifiedBy="cloveruser" name="XXX" revision="1.41">
 <Global>
 <Metadata id="Metadata2">
 <Record fieldDelimiter=";" name="BenefitsOthers" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -74,24 +74,25 @@ Input file contains the information about company employees, their benefits, fam
 
 ]]></attr>
 </Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="168" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Employees.xml" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="159" x="19" y="167"/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputEMPL.txt" guiHeight="0" guiName="Employees" guiWidth="0" guiX="391" guiY="27" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[false]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputBENEF.txt" guiHeight="0" guiName="Join - Benefits" guiWidth="0" guiX="391" guiY="369" id="DATA_WRITER1" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputBENEF.txt" guiHeight="0" guiName="Join - Benefits" guiWidth="0" guiX="405" guiY="368" id="DATA_WRITER1" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputCHILD.txt" guiHeight="0" guiName="Children" guiWidth="0" guiX="425" guiY="107" id="DATA_WRITER2" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputPROJ.txt" guiHeight="0" guiName="Projects" guiWidth="0" guiX="426" guiY="187" id="DATA_WRITER3" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputPROJ.txt" guiHeight="0" guiName="Projects" guiWidth="0" guiX="446" guiY="192" id="DATA_WRITER3" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputCUSTOM.txt" guiHeight="0" guiName="Customers" guiWidth="0" guiX="391" guiY="282" id="DATA_WRITER4" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputCUSTOM.txt" guiHeight="0" guiName="Customers" guiWidth="0" guiX="403" guiY="284" id="DATA_WRITER4" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="ExtMergeJoin" guiWidth="0" guiX="208" guiY="369" id="EXT_MERGE_JOIN1" joinKey="$seqKey#$seqKey;" type="EXT_MERGE_JOIN">
+<Node enabled="enabled" guiHeight="0" guiName="ExtMergeJoin" guiWidth="0" guiX="225" guiY="369" id="EXT_MERGE_JOIN1" joinKey="$seqKey#$seqKey;" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -114,7 +115,7 @@ function transform() {
  }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="XMLExtract" guiWidth="0" guiX="39" guiY="140" id="XML_EXTRACT0" sourceUri="${DATAIN_DIR}/other/employees.xml" type="XML_EXTRACT">
+<Node enabled="enabled" guiHeight="0" guiName="XMLExtract" guiWidth="0" guiX="32" guiY="243" id="XML_EXTRACT0" sourceUri="${DATAIN_DIR}/other/employees.xml" type="XML_EXTRACT">
 <attr name="mapping"><![CDATA[<Mappings>
 	<Mapping element="employee" outPort="0" xmlFields="salary" cloverFields="basic_salary">
 		<Mapping element="child" outPort="1" parentKey="empID" generatedKey="parentID"/>

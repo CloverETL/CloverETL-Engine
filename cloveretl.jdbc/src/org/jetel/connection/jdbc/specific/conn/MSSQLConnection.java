@@ -88,10 +88,7 @@ public class MSSQLConnection extends DefaultConnection {
 				connection.setAutoCommit(false);
 				connection.setReadOnly(true);
 				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-			} catch (SQLException ex) {
-				logger.warn("Optimizing connection failed: " + ex.getMessage());
-				logger.warn("Try to use another jdbc specific");
-			} catch (UnsupportedOperationException ex) {
+			} catch (Exception ex) {
 				logger.warn("Optimizing connection failed: " + ex.getMessage());
 				logger.warn("Try to use another jdbc specific");
 			}
@@ -102,10 +99,7 @@ public class MSSQLConnection extends DefaultConnection {
 				connection.setAutoCommit(false);
 				connection.setReadOnly(false);
 				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-			} catch (SQLException ex) {
-				logger.warn("Optimizing connection failed: " + ex.getMessage());
-				logger.warn("Try to use another jdbc specific");
-			} catch (UnsupportedOperationException ex) {
+			} catch (Exception ex) {
 				logger.warn("Optimizing connection failed: " + ex.getMessage());
 				logger.warn("Try to use another jdbc specific");
 			}
@@ -116,10 +110,7 @@ public class MSSQLConnection extends DefaultConnection {
 				connection.setAutoCommit(true);
 				connection.setReadOnly(false);
 				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-			} catch (SQLException ex) {
-				logger.warn("Optimizing connection failed: " + ex.getMessage());
-				logger.warn("Try to use another jdbc specific");
-			} catch (UnsupportedOperationException ex) {
+			} catch (Exception ex) {
 				logger.warn("Optimizing connection failed: " + ex.getMessage());
 				logger.warn("Try to use another jdbc specific");
 			}

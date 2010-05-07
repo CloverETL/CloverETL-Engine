@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Feb 16 10:01:53 CET 2007" description="This graph demonstrates how to use HASH_JOIN component for 3way join. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted" guiVersion="2.9.1" id="1204547167052" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Mon Mar 01 13:49:21 CET 2010" modifiedBy="cloveruser" name="Testing Hash Joiner" revision="1.39">
+<Graph author="avackova" created="Fri Feb 16 10:01:53 CET 2007" description="This graph demonstrates how to use HASH_JOIN component for 3way join. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted" guiVersion="0.0.0.devel" id="1204547167052" licenseType="Evaluation Devel" modified="Fri Mar 12 11:09:11 CET 2010" modifiedBy="cloveruser" name="Testing Hash Joiner" revision="1.42">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata3"/>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
@@ -24,12 +24,20 @@ Remember that ExtHashJoin does not require sorted data!
 
 ]]></attr>
 </Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="311" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Join" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="217" x="216" y="-144">
+<attr name="text"><![CDATA[
+- Orders with Employees on EmployeeID
+
+- Orders with Customers on CustomerID
+
+Left outer join (also Orders withou Employees and Customers are joined)]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="56" guiY="43" id="INPUT1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="59" guiY="136" id="INPUT2" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="25" guiName="Customers" guiWidth="50" guiX="87" guiY="220" id="INPUT3" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="256" guiY="48" id="JOIN" joinKey="EmployeeID=EmployeeID#CustomerID=CUSTOMERID" joinType="leftOuter" slaveDuplicates="true" type="EXT_HASH_JOIN">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="24" guiY="36" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="36" guiY="120" id="INPUT2" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="25" guiName="Customers" guiWidth="50" guiX="48" guiY="204" id="INPUT3" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="25" guiName="ExtHashJoin" guiWidth="50" guiX="252" guiY="36" id="JOIN" joinKey="EmployeeID=EmployeeID#CustomerID=CUSTOMERID" joinType="leftOuter" slaveDuplicates="true" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
@@ -64,7 +72,7 @@ public class ReformatJoinTest3WayInline extends DataRecordTransform{
 
 ]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="448" guiY="44" id="WRITER" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="25" guiName="Orders-Employees-Customers" guiWidth="50" guiX="468" guiY="36" id="WRITER" type="DATA_WRITER"/>
 <Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (output)" toNode="JOIN:0"/>
 <Edge debugMode="true" fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JOIN:1"/>
 <Edge debugMode="true" fromNode="INPUT3:0" guiBendpoints="" id="INEDGE3" inPort="Port 2 (slave)" metadata="Metadata3" outPort="Port 0 (output)" toNode="JOIN:2"/>

@@ -21,6 +21,7 @@ package org.jetel.component;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -677,6 +678,12 @@ public class DataIntersection extends Node {
         if(!checkInputPorts(status, 2, 2)
         		|| !checkOutputPorts(status, 3, 3)) {
         	return status;
+        }
+        
+        if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+            		"Charset "+charset+" not supported!", 
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
         
         DataRecordMetadata driverMetadata = getInputPort(DRIVER_ON_PORT).getMetadata();

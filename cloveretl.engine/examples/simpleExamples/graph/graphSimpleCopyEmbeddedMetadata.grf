@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file." guiVersion="2.9.1" id="1196683081647" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 16:12:35 CET 2010" modifiedBy="cloveruser" name="Testing Simple Copy" revision="1.16">
+<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file." guiVersion="0.0.0.devel" id="1196683081647" licenseType="Evaluation Devel" modified="Fri Mar 12 13:07:45 CET 2010" modifiedBy="cloveruser" name="Testing Simple Copy" revision="1.19">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter=";" name="Employees" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -41,10 +41,10 @@ Settings of Trashes are different here. However, for more details about the use 
 <Phase number="0">
 <Node enabled="enabled" guiHeight="25" guiName="BROADCAST" guiWidth="50" guiX="195" guiY="20" id="BROADCAST" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiHeight="25" guiName="BROADCAST2" guiWidth="50" guiX="370" guiY="194" id="BROADCAST2" type="SIMPLE_COPY"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
-<Node debugFilename="${DATAOUT_DIR}/Trash1_output.txt" enabled="enabled" guiHeight="25" guiName="TRASH1" guiWidth="50" guiX="370" guiY="20" id="TRASH1" type="TRASH"/>
-<Node enabled="enabled" guiHeight="25" guiName="TRASH2" guiWidth="50" guiX="370" guiY="107" id="TRASH2" type="TRASH"/>
-<Node enabled="enabled" guiHeight="25" guiName="TRASH3" guiWidth="50" guiX="545" guiY="194" id="TRASH3" type="TRASH"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
+<Node debugFilename="${DATAOUT_DIR}/Trash1_output.txt" debugPrint="true" enabled="enabled" guiHeight="25" guiName="Debug print to a file" guiWidth="50" guiX="370" guiY="20" id="TRASH1" type="TRASH"/>
+<Node enabled="enabled" guiHeight="25" guiName="Discards All" guiWidth="50" guiX="370" guiY="107" id="TRASH2" type="TRASH"/>
+<Node enabled="enabled" guiHeight="25" guiName="Discards All" guiWidth="50" guiX="545" guiY="194" id="TRASH3" type="TRASH"/>
 <Edge fromNode="BROADCAST:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH1:0"/>
 <Edge fromNode="BROADCAST:1" guiBendpoints="" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="TRASH2:0"/>
 <Edge fromNode="BROADCAST:2" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="BROADCAST2:0"/>

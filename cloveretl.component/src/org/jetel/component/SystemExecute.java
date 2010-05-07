@@ -478,7 +478,7 @@ public class SystemExecute extends Node{
 	
 	private void deleteBatch(){
 		if (interpreter!=null) {
-			if (!batch.delete()) {
+			if (batch != null && !batch.delete()) {
 				logger.warn("Batch file (" + batch.getName() + ") was not deleted");
 			}
 		}
@@ -572,7 +572,7 @@ public class SystemExecute extends Node{
 				|| !checkOutputPorts(status, 0, 1)) {
 			return status;
 		}
-
+		
         	try {
 				if (interpreter != null) {
 					if (interpreter.contains("${}")) {
