@@ -22,11 +22,13 @@ package org.jetel.component;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -303,8 +305,48 @@ public class DBExecute extends Node {
 		if (dbSQL==null){
             String delimiter = sqlStatementDelimiter !=null ? sqlStatementDelimiter : DEFAULT_SQL_STATEMENT_DELIMITER;
             if (sqlQuery != null) {
-            	String sqlQueryWithouComments = StringUtils.removeAllSubstrings(sqlQuery,
-            			dbConnection.getJdbcSpecific().getCommentsPattern());
+            	// temporary fix for issue 3472, if match contains odd count of single or double qoutes,
+            	// it is not removed from string - lkrejci
+            	// TODO: create sql parser which will detect all comments correctly.
+            	Matcher matcher = dbConnection.getJdbcSpecific().getCommentsPattern().matcher(sqlQuery);
+            	boolean result = matcher.find();            	
+            	String sqlQueryWithouComments;
+            	if (result) {
+            		boolean replace;
+    				int countSingleQoute;
+    				int countDoubleQoute;
+    				StringBuffer sb = new StringBuffer();
+    				do {
+    					replace = true;
+    					if (sqlQuery.charAt(matcher.start()) == '-') {
+    						int lastSingleQuote = sqlQuery.lastIndexOf("'", matcher.start());
+    						int lastDoubleQuote = sqlQuery.lastIndexOf("\"", matcher.start());
+    						if (lastSingleQuote != -1 || lastDoubleQuote != -1) {							
+    							char[] chars = sqlQuery.substring(matcher.start(), matcher.end()).toCharArray();
+    							countSingleQoute = 0;
+    							countDoubleQoute = 0;
+    							for (int i = 0; i < chars.length; i++) {
+    								if (chars[i] == '\'') {
+    									countSingleQoute++;
+    								} else if (chars[i] == '"') {
+    									countDoubleQoute++;
+    								}
+    							}
+    							replace = ((countSingleQoute % 2 == 1) || (countDoubleQoute % 2 == 1)) ? false : true;
+    						}
+    					}					
+    					if (replace) {
+    						matcher.appendReplacement(sb, "");
+    					}
+    					result=matcher.find();
+    				} while (result);
+					matcher.appendTail(sb);
+					sqlQueryWithouComments = sb.toString();
+            	} else {
+            		sqlQueryWithouComments = sqlQuery;
+            	}
+            	// end of issue 3472 temporary fix
+            	
             	String[] parts = StringUtils.split(sqlQueryWithouComments,delimiter);
             	ArrayList<String> tmp = new ArrayList<String>();
             	for(String part: parts) {
@@ -911,6 +953,12 @@ public class DBExecute extends Node {
         if(!checkInputPorts(status, 0, 1)
         		|| !checkOutputPorts(status, 0, 2)) {
         	return status;
+        }
+        
+        if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+            		"Charset "+charset+" not supported!", 
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
 
 		try {

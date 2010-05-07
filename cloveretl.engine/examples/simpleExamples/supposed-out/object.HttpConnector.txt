@@ -1,0 +1,246 @@
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/2002/07/owl#Ontology
+http://purl.org/dc/elements/1.1/title|literal|BIO: A vocabulary for biographical information
+http://purl.org/dc/elements/1.1/date|literal|2004-03-05
+http://purl.org/dc/elements/1.1/description|literal|This document describes a vocabulary for describing biographical information about people, both living and dead. It has been designed to be compatible with both RDF and non-RDF XML formats such as FOAF, RSS 1.0 and RSS 2.0. It contains terms useful for finding out more about people and their backgrounds and has some cross-over into genealogical information.
+http://www.w3.org/2002/07/owl#imports|uri|http://www.w3.org/2000/01/rdf-schema
+http://www.w3.org/2002/07/owl#imports|uri|http://www.w3.org/2002/07/owl
+http://www.w3.org/2002/07/owl#imports|uri|http://xmlns.com/foaf/0.1/
+http://purl.org/dc/elements/1.1/identifier|literal|http://purl.org/vocab/bio/0.1/bio-vocab-20040305
+http://purl.org/dc/terms/isVersionOf|uri|http://purl.org/vocab/bio/
+http://purl.org/dc/terms/replaces|uri|http://purl.org/vocab/bio/0.1/bio-vocab-20030728
+http://purl.org/dc/elements/1.1/contributor|literal|Ian Davis
+http://purl.org/dc/elements/1.1/contributor|literal|David Galbraith
+http://purl.org/dc/elements/1.1/rights|literal|Copyright © 2002-2004 Ian Davis and David Galbraith
+http://purl.org/vocab/vann/preferredNamespaceUri|literal|http://purl.org/vocab/bio/0.1/
+http://purl.org/vocab/vann/preferredNamespacePrefix|literal|bio
+http://purl.org/vocab/vann/changes|uri|http://purl.org/vocab/bio/0.1/bio-changes-20040305.html
+http://purl.org/vocab/vann/example|uri|http://purl.org/vocab/bio/0.1/bio-example-foaf-20040303.html
+http://purl.org/dc/elements/1.1/title|literal|Using With FOAF
+http://purl.org/vocab/vann/example|uri|http://purl.org/vocab/bio/0.1/bio-example-rss10-20040303.html
+http://purl.org/dc/elements/1.1/title|literal|Using With RSS 1.0
+http://purl.org/vocab/vann/example|uri|http://purl.org/vocab/bio/0.1/bio-example-rss20-20040303.html
+http://purl.org/dc/elements/1.1/title|literal|Using With RSS 2.0
+http://purl.org/vocab/vann/example|uri|http://purl.org/vocab/bio/0.1/bio-example-html-20040303.html
+http://purl.org/dc/elements/1.1/title|literal|Using With HTML
+http://purl.org/dc/terms/hasFormat|uri|http://purl.org/vocab/bio/0.1/bio-vocab-20040305.html
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://purl.org/dc/terms/IMT
+http://purl.org/dc/elements/1.1/format|anonymous|http://purl.org/vocab/bio/0.1/bio-vocab-20040305.rdf#anonymous:1
+http://www.w3.org/1999/02/22-rdf-syntax-ns#value|literal|text/html
+http://www.w3.org/2000/01/rdf-schema#label|literal|HTML
+http://purl.org/dc/terms/hasFormat|uri|http://purl.org/vocab/bio/0.1/bio-vocab-20040305.rdf
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://purl.org/dc/terms/IMT
+http://purl.org/dc/elements/1.1/format|anonymous|http://purl.org/vocab/bio/0.1/bio-vocab-20040305.rdf#anonymous:2
+http://www.w3.org/1999/02/22-rdf-syntax-ns#value|literal|application/rdf+xml
+http://www.w3.org/2000/01/rdf-schema#label|literal|RDF
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://web.resource.org/cc/Work
+http://web.resource.org/cc/license|uri|http://creativecommons.org/licenses/by/1.0/
+http://purl.org/dc/elements/1.1/type|uri|http://purl.org/dc/dcmitype/Text
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://web.resource.org/cc/License
+http://web.resource.org/cc/permits|uri|http://web.resource.org/cc/Reproduction
+http://web.resource.org/cc/permits|uri|http://web.resource.org/cc/Distribution
+http://web.resource.org/cc/requires|uri|http://web.resource.org/cc/Notice
+http://web.resource.org/cc/requires|uri|http://web.resource.org/cc/Attribution
+http://web.resource.org/cc/permits|uri|http://web.resource.org/cc/DerivativeWorks
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/2000/01/rdf-schema#Class
+http://www.w3.org/2000/01/rdf-schema#label|literal|Event
+http://www.w3.org/2000/01/rdf-schema#comment|literal|A general event, i.e. something that the person participated in.
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://purl.org/vocab/bio/0.1/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/2000/01/rdf-schema#Class
+http://www.w3.org/2000/01/rdf-schema#label|literal|Birth
+http://www.w3.org/2000/01/rdf-schema#comment|literal|A birth event.
+http://www.w3.org/2000/01/rdf-schema#subClassOf|uri|http://purl.org/vocab/bio/0.1/Event
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://purl.org/vocab/bio/0.1/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/2000/01/rdf-schema#Class
+http://www.w3.org/2000/01/rdf-schema#label|literal|Marriage
+http://www.w3.org/2000/01/rdf-schema#comment|literal|A marriage event.
+http://www.w3.org/2000/01/rdf-schema#subClassOf|uri|http://purl.org/vocab/bio/0.1/Event
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://purl.org/vocab/bio/0.1/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/2000/01/rdf-schema#Class
+http://www.w3.org/2000/01/rdf-schema#label|literal|Death
+http://www.w3.org/2000/01/rdf-schema#comment|literal|A death event.
+http://www.w3.org/2000/01/rdf-schema#subClassOf|uri|http://purl.org/vocab/bio/0.1/Event
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://purl.org/vocab/bio/0.1/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|One-line bio
+http://www.w3.org/2000/01/rdf-schema#comment|literal|A one-line biography of the person.
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://xmlns.com/foaf/0.1/Person
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://www.w3.org/2000/01/rdf-schema#Literal
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://purl.org/vocab/bio/0.1/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|Key words
+http://www.w3.org/2000/01/rdf-schema#comment|literal|A comma delimited list of key words that describe this person.
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://xmlns.com/foaf/0.1/Person
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://www.w3.org/2000/01/rdf-schema#Literal
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://purl.org/vocab/bio/0.1/
+http://www.w3.org/2000/01/rdf-schema#subPropertyOf|uri|http://purl.org/dc/elements/1.1/subject
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|Date
+http://www.w3.org/2000/01/rdf-schema#comment|literal|The date of an event.
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://purl.org/vocab/bio/0.1/Event
+http://www.w3.org/2000/01/rdf-schema#subPropertyOf|uri|http://purl.org/dc/elements/1.1/date
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://purl.org/vocab/bio/0.1/
+http://purl.org/vocab/vann/usageNote|uri|http://purl.org/vocab/bio/0.1/date-usage-20040303.html
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|Place
+http://www.w3.org/2000/01/rdf-schema#comment|literal|The place of an event.
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://purl.org/vocab/bio/0.1/Event
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://purl.org/vocab/bio/0.1/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|Event
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An event associated with a person.
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://xmlns.com/foaf/0.1/Person
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://purl.org/vocab/bio/0.1/Event
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://purl.org/vocab/bio/0.1/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/2000/01/rdf-schema#Class
+http://www.w3.org/2000/01/rdf-schema#label|literal|topic map item
+http://www.w3.org/2000/01/rdf-schema#comment|literal|A common superclass for all the classes
+              defined in this schema. This class has no direct
+              counterpart in the topic map model, and is only used in
+              order to better express the RDF schema.
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/2000/01/rdf-schema#Class
+http://www.w3.org/2000/01/rdf-schema#label|literal|topic
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF class corresponding to the topic
+              map notion of a topic.
+http://www.w3.org/2000/01/rdf-schema#subClassOf|uri|http://psi.ontopia.net/rdf/#TopicMapItem
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/2000/01/rdf-schema#Class
+http://www.w3.org/2000/01/rdf-schema#label|literal|base name
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF class corresponding to the topic
+              map notion of a base name.
+http://www.w3.org/2000/01/rdf-schema#subClassOf|uri|http://psi.ontopia.net/rdf/#TopicMapItem
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/2000/01/rdf-schema#Class
+http://www.w3.org/2000/01/rdf-schema#label|literal|variant name
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF class corresponding to the topic
+              map notion of a variant name.
+http://www.w3.org/2000/01/rdf-schema#subClassOf|uri|http://psi.ontopia.net/rdf/#TopicMapItem
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/2000/01/rdf-schema#Class
+http://www.w3.org/2000/01/rdf-schema#label|literal|occurrence
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF class corresponding to the topic
+              map notion of an occurrence.
+http://www.w3.org/2000/01/rdf-schema#subClassOf|uri|http://psi.ontopia.net/rdf/#TopicMapItem
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/2000/01/rdf-schema#Class
+http://www.w3.org/2000/01/rdf-schema#label|literal|association
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF class corresponding to the topic
+              map notion of an association.
+http://www.w3.org/2000/01/rdf-schema#subClassOf|uri|http://psi.ontopia.net/rdf/#TopicMapItem
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/2000/01/rdf-schema#Class
+http://www.w3.org/2000/01/rdf-schema#label|literal|association role
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF class corresponding to the topic
+              map notion of an association role.
+http://www.w3.org/2000/01/rdf-schema#subClassOf|uri|http://psi.ontopia.net/rdf/#TopicMapItem
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|subject identifier
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF property corresponding to the
+                topic map notion of a subject identifier.
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.daml.org/2001/03/daml+oil#UnambiguousProperty
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#Topic
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://www.w3.org/2000/01/rdf-schema#Resource
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|subject address
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF property corresponding to the
+                topic map notion of a subject address.
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.daml.org/2001/03/daml+oil#UnambiguousProperty
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#Topic
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://www.w3.org/2000/01/rdf-schema#Resource
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|base name
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF property associating the topic
+                with its base names.
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#Topic
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://psi.ontopia.net/rdf/#BaseName
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|occurrence
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF property associating the topic
+                with its occurrences.
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#Topic
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://psi.ontopia.net/rdf/#Occurrence
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|source locator
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF property associating topic map
+                items of all types with their source locators.
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.daml.org/2001/03/daml+oil#UnambiguousProperty
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#TopicMapItem
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://www.w3.org/2000/01/rdf-schema#Resource
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|scope
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF property corresponding to the
+                topic map notion of scope.
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#BaseName
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#Variant
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#Occurrence
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#Association
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Bag
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|value
+http://www.w3.org/2000/01/rdf-schema#comment|literal|The string value of this base name, variant,
+                or occurrence.
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#BaseName
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#Variant
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#Occurrence
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://www.w3.org/2000/01/rdf-schema#Literal
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|variants
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF property associating the topic
+                with its variants.
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#BaseName
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Alt
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|resource
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF property that refers to the
+                resource which is this variant or occurrence.
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#Variant
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#Occurrence
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://www.w3.org/2000/01/rdf-schema#Resource
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|occurrence type
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF property that refers to the topic
+                that defines the type of this occurrence.
+http://www.w3.org/2000/01/rdf-schema#subPropertyOf|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#type
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#Occurrence
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://psi.ontopia.net/rdf/#Topic
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|association type
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF property that refers to the topic
+                that defines the type of this association.
+http://www.w3.org/2000/01/rdf-schema#subPropertyOf|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#type
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#Association
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://psi.ontopia.net/rdf/#Topic
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|association roles
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF property that connects the roles
+                making up this association with the association.
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#Association
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://psi.ontopia.net/rdf/#AssociationRole
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|role type
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF property that refers to the topic
+                that defines the type of this association role.
+http://www.w3.org/2000/01/rdf-schema#subPropertyOf|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#type
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#AssociationRole
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://psi.ontopia.net/rdf/#Topic
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/
+http://www.w3.org/1999/02/22-rdf-syntax-ns#type|uri|http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
+http://www.w3.org/2000/01/rdf-schema#label|literal|role playing topic
+http://www.w3.org/2000/01/rdf-schema#comment|literal|An RDF property that refers to the topic
+                playing this role in the association.
+http://www.w3.org/2000/01/rdf-schema#domain|uri|http://psi.ontopia.net/rdf/#AssociationRole
+http://www.w3.org/2000/01/rdf-schema#range|uri|http://psi.ontopia.net/rdf/#Topic
+http://www.w3.org/2000/01/rdf-schema#isDefinedBy|uri|http://psi.ontopia.net/rdf/

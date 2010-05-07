@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="0.0" id="1204803555291" licenseType="Evaluation license." modified="Mon Nov 24 12:26:48 CET 2008" modifiedBy="mhaupt" name="graphMsSqlDataWriter.grf" revision="1.49">
+<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="2.9.1" id="1204803555291" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Mon Mar 08 17:05:30 CET 2010" modifiedBy="cloveruser" name="graphMsSqlDataWriter.grf" revision="1.52">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter=";" name="inMssqlData" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -22,21 +22,29 @@
 <Field name="ErrorMsg" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
-<Property id="GraphParameter10" name="SERVER_NAME" value="192.168.1.113"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Property id="GraphParameter0" name="SERVER_NAME" value="192.168.1.13"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="241" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the MSSQL Bulk Loader: MSSQLDataWriter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="553" x="24" y="216">
+<attr name="text"><![CDATA[
+Component uses the bcp utility. Data records can be received through single input port or - if input port is not connected - a file with data records must be specified in the component itself.
+
+Phase 0 demonstrates the first possibility - receiving data through input port.
+
+Phase 1 shows the second option - reading data from the file specified in the component, in its Loader input file attribute.
+
+Remember that the bcp utility must be in the PATH of your system. 
+
+A set of conditions must be fulfilled to be able to work with this component. SQL Server Client Connectivity Components must be configured on the same machine as CloverETL, bcp command line tool must be available, etc.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/mssql.dat" guiHeight="25" guiName="DATA_READER0" guiWidth="50" guiX="31" guiY="28" id="DATA_READER0" type="DATA_READER"/>
-<Node bcpUtilityPath="bcp" columnDelimiter="|" database="test" enabled="enabled" fileURL="${DATAOUT_DIR}/exchange.bcp" guiHeight="25" guiName="MS_SQL_DATA_WRITER0" guiWidth="50" guiX="282" guiY="28" id="MS_SQL_DATA_WRITER0" owner="dbo" password="clover" serverName="${SERVER_NAME}" table="test" type="MS_SQL_DATA_WRITER" username="clover">
-<attr name="parameters"><![CDATA[characterType|errFile=${DATAOUT_DIR}\err.bcp]]></attr>
-</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/mssql.dat" guiHeight="25" guiName="DATA_READER0" guiWidth="50" guiX="24" guiY="24" id="DATA_READER0" type="DATA_READER"/>
+<Node bcpUtilityPath="bcp" columnDelimiter="|" database="test" enabled="enabled" fileURL="${DATAOUT_DIR}/exchange.bcp" guiHeight="25" guiName="MS_SQL_DATA_WRITER0" guiWidth="50" guiX="276" guiY="24" id="MS_SQL_DATA_WRITER0" owner="dbo" parameters="characterType|errFile=${DATAOUT_DIR}\err.bcp" password="clover" serverName="${SERVER_NAME}" table="test" type="MS_SQL_DATA_WRITER" username="clover"/>
 <Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MS_SQL_DATA_WRITER0:0"/>
 </Phase>
 <Phase number="1">
-<Node append="false" charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}\out.txt" guiHeight="25" guiName="DATA_WRITER0" guiWidth="50" guiX="282" guiY="168" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node bcpUtilityPath="bcp" columnDelimiter=";" database="test" enabled="enabled" fileURL="${DATAIN_DIR}\delimited\mssql.dat" guiHeight="25" guiName="MS_SQL_DATA_WRITER1" guiWidth="50" guiX="31" guiY="168" id="MS_SQL_DATA_WRITER1" owner="dbo" password="clover" serverName="${SERVER_NAME}" table="test" type="MS_SQL_DATA_WRITER" username="clover">
-<attr name="parameters"><![CDATA[characterType|errFile=${DATAOUT_DIR}\err.bcp]]></attr>
-</Node>
+<Node append="false" charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}\out.txt" guiHeight="25" guiName="DATA_WRITER0" guiWidth="50" guiX="276" guiY="120" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node bcpUtilityPath="bcp" columnDelimiter=";" database="test" enabled="enabled" fileURL="${DATAIN_DIR}\delimited\mssql.dat" guiHeight="25" guiName="MS_SQL_DATA_WRITER1" guiWidth="50" guiX="24" guiY="120" id="MS_SQL_DATA_WRITER1" owner="dbo" parameters="characterType|errFile=${DATAOUT_DIR}\err.bcp" password="clover" serverName="${SERVER_NAME}" table="test" type="MS_SQL_DATA_WRITER" username="clover"/>
 <Edge debugMode="true" fromNode="MS_SQL_DATA_WRITER1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="MetadataOut" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

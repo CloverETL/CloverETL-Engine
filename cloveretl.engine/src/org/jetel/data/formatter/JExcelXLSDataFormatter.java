@@ -95,6 +95,8 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	private OutputStream os = null;
 
 	private String charset;
+	
+	private static final int MAX_SHEET_NAME_LENGTH = 31;
 
 	/**
 	 * Constructor
@@ -143,7 +145,9 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	 */
 	public void prepareSheet(){
 		String tmpName = currentSheetName != null ? currentSheetName : sheetName;
-		
+		if (!StringUtils.isEmpty(tmpName) && tmpName.length() > MAX_SHEET_NAME_LENGTH) {
+			tmpName = tmpName.substring(0, MAX_SHEET_NAME_LENGTH);
+		}
 		//get or create sheet depending of its existence and append attribute
 		if (!StringUtils.isEmpty(tmpName)){
 			sheet = wb.getSheet(tmpName);

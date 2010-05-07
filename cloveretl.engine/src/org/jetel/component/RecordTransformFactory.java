@@ -58,6 +58,8 @@ import org.jetel.util.CodeParser;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 
 public class RecordTransformFactory {
 
@@ -189,11 +191,19 @@ public class RecordTransformFactory {
             throw new ComponentNotReadyException("Record transformation is not defined.");
         }
         
+        //resolve references at given transformation string 
+        if (transform != null) {
+        	PropertyRefResolver refResolver= new PropertyRefResolver(node.getGraph().getGraphProperties());
+        	transform = refResolver.resolveRef(transform, RefResFlag.SPEC_CHARACTERS_OFF);
+        }
+        
         if (transformClass != null) {
             //get transformation from link to the compiled class
             transformation = (RecordTransform)RecordTransformFactory.loadClass(classLoader, logger, transformClass, null, classPaths);
         }else if (transform == null && transformURL != null){
         	transform = FileUtils.getStringFromURL(node.getGraph().getProjectURL(), transformURL, charset);
+        	PropertyRefResolver refResolver= new PropertyRefResolver(node.getGraph().getGraphProperties());
+        	transform = refResolver.resolveRef(transform);
         }
         if (transformClass == null) {
             
@@ -243,7 +253,7 @@ public class RecordTransformFactory {
         transformation.setGraph(node.getGraph());
     	
         // init transformation
-        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
+        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {//TODO
             throw new ComponentNotReadyException("Error when initializing tranformation function !");
         }
         

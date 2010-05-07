@@ -23,7 +23,9 @@ package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 
@@ -56,43 +58,6 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new SybaseConnection(dbConnection, operationType);
 	}
-//
-//	@Override
-//	public int jetelType2sql(DataFieldMetadata field) {
-//		switch (field.getType()) {
-//		case DataFieldMetadata.INTEGER_FIELD:
-//        case DataFieldMetadata.LONG_FIELD:
-//			return Types.INTEGER;
-//		case DataFieldMetadata.NUMERIC_FIELD:
-//			return Types.DOUBLE;
-//		case DataFieldMetadata.STRING_FIELD:
-//			return Types.VARCHAR;
-//		case DataFieldMetadata.DATE_FIELD:
-//			boolean isDate = field.isDateFormat();
-//			boolean isTime = field.isTimeFormat();
-//			if (isDate && isTime || StringUtils.isEmpty(field.getFormatStr())) 
-//				return Types.TIMESTAMP;
-//			if (isDate)
-//				return Types.DATE;
-//			if (isTime)
-//				return Types.TIME;
-//			return Types.TIMESTAMP;
-//        case DataFieldMetadata.DECIMAL_FIELD:
-//            return Types.DECIMAL;
-//        case DataFieldMetadata.BYTE_FIELD:
-//        case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-//        	if (!StringUtils.isEmpty(field.getFormatStr())
-//					&& field.getFormatStr().equalsIgnoreCase(DataFieldMetadata.BLOB_FORMAT_STRING)) {
-//        		return Types.BLOB;
-//        	}
-//            return Types.VARBINARY;
-//        case DataFieldMetadata.BOOLEAN_FIELD:
-//        	//return Types.BIT;
-//        	return Types.BOOLEAN;
-//		default:
-//			throw new IllegalArgumentException("Can't handle Clover's data type :"+field.getTypeAsString());
-//		}
-//	}
 
 	public String quoteIdentifier(String identifier) {
 		return "\"" + identifier + "\"";
@@ -101,7 +66,7 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
 		case Types.BOOLEAN :
-			return "TINYINT";
+			return "BIT";
 		case Types.INTEGER :
 			return "INT";
 		case Types.NUMERIC :
@@ -112,16 +77,67 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 		}
 		return super.sqlType2str(sqlType);
 	}
-
+	
 	@Override
-	public String jetelType2sqlDDL(DataFieldMetadata field) {
-		return super.jetelType2sqlDDL(field);
+	public int jetelType2sql(DataFieldMetadata field) {
+		switch (field.getType()) {
+		case DataFieldMetadata.NUMERIC_FIELD:
+			return Types.DOUBLE;
+		case DataFieldMetadata.BOOLEAN_FIELD:
+			return Types.BIT;
+        default: 
+        	return super.jetelType2sql(field);
+		}
+	}
+	
+	@Override
+	public char sqlType2jetel(int sqlType) {
+		switch (sqlType) {
+		case Types.BIT:
+			return DataFieldMetadata.BOOLEAN_FIELD;
+		default:
+			return super.sqlType2jetel(sqlType);
+		}
 	}
     
 	@Override
 	public ArrayList<String> getSchemas(java.sql.Connection connection)
 			throws SQLException {
 		return AbstractJdbcSpecific.getMetaCatalogs(connection.getMetaData());
+	}
+
+	@Override
+	public ResultSet getTables(Connection connection, String dbName)
+			throws SQLException {
+		Statement s = connection.createStatement();
+		s.execute("USE " + dbName);		
+		return s.executeQuery("EXECUTE sp_tables @table_type = \"'TABLE', 'VIEW'\"");
+	}
+
+	@Override
+	public String getTablePrefix(String schema, String owner,
+			boolean quoteIdentifiers) {
+		if (quoteIdentifiers) {
+			return quoteIdentifier(schema) + "." + quoteIdentifier(owner);
+		} else {
+			return schema + "." + owner;
+		}
+	}
+	
+	/**
+	 * Returns false when a call of DatabaseMetaData.supportsGetGeneratedKeys() is not
+	 * supported by a driver. Exceptions of type SQLException are passed. 
+	 */
+	@Override
+	public boolean supportsGetGeneratedKeys(DatabaseMetaData metadata) throws SQLException {
+		try {
+			boolean result = super.supportsGetGeneratedKeys(metadata);
+			return result;
+		}
+		catch (Exception e) {
+			if (e instanceof SQLException) throw (SQLException)e;  
+			return false;
+		}
 	}
 	
 }

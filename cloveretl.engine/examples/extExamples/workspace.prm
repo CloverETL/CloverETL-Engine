@@ -1,8 +1,12 @@
-#Project path
+##Project path
+#Tue Apr 13 09:07:08 CEST 2010
 PROJECT=.
+#PROJECT=/home/my_user/workspace/ExtExamples
+#PROJECT=C:/Users/my_user/workspace/ExtExamples
 
-#Thu Apr 16 11:35:32 CEST 2009
+#Tue Apr 13 09:07:08 CEST 2010
 CONN_DIR=${PROJECT}/conn
+connection=derby.cfg
 SEQ_DIR=${PROJECT}/seq
 DATAOUT_DIR=${PROJECT}/data-out
 GRAPH_DIR=${PROJECT}/graph

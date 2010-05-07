@@ -20,6 +20,7 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -375,6 +376,12 @@ public class DelimitedDataReader extends Node {
         if(!checkInputPorts(status, 0, 1)
         		|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
         	return status;
+        }
+        
+        if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+            		"Charset "+charset+" not supported!", 
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
         
         checkMetadata(status, getOutMetadata());

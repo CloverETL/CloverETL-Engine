@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu Jan 25 12:46:12 CET 2007" description="This graph demonstrates functionality of DATA_INTERSECT component - performs &#10;joining of two sorted (based on specified key) data flows (A and B) and outputs:&#10;- to port 0 records found only in flow A&#10;- to port 1 records found in A &amp;amp; B&#10;- to port 2 records found only in flow B  &#10;&#10;Records both in flow A &amp;amp; B should be unique" guiVersion="2.9.1" id="1204546108983" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 14:22:00 CET 2010" modifiedBy="cloveruser" name="Intersect Data" revision="1.29">
+<Graph author="avackova" created="Thu Jan 25 12:46:12 CET 2007" description="This graph demonstrates functionality of DATA_INTERSECT component - performs &#10;joining of two sorted (based on specified key) data flows (A and B) and outputs:&#10;- to port 0 records found only in flow A&#10;- to port 1 records found in A &amp;amp; B&#10;- to port 2 records found only in flow B  &#10;&#10;Records both in flow A &amp;amp; B should be unique" guiVersion="0.0.0.devel" id="1204546108983" licenseType="Evaluation Devel" modified="Fri Mar 12 10:54:36 CET 2010" modifiedBy="cloveruser" name="Intersect Data" revision="1.34">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employeeDB.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata1"/>
@@ -19,9 +19,16 @@ Data record is considered to be a member of both data flows if corresponding par
 By default, component has also Allow key duplicates set to true. In other words, to one master record (port 0) multiple slaves (port 1) may be found. If you want to find one record only for each master, switch this attribute to false.
 ]]></attr>
 </Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="139" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Source of Data Flow A" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="157" x="12" y="-35"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="133" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Source of Data Flow B" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="160" x="9" y="120"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="229" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Employees Intersection" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="169" x="372" y="-60">
+<attr name="text"><![CDATA[
+Employees in both flows (A and B) are compared and intersection of both flows is performed.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="305" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Groups of Employees" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="165" x="583" y="-58"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="DataIntersection" guiWidth="0" guiX="330" guiY="74" id="DATA_INTERSECTION0" joinKey="$EmployeeID=$EMP_NO" type="DATA_INTERSECTION">
+<Node enabled="enabled" guiHeight="0" guiName="DataIntersection" guiWidth="0" guiX="396" guiY="72" id="DATA_INTERSECTION0" joinKey="$EmployeeID=$EMP_NO" type="DATA_INTERSECTION">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -44,17 +51,17 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="167" guiY="24" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="167" guiY="110" id="EXT_SORT1" sortKey="EMP_NO(a)" type="EXT_SORT"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Flow A" guiWidth="50" guiX="20" guiY="24" id="INPUT1" type="DATA_READER"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.list.dat" guiHeight="25" guiName="Flow B" guiWidth="50" guiX="20" guiY="110" id="INPUT2" type="DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/intersect_1_data.out" guiHeight="25" guiName="Flow A - Flow B" guiWidth="50" guiX="487" guiY="13" id="WRITER1" type="DATA_WRITER">
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort (Flow A)" guiWidth="0" guiX="192" guiY="24" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort (Flow B)" guiWidth="0" guiX="192" guiY="168" id="EXT_SORT1" sortKey="EMP_NO(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="24" guiY="24" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.list.dat" guiHeight="25" guiName="List of Employees" guiWidth="50" guiX="24" guiY="168" id="INPUT2" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/intersect_1_data.out" guiHeight="25" guiName="Flow A &amp;&amp; Not B" guiWidth="50" guiX="600" guiY="0" id="WRITER1" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/intersect_1_2_data.out" guiHeight="25" guiName="Flow A &amp;&amp; Flow B" guiWidth="50" guiX="487" guiY="88" id="WRITER2" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/intersect_1_2_data.out" guiHeight="25" guiName="Flow A &amp;&amp; Flow B" guiWidth="50" guiX="600" guiY="84" id="WRITER2" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/intersect_2_data.out" guiHeight="25" guiName="Flow B - Flow A" guiWidth="50" guiX="487" guiY="175" id="WRITER3" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/intersect_2_data.out" guiHeight="25" guiName="Flow B &amp;&amp; Not A" guiWidth="50" guiX="600" guiY="168" id="WRITER3" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="DATA_INTERSECTION0:0" guiBendpoints="" id="OUTEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (only in A)" toNode="WRITER1:0"/>

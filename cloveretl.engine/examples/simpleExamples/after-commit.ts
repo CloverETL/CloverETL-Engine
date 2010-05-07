@@ -19,6 +19,33 @@
 	 
 </FunctionalTest>
 
+	<FunctionalTest ident="ApproximativeJoin" graphFile="graph/graphApproximativeJoin.grf">
+	 	  <FlatFile outputFile="data-out/conformingSubstring.txt" supposedFile="supposed-out/conformingSubstring.AproximativeJoin.txt"/>	                                                                 
+	 	  <FlatFile outputFile="data-out/conformingMetaphone.txt" supposedFile="supposed-out/conformingMetaphone.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/conformingNYSIIS.txt" supposedFile="supposed-out/conformingNYSIIS.AproximativeJoin.txt"/>	                                                                      
+	 	  <FlatFile outputFile="data-out/conformingSoundex.txt" supposedFile="supposed-out/conformingSoundex.AproximativeJoin.txt"/>	                                                                 
+	 	  <FlatFile outputFile="data-out/suspiciousSubstring.txt" supposedFile="supposed-out/suspiciousSubstring.AproximativeJoin.txt"/>                                                                    
+	 	  <FlatFile outputFile="data-out/suspiciousMetaphone.txt" supposedFile="supposed-out/suspiciousMetaphone.AproximativeJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/suspiciousNYSIIS.txt" supposedFile="supposed-out/suspiciousNYSIIS.AproximativeJoin.txt"/>	                                                                     
+	 	  <FlatFile outputFile="data-out/suspiciousSoundex.txt" supposedFile="supposed-out/suspiciousSoundex.AproximativeJoin.txt"/>	                                                                  
+	 	  <FlatFile outputFile="data-out/customersSoundex.out" supposedFile="supposed-out/empty.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/customersMetaphone.out" supposedFile="supposed-out/empty.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/customersSubstring.out" supposedFile="supposed-out/empty.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/customersNYSIIS.out" supposedFile="supposed-out/empty.txt"/>	                                                                  
+	 	  <FlatFile outputFile="data-out/employeeSubstring.out" supposedFile="supposed-out/employeeSubstring.AproximativeJoin.out"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/employeeMetaphone.out" supposedFile="supposed-out/employeeMetaphone.AproximativeJoin.out"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/employeeNYSIIS.out" supposedFile="supposed-out/employeeNYSIIS.AproximativeJoin.out"/>	                                                                        
+	 	  <FlatFile outputFile="data-out/employeeSoundex.out" supposedFile="supposed-out/employeeSoundex.AproximativeJoin.out"/>	                                                               
+	     <DeleteFile file="seq/id0.seq"/>
+	     <DeleteFile file="seq/id1.seq"/>
+	     <DeleteFile file="seq/id2.seq"/>
+	     <DeleteFile file="seq/id3.seq"/>
+	</FunctionalTest>
+
+	<FunctionalTest ident="CheckForeignKey" graphFile="graph/graphCheckForeignKey.grf">
+	 	  <FlatFile outputFile="data-out/wrongKey.out" supposedFile="supposed-out/wrongKey.CheckForeignKey.out"/>	                                                                    
+		  <FlatFile outputFile="data-out/fixedKey.out" supposedFile="supposed-out/fixedKey.CheckForeignKey.out"/>
+	</FunctionalTest>
 
 <FunctionalTest ident="CloverData" graphFile="graph/graphCloverData.grf">
 	 <FlatFile outputFile="data-out/strucured_customers.txt" supposedFile="supposed-out/strucured_customers.CloverData.txt"/>
@@ -27,19 +54,10 @@
 
 </FunctionalTest>
 
-
-<FunctionalTest ident="CompressedByteTest" graphFile="graph/graphCompressedByteTest.grf">
-
-</FunctionalTest>
-
-
-<FunctionalTest ident="DataPolicy" graphFile="graph/graphDataPolicy.grf">
+<FunctionalTest ident="DataPolicy" graphFile="graph/graphDataPolicy.grf" assertion="false">
 	 <FlatFile outputFile="data-out/correctCustomersControlled.txt" supposedFile="supposed-out/correctCustomers.DataPolicy.Controlled.txt"/>
 	 <FlatFile outputFile="data-out/correctCustomersLenient.txt" supposedFile="supposed-out/correctCustomers.DataPolicy.Lenient.txt"/>
-     
-<DeleteFile file="data-out/correctCustomersControlled.txt"/>
-<DeleteFile file="data-out/correctCustomersLenient.txt"/>
-
+		<RegEx expression="org.jetel.exception.BadDataFormatException: account_num \(long\) cannot be set to &quot;8747577056D&quot; in field # 2 of record # 3, value: '8747577056D'" occurences="1"/>
 </FunctionalTest>
 
 
@@ -138,12 +156,14 @@
 	<DeleteFile file="seq/seq.seq"/>
 </FunctionalTest>
 
-<FunctionalTest ident="HttpConnector" graphFile="graph/graphHTTPConnector.grf">	 
+<FunctionalTest ident="HttpConnector" graphFile="graph/graphHTTPConnector.grf" defaultProperties="changedParams">	 
 	 <FlatFile outputFile="data-out/city_overview.txt" supposedFile="supposed-out/city_overview.HttpConnector.txt"/>
-	 <FlatFile outputFile="data-out/hello.html" supposedFile="supposed-out/hello.HttpConnector.html"/>
-	 <FlatFile outputFile="data-out/hello1.html" supposedFile="supposed-out/hello.HttpConnector.html"/>
-	 <FlatFile outputFile="data-out/hello.txt" supposedFile="supposed-out/hello.HttpConnector.txt"/>
-	 <FlatFile outputFile="data-out/hello1.txt" supposedFile="supposed-out/hello.HttpConnector.txt"/>
+	 <FlatFile outputFile="data-out/object.txt" supposedFile="supposed-out/object.HttpConnector.txt"/>
+	 <FlatFile outputFile="data-out/object1.txt" supposedFile="supposed-out/object.HttpConnector.txt"/>
+	 <FlatFile outputFile="data-out/subject.txt" supposedFile="supposed-out/subject.HttpConnector.txt"/>
+	 <FlatFile outputFile="data-out/subject1.txt" supposedFile="supposed-out/subject.HttpConnector.txt"/>
+	 <FlatFile outputFile="data-out/RDFTriples.xml" supposedFile="supposed-out/RDFTriples.HttpConnector.xml"/>
+	 <FlatFile outputFile="data-out/RDFTriples1.xml" supposedFile="supposed-out/RDFTriples.HttpConnector.xml"/>
 </FunctionalTest>
 
 <FunctionalTest ident="IntersectData" graphFile="graph/graphIntersectData.grf">
@@ -161,8 +181,6 @@
 <FunctionalTest ident="JavaExecute" graphFile="graph/graphJavaExecute.grf">
 		<RegEx expression="Basic example of Java Execute, value of testingProperty = Testing output string!!!" occurences="1"/>
 </FunctionalTest>
-
-
 
 <FunctionalTest ident="JoinData" graphFile="graph/graphJoinData.grf">
 	 <FlatFile outputFile="data-out/joined_data.out" supposedFile="supposed-out/joined_data.JoinData.out"/>
@@ -239,7 +257,7 @@
 </FunctionalTest>
 
 <FunctionalTest ident="OrdersReformat" graphFile="graph/graphOrdersReformat.grf">
-	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersReformat.out"/>
+	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out/orders.dat.OrdersReformat.out"/>
      
 <DeleteFile file="data-out/orders.dat.out"/>
 
@@ -247,7 +265,7 @@
 
 
 <FunctionalTest ident="OrdersReformatExternTransform" graphFile="graph/graphOrdersReformatExternTransform.grf">
-	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersReformatExternTransform.out"/>
+	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out/orders.dat.OrdersReformat.out"/>
      
 <DeleteFile file="data-out/orders.dat.out"/>
 
@@ -255,7 +273,7 @@
 
 
 <FunctionalTest ident="OrdersReformatInline" graphFile="graph/graphOrdersReformatInline.grf">
-	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersReformatInline.out"/>
+	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersReformat.out"/>
      
 <DeleteFile file="data-out/orders.dat.out"/>
 
@@ -269,14 +287,14 @@
 </FunctionalTest>
 
 <FunctionalTest ident="OrdersTLReformat" graphFile="graph/graphOrdersTLReformat.grf">
-	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersTLReformat.out"/>
+	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersReformat.out"/>
      
 <DeleteFile file="data-out/orders.dat.out"/>
 
 </FunctionalTest>
 
 <FunctionalTest ident="OrdersTLReformatExtern" graphFile="graph/graphOrdersTLReformatExtern.grf">
-	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersTLReformatExtern.out"/>
+	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersReformat.out"/>
      
 <DeleteFile file="data-out/orders.dat.out"/>
 

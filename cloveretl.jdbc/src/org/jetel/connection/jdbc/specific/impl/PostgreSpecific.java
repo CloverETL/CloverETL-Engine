@@ -62,13 +62,11 @@ public class PostgreSpecific extends AbstractJdbcSpecific {
     
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
+		case Types.BIT:
+			return "BOOLEAN";
 		case Types.BINARY :
 		case Types.VARBINARY :
 			return "BYTEA";
-		case Types.NUMERIC :
-			return "REAL";
-		case Types.DECIMAL :
-			return "NUMERIC";
 		}
 		return super.sqlType2str(sqlType);
 	}
@@ -79,9 +77,47 @@ public class PostgreSpecific extends AbstractJdbcSpecific {
 		switch(type) {
 		case Types.VARBINARY :
 		case Types.BINARY : 
-			return sqlType2str(type); 
-		}
+			return sqlType2str(type);
+		case Types.NUMERIC:
+			String base = sqlType2str(type);
+			String prec = "";
+			if (field.getProperty("length") != null) {
+				if (field.getProperty("scale") != null) {
+					prec = "(" + field.getProperty("length") + "," + field.getProperty("scale") + ")";
+				} else {
+					prec = "(" + field.getProperty("length") + ",0)";
+				}
+			}
+			return base + prec;
+		}	
 		return super.jetelType2sqlDDL(field);
+	}
+	
+	@Override
+	public int jetelType2sql(DataFieldMetadata field) {
+		switch (field.getType()) {
+		case DataFieldMetadata.BYTE_FIELD:
+		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+        	return Types.BINARY;
+		case DataFieldMetadata.NUMERIC_FIELD:
+			return Types.REAL;
+		case DataFieldMetadata.DECIMAL_FIELD:
+			return Types.NUMERIC;
+		case DataFieldMetadata.BOOLEAN_FIELD:
+			return Types.BIT;
+        default: 
+        	return super.jetelType2sql(field);
+		}
+	}
+	
+	@Override
+	public char sqlType2jetel(int sqlType) {
+		switch (sqlType) {
+		case Types.BIT:
+			return DataFieldMetadata.BOOLEAN_FIELD;
+		default:
+			return super.sqlType2jetel(sqlType);
+		}
 	}
 
 	

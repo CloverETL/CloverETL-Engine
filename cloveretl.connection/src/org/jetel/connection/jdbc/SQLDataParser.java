@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.TimeZone;
 
@@ -236,10 +237,13 @@ public class SQLDataParser implements Parser {
 	}
 
 	protected void initSQLMap(DataRecord record) throws SQLException{
+		List<Integer> fieldTypes = (this.dbConnection!=null && this.dbConnection.getJdbcSpecific()!=null)?
+				this.dbConnection.getJdbcSpecific().getFieldTypes(resultSet.getMetaData(), metadata):
+				SQLUtil.getFieldTypes(resultSet.getMetaData());	
 		if (sqlCloverStatement.getCloverOutputFields() == null) {
-			transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultSet.getMetaData()) ,metadata, record);
+			transMap = CopySQLData.sql2JetelTransMap(fieldTypes ,metadata, record);
 		}else{
-			transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultSet.getMetaData()) , metadata, record, 
+			transMap = CopySQLData.sql2JetelTransMap(fieldTypes ,metadata, record, 
 					sqlCloverStatement.getCloverOutputFields());
 		}
 	}
@@ -313,7 +317,8 @@ public class SQLDataParser implements Parser {
 	public boolean checkIncremental() throws ComponentNotReadyException{
     	if (incrementalKey != null && sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
 			try {
-				new SQLIncremental(incrementalKey, sqlQuery, incrementalFile);
+				SQLIncremental sqlIncremental = new SQLIncremental(incrementalKey, sqlQuery, incrementalFile);
+				sqlIncremental.checkConfig();
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(e);
 			}

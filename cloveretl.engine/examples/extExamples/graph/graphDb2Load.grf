@@ -43,8 +43,7 @@
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/db2delimited.dat" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="22" guiY="140" id="DATA_READER1" type="DATA_READER"/>
-<!-- Following node should work with useNamedPipe="true", but now it causes unfinishing loop in test. Change it, when the issue 3040 is resolved -->
-<Node columnDelimiter=";" database="test" enabled="enabled" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="208" guiY="140" id="DB2_DATA_WRITER0" loadMode="insert" password="semafor" table="mytab" type="DB2_DATA_WRITER" useNamedPipe="false" userName="db2inst">
+<Node columnDelimiter=";" database="test" enabled="enabled" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="208" guiY="140" id="DB2_DATA_WRITER0" loadMode="insert" password="semafor" table="mytab" type="DB2_DATA_WRITER" useNamedPipe="true" userName="db2inst">
 <attr name="transferMode"><![CDATA[file]]></attr>
 </Node>
 <Node debugFilename="${DATAOUT_DIR}/rejected_delimited.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="394" guiY="140" id="TRASH0" type="TRASH"/>

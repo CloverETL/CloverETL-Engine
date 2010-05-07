@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Thu Sep 13 12:37:17 CEST 2007" description="This graph shows usage of CheckForeignKey component. &#10;Data are are from table &quot;customers&quot; and &quot;City&quot; and &quot;State&quot; fields are cheked agains the table of &#10;known cities. If city is not found beteen known cities null is substituted on requested fields.&#10;On output are printed customers, for which there wasn't found &quot;city&quot; and &quot;state&quot; in &quot;city&quot; table." guiVersion="0.0.0.devel" id="1204559939334" licenseType="Evaluation Devel" modified="Mon Mar 22 13:43:34 CET 2010" modifiedBy="cloveruser" name="graphCheckForeignKey" revision="1.44">
+<Global>
+<Metadata id="Metadata2">
+<Record fieldDelimiter=";" name="City" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="city" nullable="true" shift="0" type="string"/>
+<Field name="country" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0">
+<Record name="customer" recordSize="-1" type="delimited">
+<Field delimiter=";" name="customer_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="account_num" nullable="true" shift="0" type="long"/>
+<Field delimiter=";" name="lname" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="fname" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="mi" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="address" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="city" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="state_province" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="postal_code" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="country" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="customer_region_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="phone1" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="phone2" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" format="yyyy-MM-dd HH:mm:ss" name="birthdate" nullable="true" shift="0" type="date"/>
+<Field delimiter=";" name="marital_status" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="yearly_income" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="gender" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="total_children" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="num_children_at_home" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="education" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" format="yyyy-MM-dd HH:mm:ss" name="date_accnt_opened" nullable="true" shift="0" type="date"/>
+<Field delimiter=";" name="member_card" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="occupation" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="houseowner" nullable="true" shift="0" type="string"/>
+<Field delimiter="\n" name="num_cars_owned" nullable="true" shift="0" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="234" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the CheckForeignKey Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="550" x="21" y="211">
+<attr name="text"><![CDATA[
+CheckForeignKey receives two inputs. Both are required. 
+
+The first input are the records with a key that can be correct or incorrect and that should be fixed. 
+
+The second input is a list with correct key values that would be used to check which values are correct.
+
+Those values that are not correct are replaced with the value specified in the Default foreign key attribute of CheckForeignKey.
+
+Records with correct or fixed values of key are sent to the first output port. 
+
+Incorrect records can be sent to the optional second output port.]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node defaultForeignKey="-;-;" enabled="enabled" foreignKey="$city=$city;$country=$country" guiHeight="0" guiName="CheckForeignKey" guiWidth="0" guiX="180" guiY="34" id="CHECK_FOREIGN_KEY0" type="CHECK_FOREIGN_KEY"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/city.dat" guiHeight="0" guiName="Primary key" guiWidth="0" guiX="14" guiY="101" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customer.dat" guiHeight="0" guiName="Foreign key" guiWidth="0" guiX="14" guiY="-31" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/fixedKey.out" guiHeight="0" guiName="Fixed Foreign key" guiWidth="0" guiX="355" guiY="-31" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node debugFilename="${DATAOUT_DIR}/wrongKey.out" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Debug Wrong key" guiWidth="0" guiX="355" guiY="101" id="TRASH0" type="TRASH"/>
+<Edge debugMode="false" fromNode="CHECK_FOREIGN_KEY0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (foreign records)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="CHECK_FOREIGN_KEY0:1" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (invalid foreign records)" toNode="TRASH0:0"/>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 1 (primary records)" metadata="Metadata2" outPort="Port 0 (output)" toNode="CHECK_FOREIGN_KEY0:1"/>
+<Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (foreign records)" metadata="Metadata0" outPort="Port 0 (output)" toNode="CHECK_FOREIGN_KEY0:0"/>
+</Phase>
+</Graph>

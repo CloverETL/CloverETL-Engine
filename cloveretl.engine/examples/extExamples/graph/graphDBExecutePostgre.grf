@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation Devel" modified="Fri Oct 02 08:34:17 GMT+01:00 2009" modifiedBy="avackova" name="TestingDB2" revision="1.224">
+<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation Devel" modified="Wed Apr 21 18:22:03 CEST 2010" modifiedBy="cloveruser" name="TestingDB2" revision="1.320">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter=";" name="city" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -8,41 +8,77 @@
 <Field name="country" nullable="true" shift="0" skipFirstLine="false" type="string"/>
 </Record>
 </Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="errorInfo" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field auto_filling="ErrCode" name="errCode" type="integer"/>
+<Field auto_filling="ErrText" name="errMess" type="string"/>
+</Record>
+</Metadata>
 <Metadata id="Metadata1">
 <Record fieldDelimiter="|" name="id" recordDelimiter="\n" type="delimited">
 <Field name="id" type="integer"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
-<Field auto_filling="ErrCode" name="errCode" type="integer"/>
-<Field auto_filling="ErrText" name="errMess" type="string"/>
-</Record>
-</Metadata>
 <Connection dbConfig="${CONN_DIR}/postgre.cfg" id="Connection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Sequence cached="0" fileURL="${SEQ_DIR}/seq.txt" id="Sequence0" name="sequence" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="399" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the DBExecute Component (Procedure Usage)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="534" x="36" y="228">
+<attr name="text"><![CDATA[
+This graph shows how a DBExecute component can be used to define a procedure in one phase and to call it in another. 
+
+In phase 2, a procedure is created. It is stored in database. Note that the query creating the procedure includes the "CREATE OR REPLACE" expression. If this "OR REPLACE" was removed, during each run of this graph (except the first one), an error code with the error message would be sent to Trash connected to the optional second output port of DBExecute.  
+
+Just in case an error happens, the Error actions attribute is set to MIN_INT=CONTINUE. That ensures that graph may continue even when an error occurs.
+
+In addition, the definition of the procedure is written to Console (Print statements is true).
+
+In phase 3, DataGenerator uses a sequence to generate ID-s for this procedure that is subsequently called in the DBExecute of the phase 1. This sequence is always reset in the init() function of DataGenerator transformation. The generated ids are used to select cities and countries stored in the database table specified in phase 0. This DBExecute only includes a call of the previously defined stored procedure. The Call as stored procedure attribute must be set to true, otherwise, the graph would fail.
+
+Both the input parameters and the fields for the result output set are specified.
+
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="181" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Table Creation and Table Filling" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="277" x="360" y="-144">
+<attr name="text"><![CDATA[
+In phase 0, a db table is created. If it already exists, it is deleted. In either case, the Error actions attribute value (MIN_INT=CONTINUE) ensures that graph successfully runs even when an attempt to drop a non-existing table or create an existing one is made.
+
+In phase 1, table is filled with data from a flat file.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection0" enabled="enabled" errorActions="CONTINUE" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="26" guiY="21" id="DB_EXECUTE1" printStatements="true" sqlStatementDelimiter="#" type="DB_EXECUTE">
-<attr name="sqlQuery"><![CDATA[CREATE OR REPLACE FUNCTION myfunc(int)
-RETURNS SETOF city
-AS
-$$ 
-  SELECT * FROM city WHERE id = $1;
-$$
-LANGUAGE 'sql' VOLATILE;]]></attr>
-</Node>
-<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="215" guiY="17" id="TRASH0" type="TRASH"/>
-<Edge fromNode="DB_EXECUTE1:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (error output)" toNode="TRASH0:0"/>
+<Node dbConnection="Connection0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiHeight="0" guiName="Table creation" guiWidth="0" guiX="36" guiY="-144" id="DB_EXECUTE0" sqlQuery="drop table IF EXISTS city CASCADE;&#13;&#10;create table city (&#13;&#10; id INTEGER,&#13;&#10; city VARCHAR(80),&#13;&#10; country VARCHAR(80)&#13;&#10;);&#13;&#10;" sqlStatementDelimiter=";" type="DB_EXECUTE"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/citytable.txt" guiHeight="0" guiName="Data for table" guiWidth="0" guiX="36" guiY="-60" id="DATA_READER0" type="DATA_READER"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Table filling" guiWidth="0" guiX="216" guiY="-60" id="DB_OUTPUT_TABLE0" sqlQuery="INSERT INTO city (id, city, country) &#13;&#10;VALUES ($id, $city, $country)" type="DB_OUTPUT_TABLE"/>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DB_OUTPUT_TABLE0:0"/>
 </Phase>
 <Phase number="2">
-<Node enabled="enabled" generate="//#TL&#10;&#10;// Generates output record.&#10;function generate() {&#10;&#9;$0.id := sequence(Sequence0).next;&#10;}&#10;&#10;// Called during component initialization.&#10; function init() {&#10; &#9;sequence(Sequence0).reset;&#10; }&#10;&#10;// Called after the component finishes.&#10;// function finished() {}&#10;" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="25" guiY="113" id="DATA_GENERATOR3" recordsNumber="100" type="DATA_GENERATOR"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/cities.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="396" guiY="113" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="214" guiY="113" id="DB_EXECUTE2" inParameters="1:=$id;" outputFields="id;city;country" type="DB_EXECUTE">
-<attr name="sqlQuery"><![CDATA[{call myfunc(?)}]]></attr>
+<Node dbConnection="Connection0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiHeight="0" guiName="Procedure creation" guiWidth="0" guiX="36" guiY="48" id="DB_EXECUTE1" printStatements="true" sqlQuery="CREATE OR REPLACE FUNCTION myfunc(int)&#13;&#10;RETURNS SETOF city&#13;&#10;AS&#13;&#10;$$ &#13;&#10;  SELECT * FROM city WHERE id = $1;&#13;&#10;$$&#13;&#10;LANGUAGE 'sql' VOLATILE;" sqlStatementDelimiter="#" type="DB_EXECUTE"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Error info" guiWidth="0" guiX="216" guiY="48" id="TRASH0" type="TRASH"/>
+<Edge debugMode="true" fromNode="DB_EXECUTE1:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (error output)" toNode="TRASH0:0"/>
+</Phase>
+<Phase number="3">
+<Node enabled="enabled" guiHeight="0" guiName="ID-s generator" guiWidth="0" guiX="36" guiY="132" id="DATA_GENERATOR3" recordsNumber="100" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#TL
+
+// Generates output record.
+function generate() {
+	$0.id := sequence(Sequence0).next;
+}
+
+// Called during component initialization.
+ function init() {
+ 	sequence(Sequence0).reset;
+ }
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
 </Node>
-<Edge fromNode="DATA_GENERATOR3:0" guiBendpoints="" id="Edge5" inPort="Port 0 (input parameters)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DB_EXECUTE2:0"/>
-<Edge fromNode="DB_EXECUTE2:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (procedure output)" toNode="DATA_WRITER0:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/cities.txt" guiHeight="0" guiName="Procedure output" guiWidth="0" guiX="396" guiY="132" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Procedure call" guiWidth="0" guiX="216" guiY="132" id="DB_EXECUTE2" inParameters="1:=$id;" outputFields="id;city;country" sqlQuery="{call myfunc2(?)}" type="DB_EXECUTE"/>
+<Edge debugMode="true" fromNode="DATA_GENERATOR3:0" guiBendpoints="" id="Edge5" inPort="Port 0 (input parameters)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DB_EXECUTE2:0"/>
+<Edge debugMode="true" fromNode="DB_EXECUTE2:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (procedure output)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

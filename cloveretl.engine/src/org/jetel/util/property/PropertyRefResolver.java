@@ -386,5 +386,12 @@ public class PropertyRefResolver {
 		}
 	}
 
+	/**
+	 * @param value
+	 * @return <code>true</code> if value contains at least one parameter.
+	 */
+	public boolean containsProperty(String value){
+		return propertyPattern.matcher(value).find();
+	}
 }
 

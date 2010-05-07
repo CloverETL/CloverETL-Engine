@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Jan 06 10:30:07 CET 2009" guiVersion="0.0.0.devel" id="1231234967225" licenseType="Evaluation license." modified="Fri Mar 27 11:47:14 CET 2009" modifiedBy="avackova" name="graphDBExecuteSybase" revision="1.22">
+<Graph author="avackova" created="Tue Jan 06 10:30:07 CET 2009" guiVersion="0.0.0.devel" id="1231234967225" licenseType="Evaluation Devel" modified="Tue Mar 16 14:28:01 CET 2010" modifiedBy="avackova" name="graphDBExecuteSybase" revision="1.28">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/date.fmt" id="Metadata1"/>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Record fieldDelimiter="|" name="errorInfo" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
 <Field auto_filling="ErrCode" name="errCode" type="integer"/>
 <Field auto_filling="ErrText" name="errMess" type="string"/>
 </Record>
@@ -19,31 +19,15 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection0" enabled="enabled" errorActions="CONTINUE" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="36" guiY="31" id="DB_EXECUTE1" type="DB_EXECUTE">
-<attr name="sqlQuery"><![CDATA[create table proc_table (
-	id INTEGER,
-	string VARCHAR(80),
-	date DATETIME
-);
-drop procedure SPDownload;
-CREATE PROCEDURE SPDownload(@last_dl_ts DATETIME)
-AS
-BEGIN
-     SELECT id, string, date
-       FROM proc_table
-          WHERE date <= @last_dl_ts
-END;]]></attr>
-</Node>
-<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="225" guiY="27" id="TRASH0" type="TRASH"/>
-<Edge debugLastRecords="true" fromNode="DB_EXECUTE1:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (error output)" toNode="TRASH0:0"/>
+<Node dbConnection="Connection0" enabled="enabled" errorActions="CONTINUE" guiHeight="0" guiName="Procedure creation" guiWidth="0" guiX="36" guiY="31" id="DB_EXECUTE1" sqlQuery="create table proc_table (&#10;&#9;id INTEGER,&#10;&#9;string VARCHAR(80),&#10;&#9;date DATETIME&#10;);&#10;drop procedure SPDownload;&#10;CREATE PROCEDURE SPDownload(@last_dl_ts DATETIME)&#10;AS&#10;BEGIN&#10;     SELECT id, string, date&#10;       FROM proc_table&#10;          WHERE date &lt;= @last_dl_ts&#10;END;" type="DB_EXECUTE"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Error info" guiWidth="0" guiX="225" guiY="27" id="TRASH0" type="TRASH"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DB_EXECUTE1:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (error output)" toNode="TRASH0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/dates.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="36" guiY="111" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/sybase.out" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="404" guiY="111" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="225" guiY="111" id="DB_EXECUTE2" inParameters="1:=$date" outputFields="id;string;date" type="DB_EXECUTE">
-<attr name="sqlQuery"><![CDATA[{call SPDownload(?)}]]></attr>
-</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/dates.txt" guiHeight="0" guiName="Dates" guiWidth="0" guiX="36" guiY="111" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/sybase.out" guiHeight="0" guiName="Procedure output" guiWidth="0" guiX="404" guiY="111" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Procedure call" guiWidth="0" guiX="225" guiY="111" id="DB_EXECUTE2" inParameters="1:=$date" outputFields="id;string;date" sqlQuery="{call SPDownload(?)}" type="DB_EXECUTE"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (input parameters)" metadata="Metadata1" outPort="Port 0 (output)" toNode="DB_EXECUTE2:0"/>
-<Edge debugLastRecords="true" fromNode="DB_EXECUTE2:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (procedure output)" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DB_EXECUTE2:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (procedure output)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

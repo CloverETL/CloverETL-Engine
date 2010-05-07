@@ -346,8 +346,15 @@ public class SQLCloverStatement {
 			return status;
 		}
 		if (cloverOutputFields != null){
-			tm = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultMetadata), outMetadata, outRecord, 
-					cloverOutputFields);
+			List<Integer> fieldTypes = SQLUtil.getFieldTypes(resultMetadata);
+			if (fieldTypes != null && cloverOutputFields != null && fieldTypes.size() != cloverOutputFields.length) {
+				ConfigurationProblem problem = new ConfigurationProblem(
+						"Can't validate SQL statement "+query, ConfigurationStatus.Severity.WARNING, null,
+						ConfigurationStatus.Priority.NORMAL);
+				status.add(problem);
+				return status;
+			}
+			tm = CopySQLData.sql2JetelTransMap(fieldTypes, outMetadata, outRecord, cloverOutputFields);
 		}else{
 			tm = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultMetadata), outMetadata, outRecord);
 		}

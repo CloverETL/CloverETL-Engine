@@ -54,7 +54,6 @@ public class RecordOrderedKey extends RecordKey {
 	private static final Object KEY_ORDERING_2ND_DELIMITER = ")";
 	private StringBuffer keyStr;
 
-	private boolean equalNULLs = false; // specifies whether two NULLs are deemed equal
 
 	/**
 	 *  Constructor for the RecordOrderedKey object
@@ -207,7 +206,7 @@ public class RecordOrderedKey extends RecordKey {
 					" Possibly different structure");
 		}
 	    DataField field;
-		if (equalNULLs){
+		if (this.isEqualNULLs()){
 			for (int i = 0; i < keyFields.length; i++) {
 		        field = record1.getField(keyFields[i]);
 				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
@@ -260,7 +259,7 @@ public class RecordOrderedKey extends RecordKey {
 			throw new RuntimeException("Can't compare. Keys have different number of DataFields");
 		}
 		DataField field;
-		if (equalNULLs){
+		if (this.isEqualNULLs()){
 		    for (int i = 0; i < keyFields.length; i++) {
 		    	field = record1.getField(keyFields[i]);
 		    	if (useCollator && collators[i] != null && (field instanceof StringDataField)) {

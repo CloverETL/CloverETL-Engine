@@ -20,7 +20,6 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -71,22 +70,36 @@ public class MSSQLSpecific extends AbstractJdbcSpecific {
 		case Types.TIMESTAMP :
 			return "DATETIME";
 		case Types.BOOLEAN :
-			return "TINYINT";
+			return "BIT";
 		case Types.INTEGER :
 			return "INT";
 		case Types.NUMERIC :
+		case Types.DOUBLE :
 			return "FLOAT";
 		}
 		return super.sqlType2str(sqlType);
 	}
 
 	@Override
-	public String jetelType2sqlDDL(DataFieldMetadata field) {
-		switch(jetelType2sql(field)) {
-		case Types.BOOLEAN :
-			return "TINYINT(1)";
+	public int jetelType2sql(DataFieldMetadata field) {
+		switch (field.getType()) {
+		case DataFieldMetadata.BOOLEAN_FIELD:
+			return Types.BIT;
+		case DataFieldMetadata.NUMERIC_FIELD:
+			return Types.DOUBLE;
+		default:
+	return super.jetelType2sql(field);
 		}
-		return super.jetelType2sqlDDL(field);
+	}
+	
+	@Override
+	public char sqlType2jetel(int sqlType) {
+		switch (sqlType) {
+		case Types.BIT:
+			return DataFieldMetadata.BOOLEAN_FIELD;
+		default:
+			return super.sqlType2jetel(sqlType);
+		}
 	}
 
 	@Override

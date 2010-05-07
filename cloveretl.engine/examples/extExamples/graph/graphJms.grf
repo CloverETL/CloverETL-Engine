@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Nov 22 11:30:48 CET 2006" description="This graph ilustrates usage of JMS Reader/Writer Components. It reuires ACtiveMQ JMS server to be running on localhost!" guiVersion="0.0.0.devel" id="1204546356214" licenseType="Evaluation license." modified="Mon May 18 09:34:32 CEST 2009" modifiedBy="avackova" name="graphSystemExecute" revision="1.52">
+<Graph author="avackova" created="Wed Nov 22 11:30:48 CET 2006" description="This graph ilustrates usage of JMS Reader/Writer Components. It reuires ACtiveMQ JMS server to be running on localhost!" guiVersion="0.0.0.devel" id="1204546356214" licenseType="Evaluation Devel" modified="Mon Mar 22 14:30:29 CET 2010" modifiedBy="cloveruser" name="graphSystemExecute" revision="1.54">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="${PROJECT}/lib/activemq-all-5.2.0.jar" name="" password="" providerUrl="vm://localhost" type="JMS" username=""/>
@@ -7,15 +7,13 @@
 </Global>
 <Phase number="0">
 <Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Input" guiWidth="50" guiX="20" guiY="20" id="Input" quotedStrings="true" type="DATA_READER"/>
-<Node connection="dest" enabled="enabled" guiHeight="25" guiName="JmsReader" guiWidth="50" guiX="20" guiY="107" id="JmsReader" maxMsgCount="0" timeout="4000" type="JMS_READER">
-<attr name="bodyField"><![CDATA[LastName]]></attr>
+<Node bodyField="LastName" connection="dest" enabled="enabled" guiHeight="25" guiName="JmsReader" guiWidth="50" guiX="20" guiY="107" id="JmsReader" maxMsgCount="0" timeout="4000" type="JMS_READER">
 <attr name="_processorClass"><![CDATA[org.jetel.component.JmsMsg2DataRecordProperties]]></attr>
 </Node>
-<Node connection="dest" enabled="enabled" guiHeight="25" guiName="JmsWriter" guiWidth="50" guiX="245" guiY="20" id="JmsWriter" type="JMS_WRITER">
-<attr name="bodyField"><![CDATA[LastName]]></attr>
+<Node bodyField="LastName" connection="dest" enabled="enabled" guiHeight="25" guiName="JmsWriter" guiWidth="50" guiX="245" guiY="20" id="JmsWriter" type="JMS_WRITER">
 <attr name="_processorClass"><![CDATA[org.jetel.component.DataRecord2JmsMsgProperties]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/jms.out" guiHeight="25" guiName="Output" guiWidth="50" guiX="245" guiY="107" id="Output" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/jms.out" guiHeight="25" guiName="Output" guiWidth="50" guiX="245" guiY="107" id="Output" type="DATA_WRITER"/>
 <Edge fromNode="Input:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JmsWriter:0"/>
 <Edge fromNode="JmsReader:0" guiBendpoints="" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="Output:0"/>
 </Phase>

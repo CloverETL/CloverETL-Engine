@@ -161,34 +161,4 @@ public class FTPConnection extends URLConnection {
 	public void setSoTimeout(int timeout) throws SocketException {
 		ftp.setSoTimeout(timeout);
 	}
-
-
-	public static void main(String[] s) {
-		try {
-			//ReadableByteChannel rc = FileUtils.getReadableChannel(null, "ftp://jausperger:relatko5@linuxweb:21/public_html/g.html");
-			URL url = new URL(null, "ftp://jausperger:relatko5@linuxweb:21/public_html/", new FTPStreamHandler());
-			FTPConnection con = (FTPConnection) url.openConnection();
-			// con.getInputStream();
-
-			con.connect();
-			
-			System.out.println(con.pwd());
-			con.cd("public_html");
-			//con.ls(con.pwd());
-			System.out.println(con.pwd());
-			
-			con.ls("path");
-
-			//files[10].getName()
-			con.ftp.listFiles("orders.dat")[0].isDirectory();
-			con.ftp.listFiles("xml");
-			
-			con.disconnect();
-
-		} catch (Throwable e) {
-			log.error("error",e);
-		}
-		System.exit(0);
-	}
-
 }

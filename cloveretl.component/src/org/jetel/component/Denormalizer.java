@@ -22,6 +22,7 @@ package org.jetel.component;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -471,6 +472,12 @@ public class Denormalizer extends Node {
         	return status;
         }
 
+        if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+            		"Charset "+charset+" not supported!", 
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+        }
+        
         if (errorActionsString != null){
         	try {
 				ErrorAction.checkActions(errorActionsString);

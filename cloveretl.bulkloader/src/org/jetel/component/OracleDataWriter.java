@@ -844,34 +844,108 @@ public class OracleDataWriter extends BulkLoader {
         DataFieldMetadata[] fields = metadata.getFields();
         int fixlenCounter = 0;
         
-        for(int i = 0; i < fields.length; i++) {
-            ret.append('\t');
-            if(dbFields != null) {
-                ret.append(dbFields[i]);
-            } else {
-                ret.append(fields[i].getName());
-            }
-            if(fields[i].isDelimited()) {
-                ret.append(" TERMINATED BY '");
-                ret.append(StringUtils.specCharToString(fields[i].getDelimiters()[0]));
-                ret.append('\'');
-            } else { //fixlen field
-                fixlenCounter++;
-                ret.append(" POSITION (");
-                ret.append(Integer.toString(fixlenCounter));
-                ret.append(':');
-                fixlenCounter += fields[i].getSize() - 1;
-                ret.append(Integer.toString(fixlenCounter));
-                ret.append(')');
-            }
-            ret.append(',');
-            ret.append(lineSeparator);
-        }
+		for (int i = 0; i < fields.length; i++) {
+			ret.append('\t');
+			if (dbFields != null) {
+				ret.append(dbFields[i]);
+			} else {
+				ret.append(fields[i].getName());
+			}
+			if (fields[i].getType() == DataFieldMetadata.DATE_FIELD) {
+				if (fields[i].isDateFormat() && !fields[i].isTimeFormat()) {
+					ret.append(" DATE \"");
+				} else {
+					ret.append(" TIMESTAMP \"");
+				}
+				ret.append(javaDatePattern2Oracle(fields[i].getFormatStr()));
+				ret.append("\"");
+			}
+			if (fields[i].isDelimited()) {
+				ret.append(" TERMINATED BY '");
+				ret.append(StringUtils.specCharToString(fields[i]
+						.getDelimiters()[0]));
+				ret.append('\'');
+			} else { // fixlen field
+				fixlenCounter++;
+				ret.append(" POSITION (");
+				ret.append(Integer.toString(fixlenCounter));
+				ret.append(':');
+				fixlenCounter += fields[i].getSize() - 1;
+				ret.append(Integer.toString(fixlenCounter));
+				ret.append(')');
+			}
+			ret.append(',');
+			ret.append(lineSeparator);
+		}
         ret.setLength(ret.length() - (1 + lineSeparator.length())); //remove comma delimiter and line separator in last field
         
         return ret.toString();
     }
     
+    /**
+     *  Converts Java Date format pattern to Oracle date format pattern
+     *  
+     * @param java Date pattern
+     * @return Oracle Date pattern
+     */
+	private static String javaDatePattern2Oracle(String pattern) {
+		StringBuffer sb = new StringBuffer();
+		char[] patternArray = pattern.toCharArray();
+		char lastChar = 0;
+		for (int i = 0; i < patternArray.length; i++) {
+			if (lastChar != patternArray[i]) {
+				lastChar = patternArray[i];
+				switch (patternArray[i]) {
+				case 'y':
+					sb.append("YYYY");
+					break;
+				case 'M':
+					sb.append("MM");
+					break;
+				case 'w':
+					sb.append("WW");
+					break;
+				case 'W':
+					sb.append("W");
+					break;
+				case 'D':
+					sb.append("DDD");
+					break;
+				case 'd':
+					sb.append("DD");
+					break;
+				case 'F':
+					sb.append("D");
+					break;
+				case 'E':
+					sb.append("DAY");
+					break;
+				case 'H':
+				case 'k':
+					sb.append("HH24");
+					break;
+				case 'h':
+				case 'K':
+					sb.append("HH12");
+					break;
+				case 'm':
+					sb.append("MI");
+					break;
+				case 's':
+					sb.append("SS");
+					break;
+				case 'z':
+				case 'Z':
+					sb.append("TZH");
+					break;
+				default:
+					sb.append(patternArray[i]);
+					break;
+				}
+			}
+		}
+		return sb.toString();
+	}
     /**
 	 * Return list of all adding parameters (parameters attribute).
 	 * Deprecated parameters mustn't be used.

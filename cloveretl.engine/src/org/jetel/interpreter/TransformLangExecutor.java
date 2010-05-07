@@ -1329,7 +1329,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         case RECORD_VAR:
 			DataRecordMetadata metadata = null;
 			if (node.recordNo >= 0) {
-				metadata = inputRecords[node.recordNo].getMetadata();
+				metadata = parser.getInRecordMeta(node.recordNo);
 			} else {
 				try {
 					metadata = graph.getDataRecordMetadata(node.metadataId, true);

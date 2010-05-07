@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu Jan 11 09:49:56 CET 2007" guiVersion="0.0.0.devel" id="1199787231325" licenseType="Evaluation license." modified="Tue May 19 13:29:04 CEST 2009" modifiedBy="avackova" name="graphGenerateData" revision="1.133">
+<Graph author="avackova" created="Thu Jan 11 09:49:56 CET 2007" guiVersion="2.9.1" id="1199787231325" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Thu Mar 04 17:22:53 CET 2010" modifiedBy="cloveruser" name="graphGenerateData" revision="1.138">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record name="Orders" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="149" type="mixed">
@@ -23,12 +23,27 @@
 <Property id="GraphParameter1" name="REQUIRED_DATE" value="31.01.2007"/>
 <Property fileURL="workspace.prm" id="GraphParameter2"/>
 <Sequence cached="20" fileURL="${SEQ_DIR}/seq.seq" id="Sequence0" name="ordersID" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="295" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Deprecated Attributes of DataGenerator" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="521" x="45" y="175">
+<attr name="text"><![CDATA[
+This graph is an examples of the use of deprecated attributes of DataGenerator.
+
+Data records for the output are defined in the following way:
+
+- list of constant values is specified (Record pattern)
+
+- list of random values is specified (Random fields)
+
+- list of sequence values is specified (Sequence fields). One sequence can be used for multiple fields.
+
+Random seed ensures that all random values are constant between subsequent runs of the graph.
+
+
+For information about current attributes of DataGenerator see graphDataGeneratorExt.grf]]></attr>
+</Note>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="44" guiY="90" id="DATA_GENERATOR1" pattern="aga|${ORDER_DATE}|${REQUIRED_DATE}|1|10|name|adress|Prague|EU|12000|CR&#10;" randomFields="$EmployeeID:=random(&quot;1&quot;,&quot;1000&quot;);$ShippedDate:=random(&quot;01.11.2008&quot;,&quot;30.11.2008&quot;)" randomSeed="0" recordsNumber="1000" sequenceFields="$OrderID:=Sequence0;" type="DATA_GENERATOR"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.mix" guiHeight="0" guiName="Universal Data Writer" guiWidth="0" guiX="373" guiY="90" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="217" guiY="90" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Edge debugMode="false" fromNode="DATA_GENERATOR1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="DATA_GENERATOR1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

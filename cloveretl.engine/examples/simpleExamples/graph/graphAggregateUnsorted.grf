@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates usage of the new Aggregate component. " guiVersion="2.9.1" id="1204542338830" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 12:46:41 CET 2010" modifiedBy="cloveruser" name="TestingSort" revision="1.35">
+<Graph author="cloveruser" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates usage of the new Aggregate component. " guiVersion="0.0.0.devel" id="1204542338830" licenseType="Evaluation Devel" modified="Fri Mar 12 12:25:37 CET 2010" modifiedBy="cloveruser" name="TestingSort" revision="1.37">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersAggregate.fmt" id="Metadata1"/>
@@ -24,8 +24,8 @@ When the records reach Aggregate, it processes them in the following way (as sho
 </Global>
 <Phase number="0">
 <Node aggregateKey="ShipCountry" enabled="enabled" guiHeight="25" guiName="AGGREGATE" guiWidth="50" guiX="195" guiY="20" id="AGGREGATE" mapping="$ShipCountry:=$ShipCountry;$Count:=count();$AvgFreight:=avg($Freight)" sorted="false" type="AGGREGATE"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated" guiHeight="25" guiName="Orders Aggregated" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
 <Edge debugMode="true" fromNode="AGGREGATE:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
 <Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="AGGREGATE:0"/>
 </Phase>

@@ -81,7 +81,7 @@ public class SQLIncremental {
 		keyValue = new Properties();
 		
 		File file = new File(incrementalFile);
-		if (!file.exists() && existAllInitialValues(key)) {
+		if (!file.exists()) {
 			file.createNewFile();
 		}
 		keyValue.load(new FileInputStream(incrementalFile));
@@ -91,23 +91,28 @@ public class SQLIncremental {
 		Arrays.fill(firstUpdate, true);
 	}
 	
-	private boolean existAllInitialValues(Properties key) {
-		Set<String> keys = new HashSet<String>(); 
+	/**
+	 * Check initial values.
+	 * @throws ComponentNotReadyException
+	 */
+	public void checkConfig() throws ComponentNotReadyException {
+		if (!existAllInitialValues()) {
+			throw new ComponentNotReadyException("Set up all initial values in the incremental key attribute.");
+		}
+	}
+
+	
+	/**
+	 * true if all keys have an initial value.
+	 * @param key
+	 * @return
+	 */
+	private boolean existAllInitialValues() {
 		Matcher keyValueMatcher = KEY_VALUE_PATTERN.matcher(sqlQuery);
 		while (keyValueMatcher.find()) {
 			String keyName = keyValueMatcher.group().substring(INCREMENTAL_KEY_INDICATOR.length());
-			if (keyName != null && !keyName.equals("")) keys.add(keyName);
-		}
-
-		for (Iterator<?> it = key.entrySet().iterator();it.hasNext();) {
-			Entry<String, String> e = (Entry<String, String>) it.next();
-			Matcher keyDefMatcher = KEY_FIELD_PATTERN.matcher(e.getValue());
-			keyDefMatcher.find();
-			if (keyDefMatcher.groupCount() >= 5) {
-				String sInitialValue;
-				if ((sInitialValue = keyDefMatcher.group(5)) == null || sInitialValue.length() <= 1) {
-					if (keys.contains(e.getKey())) return false;
-				}
+			if (keyName != null && !keyName.equals("")) {
+				if (!keyValue.containsKey(keyName)) return false;
 			}
 		}
 		return true;
@@ -116,7 +121,11 @@ public class SQLIncremental {
 	private void setInitialValues(Properties prop, Properties key) {
 		for (Iterator<?> it = key.entrySet().iterator();it.hasNext();) {
 			Entry<String, String> e = (Entry<String, String>) it.next();
-			Matcher keyDefMatcher = KEY_FIELD_PATTERN.matcher(e.getValue());
+			String value = e.getValue();
+			if (value.startsWith("\"") && value.endsWith("\"")) {
+				value = value.substring(1, value.length()-1);
+			}
+			Matcher keyDefMatcher = KEY_FIELD_PATTERN.matcher(value);
 			keyDefMatcher.find();
 			String sInitialValue;
 			Object oKey = prop.get(e.getKey());

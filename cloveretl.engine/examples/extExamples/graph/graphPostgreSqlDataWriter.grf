@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="0.0.0.devel" id="1204804033806" licenseType="Evaluation license." modified="Fri Jun 19 12:25:47 CEST 2009" modifiedBy="avackova" name="PsqlDataWriter" revision="1.88">
+<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="2.9.1" id="1204804033806" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Mon Mar 08 16:53:53 CET 2010" modifiedBy="cloveruser" name="PsqlDataWriter" revision="1.93">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter="," name="test" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -17,13 +17,25 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="229" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the PostgreSQL Bulk Loader: PostgreSQLDataWriter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="553" x="24" y="192">
+<attr name="text"><![CDATA[
+Component uses the psql utility. Data records can be received through single input port or - if input port is not connected - a file with data records must be specified in the component itself.
+
+Phase 0 demonstrates the first possibility - receiving data through input port.
+
+Phase 1 shows the second option - reading data from the file specified in the component, in its Loader input file attribute.
+
+Remember that the psql utility must be in the PATH of your system. 
+
+PostgreSQL client must be configured on the same machine as CloverETL.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node columnDelimiter="," database="test" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/postgreSqlFlat.dat" guiHeight="25" guiName="PostgreSql Data Writer" guiWidth="50" guiX="22" guiY="121" host="koule.javlin.eu" id="POSTGRESQL_DATA_WRITER0" parameters="null=&quot;&quot;" psqlPath="psql" table="test" type="POSTGRESQL_DATA_WRITER" username="test"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/postgreSqlFlat.dat" guiHeight="25" guiName="Data Reader" guiWidth="50" guiX="24" guiY="24" id="DATA_READER0" type="DATA_READER"/>
+<Node database="test" enabled="enabled" guiHeight="25" guiName="PostgreSql Data Writer" guiWidth="50" guiX="252" guiY="24" host="koule.javlin.eu" id="POSTGRESQL_DATA_WRITER1" psqlPath="psql" table="test" type="POSTGRESQL_DATA_WRITER" username="test"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="POSTGRESQL_DATA_WRITER1:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/postgreSqlFlat.dat" guiHeight="25" guiName="Data Reader" guiWidth="50" guiX="20" guiY="20" id="DATA_READER0" type="DATA_READER"/>
-<Node database="test" enabled="enabled" guiHeight="25" guiName="PostgreSql Data Writer" guiWidth="50" guiX="245" guiY="20" host="koule.javlin.eu" id="POSTGRESQL_DATA_WRITER1" psqlPath="psql" table="test" type="POSTGRESQL_DATA_WRITER" username="test"/>
-<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="POSTGRESQL_DATA_WRITER1:0"/>
+<Node columnDelimiter="," database="test" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/postgreSqlFlat.dat" guiHeight="25" guiName="PostgreSql Data Writer" guiWidth="50" guiX="24" guiY="108" host="koule.javlin.eu" id="POSTGRESQL_DATA_WRITER0" parameters="null=&quot;&quot;" psqlPath="psql" table="test" type="POSTGRESQL_DATA_WRITER" username="test"/>
 </Phase>
 </Graph>

@@ -83,6 +83,7 @@ public class DateDataField extends DataField implements Comparable {
             // create a date formatter based on the format string and locale
             dateFormatter = DateFormatterFactory.createFormatter(metadata.getFormatStr(), locale);
         }
+        this.reset();
     }
 
     /**

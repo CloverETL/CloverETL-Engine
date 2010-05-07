@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph ilustrates reading data from DBF file." guiVersion="0.0.0.devel" id="1204544905191" licenseType="Evaluation license." modified="Mon Aug 03 13:56:09 CEST 2009" modifiedBy="avackova" name="TestingDB2" revision="1.7">
+<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph ilustrates reading data from DBF file." guiVersion="0.0.0.devel" id="1204544905191" licenseType="Evaluation Devel" modified="Thu Mar 11 16:40:21 CET 2010" modifiedBy="cloveruser" name="TestingDB2" revision="1.14">
 <Global>
 <Metadata fileURL="${META_DIR}/fixlen/supplierDBF.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="208" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of DBFDataReader" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="456" x="19" y="132">
+<attr name="text"><![CDATA[
+The graph shows the use of DBFDataReader. 
+
+Fixed metadata are used for the edge. 
+
+Data is read from the input dBase file and sent to Trash. 
+
+Debug print is set to true and Debug file URL is specified. Thus, Trash has an output into specified file.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node charset="IBM850" enabled="enabled" fileURL="${DATAIN_DIR}/other/SUPPLIER.DBF" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DBF_DATA_READER"/>
-<Node debugFilename="${DATAOUT_DIR}/Trash1_output.txt" debugPrint="true" enabled="enabled" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" type="TRASH"/>
+<Node charset="IBM850" enabled="enabled" fileURL="${DATAIN_DIR}/other/SUPPLIER.DBF" guiHeight="25" guiName="Suppliers" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DBF_DATA_READER"/>
+<Node debugFilename="${DATAOUT_DIR}/Trash1_output.txt" debugPrint="true" enabled="enabled" guiHeight="25" guiName="Trash Output" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" type="TRASH"/>
 <Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

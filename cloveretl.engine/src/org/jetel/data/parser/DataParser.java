@@ -478,8 +478,12 @@ public class DataParser implements Parser {
 					}
 					//check record delimiter presence for last field
 					if(hasRecordDelimiter && fieldCounter + 1 == numFields) {
-						if(!followRecordDelimiter()) { //record delimiter is not found
+						int followRecord = followRecordDelimiter(); 
+						if(followRecord>0) { //record delimiter is not found
 							return parsingErrorFound("Too many characters found", record, fieldCounter);
+						}
+						if(followRecord<0) { //record delimiter is not found
+							return parsingErrorFound("Unexpected record delimiter, probably record is too short.", record, fieldCounter);
 						}
 					}
 
@@ -783,16 +787,16 @@ public class DataParser implements Parser {
 	
 	/**
 	 * Follow record delimiter in the input channel?
-	 * @return
+	 * @return 0 if record delimiter follows. -1 if record is too short, 1 if record is longer
 	 */
-	private boolean followRecordDelimiter() {
+	private int followRecordDelimiter() {
 		int count = 1;
 		int character;
 		try {
 			while ((character = readChar()) != -1) {
 				delimiterSearcher.update((char) character);
 				if(recordDelimiterFound()) {
-					return (count == delimiterSearcher.getMatchLength());
+					return (count - delimiterSearcher.getMatchLength());
 				}
 				count++;
 			}
@@ -800,7 +804,7 @@ public class DataParser implements Parser {
 			throw new RuntimeException(getErrorMessage(e.getMessage(), null, null));
 		}
 		//end of file
-		return false;
+		return -1;
 	}
 
 	/**
@@ -958,5 +962,4 @@ public class DataParser implements Parser {
 	public boolean isVerbose() {
 		return verbose;
 	}
-
 }

@@ -20,6 +20,7 @@
 package org.jetel.component;
 
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
@@ -35,6 +36,7 @@ import org.jetel.connection.jms.JmsConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
@@ -418,6 +420,12 @@ public class JmsReader extends Node {
         if(!checkInputPorts(status, 0, 0)
         		|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
         	return status;
+        }
+        
+        if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+            		"Charset "+charset+" not supported!", 
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
 
 //        try {

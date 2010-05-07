@@ -23,6 +23,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -32,6 +33,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.parser.XPathParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
@@ -415,6 +417,12 @@ public class XmlXPathReader extends Node {
         if(!checkInputPorts(status, 0, 1)
         		|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
         	return status;
+        }
+        
+        if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+            		"Charset "+charset+" not supported!", 
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
 
 //        try {

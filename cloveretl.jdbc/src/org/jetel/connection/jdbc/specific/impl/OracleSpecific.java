@@ -64,6 +64,10 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new OracleConnection(dbConnection, operationType, getAutoKeyType());
 	}
+	
+	public String quoteIdentifier(String identifier) {
+        return ('"' + identifier + '"');
+    }
 
 	/* (non-Javadoc)
 	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#jetelType2sql(org.jetel.metadata.DataFieldMetadata)
@@ -76,6 +80,9 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 			if (isDate && !isTime)
 				return Types.DATE;
 			return Types.TIMESTAMP;
+		case DataFieldMetadata.BYTE_FIELD:
+		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+			return Types.VARBINARY;
 		}
 		return super.jetelType2sql(field);
 	}
@@ -87,6 +94,7 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 		case Types.VARCHAR :
 			return "VARCHAR2";
 		case Types.NUMERIC :
+			return "FLOAT";
 		case Types.BIGINT :
 			return "NUMBER";
 		case Types.VARBINARY :
@@ -137,4 +145,31 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 	public boolean isSchemaRequired() {
 		return true;
 	}
+
+	public boolean isJetelTypeConvertible2sql(int sqlType, DataFieldMetadata field) {
+		switch (field.getType()) {
+		case DataFieldMetadata.BOOLEAN_FIELD:
+		case DataFieldMetadata.DECIMAL_FIELD:
+		case DataFieldMetadata.LONG_FIELD:
+		case DataFieldMetadata.INTEGER_FIELD:
+			switch (sqlType) {
+			case Types.NUMERIC:
+				return true;
+			default:
+				return false;
+			}
+		case DataFieldMetadata.DATE_FIELD:
+			switch (sqlType) {
+			case Types.TIMESTAMP:
+				return true;
+			default:
+				return false;
+			}
+		default:
+			return super.isJetelTypeConvertible2sql(sqlType, field);
+		}
+		
+	}
+	
+	
 }

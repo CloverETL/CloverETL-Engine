@@ -1209,6 +1209,12 @@ public class XmlWriter extends Node {
 			return status;
 		}
 		
+		if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+            		"Charset "+charset+" not supported!", 
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+        }
+		
 		//Check whether XML mapping schema is valid
 		try {
 			SAXParserFactory factory = SAXParserFactory.newInstance();

@@ -1,52 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation Devel" modified="Fri Oct 02 08:33:19 GMT+01:00 2009" modifiedBy="avackova" name="TestingDB2" revision="1.210">
+<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation Devel" modified="Wed Apr 21 18:23:29 CEST 2010" modifiedBy="cloveruser" name="TestingDB2" revision="1.272">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/date.fmt" id="Metadata1"/>
-<Metadata id="Metadata3">
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="errorInfo" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field auto_filling="ErrCode" name="errCode" type="integer"/>
+<Field auto_filling="ErrText" name="errMess" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2">
 <Record fieldDelimiter=";" name="mssqltable" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field name="id" nullable="true" shift="0" type="integer"/>
 <Field name="string" nullable="true" shift="0" type="string"/>
 <Field format="dd-MM-yyyy hh:mm:ss" name="date" nullable="true" shift="0" type="date"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
-<Field auto_filling="ErrCode" name="errCode" type="integer"/>
-<Field auto_filling="ErrText" name="errMess" type="string"/>
-</Record>
-</Metadata>
-<Connection dbConfig="${CONN_DIR}/mssql.cfg" id="Connection1" type="JDBC"/>
+<Connection dbConfig="${CONN_DIR}/mssql.cfg" id="Connection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="420" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the DBExecute Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="534" x="24" y="360">
+<attr name="text"><![CDATA[
+This graph shows how a DBExecute component can drop or create a database table, how it can be used to define a procedure in one phase and to call it in another. 
+
+In phase 0, the specified database table is dropped. If it does not exist, an error message is sent through the optional seconed output port of DBExecute to Trash. Then, the same database table is created. Trash writes its output to Console.
+
+So as not to cause graph fail, the Error actions attribute is set to MIN_INT=CONTINUE. That ensures that graph may continue even when an error occurs.
+
+In phase 1, the database table is filled with data that is read from a flat file. DBOutputTable uses the DB table and Field mapping attributes.
+
+In phase 2, a procedure is dropped (if it exists) and created. If the procedure still does not exist (during the first graph run), an error code with the error message is sent to the optional output port and, through it, to Trash. This Trash also writes its output to Console.
+
+So as not to cause graph fail, the Error actions attribute is set to MIN_INT=CONTINUE. That ensures that graph may continue even when an error occurs.
+
+In phase 3, a flat file containing dates is read. These dates are passed to DBExecute. DBExecute reads data records in the specified database table, select those whose dates are higher (later) than the date on the edge and sends them to UniversalDataWriter that is connected to the first output port of this DBExecute. The Writer writes selected records to a flat file. In DBExecute of this phase, both the input parameters and the fields for the result output set are specified. The Call as stored procedure attribute is set to true.
+
+]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection1" enabled="enabled" errorActions="CONTINUE" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="25" guiY="21" id="DB_EXECUTE1" type="DB_EXECUTE">
-<attr name="sqlQuery"><![CDATA[create table proc_table (
-	id INTEGER,
-	string VARCHAR(80),
-	date DATETIME
-);
-drop procedure SPDownload;
-CREATE PROCEDURE SPDownload
-    @last_dl_ts DATETIME
-AS
-BEGIN
-     SELECT id, string, date
-       FROM proc_table
-          WHERE date >= @last_dl_ts
-END;]]></attr>
-</Node>
-<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="214" guiY="17" id="TRASH0" type="TRASH"/>
-<Edge debugLastRecords="true" fromNode="DB_EXECUTE1:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (error output)" toNode="TRASH0:0"/>
+<Node dbConnection="Connection0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiHeight="0" guiName="Table creation" guiWidth="0" guiX="24" guiY="24" id="DB_EXECUTE1" sqlQuery="drop table proc_table;&#13;&#10;create table proc_table (&#13;&#10;&#9;id INTEGER,&#13;&#10;&#9;string VARCHAR(80),&#13;&#10;&#9;date DATETIME&#13;&#10;);" type="DB_EXECUTE"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Error info" guiWidth="0" guiX="216" guiY="24" id="TRASH0" type="TRASH"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DB_EXECUTE1:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (error output)" toNode="TRASH0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/dates.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="25" guiY="102" id="DATA_READER0" type="DATA_READER"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (input parameters)" metadata="Metadata1" outPort="Port 0 (output)" toNode="DB_EXECUTE2:0"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/proc_table.txt" guiHeight="0" guiName="Table data" guiWidth="0" guiX="24" guiY="108" id="DATA_READER0" type="DATA_READER"/>
+<Node dbConnection="Connection0" dbTable="proc_table" enabled="enabled" fieldMap="$id:=id;$string:=string;$date:=date;" guiHeight="0" guiName="Table filling" guiWidth="0" guiX="216" guiY="108" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="DB_OUTPUT_TABLE0:0"/>
 </Phase>
 <Phase number="2">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/mssql.out" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="402" guiY="102" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node callStatement="true" dbConnection="Connection1" enabled="enabled" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="214" guiY="102" id="DB_EXECUTE2" inParameters="1:=$date" outputFields="id;string;date" type="DB_EXECUTE">
-<attr name="sqlQuery"><![CDATA[{call SPDownload(?)}]]></attr>
-</Node>
-<Edge debugLastRecords="true" fromNode="DB_EXECUTE2:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (procedure output)" toNode="DATA_WRITER0:0"/>
+<Node dbConnection="Connection0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiHeight="0" guiName="Procedure creation" guiWidth="0" guiX="24" guiY="192" id="DB_EXECUTE4" sqlQuery="drop procedure SPDownload;&#13;&#10;CREATE PROCEDURE SPDownload&#13;&#10;    @last_dl_ts DATETIME&#13;&#10;AS&#13;&#10;BEGIN&#13;&#10;     SELECT id, string, date&#13;&#10;       FROM proc_table&#13;&#10;          WHERE date &gt;= @last_dl_ts&#13;&#10;END;" type="DB_EXECUTE"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Error info" guiWidth="0" guiX="216" guiY="192" id="TRASH1" type="TRASH"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DB_EXECUTE4:1" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (error output)" toNode="TRASH1:0"/>
+</Phase>
+<Phase number="3">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/dates.txt" guiHeight="0" guiName="Dates" guiWidth="0" guiX="24" guiY="276" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/mssql.out" guiHeight="0" guiName="Procedure output" guiWidth="0" guiX="408" guiY="276" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Procedure call" guiWidth="0" guiX="216" guiY="276" id="DB_EXECUTE3" inParameters="1:=$date" outputFields="id;string;date" sqlQuery="{call SPDownload(?)}" type="DB_EXECUTE"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (input parameters)" metadata="Metadata1" outPort="Port 0 (output)" toNode="DB_EXECUTE3:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DB_EXECUTE3:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (procedure output)" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>

@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="2.9.1" id="1204545320021" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 14:09:32 CET 2010" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.47">
+<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="0.0.0.devel" id="1204545320021" licenseType="Evaluation Devel" modified="Fri Mar 12 12:47:52 CET 2010" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.50">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="customers" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="customers_count" type="integer">
+<attr name="description"><![CDATA[This field contains number of customers, that are listed in 'customers' field.]]></attr>
+</Field>
+<Field name="customers" type="string"/>
+<Field name="EmployeeID" type="integer"/>
+</Record>
+</Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="333" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Denormalizer Component (Java)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="567" x="21" y="112">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="333" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Denormalizer Component (Java)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="567" x="31" y="122">
 <attr name="text"><![CDATA[
 Denormalizer processes groups of data records with the same value of Key. 
 
@@ -15,11 +24,11 @@ In this graph, all customers for each employee are concatenated using white spac
 
 After processing every group of records, before processing the next key value, the clean() function is used to return the settings to the initial state.
 
-Transformation is defined in Java directly in the graph. It can be seen in the Source code and is compiled on runtime.]]></attr>
+Transformation is defined in Java directly in the graph. It can be seen in the Source code and is compiled at runtime.]]></attr>
 </Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="25" guiName="Denormalize" guiWidth="50" guiX="366" guiY="17" id="DENORMALIZE" key="EmployeeID" order="Asc" type="DENORMALIZER">
+<Node enabled="enabled" guiHeight="25" guiName="Denormalizer" guiWidth="50" guiX="366" guiY="17" id="DENORMALIZE" key="EmployeeID" order="Asc" type="DENORMALIZER">
 <attr name="denormalize"><![CDATA[
 import org.jetel.component.denormalize.DataRecordDenormalize;
 import org.jetel.data.*;
@@ -40,8 +49,8 @@ public class DenormalizeTestInline extends DataRecordDenormalize {
 	}
 	public int transform(DataRecord outRecord) {
 		outRecord.getField("EmployeeID").setValue(employeeID);
-		outRecord.getField("CustomerID").setValue(customerID);
-		outRecord.getField("OrderID").setValue(recNum);
+		outRecord.getField("customers").setValue(customerID);
+		outRecord.getField("customers_count").setValue(recNum);
 		return 0;
 	}
 
@@ -52,13 +61,13 @@ public class DenormalizeTestInline extends DataRecordDenormalize {
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="194" guiY="17" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="17" id="INPUT1" type="DATA_READER">
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort (EmployeeID)" guiWidth="0" guiX="194" guiY="17" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="Orders Sorted" guiWidth="50" guiX="20" guiY="17" id="INPUT1" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/denormalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="542" guiY="16" id="WRITER" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalized.out" guiHeight="25" guiName="Customers Grouped for Each Employee" guiWidth="50" guiX="542" guiY="17" id="WRITER" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITER:0"/>
 <Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DENORMALIZE:0"/>
-<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
 </Phase>
 </Graph>

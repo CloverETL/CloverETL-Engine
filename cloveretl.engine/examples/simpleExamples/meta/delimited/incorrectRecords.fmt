@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Record fieldDelimiter=";" name="incorrectRecords" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Record fieldDelimiter=";" name="incorrectRecords" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field name="recNo" nullable="true" shift="0" type="integer"/>
 <Field name="fieldNo" nullable="true" shift="0" type="integer"/>
-<Field name="offendindValue" nullable="true" shift="0" type="string"/>
+<Field name="offendingValue" nullable="true" shift="0" type="string"/>
 <Field name="errmes" nullable="true" shift="0" type="string"/>
 </Record>

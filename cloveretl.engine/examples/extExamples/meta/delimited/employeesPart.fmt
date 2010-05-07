@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="employeesPart" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="EmployeeID" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="LastName" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="FirstName" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="Title" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" format="dd/MM/yyyy" name="BirthDate" nullable="true" shift="0" size="0" type="date"/>
+<Field eofAsDelimiter="false" format="dd/MM/yyyy" name="HireDate" nullable="true" shift="0" size="0" type="date"/>
+</Record>

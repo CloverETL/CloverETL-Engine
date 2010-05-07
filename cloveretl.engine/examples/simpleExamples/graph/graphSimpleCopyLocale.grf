@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file.&#10;Output metadata is the same as input except that for BirthDate and HireDate, locale&#10;property is defined. It allows to specify language or language.Country locale&#10;which is used when formatting output.&#10;In this example, date info on input is expected to be in dd/MM/yyyy format, wherease&#10;on output it should follow US/UK standard -&gt; (usually defined as MM/dd/YYYY)." guiVersion="2.9.1" id="1196683146888" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 16:11:38 CET 2010" modifiedBy="cloveruser" name="Testing Simple Copy" revision="1.19">
+<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file.&#10;Output metadata is the same as input except that for BirthDate and HireDate, locale&#10;property is defined. It allows to specify language or language.Country locale&#10;which is used when formatting output.&#10;In this example, date info on input is expected to be in dd/MM/yyyy format, wherease&#10;on output it should follow US/UK standard -&gt; (usually defined as MM/dd/YYYY)." guiVersion="0.0.0.devel" id="1196683146888" licenseType="Evaluation Devel" modified="Fri Mar 12 13:06:20 CET 2010" modifiedBy="cloveruser" name="Testing Simple Copy" revision="1.23">
 <Global>
 <Metadata id="InMetadata" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="Employees" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -54,11 +54,13 @@ In this example, date data fields of the input have specified format (dd/MM/yyyy
 
 Also delimiters can be changed, etc.]]></attr>
 </Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="133" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Employees &amp;&amp; OutMetadata" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="213" x="360" y="-36"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="133" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Employees &amp;&amp; InMetadata" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="193" x="-12" y="-36"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="25" guiName="BROADCAST" guiWidth="50" guiX="195" guiY="20" id="BROADCAST" type="SIMPLE_COPY"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees_locale.dat" guiHeight="25" guiName="OUTPUT1" guiWidth="50" guiX="370" guiY="20" id="OUTPUT1" type="DATA_WRITER">
+<Node enabled="enabled" guiHeight="25" guiName="BROADCAST" guiWidth="50" guiX="204" guiY="24" id="BROADCAST" type="SIMPLE_COPY"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="0" guiY="24" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees_locale.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="408" guiY="24" id="OUTPUT1" type="DATA_WRITER">
 <attr name="dataPolicy"><![CDATA[Strict]]></attr>
 </Node>
 <Edge debugMode="false" fromNode="BROADCAST:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="OutMetadata" outPort="Port 0 (out)" toNode="OUTPUT1:0"/>

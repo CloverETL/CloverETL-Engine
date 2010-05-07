@@ -1,13 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed Nov 14 08:50:54 CET 2007" description="This graph shows how to unload data from database with direct mapping usage. &#10;Mapping between clover and database fields is set directly in sql query." guiVersion="1.9" id="1204559175469" licenseType="Commercial License javlinconsulting" modified="Mon Mar 03 16:46:15 CET 2008" name="graphDBUnload2grf" revision="1.6">
+<Graph author="cloveruser" created="Wed Nov 14 08:50:54 CET 2007" description="This graph shows how to unload data from database with direct mapping usage. &#10;Mapping between clover and database fields is set directly in sql query." guiVersion="0.0.0.devel" id="1204559175469" licenseType="Evaluation Devel" modified="Thu Apr 15 12:04:54 CEST 2010" modifiedBy="avackova" name="graphDBUnload2grf" revision="1.35">
 <Global>
-<Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
-<Connection dbConfig="${CONN_DIR}/postgre.cfg" id="Connection1" type="JDBC"/>
+<Metadata fileURL="${META_DIR}/delimited/employeesPart.fmt" id="Metadata0"/>
+<Connection dbConfig="${CONN_DIR}/${connection}" id="Connection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="217" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the DBInputTable Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="417" x="23" y="158">
+<attr name="text"><![CDATA[
+DBInputTable reads data records using the specified query. 
+
+The component gets the values from the specified db fields and maps them onto the fields of the edge metadata as these have different names and they are also only a part of all db table fields. 
+
+Metadata of the edge can be extracted from a table and can include only part of all database fields.
+
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="21" y="-29">
+<attr name="text"><![CDATA[This example uses Derby database located in ${DATAIN_DIR} directory. To run this graph successfully PROJECT parameter needs to be set to absolute path to ExtExamples project.]]></attr>
+</Note>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection1" enabled="enabled" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="30" guiY="30" id="INPUT" sqlQuery="select $EmployeeID:=employee_id, $LastName:=last_name, $FirstName:=first_name, $Title:=position_title, $BirthDate:=birth_date, $HireDate:=hire_date from employee" type="DB_INPUT_TABLE"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/employees.txt" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="205" guiY="30" id="OUTPUT" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="25" guiName="Employees" guiWidth="50" guiX="24" guiY="76" id="INPUT" sqlQuery="select $EmployeeID:=employee_id, $LastName:=last_name, $FirstName:=first_name, $Title:=position_title, $BirthDate:=birth_date, $HireDate:=hire_date from employee" type="DB_INPUT_TABLE"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees.txt" guiHeight="25" guiName="Employees" guiWidth="50" guiX="313" guiY="76" id="OUTPUT" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

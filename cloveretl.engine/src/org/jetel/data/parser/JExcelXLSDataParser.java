@@ -24,7 +24,10 @@ import java.nio.channels.ReadableByteChannel;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 
 import jxl.BooleanCell;
 import jxl.Cell;
@@ -61,6 +64,12 @@ public class JExcelXLSDataParser extends XLSParser {
 	private Workbook wb;
 	private Sheet sheet;
 	private String charset = null;
+	
+	//calendars used by a method changeTimeShiftToLocal
+	//declared and initiated here because of speed (the method is called for each
+	//field containing date)
+	private Calendar utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));    
+	private Calendar localCalendar = Calendar.getInstance(TimeZone.getDefault());
 	
 	/**
 	 * Default constructor
@@ -260,6 +269,40 @@ public class JExcelXLSDataParser extends XLSParser {
 		}
 	}
 
+	
+	/** 
+	 * A method that shifts the date to look under the current time zone settings the same
+	 * as it looks under settings of UTC. The method is used to shift the time returned by Excel parser,
+	 * because it is wrongly assumed to be in UTC, while the user expects it to be interpreted according to
+	 * his or her current time settings.
+	 *  
+	 * @param date
+	 * 		an original date
+	 * @return
+	 * 		a date which is in the current time zone (according to system settings)
+	 *      with the current daylight-saving settings (according to the current time),
+	 *      transcribed by the same string as the original date in UTC.
+	 * 
+	 *    	Example: If the current time zone CET (with daylight saving off),
+	 *      and the date is 03-03-2010 10:00:00.234 UTC, then
+	 *    	the returned value is 03-03-2010 10:00:00.234 CET (i.e. 03-03-2010 09:00:00.234 UTC) 
+	 */
+	private Date changeTimeShiftToLocal(Date date) {
+		utcCalendar.setTime(date);
+		localCalendar.set(Calendar.ERA, utcCalendar.get(Calendar.ERA));
+		localCalendar.set(utcCalendar.get(Calendar.YEAR),
+				          utcCalendar.get(Calendar.MONTH),
+				          utcCalendar.get(Calendar.DAY_OF_MONTH),
+				          utcCalendar.get(Calendar.HOUR_OF_DAY),
+				          utcCalendar.get(Calendar.MINUTE),
+				          utcCalendar.get(Calendar.SECOND));
+		localCalendar.set(Calendar.MILLISECOND, utcCalendar.get(Calendar.MILLISECOND));
+		
+		return localCalendar.getTime();
+	}
+
+
+	
 	@Override
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
 		if (currentRow>=lastRow) return null;
@@ -287,7 +330,9 @@ public class JExcelXLSDataParser extends XLSParser {
 				switch (type) {
 				case DataFieldMetadata.DATE_FIELD:
 				case DataFieldMetadata.DATETIME_FIELD:
-					record.getField(cloverFieldIndex).setValue(((DateCell) cell).getDate());
+					Date dateWronglyInUTC = ((DateCell) cell).getDate();
+					Date dateInLocalTimeZone = this.changeTimeShiftToLocal(dateWronglyInUTC);
+					record.getField(cloverFieldIndex).setValue(dateInLocalTimeZone);
 					break;
 				case DataFieldMetadata.BYTE_FIELD:
 				case DataFieldMetadata.STRING_FIELD:

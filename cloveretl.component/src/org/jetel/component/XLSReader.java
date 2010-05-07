@@ -19,6 +19,7 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
 import java.util.Iterator;
 
@@ -433,6 +434,12 @@ public class XLSReader extends Node {
 
         if (!checkInputPorts(status, 0, 1) || !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
             return status;
+        }
+        
+        if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+            		"Charset "+charset+" not supported!", 
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
 
         checkMetadata(status, getOutMetadata());

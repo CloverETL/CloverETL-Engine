@@ -169,17 +169,14 @@ public class XPathContext {
 			initTree(this);
 			nextXPathContext = null;
 			createOrderedPortList(orderedPortList);
-			XPathContext portXpathContext;
-			for(Iterator<XPathContext> it = orderedPortList.iterator(); it.hasNext();) {
-				initParentContext4Keys(portXpathContext = it.next());
+			for (XPathContext portXpathContext : orderedPortList) {
+				initParentContext4Keys(portXpathContext);
 				initSequences(portXpathContext);
 			}
 			init = false;
 		}
 		DataRecord tmpRecord = null;
-		XPathContext portContext;
-		for (Iterator<XPathContext> it=orderedPortList.iterator(); it.hasNext(); ) {
-			portContext = it.next();
+		for (XPathContext portContext : orderedPortList) {
 			if (!portContext.recordLoadedLast && portContext.record != null) 
 				portContext.record.reset(); // test if null
 			
@@ -188,14 +185,20 @@ public class XPathContext {
 		    } catch(BadDataFormatException bdfe) {
 		    	this.bdfe = bdfe;
 		    }
-			if (tmpRecord != null) {
+		    // TODO: it is not documented (yet) when tmpRecord can be null, it may be on of:
+		       //  a) error in parsing
+		       //  b) some inner field set to null (imho, should be NPE instead and debugged for all invalid states)
+		       //  c) ?something else?
+		    if (tmpRecord != null) {
 				portContext.findAndPropagatePort();
 				portContext.prepareNextValue(portContext);
 				break;
 			} else if (portContext.parentContext == null) {
+				// error occured or "?" and we're top node
 				portContext.prepareNextValue(portContext);
 				if (portContext.lastPortNode) break;
-				it = orderedPortList.iterator();
+//				it = orderedPortList.iterator(); 
+				// TODO: who knows, what was the intention of reseting iterator to process next record in this case
 			}
 		}
 		if (lastPortNode && parentContext == null) lastNode = true;

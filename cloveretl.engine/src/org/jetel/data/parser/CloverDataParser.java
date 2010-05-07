@@ -149,12 +149,14 @@ public class CloverDataParser implements Parser {
                 	
                 //read and check header of clover binary data format to check out the compatibility issues
                 checkCompatibilityHeader(recordFile);
-                
+                boolean idxSet = false;
                 if (indexSkipSourceRows > 0 || index > 0 || readIdx) {//reading not all records --> find index in record file
                 	try {
     					noDataAvailable = !setStartIndex(fileName);
+    					idxSet = true;
     				} catch (Exception e) {
-    					throw new ComponentNotReadyException("Can't set starting index", e);
+    					// error in setting start index. We will do it later, using slower way.
+    					idxSet = false;
     				}
                 }
                 //skip idx bytes from record file
@@ -166,6 +168,18 @@ public class CloverDataParser implements Parser {
                     i++;
                 }while (i*Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE < idx);
                 recordBuffer.position((int)idx%Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+                if(index>0 && !idxSet) {
+                	//idxSet==false means we need to skip rows now. It is slower than using index to skip, but skipping 
+                	//with index failed.
+					for(int ndx=0; ndx<index/LONG_SIZE_BYTES;ndx++) {
+						try {
+							this.getNext();
+						} catch (JetelException e1) {
+			                throw new ComponentNotReadyException(e1);
+						}
+					}
+                	
+                }
             } catch (IOException ex) {
                 throw new ComponentNotReadyException(ex);
             }

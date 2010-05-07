@@ -734,7 +734,6 @@ public class DBConnection extends GraphElement implements IConnection {
 		}
         statement = connection.createStatement();
         resultSet = statement.executeQuery(sqlQuery);
-        
         return SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), getJdbcSpecific());
     }
 

@@ -3,39 +3,18 @@
 <TestScenario ident="ext-examples" description="Engine extended examples" useJMX="true">
 
 	<DBConnection ident="postgre_foodmart" type="POSTGRE" user="test" password="test" URL="jdbc:postgresql://koule/foodmart" driver="org.postgresql.Driver" />
+	<DBConnection ident="derby" type="DERBY" user="app" password="derby" 
+		URL="jdbc:derby://localhost:1527/${PROJECT_DIR}/data-in/derby.db;" 
+		driver="org.apache.derby.jdbc.ClientDriver" />
 
-	<FunctionalTest ident="ApproximativeJoin" graphFile="graph/graphApproximativeJoin.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-	 	  <FlatFile outputFile="data-out/conformingKeyGenerator.txt" supposedFile="supposed-out/conformingKeyGenerator.AproximativeJoin.txt"/>	                                                                 
-	 	  <FlatFile outputFile="data-out/conformingMetaphone.txt" supposedFile="supposed-out/conformingMetaphone.AproximativeJoin.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/conformingNYSIIS.txt" supposedFile="supposed-out/conformingNYSIIS.AproximativeJoin.txt"/>	                                                                      
-	 	  <FlatFile outputFile="data-out/conformingSoundex.txt" supposedFile="supposed-out/conformingSoundex.AproximativeJoin.txt"/>	                                                                 
-	 	  <FlatFile outputFile="data-out/suspicoiusKeyGenerator.txt" supposedFile="supposed-out/suspicoiusKeyGenerator.AproximativeJoin.txt"/>                                                                    
-	 	  <FlatFile outputFile="data-out/suspicoiusMetaphone.txt" supposedFile="supposed-out/suspicoiusMetaphone.AproximativeJoin.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/suspicoiusNYSIIS.txt" supposedFile="supposed-out/suspicoiusNYSIIS.AproximativeJoin.txt"/>	                                                                     
-	 	  <FlatFile outputFile="data-out/suspicoiusSoundex.txt" supposedFile="supposed-out/suspicoiusSoundex.AproximativeJoin.txt"/>	                                                                  
-	 	  <FlatFile outputFile="data-out/customersSoundex.out" supposedFile="supposed-out/empty.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/customersMetaphone.out" supposedFile="supposed-out/empty.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/customersKeyGenerator.out" supposedFile="supposed-out/empty.txt"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/customersNYSIIS.out" supposedFile="supposed-out/empty.txt"/>	                                                                  
-	 	  <FlatFile outputFile="data-out/employeeKeyGenerator.out" supposedFile="supposed-out/employeeKeyGenerator.AproximativeJoin.out"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/employeeMetaphone.out" supposedFile="supposed-out/employeeMetaphone.AproximativeJoin.out"/>	                                                                    
-	 	  <FlatFile outputFile="data-out/employeeNYSIIS.out" supposedFile="supposed-out/employeeNYSIIS.AproximativeJoin.out"/>	                                                                        
-	 	  <FlatFile outputFile="data-out/employeeSoundex.out" supposedFile="supposed-out/employeeSoundex.AproximativeJoin.out"/>	                                                               
-	     <DeleteFile file="seq/id0.seq"/>
-	     <DeleteFile file="seq/id1.seq"/>
-	     <DeleteFile file="seq/id2.seq"/>
-	     <DeleteFile file="seq/id3.seq"/>
-	</FunctionalTest>
-
-	<FunctionalTest ident="CheckForeignKey" graphFile="graph/graphCheckForeignKey.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-	 	  <FlatFile outputFile="data-out/wrongKey.out" supposedFile="supposed-out/wrongKey.CheckForeignKey.out"/>	                                                                    
+    <FunctionalTest ident="DBExecuteDerby" graphFile="graph/graphDBExecuteDerby.grf" absoluteProjectPath="true">
+        <FlatFile outputFile="data-out/cities.txt" supposedFile="supposed-out/cities.DBExecutePostgre.txt"/>	                                                                    
+        <DeleteFile file="seq/seq.txt"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBExecuteMsSql" graphFile="graph/graphDBExecuteMsSql.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-	 	  <FlatFile outputFile="data-out/mssql.out" supposedFile="supposed-out/mssql.DBExecuteMsSql.out"/>	                                                                    
+        <FlatFile outputFile="data-out/mssql.out" supposedFile="supposed-out/mssql.DBExecuteMsSql.out"/>	                                                                    
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBExecuteMySql" graphFile="graph/graphDBExecuteMySql.grf">
@@ -46,6 +25,8 @@
 
 	<FunctionalTest ident="DBExecuteOracle" graphFile="graph/graphDBExecuteOracle.grf">
         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+        <Property name="LIB_DIR" value="../../../cloveretl.test.scenarios/lib" />
+
 	 	  <FlatFile outputFile="data-out/countries.txt" supposedFile="supposed-out/countries.DBExecuteOracle.txt"/>	                                                                    
 	</FunctionalTest>
 
@@ -60,73 +41,68 @@
 	 	  <FlatFile outputFile="data-out/sybase.out" supposedFile="supposed-out/sybase.DBExecuteSybase.out"/>	                                                                    
 	</FunctionalTest>
 
-	<FunctionalTest ident="DBJoin" graphFile="graph/graphDBJoin.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	<FunctionalTest ident="DBJoin" graphFile="graph/graphDBJoin.grf" absoluteProjectPath="true">
 	 	  <FlatFile outputFile="data-out/joined.txt" supposedFile="supposed-out/joined.DBJoin.txt"/>	                                                                    
 	</FunctionalTest>
 
-	<FunctionalTest ident="DBLoad" graphFile="graph/graphDBLoad.grf">
-         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	<FunctionalTest ident="DBLoad" graphFile="graph/graphDBLoad.grf" absoluteProjectPath="true">
 	 	  <FlatFile outputFile="data-out/rejected.txt" supposedFile="supposed-out/rejected.DBLoad.txt"/>	                                                                    
 	</FunctionalTest>
 
-	<FunctionalTest ident="DBLoad5" graphFile="graph/graphDBLoad5.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_names" outputTableConnection="postgre_foodmart" supposedXMLFile="supposed-out/employee.DBLoad5.xml"/>
+	<FunctionalTest ident="DBLoad5" graphFile="graph/graphDBLoad5.grf" absoluteProjectPath="true">
+      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_names" outputTableConnection="derby" supposedXMLFile="supposed-out/employee.DBLoad5.xml"/>
 <!--	      <DBTableToTable
 	      	 outputTable="employee_tmp" 
 	      	 outputTableConnection="postgre_foodmart"
 	      	 supposedTable="employee_names"
 	      	 supposedTableConnection="postgre_foodmart"
 	      /> -->
-      	<DeleteTable connection="postgre_foodmart" name="employee_tmp"/>
+      	<DeleteTable connection="derby" name="employee_tmp"/>
 	</FunctionalTest>
 
-	<FunctionalTest ident="DBLoad6" graphFile="graph/graphDBLoad6.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_names_dates" outputTableConnection="postgre_foodmart" supposedXMLFile="supposed-out/employee.DBLoad6.xml"/>
+	<FunctionalTest ident="DBLoad6" graphFile="graph/graphDBLoad6.grf" absoluteProjectPath="true">
+      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_names_dates" outputTableConnection="derby" supposedXMLFile="supposed-out/employee.DBLoad6.xml"/>
 <!--	      <DBTableToTable
 	      	 outputTable="employee_tmp" 
 	      	 outputTableConnection="postgre_foodmart"
 	      	 supposedTable="employee_names_dates"
 	      	 supposedTableConnection="postgre_foodmart"
 	      />--> 
-      	<DeleteTable connection="postgre_foodmart" name="employee_tmp"/>
+      	<DeleteTable connection="derby" name="employee_tmp"/>
 	</FunctionalTest>
 
-	<FunctionalTest ident="DBLookup" graphFile="graph/graphDBLookup.grf">
-         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-	 	  <FlatFile outputFile="data-out/joined_data.out" supposedFile="supposed-out/joined_data.DBLookup.out"/>	                                                                    
+	<FunctionalTest ident="DBLookup" graphFile="graph/graphDBLookup.grf" absoluteProjectPath="true">
+ 	 	  <FlatFile outputFile="data-out/joined_data.out" supposedFile="supposed-out/joined_data.DBLookup.out"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/log.err" supposedFile="supposed-out/log.DBLookup.err"/>	                                                                    
 	</FunctionalTest>
 
-	<FunctionalTest ident="DBRead" graphFile="graph/graphDBRead.grf">
-         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	<FunctionalTest ident="DBRead" graphFile="graph/graphDBRead.grf" absoluteProjectPath="true">
 	 	  <FlatFile outputFile="data-out/customer.out" supposedFile="supposed-out/customer.DBRead.out"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/intersection_customer_employee.txt" supposedFile="supposed-out/intersection_customer_employee.DBRead.txt"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/employee.out" supposedFile="supposed-out/employee.DBRead.out"/>	                                                                    
 	</FunctionalTest>
 
-	<FunctionalTest ident="DBUnload" graphFile="graph/graphDBUnload.grf">
-         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	<FunctionalTest ident="DBUnload" graphFile="graph/graphDBUnload.grf" absoluteProjectPath="true">
 	 	  <FlatFile outputFile="data-out/employees.list.out" supposedFile="supposed-out/employees.list.DBUnload.out"/>	                                                                    
 	     <DeleteFile file="dbInc.txt"/>
 	</FunctionalTest>
 
-	<FunctionalTest ident="DBUnload2" graphFile="graph/graphDBUnload2.grf">
-         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	<FunctionalTest ident="DBUnload2" graphFile="graph/graphDBUnload2.grf" absoluteProjectPath="true">
 	 	  <FlatFile outputFile="data-out/employees.txt" supposedFile="supposed-out/employees.DBUnload2.txt"/>	                                                                    
 	</FunctionalTest>
 
-	<FunctionalTest ident="DBUnloadParametrized" graphFile="graph/graphDBUnloadParametrized.grf">
-         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	<FunctionalTest ident="DBUnloadParametrized" graphFile="graph/graphDBUnloadParametrized.grf" absoluteProjectPath="true">
  	  <XlsFile outputFile="data-out/employees.xls" supposedFile="supposed-out/employees.DBUnloadParametrized.xls"/>	          
 	     <DeleteFile file="data-out/employees.xls"/>
 	</FunctionalTest>
 
-	<FunctionalTest ident="DBUnloadUniversal" graphFile="graph/graphDBUnloadUniversal.grf">
-         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-	 	  <FlatFile outputFile="data-out/employee.output" supposedFile="supposed-out/employee.DBUnloadUniversal.output"/>	                                                                    
+	<FunctionalTest ident="DBUnloadUniversal" graphFile="graph/graphDBUnloadUniversal.grf" absoluteProjectPath="true">
+ 	 	  <FlatFile outputFile="data-out/employee.output" supposedFile="supposed-out/employee.DBUnloadUniversal.output"/>	                                                                    
+	</FunctionalTest>
+
+	<FunctionalTest ident="LDAPReaderWriter" graphFile="graph/graphLdapReaderWriter.grf">
+          <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+	 	  <FlatFile outputFile="data-out/persons.txt" supposedFile="data-out/ldap_persons.txt"/>	                                                                 
 	</FunctionalTest>
 
 	<FunctionalTest ident="JMS" graphFile="graph/graphJms.grf">
@@ -140,14 +116,8 @@
 	 	  <FlatFile outputFile="data-out/orders.out" supposedFile="supposed-out/orders.JmsSingleXmlField.out"/>	                                                                    
 	</FunctionalTest>
 
-	<FunctionalTest ident="LDAPReaderWriter" graphFile="graph/graphLdapReaderWriter.grf">
-          <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-	 	  <FlatFile outputFile="data-out/persons.txt" supposedFile="data-out/ldap_persons.txt"/>	                                                                 
-	</FunctionalTest>
-
-	<FunctionalTest ident="LookupJoin" graphFile="graph/graphLookupJoin.grf">
-         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-	 	  <FlatFile outputFile="data-out/joined_data.out" supposedFile="supposed-out/joined_data.DBLookup.out"/>	                                                                    
+	<FunctionalTest ident="LookupJoin" graphFile="graph/graphLookupJoin.grf" absoluteProjectPath="true">
+	 	  <FlatFile outputFile="data-out/joined_data.out" supposedFile="supposed-out/joined_data.LookupJoin.out"/>	                                                                    
 	</FunctionalTest>
 
 </TestScenario>

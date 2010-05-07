@@ -21,6 +21,7 @@
 
 package org.jetel.connection.jdbc.specific.conn;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -77,7 +78,8 @@ public class SybaseConnection extends DefaultConnection {
 				connection.setAutoCommit(false);
 				connection.setReadOnly(true);
 				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
-			} catch (SQLException ex) {
+				connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+			} catch (Exception ex) {
 				logger.warn("Optimizing connection failed: " + ex.getMessage());
 				logger.warn("Try to use another jdbc specific");
 			} 
@@ -88,20 +90,22 @@ public class SybaseConnection extends DefaultConnection {
 				connection.setAutoCommit(false);
 				connection.setReadOnly(false);
 				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
-			} catch (SQLException ex) {
+				connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+			} catch (Exception ex) {
 				logger.warn("Optimizing connection failed: " + ex.getMessage());
 				logger.warn("Try to use another jdbc specific");
-			} 
+			}
 			break;
 		case TRANSACTION:
 			try {
 				connection.setAutoCommit(true);
 				connection.setReadOnly(false);
 				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
-			} catch (SQLException ex) {
+				connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+			} catch (Exception ex) {
 				logger.warn("Optimizing connection failed: " + ex.getMessage());
 				logger.warn("Try to use another jdbc specific");
-			} 
+			}
 			break;
 		}
 	}

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of NORMALIZER component with normalization specified by inline TransformLang source." guiVersion="2.9.1" id="1204549060147" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 14:03:02 CET 2010" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.32">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of NORMALIZER component with normalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204549060147" licenseType="Evaluation Devel" modified="Fri Mar 12 12:47:27 CET 2010" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.29">
 <Global>
-<Metadata id="Metadata0">
-<Record fieldDelimiter="|" name="customers" recordDelimiter="\n" type="delimited">
-<Field name="cust_no" type="integer"/>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="customers" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="customers_count" type="integer"/>
 <Field name="customers" type="string"/>
 <Field name="EmployeeID" type="integer"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="338" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Normalizer Component (CTL)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="472" x="27" y="133">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="338" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Normalizer Component (CTL)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="472" x="37" y="143">
 <attr name="text"><![CDATA[
 Graph demonstrates the use of Normalizer. Received records contain a field named "customers". Its values are strings consisting of substrings, white spaces and hyphens.
 
@@ -26,15 +26,15 @@ Transformation is written in Clover Transformation Language (CTL) directly in th
 </Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="22" guiY="30" id="INPUT2" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="25" guiName="Customers Grouped for Each Employee" guiWidth="50" guiX="22" guiY="30" id="INPUT2" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Normalizer" guiWidth="0" guiX="197" guiY="30" id="NORMALIZER0" type="NORMALIZER">
 <attr name="normalize"><![CDATA[//#TL
+list customers;
 // This transformation defines the way in which a single input record is normalized
 // into multiple output records.
 
-list customers;
 
 // This function is called for all input records.
 // It parses each single input record and returns multiple output records
@@ -70,8 +70,8 @@ function clean() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="372" guiY="30" id="WRITER1" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="NORMALIZER0:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="25" guiName="Customers Normalized" guiWidth="50" guiX="372" guiY="30" id="WRITER1" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="NORMALIZER0:0"/>
 <Edge debugMode="true" fromNode="NORMALIZER0:0" guiBendpoints="" id="OUTEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER1:0"/>
 </Phase>
 </Graph>

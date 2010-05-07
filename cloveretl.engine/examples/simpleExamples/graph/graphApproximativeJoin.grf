@@ -1,0 +1,648 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph illustrates usage of Approximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator or Reformat creates it) &#10;and be sorted by this key." guiVersion="0.0.0.devel" id="1200561503662" licenseType="Evaluation Devel" modified="Mon Mar 22 14:03:17 CET 2010" modifiedBy="cloveruser" name="graphFixedLengthData" revision="1.174">
+<Global>
+<Metadata id="Metadata4">
+<Record name="conforming_out" recordDelimiter="\n" recordSize="71" type="fixed">
+<Field name="no" nullable="true" shift="0" size="3" type="integer"/>
+<Field name="lname" nullable="true" shift="0" size="15" type="string"/>
+<Field name="fname" nullable="true" shift="0" size="15" type="string"/>
+<Field name="last_name" nullable="true" shift="0" size="15" type="string"/>
+<Field name="first_name" nullable="true" shift="0" size="15" type="string"/>
+<Field name="_total_conformity_" nullable="true" shift="0" size="8" type="number"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata6">
+<Record name="customer" recordDelimiter="\n" recordSize="212" type="fixed">
+<Field name="customer_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="account_num" nullable="true" shift="0" size="11" type="long"/>
+<Field name="lname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="fname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="mi" nullable="true" shift="0" size="4" type="string"/>
+<Field name="address1" nullable="true" shift="0" size="30" type="string"/>
+<Field name="city" nullable="true" shift="0" size="7" type="string"/>
+<Field name="state_province" nullable="true" shift="0" size="6" type="string"/>
+<Field name="postal_code" nullable="true" shift="0" size="5" type="string"/>
+<Field name="country" nullable="true" shift="0" size="5" type="string"/>
+<Field name="customer_region_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="phone1" nullable="true" shift="0" size="12" type="string"/>
+<Field name="phone2" nullable="true" shift="0" size="12" type="string"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="birthdate" nullable="false" shift="0" size="15" type="date"/>
+<Field name="marital_status" nullable="true" shift="0" size="1" type="string"/>
+<Field name="yearly_income" nullable="true" shift="0" size="13" type="string"/>
+<Field name="gender" nullable="true" shift="0" size="1" type="string"/>
+<Field name="total_children" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="num_children_at_home" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="education" nullable="true" shift="0" size="15" type="string"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="date_accnt_opened" nullable="true" shift="0" size="15" type="date"/>
+<Field name="member_card" nullable="true" shift="0" size="8" type="string"/>
+<Field name="occupation" nullable="true" shift="0" size="20" type="string"/>
+<Field name="houseowner" nullable="true" shift="0" size="1" type="string"/>
+<Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record name="customer" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="212" type="fixed">
+<Field name="customer_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="account_num" nullable="true" shift="0" size="11" type="long"/>
+<Field name="lname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="fname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="mi" nullable="true" shift="0" size="4" type="string"/>
+<Field name="address1" nullable="true" shift="0" size="30" type="string"/>
+<Field name="city" nullable="true" shift="0" size="7" type="string"/>
+<Field name="state_province" nullable="true" shift="0" size="6" type="string"/>
+<Field name="postal_code" nullable="true" shift="0" size="5" type="string"/>
+<Field name="country" nullable="true" shift="0" size="5" type="string"/>
+<Field name="customer_region_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="phone1" nullable="true" shift="0" size="12" type="string"/>
+<Field name="phone2" nullable="true" shift="0" size="12" type="string"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="birthdate" nullable="false" shift="0" size="15" type="date"/>
+<Field name="marital_status" nullable="true" shift="0" size="1" type="string"/>
+<Field name="yearly_income" nullable="true" shift="0" size="13" type="string"/>
+<Field name="gender" nullable="true" shift="0" size="1" type="string"/>
+<Field name="total_children" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="num_children_at_home" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="education" nullable="true" shift="0" size="15" type="string"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="date_accnt_opened" nullable="true" shift="0" size="15" type="date"/>
+<Field name="member_card" nullable="true" shift="0" size="8" type="string"/>
+<Field name="occupation" nullable="true" shift="0" size="20" type="string"/>
+<Field name="houseowner" nullable="true" shift="0" size="1" type="string"/>
+<Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2">
+<Record name="customer_with_key" recordSize="239" type="fixed">
+<Field name="customer_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="account_num" nullable="true" shift="0" size="11" type="long"/>
+<Field name="lname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="fname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="mi" nullable="true" shift="0" size="4" type="string"/>
+<Field name="address1" nullable="true" shift="0" size="30" type="string"/>
+<Field name="city" nullable="true" shift="0" size="6" type="string"/>
+<Field name="state_province" nullable="true" shift="0" size="6" type="string"/>
+<Field name="postal_code" nullable="true" shift="0" size="5" type="string"/>
+<Field name="country" nullable="true" shift="0" size="5" type="string"/>
+<Field name="customer_region_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="phone1" nullable="true" shift="0" size="12" type="string"/>
+<Field name="phone2" nullable="true" shift="0" size="12" type="string"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="birthdate" nullable="true" shift="0" size="28" type="date"/>
+<Field name="marital_status" nullable="true" shift="0" size="1" type="string"/>
+<Field name="yearly_income" nullable="true" shift="0" size="13" type="string"/>
+<Field name="gender" nullable="true" shift="0" size="1" type="string"/>
+<Field name="total_children" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="num_children_at_home" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="education" nullable="true" shift="0" size="10" type="string"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="date_accnt_opened" nullable="true" shift="0" size="28" type="date"/>
+<Field name="member_card" nullable="true" shift="0" size="8" type="string"/>
+<Field name="occupation" nullable="true" shift="0" size="20" type="string"/>
+<Field name="houseowner" nullable="true" shift="0" size="1" type="string"/>
+<Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
+<Field locale="en.US" name="key" nullable="true" shift="0" size="7" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="employee" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="employee_id" nullable="true" shift="0" type="integer"/>
+<Field name="full_name" nullable="true" shift="0" type="string"/>
+<Field name="first_name" nullable="true" shift="0" type="string"/>
+<Field name="last_name" nullable="true" shift="0" type="string"/>
+<Field name="position_id" nullable="true" shift="0" type="integer"/>
+<Field name="position_title" nullable="true" shift="0" type="string"/>
+<Field name="store_id" nullable="true" shift="0" type="integer"/>
+<Field name="department_id" nullable="true" shift="0" type="integer"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="birth_date" nullable="true" shift="0" type="date"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="hire_date" nullable="true" shift="0" type="date"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="end_date" nullable="true" shift="0" type="date"/>
+<Field name="salary" nullable="true" shift="0" type="number"/>
+<Field name="supervisor_id" nullable="true" shift="0" type="integer"/>
+<Field name="education_level" nullable="true" shift="0" type="string"/>
+<Field name="marital_status" nullable="true" shift="0" type="string"/>
+<Field name="gender" nullable="true" shift="0" type="string"/>
+<Field name="management_role" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3">
+<Record fieldDelimiter=";" name="employee_with_key" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="employee_id" nullable="true" shift="0" type="integer"/>
+<Field name="full_name" nullable="true" shift="0" type="string"/>
+<Field name="first_name" nullable="true" shift="0" type="string"/>
+<Field name="last_name" nullable="true" shift="0" type="string"/>
+<Field name="position_id" nullable="true" shift="0" type="integer"/>
+<Field name="position_title" nullable="true" shift="0" type="string"/>
+<Field name="store_id" nullable="true" shift="0" type="integer"/>
+<Field name="department_id" nullable="true" shift="0" type="integer"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="birth_date" nullable="true" shift="0" type="date"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="hire_date" nullable="true" shift="0" type="date"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="end_date" nullable="true" shift="0" type="date"/>
+<Field name="salary" nullable="true" shift="0" type="number"/>
+<Field name="supervisor_id" nullable="true" shift="0" type="integer"/>
+<Field name="education_level" nullable="true" shift="0" type="string"/>
+<Field name="marital_status" nullable="true" shift="0" type="string"/>
+<Field name="gender" nullable="true" shift="0" type="string"/>
+<Field name="management_role" nullable="true" shift="0" type="string"/>
+<Field locale="en.US" name="key" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata5">
+<Record fieldDelimiter=";" name="suspicious" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="lname" nullable="true" shift="0" type="string"/>
+<Field name="fname" nullable="true" shift="0" type="string"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="birthdate" nullable="true" shift="0" type="date"/>
+<Field name="gender" nullable="true" shift="0" type="string"/>
+<Field name="last_name" nullable="true" shift="0" type="string"/>
+<Field name="first_name" nullable="true" shift="0" type="string"/>
+<Field format="EEE MMM dd yyyy" locale="en" name="birth_date" nullable="true" shift="0" type="date"/>
+<Field name="gender1" nullable="true" shift="0" type="string"/>
+<Field length="8" name="_lname_conformity_" nullable="true" scale="2" shift="0" type="number"/>
+<Field length="8" name="_fname_conformity_" nullable="true" scale="2" shift="0" type="number"/>
+<Field length="8" name="_total_conformity_" nullable="true" scale="2" shift="0" type="number"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Sequence cached="10" fileURL="${SEQ_DIR}/id1.seq" id="Sequence1" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="10" fileURL="${SEQ_DIR}/id0.seq" id="Sequence0" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="10" fileURL="${SEQ_DIR}/id2.seq" id="Sequence2" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="10" fileURL="${SEQ_DIR}/id3.seq" id="Sequence3" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="510" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the ApproximativeJoin Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="820" x="2" y="-504">
+<attr name="text"><![CDATA[
+This graph shows the use of ApproximativeJoin.
+
+Data with customers information is read from one flat file, data with employees from another one. 
+
+These two data flows are processed in the same way:
+
+- Last name and First name together are used to create an artificial key. 
+
+- Both data flows are subsequently sorted on this key. 
+
+- ApproximativeJoin receives the sorted records. It compares records received from the first input port (master) and the second input port (slave) on this Key (which serves as Matching key). 
+
+- The master and the slave records are compared based on Join key definition. Conformity is calculated and pairs of records are divided into two groups: with greater and less conformity.
+
+- Records with greater conformity are processed as defined in the Transform class attribute and the result is sent to the first output port (Transform or Transform URL can also be used to define the transformation of records with greater conformity). 
+- Records with less conformity are processed as defined in the Transform URL for suspicious and the result is sent to the second output port (Transform for suspicious or Transform class for suspicious can also be used to define the transformation of records with less conformity).
+
+- The master records in which the value of this Matching key does not equal to the value of the same Matching key in slave records can be sent to the optional third output port. 
+- The slave records in which the value of this Matching key does not equal to the value of the same Matching key in master records can be sent to the fourth output port. 
+
+In this graph, four methods are used to generate Matching key:
+- simple concatenation of part of two strings
+- soundex() function
+- metaphone() function
+- NYSIIS() function
+
+
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="304" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Soundex" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="144" x="150" y="327"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="304" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Metaphone" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="146" x="150" y="656"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="304" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="NYSIIS" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="145" x="150" y="977"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="295" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Substrings" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="143" x="146" y="11"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="184" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ApproximativeJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="144" x="437" y="85"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="167" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ApproximativeJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="140" x="442" y="403"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="159" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ApproximativeJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="147" x="440" y="734"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="157" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ApproximativeJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="149" x="439" y="1064"/>
+</Global>
+<Phase number="0">
+<Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="Join on Names" guiWidth="122" guiX="445" guiY="132" id="APROX_MERGE_JOIN1" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
+<attr name="seq_name"><![CDATA[Sequence0]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="0" guiName="employee" guiWidth="0" guiX="12" guiY="216" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousSubstring.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="621" guiY="91" id="DELIMITED_DATA_WRITER_NIO0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeSubstring.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="599" guiY="259" id="DELIMITED_DATA_WRITER_NIO1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="64" guiName="ExtSort on Key" guiWidth="95" guiX="297" guiY="48" id="EXT_SORT0" sortKey="key(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="64" guiName="ExtSort on Key" guiWidth="111" guiX="300" guiY="216" id="EXT_SORT1" sortKey="key(a)" type="EXT_SORT"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="8" guiY="48" id="FIXLEN_DATA_READER_NIO0" type="DATA_READER">
+<attr name="byteMode"><![CDATA[false]]></attr>
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingSubstring.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="599" guiY="10" id="FIXLEN_DATA_WRITER_NIO0" type="DATA_WRITER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersSubstring.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="618" guiY="171" id="FIXLEN_DATA_WRITER_NIO1" type="DATA_WRITER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="152" guiY="48" id="REFORMAT6" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+string LastName;
+string FirstName;
+int LN;
+int FN;
+LN=4;
+FN=3;
+function forLeft() {
+	LastName = nvl($0.lname,"");
+	FirstName = nvl($0.fname,"");
+	while (length(LastName) < LN) {
+		LastName = LastName + " ";
+	}
+	while (length(FirstName) < FN) {
+		FirstName = FirstName + " ";
+	}	
+}
+
+
+// Transforms input record into output record.
+function transform() {
+	forLeft();
+	$0.customer_id := $0.customer_id;
+	$0.account_num := $0.account_num;
+	$0.lname := $0.lname;
+	$0.fname := $0.fname;
+	$0.mi := $0.mi;
+	$0.address1 := $0.address1;
+	$0.city := $0.city;
+	$0.state_province := $0.state_province;
+	$0.postal_code := $0.postal_code;
+	$0.country := $0.country;
+	$0.customer_region_id := $0.customer_region_id;
+	$0.phone1 := $0.phone1;
+	$0.phone2 := $0.phone2;
+	$0.birthdate := $0.birthdate;
+	$0.marital_status := $0.marital_status;
+	$0.yearly_income := $0.yearly_income;
+	$0.gender := $0.gender;
+	$0.total_children := $0.total_children;
+	$0.num_children_at_home := $0.num_children_at_home;
+	$0.education := $0.education;
+	$0.date_accnt_opened := $0.date_accnt_opened;
+	$0.member_card := $0.member_card;
+	$0.occupation := $0.occupation;
+	$0.houseowner := $0.houseowner;
+	$0.num_cars_owned := $0.num_cars_owned;
+	$0.key := left(LastName,LN) + left(FirstName,FN);
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="156" guiY="216" id="REFORMAT7" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+string LastName;
+string FirstName;
+int LN;
+int FN;
+LN=4;
+FN=3;
+function forLeft() {
+	LastName = nvl($0.last_name,"");
+	FirstName = nvl($0.first_name,"");
+	while (length(LastName) < LN) {
+		LastName = LastName + " ";
+	}
+	while (length(FirstName) < FN) {
+		FirstName = FirstName + " ";
+	}
+}
+
+// Transforms input record into output record.
+function transform() {
+	forLeft();
+	$0.employee_id := $0.employee_id;
+	$0.full_name := $0.full_name;
+	$0.first_name := $0.first_name;
+	$0.last_name := $0.last_name;
+	$0.position_id := $0.position_id;
+	$0.position_title := $0.position_title;
+	$0.store_id := $0.store_id;
+	$0.department_id := $0.department_id;
+	$0.birth_date := $0.birth_date;
+	$0.hire_date := $0.hire_date;
+	$0.end_date := $0.end_date;
+	$0.salary := $0.salary;
+	$0.supervisor_id := $0.supervisor_id;
+	$0.education_level := $0.education_level;
+	$0.marital_status := $0.marital_status;
+	$0.gender := $0.gender;
+	$0.management_role := $0.management_role;
+	$0.key := left(LastName,LN) + left(FirstName,FN);
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
+<Edge debugMode="true" fromNode="APROX_MERGE_JOIN1:1" guiBendpoints="" id="Edge18" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" toNode="DELIMITED_DATA_WRITER_NIO0:0"/>
+<Edge fromNode="APROX_MERGE_JOIN1:2" guiBendpoints="" id="Edge19" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" toNode="FIXLEN_DATA_WRITER_NIO1:0"/>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN1:3" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" toNode="DELIMITED_DATA_WRITER_NIO1:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT7:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN1:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge7" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN1:1"/>
+<Edge debugMode="false" fromNode="FIXLEN_DATA_READER_NIO0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT6:0"/>
+<Edge debugMode="false" fromNode="REFORMAT6:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT7:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+</Phase>
+<Phase number="1">
+<Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="Join on Names" guiWidth="122" guiX="447" guiY="450" id="APROX_MERGE_JOIN2" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
+<attr name="seq_name"><![CDATA[Sequence1]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="0" guiName="employee" guiWidth="0" guiX="12" guiY="528" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousSoundex.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="609" guiY="410" id="DELIMITED_DATA_WRITER_NIO2" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeSoundex.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="599" guiY="577" id="DELIMITED_DATA_WRITER_NIO3" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="64" guiName="ExtSort on Key" guiWidth="111" guiX="300" guiY="528" id="EXT_SORT2" sortKey="key(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="64" guiName="Ext ort on Key" guiWidth="95" guiX="299" guiY="366" id="EXT_SORT3" sortKey="key(a)" type="EXT_SORT"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="10" guiY="366" id="FIXLEN_DATA_READER_NIO1" type="DATA_READER">
+<attr name="byteMode"><![CDATA[false]]></attr>
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersSoundex.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="610" guiY="489" id="FIXLEN_DATA_WRITER_NIO2" type="DATA_WRITER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingSoundex.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="599" guiY="328" id="FIXLEN_DATA_WRITER_NIO3" type="DATA_WRITER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="159" guiY="367" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.customer_id := $0.customer_id;
+	$0.account_num := $0.account_num;
+	$0.lname := $0.lname;
+	$0.fname := $0.fname;
+	$0.mi := $0.mi;
+	$0.address1 := $0.address1;
+	$0.city := $0.city;
+	$0.state_province := $0.state_province;
+	$0.postal_code := $0.postal_code;
+	$0.country := $0.country;
+	$0.customer_region_id := $0.customer_region_id;
+	$0.phone1 := $0.phone1;
+	$0.phone2 := $0.phone2;
+	$0.birthdate := $0.birthdate;
+	$0.marital_status := $0.marital_status;
+	$0.yearly_income := $0.yearly_income;
+	$0.gender := $0.gender;
+	$0.total_children := $0.total_children;
+	$0.num_children_at_home := $0.num_children_at_home;
+	$0.education := $0.education;
+	$0.date_accnt_opened := $0.date_accnt_opened;
+	$0.member_card := $0.member_card;
+	$0.occupation := $0.occupation;
+	$0.houseowner := $0.houseowner;
+	$0.num_cars_owned := $0.num_cars_owned;
+	$0.key := soundex($lname + $fname);
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="156" guiY="528" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.employee_id := $0.employee_id;
+	$0.full_name := $0.full_name;
+	$0.first_name := $0.first_name;
+	$0.last_name := $0.last_name;
+	$0.position_id := $0.position_id;
+	$0.position_title := $0.position_title;
+	$0.store_id := $0.store_id;
+	$0.department_id := $0.department_id;
+	$0.birth_date := $0.birth_date;
+	$0.hire_date := $0.hire_date;
+	$0.end_date := $0.end_date;
+	$0.salary := $0.salary;
+	$0.supervisor_id := $0.supervisor_id;
+	$0.education_level := $0.education_level;
+	$0.marital_status := $0.marital_status;
+	$0.gender := $0.gender;
+	$0.management_role := $0.management_role;
+	$0.key := soundex(nvl($last_name,'') + $first_name);
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN2:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" toNode="FIXLEN_DATA_WRITER_NIO3:0"/>
+<Edge fromNode="APROX_MERGE_JOIN2:1" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" toNode="DELIMITED_DATA_WRITER_NIO2:0"/>
+<Edge fromNode="APROX_MERGE_JOIN2:2" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" toNode="FIXLEN_DATA_WRITER_NIO2:0"/>
+<Edge fromNode="APROX_MERGE_JOIN2:3" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" toNode="DELIMITED_DATA_WRITER_NIO3:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge9" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN2:1"/>
+<Edge debugMode="true" fromNode="EXT_SORT3:0" guiBendpoints="" id="Edge8" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN2:0"/>
+<Edge fromNode="FIXLEN_DATA_READER_NIO1:0" guiBendpoints="" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge16" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT3:0"/>
+<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT2:0"/>
+</Phase>
+<Phase number="2">
+<Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="Join on Names" guiWidth="122" guiX="449" guiY="773" id="APROX_MERGE_JOIN3" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
+<attr name="seq_name"><![CDATA[Sequence2]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="0" guiName="employee" guiWidth="0" guiX="12" guiY="852" id="DATA_READER2" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousMetaphone.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="632" guiY="735" id="DELIMITED_DATA_WRITER_NIO4" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeMetaphone.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="610" guiY="900" id="DELIMITED_DATA_WRITER_NIO5" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="64" guiName="ExtSort on Key" guiWidth="111" guiX="300" guiY="852" id="EXT_SORT4" sortKey="key(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="64" guiName="ExtSort on Key" guiWidth="95" guiX="301" guiY="689" id="EXT_SORT5" sortKey="key(a)" type="EXT_SORT"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="12" guiY="689" id="FIXLEN_DATA_READER_NIO2" type="DATA_READER">
+<attr name="byteMode"><![CDATA[false]]></attr>
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersMetaphone.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="633" guiY="811" id="FIXLEN_DATA_WRITER_NIO4" type="DATA_WRITER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingMetaphone.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="603" guiY="651" id="FIXLEN_DATA_WRITER_NIO5" type="DATA_WRITER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="160" guiY="689" id="REFORMAT2" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.customer_id := $0.customer_id;
+	$0.account_num := $0.account_num;
+	$0.lname := $0.lname;
+	$0.fname := $0.fname;
+	$0.mi := $0.mi;
+	$0.address1 := $0.address1;
+	$0.city := $0.city;
+	$0.state_province := $0.state_province;
+	$0.postal_code := $0.postal_code;
+	$0.country := $0.country;
+	$0.customer_region_id := $0.customer_region_id;
+	$0.phone1 := $0.phone1;
+	$0.phone2 := $0.phone2;
+	$0.birthdate := $0.birthdate;
+	$0.marital_status := $0.marital_status;
+	$0.yearly_income := $0.yearly_income;
+	$0.gender := $0.gender;
+	$0.total_children := $0.total_children;
+	$0.num_children_at_home := $0.num_children_at_home;
+	$0.education := $0.education;
+	$0.date_accnt_opened := $0.date_accnt_opened;
+	$0.member_card := $0.member_card;
+	$0.occupation := $0.occupation;
+	$0.houseowner := $0.houseowner;
+	$0.num_cars_owned := $0.num_cars_owned;
+	$0.key := metaphone($lname + $fname);
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="156" guiY="852" id="REFORMAT3" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.employee_id := $0.employee_id;
+	$0.full_name := $0.full_name;
+	$0.first_name := $0.first_name;
+	$0.last_name := $0.last_name;
+	$0.position_id := $0.position_id;
+	$0.position_title := $0.position_title;
+	$0.store_id := $0.store_id;
+	$0.department_id := $0.department_id;
+	$0.birth_date := $0.birth_date;
+	$0.hire_date := $0.hire_date;
+	$0.end_date := $0.end_date;
+	$0.salary := $0.salary;
+	$0.supervisor_id := $0.supervisor_id;
+	$0.education_level := $0.education_level;
+	$0.marital_status := $0.marital_status;
+	$0.gender := $0.gender;
+	$0.management_role := $0.management_role;
+	$0.key := metaphone(nvl($last_name,'') + $first_name);
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN3:0" guiBendpoints="" id="Edge17" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" toNode="FIXLEN_DATA_WRITER_NIO5:0"/>
+<Edge fromNode="APROX_MERGE_JOIN3:1" guiBendpoints="" id="Edge22" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" toNode="DELIMITED_DATA_WRITER_NIO4:0"/>
+<Edge fromNode="APROX_MERGE_JOIN3:2" guiBendpoints="" id="Edge29" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" toNode="FIXLEN_DATA_WRITER_NIO4:0"/>
+<Edge fromNode="APROX_MERGE_JOIN3:3" guiBendpoints="" id="Edge26" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" toNode="DELIMITED_DATA_WRITER_NIO5:0"/>
+<Edge fromNode="DATA_READER2:0" guiBendpoints="" id="Edge23" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT3:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT4:0" guiBendpoints="" id="Edge24" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN3:1"/>
+<Edge debugMode="true" fromNode="EXT_SORT5:0" guiBendpoints="" id="Edge27" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN3:0"/>
+<Edge fromNode="FIXLEN_DATA_READER_NIO2:0" guiBendpoints="" id="Edge25" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT2:0"/>
+<Edge fromNode="REFORMAT2:0" guiBendpoints="" id="Edge28" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT5:0"/>
+<Edge debugMode="false" fromNode="REFORMAT3:0" guiBendpoints="" id="Edge21" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT4:0"/>
+</Phase>
+<Phase number="3">
+<Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="Join on Names" guiWidth="122" guiX="449" guiY="1105" id="APROX_MERGE_JOIN4" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
+<attr name="seq_name"><![CDATA[Sequence3]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="0" guiName="employee" guiWidth="0" guiX="12" guiY="1188" id="DATA_READER3" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousNYSIIS.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="642" guiY="1065" id="DELIMITED_DATA_WRITER_NIO6" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeNYSIIS.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="619" guiY="1229" id="DELIMITED_DATA_WRITER_NIO7" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="64" guiName="ExtSort on Key" guiWidth="95" guiX="301" guiY="1021" id="EXT_SORT6" sortKey="key(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="64" guiName="ExtSort on Key" guiWidth="111" guiX="301" guiY="1188" id="EXT_SORT7" sortKey="key(a)" type="EXT_SORT"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="12" guiY="1021" id="FIXLEN_DATA_READER_NIO3" type="DATA_READER">
+<attr name="byteMode"><![CDATA[false]]></attr>
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingNYSIIS.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="607" guiY="983" id="FIXLEN_DATA_WRITER_NIO6" type="DATA_WRITER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersNYSIIS.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="641" guiY="1146" id="FIXLEN_DATA_WRITER_NIO7" type="DATA_WRITER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="159" guiY="1021" id="REFORMAT4" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.customer_id := $0.customer_id;
+	$0.account_num := $0.account_num;
+	$0.lname := $0.lname;
+	$0.fname := $0.fname;
+	$0.mi := $0.mi;
+	$0.address1 := $0.address1;
+	$0.city := $0.city;
+	$0.state_province := $0.state_province;
+	$0.postal_code := $0.postal_code;
+	$0.country := $0.country;
+	$0.customer_region_id := $0.customer_region_id;
+	$0.phone1 := $0.phone1;
+	$0.phone2 := $0.phone2;
+	$0.birthdate := $0.birthdate;
+	$0.marital_status := $0.marital_status;
+	$0.yearly_income := $0.yearly_income;
+	$0.gender := $0.gender;
+	$0.total_children := $0.total_children;
+	$0.num_children_at_home := $0.num_children_at_home;
+	$0.education := $0.education;
+	$0.date_accnt_opened := $0.date_accnt_opened;
+	$0.member_card := $0.member_card;
+	$0.occupation := $0.occupation;
+	$0.houseowner := $0.houseowner;
+	$0.num_cars_owned := $0.num_cars_owned;
+	$0.key := NYSIIS($lname);
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="156" guiY="1188" id="REFORMAT5" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.employee_id := $0.employee_id;
+	$0.full_name := $0.full_name;
+	$0.first_name := $0.first_name;
+	$0.last_name := $0.last_name;
+	$0.position_id := $0.position_id;
+	$0.position_title := $0.position_title;
+	$0.store_id := $0.store_id;
+	$0.department_id := $0.department_id;
+	$0.birth_date := $0.birth_date;
+	$0.hire_date := $0.hire_date;
+	$0.end_date := $0.end_date;
+	$0.salary := $0.salary;
+	$0.supervisor_id := $0.supervisor_id;
+	$0.education_level := $0.education_level;
+	$0.marital_status := $0.marital_status;
+	$0.gender := $0.gender;
+	$0.management_role := $0.management_role;
+	$0.key := NYSIIS(nvl($last_name,''));
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN4:0" guiBendpoints="" id="Edge36" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" toNode="FIXLEN_DATA_WRITER_NIO6:0"/>
+<Edge fromNode="APROX_MERGE_JOIN4:1" guiBendpoints="" id="Edge37" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" toNode="DELIMITED_DATA_WRITER_NIO6:0"/>
+<Edge fromNode="APROX_MERGE_JOIN4:2" guiBendpoints="" id="Edge33" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" toNode="FIXLEN_DATA_WRITER_NIO7:0"/>
+<Edge fromNode="APROX_MERGE_JOIN4:3" guiBendpoints="" id="Edge31" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" toNode="DELIMITED_DATA_WRITER_NIO7:0"/>
+<Edge fromNode="DATA_READER3:0" guiBendpoints="" id="Edge30" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT5:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT6:0" guiBendpoints="" id="Edge39" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN4:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT7:0" guiBendpoints="" id="Edge32" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN4:1"/>
+<Edge fromNode="FIXLEN_DATA_READER_NIO3:0" guiBendpoints="" id="Edge34" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT4:0"/>
+<Edge fromNode="REFORMAT4:0" guiBendpoints="" id="Edge38" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT6:0"/>
+<Edge debugMode="false" fromNode="REFORMAT5:0" guiBendpoints="" id="Edge35" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT7:0"/>
+</Phase>
+</Graph>

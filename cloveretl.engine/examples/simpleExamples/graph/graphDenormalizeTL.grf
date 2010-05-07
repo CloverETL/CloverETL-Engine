@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jan 12 08:41:50 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline TransformLang source." guiVersion="2.9.1" id="1204545430039" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Feb 26 14:10:32 CET 2010" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.60">
+<Graph author="avackova" created="Fri Jan 12 08:41:50 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204545430039" licenseType="Evaluation Devel" modified="Fri Mar 12 13:00:24 CET 2010" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.52">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="customers" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="customers_count" type="integer">
+<attr name="description"><![CDATA[This field contains number of customers, that are listed in 'customers' field.]]></attr>
+</Field>
+<Field name="customers" type="string"/>
+<Field name="EmployeeID" type="integer"/>
+</Record>
+</Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="357" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Denormalizer Component (CTL)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="625" x="24" y="189">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="357" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Denormalizer Component (CTL)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="625" x="23" y="195">
 <attr name="text"><![CDATA[
 Denormalizer processes groups of data records with the same value of Key. 
 
@@ -17,11 +26,11 @@ In this graph, all customers for each employee are concatenated using white spac
 
 After processing every group of records, before processing the next key value, the clean() function is used to return the settings to the initial state.
 
-Transformation is defined in Clover transformation language directly in the graph. It can be seen in the Source code and is executed on runtime.]]></attr>
+Transformation is defined in Clover transformation language directly in the graph. It can be seen in the Source tab.]]></attr>
 </Note>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="25" guiName="DENORMALIZE" guiWidth="50" guiX="353" guiY="20" id="DENORMALIZE" key="EmployeeID" order="Asc" type="DENORMALIZER">
+<Node enabled="enabled" guiHeight="25" guiName="Denormalizer" guiWidth="50" guiX="353" guiY="20" id="DENORMALIZE" key="EmployeeID" order="Asc" type="DENORMALIZER">
 <attr name="denormalize"><![CDATA[
 string customer = "";
 int employee = 0;
@@ -34,8 +43,8 @@ function append() {
 }
 
 function transform() {
-	$OrderID := numRec;
-	$CustomerID := customer;
+	$customers_count := numRec;
+	$customers := customer;
 	$EmployeeID := employee;
 } 
 
@@ -46,17 +55,17 @@ function clean(){
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="181" guiY="20" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER">
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort (EmployeeID)" guiWidth="0" guiX="181" guiY="20" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="Orders Sorted" guiWidth="50" guiX="23" guiY="20" id="INPUT1" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTL.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="529" guiY="20" id="WRITER" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTL.out" guiHeight="25" guiName="Customers Grouped for Each Employee" guiWidth="50" guiX="529" guiY="20" id="WRITER" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITER:0"/>
 <Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DENORMALIZE:0"/>
 <Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" guiHeight="25" guiName="DENORMALIZE" guiWidth="50" guiX="353" guiY="104" id="DENORMALIZE1" key="EmployeeID" order="Ignore" type="DENORMALIZER">
+<Node enabled="enabled" guiHeight="25" guiName="Denormalizer" guiWidth="50" guiX="353" guiY="104" id="DENORMALIZE1" key="EmployeeID" order="Ignore" type="DENORMALIZER">
 <attr name="denormalize"><![CDATA[
 string customer = "";
 int employee = 0;
@@ -69,8 +78,8 @@ function append() {
 }
 
 function transform() {
-	$OrderID := numRec;
-	$CustomerID := customer;
+	$customers_count := numRec;
+	$customers := customer;
 	$EmployeeID := employee;
 } 
 
@@ -81,11 +90,11 @@ function clean(){
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="23" guiY="104" id="INPUT2" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="Orders Sorted" guiWidth="50" guiX="23" guiY="104" id="INPUT2" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTLwithoutOrder.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="532" guiY="104" id="WRITER1" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="DENORMALIZE1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER1:0"/>
-<Edge debugMode="true" fromNode="INPUT2:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DENORMALIZE1:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTLwithoutOrder.out" guiHeight="25" guiName="Customers Grouped for An Employee" guiWidth="50" guiX="532" guiY="104" id="WRITER1" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="DENORMALIZE1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITER1:0"/>
+<Edge debugMode="false" fromNode="INPUT2:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DENORMALIZE1:0"/>
 </Phase>
 </Graph>

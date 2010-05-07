@@ -1,18 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" guiVersion="0.0.0.devel" id="1204547843697" licenseType="Evaluation license." modified="Mon Apr 20 11:14:55 CEST 2009" modifiedBy="avackova" name="Testing Hash Joiner" revision="1.14">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" guiVersion="0.0.0.devel" id="1204547843697" licenseType="Evaluation Devel" modified="Thu Apr 01 10:43:31 CEST 2010" modifiedBy="avackova" name="Testing Hash Joiner" revision="1.43">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employee.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
-<Connection dbConfig="${CONN_DIR}/postgre.cfg" id="Connection0" type="JDBC"/>
+<Connection dbConfig="${CONN_DIR}/${connection}" id="Connection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<LookupTable dbConnection="Connection0" id="LookupTable0" metadata="Metadata1" name="name" type="dbLookup">
+<LookupTable dbConnection="Connection0" id="LookupTable0" maxCached="0" metadata="Metadata1" name="name" type="dbLookup">
 <attr name="sqlQuery"><![CDATA[select * from employee where employee_id=?]]></attr>
 </LookupTable>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="265" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of DB Lookup Table in LookupJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="517" x="24" y="192">
+<attr name="text"><![CDATA[
+The graph illustrates the use of LookupJoin and DB lookup table.
+
+UniversalDataReader reads a flat file with Orders data. It is received by LookupJoin. In it, these records are joined with Employees that are get from DB lookup table. 
+
+The Transform attribute is defined, it is written in Java directly in the graph source code.
+
+Inner join is performed.
+
+We can also send those non-matched orders (Orders without an employee who executed them) to the optional second output port. No mapping nees not be defined for this output port. Its metadata are the same as those on the input port.
+
+graphDBLookup.grf is an equivalent of this graph. There are multiple ways to the same results.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="144" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="LookupJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="156" x="202" y="-41"/>
 </Global>
 <Phase number="0">
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="228" guiY="20" id="JOIN" joinKey="EmployeeID" lookupTable="LookupTable0" type="LOOKUP_JOIN">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="24" guiY="24" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="25" guiName="Join with Employees (Inner)" guiWidth="50" guiX="216" guiY="24" id="JOIN" joinKey="EmployeeID" lookupTable="LookupTable0" type="LOOKUP_JOIN">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.DataRecord;
@@ -32,15 +47,17 @@ public class ReformatTestInline extends DataRecordTransform{
   		target[0].getField(1).setValue(source[0].getField(1).getValue());
 		target[0].getField(2).setValue(source[0].getField(2).getValue().toString());
 		target[0].getField(3).setValue(source[1].getField(0).getValue().toString());
-		target[0].getField(4).setValue(source[1].getField(1).getValue());
+		target[0].getField(4).setValue(source[1].getField(3).getValue());
 
 		return ALL;
 	}
 }
 ]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="421" guiY="20" id="WRITER" type="DATA_WRITER"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Non-matched Orders" guiWidth="0" guiX="408" guiY="108" id="TRASH0" type="TRASH"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data.out" guiHeight="25" guiName="Orders-Employees" guiWidth="50" guiX="408" guiY="24" id="WRITER" type="DATA_WRITER"/>
 <Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JOIN:0"/>
-<Edge fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (joined records)" toNode="WRITER:0"/>
+<Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (joined records)" toNode="WRITER:0"/>
+<Edge debugMode="false" fromNode="JOIN:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (skipped records)" toNode="TRASH0:0"/>
 </Phase>
 </Graph>
