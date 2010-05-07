@@ -673,7 +673,8 @@ public class FileUtils {
             	return graph.getAuthorityProxy().getSandboxResourceOutput(graph.getRuntimeContext().getRunId(), url.getHost(), url.getPath());
     		} else {
     			// file input stream 
-    			String filePath = FileUtils.getFile(contextURL, input);
+    			URL url = FileUtils.getFileURL(contextURL, input);
+    			String filePath = url.getRef() != null ? url.getFile() + "#" + url.getRef() : url.getFile();
     			os = new FileOutputStream(filePath, appendData);
     		}
     	}
