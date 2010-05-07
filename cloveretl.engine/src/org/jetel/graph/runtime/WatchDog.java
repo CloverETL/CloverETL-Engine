@@ -561,6 +561,38 @@ public class WatchDog implements Callable<Result>, CloverPost {
         }catch(InterruptedException ex){
             phaseStatus = Result.ABORTED;
         } finally {
+        	
+            //now we can notify all waiting phases for free threads
+            synchronized(threadManager) {
+            	threadManager.releaseNodeThreads(phase.getNodes().size());
+            	/////////////////
+            	//is this code really necessary? why?
+            	for (Node node : phase.getNodes().values()){
+            		Thread t = node.getNodeThread();
+            		long runId = this.getGraphRuntimeContext().getRunId();
+            		if (t == null)
+            			throw new NullPointerException("Thread is null");
+            		if (node == null)
+            			throw new NullPointerException("Node is null");
+            		t.setName("exNode_"+runId+"_"+node.getId());
+            		// explicit interruption of threads of failed graph; (some nodes may be still running)
+            		if (node.getResultCode() == Result.RUNNING)
+//            			node.setResultCode(Result.ABORTED);
+            			node.abort();
+                	if (phaseStatus == Result.ERROR || phaseStatus == Result.ABORTED){  
+                		try {
+                    		if (t.isAlive())
+                    			t.interrupt();
+                		} catch (Exception e) {
+                			logger.warn(e.getMessage(), e);
+                		} // catch
+                	}
+            	}// for
+            	/////////////////
+                threadManager.notifyAll();
+            }
+        	
+        	
         	//specify transaction mode for postExecute()
         	TransactionMethod transactionMethod = TransactionMethod.DEFAULT;
         	if (runtimeContext.isTransactionMode()) {
@@ -581,36 +613,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
     			causeGraphElement = e.getGraphElement();
     			return Result.ERROR;
         	}
-        }
-        
-        //now we can notify all waiting phases for free threads
-        synchronized(threadManager) {
-        	threadManager.releaseNodeThreads(phase.getNodes().size());
-        	/////////////////
-        	//is this code really necessary? why?
-        	for (Node node : phase.getNodes().values()){
-        		Thread t = node.getNodeThread();
-        		long runId = this.getGraphRuntimeContext().getRunId();
-        		if (t == null)
-        			throw new NullPointerException("Thread is null");
-        		if (node == null)
-        			throw new NullPointerException("Node is null");
-        		t.setName("exNode_"+runId+"_"+node.getId());
-        		// explicit interruption of threads of failed graph; (some nodes may be still running)
-        		if (node.getResultCode() == Result.RUNNING)
-//        			node.setResultCode(Result.ABORTED);
-        			node.abort();
-            	if (phaseStatus == Result.ERROR || phaseStatus == Result.ABORTED){  
-            		try {
-                		if (t.isAlive())
-                			t.interrupt();
-            		} catch (Exception e) {
-            			logger.warn(e.getMessage(), e);
-            		} // catch
-            	}
-        	}// for
-        	/////////////////
-            threadManager.notifyAll();
         }
         
         phase.setResult(phaseStatus);
