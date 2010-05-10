@@ -43,7 +43,7 @@ public class CLVFFunctionCall extends SimpleNode {
 	}
 	
 	public String getName() {
-		return name;
+		return (localFunc != null) ? localFunc.getName() : name;
 	}
 
 	public void setCallTarget(CLVFFunctionDeclaration localFunc) {

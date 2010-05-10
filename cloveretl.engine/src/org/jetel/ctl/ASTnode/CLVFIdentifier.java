@@ -37,7 +37,7 @@ public class CLVFIdentifier extends SimpleNode {
 	}
 	
 	public String getName() {
-		return name;
+		return (variable != null) ? variable.getName() : name;
 	}
 	
 	public void setBlockOffset(int blockOffset) {
