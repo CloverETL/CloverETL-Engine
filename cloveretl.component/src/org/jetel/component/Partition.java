@@ -21,7 +21,6 @@ package org.jetel.component;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -446,20 +445,20 @@ public class Partition extends Node {
 
         checkMetadata(status, getInMetadata(), getOutMetadata());
 
-            try {
-            	
-        	    if (partitionKeyNames != null) {
-        			partitionKey = new RecordKey(partitionKeyNames,
-        					getInputPort(0).getMetadata());
-        		}
-        		if (partitionKey != null) {
-        			try {
-        				partitionKey.init();
-        			} catch (Exception e) {
-        				throw new ComponentNotReadyException(this, 
-        						XML_PARTITIONKEY_ATTRIBUTE, e.getMessage());
-        			}
-        		}
+        DataRecordMetadata inMetadata = getInputPort(0).getMetadata();
+        try {
+        	
+    	    if (partitionKeyNames != null) {
+    			partitionKey = new RecordKey(partitionKeyNames, inMetadata);
+    		}
+    		if (partitionKey != null) {
+    			try {
+    				partitionKey.init();
+    			} catch (Exception e) {
+    				throw new ComponentNotReadyException(this, 
+    						XML_PARTITIONKEY_ATTRIBUTE, e.getMessage());
+    			}
+    		}
         	
         	
 //                init();
