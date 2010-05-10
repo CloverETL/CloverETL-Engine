@@ -2,7 +2,7 @@ string[] a = ["1", "2"];
 string[] b = ["a","b","c"];
 string[] c;
 
-function int transform () {
+function integer transform () {
 	c = a+b;
 	
 	return 0;

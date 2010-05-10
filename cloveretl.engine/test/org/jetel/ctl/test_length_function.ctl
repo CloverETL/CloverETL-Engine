@@ -1,9 +1,9 @@
-int stringLength;
-int listLength;
-int mapLength;
-int recordLength;
+integer stringLength;
+integer listLength;
+integer mapLength;
+integer recordLength;
 
-function int transform() {
+function integer transform() {
 	// string length
 	stringLength = length("12345678");
 	print_err("string:" + stringLength);
@@ -13,7 +13,7 @@ function int transform() {
 	print_err("list: " + listLength);
 	
 	// map length
-	map[string,int] m;
+	map[string,integer] m;
 	m["first"] = 1;
 	m["second"] = 2;
 	m["third"] = 3;

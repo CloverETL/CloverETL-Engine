@@ -1,6 +1,6 @@
-function int transform() {
+function integer transform() {
 
-	int b = 1;
+	integer b = 1;
 
 	switch (b) {
 		default: 

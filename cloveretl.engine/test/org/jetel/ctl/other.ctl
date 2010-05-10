@@ -1,1 +1,1 @@
-int otherImportVar = 1;
+integer otherImportVar = 1;

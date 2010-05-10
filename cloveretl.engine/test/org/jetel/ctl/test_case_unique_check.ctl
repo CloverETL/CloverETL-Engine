@@ -1,4 +1,4 @@
-function int transform() {
+function integer transform() {
 
 	string b = "a";
 

@@ -3,8 +3,8 @@ double[] longResult;
 double[] doubleResult;
 double[] decimalResult;
 
-function int transform() {
-	int[] intArgs = [ 2 , 3 ];
+function integer transform() {
+	integer[] intArgs = [ 2 , 3 ];
 	long[] longArgs = [ 2L, 3L ];
 	double[] doubleArgs = [ 2.0, 3.0 ];
 	decimal[] decimalArgs = [ 2.0D, 3.0D ];

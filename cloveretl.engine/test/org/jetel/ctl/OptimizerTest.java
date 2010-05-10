@@ -59,7 +59,7 @@ public class OptimizerTest extends CompilerTestCase {
 
 		String expStr = "/*#TL:COMPILED\n*/\n" + 
 						"// this is other comment\n" + 
-						"for (int i=0; i<5; i++) \n" + 
+						"for (integer i=0; i<5; i++) \n" + 
 						"  if (i%2 == 0) {\n" +
 						"		continue;\n" + 
 						"  }\n";

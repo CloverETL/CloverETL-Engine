@@ -3,13 +3,13 @@ string[] longOutput;
 string[] doubleOutput;
 string[] decimalOutput;
 		
-function int transform() {
+function integer transform() {
 	// integer conversions
 	intOutput[0] = num2str(16);
 	intOutput[1] = num2str(16,2);
 	intOutput[2] = num2str(16,8);
 	intOutput[3] = num2str(16,16);
-	print_err("int output: " + intOutput);
+	print_err("integer output: " + intOutput);
 
 	// long conversions
 	longOutput[0] = num2str(16);
