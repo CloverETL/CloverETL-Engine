@@ -1,13 +1,13 @@
-int resultInt1;
-int resultInt2;
-int resultInt3;
-int resultInt4;
+integer resultInt1;
+integer resultInt2;
+integer resultInt3;
+integer resultInt4;
 long resultLong1;
 long resultLong2;
 long resultLong3;
 long resultLong4;
 
-function int transform() {
+function integer transform() {
 
 	resultInt1 = bit_xor(0,1);
 	resultInt2 = bit_xor(1,1);

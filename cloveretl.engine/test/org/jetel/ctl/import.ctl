@@ -1,6 +1,6 @@
-int a =3;
+integer a =3;
 
-function void print_result(int from,int to, int format) {
+function void print_result(integer from,integer to, integer format) {
 	if (isnull(format)) {
         if (try_convert(from,to)) 
         	print_err('converted:'+from+'-->'+to);

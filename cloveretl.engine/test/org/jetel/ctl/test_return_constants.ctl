@@ -1,21 +1,21 @@
 
-int skip;
-int ok;
-int all;
+integer skip;
+integer ok;
+integer all;
 
-function int skip_function() {
+function integer skip_function() {
 	return SKIP;
 }
 
-function int ok_function() {
+function integer ok_function() {
 	return OK;
 }
 
-function int all_function() {
+function integer all_function() {
 	return ALL;
 }
 
-function int transform() {
+function integer transform() {
 	skip = skip_function();
 	ok = ok_function();
 	all = all_function();

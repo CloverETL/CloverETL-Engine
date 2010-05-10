@@ -1,5 +1,5 @@
-function int transform() {
-	int[] intArgs = [ 2 , 3 ];
+function integer transform() {
+	integer[] intArgs = [ 2 , 3 ];
 	long[] longArgs = [ 2L, 3L ];
 	double[] doubleArgs = [ 2.4, 3.5 ];
 	decimal[] decimalArgs = [ 2.4D, 3.5D ];

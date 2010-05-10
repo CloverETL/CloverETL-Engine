@@ -562,15 +562,15 @@ TOKEN:
 /* Types */
 TOKEN : 
 { 	
-    <INT_VAR: "int" >
+    <INT_VAR: "integer" >
  |  <LONG_VAR: "long" >
  |  <DATE_VAR: "date" >
  |  <DOUBLE_VAR: "number" | "double" >
  |  <DECIMAL_VAR: "decimal" >
  |  <BOOLEAN_VAR: "boolean" >
  |  <STRING_VAR: "string" >
- |  <BYTE_VAR: "bytearray" >
- |  <CBYTE_VAR: "cbytearray" > 
+ |  <BYTE_VAR: "byte" >
+ |  <CBYTE_VAR: "cbyte" > 
  |  <LIST_VAR: "list" >
  |  <MAP_VAR: "map" >
  |  <RECORD_VAR: "record" >

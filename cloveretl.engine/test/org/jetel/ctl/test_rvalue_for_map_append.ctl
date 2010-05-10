@@ -1,8 +1,8 @@
-map[int,string] map1;
-map[int,string] map2;
-map[int,string] map3;
+map[integer,string] map1;
+map[integer,string] map2;
+map[integer,string] map3;
 
-function int transform () {
+function integer transform () {
 	
 	map1[1] = "a";
 	map1[2] = "b";

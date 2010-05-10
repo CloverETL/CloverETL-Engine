@@ -1,14 +1,14 @@
 //#TL
-int phone_number = -1;
+integer phone_number = -1;
 string absoluteFilePath = "";
 
 //parse input line to 12 fields
 //for every line add phone_number
 //phone_number == -1 for useless line
-function int transform(){
+function integer transform(){
 	string[] l;
-	int i;
-//	int row_id = 0;
+	integer i;
+//	integer row_id = 0;
 
 	if ( $Name != absoluteFilePath ){
 		phone_number = -1;
