@@ -791,7 +791,7 @@ public class ASTBuilder extends NavigatingVisitor {
 				if (voidMetadataAllowed(typeNode)) {
 					meta = VOID_METADATA;
 				} else {
-					error(typeNode, "Unable to resolve metadata '" + typeNode.getMetadataName() + "'");
+					error(typeNode, "Unknown variable type or metadata name '" + typeNode.getMetadataName() + "'");
 					return TLType.ERROR;
 				}
 			} else if (voidMetadataAllowed(typeNode)) {
