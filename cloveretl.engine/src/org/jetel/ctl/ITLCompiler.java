@@ -100,6 +100,18 @@ public interface ITLCompiler {
 	 * @return Compilation error messages as return by {@link #compile(String, Class, String)}.
 	 */
 	public List<ErrorMessage> compileExpression(String expression, Class<?> targetInterface, String componentId, String syntheticFunctionName, Class<?> syntheticReturnType);
-	
+
+	/**
+	 * Returns Java source code in case the compiler supports CTL-to-Java compilation. This method may only be called
+	 * after a successful call to the {@link #compile(String, Class, String)} method.
+	 *
+	 * @return the Java source code as a string
+	 *
+	 * @throws UnsupportedOperationException if the compiler does not support CTL-to-Java compilation
+	 * @throws IllegalStateException if the source code has not yet been generated
+	 * (i.e. the {@link #compile(String, Class, String)} method has not yet been called)
+	 */
+	public String getSourceCode();
+
 	public Object getCompiledCode();
 }
