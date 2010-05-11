@@ -40,6 +40,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.ByteArray;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.PackedDecimal;
+import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
 import org.jetel.util.crypto.Digest.DigestType;
 
@@ -524,10 +525,8 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Converts binary data encoded in base64 to array of bytes.")
-	public static final ByteArray base64byte(String src) {
-		ByteArray array = new ByteArray();
-		array.decodeBase64(src);
-		return array;
+	public static final byte[] base64byte(String src) {
+		return Base64.decode(src);
 	}	
 	
 	// BASE64BYTE
@@ -539,8 +538,8 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Converts binary data into their base64 representation.")
-	public static final String byte2base64(ByteArray src) {
-		return src.encodeBase64();
+	public static final String byte2base64(byte[] src) {
+		return Base64.encodeBytes(src);
 	}
 	
 	// BYTE2BASE64
@@ -552,9 +551,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Converts bits into their string representation.")
-	public static final String bits2str(ByteArray src) {
-		int length = src.length();
-		return src.decodeBitString('1', '0', 0, length == 0 ? 0 : (src.length() << 3) - 1).toString();
+	public static final String bits2str(byte[] src) {
+		// TODO: ByteArray (and other types from org.jetel.data.primitive) shouldn't be used anymore 
+		return new ByteArray(src).decodeBitString('1', '0', 0, src.length == 0 ? 0 : (src.length << 3) - 1).toString();
 	}
 
 	// BITS2STR
@@ -566,10 +565,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Converts string representation of bits into binary value.")
-	public static final ByteArray str2bits(String src) {
+	public static final byte[] str2bits(String src) {
+		// TODO: ByteArray (and other types from org.jetel.data.primitive) shouldn't be used anymore		
 		ByteArray array = new ByteArray();
 		array.encodeBitString(src, '1', true);
-		return array;
+		return array.getValue();
 	}
 
 	// STR2BITS
@@ -581,11 +581,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 
 	@TLFunctionAnnotation("Converts binary data into hex string.")
-	public static final String byte2hex(ByteArray src) {
-		StringBuilder strVal = new StringBuilder(src.length());
-		for (int i = 0; i < src.length(); i++) {
-			strVal.append(Character.forDigit((src.getByte(i) & 0xF0) >> 4, 16));
-			strVal.append(Character.forDigit(src.getByte(i) & 0x0F, 16));
+	public static final String byte2hex(byte[] src) {
+		StringBuilder strVal = new StringBuilder(src.length);
+		for (int i = 0; i < src.length; i++) {
+			strVal.append(Character.forDigit((src[i] & 0xF0) >> 4, 16));
+			strVal.append(Character.forDigit(src[i] & 0x0F, 16));
 		}
 		return strVal.toString();
 	}
@@ -599,13 +599,14 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Converts hex string into binary.")
-	public static final ByteArray hex2byte(String src) {
-		ByteArray array = new ByteArray();
+	public static final byte[] hex2byte(String src) {
 		char[] charArray = src.toCharArray();
+		byte[] byteArr = new byte[charArray.length / 2];
+		int j = 0;
 		for (int i = 0; i < charArray.length - 1; i = i + 2) {
-			array.append((byte) (((byte) Character.digit(charArray[i], 16) << 4) | (byte) Character.digit(charArray[i + 1], 16)));
+			byteArr[j++] = (byte) (((byte) Character.digit(charArray[i], 16) << 4) | (byte) Character.digit(charArray[i + 1], 16));
 		}
-    	return array;
+    	return byteArr;
 	}
 
 	// HEX2BYTE
@@ -617,13 +618,12 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Converts long into packed decimal representation (bytes).")
-	public static final ByteArray long2packdecimal(Long src) {
-		ByteArray bytes = new ByteArray(16);
+	public static final byte[] long2packdecimal(Long src) {
 		byte[] tmp = new byte[16];
 		int length = PackedDecimal.format(src, tmp);
-		bytes.setValue(tmp);
-		bytes.setLength(length);
-		return bytes;
+		byte[] result = new byte[length];
+		System.arraycopy(tmp, 0, result, 0, length);
+		return result;
 	}
 	
 	// LONG2PACKEDDECIMAL
@@ -635,8 +635,8 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Converts packed decimal(bytes) into long value.")
-	public static final Long packdecimal2long(ByteArray array) {
-		return PackedDecimal.parse(array.getValue());
+	public static final Long packdecimal2long(byte[] array) {
+		return PackedDecimal.parse(array);
 	}
 	
 	// PACKEDDECIMAL2LONG
@@ -648,13 +648,13 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 
 	@TLFunctionAnnotation("Calculates MD5 hash of input string.")
-	public static final ByteArray md5(String src) {
-		return new ByteArray(Digest.digest(DigestType.MD5, src));
+	public static final byte[] md5(String src) {
+		return Digest.digest(DigestType.MD5, src);
 	}
 	
 	@TLFunctionAnnotation("Calculates MD5 hash of input bytes.")
-	public static final ByteArray md5(ByteArray src) {
-		return new ByteArray(Digest.digest(DigestType.MD5, src.getValue()));
+	public static final byte[] md5(byte[] src) {
+		return Digest.digest(DigestType.MD5, src);
 	}
 	
 	// MD5
@@ -670,13 +670,13 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Calculates SHA hash of input bytes.")
-	public static final ByteArray sha(ByteArray src) {
-		return new ByteArray(Digest.digest(DigestType.SHA, src.getValue()));
+	public static final byte[] sha(byte[] src) {
+		return Digest.digest(DigestType.SHA, src);
 	}
 	
 	@TLFunctionAnnotation("Calculates SHA hash of input string.")
-	public static final ByteArray sha(String src) {
-		return new ByteArray(Digest.digest(DigestType.SHA, src));
+	public static final byte[] sha(String src) {
+		return Digest.digest(DigestType.SHA, src);
 	}
 	
 	// SHA

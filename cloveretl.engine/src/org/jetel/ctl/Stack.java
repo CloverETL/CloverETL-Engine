@@ -127,8 +127,8 @@ public class Stack {
 		return (DataRecord)pop();
 	}
 	
-	public ByteArray popByteArray() {
-		return (ByteArray)pop();
+	public byte[] popByteArray() {
+		return (byte[])pop();
 	}
 
 	

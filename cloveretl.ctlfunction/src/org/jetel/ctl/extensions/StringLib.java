@@ -233,8 +233,8 @@ public class StringLib extends TLFunctionLibrary {
 		return input.size();
 	}
 
-	public static Integer length(ByteArray input) {
-		return input.length();
+	public static Integer length(byte[] input) {
+		return input.length;
 	}
 
 	@TLFunctionAnnotation("Returns number of fields in the input record")
