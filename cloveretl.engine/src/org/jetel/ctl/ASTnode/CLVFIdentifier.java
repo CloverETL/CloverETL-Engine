@@ -37,6 +37,7 @@ public class CLVFIdentifier extends SimpleNode {
 	}
 	
 	public String getName() {
+		// this piece of code makes prefixing of variables in the AST post processing step possible
 		return (variable != null) ? variable.getName() : name;
 	}
 	
