@@ -22,6 +22,8 @@ package org.jetel.util.file;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -217,12 +219,37 @@ public class FileURLParser {
 			sURL = matcher.group(2) + matcher.group(3) + matcher.group(7);
 		}
 		
+		try {
+			URL url = new URL(null, sURL, new GeneralHandler());
+			sURL = url.getFile() + "#" + url.getRef();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
         if(sURL.contains(ARCHIVE_ANCHOR)) { 
-        	return sURL.substring(sURL.lastIndexOf(ARCHIVE_ANCHOR) + 1);
+        	return sURL.substring(sURL.indexOf(ARCHIVE_ANCHOR) + 1);
         }
     	return null;
 	}
 	
+	/**
+	 * Parses all protocols.
+	 * @author admin (info@cloveretl.com)
+	 *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created 11.1.2010
+	 */
+	private static class GeneralHandler extends URLStreamHandler {
+
+		@Override
+		public URLConnection openConnection(URL url) throws IOException {
+			return null;
+		}
+		
+	    protected void parseURL(URL u, String spec, int start, int limit) {
+	    	super.parseURL(u, spec, start, limit);
+	    }
+	}
+
 	/**
 	 * Gets file without archive anchor.
 	 * @param sURL

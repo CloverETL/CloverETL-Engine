@@ -292,7 +292,7 @@ public class FileUtils {
         	
         	// creates file input stream for incremental reading (random access file)
         	if (archiveType == null && url.getProtocol().equals(FILE_PROTOCOL)) {
-            	return new FileInputStream(url.getFile());
+            	return new FileInputStream(url.getRef() != null ? url.getFile() + "#" + url.getRef() : url.getFile());
         	} else if (archiveType == null && url.getProtocol().equals(SandboxStreamHandler.SANDBOX_PROTOCOL)) {
     			TransformationGraph graph = ContextProvider.getGraph();
         		if (graph == null)
@@ -344,8 +344,8 @@ public class FileUtils {
                 anchor = null;
                 innerInput.append(input.substring(input.indexOf(':') + 1));
             } else {
-                anchor.append(input.substring(input.lastIndexOf('#') + 1));
-                innerInput.append(input.substring(input.indexOf(':') + 1, input.lastIndexOf('#')));
+                anchor.append(input.substring(input.indexOf('#') + 1));
+                innerInput.append(input.substring(input.indexOf(':') + 1, input.indexOf('#')));
             }
         }
         else if (archiveType == ArchiveType.GZIP) {
